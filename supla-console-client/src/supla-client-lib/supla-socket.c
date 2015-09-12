@@ -1,0 +1,660 @@
+/*
+ ============================================================================
+ Name        : supla-socket.c
+ Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Version     : 1.0
+ Copyright   : GPLv2
+ ============================================================================
+
+ */
+
+
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <string.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+#include <resolv.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <pthread.h>
+
+
+#include "log.h"
+#include "tools.h"
+#include "supla-socket.h"
+#include "lck.h"
+
+
+typedef struct {
+
+	int sfd;
+	SSL *ssl;
+
+}TSuplaSocket;
+
+typedef struct  {
+
+   unsigned char secure;
+   int port;
+   char *host;
+
+   SSL_CTX *ctx;
+
+   #ifdef __MBED_TLS
+   mbedtls_ssl_config mbed_conf;
+   mbedtls_x509_crt mbed_cacert;
+   #endif
+
+   TSuplaSocket supla_socket;
+
+}TSuplaSocketData;
+
+
+struct CRYPTO_dynlock_value
+{
+    void *lck;
+};
+
+
+static void **ssl_locks = NULL;
+
+static void ssocket_ssl_locking_function(int mode, int n, const char *file, int line)
+{
+    if (mode & CRYPTO_LOCK) {
+    	lck_lock(ssl_locks[n]);
+    } else {
+    	lck_unlock(ssl_locks[n]);
+    }
+}
+
+static unsigned long ssocket_ssl_id_function(void)
+{
+    return ((unsigned long) pthread_self());
+}
+
+static struct CRYPTO_dynlock_value *ssocket_ssl_dyn_create_function(const char *file, int line)
+{
+    struct CRYPTO_dynlock_value *value;
+
+    value = (struct CRYPTO_dynlock_value *)
+        malloc(sizeof(struct CRYPTO_dynlock_value));
+    if (!value) {
+        goto err;
+    }
+
+    value->lck = lck_init();
+
+    return value;
+
+  err:
+    return (NULL);
+}
+
+static void ssocket_ssl_dyn_lock_function(int mode, struct CRYPTO_dynlock_value *l,
+                              const char *file, int line)
+{
+    if (mode & CRYPTO_LOCK) {
+    	lck_lock(l->lck);
+    } else {
+    	lck_unlock(l->lck);
+    }
+}
+
+static void ssocket_ssl_dyn_destroy_function(struct CRYPTO_dynlock_value *l,
+                                 const char *file, int line)
+{
+	lck_free(l->lck);
+    free(l);
+}
+
+void ssocket_ssl_error_log(void) {
+    char *errstr;
+	int code;
+	do {
+		code = ERR_get_error();
+		if ( code ) {
+			errstr = ERR_error_string(code, NULL);
+			supla_log(LOG_ERR, errstr);
+		}
+	} while(code);
+}
+
+SSL_CTX* ssocket_initserverctx(void) {
+
+	SSL_METHOD *method;
+    SSL_CTX *ctx;
+
+    OpenSSL_add_all_algorithms();
+    SSL_load_error_strings();
+    method = (SSL_METHOD *)SSLv3_server_method();
+    ctx = SSL_CTX_new(method);
+
+    if ( ctx == NULL )
+    	ssocket_ssl_error_log();
+
+    return ctx;
+}
+
+unsigned char ssocket_loadcertificates(SSL_CTX* ctx, const char* CertFile, const char* KeyFile) {
+
+	if ( !st_file_exists(CertFile) ) {
+		supla_log(LOG_ERR, "SSL: certificate file doesn't exists");
+		return 0;
+	}
+
+	if ( !st_file_exists(KeyFile) ) {
+		supla_log(LOG_ERR, "SSL: private key file doesn't exists");
+		return 0;
+	}
+
+    if ( SSL_CTX_use_certificate_file(ctx, CertFile, SSL_FILETYPE_PEM) <= 0 ) {
+    	ssocket_ssl_error_log();
+        return 0;
+    }
+
+    if ( SSL_CTX_use_PrivateKey_file(ctx, KeyFile, SSL_FILETYPE_PEM) <= 0 ) {
+    	ssocket_ssl_error_log();
+    	return 0;
+    }
+
+    if ( !SSL_CTX_check_private_key(ctx) ) {
+        supla_log(LOG_ERR, "Private key does not match the public certificate");
+        return 0;
+    }
+
+    return 1;
+}
+
+void ssocket_showcerts(SSL* ssl) {
+
+	X509 *cert;
+    char *line;
+
+    cert = SSL_get_peer_certificate(ssl);
+    if ( cert != NULL )
+    {
+        supla_log(LOG_DEBUG, "Server certificates:");
+        line = X509_NAME_oneline(X509_get_subject_name(cert), 0, 0);
+        supla_log(LOG_DEBUG, "Subject: %s", line);
+        free(line);
+        line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
+        supla_log(LOG_DEBUG, "Issuer: %s", line);
+        free(line);
+        X509_free(cert);
+    }
+    else
+    	supla_log(LOG_DEBUG, "No certificates.");
+}
+
+int32_t ssocket_ssl_error(TSuplaSocket *supla_socket, int ret_code) {
+
+	int32_t ssl_error;
+
+	ssl_error = SSL_get_error (supla_socket->ssl, ret_code);
+
+    switch (ssl_error) {
+    case SSL_ERROR_NONE:
+                supla_log(LOG_DEBUG, "SSL_ERROR_NONE");
+                break;
+    case SSL_ERROR_SSL:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_SSL");
+                break;
+    case SSL_ERROR_WANT_READ:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_READ");
+                break;
+    case SSL_ERROR_WANT_WRITE:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_WRITE");
+                break;
+    case SSL_ERROR_WANT_X509_LOOKUP:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_X509_LOOKUP");
+                break;
+    case SSL_ERROR_SYSCALL:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_SYSCALL");
+                break;
+    case SSL_ERROR_ZERO_RETURN:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_ZERO_RETURN");
+                break;
+    case SSL_ERROR_WANT_CONNECT:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_CONNECT");
+    	        break;
+    case SSL_ERROR_WANT_ACCEPT:
+    	        supla_log(LOG_DEBUG, "SSL_ERROR_WANT_ACCEPT");
+                break;
+     }
+
+    return ssl_error;
+}
+
+SSL_CTX* ssocket_client_initctx(void) {
+
+	SSL_METHOD *method;
+    SSL_CTX *ctx;
+
+    OpenSSL_add_all_algorithms();
+    SSL_load_error_strings();
+    method = (SSL_METHOD *)SSLv3_client_method();
+    ctx = SSL_CTX_new(method);
+
+
+    if ( ctx == NULL )
+    	ssocket_ssl_error_log();
+
+    return ctx;
+}
+
+
+char ssocket_openlistener(void *_ssd) {
+
+	int sd, sflag;
+    struct sockaddr_in addr;
+    TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+
+    sd = socket(PF_INET, SOCK_STREAM, 0);
+
+    if ( sd == -1 ) {
+        supla_log(LOG_ERR, "Can't create socket");
+        return 0;
+    }
+
+    sflag = 1;
+    setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
+                     (const char *)&sflag, sizeof(sflag));
+
+    #ifdef __APPLE__
+    setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&sflag, sizeof(sflag));
+    #endif
+
+    bzero(&addr, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(ssd->port);
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    if ( bind(sd, (struct sockaddr*)&addr, sizeof(addr)) != 0 ) {
+        supla_log(LOG_ERR, "Can't bind port");
+        return 0;
+    }
+
+    if ( listen(sd, 10) != 0 ) {
+        supla_log(LOG_ERR, "Can't configure listening port");
+        return 0;
+    }
+
+
+    if ( sd != -1 ) {
+    	ssd->supla_socket.sfd = sd;
+    	return 1;
+    }
+
+
+    return 0;
+}
+
+
+void *ssocket_server_init(const char cert[], const char key[], int port, unsigned char secure) {
+
+	int i;
+
+	TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
+    memset(ssd, 0, sizeof(TSuplaSocketData));
+
+    ssd->port = port;
+    ssd->supla_socket.sfd = -1;
+
+
+    if ( secure == 1 ) {
+
+    	  SSL_library_init();
+
+          ssl_locks = malloc(CRYPTO_num_locks() * sizeof(void*));
+
+		  if (ssl_locks != 0 ) {
+
+				for (i = 0; i < CRYPTO_num_locks(); i++) {
+					ssl_locks[i] = lck_init();
+				}
+
+				// http://openssl.6102.n7.nabble.com/When-to-use-CRYPTO-set-locking-callback-and-CRYPTO-set-id-callback-td7379.html
+				CRYPTO_set_locking_callback(ssocket_ssl_locking_function);
+				CRYPTO_set_id_callback(ssocket_ssl_id_function);
+				CRYPTO_set_dynlock_create_callback(ssocket_ssl_dyn_create_function);
+				CRYPTO_set_dynlock_lock_callback(ssocket_ssl_dyn_lock_function);
+				CRYPTO_set_dynlock_destroy_callback(ssocket_ssl_dyn_destroy_function);
+
+
+				ssd->secure = 1;
+				ssd->ctx = ssocket_initserverctx();
+
+				if ( ssd->ctx == NULL
+					 || ssocket_loadcertificates(ssd->ctx, cert, key) == 0 ) {
+					ssocket_free(ssd);
+					ssd = NULL;
+				}
+		  }
+
+
+    }
+
+
+	return ssd;
+}
+
+void ssocket_free(void *_ssd) {
+
+	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+
+	int i;
+
+	if ( ssd ) {
+		ssocket_close(ssd);
+
+		 if (ssl_locks != 0 ) {
+
+			    CRYPTO_set_dynlock_create_callback(NULL);
+			    CRYPTO_set_dynlock_lock_callback(NULL);
+			    CRYPTO_set_dynlock_destroy_callback(NULL);
+
+			    CRYPTO_set_locking_callback(NULL);
+			    CRYPTO_set_id_callback(NULL);
+
+			    for (i = 0; i < CRYPTO_num_locks(); i++) {
+			    	lck_free(ssl_locks[i]);
+			    }
+			    free(ssl_locks);
+			    ssl_locks = NULL;
+		    }
+
+
+
+		if ( ssd->host ) {
+			free(ssd->host);
+			ssd->host = NULL;
+		}
+
+
+		free(ssd);
+	}
+
+}
+
+char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
+
+	 struct sockaddr_in addr;
+	 int client_sd = -1;
+	 char result = 0;
+	 socklen_t len;
+     TSuplaSocket *supla_socket = NULL;
+	 TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+
+	 *_supla_socket = NULL;
+
+	 if ( ssd->supla_socket.sfd != -1 )
+		 {
+
+		      len = sizeof(addr);
+
+		      client_sd = accept(ssd->supla_socket.sfd, (struct sockaddr*)&addr, &len);
+
+		      if ( client_sd != -1 ) {
+
+			      //supla_log(LOG_DEBUG, "Connection: %i, %s:%d\n",client_sd, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
+		    	  result = 1;
+		    	  supla_socket = malloc(sizeof(TSuplaSocket));
+		    	  memset(supla_socket, 0, sizeof(TSuplaSocket));
+		    	  supla_socket->sfd = -1;
+
+		    	  *ipv4 = addr.sin_addr.s_addr;
+
+			      if ( ssd->secure == 1 ) {
+
+				      supla_socket->ssl = SSL_new(ssd->ctx);
+				      SSL_set_fd(supla_socket->ssl, client_sd);
+
+				      if ( SSL_accept(supla_socket->ssl) < 1 ) {
+
+				    	  supla_socket->sfd = client_sd;
+				    	  ssocket_supla_socket_close(supla_socket);
+				    	  client_sd = -1;
+
+				    	  ssocket_ssl_error_log();
+				      }
+
+			      }
+
+			      if ( client_sd != -1 ) {
+			    	  fcntl(client_sd, F_SETFL, O_NONBLOCK);
+			      }
+
+			      supla_socket->sfd = client_sd;
+		      }
+
+		}
+
+	 if ( supla_socket && supla_socket->sfd == -1 ) {
+		 free(supla_socket);
+		 supla_socket = NULL;
+	 }
+
+	 *_supla_socket = supla_socket;
+
+	 return result;
+
+}
+
+void ssocket_supla_socket_close(void *_supla_socket) {
+
+	TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
+	if ( supla_socket ) {
+
+		if ( supla_socket->ssl ) {
+			SSL_shutdown(supla_socket->ssl);
+			SSL_free(supla_socket->ssl);
+			supla_socket->ssl = NULL;
+		}
+
+		if ( supla_socket->sfd != -1 ) {
+			close(supla_socket->sfd);
+			supla_socket->sfd = -1;
+		}
+	}
+}
+
+void ssocket_supla_socket__close(void *_ssd) {
+
+	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+	ssocket_supla_socket_close(&ssd->supla_socket);
+}
+
+void ssocket_supla_socket_free(void *_supla_socket) {
+
+	if ( _supla_socket ) {
+		ssocket_supla_socket_close(_supla_socket);
+        free(_supla_socket);
+	}
+}
+
+int ssocket_supla_socket_getsfd(void *_supla_socket) {
+	return ((TSuplaSocket *)_supla_socket)->sfd;
+}
+
+
+void ssocket_close(void *_ssd) {
+
+	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+
+	if ( ssd ) {
+
+		ssocket_supla_socket_close(&ssd->supla_socket);
+
+		if ( ssd->ctx ) {
+
+			SSL_CTX_free(ssd->ctx);
+			ssd->ctx = NULL;
+
+			ERR_free_strings();
+			EVP_cleanup();
+		}
+	}
+
+}
+
+
+int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file) {
+
+    struct hostent *host;
+    struct sockaddr_in addr;
+
+    ssd->supla_socket.sfd = -1;
+
+    if ( ssd->host == NULL
+        || strlen(ssd->host) < 1
+        || (host = gethostbyname(ssd->host)) == NULL )
+    {
+
+		supla_write_state_file(state_file, LOG_ERR, "Host not found %s", ssd->host == NULL ? "" : ssd->host);
+
+    } else {
+
+        ssd->supla_socket.sfd = socket(PF_INET, SOCK_STREAM, 0);
+        bzero(&addr, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(ssd->port);
+        addr.sin_addr.s_addr = *(long*)(host->h_addr);
+
+        if ( connect(ssd->supla_socket.sfd, (struct sockaddr*)&addr, sizeof(addr)) != 0 ) {
+            close(ssd->supla_socket.sfd);
+            ssd->supla_socket.sfd = -1;
+
+            supla_write_state_file(state_file, LOG_ERR, "Can't connect to host %s", ssd->host == NULL ? "" : ssd->host);
+        }
+    }
+
+    return ssd->supla_socket.sfd;
+}
+
+
+
+void *ssocket_client_init(const char host[], int port, unsigned char secure) {
+
+	TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
+    memset(ssd, 0, sizeof(TSuplaSocketData));
+
+    ssd->port = port;
+    ssd->secure = secure;
+    ssd->supla_socket.sfd = -1;
+
+    if ( host ) {
+    	ssd->host = strdup(host);
+    }
+
+    if ( secure == 1 ) {
+
+        SSL_library_init();
+        ssd->ctx = ssocket_client_initctx();
+
+        if ( ssd->ctx == NULL ) {
+        	ssocket_free(ssd);
+        	ssd = NULL;
+        }
+
+    }
+
+	return ssd;
+
+}
+
+unsigned char ssocket_client_connect(void *_ssd, const char *state_file) {
+
+	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+
+	ssocket_supla_socket_close(&ssd->supla_socket);
+
+	if ( ssocket_client_openconnection(_ssd, state_file) == -1 )
+	   return 0;
+
+	if ( ssd->secure == 0 )
+	   return 1;
+
+	ssd->supla_socket.ssl = SSL_new(ssd->ctx);
+    SSL_set_fd(ssd->supla_socket.ssl, ssd->supla_socket.sfd);
+
+    if ( SSL_connect(ssd->supla_socket.ssl) < 1 ) {
+
+    	ssocket_ssl_error_log();
+    	ssocket_supla_socket_close(&ssd->supla_socket);
+
+    } else {
+
+    	fcntl(ssd->supla_socket.sfd, F_SETFL, O_NONBLOCK);
+
+    	supla_log(LOG_DEBUG, "Connected with %s encryption", SSL_get_cipher(ssd->supla_socket.ssl));
+    	SSL_get_cipher(ssd->supla_socket.ssl);
+    	ssocket_showcerts(ssd->supla_socket.ssl);
+
+    	return (1);
+    }
+
+	return (0);
+}
+
+int ssocket_get_fd(void *ssd) {
+   return ((TSuplaSocketData *)ssd)->supla_socket.sfd;
+}
+
+char ssocket_is_secure(void *_ssd) {
+	return ((TSuplaSocketData *)_ssd)->secure == 1;
+}
+
+int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
+
+	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+	TSuplaSocket *supla_socket = _supla_socket == NULL ? &ssd->supla_socket : (TSuplaSocket*)_supla_socket;
+
+	assert(ssd != NULL);
+
+	if ( ssd->secure == 1 ) {
+
+		count = SSL_read(supla_socket->ssl, buf, count);
+
+		if ( count < 0 && SSL_get_error (supla_socket->ssl, count) != SSL_ERROR_WANT_READ  )
+			ssocket_ssl_error(supla_socket, count);
+
+	} else {
+		count = recv(supla_socket->sfd, buf, count, MSG_DONTWAIT);
+	}
+
+
+return count;
+}
+
+int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
+
+	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+	TSuplaSocket *supla_socket = _supla_socket == NULL ? &ssd->supla_socket : (TSuplaSocket*)_supla_socket;
+
+	assert(ssd != NULL);
+
+	if ( ssd->secure == 1 ) {
+
+		count = SSL_write(supla_socket->ssl, buf, count);
+
+		if ( count < 0 )
+			ssocket_ssl_error(supla_socket, count);
+
+	} else {
+		count = send(supla_socket->sfd, buf, count,
+                #ifdef __linux__
+				MSG_NOSIGNAL
+				#else
+				0
+				#endif
+				);
+
+	}
+
+return count;
+}
