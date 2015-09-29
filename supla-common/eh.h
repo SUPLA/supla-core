@@ -22,6 +22,7 @@ typedef struct {
 	int nfds;
 
 #ifdef __linux__
+	int epoll_fd;
 	int fd1;
 #else
 	int fd1[2];

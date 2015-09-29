@@ -525,30 +525,32 @@ void channelio_raise_valuechanged(TDeviceChannel *channel) {
 
 }
 
-void channelio_gpio_on_portchanged(TGpioPort *port) {
+void channelio_gpio_on_portvalue(TGpioPort *port) {
 
 	TChannelGpioPortValue *gpio_value;
 	struct timeval now;
 	char _raise = 0;
-	char t = 0;
 
 	gpio_value = (TChannelGpioPortValue *)port->user_data1;
 
 	lck_lock(gpio_value->lck);
 
-    gettimeofday(&now, NULL);
+	if ( gpio_value->value != port->value ) {
 
-    t = gpio_value->last_tv.tv_sec > now.tv_sec  // the date has been changed
-			   || (long int)( now.tv_sec-gpio_value->last_tv.tv_sec ) > (long int)(GPIO_MINDELAY_USEC/1000000)
-			   || ( (long int)( now.tv_sec-gpio_value->last_tv.tv_sec ) == (long int)(GPIO_MINDELAY_USEC/1000000)
-					   && (long int)(now.tv_usec-gpio_value->last_tv.tv_usec) >= (long int)(GPIO_MINDELAY_USEC%1000000) ) ? 1 : 0;
+	    gettimeofday(&now, NULL);
 
-    if ( gpio_value->value != port->value
-    	 && t == 1 ) {
-        gpio_value->value = port->value;
-        gpio_value->last_tv = now;
-        _raise = 1;
-    };
+	    if ( gpio_value->last_tv.tv_sec > now.tv_sec  // the date has been changed
+				   || (long int)( now.tv_sec-gpio_value->last_tv.tv_sec ) > (long int)(GPIO_MINDELAY_USEC/1000000)
+				   || ( (long int)( now.tv_sec-gpio_value->last_tv.tv_sec ) == (long int)(GPIO_MINDELAY_USEC/1000000)
+						   && (long int)(now.tv_usec-gpio_value->last_tv.tv_usec) >= (long int)(GPIO_MINDELAY_USEC%1000000) ) )  {
+
+	        gpio_value->value = port->value;
+	        gpio_value->last_tv = now;
+	        _raise = 1;
+
+	    };
+
+	}
 
 	lck_unlock(gpio_value->lck);
 
@@ -637,10 +639,10 @@ void channelio_gpio_iterate(void) {
 
 
         #ifdef __SINGLE_THREAD
-		gpio_wait(cio->watch_list, cio->watch_list_count, 100, channelio_gpio_on_portchanged);
+		gpio_wait(cio->watch_list, cio->watch_list_count, 100, channelio_gpio_on_portvalue);
 		channelio_gpio_set_timed_lo_value();
         #else
-		gpio_wait(cio->watch_list, cio->watch_list_count, 1000000, channelio_gpio_on_portchanged);
+		gpio_wait(cio->watch_list, cio->watch_list_count, 5000000, channelio_gpio_on_portvalue);
         #endif
 	}
 

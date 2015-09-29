@@ -89,7 +89,7 @@ void *client_loop_init(void *sthread) {
 	snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
 
 	if ( cfg_pwd != NULL )
-		snprintf(scc.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, cfg_pwd);
+		snprintf(scc.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "%s", cfg_pwd);
 
 	scc.AccessID = cfg_aid;
 	memcpy(scc.clientGUID, cfg_client_GUID, SUPLA_GUID_SIZE);
@@ -133,7 +133,7 @@ void client_loop(void *user_data, void *sthread) {
 		} else {
 
 			while( sthread_isterminated(sthread) == 0
-				   && supla_client_iterate(sclient, 1000000) == 1 ) {
+				   && supla_client_iterate(sclient, 10000000) == 1 ) {
 			}
 
 		}

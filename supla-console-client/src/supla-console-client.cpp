@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 		if ( kbhit() > 0 ) {
             switch(getch()) {
             case '1':
-            	supla_client_open(sclient, 112, 1);
+            	supla_client_open(sclient, 121, 1);
             	break;
             case '2':
             	supla_client_open(sclient, 113, 1);

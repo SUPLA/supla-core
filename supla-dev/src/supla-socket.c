@@ -265,9 +265,9 @@ char ssocket_openlistener(void *_ssd) {
     setsockopt(sd, SOL_SOCKET, SO_REUSEADDR,
                      (const char *)&sflag, sizeof(sflag));
 
-    #ifdef __APPLE__
-    setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&sflag, sizeof(sflag));
-    #endif
+	#ifdef __APPLE__
+	setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (const char *)&sflag, sizeof(sflag));
+	#endif
 
     bzero(&addr, sizeof(addr));
     addr.sin_family = AF_INET;
@@ -402,34 +402,28 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 		      if ( client_sd != -1 ) {
 
 			      //supla_log(LOG_DEBUG, "Connection: %i, %s:%d\n",client_sd, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
-		    	  result = 1;
+
 		    	  supla_socket = malloc(sizeof(TSuplaSocket));
 		    	  memset(supla_socket, 0, sizeof(TSuplaSocket));
 		    	  supla_socket->sfd = -1;
 
 		    	  *ipv4 = addr.sin_addr.s_addr;
 
-			      if ( ssd->secure == 1 ) {
+			      if ( client_sd != -1
+			    	   && ssd->secure != 1 ) {
 
-				      supla_socket->ssl = SSL_new(ssd->ctx);
-				      SSL_set_fd(supla_socket->ssl, client_sd);
+			    	  if ( -1 == fcntl(client_sd, F_SETFL, O_NONBLOCK) ) {
 
-				      if ( SSL_accept(supla_socket->ssl) < 1 ) {
+			    		  supla_log(LOG_ERR,  "O_NONBLOCK");
 
-				    	  supla_socket->sfd = client_sd;
-				    	  ssocket_supla_socket_close(supla_socket);
-				    	  client_sd = -1;
-
-				    	  ssocket_ssl_error_log();
-				      }
-
-			      }
-
-			      if ( client_sd != -1 ) {
-			    	  fcntl(client_sd, F_SETFL, O_NONBLOCK);
+			    		  supla_socket->sfd = client_sd;
+			    		  ssocket_supla_socket_close(supla_socket);
+			    		  client_sd = -1;
+			    	  }
 			      }
 
 			      supla_socket->sfd = client_sd;
+			      result = 1;
 		      }
 
 		}
@@ -443,6 +437,62 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 
 	 return result;
 
+}
+
+char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
+
+	 int n;
+	 struct timeval tv;
+     TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
+	 TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
+
+     if ( _supla_socket
+    		 && supla_socket->sfd != -1
+    		 && ssd->secure == 1 ) {
+
+   	  tv.tv_sec = 5;
+   	  tv.tv_usec = 0;
+
+   	  n = setsockopt(supla_socket->sfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv));
+
+   	  if ( n == -1 ) {
+   		  supla_log(LOG_ERR,  "SO_RCVTIMEO/%i", tv.tv_sec);
+   	  } else {
+		      supla_socket->ssl = SSL_new(ssd->ctx);
+		      SSL_set_fd(supla_socket->ssl, supla_socket->sfd);
+   	  }
+
+	      if ( n == -1
+	    	   || SSL_accept(supla_socket->ssl) < 1 ) {
+
+	    	  ssocket_supla_socket_close(supla_socket);
+
+	    	  if ( n != -1 )
+		    	  ssocket_ssl_error_log();
+
+	      } else {
+
+	    	  tv.tv_sec = 0;
+	    	  tv.tv_usec = 0 ;
+
+	    	  if ( -1 == setsockopt(supla_socket->sfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(tv)) ) {
+
+	    		  supla_log(LOG_ERR,  "SO_RCVTIMEO/%i", tv.tv_sec);
+	    		  ssocket_supla_socket_close(supla_socket);
+
+	    	  };
+
+	    	  if ( -1 == fcntl(supla_socket->sfd, F_SETFL, O_NONBLOCK) ) {
+
+	    		  supla_log(LOG_ERR,  "O_NONBLOCK");
+	    		  ssocket_supla_socket_close(supla_socket);
+
+	    	  }
+	      }
+
+     }
+
+     return supla_socket->sfd == -1 ? 0 : 1;
 }
 
 void ssocket_supla_socket_close(void *_supla_socket) {

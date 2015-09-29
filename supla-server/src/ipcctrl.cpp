@@ -22,6 +22,7 @@
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
 const char cmd_user_reconnect[] = "USER-RECONNECT:";
+const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
 	this->sfd = sfd;
@@ -57,6 +58,12 @@ void svr_ipcctrl::send_result(const char *result, int i) {
 
 }
 
+void svr_ipcctrl::send_result(const char *result, double i) {
+
+	snprintf(buffer, 255, "%s%f\n", result, i);
+	send(sfd, buffer, strlen(buffer), 0);
+
+}
 
 void svr_ipcctrl::execute(void *sthread) {
 
@@ -102,6 +109,25 @@ void svr_ipcctrl::execute(void *sthread) {
 						send_result("OK:", UserID);
 					} else {
 						send_result("USER_UNKNOWN:", UserID);
+					}
+				} else if ( match_command(cmd_get_double_value, len) ) {
+
+					int UserID = 0;
+					int DeviceID = 0;
+					int ChannelID = 0;
+					double Value;
+
+					sscanf (&buffer[strlen(cmd_get_double_value)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+
+					if ( UserID
+						 && DeviceID
+						 && ChannelID
+						 && supla_user::get_channel_double_value(UserID, DeviceID, ChannelID, &Value) ) {
+
+						send_result("VALUE:", Value);
+
+					} else {
+						send_result("UNKNOWN:", ChannelID);
 					}
 				}
 

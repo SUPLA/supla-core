@@ -112,7 +112,7 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel, supla_cl
 	}
 
 	if ( Caption ) {
-		snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, Caption);
+		snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s", Caption);
 		channel->CaptionSize = strlen(channel->Caption)+1;
 	} else {
 		channel->CaptionSize = 1;
@@ -371,6 +371,7 @@ void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId, i
 }
 
 bool supla_client_channels::set_device_channel_new_value(TCS_SuplaChannelNewValue *channel_new_value) {
+
 
 	if ( channel_exists(channel_new_value->ChannelId) ) {
 

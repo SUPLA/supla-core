@@ -239,3 +239,7 @@ int supla_device::master_channel(int ChannelID) {
 int supla_device::slave_channel(int ChannelID) {
 	return channels->slave_channel(ChannelID);
 }
+
+bool supla_device::get_channel_double_value(int ChannelID, double *Value) {
+	return channels->get_channel_double_value(ChannelID, Value);
+}

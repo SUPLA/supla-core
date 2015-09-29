@@ -9,6 +9,7 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -68,7 +69,9 @@ void *ipcsocket_init(const char *address) {
 		close(sfd);
 		supla_log(LOG_ERR, "IPC listen error");
 	    return 0;
-	  }
+	} else {
+		chmod(address, 0777);
+	}
 
     ipc->sfd = sfd;
 

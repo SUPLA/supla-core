@@ -69,25 +69,20 @@ char gpio_read_file(const char *file, char *buff, int buff_len) {
     return result;
 };
 
-void gpio_read_and_raise(TGpioPort *port, _func_gpio_portchanged on_portchanged) {
+void gpio_read_and_raise(TGpioPort *port, _func_gpio_portvalue on_portvalue) {
 
 	char value[2];
 
     if ( read(port->fd, value, 2) > 0 ) {
 
-         value[0] = value[0] == 49 ? 1 : 0;
-
-         if ( port->value != value[0] ) {
-
-        	 port->value = value[0];
-        	 on_portchanged(port);
-
-         }
+           value[0] = value[0] == 49 ? 1 : 0;
+           port->value = value[0];
+           on_portvalue(port);
 
     };
 };
 
-void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portchanged on_portchanged) {
+void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portvalue on_portvalue) {
 
    char buffer[GPIO_BUFFER_SIZE];
    int a, max;
@@ -100,6 +95,8 @@ void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portchanged on_p
    fd_set rfds;
    FD_ZERO(&rfds);
    max = -1;
+
+   supla_log(LOG_DEBUG, "gpio_wait");
 
    wait_tv.tv_sec = (int)(usec/1000000);
    wait_tv.tv_usec = (int)(usec%1000000);
@@ -114,7 +111,7 @@ void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portchanged on_p
 	    port[a].ifd = inotify_add_watch(inot_fd, gpio_get_file(buffer, port[a].number, "value"), IN_MODIFY);
 
         if ( port[a].fd != -1 && port[a].ifd != -1 ) {
-           gpio_read_and_raise(&port[a], on_portchanged);
+           gpio_read_and_raise(&port[a], on_portvalue);
         }
 
         #else
@@ -124,7 +121,7 @@ void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portchanged on_p
               max=port[a].fd;
 
            FD_SET(port[a].fd, &rfds);
-           gpio_read_and_raise(&port[a], on_portchanged);
+           gpio_read_and_raise(&port[a], on_portvalue);
         }
         #endif
 
@@ -149,7 +146,7 @@ void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portchanged on_p
 
    for(a=0;a<count;a++)
        if (  port[a].fd != -1 ) {
-    	  gpio_read_and_raise(&port[a], on_portchanged);
+    	  gpio_read_and_raise(&port[a], on_portvalue);
 
           #ifdef __GPIO_SIMULATE
     	  if ( port[a].ifd != -1 )

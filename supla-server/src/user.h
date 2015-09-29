@@ -47,6 +47,7 @@ public:
     static supla_user *find(int UserID, bool create);
     static bool reconnect(int UserID);
     static bool is_device_online(int UserID, int DeviceID);
+    static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value);
 
     void remove_device(supla_device *device);
     void remove_client(supla_client *client);
@@ -54,6 +55,7 @@ public:
     int getUserID(void);
     bool getClientName(int ClientID, char *buffer, int size);
 
+    bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
     bool is_device_online(int DeviceID);
     bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value, char *online);
     bool set_device_channel_value(int SenderID, int DeviceID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]);

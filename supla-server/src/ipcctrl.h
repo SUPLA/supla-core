@@ -20,6 +20,7 @@ private:
 	bool match_command(const char *cmd, int len);
 	void send_result(const char *result);
 	void send_result(const char *result, int i);
+	void send_result(const char *result, double i);
 	char buffer[256];
 public:
 	svr_ipcctrl(int sfd);

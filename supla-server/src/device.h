@@ -35,6 +35,7 @@ public:
 	void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result) ;
 	int master_channel(int ChannelID);
 	int slave_channel(int ChannelID);
+	bool get_channel_double_value(int ChannelID, double *Value);
 
 };
 

@@ -87,7 +87,7 @@ void supla_vlog(int __pri, const char *message) {
     #else
 
     if ( run_as_daemon == 1 ) {
-          syslog(__pri, message);
+          syslog(__pri, "%s", message);
     } else {
             switch(__pri) {
                     case LOG_EMERG: printf("EMERG"); break;
@@ -102,7 +102,7 @@ void supla_vlog(int __pri, const char *message) {
 
        gettimeofday(&now, NULL);
        printf("[%li.%li] ", (unsigned long)now.tv_sec, (unsigned long)now.tv_usec);
-       printf(message);
+       printf("%s", message);
        printf("\n");
        fflush (stdout);
     }

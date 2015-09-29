@@ -34,6 +34,7 @@ public:
 	unsigned int getValueDuration(void);
 	void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
 	void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+	void getDouble(double *Value);
 	int master_channel(void);
 	int slave_channel(void);
 };
@@ -58,6 +59,7 @@ public:
 	virtual ~supla_device_channels();
 	void add_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3);
 	bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+	bool get_channel_double_value(int ChannelID, double *Value);
 	unsigned int get_channel_value_duration(int ChannelID);
 	int get_channel_func(int ChannelID);
 	void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);

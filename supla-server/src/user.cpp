@@ -204,6 +204,41 @@ bool supla_user::is_device_online(int UserID, int DeviceID) {
 	return result;
 }
 
+bool supla_user::get_channel_double_value(int DeviceID, int ChannelID, double *Value) {
+
+	bool result = false;
+
+	safe_array_lock(device_arr);
+
+	supla_device *device = find_device(DeviceID);
+	if ( device != NULL
+		 && device->get_channel_double_value(ChannelID, Value) ) {
+		result = true;
+	}
+
+	safe_array_unlock(device_arr);
+
+	return result;
+}
+
+bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value) {
+
+	bool result = false;
+
+	safe_array_lock(supla_user::user_arr);
+
+	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+	if ( user
+		  && user->get_channel_double_value(DeviceID, ChannelID, Value) == true )
+		result = true;
+
+	safe_array_unlock(supla_user::user_arr);
+
+	return result;
+
+}
+
 supla_device *supla_user::device_by_channel_id(supla_device *suspect, int ChannelID) {
 
 	if ( suspect != NULL

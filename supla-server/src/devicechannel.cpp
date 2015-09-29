@@ -48,6 +48,23 @@ void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 }
 
+void supla_device_channel::getDouble(double *Value) {
+
+	if ( Value == NULL ) return;
+
+	switch(Type) {
+	case SUPLA_CHANNELTYPE_SENSORNO:
+		*Value = this->value[0] == 1 ? 1 : 0;
+		break;
+	case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
+		memcpy(Value, this->value, sizeof(double));
+		break;
+	default:
+		*Value = 0;
+	}
+
+}
+
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 	memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -62,7 +79,7 @@ bool supla_device_channel::isValueWritable(void) {
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
 
-		return Param2;
+		return 1;
 
 		break;
 	}
@@ -210,6 +227,29 @@ bool supla_device_channels::get_channel_value(int ChannelID, char value[SUPLA_CH
 
 		if ( channel ) {
 			channel->getValue(value);
+			result = true;
+		}
+
+
+		safe_array_unlock(arr);
+
+	}
+
+	return result;
+
+}
+
+bool supla_device_channels::get_channel_double_value(int ChannelID, double *Value) {
+
+	bool result = false;
+
+	if ( ChannelID ) {
+
+		safe_array_lock(arr);
+		supla_device_channel *channel = find_channel(ChannelID);
+
+		if ( channel ) {
+			channel->getDouble(Value);
 			result = true;
 		}
 
