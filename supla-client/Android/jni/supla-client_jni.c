@@ -83,6 +83,31 @@ void supla_android_client(TAndroidSuplaClient *asc, jmethodID mid, jobject obj) 
 }
 
 void supla_android_client_cb_on_versionerror(void *_suplaclient, void *user_data, int version, int remote_version_min, int remote_version) {
+   
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    
+    if ( env && asc && asc->j_mid_on_versionerror ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaVersionError");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject rerr = (*env)->NewObject(env,cls, methodID);
+        jclass crerr = (*env)->GetObjectClass(env, rerr);
+        
+        fid = (*env)->GetFieldID(env, crerr, "Version", "I");
+        (*env)->SetIntField(env, rerr, fid, version);
+        
+        fid = (*env)->GetFieldID(env, crerr, "RemoteVersionMin", "I");
+        (*env)->SetIntField(env, rerr, fid, remote_version_min);
+        
+        fid = (*env)->GetFieldID(env, crerr, "RemoteVersion", "I");
+        (*env)->SetIntField(env, rerr, fid, remote_version);
+        
+        supla_android_client(asc, asc->j_mid_on_versionerror, rerr);
+    }
     
 }
 
@@ -117,6 +142,42 @@ void supla_android_client_cb_on_registering(void *_suplaclient, void *user_data)
 
 void supla_android_client_cb_on_registered(void *_suplaclient, void *user_data, TSC_SuplaRegisterClientResult *result) {
     
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_on_registered ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaRegisterResult");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject reg = (*env)->NewObject(env,cls, methodID);
+        jclass creg = (*env)->GetObjectClass(env, reg);
+        
+        fid = (*env)->GetFieldID(env, creg, "ResultCode", "I");
+        (*env)->SetIntField(env, reg, fid, result->result_code);
+        
+        fid = (*env)->GetFieldID(env, creg, "ClientID", "I");
+        (*env)->SetIntField(env, reg, fid, result->ClientID);
+        
+        fid = (*env)->GetFieldID(env, creg, "LocationCount", "I");
+        (*env)->SetIntField(env, reg, fid, result->LocationCount);
+        
+        fid = (*env)->GetFieldID(env, creg, "ChannelCount", "I");
+        (*env)->SetIntField(env, reg, fid, result->ChannelCount);
+        
+        fid = (*env)->GetFieldID(env, creg, "ActivityTimeout", "I");
+        (*env)->SetIntField(env, reg, fid, result->activity_timeout);
+        
+        fid = (*env)->GetFieldID(env, creg, "Version", "I");
+        (*env)->SetIntField(env, reg, fid, result->version);
+        
+        fid = (*env)->GetFieldID(env, creg, "VersionMin", "I");
+        (*env)->SetIntField(env, reg, fid, result->version_min);
+        
+        supla_android_client(asc, asc->j_mid_on_registered, reg);
+    }
+    
 }
 
 void supla_android_client_cb_on_registererror(void *_suplaclient, void *user_data, int code) {
@@ -124,15 +185,17 @@ void supla_android_client_cb_on_registererror(void *_suplaclient, void *user_dat
     jfieldID fid;
     TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
     JNIEnv* env = supla_client_get_env(asc);
-
+    
     
     if ( env && asc && asc->j_mid_on_registererror ) {
-         jclass cls = (*env)->FindClass(env, "Lorg/supla/android/SuplaRegisterError;");
-        
+
+         jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaRegisterError");
+
          jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
          jobject rerr = (*env)->NewObject(env,cls, methodID);
+         jclass crerr = (*env)->GetObjectClass(env, rerr);
         
-         fid = (*env)->GetFieldID(env, rerr, "code", "I");
+         fid = (*env)->GetFieldID(env, crerr, "ResultCode", "I");
          (*env)->SetIntField(env, rerr, fid, code);
         
          supla_android_client(asc, asc->j_mid_on_registererror, rerr);
@@ -142,18 +205,173 @@ void supla_android_client_cb_on_registererror(void *_suplaclient, void *user_dat
 
 void supla_android_client_cb_location_update(void *_suplaclient, void *user_data, TSC_SuplaLocation *location) {
     
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_location_update ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaLocation");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject loc = (*env)->NewObject(env,cls, methodID);
+        jclass cloc = (*env)->GetObjectClass(env, loc);
+        
+        fid = (*env)->GetFieldID(env, cloc, "EOL", "Z");
+        (*env)->SetBooleanField(env, loc, fid, location->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+        
+        fid = (*env)->GetFieldID(env, cloc, "Id", "I");
+        (*env)->SetIntField(env, loc, fid, location->Id);
+        
+        fid = (*env)->GetFieldID(env, cloc, "Caption", "Ljava/lang/String;");
+        (*env)->SetObjectField(env, loc, fid, (*env)->NewStringUTF(env, location->Caption));
+        
+        supla_android_client(asc, asc->j_mid_location_update, loc);
+    }
+    
+}
+
+jobject supla_android_client_channelvalue_to_jobject(void *_suplaclient, void *user_data, TSuplaChannelValue *channel_value) {
+    
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaChannelValue");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject val = (*env)->NewObject(env,cls, methodID);
+        jclass cval = (*env)->GetObjectClass(env, val);
+        
+        jbyteArray arr = (*env)->NewByteArray(env, SUPLA_CHANNELVALUE_SIZE);
+        (*env)->SetByteArrayRegion (env, arr, 0, SUPLA_CHANNELVALUE_SIZE, channel_value->value);
+        
+        fid = (*env)->GetFieldID(env, cval, "Value", "[B");
+        (*env)->SetObjectField(env, val, fid, arr);
+        
+        
+        arr = (*env)->NewByteArray(env, SUPLA_CHANNELVALUE_SIZE);
+        (*env)->SetByteArrayRegion (env, arr, 0, SUPLA_CHANNELVALUE_SIZE, channel_value->sub_value);
+        
+        fid = (*env)->GetFieldID(env, cval, "SubValue", "[B");
+        (*env)->SetObjectField(env, val, fid, arr);
+        
+
+        return cval;
+    }
+    
+    return NULL;
 }
 
 void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel *channel) {
+    
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_channel_update ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaChannel");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject ch = (*env)->NewObject(env,cls, methodID);
+        jclass cch = (*env)->GetObjectClass(env, ch);
+        
+        fid = (*env)->GetFieldID(env, cch, "EOL", "Z");
+        (*env)->SetBooleanField(env, ch, fid, channel->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+        
+        fid = (*env)->GetFieldID(env, cch, "Id", "I");
+        (*env)->SetIntField(env, ch, fid, channel->Id);
+        
+        fid = (*env)->GetFieldID(env, cch, "LocationId", "I");
+        (*env)->SetIntField(env, ch, fid, channel->LocationID);
+        
+        fid = (*env)->GetFieldID(env, cch, "Func", "I");
+        (*env)->SetIntField(env, ch, fid, channel->Func);
+        
+        fid = (*env)->GetFieldID(env, cch, "OnLine", "Z");
+        (*env)->SetBooleanField(env, ch, fid, channel->online == 1 ? JNI_TRUE : JNI_FALSE);
+        
+        fid = (*env)->GetFieldID(env, cch, "Value", "Lorg/supla/android/SuplaChannelValue;");
+        jobject chv = supla_android_client_channelvalue_to_jobject(_suplaclient, user_data, &channel->value);
+        (*env)->SetObjectField(env, ch, fid, chv);
+        
+        fid = (*env)->GetFieldID(env, cch, "Caption", "Ljava/lang/String;");
+        (*env)->SetObjectField(env, ch, fid, (*env)->NewStringUTF(env, channel->Caption));
+        
+        supla_android_client(asc, asc->j_mid_channel_update, ch);
+    }
     
 }
 
 void supla_android_client_cb_channel_value_update(void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value) {
     
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_channel_value_update ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaChannelValueUpdate");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject val = (*env)->NewObject(env,cls, methodID);
+        jclass cval = (*env)->GetObjectClass(env, val);
+        
+        fid = (*env)->GetFieldID(env, cval, "EOL", "Z");
+        (*env)->SetBooleanField(env, val, fid, channel_value->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+        
+        fid = (*env)->GetFieldID(env, cval, "Id", "I");
+        (*env)->SetIntField(env, val, fid, channel_value->Id);
+        
+        fid = (*env)->GetFieldID(env, cval, "OnLine", "Z");
+        (*env)->SetBooleanField(env, val, fid, channel_value->online == 1 ? JNI_TRUE : JNI_FALSE);
+        
+        fid = (*env)->GetFieldID(env, cval, "Value", "Lorg/supla/android/SuplaChannelValue;");
+        jobject chv = supla_android_client_channelvalue_to_jobject(_suplaclient, user_data, &channel_value->value);
+        (*env)->SetObjectField(env, val, fid, chv);
+        
+        
+        supla_android_client(asc, asc->j_mid_channel_value_update, val);
+
+    }
+    
 }
 
 void supla_android_client_cb_on_event(void *_suplaclient, void *user_data, TSC_SuplaEvent *event) {
     
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_on_event ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/SuplaEvent");
+        
+        jmethodID methodID = (*env)->GetMethodID(env, cls, "<init>", "()V");
+        jobject ev = (*env)->NewObject(env, cls, methodID);
+        jclass cev = (*env)->GetObjectClass(env, ev);
+        
+        fid = (*env)->GetFieldID(env, cev, "Event", "I");
+        (*env)->SetIntField(env, ev, fid, event->Event);
+        
+        fid = (*env)->GetFieldID(env, cev, "ChannelID", "I");
+        (*env)->SetIntField(env, ev, fid, event->ChannelID);
+    
+        fid = (*env)->GetFieldID(env, cev, "DurationMS", "J");
+        (*env)->SetLongField(env, ev, fid, event->DurationMS);
+
+        fid = (*env)->GetFieldID(env, cev, "SenderID", "I");
+        (*env)->SetIntField(env, ev, fid, event->SenderID);
+        
+        fid = (*env)->GetFieldID(env, cev, "SenderName", "Ljava/lang/String;");
+        (*env)->SetObjectField(env, ev, fid, (*env)->NewStringUTF(env, event->SenderName));
+        
+        supla_android_client(asc, asc->j_mid_on_event, ev);
+        
+    }
     
 }
 
@@ -288,16 +506,16 @@ Java_org_supla_android_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject cfg
         
         jclass oclass = (*env)->GetObjectClass(env, thiz);
         
-        _asc->j_mid_on_versionerror = (*env)->GetMethodID(env, oclass, "onVersionError", "()V");
+        _asc->j_mid_on_versionerror = (*env)->GetMethodID(env, oclass, "onVersionError", "(Lorg/supla/android/SuplaVersionError;)V");
         _asc->j_mid_on_connected = (*env)->GetMethodID(env, oclass, "onConnected", "()V");
         _asc->j_mid_on_disconnected = (*env)->GetMethodID(env, oclass, "onDisconnected", "()V");
         _asc->j_mid_on_registering = (*env)->GetMethodID(env, oclass, "onRegistering", "()V");
-        _asc->j_mid_on_registered = (*env)->GetMethodID(env, oclass, "onRegistered", "()V");
+        _asc->j_mid_on_registered = (*env)->GetMethodID(env, oclass, "onRegistered", "(Lorg/supla/android/SuplaRegisterResult;)V");
         _asc->j_mid_on_registererror = (*env)->GetMethodID(env, oclass, "onRegisterError", "(Lorg/supla/android/SuplaRegisterError;)V");
-        _asc->j_mid_location_update = (*env)->GetMethodID(env, oclass, "LocationUpdate", "()V");
-        _asc->j_mid_channel_update = (*env)->GetMethodID(env, oclass, "ChannelUpdate", "()V");
-        _asc->j_mid_channel_value_update = (*env)->GetMethodID(env, oclass, "ChannelValueUpdate", "()V");
-        _asc->j_mid_on_event = (*env)->GetMethodID(env, oclass, "onEvent", "()V");
+        _asc->j_mid_location_update = (*env)->GetMethodID(env, oclass, "LocationUpdate", "(Lorg/supla/android/SuplaLocation;)V");
+        _asc->j_mid_channel_update = (*env)->GetMethodID(env, oclass, "ChannelUpdate", "(Lorg/supla/android/SuplaChannel;)V");
+        _asc->j_mid_channel_value_update = (*env)->GetMethodID(env, oclass, "ChannelValueUpdate", "(Lorg/supla/android/SuplaChannelValueUpdate;)V");
+        _asc->j_mid_on_event = (*env)->GetMethodID(env, oclass, "onEvent", "(Lorg/supla/android/SuplaEvent;)V");
         
     
         sclient_cfg.user_data = _asc;
