@@ -1,0 +1,3 @@
+ifndef GCC
+GCC=gcc
+endif
