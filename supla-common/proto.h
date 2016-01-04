@@ -23,7 +23,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 1
+#define SUPLA_PROTO_VERSION                 2
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #define SUPLA_MAX_DATA_SIZE                 10240
@@ -47,6 +47,7 @@ extern "C" {
 #define SUPLA_DCS_CALL_PING_SERVER                        40
 #define SUPLA_SDC_CALL_PING_SERVER_RESULT                 50
 #define SUPLA_DS_CALL_REGISTER_DEVICE                     60
+#define SUPLA_DS_CALL_REGISTER_DEVICE_B                   65 // ver. >= 2
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT              70
 #define SUPLA_CS_CALL_REGISTER_CLIENT                     80
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT              90
@@ -61,6 +62,8 @@ extern "C" {
 #define SUPLA_CS_CALL_GET_NEXT                            180
 #define SUPLA_SC_CALL_EVENT                               190
 #define SUPLA_CS_CALL_CHANNEL_SET_VALUE                   200
+#define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT               210 // ver. >= 2
+#define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT        220 // ver. >= 2
 
 #define SUPLA_RESULT_DATA_TOO_LARGE         -4
 #define SUPLA_RESULT_BUFFER_OVERFLOW        -3
@@ -98,6 +101,7 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_RELAYHFD4                2000
 #define SUPLA_CHANNELTYPE_RELAYG5LA1A              2010
 #define SUPLA_CHANNELTYPE_2XRELAYG5LA1A            2020
+#define SUPLA_CHANNELTYPE_RELAY                    2900
 #define SUPLA_CHANNELTYPE_THERMOMETERDS18B20       3000
 
 #define SUPLA_CHANNELFNC_NONE                               0
@@ -115,6 +119,14 @@ extern "C" {
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER      120
 #define SUPLA_CHANNELFNC_POWERSWITCH                      130
 #define SUPLA_CHANNELFNC_LIGHTSWITCH                      140
+
+#define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK         0x0001
+#define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE                0x0002
+#define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR          0x0004
+#define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK            0x0008
+#define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEROLLERSHUTTER       0x0010
+#define SUPLA_BIT_RELAYFUNC_POWERSWITCH                       0x0020
+#define SUPLA_BIT_RELAYFUNC_LIGHTSWITCH                       0x0040
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK               10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE                      20
@@ -173,6 +185,22 @@ typedef struct {
 }TSDC_SuplaPingServerResult;
 
 typedef struct {
+	// device|client -> server
+
+	unsigned char activity_timeout;
+
+}TDCS_SuplaSetActivityTimeout;
+
+typedef struct {
+	// server -> device|client
+
+	unsigned char activity_timeout;
+	unsigned char min;
+	unsigned char max;
+
+}TSDC_SuplaSetActivityTimeoutResult;
+
+typedef struct {
 	char value[SUPLA_CHANNELVALUE_SIZE];
 	char sub_value[SUPLA_CHANNELVALUE_SIZE]; // For example sensor value
 }TSuplaChannelValue;
@@ -221,6 +249,35 @@ typedef struct {
 	TDS_SuplaDeviceChannel channels[SUPLA_CHANNELMAXCOUNT]; // Last variable in struct!
 
 }TDS_SuplaRegisterDevice;
+
+typedef struct {
+	// device -> server
+
+	unsigned char Number;
+	int Type;
+
+	int FuncList;
+	int Default;
+
+	char value[SUPLA_CHANNELVALUE_SIZE];
+
+}TDS_SuplaDeviceChannel_B; // ver. >= 2
+
+
+typedef struct {
+	// device -> server
+
+	int LocationID;
+	char LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE]; // UTF8
+
+	char GUID[SUPLA_GUID_SIZE];
+	char Name[SUPLA_DEVICE_NAME_MAXSIZE]; // UTF8
+	char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+	unsigned char channel_count;
+	TDS_SuplaDeviceChannel_B channels[SUPLA_CHANNELMAXCOUNT]; // Last variable in struct!
+
+}TDS_SuplaRegisterDevice_B; // ver. >= 2
 
 typedef struct {
 	// server -> device

@@ -14,7 +14,6 @@
 #include <stddef.h>
 #include "eh.h"
 
-#define ACTIVITY_TIMEOUT       120
 
 class supla_client;
 class supla_device;
@@ -31,6 +30,7 @@ protected:
 	TEventHandler *eh;
 
 	struct timeval init_time;
+	unsigned char activity_timeout;
 
 
 	union {
@@ -52,6 +52,7 @@ public:
 	void on_remote_call_received(void *_srpc, unsigned int rr_id, unsigned int call_type, unsigned char proto_version);
 	void *srpc(void);
 	unsigned int getClientIpv4(void);
+	unsigned char GetActivityTimeout(void);
 
 };
 

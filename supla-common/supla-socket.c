@@ -131,7 +131,7 @@ SSL_CTX* ssocket_initserverctx(void) {
 
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
-    method = (SSL_METHOD *)SSLv3_server_method();
+    method = (SSL_METHOD *)SSLv23_server_method();
     ctx = SSL_CTX_new(method);
 
     if ( ctx == NULL )

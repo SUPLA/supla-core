@@ -13,9 +13,25 @@
 #include "proto.h"
 #include "log.h"
 
+#ifdef ESP8266
+
+#include <osapi.h>
+#include <mem.h>
+
+#define BUFFER_MIN_SIZE    512
+#define BUFFER_MAX_SIZE    2048
+
+#define malloc os_malloc
+#define free os_free
+#define realloc os_realloc
+
+#else
+
 #define BUFFER_MIN_SIZE    0
 //sizeof(TSuplaDataPacket)
 #define BUFFER_MAX_SIZE    131072
+
+#endif
 
 static char sproto_tag[SUPLA_TAG_SIZE] = { 'S', 'U', 'P', 'L', 'A' };
 
@@ -89,11 +105,12 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned int *b
 		return (SUPLA_RESULT_BUFFER_OVERFLOW);
 
 	if ( size != (*buffer_size) )
-		*buffer = realloc(*buffer, size);
+		*buffer = (char *)realloc(*buffer, size);
 
+    #ifndef ESP8266
     if ( errno == ENOMEM )
     	return (SUPLA_RESULT_FALSE);
-
+    #endif
 
     memcpy(&(*buffer)[(*buffer_data_size)], data, data_size);
 
@@ -161,7 +178,7 @@ unsigned int sproto_pop_out_data(void *spd_ptr, char *buffer, unsigned int buffe
     		spd->out.size = BUFFER_MIN_SIZE;
 
     	if ( b != spd->out.size )
-    	  spd->out.buffer = realloc(spd->out.buffer, spd->out.size);
+    	  spd->out.buffer = (char *)realloc(spd->out.buffer, spd->out.size);
     }
 
     return (buffer_size);
@@ -198,7 +215,7 @@ void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in, unsigned int size) {
 			in->size = BUFFER_MIN_SIZE;
 
 		if ( old_size != in->size )
-			in->buffer = realloc(in->buffer, in->size);
+			in->buffer = (char *)realloc(in->buffer, in->size);
 	}
 
 }

@@ -65,7 +65,7 @@ public:
 	unsigned int get_channel_value_duration(int ChannelID);
 	int get_channel_func(int ChannelID);
 	void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
-	void set_channels_value(TDS_SuplaDeviceChannel *schannel, int count);
+	void set_channels_value(TDS_SuplaDeviceChannel_B *schannel, int count);
 
 	void set_device_channel_value(void *srpc, int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) ;
 

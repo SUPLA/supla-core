@@ -392,7 +392,7 @@ bool supla_device_channels::channel_exists(int ChannelID) {
 	return result;
 }
 
-void supla_device_channels::set_channels_value(TDS_SuplaDeviceChannel *schannel, int count) {
+void supla_device_channels::set_channels_value(TDS_SuplaDeviceChannel_B *schannel, int count) {
 
 	for(int a=0;a<count;a++)
 		set_channel_value(get_channel_id(schannel[a].Number), schannel[a].value);

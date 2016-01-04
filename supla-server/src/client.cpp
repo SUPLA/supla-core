@@ -132,7 +132,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient *register_client, uns
 	TSC_SuplaRegisterClientResult srcr;
 	srcr.result_code = resultcode;
 	srcr.ClientID = getID();
-	srcr.activity_timeout = ACTIVITY_TIMEOUT;
+	srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
 	srcr.version_min = SUPLA_PROTO_VERSION;
 	srcr.version = SUPLA_PROTO_VERSION;
 	srcr.LocationCount = locations->count();

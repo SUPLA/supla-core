@@ -542,28 +542,34 @@ int database::get_device_channel_id(int DeviceID, int ChannelNumber, int *Type) 
 }
 
 
-int database::add_device_channel(int DeviceID, int ChannelNumber, int Type, int UserID, bool *new_channel) {
+int database::add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func, int FList, int UserID, bool *new_channel) {
 
-	MYSQL_BIND pbind[4];
+	MYSQL_BIND pbind[6];
 	memset(pbind, 0, sizeof(pbind));
 
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&Type;
 
 	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&UserID;
+	pbind[1].buffer= (char *)&Func;
 
 	pbind[2].buffer_type= MYSQL_TYPE_LONG;
-	pbind[2].buffer= (char *)&ChannelNumber;
+	pbind[2].buffer= (char *)&UserID;
 
 	pbind[3].buffer_type= MYSQL_TYPE_LONG;
-	pbind[3].buffer= (char *)&DeviceID;
+	pbind[3].buffer= (char *)&ChannelNumber;
+
+	pbind[4].buffer_type= MYSQL_TYPE_LONG;
+	pbind[4].buffer= (char *)&DeviceID;
+
+	pbind[5].buffer_type= MYSQL_TYPE_LONG;
+	pbind[5].buffer= (char *)&FList;
 
 	{
-		const char sql[] = "INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, `param3`, `user_id`, `channel_number`, `iodevice_id`) VALUES (?,0,0,0,0,?,?,?)";
+		const char sql[] = "INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, `param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`) VALUES (?,?,0,0,0,?,?,?,?)";
 
 		MYSQL_STMT *stmt;
-		if ( !stmt_execute((void**)&stmt, sql, pbind, 4, false) ) {
+		if ( !stmt_execute((void**)&stmt, sql, pbind, 6, false) ) {
 			mysql_stmt_close(stmt);
 			return 0;
 		} else if ( new_channel ) {

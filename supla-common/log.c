@@ -18,7 +18,20 @@
 #include <string.h>
 
 #include "log.h"
+
+#ifdef ESP8266
+
+#include <osapi.h>
+#include <mem.h>
+
+#define malloc os_malloc
+#define free os_free
+#define realloc os_realloc
+#define vsnprintf ets_vsnprintf
+
+#else
 #include "cfg.h"
+#endif
 
 #ifdef __ANDROID__
 #include <android/log.h>
@@ -40,7 +53,7 @@ char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
 
     if ( *size == 0 ) {
         *size = strlen(__fmt)+10;
-        *buffer = malloc(*size);
+        *buffer = (char *)malloc(*size);
     }
 
     if ( *buffer == NULL ) {
@@ -58,7 +71,7 @@ char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
 		 else           /* glibc 2.0 */
 			  (*size) *= 2;  /* twice the old size */
 
-		 if ((nb = realloc (*buffer, *size)) == NULL) {
+		 if ((nb = (char *)realloc (*buffer, *size)) == NULL) {
 			  free(*buffer);
 			  *buffer = NULL;
 			  *size = 0;
@@ -76,6 +89,11 @@ char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
 
 }
 
+#ifdef ESP8266
+void supla_vlog(int __pri, const char *message) {
+	os_printf("%s\r\n", message);
+}
+#else
 void supla_vlog(int __pri, const char *message) {
 
 #ifdef __ANDROID__
@@ -108,7 +126,11 @@ void supla_vlog(int __pri, const char *message) {
     struct timeval now;
     #endif
 
+    #ifdef ESP8266
+    if ( message == NULL ) return;
+    #else
     if ( message == NULL || ( debug_mode == 0 && __pri == LOG_DEBUG ) ) return;
+    #endif
 
     #ifdef __LOG_CALLBACK
     if ( __supla_log_callback )
@@ -129,16 +151,21 @@ void supla_vlog(int __pri, const char *message) {
                     case LOG_DEBUG: printf("DEBUG"); break;
             }
 
+       #ifdef ESP8266
+       os_printf("%s\r\n", message);
+       #else
        gettimeofday(&now, NULL);
        printf("[%li.%li] ", (unsigned long)now.tv_sec, (unsigned long)now.tv_usec);
        printf("%s", message);
        printf("\n");
        fflush (stdout);
+       #endif
     }
     #endif
 
 #endif
 }
+#endif
 
 void supla_log(int __pri, const char *__fmt, ...) {
 
@@ -146,7 +173,13 @@ void supla_log(int __pri, const char *__fmt, ...) {
 	char *buffer = NULL;
 	int size = 0;
 
-    if ( __fmt == NULL || ( debug_mode == 0 && __pri == LOG_DEBUG ) ) return;
+
+	#ifdef ESP8266
+	if ( __fmt == NULL ) return;
+    #else
+	if ( __fmt == NULL || ( debug_mode == 0 && __pri == LOG_DEBUG ) ) return;
+    #endif
+
 
 	while(1) {
 		va_start(ap, __fmt);

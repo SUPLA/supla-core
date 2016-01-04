@@ -15,11 +15,14 @@
 
 #define MUTEX_COUNT  4
 
+#ifndef __SINGLE_THREAD
+
 typedef struct {
 
 	pthread_mutex_t mutex;
 
 }TLckData;
+#endif
 
 void *lck_init(void) {
 

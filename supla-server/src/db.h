@@ -49,7 +49,7 @@ public:
 			        int UserID, bool *new_device, bool *is_enabled, int *Limit);
 
 	int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
-	int add_device_channel(int DeviceID, int ChannelNumber, int Type, int UserID, bool *new_channel);
+	int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func, int FList, int UserID, bool *new_channel);
 
 	int get_device_count(int UserID);
 	int get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, bool *is_enabled);

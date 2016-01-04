@@ -37,7 +37,7 @@ supla_device::~supla_device() {
 
 }
 
-char supla_device::register_device(TDS_SuplaRegisterDevice *register_device, unsigned char proto_version) {
+char supla_device::register_device(TDS_SuplaRegisterDevice_B *register_device, unsigned char proto_version) {
 
 	int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
 	char result = 0;
@@ -108,7 +108,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice *register_device, uns
 
 								bool new_channel = false;
 								int ChannelID = db->add_device_channel(DeviceID, register_device->channels[a].Number,
-										                                         register_device->channels[a].Type, UserID, &new_channel);
+										                                         register_device->channels[a].Type,
+										                                         register_device->channels[a].Default ? register_device->channels[a].Default : 0,
+										                                         register_device->channels[a].FuncList,
+										                                         UserID, &new_channel);
 
 								if ( ChannelID == 0 ) {
 									ChannelCount = -1;
@@ -163,7 +166,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice *register_device, uns
 
 	TSD_SuplaRegisterDeviceResult srdr;
 	srdr.result_code = resultcode;
-	srdr.activity_timeout = ACTIVITY_TIMEOUT;
+	srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
 	srdr.version_min = SUPLA_PROTO_VERSION;
 	srdr.version = SUPLA_PROTO_VERSION;
 	srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);

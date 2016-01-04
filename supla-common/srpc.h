@@ -43,7 +43,10 @@ union TsrpcDataPacketData {
 	TSDC_SuplaPingServerResult *sdc_ping_result;
 	TSDC_SuplaGetVersionResult *sdc_getversion_result;
 	TSDC_SuplaVersionError *sdc_version_error;
+	TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout;
+	TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result;
 	TDS_SuplaRegisterDevice *ds_register_device;
+	TDS_SuplaRegisterDevice_B *ds_register_device_b;
 	TSD_SuplaRegisterDeviceResult *sd_register_device_result;
 	TCS_SuplaRegisterClient *cs_register_client;
 	TSC_SuplaRegisterClientResult *sc_register_client_result;
@@ -88,9 +91,12 @@ int srpc_sdc_async_getversion_result(void *_srpc, char *SoftVer);
 int srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
 int srpc_dcs_async_ping_server(void *_srpc);
 int srpc_sdc_async_ping_server_result(void *_srpc);
+int srpc_dcs_async_set_activity_timeout(void *_srpc, TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout);
+int srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result);
 
 // device <-> server
 int srpc_ds_async_registerdevice(void *_srpc, TDS_SuplaRegisterDevice *registerdevice);
+int srpc_ds_async_registerdevice_b(void *_srpc, TDS_SuplaRegisterDevice_B *registerdevice); // ver. >= 2
 int srpc_sd_async_registerdevice_result(void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
 int srpc_ds_async_channel_value_changed(void *_srpc, unsigned char channel_number, char *value);
 int srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);

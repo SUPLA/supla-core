@@ -10,7 +10,9 @@
 #ifndef EH_H_
 #define EH_H_
 
+#ifndef ESP8266
 #include <sys/select.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

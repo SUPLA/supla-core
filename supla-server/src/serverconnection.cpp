@@ -9,6 +9,7 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "serverconnection.h"
 #include "device.h"
@@ -24,6 +25,10 @@
 #define REG_NONE    0
 #define REG_DEVICE  1
 #define REG_CLIENT  2
+
+#define ACTIVITY_TIMEOUT       120
+#define ACTIVITY_TIMEOUT_MIN       10
+#define ACTIVITY_TIMEOUT_MAX       240
 
 int supla_connection_socket_read(void *buf, int count, void *sc) {
 	return ((serverconnection*)sc)->socket_read(buf, count);
@@ -56,6 +61,7 @@ serverconnection::serverconnection(void *ssd, void *supla_socket, unsigned int c
 	this->registered = REG_NONE;
 	this->ssd = ssd;
 	this->supla_socket = supla_socket;
+	this->activity_timeout = ACTIVITY_TIMEOUT;
 
 	eh = eh_init();
 	eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
@@ -135,13 +141,40 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 			supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE");
 
+			if ( rd.data.ds_register_device != NULL ) {
+				TDS_SuplaRegisterDevice_B *register_device_b = (TDS_SuplaRegisterDevice_B *)malloc(sizeof(TDS_SuplaRegisterDevice_B));
+				memset(register_device_b, 0, sizeof(TDS_SuplaRegisterDevice_B));
+
+				register_device_b->LocationID = rd.data.ds_register_device->LocationID;
+				memcpy(register_device_b->LocationPWD, rd.data.ds_register_device->LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE);
+				memcpy(register_device_b->GUID, rd.data.ds_register_device->GUID, SUPLA_GUID_SIZE);
+				memcpy(register_device_b->Name, rd.data.ds_register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE);
+				memcpy(register_device_b->SoftVer, rd.data.ds_register_device->SoftVer, SUPLA_SOFTVER_MAXSIZE);
+
+				register_device_b->channel_count = rd.data.ds_register_device->channel_count;
+
+				for(int c=0;c<register_device_b->channel_count;c++) {
+					register_device_b->channels[c].Number = rd.data.ds_register_device->channels[c].Number;
+					register_device_b->channels[c].Type = rd.data.ds_register_device->channels[c].Type;
+					memcpy(register_device_b->channels[c].value, rd.data.ds_register_device->channels[c].value, SUPLA_CHANNELVALUE_SIZE);
+				}
+
+				free(rd.data.ds_register_device);
+				rd.data.ds_register_device_b = register_device_b;
+			}
+
+		/* no break between SUPLA_DS_CALL_REGISTER_DEVICE and SUPLA_DS_CALL_REGISTER_DEVICE_B!!! */
+		case SUPLA_DS_CALL_REGISTER_DEVICE_B:
+
+			supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_B");
+
 			if ( cdptr == NULL ) {
 				device = new supla_device(this);
 				rd.data.ds_register_device->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
 				rd.data.ds_register_device->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
 				rd.data.ds_register_device->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
 
-				if ( device->register_device(rd.data.ds_register_device, proto_version) == 1 ) {
+				if ( device->register_device(rd.data.ds_register_device_b, proto_version) == 1 ) {
 					registered = REG_DEVICE;
 				};
 			}
@@ -175,9 +208,29 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 		cdptr->updateLastActivity();
 
-		if ( call_type == SUPLA_DCS_CALL_PING_SERVER
+		if ( call_type == SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT
 			 && ( registered == REG_DEVICE
 			      || registered == REG_CLIENT ) ) {
+
+			if ( rd.data.dcs_set_activity_timeout->activity_timeout < ACTIVITY_TIMEOUT_MIN )
+				rd.data.dcs_set_activity_timeout->activity_timeout = ACTIVITY_TIMEOUT_MIN;
+
+			if ( rd.data.dcs_set_activity_timeout->activity_timeout > ACTIVITY_TIMEOUT_MAX )
+				rd.data.dcs_set_activity_timeout->activity_timeout = ACTIVITY_TIMEOUT_MAX;
+
+
+			activity_timeout = rd.data.dcs_set_activity_timeout->activity_timeout;
+
+			TSDC_SuplaSetActivityTimeoutResult result;
+			result.activity_timeout = GetActivityTimeout();
+			result.min = ACTIVITY_TIMEOUT_MIN;
+			result.max = ACTIVITY_TIMEOUT_MAX;
+
+			srpc_dcs_async_set_activity_timeout_result(_srpc, &result);
+
+		} else if ( call_type == SUPLA_DCS_CALL_PING_SERVER
+			        && ( registered == REG_DEVICE
+			              || registered == REG_CLIENT ) ) {
 
 
 			srpc_sdc_async_ping_server_result(_srpc);
@@ -259,7 +312,7 @@ void serverconnection::execute(void *sthread) {
 
 		} else {
 
-			if ( cdptr->getActivityDelay() >= ACTIVITY_TIMEOUT ) {
+			if ( cdptr->getActivityDelay() >= GetActivityTimeout() ) {
 
 				sthread_terminate(sthread);
 				supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread, cdptr->getActivityDelay(), registered);
@@ -281,4 +334,8 @@ unsigned int serverconnection::getClientIpv4(void) {
 
 void* serverconnection::srpc(void) {
 	return _srpc;
+}
+
+unsigned char serverconnection::GetActivityTimeout(void) {
+	return activity_timeout;
 }
