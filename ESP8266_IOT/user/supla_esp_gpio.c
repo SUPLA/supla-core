@@ -11,15 +11,21 @@
 #include <gpio.h>
 #include <osapi.h>
 #include <mem.h>
-
+#include <os_type.h>
 #include "supla_esp.h"
 #include "supla_esp_gpio.h"
 
+#include "supla-dev/log.h"
+#include "driver/key.h"
 
 #define GPIO_OUTPUT_GET(gpio_no)     ((gpio_output_get()>>gpio_no)&BIT0)
 
 static ETSTimer supla_gpio_timer1;
-static _supla_esp_gpio_up_event __supla_esp_gpio_up_event = NULL;
+
+static struct single_key_param *single_key[1];
+static struct keys_param keys;
+static char cfg_exit_counter = 1; // 1 for start cfg from user_init
+
 
 uint32 ICACHE_FLASH_ATTR
 gpio_output_get(void)
@@ -27,50 +33,59 @@ gpio_output_get(void)
     return GPIO_REG_READ(GPIO_OUT_ADDRESS);
 }
 
-void ICACHE_FLASH_ATTR
-supla_esp_gpio_check_status(uint32 gpio_status, uint32 port) {
+void ICACHE_FLASH_ATTR supla_esg_gpio_cfg_pressed(void) {
 
-	if ( gpio_status & BIT(port) ) {
+	if ( supla_esp_cfgmode_started() == 0 ) {
 
-		GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status & BIT(port));
+		cfg_exit_counter = 0;
 
-		if ( __supla_esp_gpio_up_event != NULL )
-			__supla_esp_gpio_up_event(port);
+		supla_esp_devconn_stop();
+		supla_esp_cfgmode_start();
 
+	};
+
+}
+
+void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
+
+	if ( supla_esp_cfgmode_started() == 0 ) {
+
+		char hi = supla_esp_gpio_is_hi(RELAY1_PORT) == 1 ? 0 : 1;
+
+		supla_esp_gpio_hi(RELAY1_PORT, hi);
+		supla_esp_devconn_on_port_value_changed(RELAY1_PORT, hi);
+
+	} else {
+
+		cfg_exit_counter++;
+
+		if ( cfg_exit_counter > 1 ) {
+            system_restart();
+		}
 	}
 
 }
 
-static void supla_esp_key_intr_handler(void *data) {
-
-	uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
-
-	supla_esp_gpio_check_status(gpio_status, CFG_PORT);
-	supla_esp_gpio_check_status(gpio_status, MANUAL_PORT);
-
-}
-
 void ICACHE_FLASH_ATTR
-supla_esp_gpio_init(_supla_esp_gpio_up_event up_event) {
-	
-	__supla_esp_gpio_up_event = up_event;
+supla_esp_gpio_init(void) {
 
-	ETS_GPIO_INTR_ATTACH(supla_esp_key_intr_handler, NULL);
 	ETS_GPIO_INTR_DISABLE();
 
 	GPIO_PORT_INIT;
-    
-    gpio_output_set(0, 0, 0, BIT(CFG_PORT));
-    gpio_output_set(0, 0, 0, BIT(MANUAL_PORT));
 
-    supla_esp_gpio_led_red_on(0);
-    supla_esp_gpio_led_green_on(0);
-    supla_esp_gpio_led_blue_on(0);
+    gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
+    gpio_pin_intr_state_set(GPIO_ID_PIN(LED_GREEN_PORT), GPIO_PIN_INTR_DISABLE);
+    gpio_pin_intr_state_set(GPIO_ID_PIN(LED_BLUE_PORT), GPIO_PIN_INTR_DISABLE);
+    gpio_pin_intr_state_set(GPIO_ID_PIN(RELAY1_PORT), GPIO_PIN_INTR_DISABLE);
 
+	ETS_GPIO_INTR_ENABLE();
 
-    gpio_pin_intr_state_set(GPIO_ID_PIN(CFG_PORT), GPIO_PIN_INTR_NEGEDGE);
-    gpio_pin_intr_state_set(GPIO_ID_PIN(MANUAL_PORT), GPIO_PIN_INTR_NEGEDGE);
-    ETS_GPIO_INTR_ENABLE();
+	single_key[0] = key_init_single(BTN_PORT, supla_esg_gpio_cfg_pressed, supla_esg_gpio_manual_pressed);
+
+	keys.key_num = 1;
+	keys.single_key = single_key;
+
+	key_init(&keys);
 
 }
 

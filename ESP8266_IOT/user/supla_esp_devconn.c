@@ -39,8 +39,10 @@ static char devconn_laststate[STATE_MAXSIZE];
 static char devconn_autoconnect = 1;
 static char sys_restart = 0;
 
-static int last_response = 0;
+static unsigned int last_response = 0;
 static int server_activity_timeout;
+
+static uint8 last_wifi_status = STATION_GOT_IP+1;
 
 void ICACHE_FLASH_ATTR supla_esp_devconn_timer1_cb(void *timer_arg);
 void ICACHE_FLASH_ATTR supla_esp_wifi_check_status(char autoconnect);
@@ -293,6 +295,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 		};
 
 		if( srpc_iterate(srpc) == SUPLA_RESULT_FALSE ) {
+			supla_log(LOG_DEBUG, "iterate fail");
 			supla_esp_system_restart();
 		}
 
@@ -303,8 +306,6 @@ supla_esp_devconn_iterate(void *timer_arg) {
 
 void ICACHE_FLASH_ATTR
 supla_esp_srpc_free(void) {
-
-	supla_log(LOG_DEBUG, "srpc_free");
 
 	os_timer_disarm(&supla_iterate_timer);
 
@@ -443,7 +444,14 @@ supla_esp_devconn_laststate(void) {
 void ICACHE_FLASH_ATTR
 supla_esp_wifi_check_status(char autoconnect) {
 
-	if ( STATION_GOT_IP == wifi_station_get_connect_status() ) {
+	uint8 status = wifi_station_get_connect_status();
+
+	if ( status != last_wifi_status )
+		supla_log(LOG_DEBUG, "WiFi Status: %i", status);
+
+	last_wifi_status = status;
+
+	if ( STATION_GOT_IP == status ) {
 
 		if ( srpc == NULL ) {
 
@@ -460,6 +468,7 @@ supla_esp_wifi_check_status(char autoconnect) {
 
 		if ( srpc != NULL )
 			supla_esp_system_restart();
+
 
 		supla_esp_gpio_led_red_on(1);
 		supla_esp_gpio_led_green_on(0);
@@ -481,13 +490,15 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 
 		    t = system_get_time();
 
-		    if ( (t-last_response)/1000000 >= (server_activity_timeout+5) ) {
+		    if ( abs((t-last_response)/1000000) >= (server_activity_timeout+5) ) {
 
+		    	supla_log(LOG_DEBUG, "Response timeout %i, %i, %i, %i", t, last_response, (t-last_response)/1000000, server_activity_timeout+5);
 		    	supla_esp_system_restart();
 
 		    } else if ( abs((t-last_response)/1000000) >= (server_activity_timeout-5) ) {
 
 				srpc_dcs_async_ping_server(srpc);
+
 			}
 
 	}

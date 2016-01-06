@@ -11,5 +11,6 @@
 #define SUPLA_ESP_CFGMODE_H_
 
 void ICACHE_FLASH_ATTR supla_esp_cfgmode_start(void);
+char ICACHE_FLASH_ATTR supla_esp_cfgmode_started(void);
 
 #endif /* SUPLA_ESP_CFGMODE_H_ */

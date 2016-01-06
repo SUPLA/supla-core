@@ -25,8 +25,10 @@
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/string.h \
  ../include/user_config.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/mem.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/os_type.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/ets_sys.h \
  supla_esp.h ../include/supla-dev/proto.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/time.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/types.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/machine/types.h \
- supla_esp_gpio.h
+ supla_esp_gpio.h ../include/supla-dev/log.h ../include/driver/key.h

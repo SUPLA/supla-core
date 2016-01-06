@@ -1,4 +1,4 @@
-.output/eagle/debug/obj/uart.o .output/eagle/debug/obj/uart.d : uart.c \
+.output/eagle/debug/obj/key.o .output/eagle/debug/obj/key.d : key.c \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/ets_sys.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/c_types.h \
  /hdd2/Espressif/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/include/stdint.h \
@@ -11,6 +11,8 @@
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/xtensa/config/core-isa.h \
  /hdd2/Espressif/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/include/stdbool.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/eagle_soc.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/os_type.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/ets_sys.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/osapi.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/string.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/_ansi.h \
@@ -22,11 +24,12 @@
  /hdd2/Espressif/xtensa-lx106-elf/lib/gcc/xtensa-lx106-elf/4.8.2/include/stddef.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/cdefs.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/include/sys/string.h \
- ../include/user_config.h ../include/driver/uart.h \
- ../include/driver/uart_register.h \
- /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/eagle_soc.h \
- /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/c_types.h \
- ../include/driver/uart_register.h \
+ ../include/user_config.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/mem.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/gpio.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/user_interface.h \
  /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/os_type.h \
- /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/ets_sys.h
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/ip_addr.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/queue.h \
+ /hdd2/Espressif/xtensa-lx106-elf/xtensa-lx106-elf/sysroot/usr/include/spi_flash.h \
+ ../include/driver/key.h

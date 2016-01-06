@@ -23,6 +23,7 @@ GEN_BINS= eagle.app.v6.bin
 SPECIAL_MKTARGETS=$(APP_MKTARGETS)
 SUBDIRS=    \
 	user    \
+        driver \
 	supla-dev    
 
 endif # } PDIR
@@ -47,6 +48,7 @@ endif
 
 COMPONENTS_eagle.app.v6 = \
 	user/libuser.a  \
+	driver/libdriver.a \
 	supla-dev/libsupladev.a
 
 LINKFLAGS_eagle.app.v6 = \

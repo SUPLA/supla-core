@@ -179,7 +179,7 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 		
 			if ( len-a >= 4
 				 && memcmp(header_end, &pdata[a], 4) == 0 ) {
-				os_printf("STEP_PARSE_VARS\r\n");
+
 				pVars->step = STEP_PARSE_VARS;
 				p+=3;
 			}
@@ -336,14 +336,6 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 					memcpy(new_cfg.WIFI_PWD, supla_esp_cfg.WIFI_PWD, WIFI_PWD_MAXSIZE);
 	    
 		if ( 1 == supla_esp_cfg_save(&new_cfg) ) {
-			
-			/*
-			os_printf("Server: %s\r\n", new_cfg.Server);
-			os_printf("LocationID: %d\r\n", new_cfg.LocationID);
-			os_printf("LocationPwd: %s\r\n", new_cfg.LocationPwd);
-			os_printf("WIFI_SSID: %s\r\n", new_cfg.WIFI_SSID);
-			os_printf("WIFI_PWD: %s\r\n", new_cfg.WIFI_PWD);
-			*/
 					
 			memcpy(&supla_esp_cfg, &new_cfg, sizeof(SuplaEspCfg));
 			data_saved = 1;
@@ -407,7 +399,6 @@ void ICACHE_FLASH_ATTR
 supla_esp_discon_callback(void *arg) {
 	
     struct espconn *conn = (struct espconn *)arg;
-    os_printf("disconnect conn\r\n");
 	
     if ( conn->reverse != NULL ) {
     	os_free(conn->reverse);
@@ -419,7 +410,6 @@ void ICACHE_FLASH_ATTR
 supla_esp_connectcb(void *arg)
 {
     struct espconn *conn = (struct espconn *)arg;
-    os_printf("connect conn=%d\r\n");
     
     TrivialHttpParserVars *pVars = os_malloc(sizeof(TrivialHttpParserVars));
     memset(pVars, 0, sizeof(TrivialHttpParserVars));
@@ -473,5 +463,11 @@ supla_esp_cfgmode_start(void) {
 	espconn_regist_connectcb(conn, supla_esp_connectcb);
 	espconn_accept(conn);
 
+}
+
+char ICACHE_FLASH_ATTR
+supla_esp_cfgmode_started(void) {
+
+	return supla_esp_cfgmode == 1 ? 1 : 0;
 }
 
