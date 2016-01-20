@@ -2,7 +2,7 @@
  ============================================================================
  Name        : srpc.c [SUPLA DATA EXCHANGE]
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Version     : 1.1
  Copyright   : GPLv2
  ============================================================================
  */
@@ -554,6 +554,13 @@ char srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned int rr_id) {
 
 			   break;
 
+		   case SUPLA_CS_CALL_CHANNEL_SET_VALUE_B:
+
+			   if ( srpc->sdp.data_size == sizeof(TCS_SuplaChannelNewValue_B) )
+				   rd->data.cs_channel_new_value_b = (TCS_SuplaChannelNewValue_B*)malloc(sizeof(TCS_SuplaChannelNewValue_B));
+
+			   break;
+
 		   case SUPLA_SC_CALL_EVENT:
 
 			   if ( srpc->sdp.data_size >= (sizeof(TSC_SuplaEvent)-SUPLA_SENDER_NAME_MAXSIZE)
@@ -889,6 +896,10 @@ int srpc_sc_async_event(void *_srpc, TSC_SuplaEvent *event) {
 
 int srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value) {
 	return srpc_async_call(_srpc, SUPLA_CS_CALL_CHANNEL_SET_VALUE, (char*)value, sizeof(TCS_SuplaChannelNewValue));
+}
+
+int srpc_cs_async_set_channel_value_b(void *_srpc, TCS_SuplaChannelNewValue_B *value) {
+	return srpc_async_call(_srpc, SUPLA_CS_CALL_CHANNEL_SET_VALUE_B, (char*)value, sizeof(TCS_SuplaChannelNewValue_B));
 }
 
 

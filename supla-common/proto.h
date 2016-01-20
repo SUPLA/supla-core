@@ -2,7 +2,7 @@
  ============================================================================
  Name        : proto.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Version     : 1.1
  Copyright   : GPLv2
  ============================================================================
  */
@@ -23,7 +23,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 2
+#define SUPLA_PROTO_VERSION                 3
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #define SUPLA_MAX_DATA_SIZE                 10240
@@ -62,6 +62,7 @@ extern "C" {
 #define SUPLA_CS_CALL_GET_NEXT                            180
 #define SUPLA_SC_CALL_EVENT                               190
 #define SUPLA_CS_CALL_CHANNEL_SET_VALUE                   200
+#define SUPLA_CS_CALL_CHANNEL_SET_VALUE_B                 205 // ver. >= 3
 #define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT               210 // ver. >= 2
 #define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT        220 // ver. >= 2
 
@@ -386,8 +387,14 @@ typedef struct {
 	unsigned char ChannelId;
 	char value[SUPLA_CHANNELVALUE_SIZE];
 
-}TCS_SuplaChannelNewValue;
+}TCS_SuplaChannelNewValue; // Deprecated
 
+typedef struct {
+	// client -> server
+	int ChannelId;
+	char value[SUPLA_CHANNELVALUE_SIZE];
+
+}TCS_SuplaChannelNewValue_B;
 
 typedef struct {
     // server -> client

@@ -126,6 +126,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 		switch(call_type) {
 		case SUPLA_DS_CALL_REGISTER_DEVICE:
+		case SUPLA_DS_CALL_REGISTER_DEVICE_B:
 		case SUPLA_CS_CALL_REGISTER_CLIENT:
 
 			if ( srpc_get_proto_version(_srpc) != proto_version ) {
@@ -258,8 +259,25 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 				break;
 			case SUPLA_CS_CALL_CHANNEL_SET_VALUE:
 				supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE");
-				client->set_device_channel_new_value(rd.data.cs_channel_new_value);
+
+				if ( rd.data.cs_channel_new_value != NULL ) {
+
+					TCS_SuplaChannelNewValue_B *cs_channel_new_value_b = (TCS_SuplaChannelNewValue_B *)malloc(sizeof(TCS_SuplaChannelNewValue_B));
+					memset(cs_channel_new_value_b, 0, sizeof(TCS_SuplaChannelNewValue_B));
+
+					cs_channel_new_value_b->ChannelId = rd.data.cs_channel_new_value->ChannelId;
+
+					memcpy(cs_channel_new_value_b->value, rd.data.cs_channel_new_value->value, SUPLA_CHANNELVALUE_SIZE);
+
+					free(rd.data.cs_channel_new_value);
+					rd.data.cs_channel_new_value_b = cs_channel_new_value_b;
+				}
+			/* no break between SUPLA_CS_CALL_CHANNEL_SET_VALUE and SUPLA_CS_CALL_CHANNEL_SET_VALUE_B!!! */
+			case SUPLA_CS_CALL_CHANNEL_SET_VALUE_B:
+				supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE_B");
+				client->set_device_channel_new_value(rd.data.cs_channel_new_value_b);
 			break;
+
 			default:
 				sthread_terminate(sthread);
 			}

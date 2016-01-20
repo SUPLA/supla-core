@@ -37,7 +37,7 @@ public:
 	void on_channel_value_changed(int DeviceId, int ChannelId = 0);
 
 	void get_next(void);
-	void set_device_channel_new_value(TCS_SuplaChannelNewValue *channel_new_value);
+	void set_device_channel_new_value(TCS_SuplaChannelNewValue_B *channel_new_value);
 	int getName(char *buffer, int size) ;
 
 	void call_event(TSC_SuplaEvent *event);

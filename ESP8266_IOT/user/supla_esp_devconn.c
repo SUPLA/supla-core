@@ -490,7 +490,7 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 
 		    t = system_get_time();
 
-		    if ( abs((t-last_response)/1000000) >= (server_activity_timeout+5) ) {
+		    if ( abs((t-last_response)/1000000) >= (server_activity_timeout+10) ) {
 
 		    	supla_log(LOG_DEBUG, "Response timeout %i, %i, %i, %i", t, last_response, (t-last_response)/1000000, server_activity_timeout+5);
 		    	supla_esp_system_restart();

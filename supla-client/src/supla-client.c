@@ -460,17 +460,17 @@ void* supla_client_get_userdata(void *_suplaclient) {
 
 char supla_client_open(void *_suplaclient, int ChannelID, char open) {
 
-	TCS_SuplaChannelNewValue value;
+	TCS_SuplaChannelNewValue_B value;
 	TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
 	char result = 0;
 
 	lck_lock(suplaclient->lck);
 	if ( supla_client_registered(_suplaclient) == 1 ) {
 
-		memset(&value, 0, sizeof(TCS_SuplaChannelNewValue));
+		memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
 		value.ChannelId = ChannelID;
 		value.value[0] = open;
-		srpc_cs_async_set_channel_value(suplaclient->srpc, &value);
+		srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value);
 
 	}
 	lck_unlock(suplaclient->lck);

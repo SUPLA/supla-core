@@ -25,7 +25,7 @@
 
 #define RECVBUFF_MAXSIZE  1024
 
-#define ACTIVITY_TIMEOUT 30
+#define ACTIVITY_TIMEOUT 10
 
 #define LED_RED_PORT    13
 #define LED_GREEN_PORT  12   

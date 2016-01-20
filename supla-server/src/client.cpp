@@ -184,7 +184,7 @@ void supla_client::get_next(void) {
 	remote_update_lists();
 }
 
-void supla_client::set_device_channel_new_value(TCS_SuplaChannelNewValue *channel_new_value) {
+void supla_client::set_device_channel_new_value(TCS_SuplaChannelNewValue_B *channel_new_value) {
 
 	channels->set_device_channel_new_value(channel_new_value);
 }

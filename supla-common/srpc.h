@@ -2,7 +2,7 @@
  ============================================================================
  Name        : srpc.h [SUPLA REMOTE PROCEDURE CALL]
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Version     : 1.1
  Copyright   : GPLv2
  ============================================================================
  */
@@ -60,6 +60,7 @@ union TsrpcDataPacketData {
 	TSD_SuplaChannelNewValue *sd_channel_new_value;
 	TDS_SuplaChannelNewValueResult *ds_channel_new_value_result;
 	TCS_SuplaChannelNewValue *cs_channel_new_value;
+	TCS_SuplaChannelNewValue_B *cs_channel_new_value_b;
 
 };
 
@@ -113,6 +114,7 @@ int srpc_sc_async_channel_value_update(void *_srpc, TSC_SuplaChannelValue *chann
 int srpc_cs_async_get_next(void *_srpc);
 int srpc_sc_async_event(void *_srpc, TSC_SuplaEvent *event);
 int srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
+int srpc_cs_async_set_channel_value_b(void *_srpc, TCS_SuplaChannelNewValue_B *value);
 
 #ifdef __cplusplus
 }

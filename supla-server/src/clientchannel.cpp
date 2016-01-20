@@ -395,7 +395,7 @@ void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId, i
 
 }
 
-bool supla_client_channels::set_device_channel_new_value(TCS_SuplaChannelNewValue *channel_new_value) {
+bool supla_client_channels::set_device_channel_new_value(TCS_SuplaChannelNewValue_B *channel_new_value) {
 
 
 	if ( channel_exists(channel_new_value->ChannelId) ) {

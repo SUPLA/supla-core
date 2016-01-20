@@ -62,7 +62,7 @@ public:
 	int count(void);
 	bool remote_update(void *srpc);
 
-	bool set_device_channel_new_value(TCS_SuplaChannelNewValue *channel_new_value);
+	bool set_device_channel_new_value(TCS_SuplaChannelNewValue_B *channel_new_value);
 };
 
 #endif /* CLIENTCHANNEL_H_ */
