@@ -274,8 +274,8 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 		} else if ( new_value->ChannelNumber == 1 ) {
 			os_timer_disarm(&supla_relay2_timer);
 
-			os_timer_setfn(&supla_relay1_timer, supla_esp_relay2_timer_func, NULL);
-			os_timer_arm (&supla_relay1_timer, new_value->DurationMS, false);
+			os_timer_setfn(&supla_relay2_timer, supla_esp_relay2_timer_func, NULL);
+			os_timer_arm (&supla_relay2_timer, new_value->DurationMS, false);
 		}
 
 	}
