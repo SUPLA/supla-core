@@ -24,6 +24,11 @@
 static ETSTimer supla_devconn_timer1;
 static ETSTimer supla_iterate_timer;
 
+#ifdef GATEMODULE
+static ETSTimer supla_relay1_timer;
+static ETSTimer supla_relay2_timer;
+#endif
+
 static struct espconn ESPConn;
 static esp_tcp ESPTCP;
 ip_addr_t ipaddr;
@@ -204,31 +209,78 @@ supla_esp_channel_set_activity_timeout_result(TSDC_SuplaSetActivityTimeoutResult
 	server_activity_timeout = result->activity_timeout;
 }
 
+char ICACHE_FLASH_ATTR
+_supla_esp_channel_set_value(int port, char v, int channel_number) {
+
+	char Success = 0;
+
+	supla_esp_gpio_hi(port, v);
+	Success = supla_esp_gpio_is_hi(port) == v;
+
+	if ( Success ) {
+
+		char value[SUPLA_CHANNELVALUE_SIZE];
+		memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+		value[0] = v;
+
+		srpc_ds_async_channel_value_changed(srpc, channel_number, value);
+	}
+
+	return Success;
+}
+
+#ifdef GATEMODULE
+
+void ICACHE_FLASH_ATTR
+supla_esp_relay1_timer_func(void *timer_arg) {
+
+	_supla_esp_channel_set_value(RELAY1_PORT, 0, 0);
+
+}
+
+void ICACHE_FLASH_ATTR
+supla_esp_relay2_timer_func(void *timer_arg) {
+
+	_supla_esp_channel_set_value(RELAY2_PORT, 0, 1);
+}
+
+#endif
+
 void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 
-	char Success = 0;
 	char v = new_value->value[0] == 0 ? 0 : 1;
 
-	if ( new_value->ChannelNumber == 0 ) {
+    #ifdef WIFISOCKET
+	int port = RELAY1_PORT;
+    #elif defined(GATEMODULE)
+	int port = new_value->ChannelNumber == 0 ? RELAY1_PORT : RELAY2_PORT;
+    #endif
 
+	char Success = _supla_esp_channel_set_value(port, v, new_value->ChannelNumber);
+	srpc_ds_async_set_channel_result(srpc, new_value->ChannelNumber, new_value->SenderID, Success);
 
-		supla_esp_gpio_hi(RELAY1_PORT, v);
-		Success = supla_esp_gpio_is_hi(RELAY1_PORT) == v;
+	#ifdef GATEMODULE
 
-		if ( Success ) {
+	if ( v == 1 && new_value->DurationMS > 0 ) {
 
-			char value[SUPLA_CHANNELVALUE_SIZE];
-			memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-			value[0] = v;
+		if ( new_value->ChannelNumber == 0 ) {
+			os_timer_disarm(&supla_relay1_timer);
 
-			srpc_ds_async_channel_value_changed(srpc, 0, value);
+			os_timer_setfn(&supla_relay1_timer, supla_esp_relay1_timer_func, NULL);
+			os_timer_arm (&supla_relay1_timer, new_value->DurationMS, false);
+
+		} else if ( new_value->ChannelNumber == 1 ) {
+			os_timer_disarm(&supla_relay2_timer);
+
+			os_timer_setfn(&supla_relay1_timer, supla_esp_relay2_timer_func, NULL);
+			os_timer_arm (&supla_relay1_timer, new_value->DurationMS, false);
 		}
 
 	}
+	#endif
 
-	srpc_ds_async_set_channel_result(srpc, new_value->ChannelNumber, new_value->SenderID, Success);
 }
 
 void ICACHE_FLASH_ATTR
@@ -283,12 +335,29 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			strcpy(srd.SoftVer, "1.0");
 			os_memcpy(srd.GUID, supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 
+#ifdef WIFISOCKET
 			srd.channel_count = 1;
 			srd.channels[0].Number = 0;
 			srd.channels[0].Type = CHANNEL_TYPE;
 			srd.channels[0].FuncList = CHANNEL_FUNCLIST;
 			srd.channels[0].Default = CHANNEL_DEFAULT_FUNC;
 			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
+#elif defined(GATEMODULE)
+
+			srd.channel_count = 2;
+			srd.channels[0].Number = 0;
+			srd.channels[0].Type = CHANNEL_TYPE;
+			srd.channels[0].FuncList = CHANNEL_FUNCLIST;
+			srd.channels[0].Default = CHANNEL_DEFAULT_FUNC;
+			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
+
+			srd.channels[1].Number = 1;
+			srd.channels[1].Type = CHANNEL_TYPE;
+			srd.channels[1].FuncList = CHANNEL_FUNCLIST;
+			srd.channels[1].Default = CHANNEL_DEFAULT_FUNC;
+			srd.channels[1].value[0] = supla_esp_gpio_is_hi(RELAY2_PORT);
+
+#endif
 
 			srpc_ds_async_registerdevice_b(srpc, &srd);
 

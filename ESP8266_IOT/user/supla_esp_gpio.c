@@ -73,10 +73,16 @@ supla_esp_gpio_init(void) {
 
 	GPIO_PORT_INIT;
 
-    gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
+
     gpio_pin_intr_state_set(GPIO_ID_PIN(LED_GREEN_PORT), GPIO_PIN_INTR_DISABLE);
     gpio_pin_intr_state_set(GPIO_ID_PIN(LED_BLUE_PORT), GPIO_PIN_INTR_DISABLE);
     gpio_pin_intr_state_set(GPIO_ID_PIN(RELAY1_PORT), GPIO_PIN_INTR_DISABLE);
+
+#ifdef WIFISOCKET
+    gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
+#elif defined(GATEMODULE)
+    gpio_pin_intr_state_set(GPIO_ID_PIN(RELAY2_PORT), GPIO_PIN_INTR_DISABLE);
+#endif
 
 	ETS_GPIO_INTR_ENABLE();
 
@@ -96,7 +102,9 @@ supla_esp_gpio_hi(int port, char hi) {
 
 void ICACHE_FLASH_ATTR
 supla_esp_gpio_led_red_on(char on) {
+#ifdef WIFISOCKET
 	supla_esp_gpio_hi(LED_RED_PORT, on == 1 ? 1 : 0);
+#endif
 }
 
 void ICACHE_FLASH_ATTR
