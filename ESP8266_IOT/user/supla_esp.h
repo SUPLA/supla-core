@@ -38,8 +38,8 @@
 #define LED_GREEN_PORT  12   
 #define LED_BLUE_PORT   14   
 
-#define RELAY1_PORT      5
-#define BTN_PORT         4
+#define RELAY1_PORT      4
+#define BTN_PORT         5
 
 #define CHANNEL_TYPE SUPLA_CHANNELTYPE_RELAY
 
