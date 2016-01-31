@@ -266,9 +266,11 @@ char channelio_read_temp(char *w1, TChannelW1TempValue *w1_value, char log_err) 
 					//supla_log(LOG_DEBUG, "Temp: %f", temp);
 					result = 1;
 				}
-			} else if ( log_err == 1 ) {
+			} else {
 				w1_value->temp = -1000;
-				supla_log(LOG_ERR, "Can't read 1-wire device %s", w1);
+
+				if ( log_err == 1 )
+					supla_log(LOG_ERR, "Can't read 1-wire device %s", w1);
 			}
 
 		}
