@@ -12,5 +12,6 @@
 
 void ICACHE_FLASH_ATTR supla_esp_cfgmode_start(void);
 char ICACHE_FLASH_ATTR supla_esp_cfgmode_started(void);
+void ICACHE_FLASH_ATTR supla_esp_channel_value_changed(int channel_number, char v);
 
 #endif /* SUPLA_ESP_CFGMODE_H_ */

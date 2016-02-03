@@ -433,7 +433,7 @@ supla_esp_cfgmode_start(void) {
 	supla_esp_cfgmode = 1;
 	
 	supla_log(LOG_DEBUG, "ENTER CFG MODE");
-	supla_esp_gpio_led_blue_blinking(1);
+	supla_esp_gpio_state_cfgmode();
 
 	
 	memcpy(apconfig.ssid, APSSID, strlen(APSSID));

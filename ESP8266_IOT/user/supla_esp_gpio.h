@@ -12,10 +12,11 @@
 
 
 void ICACHE_FLASH_ATTR supla_esp_gpio_init(void);
-void ICACHE_FLASH_ATTR supla_esp_gpio_led_red_on(char on);
-void ICACHE_FLASH_ATTR supla_esp_gpio_led_green_on(char on);
-void ICACHE_FLASH_ATTR supla_esp_gpio_led_blue_on(char on);
-void ICACHE_FLASH_ATTR supla_esp_gpio_led_blue_blinking(char blink);
+
+void ICACHE_FLASH_ATTR supla_esp_gpio_state_disconnected(void);
+void ICACHE_FLASH_ATTR supla_esp_gpio_state_ipreceived(void);
+void ICACHE_FLASH_ATTR supla_esp_gpio_state_connected(void);
+void ICACHE_FLASH_ATTR supla_esp_gpio_state_cfgmode(void);
 
 void ICACHE_FLASH_ATTR supla_esp_gpio_hi(int port, char hi);
 char ICACHE_FLASH_ATTR supla_esp_gpio_is_hi(int port);

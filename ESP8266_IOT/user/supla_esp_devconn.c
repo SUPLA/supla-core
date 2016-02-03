@@ -162,9 +162,7 @@ supla_esp_on_register_result(TSD_SuplaRegisterDeviceResult *register_device_resu
 		break;
 	case SUPLA_RESULTCODE_TRUE:
 
-		supla_esp_gpio_led_red_on(0);
-		supla_esp_gpio_led_green_on(1);
-		supla_esp_gpio_led_blue_on(0);
+		supla_esp_gpio_state_connected();
 
 		server_activity_timeout = register_device_result->activity_timeout;
 		registered = 1;
@@ -209,6 +207,17 @@ supla_esp_channel_set_activity_timeout_result(TSDC_SuplaSetActivityTimeoutResult
 	server_activity_timeout = result->activity_timeout;
 }
 
+void ICACHE_FLASH_ATTR
+supla_esp_channel_value_changed(int channel_number, char v) {
+
+	char value[SUPLA_CHANNELVALUE_SIZE];
+	memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+	value[0] = v;
+
+	srpc_ds_async_channel_value_changed(srpc, channel_number, value);
+
+}
+
 char ICACHE_FLASH_ATTR
 _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
@@ -219,11 +228,7 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
 	if ( Success ) {
 
-		char value[SUPLA_CHANNELVALUE_SIZE];
-		memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-		value[0] = v;
-
-		srpc_ds_async_channel_value_changed(srpc, channel_number, value);
+		supla_esp_channel_value_changed(channel_number, v);
 	}
 
 	return Success;
@@ -335,27 +340,45 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			strcpy(srd.SoftVer, "1.0");
 			os_memcpy(srd.GUID, supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 
+			//supla_log(LOG_DEBUG, "LocationID=%i, LocationPWD=%s", srd.LocationID, srd.LocationPWD);
+
 #ifdef WIFISOCKET
 			srd.channel_count = 1;
 			srd.channels[0].Number = 0;
-			srd.channels[0].Type = CHANNEL_TYPE;
-			srd.channels[0].FuncList = CHANNEL_FUNCLIST;
-			srd.channels[0].Default = CHANNEL_DEFAULT_FUNC;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_POWERSWITCH \
+                    					| SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
+			srd.channels[0].Default = SUPLA_CHANNELFNC_POWERSWITCH;
 			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
 #elif defined(GATEMODULE)
 
-			srd.channel_count = 2;
+			srd.channel_count = 4;
 			srd.channels[0].Number = 0;
-			srd.channels[0].Type = CHANNEL_TYPE;
-			srd.channels[0].FuncList = CHANNEL_FUNCLIST;
-			srd.channels[0].Default = CHANNEL_DEFAULT_FUNC;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK;
+			srd.channels[0].Default = 0;
 			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
 
 			srd.channels[1].Number = 1;
-			srd.channels[1].Type = CHANNEL_TYPE;
-			srd.channels[1].FuncList = CHANNEL_FUNCLIST;
-			srd.channels[1].Default = CHANNEL_DEFAULT_FUNC;
+			srd.channels[1].Type = srd.channels[0].Type;
+			srd.channels[1].FuncList = srd.channels[0].FuncList;
+			srd.channels[1].Default = srd.channels[0].Default;
 			srd.channels[1].value[0] = supla_esp_gpio_is_hi(RELAY2_PORT);
+
+			srd.channels[2].Number = 2;
+			srd.channels[2].Type = SUPLA_CHANNELTYPE_SENSORNO;
+			srd.channels[2].FuncList = 0;
+			srd.channels[2].Default = 0;
+			srd.channels[2].value[0] = 0;
+
+			srd.channels[3].Number = 3;
+			srd.channels[3].Type = SUPLA_CHANNELTYPE_SENSORNO;
+			srd.channels[3].FuncList = 0;
+			srd.channels[3].Default = 0;
+			srd.channels[3].value[0] = 0;
 
 #endif
 
@@ -469,8 +492,7 @@ supla_esp_devconn_start(void) {
 
 	wifi_station_disconnect();
 	
-    supla_esp_gpio_led_blue_blinking(0);
-    supla_esp_gpio_led_red_on(1);
+	supla_esp_gpio_state_disconnected();
 
     struct station_config stationConf;
 
@@ -524,9 +546,7 @@ supla_esp_wifi_check_status(char autoconnect) {
 
 		if ( srpc == NULL ) {
 
-			supla_esp_gpio_led_red_on(0);
-			supla_esp_gpio_led_green_on(0);
-			supla_esp_gpio_led_blue_on(1);
+			supla_esp_gpio_state_ipreceived();
 
 			 if ( autoconnect == 1 )
 				 supla_esp_devconn_resolvandconnect();
@@ -539,9 +559,7 @@ supla_esp_wifi_check_status(char autoconnect) {
 			supla_esp_system_restart();
 
 
-		supla_esp_gpio_led_red_on(1);
-		supla_esp_gpio_led_green_on(0);
-		supla_esp_gpio_led_blue_on(0);
+		supla_esp_gpio_state_disconnected();
 	}
 
 }
