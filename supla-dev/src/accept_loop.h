@@ -1,24 +1,18 @@
 /*
  ============================================================================
- Name        : dev-connection.h
+ Name        : accept_loop.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
  Version     : 1.0
  Copyright   : GPLv2
  ============================================================================
  */
 
-#ifndef DEV_CONNECTION_H_
-#define DEV_CONNECTION_H_
+#ifndef ACCEPT_LOOP_H_
+#define ACCEPT_LOOP_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void accept_loop(void *ssd, void *sthread);
+void ipc_accept_loop(void *ipc, void *ipc_al_sthread);
 
-void* devconnection_start(void);
-void devconnection_stop(void *dconn_thread);
 
-#ifdef __cplusplus
-}
-#endif
 
-#endif /* DEV_CONNECTION_H_ */
+#endif /* ACCEPT_LOOP_H_ */

@@ -15,6 +15,10 @@
 
 extern char DEVICE_GUID[SUPLA_GUID_SIZE];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CFG_GUID_FILE         0
 #define CFG_ALTCFG_FILE       1
 #define CFG_STATE_FILE        2
@@ -29,5 +33,10 @@ extern char DEVICE_GUID[SUPLA_GUID_SIZE];
 unsigned char devcfg_init(int argc, char* argv[]);
 char devcfg_getdev_guid();
 void devcfg_free(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* supladevcfg_H_ */

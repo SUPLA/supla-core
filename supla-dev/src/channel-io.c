@@ -437,6 +437,21 @@ void channelio_set_type(unsigned char number, int type) {
 		channel->type = type;
 }
 
+int channelio_get_type(unsigned char number) {
+
+	TDeviceChannel *channel;
+
+	if ( cio == NULL || cio->initialized == 0 )
+		return 0;
+
+	channel = channelio_find(number, 0);
+
+	if ( channel != NULL )
+		return channel->type;
+
+	return 0;
+}
+
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1) {
 
 	TDeviceChannel *channel;
@@ -891,6 +906,27 @@ char channelio_set_hi_value(unsigned char number, char hi, unsigned int time_ms)
 
 
 	return result;
+}
+
+char channelio_get_hi_value(unsigned char number, char *hi) {
+
+	char value[SUPLA_CHANNELVALUE_SIZE];
+
+	TDeviceChannel *channel = channelio_find(number, 0);
+
+	if ( channel
+		 && ( channel->type == SUPLA_CHANNELTYPE_RELAYHFD4
+		      || channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A
+		      || channel->type == SUPLA_CHANNELTYPE_2XRELAYG5LA1A ) ) {
+
+		if ( channelio_get_value(number, value) == 1 ) {
+			*hi = value[0] == 1 ? 1 : 0;
+			return 1;
+		}
+
+	}
+
+	return 0;
 }
 
 void channelio_channels_to_srd(TDS_SuplaRegisterDevice *srd) {
