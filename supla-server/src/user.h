@@ -48,8 +48,6 @@ public:
     static bool reconnect(int UserID);
     static bool is_device_online(int UserID, int DeviceID);
     static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value);
-    static int user_count(void);
-    static supla_user *get_user(int idx);
 
     void remove_device(supla_device *device);
     void remove_client(supla_client *client);
@@ -65,7 +63,6 @@ public:
     void on_channel_value_changed(int DeviceId, int ChannelId = 0);
 
     void call_event(TSC_SuplaEvent *event);
-    void get_temperatures(void *tarr);
 
 	supla_user(int UserID);
 	virtual ~supla_user();

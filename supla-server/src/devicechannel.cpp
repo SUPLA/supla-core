@@ -16,34 +16,6 @@
 #include "log.h"
 #include "srpc.h"
 
-char supla_channel_tarr_clean(void *ptr) {
-	delete (supla_channel_temp*)ptr;
-	return 1;
-}
-
-supla_channel_temp::supla_channel_temp(int ChannelId, double Temperature) {
-
-	this->ChannelId = ChannelId;
-	this->Temperature = Temperature;
-
-}
-
-int supla_channel_temp::getChannelId(void) {
-	return ChannelId;
-}
-
-double supla_channel_temp::getTemperature(void) {
-	return Temperature;
-}
-
-void supla_channel_temp::free(void *tarr) {
-
-	safe_array_clean(tarr, supla_channel_tarr_clean);
-	safe_array_free(tarr);
-}
-
-//-----------------------------------------------------
-
 supla_device_channel::supla_device_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3) {
 
 	this->Id = Id;
@@ -459,31 +431,6 @@ void supla_device_channels::set_device_channel_value(void *srpc, int SenderID, i
 		memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
 		srpc_sd_async_set_channel_value(srpc, &s);
-	}
-
-	safe_array_unlock(arr);
-
-}
-
-void supla_device_channels::get_temperatures(void *tarr) {
-
-	int a;
-	double temp;
-
-	safe_array_lock(arr);
-
-	for(a=0;a<safe_array_count(arr);a++) {
-
-		supla_device_channel *channel = (supla_device_channel *)safe_array_get(arr, a);
-		if ( channel
-				&& channel->getFunc() == SUPLA_CHANNELFNC_THERMOMETER ) {
-
-			channel->getDouble(&temp);
-			if ( temp > -273 && temp <= 1000 ) {
-				safe_array_add(tarr, new supla_channel_temp(channel->getId(), temp));
-			}
-		}
-
 	}
 
 	safe_array_unlock(arr);

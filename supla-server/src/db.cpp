@@ -945,33 +945,5 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 
 }
 
-void database::add_temperature(int ChannelID, double temperature) {
-
-	char buff[20];
-	memset(buff, 0, sizeof(buff));
-
-	MYSQL_BIND pbind[2];
-	memset(pbind, 0, sizeof(pbind));
-
-	snprintf(buff, 20, "%04.4f", temperature);
-
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&ChannelID;
-
-	pbind[1].buffer_type= MYSQL_TYPE_DECIMAL;
-	pbind[1].buffer= (char *)buff;
-	pbind[1].buffer_length = strlen(buff);
-
-
-	const char sql[] = "INSERT INTO `supla_temperature_log`(`channel_id`, `date`, `temperature`) VALUES (?,NOW(),?)";
-
-	MYSQL_STMT *stmt;
-	stmt_execute((void**)&stmt, sql, pbind, 2, false);
-
-	if ( stmt != NULL )
-		  mysql_stmt_close(stmt);
-
-}
-
 
 

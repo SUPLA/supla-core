@@ -258,7 +258,3 @@ int supla_device::slave_channel(int ChannelID) {
 bool supla_device::get_channel_double_value(int ChannelID, double *Value) {
 	return channels->get_channel_double_value(ChannelID, Value);
 }
-
-void supla_device::get_temperatures(void *tarr) {
-	channels->get_temperatures(tarr);
-}

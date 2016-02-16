@@ -69,8 +69,6 @@ public:
 	void get_client_locations(int ClientID, supla_client_locations *locs);
 	void get_client_channels(int ClientID, int *DeviceID, supla_client_channels *channels);
 
-	void add_temperature(int ChannelID, double temperature);
-
 };
 
 #endif /* DB_H_ */
