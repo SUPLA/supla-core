@@ -2,8 +2,8 @@
  ============================================================================
  Name        : eh.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
- Copyright   : GPLv2
+ Version     : 1.2
+ Copyright   : 2015-2016 GPLv2
  ============================================================================
 */
 
@@ -11,7 +11,9 @@
 #define EH_H_
 
 #ifndef ESP8266
+#ifndef __AVR__
 #include <sys/select.h>
+#endif 
 #endif
 
 #ifdef __cplusplus

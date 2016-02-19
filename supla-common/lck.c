@@ -2,15 +2,22 @@
  ============================================================================
  Name        : lck.c
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
- Copyright   : GPLv2
+ Version     : 1.2
+ Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
 
 #include "lck.h"
+
+#ifdef __AVR__
+#define __SINGLE_THREAD
+#else
 #include <pthread.h>
-#include <stdlib.h>
 #include <time.h>
+#endif
+
+#include <stdlib.h>
+
 
 
 #define MUTEX_COUNT  4

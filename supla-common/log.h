@@ -2,15 +2,15 @@
  ============================================================================
  Name        : log.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
- Copyright   : GPLv2
+ Version     : 1.2
+ Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
 
 #ifndef suplalog_H_
 #define suplalog_H_
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(__AVR__)
 
 #define LOG_EMERG       0       
 #define LOG_ALERT       1      

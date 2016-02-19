@@ -2,8 +2,8 @@
  ============================================================================
  Name        : proto.c
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
- Copyright   : GPLv2
+ Version     : 1.2
+ Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
 
@@ -15,21 +15,26 @@
 
 #ifdef ESP8266
 
-#include <osapi.h>
-#include <mem.h>
+	#include <osapi.h>
+	#include <mem.h>
+	
+	#define BUFFER_MIN_SIZE    512
+	#define BUFFER_MAX_SIZE    2048
+	
+	#define malloc os_malloc
+	#define free os_free
+	#define realloc os_realloc
 
-#define BUFFER_MIN_SIZE    512
-#define BUFFER_MAX_SIZE    2048
+#elif defined(__AVR__)
 
-#define malloc os_malloc
-#define free os_free
-#define realloc os_realloc
+	#define BUFFER_MIN_SIZE    32
+	#define BUFFER_MAX_SIZE    1024
 
 #else
 
-#define BUFFER_MIN_SIZE    0
-//sizeof(TSuplaDataPacket)
-#define BUFFER_MAX_SIZE    131072
+	#define BUFFER_MIN_SIZE    0
+	//sizeof(TSuplaDataPacket)
+	#define BUFFER_MAX_SIZE    131072
 
 #endif
 
@@ -38,8 +43,8 @@ static char sproto_tag[SUPLA_TAG_SIZE] = { 'S', 'U', 'P', 'L', 'A' };
 typedef struct {
 
 	unsigned char begin_tag;
-	unsigned int size;
-	unsigned int data_size;
+	unsigned _supla_int_t size;
+	unsigned _supla_int_t data_size;
 
 	char *buffer;
 
@@ -47,8 +52,8 @@ typedef struct {
 
 typedef struct {
 
-	unsigned int size;
-	unsigned int data_size;
+	unsigned _supla_int_t size;
+	unsigned _supla_int_t data_size;
 
 	char *buffer;
 
@@ -56,7 +61,7 @@ typedef struct {
 
 typedef struct {
 
-	unsigned int next_rr_id;
+	unsigned _supla_int_t next_rr_id;
 	unsigned char version;
 	TSuplaProtoInBuffer in;
 	TSuplaProtoOutBuffer out;
@@ -87,10 +92,10 @@ void sproto_free(void *spd_ptr) {
 
 }
 
-unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned int *buffer_size,
-		unsigned int *buffer_data_size, char *data, unsigned int data_size) {
+unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned _supla_int_t *buffer_size,
+		unsigned _supla_int_t *buffer_data_size, char *data, unsigned _supla_int_t data_size) {
 
-	unsigned int size = *buffer_size;
+	unsigned _supla_int_t size = *buffer_size;
 
 	if ( size < BUFFER_MIN_SIZE ) {
        size = BUFFER_MIN_SIZE;
@@ -108,8 +113,10 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned int *b
 		*buffer = (char *)realloc(*buffer, size);
 
     #ifndef ESP8266
+    #ifndef __AVR__
     if ( errno == ENOMEM )
     	return (SUPLA_RESULT_FALSE);
+    #endif
     #endif
 
     memcpy(&(*buffer)[(*buffer_data_size)], data, data_size);
@@ -120,7 +127,7 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned int *b
 	return (SUPLA_RESULT_TRUE);
 }
 
-char sproto_in_buffer_append(void *spd_ptr, char *data, unsigned int data_size) {
+char sproto_in_buffer_append(void *spd_ptr, char *data, unsigned _supla_int_t data_size) {
 
 	TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
     return sproto_buffer_append(spd_ptr, &spd->in.buffer, &spd->in.size, &spd->in.data_size, data, data_size);
@@ -129,8 +136,8 @@ char sproto_in_buffer_append(void *spd_ptr, char *data, unsigned int data_size) 
 char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp) {
 
 	TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
-	unsigned int sdp_size = sizeof(TSuplaDataPacket);
-	unsigned int packet_size = sdp_size-SUPLA_MAX_DATA_SIZE+sdp->data_size;
+	unsigned _supla_int_t sdp_size = sizeof(TSuplaDataPacket);
+	unsigned _supla_int_t packet_size = sdp_size-SUPLA_MAX_DATA_SIZE+sdp->data_size;
 
 	if ( packet_size+SUPLA_TAG_SIZE > sdp_size )
 		return SUPLA_RESULT_DATA_TOO_LARGE;
@@ -142,10 +149,10 @@ char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp) {
 	return (SUPLA_RESULT_FALSE);
 }
 
-unsigned int sproto_pop_out_data(void *spd_ptr, char *buffer, unsigned int buffer_size) {
+unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer, unsigned _supla_int_t buffer_size) {
 
-	unsigned int a;
-	unsigned int b;
+	unsigned _supla_int_t a;
+	unsigned _supla_int_t b;
 
 	TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
 
@@ -188,10 +195,10 @@ char sproto_out_dataexists(void *spd_ptr) {
 	return ((TSuplaProtoData *)spd_ptr)->out.data_size > 0 ? SUPLA_RESULT_TRUE : SUPLA_RESULT_FALSE;
 }
 
-void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in, unsigned int size) {
+void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in, unsigned _supla_int_t size) {
 
-	unsigned int old_size = in->size;
-	int a, b;
+	unsigned _supla_int_t old_size = in->size;
+	_supla_int_t a, b;
 
 	in->begin_tag = 0;
 
@@ -222,7 +229,7 @@ void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in, unsigned int size) {
 
 char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
 
-	unsigned int header_size;
+	unsigned _supla_int_t header_size;
 	TSuplaDataPacket *_sdp;
 
 	TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
@@ -324,7 +331,7 @@ void sproto_sdp_free(TSuplaDataPacket* sdp) {
     free(sdp);
 }
 
-char sproto_set_data(TSuplaDataPacket *sdp, char *data, unsigned int data_size, unsigned int call_type) {
+char sproto_set_data(TSuplaDataPacket *sdp, char *data, unsigned _supla_int_t data_size, unsigned _supla_int_t call_type) {
 
 	if ( data_size >  SUPLA_MAX_DATA_SIZE )
 		return SUPLA_RESULT_FALSE;
@@ -360,9 +367,9 @@ void sproto_log_summary(void *spd_ptr) {
 
 void sproto_buffer_dump(void *spd_ptr, unsigned char in) {
 
-	int a;
+	_supla_int_t a;
 	char *buffer;
-	int size;
+	_supla_int_t size;
 
 	TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
 

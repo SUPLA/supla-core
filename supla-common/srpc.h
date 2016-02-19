@@ -2,8 +2,8 @@
  ============================================================================
  Name        : srpc.h [SUPLA REMOTE PROCEDURE CALL]
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.1
- Copyright   : GPLv2
+ Version     : 1.2
+ Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
 
@@ -19,9 +19,9 @@
 extern "C" {
 #endif
 
-typedef int (*_func_srpc_DataRW)(void *buf, int count, void *user_params);
-typedef void (*_func_srpc_event_OnRemoteCallReceived)(void *_srpc, unsigned int rr_id, unsigned int call_type, void *user_params, unsigned char proto_version);
-typedef void (*_func_srpc_event_BeforeCall)(void *_srpc, unsigned int call_type, void *user_params);
+typedef _supla_int_t (*_func_srpc_DataRW)(void *buf, _supla_int_t count, void *user_params);
+typedef void (*_func_srpc_event_OnRemoteCallReceived)(void *_srpc, unsigned _supla_int_t rr_id, unsigned _supla_int_t call_type, void *user_params, unsigned char proto_version);
+typedef void (*_func_srpc_event_BeforeCall)(void *_srpc, unsigned _supla_int_t call_type, void *user_params);
 typedef void (*_func_srpc_event_OnVersionError)(void *_srpc, unsigned char remote_version, void *user_params);
 
 typedef struct {
@@ -66,8 +66,8 @@ union TsrpcDataPacketData {
 
 typedef struct {
 
-  unsigned int call_type;
-  unsigned int rr_id;
+  unsigned _supla_int_t call_type;
+  unsigned _supla_int_t rr_id;
 
   union TsrpcDataPacketData data;
 
@@ -80,41 +80,41 @@ void srpc_free(void *_srpc);
 
 char srpc_iterate(void *_srpc);
 
-char srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned int rr_id);
+char srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned _supla_int_t rr_id);
 void srpc_rd_free(TsrpcReceivedData *rd);
 
 unsigned char srpc_get_proto_version(void *_srpc);
 void srpc_set_proto_version(void *_srpc, unsigned char version);
 
 // device/client <-> server
-int srpc_dcs_async_getversion(void *_srpc);
-int srpc_sdc_async_getversion_result(void *_srpc, char *SoftVer);
-int srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
-int srpc_dcs_async_ping_server(void *_srpc);
-int srpc_sdc_async_ping_server_result(void *_srpc);
-int srpc_dcs_async_set_activity_timeout(void *_srpc, TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout);
-int srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result);
+_supla_int_t srpc_dcs_async_getversion(void *_srpc);
+_supla_int_t srpc_sdc_async_getversion_result(void *_srpc, char *SoftVer);
+_supla_int_t srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
+_supla_int_t srpc_dcs_async_ping_server(void *_srpc);
+_supla_int_t srpc_sdc_async_ping_server_result(void *_srpc);
+_supla_int_t srpc_dcs_async_set_activity_timeout(void *_srpc, TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout);
+_supla_int_t srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result);
 
 // device <-> server
-int srpc_ds_async_registerdevice(void *_srpc, TDS_SuplaRegisterDevice *registerdevice);
-int srpc_ds_async_registerdevice_b(void *_srpc, TDS_SuplaRegisterDevice_B *registerdevice); // ver. >= 2
-int srpc_sd_async_registerdevice_result(void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
-int srpc_ds_async_channel_value_changed(void *_srpc, unsigned char channel_number, char *value);
-int srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
-int srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber, int SenderID, char Success);
+_supla_int_t srpc_ds_async_registerdevice(void *_srpc, TDS_SuplaRegisterDevice *registerdevice);
+_supla_int_t srpc_ds_async_registerdevice_b(void *_srpc, TDS_SuplaRegisterDevice_B *registerdevice); // ver. >= 2
+_supla_int_t srpc_sd_async_registerdevice_result(void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
+_supla_int_t srpc_ds_async_channel_value_changed(void *_srpc, unsigned char channel_number, char *value);
+_supla_int_t srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
+_supla_int_t srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber, _supla_int_t SenderID, char Success);
 
 // client <-> server
-int srpc_cs_async_registerclient(void *_srpc, TCS_SuplaRegisterClient *registerclient);
-int srpc_sc_async_registerclient_result(void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result);
-int srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
-int srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack);
-int srpc_sc_async_channel_update(void *_srpc, TSC_SuplaChannel *channel);
-int srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack);
-int srpc_sc_async_channel_value_update(void *_srpc, TSC_SuplaChannelValue *channel_item_value);
-int srpc_cs_async_get_next(void *_srpc);
-int srpc_sc_async_event(void *_srpc, TSC_SuplaEvent *event);
-int srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
-int srpc_cs_async_set_channel_value_b(void *_srpc, TCS_SuplaChannelNewValue_B *value);
+_supla_int_t srpc_cs_async_registerclient(void *_srpc, TCS_SuplaRegisterClient *registerclient);
+_supla_int_t srpc_sc_async_registerclient_result(void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result);
+_supla_int_t srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
+_supla_int_t srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack);
+_supla_int_t srpc_sc_async_channel_update(void *_srpc, TSC_SuplaChannel *channel);
+_supla_int_t srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack);
+_supla_int_t srpc_sc_async_channel_value_update(void *_srpc, TSC_SuplaChannelValue *channel_item_value);
+_supla_int_t srpc_cs_async_get_next(void *_srpc);
+_supla_int_t srpc_sc_async_event(void *_srpc, TSC_SuplaEvent *event);
+_supla_int_t srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
+_supla_int_t srpc_cs_async_set_channel_value_b(void *_srpc, TCS_SuplaChannelNewValue_B *value);
 
 #ifdef __cplusplus
 }
