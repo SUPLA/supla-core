@@ -36,6 +36,7 @@ public:
 	int master_channel(int ChannelID);
 	int slave_channel(int ChannelID);
 	bool get_channel_double_value(int ChannelID, double *Value);
+	void get_temperatures(void *tarr);
 
 };
 

@@ -23,6 +23,7 @@
 #include "accept_loop.h"
 #include "db.h"
 #include "user.h"
+#include "datalogger.h"
 
 int main(int argc, char* argv[]) {
 
@@ -32,6 +33,7 @@ int main(int argc, char* argv[]) {
 	void *tcp_accept_loop_t = NULL;
 	void *ssl_accept_loop_t = NULL;
 	void *ipc_accept_loop_t = NULL;
+	void *datalogger_loop_t = NULL;
 
 	//INIT BLOCK
 	supla_log(LOG_DEBUG, "Protocol v%d", SUPLA_PROTO_VERSION);
@@ -96,6 +98,10 @@ int main(int argc, char* argv[]) {
 	if ( ipc )
 		ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
 
+	// DATA LOGGER
+	datalogger_loop_t = sthread_simple_run(datalogger_loop, NULL, 0);
+
+
 	// MAIN LOOP
 
 	while(st_app_terminate == 0) {
@@ -122,6 +128,8 @@ int main(int argc, char* argv[]) {
 		sthread_twf(tcp_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
 		ssocket_free(ssd_tcp);
 	}
+
+	sthread_twf(datalogger_loop_t);
 
 	st_mainloop_free();
 	st_delpidfile(pidfile_path);

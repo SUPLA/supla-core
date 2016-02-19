@@ -12,6 +12,20 @@
 
 #include "proto.h"
 
+class supla_channel_temp {
+
+private:
+	int ChannelId;
+	double Temperature;
+public:
+	supla_channel_temp(int ChannelId, double Temperature);
+
+	int getChannelId(void);
+	double getTemperature(void);
+
+	static void free(void *tarr);
+};
+
 class supla_device_channel {
 private:
 
@@ -74,6 +88,8 @@ public:
 	int get_channel_id(unsigned char ChannelNumber);
     bool channel_exists(int ChannelID);
 	void load(int DeviceID);
+
+	void get_temperatures(void *tarr);
 };
 
 #endif /* DEVICECHANNEL_H_ */

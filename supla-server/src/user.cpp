@@ -78,6 +78,14 @@ int supla_user::getUserID(void) {
 	return UserID;
 }
 
+int supla_user::user_count(void) {
+	return safe_array_count(supla_user::user_arr);
+}
+
+supla_user *supla_user::get_user(int idx) {
+	return (supla_user *)safe_array_get(supla_user::user_arr, idx);
+}
+
 bool supla_user::getClientName(int ClientID, char *buffer, int size) {
 
 	if ( size < 1 )
@@ -364,6 +372,20 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
 
 }
 
+void supla_user::get_temperatures(void *tarr) {
+
+	int a;
+
+	safe_array_lock(device_arr);
+
+	for(a=0;a<safe_array_count(device_arr);a++) {
+		((supla_device *)safe_array_get(device_arr, a))->get_temperatures(tarr);
+	}
+
+	safe_array_unlock(device_arr);
+
+}
+
 void supla_user::reconnect() {
 
 	int a;
@@ -406,3 +428,5 @@ bool supla_user::reconnect(int UserID) {
 	return false;
 
 }
+
+
