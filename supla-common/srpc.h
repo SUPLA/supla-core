@@ -2,7 +2,7 @@
  ============================================================================
  Name        : srpc.h [SUPLA REMOTE PROCEDURE CALL]
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Version     : 1.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -14,6 +14,13 @@
 #include <stddef.h>
 #include "proto.h"
 #include "eh.h"
+
+#ifdef ESP8266
+  #include <os_type.h>
+  #define SRPC_ICACHE_FLASH ICACHE_FLASH_ATTR
+#else 
+  #define SRPC_ICACHE_FLASH 
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,48 +80,48 @@ typedef struct {
 
 }TsrpcReceivedData;
 
-void  srpc_params_init(TsrpcParams *params);
+void SRPC_ICACHE_FLASH srpc_params_init(TsrpcParams *params);
 
-void* srpc_init(TsrpcParams *params);
-void srpc_free(void *_srpc);
+void* SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params);
+void SRPC_ICACHE_FLASH srpc_free(void *_srpc);
 
-char srpc_iterate(void *_srpc);
+char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 
-char srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned _supla_int_t rr_id);
-void srpc_rd_free(TsrpcReceivedData *rd);
+char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned _supla_int_t rr_id);
+void SRPC_ICACHE_FLASH srpc_rd_free(TsrpcReceivedData *rd);
 
-unsigned char srpc_get_proto_version(void *_srpc);
-void srpc_set_proto_version(void *_srpc, unsigned char version);
+unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc);
+void SRPC_ICACHE_FLASH srpc_set_proto_version(void *_srpc, unsigned char version);
 
 // device/client <-> server
-_supla_int_t srpc_dcs_async_getversion(void *_srpc);
-_supla_int_t srpc_sdc_async_getversion_result(void *_srpc, char *SoftVer);
-_supla_int_t srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
-_supla_int_t srpc_dcs_async_ping_server(void *_srpc);
-_supla_int_t srpc_sdc_async_ping_server_result(void *_srpc);
-_supla_int_t srpc_dcs_async_set_activity_timeout(void *_srpc, TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout);
-_supla_int_t srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(void *_srpc, char *SoftVer);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_ping_server_result(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_set_activity_timeout(void *_srpc, TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result);
 
 // device <-> server
-_supla_int_t srpc_ds_async_registerdevice(void *_srpc, TDS_SuplaRegisterDevice *registerdevice);
-_supla_int_t srpc_ds_async_registerdevice_b(void *_srpc, TDS_SuplaRegisterDevice_B *registerdevice); // ver. >= 2
-_supla_int_t srpc_sd_async_registerdevice_result(void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
-_supla_int_t srpc_ds_async_channel_value_changed(void *_srpc, unsigned char channel_number, char *value);
-_supla_int_t srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
-_supla_int_t srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber, _supla_int_t SenderID, char Success);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice(void *_srpc, TDS_SuplaRegisterDevice *registerdevice);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_b(void *_srpc, TDS_SuplaRegisterDevice_B *registerdevice); // ver. >= 2
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(void *_srpc, unsigned char channel_number, char *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber, _supla_int_t SenderID, char Success);
 
 // client <-> server
-_supla_int_t srpc_cs_async_registerclient(void *_srpc, TCS_SuplaRegisterClient *registerclient);
-_supla_int_t srpc_sc_async_registerclient_result(void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result);
-_supla_int_t srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
-_supla_int_t srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack);
-_supla_int_t srpc_sc_async_channel_update(void *_srpc, TSC_SuplaChannel *channel);
-_supla_int_t srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack);
-_supla_int_t srpc_sc_async_channel_value_update(void *_srpc, TSC_SuplaChannelValue *channel_item_value);
-_supla_int_t srpc_cs_async_get_next(void *_srpc);
-_supla_int_t srpc_sc_async_event(void *_srpc, TSC_SuplaEvent *event);
-_supla_int_t srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
-_supla_int_t srpc_cs_async_set_channel_value_b(void *_srpc, TCS_SuplaChannelNewValue_B *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient(void *_srpc, TCS_SuplaRegisterClient *registerclient);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update(void *_srpc, TSC_SuplaChannel *channel);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(void *_srpc, TSC_SuplaChannelValue *channel_item_value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc, TSC_SuplaEvent *event);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(void *_srpc, TCS_SuplaChannelNewValue_B *value);
 
 #ifdef __cplusplus
 }
