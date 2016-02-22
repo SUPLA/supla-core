@@ -16,6 +16,10 @@ void ICACHE_FLASH_ATTR supla_esp_devconn_init(void);
 void ICACHE_FLASH_ATTR supla_esp_devconn_start(void);
 void ICACHE_FLASH_ATTR supla_esp_devconn_stop(void);
 char * ICACHE_FLASH_ATTR supla_esp_devconn_laststate(void);
-void ICACHE_FLASH_ATTR supla_esp_devconn_on_port_value_changed(int port, char hi);
+void ICACHE_FLASH_ATTR supla_esp_channel_value_changed(int channel_number, char v);
+
+#ifdef GATEMODULE
+void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp);
+#endif
 
 #endif /* SUPLA_ESP_CLIENT_H_ */

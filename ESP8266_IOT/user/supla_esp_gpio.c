@@ -61,7 +61,7 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
 		char hi = supla_esp_gpio_is_hi(RELAY1_PORT) == 1 ? 0 : 1;
 
 		supla_esp_gpio_hi(RELAY1_PORT, hi);
-		supla_esp_devconn_on_port_value_changed(RELAY1_PORT, hi);
+		supla_esp_channel_value_changed(0, hi);
         #endif
 
 	} else {

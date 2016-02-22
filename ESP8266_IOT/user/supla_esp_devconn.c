@@ -210,11 +210,15 @@ supla_esp_channel_set_activity_timeout_result(TSDC_SuplaSetActivityTimeoutResult
 void ICACHE_FLASH_ATTR
 supla_esp_channel_value_changed(int channel_number, char v) {
 
-	char value[SUPLA_CHANNELVALUE_SIZE];
-	memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-	value[0] = v;
+	if ( srpc != NULL
+		 && registered == 1 ) {
 
-	srpc_ds_async_channel_value_changed(srpc, channel_number, value);
+		char value[SUPLA_CHANNELVALUE_SIZE];
+		memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+		value[0] = v;
+
+		srpc_ds_async_channel_value_changed(srpc, channel_number, value);
+	}
 
 }
 
@@ -337,7 +341,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.LocationID = supla_esp_cfg.LocationID;
 			ets_snprintf(srd.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s", supla_esp_cfg.LocationPwd);
 			ets_snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", DEVICE_NAME);
-			strcpy(srd.SoftVer, "1.0");
+			strcpy(srd.SoftVer, "1.1");
 			os_memcpy(srd.GUID, supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 
 			//supla_log(LOG_DEBUG, "LocationID=%i, LocationPWD=%s", srd.LocationID, srd.LocationPWD);
@@ -352,10 +356,10 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
 #elif defined(GATEMODULE)
 
-			srd.channel_count = 4;
+			srd.channel_count = 5;
 			srd.channels[0].Number = 0;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
+			srd.channels[0].FuncList =  SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
 										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE \
 										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR \
 										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK;
@@ -379,6 +383,16 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[3].FuncList = 0;
 			srd.channels[3].Default = 0;
 			srd.channels[3].value[0] = 0;
+
+			// TEMPERATURE_CHANNEL
+			srd.channels[4].Number = 4;
+			srd.channels[4].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+			srd.channels[4].FuncList = 0;
+			srd.channels[4].Default = 0;
+
+			double temp;
+			supla_ds18b20_get_temp(&temp);
+			memcpy(srd.channels[4].value, &temp, sizeof(double));
 
 #endif
 
@@ -444,27 +458,31 @@ supla_esp_devconn_disconnect_cb(void *arg){
 void ICACHE_FLASH_ATTR
 supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 
-	if ( ip != NULL ) {
+	uint32_t _ip;
 
-		//supla_log(LOG_DEBUG, "Domain %s found", name);
+	if ( ip == NULL ) {
 
-		espconn_secure_disconnect(&ESPConn);
-
-		ESPConn.proto.tcp = &ESPTCP;
-		ESPConn.type = ESPCONN_TCP;
-		ESPConn.state = ESPCONN_NONE;
-
-		os_memcpy(ESPConn.proto.tcp->remote_ip, ip, 4);
-		ESPConn.proto.tcp->local_port = espconn_port();
-		ESPConn.proto.tcp->remote_port = 2016;
-
-		espconn_regist_recvcb(&ESPConn, supla_esp_devconn_recv_cb);
-		espconn_regist_connectcb(&ESPConn, supla_esp_devconn_connect_cb);
-		espconn_regist_disconcb(&ESPConn, supla_esp_devconn_disconnect_cb);
-
-		espconn_secure_connect(&ESPConn);
-
+		supla_log(LOG_DEBUG, "Domain %s not found", name);
+		//_ip =  ipaddr_addr(name);
+		_ip =  ipaddr_addr("192.168.178.30");
+		ip = (ip_addr_t *)&_ip;
 	}
+
+	espconn_secure_disconnect(&ESPConn);
+
+	ESPConn.proto.tcp = &ESPTCP;
+	ESPConn.type = ESPCONN_TCP;
+	ESPConn.state = ESPCONN_NONE;
+
+	os_memcpy(ESPConn.proto.tcp->remote_ip, ip, 4);
+	ESPConn.proto.tcp->local_port = espconn_port();
+	ESPConn.proto.tcp->remote_port = 2016;
+
+	espconn_regist_recvcb(&ESPConn, supla_esp_devconn_recv_cb);
+	espconn_regist_connectcb(&ESPConn, supla_esp_devconn_connect_cb);
+	espconn_regist_disconcb(&ESPConn, supla_esp_devconn_disconnect_cb);
+
+	espconn_secure_connect(&ESPConn);
 
 	devconn_autoconnect = 1;
 }
@@ -591,19 +609,18 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 	}
 }
 
-void ICACHE_FLASH_ATTR
-supla_esp_devconn_on_port_value_changed(int port, char hi) {
+#ifdef GATEMODULE
+void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp) {
 
 	if ( srpc != NULL
 		 && registered == 1 ) {
 
 		char value[SUPLA_CHANNELVALUE_SIZE];
 		memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+        memcpy(value, &temp, sizeof(double));
 
-		value[0] = hi;
-
-		srpc_ds_async_channel_value_changed(srpc, 0, value);
-		supla_esp_devconn_iterate(NULL);
+		srpc_ds_async_channel_value_changed(srpc, TEMPERATURE_CHANNEL, value);
 	}
 
 }
+#endif

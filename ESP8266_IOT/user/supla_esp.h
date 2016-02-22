@@ -12,18 +12,25 @@
 
 #include "supla-dev/proto.h"
 
-//#define WIFI-SOCKET
+//#define WIFISOCKET
 #define GATEMODULE
+#define WROOM
 
 #ifdef WIFISOCKET
-#define DEVICE_NAME "SUPLA-SOCKET"
+	#define DEVICE_NAME "SUPLA-SOCKET"
 #elif defined(GATEMODULE)
-#define DEVICE_NAME "SUPLA-GATE-MODULE"
+	#define TEMPERATURE_CHANNEL 4
+	#define DEVICE_NAME "SUPLA-GATE-MODULE"
 #endif
 
 #define AP_SSID "SUPLA-ESP8266"
 
+#ifdef WROOM
+#define CFG_SECTOR          0xBC
+#else
 #define CFG_SECTOR          0x3C
+#endif
+
 #define SPI_FLASH_SEC_SIZE  4096
 #define SERVER_MAXSIZE      100
 #define WIFI_SSID_MAXSIZE   32
@@ -35,25 +42,42 @@
 
 #define ACTIVITY_TIMEOUT 10
 
-#define LED_GREEN_PORT  12   
-#define LED_BLUE_PORT   14   
-
-#define RELAY1_PORT      4
-#define BTN_PORT         5
 
 #define CHANNEL_TYPE
 
 #ifdef WIFISOCKET
 
 #define LED_RED_PORT    13
+#define LED_GREEN_PORT  12
+#define LED_BLUE_PORT   14
+#define RELAY1_PORT      4
+#define BTN_PORT         5
 
 
 #elif defined(GATEMODULE)
 
+#ifdef WROOM
+
+#define LED_GREEN_PORT  5
+#define LED_BLUE_PORT   12
+
+#define BTN_PORT         13
+#define RELAY1_PORT      4
+#define RELAY2_PORT      14
+#define INPUT_PORT1      5
+#define INPUT_PORT2      12
+
+#else
+
+#define LED_GREEN_PORT  12
+#define LED_BLUE_PORT   14
+
+#define BTN_PORT         5
+#define RELAY1_PORT      4
 #define RELAY2_PORT      13
 #define INPUT_PORT1      12
 #define INPUT_PORT2      14
-
+#endif
 
 #endif
 

@@ -10,6 +10,7 @@
 #ifndef SUPLA_ESP_GPIO_H_
 #define SUPLA_ESP_GPIO_H_
 
+#include "supla_esp.h"
 
 void ICACHE_FLASH_ATTR supla_esp_gpio_init(void);
 

@@ -21,17 +21,18 @@
 #include "supla_esp_gpio.h"
 #include "supla-dev/log.h"
 
-
 void user_init(void)
 {
 
      supla_log(LOG_DEBUG, "Starting");
-
      wifi_status_led_uninstall();
 
      supla_esp_cfg_init();
      supla_esp_devconn_init();
      supla_esp_gpio_init();
+	 #ifdef GATEMODULE
+     supla_ds18b20_init();
+	 #endif
 
      if ( supla_esp_cfg.LocationID == 0
     		 || supla_esp_cfg.LocationPwd[0] == 0
@@ -44,7 +45,12 @@ void user_init(void)
      }
 
 
-    supla_esp_devconn_start();
+	#ifdef GATEMODULE
+	supla_ds18b20_start();
+	#endif
+
+	supla_esp_devconn_start();
+
 
 }
 
