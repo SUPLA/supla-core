@@ -12,16 +12,18 @@
 
 #include "supla-dev/proto.h"
 
-//#define WIFISOCKET
-#define GATEMODULE
-#define WROOM
+#define WIFISOCKET
+//#define GATEMODULE
+//#define WROOM
 
 #ifdef WIFISOCKET
 	#define DEVICE_NAME "SUPLA-SOCKET"
+	#define TEMPERATURE_CHANNEL 1
 #elif defined(GATEMODULE)
-	#define TEMPERATURE_CHANNEL 4
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
+	#define TEMPERATURE_CHANNEL 4
 #endif
+
 
 #define AP_SSID "SUPLA-ESP8266"
 

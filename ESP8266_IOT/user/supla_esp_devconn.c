@@ -45,6 +45,7 @@ static char devconn_autoconnect = 1;
 static char sys_restart = 0;
 
 static unsigned int last_response = 0;
+static unsigned char ping_flag = 0;
 static int server_activity_timeout;
 
 static uint8 last_wifi_status = STATION_GOT_IP+1;
@@ -299,6 +300,7 @@ supla_esp_on_remote_call_received(void *_srpc, unsigned int rr_id, unsigned int 
 	char result;
 
 	last_response = system_get_time();
+	ping_flag = 0;
 
 	if ( SUPLA_RESULT_TRUE == ( result = srpc_getdata(_srpc, &rd, 0)) ) {
 
@@ -347,13 +349,19 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			//supla_log(LOG_DEBUG, "LocationID=%i, LocationPWD=%s", srd.LocationID, srd.LocationPWD);
 
 #ifdef WIFISOCKET
-			srd.channel_count = 1;
+			srd.channel_count = 2;
 			srd.channels[0].Number = 0;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
 			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_POWERSWITCH \
                     					| SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
 			srd.channels[0].Default = SUPLA_CHANNELFNC_POWERSWITCH;
 			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
+
+			srd.channels[1].Number = 1;
+			srd.channels[1].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+			srd.channels[1].FuncList = 0;
+			srd.channels[1].Default = 0;
+
 #elif defined(GATEMODULE)
 
 			srd.channel_count = 5;
@@ -417,6 +425,7 @@ supla_esp_srpc_free(void) {
 
 	registered = 0;
 	last_response = 0;
+	ping_flag = 0;
 
 	if ( srpc != NULL ) {
 		srpc_free(srpc);
@@ -463,8 +472,8 @@ supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 	if ( ip == NULL ) {
 
 		supla_log(LOG_DEBUG, "Domain %s not found", name);
-		//_ip =  ipaddr_addr(name);
-		_ip =  ipaddr_addr("192.168.178.30");
+		_ip =  ipaddr_addr(name);
+		//_ip =  ipaddr_addr("192.168.178.30");
 		ip = (ip_addr_t *)&_ip;
 	}
 
@@ -600,8 +609,10 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 		    	supla_log(LOG_DEBUG, "Response timeout %i, %i, %i, %i", t, last_response, (t-last_response)/1000000, server_activity_timeout+5);
 		    	supla_esp_system_restart();
 
-		    } else if ( abs((t-last_response)/1000000) >= (server_activity_timeout-5) ) {
+		    } else if ( ping_flag == 0
+		    		    && abs((t-last_response)/1000000) >= (server_activity_timeout-5) ) {
 
+		    	ping_flag = 1;
 				srpc_dcs_async_ping_server(srpc);
 
 			}
@@ -609,7 +620,7 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 	}
 }
 
-#ifdef GATEMODULE
+
 void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp) {
 
 	if ( srpc != NULL
@@ -623,4 +634,4 @@ void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp) {
 	}
 
 }
-#endif
+

@@ -30,9 +30,8 @@ void user_init(void)
      supla_esp_cfg_init();
      supla_esp_devconn_init();
      supla_esp_gpio_init();
-	 #ifdef GATEMODULE
      supla_ds18b20_init();
-	 #endif
+
 
      if ( supla_esp_cfg.LocationID == 0
     		 || supla_esp_cfg.LocationPwd[0] == 0
@@ -45,10 +44,7 @@ void user_init(void)
      }
 
 
-	#ifdef GATEMODULE
 	supla_ds18b20_start();
-	#endif
-
 	supla_esp_devconn_start();
 
 
