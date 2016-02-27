@@ -17,32 +17,53 @@
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 
+/**
+ * Use type names to process supla configuration file
+ */
+static int decode_channel_type(const char* type) {
+
+	if ( strcasecmp(type, "SENSORNO") == 0 ) {
+		return SUPLA_CHANNELTYPE_SENSORNO;
+	} else 	if ( strcasecmp(type, "RELAYHFD4") == 0 ) {
+		return SUPLA_CHANNELTYPE_RELAYHFD4;
+	} else 	if ( strcasecmp(type, "RELAYG5LA1A") == 0 ) {
+		return SUPLA_CHANNELTYPE_RELAYG5LA1A;
+	} else 	if ( strcasecmp(type, "2XRELAYG5LA1A") == 0 ) {
+		return SUPLA_CHANNELTYPE_2XRELAYG5LA1A;
+	} else 	if ( strcasecmp(type, "RELAY") == 0 ) {
+		return SUPLA_CHANNELTYPE_RELAY;
+	} else 	if ( strcasecmp(type, "THERMOMETERDS18B20") == 0 ) {
+		return SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+	}
+
+	return atoi(type);
+}
+
 void devcfg_channel_cfg(const char* section, const char* name, const char* value) {
 
+	const char *sec_name = "CHANNEL_";
+	int sec_name_len = strlen(sec_name);
 
-	if ( strlen(section) <= 8
-		 || strncasecmp(section, "CHANNEL_", 8) != 0 )
+	if ( strlen(section) <= sec_name_len
+		 || strncasecmp(section, sec_name, sec_name_len) != 0 )
 		return;
 
-	unsigned char number = atoi(&section[8]);
+	if ( strlen(value) == 0 ) {
+		supla_log(LOG_ERR, "Empty value in configuration file for key: %s", name);
+		return;
+	}
 
+	unsigned char number = atoi(&section[sec_name_len]);
 
 	if ( strcasecmp(name, "type") == 0 ) {
-		channelio_set_type(number, atoi(value));
-	}
-
-	if ( strcasecmp(name, "gpio1") == 0 ) {
+		channelio_set_type(number, decode_channel_type(value));
+	} else if ( strcasecmp(name, "gpio1") == 0 ) {
 		channelio_set_gpio1(number, atoi(value) % 255);
-	}
-
-	if ( strcasecmp(name, "gpio2") == 0 ) {
+	} else if ( strcasecmp(name, "gpio2") == 0 ) {
 		channelio_set_gpio2(number, atoi(value) % 255);
-	}
-
-	if ( strcasecmp(name, "w1") == 0  && strlen(value) > 0 ) {
+	} else if ( strcasecmp(name, "w1") == 0  && strlen(value) > 0 ) {
 		channelio_set_w1(number, value);
 	}
-
 }
 
 unsigned char devcfg_init(int argc, char* argv[]) {
