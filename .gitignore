@@ -40,3 +40,7 @@ local.properties
 
 # STS (Spring Tool Suite)
 .springBeans
+
+# Build tmp files
+*.o
+*.d
