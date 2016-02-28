@@ -13,10 +13,10 @@
 #include <assert.h>
 #include <unistd.h>
 
-
 #include "channel-io.h"
 #include "gpio.h"
 #include "w1.h"
+#include "mcp23008.h"
 #include "log.h"
 #include "lck.h"
 #include "eh.h"
@@ -54,9 +54,25 @@ typedef struct {
 }TChannelW1TempValue;
 
 typedef struct {
+#ifdef __SINGLE_THREAD
+	struct timeval close_time;
+#endif
+	struct timeval last_tv;
+	char addr;
+	char reset;
+	char value;
+	char dir;
+	char port;
+	char active;
+	void *lck;
+
+}TChannelMCP23008;
+
+typedef struct {
 
 	unsigned char number;
 	int type;
+	int driver;
 	unsigned char gpio1;
 	unsigned char gpio2;
 	char *w1;
@@ -64,6 +80,7 @@ typedef struct {
 	TChannelGpioPortValue gpio1_value;
 	TChannelGpioPortValue gpio2_value;
 	TChannelW1TempValue w1_value;
+	TChannelMCP23008 mcp23008;
 
 }TDeviceChannel;
 
@@ -370,17 +387,22 @@ void channelio_channel_init(void) {
 
 	for(a=0;a<cio->channel_count;a++) {
 		channel = &cio->channels[a];
-		if ( channel->gpio1 > 0 || channel->gpio2 > 0 ) {
+		if ( channel->gpio1 > 0 )
+			channelio_gpio_port_init(channel, &channel->gpio1_value, channel->gpio1, channelio_gpio_in(channel->type));
 
-			if ( channel->gpio1 > 0 )
-				channelio_gpio_port_init(channel, &channel->gpio1_value, channel->gpio1, channelio_gpio_in(channel->type));
-
-			if ( channel->gpio2 > 0 )
-				channelio_gpio_port_init(channel, &channel->gpio2_value, channel->gpio2, channelio_gpio_in(channel->type));
-		}
-
+		if ( channel->gpio2 > 0 )
+			channelio_gpio_port_init(channel, &channel->gpio2_value, channel->gpio2, channelio_gpio_in(channel->type));
 
 		channelio_read_temp(channel->w1, &channel->w1_value, 1);
+
+		if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
+			mcp23008_init(channel->mcp23008.reset, channel->mcp23008.addr);
+			if (channel->mcp23008.active) {
+				mcp23008_gpio_port_init(channel->mcp23008.port,
+							channel->mcp23008.dir,
+							channel->mcp23008.value);
+			}
+		}
 	}
 
 #ifndef __SINGLE_THREAD
@@ -492,6 +514,41 @@ void channelio_set_w1(unsigned char number, const char *w1) {
 
 	if ( channel != NULL )
 		channel->w1 = strdup(w1);
+}
+
+#define HELPER_CHANNEL_CHECK_VALUE_SET(PARAM, NUMBER, VALUE)	\
+	do {							\
+		TDeviceChannel *channel;			\
+		if ( cio == NULL || cio->initialized == 1 )	\
+			return;					\
+		channel = channelio_find(NUMBER, 1);		\
+		if ( channel != NULL )				\
+			channel->PARAM = VALUE;			\
+	} while(0)						\
+
+void channelio_set_mcp23008_driver(unsigned char number, int driver) {
+	HELPER_CHANNEL_CHECK_VALUE_SET(driver, number, driver);
+}
+
+void channelio_set_mcp23008_addr(unsigned char number, unsigned char addr) {
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.addr, number, addr);
+}
+
+void channelio_set_mcp23008_gpio_dir(unsigned char number, unsigned char value) {
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.dir, number, value);
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.active, number, 1);
+}
+
+void channelio_set_mcp23008_gpio_val(unsigned char number, unsigned char value) {
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.value, number, value);
+}
+
+void channelio_set_mcp23008_gpio_port(unsigned char number, unsigned char port) {
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.port, number, port);
+}
+
+void channelio_set_mcp23008_reset(unsigned char number, unsigned char reset) {
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.reset, number, reset);
 }
 
 char channelio_get_cvalue(TDeviceChannel *channel, char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -833,16 +890,19 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi, unsigned int time
 
 
 		if ( time_ms > 0 ) {
-
 			result = channelio_start_gpio_thread(channel, channelio_gpio_set_hi_execute, port, time_ms, raise);
 
 
 		} else {
 
-			lck_lock(gpio_value->lck);
-			gpio_value->value = hi == 0 ? 0 : 1;
-			gpio_set_value(port, gpio_value->value);
-			lck_unlock(gpio_value->lck);
+			if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
+				mcp23008_gpio_set_value(channel->mcp23008.port, !hi);
+			} else {
+				lck_lock(gpio_value->lck);
+				gpio_value->value = hi == 0 ? 0 : 1;
+				gpio_set_value(port, gpio_value->value);
+				lck_unlock(gpio_value->lck);
+			}
 
 			if ( raise )
 				channelio_raise_valuechanged(channel);

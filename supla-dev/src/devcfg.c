@@ -39,6 +39,15 @@ static int decode_channel_type(const char* type) {
 	return atoi(type);
 }
 
+static int decode_channel_driver(const char* type) {
+
+	if ( strcasecmp(type, "mcp23008") == 0 ) {
+		return SUPLA_CHANNELDRIVER_MCP23008;
+	}
+	return 0;
+}
+
+#define MCP23008_MAX_GPIO  8
 void devcfg_channel_cfg(const char* section, const char* name, const char* value) {
 
 	const char *sec_name = "CHANNEL_";
@@ -63,7 +72,20 @@ void devcfg_channel_cfg(const char* section, const char* name, const char* value
 		channelio_set_gpio2(number, atoi(value) % 255);
 	} else if ( strcasecmp(name, "w1") == 0  && strlen(value) > 0 ) {
 		channelio_set_w1(number, value);
+	} else if ( strcasecmp(name, "driver") == 0 ) {
+		channelio_set_mcp23008_driver(number, decode_channel_driver(value));
+	} else if ( strcasecmp(name, "mcp_addr") == 0 ) {
+		channelio_set_mcp23008_addr(number, strtol(value, NULL, 16));
+	} else if ( strcasecmp(name, "mcp_reset") == 0 ) {
+		channelio_set_mcp23008_reset(number,  atoi(value) % 255 );
+	} else if ( strcasecmp(name, "mcp_gpio_dir") == 0 ) {
+		channelio_set_mcp23008_gpio_dir(number,  atoi(value) % 255 );
+	} else if ( strcasecmp(name, "mcp_gpio_val") == 0 ) {
+		channelio_set_mcp23008_gpio_val(number,  atoi(value) % 255 );
+	} else if ( strcasecmp(name, "mcp_gpio_port") == 0 ) {
+		channelio_set_mcp23008_gpio_port(number,  atoi(value) % MCP23008_MAX_GPIO );
 	}
+
 }
 
 unsigned char devcfg_init(int argc, char* argv[]) {

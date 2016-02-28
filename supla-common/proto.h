@@ -137,6 +137,8 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_RELAY                    2900
 #define SUPLA_CHANNELTYPE_THERMOMETERDS18B20       3000
 
+#define SUPLA_CHANNELDRIVER_MCP23008               2
+
 #define SUPLA_CHANNELFNC_NONE                               0
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK         10
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGATE                20
