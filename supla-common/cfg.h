@@ -26,6 +26,7 @@ extern unsigned run_as_daemon;
 typedef void (*_func_cfg_callback)(const char* section, const char* name, const char* value);
 
 // section_name must be allocated until call scfg_load
+void scfg_print_help(const char* app_name);
 unsigned char scfg_load(int argc, char* argv[], char default_file[]);
 void scfg_add_str_param(char *section_name, const char *param_name, char *default_value);
 void scfg_add_double_param(char *section_name, const char *param_name, double default_value);

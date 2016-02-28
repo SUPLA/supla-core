@@ -155,6 +155,17 @@ void scfg_add_bool_param(char *section_name, const char *param_name, unsigned ch
 	scfg_add_param(section_name, param_name, SCFG_VTYPE_BOOLEAN, NULL, default_value, 0, 0);
 }
 
+void scfg_print_help(const char* app_name)
+{
+	printf("The application supports the following options:\n");
+	printf("    -c <config file>\n");
+	printf("    -p <pid file>\n");
+	printf("    -d                  run in daemon mode\n");
+	printf("    -D                  run in debug mode\n");
+	printf("    -h                  prints this help\n");
+	printf("\n");
+}
+
 unsigned char scfg_load(int argc, char* argv[], char default_file[]) {
 
 	   int a;
@@ -171,7 +182,10 @@ unsigned char scfg_load(int argc, char* argv[], char default_file[]) {
 	                   run_as_daemon = 1;
 	           } else if ( strcmp("-D", argv[a]) == 0 ) {
 	        	       debug_mode = 1;
-	           }
+	           } else if ( strcmp("-h", argv[a]) == 0 ) {
+			   scfg_print_help(argv[0]);
+			   return 0;
+		   }
 	   }
 
 	   if ( cfg_path == NULL ) {
