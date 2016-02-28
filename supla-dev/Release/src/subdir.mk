@@ -25,7 +25,8 @@ C_SRCS += \
 ../src/sthread.c \
 ../src/supla-socket.c \
 ../src/tools.c \
-../src/w1.c 
+../src/w1.c \
+../src/mcp23008.c
 
 OBJS += \
 ./src/accept_loop.o \
@@ -47,7 +48,8 @@ OBJS += \
 ./src/supla-dev.o \
 ./src/supla-socket.o \
 ./src/tools.o \
-./src/w1.o 
+./src/w1.o \
+./src/mcp23008.o
 
 C_DEPS += \
 ./src/cfg.d \
@@ -66,7 +68,8 @@ C_DEPS += \
 ./src/sthread.d \
 ./src/supla-socket.d \
 ./src/tools.d \
-./src/w1.d 
+./src/w1.d \
+.src/mcp23008.d \
 
 CPP_DEPS += \
 ./src/accept_loop.d \
@@ -78,14 +81,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__OPEN_SSL=1 -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	ccache g++ -D__OPEN_SSL=1 -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	ccache gcc -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
