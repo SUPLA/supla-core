@@ -24,6 +24,16 @@ static double supla_ds18b20_last_temp = -275;
 static ETSTimer supla_ds18b20_timer1;
 static ETSTimer supla_ds18b20_timer2;
 
+#define SUPLA_DS_MODEL_UNKNOWN 0
+#define SUPLA_DS_MODEL_18B20 1
+#define SUPLA_DS_MODEL_1820  2
+
+static char SUPLA_DS_MODEL = SUPLA_DS_MODEL_UNKNOWN;
+static float supla_ds18b20_divider;
+
+// TODO: Add support for multiple sensors
+// TODO: Add resolution setup
+
 void ICACHE_FLASH_ATTR supla_ds18b20_init(void) {
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
     PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
@@ -45,7 +55,7 @@ void ICACHE_FLASH_ATTR supla_ds18b20_reset(void)
     os_delay_us(480);
 }
 
-void ICACHE_FLASH_ATTR supla_ds18b20_write_bit( int v )
+void supla_ds18b20_write_bit( int v )
 {
     GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 0 );
     if( v ) {
@@ -60,7 +70,7 @@ void ICACHE_FLASH_ATTR supla_ds18b20_write_bit( int v )
 }
 
 
-int ICACHE_FLASH_ATTR supla_ds18b20_read_bit(void)
+int  supla_ds18b20_read_bit(void)
 {
     int r;
     GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 0 );
@@ -93,7 +103,7 @@ uint8_t ICACHE_FLASH_ATTR supla_ds18b20_read() {
 }
 
 
-void ICACHE_FLASH_ATTR
+void
 supla_ds18b20_read_temperatureB(void *timer_arg) {
 
 	os_timer_disarm(&supla_ds18b20_timer2);
@@ -115,11 +125,7 @@ supla_ds18b20_read_temperatureB(void *timer_arg) {
     double t = -275;
 
     if ( d == 1 ) {
-        t = (data[0]+(data[1]*256))/16.0;
-
-        if ( t > 1000 )
-        	t-=4096;
-
+    	t = ((((int8_t)data[1])<<8) | data[0]) / supla_ds18b20_divider;
     } else {
     	t = -275;
     }
@@ -131,19 +137,45 @@ supla_ds18b20_read_temperatureB(void *timer_arg) {
 
 }
 
-void ICACHE_FLASH_ATTR
+void
 supla_ds18b20_read_temperatureA(void *timer_arg) {
 
 	supla_ds18b20_reset();
-	supla_ds18b20_write(0xcc,1);
-    supla_ds18b20_write(0x44,1);
 
-    os_timer_disarm(&supla_ds18b20_timer2);
-	os_timer_setfn(&supla_ds18b20_timer2, supla_ds18b20_read_temperatureB, NULL);
-    os_timer_arm (&supla_ds18b20_timer2, 1000, 0);
+	if ( SUPLA_DS_MODEL == SUPLA_DS_MODEL_UNKNOWN ) {
+
+		uint8_t data = 0;
+
+		supla_ds18b20_write(0x33, 1);
+	    data = supla_ds18b20_read();
+
+	    if ( data == 0x28 ) {
+	    	supla_ds18b20_divider = 16.0;
+	    	SUPLA_DS_MODEL = SUPLA_DS_MODEL_18B20;
+
+	    } else if ( data == 0x10 ) {
+	    	supla_ds18b20_divider = 2.0;
+	    	SUPLA_DS_MODEL = SUPLA_DS_MODEL_1820;
+	    }
+
+
+	    if ( SUPLA_DS_MODEL != SUPLA_DS_MODEL_UNKNOWN )
+	    	supla_ds18b20_read_temperatureA(NULL);
+
+	} else {
+
+		supla_ds18b20_write(0xcc,1);
+	    supla_ds18b20_write(0x44,1);
+
+	    os_timer_disarm(&supla_ds18b20_timer2);
+		os_timer_setfn(&supla_ds18b20_timer2, supla_ds18b20_read_temperatureB, NULL);
+	    os_timer_arm (&supla_ds18b20_timer2, 1000, 0);
+
+	}
+
 }
 
-void ICACHE_FLASH_ATTR supla_ds18b20_start(void)
+void supla_ds18b20_start(void)
 {
 	supla_ds18b20_last_temp = -275;
 
