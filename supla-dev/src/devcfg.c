@@ -14,6 +14,7 @@
 #include "tools.h"
 #include "log.h"
 #include "channel-io.h"
+#include "mcp23008.h"
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 
@@ -47,7 +48,6 @@ static int decode_channel_driver(const char* type) {
 	return 0;
 }
 
-#define MCP23008_MAX_GPIO  8
 void devcfg_channel_cfg(const char* section, const char* name, const char* value) {
 
 	const char *sec_name = "CHANNEL_";
