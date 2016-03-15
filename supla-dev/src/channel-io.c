@@ -32,6 +32,7 @@
 #else
 #define W1_TEMP_MINDELAY_SEC    30
 #endif
+#define MCP23008_MINDELAY_SEC   1
 
 typedef struct {
 
@@ -60,11 +61,11 @@ typedef struct {
 	struct timeval last_tv;
 	char addr;
 	char reset;
-	char value;
 	char dir;
 	char port;
 	char active;
 	void *lck;
+	TChannelGpioPortValue gpio;
 
 }TChannelMCP23008;
 
@@ -112,6 +113,7 @@ typedef struct {
 #ifndef __SINGLE_THREAD
 	void *gpio_thread_arr;
 	void *w1_sthread;
+	void *mcp_sthread;
 #endif
 
 }TChannelIo;
@@ -121,6 +123,7 @@ TChannelIo *cio = NULL;
 #ifndef __SINGLE_THREAD
 void channelio_w1_execute(void *user_data, void *sthread);
 void channelio_gpio_monitor_execute(void *user_data, void *sthread);
+void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
 char channelio_gpio_in(int type) {
@@ -397,10 +400,10 @@ void channelio_channel_init(void) {
 
 		if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
 			mcp23008_init(channel->mcp23008.reset, channel->mcp23008.addr);
-			if (channel->mcp23008.active) {
+			if ( channel->mcp23008.active ) {
 				mcp23008_gpio_port_init(channel->mcp23008.port,
 							channel->mcp23008.dir,
-							channel->mcp23008.value);
+							channel->mcp23008.gpio.value);
 			}
 		}
 	}
@@ -408,6 +411,7 @@ void channelio_channel_init(void) {
 #ifndef __SINGLE_THREAD
 	 cio->w1_sthread = sthread_simple_run(channelio_w1_execute, NULL, 0);
 	 channelio_start_gpio_thread(NULL, channelio_gpio_monitor_execute, 0, 0, 0);
+	 cio->mcp_sthread = sthread_simple_run(channelio_mcp23008_execute, NULL, 1);
 #endif
 
 }
@@ -540,7 +544,7 @@ void channelio_set_mcp23008_gpio_dir(unsigned char number, unsigned char value) 
 }
 
 void channelio_set_mcp23008_gpio_val(unsigned char number, unsigned char value) {
-	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.value, number, value);
+	HELPER_CHANNEL_CHECK_VALUE_SET(mcp23008.gpio.value, number, value);
 }
 
 void channelio_set_mcp23008_gpio_port(unsigned char number, unsigned char port) {
@@ -562,7 +566,11 @@ char channelio_get_cvalue(TDeviceChannel *channel, char value[SUPLA_CHANNELVALUE
 			 || channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A ) {
 
 			lck_lock(channel->gpio1_value.lck);
-			value[0] =  channel->gpio1_value.value;
+			value[0] = channel->gpio1_value.value;
+			if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008
+			     && channel->type == SUPLA_CHANNELTYPE_SENSORNO ) {
+				value[0] = channel->mcp23008.gpio.value;
+			}
 			lck_unlock(channel->gpio1_value.lck);
 
 			return 1;
@@ -763,6 +771,22 @@ void channelio_w1_iterate(void) {
 
 }
 
+void channelio_mcp23008_iterate(void) {
+
+	int a;
+	for(a=0;a<cio->channel_count;a++) {
+		TDeviceChannel *ch = &cio->channels[a];
+		if ( ch->type == SUPLA_CHANNELTYPE_SENSORNO ) {
+			unsigned char val = mcp23008_gpio_get_value(ch->mcp23008.port);
+			if ( ch->mcp23008.gpio.value != val ) {
+				ch->mcp23008.gpio.value = val;
+				channelio_raise_valuechanged(ch);
+			}
+		}
+	}
+
+}
+
 #ifdef __SINGLE_THREAD
 void channelio_iterate(void) {
 
@@ -771,6 +795,7 @@ void channelio_iterate(void) {
 
 	channelio_gpio_iterate();
 	channelio_w1_iterate();
+	channelio_mcp23008_iterate();
 
 }
 #else
@@ -788,6 +813,19 @@ void channelio_w1_execute(void *user_data, void *sthread) {
 	}
 
 
+}
+
+void channelio_mcp23008_execute(void *user_data, void *sthread) {
+
+	int wait = (MCP23008_MINDELAY_SEC * 1000000) - 2000000;
+
+	if ( wait <= 0 )
+		wait = 1000000;
+
+	while(!sthread_isterminated(sthread)) {
+		channelio_mcp23008_iterate();
+		usleep(wait);
+	}
 }
 
 void channelio_gpio_monitor_execute(void *user_data, void *sthread) {
@@ -896,7 +934,10 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi, unsigned int time
 		} else {
 
 			if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
+				lck_lock(gpio_value->lck);
 				mcp23008_gpio_set_value(channel->mcp23008.port, !hi);
+				gpio_value->value = hi == 0 ? 0 : 1;
+				lck_unlock(gpio_value->lck);
 			} else {
 				lck_lock(gpio_value->lck);
 				gpio_value->value = hi == 0 ? 0 : 1;
