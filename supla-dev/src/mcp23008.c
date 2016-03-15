@@ -31,9 +31,16 @@ char mcp23008_gpio_get_value(unsigned char port_number) {
 
 char mcp23008_gpio_port_init(unsigned char port_number, unsigned char in, char value) {
 
-	pinMode(MCP23008_PIN_START + port_number, in ? INPUT : OUTPUT);
+	int port = MCP23008_PIN_START + port_number;
+
+	pinMode(port, in ? INPUT : OUTPUT);
+
+	if ( in && value )
+		pullUpDnControl(port, PUD_UP);
+
 	if ( !in )
 		digitalWrite(MCP23008_PIN_START + port_number, value);
+
 	return 0;
 }
 
