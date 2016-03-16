@@ -25,6 +25,8 @@ static int decode_channel_type(const char* type) {
 
 	if ( strcasecmp(type, "SENSORNO") == 0 ) {
 		return SUPLA_CHANNELTYPE_SENSORNO;
+	} else  if ( strcasecmp(type, "SENSORNC") == 0 ) {
+		return SUPLA_CHANNELTYPE_SENSORNC;
 	} else 	if ( strcasecmp(type, "RELAYHFD4") == 0 ) {
 		return SUPLA_CHANNELTYPE_RELAYHFD4;
 	} else 	if ( strcasecmp(type, "RELAYG5LA1A") == 0 ) {
