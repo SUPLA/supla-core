@@ -128,7 +128,8 @@ void channelio_mcp23008_execute(void *user_data, void *sthread);
 
 char channelio_gpio_in(int type) {
 
-	if ( type == SUPLA_CHANNELTYPE_SENSORNO )
+	if ( type == SUPLA_CHANNELTYPE_SENSORNO ||
+	     type == SUPLA_CHANNELTYPE_SENSORNC )
 		return 1;
 
 	return 0;
@@ -220,6 +221,7 @@ char channelio_allowed_type(int type) {
 	switch(type) {
 	case SUPLA_CHANNELTYPE_RELAYHFD4:
 	case SUPLA_CHANNELTYPE_SENSORNO:
+	case SUPLA_CHANNELTYPE_SENSORNC:
 	case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
 	case SUPLA_CHANNELTYPE_RELAYG5LA1A:
 	case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
@@ -570,13 +572,15 @@ char channelio_get_cvalue(TDeviceChannel *channel, char value[SUPLA_CHANNELVALUE
 	if ( channel ) {
 
 		if ( channel->type == SUPLA_CHANNELTYPE_SENSORNO
+			 || channel->type == SUPLA_CHANNELTYPE_SENSORNC
 			 || channel->type == SUPLA_CHANNELTYPE_RELAYHFD4
 			 || channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A ) {
 
 			lck_lock(channel->gpio1_value.lck);
 			value[0] = channel->gpio1_value.value;
 			if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008
-			     && channel->type == SUPLA_CHANNELTYPE_SENSORNO ) {
+			     && (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
+				 channel->type == SUPLA_CHANNELTYPE_SENSORNC) ) {
 				value[0] = channel->mcp23008.gpio.value;
 			}
 			lck_unlock(channel->gpio1_value.lck);
@@ -785,8 +789,10 @@ void channelio_mcp23008_iterate(void) {
 	int a;
 	for(a=0;a<cio->channel_count;a++) {
 		TDeviceChannel *ch = &cio->channels[a];
-		if ( ch->type == SUPLA_CHANNELTYPE_SENSORNO ) {
+		if ( ch->type == SUPLA_CHANNELTYPE_SENSORNO ||
+		     ch->type == SUPLA_CHANNELTYPE_SENSORNC ) {
 			unsigned char val = mcp23008_gpio_get_value(ch->mcp23008.port);
+			ch->type == SUPLA_CHANNELTYPE_SENSORNC ? val = !val: val;
 			if ( ch->mcp23008.gpio.value != val ) {
 				ch->mcp23008.gpio.value = val;
 				channelio_raise_valuechanged(ch);
