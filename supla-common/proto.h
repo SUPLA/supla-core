@@ -2,7 +2,7 @@
  ============================================================================
  Name        : proto.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Version     : 1.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -42,7 +42,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 3
+#define SUPLA_PROTO_VERSION                 4
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #ifdef __AVR__
@@ -131,17 +131,27 @@ extern "C" {
 #define SUPLA_CHANNELVALUE_SIZE                    8
 
 #define SUPLA_CHANNELTYPE_SENSORNO                 1000
+#define SUPLA_CHANNELTYPE_SENSORNC                 1010  // ver. >= 4
+#define SUPLA_CHANNELTYPE_CALLBUTTON               1500  // ver. >= 4
 #define SUPLA_CHANNELTYPE_RELAYHFD4                2000
 #define SUPLA_CHANNELTYPE_RELAYG5LA1A              2010
 #define SUPLA_CHANNELTYPE_2XRELAYG5LA1A            2020
 #define SUPLA_CHANNELTYPE_RELAY                    2900
 #define SUPLA_CHANNELTYPE_THERMOMETERDS18B20       3000
+#define SUPLA_CHANNELTYPE_DHT11                    3010  // ver. >= 4
+#define SUPLA_CHANNELTYPE_DHT22                    3020  // ver. >= 4
+#define SUPLA_CHANNELTYPE_AM2302                   3030  // ver. >= 4
+#define SUPLA_CHANNELTYPE_DIMMER                   4000  // ver. >= 4
+#define SUPLA_CHANNELTYPE_RGBLED                   4010  // ver. >= 4
+#define SUPLA_CHANNELTYPE_DIMMERANDRGBLED          4020  // ver. >= 4
 
 #define SUPLA_CHANNELFNC_NONE                               0
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK         10
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGATE                20
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR          30
 #define SUPLA_CHANNELFNC_THERMOMETER                       40
+#define SUPLA_CHANNELFNC_HUMIDITY                          42
+#define SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE            45
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY             50
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_GATE                60
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR          70
@@ -152,6 +162,9 @@ extern "C" {
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER      120
 #define SUPLA_CHANNELFNC_POWERSWITCH                      130
 #define SUPLA_CHANNELFNC_LIGHTSWITCH                      140
+#define SUPLA_CHANNELFNC_RING                             150
+#define SUPLA_CHANNELFNC_ALARM                            160
+#define SUPLA_CHANNELFNC_NOTIFICATION                     170
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK         0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE                0x0002
