@@ -265,7 +265,7 @@ char gpio_port_init(unsigned char port_number, unsigned char in, char value) {
 
      if ( st_file_exists(gpio_get_file(buffer, port_number, val_str)) == 0 ) {
 
-         supla_log(LOG_ERR, "Can't create GPIO port. Port number %d", port_number);
+         supla_log(LOG_ERR, "GPIO %d does not exist.", port_number);
          return 0;
      }
 

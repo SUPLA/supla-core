@@ -211,7 +211,8 @@ char channelio_allowed_type(int type) {
 
 void channelio_gpio_port_init(TDeviceChannel *channel, TChannelGpioPortValue *gpio_value, unsigned char number, char in) {
 
-	gpio_port_init(number, in, 0);
+	if ( gpio_port_init(number, in, 0) == 0 )
+		return;
 
 	if ( in == 1 ) {
 
@@ -385,7 +386,15 @@ void channelio_channel_init(void) {
 
 #ifndef __SINGLE_THREAD
 	 cio->w1_sthread = sthread_simple_run(channelio_w1_execute, NULL, 0);
-	 channelio_start_gpio_thread(NULL, channelio_gpio_monitor_execute, 0, 0, 0);
+
+		lck_lock(cio->wl_lck);
+
+		if ( cio->watch_list_count > 0 ) {
+			channelio_start_gpio_thread(NULL, channelio_gpio_monitor_execute, 0, 0, 0);
+		}
+
+		lck_unlock(cio->wl_lck);
+
 #endif
 
 }
@@ -687,6 +696,7 @@ void channelio_gpio_iterate(void) {
 		gpio_wait(cio->watch_list, cio->watch_list_count, 100, channelio_gpio_on_portvalue);
 		channelio_gpio_set_timed_lo_value();
         #else
+
 		gpio_wait(cio->watch_list, cio->watch_list_count, 5000000, channelio_gpio_on_portvalue);
         #endif
 	}
