@@ -8,7 +8,25 @@
  */
 
 
-#include <stdio.h>
+#ifndef __MCP23008
+
+char mcp23008_gpio_set_value(unsigned char port_number, char value) {
+	return 0;
+}
+
+char mcp23008_gpio_get_value(unsigned char port_number) {
+	return 0;
+}
+
+char mcp23008_gpio_port_init(unsigned char port_number, unsigned char in, char value) {
+	return 0;
+}
+
+char mcp23008_init(unsigned char reset, unsigned char addr ) {
+	return 0;
+}
+#else
+
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
 #include <mcp23008.h>
@@ -66,3 +84,5 @@ char mcp23008_init(unsigned char reset, unsigned char addr ) {
 	initialized = 1;
 	return 0;
 }
+
+#endif
