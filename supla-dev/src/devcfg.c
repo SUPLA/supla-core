@@ -14,6 +14,7 @@
 #include "tools.h"
 #include "log.h"
 #include "channel-io.h"
+#include "mcp23008.h"
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 
@@ -24,6 +25,8 @@ static int decode_channel_type(const char* type) {
 
 	if ( strcasecmp(type, "SENSORNO") == 0 ) {
 		return SUPLA_CHANNELTYPE_SENSORNO;
+	} else  if ( strcasecmp(type, "SENSORNC") == 0 ) {
+		return SUPLA_CHANNELTYPE_SENSORNC;
 	} else 	if ( strcasecmp(type, "RELAYHFD4") == 0 ) {
 		return SUPLA_CHANNELTYPE_RELAYHFD4;
 	} else 	if ( strcasecmp(type, "RELAYG5LA1A") == 0 ) {
@@ -37,6 +40,14 @@ static int decode_channel_type(const char* type) {
 	}
 
 	return atoi(type);
+}
+
+static int decode_channel_driver(const char* type) {
+
+	if ( strcasecmp(type, "mcp23008") == 0 ) {
+		return SUPLA_CHANNELDRIVER_MCP23008;
+	}
+	return 0;
 }
 
 void devcfg_channel_cfg(const char* section, const char* name, const char* value) {
@@ -63,7 +74,20 @@ void devcfg_channel_cfg(const char* section, const char* name, const char* value
 		channelio_set_gpio2(number, atoi(value) % 255);
 	} else if ( strcasecmp(name, "w1") == 0  && strlen(value) > 0 ) {
 		channelio_set_w1(number, value);
+	} else if ( strcasecmp(name, "driver") == 0 ) {
+		channelio_set_mcp23008_driver(number, decode_channel_driver(value));
+	} else if ( strcasecmp(name, "mcp_addr") == 0 ) {
+		channelio_set_mcp23008_addr(number, strtol(value, NULL, 16));
+	} else if ( strcasecmp(name, "mcp_reset") == 0 ) {
+		channelio_set_mcp23008_reset(number,  atoi(value) % 255 );
+	} else if ( strcasecmp(name, "mcp_gpio_dir") == 0 ) {
+		channelio_set_mcp23008_gpio_dir(number,  atoi(value) % 255 );
+	} else if ( strcasecmp(name, "mcp_gpio_val") == 0 ) {
+		channelio_set_mcp23008_gpio_val(number,  atoi(value) % 255 );
+	} else if ( strcasecmp(name, "mcp_gpio_port") == 0 ) {
+		channelio_set_mcp23008_gpio_port(number,  atoi(value) % MCP23008_MAX_GPIO );
 	}
+
 }
 
 unsigned char devcfg_init(int argc, char* argv[]) {

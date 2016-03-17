@@ -145,6 +145,8 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_RGBLED                   4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED          4020  // ver. >= 4
 
+#define SUPLA_CHANNELDRIVER_MCP23008               2
+
 #define SUPLA_CHANNELFNC_NONE                               0
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK         10
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEGATE                20
