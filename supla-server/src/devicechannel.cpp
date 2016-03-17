@@ -55,6 +55,10 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type, int Fun
 	this->Param3 = Param3;
 
 	memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+	if ( Type == SUPLA_CHANNELTYPE_SENSORNC ) {
+		this->value[0] = 1;
+	}
 }
 
 
@@ -82,6 +86,7 @@ void supla_device_channel::getDouble(double *Value) {
 
 	switch(Type) {
 	case SUPLA_CHANNELTYPE_SENSORNO:
+	case SUPLA_CHANNELTYPE_SENSORNC:
 		*Value = this->value[0] == 1 ? 1 : 0;
 		break;
 	case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
@@ -103,6 +108,10 @@ void supla_device_channel::getChar(char *Value) {
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 	memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
+
+    if ( Type == SUPLA_CHANNELTYPE_SENSORNC ) {
+    	this->value[0] = this->value[0] == 0 ? 1 : 0;
+    }
 
 }
 

@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	void *datalogger_loop_t = NULL;
 
 	//INIT BLOCK
-	supla_log(LOG_DEBUG, "Protocol v%d", SUPLA_PROTO_VERSION);
+	supla_log(LOG_DEBUG, "Protocol v%i", SUPLA_PROTO_VERSION);
 
 	if ( svrcfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;
