@@ -3,7 +3,7 @@
 
 
 typedef void (* key_function)(void);
-typedef void (* supla_intr_handler)(uint32 gpio_status);
+typedef char (* supla_intr_handler)(uint32 gpio_status);
 
 struct single_key_param {
     uint8 key_level;

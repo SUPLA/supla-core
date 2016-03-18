@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla_esp_devconn.c
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Version     : 1.2
  Copyright   : GPLv2
  ============================================================================
 */
@@ -260,15 +260,38 @@ void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 
-	char v = new_value->value[0] == 0 ? 0 : 1;
+	char v = new_value->value[0];
 
     #ifdef WIFISOCKET
-	int port = RELAY1_PORT;
-    #elif defined(GATEMODULE)
-	int port = new_value->ChannelNumber == 0 ? RELAY1_PORT : RELAY2_PORT;
+		int port = RELAY1_PORT;
+	#elif defined(GATEMODULE)
+		int port = new_value->ChannelNumber == 0 ? RELAY1_PORT : RELAY2_PORT;
     #endif
 
-	char Success = _supla_esp_channel_set_value(port, v, new_value->ChannelNumber);
+    #if defined(RSMODULE)
+
+		char Success = 0;
+		char s1, s2, v1, v2;
+
+        v1 = 0;
+        v2 = 0;
+
+		if ( v == 1 ) {
+			v1 = 1;
+			v2 = 0;
+		} else if ( v == 2 ) {
+			v1 = 0;
+			v2 = 1;
+		}
+
+		s1 = _supla_esp_channel_set_value(RELAY1_PORT, v1, new_value->ChannelNumber);
+		s2 = _supla_esp_channel_set_value(RELAY2_PORT, v2, new_value->ChannelNumber);
+		Success = s1 != 0 || s2 != 0;
+
+    #else
+		char Success = _supla_esp_channel_set_value(port, v, new_value->ChannelNumber);
+    #endif
+
 	srpc_ds_async_set_channel_result(srpc, new_value->ChannelNumber, new_value->SenderID, Success);
 
 	#ifdef GATEMODULE
@@ -401,6 +424,31 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			double temp;
 			supla_ds18b20_get_temp(&temp);
 			memcpy(srd.channels[4].value, &temp, sizeof(double));
+
+#elif defined(RSMODULE)
+
+			srd.channel_count = 3;
+			srd.channels[0].Number = 0;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+			srd.channels[0].FuncList =  SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEROLLERSHUTTER;
+			srd.channels[0].Default = 0;
+			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT) ? 1 : ( supla_esp_gpio_is_hi(RELAY2_PORT) ? 2 : 0 ) ;
+
+			srd.channels[1].Number = 1;
+			srd.channels[1].Type = SUPLA_CHANNELTYPE_SENSORNO;
+			srd.channels[1].FuncList = 0;
+			srd.channels[1].Default = 0;
+			srd.channels[1].value[0] = 0;
+
+			// TEMPERATURE_CHANNEL
+			srd.channels[2].Number = 2;
+			srd.channels[2].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+			srd.channels[2].FuncList = 0;
+			srd.channels[2].Default = 0;
+
+			double temp;
+			supla_ds18b20_get_temp(&temp);
+			memcpy(srd.channels[2].value, &temp, sizeof(double));
 
 #endif
 

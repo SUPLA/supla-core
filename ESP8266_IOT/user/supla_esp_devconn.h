@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla_esp_devconn.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Version     : 1.2
  Copyright   : GPLv2
  ============================================================================
 */

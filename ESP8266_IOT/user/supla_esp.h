@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla_esp.h
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Version     : 1.2
  Copyright   : GPLv2
  ============================================================================
 */
@@ -14,6 +14,7 @@
 
 #define WIFISOCKET
 //#define GATEMODULE
+//#define RSMODULE
 //#define WROOM
 
 #ifdef WIFISOCKET
@@ -22,6 +23,9 @@
 #elif defined(GATEMODULE)
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
 	#define TEMPERATURE_CHANNEL 4
+#elif defined(RSMODULE)
+	#define DEVICE_NAME "SUPLA-RS-MODULE"
+	#define TEMPERATURE_CHANNEL 3
 #endif
 
 
@@ -56,7 +60,7 @@
 #define BTN_PORT         5
 
 
-#elif defined(GATEMODULE)
+#elif defined(GATEMODULE) || defined(RSMODULE)
 
 #ifdef WROOM
 
@@ -80,6 +84,8 @@
 #define INPUT_PORT1      12
 #define INPUT_PORT2      14
 #endif
+
+
 
 #endif
 

@@ -15,6 +15,9 @@
 #include "supla-dev/proto.h"
 #include "supla_esp.h"
 
+#define BTN_TYPE_BUTTON       0
+#define BTN_TYPE_SWITCH       1
+
 typedef struct {
 
 	char TAG[6];
@@ -24,6 +27,7 @@ typedef struct {
     char LocationPwd[SUPLA_LOCATION_PWD_MAXSIZE];
     char WIFI_SSID[WIFI_SSID_MAXSIZE];
     char WIFI_PWD[WIFI_PWD_MAXSIZE];
+    char ButtonType;
 
 }SuplaEspCfg;
 

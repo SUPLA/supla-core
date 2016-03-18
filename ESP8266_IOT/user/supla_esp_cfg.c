@@ -40,7 +40,7 @@ supla_esp_cfg_save(SuplaEspCfg *cfg) {
 char ICACHE_FLASH_ATTR
 supla_esp_cfg_init(void) {
 
-	char TAG[6] = {'S','U','P','L','A', 1};
+	char TAG[6] = {'S','U','P','L','A', 2};
 	char mac[6];
 	int a;
 
@@ -59,6 +59,7 @@ supla_esp_cfg_init(void) {
 	supla_esp_cfg.LocationPwd[0] = 0;
 	supla_esp_cfg.WIFI_PWD[0] = 0;
 	supla_esp_cfg.WIFI_SSID[0] = 0;
+	supla_esp_cfg.ButtonType = BTN_TYPE_BUTTON;
 
 	os_get_random(supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 

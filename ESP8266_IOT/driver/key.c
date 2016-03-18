@@ -134,12 +134,13 @@ key_intr_handler(struct keys_param *keys)
     uint8 i;
     uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
 
-    if ( keys->handler )
-    	keys->handler(gpio_status);
+    if ( keys->handler
+    		&& keys->handler(gpio_status) == 1 ) return;
 
     for (i = 0; i < keys->key_num; i++) {
         if (gpio_status & BIT(keys->single_key[i]->gpio_id)) {
             //disable interrupt
+
             gpio_pin_intr_state_set(GPIO_ID_PIN(keys->single_key[i]->gpio_id), GPIO_PIN_INTR_DISABLE);
 
             //clear interrupt status
