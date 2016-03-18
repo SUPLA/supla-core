@@ -792,7 +792,6 @@ void channelio_mcp23008_iterate(void) {
 		if ( ch->type == SUPLA_CHANNELTYPE_SENSORNO ||
 		     ch->type == SUPLA_CHANNELTYPE_SENSORNC ) {
 			unsigned char val = mcp23008_gpio_get_value(ch->mcp23008.port);
-			ch->type == SUPLA_CHANNELTYPE_SENSORNC ? val = !val: val;
 			if ( ch->mcp23008.gpio.value != val ) {
 				ch->mcp23008.gpio.value = val;
 				channelio_raise_valuechanged(ch);
