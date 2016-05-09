@@ -142,7 +142,7 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DHT22                    3020  // ver. >= 4
 #define SUPLA_CHANNELTYPE_AM2302                   3030  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMER                   4000  // ver. >= 4
-#define SUPLA_CHANNELTYPE_RGBLED                   4010  // ver. >= 4
+#define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER         4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED          4020  // ver. >= 4
 
 #define SUPLA_CHANNELDRIVER_MCP23008               2
@@ -167,6 +167,9 @@ extern "C" {
 #define SUPLA_CHANNELFNC_RING                             150
 #define SUPLA_CHANNELFNC_ALARM                            160
 #define SUPLA_CHANNELFNC_NOTIFICATION                     170
+#define SUPLA_CHANNELFNC_DIMMER                           180
+#define SUPLA_CHANNELFNC_RGBLIGHTING                      190
+#define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING             200
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK         0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE                0x0002
