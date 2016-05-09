@@ -34,6 +34,9 @@ protected:
     static char find_device_byguid(void *ptr, void *GUID);
     static char find_client_byid(void *ptr, void *ID);
     static char find_client_byguid(void *ptr, void *GUID);
+    static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value, char Type);
+
+    bool get_channel_double_value(int DeviceID, int ChannelID, double *Value, char Type);
 
     void reconnect();
 
@@ -48,6 +51,8 @@ public:
     static bool reconnect(int UserID);
     static bool is_device_online(int UserID, int DeviceID);
     static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value);
+    static bool get_channel_temperature_value(int UserID, int DeviceID, int ChannelID, double *Value);
+    static bool get_channel_humidity_value(int UserID, int DeviceID, int ChannelID, double *Value);
     static int user_count(void);
     static supla_user *get_user(int idx);
 
@@ -58,6 +63,9 @@ public:
     bool getClientName(int ClientID, char *buffer, int size);
 
     bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
+    bool get_channel_temperature_value(int DeviceID, int ChannelID, double *Value);
+    bool get_channel_humidity_value(int DeviceID, int ChannelID, double *Value);
+
     bool is_device_online(int DeviceID);
     bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value, char *online);
     bool set_device_channel_value(int SenderID, int DeviceID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -65,7 +73,7 @@ public:
     void on_channel_value_changed(int DeviceId, int ChannelId = 0);
 
     void call_event(TSC_SuplaEvent *event);
-    void get_temperatures(void *tarr);
+    void get_temp_and_humidity(void *tarr);
 
 	supla_user(int UserID);
 	virtual ~supla_user();

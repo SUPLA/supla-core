@@ -23,6 +23,8 @@ const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
 const char cmd_user_reconnect[] = "USER-RECONNECT:";
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
+const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
+const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
 	this->sfd = sfd;
@@ -63,6 +65,41 @@ void svr_ipcctrl::send_result(const char *result, double i) {
 	snprintf(buffer, 255, "%s%f\n", result, i);
 	send(sfd, buffer, strlen(buffer), 0);
 
+}
+
+void svr_ipcctrl::cmd_get_double(const char *cmd, char Type) {
+
+	int UserID = 0;
+	int DeviceID = 0;
+	int ChannelID = 0;
+	double Value;
+
+	sscanf (&buffer[strlen(cmd)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+
+	if ( UserID
+		 && DeviceID
+		 && ChannelID ) {
+
+		bool r = 0;
+
+		switch(Type) {
+		case 0:
+			r = supla_user::get_channel_double_value(UserID, DeviceID, ChannelID, &Value);
+			break;
+		case 1:
+			r = supla_user::get_channel_temperature_value(UserID, DeviceID, ChannelID, &Value);
+			break;
+		case 2:
+			r = supla_user::get_channel_humidity_value(UserID, DeviceID, ChannelID, &Value);
+			break;
+		}
+
+		if ( r )
+			send_result("VALUE:", Value);
+
+	}
+
+	send_result("UNKNOWN:", ChannelID);
 }
 
 void svr_ipcctrl::execute(void *sthread) {
@@ -112,23 +149,16 @@ void svr_ipcctrl::execute(void *sthread) {
 					}
 				} else if ( match_command(cmd_get_double_value, len) ) {
 
-					int UserID = 0;
-					int DeviceID = 0;
-					int ChannelID = 0;
-					double Value;
+					cmd_get_double(cmd_get_double_value, 0);
 
-					sscanf (&buffer[strlen(cmd_get_double_value)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+				} else if ( match_command(cmd_get_temperature_value, len) ) {
 
-					if ( UserID
-						 && DeviceID
-						 && ChannelID
-						 && supla_user::get_channel_double_value(UserID, DeviceID, ChannelID, &Value) ) {
+					cmd_get_double(cmd_get_temperature_value, 1);
 
-						send_result("VALUE:", Value);
+				} else if ( match_command(cmd_get_humidity_value, len) ) {
 
-					} else {
-						send_result("UNKNOWN:", ChannelID);
-					}
+					cmd_get_double(cmd_get_humidity_value, 2);
+
 				}
 
 

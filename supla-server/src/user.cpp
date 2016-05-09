@@ -212,16 +212,25 @@ bool supla_user::is_device_online(int UserID, int DeviceID) {
 	return result;
 }
 
-bool supla_user::get_channel_double_value(int DeviceID, int ChannelID, double *Value) {
+bool supla_user::get_channel_double_value(int DeviceID, int ChannelID, double *Value, char Type) {
 
 	bool result = false;
 
 	safe_array_lock(device_arr);
 
 	supla_device *device = find_device(DeviceID);
-	if ( device != NULL
-		 && device->get_channel_double_value(ChannelID, Value) ) {
-		result = true;
+	if ( device != NULL ) {
+		switch(Type) {
+		case 0:
+			result = device->get_channel_double_value(ChannelID, Value) == 1;
+			break;
+		case 1:
+			result = device->get_channel_temperature_value(ChannelID, Value) == 1;
+			break;
+		case 2:
+			result = device->get_channel_humidity_value(ChannelID, Value) == 1;
+			break;
+		}
 	}
 
 	safe_array_unlock(device_arr);
@@ -229,7 +238,19 @@ bool supla_user::get_channel_double_value(int DeviceID, int ChannelID, double *V
 	return result;
 }
 
-bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value) {
+bool supla_user::get_channel_double_value(int DeviceID, int ChannelID, double *Value) {
+	return get_channel_double_value(DeviceID, ChannelID, Value, 0);
+}
+
+bool supla_user::get_channel_temperature_value(int DeviceID, int ChannelID, double *Value) {
+	return get_channel_double_value(DeviceID, ChannelID, Value, 1);
+}
+
+bool supla_user::get_channel_humidity_value(int DeviceID, int ChannelID, double *Value) {
+	return get_channel_double_value(DeviceID, ChannelID, Value, 2);
+}
+
+bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value, char Type) {
 
 	bool result = false;
 
@@ -237,14 +258,36 @@ bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelI
 
 	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
-	if ( user
-		  && user->get_channel_double_value(DeviceID, ChannelID, Value) == true )
-		result = true;
+	if ( user ) {
+		switch(Type) {
+		case 0:
+			result = user->get_channel_double_value(DeviceID, ChannelID, Value) == true;
+			break;
+		case 1:
+			result = user->get_channel_temperature_value(DeviceID, ChannelID, Value) == true;
+			break;
+		case 2:
+			result = user->get_channel_humidity_value(DeviceID, ChannelID, Value) == true;
+			break;
+		}
+	}
 
 	safe_array_unlock(supla_user::user_arr);
 
 	return result;
 
+}
+
+bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value) {
+     return get_channel_double_value(UserID, DeviceID, ChannelID, Value, 0);
+}
+
+bool supla_user::get_channel_temperature_value(int UserID, int DeviceID, int ChannelID, double *Value) {
+    return get_channel_double_value(UserID, DeviceID, ChannelID, Value, 1);
+}
+
+bool supla_user::get_channel_humidity_value(int UserID, int DeviceID, int ChannelID, double *Value) {
+    return get_channel_double_value(UserID, DeviceID, ChannelID, Value, 2);
 }
 
 supla_device *supla_user::device_by_channel_id(supla_device *suspect, int ChannelID) {
@@ -372,19 +415,20 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
 
 }
 
-void supla_user::get_temperatures(void *tarr) {
+void supla_user::get_temp_and_humidity(void *tarr) {
 
 	int a;
 
 	safe_array_lock(device_arr);
 
 	for(a=0;a<safe_array_count(device_arr);a++) {
-		((supla_device *)safe_array_get(device_arr, a))->get_temperatures(tarr);
+		((supla_device *)safe_array_get(device_arr, a))->get_temp_and_humidity(tarr);
 	}
 
 	safe_array_unlock(device_arr);
 
 }
+
 
 void supla_user::reconnect() {
 

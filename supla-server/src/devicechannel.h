@@ -12,16 +12,20 @@
 
 #include "proto.h"
 
-class supla_channel_temp {
+class supla_channel_temphum {
 
 private:
 	int ChannelId;
+	char TempAndHumidity;
 	double Temperature;
+	double Humidity;
 public:
-	supla_channel_temp(int ChannelId, double Temperature);
+	supla_channel_temphum(char TempAndHumidity, int ChannelId, double Temperature, double Humidity);
 
 	int getChannelId(void);
+	char isTempAndHumidity(void);
 	double getTemperature(void);
+	double getHumidity(void);
 
 	static void free(void *tarr);
 };
@@ -44,6 +48,7 @@ public:
 	int getId(void);
 	int getNumber(void);
 	int getFunc(void);
+	int getType(void);
 	bool isValueWritable(void);
 	unsigned int getValueDuration(void);
 	void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -52,6 +57,7 @@ public:
 	void getChar(char *Value);
 	int master_channel(void);
 	int slave_channel(void);
+	supla_channel_temphum *getTempHum(void);
 };
 
 class supla_device_channels {
@@ -75,6 +81,9 @@ public:
 	void add_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3);
 	bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
 	bool get_channel_double_value(int ChannelID, double *Value);
+	supla_channel_temphum* get_channel_temp_and_humidity_value(int ChannelID);
+	bool get_channel_temperature_value(int ChannelID, double *Value);
+	bool get_channel_humidity_value(int ChannelID, double *Value);
 	bool get_channel_char_value(int ChannelID, char *Value);
 	unsigned int get_channel_value_duration(int ChannelID);
 	int get_channel_func(int ChannelID);
@@ -89,7 +98,7 @@ public:
     bool channel_exists(int ChannelID);
 	void load(int DeviceID);
 
-	void get_temperatures(void *tarr);
+	void get_temp_and_humidity(void *tarr);
 };
 
 #endif /* DEVICECHANNEL_H_ */

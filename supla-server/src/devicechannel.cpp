@@ -17,26 +17,36 @@
 #include "srpc.h"
 
 char supla_channel_tarr_clean(void *ptr) {
-	delete (supla_channel_temp*)ptr;
+	delete (supla_channel_temphum*)ptr;
 	return 1;
 }
 
-supla_channel_temp::supla_channel_temp(int ChannelId, double Temperature) {
+supla_channel_temphum::supla_channel_temphum(char TempAndHumidity, int ChannelId, double Temperature, double Humidity) {
 
 	this->ChannelId = ChannelId;
+	this->TempAndHumidity = TempAndHumidity;
 	this->Temperature = Temperature;
-
+	this->Humidity = Humidity;
 }
 
-int supla_channel_temp::getChannelId(void) {
+int supla_channel_temphum::getChannelId(void) {
 	return ChannelId;
 }
 
-double supla_channel_temp::getTemperature(void) {
+char supla_channel_temphum::isTempAndHumidity(void) {
+	return TempAndHumidity;
+}
+
+double supla_channel_temphum::getTemperature(void) {
 	return Temperature;
 }
 
-void supla_channel_temp::free(void *tarr) {
+double supla_channel_temphum::getHumidity(void) {
+	return Humidity;
+}
+
+
+void supla_channel_temphum::free(void *tarr) {
 
 	safe_array_clean(tarr, supla_channel_tarr_clean);
 	safe_array_free(tarr);
@@ -72,6 +82,10 @@ int supla_device_channel::getNumber(void) {
 
 int supla_device_channel::getFunc(void) {
 	return Func;
+}
+
+int supla_device_channel::getType(void) {
+	return Type;
 }
 
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -183,6 +197,50 @@ int supla_device_channel::master_channel(void) {
 	}
 
 	return 0;
+}
+
+supla_channel_temphum *supla_device_channel::getTempHum(void) {
+
+	double temp;
+
+
+    if ( getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20
+	 	&& getFunc() == SUPLA_CHANNELFNC_THERMOMETER  ) {
+
+			getDouble(&temp);
+
+			if ( temp > -273 && temp <= 1000 ) {
+				return new supla_channel_temphum(0, getId(), temp, 0);
+			}
+
+ 	} else if ( ( getType() == SUPLA_CHANNELTYPE_DHT11
+		 			 || getType() == SUPLA_CHANNELTYPE_DHT22
+					 || getType() == SUPLA_CHANNELTYPE_AM2302 )
+			 	&& ( getFunc() == SUPLA_CHANNELFNC_THERMOMETER
+					 || getFunc() == SUPLA_CHANNELFNC_HUMIDITY
+					 || getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE ) ) {
+
+			int n;
+			char value[SUPLA_CHANNELVALUE_SIZE];
+			double humidity;
+
+			getValue(value);
+			memcpy(&n, value, 4);
+			temp = n/1000.00;
+
+			memcpy(&n, &value[4], 4);
+			humidity = n/1000.00;
+
+			if ( temp > -273
+				 && temp <= 1000
+				 && humidity >= 0
+				 && humidity <= 100 ) {
+
+				return new supla_channel_temphum(1, getId(), temp, humidity);
+			}
+	}
+
+	return NULL;
 }
 
 // ---------------------------------------------
@@ -308,6 +366,58 @@ bool supla_device_channels::get_channel_double_value(int ChannelID, double *Valu
 
 	return result;
 
+}
+
+supla_channel_temphum* supla_device_channels::get_channel_temp_and_humidity_value(int ChannelID) {
+
+	supla_channel_temphum *result = NULL;
+
+	if ( ChannelID ) {
+
+		safe_array_lock(arr);
+		supla_device_channel *channel = find_channel(ChannelID);
+
+		if ( channel ) {
+			result = channel->getTempHum();
+		}
+
+		safe_array_unlock(arr);
+
+	}
+
+	return result;
+
+}
+
+bool supla_device_channels::get_channel_temperature_value(int ChannelID, double *Value) {
+
+	supla_channel_temphum *result = get_channel_temp_and_humidity_value(ChannelID);
+	if ( result ) {
+		*Value = result->getTemperature();
+		delete result;
+		return true;
+	}
+
+	return false;
+}
+
+bool supla_device_channels::get_channel_humidity_value(int ChannelID, double *Value) {
+
+	supla_channel_temphum *result = get_channel_temp_and_humidity_value(ChannelID);
+	if ( result ) {
+		if ( result->isTempAndHumidity() == 1 ) {
+
+			*Value = result->getHumidity();
+			delete result;
+			return true;
+
+		} else {
+			delete result;
+		}
+
+	}
+
+	return false;
 }
 
 bool supla_device_channels::get_channel_char_value(int ChannelID, char *Value) {
@@ -474,23 +584,21 @@ void supla_device_channels::set_device_channel_value(void *srpc, int SenderID, i
 
 }
 
-void supla_device_channels::get_temperatures(void *tarr) {
+void supla_device_channels::get_temp_and_humidity(void *tarr) {
 
 	int a;
-	double temp;
-
 	safe_array_lock(arr);
 
 	for(a=0;a<safe_array_count(arr);a++) {
 
 		supla_device_channel *channel = (supla_device_channel *)safe_array_get(arr, a);
-		if ( channel
-				&& channel->getFunc() == SUPLA_CHANNELFNC_THERMOMETER ) {
 
-			channel->getDouble(&temp);
-			if ( temp > -273 && temp <= 1000 ) {
-				safe_array_add(tarr, new supla_channel_temp(channel->getId(), temp));
-			}
+		if ( channel != NULL ) {
+
+			   supla_channel_temphum *temphum = channel->getTempHum();
+
+			   if ( temphum != NULL )
+				   safe_array_add(tarr, temphum);
 		}
 
 	}

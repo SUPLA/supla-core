@@ -36,8 +36,9 @@ public:
 	int master_channel(int ChannelID);
 	int slave_channel(int ChannelID);
 	bool get_channel_double_value(int ChannelID, double *Value);
-	void get_temperatures(void *tarr);
-
+	bool get_channel_temperature_value(int ChannelID, double *Value);
+	bool get_channel_humidity_value(int ChannelID, double *Value);
+	void get_temp_and_humidity(void *tarr);
 };
 
 #endif /* DEVICE_H_ */

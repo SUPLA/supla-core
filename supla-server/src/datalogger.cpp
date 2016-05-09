@@ -30,16 +30,20 @@ void supla_datalogger::log_temperature() {
 
 	while((user = supla_user::get_user(n)) != NULL) {
 		n++;
-		user->get_temperatures(tarr);
+		user->get_temp_and_humidity(tarr);
 	}
 
 	for(a=0;a<safe_array_count(tarr); a++) {
 
-		supla_channel_temp *sct = (supla_channel_temp *)safe_array_get(tarr, a);
-		db->add_temperature(sct->getChannelId(), sct->getTemperature());
+		supla_channel_temphum *sct = (supla_channel_temphum *)safe_array_get(tarr, a);
+
+		if ( sct->isTempAndHumidity() == 1 )
+			db->add_temperature_and_humidity(sct->getChannelId(), sct->getTemperature(), sct->getHumidity());
+		else
+			db->add_temperature(sct->getChannelId(), sct->getTemperature());
 	}
 
-	supla_channel_temp::free(tarr);
+	supla_channel_temphum::free(tarr);
 
 }
 

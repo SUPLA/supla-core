@@ -13,6 +13,8 @@
 #include "db.h"
 
 #define TEMPLOG_INTERVAL 600
+//#define TEMPLOG_INTERVAL 6
+
 
 class supla_datalogger {
 private:

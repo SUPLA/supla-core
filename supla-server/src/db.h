@@ -70,6 +70,7 @@ public:
 	void get_client_channels(int ClientID, int *DeviceID, supla_client_channels *channels);
 
 	void add_temperature(int ChannelID, double temperature);
+	void add_temperature_and_humidity(int ChannelID, double temperature, double humidity);
 
 };
 
