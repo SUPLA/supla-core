@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : supla_esp_gpio.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Version     : 1.2
  Copyright   : GPLv2
  ============================================================================

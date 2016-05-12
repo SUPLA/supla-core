@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : supla_esp_cfg.h
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Version     : 1.0
  Copyright   : GPLv2
  ============================================================================
