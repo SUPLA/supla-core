@@ -2,6 +2,12 @@
 
 
 case $1 in
+   "dht11_esp01")
+   ;;
+   "dht22_esp01")
+   ;;
+   "am2302_esp01")
+   ;;
    "thermometer_esp01")
    ;;
    "thermometer_esp01_ds_gpio0")
@@ -35,6 +41,9 @@ case $1 in
    echo "       build.sh BOARD_TYPE";
    echo "--------------------------";
    echo " Board types:             ";
+   echo "              dht11_esp01";
+   echo "              dht22_esp01";
+   echo "              am2302_esp01";
    echo "              thermometer_esp01";
    echo "              thermometer_esp01_ds_gpio0";
    echo "              wifisocket  ";

@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : supla_esp.h
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Author      : Przemyslaw Zygmunt przemek@supla.org
+ Version     : 1.3
  Copyright   : GPLv2
  ============================================================================
 */
@@ -26,7 +26,29 @@
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13); \
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14)
 
-#if defined(__BOARD_thermometer_esp01)
+#if defined(__BOARD_dht11_esp01)
+
+	#define DEVICE_NAME "SUPLA-DHT11-ESP01"
+	#define SENSOR_DHT11
+    #define TEMPERATURE_CHANNEL 0
+	#define BTN_PORT         0
+
+#elif defined(__BOARD_dht22_esp01)
+
+	#define DEVICE_NAME "SUPLA-DHT22-ESP01"
+	#define SENSOR_DHT22
+    #define TEMPERATURE_CHANNEL 0
+	#define BTN_PORT         0
+
+#elif defined(__BOARD_am2302_esp01)
+
+	#define DEVICE_NAME "SUPLA-AM2302-ESP01"
+	#define SENSOR_DHT22
+    #define TEMPERATURE_CHANNEL 0
+	#define BTN_PORT         0
+
+
+#elif defined(__BOARD_thermometer_esp01)
 
 	#define DEVICE_NAME "SUPLA-THERMOMETER-ESP01"
 	#define DS18B20
@@ -234,6 +256,8 @@
 
 #define ACTIVITY_TIMEOUT 10
 
-
+#if defined(SENSOR_DHT11) || defined(SENSOR_DHT22) || defined(SENSOR_AM2302)
+#define DHTSENSOR
+#endif
 
 #endif /* SUPLA_ESP_H_ */

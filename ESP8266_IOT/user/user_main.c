@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : user_main.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Version     : 1.0
  Copyright   : GPLv2
  ============================================================================
@@ -36,6 +36,9 @@ void user_init(void)
 		 supla_ds18b20_init();
      #endif
 
+     #ifdef DHTSENSOR
+		 supla_dht_init();
+     #endif
 
      if ( supla_esp_cfg.LocationID == 0
     		 || supla_esp_cfg.LocationPwd[0] == 0
@@ -51,6 +54,10 @@ void user_init(void)
     #ifdef DS18B20
 		supla_ds18b20_start();
     #endif
+
+	#ifdef DHTSENSOR
+		supla_dht_start();
+	#endif
 
 	supla_esp_devconn_start();
 

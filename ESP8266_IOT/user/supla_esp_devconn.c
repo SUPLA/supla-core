@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : supla_esp_devconn.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Version     : 1.2
  Copyright   : GPLv2
  ============================================================================
@@ -18,6 +18,8 @@
 
 #include "supla_esp_devconn.h"
 #include "supla_esp_cfg.h"
+#include "supla_ds18b20.h"
+#include "supla_dht.h"
 #include "supla-dev/srpc.h"
 #include "supla-dev/log.h"
 
@@ -374,24 +376,37 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.LocationID = supla_esp_cfg.LocationID;
 			ets_snprintf(srd.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s", supla_esp_cfg.LocationPwd);
 			ets_snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", DEVICE_NAME);
-			strcpy(srd.SoftVer, "1.3");
+			strcpy(srd.SoftVer, "1.4");
 			os_memcpy(srd.GUID, supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 
 			//supla_log(LOG_DEBUG, "LocationID=%i, LocationPWD=%s", srd.LocationID, srd.LocationPWD);
 
-#if defined(__BOARD_thermometer_esp01) || defined(__BOARD_thermometer_esp01_ds_gpio0)
+#if defined(__BOARD_dht11_esp01)  || \
+	defined(__BOARD_dht22_esp01)  || \
+    defined(__BOARD_am2302_esp01) || \
+	defined(__BOARD_thermometer_esp01) || \
+	defined(__BOARD_thermometer_esp01_ds_gpio0)
 
 
 		srd.channel_count = 1;
 
 		srd.channels[0].Number = 0;
-		srd.channels[0].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+
+		#ifdef __BOARD_dht11_esp01
+		  srd.channels[0].Type = SUPLA_CHANNELTYPE_DHT11;
+        #elif defined(__BOARD_dht22_esp01)
+		  srd.channels[0].Type = SUPLA_CHANNELTYPE_DHT22;
+        #elif defined(__BOARD_am2302_esp01)
+		  srd.channels[0].Type = SUPLA_CHANNELTYPE_AM2302;
+		#else
+		  srd.channels[0].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+
+
+        #endif
 		srd.channels[0].FuncList = 0;
 		srd.channels[0].Default = 0;
 
-		double temp;
-		supla_ds18b20_get_temp(&temp);
-		memcpy(srd.channels[0].value, &temp, sizeof(double));
+		supla_get_temp_and_humidity(srd.channels[0].value);
 
 
 #elif defined(__BOARD_wifisocket) || defined(__BOARD_wifisocket_esp01) || defined(__BOARD_wifisocket_54) || defined(__BOARD_gate_module_esp01) || defined(__BOARD_gate_module_esp01_ds)
@@ -426,9 +441,8 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				srd.channels[1].FuncList = 0;
 				srd.channels[1].Default = 0;
 
-				double temp;
-				supla_ds18b20_get_temp(&temp);
-				memcpy(srd.channels[1].value, &temp, sizeof(double));
+				supla_get_temp_and_humidity(srd.channels[1].value);
+
             #endif
 
 #elif defined(__BOARD_gate_module) || defined(__BOARD_gate_module_wroom) || defined(__BOARD_gate_module2_wroom)
@@ -473,9 +487,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				srd.channels[4].FuncList = 0;
 				srd.channels[4].Default = 0;
 
-				double temp;
-				supla_ds18b20_get_temp(&temp);
-				memcpy(srd.channels[4].value, &temp, sizeof(double));
+				supla_get_temp_and_humidity(srd.channels[4].value);
             #endif
 
 #elif defined(__BOARD_rs_module) || defined(__BOARD_rs_module_wroom) || defined(__BOARD_jangoe_rs)
@@ -505,9 +517,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				srd.channels[2].FuncList = 0;
 				srd.channels[2].Default = 0;
 
-				double temp;
-				supla_ds18b20_get_temp(&temp);
-				memcpy(srd.channels[2].value, &temp, sizeof(double));
+				supla_get_temp_and_humidity(srd.channels[2].value);
             #endif
 
 #elif defined(__BOARD_starter1_module_wroom)
@@ -540,9 +550,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				srd.channels[2].FuncList = 0;
 				srd.channels[2].Default = 0;
 
-				double temp;
-				supla_ds18b20_get_temp(&temp);
-				memcpy(srd.channels[2].value, &temp, sizeof(double));
+				supla_get_temp_and_humidity(srd.channels[2].value);
 			#endif
 
 
@@ -765,20 +773,21 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 }
 
 #ifdef TEMPERATURE_CHANNEL
-void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp) {
 
-	int t = temp;
+void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_humidity_changed(char humidity) {
 
 	if ( srpc != NULL
 		 && registered == 1 ) {
 
 		char value[SUPLA_CHANNELVALUE_SIZE];
-		memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-        memcpy(value, &temp, sizeof(double));
+
+		// Temperature or Humidity or ( Temperature and humidity )
+		supla_get_temp_and_humidity(value);
 
 		srpc_ds_async_channel_value_changed(srpc, TEMPERATURE_CHANNEL, value);
 	}
 
 }
+
 #endif
 
