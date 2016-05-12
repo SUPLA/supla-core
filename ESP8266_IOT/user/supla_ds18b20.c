@@ -18,7 +18,16 @@
 #include "supla_ds18b20.h"
 #include "supla-dev/log.h"
 
-static int supla_ds18b20_gpioPin = GPIO_ID_PIN(2);
+#ifdef DS18B20
+
+#ifdef W1_GPIO0
+  static int supla_ds18b20_gpioPin = GPIO_ID_PIN(0);
+#elif defined(W1_GPIO5)
+  static int supla_ds18b20_gpioPin = GPIO_ID_PIN(5);
+#else
+  static int supla_ds18b20_gpioPin = GPIO_ID_PIN(2);
+#endif
+
 static double supla_ds18b20_last_temp = -275;
 
 static ETSTimer supla_ds18b20_timer1;
@@ -35,8 +44,18 @@ static float supla_ds18b20_divider;
 // TODO: Add resolution setup
 
 void ICACHE_FLASH_ATTR supla_ds18b20_init(void) {
-    PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
-    PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
+
+	#ifdef W1_GPIO0
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
+		PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO0_U);
+    #elif defined(W1_GPIO5)
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5);
+		PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO5_U);
+    #else
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
+		PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
+    #endif
+
     GPIO_DIS_OUTPUT( supla_ds18b20_gpioPin );
 }
 
@@ -187,5 +206,7 @@ void supla_ds18b20_start(void)
 void ICACHE_FLASH_ATTR supla_ds18b20_get_temp(double *value) {
 	*value = supla_ds18b20_last_temp;
 }
+
+#endif
 
  

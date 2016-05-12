@@ -49,6 +49,12 @@ supla_esp_cfg_init(void) {
 	   if ( memcmp(supla_esp_cfg.TAG, TAG, 6) == 0 ) {
 
 		   supla_log(LOG_DEBUG, "CFG READ SUCCESS!");
+
+		   supla_log(LOG_DEBUG, "SSID: %s", supla_esp_cfg.WIFI_SSID);
+		   supla_log(LOG_DEBUG, "SVR: %s", supla_esp_cfg.Server);
+		   supla_log(LOG_DEBUG, "Location ID: %i", supla_esp_cfg.LocationID);
+		   supla_log(LOG_DEBUG, "BUTTON TYPE: %s", supla_esp_cfg.ButtonType == BTN_TYPE_BUTTON ? "button" : "switch");
+
 		   return 1;
 	   }
 	}

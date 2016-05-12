@@ -12,7 +12,9 @@
 
 #include "supla_esp.h"
 
+#ifdef DS18B20
 void ICACHE_FLASH_ATTR supla_ds18b20_init(void);
 void ICACHE_FLASH_ATTR supla_ds18b20_get_temp(double *value);
+#endif
 
 #endif

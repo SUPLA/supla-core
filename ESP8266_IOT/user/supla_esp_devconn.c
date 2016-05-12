@@ -24,9 +24,12 @@
 static ETSTimer supla_devconn_timer1;
 static ETSTimer supla_iterate_timer;
 
-#ifdef GATEMODULE
-static ETSTimer supla_relay1_timer;
-static ETSTimer supla_relay2_timer;
+#ifdef RELAY1_PORT
+	static ETSTimer supla_relay1_timer;
+#endif
+
+#ifdef RELAY2_PORT
+	static ETSTimer supla_relay2_timer;
 #endif
 
 static struct espconn ESPConn;
@@ -228,8 +231,10 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
 	char Success = 0;
 
-	supla_esp_gpio_hi(port, v);
-	Success = supla_esp_gpio_is_hi(port) == v;
+	char _v = v == 1 ? RELAY_HI_VALUE : RELAY_LO_VALUE;
+
+	supla_esp_gpio_hi(port, _v);
+	Success = supla_esp_gpio_is_hi(port) == _v;
 
 	if ( Success ) {
 
@@ -239,36 +244,37 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 	return Success;
 }
 
-#ifdef GATEMODULE
+#ifdef RELAY1_PORT
+	void ICACHE_FLASH_ATTR
+	supla_esp_relay1_timer_func(void *timer_arg) {
 
-void ICACHE_FLASH_ATTR
-supla_esp_relay1_timer_func(void *timer_arg) {
+		_supla_esp_channel_set_value(RELAY1_PORT, 0, 0);
 
-	_supla_esp_channel_set_value(RELAY1_PORT, 0, 0);
+	}
+#endif
 
-}
+#ifdef RELAY2_PORT
+	void ICACHE_FLASH_ATTR
+	supla_esp_relay2_timer_func(void *timer_arg) {
 
-void ICACHE_FLASH_ATTR
-supla_esp_relay2_timer_func(void *timer_arg) {
-
-	_supla_esp_channel_set_value(RELAY2_PORT, 0, 1);
-}
-
+		_supla_esp_channel_set_value(RELAY2_PORT, 0, 1);
+	}
 #endif
 
 void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
+#if defined(RELAY1_PORT) || defined(RELAY2_PORT)
 
 	char v = new_value->value[0];
 
-    #ifdef WIFISOCKET
-		int port = RELAY1_PORT;
-	#elif defined(GATEMODULE)
+	#if defined(RELAY1_PORT) && defined(RELAY2_PORT)
 		int port = new_value->ChannelNumber == 0 ? RELAY1_PORT : RELAY2_PORT;
+    #elif defined(RELAY1_PORT)
+		int port = RELAY1_PORT;
     #endif
 
-    #if defined(RSMODULE)
+    #if defined(__BOARD_rs_module) || defined(__BOARD_rs_module_wroom) || defined(__BOARD_jangoe_rs)
 
 		char Success = 0;
 		char s1, s2, v1, v2;
@@ -294,25 +300,27 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 	srpc_ds_async_set_channel_result(srpc, new_value->ChannelNumber, new_value->SenderID, Success);
 
-	#ifdef GATEMODULE
 
 	if ( v == 1 && new_value->DurationMS > 0 ) {
 
 		if ( new_value->ChannelNumber == 0 ) {
-			os_timer_disarm(&supla_relay1_timer);
+            #ifdef RELAY1_PORT
+				os_timer_disarm(&supla_relay1_timer);
 
-			os_timer_setfn(&supla_relay1_timer, supla_esp_relay1_timer_func, NULL);
-			os_timer_arm (&supla_relay1_timer, new_value->DurationMS, false);
-
+				os_timer_setfn(&supla_relay1_timer, supla_esp_relay1_timer_func, NULL);
+				os_timer_arm (&supla_relay1_timer, new_value->DurationMS, false);
+            #endif
 		} else if ( new_value->ChannelNumber == 1 ) {
-			os_timer_disarm(&supla_relay2_timer);
+			#ifdef RELAY2_PORT
+				os_timer_disarm(&supla_relay2_timer);
 
-			os_timer_setfn(&supla_relay2_timer, supla_esp_relay2_timer_func, NULL);
-			os_timer_arm (&supla_relay2_timer, new_value->DurationMS, false);
+				os_timer_setfn(&supla_relay2_timer, supla_esp_relay2_timer_func, NULL);
+				os_timer_arm (&supla_relay2_timer, new_value->DurationMS, false);
+			#endif
 		}
 
 	}
-	#endif
+#endif
 
 }
 
@@ -366,28 +374,71 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.LocationID = supla_esp_cfg.LocationID;
 			ets_snprintf(srd.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s", supla_esp_cfg.LocationPwd);
 			ets_snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", DEVICE_NAME);
-			strcpy(srd.SoftVer, "1.1");
+			strcpy(srd.SoftVer, "1.3");
 			os_memcpy(srd.GUID, supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 
 			//supla_log(LOG_DEBUG, "LocationID=%i, LocationPWD=%s", srd.LocationID, srd.LocationPWD);
 
-#ifdef WIFISOCKET
-			srd.channel_count = 2;
+#if defined(__BOARD_thermometer_esp01) || defined(__BOARD_thermometer_esp01_ds_gpio0)
+
+
+		srd.channel_count = 1;
+
+		srd.channels[0].Number = 0;
+		srd.channels[0].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+		srd.channels[0].FuncList = 0;
+		srd.channels[0].Default = 0;
+
+		double temp;
+		supla_ds18b20_get_temp(&temp);
+		memcpy(srd.channels[0].value, &temp, sizeof(double));
+
+
+#elif defined(__BOARD_wifisocket) || defined(__BOARD_wifisocket_esp01) || defined(__BOARD_wifisocket_54) || defined(__BOARD_gate_module_esp01) || defined(__BOARD_gate_module_esp01_ds)
+
+            #ifdef DS18B20
+				srd.channel_count = 2;
+            #else
+				srd.channel_count = 1;
+            #endif
+
 			srd.channels[0].Number = 0;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
-			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_POWERSWITCH \
-                    					| SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
-			srd.channels[0].Default = SUPLA_CHANNELFNC_POWERSWITCH;
-			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
 
-			srd.channels[1].Number = 1;
-			srd.channels[1].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
-			srd.channels[1].FuncList = 0;
-			srd.channels[1].Default = 0;
+            #if defined(__BOARD_gate_module_esp01) || defined(__BOARD_gate_module_esp01_ds)
+				srd.channels[0].FuncList =  SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
+											| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE \
+											| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR \
+											| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK;
+				srd.channels[0].Default = 0;
+            #else
+				srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_POWERSWITCH \
+											| SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
+				srd.channels[0].Default = SUPLA_CHANNELFNC_POWERSWITCH;
+            #endif
 
-#elif defined(GATEMODULE)
 
-			srd.channel_count = 5;
+			srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
+
+            #ifdef DS18B20
+				srd.channels[1].Number = 1;
+				srd.channels[1].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+				srd.channels[1].FuncList = 0;
+				srd.channels[1].Default = 0;
+
+				double temp;
+				supla_ds18b20_get_temp(&temp);
+				memcpy(srd.channels[1].value, &temp, sizeof(double));
+            #endif
+
+#elif defined(__BOARD_gate_module) || defined(__BOARD_gate_module_wroom) || defined(__BOARD_gate_module2_wroom)
+
+            #ifdef DS18B20
+				srd.channel_count = 5;
+            #else
+				srd.channel_count = 4;
+            #endif
+
 			srd.channels[0].Number = 0;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
 			srd.channels[0].FuncList =  SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
@@ -395,13 +446,13 @@ supla_esp_devconn_iterate(void *timer_arg) {
 										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR \
 										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK;
 			srd.channels[0].Default = 0;
-			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT);
+			srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
 
 			srd.channels[1].Number = 1;
 			srd.channels[1].Type = srd.channels[0].Type;
 			srd.channels[1].FuncList = srd.channels[0].FuncList;
 			srd.channels[1].Default = srd.channels[0].Default;
-			srd.channels[1].value[0] = supla_esp_gpio_is_hi(RELAY2_PORT);
+			srd.channels[1].value[0] = supla_esp_gpio_relay_on(RELAY2_PORT);
 
 			srd.channels[2].Number = 2;
 			srd.channels[2].Type = SUPLA_CHANNELTYPE_SENSORNO;
@@ -416,23 +467,30 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[3].value[0] = 0;
 
 			// TEMPERATURE_CHANNEL
-			srd.channels[4].Number = 4;
-			srd.channels[4].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
-			srd.channels[4].FuncList = 0;
-			srd.channels[4].Default = 0;
+            #ifdef DS18B20
+				srd.channels[4].Number = 4;
+				srd.channels[4].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+				srd.channels[4].FuncList = 0;
+				srd.channels[4].Default = 0;
 
-			double temp;
-			supla_ds18b20_get_temp(&temp);
-			memcpy(srd.channels[4].value, &temp, sizeof(double));
+				double temp;
+				supla_ds18b20_get_temp(&temp);
+				memcpy(srd.channels[4].value, &temp, sizeof(double));
+            #endif
 
-#elif defined(RSMODULE)
+#elif defined(__BOARD_rs_module) || defined(__BOARD_rs_module_wroom) || defined(__BOARD_jangoe_rs)
 
-			srd.channel_count = 3;
+            #ifdef DS18B20
+				srd.channel_count = 3;
+            #else
+				srd.channel_count = 2;
+            #endif
+
 			srd.channels[0].Number = 0;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
 			srd.channels[0].FuncList =  SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEROLLERSHUTTER;
 			srd.channels[0].Default = 0;
-			srd.channels[0].value[0] = supla_esp_gpio_is_hi(RELAY1_PORT) ? 1 : ( supla_esp_gpio_is_hi(RELAY2_PORT) ? 2 : 0 ) ;
+			srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT) ? 1 : ( supla_esp_gpio_relay_on(RELAY2_PORT) ? 2 : 0 ) ;
 
 			srd.channels[1].Number = 1;
 			srd.channels[1].Type = SUPLA_CHANNELTYPE_SENSORNO;
@@ -440,15 +498,53 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[1].Default = 0;
 			srd.channels[1].value[0] = 0;
 
-			// TEMPERATURE_CHANNEL
-			srd.channels[2].Number = 2;
-			srd.channels[2].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
-			srd.channels[2].FuncList = 0;
-			srd.channels[2].Default = 0;
+            #ifdef DS18B20
+				// TEMPERATURE_CHANNEL
+				srd.channels[2].Number = 2;
+				srd.channels[2].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+				srd.channels[2].FuncList = 0;
+				srd.channels[2].Default = 0;
 
-			double temp;
-			supla_ds18b20_get_temp(&temp);
-			memcpy(srd.channels[2].value, &temp, sizeof(double));
+				double temp;
+				supla_ds18b20_get_temp(&temp);
+				memcpy(srd.channels[2].value, &temp, sizeof(double));
+            #endif
+
+#elif defined(__BOARD_starter1_module_wroom)
+
+			#ifdef DS18B20
+				srd.channel_count = 3;
+			#else
+				srd.channel_count = 2;
+			#endif
+
+			srd.channels[0].Number = 0;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK;
+			srd.channels[0].Default = 0;
+			srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
+
+			srd.channels[1].Number = 1;
+			srd.channels[1].Type = srd.channels[0].Type;
+			srd.channels[1].FuncList = srd.channels[0].FuncList;
+			srd.channels[1].Default = 0;
+			srd.channels[1].value[0] = supla_esp_gpio_relay_on(RELAY2_PORT);
+
+			#ifdef DS18B20
+				// TEMPERATURE_CHANNEL
+				srd.channels[2].Number = 2;
+				srd.channels[2].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+				srd.channels[2].FuncList = 0;
+				srd.channels[2].Default = 0;
+
+				double temp;
+				supla_ds18b20_get_temp(&temp);
+				memcpy(srd.channels[2].value, &temp, sizeof(double));
+			#endif
+
 
 #endif
 
@@ -668,8 +764,10 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 	}
 }
 
-
+#ifdef TEMPERATURE_CHANNEL
 void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp) {
+
+	int t = temp;
 
 	if ( srpc != NULL
 		 && registered == 1 ) {
@@ -682,4 +780,5 @@ void ICACHE_FLASH_ATTR supla_esp_devconn_on_temp_changed(double temp) {
 	}
 
 }
+#endif
 

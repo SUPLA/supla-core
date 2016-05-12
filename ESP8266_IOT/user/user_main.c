@@ -24,13 +24,17 @@
 void user_init(void)
 {
 
-     supla_log(LOG_DEBUG, "Starting");
      wifi_status_led_uninstall();
+     supla_esp_gpio_init();
+
+     supla_log(LOG_DEBUG, "Starting");
 
      supla_esp_cfg_init();
      supla_esp_devconn_init();
-     supla_esp_gpio_init();
-     supla_ds18b20_init();
+
+     #ifdef DS18B20
+		 supla_ds18b20_init();
+     #endif
 
 
      if ( supla_esp_cfg.LocationID == 0
@@ -44,7 +48,10 @@ void user_init(void)
      }
 
 
-	supla_ds18b20_start();
+    #ifdef DS18B20
+		supla_ds18b20_start();
+    #endif
+
 	supla_esp_devconn_start();
 
 
