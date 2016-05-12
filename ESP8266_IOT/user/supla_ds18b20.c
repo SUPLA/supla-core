@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : supla_ds18b20.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Version     : 1.0
  Copyright   : 2016 GPLv2
  ============================================================================
@@ -11,22 +11,16 @@
 
 #include <os_type.h>
 #include <osapi.h>
-#include <gpio.h>
 #include <eagle_soc.h>
 #include <ets_sys.h>
+#include <gpio.h>
 
 #include "supla_ds18b20.h"
+#include "supla_w1.h"
 #include "supla-dev/log.h"
 
 #ifdef DS18B20
 
-#ifdef W1_GPIO0
-  static int supla_ds18b20_gpioPin = GPIO_ID_PIN(0);
-#elif defined(W1_GPIO5)
-  static int supla_ds18b20_gpioPin = GPIO_ID_PIN(5);
-#else
-  static int supla_ds18b20_gpioPin = GPIO_ID_PIN(2);
-#endif
 
 static double supla_ds18b20_last_temp = -275;
 
@@ -45,45 +39,34 @@ static float supla_ds18b20_divider;
 
 void ICACHE_FLASH_ATTR supla_ds18b20_init(void) {
 
-	#ifdef W1_GPIO0
-		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
-		PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO0_U);
-    #elif defined(W1_GPIO5)
-		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5);
-		PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO5_U);
-    #else
-		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
-		PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
-    #endif
-
-    GPIO_DIS_OUTPUT( supla_ds18b20_gpioPin );
+	supla_w1_init();
 }
 
 void ICACHE_FLASH_ATTR supla_ds18b20_reset(void)
 {
     uint8_t retries = 125;
-    GPIO_DIS_OUTPUT( supla_ds18b20_gpioPin );
+    GPIO_DIS_OUTPUT( supla_w1_pin );
     do {
         if (--retries == 0) return;
         os_delay_us(2);
-    } while ( !GPIO_INPUT_GET( supla_ds18b20_gpioPin ));
+    } while ( !GPIO_INPUT_GET( supla_w1_pin ));
 
-    GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 0 );
+    GPIO_OUTPUT_SET( supla_w1_pin, 0 );
     os_delay_us(480);
-    GPIO_DIS_OUTPUT( supla_ds18b20_gpioPin );
+    GPIO_DIS_OUTPUT( supla_w1_pin );
     os_delay_us(480);
 }
 
 void supla_ds18b20_write_bit( int v )
 {
-    GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 0 );
+    GPIO_OUTPUT_SET( supla_w1_pin, 0 );
     if( v ) {
         os_delay_us(10);
-        GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 1 );
+        GPIO_OUTPUT_SET( supla_w1_pin, 1 );
         os_delay_us(55);
     } else {
         os_delay_us(65);
-        GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 1 );
+        GPIO_OUTPUT_SET( supla_w1_pin, 1 );
         os_delay_us(5);
     }
 }
@@ -92,11 +75,11 @@ void supla_ds18b20_write_bit( int v )
 int  supla_ds18b20_read_bit(void)
 {
     int r;
-    GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 0 );
+    GPIO_OUTPUT_SET( supla_w1_pin, 0 );
     os_delay_us(3);
-    GPIO_DIS_OUTPUT( supla_ds18b20_gpioPin );
+    GPIO_DIS_OUTPUT( supla_w1_pin );
     os_delay_us(10);
-    r = GPIO_INPUT_GET( supla_ds18b20_gpioPin );
+    r = GPIO_INPUT_GET( supla_w1_pin );
     os_delay_us(53);
     return r;
 }
@@ -107,8 +90,8 @@ void ICACHE_FLASH_ATTR  supla_ds18b20_write( uint8_t v, int power ) {
     	supla_ds18b20_write_bit( (bitMask & v)?1:0);
     }
     if ( !power) {
-        GPIO_DIS_OUTPUT( supla_ds18b20_gpioPin );
-        GPIO_OUTPUT_SET( supla_ds18b20_gpioPin, 0 );
+        GPIO_DIS_OUTPUT( supla_w1_pin );
+        GPIO_OUTPUT_SET( supla_w1_pin, 0 );
     }
 }
 
@@ -203,8 +186,9 @@ void supla_ds18b20_start(void)
 	os_timer_arm (&supla_ds18b20_timer1, 5000, 1);
 }
 
-void ICACHE_FLASH_ATTR supla_ds18b20_get_temp(double *value) {
-	*value = supla_ds18b20_last_temp;
+void ICACHE_FLASH_ATTR supla_get_temp_and_humidity(char value[SUPLA_CHANNELVALUE_SIZE]) {
+	// Only temperature
+	memcpy(value, &supla_ds18b20_last_temp, sizeof(double));
 }
 
 #endif
