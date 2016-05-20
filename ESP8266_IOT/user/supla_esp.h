@@ -102,10 +102,18 @@
 	#define USE_GPIO3
 	#define DS18B20
 
-#elif defined(__BOARD_gate_module)
+#elif defined(__BOARD_gate_module) || defined(__BOARD_gate_module_dht11) || defined(__BOARD_gate_module_dht22)
 
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
-    #define DS18B20
+
+    #if defined(__BOARD_gate_module_dht11)
+       #define SENSOR_DHT11
+    #elif defined(__BOARD_gate_module_dht22)
+       #define SENSOR_DHT22
+    #else
+       #define DS18B20
+    #endif
+
     #define RESET_RELAY_PORT
 	#define TEMPERATURE_CHANNEL 4
 

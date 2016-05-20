@@ -409,7 +409,11 @@ supla_esp_devconn_iterate(void *timer_arg) {
 		supla_get_temp_and_humidity(srd.channels[0].value);
 
 
-#elif defined(__BOARD_wifisocket) || defined(__BOARD_wifisocket_esp01) || defined(__BOARD_wifisocket_54) || defined(__BOARD_gate_module_esp01) || defined(__BOARD_gate_module_esp01_ds)
+#elif defined(__BOARD_wifisocket) \
+		|| defined(__BOARD_wifisocket_esp01) \
+		|| defined(__BOARD_wifisocket_54) \
+		|| defined(__BOARD_gate_module_esp01) \
+		|| defined(__BOARD_gate_module_esp01_ds)
 
             #ifdef DS18B20
 				srd.channel_count = 2;
@@ -445,9 +449,13 @@ supla_esp_devconn_iterate(void *timer_arg) {
 
             #endif
 
-#elif defined(__BOARD_gate_module) || defined(__BOARD_gate_module_wroom) || defined(__BOARD_gate_module2_wroom)
+#elif defined(__BOARD_gate_module) \
+	    || defined(__BOARD_gate_module_dht11) \
+	    || defined(__BOARD_gate_module_dht22) \
+		|| defined(__BOARD_gate_module_wroom) \
+		|| defined(__BOARD_gate_module2_wroom)
 
-            #ifdef DS18B20
+            #if defined(DS18B20) || defined(SENSOR_DHT11) || defined(SENSOR_DHT22)
 				srd.channel_count = 5;
             #else
 				srd.channel_count = 4;
@@ -481,9 +489,18 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[3].value[0] = 0;
 
 			// TEMPERATURE_CHANNEL
-            #ifdef DS18B20
+            #if defined(DS18B20) || defined(SENSOR_DHT11) || defined(SENSOR_DHT22)
 				srd.channels[4].Number = 4;
-				srd.channels[4].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+
+
+                #if defined(SENSOR_DHT11)
+			    	srd.channels[4].Type = SUPLA_CHANNELTYPE_DHT11;
+                #elif defined(SENSOR_DHT22)
+				    srd.channels[4].Type = SUPLA_CHANNELTYPE_DHT22;
+                #else
+				    srd.channels[4].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+                #endif
+
 				srd.channels[4].FuncList = 0;
 				srd.channels[4].Default = 0;
 
