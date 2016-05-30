@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla-server.c
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     :
+ Version     : 1.2
  Copyright   : GPLv2
  ============================================================================
  */
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	void *datalogger_loop_t = NULL;
 
 	//INIT BLOCK
-	supla_log(LOG_DEBUG, "Protocol v%i", SUPLA_PROTO_VERSION);
+	supla_log(LOG_DEBUG, "Version 1.2 [Protocol v%i]", SUPLA_PROTO_VERSION);
 
 	if ( svrcfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;
