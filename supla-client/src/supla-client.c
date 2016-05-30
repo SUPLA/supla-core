@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : supla-client.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Author      : Przemyslaw Zygmunt przemek@supla.org
+ Version     : 1.1
  Copyright   : GPLv2
  ============================================================================
  */
@@ -470,11 +470,42 @@ char supla_client_open(void *_suplaclient, int ChannelID, char open) {
 		memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
 		value.ChannelId = ChannelID;
 		value.value[0] = open;
-		srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value);
+		result =  srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) == SUPLA_RESULT_FALSE ? 0 : 1;
 
 	}
 	lck_unlock(suplaclient->lck);
 
 
 	return result;
+}
+
+char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color, char color_brightness, char brightness) {
+
+	TCS_SuplaChannelNewValue_B value;
+	TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+	char result = 0;
+
+	lck_lock(suplaclient->lck);
+	if ( supla_client_registered(_suplaclient) == 1 ) {
+
+		memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
+		value.ChannelId = ChannelID;
+		value.value[0] = brightness;
+
+		value.value[1] = color_brightness;
+		value.value[2] = (char)((color & 0x000000FF));       // BLUE
+		value.value[3] = (char)((color & 0x0000FF00) >> 8);  // GREEN
+		value.value[4] = (char)((color & 0x00FF0000) >> 16); // RED
+
+		result =  srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) == SUPLA_RESULT_FALSE ? 0 : 1;
+
+	}
+	lck_unlock(suplaclient->lck);
+
+
+	return result;
+}
+
+char supla_client_set_dimmer(void *_suplaclient, int ChannelID, char brightness) {
+	return supla_client_set_rgbw(_suplaclient, ChannelID, 0, 0, brightness);
 }
