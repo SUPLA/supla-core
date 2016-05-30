@@ -79,7 +79,11 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
 
 	if ( supla_esp_cfgmode_started() == 0 ) {
 
-        #if defined(__BOARD_wifisocket) || defined(__BOARD_wifisocket_54) || defined(__BOARD_wifisocket_esp01)
+        #if defined(__BOARD_wifisocket) \
+		    || defined(__BOARD_wifisocket_54)
+		    || defined(__BOARD_wifisocket_esp01) \
+		    || defined(__BOARD_sonoff) \
+		    || defined(__BOARD_sonoff_ds18b20)
 
 		char hi = supla_esp_gpio_is_hi(RELAY1_PORT) == 1 ? 0 : 1;
 

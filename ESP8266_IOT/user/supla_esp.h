@@ -170,7 +170,7 @@
 	#define DEVICE_NAME "SUPLA-RS-MODULE"
     #define RESET_RELAY_PORT
     #define DS18B20
-	#define TEMPERATURE_CHANNEL 3
+	#define TEMPERATURE_CHANNEL 2
 
 	#define LED_GREEN_PORT  12
 	#define LED_BLUE_PORT   14
@@ -189,7 +189,7 @@
     #define RESET_RELAY_PORT
     #define DS18B20
 
-	#define TEMPERATURE_CHANNEL 3
+	#define TEMPERATURE_CHANNEL 2
 
 	#define LED_GREEN_PORT  5
 	#define LED_BLUE_PORT   12
@@ -244,6 +244,26 @@
 
 	#define RELAY_LO_VALUE  1
 	#define RELAY_HI_VALUE  0
+
+#elif defined(__BOARD_sonoff)
+
+    #define CFG_SECTOR          WROOM_CFG_SECTOR
+	#define DEVICE_NAME "SONOFF"
+	#define RELAY1_PORT      12
+	#define BTN_PORT         0
+    #define LED_RED_PORT     13
+
+#elif defined(__BOARD_sonoff_ds18b20)
+
+    #define CFG_SECTOR          WROOM_CFG_SECTOR
+    #define DS18B20
+	#define DEVICE_NAME "SONOFF-DS18B20"
+	#define RELAY1_PORT      12
+	#define BTN_PORT         0
+    #define LED_RED_PORT     13
+    #define TEMPERATURE_CHANNEL 1
+    #define W1_GPIO3
+
 
 #endif
 

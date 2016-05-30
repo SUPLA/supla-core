@@ -59,6 +59,10 @@ case $1 in
    ;;
    "jangoe_rs")
    ;;
+   "sonoff")
+   ;;
+   "sonoff_ds18b20")
+   ;;
    *)
    echo "Usage:"
    echo "       build.sh BOARD_TYPE";
@@ -84,6 +88,8 @@ case $1 in
    echo "              rs_module_wroom";
    echo "              starter1_module_wroom";
    echo "              jangoe_rs";
+   echo "              sonoff";
+   echo "              sonoff_ds18b20";
    echo 
    echo
    exit;

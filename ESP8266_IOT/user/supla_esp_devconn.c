@@ -413,9 +413,11 @@ supla_esp_devconn_iterate(void *timer_arg) {
 		|| defined(__BOARD_wifisocket_esp01) \
 		|| defined(__BOARD_wifisocket_54) \
 		|| defined(__BOARD_gate_module_esp01) \
-		|| defined(__BOARD_gate_module_esp01_ds)
+		|| defined(__BOARD_gate_module_esp01_ds) \
+		|| defined(__BOARD_sonoff) \
+		|| defined(__BOARD_sonoff_ds18b20)
 
-            #ifdef DS18B20
+            #if defined(DS18B20) || defined(DHTSENSOR)
 				srd.channel_count = 2;
             #else
 				srd.channel_count = 1;
@@ -439,10 +441,18 @@ supla_esp_devconn_iterate(void *timer_arg) {
 
 			srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
 
-            #ifdef DS18B20
+            #if defined(DS18B20) || defined(DHTSENSOR)
 				srd.channels[1].Number = 1;
-				srd.channels[1].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
-				srd.channels[1].FuncList = 0;
+
+				#if defined(DS18B20)
+					   srd.channels[1].Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+				#elif defined(SENSOR_DHT11)
+					   srd.channels[1].Type = SUPLA_CHANNELTYPE_DHT11;
+				#elif defined(SENSOR_DHT22)
+					   srd.channels[1].Type = SUPLA_CHANNELTYPE_DHT22;
+				#endif
+
+			    srd.channels[1].FuncList = 0;
 				srd.channels[1].Default = 0;
 
 				supla_get_temp_and_humidity(srd.channels[1].value);
