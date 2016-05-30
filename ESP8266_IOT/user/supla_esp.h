@@ -264,6 +264,11 @@
     #define TEMPERATURE_CHANNEL 1
     #define W1_GPIO3
 
+#elif defined(__BOARD_dimmer)
+
+	#define DEVICE_NAME "DIMMER"
+	#define BTN_PORT         2
+    #define DIMMER_CHANNEL   0
 
 #endif
 

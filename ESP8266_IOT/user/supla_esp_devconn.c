@@ -228,6 +228,46 @@ supla_esp_channel_value_changed(int channel_number, char v) {
 
 }
 
+#if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+
+void ICACHE_FLASH_ATTR
+supla_esp_channel_rgbw_to_value(char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness, char brightness) {
+
+	memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+	value[0] = brightness;
+	value[1] = color_brightness;
+	value[2] = (char)((color & 0x000000FF));       // BLUE
+	value[3] = (char)((color & 0x0000FF00) >> 8);  // GREEN
+	value[4] = (char)((color & 0x00FF0000) >> 16); // RED
+
+}
+
+void ICACHE_FLASH_ATTR
+supla_esp_channel_get_current_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
+
+	supla_esp_channel_rgbw_to_value(value, 0x00FF00, 0, 0);
+
+}
+
+void ICACHE_FLASH_ATTR
+supla_esp_channel_rgbw_value_changed(int channel_number, int color, char color_brightness, char brightness) {
+
+	if ( srpc != NULL
+		 && registered == 1 ) {
+
+		char value[SUPLA_CHANNELVALUE_SIZE];
+
+
+		supla_esp_channel_rgbw_to_value(value,color, color_brightness, brightness);
+
+		srpc_ds_async_channel_value_changed(srpc, channel_number, value);
+	}
+
+}
+
+#endif
+
 char ICACHE_FLASH_ATTR
 _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
@@ -263,8 +303,61 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 	}
 #endif
 
+#if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+
+char ICACHE_FLASH_ATTR
+supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
+
+	supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
+
+	return 1;
+}
+
+#endif
+
 void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
+
+#if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+
+	unsigned char rgb_cn = 255;
+	unsigned char dimmer_cn = 255;
+
+    #ifdef RGB_CONTROLLER_CHANNEL
+	rgb_cn = RGB_CONTROLLER_CHANNEL;
+    #endif
+
+	#ifdef DIMMER_CHANNEL
+	dimmer_cn = DIMMER_CHANNEL;
+	#endif
+
+	if ( new_value->ChannelNumber == rgb_cn
+			|| new_value->ChannelNumber == dimmer_cn ) {
+
+		int Color = 0;
+		char ColorBrightness = 0;
+		char Brightness = 0;
+
+		Brightness = new_value->value[0];
+		ColorBrightness = new_value->value[1];
+
+		Color = ((int)new_value->value[4] << 16) & 0x00FF0000; // BLUE
+		Color |= ((int)new_value->value[3] << 8) & 0x0000FF00; // GREEN
+		Color |= (int)new_value->value[2] & 0x00000FF;         // RED
+
+		if ( Brightness > 100 )
+			Brightness = 0;
+
+		if ( ColorBrightness > 100 )
+			ColorBrightness = 0;
+
+		if ( 1 == supla_esp_channel_set_rgbw_value(new_value->ChannelNumber, &Color, &ColorBrightness, &Brightness) )
+			supla_esp_channel_rgbw_value_changed(new_value->ChannelNumber, Color, ColorBrightness, Brightness);
+
+		return;
+	}
+
+#endif
 
 #if defined(RELAY1_PORT) || defined(RELAY2_PORT)
 
@@ -580,6 +673,11 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				supla_get_temp_and_humidity(srd.channels[2].value);
 			#endif
 
+#elif defined(__BOARD_dimmer)
+
+			srd.channel_count = 1;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMER;
+			supla_esp_channel_get_current_rgbw_value(srd.channels[0].value);
 
 #endif
 

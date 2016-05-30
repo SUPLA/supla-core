@@ -63,6 +63,10 @@ case $1 in
    ;;
    "sonoff_ds18b20")
    ;;
+   "EgyIOT")
+   ;;
+   "dimmer")
+   ;;
    *)
    echo "Usage:"
    echo "       build.sh BOARD_TYPE";
@@ -90,6 +94,8 @@ case $1 in
    echo "              jangoe_rs";
    echo "              sonoff";
    echo "              sonoff_ds18b20";
+   echo "              EgyIOT";
+   echo "              dimmer";
    echo 
    echo
    exit;
