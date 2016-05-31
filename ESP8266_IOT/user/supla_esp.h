@@ -270,6 +270,18 @@
 	#define BTN_PORT         2
     #define DIMMER_CHANNEL   0
 
+#elif defined(__BOARD_EgyIOT)
+
+	#define DEVICE_NAME "EgyIOT"
+
+        #define USE_GPIO16_OUTPUT
+		#define RELAY1_PORT      4
+		#define RELAY2_PORT      13
+		#define RELAY3_PORT      16
+
+		#define BTN_PORT         2
+        #define DIMMER_CHANNEL   3
+
 #endif
 
 #ifndef CFG_SECTOR
