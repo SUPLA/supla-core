@@ -34,6 +34,10 @@ static ETSTimer supla_iterate_timer;
 	static ETSTimer supla_relay2_timer;
 #endif
 
+#ifdef RELAY3_PORT
+	static ETSTimer supla_relay3_timer;
+#endif
+
 static struct espconn ESPConn;
 static esp_tcp ESPTCP;
 ip_addr_t ipaddr;
@@ -303,6 +307,14 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 	}
 #endif
 
+#ifdef RELAY3_PORT
+	void ICACHE_FLASH_ATTR
+	supla_esp_relay3_timer_func(void *timer_arg) {
+
+		_supla_esp_channel_set_value(RELAY3_PORT, 0, 2);
+	}
+#endif
+
 #if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
 
 char ICACHE_FLASH_ATTR
@@ -359,11 +371,24 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 #endif
 
-#if defined(RELAY1_PORT) || defined(RELAY2_PORT)
+#if defined(RELAY1_PORT) || defined(RELAY2_PORT) || defined(RELAY3_PORT)
 
 	char v = new_value->value[0];
 
-	#if defined(RELAY1_PORT) && defined(RELAY2_PORT)
+    #if defined(RELAY1_PORT) && defined(RELAY2_PORT) && defined(RELAY3_PORT)
+		int port;
+		switch(new_value->ChannelNumber) {
+		case 0:
+			port = RELAY1_PORT;
+			break;
+		case 1:
+			port = RELAY2_PORT;
+			break;
+		case 2:
+			port = RELAY3_PORT;
+			break;
+		}
+	#elif defined(RELAY1_PORT) && defined(RELAY2_PORT)
 		int port = new_value->ChannelNumber == 0 ? RELAY1_PORT : RELAY2_PORT;
     #elif defined(RELAY1_PORT)
 		int port = RELAY1_PORT;
@@ -411,6 +436,13 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 				os_timer_setfn(&supla_relay2_timer, supla_esp_relay2_timer_func, NULL);
 				os_timer_arm (&supla_relay2_timer, new_value->DurationMS, false);
+			#endif
+		} else if ( new_value->ChannelNumber == 2 ) {
+			#ifdef RELAY3_PORT
+				os_timer_disarm(&supla_relay3_timer);
+
+				os_timer_setfn(&supla_relay3_timer, supla_esp_relay3_timer_func, NULL);
+				os_timer_arm (&supla_relay3_timer, new_value->DurationMS, false);
 			#endif
 		}
 
@@ -679,6 +711,36 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMER;
 			supla_esp_channel_get_current_rgbw_value(srd.channels[0].value);
 
+#elif defined(__BOARD_EgyIOT)
+
+			srd.channel_count = 4;
+
+			srd.channels[0].Number = 0;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+			srd.channels[0].FuncList =  SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGARAGEDOOR \
+										| SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEDOORLOCK \
+										| SUPLA_BIT_RELAYFUNC_POWERSWITCH \
+										| SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
+			srd.channels[0].Default = 0;
+			srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
+
+			srd.channels[1].Number = 1;
+			srd.channels[1].Type = srd.channels[0].Type;
+			srd.channels[1].FuncList = srd.channels[0].FuncList;
+			srd.channels[1].Default = srd.channels[0].Default;
+			srd.channels[1].value[0] = supla_esp_gpio_relay_on(RELAY2_PORT);
+
+			srd.channels[2].Number = 2;
+			srd.channels[2].Type = srd.channels[0].Type;
+			srd.channels[2].FuncList = srd.channels[0].FuncList;
+			srd.channels[2].Default = srd.channels[0].Default;
+			srd.channels[2].value[0] = supla_esp_gpio_relay_on(RELAY3_PORT);
+
+			srd.channels[3].Number = 3;
+			srd.channels[3].Type = SUPLA_CHANNELTYPE_DIMMER;
+			supla_esp_channel_get_current_rgbw_value(srd.channels[3].value);
 #endif
 
 			srpc_ds_async_registerdevice_b(srpc, &srd);
