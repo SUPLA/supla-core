@@ -53,9 +53,6 @@ static struct single_key_param *single_key[1];
 static struct keys_param keys;
 static char cfg_exit_counter = 1; // 1 for start cfg from user_init
 
-// gpio16 support
-//
-//
 
 void ICACHE_FLASH_ATTR
 gpio16_output_conf(void)
@@ -94,6 +91,12 @@ uint8 ICACHE_FLASH_ATTR
 gpio16_input_get(void)
 {
     return (uint8)(READ_PERI_REG(RTC_GPIO_IN_DATA) & 1);
+}
+
+uint8 ICACHE_FLASH_ATTR
+gpio16_output_get(void)
+{
+    return (uint8)(READ_PERI_REG(RTC_GPIO_OUT) & 1);
 }
 
 uint32 ICACHE_FLASH_ATTR
@@ -589,8 +592,10 @@ void ICACHE_FLASH_ATTR supla_esp_gpio_state_cfgmode(void) {
 
 char ICACHE_FLASH_ATTR supla_esp_gpio_is_hi(int port) {
 
-	if ( port == 16 )
-		return gpio_output_get() == 1 ? 1 : 0;
+	if ( port == 16 ) {
+		return gpio16_output_get() == 1 ? 1 : 0;
+	}
+
 
 	return GPIO_OUTPUT_GET(port) == 1 ? 1 : 0;
 }

@@ -16,6 +16,7 @@ void ICACHE_FLASH_ATTR gpio16_output_conf(void);
 void ICACHE_FLASH_ATTR gpio16_output_set(uint8 value);
 void ICACHE_FLASH_ATTR gpio16_input_conf(void);
 uint8 ICACHE_FLASH_ATTR gpio16_input_get(void);
+uint8 ICACHE_FLASH_ATTR gpio16_output_get(void);
 
 void ICACHE_FLASH_ATTR supla_esp_gpio_init(void);
 
