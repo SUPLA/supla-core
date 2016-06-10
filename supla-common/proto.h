@@ -1,7 +1,7 @@
 /*
  ============================================================================
  Name        : proto.h
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Version     : 1.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================

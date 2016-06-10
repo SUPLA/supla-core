@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : proto.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Author      : Przemyslaw Zygmunt przemek@supla.org
+ Version     : 1.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -384,3 +384,4 @@ void sproto_buffer_dump(void *spd_ptr, unsigned char in) {
 
 
 }
+
