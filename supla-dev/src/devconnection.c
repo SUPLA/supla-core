@@ -132,6 +132,16 @@ void devconnection_on_register_result(TDeviceConnectionData *dcd, TSD_SuplaRegis
 
 void devconnection_channel_set_value(TDeviceConnectionData *dcd, TSD_SuplaChannelNewValue *new_value) {
 
+	if ( new_value->ChannelNumber > 11 ) {
+		//TEST
+		supla_log(LOG_DEBUG, "Brightness: %i Color Brightness: %i R: %02X G: %02X B: %02X ", new_value->value[0], new_value->value[1], (unsigned char)new_value->value[4], (unsigned char)new_value->value[3] , (unsigned char)new_value->value[2]);
+
+		tmp_channelio_raise_valuechanged(new_value->ChannelNumber);
+		srpc_ds_async_set_channel_result(dcd->srpc, new_value->ChannelNumber, new_value->SenderID, 1);
+
+		return;
+	}
+
 	char Success = channelio_set_hi_value(new_value->ChannelNumber, new_value->value[0],  new_value->DurationMS) == 1 ? 1 : 0;
 	srpc_ds_async_set_channel_result(dcd->srpc, new_value->ChannelNumber, new_value->SenderID, Success);
 }
@@ -319,3 +329,5 @@ void devconnection_stop(void *dconn_thread) {
 		sthread_twf(dconn_thread);
 
 }
+
+

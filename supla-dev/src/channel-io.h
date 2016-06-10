@@ -38,6 +38,9 @@ char channelio_get_hi_value(unsigned char number, char *hi);
 char channelio_set_hi_value(unsigned char number, char hi, unsigned int time_ms);
 void channelio_channels_to_srd(TDS_SuplaRegisterDevice *srd);
 
+//TMP TEST
+void tmp_channelio_raise_valuechanged(unsigned char number);
+
 void channelio_setcalback_on_channel_value_changed(_func_channelio_valuechanged on_valuechanged, void *user_data);
 
 #ifdef __SINGLE_THREAD

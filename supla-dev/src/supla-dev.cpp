@@ -23,6 +23,8 @@
 #include "ipcsocket.h"
 #include "sthread.h"
 
+
+
 void exit_fail() {
 
 	devcfg_free();
@@ -38,6 +40,7 @@ int main(int argc, char* argv[]) {
 	void *ipc_accept_loop_t = NULL;
 	void* ipc = NULL;
     #endif
+
 
 #ifdef __DEBUG
 	char GUIDHEX[SUPLA_GUID_HEXSIZE+1];

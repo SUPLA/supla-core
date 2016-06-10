@@ -11,6 +11,7 @@ CPP_SRCS += \
 C_SRCS += \
 ../src/cfg.c \
 ../src/channel-io.c \
+../src/common_dht_read.c \
 ../src/devcfg.c \
 ../src/devconnection.c \
 ../src/eh.c \
@@ -19,6 +20,9 @@ C_SRCS += \
 ../src/ipcsocket.c \
 ../src/lck.c \
 ../src/log.c \
+../src/mcp23008.c \
+../src/pi_2_dht_read.c \
+../src/pi_2_mmio.c \
 ../src/proto.c \
 ../src/safearray.c \
 ../src/srpc.c \
@@ -31,6 +35,7 @@ OBJS += \
 ./src/accept_loop.o \
 ./src/cfg.o \
 ./src/channel-io.o \
+./src/common_dht_read.o \
 ./src/devcfg.o \
 ./src/devconnection.o \
 ./src/eh.o \
@@ -40,6 +45,9 @@ OBJS += \
 ./src/ipcsocket.o \
 ./src/lck.o \
 ./src/log.o \
+./src/mcp23008.o \
+./src/pi_2_dht_read.o \
+./src/pi_2_mmio.o \
 ./src/proto.o \
 ./src/safearray.o \
 ./src/srpc.o \
@@ -52,6 +60,7 @@ OBJS += \
 C_DEPS += \
 ./src/cfg.d \
 ./src/channel-io.d \
+./src/common_dht_read.d \
 ./src/devcfg.d \
 ./src/devconnection.d \
 ./src/eh.d \
@@ -60,6 +69,9 @@ C_DEPS += \
 ./src/ipcsocket.d \
 ./src/lck.d \
 ./src/log.d \
+./src/mcp23008.d \
+./src/pi_2_dht_read.d \
+./src/pi_2_mmio.d \
 ./src/proto.d \
 ./src/safearray.d \
 ./src/srpc.d \
@@ -78,14 +90,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__OPEN_SSL=1 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -D__OPEN_SSL=1 -D__DEBUG=1 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -D__W1_SIMULATE=1 -D__GPIO_SIMULATE=1 -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

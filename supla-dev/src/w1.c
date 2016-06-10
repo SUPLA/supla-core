@@ -8,6 +8,7 @@
  */
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -15,6 +16,10 @@
 
 #include "w1.h"
 #include "tools.h"
+#include "log.h"
+#include "pi_2_dht_read.h"
+
+#define W1_DEFAULT_PIN 4
 
 char w1_ds18b20_get_temp(char *device, double *temp) {
 
@@ -49,6 +54,7 @@ char w1_ds18b20_get_temp(char *device, double *temp) {
 
               sscanf(&buffer[69], "%i", &val);
               *temp = val/1000.00;
+
               result = 1;
         };
         close(fd);
@@ -57,3 +63,46 @@ char w1_ds18b20_get_temp(char *device, double *temp) {
 
    return result;
 }
+
+
+//https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code/blob/master/Adafruit_DHT_Driver/Adafruit_DHT.c
+
+char w1_dht_read(const char *w1, double *temp, double *humidity, char chip_type) {
+
+	int pin = W1_DEFAULT_PIN;
+
+	if ( w1 != NULL ) {
+		pin = atoi(w1);
+
+		if ( pin == 0 )
+			pin = W1_DEFAULT_PIN;
+	}
+
+
+
+#ifdef __W1_SIMULATE
+	*temp = 22.543;
+	*humidity =  40.321;
+	return 1;
+#else
+
+	{
+		float _humidity = 0, _temperature = 0;
+		int result = pi_2_dht_read(chip_type, pin, &_humidity, &_temperature);
+
+		if ( result == 0 ) {
+
+			*temp = _temperature;
+			*humidity = _humidity;
+
+			return 1;
+		}
+	}
+
+	*temp = -275;
+	*humidity = -1;
+
+	return 0;
+#endif
+}
+

@@ -44,7 +44,7 @@ all: supla-dev
 supla-dev: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++  -o "supla-dev" -pthread $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -pthread -lrt -o "supla-dev" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

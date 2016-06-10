@@ -50,9 +50,19 @@ typedef struct {
 
 	struct timeval last_tv;
 	double temp;
+	double humidity;
 	void *lck;
 
 }TChannelW1TempValue;
+
+typedef struct {
+
+	int color;
+	char color_brightness;
+	char brightness;
+	void *lck;
+
+}TChannelRGBWValue;
 
 typedef struct {
 #ifdef __SINGLE_THREAD
@@ -81,6 +91,7 @@ typedef struct {
 	TChannelGpioPortValue gpio1_value;
 	TChannelGpioPortValue gpio2_value;
 	TChannelW1TempValue w1_value;
+	TChannelRGBWValue rgbw_value;
 	TChannelMCP23008 mcp23008;
 
 }TDeviceChannel;
@@ -225,6 +236,12 @@ char channelio_allowed_type(int type) {
 	case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
 	case SUPLA_CHANNELTYPE_RELAYG5LA1A:
 	case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
+	case SUPLA_CHANNELTYPE_DHT11:
+	case SUPLA_CHANNELTYPE_DHT22:
+	case SUPLA_CHANNELTYPE_AM2302:
+	case SUPLA_CHANNELTYPE_DIMMER:
+	case SUPLA_CHANNELTYPE_RGBLEDCONTROLLER:
+	case SUPLA_CHANNELTYPE_DIMMERANDRGBLED:
 		return 1;
 	}
 
@@ -269,13 +286,19 @@ void channelio_gpio_port_init(TDeviceChannel *channel, TChannelGpioPortValue *gp
 
 }
 
-char channelio_read_temp(char *w1, TChannelW1TempValue *w1_value, char log_err) {
+char channelio_read_temp_and_humidity(int type, char *w1, TChannelW1TempValue *w1_value, char log_err) {
 
-	double temp;
+	double temp, humidity;
 	struct timeval now;
 	char result = 0;
+	char read_result = 0;
 
-	if ( w1 != NULL ) {
+	if ( type != SUPLA_CHANNELTYPE_THERMOMETERDS18B20
+		  && type != SUPLA_CHANNELTYPE_DHT11
+		  && type != SUPLA_CHANNELTYPE_DHT22
+		  && type != SUPLA_CHANNELTYPE_AM2302 ) return 0;
+
+	if ( w1 != NULL || type != SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ) {
 		gettimeofday(&now, NULL);
 
 		lck_lock(w1_value->lck);
@@ -283,23 +306,67 @@ char channelio_read_temp(char *w1, TChannelW1TempValue *w1_value, char log_err) 
 		if ( now.tv_sec-w1_value->last_tv.tv_sec >= W1_TEMP_MINDELAY_SEC ) {
 			w1_value->last_tv = now;
 
-			if ( w1_ds18b20_get_temp(w1, &temp) == 1 ) {
+			switch(type) {
+			case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
+				read_result = w1_ds18b20_get_temp(w1, &temp);
+				break;
+			case SUPLA_CHANNELTYPE_DHT11:
+				read_result = w1_dht_read(w1, &temp, &humidity, 11);
+				break;
+			case SUPLA_CHANNELTYPE_DHT22:
+			case SUPLA_CHANNELTYPE_AM2302:
+				read_result = w1_dht_read(w1, &temp, &humidity, 22);
+				break;
+			}
+
+			if ( read_result == 1 ) {
 				if ( w1_value->temp != temp ) {
 					w1_value->temp = temp;
 					//supla_log(LOG_DEBUG, "Temp: %f", temp);
 					result = 1;
 				}
+
+				if ( w1_value->humidity != humidity ) {
+					w1_value->humidity = humidity;
+					result = 1;
+				}
+
 			} else {
-				w1_value->temp = -1000;
+				w1_value->temp = -275;
+				w1_value->humidity = -1;
 
 				if ( log_err == 1 )
-					supla_log(LOG_ERR, "Can't read 1-wire device %s", w1);
+					supla_log(LOG_ERR, "Can't read 1-wire device %s", w1 ? w1 : "");
 			}
 
 		}
 
 		lck_unlock(w1_value->lck);
 	}
+
+	return result;
+}
+
+char channelio_read_rgbw_values(int type,  TChannelRGBWValue *rgbw_value) {
+
+	// TEMPORATY IMPLEMENTATION
+
+	char result = 0;
+
+	if ( type != SUPLA_CHANNELTYPE_DIMMER
+		  && type != SUPLA_CHANNELTYPE_RGBLEDCONTROLLER
+		  && type != SUPLA_CHANNELTYPE_DIMMERANDRGBLED ) return 0;
+
+
+		lck_lock(rgbw_value->lck);
+
+		rgbw_value->color = 0x00FF00;
+		rgbw_value->brightness = 0;
+		rgbw_value->color_brightness = 10;
+
+		result = 1;
+
+		lck_unlock(rgbw_value->lck);
 
 	return result;
 }
@@ -399,7 +466,9 @@ void channelio_channel_init(void) {
 		if ( channel->gpio2 > 0 )
 			channelio_gpio_port_init(channel, &channel->gpio2_value, channel->gpio2, channelio_gpio_in(channel->type));
 
-		channelio_read_temp(channel->w1, &channel->w1_value, 1);
+		channelio_read_temp_and_humidity(channel->type, channel->w1, &channel->w1_value, 1);
+
+		channelio_read_rgbw_values(channel->type, &channel->rgbw_value);
 
 		if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
 			mcp23008_init(channel->mcp23008.reset, channel->mcp23008.addr);
@@ -619,6 +688,43 @@ char channelio_get_cvalue(TDeviceChannel *channel, char value[SUPLA_CHANNELVALUE
 
 			return 1;
 		}
+
+		if ( channel->type == SUPLA_CHANNELTYPE_DHT11
+			 || channel->type == SUPLA_CHANNELTYPE_DHT22
+			 || channel->type == SUPLA_CHANNELTYPE_AM2302 ) {
+
+			assert(sizeof(double) <= SUPLA_CHANNELVALUE_SIZE);
+
+			lck_lock(channel->w1_value.lck);
+
+			int t = channel->w1_value.temp*1000.00;
+			int h = channel->w1_value.humidity*1000.00;
+
+			memcpy(value, &t, 4);
+			memcpy(&value[4], &h, 4);
+
+			lck_unlock(channel->w1_value.lck);
+
+			return 1;
+		}
+
+		if ( channel->type == SUPLA_CHANNELTYPE_DIMMER
+			 || channel->type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER
+			 || channel->type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED ) {
+
+			lck_lock(channel->rgbw_value.lck);
+
+			value[0] = channel->rgbw_value.brightness;
+
+			value[1] = channel->rgbw_value.color_brightness;
+			value[2] = (char)((channel->rgbw_value.color & 0x000000FF));       // BLUE
+			value[3] = (char)((channel->rgbw_value.color & 0x0000FF00) >> 8);  // GREEN
+			value[4] = (char)((channel->rgbw_value.color & 0x00FF0000) >> 16); // RED
+
+			lck_unlock(channel->rgbw_value.lck);
+
+			return 1;
+		}
 	}
 
 
@@ -778,7 +884,7 @@ void channelio_w1_iterate(void) {
 	int a;
 
 	for(a=0;a<cio->channel_count;a++) {
-		if ( channelio_read_temp(cio->channels[a].w1, &cio->channels[a].w1_value, 0) == 1 )
+		if ( channelio_read_temp_and_humidity(cio->channels[a].type, cio->channels[a].w1, &cio->channels[a].w1_value, 0) == 1 )
 			channelio_raise_valuechanged(&cio->channels[a]);
 	}
 
@@ -792,6 +898,7 @@ void channelio_mcp23008_iterate(void) {
 		if ( ch->type == SUPLA_CHANNELTYPE_SENSORNO ||
 		     ch->type == SUPLA_CHANNELTYPE_SENSORNC ) {
 			unsigned char val = mcp23008_gpio_get_value(ch->mcp23008.port);
+
 			if ( ch->mcp23008.gpio.value != val ) {
 				ch->mcp23008.gpio.value = val;
 				channelio_raise_valuechanged(ch);
@@ -1069,5 +1176,12 @@ void channelio_setcalback_on_channel_value_changed(_func_channelio_valuechanged 
 }
 
 
+void tmp_channelio_raise_valuechanged(unsigned char number) {
 
+	TDeviceChannel *channel = channelio_find(number, 0);
+
+	if ( channel ) {
+		channelio_raise_valuechanged(channel);
+	}
+}
 

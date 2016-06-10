@@ -11,6 +11,7 @@ CPP_SRCS += \
 C_SRCS += \
 ../src/cfg.c \
 ../src/channel-io.c \
+../src/common_dht_read.c \
 ../src/devcfg.c \
 ../src/devconnection.c \
 ../src/eh.c \
@@ -19,19 +20,22 @@ C_SRCS += \
 ../src/ipcsocket.c \
 ../src/lck.c \
 ../src/log.c \
+../src/mcp23008.c \
+../src/pi_2_dht_read.c \
+../src/pi_2_mmio.c \
 ../src/proto.c \
 ../src/safearray.c \
 ../src/srpc.c \
 ../src/sthread.c \
 ../src/supla-socket.c \
 ../src/tools.c \
-../src/w1.c \
-../src/mcp23008.c
+../src/w1.c 
 
 OBJS += \
 ./src/accept_loop.o \
 ./src/cfg.o \
 ./src/channel-io.o \
+./src/common_dht_read.o \
 ./src/devcfg.o \
 ./src/devconnection.o \
 ./src/eh.o \
@@ -41,6 +45,9 @@ OBJS += \
 ./src/ipcsocket.o \
 ./src/lck.o \
 ./src/log.o \
+./src/mcp23008.o \
+./src/pi_2_dht_read.o \
+./src/pi_2_mmio.o \
 ./src/proto.o \
 ./src/safearray.o \
 ./src/srpc.o \
@@ -48,12 +55,12 @@ OBJS += \
 ./src/supla-dev.o \
 ./src/supla-socket.o \
 ./src/tools.o \
-./src/w1.o \
-./src/mcp23008.o
+./src/w1.o 
 
 C_DEPS += \
 ./src/cfg.d \
 ./src/channel-io.d \
+./src/common_dht_read.d \
 ./src/devcfg.d \
 ./src/devconnection.d \
 ./src/eh.d \
@@ -62,14 +69,16 @@ C_DEPS += \
 ./src/ipcsocket.d \
 ./src/lck.d \
 ./src/log.d \
+./src/mcp23008.d \
+./src/pi_2_dht_read.d \
+./src/pi_2_mmio.d \
 ./src/proto.d \
 ./src/safearray.d \
 ./src/srpc.d \
 ./src/sthread.d \
 ./src/supla-socket.d \
 ./src/tools.d \
-./src/w1.d \
-.src/mcp23008.d \
+./src/w1.d 
 
 CPP_DEPS += \
 ./src/accept_loop.d \

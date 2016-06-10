@@ -37,6 +37,18 @@ static int decode_channel_type(const char* type) {
 		return SUPLA_CHANNELTYPE_RELAY;
 	} else 	if ( strcasecmp(type, "THERMOMETERDS18B20") == 0 ) {
 		return SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+	} else 	if ( strcasecmp(type, "DHT11") == 0 ) {
+		return SUPLA_CHANNELTYPE_DHT11;
+	} else 	if ( strcasecmp(type, "DHT22") == 0 ) {
+		return SUPLA_CHANNELTYPE_DHT22;
+	} else 	if ( strcasecmp(type, "AM2302") == 0 ) {
+		return SUPLA_CHANNELTYPE_AM2302;
+	} else 	if ( strcasecmp(type, "DIMMER") == 0 ) {
+		return SUPLA_CHANNELTYPE_DIMMER;
+	} else 	if ( strcasecmp(type, "RGBLEDCONTROLLER") == 0 ) {
+		return SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
+	} else 	if ( strcasecmp(type, "DIMMERANDRGBLED") == 0 ) {
+		return SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
 	}
 
 	return atoi(type);
