@@ -43,7 +43,9 @@
 #define VAR_SVR          3
 #define VAR_LID          4
 #define VAR_PWD          5
-#define VAR_BTN          6
+#define VAR_CFGBTN       6
+#define VAR_BTN1         7
+#define VAR_BTN2         8
 
 typedef struct {
 	
@@ -202,7 +204,9 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 				char svr[3] = { 's', 'v', 'r' };
 				char lid[3] = { 'l', 'i', 'd' };
 				char pwd[3] = { 'p', 'w', 'd' };
-				char btn[3] = { 'b', 't', 'n' };
+				char btncfg[3] = { 'c', 'f', 'g' };
+				char btn1[3] = { 'b', 't', '1' };
+				char btn2[3] = { 'b', 't', '2' };
 				
 				if ( len-a >= 4
 					 && pdata[a+3] == '=' ) {
@@ -237,9 +241,21 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 						pVars->buff_size = SUPLA_LOCATION_PWD_MAXSIZE;
 						pVars->pbuff = cfg->LocationPwd;
 						
-					} else if ( memcmp(btn, &pdata[a], 3) == 0 ) {
+					} else if ( memcmp(btncfg, &pdata[a], 3) == 0 ) {
 
-						pVars->current_var = VAR_BTN;
+						pVars->current_var = VAR_CFGBTN;
+						pVars->buff_size = 12;
+						pVars->pbuff = pVars->intval;
+
+					} else if ( memcmp(btn1, &pdata[a], 3) == 0 ) {
+
+						pVars->current_var = VAR_BTN1;
+						pVars->buff_size = 12;
+						pVars->pbuff = pVars->intval;
+
+					} else if ( memcmp(btn2, &pdata[a], 3) == 0 ) {
+
+						pVars->current_var = VAR_BTN2;
 						pVars->buff_size = 12;
 						pVars->pbuff = pVars->intval;
 
@@ -301,8 +317,17 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 
 							s++;
 						}
-					} else if ( pVars->current_var == VAR_BTN ) {
-						cfg->ButtonType = pVars->intval[0] - '0';
+					} else if ( pVars->current_var == VAR_CFGBTN ) {
+
+						cfg->CfgButtonType = pVars->intval[0] - '0';
+
+					} else if ( pVars->current_var == VAR_BTN1 ) {
+
+						cfg->Button1Type = pVars->intval[0] - '0';
+
+					} else if ( pVars->current_var == VAR_BTN2 ) {
+
+						cfg->Button2Type = pVars->intval[0] - '0';
 					}
 					
 					pVars->matched++;
@@ -343,11 +368,15 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 	
 	if ( pVars->type == TYPE_POST ) {
 		
-        #ifdef BTN_TYPE_SELECTION
+        #ifdef CFGBTN_TYPE_SELECTION
 			if ( pVars->matched < 6 ) {
 				return;
 			}
-		#else
+		#elif defined(BTN1_2_TYPE_SELECTION)
+			if ( pVars->matched < 7 ) {
+				return;
+			}
+        #else
 			if ( pVars->matched < 5 ) {
 				return;
 			}
@@ -376,11 +405,11 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 		return;
 	}
 	
-	int bufflen = 695+strlen(supla_esp_cfg.WIFI_SSID)+strlen(supla_esp_cfg.Server);
+	int bufflen = 830+strlen(supla_esp_cfg.WIFI_SSID)+strlen(supla_esp_cfg.Server);
 	char *buffer = (char*)os_malloc(bufflen);
 
+    #ifdef CFGBTN_TYPE_SELECTION
 
-    #ifdef BTN_TYPE_SELECTION
 	ets_snprintf(buffer, 
 			bufflen,
  			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"btn\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
@@ -410,10 +439,49 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 			supla_esp_cfg.WIFI_SSID,
 			supla_esp_cfg.Server,
 			supla_esp_cfg.LocationID,
-			supla_esp_cfg.ButtonType == BTN_TYPE_BUTTON ? "selected" : "",
-			supla_esp_cfg.ButtonType == BTN_TYPE_SWITCH ? "selected" : "",
+			supla_esp_cfg.CfgButtonType == BTN_TYPE_BUTTON ? "selected" : "",
+			supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ? "selected" : "",
 			data_saved == 1 ? "Data saved!" : "");
+
+	#elif defined(BTN1_2_TYPE_SELECTION)
+
+	ets_snprintf(buffer,
+			bufflen,
+ 			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Input1 type:<select name=\"bt1\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br>Input2 type:<select name=\"bt2\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+			(unsigned char)supla_esp_cfg.GUID[0],
+			(unsigned char)supla_esp_cfg.GUID[1],
+			(unsigned char)supla_esp_cfg.GUID[2],
+			(unsigned char)supla_esp_cfg.GUID[3],
+			(unsigned char)supla_esp_cfg.GUID[4],
+			(unsigned char)supla_esp_cfg.GUID[5],
+			(unsigned char)supla_esp_cfg.GUID[6],
+			(unsigned char)supla_esp_cfg.GUID[7],
+			(unsigned char)supla_esp_cfg.GUID[8],
+			(unsigned char)supla_esp_cfg.GUID[9],
+			(unsigned char)supla_esp_cfg.GUID[10],
+			(unsigned char)supla_esp_cfg.GUID[11],
+			(unsigned char)supla_esp_cfg.GUID[12],
+			(unsigned char)supla_esp_cfg.GUID[13],
+			(unsigned char)supla_esp_cfg.GUID[14],
+			(unsigned char)supla_esp_cfg.GUID[15],
+			(unsigned char)mac[0],
+			(unsigned char)mac[1],
+			(unsigned char)mac[2],
+			(unsigned char)mac[3],
+			(unsigned char)mac[4],
+			(unsigned char)mac[5],
+			supla_esp_devconn_laststate(),
+			supla_esp_cfg.WIFI_SSID,
+			supla_esp_cfg.Server,
+			supla_esp_cfg.LocationID,
+			supla_esp_cfg.Button1Type == BTN_TYPE_BUTTON ? "selected" : "",
+			supla_esp_cfg.Button1Type == BTN_TYPE_SWITCH ? "selected" : "",
+			supla_esp_cfg.Button2Type == BTN_TYPE_BUTTON ? "selected" : "",
+			supla_esp_cfg.Button2Type == BTN_TYPE_SWITCH ? "selected" : "",
+			data_saved == 1 ? "Data saved!" : "");
+
     #else
+
 	ets_snprintf(buffer,
 			bufflen,
  			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br><input type=\"submit\" value=\"Save\"></form>%s",
@@ -445,7 +513,6 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 			supla_esp_cfg.LocationID,
 			data_saved == 1 ? "Data saved!" : "");
     #endif
-	
 	
 	supla_esp_http_ok((struct espconn *)arg, buffer);
 	os_free(buffer);

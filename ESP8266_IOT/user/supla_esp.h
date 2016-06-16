@@ -18,6 +18,8 @@
 #define RELAY_LO_VALUE  0
 #define RELAY_HI_VALUE  1
 
+#define RELAY_INIT_VALUE RELAY_LO_VALUE
+
 
 #define GPIO_PORT_INIT \
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4); \
@@ -31,21 +33,21 @@
 	#define DEVICE_NAME "SUPLA-DHT11-ESP01"
 	#define SENSOR_DHT11
     #define TEMPERATURE_CHANNEL 0
-	#define BTN_PORT         0
+	#define CFG_PORT         0
 
 #elif defined(__BOARD_dht22_esp01)
 
 	#define DEVICE_NAME "SUPLA-DHT22-ESP01"
 	#define SENSOR_DHT22
     #define TEMPERATURE_CHANNEL 0
-	#define BTN_PORT         0
+	#define CFG_PORT         0
 
 #elif defined(__BOARD_am2302_esp01)
 
 	#define DEVICE_NAME "SUPLA-AM2302-ESP01"
 	#define SENSOR_DHT22
     #define TEMPERATURE_CHANNEL 0
-	#define BTN_PORT         0
+	#define CFG_PORT         0
 
 
 #elif defined(__BOARD_thermometer_esp01)
@@ -53,7 +55,7 @@
 	#define DEVICE_NAME "SUPLA-THERMOMETER-ESP01"
 	#define DS18B20
     #define TEMPERATURE_CHANNEL 0
-	#define BTN_PORT         0
+	#define CFG_PORT         0
 
 #elif defined(__BOARD_thermometer_esp01_ds_gpio0)
 
@@ -61,12 +63,12 @@
 	#define DS18B20
 	#define W1_GPIO0
 	#define TEMPERATURE_CHANNEL 0
-	#define BTN_PORT         2
+	#define CFG_PORT         2
 
 #elif defined(__BOARD_wifisocket) || defined(__BOARD_wifisocket_54)
 
 	#define DS18B20
-    #define BTN_TYPE_SELECTION
+    #define CFGBTN_TYPE_SELECTION
 	#define DEVICE_NAME "SUPLA-SOCKET"
 	#define TEMPERATURE_CHANNEL 1
 	#define LED_RED_PORT    13
@@ -75,29 +77,29 @@
 
 	#ifdef __BOARD_wifisocket_54
 		#define RELAY1_PORT      5
-		#define BTN_PORT         4
+		#define CFG_PORT         4
 	#else
 		#define RELAY1_PORT      4
-		#define BTN_PORT         5
+		#define CFG_PORT         5
 	#endif
 
 #elif defined(__BOARD_wifisocket_esp01)
 
 	#define DEVICE_NAME "SUPLA-SOCKET"
 	#define RELAY1_PORT      0
-	#define BTN_PORT         2
+	#define CFG_PORT         2
 
 #elif defined(__BOARD_gate_module_esp01)
 
 	#define DEVICE_NAME "SUPLA-GATE-MODULE-ESP01"
 	#define RELAY1_PORT      0
-	#define BTN_PORT         2
+	#define CFG_PORT         2
 
 #elif defined(__BOARD_gate_module_esp01_ds)
 
 	#define DEVICE_NAME "SUPLA-GATE-MODULE-ESP01"
 	#define RELAY1_PORT      3
-	#define BTN_PORT         0
+	#define CFG_PORT         0
     #define TEMPERATURE_CHANNEL 1
 	#define USE_GPIO3
 	#define DS18B20
@@ -120,7 +122,7 @@
 	#define LED_GREEN_PORT  12
 	#define LED_BLUE_PORT   14
 
-	#define BTN_PORT         5
+	#define CFG_PORT         5
 
 	#define RELAY1_PORT      4
 	#define RELAY2_PORT      13
@@ -139,7 +141,7 @@
 	#define LED_GREEN_PORT  5
 	#define LED_BLUE_PORT   12
 
-	#define BTN_PORT         13
+	#define CFG_PORT         13
 
 	#define RELAY1_PORT      4
 	#define RELAY2_PORT      14
@@ -158,7 +160,7 @@
 	#define LED_GREEN_PORT  12
 	#define LED_BLUE_PORT   14
 
-	#define BTN_PORT         13
+	#define CFG_PORT         13
 	#define RELAY1_PORT      4
 	#define RELAY2_PORT      5
 
@@ -175,7 +177,7 @@
 	#define LED_GREEN_PORT  12
 	#define LED_BLUE_PORT   14
 
-	#define BTN_PORT         5
+	#define CFG_PORT         5
 
 	#define RELAY1_PORT      4
 	#define RELAY2_PORT      13
@@ -194,7 +196,7 @@
 	#define LED_GREEN_PORT  5
 	#define LED_BLUE_PORT   12
 
-	#define BTN_PORT         13
+	#define CFG_PORT         13
 	#define RELAY1_PORT      4
 	#define RELAY2_PORT      14
 
@@ -212,7 +214,7 @@
 
     #define LED_RED_PORT  14
 
-	#define BTN_PORT         12
+	#define CFG_PORT         12
 	#define RELAY1_PORT      4
 	#define RELAY2_PORT      13
 
@@ -223,7 +225,7 @@
 
     #define INPUT_PORT1      4
 
-	#define BTN_PORT         5
+	#define CFG_PORT         5
 
 	#define RELAY1_PORT      14
 	#define RELAY2_PORT      2
@@ -250,7 +252,7 @@
     #define CFG_SECTOR          WROOM_CFG_SECTOR
 	#define DEVICE_NAME "SONOFF"
 	#define RELAY1_PORT      12
-	#define BTN_PORT         0
+	#define CFG_PORT         0
     #define LED_RED_PORT     13
 
 #elif defined(__BOARD_sonoff_ds18b20)
@@ -259,7 +261,7 @@
     #define DS18B20
 	#define DEVICE_NAME "SONOFF-DS18B20"
 	#define RELAY1_PORT      12
-	#define BTN_PORT         0
+	#define CFG_PORT         0
     #define LED_RED_PORT     13
     #define TEMPERATURE_CHANNEL 1
     #define W1_GPIO3
@@ -267,7 +269,7 @@
 #elif defined(__BOARD_dimmer)
 
 	#define DEVICE_NAME "DIMMER"
-	#define BTN_PORT         2
+	#define CFG_PORT         2
     #define DIMMER_CHANNEL   0
 
 #elif defined(__BOARD_EgyIOT)
@@ -279,8 +281,28 @@
 		#define RELAY2_PORT      13
 		#define RELAY3_PORT      16
 
-		#define BTN_PORT         2
+		#define CFG_PORT         0
         #define DIMMER_CHANNEL   3
+
+#elif defined(__BOARD_zam_wop_01)
+
+     	#define DEVICE_NAME "ZAM-WOP-01"
+
+        #define USE_GPIO16_OUTPUT
+        #define LED_RED_PORT     16
+
+        #define RESET_RELAY_PORT
+
+        #define RELAY1_PORT      14
+		#define CFG_PORT         13
+
+        #define ZAM_INPUT1        4
+        #define ZAM_INPUT2        5
+
+        #define BTN1_2_TYPE_SELECTION
+
+		#undef RELAY_INIT_VALUE
+        #define RELAY_INIT_VALUE 1
 
 #endif
 

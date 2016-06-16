@@ -25,9 +25,13 @@ typedef struct {
 	char Server[SERVER_MAXSIZE];
 	int LocationID;
     char LocationPwd[SUPLA_LOCATION_PWD_MAXSIZE];
+
     char WIFI_SSID[WIFI_SSID_MAXSIZE];
     char WIFI_PWD[WIFI_PWD_MAXSIZE];
-    char ButtonType;
+
+    char CfgButtonType;
+    char Button1Type;
+    char Button2Type;
 
 }SuplaEspCfg;
 

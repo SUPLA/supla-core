@@ -68,8 +68,10 @@ void ICACHE_FLASH_ATTR supla_esp_devconn_iterate(void *timer_arg);
 void ICACHE_FLASH_ATTR
 supla_esp_system_restart(void) {
 
-      if ( sys_restart == 1 )
+      if ( sys_restart == 1 ) {
     	  system_restart();
+      }
+
 }
 
 int ICACHE_FLASH_ATTR
@@ -741,6 +743,20 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[3].Number = 3;
 			srd.channels[3].Type = SUPLA_CHANNELTYPE_DIMMER;
 			supla_esp_channel_get_current_rgbw_value(srd.channels[3].value);
+
+#elif defined(__BOARD_zam_wop_01)
+
+			srd.channel_count = 1;
+
+			srd.channels[0].Number = 0;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_RELAY;
+			srd.channels[0].FuncList = SUPLA_BIT_RELAYFUNC_POWERSWITCH \
+										| SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
+			srd.channels[0].Default = SUPLA_CHANNELFNC_LIGHTSWITCH;
+
+
+		    srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
+
 #endif
 
 			srpc_ds_async_registerdevice_b(srpc, &srd);

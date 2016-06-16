@@ -40,7 +40,7 @@ supla_esp_cfg_save(SuplaEspCfg *cfg) {
 char ICACHE_FLASH_ATTR
 supla_esp_cfg_init(void) {
 
-	char TAG[6] = {'S','U','P','L','A', 2};
+	char TAG[6] = {'S','U','P','L','A', 3};
 	char mac[6];
 	int a;
 
@@ -53,8 +53,10 @@ supla_esp_cfg_init(void) {
 		   supla_log(LOG_DEBUG, "SSID: %s", supla_esp_cfg.WIFI_SSID);
 		   supla_log(LOG_DEBUG, "SVR: %s", supla_esp_cfg.Server);
 		   supla_log(LOG_DEBUG, "Location ID: %i", supla_esp_cfg.LocationID);
-		   supla_log(LOG_DEBUG, "BUTTON TYPE: %s", supla_esp_cfg.ButtonType == BTN_TYPE_BUTTON ? "button" : "switch");
+		   supla_log(LOG_DEBUG, "CFG BUTTON TYPE: %s", supla_esp_cfg.CfgButtonType == BTN_TYPE_BUTTON ? "button" : "switch");
 
+		   supla_log(LOG_DEBUG, "BUTTON1 TYPE: %s", supla_esp_cfg.Button1Type == BTN_TYPE_BUTTON ? "button" : "switch");
+		   supla_log(LOG_DEBUG, "BUTTON2 TYPE: %s", supla_esp_cfg.Button2Type == BTN_TYPE_BUTTON ? "button" : "switch");
 		   return 1;
 	   }
 	}
@@ -65,7 +67,9 @@ supla_esp_cfg_init(void) {
 	supla_esp_cfg.LocationPwd[0] = 0;
 	supla_esp_cfg.WIFI_PWD[0] = 0;
 	supla_esp_cfg.WIFI_SSID[0] = 0;
-	supla_esp_cfg.ButtonType = BTN_TYPE_BUTTON;
+	supla_esp_cfg.CfgButtonType = BTN_TYPE_BUTTON;
+	supla_esp_cfg.Button1Type = BTN_TYPE_BUTTON;
+	supla_esp_cfg.Button2Type = BTN_TYPE_SWITCH;
 
 	os_get_random(supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 

@@ -67,6 +67,8 @@ case $1 in
    ;;
    "dimmer")
    ;;
+   "zam_wop_01")
+   ;;
    *)
    echo "Usage:"
    echo "       build.sh BOARD_TYPE";
@@ -96,6 +98,7 @@ case $1 in
    echo "              sonoff_ds18b20";
    echo "              EgyIOT";
    echo "              dimmer";
+   echo "              zam_wop_01";
    echo 
    echo
    exit;

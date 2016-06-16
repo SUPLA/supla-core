@@ -44,15 +44,24 @@ static char input2_last_state = -1;
 static ETSTimer supla_gpio_timer4;
 static ETSTimer supla_gpio_timer5;
 
-static char switch_btn_state_check = 0;
-static char switch_btn_last_state = -1;
+static char switch_cfgbtn_state_check = 0;
+static char switch_cfgbtn_last_state = -1;
 
-static char switch_btn_counter = 0;
+static char switch_cfgbtn_counter = 0;
 
 static struct single_key_param *single_key[1];
 static struct keys_param keys;
 static char cfg_exit_counter = 1; // 1 for start cfg from user_init
 
+
+#if defined(ZAM_INPUT1) || defined(ZAM_INPUT2)
+static uint32 zam_input1_time = 0;
+static uint32 zam_input2_time = 0;
+
+static ETSTimer supla_gpio_timer6;
+static ETSTimer supla_gpio_timer7;
+
+#endif
 
 void ICACHE_FLASH_ATTR
 gpio16_output_conf(void)
@@ -110,7 +119,7 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_cfg_pressed(void) {
 	if ( supla_esp_cfgmode_started() == 0 ) {
 
 		cfg_exit_counter = 0;
-		switch_btn_counter = 0;
+		switch_cfgbtn_counter = 0;
 
 		supla_esp_devconn_stop();
 		supla_esp_cfgmode_start();
@@ -119,7 +128,21 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_cfg_pressed(void) {
 
 }
 
+#ifdef RELAY1_PORT
+
+void ICACHE_FLASH_ATTR supla_esg_gpio_relay_switch(void) {
+
+	char hi = supla_esp_gpio_is_hi(RELAY1_PORT) == 1 ? 0 : 1;
+
+	supla_esp_gpio_hi(RELAY1_PORT, hi);
+	supla_esp_channel_value_changed(0, hi);
+
+}
+
+#endif
+
 void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
+
 
 	if ( supla_esp_cfgmode_started() == 0 ) {
 
@@ -129,10 +152,7 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
 		    || defined(__BOARD_sonoff) \
 		    || defined(__BOARD_sonoff_ds18b20)
 
-		char hi = supla_esp_gpio_is_hi(RELAY1_PORT) == 1 ? 0 : 1;
-
-		supla_esp_gpio_hi(RELAY1_PORT, hi);
-		supla_esp_channel_value_changed(0, hi);
+		supla_esg_gpio_relay_switch();
 
         #endif
 
@@ -141,7 +161,7 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
 		cfg_exit_counter++;
 
 		if ( cfg_exit_counter > 1
-			 && switch_btn_counter < 10 ) {
+			 && switch_cfgbtn_counter < 10 ) {
 
             system_restart();
 		}
@@ -184,17 +204,17 @@ supla_esp_gpio_check_inputs(void *timer_arg) {
 
 void ICACHE_FLASH_ATTR
 supla_esp_gpio_reset_cfg_counter(void *timer_arg) {
-	switch_btn_counter = 0;
+	switch_cfgbtn_counter = 0;
 }
 
 void ICACHE_FLASH_ATTR
-supla_esp_gpio_check_switch_btn(void *timer_arg) {
+supla_esp_gpio_check_switch_cfgbtn(void *timer_arg) {
 
-	char v = GPIO_INPUT_GET(GPIO_ID_PIN(BTN_PORT));
+	char v = GPIO_INPUT_GET(GPIO_ID_PIN((int)timer_arg));
 
-	if ( v != switch_btn_last_state ) {
+	if ( v != switch_cfgbtn_last_state ) {
 
-		if ( switch_btn_counter == 0 ) {
+		if ( switch_cfgbtn_counter == 0 ) {
 
 			os_timer_disarm(&supla_gpio_timer5);
 			os_timer_setfn(&supla_gpio_timer5, supla_esp_gpio_reset_cfg_counter, NULL);
@@ -202,22 +222,94 @@ supla_esp_gpio_check_switch_btn(void *timer_arg) {
 
 		}
 
-		switch_btn_counter++;
+		switch_cfgbtn_counter++;
 
-		supla_log(LOG_DEBUG, "Switch counter: %i", switch_btn_counter);
+		supla_log(LOG_DEBUG, "Switch counter: %i", switch_cfgbtn_counter);
 
-		if ( switch_btn_counter >= 10 ) {
+		if ( switch_cfgbtn_counter >= 10 ) {
 			supla_esg_gpio_cfg_pressed();
 		} else {
 			supla_esg_gpio_manual_pressed();
 		}
 
-		switch_btn_last_state = v;
+		switch_cfgbtn_last_state = v;
 	}
 
-	switch_btn_state_check = 0;
+	switch_cfgbtn_state_check = 0;
 
 }
+
+#if defined(ZAM_INPUT1) || defined(ZAM_INPUT2)
+
+void ICACHE_FLASH_ATTR
+supla_esp_zam_unpress_detect(void *timer_arg) {
+
+	uint32 time = system_get_time();
+
+	uint32 *zam_input_time;
+	ETSTimer *supla_gpio_timer;
+
+	if ( ZAM_INPUT1 == (int)timer_arg ) {
+		zam_input_time = &zam_input1_time;
+		supla_gpio_timer = &supla_gpio_timer6;
+	} else {
+		zam_input_time = &zam_input2_time;
+		supla_gpio_timer = &supla_gpio_timer7;
+	}
+
+	if ( abs(time-(*zam_input_time)) > 50000 ) {
+
+		os_timer_disarm(supla_gpio_timer);
+		supla_esg_gpio_relay_switch();
+	}
+
+}
+
+char supla_esp_key_intr_zam_handler(uint32 gpio_status, int port, char btn_type) {
+
+	if ( gpio_status & BIT(port) ) {
+
+		gpio_pin_intr_state_set(GPIO_ID_PIN(port), GPIO_PIN_INTR_DISABLE);
+		GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status & BIT(port));
+
+		uint32 time = system_get_time();
+
+		uint32 *zam_input_time;
+		ETSTimer *supla_gpio_timer;
+
+		if ( port == ZAM_INPUT1 ) {
+			zam_input_time = &zam_input1_time;
+			supla_gpio_timer = &supla_gpio_timer6;
+		} else {
+			zam_input_time = &zam_input2_time;
+			supla_gpio_timer = &supla_gpio_timer7;
+		}
+
+		if ( abs(time-(*zam_input_time)) > 100000 ) {
+
+			supla_esg_gpio_relay_switch();
+
+			if ( btn_type == BTN_TYPE_SWITCH ) {
+
+				os_timer_disarm(supla_gpio_timer);
+				os_timer_setfn(supla_gpio_timer, supla_esp_zam_unpress_detect, (void*)port);
+				os_timer_arm (supla_gpio_timer, 50, true);
+
+			}
+
+		}
+
+		*zam_input_time = time;
+
+		gpio_pin_intr_state_set(GPIO_ID_PIN(port), GPIO_PIN_INTR_ANYEDGE);
+
+		return 1;
+	}
+
+	return 0;
+}
+
+#endif
 
 LOCAL char
 supla_esp_key_intr_handler(uint32 gpio_status) {
@@ -256,16 +348,35 @@ supla_esp_key_intr_handler(uint32 gpio_status) {
 
     #endif
 
-	if ( supla_esp_cfg.ButtonType == BTN_TYPE_SWITCH ) {
-		if ( gpio_status & BIT(BTN_PORT) ) {
+	char handler_result = 0;
 
-			GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status & BIT(BTN_PORT));
+	#if defined(ZAM_INPUT1)
 
-			if ( switch_btn_state_check == 0 ) {
-				switch_btn_state_check = 1;
+		if ( supla_esp_key_intr_zam_handler(gpio_status, ZAM_INPUT1, supla_esp_cfg.Button1Type) == 1 )
+			handler_result = 1;
+
+	#endif
+
+	#if defined(ZAM_INPUT2)
+
+		if ( supla_esp_key_intr_zam_handler(gpio_status, ZAM_INPUT2, supla_esp_cfg.Button2Type) == 1 )
+			handler_result = 1;
+
+	#endif
+
+	if ( handler_result == 1 )
+		return 1;
+
+	if ( supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ) {
+		if ( gpio_status & BIT(CFG_PORT) ) {
+
+			GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, gpio_status & BIT(CFG_PORT));
+
+			if ( switch_cfgbtn_state_check == 0 ) {
+				switch_cfgbtn_state_check = 1;
 
 				os_timer_disarm(&supla_gpio_timer4);
-				os_timer_setfn(&supla_gpio_timer4, supla_esp_gpio_check_switch_btn, NULL);
+				os_timer_setfn(&supla_gpio_timer4, supla_esp_gpio_check_switch_cfgbtn, (void*)CFG_PORT);
 				os_timer_arm (&supla_gpio_timer4, 50, false);
 			}
 
@@ -273,15 +384,30 @@ supla_esp_key_intr_handler(uint32 gpio_status) {
 		}
 	};
 
+
 	return 0;
+}
+
+void
+supla_esp_gpio_enable_input_port(char port) {
+
+    gpio_output_set(0, 0, 0, GPIO_ID_PIN(port));
+
+    gpio_register_set(GPIO_PIN_ADDR(port), GPIO_PIN_INT_TYPE_SET(GPIO_PIN_INTR_DISABLE)
+                      | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_DISABLE)
+                      | GPIO_PIN_SOURCE_SET(GPIO_AS_PIN_SOURCE));
+
+    GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(port));
+    gpio_pin_intr_state_set(GPIO_ID_PIN(port), GPIO_PIN_INTR_ANYEDGE);
+
 }
 
 void ICACHE_FLASH_ATTR
 supla_esp_gpio_init(void) {
 
-	switch_btn_state_check = 0;
-	switch_btn_last_state = -1;
-	switch_btn_counter = 0;
+	switch_cfgbtn_state_check = 0;
+	switch_cfgbtn_last_state = -1;
+	switch_cfgbtn_counter = 0;
 
 	#ifdef USE_GPIO3
 		 system_uart_swap ();
@@ -299,29 +425,32 @@ supla_esp_gpio_init(void) {
 	gpio16_output_conf();
 	#endif
 
+
     #ifdef USE_GPIO3
 	   PIN_FUNC_SELECT(PERIPHS_IO_MUX_U0RXD_U, FUNC_GPIO3);
 	   PIN_PULLUP_DIS(PERIPHS_IO_MUX_U0RXD_U);
     #endif
 
     #ifdef BTN_PULLUP
-        #if BTN_PORT == 0
+        #if CFG_PORT == 0
 	      PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO0_U);
-        #elif BTN_PORT == 2
+        #elif CFG_PORT == 2
           PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO2_U);
-        #elif BTN_PORT == 4
+        #elif CFG_PORT == 4
 	      PIN_PULLUP_EN(PERIPHS_IO_MUX_GPIO4_U);
-		#elif BTN_PORT == 12
+		#elif CFG_PORT == 12
 	     PIN_PULLUP_EN(PERIPHS_IO_MUX_MTDI_U);
-		#elif BTN_PORT == 13
-	      PIN_PULLUP_EN(PPERIPHS_IO_MUX_MTCK_U);
-		#elif BTN_PORT == 14
+		#elif CFG_PORT == 13
+	      PIN_PULLUP_EN(PERIPHS_IO_MUX_MTCK_U);
+		#elif CFG_PORT == 14
 	      PIN_PULLUP_EN(PERIPHS_IO_MUX_MTMS_U);
        #endif
     #endif
 
     #ifdef LED_RED_PORT
-	gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
+      #if LED_RED_PORT != 16
+	    gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
+      #endif
     #endif
 
     #ifdef LED_GREEN_PORT
@@ -341,10 +470,17 @@ supla_esp_gpio_init(void) {
     gpio_pin_intr_state_set(GPIO_ID_PIN(RELAY2_PORT), GPIO_PIN_INTR_DISABLE);
     #endif
 
+	#ifdef ZAM_INPUT1
+	supla_esp_gpio_enable_input_port(ZAM_INPUT1);
+	#endif
+
+	#ifdef ZAM_INPUT2
+	supla_esp_gpio_enable_input_port(ZAM_INPUT2);
+	#endif
 
 	ETS_GPIO_INTR_ENABLE();
 
-	single_key[0] = key_init_single(BTN_PORT, supla_esg_gpio_cfg_pressed, supla_esg_gpio_manual_pressed);
+	single_key[0] = key_init_single(CFG_PORT, supla_esg_gpio_cfg_pressed, supla_esg_gpio_manual_pressed);
 
 	keys.key_num = 1;
 	keys.single_key = single_key;
@@ -352,17 +488,18 @@ supla_esp_gpio_init(void) {
 
     #ifdef RESET_RELAY_PORT
 
-      #ifdef RELAY1_PORT
-	     supla_esp_gpio_hi(RELAY1_PORT, RELAY_LO_VALUE);
-      #endif
+		#ifdef RELAY1_PORT
+		   supla_esp_gpio_hi(RELAY1_PORT, RELAY_INIT_VALUE);
+		#endif
 
-      #ifdef RELAY2_PORT
-	     supla_esp_gpio_hi(RELAY2_PORT, RELAY_LO_VALUE);
-      #endif
+		#ifdef RELAY2_PORT
+		   supla_esp_gpio_hi(RELAY2_PORT, RELAY_INIT_VALUE);
+		#endif
 
     #endif
 
 	key_init(&keys);
+
 
 
 }
@@ -378,7 +515,7 @@ supla_esp_gpio_hi(int port, char hi) {
 
 }
 
-void ICACHE_FLASH_ATTR supla_esp_gpio_set_rgb(char r, char g, char b) {
+void ICACHE_FLASH_ATTR supla_esp_gpio_set_led(char r, char g, char b) {
 
 	os_timer_disarm(&supla_gpio_timer1);
 
@@ -408,9 +545,11 @@ void ICACHE_FLASH_ATTR supla_esp_gpio_init_led(void) {
 	ETS_GPIO_INTR_DISABLE();
 
 	#ifdef LED_RED_PORT
-		GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(LED_RED_PORT));
-		gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
-		gpio_output_set(0, GPIO_ID_PIN(LED_RED_PORT), GPIO_ID_PIN(LED_RED_PORT), 0);
+		#if LED_RED_PORT != 16
+			GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(LED_RED_PORT));
+			gpio_pin_intr_state_set(GPIO_ID_PIN(LED_RED_PORT), GPIO_PIN_INTR_DISABLE);
+			gpio_output_set(0, GPIO_ID_PIN(LED_RED_PORT), GPIO_ID_PIN(LED_RED_PORT), 0);
+		#endif
 	#endif
 
 	#ifdef LED_GREEN_PORT
@@ -437,17 +576,17 @@ supla_esp_gpio_led_blinking_func(void *timer_arg) {
 
 	#ifdef LED_RED_PORT
 		if ( (int)timer_arg & LED_RED )
-			supla_esp_gpio_hi(LED_RED_PORT, GPIO_OUTPUT_GET(LED_RED_PORT) == 0 ? 1 : 0);
+			supla_esp_gpio_hi(LED_RED_PORT, supla_esp_gpio_is_hi(LED_RED_PORT) == 0 ? 1 : 0);
 	#endif
 
 	#ifdef LED_GREEN_PORT
 		if ( (int)timer_arg & LED_GREEN )
-			supla_esp_gpio_hi(LED_GREEN_PORT, GPIO_OUTPUT_GET(LED_GREEN_PORT) == 0 ? 1 : 0);
+			supla_esp_gpio_hi(LED_GREEN_PORT, supla_esp_gpio_is_hi(LED_GREEN_PORT) == 0 ? 1 : 0);
 	#endif
 
     #ifdef LED_BLUE_PORT
 		if ( (int)timer_arg & LED_BLUE )
-			supla_esp_gpio_hi(LED_BLUE_PORT, GPIO_OUTPUT_GET(LED_BLUE_PORT) == 0 ? 1 : 0);
+			supla_esp_gpio_hi(LED_BLUE_PORT, supla_esp_gpio_is_hi(LED_BLUE_PORT) == 0 ? 1 : 0);
     #endif
 
 }
@@ -455,7 +594,7 @@ supla_esp_gpio_led_blinking_func(void *timer_arg) {
 void ICACHE_FLASH_ATTR
 supla_esp_gpio_led_blinking(int led, int time) {
 
-	supla_esp_gpio_set_rgb(0, 0, 0);
+	supla_esp_gpio_set_led(0, 0, 0);
 
 	os_timer_setfn(&supla_gpio_timer1, supla_esp_gpio_led_blinking_func, (void*)led);
 	os_timer_arm (&supla_gpio_timer1, time, true);
@@ -478,7 +617,7 @@ void ICACHE_FLASH_ATTR supla_esp_gpio_state_disconnected(void) {
 
 
     #if defined(LED_RED_PORT) && defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
-	supla_esp_gpio_set_rgb(1, 0, 0);
+	supla_esp_gpio_set_led(1, 0, 0);
     #elif defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
 	supla_esp_gpio_led_blinking(LED_GREEN, 500);
     #elif defined(LED_RED_PORT)
@@ -497,7 +636,7 @@ void ICACHE_FLASH_ATTR supla_esp_gpio_state_ipreceived(void) {
 	supla_log(LOG_DEBUG, "IP Received");
 
 	#if defined(LED_RED_PORT) && defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
-	supla_esp_gpio_set_rgb(0, 0, 1);
+	supla_esp_gpio_set_led(0, 0, 1);
 	#elif defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
 	supla_esp_gpio_led_blinking(LED_GREEN | LED_BLUE, 500);
 	#elif defined(LED_RED_PORT)
@@ -507,24 +646,11 @@ void ICACHE_FLASH_ATTR supla_esp_gpio_state_ipreceived(void) {
 
 #if defined(INPUT_PORT1) || defined(INPUT_PORT2)
 
-void ICACHE_FLASH_ATTR
-supla_esp_gpio_enable_input_port(char port) {
-
-    gpio_output_set(0, 0, 0, GPIO_ID_PIN(port));
-
-    gpio_register_set(GPIO_PIN_ADDR(port), GPIO_PIN_INT_TYPE_SET(GPIO_PIN_INTR_DISABLE)
-                      | GPIO_PIN_PAD_DRIVER_SET(GPIO_PAD_DRIVER_DISABLE)
-                      | GPIO_PIN_SOURCE_SET(GPIO_AS_PIN_SOURCE));
-
-    GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(port));
-    gpio_pin_intr_state_set(GPIO_ID_PIN(port), GPIO_PIN_INTR_ANYEDGE);
-
-}
 
 void ICACHE_FLASH_ATTR
 supla_esp_gpio_enable_inputs(void *timer_arg) {
 
-	supla_esp_gpio_set_rgb(0, 0, 0);
+	supla_esp_gpio_set_led(0, 0, 0);
 
 	input1_last_state = -1;
 	input2_last_state = -1;
@@ -557,9 +683,9 @@ void ICACHE_FLASH_ATTR supla_esp_gpio_state_connected(void) {
 
 
 	#if defined(LED_RED_PORT) && defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
-	supla_esp_gpio_set_rgb(0, 1, 0);
+	supla_esp_gpio_set_led(0, 1, 0);
 	#else
-	supla_esp_gpio_set_rgb(0, 0, 0);
+	supla_esp_gpio_set_led(0, 0, 0);
 	#endif
 
 	#if defined(INPUT_PORT1) || defined(INPUT_PORT2)
