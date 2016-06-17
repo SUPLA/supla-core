@@ -26,10 +26,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define MMIO_SUCCESS 0
 #define MMIO_ERROR_DEVMEM -1
 #define MMIO_ERROR_MMAP -2
@@ -62,9 +58,5 @@ static inline void pi_2_mmio_set_low(const int gpio_number) {
 static inline uint32_t pi_2_mmio_input(const int gpio_number) {
   return *(pi_2_mmio_gpio+13) & (1 << gpio_number);
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

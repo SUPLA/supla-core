@@ -94,7 +94,6 @@ char w1_dht_read(const char *w1, double *temp, double *humidity, char chip_type)
 
 			*temp = _temperature;
 			*humidity = _humidity;
-
 			return 1;
 		}
 	}

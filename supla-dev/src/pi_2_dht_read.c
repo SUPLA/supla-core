@@ -36,6 +36,8 @@
 #define DHT_PULSES 41
 
 int pi_2_dht_read(int type, int pin, float* humidity, float* temperature) {
+
+
   // Validate humidity and temperature arguments and set them to zero.
   if (humidity == NULL || temperature == NULL) {
     return DHT_ERROR_ARGUMENT;
@@ -72,8 +74,8 @@ int pi_2_dht_read(int type, int pin, float* humidity, float* temperature) {
   // Set pin at input.
   pi_2_mmio_set_input(pin);
   // Need a very short delay before reading pins or else value is sometimes still low.
-  int i;
-  for (i = 0; i < 50; ++i) {
+  volatile int j;
+  for (j = 0; j < 50; ++j) {
   }
 
   // Wait for DHT to pull pin low.
@@ -86,6 +88,7 @@ int pi_2_dht_read(int type, int pin, float* humidity, float* temperature) {
     }
   }
 
+  int i;
   // Record pulse widths for the expected result bits.
   for (i=0; i < DHT_PULSES*2; i+=2) {
     // Count how long pin is low and store in pulseCounts[i]
@@ -114,7 +117,6 @@ int pi_2_dht_read(int type, int pin, float* humidity, float* temperature) {
   // Compute the average low pulse width to use as a 50 microsecond reference threshold.
   // Ignore the first two readings because they are a constant 80 microsecond pulse.
   uint32_t threshold = 0;
-
   for (i=2; i < DHT_PULSES*2; i+=2) {
     threshold += pulseCounts[i];
   }
