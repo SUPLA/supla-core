@@ -21,6 +21,9 @@
 #include "supla_esp_gpio.h"
 #include "supla-dev/log.h"
 
+
+
+
 void user_init(void)
 {
 
@@ -28,6 +31,10 @@ void user_init(void)
      supla_esp_gpio_init();
 
      supla_log(LOG_DEBUG, "Starting");
+
+	 #if NOSSL == 1
+      supla_log(LOG_DEBUG, "NO SSL!");
+	 #endif
 
      supla_esp_cfg_init();
      supla_esp_devconn_init();
@@ -39,6 +46,10 @@ void user_init(void)
      #ifdef DHTSENSOR
 		 supla_dht_init();
      #endif
+
+	#ifdef SUPLA_PWM_COUNT
+	     supla_esp_pwm_init();
+	#endif
 
      if ( supla_esp_cfg.LocationID == 0
     		 || supla_esp_cfg.LocationPwd[0] == 0
@@ -60,6 +71,7 @@ void user_init(void)
 	#endif
 
 	supla_esp_devconn_start();
+
 
 
 }

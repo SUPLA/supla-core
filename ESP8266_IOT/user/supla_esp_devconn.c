@@ -18,6 +18,7 @@
 
 #include "supla_esp_devconn.h"
 #include "supla_esp_cfg.h"
+#include "supla_esp_pwm.h"
 #include "supla_ds18b20.h"
 #include "supla_dht.h"
 #include "supla-dev/srpc.h"
@@ -25,6 +26,16 @@
 
 static ETSTimer supla_devconn_timer1;
 static ETSTimer supla_iterate_timer;
+
+#if NOSSL == 1
+    #define supla_espconn_sent espconn_sent
+    #define supla_espconn_disconnect espconn_disconnect
+    #define supla_espconn_connect espconn_connect
+#else
+    #define supla_espconn_sent espconn_secure_sent
+	#define supla_espconn_disconnect espconn_secure_disconnect
+	#define supla_espconn_connect espconn_secure_connect
+#endif
 
 #ifdef RELAY1_PORT
 	static ETSTimer supla_relay1_timer;
@@ -124,7 +135,9 @@ supla_esp_devconn_recv_cb (void *arg, char *pdata, unsigned short len) {
 
 int ICACHE_FLASH_ATTR
 supla_esp_data_write(void *buf, int count, void *dcd) {
-	return espconn_secure_sent(&ESPConn, buf, count) == 0 ? count : -1;
+
+	return supla_espconn_sent(&ESPConn, buf, count) == 0 ? count : -1;
+
 }
 
 
@@ -234,7 +247,8 @@ supla_esp_channel_value_changed(int channel_number, char v) {
 
 }
 
-#if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+#if defined(RGBW_CONTROLLER_CHANNEL) \
+    || defined(DIMMER_CHANNEL)
 
 void ICACHE_FLASH_ATTR
 supla_esp_channel_rgbw_to_value(char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness, char brightness) {
@@ -264,9 +278,7 @@ supla_esp_channel_rgbw_value_changed(int channel_number, int color, char color_b
 
 		char value[SUPLA_CHANNELVALUE_SIZE];
 
-
 		supla_esp_channel_rgbw_to_value(value,color, color_brightness, brightness);
-
 		srpc_ds_async_channel_value_changed(srpc, channel_number, value);
 	}
 
@@ -317,12 +329,18 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 	}
 #endif
 
-#if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+#if defined(RGBW_CONTROLLER_CHANNEL)
 
 char ICACHE_FLASH_ATTR
 supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
 
-	supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
+	//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
+
+	supla_esp_pwm_set_percent_duty(*Brightness, 0);
+	supla_esp_pwm_set_percent_duty(*ColorBrightness, 1);
+	supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, 2); //RED
+	supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, 3);  //GREEN
+	supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, 4);         //BLUE
 
 	return 1;
 }
@@ -332,13 +350,13 @@ supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrigh
 void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
-#if defined(RGB_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+#if defined(RGBW_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
 
 	unsigned char rgb_cn = 255;
 	unsigned char dimmer_cn = 255;
 
-    #ifdef RGB_CONTROLLER_CHANNEL
-	rgb_cn = RGB_CONTROLLER_CHANNEL;
+    #ifdef RGBW_CONTROLLER_CHANNEL
+	rgb_cn = RGBW_CONTROLLER_CHANNEL;
     #endif
 
 	#ifdef DIMMER_CHANNEL
@@ -713,6 +731,12 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMER;
 			supla_esp_channel_get_current_rgbw_value(srd.channels[0].value);
 
+#elif defined(__BOARD_rgbw)
+
+			srd.channel_count = 1;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
+			supla_esp_channel_get_current_rgbw_value(srd.channels[0].value);
+
 #elif defined(__BOARD_EgyIOT)
 
 			srd.channel_count = 4;
@@ -832,7 +856,8 @@ supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 		ip = (ip_addr_t *)&_ip;
 	}
 
-	espconn_secure_disconnect(&ESPConn);
+
+	supla_espconn_disconnect(&ESPConn);
 
 	ESPConn.proto.tcp = &ESPTCP;
 	ESPConn.type = ESPCONN_TCP;
@@ -840,13 +865,19 @@ supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 
 	os_memcpy(ESPConn.proto.tcp->remote_ip, ip, 4);
 	ESPConn.proto.tcp->local_port = espconn_port();
-	ESPConn.proto.tcp->remote_port = 2016;
+
+	#if NOSSL == 1
+		ESPConn.proto.tcp->remote_port = 2015;
+	#else
+		ESPConn.proto.tcp->remote_port = 2016;
+	#endif
 
 	espconn_regist_recvcb(&ESPConn, supla_esp_devconn_recv_cb);
 	espconn_regist_connectcb(&ESPConn, supla_esp_devconn_connect_cb);
 	espconn_regist_disconcb(&ESPConn, supla_esp_devconn_disconnect_cb);
 
-	espconn_secure_connect(&ESPConn);
+
+	supla_espconn_connect(&ESPConn);
 
 	devconn_autoconnect = 1;
 }
@@ -855,7 +886,9 @@ void ICACHE_FLASH_ATTR
 supla_esp_devconn_resolvandconnect(void) {
 
 	devconn_autoconnect = 0;
-	espconn_secure_disconnect(&ESPConn);
+
+	supla_espconn_disconnect(&ESPConn);
+
     espconn_gethostbyname(&ESPConn, supla_esp_cfg.Server, &ipaddr, supla_esp_devconn_dns_found_cb);
 
 }
@@ -904,7 +937,8 @@ supla_esp_devconn_stop(void) {
 	sys_restart = 0;
 
 	os_timer_disarm(&supla_devconn_timer1);
-	espconn_secure_disconnect(&ESPConn);
+
+	supla_espconn_disconnect(&ESPConn);
 
 	supla_esp_wifi_check_status(0);
 }

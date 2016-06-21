@@ -17,8 +17,8 @@
 #
 ###
 
-
-
+DEP_LIBS="-lssl"
+CFG_SECTOR=0x3C
 
 case $1 in
    "dht11_esp01")
@@ -48,26 +48,36 @@ case $1 in
    "gate_module_esp01_ds")
    ;;
    "gate_module_wroom")
+     CFG_SECTOR=0xBC
    ;;
    "gate_module2_wroom")
+     CFG_SECTOR=0xBC
    ;;
    "rs_module")
    ;;
    "rs_module_wroom")
+     CFG_SECTOR=0xBC
    ;;
    "starter1_module_wroom")
+     CFG_SECTOR=0xBC
    ;;
    "jangoe_rs")
    ;;
    "sonoff")
+     CFG_SECTOR=0xBC
    ;;
    "sonoff_ds18b20")
+     CFG_SECTOR=0xBC
    ;;
    "EgyIOT")
    ;;
    "dimmer")
    ;;
    "zam_wop_01")
+   ;;
+   "rgbw")
+     DEP_LIBS="-lpwm"
+     NOSSL=1
    ;;
    *)
    echo "Usage:"
@@ -99,6 +109,7 @@ case $1 in
    echo "              EgyIOT";
    echo "              dimmer";
    echo "              zam_wop_01";
+   echo "              rgbw";
    echo 
    echo
    exit;
@@ -112,9 +123,27 @@ export SDK_PATH=/hdd2/Espressif/ESP8266_IOT_SDK
 export BIN_PATH=/hdd2/Espressif/ESP8266_BIN
 
 make clean
-make BOARD=$1 BOOT=new APP=0 SPI_SPEED=40 SPI_MODE=DIO SPI_SIZE_MAP=0 && \
-cp $BIN_PATH/eagle.flash.bin /media/sf_Public/$1_eagle.flash.bin &&
-cp $BIN_PATH/eagle.irom0text.bin /media/sf_Public/$1_eagle.irom0text.bin &&
-exit 0
+
+BOARD_NAME=$1
+
+if [ "$NOSSL" -eq 1 ]; then
+  EXTRA="NOSSL=1"
+  BOARD_NAME="$1"_nossl
+fi
+
+if [ "$UPGRADE_1024" -eq 1 ]; then
+
+   make SUPLA_DEP_LIBS="$DEP_LIBS"  BOARD=$1 CFG_SECTOR="$CFG_SECTOR" BOOT=new APP=1 SPI_SPEED=40 SPI_MODE=QIO SPI_SIZE_MAP=2 $EXTRA && \
+   cp $BIN_PATH/upgrade/user1.1024.new.2.bin /media/sf_Public/"$BOARD_NAME"_user1.1024.new.2.bin && \
+   cp $SDK_PATH/bin/boot_v1.2.bin /media/sf_Public/boot_v1.2.bin
+   
+else
+
+   make SUPLA_DEP_LIBS="$DEP_LIBS" BOARD=$1 CFG_SECTOR=$CFG_SECTOR BOOT=new APP=0 SPI_SPEED=40 SPI_MODE=DIO SPI_SIZE_MAP=0 $EXTRA && \
+   cp $BIN_PATH/eagle.flash.bin /media/sf_Public/"$BOARD_NAME"_eagle.flash.bin && \
+   cp $BIN_PATH/eagle.irom0text.bin /media/sf_Public/"$BOARD_NAME"_eagle.irom0text.bin &&
+   
+   exit 0
+fi
 
 exit 1

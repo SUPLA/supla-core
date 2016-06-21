@@ -15,7 +15,8 @@ TARGET = eagle
 #FLAVOR = release
 FLAVOR = debug
 
-EXTRA_CCFLAGS += -DESP8266 -D__SINGLE_THREAD -D__EH_DISABLED -D__BOARD_$(BOARD)
+
+EXTRA_CCFLAGS += -DESP8266 -D__SINGLE_THREAD -D__EH_DISABLED -D__BOARD_$(BOARD) -DCFG_SECTOR=$(CFG_SECTOR) -DNOSSL=$(NOSSL)
 
 ifndef PDIR # {
 GEN_IMAGES= eagle.app.v6.out
@@ -65,10 +66,10 @@ LINKFLAGS_eagle.app.v6 = \
 	-lphy	\
 	-lnet80211	\
 	-lwpa	\
-	-lcrypto    \
-	-lssl    \
 	-lmain	\
 	-llwip	\
+        -lcrypto \
+        $(SUPLA_DEP_LIBS) \
 	$(DEP_LIBS_eagle.app.v6)					\
 	-Wl,--end-group
 

@@ -12,14 +12,36 @@
 
 #include "supla-dev/proto.h"
 
-#define STD_CFG_SECTOR    0x3C
-#define WROOM_CFG_SECTOR  0xBC
 
 #define RELAY_LO_VALUE  0
 #define RELAY_HI_VALUE  1
 
 #define RELAY_INIT_VALUE RELAY_LO_VALUE
 
+// PWM ----------------------------------
+
+#define PWM_0_OUT_IO_MUX PERIPHS_IO_MUX_GPIO4_U
+#define PWM_0_OUT_IO_NUM 4
+#define PWM_0_OUT_IO_FUNC  FUNC_GPIO4
+
+#define PWM_1_OUT_IO_MUX PERIPHS_IO_MUX_GPIO5_U
+#define PWM_1_OUT_IO_NUM 5
+#define PWM_1_OUT_IO_FUNC  FUNC_GPIO5
+
+#define PWM_2_OUT_IO_MUX PERIPHS_IO_MUX_MTDI_U
+#define PWM_2_OUT_IO_NUM 12
+#define PWM_2_OUT_IO_FUNC  FUNC_GPIO12
+
+#define PWM_3_OUT_IO_MUX PERIPHS_IO_MUX_MTCK_U
+#define PWM_3_OUT_IO_NUM 13
+#define PWM_3_OUT_IO_FUNC  FUNC_GPIO13
+
+#define PWM_4_OUT_IO_MUX PERIPHS_IO_MUX_MTMS_U
+#define PWM_4_OUT_IO_NUM 14
+#define PWM_4_OUT_IO_FUNC  FUNC_GPIO14
+
+
+// --------------------------------------
 
 #define GPIO_PORT_INIT \
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4); \
@@ -132,7 +154,6 @@
 
 #elif defined(__BOARD_gate_module_wroom)
 
-    #define CFG_SECTOR          WROOM_CFG_SECTOR
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
     #define RESET_RELAY_PORT
     #define DS18B20
@@ -151,7 +172,6 @@
 
 #elif defined(__BOARD_gate_module2_wroom)
 
-    #define CFG_SECTOR    WROOM_CFG_SECTOR
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
     #define RESET_RELAY_PORT
     #define DS18B20
@@ -186,7 +206,6 @@
 
 #elif defined(__BOARD_rs_module_wroom)
 
-    #define CFG_SECTOR   WROOM_CFG_SECTOR
 	#define DEVICE_NAME "SUPLA-RS-MODULE"
     #define RESET_RELAY_PORT
     #define DS18B20
@@ -204,7 +223,6 @@
 
 #elif defined(__BOARD_starter1_module_wroom)
 
-    #define CFG_SECTOR          WROOM_CFG_SECTOR
     #define DS18B20
     #define BTN_PULLUP
     #define W1_GPIO5
@@ -249,7 +267,6 @@
 
 #elif defined(__BOARD_sonoff)
 
-    #define CFG_SECTOR          WROOM_CFG_SECTOR
 	#define DEVICE_NAME "SONOFF"
 	#define RELAY1_PORT      12
 	#define CFG_PORT         0
@@ -257,7 +274,6 @@
 
 #elif defined(__BOARD_sonoff_ds18b20)
 
-    #define CFG_SECTOR          WROOM_CFG_SECTOR
     #define DS18B20
 	#define DEVICE_NAME "SONOFF-DS18B20"
 	#define RELAY1_PORT      12
@@ -304,11 +320,16 @@
 		#undef RELAY_INIT_VALUE
         #define RELAY_INIT_VALUE 1
 
+#elif defined(__BOARD_rgbw)
+
+     	#define DEVICE_NAME "RGBW-CONTROLLER"
+
+		#define CFG_PORT         0
+		#define SUPLA_PWM_COUNT  5
+		#define RGBW_CONTROLLER_CHANNEL 0
+
 #endif
 
-#ifndef CFG_SECTOR
-	#define CFG_SECTOR          STD_CFG_SECTOR
-#endif
 
 #define AP_SSID "SUPLA-ESP8266"
 
