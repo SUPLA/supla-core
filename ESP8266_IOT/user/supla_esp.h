@@ -313,13 +313,13 @@
 		#undef RELAY_INIT_VALUE
         #define RELAY_INIT_VALUE 1
 
-#elif defined(__BOARD_rgbw)
+#elif defined(__BOARD_rgbw) || defined(__BOARD_rgbw_wroom)
 
      	#define DEVICE_NAME "RGBW-CONTROLLER"
 
 		#define CFG_PORT         0
 		#define SUPLA_PWM_COUNT  5
-		#define RGBW_CONTROLLER_CHANNEL 0
+		#define RGBW_CONTROLLER_CHANNEL  0
 
 #endif
 

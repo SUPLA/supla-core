@@ -325,7 +325,7 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
 #if defined(RGBW_CONTROLLER_CHANNEL)
 
-char ICACHE_FLASH_ATTR
+char
 supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
 
 	//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
@@ -388,7 +388,7 @@ supla_esp_channel_set_rgbw__value(int ChannelNumber, int Color, char ColorBright
 void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
-#if defined(fv) \
+#if defined(RGBW_CONTROLLER_CHANNEL) \
 	|| defined(RGB_CONTROLLER_CHANNEL) \
 	|| defined(DIMMER_CHANNEL)
 
@@ -777,7 +777,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			supla_esp_channel_set_rgbw__value(0, 0x00FF00, 0, 0);
 
 
-#elif defined(__BOARD_rgbw)
+#elif defined(__BOARD_rgbw) || defined(__BOARD_rgbw_wroom)
 
 			srd.channel_count = 1;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;

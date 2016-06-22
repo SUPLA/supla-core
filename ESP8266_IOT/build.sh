@@ -19,6 +19,7 @@
 
 DEP_LIBS="-lssl"
 CFG_SECTOR=0x3C
+NOSSL=0
 
 case $1 in
    "dht11_esp01")
@@ -84,6 +85,7 @@ case $1 in
    "rgbw_wroom")
      DEP_LIBS="-lpwm -lssl"
      CFG_SECTOR=0xBC
+     UPGRADE_1024=1
    ;;
    *)
    echo "Usage:"
@@ -116,6 +118,7 @@ case $1 in
    echo "              dimmer";
    echo "              zam_wop_01";
    echo "              rgbw";
+   echo "              rgbw_wroom";
    echo 
    echo
    exit;
@@ -135,6 +138,8 @@ BOARD_NAME=$1
 if [ "$NOSSL" -eq 1 ]; then
   EXTRA="NOSSL=1"
   BOARD_NAME="$1"_nossl
+else
+  EXTRA="NOSSL=0"
 fi
 
 if [ "$UPGRADE_1024" -eq 1 ]; then

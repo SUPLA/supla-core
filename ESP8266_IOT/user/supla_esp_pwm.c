@@ -47,6 +47,9 @@ void supla_esp_pwm_set_percent_duty(uint8 percent, uint8 percent_percent, uint8 
 	if ( percent > 100 )
 		percent = 100;
 	
+	if ( percent_percent > 100 )
+		percent_percent = 100;
+	
 	
 	uint32 duty = ((PWM_PERIOD * 1000 / 45) * percent) / 100;
 	duty = (duty * percent_percent) / 100;
