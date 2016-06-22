@@ -36,22 +36,27 @@ void supla_esp_pwm_init(void) {
     pwm_init(PWM_PERIOD, &duty, SUPLA_PWM_COUNT, io_info);
     pwm_start();
     
+    int a;
+    for(a=0;a<SUPLA_PWM_COUNT;a++)
+    	supla_esp_pwm_set_percent_duty(0, 0, a);
     
 }
 
-void supla_esp_pwm_set_percent_duty(uint8 percent, uint8 channel) {
+void supla_esp_pwm_set_percent_duty(uint8 percent, uint8 percent_percent, uint8 channel) {
 	
 	if ( percent > 100 )
 		percent = 100;
 	
 	
 	uint32 duty = ((PWM_PERIOD * 1000 / 45) * percent) / 100;
+	duty = (duty * percent_percent) / 100;
 	
-	supla_log(LOG_DEBUG, "DUTY: %i, CHANNEL: %i", duty, channel);
+	//supla_log(LOG_DEBUG, "DUTY: %i, CHANNEL: %i", duty, channel);
 
 	pwm_set_duty(duty, channel);
+	os_delay_us(1000);
 	pwm_start();
-	
+
 }
 
 

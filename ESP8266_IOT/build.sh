@@ -70,6 +70,8 @@ case $1 in
      CFG_SECTOR=0xBC
    ;;
    "EgyIOT")
+     DEP_LIBS="-lpwm"
+     NOSSL=1
    ;;
    "dimmer")
    ;;
@@ -78,6 +80,10 @@ case $1 in
    "rgbw")
      DEP_LIBS="-lpwm"
      NOSSL=1
+   ;;
+   "rgbw_wroom")
+     DEP_LIBS="-lpwm -lssl"
+     CFG_SECTOR=0xBC
    ;;
    *)
    echo "Usage:"

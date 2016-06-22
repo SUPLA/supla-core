@@ -19,7 +19,7 @@
 
 
 void supla_esp_pwm_init(void);
-void supla_esp_pwm_set_percent_duty(uint8 percent, uint8 channel);
+void supla_esp_pwm_set_percent_duty(uint8 percent, uint8 percent_percent, uint8 channel);
 
 #endif /* SUPLA_PWM_COUNT */
 

@@ -18,30 +18,7 @@
 
 #define RELAY_INIT_VALUE RELAY_LO_VALUE
 
-// PWM ----------------------------------
 
-#define PWM_0_OUT_IO_MUX PERIPHS_IO_MUX_GPIO4_U
-#define PWM_0_OUT_IO_NUM 4
-#define PWM_0_OUT_IO_FUNC  FUNC_GPIO4
-
-#define PWM_1_OUT_IO_MUX PERIPHS_IO_MUX_GPIO5_U
-#define PWM_1_OUT_IO_NUM 5
-#define PWM_1_OUT_IO_FUNC  FUNC_GPIO5
-
-#define PWM_2_OUT_IO_MUX PERIPHS_IO_MUX_MTDI_U
-#define PWM_2_OUT_IO_NUM 12
-#define PWM_2_OUT_IO_FUNC  FUNC_GPIO12
-
-#define PWM_3_OUT_IO_MUX PERIPHS_IO_MUX_MTCK_U
-#define PWM_3_OUT_IO_NUM 13
-#define PWM_3_OUT_IO_FUNC  FUNC_GPIO13
-
-#define PWM_4_OUT_IO_MUX PERIPHS_IO_MUX_MTMS_U
-#define PWM_4_OUT_IO_NUM 14
-#define PWM_4_OUT_IO_FUNC  FUNC_GPIO14
-
-
-// --------------------------------------
 
 #define GPIO_PORT_INIT \
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4); \
@@ -297,8 +274,24 @@
 		#define RELAY2_PORT      13
 		#define RELAY3_PORT      16
 
-		#define CFG_PORT         0
-        #define DIMMER_CHANNEL   3
+		#define CFG_PORT                 0
+        #define RGB_CONTROLLER_CHANNEL   3
+        #define SUPLA_PWM_COUNT          3
+
+
+		#define PWM_0_OUT_IO_MUX PERIPHS_IO_MUX_MTMS_U
+		#define PWM_0_OUT_IO_NUM 14
+		#define PWM_0_OUT_IO_FUNC  FUNC_GPIO14
+
+		#define PWM_1_OUT_IO_MUX PERIPHS_IO_MUX_MTDI_U
+		#define PWM_1_OUT_IO_NUM 12
+		#define PWM_1_OUT_IO_FUNC  FUNC_GPIO12
+
+		#define PWM_2_OUT_IO_MUX PERIPHS_IO_MUX_GPIO5_U
+		#define PWM_2_OUT_IO_NUM 5
+		#define PWM_2_OUT_IO_FUNC  FUNC_GPIO5
+
+
 
 #elif defined(__BOARD_zam_wop_01)
 
@@ -330,6 +323,40 @@
 
 #endif
 
+
+// PWM ----------------------------------
+
+#ifndef PWM_0_OUT_IO_MUX
+	#define PWM_0_OUT_IO_MUX PERIPHS_IO_MUX_GPIO4_U
+	#define PWM_0_OUT_IO_NUM 4
+	#define PWM_0_OUT_IO_FUNC  FUNC_GPIO4
+#endif
+
+#ifndef PWM_1_OUT_IO_MUX
+	#define PWM_1_OUT_IO_MUX PERIPHS_IO_MUX_GPIO5_U
+	#define PWM_1_OUT_IO_NUM 5
+	#define PWM_1_OUT_IO_FUNC  FUNC_GPIO5
+#endif
+
+#ifndef PWM_2_OUT_IO_MUX
+	#define PWM_2_OUT_IO_MUX PERIPHS_IO_MUX_MTDI_U
+	#define PWM_2_OUT_IO_NUM 12
+	#define PWM_2_OUT_IO_FUNC  FUNC_GPIO12
+#endif
+
+#ifndef PWM_3_OUT_IO_MUX
+	#define PWM_3_OUT_IO_MUX PERIPHS_IO_MUX_MTCK_U
+	#define PWM_3_OUT_IO_NUM 13
+	#define PWM_3_OUT_IO_FUNC  FUNC_GPIO13
+#endif
+
+#ifndef PWM_4_OUT_IO_MUX
+	#define PWM_4_OUT_IO_MUX PERIPHS_IO_MUX_MTMS_U
+	#define PWM_4_OUT_IO_NUM 14
+	#define PWM_4_OUT_IO_FUNC  FUNC_GPIO14
+#endif
+
+// --------------------------------------
 
 #define AP_SSID "SUPLA-ESP8266"
 

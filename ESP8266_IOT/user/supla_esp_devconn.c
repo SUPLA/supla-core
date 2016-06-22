@@ -248,6 +248,7 @@ supla_esp_channel_value_changed(int channel_number, char v) {
 }
 
 #if defined(RGBW_CONTROLLER_CHANNEL) \
+	|| defined(RGB_CONTROLLER_CHANNEL) \
     || defined(DIMMER_CHANNEL)
 
 void ICACHE_FLASH_ATTR
@@ -260,13 +261,6 @@ supla_esp_channel_rgbw_to_value(char value[SUPLA_CHANNELVALUE_SIZE], int color, 
 	value[2] = (char)((color & 0x000000FF));       // BLUE
 	value[3] = (char)((color & 0x0000FF00) >> 8);  // GREEN
 	value[4] = (char)((color & 0x00FF0000) >> 16); // RED
-
-}
-
-void ICACHE_FLASH_ATTR
-supla_esp_channel_get_current_rgbw_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
-
-	supla_esp_channel_rgbw_to_value(value, 0x00FF00, 0, 0);
 
 }
 
@@ -336,13 +330,57 @@ supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrigh
 
 	//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
 
-	supla_esp_pwm_set_percent_duty(*Brightness, 0);
-	supla_esp_pwm_set_percent_duty(*ColorBrightness, 1);
-	supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, 2); //RED
-	supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, 3);  //GREEN
-	supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, 4);         //BLUE
+	supla_esp_pwm_set_percent_duty(*Brightness, 100, 0);
+	supla_esp_pwm_set_percent_duty(*ColorBrightness, 100, 1);
+	supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, 100, 2); //RED
+	supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, 100, 3);  //GREEN
+	supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, 100, 4);         //BLUE
 
 	return 1;
+}
+
+#elif defined(RGB_CONTROLLER_CHANNEL)
+
+char ICACHE_FLASH_ATTR
+supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
+
+	//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
+
+	#if SUPLA_PWM_COUNT >= 4
+
+		supla_esp_pwm_set_percent_duty(*ColorBrightness, 100, 0);
+		supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, 100, 1); //RED
+		supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, 100, 2);  //GREEN
+		supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, 100, 3);         //BLUE
+
+	#else
+
+		char CB = *ColorBrightness;
+
+		if ( CB > 10 && CB < 25 )
+			CB = 25;
+
+		if ( CB < 10 )
+			CB = 0;
+
+		supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, CB, 0); //RED
+		supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, CB, 1);  //GREEN
+		supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, CB, 2);         //BLUE
+
+	#endif
+
+	return 1;
+}
+
+#endif
+
+#if defined(RGB_CONTROLLER_CHANNEL) \
+    || defined(RGBW_CONTROLLER_CHANNEL) \
+    || defined(DIMMER_CHANNEL)
+
+char ICACHE_FLASH_ATTR
+supla_esp_channel_set_rgbw__value(int ChannelNumber, int Color, char ColorBrightness, char Brightness) {
+	supla_esp_channel_set_rgbw_value(ChannelNumber, &Color, &ColorBrightness, &Brightness);
 }
 
 #endif
@@ -350,7 +388,9 @@ supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrigh
 void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
-#if defined(RGBW_CONTROLLER_CHANNEL) || defined(DIMMER_CHANNEL)
+#if defined(fv) \
+	|| defined(RGB_CONTROLLER_CHANNEL) \
+	|| defined(DIMMER_CHANNEL)
 
 	unsigned char rgb_cn = 255;
 	unsigned char dimmer_cn = 255;
@@ -358,6 +398,10 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
     #ifdef RGBW_CONTROLLER_CHANNEL
 	rgb_cn = RGBW_CONTROLLER_CHANNEL;
     #endif
+
+	#ifdef RGB_CONTROLLER_CHANNEL
+	rgb_cn = RGB_CONTROLLER_CHANNEL;
+	#endif
 
 	#ifdef DIMMER_CHANNEL
 	dimmer_cn = DIMMER_CHANNEL;
@@ -729,13 +773,16 @@ supla_esp_devconn_iterate(void *timer_arg) {
 
 			srd.channel_count = 1;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMER;
-			supla_esp_channel_get_current_rgbw_value(srd.channels[0].value);
+			supla_esp_channel_rgbw_to_value(srd.channels[0].value, 0x00FF00, 0, 0);
+			supla_esp_channel_set_rgbw__value(0, 0x00FF00, 0, 0);
+
 
 #elif defined(__BOARD_rgbw)
 
 			srd.channel_count = 1;
 			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
-			supla_esp_channel_get_current_rgbw_value(srd.channels[0].value);
+			supla_esp_channel_rgbw_to_value(srd.channels[0].value, 0x00FF00, 0, 0);
+			supla_esp_channel_set_rgbw__value(0, 0x00FF00, 0, 0);
 
 #elif defined(__BOARD_EgyIOT)
 
@@ -765,8 +812,10 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.channels[2].value[0] = supla_esp_gpio_relay_on(RELAY3_PORT);
 
 			srd.channels[3].Number = 3;
-			srd.channels[3].Type = SUPLA_CHANNELTYPE_DIMMER;
-			supla_esp_channel_get_current_rgbw_value(srd.channels[3].value);
+			srd.channels[3].Type = SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
+
+			supla_esp_channel_rgbw_to_value(srd.channels[3].value, 0x00FF00, 0, 0);
+			supla_esp_channel_set_rgbw__value(3, 0x00FF00, 0, 0);
 
 #elif defined(__BOARD_zam_wop_01)
 
