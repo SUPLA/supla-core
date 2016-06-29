@@ -75,6 +75,8 @@ case $1 in
      NOSSL=1
    ;;
    "dimmer")
+     DEP_LIBS="-lpwm"
+     NOSSL=1
    ;;
    "zam_wop_01")
    ;;

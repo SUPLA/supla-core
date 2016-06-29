@@ -22,8 +22,6 @@
 #include "supla-dev/log.h"
 
 
-
-
 void user_init(void)
 {
 
@@ -38,6 +36,7 @@ void user_init(void)
 
      supla_esp_cfg_init();
      supla_esp_devconn_init();
+
 
      #ifdef DS18B20
 		 supla_ds18b20_init();

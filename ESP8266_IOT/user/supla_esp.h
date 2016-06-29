@@ -262,8 +262,9 @@
 #elif defined(__BOARD_dimmer)
 
 	#define DEVICE_NAME "DIMMER"
-	#define CFG_PORT         2
+	#define CFG_PORT         0
     #define DIMMER_CHANNEL   0
+    #define SUPLA_PWM_COUNT  1
 
 #elif defined(__BOARD_EgyIOT)
 

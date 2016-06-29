@@ -323,10 +323,22 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 	}
 #endif
 
-#if defined(RGBW_CONTROLLER_CHANNEL)
+#if defined(DIMMER_CHANNEL)
+
+	char
+	ICACHE_FLASH_ATTR supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
+
+		//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
+
+		supla_esp_pwm_set_percent_duty(*Brightness, 100, 0);
+
+		return 1;
+	}
+
+#elif defined(RGBW_CONTROLLER_CHANNEL)
 
 char
-supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
+ICACHE_FLASH_ATTR supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
 
 	//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
 
