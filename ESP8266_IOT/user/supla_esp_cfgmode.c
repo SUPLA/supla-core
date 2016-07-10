@@ -368,6 +368,8 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 	
 	if ( pVars->type == TYPE_POST ) {
 		
+		//supla_log(LOG_DEBUG, "Matched: %i", pVars->matched);
+
         #ifdef CFGBTN_TYPE_SELECTION
 			if ( pVars->matched < 6 ) {
 				return;
@@ -412,7 +414,7 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 
 	ets_snprintf(buffer, 
 			bufflen,
- 			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"btn\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+ 			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"cfg\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
 			(unsigned char)supla_esp_cfg.GUID[0],
 			(unsigned char)supla_esp_cfg.GUID[1],
 			(unsigned char)supla_esp_cfg.GUID[2],
