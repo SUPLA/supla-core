@@ -303,16 +303,16 @@
 
         #define RESET_RELAY_PORT
 
-        #define RELAY1_PORT      14
-		#define CFG_PORT         13
+        #define RELAY1_PORT      5
+		#define CFG_PORT         4
 
-        #define ZAM_INPUT1        4
-        #define ZAM_INPUT2        5
+        #define ZAM_INPUT1        14
+        #define ZAM_INPUT2        13
 
         #define BTN1_2_TYPE_SELECTION
 
 		#undef RELAY_INIT_VALUE
-        #define RELAY_INIT_VALUE 1
+        #define RELAY_INIT_VALUE 0
 
 #elif defined(__BOARD_rgbw) || defined(__BOARD_rgbw_wroom)
 
