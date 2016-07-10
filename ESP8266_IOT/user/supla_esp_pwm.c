@@ -18,7 +18,7 @@
 #include <osapi.h>
 #include <pwm.h>
 
-#define PWM_PERIOD 1001
+#define PWM_PERIOD 1000
 
 void ICACHE_FLASH_ATTR supla_esp_pwm_init(void) {
 	
@@ -63,6 +63,25 @@ void ICACHE_FLASH_ATTR supla_esp_pwm_set_percent_duty(uint8 percent, uint8 perce
 
 }
 
+char ICACHE_FLASH_ATTR supla_esp_pwm_is_on(void) {
+	
+	int a;
+	
+	for(a=0;a<SUPLA_PWM_COUNT;a++)
+		if ( pwm_get_duty(a) > 0 )
+			return 1;
+		
+	return 0;
+}
+
+void ICACHE_FLASH_ATTR supla_esp_pwm_on(char on) {
+	
+	int a;
+	
+	for(a=0;a<SUPLA_PWM_COUNT;a++)
+		supla_esp_pwm_set_percent_duty(on == 1 ? 100 : 0, 100, a);
+	
+}
 
      
 #endif

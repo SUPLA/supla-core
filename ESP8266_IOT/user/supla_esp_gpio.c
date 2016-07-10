@@ -141,6 +141,20 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_relay_switch(void) {
 
 #endif
 
+
+#if defined(DIMMER_CHANNEL)
+
+void ICACHE_FLASH_ATTR supla_esg_gpio_pwm_onoff(void) {
+
+	char pwm_on = supla_esp_pwm_is_on() == 1 ? 0 : 1 ;
+	supla_esp_pwm_on(pwm_on);
+
+	supla_esp_channel_rgbw_value_changed(DIMMER_CHANNEL, 0, 0, pwm_on ? 100 : 0);
+
+}
+
+#endif
+
 void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
 
 
@@ -153,6 +167,10 @@ void ICACHE_FLASH_ATTR supla_esg_gpio_manual_pressed(void) {
 		    || defined(__BOARD_sonoff_ds18b20)
 
 		supla_esg_gpio_relay_switch();
+
+        #elif defined(DIMMER_CHANNEL)
+
+		supla_esg_gpio_pwm_onoff();
 
         #endif
 
