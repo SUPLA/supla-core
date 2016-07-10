@@ -25,6 +25,7 @@
 #include "supla-dev/log.h"
 
 static ETSTimer supla_devconn_timer1;
+static ETSTimer supla_devconn_timer2;
 static ETSTimer supla_iterate_timer;
 
 #if NOSSL == 1
@@ -80,6 +81,7 @@ void ICACHE_FLASH_ATTR
 supla_esp_system_restart(void) {
 
       if ( sys_restart == 1 ) {
+    	  supla_log(LOG_DEBUG, "RESTART");
     	  system_restart();
       }
 
@@ -873,7 +875,7 @@ supla_esp_srpc_free(void) {
 	}
 }
 
-void ICACHE_FLASH_ATTR
+void
 supla_esp_srpc_init(void) {
 	
 	supla_esp_srpc_free();
@@ -891,32 +893,37 @@ supla_esp_srpc_init(void) {
 
 }
 
-void ICACHE_FLASH_ATTR
+void
 supla_esp_devconn_connect_cb(void *arg) {
 	supla_log(LOG_DEBUG, "devconn_connect_cb\r\n");
 	supla_esp_srpc_init();	
 }
 
-void ICACHE_FLASH_ATTR
+void
 supla_esp_devconn_disconnect_cb(void *arg){
 	supla_log(LOG_DEBUG, "devconn_disconnect_cb\r\n");
 	supla_esp_system_restart();
 }
 
+void
+supla_esp_devconn_delayed_disconnect_event(int sec) {
 
-void ICACHE_FLASH_ATTR
+	os_timer_disarm(&supla_devconn_timer2);
+	os_timer_setfn(&supla_devconn_timer2, (os_timer_func_t *)supla_esp_devconn_disconnect_cb, NULL);
+	os_timer_arm(&supla_devconn_timer2, sec * 1000, 1);
+
+}
+
+
+void
 supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 
-	uint32_t _ip;
-
 	if ( ip == NULL ) {
+		supla_log(LOG_DEBUG, "Domain %s not found.", name);
+		supla_esp_devconn_delayed_disconnect_event(15);
+		return;
 
-		supla_log(LOG_DEBUG, "Domain %s not found", name);
-		_ip =  ipaddr_addr(name);
-		//_ip =  ipaddr_addr("192.168.178.30");
-		ip = (ip_addr_t *)&_ip;
 	}
-
 
 	supla_espconn_disconnect(&ESPConn);
 
@@ -937,20 +944,28 @@ supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 	espconn_regist_connectcb(&ESPConn, supla_esp_devconn_connect_cb);
 	espconn_regist_disconcb(&ESPConn, supla_esp_devconn_disconnect_cb);
 
-
 	supla_espconn_connect(&ESPConn);
-
 	devconn_autoconnect = 1;
+
 }
 
-void ICACHE_FLASH_ATTR
+void
 supla_esp_devconn_resolvandconnect(void) {
 
 	devconn_autoconnect = 0;
 
 	supla_espconn_disconnect(&ESPConn);
 
-    espconn_gethostbyname(&ESPConn, supla_esp_cfg.Server, &ipaddr, supla_esp_devconn_dns_found_cb);
+	uint32_t _ip = ipaddr_addr(supla_esp_cfg.Server);
+
+	if ( _ip == -1 ) {
+		 supla_log(LOG_DEBUG, "Resolv %s", supla_esp_cfg.Server);
+
+		 espconn_gethostbyname(&ESPConn, supla_esp_cfg.Server, &ipaddr, supla_esp_devconn_dns_found_cb);
+	} else {
+		 supla_esp_devconn_dns_found_cb(supla_esp_cfg.Server, (ip_addr_t *)&_ip, NULL);
+	}
+
 
 }
 
@@ -998,6 +1013,7 @@ supla_esp_devconn_stop(void) {
 	sys_restart = 0;
 
 	os_timer_disarm(&supla_devconn_timer1);
+	os_timer_disarm(&supla_devconn_timer2);
 
 	supla_espconn_disconnect(&ESPConn);
 
