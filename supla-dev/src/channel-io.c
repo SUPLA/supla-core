@@ -86,6 +86,7 @@ typedef struct {
 	int driver;
 	unsigned char gpio1;
 	unsigned char gpio2;
+	unsigned char bistable;
 	char *w1;
 
 	TChannelGpioPortValue gpio1_value;
@@ -100,7 +101,10 @@ typedef struct {
 
 	TDeviceChannel *channel;
 	void *sthread;
-	unsigned char port;
+	unsigned char port1;
+	unsigned char port2;
+	unsigned char bistable;
+	char hi;
 	int time_ms;
 	char raise;
 
@@ -137,10 +141,15 @@ void channelio_gpio_monitor_execute(void *user_data, void *sthread);
 void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
-char channelio_gpio_in(int type) {
+char channelio_gpio_in(TDeviceChannel *channel, char port12) {
 
-	if ( type == SUPLA_CHANNELTYPE_SENSORNO ||
-	     type == SUPLA_CHANNELTYPE_SENSORNC )
+	if ( channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
+		   channel->type == SUPLA_CHANNELTYPE_SENSORNC
+		   || ( ( channel->type == SUPLA_CHANNELTYPE_RELAYHFD4
+			   	  || channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A
+				  || channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A )
+				&& port12 == 2
+				&& channel->bistable == 1 ) )
 		return 1;
 
 	return 0;
@@ -196,7 +205,7 @@ void channelio_free(void) {
 			if ( cio->channels[a].w1 != NULL )
 				free(cio->channels[a].w1);
 
-			if ( channelio_gpio_in(cio->channels[a].type) == 0 ) {
+			if ( channelio_gpio_in(&cio->channels[a], 1) == 0 ) {
 
 				if ( cio->channels[a].gpio1 > 0 )
 					gpio_set_value(cio->channels[a].gpio1 , 0);
@@ -406,7 +415,7 @@ char channelio_gpio_thread_exists(unsigned char port) {
 	safe_array_lock(cio->gpio_thread_arr);
 	for(a=0;a<safe_array_count(cio->gpio_thread_arr);a++) {
 		gti = safe_array_get(cio->gpio_thread_arr, a);
-		if ( gti && gti->port == port ) {
+		if ( gti && gti->port1 == port ) {
 			result = 1;
 			break;
 		}
@@ -417,17 +426,21 @@ char channelio_gpio_thread_exists(unsigned char port) {
 	return result;
 }
 
-char channelio_start_gpio_thread(TDeviceChannel *channel, _func_sthread_execute execute, unsigned char port, int time_ms, char raise) {
+char channelio_start_gpio_thread(TDeviceChannel *channel, _func_sthread_execute execute, char hi, unsigned char port1,
+		                         unsigned char port2, unsigned char bistable, int time_ms, char raise) {
 
 	TGpioThreadItem *gti = NULL;
 
-	if ( channelio_gpio_thread_exists(port) )
+	if ( channelio_gpio_thread_exists(port1) )
 		return 0;
 
 	gti = malloc(sizeof(TGpioThreadItem));
 	memset(gti, 0, sizeof(TGpioThreadItem));
 	gti->channel = channel;
-	gti->port = port;
+	gti->hi = hi;
+	gti->port1 = port1;
+	gti->port2 = port2;
+	gti->bistable = bistable;
 	gti->time_ms = time_ms;
 	gti->raise = raise;
 
@@ -461,10 +474,10 @@ void channelio_channel_init(void) {
 	for(a=0;a<cio->channel_count;a++) {
 		channel = &cio->channels[a];
 		if ( channel->gpio1 > 0 )
-			channelio_gpio_port_init(channel, &channel->gpio1_value, channel->gpio1, channelio_gpio_in(channel->type));
+			channelio_gpio_port_init(channel, &channel->gpio1_value, channel->gpio1, channelio_gpio_in(channel, 1));
 
 		if ( channel->gpio2 > 0 )
-			channelio_gpio_port_init(channel, &channel->gpio2_value, channel->gpio2, channelio_gpio_in(channel->type));
+			channelio_gpio_port_init(channel, &channel->gpio2_value, channel->gpio2, channelio_gpio_in(channel, 2));
 
 		channelio_read_temp_and_humidity(channel->type, channel->w1, &channel->w1_value, 1);
 
@@ -485,7 +498,7 @@ void channelio_channel_init(void) {
 		lck_lock(cio->wl_lck);
 
 		if ( cio->watch_list_count > 0 ) {
-			channelio_start_gpio_thread(NULL, channelio_gpio_monitor_execute, 0, 0, 0);
+			channelio_start_gpio_thread(NULL, channelio_gpio_monitor_execute, 1, 0, 0, 0, 0, 0);
 		}
 
 		lck_unlock(cio->wl_lck);
@@ -583,6 +596,20 @@ void channelio_set_gpio2(unsigned char number, unsigned char gpio2) {
 		channel->gpio2 = gpio2;
 }
 
+void channelio_set_bistable_flag(unsigned char number, unsigned char bistable) {
+
+	TDeviceChannel *channel;
+
+	if ( cio == NULL || cio->initialized == 1 )
+		return;
+
+	channel = channelio_find(number, 1);
+
+	if ( channel != NULL )
+		channel->bistable = bistable;
+
+}
+
 void channelio_set_w1(unsigned char number, const char *w1) {
 
 	TDeviceChannel *channel;
@@ -645,14 +672,26 @@ char channelio_get_cvalue(TDeviceChannel *channel, char value[SUPLA_CHANNELVALUE
 			 || channel->type == SUPLA_CHANNELTYPE_RELAYHFD4
 			 || channel->type == SUPLA_CHANNELTYPE_RELAYG5LA1A ) {
 
-			lck_lock(channel->gpio1_value.lck);
-			value[0] = channel->gpio1_value.value;
-			if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008
-			     && (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
-				 channel->type == SUPLA_CHANNELTYPE_SENSORNC) ) {
-				value[0] = channel->mcp23008.gpio.value;
+			if ( channel->bistable == 1 ) {
+
+				lck_lock(channel->gpio2_value.lck);
+				value[0] = channel->gpio2_value.value;
+				lck_unlock(channel->gpio2_value.lck);
+
+			} else {
+
+				lck_lock(channel->gpio1_value.lck);
+				value[0] = channel->gpio1_value.value;
+				if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008
+				     && (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
+					 channel->type == SUPLA_CHANNELTYPE_SENSORNC) ) {
+					value[0] = channel->mcp23008.gpio.value;
+				}
+				lck_unlock(channel->gpio1_value.lck);
+
 			}
-			lck_unlock(channel->gpio1_value.lck);
+
+
 
 			return 1;
 		}
@@ -962,32 +1001,90 @@ void channelio_gpio_set_hi_execute(void *user_data, void *sthread) {
 
      TGpioThreadItem *gti = (TGpioThreadItem*)user_data;
 
-     TChannelGpioPortValue *gpio_value = gti->port == gti->channel->gpio1 ? &gti->channel->gpio1_value : &gti->channel->gpio2_value;
+     TChannelGpioPortValue *gpio1_value = gti->port1 == gti->channel->gpio1 ? &gti->channel->gpio1_value : &gti->channel->gpio2_value;
 
-     lck_lock(gpio_value->lck);
+     char bistable = gti->port2 != 0 &&  gti->bistable == 1;
+     char gpio2_hi = 0;
 
-	 gpio_value->value = 1;
-	 gpio_set_value(gti->port, 1);
-	// supla_log(LOG_DEBUG, "Port %i is set to HI", gti->port);
+     if ( bistable == 1 ) {
+    	 lck_lock(gti->channel->gpio2_value.lck);
+    	 gpio2_hi = gti->channel->gpio2_value.value;
+    	 lck_unlock(gti->channel->gpio2_value.lck);
+     }
 
-     lck_unlock(gpio_value->lck);
+     if ( bistable == 0
+    	  || gti->hi != gpio2_hi ) {
 
-     if ( gti->raise )
-         channelio_raise_valuechanged(gti->channel);
+    	 lck_lock(gpio1_value->lck);
+    	 gpio1_value->value = 1;
+    	 gpio_set_value(gti->port1, 1);
+    	 lck_unlock(gpio1_value->lck);
 
-     usleep(gti->time_ms*1000);
+
+		 if ( bistable == 1 ) {
+
+			 usleep(500000);
+
+			 lck_lock(gpio1_value->lck);
+			 gpio1_value->value = 0;
+			 gpio_set_value(gti->port1, 0);
+			 lck_unlock(gpio1_value->lck);
+		 }
+
+     }
+
+	 if ( gti->raise )
+		 channelio_raise_valuechanged(gti->channel);
+
+	 if ( gti->time_ms > 0 ) {
+
+		 usleep(gti->time_ms*1000);
+
+		 char v;
+
+	     if ( bistable == 1 ) {
+
+	    	 lck_lock(gti->channel->gpio2_value.lck);
+	    	 gpio2_hi = gti->channel->gpio2_value.value;
+	    	 lck_unlock(gti->channel->gpio2_value.lck);
+
+	    	 v = 1;
+
+	     } else {
+
+	    	 v= 0 ;
+
+	     }
+
+	     if ( bistable == 0
+	    	  || gti->hi == gpio2_hi ) {
+
+			 lck_lock(gpio1_value->lck);
+			 gpio1_value->value = v;
+			 gpio_set_value(gti->port1, v);
+			 lck_unlock(gpio1_value->lck);
 
 
-     lck_lock(gpio_value->lck);
+			 if ( bistable == 1 ) {
 
-	 gpio_value->value = 0;
-	 gpio_set_value(gti->port, 0);
-	// supla_log(LOG_DEBUG, "Port %i is set to LO", gti->port);
+				 usleep(500000);
 
-     lck_unlock(gpio_value->lck);
+				 lck_lock(gpio1_value->lck);
+				 gpio1_value->value = 0;
+				 gpio_set_value(gti->port1, 0);
+				 lck_unlock(gpio1_value->lck);
+			 }
 
-     if ( gti->raise )
-         channelio_raise_valuechanged(gti->channel);
+
+			 if ( gti->raise )
+				 channelio_raise_valuechanged(gti->channel);
+
+	     }
+
+
+	 }
+
+
 
 }
 
@@ -999,15 +1096,17 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi, unsigned int time
 
 
 	char result = 0;
-	unsigned char port;
+	unsigned char port1;
+	unsigned char port2 = 0;
 	TChannelGpioPortValue *gpio_value;
 
 	if ( second_gpio == 0 ) {
 		gpio_value = &channel->gpio1_value;
-		port = channel->gpio1;
+		port1 = channel->gpio1;
+		port2 = channel->gpio2;
 	} else {
 		gpio_value = &channel->gpio2_value;
-		port = channel->gpio2;
+		port1 = channel->gpio2;
 	}
 
 	if ( channel->type == SUPLA_CHANNELTYPE_RELAYHFD4
@@ -1022,6 +1121,8 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi, unsigned int time
 		}
 
         #ifdef __SINGLE_THREAD
+
+		// BISTABLE RELAY UNSUPPORTED
 
 		lck_lock(gpio_value->lck);
 
@@ -1048,29 +1149,27 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi, unsigned int time
         #else
 
 
-		if ( time_ms > 0 ) {
-			result = channelio_start_gpio_thread(channel, channelio_gpio_set_hi_execute, port, time_ms, raise);
-
-
-		} else {
-
-			if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
-				lck_lock(gpio_value->lck);
-				mcp23008_gpio_set_value(channel->mcp23008.port, !hi);
-				gpio_value->value = hi == 0 ? 0 : 1;
-				lck_unlock(gpio_value->lck);
+			if ( time_ms > 0 || channel->bistable ) {
+				result = channelio_start_gpio_thread(channel, channelio_gpio_set_hi_execute, hi, port1, port2, channel->bistable, time_ms, raise);
 			} else {
-				lck_lock(gpio_value->lck);
-				gpio_value->value = hi == 0 ? 0 : 1;
-				gpio_set_value(port, gpio_value->value);
-				lck_unlock(gpio_value->lck);
+
+				if ( channel->driver == SUPLA_CHANNELDRIVER_MCP23008 ) {
+					lck_lock(gpio_value->lck);
+					mcp23008_gpio_set_value(channel->mcp23008.port, !hi);
+					gpio_value->value = hi == 0 ? 0 : 1;
+					lck_unlock(gpio_value->lck);
+				} else {
+					lck_lock(gpio_value->lck);
+					gpio_value->value = hi == 0 ? 0 : 1;
+					gpio_set_value(port1, gpio_value->value);
+					lck_unlock(gpio_value->lck);
+				}
+
+				if ( raise )
+					channelio_raise_valuechanged(channel);
+
+				result = 1;
 			}
-
-			if ( raise )
-				channelio_raise_valuechanged(channel);
-
-			result = 1;
-		}
 
         #endif
 

@@ -26,6 +26,7 @@ void channelio_set_type(unsigned char number, int type);
 int channelio_get_type(unsigned char number);
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1);
 void channelio_set_gpio2(unsigned char number, unsigned char gpio2);
+void channelio_set_bistable_flag(unsigned char number, unsigned char bistable);
 void channelio_set_w1(unsigned char number, const char *w1);
 void channelio_set_mcp23008_driver(unsigned char number, int driver);
 void channelio_set_mcp23008_addr(unsigned char number,  unsigned char addr);

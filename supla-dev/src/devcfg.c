@@ -84,6 +84,8 @@ void devcfg_channel_cfg(const char* section, const char* name, const char* value
 		channelio_set_gpio1(number, atoi(value) % 255);
 	} else if ( strcasecmp(name, "gpio2") == 0 ) {
 		channelio_set_gpio2(number, atoi(value) % 255);
+	} else if ( strcasecmp(name, "bistable") == 0 ) {
+		channelio_set_bistable_flag(number, atoi(value) == 1 ? 1 : 0);
 	} else if ( strcasecmp(name, "w1") == 0  && strlen(value) > 0 ) {
 		channelio_set_w1(number, value);
 	} else if ( strcasecmp(name, "driver") == 0 ) {
