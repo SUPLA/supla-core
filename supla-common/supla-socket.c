@@ -553,7 +553,7 @@ void ssocket_close(void *_ssd) {
 }
 
 
-int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file) {
+int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file, int *err) {
 
     struct hostent *host;
     struct sockaddr_in addr;
@@ -564,6 +564,8 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file)
         || strlen(ssd->host) < 1
         || (host = gethostbyname(ssd->host)) == NULL )
     {
+    	if ( err )
+    		*err = SUPLA_RESULTCODE_HOSTNOTFOUND;
 
 		supla_write_state_file(state_file, LOG_ERR, "Host not found %s", ssd->host == NULL ? "" : ssd->host);
 
@@ -578,6 +580,9 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file)
         if ( connect(ssd->supla_socket.sfd, (struct sockaddr*)&addr, sizeof(addr)) != 0 ) {
             close(ssd->supla_socket.sfd);
             ssd->supla_socket.sfd = -1;
+
+        	if ( err )
+        		*err = SUPLA_RESULTCODE_CANTCONNECTTOHOST;
 
             supla_write_state_file(state_file, LOG_ERR, "Can't connect to host %s", ssd->host == NULL ? "" : ssd->host);
         }
@@ -617,13 +622,13 @@ void *ssocket_client_init(const char host[], int port, unsigned char secure) {
 
 }
 
-unsigned char ssocket_client_connect(void *_ssd, const char *state_file) {
+unsigned char ssocket_client_connect(void *_ssd, const char *state_file, int *err) {
 
 	TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
 
 	ssocket_supla_socket_close(&ssd->supla_socket);
 
-	if ( ssocket_client_openconnection(_ssd, state_file) == -1 )
+	if ( ssocket_client_openconnection(_ssd, state_file, err) == -1 )
 	   return 0;
 
 	if ( ssd->secure == 0 )

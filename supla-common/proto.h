@@ -2,7 +2,7 @@
  ============================================================================
  Name        : proto.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.3
+ Version     : 1.3.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -42,7 +42,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 4
+#define SUPLA_PROTO_VERSION                 5
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #ifdef __AVR__
@@ -111,6 +111,8 @@ extern "C" {
 #define SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED      12
 #define SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED      13
 #define SUPLA_RESULTCODE_GUID_ERROR                14
+#define SUPLA_RESULTCODE_HOSTNOTFOUND              15 // ver. >= 5
+#define SUPLA_RESULTCODE_CANTCONNECTTOHOST         16 // ver. >= 5
 
 #define SUPLA_DEVICE_NAME_MAXSIZE                  201
 #define SUPLA_DEVICE_NAMEHEX_MAXSIZE               401
@@ -144,6 +146,7 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DIMMER                   4000  // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER         4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED          4020  // ver. >= 4
+#define SUPLA_CHANNELTYPE_HCSR04                   5000  // ver. >= 5
 
 #define SUPLA_CHANNELDRIVER_MCP23008               2
 
@@ -170,6 +173,9 @@ extern "C" {
 #define SUPLA_CHANNELFNC_DIMMER                           180
 #define SUPLA_CHANNELFNC_RGBLIGHTING                      190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING             200
+#define SUPLA_CHANNELFNC_LIQUIDLEVELSENSOR                210  // ver. >= 5
+#define SUPLA_CHANNELFNC_DISTANCESENSOR                   220  // ver. >= 5
+
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK         0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE                0x0002
