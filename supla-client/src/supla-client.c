@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla-client.c
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.1
+ Version     : 1.1.2
  Copyright   : GPLv2
  ============================================================================
  */
@@ -123,6 +123,7 @@ void supla_client_on_register_result(TSuplaClientData *scd, TSC_SuplaRegisterCli
 		case SUPLA_RESULTCODE_GUID_ERROR:
 			supla_log(LOG_NOTICE, "Incorrect client GUID!");
 			break;
+
 		}
 
 		if ( scd->cfg.cb_on_registererror )
@@ -359,7 +360,9 @@ char supla_client_connect(void *_suplaclient) {
 
 	supla_client_clean(_suplaclient);
 
-	if ( ssocket_client_connect(suplaclient->ssd, NULL) == 1 ) {
+	int err = 0;
+
+	if ( ssocket_client_connect(suplaclient->ssd, NULL, &err) == 1 ) {
 
 
 		suplaclient->eh = eh_init();
@@ -382,6 +385,13 @@ char supla_client_connect(void *_suplaclient) {
 			suplaclient->cfg.cb_on_connected(_suplaclient, suplaclient->cfg.user_data);
 
 		return 1;
+
+	} else {
+
+		if ( suplaclient->cfg.cb_on_connerror )
+			suplaclient->cfg.cb_on_connerror(_suplaclient, suplaclient->cfg.user_data, err);
+
+
 	}
 
 	return 0;

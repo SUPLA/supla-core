@@ -1,8 +1,8 @@
 /*
  ============================================================================
  Name        : supla_client-jni.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Author      : Przemyslaw Zygmunt przemek@supla.org
+ Version     : 1.0.7
  Copyright   : GPLv2
  ============================================================================
 */
@@ -25,6 +25,7 @@ typedef struct {
     
     jmethodID j_mid_on_versionerror;
     jmethodID j_mid_on_connected;
+    jmethodID j_mid_on_connerror;
     jmethodID j_mid_on_disconnected;
     jmethodID j_mid_on_registering;
     jmethodID j_mid_on_registered;
@@ -145,6 +146,31 @@ void supla_android_client_cb_on_connected(void *_suplaclient, void *user_data) {
         supla_android_client(asc, asc->j_mid_on_connected, NULL);
     
 }
+
+void supla_android_client_cb_on_connerror(void *_suplaclient, void *user_data, int code) {
+
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+   
+   
+    if ( env && asc && asc->j_mid_on_connerror ) {
+
+         jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaConnError");
+
+         jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "()V");
+         jobject cerr = (*env)->NewObject(env,cls, methodID);
+         jclass ccerr = (*env)->GetObjectClass(env, cerr);
+
+         fid = supla_client_GetFieldID(env, ccerr, "Code", "I");
+         (*env)->SetIntField(env, cerr, fid, code);
+
+         supla_android_client(asc, asc->j_mid_on_connerror, cerr);
+    }
+
+
+}
+
 
 void supla_android_client_cb_on_disconnected(void *_suplaclient, void *user_data) {
     
@@ -538,6 +564,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         
         _asc->j_mid_on_versionerror = supla_client_GetMethodID(env, oclass, "onVersionError", "(Lorg/supla/android/lib/SuplaVersionError;)V");
         _asc->j_mid_on_connected = supla_client_GetMethodID(env, oclass, "onConnected", "()V");
+        _asc->j_mid_on_connerror = supla_client_GetMethodID(env, oclass, "onConnError", "(Lorg/supla/android/lib/SuplaConnError;)V");
         _asc->j_mid_on_disconnected = supla_client_GetMethodID(env, oclass, "onDisconnected", "()V");
         _asc->j_mid_on_registering = supla_client_GetMethodID(env, oclass, "onRegistering", "()V");
         _asc->j_mid_on_registered = supla_client_GetMethodID(env, oclass, "onRegistered", "(Lorg/supla/android/lib/SuplaRegisterResult;)V");
@@ -551,6 +578,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         sclient_cfg.user_data = _asc;
         sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
         sclient_cfg.cb_on_connected = supla_android_client_cb_on_connected;
+        sclient_cfg.cb_on_connerror = supla_android_client_cb_on_connerror;
         sclient_cfg.cb_on_disconnected = supla_android_client_cb_on_disconnected;
         sclient_cfg.cb_on_registering = supla_android_client_cb_on_registering;
         sclient_cfg.cb_on_registered = supla_android_client_cb_on_registered;
@@ -677,5 +705,26 @@ Java_org_supla_android_lib_SuplaClient_scOpen(JNIEnv* env, jobject thiz, jlong _
     if ( supla_client )
         return supla_client_open(supla_client, channelid, open) == 1 ? JNI_TRUE : JNI_FALSE;
     
+    return JNI_FALSE;
+};
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSetRGBW(JNIEnv* env, jobject thiz, jlong _asc, jint channelid, jint color, int color_brightness, int brightness) {
+
+    void *supla_client = supla_client_ptr(_asc);
+
+    if ( supla_client ) {
+
+        if ( color_brightness > 255 
+             || color_brightness < 0 )
+          color_brightness = 0;
+
+        if ( brightness > 255
+             || brightness < 0 )
+          brightness = 0; 
+  
+        return supla_client_set_rgbw(supla_client, channelid, color, color_brightness, brightness) == 1 ? JNI_TRUE : JNI_FALSE;
+    }
+
     return JNI_FALSE;
 };

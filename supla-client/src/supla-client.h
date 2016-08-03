@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla-client.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.1
+ Version     : 1.1.2
  Copyright   : GPLv2
  ============================================================================
  */
@@ -51,6 +51,7 @@ typedef struct {
    int iterate_wait_usec;
 
    _suplaclient_cb_on_versionerror cb_on_versionerror;
+   _suplaclient_cb_on_error cb_on_connerror;
    _suplaclient_cb_on_action cb_on_connected;
    _suplaclient_cb_on_action cb_on_disconnected;
    _suplaclient_cb_on_action cb_on_registering;
