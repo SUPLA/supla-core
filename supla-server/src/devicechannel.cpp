@@ -104,6 +104,7 @@ void supla_device_channel::getDouble(double *Value) {
 		*Value = this->value[0] == 1 ? 1 : 0;
 		break;
 	case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
+	case SUPLA_CHANNELTYPE_HCSR04:
 		memcpy(Value, this->value, sizeof(double));
 		break;
 	default:

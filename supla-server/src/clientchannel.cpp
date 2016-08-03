@@ -97,6 +97,8 @@ void supla_client_channel::mark_for_remote_update(char mark) {
 	case SUPLA_CHANNELFNC_DIMMER:
 	case SUPLA_CHANNELFNC_RGBLIGHTING:
 	case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+	case SUPLA_CHANNELFNC_LIQUIDLEVELSENSOR:
+	case SUPLA_CHANNELFNC_DISTANCESENSOR:
 
 		remote_update = mark;
 		break;
