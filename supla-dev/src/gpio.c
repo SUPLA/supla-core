@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 #ifdef __GPIO_SIMULATE
-#include <sys/inotify.h>
+  #include <sys/inotify.h>
 #endif
 
 #include "gpio.h"
@@ -163,6 +163,8 @@ void gpio_wait(TGpioPort *port, int count, int usec, _func_gpio_portvalue on_por
 }
 
 char gpio_set_value(unsigned char port_number, char value) {
+
+   supla_log(LOG_DEBUG, "gpio_set_value port: %i, value: %i", port_number, value);
 
    char v[2];
    char buffer[GPIO_BUFFER_SIZE];

@@ -655,6 +655,7 @@ unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc) {
 	return version;
 }
 
+
 void SRPC_ICACHE_FLASH srpc_set_proto_version(void *_srpc, unsigned char version) {
 
 	Tsrpc *srpc = (Tsrpc*)_srpc;

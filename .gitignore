@@ -47,3 +47,6 @@ local.properties
 
 **/*.o
 **/*.d
+
+# esp_com
+/ESP8266_IOT/include/com
