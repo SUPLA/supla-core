@@ -44,3 +44,6 @@ local.properties
 # Build tmp files
 *.o
 *.d
+
+**/*.o
+**/*.d
