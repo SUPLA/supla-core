@@ -18,7 +18,6 @@
 #include <osapi.h>
 #include <pwm.h>
 
-#define PWM_PERIOD 1000
 
 void ICACHE_FLASH_ATTR supla_esp_pwm_init(void) {
 	

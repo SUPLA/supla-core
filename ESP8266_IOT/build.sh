@@ -21,6 +21,11 @@ DEP_LIBS="-lssl"
 CFG_SECTOR=0x3C
 NOSSL=0
 
+export PATH=/hdd2/Espressif/xtensa-lx106-elf/bin:$PATH
+export COMPILE=gcc
+export SDK_PATH=/hdd2/Espressif/ESP8266_IOT_SDK
+export BIN_PATH=/hdd2/Espressif/ESP8266_BIN
+
 case $1 in
    "dht11_esp01")
    ;;
@@ -40,6 +45,8 @@ case $1 in
    ;;
    "gate_module")
    ;;
+   "gate_module_mem")
+   ;;
    "gate_module_dht11")
    ;;
    "gate_module_dht22")
@@ -54,6 +61,12 @@ case $1 in
    "gate_module2_wroom")
      CFG_SECTOR=0xBC
    ;;
+   "gate_module_wroom_mem")
+     CFG_SECTOR=0xBC
+   ;;
+   "gate_module2_wroom_mem")
+     CFG_SECTOR=0xBC
+   ;;
    "rs_module")
    ;;
    "rs_module_wroom")
@@ -61,6 +74,8 @@ case $1 in
    ;;
    "starter1_module_wroom")
      CFG_SECTOR=0xBC
+   ;;
+   "jangoe_wifisocket")
    ;;
    "jangoe_rs")
    ;;
@@ -78,7 +93,10 @@ case $1 in
      DEP_LIBS="-lpwm"
      NOSSL=1
    ;;
-   "zam_wop_01")
+   "zam_row_01")
+#     SDK154=1 
+#     UPGRADE_1024=1
+     CFG_SECTOR=0xBC
    ;;
    "rgbw")
      DEP_LIBS="-lpwm"
@@ -88,6 +106,12 @@ case $1 in
      DEP_LIBS="-lpwm -lssl"
      CFG_SECTOR=0xBC
      UPGRADE_1024=1
+   ;;
+   "h801")
+     DEP_LIBS="-lpwm -lssl"
+     SDK154=1
+     UPGRADE_1024=1
+     CFG_SECTOR=0xBC
    ;;
    *)
    echo "Usage:"
@@ -104,23 +128,28 @@ case $1 in
    echo "              wifisocket_esp01_thermometer";
    echo "              wifisocket_54";
    echo "              gate_module";
+   echo "              gate_module_mem";
    echo "              gate_module_dht11";
    echo "              gate_module_dht22";
    echo "              gate_module_esp01";
    echo "              gate_module_esp01_ds";
    echo "              gate_module_wroom";
+   echo "              gate_module_wroom_mem";
    echo "              gate_module2_wroom";
+   echo "              gate_module2_wroom_mem";
    echo "              rs_module";
    echo "              rs_module_wroom";
    echo "              starter1_module_wroom";
    echo "              jangoe_rs";
+   echo "              jangoe_wifisocket";
    echo "              sonoff";
    echo "              sonoff_ds18b20";
    echo "              EgyIOT";
    echo "              dimmer";
-   echo "              zam_wop_01";
+   echo "              zam_row_01";
    echo "              rgbw";
    echo "              rgbw_wroom";
+   echo "              h801";
    echo 
    echo
    exit;
@@ -128,10 +157,10 @@ case $1 in
    
 esac 
 
-export PATH=/hdd2/Espressif/xtensa-lx106-elf/bin:$PATH
-export COMPILE=gcc
-export SDK_PATH=/hdd2/Espressif/ESP8266_IOT_SDK
-export BIN_PATH=/hdd2/Espressif/ESP8266_BIN
+if [ "$SDK154" -eq 1 ]; then
+  export SDK_PATH=/hdd2/Espressif/ESP8266_NONOS_SDK154
+  export BIN_PATH=/hdd2/Espressif/ESP8266_BIN154
+fi
 
 make clean
 
@@ -146,7 +175,7 @@ fi
 
 if [ "$UPGRADE_1024" -eq 1 ]; then
 
-   make SUPLA_DEP_LIBS="$DEP_LIBS"  BOARD=$1 CFG_SECTOR="$CFG_SECTOR" BOOT=new APP=1 SPI_SPEED=40 SPI_MODE=QIO SPI_SIZE_MAP=2 $EXTRA && \
+   make SUPLA_DEP_LIBS="$DEP_LIBS"  BOARD=$1 CFG_SECTOR="$CFG_SECTOR" BOOT=new APP=1 SPI_SPEED=40 SPI_MODE=DIO SPI_SIZE_MAP=2 $EXTRA && \
    cp $BIN_PATH/upgrade/user1.1024.new.2.bin /media/sf_Public/"$BOARD_NAME"_user1.1024.new.2.bin && \
    cp $SDK_PATH/bin/boot_v1.2.bin /media/sf_Public/boot_v1.2.bin
    

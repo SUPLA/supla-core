@@ -22,6 +22,8 @@
 #include "supla-dev/log.h"
 
 SuplaEspCfg supla_esp_cfg;
+SuplaEspState supla_esp_state;
+static ETSTimer supla_esp_cfg_timer1;
 
 char ICACHE_FLASH_ATTR
 supla_esp_cfg_save(SuplaEspCfg *cfg) {
@@ -37,6 +39,28 @@ supla_esp_cfg_save(SuplaEspCfg *cfg) {
 	return 0;
 }
 
+void ICACHE_FLASH_ATTR
+_supla_esp_save_state(void *timer_arg) {
+
+	spi_flash_erase_sector(CFG_SECTOR+1);
+
+	if ( SPI_FLASH_RESULT_OK == spi_flash_write((CFG_SECTOR+1) * SPI_FLASH_SEC_SIZE, (uint32*)&supla_esp_state, sizeof(SuplaEspState)) ) {
+		//supla_log(LOG_DEBUG, "STATE WRITE SUCCESS");
+		return;
+	}
+
+	supla_log(LOG_DEBUG, "STATE WRITE FAIL!");
+}
+
+void ICACHE_FLASH_ATTR
+supla_esp_save_state(int delay) {
+
+	os_timer_disarm(&supla_esp_cfg_timer1);
+	os_timer_setfn(&supla_esp_cfg_timer1, _supla_esp_save_state, NULL);
+    os_timer_arm (&supla_esp_cfg_timer1, delay, 0);
+
+}
+
 char ICACHE_FLASH_ATTR
 supla_esp_cfg_init(void) {
 
@@ -44,6 +68,7 @@ supla_esp_cfg_init(void) {
 	char mac[6];
 	int a;
 
+	os_timer_disarm(&supla_esp_cfg_timer1);
 
 	if ( SPI_FLASH_RESULT_OK == spi_flash_read(CFG_SECTOR * SPI_FLASH_SEC_SIZE, (uint32*)&supla_esp_cfg, sizeof(SuplaEspCfg)) ) {
 	   if ( memcmp(supla_esp_cfg.TAG, TAG, 6) == 0 ) {
@@ -57,6 +82,13 @@ supla_esp_cfg_init(void) {
 
 		   supla_log(LOG_DEBUG, "BUTTON1 TYPE: %s", supla_esp_cfg.Button1Type == BTN_TYPE_BUTTON ? "button" : "switch");
 		   supla_log(LOG_DEBUG, "BUTTON2 TYPE: %s", supla_esp_cfg.Button2Type == BTN_TYPE_BUTTON ? "button" : "switch");
+
+			if ( SPI_FLASH_RESULT_OK == spi_flash_read((CFG_SECTOR+1) * SPI_FLASH_SEC_SIZE, (uint32*)&supla_esp_state, sizeof(SuplaEspState)) ) {
+			    supla_log(LOG_DEBUG, "STATE READ SUCCESS!");
+			} else {
+				supla_log(LOG_DEBUG, "STATE READ FAIL!");
+			}
+
 		   return 1;
 	   }
 	}
@@ -91,9 +123,15 @@ supla_esp_cfg_init(void) {
 		supla_esp_cfg.GUID[a]= (supla_esp_cfg.GUID[a] + system_get_time() + spi_flash_get_id() + system_get_chip_id() + system_get_rtc_time()) % 255;
 	}
 
+	memset(&supla_esp_state, 0, sizeof(SuplaEspState));
+
 	if ( supla_esp_cfg_save(&supla_esp_cfg) == 1 ) {
+
+		supla_esp_save_state(1);
 		return 1;
 	}
 
 	return 0;
 }
+
+

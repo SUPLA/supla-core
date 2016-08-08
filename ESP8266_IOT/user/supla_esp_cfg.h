@@ -35,12 +35,22 @@ typedef struct {
 
 }SuplaEspCfg;
 
+typedef struct {
+
+	char Relay1;
+	char Relay2;
+
+}SuplaEspState;
+
 extern SuplaEspCfg supla_esp_cfg;
+extern SuplaEspState supla_esp_state;
 
 char ICACHE_FLASH_ATTR supla_esp_write_state(char *message);
 char ICACHE_FLASH_ATTR supla_esp_read_state(char *message);
 
 char ICACHE_FLASH_ATTR supla_esp_cfg_init(void);
 char ICACHE_FLASH_ATTR supla_esp_cfg_save(SuplaEspCfg *cfg);
+void ICACHE_FLASH_ATTR supla_esp_save_state(int delay);
+
 
 #endif /* SUPLA_ESP_CFG_H_ */

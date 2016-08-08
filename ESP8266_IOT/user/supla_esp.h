@@ -12,12 +12,11 @@
 
 #include "supla-dev/proto.h"
 
+#define LO_VALUE  0
+#define HI_VALUE  1
 
-#define RELAY_LO_VALUE  0
-#define RELAY_HI_VALUE  1
-
-#define RELAY_INIT_VALUE RELAY_LO_VALUE
-
+#define RELAY_INIT_VALUE LO_VALUE
+#define SAVE_STATE_DELAY  1000
 
 
 #define GPIO_PORT_INIT \
@@ -26,6 +25,26 @@
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12); \
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13); \
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14)
+
+#define GPIO_PORT_POST_INIT
+#define RELAY_BEFORE_CHANGE_STATE
+#define RELAY_AFTER_CHANGE_STATE
+
+
+#ifdef __BOARD_gate_module_mem
+	#define __BOARD_gate_module
+	#define RELAY1_ELLOCK_MEM
+#endif
+
+#ifdef __BOARD_gate_module_wroom_mem
+	#define __BOARD_gate_module_wroom
+	#define RELAY1_ELLOCK_MEM
+#endif
+
+#ifdef __BOARD_gate_module2_wroom_mem
+	#define __BOARD_gate_module2_wroom
+	#define RELAY1_ELLOCK_MEM
+#endif
 
 #if defined(__BOARD_dht11_esp01)
 
@@ -73,6 +92,7 @@
 	#define LED_RED_PORT    13
 	#define LED_GREEN_PORT  12
 	#define LED_BLUE_PORT   14
+    #define RELAY_STATE_RESTORE
 
 	#ifdef __BOARD_wifisocket_54
 		#define RELAY1_PORT      5
@@ -81,6 +101,7 @@
 		#define RELAY1_PORT      4
 		#define CFG_PORT         5
 	#endif
+
 
 #elif defined(__BOARD_wifisocket_esp01)
 
@@ -103,7 +124,9 @@
 	#define USE_GPIO3
 	#define DS18B20
 
-#elif defined(__BOARD_gate_module) || defined(__BOARD_gate_module_dht11) || defined(__BOARD_gate_module_dht22)
+#elif defined(__BOARD_gate_module) \
+      || defined(__BOARD_gate_module_dht11) \
+      || defined(__BOARD_gate_module_dht22)
 
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
 
@@ -129,6 +152,7 @@
 	#define INPUT_PORT1      12
 	#define INPUT_PORT2      14
 
+
 #elif defined(__BOARD_gate_module_wroom)
 
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
@@ -147,6 +171,7 @@
 	#define INPUT_PORT1      5
 	#define INPUT_PORT2      12
 
+
 #elif defined(__BOARD_gate_module2_wroom)
 
 	#define DEVICE_NAME "SUPLA-GATE-MODULE"
@@ -163,6 +188,7 @@
 
 	#define INPUT_PORT1      12
 	#define INPUT_PORT2      14
+
 
 #elif defined(__BOARD_rs_module)
 
@@ -236,11 +262,39 @@
 		PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13); \
 		PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14)
 
-    #undef RELAY_LO_VALUE
-    #undef RELAY_HI_VALUE
+    #undef LO_VALUE
+    #undef HI_VALUE
 
-	#define RELAY_LO_VALUE  1
-	#define RELAY_HI_VALUE  0
+	#define LO_VALUE  1
+	#define HI_VALUE  0
+
+#elif defined(__BOARD_jangoe_wifisocket)
+
+	#define DEVICE_NAME "JANGOE-WIFISOCKET"
+
+	#define CFG_PORT         5
+
+	#define RELAY1_PORT      14
+	#define RELAY2_PORT      2
+
+	#define BUTTON1_PORT      13
+	#define BUTTON2_PORT      12
+
+    #undef GPIO_PORT_INIT
+
+	#define GPIO_PORT_INIT \
+    	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2); \
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4); \
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5); \
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12); \
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13); \
+		PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14)
+
+    #undef LO_VALUE
+    #undef HI_VALUE
+
+	#define LO_VALUE  1
+	#define HI_VALUE  0
 
 #elif defined(__BOARD_sonoff)
 
@@ -248,6 +302,7 @@
 	#define RELAY1_PORT      12
 	#define CFG_PORT         0
     #define LED_RED_PORT     13
+    #define RELAY_STATE_RESTORE
 
 #elif defined(__BOARD_sonoff_ds18b20)
 
@@ -258,6 +313,7 @@
     #define LED_RED_PORT     13
     #define TEMPERATURE_CHANNEL 1
     #define W1_GPIO3
+    #define RELAY_STATE_RESTORE
 
 #elif defined(__BOARD_dimmer)
 
@@ -294,25 +350,9 @@
 
 
 
-#elif defined(__BOARD_zam_wop_01)
+#elif defined(__BOARD_zam_row_01)
 
-     	#define DEVICE_NAME "ZAM-WOP-01"
-
-        #define USE_GPIO16_OUTPUT
-        #define LED_RED_PORT     16
-
-        #define RESET_RELAY_PORT
-
-        #define RELAY1_PORT      5
-		#define CFG_PORT         4
-
-        #define ZAM_INPUT1        14
-        #define ZAM_INPUT2        13
-
-        #define BTN1_2_TYPE_SELECTION
-
-		#undef RELAY_INIT_VALUE
-        #define RELAY_INIT_VALUE 0
+#include "com/zam/supla_esp.h"
 
 #elif defined(__BOARD_rgbw) || defined(__BOARD_rgbw_wroom)
 
@@ -321,7 +361,37 @@
 		#define CFG_PORT         0
 		#define SUPLA_PWM_COUNT  5
 		#define RGBW_CONTROLLER_CHANNEL  0
+        #define COLOR_BRIGHTNESS_PWM
 
+
+#elif defined(__BOARD_h801)
+
+        #define DEVICE_NAME "H801-RGBWW"
+
+		#define CFG_PORT         0
+		#define LED_RED_PORT  5
+		#define SUPLA_PWM_COUNT  5
+		#define RGBWW_CONTROLLER_CHANNEL  0
+
+		#define PWM_0_OUT_IO_MUX PERIPHS_IO_MUX_MTDO_U
+		#define PWM_0_OUT_IO_NUM 15
+		#define PWM_0_OUT_IO_FUNC  FUNC_GPIO15
+
+		#define PWM_1_OUT_IO_MUX PERIPHS_IO_MUX_MTCK_U
+		#define PWM_1_OUT_IO_NUM 13
+		#define PWM_1_OUT_IO_FUNC  FUNC_GPIO13
+
+		#define PWM_2_OUT_IO_MUX PERIPHS_IO_MUX_MTDI_U
+		#define PWM_2_OUT_IO_NUM 12
+		#define PWM_2_OUT_IO_FUNC  FUNC_GPIO12
+
+		#define PWM_3_OUT_IO_MUX PERIPHS_IO_MUX_MTMS_U
+		#define PWM_3_OUT_IO_NUM 14
+		#define PWM_3_OUT_IO_FUNC  FUNC_GPIO14
+
+		#define PWM_4_OUT_IO_MUX PERIPHS_IO_MUX_GPIO4_U
+		#define PWM_4_OUT_IO_NUM 4
+		#define PWM_4_OUT_IO_FUNC  FUNC_GPIO4
 #endif
 
 
@@ -357,6 +427,10 @@
 	#define PWM_4_OUT_IO_FUNC  FUNC_GPIO14
 #endif
 
+#ifndef PWM_PERIOD
+  #define PWM_PERIOD 1000
+#endif
+
 // --------------------------------------
 
 #define AP_SSID "SUPLA-ESP8266"
@@ -375,5 +449,7 @@
 #if defined(SENSOR_DHT11) || defined(SENSOR_DHT22) || defined(SENSOR_AM2302)
 #define DHTSENSOR
 #endif
+
+
 
 #endif /* SUPLA_ESP_H_ */

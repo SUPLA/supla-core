@@ -2,7 +2,7 @@
  ============================================================================
  Name        : supla_esp_devconn.c
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.2
+ Version     : 1.5
  Copyright   : GPLv2
  ============================================================================
 */
@@ -28,6 +28,7 @@ static ETSTimer supla_devconn_timer1;
 static ETSTimer supla_devconn_timer2;
 static ETSTimer supla_iterate_timer;
 
+
 #if NOSSL == 1
     #define supla_espconn_sent espconn_sent
     #define supla_espconn_disconnect espconn_disconnect
@@ -37,6 +38,7 @@ static ETSTimer supla_iterate_timer;
 	#define supla_espconn_disconnect espconn_secure_disconnect
 	#define supla_espconn_connect espconn_secure_connect
 #endif
+
 
 #ifdef RELAY1_PORT
 	static ETSTimer supla_relay1_timer;
@@ -250,6 +252,7 @@ supla_esp_channel_value_changed(int channel_number, char v) {
 }
 
 #if defined(RGBW_CONTROLLER_CHANNEL) \
+    || defined(RGBWW_CONTROLLER_CHANNEL) \
 	|| defined(RGB_CONTROLLER_CHANNEL) \
     || defined(DIMMER_CHANNEL)
 
@@ -287,9 +290,36 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
 	char Success = 0;
 
-	char _v = v == 1 ? RELAY_HI_VALUE : RELAY_LO_VALUE;
+	char _v = v == 1 ? HI_VALUE : LO_VALUE;
 
-	supla_esp_gpio_hi(port, _v);
+    #ifdef RELAY_STATE_RESTORE
+
+		#ifdef RELAY1_PORT
+			if ( port == RELAY1_PORT )
+				supla_esp_state.Relay1 = _v;
+		#endif
+
+		#ifdef RELAY2_PORT
+			if ( port == RELAY2_PORT )
+				supla_esp_state.Relay2 = _v;
+		#endif
+
+		supla_esp_save_state(SAVE_STATE_DELAY);
+
+    #endif
+
+	#ifdef RELAY1_PORT
+		if ( port == RELAY1_PORT )
+			supla_esp_gpio_relay1_hi(_v);
+	#endif
+
+	#ifdef RELAY2_PORT
+		if ( port == RELAY2_PORT )
+			supla_esp_gpio_relay2_hi(_v);
+	#endif
+
+	//supla_log(LOG_DEBUG, "_supla_esp_channel_set_value %i, %i", port, _v);
+
 	Success = supla_esp_gpio_is_hi(port) == _v;
 
 	if ( Success ) {
@@ -337,18 +367,58 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 		return 1;
 	}
 
-#elif defined(RGBW_CONTROLLER_CHANNEL)
+#elif defined(RGBW_CONTROLLER_CHANNEL) || defined(RGBWW_CONTROLLER_CHANNEL)
 
 char
 ICACHE_FLASH_ATTR supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrightness, char *Brightness) {
 
 	//supla_log(LOG_DEBUG, "Color: %i, CB: %i, B: %i", *Color, *ColorBrightness, *Brightness);
 
-	supla_esp_pwm_set_percent_duty(*Brightness, 100, 0);
-	supla_esp_pwm_set_percent_duty(*ColorBrightness, 100, 1);
-	supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, 100, 2); //RED
-	supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, 100, 3);  //GREEN
-	supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, 100, 4);         //BLUE
+	#ifdef COLOR_BRIGHTNESS_PWM
+
+		supla_esp_pwm_set_percent_duty(*Brightness, 100, 0);
+		supla_esp_pwm_set_percent_duty(*ColorBrightness, 100, 1);
+		supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, 100, 2); //RED
+		supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, 100, 3);  //GREEN
+		supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, 100, 4);         //BLUE
+
+	#else
+
+		int cn = 255;
+
+		#ifdef RGBW_CONTROLLER_CHANNEL
+			cn = RGBW_CONTROLLER_CHANNEL;
+		#else
+			cn = RGBWW_CONTROLLER_CHANNEL;
+		#endif
+
+		if ( ChannelNumber == cn ) {
+
+			char CB = *ColorBrightness;
+
+			if ( CB > 10 && CB < 25 )
+				CB = 25;
+
+			if ( CB < 10 )
+				CB = 0;
+
+			supla_esp_pwm_set_percent_duty((((*Color) & 0x00FF0000) >> 16) * 100 / 255, CB, 0); //RED
+			supla_esp_pwm_set_percent_duty((((*Color) & 0x0000FF00) >> 8) * 100 / 255, CB, 1);  //GREEN
+			supla_esp_pwm_set_percent_duty(((*Color) & 0x000000FF) * 100 / 255, CB, 2);         //BLUE
+
+			supla_esp_pwm_set_percent_duty(*Brightness, 100, 3);
+
+		} else if ( ChannelNumber == cn+1 ) {
+
+			#if SUPLA_PWM_COUNT >= 4
+				supla_esp_pwm_set_percent_duty(*Brightness, 100, 4);
+			#endif
+
+		}
+
+
+
+	#endif
 
 	return 1;
 }
@@ -390,6 +460,7 @@ supla_esp_channel_set_rgbw_value(int ChannelNumber, int *Color, char *ColorBrigh
 
 #if defined(RGB_CONTROLLER_CHANNEL) \
     || defined(RGBW_CONTROLLER_CHANNEL) \
+    || defined(RGBWW_CONTROLLER_CHANNEL) \
     || defined(DIMMER_CHANNEL)
 
 char ICACHE_FLASH_ATTR
@@ -403,6 +474,7 @@ void ICACHE_FLASH_ATTR
 supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 #if defined(RGBW_CONTROLLER_CHANNEL) \
+	|| defined(RGBWW_CONTROLLER_CHANNEL) \
 	|| defined(RGB_CONTROLLER_CHANNEL) \
 	|| defined(DIMMER_CHANNEL)
 
@@ -412,6 +484,11 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
     #ifdef RGBW_CONTROLLER_CHANNEL
 	rgb_cn = RGBW_CONTROLLER_CHANNEL;
     #endif
+
+	#ifdef RGBWW_CONTROLLER_CHANNEL
+	rgb_cn = RGBWW_CONTROLLER_CHANNEL;
+	dimmer_cn = RGBWW_CONTROLLER_CHANNEL+1;
+	#endif
 
 	#ifdef RGB_CONTROLLER_CHANNEL
 	rgb_cn = RGB_CONTROLLER_CHANNEL;
@@ -472,7 +549,9 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 		int port = RELAY1_PORT;
     #endif
 
-    #if defined(__BOARD_rs_module) || defined(__BOARD_rs_module_wroom) || defined(__BOARD_jangoe_rs)
+    #if defined(__BOARD_rs_module) \
+		|| defined(__BOARD_rs_module_wroom) \
+		|| defined(__BOARD_jangoe_rs)
 
 		char Success = 0;
 		char s1, s2, v1, v2;
@@ -579,7 +658,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srd.LocationID = supla_esp_cfg.LocationID;
 			ets_snprintf(srd.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s", supla_esp_cfg.LocationPwd);
 			ets_snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", DEVICE_NAME);
-			strcpy(srd.SoftVer, "1.4");
+			strcpy(srd.SoftVer, "1.6");
 			os_memcpy(srd.GUID, supla_esp_cfg.GUID, SUPLA_GUID_SIZE);
 
 			//supla_log(LOG_DEBUG, "LocationID=%i, LocationPWD=%s", srd.LocationID, srd.LocationPWD);
@@ -618,11 +697,14 @@ supla_esp_devconn_iterate(void *timer_arg) {
 		|| defined(__BOARD_gate_module_esp01) \
 		|| defined(__BOARD_gate_module_esp01_ds) \
 		|| defined(__BOARD_sonoff) \
-		|| defined(__BOARD_sonoff_ds18b20)
+		|| defined(__BOARD_sonoff_ds18b20) \
+		|| defined(__BOARD_jangoe_wifisocket)
 
             #if defined(DS18B20) || defined(DHTSENSOR)
 				srd.channel_count = 2;
-            #else
+            #elif defined(__BOARD_jangoe_wifisocket)
+				srd.channel_count = 2;
+			#else
 				srd.channel_count = 1;
             #endif
 
@@ -661,6 +743,13 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				supla_get_temp_and_humidity(srd.channels[1].value);
 
             #endif
+
+            #ifdef __BOARD_jangoe_wifisocket
+				srd.channels[1].Number = 1;
+				srd.channels[1].Type = srd.channels[0].Type;
+				srd.channels[1].FuncList = srd.channels[0].FuncList;
+				srd.channels[1].Default = srd.channels[0].Default;
+			#endif
 
 #elif defined(__BOARD_gate_module) \
 	    || defined(__BOARD_gate_module_dht11) \
@@ -720,7 +809,9 @@ supla_esp_devconn_iterate(void *timer_arg) {
 				supla_get_temp_and_humidity(srd.channels[4].value);
             #endif
 
-#elif defined(__BOARD_rs_module) || defined(__BOARD_rs_module_wroom) || defined(__BOARD_jangoe_rs)
+#elif defined(__BOARD_rs_module) \
+		|| defined(__BOARD_rs_module_wroom) \
+		|| defined(__BOARD_jangoe_rs)
 
             #ifdef DS18B20
 				srd.channel_count = 3;
@@ -831,7 +922,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			supla_esp_channel_rgbw_to_value(srd.channels[3].value, 0x00FF00, 0, 0);
 			supla_esp_channel_set_rgbw__value(3, 0x00FF00, 0, 0);
 
-#elif defined(__BOARD_zam_wop_01)
+#elif defined(__BOARD_zam_row_01)
 
 			srd.channel_count = 1;
 
@@ -844,6 +935,17 @@ supla_esp_devconn_iterate(void *timer_arg) {
 
 		    srd.channels[0].value[0] = supla_esp_gpio_relay_on(RELAY1_PORT);
 
+#elif defined(__BOARD_h801)
+
+			srd.channel_count = 2;
+			srd.channels[0].Type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
+			supla_esp_channel_rgbw_to_value(srd.channels[0].value, 0x00FF00, 0, 0);
+			supla_esp_channel_set_rgbw__value(0, 0x00FF00, 0, 0);
+
+			srd.channels[1].Type = SUPLA_CHANNELTYPE_DIMMER;
+			srd.channels[1].Number = 1;
+			supla_esp_channel_rgbw_to_value(srd.channels[1].value, 0x000000, 0, 0);
+			supla_esp_channel_set_rgbw__value(1, 0x000000, 0, 0);
 #endif
 
 			srpc_ds_async_registerdevice_b(srpc, &srd);
