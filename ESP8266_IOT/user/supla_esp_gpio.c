@@ -254,8 +254,11 @@ void supla_esg_gpio_relay_switch(char port) {
 
 	    if ( RELAY1_PORT == port )
 			supla_esp_state.Relay1 = hi;
+
+		#ifdef RELAY2_PORT
 	    else if ( RELAY2_PORT == port )
 	    	supla_esp_state.Relay2 = hi;
+		#endif
 
 		supla_esp_save_state(SAVE_STATE_DELAY);
 	#endif
@@ -268,9 +271,11 @@ void supla_esg_gpio_relay_switch(char port) {
 
 		} else {
 
+			#ifdef RELAY2_PORT
 			if ( supla_esp_gpio_relay2_hi(hi) == 1 ) {
 				supla_esp_channel_value_changed(1, hi);
 			}
+			#endif
 
 		}
 
