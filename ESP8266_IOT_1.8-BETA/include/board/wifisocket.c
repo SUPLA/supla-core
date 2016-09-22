@@ -79,6 +79,22 @@ void ICACHE_FLASH_ATTR supla_esp_board_gpio_init(void) {
     supla_relay_cfg[0].flags = RELAY_FLAG_RESTORE;
     supla_relay_cfg[0].channel = 0;
     
+	#ifdef __BOARD_wifisocket_x4
+
+		supla_relay_cfg[1].gpio_id = B_RELAY2_PORT;
+		supla_relay_cfg[1].flags = RELAY_FLAG_RESTORE;
+		supla_relay_cfg[1].channel = 1;
+
+		supla_relay_cfg[2].gpio_id = B_RELAY3_PORT;
+		supla_relay_cfg[2].flags = RELAY_FLAG_RESTORE;
+		supla_relay_cfg[2].channel = 2;
+
+		supla_relay_cfg[3].gpio_id = B_RELAY4_PORT;
+		supla_relay_cfg[3].flags = RELAY_FLAG_RESTORE;
+		supla_relay_cfg[3].channel = 3;
+
+	#endif
+
 }
 
 void ICACHE_FLASH_ATTR  supla_esp_board_set_channels(TDS_SuplaRegisterDevice_B *srd) {
