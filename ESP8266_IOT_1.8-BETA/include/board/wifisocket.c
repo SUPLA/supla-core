@@ -35,17 +35,19 @@
 
 #endif
 
-void ICACHE_FLASH_ATTR supla_esp_board_set_device_name(char *buffer, uint8 buffer_size) {
-	
 #ifdef __BOARD_wifisocket_x4
+void supla_esp_board_set_device_name(char *buffer, uint8 buffer_size) {
 	ets_snprintf(buffer, buffer_size, "SUPLA-SOCKETx4");
+}
 #else
+void ICACHE_FLASH_ATTR supla_esp_board_set_device_name(char *buffer, uint8 buffer_size) {
 	ets_snprintf(buffer, buffer_size, "SUPLA-SOCKET");
+}
 #endif
 	
-}
 
-void ICACHE_FLASH_ATTR supla_esp_board_gpio_init(void) {
+
+void supla_esp_board_gpio_init(void) {
 		
 
 	#ifdef __BOARD_wifisocket_x4
@@ -53,22 +55,32 @@ void ICACHE_FLASH_ATTR supla_esp_board_gpio_init(void) {
 	supla_input_cfg[0].type = INPUT_TYPE_BUTTON;
 	supla_input_cfg[0].gpio_id = B_CFG_PORT;
 	supla_input_cfg[0].flags = INPUT_FLAG_PULLUP | INPUT_FLAG_CFG_BTN;
+	supla_input_cfg[0].relay_gpio_id = B_RELAY1_PORT;
+	supla_input_cfg[0].channel = 0;
 
 	supla_input_cfg[1].type = INPUT_TYPE_BUTTON;
 	supla_input_cfg[1].gpio_id = B_BTN2_PORT;
 	supla_input_cfg[1].flags = INPUT_FLAG_PULLUP;
+	supla_input_cfg[1].relay_gpio_id = B_RELAY2_PORT;
+	supla_input_cfg[1].channel = 1;
 
 	supla_input_cfg[2].type = supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ? INPUT_TYPE_SWITCH : INPUT_TYPE_BUTTON;
 	supla_input_cfg[2].gpio_id = B_BTN3_PORT;
+	supla_input_cfg[2].relay_gpio_id = B_RELAY3_PORT;
+	supla_input_cfg[2].channel = 2;
 
 	supla_input_cfg[3].type = supla_input_cfg[2].type;
 	supla_input_cfg[3].gpio_id = B_BTN4_PORT;
+	supla_input_cfg[3].relay_gpio_id = B_RELAY4_PORT;
+	supla_input_cfg[3].channel = 3;
 
 	#else
 
 	supla_input_cfg[0].type = supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ? INPUT_TYPE_SWITCH : INPUT_TYPE_BUTTON;
 	supla_input_cfg[0].gpio_id = B_CFG_PORT;
 	supla_input_cfg[0].flags = INPUT_FLAG_PULLUP | INPUT_FLAG_CFG_BTN;
+	supla_input_cfg[0].relay_gpio_id = B_RELAY1_PORT;
+	supla_input_cfg[0].channel = 0;
 
 	#endif
 
@@ -97,7 +109,7 @@ void ICACHE_FLASH_ATTR supla_esp_board_gpio_init(void) {
 
 }
 
-void ICACHE_FLASH_ATTR  supla_esp_board_set_channels(TDS_SuplaRegisterDevice_B *srd) {
+void supla_esp_board_set_channels(TDS_SuplaRegisterDevice_B *srd) {
 	
 	#if defined(__BOARD_wifisocket_x4)
 		srd->channel_count = 4;
@@ -153,8 +165,16 @@ void ICACHE_FLASH_ATTR  supla_esp_board_set_channels(TDS_SuplaRegisterDevice_B *
 	#endif
 }
 
-void ICACHE_FLASH_ATTR supla_esp_board_send_channel_values(void *srpc) {
+void supla_esp_board_send_channel_values(void *srpc) {
 
 	supla_esp_channel_value_changed(0, supla_esp_gpio_relay_on(B_RELAY1_PORT));
+
+	#if defined(__BOARD_wifisocket_x4)
+
+	supla_esp_channel_value_changed(1, supla_esp_gpio_relay_on(B_RELAY2_PORT));
+	supla_esp_channel_value_changed(2, supla_esp_gpio_relay_on(B_RELAY3_PORT));
+	supla_esp_channel_value_changed(3, supla_esp_gpio_relay_on(B_RELAY4_PORT));
+
+	#endif
 
 }
