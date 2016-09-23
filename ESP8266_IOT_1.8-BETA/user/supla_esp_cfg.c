@@ -45,7 +45,7 @@ _supla_esp_save_state(void *timer_arg) {
 	spi_flash_erase_sector(CFG_SECTOR+1);
 
 	if ( SPI_FLASH_RESULT_OK == spi_flash_write((CFG_SECTOR+1) * SPI_FLASH_SEC_SIZE, (uint32*)&supla_esp_state, sizeof(SuplaEspState)) ) {
-		supla_log(LOG_DEBUG, "STATE WRITE SUCCESS");
+		//supla_log(LOG_DEBUG, "STATE WRITE SUCCESS");
 		return;
 	}
 

@@ -505,7 +505,7 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 	#else
 
 		for(a=0;a<RELAY_MAX_COUNT;a++)
-			if ( supla_relay_cfg[a].gpio_id != 0
+			if ( supla_relay_cfg[a].gpio_id != 255
 				 && new_value->ChannelNumber == supla_relay_cfg[a].channel ) {
 
 				Success = _supla_esp_channel_set_value(supla_relay_cfg[a].gpio_id, v, new_value->ChannelNumber);
@@ -521,7 +521,7 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 	if ( v == 1 && new_value->DurationMS > 0 ) {
 
 		for(a=0;a<RELAY_MAX_COUNT;a++)
-			if ( supla_relay_cfg[a].gpio_id != 0
+			if ( supla_relay_cfg[a].gpio_id != 255
 				 && new_value->ChannelNumber == supla_relay_cfg[a].channel ) {
 
 				os_timer_disarm(&supla_relay_cfg[a].timer);

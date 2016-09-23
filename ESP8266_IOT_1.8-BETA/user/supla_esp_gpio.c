@@ -35,7 +35,7 @@
 #define INPUT_MIN_CYCLE_COUNT   5
 #define INPUT_CYCLE_TIME        20
 
-#define CFG_BTN_PRESS_TIME      5000
+#define CFG_BTN_PRESS_TIME      4500
 #define CFG_BTN_PRESS_COUNT     10
 
 supla_input_cfg_t supla_input_cfg[INPUT_MAX_COUNT];
@@ -154,6 +154,7 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
 
     for(a=0;a<RELAY_MAX_COUNT;a++)
     	if ( supla_relay_cfg[a].gpio_id == port ) {
+
     		time = &supla_relay_cfg[a].last_time;
 
     		if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE )
@@ -207,7 +208,7 @@ void supla_esg_gpio_pwm_onoff(void) {
 
 LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg) {
 
-	if (  input_cfg->relay_gpio_id != 0 ) {
+	if (  input_cfg->relay_gpio_id != 255 ) {
 
 		//supla_log(LOG_DEBUG, "RELAY");
 		supla_esp_gpio_relay_hi(input_cfg->relay_gpio_id, 255);
@@ -413,7 +414,7 @@ supla_esp_gpio_intr_handler(void *params) {
 
 		input_cfg = &supla_input_cfg[a];
 
-		if ( input_cfg->gpio_id != 0
+		if ( input_cfg->gpio_id != 255
 			 && gpio_status & BIT(input_cfg->gpio_id) ) {
 
             gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), GPIO_PIN_INTR_DISABLE);
@@ -455,11 +456,13 @@ supla_esp_gpio_init(void) {
 	memset(&supla_relay_cfg, 0, sizeof(supla_relay_cfg));
 
 	for (a=0; a<INPUT_MAX_COUNT; a++) {
+		supla_input_cfg[a].gpio_id = 255;
 		supla_input_cfg[a].channel = 255;
 		supla_input_cfg[a].last_state = 255;
 	}
 
 	for (a=0; a<RELAY_MAX_COUNT; a++) {
+		supla_relay_cfg[a].gpio_id = 255;
 		supla_relay_cfg[a].channel = 255;
 	}
 
@@ -502,7 +505,7 @@ supla_esp_gpio_init(void) {
 
 
 	for (a=0; a<RELAY_MAX_COUNT; a++)
-		if ( supla_relay_cfg[a].gpio_id != 0 ) {
+		if ( supla_relay_cfg[a].gpio_id != 255 ) {
 
 			gpio_pin_intr_state_set(GPIO_ID_PIN(supla_relay_cfg[a].gpio_id), GPIO_PIN_INTR_DISABLE);
 			supla_relay_cfg[0].last_time = 2147483647;
@@ -625,7 +628,7 @@ supla_esp_gpio_init(void) {
     ETS_GPIO_INTR_DISABLE();
 
     for (a=0; a<INPUT_MAX_COUNT; a++)
-      if ( supla_input_cfg[a].gpio_id != 0
+      if ( supla_input_cfg[a].gpio_id != 255
     		&& supla_input_cfg[a].type != 0) {
 
         gpio_output_set(0, 0, 0, GPIO_ID_PIN(supla_input_cfg[a].gpio_id));
@@ -791,7 +794,7 @@ supla_esp_gpio_enable_sensors(void *timer_arg) {
 	ETS_GPIO_INTR_DISABLE();
 
 	for(a=0;a<INPUT_MAX_COUNT;a++)
-		if ( supla_input_cfg[a].gpio_id != 0
+		if ( supla_input_cfg[a].gpio_id != 255
 			 && supla_input_cfg[a].type == INPUT_TYPE_SENSOR )
 
 		supla_esp_gpio_enable_input_port(supla_input_cfg[a].gpio_id);
