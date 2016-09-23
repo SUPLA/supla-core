@@ -140,6 +140,25 @@ supla_esp_gpio_enable_input_port(char port) {
 
 }
 
+void supla_esp_gpio_btn_irq_lock(uint8 lock) {
+
+	supla_input_cfg_t *input_cfg;
+	int a;
+
+	for(a=0;a<INPUT_MAX_COUNT;a++) {
+
+		input_cfg = &supla_input_cfg[a];
+
+		if ( input_cfg->gpio_id != 255
+				&& ( input_cfg->type == INPUT_TYPE_BUTTON
+					 || input_cfg->type == INPUT_TYPE_SWITCH ) )
+		     gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), lock == 1 ? GPIO_PIN_INTR_DISABLE : GPIO_PIN_INTR_ANYEDGE);
+
+	}
+
+
+}
+
 char supla_esp_gpio_relay_hi(int port, char hi) {
 
     unsigned int t = system_get_time();
@@ -164,6 +183,9 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     	}
 
 
+    supla_esp_gpio_btn_irq_lock(1);
+    os_delay_us(10);
+
     RELAY_BEFORE_CHANGE_STATE;
 
     if ( time == NULL
@@ -179,6 +201,9 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
 
     	result = 1;
     }
+
+    os_delay_us(10);
+    supla_esp_gpio_btn_irq_lock(0);
 
 	RELAY_AFTER_CHANGE_STATE;
 
@@ -211,6 +236,7 @@ LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg) {
 	if (  input_cfg->relay_gpio_id != 255 ) {
 
 		//supla_log(LOG_DEBUG, "RELAY");
+
 		supla_esp_gpio_relay_hi(input_cfg->relay_gpio_id, 255);
 
 		if ( input_cfg->channel != 255 )
@@ -225,7 +251,8 @@ supla_esp_gpio_on_input_active(supla_input_cfg_t *input_cfg) {
 
 	if ( input_cfg->type == INPUT_TYPE_SWITCH ) {
 
-		//supla_log(LOG_DEBUG, "RELAY");
+		supla_log(LOG_DEBUG, "RELAY");
+
 		supla_esp_gpio_relay_switch(input_cfg);
 
 	} else if ( input_cfg->type == INPUT_TYPE_SENSOR
@@ -255,7 +282,7 @@ supla_esp_gpio_on_input_inactive(supla_input_cfg_t *input_cfg) {
 	} else if ( input_cfg->type == INPUT_TYPE_SENSOR
 			    &&  input_cfg->channel != 255 ) {
 
-		//supla_log(LOG_DEBUG, "inactive");
+		supla_log(LOG_DEBUG, "inactive");
 		supla_esp_channel_value_changed(input_cfg->channel, 0);
 
 	}
@@ -269,7 +296,6 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 	supla_input_cfg_t *input_cfg = (supla_input_cfg_t *)timer_arg;
 	uint8 v = gpio__input_get(input_cfg->gpio_id);
 	uint8 active = (input_cfg->flags & INPUT_FLAG_PULLUP) ? 0 : 1;
-
 
 	if ( input_cfg->step == 1 ) {
 

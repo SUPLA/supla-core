@@ -77,7 +77,8 @@ supla_esp_system_restart(void) {
       if ( sys_restart == 1 ) {
 
     	  supla_log(LOG_DEBUG, "RESTART");
-    	  system_print_meminfo();
+    	  supla_log(LOG_DEBUG, "Free heap size: %i", system_get_free_heap_size());
+
     	  system_restart();
       }
 
@@ -1099,6 +1100,8 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 
 	unsigned int t1;
 	unsigned int t2;
+
+	//supla_log(LOG_DEBUG, "Free heap size: %i", system_get_free_heap_size());
 
 	if ( registered == 1
 		 && server_activity_timeout > 0

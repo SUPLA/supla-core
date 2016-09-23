@@ -10,6 +10,8 @@
 #ifndef SUPLA_ESP_H_
 #define SUPLA_ESP_H_
 
+#define MEMLEAK_DEBUG
+
 #include "supla-dev/proto.h"
 #include "board/supla_esp_board.h"
 

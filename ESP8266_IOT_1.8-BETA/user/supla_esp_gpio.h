@@ -15,6 +15,7 @@
 #define RELAY_FLAG_RESET          0x01
 #define RELAY_FLAG_RESTORE        0x02
 #define RELAY_FLAG_RESTORE_FORCE  0x04
+#define RELAY_FLAG_IRQ_LOCKED     0x08
 
 typedef struct {
 

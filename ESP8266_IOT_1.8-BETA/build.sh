@@ -18,7 +18,9 @@
 ###
 
 DEP_LIBS="-lssl"
-CFG_SECTOR=0x3C
+CFG_SECTOR=0xBC
+SDK154=1
+UPGRADE_1024=1
 NOSSL=0
 
 export PATH=/hdd2/Espressif/xtensa-lx106-elf/bin:$PATH
@@ -26,22 +28,41 @@ export COMPILE=gcc
 export SDK_PATH=/hdd2/Espressif/ESP8266_IOT_SDK
 export BIN_PATH=/hdd2/Espressif/ESP8266_BIN
 
+
 case $1 in
    "dht11_esp01")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "dht22_esp01")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "am2302_esp01")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "thermometer_esp01")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "thermometer_esp01_ds_gpio0")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "wifisocket")
    ;;
    "wifisocket_x4")
    ;;
    "wifisocket_esp01")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "wifisocket_54")
    ;;
@@ -52,38 +73,32 @@ case $1 in
    "gate_module_dht22")
    ;;
    "gate_module_esp01")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "gate_module_esp01_ds")
+      CFG_SECTOR=0x3C
+      SDK154=0
+      UPGRADE_1024=0
    ;;
    "gate_module_wroom")
-     CFG_SECTOR=0xBC
-     SDK154=1
-     UPGRADE_1024=1
    ;;
    "gate_module2_wroom")
-     CFG_SECTOR=0xBC
-     SDK154=1 
-     UPGRADE_1024=1
    ;;
    "rs_module")
    ;;
    "rs_module_wroom")
-     CFG_SECTOR=0xBC
    ;;
    "starter1_module_wroom")
-     CFG_SECTOR=0xBC
    ;;
    "jangoe_wifisocket")
    ;;
    "jangoe_rs")
    ;;
    "sonoff")
-    CFG_SECTOR=0xBC
-#    SDK154=1 
-#    UPGRADE_1024=1
    ;;
    "sonoff_ds18b20")
-     CFG_SECTOR=0xBC
    ;;
    "EgyIOT")
      DEP_LIBS="-lpwm"
@@ -94,24 +109,12 @@ case $1 in
      NOSSL=1
    ;;
    "zam_row_01")
-     SDK154=1 
-     UPGRADE_1024=1
-     CFG_SECTOR=0xBC
-   ;;
-   "rgbw")
-     DEP_LIBS="-lpwm"
-     NOSSL=1
    ;;
    "rgbw_wroom")
      DEP_LIBS="-lpwm -lssl"
-     CFG_SECTOR=0xBC
-     UPGRADE_1024=1
    ;;
    "h801")
      DEP_LIBS="-lpwm -lssl"
-     SDK154=1
-     UPGRADE_1024=1
-     CFG_SECTOR=0xBC
    ;;
    *)
    echo "Usage:"
@@ -145,7 +148,6 @@ case $1 in
    echo "              EgyIOT";
    echo "              dimmer";
    echo "              zam_row_01";
-   echo "              rgbw";
    echo "              rgbw_wroom";
    echo "              h801";
    echo 
