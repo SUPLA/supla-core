@@ -2,7 +2,6 @@
  ============================================================================
  Name        : supla_esp_gpio.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.2
  Copyright   : GPLv2
  ============================================================================
 */
@@ -55,12 +54,12 @@ uint8 gpio16_input_get(void);
 uint8 gpio16_output_get(void);
 uint8 gpio__input_get(uint8 port);
 
-void ICACHE_FLASH_ATTR supla_esp_gpio_init(void);
+void GPIO_ICACHE_FLASH supla_esp_gpio_init(void);
 
-void ICACHE_FLASH_ATTR supla_esp_gpio_state_disconnected(void);
-void ICACHE_FLASH_ATTR supla_esp_gpio_state_ipreceived(void);
-void ICACHE_FLASH_ATTR supla_esp_gpio_state_connected(void);
-void ICACHE_FLASH_ATTR supla_esp_gpio_state_cfgmode(void);
+void GPIO_ICACHE_FLASH supla_esp_gpio_state_disconnected(void);
+void GPIO_ICACHE_FLASH supla_esp_gpio_state_ipreceived(void);
+void GPIO_ICACHE_FLASH supla_esp_gpio_state_connected(void);
+void GPIO_ICACHE_FLASH supla_esp_gpio_state_cfgmode(void);
 
 void supla_esp_gpio_hi(int port, char hi);
 char supla_esp_gpio_is_hi(int port);

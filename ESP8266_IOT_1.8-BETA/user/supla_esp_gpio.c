@@ -2,7 +2,6 @@
  ============================================================================
  Name        : supla_esp_gpio.c
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.3
  Copyright   : GPLv2
  ============================================================================
 */
@@ -473,7 +472,7 @@ supla_esp_gpio_intr_handler(void *params) {
 
 }
 
-void ICACHE_FLASH_ATTR
+void GPIO_ICACHE_FLASH
 supla_esp_gpio_init(void) {
 
 	char a;
@@ -559,94 +558,7 @@ supla_esp_gpio_init(void) {
 	ETS_GPIO_INTR_ENABLE();
 
 	supla_esp_board_gpio_init();
-/*
-	#ifdef CFG_PORT
-		supla_input_cfg[0].gpio_id = CFG_PORT;
-		supla_input_cfg[0].flags = INPUT_FLAG_PULLUP | INPUT_FLAG_CFG_BTN;
-		supla_input_cfg[0].type = supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ? INPUT_TYPE_SWITCH : INPUT_TYPE_BUTTON;
-	#endif
 
-    #ifdef RELAY1_PORT
-
-	  	 #if defined(__BOARD_wifisocket) \
-		 			|| defined(__BOARD_wifisocket_54) \
-		 			|| defined(__BOARD_wifisocket_esp01) \
-		 			|| defined(__BOARD_sonoff) \
-		 			|| defined(__BOARD_sonoff_ds18b20)
-
-			 supla_input_cfg[0].relay_gpio_id = RELAY1_PORT;
-			 supla_input_cfg[0].channel = 0;
-
-		 #endif
-
-    #endif
-
-	#ifdef SENSOR_PORT1
-
-		    supla_input_cfg[1].gpio_id = SENSOR_PORT1;
-			supla_input_cfg[1].type = INPUT_TYPE_SENSOR;
-
-			#if defined(__BOARD_rs_module) || defined(__BOARD_rs_module_wroom) || defined(__BOARD_jangoe_rs)
-				supla_input_cfg[1].channel = 1;
-			#else
-				supla_input_cfg[1].channel = 2;
-			#endif
-
-	#endif
-
-	#ifdef SENSOR_PORT2
-
-			supla_input_cfg[2].gpio_id = SENSOR_PORT2;
-			supla_input_cfg[2].type = INPUT_TYPE_SENSOR;
-			supla_input_cfg[2].channel = 3;
-
-	#endif
-
-	#ifdef BUTTON1_PORT
-
-		supla_input_cfg[3].gpio_id = BUTTON1_PORT;
-		supla_input_cfg[3].type = supla_esp_cfg.Button1Type == BTN_TYPE_SWITCH ? INPUT_TYPE_SWITCH : INPUT_TYPE_BUTTON;
-
-		#ifdef RELAY1_PORT
-			supla_input_cfg[3].relay_gpio_id = RELAY1_PORT;
-		#endif
-
-	#endif
-
-	#ifdef BUTTON2_PORT
-
-		supla_input_cfg[4].gpio_id = BUTTON2_PORT;
-		supla_input_cfg[4].type = supla_esp_cfg.Button2Type == BTN_TYPE_SWITCH ? INPUT_TYPE_SWITCH : INPUT_TYPE_BUTTON;
-
-		#ifdef RELAY2_PORT
-			supla_input_cfg[4].relay_gpio_id = RELAY2_PORT;
-		#endif
-
-	#endif
-
-	#ifdef BUTTON3_PORT
-
-		supla_input_cfg[5].gpio_id = BUTTON3_PORT;
-		supla_input_cfg[5].type = INPUT_TYPE_BUTTON;
-
-		#ifdef RELAY3_PORT
-			supla_input_cfg[5].relay_gpio_id = RELAY3_PORT;
-		#endif
-
-	#endif
-
-	#ifdef BUTTON4_PORT
-
-		supla_input_cfg[6].gpio_id = BUTTON4_PORT;
-		supla_input_cfg[6].type = INPUT_TYPE_BUTTON;
-
-		#ifdef RELAY4_PORT
-			supla_input_cfg[6].relay_gpio_id = RELAY4_PORT;
-		#endif
-
-	#endif
-    // ------------------------------------
-*/
     GPIO_PORT_POST_INIT;
 
     ETS_GPIO_INTR_ATTACH(supla_esp_gpio_intr_handler, NULL);
@@ -771,7 +683,7 @@ supla_esp_gpio_led_blinking(int led, int time) {
 }
 #endif
 
-void ICACHE_FLASH_ATTR
+void GPIO_ICACHE_FLASH
 supla_esp_gpio_state_disconnected(void) {
 
 	if ( supla_last_state == STATE_DISCONNECTED )
@@ -792,7 +704,7 @@ supla_esp_gpio_state_disconnected(void) {
 
 }
 
-void ICACHE_FLASH_ATTR
+void GPIO_ICACHE_FLASH
 supla_esp_gpio_state_ipreceived(void) {
 
 	if ( supla_last_state == STATE_IPRECEIVED )
@@ -831,7 +743,7 @@ supla_esp_gpio_enable_sensors(void *timer_arg) {
 }
 
 
-void ICACHE_FLASH_ATTR
+void GPIO_ICACHE_FLASH
 supla_esp_gpio_state_connected(void) {
 
 	if ( supla_last_state == STATE_CONNECTED )
@@ -853,7 +765,7 @@ supla_esp_gpio_state_connected(void) {
 }
 
 
-void ICACHE_FLASH_ATTR
+void GPIO_ICACHE_FLASH
 supla_esp_gpio_state_cfgmode(void) {
 
 	if ( supla_last_state == STATE_CFGMODE )

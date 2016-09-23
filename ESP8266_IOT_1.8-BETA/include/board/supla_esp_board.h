@@ -11,15 +11,16 @@
 #ifndef SUPLA_ESP_BOARD_H_
 #define SUPLA_ESP_BOARD_H_
 
-#if defined(__BOARD_dht11_esp01)
+#if defined(__BOARD_dht11_esp01) \
+    || defined(__BOARD_dht22_esp01) \
+    || defined(__BOARD_am2302_esp01) \
 
-#elif defined(__BOARD_dht22_esp01)
+#include "board/dht_esp01.h"
 
-#elif defined(__BOARD_am2302_esp01)
+#elif defined(__BOARD_thermometer_esp01) \
+      || defined(__BOARD_thermometer_esp01_ds_gpio0) \
 
-#elif defined(__BOARD_thermometer_esp01)
-
-#elif defined(__BOARD_thermometer_esp01_ds_gpio0)
+#include "board/thermometer_esp01.h"
 
 #elif defined(__BOARD_wifisocket)  \
       || defined(__BOARD_wifisocket_x4) \
@@ -55,7 +56,10 @@
 
 #elif defined(__BOARD_jangoe_wifisocket)
 
-#elif defined(__BOARD_sonoff_ds18b20)
+#elif defined(__BOARD_sonoff) \
+      || defined(__BOARD_sonoff_ds18b20)
+
+#include "board/sonoff.h"
 
 #elif defined(__BOARD_dimmer)
 
