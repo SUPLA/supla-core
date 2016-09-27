@@ -123,6 +123,10 @@ supla_esp_cfg_init(void) {
 		supla_esp_cfg.GUID[a]= (supla_esp_cfg.GUID[a] + system_get_time() + spi_flash_get_id() + system_get_chip_id() + system_get_rtc_time()) % 255;
 	}
 
+	#ifdef CFG_AFTER_GUID_GEN
+	CFG_AFTER_GUID_GEN;
+	#endif
+
 	memset(&supla_esp_state, 0, sizeof(SuplaEspState));
 
 	if ( supla_esp_cfg_save(&supla_esp_cfg) == 1 ) {

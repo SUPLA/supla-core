@@ -40,19 +40,11 @@
 supla_input_cfg_t supla_input_cfg[INPUT_MAX_COUNT];
 supla_relay_cfg_t supla_relay_cfg[RELAY_MAX_COUNT];
 
-static unsigned int supla_esp_gpio_init_time = 0;
+unsigned int supla_esp_gpio_init_time = 0;
 
 static char supla_last_state = STATE_UNKNOWN;
 static ETSTimer supla_gpio_timer1;
 static ETSTimer supla_gpio_timer2;
-
-
-#ifdef __BOARD_zam_row_01
-#include "com/zam/supla_esp_gpio.c"
-#endif
-
-
-
 
 void
 gpio16_output_conf(void)
@@ -176,7 +168,9 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     		time = &supla_relay_cfg[a].last_time;
 
     		if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE )
-        		state = &supla_esp_state.Relay[a];
+    			state = &supla_esp_state.Relay[a];
+
+
 
     		break;
     	}
@@ -185,10 +179,12 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     supla_esp_gpio_btn_irq_lock(1);
     os_delay_us(10);
 
+	#ifdef RELAY_BEFORE_CHANGE_STATE
     RELAY_BEFORE_CHANGE_STATE;
+	#endif
 
     if ( time == NULL
-    	 || abs(t-(*time)) >= 100000 ) {
+    	 || abs(t-(*time)) >= RELAY_MIN_DELAY ) {
 
     	supla_esp_gpio_hi(port, hi);
     	os_delay_us(10000);
@@ -204,7 +200,9 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     os_delay_us(10);
     supla_esp_gpio_btn_irq_lock(0);
 
+	#ifdef RELAY_AFTER_CHANGE_STATE
 	RELAY_AFTER_CHANGE_STATE;
+	#endif
 
     if ( result == 1
 		 && state != NULL ) {
@@ -434,12 +432,16 @@ supla_esp_gpio_intr_handler(void *params) {
 	uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
 	supla_input_cfg_t *input_cfg;
 
+	#ifdef BOARD_INTR_HANDLER
+	BOARD_INTR_HANDLER;
+	#endif
 
 	for(a=0;a<INPUT_MAX_COUNT;a++) {
 
 		input_cfg = &supla_input_cfg[a];
 
 		if ( input_cfg->gpio_id != 255
+			 && input_cfg->type != INPUT_TYPE_CUSTOM
 			 && gpio_status & BIT(input_cfg->gpio_id) ) {
 
             gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), GPIO_PIN_INTR_DISABLE);
@@ -459,16 +461,6 @@ supla_esp_gpio_intr_handler(void *params) {
             gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), GPIO_PIN_INTR_ANYEDGE);
 		}
 	}
-
-
-	#if defined(ZAM_INPUT1)
-		supla_esp_key_intr_zam_handler(gpio_status, ZAM_INPUT1, supla_esp_cfg.Button1Type);
-	#endif
-
-	#if defined(ZAM_INPUT2)
-		supla_esp_key_intr_zam_handler(gpio_status, ZAM_INPUT2, supla_esp_cfg.Button2Type);
-	#endif
-
 
 }
 
@@ -496,8 +488,6 @@ supla_esp_gpio_init(void) {
 	#endif
 
 	ETS_GPIO_INTR_DISABLE();
-
-	GPIO_PORT_INIT;
 
     #ifdef USE_GPIO16_INPUT
 	gpio16_input_conf();
@@ -528,6 +518,13 @@ supla_esp_gpio_init(void) {
     gpio_pin_intr_state_set(GPIO_ID_PIN(LED_BLUE_PORT), GPIO_PIN_INTR_DISABLE);
     #endif
 
+	ETS_GPIO_INTR_ENABLE();
+
+	supla_esp_board_gpio_init();
+
+    ETS_GPIO_INTR_ATTACH(supla_esp_gpio_intr_handler, NULL);
+
+    ETS_GPIO_INTR_DISABLE();
 
 	for (a=0; a<RELAY_MAX_COUNT; a++)
 		if ( supla_relay_cfg[a].gpio_id != 255 ) {
@@ -553,17 +550,6 @@ supla_esp_gpio_init(void) {
 
 			}
 		}
-
-
-	ETS_GPIO_INTR_ENABLE();
-
-	supla_esp_board_gpio_init();
-
-    GPIO_PORT_POST_INIT;
-
-    ETS_GPIO_INTR_ATTACH(supla_esp_gpio_intr_handler, NULL);
-
-    ETS_GPIO_INTR_DISABLE();
 
     for (a=0; a<INPUT_MAX_COUNT; a++)
       if ( supla_input_cfg[a].gpio_id != 255
@@ -617,7 +603,7 @@ void supla_esp_gpio_set_led(char r, char g, char b) {
 }
 
 
-void  supla_esp_gpio_init_led(void) {
+void GPIO_ICACHE_FLASH supla_esp_gpio_init_led(void) {
 
 	ETS_GPIO_INTR_DISABLE();
 
@@ -723,7 +709,7 @@ supla_esp_gpio_state_ipreceived(void) {
 	#endif
 }
 
-void
+void GPIO_ICACHE_FLASH
 supla_esp_gpio_enable_sensors(void *timer_arg) {
 
 	int a;

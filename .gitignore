@@ -48,5 +48,5 @@ local.properties
 **/*.o
 **/*.d
 
-# esp_com
-/ESP8266_IOT/include/com
+# acs
+/ESP8266_IOT/include/board/acs_*

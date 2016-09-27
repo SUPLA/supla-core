@@ -46,6 +46,7 @@ typedef struct {
 
 extern supla_input_cfg_t supla_input_cfg[INPUT_MAX_COUNT];
 extern supla_relay_cfg_t supla_relay_cfg[RELAY_MAX_COUNT];
+extern unsigned int supla_esp_gpio_init_time;
 
 void gpio16_output_conf(void);
 void gpio16_output_set(uint8 value);

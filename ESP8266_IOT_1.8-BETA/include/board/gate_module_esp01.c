@@ -70,5 +70,5 @@ void ICACHE_FLASH_ATTR supla_esp_board_set_channels(TDS_SuplaRegisterDevice_B *s
 
 }
 
-void ICACHE_FLASH_ATTR supla_esp_board_send_channel_values(void *srpc) {
+void ICACHE_FLASH_ATTR supla_esp_board_send_channel_values_with_delay(void *srpc) {
 }

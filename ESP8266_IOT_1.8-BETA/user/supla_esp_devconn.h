@@ -18,7 +18,7 @@ void DEVCONN_ICACHE_FLASH supla_esp_devconn_start(void);
 void DEVCONN_ICACHE_FLASH supla_esp_devconn_stop(void);
 char * DEVCONN_ICACHE_FLASH supla_esp_devconn_laststate(void);
 void DEVCONN_ICACHE_FLASH supla_esp_channel_value_changed(int channel_number, char v);
-void DEVCONN_ICACHE_FLASH supla_esp_devconn_send_channel_values(void);
+void DEVCONN_ICACHE_FLASH supla_esp_devconn_send_channel_values_with_delay(void);
 
 #ifdef TEMPERATURE_CHANNEL
 void DEVCONN_ICACHE_FLASH supla_esp_devconn_on_temp_humidity_changed(char humidity);

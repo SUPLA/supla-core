@@ -191,6 +191,7 @@ supla_esp_on_register_result(TSD_SuplaRegisterDeviceResult *register_device_resu
 		registered = 1;
 
 		supla_esp_set_state(LOG_DEBUG, "Registered and ready.");
+		supla_log(LOG_DEBUG, "Free heap size: %i", system_get_free_heap_size());
 
 		if ( server_activity_timeout != ACTIVITY_TIMEOUT ) {
 
@@ -200,7 +201,7 @@ supla_esp_on_register_result(TSD_SuplaRegisterDeviceResult *register_device_resu
 
 		}
 
-		supla_esp_devconn_send_channel_values();
+		supla_esp_devconn_send_channel_values_with_delay();
 
 		return;
 
@@ -557,7 +558,7 @@ supla_esp_on_remote_call_received(void *_srpc, unsigned int rr_id, unsigned int 
 			break;
 		case SUPLA_SD_CALL_CHANNEL_SET_VALUE:
 			supla_esp_channel_set_value(rd.data.sd_channel_new_value);
-			supla_esp_devconn_send_channel_values();
+			supla_esp_devconn_send_channel_values_with_delay();
 			break;
 		case SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT:
 			supla_esp_channel_set_activity_timeout_result(rd.data.sdc_set_activity_timeout_result);
@@ -625,7 +626,7 @@ supla_esp_srpc_free(void) {
 	}
 }
 
-void
+void DEVCONN_ICACHE_FLASH
 supla_esp_srpc_init(void) {
 	
 	supla_esp_srpc_free();
@@ -699,7 +700,7 @@ supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 
 }
 
-void
+void DEVCONN_ICACHE_FLASH
 supla_esp_devconn_resolvandconnect(void) {
 
 	devconn_autoconnect = 0;
@@ -841,22 +842,22 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 }
 
 void DEVCONN_ICACHE_FLASH
-supla_esp_devconn_send_channel_values_cb(void *timer_arg) {
+supla_esp_devconn_send_channel_values_with_delay_cb(void *timer_arg) {
 
 	if ( registered == 1
 		 && srpc != NULL ) {
 
-		supla_esp_board_send_channel_values(srpc);
+		supla_esp_board_send_channel_values_with_delay(srpc);
 
 	}
 
 }
 
 void DEVCONN_ICACHE_FLASH
-supla_esp_devconn_send_channel_values(void) {
+supla_esp_devconn_send_channel_values_with_delay(void) {
 
 	os_timer_disarm(&supla_devconn_timer3);
-	os_timer_setfn(&supla_devconn_timer3, (os_timer_func_t *)supla_esp_devconn_send_channel_values_cb, NULL);
+	os_timer_setfn(&supla_devconn_timer3, (os_timer_func_t *)supla_esp_devconn_send_channel_values_with_delay_cb, NULL);
 	os_timer_arm(&supla_devconn_timer3, 2000, 0);
 
 }

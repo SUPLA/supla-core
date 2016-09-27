@@ -406,16 +406,21 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 		supla_esp_http_error(conn);
 		return;
 	}
+
+	char dev_name[25];
+	supla_esp_board_set_device_name(&dev_name, 25);
+	dev_name[24] = 0;
 	
-	int bufflen = 830+strlen(supla_esp_cfg.WIFI_SSID)+strlen(supla_esp_cfg.Server);
+	int bufflen = 830+strlen(dev_name)+strlen(supla_esp_cfg.WIFI_SSID)+strlen(supla_esp_cfg.Server);
 	char *buffer = (char*)os_malloc(bufflen);
 
     #ifdef CFGBTN_TYPE_SELECTION
 
 	ets_snprintf(buffer, 
 			bufflen,
- 			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"cfg\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
-			(unsigned char)supla_esp_cfg.GUID[0],
+ 			"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"cfg\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+            dev_name,
+ 			(unsigned char)supla_esp_cfg.GUID[0],
 			(unsigned char)supla_esp_cfg.GUID[1],
 			(unsigned char)supla_esp_cfg.GUID[2],
 			(unsigned char)supla_esp_cfg.GUID[3],
@@ -449,8 +454,9 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 
 	ets_snprintf(buffer,
 			bufflen,
- 			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Input1 type:<select name=\"bt1\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br>Input2 type:<select name=\"bt2\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
-			(unsigned char)supla_esp_cfg.GUID[0],
+ 			"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Input1 type:<select name=\"bt1\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br>Input2 type:<select name=\"bt2\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+ 			dev_name,
+ 			(unsigned char)supla_esp_cfg.GUID[0],
 			(unsigned char)supla_esp_cfg.GUID[1],
 			(unsigned char)supla_esp_cfg.GUID[2],
 			(unsigned char)supla_esp_cfg.GUID[3],
@@ -486,8 +492,9 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 
 	ets_snprintf(buffer,
 			bufflen,
- 			"<h1>SUPLA ESP8266</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br><input type=\"submit\" value=\"Save\"></form>%s",
-			(unsigned char)supla_esp_cfg.GUID[0],
+ 			"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+ 			dev_name,
+ 			(unsigned char)supla_esp_cfg.GUID[0],
 			(unsigned char)supla_esp_cfg.GUID[1],
 			(unsigned char)supla_esp_cfg.GUID[2],
 			(unsigned char)supla_esp_cfg.GUID[3],
