@@ -36,6 +36,7 @@ typedef struct {
 typedef struct {
 
 	uint8 gpio_id;
+	uint8 bind;
 	uint8 flags;
 	uint8 channel;
 

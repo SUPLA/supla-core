@@ -96,6 +96,24 @@ case $1 in
    ;;
    "jangoe_rs")
    ;;
+   "lightswitch_x2")
+     UPGRADE_4096=1
+   ;;
+   "lightswitch_x2_54")
+     UPGRADE_4096=1
+   ;;
+   "lightswitch_x2_DHT11")
+     UPGRADE_4096=1
+   ;;
+   "lightswitch_x2_54_DHT11")
+     UPGRADE_4096=1
+   ;;
+   "lightswitch_x2_DHT22")
+     UPGRADE_4096=1
+   ;;
+   "lightswitch_x2_54_DHT22")
+     UPGRADE_4096=1
+   ;;
    "sonoff")
    ;;
    "sonoff_ds18b20")
@@ -150,6 +168,12 @@ case $1 in
    echo "              zam_row_01";
    echo "              rgbw_wroom";
    echo "              h801";
+   echo "              lightswitch_x2";
+   echo "              lightswitch_x2_54";
+   echo "              lightswitch_x2_DHT11";
+   echo "              lightswitch_x2_54_DHT11";
+   echo "              lightswitch_x2_DHT22";
+   echo "              lightswitch_x2_54_DHT22";
    echo 
    echo
    exit;
@@ -173,7 +197,14 @@ else
   EXTRA="NOSSL=0"
 fi
 
-if [ "$UPGRADE_1024" -eq 1 ]; then
+if [ "$UPGRADE_4096" -eq 1 ]; then
+   CFG_SECTOR=0xC0
+
+   make SUPLA_DEP_LIBS="$DEP_LIBS"  BOARD=$1 CFG_SECTOR="$CFG_SECTOR" BOOT=new APP=1 SPI_SPEED=40 SPI_MODE=QIO SPI_SIZE_MAP=4 $EXTRA 
+   cp $BIN_PATH/upgrade/user1.4096.new.4.bin /media/sf_Public/"$BOARD_NAME"_user1.4096.new.4.bin && \
+   cp $SDK_PATH/bin/boot_v1.2.bin /media/sf_Public/boot_v1.2.bin
+
+elif [ "$UPGRADE_1024" -eq 1 ]; then
 
    make SUPLA_DEP_LIBS="$DEP_LIBS"  BOARD=$1 CFG_SECTOR="$CFG_SECTOR" BOOT=new APP=1 SPI_SPEED=40 SPI_MODE=QIO SPI_SIZE_MAP=2 $EXTRA && \
    cp $BIN_PATH/upgrade/user1.1024.new.2.bin /media/sf_Public/"$BOARD_NAME"_user1.1024.new.2.bin && \

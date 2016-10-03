@@ -481,40 +481,37 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 	int a;
 	char Success = 0;
 
-	#if defined(__BOARD_rs_module) \
-		|| defined(__BOARD_rs_module_wroom) \
-		|| defined(__BOARD_jangoe_rs)
+	for(a=0;a<RELAY_MAX_COUNT;a++)
+		if ( supla_relay_cfg[a].gpio_id != 255
+			 && new_value->ChannelNumber == supla_relay_cfg[a].channel ) {
 
+			if ( supla_relay_cfg[a].bind != 255 ) {
 
-		char s1, s2, v1, v2;
+				char s1, s2, v1, v2;
 
-		v1 = 0;
-		v2 = 0;
+				v1 = 0;
+				v2 = 0;
 
-		if ( v == 1 ) {
-			v1 = 1;
-			v2 = 0;
-		} else if ( v == 2 ) {
-			v1 = 0;
-			v2 = 1;
-		}
+				if ( v == 1 ) {
+					v1 = 1;
+					v2 = 0;
+				} else if ( v == 2 ) {
+					v1 = 0;
+					v2 = 1;
+				}
 
-		s1 = _supla_esp_channel_set_value(RELAY1_PORT, v1, new_value->ChannelNumber);
-		s2 = _supla_esp_channel_set_value(RELAY2_PORT, v2, new_value->ChannelNumber);
-		Success = s1 != 0 || s2 != 0;
+				s1 = _supla_esp_channel_set_value(supla_relay_cfg[a].gpio_id, v1, new_value->ChannelNumber);
+				s2 = _supla_esp_channel_set_value(supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id, v2, new_value->ChannelNumber);
+				Success = s1 != 0 || s2 != 0;
 
-	#else
-
-		for(a=0;a<RELAY_MAX_COUNT;a++)
-			if ( supla_relay_cfg[a].gpio_id != 255
-				 && new_value->ChannelNumber == supla_relay_cfg[a].channel ) {
-
+			} else {
 				Success = _supla_esp_channel_set_value(supla_relay_cfg[a].gpio_id, v, new_value->ChannelNumber);
-				break;
 			}
 
 
-	#endif
+			break;
+		}
+
 
 
 	srpc_ds_async_set_channel_result(srpc, new_value->ChannelNumber, new_value->SenderID, Success);

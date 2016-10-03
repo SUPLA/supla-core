@@ -113,6 +113,7 @@ void user_init(void)
 	#endif
 
 	supla_esp_devconn_start();
+
 	system_print_meminfo();
 
 }

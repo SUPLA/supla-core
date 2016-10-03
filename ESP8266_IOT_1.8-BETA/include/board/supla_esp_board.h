@@ -46,9 +46,10 @@
 
 #include "board/gate_module_wroom.h"
 
-#elif defined(__BOARD_rs_module)
+#elif defined(__BOARD_rs_module) \
+      || defined(__BOARD_rs_module_wroom)
 
-#elif defined(__BOARD_rs_module_wroom)
+#include "board/rs_module.h"
 
 #elif defined(__BOARD_starter1_module_wroom)
 
@@ -66,6 +67,17 @@
 #elif defined(__BOARD_EgyIOT)
 
 #elif defined(__BOARD_zam_row_01)
+
+#include "board/acs_zam_row_01.h"
+
+#elif defined(__BOARD_lightswitch_x2) \
+        || defined(__BOARD_lightswitch_x2_DHT11) \
+        || defined(__BOARD_lightswitch_x2_DHT22) \
+        || defined(__BOARD_lightswitch_x2_54) \
+        || defined(__BOARD_lightswitch_x2_54_DHT11) \
+        || defined(__BOARD_lightswitch_x2_54_DHT22)
+
+#include "board/lightswitch.h"
 
 #endif
 

@@ -17,9 +17,6 @@
 
 #define SUPLA_ESP_SOFTVER "1.8"
 
-#define GPIO_ICACHE_FLASH ICACHE_FLASH_ATTR
-#define DEVCONN_ICACHE_FLASH ICACHE_FLASH_ATTR
-
 #define LO_VALUE  0
 #define HI_VALUE  1
 
@@ -41,51 +38,18 @@
 #define RELAY_MIN_DELAY 100000
 #endif
 
-#define GPIO_PORT_INIT \
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4); \
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5); \
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12); \
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13); \
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14)
+#ifndef GPIO_ICACHE_FLASH
+#define GPIO_ICACHE_FLASH ICACHE_FLASH_ATTR
+#endif
+
+#ifndef DEVCONN_ICACHE_FLASH
+#define DEVCONN_ICACHE_FLASH ICACHE_FLASH_ATTR
+#endif
 
 /*
 
 
-#if defined(__BOARD_rs_module)
-
-	#define DEVICE_NAME "SUPLA-RS-MODULE"
-    #define RESET_RELAY_PORT
-    #define DS18B20
-	#define TEMPERATURE_CHANNEL 2
-
-	#define LED_GREEN_PORT  12
-	#define LED_BLUE_PORT   14
-
-	#define CFG_PORT         5
-
-	#define RELAY1_PORT      4
-	#define RELAY2_PORT      13
-
-	#define SENSOR_PORT1      12
-
-#elif defined(__BOARD_rs_module_wroom)
-
-	#define DEVICE_NAME "SUPLA-RS-MODULE"
-    #define RESET_RELAY_PORT
-    #define DS18B20
-
-	#define TEMPERATURE_CHANNEL 2
-
-	#define LED_GREEN_PORT  5
-	#define LED_BLUE_PORT   12
-
-	#define CFG_PORT         13
-	#define RELAY1_PORT      4
-	#define RELAY2_PORT      14
-
-	#define SENSOR_PORT1      5
-
-#elif defined(__BOARD_starter1_module_wroom)
+#if  defined(__BOARD_starter1_module_wroom)
 
     #define DS18B20
     #define BTN_PULLUP
@@ -255,6 +219,15 @@
 		#define PWM_4_OUT_IO_FUNC  FUNC_GPIO4
 #endif
 */
+
+#ifndef GPIO_PORT_INIT
+#define GPIO_PORT_INIT \
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO4_U, FUNC_GPIO4); \
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, FUNC_GPIO5); \
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12); \
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTCK_U, FUNC_GPIO13); \
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_MTMS_U, FUNC_GPIO14)
+#endif
 
 // PWM ----------------------------------
 
