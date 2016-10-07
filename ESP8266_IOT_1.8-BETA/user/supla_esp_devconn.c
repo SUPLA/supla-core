@@ -519,6 +519,7 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 
 				s1 = _supla_esp_channel_set_value(supla_relay_cfg[a].gpio_id, v1, new_value->ChannelNumber);
 				s2 = _supla_esp_channel_set_value(supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id, v2, new_value->ChannelNumber);
+
 				Success = s1 != 0 || s2 != 0;
 
 			} else {

@@ -6,22 +6,12 @@
  ============================================================================
 */
 
-#ifdef __BOARD_rs_module
-
-	#define B_CFG_PORT          5
-	#define B_RELAY1_PORT       4
-	#define B_RELAY2_PORT      13
-	#define B_SENSOR_PORT1     12
-
-#else
-
-	#define B_CFG_PORT         13
-	#define B_RELAY1_PORT       4
-	#define B_RELAY2_PORT      14
-	#define B_SENSOR_PORT1      5
-
-#endif
-
+#define B_CFG_PORT          0
+#define B_RELAY1_PORT       4
+#define B_RELAY2_PORT       5
+#define B_BTN1_PORT        13
+#define B_BTN2_PORT        14
+#define B_SENSOR_PORT1     12
 
 
 void supla_esp_board_set_device_name(char *buffer, uint8 buffer_size) {
@@ -40,16 +30,25 @@ void supla_esp_board_gpio_init(void) {
 	supla_input_cfg[1].gpio_id = B_SENSOR_PORT1;
 	supla_input_cfg[1].channel = 1;
 	
+	supla_input_cfg[2].type = INPUT_TYPE_BUTTON_HILO;
+	supla_input_cfg[2].gpio_id = B_BTN1_PORT;
+	supla_input_cfg[2].relay_gpio_id = B_RELAY1_PORT;
+
+	supla_input_cfg[3].type = INPUT_TYPE_BUTTON_HILO;
+	supla_input_cfg[3].gpio_id = B_BTN2_PORT;
+	supla_input_cfg[3].relay_gpio_id = B_RELAY2_PORT;
+
 	// ---------------------------------------
 	// ---------------------------------------
 
     supla_relay_cfg[0].gpio_id = B_RELAY1_PORT;
-    supla_relay_cfg[0].flags = RELAY_FLAG_RESET;
+    supla_relay_cfg[0].flags = RELAY_FLAG_RESET | RELAY_FLAG_TURNOFF_BINDED;
     supla_relay_cfg[0].channel = 0;
     supla_relay_cfg[0].bind = 1;
     
     supla_relay_cfg[1].gpio_id = B_RELAY2_PORT;
-    supla_relay_cfg[1].flags = RELAY_FLAG_RESET;
+    supla_relay_cfg[1].flags = RELAY_FLAG_RESET | RELAY_FLAG_TURNOFF_BINDED;
+    supla_relay_cfg[1].bind = 0;
 
 }
 

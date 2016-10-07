@@ -29,10 +29,11 @@
 #define INPUT_FLAG_PULLUP             0x01
 #define INPUT_FLAG_CFG_BTN            0x02
 
-#define INPUT_TYPE_SENSOR     1
-#define INPUT_TYPE_BUTTON     2
-#define INPUT_TYPE_SWITCH     3
-#define INPUT_TYPE_CUSTOM     200
+#define INPUT_TYPE_SENSOR        1
+#define INPUT_TYPE_BUTTON        2
+#define INPUT_TYPE_BUTTON_HILO   3
+#define INPUT_TYPE_SWITCH        4
+#define INPUT_TYPE_CUSTOM        200
 
 #ifndef RELAY_MIN_DELAY
 #define RELAY_MIN_DELAY 100000

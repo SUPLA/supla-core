@@ -142,6 +142,7 @@ void supla_esp_gpio_btn_irq_lock(uint8 lock) {
 
 		if ( input_cfg->gpio_id != 255
 				&& ( input_cfg->type == INPUT_TYPE_BUTTON
+					 || input_cfg->type == INPUT_TYPE_BUTTON_HILO
 					 || input_cfg->type == INPUT_TYPE_SWITCH ) )
 		     gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), lock == 1 ? GPIO_PIN_INTR_DISABLE : GPIO_PIN_INTR_ANYEDGE);
 
@@ -174,6 +175,15 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     		if ( supla_relay_cfg[a].flags &  RELAY_FLAG_HI_LEVEL_TRIGGER )
     			_hi = hi == HI_VALUE ? LO_VALUE : HI_VALUE;
 
+    		if ( hi == 1
+    			 && supla_relay_cfg[a].bind != 255
+    			 && supla_relay_cfg[a].flags & RELAY_FLAG_TURNOFF_BINDED
+    			 && supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id != 255 ) {
+
+    			supla_esp_gpio_relay_hi(supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id, 0);
+    			os_delay_us(50000);
+
+    		}
 
     		break;
     	}
@@ -233,13 +243,13 @@ void supla_esg_gpio_pwm_onoff(void) {
 #endif
 
 
-LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg) {
+LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg, char hi) {
 
 	if (  input_cfg->relay_gpio_id != 255 ) {
 
 		//supla_log(LOG_DEBUG, "RELAY");
 
-		supla_esp_gpio_relay_hi(input_cfg->relay_gpio_id, 255);
+		supla_esp_gpio_relay_hi(input_cfg->relay_gpio_id, hi);
 
 		if ( input_cfg->channel != 255 )
 			supla_esp_channel_value_changed(input_cfg->channel, supla_esp_gpio_relay_is_hi(input_cfg->relay_gpio_id));
@@ -251,11 +261,16 @@ LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg) {
 LOCAL void
 supla_esp_gpio_on_input_active(supla_input_cfg_t *input_cfg) {
 
-	if ( input_cfg->type == INPUT_TYPE_SWITCH ) {
+	if ( input_cfg->type == INPUT_TYPE_BUTTON_HILO ) {
+
+		//supla_log(LOG_DEBUG, "RELAY HI");
+		supla_esp_gpio_relay_switch(input_cfg, 1);
+
+	} else if ( input_cfg->type == INPUT_TYPE_SWITCH ) {
 
 		//supla_log(LOG_DEBUG, "RELAY");
+		supla_esp_gpio_relay_switch(input_cfg, 255);
 
-		supla_esp_gpio_relay_switch(input_cfg);
 
 	} else if ( input_cfg->type == INPUT_TYPE_SENSOR
 				&&  input_cfg->channel != 255 ) {
@@ -271,11 +286,16 @@ supla_esp_gpio_on_input_active(supla_input_cfg_t *input_cfg) {
 LOCAL void
 supla_esp_gpio_on_input_inactive(supla_input_cfg_t *input_cfg) {
 
-	if ( input_cfg->type == INPUT_TYPE_BUTTON
+	if ( input_cfg->type == INPUT_TYPE_BUTTON_HILO ) {
+
+		//supla_log(LOG_DEBUG, "RELAY LO");
+		supla_esp_gpio_relay_switch(input_cfg, 0);
+
+	} else if ( input_cfg->type == INPUT_TYPE_BUTTON
 		 || input_cfg->type == INPUT_TYPE_SWITCH ) {
 
 
-		supla_esp_gpio_relay_switch(input_cfg);
+		supla_esp_gpio_relay_switch(input_cfg, 255);
 
         #ifdef DIMMER_CHANNEL
 				supla_esg_gpio_pwm_onoff();
@@ -308,6 +328,7 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 
 			if ( input_cfg->flags & INPUT_FLAG_CFG_BTN
 				 && ( input_cfg->type == INPUT_TYPE_BUTTON
+					  || input_cfg->type == INPUT_TYPE_BUTTON_HILO
 				      || (system_get_time() - input_cfg->last_active) >= 2000000 ) ) {
 
 				input_cfg->cfg_counter = 0;
@@ -327,7 +348,8 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 
 			if ( input_cfg->step == 3
 					&& input_cfg->flags & INPUT_FLAG_CFG_BTN
-					&& input_cfg->type == INPUT_TYPE_BUTTON ) {
+					&& ( input_cfg->type == INPUT_TYPE_BUTTON
+						 || input_cfg->type == INPUT_TYPE_BUTTON_HILO) ) {
 
 				if ( input_cfg->cfg_counter < 255 )
 					input_cfg->cfg_counter++;
@@ -405,7 +427,8 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 
 				if ( input_cfg->flags & INPUT_FLAG_CFG_BTN
 						&& supla_esp_cfgmode_started() == 1
-						&& input_cfg->type == INPUT_TYPE_BUTTON ) {
+						&& ( input_cfg->type == INPUT_TYPE_BUTTON
+							 || input_cfg->type == INPUT_TYPE_BUTTON_HILO ) ) {
 
 					// EXIT CFG MODE
 					system_restart();

@@ -88,8 +88,6 @@ case $1 in
    ;;
    "rs_module")
    ;;
-   "rs_module_wroom")
-   ;;
    "starter1_module_wroom")
    ;;
    "jangoe_wifisocket")
@@ -157,7 +155,6 @@ case $1 in
    echo "              gate_module_wroom";
    echo "              gate_module2_wroom";
    echo "              rs_module";
-   echo "              rs_module_wroom";
    echo "              starter1_module_wroom";
    echo "              jangoe_rs";
    echo "              jangoe_wifisocket";
