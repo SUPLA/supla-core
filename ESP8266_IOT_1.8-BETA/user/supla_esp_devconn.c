@@ -55,6 +55,7 @@ static char devconn_laststate[STATE_MAXSIZE];
 
 static char devconn_autoconnect = 1;
 static char sys_restart = 0;
+static char sys_wait_for_restart = 0;
 
 static unsigned int last_response = 0;
 static int server_activity_timeout;
@@ -66,20 +67,36 @@ void DEVCONN_ICACHE_FLASH supla_esp_wifi_check_status(char autoconnect);
 void DEVCONN_ICACHE_FLASH supla_esp_srpc_free(void);
 void DEVCONN_ICACHE_FLASH supla_esp_devconn_iterate(void *timer_arg);
 
-#ifdef __BOARD_zam_row_01
-#include "com/zam/supla_esp_devconn.c"
-#endif
+
+void  DEVCONN_ICACHE_FLASH
+supla_esp_devconn_system_restart_cb(void *arg){
+
+    if ( sys_restart == 1
+  	   && supla_esp_cfgmode_started() == 0 ) {
+
+  	  supla_log(LOG_DEBUG, "RESTART");
+  	  supla_log(LOG_DEBUG, "Free heap size: %i", system_get_free_heap_size());
+
+  	  system_restart();
+    }
+}
 
 void DEVCONN_ICACHE_FLASH
-supla_esp_system_restart(void) {
+supla_esp_devconn_system_restart(void) {
 
-      if ( sys_restart == 1 ) {
+	if ( sys_wait_for_restart == 1 )
+		return;
 
-    	  supla_log(LOG_DEBUG, "RESTART");
-    	  supla_log(LOG_DEBUG, "Free heap size: %i", system_get_free_heap_size());
+	supla_esp_srpc_free();
 
-    	  system_restart();
-      }
+	sys_wait_for_restart = 1;
+	uint32 t = system_get_time()/1000;
+
+	//supla_log(LOG_DEBUG, "BR %i, %i", t, (t > 30000 ? 0 : 30000-t)+1);
+
+	os_timer_disarm(&supla_devconn_timer2);
+	os_timer_setfn(&supla_devconn_timer2, (os_timer_func_t *)supla_esp_devconn_system_restart_cb, NULL);
+	os_timer_arm(&supla_devconn_timer2, (t > 30000 ? 0 : 30000-t)+1, 0);
 
 }
 
@@ -173,7 +190,7 @@ supla_esp_on_register_result(TSD_SuplaRegisterDeviceResult *register_device_resu
 
 	case SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE:
 		supla_esp_set_state(LOG_NOTICE, "Temporarily unavailable!");
-		supla_esp_system_restart();
+		supla_esp_devconn_system_restart();
 		break;
 
 	case SUPLA_RESULTCODE_LOCATION_CONFLICT:
@@ -207,12 +224,12 @@ supla_esp_on_register_result(TSD_SuplaRegisterDeviceResult *register_device_resu
 
 	case SUPLA_RESULTCODE_DEVICE_DISABLED:
 		supla_esp_set_state(LOG_NOTICE, "Device is disabled!");
-		supla_esp_system_restart();
+		supla_esp_devconn_system_restart();
 		break;
 
 	case SUPLA_RESULTCODE_LOCATION_DISABLED:
 		supla_esp_set_state(LOG_NOTICE, "Location is disabled!");
-		supla_esp_system_restart();
+		supla_esp_devconn_system_restart();
 		break;
 
 	case SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED:
@@ -291,7 +308,7 @@ _supla_esp_channel_set_value(int port, char v, int channel_number) {
 
 	supla_esp_gpio_relay_hi(port, _v);
 
-	_v = supla_esp_gpio_is_hi(port);
+	_v = supla_esp_gpio_relay_is_hi(port);
 
 	supla_esp_channel_value_changed(channel_number, _v == HI_VALUE ? 1 : 0);
 
@@ -601,7 +618,7 @@ supla_esp_devconn_iterate(void *timer_arg) {
 
 		if( srpc_iterate(srpc) == SUPLA_RESULT_FALSE ) {
 			supla_log(LOG_DEBUG, "iterate fail");
-			supla_esp_system_restart();
+			supla_esp_devconn_system_restart();
 		}
 
 	}
@@ -643,23 +660,14 @@ supla_esp_srpc_init(void) {
 
 void
 supla_esp_devconn_connect_cb(void *arg) {
-	supla_log(LOG_DEBUG, "devconn_connect_cb\r\n");
+	//supla_log(LOG_DEBUG, "devconn_connect_cb\r\n");
 	supla_esp_srpc_init();	
 }
 
 void
 supla_esp_devconn_disconnect_cb(void *arg){
-	supla_log(LOG_DEBUG, "devconn_disconnect_cb\r\n");
-	supla_esp_system_restart();
-}
-
-void
-supla_esp_devconn_delayed_disconnect_event(int sec) {
-
-	os_timer_disarm(&supla_devconn_timer2);
-	os_timer_setfn(&supla_devconn_timer2, (os_timer_func_t *)supla_esp_devconn_disconnect_cb, NULL);
-	os_timer_arm(&supla_devconn_timer2, sec * 1000, 1);
-
+	//supla_log(LOG_DEBUG, "devconn_disconnect_cb\r\n");
+	supla_esp_devconn_system_restart();
 }
 
 
@@ -667,8 +675,8 @@ void
 supla_esp_devconn_dns_found_cb(const char *name, ip_addr_t *ip, void *arg) {
 
 	if ( ip == NULL ) {
-		supla_log(LOG_DEBUG, "Domain %s not found.", name);
-		supla_esp_devconn_delayed_disconnect_event(15);
+		supla_esp_set_state(LOG_NOTICE, "Domain not found.");
+		supla_esp_devconn_system_restart();
 		return;
 
 	}
@@ -720,8 +728,9 @@ supla_esp_devconn_resolvandconnect(void) {
 void DEVCONN_ICACHE_FLASH
 supla_esp_devconn_init(void) {
 
-	devconn_laststate[0] = '-';
-	devconn_laststate[1] = 0;
+	ets_snprintf(devconn_laststate, STATE_MAXSIZE, "WiFi - Connecting...");
+	sys_wait_for_restart = 0;
+
 }
 
 void DEVCONN_ICACHE_FLASH
@@ -796,11 +805,21 @@ supla_esp_wifi_check_status(char autoconnect) {
 
 	} else {
 
-		if ( srpc != NULL )
-			supla_esp_system_restart();
+		switch(status) {
 
+			case STATION_NO_AP_FOUND:
+				supla_esp_set_state(LOG_NOTICE, "SSID Not found");
+				break;
+			case STATION_WRONG_PASSWORD:
+				supla_esp_set_state(LOG_NOTICE, "WiFi - Wrong password");
+				break;
+		}
+
+		if ( srpc != NULL )
+			supla_esp_devconn_system_restart();
 
 		supla_esp_gpio_state_disconnected();
+
 	}
 
 }
@@ -825,7 +844,7 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 		    if ( t2 >= (server_activity_timeout+10) ) {
 
 		    	supla_log(LOG_DEBUG, "Response timeout %i, %i, %i, %i",  t1, last_response, (t1-last_response)/1000000, server_activity_timeout+5);
-		    	supla_esp_system_restart();
+		    	supla_esp_devconn_system_restart();
 
 		    } else if ( t2 >= (server_activity_timeout-5)
 		    		    && t2 <= server_activity_timeout ) {

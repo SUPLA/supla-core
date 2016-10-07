@@ -11,10 +11,11 @@
 
 #include "supla_esp.h"
 
-#define RELAY_FLAG_RESET          0x01
-#define RELAY_FLAG_RESTORE        0x02
-#define RELAY_FLAG_RESTORE_FORCE  0x04
-#define RELAY_FLAG_IRQ_LOCKED     0x08
+#define RELAY_FLAG_RESET              0x01
+#define RELAY_FLAG_RESTORE            0x02
+#define RELAY_FLAG_RESTORE_FORCE      0x04
+#define RELAY_FLAG_IRQ_LOCKED         0x08
+#define RELAY_FLAG_HI_LEVEL_TRIGGER   0x10
 
 typedef struct {
 
@@ -65,6 +66,7 @@ void GPIO_ICACHE_FLASH supla_esp_gpio_state_cfgmode(void);
 
 void supla_esp_gpio_hi(int port, char hi);
 char supla_esp_gpio_is_hi(int port);
+char supla_esp_gpio_relay_is_hi(int port);
 
 
 #endif /* SUPLA_ESP_GPIO_H_ */
