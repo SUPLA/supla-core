@@ -17,10 +17,10 @@
 
 	#include <osapi.h>
 	#include <mem.h>
-	
+
 	#define BUFFER_MIN_SIZE    512
 	#define BUFFER_MAX_SIZE    2048
-	
+
 	#define malloc os_malloc
 	#define free os_free
 	#define realloc os_realloc

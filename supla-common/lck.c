@@ -9,7 +9,7 @@
 
 #include "lck.h"
 
-#ifdef __AVR__
+#if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)
 #define __SINGLE_THREAD
 #else
 #include <pthread.h>

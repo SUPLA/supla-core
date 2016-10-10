@@ -2,7 +2,6 @@
  ============================================================================
  Name        : srpc.c [SUPLA DATA EXCHANGE]
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -17,6 +16,10 @@
 #ifdef ESP8266
 
 	#include <osapi.h>
+        #ifdef ARDUINO_ARCH_ESP8266
+           #include <ets_sys.h>
+ 	   #define __EH_DISABLED
+	#endif
 	#include <mem.h>
 	
 	#define srpc_BUFFER_SIZE      1024
