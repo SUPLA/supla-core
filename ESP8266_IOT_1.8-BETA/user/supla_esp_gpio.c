@@ -158,11 +158,13 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     int a;
     char result = 0;
     char *state = NULL;
-    char _hi = hi;
+    char _hi;
 
     if ( hi == 255 ) {
     	hi = supla_esp_gpio_relay_is_hi(port) == 1 ? 0 : 1;
     }
+
+    _hi = hi;
 
     for(a=0;a<RELAY_MAX_COUNT;a++)
     	if ( supla_relay_cfg[a].gpio_id == port ) {
@@ -261,6 +263,8 @@ LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg, char hi) {
 LOCAL void
 supla_esp_gpio_on_input_active(supla_input_cfg_t *input_cfg) {
 
+	//supla_log(LOG_DEBUG, "active");
+
 	if ( input_cfg->type == INPUT_TYPE_BUTTON_HILO ) {
 
 		//supla_log(LOG_DEBUG, "RELAY HI");
@@ -275,7 +279,6 @@ supla_esp_gpio_on_input_active(supla_input_cfg_t *input_cfg) {
 	} else if ( input_cfg->type == INPUT_TYPE_SENSOR
 				&&  input_cfg->channel != 255 ) {
 
-		//supla_log(LOG_DEBUG, "active");
 		supla_esp_channel_value_changed(input_cfg->channel, 1);
 
 	}
@@ -285,6 +288,8 @@ supla_esp_gpio_on_input_active(supla_input_cfg_t *input_cfg) {
 
 LOCAL void
 supla_esp_gpio_on_input_inactive(supla_input_cfg_t *input_cfg) {
+
+	//supla_log(LOG_DEBUG, "inactive");
 
 	if ( input_cfg->type == INPUT_TYPE_BUTTON_HILO ) {
 
@@ -304,8 +309,6 @@ supla_esp_gpio_on_input_inactive(supla_input_cfg_t *input_cfg) {
 
 	} else if ( input_cfg->type == INPUT_TYPE_SENSOR
 			    &&  input_cfg->channel != 255 ) {
-
-		//supla_log(LOG_DEBUG, "inactive");
 		supla_esp_channel_value_changed(input_cfg->channel, 0);
 
 	}
