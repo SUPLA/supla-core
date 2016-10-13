@@ -171,7 +171,8 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
 
     		time = &supla_relay_cfg[a].last_time;
 
-    		if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE )
+    		if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE
+    			 || supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE_FORCE )
     			state = &supla_esp_state.Relay[a];
 
     		if ( supla_relay_cfg[a].flags &  RELAY_FLAG_HI_LEVEL_TRIGGER )
