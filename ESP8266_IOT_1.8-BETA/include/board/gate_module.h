@@ -21,5 +21,6 @@
 
 #define LED_GREEN_PORT  12
 #define LED_BLUE_PORT   14
+#define LED_REINIT
 
 #endif

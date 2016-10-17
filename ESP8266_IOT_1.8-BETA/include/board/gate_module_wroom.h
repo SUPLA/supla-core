@@ -11,6 +11,7 @@
 
 #define DS18B20
 #define TEMPERATURE_CHANNEL 4
+#define LED_REINIT
 
 #if defined(__BOARD_gate_module_wroom)
 

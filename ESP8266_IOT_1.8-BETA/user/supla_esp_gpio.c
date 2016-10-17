@@ -324,6 +324,8 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 	uint8 v = gpio__input_get(input_cfg->gpio_id);
 	uint8 active = (input_cfg->flags & INPUT_FLAG_PULLUP) ? 0 : 1;
 
+	//supla_log(LOG_DEBUG, "Active=%i, v=%i", active, v);
+
 	if ( input_cfg->step == 1 ) {
 
 		if ( v == active ) {
@@ -362,6 +364,7 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 				if ( (input_cfg->cfg_counter * INPUT_CYCLE_TIME) >= CFG_BTN_PRESS_TIME ) {
 
 					// CFG MODE
+
 					supla_esg_gpio_start_cfg_mode();
 
 					input_cfg->step = 0;
@@ -651,8 +654,8 @@ void supla_esp_gpio_set_led(char r, char g, char b) {
 	#endif
 }
 
-
-void GPIO_ICACHE_FLASH supla_esp_gpio_init_led(void) {
+#ifdef LED_REINIT
+void GPIO_ICACHE_FLASH supla_esp_gpio_reinit_led(void) {
 
 	ETS_GPIO_INTR_DISABLE();
 
@@ -683,7 +686,7 @@ void GPIO_ICACHE_FLASH supla_esp_gpio_init_led(void) {
     ETS_GPIO_INTR_ENABLE();
 
 }
-
+#endif
 
 
 #if defined(LED_RED_PORT) || defined(LED_GREEN_PORT) || defined(LED_BLUE_PORT)
@@ -726,7 +729,10 @@ supla_esp_gpio_state_disconnected(void) {
 
 	supla_last_state = STATE_DISCONNECTED;
 	supla_log(LOG_DEBUG, "Disconnected");
-	supla_esp_gpio_init_led();
+
+	#ifdef LED_REINIT
+	supla_esp_gpio_reinit_led();
+	#endif
 
 
     #if defined(LED_RED_PORT) && defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
@@ -808,7 +814,9 @@ supla_esp_gpio_state_cfgmode(void) {
 
 	supla_last_state = STATE_CFGMODE;
 
-    supla_esp_gpio_init_led();
+	#ifdef LED_REINIT
+	supla_esp_gpio_reinit_led();
+	#endif
 
 	#if defined(LED_RED_PORT) && defined(LED_GREEN_PORT) && defined(LED_BLUE_PORT)
     supla_esp_gpio_led_blinking(LED_BLUE, 500);
