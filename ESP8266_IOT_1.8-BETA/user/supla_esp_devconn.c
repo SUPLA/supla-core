@@ -26,9 +26,14 @@
 
 static ETSTimer supla_devconn_timer1;
 static ETSTimer supla_devconn_timer2;
-static ETSTimer supla_devconn_timer3;
+//static ETSTimer supla_devconn_timer3;
 static ETSTimer supla_iterate_timer;
 
+// ESPCONN_INPROGRESS fix
+#define SEND_BUFFER_SIZE 500
+static char esp_send_buffer[SEND_BUFFER_SIZE];
+static char esp_send_buffer_len = 0;
+// ---------------------------------------------
 
 #if NOSSL == 1
     #define supla_espconn_sent espconn_sent
@@ -149,10 +154,61 @@ supla_esp_devconn_recv_cb (void *arg, char *pdata, unsigned short len) {
 }
 
 int DEVCONN_ICACHE_FLASH
+supla_esp_data_write_append_buffer(void *buf, int count) {
+
+	if ( count > 0 ) {
+
+		if ( esp_send_buffer_len+count > SEND_BUFFER_SIZE ) {
+
+			supla_log(LOG_ERR, "Send buffer size exceeded");
+			supla_esp_devconn_system_restart();
+
+			return -1;
+
+		} else {
+
+			memcpy(&esp_send_buffer[esp_send_buffer_len], buf, count);
+			esp_send_buffer_len+=count;
+
+			return 0;
+
+
+		}
+	}
+
+	return 0;
+}
+
+int DEVCONN_ICACHE_FLASH
 supla_esp_data_write(void *buf, int count, void *dcd) {
 
-	return supla_espconn_sent(&ESPConn, buf, count) == 0 ? count : -1;
+	int r;
 
+	if ( esp_send_buffer_len > 0
+		 && supla_espconn_sent(&ESPConn, esp_send_buffer, esp_send_buffer_len) == 0 ) {
+
+			esp_send_buffer_len = 0;
+	};
+
+
+	if ( esp_send_buffer_len > 0 ) {
+		return supla_esp_data_write_append_buffer(buf, count);
+	}
+
+	if ( count > 0 ) {
+
+		r = supla_espconn_sent(&ESPConn, buf, count);
+
+		if ( ESPCONN_INPROGRESS == r  ) {
+			return supla_esp_data_write_append_buffer(buf, count);
+		} else {
+			return r == 0 ? count : -1;
+		}
+
+	}
+
+
+	return 0;
 }
 
 
@@ -218,7 +274,7 @@ supla_esp_on_register_result(TSD_SuplaRegisterDeviceResult *register_device_resu
 
 		}
 
-		supla_esp_devconn_send_channel_values_with_delay();
+		//supla_esp_devconn_send_channel_values_with_delay();
 
 		return;
 
@@ -531,7 +587,6 @@ supla_esp_channel_set_value(TSD_SuplaChannelNewValue *new_value) {
 		}
 
 
-
 	srpc_ds_async_set_channel_result(srpc, new_value->ChannelNumber, new_value->SenderID, Success);
 
 	if ( v == 1 && new_value->DurationMS > 0 ) {
@@ -573,7 +628,7 @@ supla_esp_on_remote_call_received(void *_srpc, unsigned int rr_id, unsigned int 
 			break;
 		case SUPLA_SD_CALL_CHANNEL_SET_VALUE:
 			supla_esp_channel_set_value(rd.data.sd_channel_new_value);
-			supla_esp_devconn_send_channel_values_with_delay();
+			//supla_esp_devconn_send_channel_values_with_delay();
 			break;
 		case SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT:
 			supla_esp_channel_set_activity_timeout_result(rd.data.sdc_set_activity_timeout_result);
@@ -616,6 +671,8 @@ supla_esp_devconn_iterate(void *timer_arg) {
 			srpc_ds_async_registerdevice_b(srpc, &srd);
 
 		};
+
+		supla_esp_data_write(NULL, 0, NULL);
 
 		if( srpc_iterate(srpc) == SUPLA_RESULT_FALSE ) {
 			supla_log(LOG_DEBUG, "iterate fail");
@@ -858,6 +915,7 @@ supla_esp_devconn_timer1_cb(void *timer_arg) {
 	}
 }
 
+/*
 void DEVCONN_ICACHE_FLASH
 supla_esp_devconn_send_channel_values_with_delay_cb(void *timer_arg) {
 
@@ -878,6 +936,7 @@ supla_esp_devconn_send_channel_values_with_delay(void) {
 	os_timer_arm(&supla_devconn_timer3, 2000, 0);
 
 }
+*/
 
 #ifdef TEMPERATURE_CHANNEL
 
