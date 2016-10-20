@@ -2,9 +2,8 @@
  ============================================================================
  Name        : srpc.h [SUPLA REMOTE PROCEDURE CALL]
  Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.3
  Copyright   : 2015-2016 GPLv2
- ============================================================================
+ ============================================================================ 
  */
 
 #ifndef supladex_H_

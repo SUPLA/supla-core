@@ -1,8 +1,7 @@
 /*
  ============================================================================
  Name        : log.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : 2015-2016 GPLv2 
  ============================================================================
  */
@@ -10,8 +9,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "log.h"
 
-#if defined(ARDUINO_ARCH_ESP8266) || defined(__AVR__)
+#if defined(_WIN32)
+    #include <Windows.h>
+	#include <wchar.h>
+#elif defined(ARDUINO_ARCH_ESP8266) || defined(__AVR__)
     #include <Arduino.h>
 #else
 	#include <unistd.h>
@@ -23,7 +26,7 @@
 
 #include <string.h>
 
-#include "log.h"
+
 
 #ifdef ESP8266
         #include <osapi.h>
@@ -74,8 +77,11 @@ char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
     	return 0;
     }
 
-
-    n = vsnprintf(*buffer, *size, __fmt, va);
+	#ifdef _WIN32
+		n = vsnprintf_s(*buffer, *size, _TRUNCATE,__fmt, va);
+	#else
+		n = vsnprintf(*buffer, *size, __fmt, va);
+	#endif
 
 	if (n < 0 || n >= *size) {
 
@@ -102,7 +108,26 @@ char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
 
 }
 
-#if defined(ESP8266) || defined(__AVR__)
+#ifdef _WIN32
+
+void supla_vlog(int __pri, const char *message) {
+
+	WCHAR wstr[2048];
+	size_t convertedChars;
+
+	mbstowcs_s(
+	    &convertedChars,
+		wstr,
+		2048,
+		message,
+		strlen(message)
+	);
+
+	OutputDebugStringW(wstr);
+	OutputDebugStringW(L"\n");
+}
+
+#elif defined(ESP8266) || defined(__AVR__)
 	void supla_vlog(int __pri, const char *message) {
         #if defined(ESP8266) && !defined(ARDUINO_ARCH_ESP8266)
 		os_printf("%s\r\n", message);
@@ -190,7 +215,7 @@ void supla_log(int __pri, const char *__fmt, ...) {
 	int size = 0;
 
 
-    #if defined(ESP8266) || defined(__AVR__)
+    #if defined(ESP8266) || defined(__AVR__) || defined(_WIN32)
 		if ( __fmt == NULL ) return;
     #else
 		if ( __fmt == NULL || ( debug_mode == 0 && __pri == LOG_DEBUG ) ) return;
@@ -216,46 +241,48 @@ void supla_log(int __pri, const char *__fmt, ...) {
 
 }
 
-#ifndef ESP8266
-#ifndef __AVR__
-	void supla_write_state_file(const char *file, int __pri, const char *__fmt, ...) {
+
+void supla_write_state_file(const char *file, int __pri, const char *__fmt, ...) {
 	
-		char *buffer = NULL;
-		int size = 0;
+	char *buffer = NULL;
+	int size = 0;
 	
-		va_list ap;
-		int fd;
-	
-		while(1) {
-			va_start(ap, __fmt);
-			if ( 0 == supla_log_string(&buffer,  &size, ap, __fmt) ) {
-				va_end(ap);
-				break;
-			} else {
-				va_end(ap);
-			}
+	va_list ap;
+
+	while(1) {
+		va_start(ap, __fmt);
+		if ( 0 == supla_log_string(&buffer,  &size, ap, __fmt) ) {
+			va_end(ap);
+			break;
+		} else {
+			va_end(ap);
 		}
-	
-		if ( buffer == NULL )
-			return;
-	
-		if ( __pri > -1 ) {
-			supla_vlog(__pri, buffer);
-		}
-	
-	
-		if ( file != 0
-			 && strlen(file) > 0 ) {
-	
-				fd = open(file, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
-				if ( fd != -1 ) {
-					write(fd, buffer, strlen(buffer));
-					close(fd);
-				}
-		}
-	
-		free(buffer);
-	
 	}
-#endif
-#endif
+	
+	if ( buffer == NULL )
+		return;
+	
+	if ( __pri > -1 ) {
+		supla_vlog(__pri, buffer);
+	}
+	
+	#if !defined(ESP8266) && !defined(__AVR__) && !defined(WIN32)
+	
+	int fd;
+
+	if ( file != 0
+			&& strlen(file) > 0 ) {
+	
+			fd = open(file, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
+			if ( fd != -1 ) {
+				write(fd, buffer, strlen(buffer));
+				close(fd);
+			}
+	}
+	#endif
+
+	free(buffer);
+	
+}
+
+

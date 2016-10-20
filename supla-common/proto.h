@@ -2,7 +2,6 @@
  ============================================================================
  Name        : proto.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.3.3
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -10,7 +9,12 @@
 #ifndef supla_proto_H_
 #define supla_proto_H_
 
-#ifdef __AVR__
+#ifdef _WIN32
+
+	#include <WinSock2.h>
+	#define _supla_int_t int
+
+#elif defined(__AVR__) 
 
 	#ifndef _TIMEVAL_DEFINED
 		#define _TIMEVAL_DEFINED

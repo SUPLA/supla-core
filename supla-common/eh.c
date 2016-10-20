@@ -1,8 +1,7 @@
 /*
  ============================================================================
  Name        : eh.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : GPLv2
  ============================================================================
  */
@@ -10,7 +9,13 @@
 #include "eh.h"
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <unistd.h>
+#endif
+
 #include <assert.h>
 #include <fcntl.h>
 
@@ -22,9 +27,13 @@
 
 TEventHandler* eh_init(void) {
 
-    #ifdef __linux__
+#ifdef __linux__
 	struct epoll_event evnt = {0};
-    #endif
+#endif
+
+#ifdef _WIN32
+	return 0;
+#else
 
 	TEventHandler *eh = malloc(sizeof(TEventHandler));
 	if ( eh != 0 ) {
@@ -74,6 +83,7 @@ TEventHandler* eh_init(void) {
 	}
 
     return eh;
+#endif
 
 }
 
@@ -86,6 +96,7 @@ void eh_add_fd(TEventHandler *eh, int fd) {
 	if ( eh == 0 )
 		return;
 
+	#ifndef _WIN32
 	if ( fd != -1 ) {
 
 		if ( eh->fd2 == -1 )
@@ -117,6 +128,7 @@ void eh_add_fd(TEventHandler *eh, int fd) {
 		}
 
 	}
+	#endif
 
 }
 
@@ -131,7 +143,7 @@ void eh_raise_event(TEventHandler *eh) {
 
 	if ( eh->fd1 != -1 )
 	  	write(eh->fd1, &u, sizeof(uint64_t));
-	#else
+	#elif !defined(_WIN32)
 
 	char u=1;
 
@@ -144,6 +156,10 @@ void eh_raise_event(TEventHandler *eh) {
 
 int eh_wait(TEventHandler *eh, int usec) {
 
+#ifdef _WIN32
+	SleepEx(usec, TRUE); // usec mean msec
+	return -1;
+#else
 	int result;
 
 	#ifdef __linux__
@@ -210,10 +226,12 @@ int eh_wait(TEventHandler *eh, int usec) {
 	};
 
 	return -1;
+#endif
 }
 
 void eh_free(TEventHandler *eh) {
 
+#ifndef _WIN32
 	if ( eh != 0 ) {
 
         #ifdef __linux__
@@ -236,5 +254,6 @@ void eh_free(TEventHandler *eh) {
 
 		free(eh);
 	}
+#endif
 
 }

@@ -1,8 +1,7 @@
 /*
  ============================================================================
  Name        : lck.h
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.0
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : GPLv2
  ============================================================================
  */

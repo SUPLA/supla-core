@@ -1,8 +1,7 @@
 /*
  ============================================================================
  Name        : eh.h
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : 2015-2016 GPLv2
  ============================================================================
 */
@@ -10,10 +9,8 @@
 #ifndef EH_H_
 #define EH_H_
 
-#ifndef ESP8266
-#ifndef __AVR__
+#if !defined(ESP8266) && !defined(__AVR__) && !defined(_WIN32)
 #include <sys/select.h>
-#endif 
 #endif
 
 #ifdef __cplusplus
@@ -22,19 +19,23 @@ extern "C" {
 
 typedef struct {
 
-
 	int nfds;
 
-#ifdef __linux__
-	int epoll_fd;
-	int fd1;
-#else
-	int fd1[2];
-#endif
-	int fd2;
-	int fd3;
+	#ifndef _WIN32
 
-	struct timeval tv;
+		#ifdef __linux__
+		int epoll_fd;
+		int fd1;
+		#else
+		int fd1[2];
+		#endif
+
+		int fd2;
+		int fd3;
+
+		struct timeval tv;
+
+	#endif
 
 }TEventHandler;
 

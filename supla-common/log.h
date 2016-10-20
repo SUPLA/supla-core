@@ -1,8 +1,7 @@
 /*
  ============================================================================
  Name        : log.h
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -10,7 +9,8 @@
 #ifndef suplalog_H_
 #define suplalog_H_
 
-#if defined(ESP8266) || defined(__AVR__)
+
+#if defined(ESP8266) || defined(__AVR__) || defined(_WIN32)
 
 #define LOG_EMERG       0       
 #define LOG_ALERT       1      

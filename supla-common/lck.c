@@ -1,8 +1,7 @@
 /*
  ============================================================================
  Name        : lck.c
- Author      : Przemyslaw Zygmunt p.zygmunt@acsoftware.pl [AC SOFTWARE]
- Version     : 1.2
+ Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : 2015-2016 GPLv2
  ============================================================================
  */
@@ -12,8 +11,14 @@
 #if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)
 #define __SINGLE_THREAD
 #else
-#include <pthread.h>
-#include <time.h>
+
+	#ifdef _WIN32
+		#include <Windows.h>
+	#else
+		#include <pthread.h>
+		#include <time.h>
+	#endif
+
 #endif
 
 #include <stdlib.h>
@@ -25,9 +30,11 @@
 #ifndef __SINGLE_THREAD
 
 typedef struct {
-
+	#ifdef _WIN32
+	CRITICAL_SECTION critSec;
+	#else
 	pthread_mutex_t mutex;
-
+	#endif
 }TLckData;
 #endif
 
@@ -40,11 +47,16 @@ void *lck_init(void) {
 
 	if ( lck != NULL ) {
 
-	    pthread_mutexattr_t    attr;
-	    pthread_mutexattr_init(&attr);
-	    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-	    pthread_mutex_init(&lck->mutex, &attr);
+		#ifdef _WIN32
+		InitializeCriticalSectionEx(&lck->critSec, 4000, CRITICAL_SECTION_NO_DEBUG_INFO);
+		#else
+		
+		pthread_mutexattr_t    attr;
+		pthread_mutexattr_init(&attr);
+		pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+		pthread_mutex_init(&lck->mutex, &attr);
 
+		#endif
 	}
 
 
@@ -55,16 +67,28 @@ void *lck_init(void) {
 void lck_lock(void *lck) {
 
 #ifndef __SINGLE_THREAD
-    if ( lck != NULL )
-    	pthread_mutex_lock(&((TLckData*)lck)->mutex);
+	if (lck != NULL) {
+		#ifdef _WIN32
+			EnterCriticalSection(&((TLckData*)lck)->critSec);
+		#else
+			pthread_mutex_lock(&((TLckData*)lck)->mutex);
+		#endif
+	}
+    	
 #endif
 }
 
 
 void lck_unlock(void *lck) {
 #ifndef __SINGLE_THREAD
-    if ( lck != NULL )
-    	pthread_mutex_unlock(&((TLckData*)lck)->mutex);
+	if (lck != NULL) {
+		#ifdef _WIN32
+			LeaveCriticalSection(&((TLckData*)lck)->critSec);
+		#else
+			pthread_mutex_unlock(&((TLckData*)lck)->mutex);
+		#endif
+	}
+    	
 #endif
 }
 
@@ -78,7 +102,11 @@ int lck_unlock_r(void *lck, int result) {
 void lck_free(void *lck) {
 #ifndef __SINGLE_THREAD
     if ( lck != NULL ) {
-    	pthread_mutex_destroy(&((TLckData*)lck)->mutex);
+		#ifdef _WIN32
+			DeleteCriticalSection(&((TLckData*)lck)->critSec);
+		#else
+    		pthread_mutex_destroy(&((TLckData*)lck)->mutex);
+		#endif
     	free(lck);
     }
 #endif
