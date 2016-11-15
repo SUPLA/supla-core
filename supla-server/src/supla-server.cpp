@@ -25,7 +25,9 @@
 #include "user.h"
 #include "datalogger.h"
 
+
 int main(int argc, char* argv[]) {
+
 
 	void *ssd_ssl = NULL;
 	void *ssd_tcp = NULL;
