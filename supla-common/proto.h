@@ -138,6 +138,7 @@ extern "C" {
 
 #define SUPLA_CHANNELTYPE_SENSORNO                 1000
 #define SUPLA_CHANNELTYPE_SENSORNC                 1010  // ver. >= 4
+#define SUPLA_CHANNELTYPE_DISTANCESENSOR           1020  // ver. >= 5
 #define SUPLA_CHANNELTYPE_CALLBUTTON               1500  // ver. >= 4
 #define SUPLA_CHANNELTYPE_RELAYHFD4                2000
 #define SUPLA_CHANNELTYPE_RELAYG5LA1A              2010
@@ -146,11 +147,12 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_THERMOMETERDS18B20       3000
 #define SUPLA_CHANNELTYPE_DHT11                    3010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DHT22                    3020  // ver. >= 4
+#define SUPLA_CHANNELTYPE_DHT21                    3022  // ver. >= 5
 #define SUPLA_CHANNELTYPE_AM2302                   3030  // ver. >= 4
+#define SUPLA_CHANNELTYPE_AM2301                   3032  // ver. >= 5
 #define SUPLA_CHANNELTYPE_DIMMER                   4000  // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER         4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED          4020  // ver. >= 4
-#define SUPLA_CHANNELTYPE_HCSR04                   5000  // ver. >= 5
 
 #define SUPLA_CHANNELDRIVER_MCP23008               2
 
@@ -177,7 +179,7 @@ extern "C" {
 #define SUPLA_CHANNELFNC_DIMMER                           180
 #define SUPLA_CHANNELFNC_RGBLIGHTING                      190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING             200
-#define SUPLA_CHANNELFNC_LIQUIDLEVELSENSOR                210  // ver. >= 5
+#define SUPLA_CHANNELFNC_DEPTHSENSOR                      210  // ver. >= 5
 #define SUPLA_CHANNELFNC_DISTANCESENSOR                   220  // ver. >= 5
 
 
