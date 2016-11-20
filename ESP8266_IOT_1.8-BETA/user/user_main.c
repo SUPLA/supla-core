@@ -65,14 +65,16 @@ void user_rf_pre_init(){};
 void user_init(void)
 {
 
+	 struct rst_info *rtc_info = system_get_rst_info();
+	 supla_log(LOG_DEBUG, "RST reason: %i", rtc_info->reason);
+
+
      wifi_status_led_uninstall();
      supla_esp_cfg_init();
      supla_esp_gpio_init();
 
      supla_log(LOG_DEBUG, "Starting %i", system_get_time());
 
-	 struct rst_info *rtc_info = system_get_rst_info();
-	 supla_log(LOG_DEBUG, "RST reason: %i", rtc_info->reason);
 
 	 #if NOSSL == 1
       supla_log(LOG_DEBUG, "NO SSL!");
@@ -115,6 +117,23 @@ void user_init(void)
 	supla_esp_devconn_start();
 
 	system_print_meminfo();
+
+/*
+	if ( supla_esp_state.ltag != 25 ) {
+		supla_log(LOG_DEBUG, "Log state reset");
+		memset(supla_esp_state.log, 0, 4000);
+		supla_esp_state.len = 0;
+		supla_esp_state.ltag = 25;
+		supla_esp_save_state(1);
+	}
+
+	if ( supla_esp_state.len < 0 || supla_esp_state.len > 20 )
+		supla_esp_state.len = 0;
+
+	int a;
+	for(a=0;a<supla_esp_state.len;a++)
+		supla_log(LOG_DEBUG, "%i. %s", a, supla_esp_state.log[a]);
+*/
 
 }
 

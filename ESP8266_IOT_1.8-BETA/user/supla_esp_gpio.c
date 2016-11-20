@@ -15,6 +15,7 @@
 #include "supla_esp.h"
 #include "supla_esp_gpio.h"
 #include "supla_esp_cfg.h"
+#include "supla_esp_cfgmode.h"
 
 #include "supla-dev/log.h"
 
@@ -136,6 +137,8 @@ void supla_esp_gpio_btn_irq_lock(uint8 lock) {
 	supla_input_cfg_t *input_cfg;
 	int a;
 
+	ETS_GPIO_INTR_DISABLE();
+
 	for(a=0;a<INPUT_MAX_COUNT;a++) {
 
 		input_cfg = &supla_input_cfg[a];
@@ -143,15 +146,25 @@ void supla_esp_gpio_btn_irq_lock(uint8 lock) {
 		if ( input_cfg->gpio_id != 255
 				&& ( input_cfg->type == INPUT_TYPE_BUTTON
 					 || input_cfg->type == INPUT_TYPE_BUTTON_HILO
-					 || input_cfg->type == INPUT_TYPE_SWITCH ) )
-		     gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), lock == 1 ? GPIO_PIN_INTR_DISABLE : GPIO_PIN_INTR_ANYEDGE);
+					 || input_cfg->type == INPUT_TYPE_SWITCH ) ) {
+
+			gpio_pin_intr_state_set(GPIO_ID_PIN(input_cfg->gpio_id), lock == 1 ? GPIO_PIN_INTR_DISABLE : GPIO_PIN_INTR_ANYEDGE);
+
+			if ( lock == 1 )
+				GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(input_cfg->gpio_id));
+
+		}
+
+
 
 	}
+
+	ETS_GPIO_INTR_ENABLE();
 
 
 }
 
-char supla_esp_gpio_relay_hi(int port, char hi) {
+char supla_esp_gpio_relay_hi(int port, char hi, char save_before) {
 
     unsigned int t = system_get_time();
     unsigned int *time = NULL;
@@ -183,7 +196,7 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     			 && supla_relay_cfg[a].flags & RELAY_FLAG_TURNOFF_BINDED
     			 && supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id != 255 ) {
 
-    			supla_esp_gpio_relay_hi(supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id, 0);
+    			supla_esp_gpio_relay_hi(supla_relay_cfg[supla_relay_cfg[a].bind].gpio_id, 0, save_before);
     			os_delay_us(50000);
 
     		}
@@ -191,6 +204,15 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
     		break;
     	}
 
+    if ( save_before == 1
+         && state != NULL
+    	 && ( time == NULL
+    	      || abs(t-(*time)) >= RELAY_MIN_DELAY ) ) {
+
+		*state = hi;
+		supla_esp_save_state(0);
+
+    }
 
     supla_esp_gpio_btn_irq_lock(1);
     os_delay_us(10);
@@ -223,7 +245,8 @@ char supla_esp_gpio_relay_hi(int port, char hi) {
 	#endif
 
     if ( result == 1
-		 && state != NULL ) {
+		 && state != NULL
+		 && save_before != 255 ) {
 
 		*state = hi;
 		supla_esp_save_state(SAVE_STATE_DELAY);
@@ -252,7 +275,7 @@ LOCAL void supla_esp_gpio_relay_switch(supla_input_cfg_t *input_cfg, char hi) {
 
 		//supla_log(LOG_DEBUG, "RELAY");
 
-		supla_esp_gpio_relay_hi(input_cfg->relay_gpio_id, hi);
+		supla_esp_gpio_relay_hi(input_cfg->relay_gpio_id, hi, 0);
 
 		if ( input_cfg->channel != 255 )
 			supla_esp_channel_value_changed(input_cfg->channel, supla_esp_gpio_relay_is_hi(input_cfg->relay_gpio_id));
@@ -435,7 +458,8 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 				if ( input_cfg->flags & INPUT_FLAG_CFG_BTN
 						&& supla_esp_cfgmode_started() == 1
 						&& ( input_cfg->type == INPUT_TYPE_BUTTON
-							 || input_cfg->type == INPUT_TYPE_BUTTON_HILO ) ) {
+							 || input_cfg->type == INPUT_TYPE_BUTTON_HILO )
+						&& (system_get_time() - supla_esp_cfgmode_entertime) > 3000000 ) {
 
 					// EXIT CFG MODE
 					system_restart();
@@ -463,6 +487,7 @@ supla_esp_gpio_input_timer_cb(void *timer_arg) {
 
 LOCAL void
 supla_esp_gpio_intr_handler(void *params) {
+
 
 	char a;
 	uint32 gpio_status = GPIO_REG_READ(GPIO_STATUS_ADDRESS);
@@ -504,11 +529,13 @@ supla_esp_gpio_intr_handler(void *params) {
 
 }
 
-
 void GPIO_ICACHE_FLASH
 supla_esp_gpio_init(void) {
 
 	char a;
+	//supla_log(LOG_DEBUG, "supla_esp_gpio_init");
+
+	supla_esp_gpio_init_time = 0;
 
 	memset(&supla_input_cfg, 0, sizeof(supla_input_cfg));
 	memset(&supla_relay_cfg, 0, sizeof(supla_relay_cfg));
@@ -526,12 +553,14 @@ supla_esp_gpio_init(void) {
 		supla_relay_cfg[a].channel = 255;
 	}
 
-	#if defined(USE_GPIO3) || defined(UART_SWAP)
+	#if defined(USE_GPIO3) ||  defined(USE_GPIO1) || defined(UART_SWAP)
 		 system_uart_swap ();
 	#endif
 
 	ETS_GPIO_INTR_DISABLE();
+
 	GPIO_PORT_INIT;
+	ETS_GPIO_INTR_ATTACH(supla_esp_gpio_intr_handler, NULL);
 
     #ifdef USE_GPIO16_INPUT
 	gpio16_input_conf();
@@ -547,6 +576,10 @@ supla_esp_gpio_init(void) {
 	   PIN_PULLUP_DIS(PERIPHS_IO_MUX_U0RXD_U);
     #endif
 
+    #ifdef USE_GPIO1
+	   PIN_FUNC_SELECT(PERIPHS_IO_MUX_U0TXD_U, FUNC_GPIO1);
+	   PIN_PULLUP_DIS(PERIPHS_IO_MUX_U0TXD_U);
+	#endif
 
     #ifdef LED_RED_PORT
       #if LED_RED_PORT != 16
@@ -566,8 +599,6 @@ supla_esp_gpio_init(void) {
 
 	supla_esp_board_gpio_init();
 
-    ETS_GPIO_INTR_ATTACH(supla_esp_gpio_intr_handler, NULL);
-
     ETS_GPIO_INTR_DISABLE();
 
 	for (a=0; a<RELAY_MAX_COUNT; a++) {
@@ -576,24 +607,30 @@ supla_esp_gpio_init(void) {
 
 			  //supla_log(LOG_DEBUG, "relay init %i", supla_relay_cfg[a].gpio_id);
 
+			GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, BIT(supla_relay_cfg[a].gpio_id));
 			gpio_pin_intr_state_set(GPIO_ID_PIN(supla_relay_cfg[a].gpio_id), GPIO_PIN_INTR_DISABLE);
+			gpio_output_set(0, GPIO_ID_PIN(supla_relay_cfg[a].gpio_id), GPIO_ID_PIN(supla_relay_cfg[a].gpio_id), 0);
+
 			supla_relay_cfg[0].last_time = 2147483647;
 
 			if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE_FORCE ) {
 
-				supla_esp_gpio_relay_hi(supla_relay_cfg[a].gpio_id, supla_esp_state.Relay[a]);
+				//supla_log(LOG_DEBUG, "RESTORE_FORCE");
+				supla_esp_gpio_relay_hi(supla_relay_cfg[a].gpio_id, supla_esp_state.Relay[a], 255);
 
 			} else if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESTORE ) {
 
 				struct rst_info *rtc_info = system_get_rst_info();
 
 				if ( rtc_info->reason == 0 ) {
-					   supla_esp_gpio_relay_hi(supla_relay_cfg[a].gpio_id, supla_esp_state.Relay[a]);
+					   //supla_log(LOG_DEBUG, "RESTORE");
+					   supla_esp_gpio_relay_hi(supla_relay_cfg[a].gpio_id, supla_esp_state.Relay[a], 255);
 				}
 
 			} else if ( supla_relay_cfg[a].flags & RELAY_FLAG_RESET ) {
 
-				supla_esp_gpio_relay_hi(supla_relay_cfg[a].gpio_id, LO_VALUE);
+				//supla_log(LOG_DEBUG, "LO_VALUE");
+				supla_esp_gpio_relay_hi(supla_relay_cfg[a].gpio_id, LO_VALUE, 0);
 
 			}
 		}
@@ -605,7 +642,7 @@ supla_esp_gpio_init(void) {
       if ( supla_input_cfg[a].gpio_id != 255
     		&& supla_input_cfg[a].type != 0) {
 
-    	  //supla_log(LOG_DEBUG, "input init %i", supla_input_cfg[a].gpio_id);
+    	//supla_log(LOG_DEBUG, "input init %i", supla_input_cfg[a].gpio_id);
 
         gpio_output_set(0, 0, 0, GPIO_ID_PIN(supla_input_cfg[a].gpio_id));
 
@@ -803,6 +840,10 @@ supla_esp_gpio_state_connected(void) {
 
 	os_timer_setfn(&supla_gpio_timer2, supla_esp_gpio_enable_sensors, NULL);
     os_timer_arm (&supla_gpio_timer2, 1000, 0);
+
+	#ifdef BOARD_ON_CONNECT
+    supla_esp_board_on_connect();
+	#endif
 }
 
 
@@ -859,4 +900,5 @@ char supla_esp_gpio_relay_is_hi(int port) {
 char  supla_esp_gpio_relay_on(int port) {
 	return GPIO_OUTPUT_GET(port) == HI_VALUE ? 1 : 0;
 }
+
 

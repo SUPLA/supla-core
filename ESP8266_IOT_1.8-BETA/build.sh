@@ -118,6 +118,8 @@ case $1 in
    ;;
    "zam_row_01")
    ;;
+   "zam_sbp_01")
+   ;;
    "rgbw_wroom")
      DEP_LIBS="-lpwm -lssl"
    ;;
@@ -159,7 +161,6 @@ case $1 in
    echo "              sonoff_dual";
    echo "              EgyIOT";
    echo "              dimmer";
-   echo "              zam_row_01";
    echo "              rgbw_wroom";
    echo "              h801";
    echo "              lightswitch_x2";

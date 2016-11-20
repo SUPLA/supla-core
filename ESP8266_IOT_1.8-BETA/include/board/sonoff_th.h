@@ -1,15 +1,23 @@
 /*
  ============================================================================
- Name        : dht_esp01.h
+ Name        : sonoff_th.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : GPLv2
  ============================================================================
 */
 
-#ifndef DHT_ESP01_H_
-#define DHT_ESP01_H_
+#ifndef SONOFF_TH_H_
+#define SONOFF_TH_H_
+
 
 #define DHTSENSOR
-#define TEMPERATURE_HUMIDITY_CHANNEL 0
+#define DS18B20
+
+#define TEMPERATURE_CHANNEL 1
+#define TEMPERATURE_HUMIDITY_CHANNEL 2
+
+#define W1_GPIO14
+
+#define LED_RED_PORT    13
 
 #endif

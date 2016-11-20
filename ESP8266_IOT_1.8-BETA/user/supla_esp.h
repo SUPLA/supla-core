@@ -15,7 +15,7 @@
 #include "supla-dev/proto.h"
 #include "board/supla_esp_board.h"
 
-#define SUPLA_ESP_SOFTVER "1.8"
+#define SUPLA_ESP_SOFTVER "1.8.1"
 
 #define LO_VALUE  0
 #define HI_VALUE  1
@@ -270,7 +270,11 @@
 // --------------------------------------
 
 #ifndef AP_SSID
-#define AP_SSID "SUPLA-ESP8266"
+	#ifdef ESP8285
+		#define AP_SSID "SUPLA-ESP8285"
+	#else
+		#define AP_SSID "SUPLA-ESP8266"
+	#endif
 #endif
 
 #define SPI_FLASH_SEC_SIZE  4096

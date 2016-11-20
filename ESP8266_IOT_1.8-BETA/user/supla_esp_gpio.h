@@ -51,6 +51,7 @@ extern supla_input_cfg_t supla_input_cfg[INPUT_MAX_COUNT];
 extern supla_relay_cfg_t supla_relay_cfg[RELAY_MAX_COUNT];
 extern unsigned int supla_esp_gpio_init_time;
 
+
 void gpio16_output_conf(void);
 void gpio16_output_set(uint8 value);
 void gpio16_input_conf(void);
@@ -68,7 +69,6 @@ void GPIO_ICACHE_FLASH supla_esp_gpio_state_cfgmode(void);
 void supla_esp_gpio_hi(int port, char hi);
 char supla_esp_gpio_is_hi(int port);
 char supla_esp_gpio_relay_is_hi(int port);
-
 
 #endif /* SUPLA_ESP_GPIO_H_ */
 

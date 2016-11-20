@@ -18,14 +18,15 @@
 #include "supla_ds18b20.h"
 #include "supla_w1.h"
 #include "supla-dev/log.h"
+#include "supla_dht.h"
 
 #ifdef DS18B20
 
 
 static double supla_ds18b20_last_temp = -275;
 
-static ETSTimer supla_ds18b20_timer1;
-static ETSTimer supla_ds18b20_timer2;
+ETSTimer supla_ds18b20_timer1;
+ETSTimer supla_ds18b20_timer2;
 
 #define SUPLA_DS_MODEL_UNKNOWN 0
 #define SUPLA_DS_MODEL_18B20 1
@@ -37,7 +38,7 @@ static float supla_ds18b20_divider;
 // TODO: Add support for multiple sensors
 // TODO: Add resolution setup
 
-void  supla_ds18b20_init(void) {
+void supla_ds18b20_init(void) {
 
 	supla_w1_init();
 }
@@ -84,7 +85,7 @@ int supla_ds18b20_read_bit(void)
     return r;
 }
 
-void  supla_ds18b20_write( uint8_t v, int power ) {
+void supla_ds18b20_write( uint8_t v, int power ) {
     uint8_t bitMask;
     for (bitMask = 0x01; bitMask; bitMask <<= 1) {
     	supla_ds18b20_write_bit( (bitMask & v)?1:0);
@@ -128,6 +129,11 @@ supla_ds18b20_read_temperatureB(void *timer_arg) {
 
     if ( d == 1 ) {
     	t = ((((int8_t)data[1])<<8) | data[0]) / supla_ds18b20_divider;
+
+		#ifdef DHTSENSOR
+		os_timer_disarm(&supla_dht_timer1);
+		#endif
+
     } else {
     	t = -275;
     }
@@ -177,7 +183,7 @@ supla_ds18b20_read_temperatureA(void *timer_arg) {
 
 }
 
-void  supla_ds18b20_start(void)
+void supla_ds18b20_start(void)
 {
 	supla_ds18b20_last_temp = -275;
 
@@ -186,7 +192,7 @@ void  supla_ds18b20_start(void)
 	os_timer_arm (&supla_ds18b20_timer1, 5000, 1);
 }
 
-void supla_get_temp_and_humidity(char value[SUPLA_CHANNELVALUE_SIZE]) {
+void supla_get_temperature(char value[SUPLA_CHANNELVALUE_SIZE]) {
 	// Only temperature
 	memcpy(value, &supla_ds18b20_last_temp, sizeof(double));
 }

@@ -24,4 +24,7 @@ void DEVCONN_ICACHE_FLASH supla_esp_devconn_send_channel_values_with_delay(void)
 void DEVCONN_ICACHE_FLASH supla_esp_devconn_on_temp_humidity_changed(char humidity);
 #endif
 
+void DEVCONN_ICACHE_FLASH supla_esp_devconn_before_cfgmode_start(void);
+
+
 #endif /* SUPLA_ESP_CLIENT_H_ */

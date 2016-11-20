@@ -46,6 +46,8 @@
 #define VAR_CFGBTN       6
 #define VAR_BTN1         7
 #define VAR_BTN2         8
+#define VAR_ICF          9
+#define VAR_LED          10
 
 typedef struct {
 	
@@ -63,7 +65,7 @@ typedef struct {
 }TrivialHttpParserVars;
 
 
-static char supla_esp_cfgmode = 0;
+unsigned int supla_esp_cfgmode_entertime = 0;
 
 void ICACHE_FLASH_ATTR 
 supla_esp_http_send_response(struct espconn *pespconn, const char *code, const char *html) {
@@ -207,6 +209,8 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 				char btncfg[3] = { 'c', 'f', 'g' };
 				char btn1[3] = { 'b', 't', '1' };
 				char btn2[3] = { 'b', 't', '2' };
+				char icf[3] = { 'i', 'c', 'f' };
+				char led[3] = { 'l', 'e', 'd' };
 				
 				if ( len-a >= 4
 					 && pdata[a+3] == '=' ) {
@@ -256,6 +260,18 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 					} else if ( memcmp(btn2, &pdata[a], 3) == 0 ) {
 
 						pVars->current_var = VAR_BTN2;
+						pVars->buff_size = 12;
+						pVars->pbuff = pVars->intval;
+
+					} else if ( memcmp(icf, &pdata[a], 3) == 0 ) {
+
+						pVars->current_var = VAR_ICF;
+						pVars->buff_size = 12;
+						pVars->pbuff = pVars->intval;
+
+					} else if ( memcmp(led, &pdata[a], 3) == 0 ) {
+
+						pVars->current_var = VAR_LED;
 						pVars->buff_size = 12;
 						pVars->pbuff = pVars->intval;
 
@@ -328,6 +344,14 @@ supla_esp_parse_request(TrivialHttpParserVars *pVars, char *pdata, unsigned shor
 					} else if ( pVars->current_var == VAR_BTN2 ) {
 
 						cfg->Button2Type = pVars->intval[0] - '0';
+
+					} else if ( pVars->current_var == VAR_ICF ) {
+
+						cfg->InputCfgTriggerOff = (pVars->intval[0] - '0') == 1 ? 1 : 0;
+
+					} else if ( pVars->current_var == VAR_LED ) {
+
+						cfg->StatusLedOff = (pVars->intval[0] - '0') == 1 ? 1 : 0;
 					}
 					
 					pVars->matched++;
@@ -370,19 +394,9 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 		
 		//supla_log(LOG_DEBUG, "Matched: %i", pVars->matched);
 
-        #ifdef CFGBTN_TYPE_SELECTION
-			if ( pVars->matched < 6 ) {
-				return;
-			}
-		#elif defined(BTN1_2_TYPE_SELECTION)
-			if ( pVars->matched < 7 ) {
-				return;
-			}
-        #else
-			if ( pVars->matched < 5 ) {
-				return;
-			}
-		#endif
+		if ( pVars->matched < 5 ) {
+			return;
+		}
 				
 		if ( new_cfg.LocationPwd[0] == 0 )
 			memcpy(new_cfg.LocationPwd, supla_esp_cfg.LocationPwd, SUPLA_LOCATION_PWD_MAXSIZE);
@@ -411,120 +425,130 @@ supla_esp_recv_callback (void *arg, char *pdata, unsigned short len)
 	supla_esp_board_set_device_name(&dev_name, 25);
 	dev_name[24] = 0;
 	
-	int bufflen = 830+strlen(dev_name)+strlen(supla_esp_cfg.WIFI_SSID)+strlen(supla_esp_cfg.Server);
-	char *buffer = (char*)os_malloc(bufflen);
+	char *buffer = 0;
 
-    #ifdef CFGBTN_TYPE_SELECTION
+	#ifdef BOARD_CFG_HTML_TEMPLATE
+	    buffer = supla_esp_board_cfg_html_template(dev_name, mac, data_saved);
+	#else
 
-	ets_snprintf(buffer, 
-			bufflen,
- 			"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"cfg\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
-            dev_name,
- 			(unsigned char)supla_esp_cfg.GUID[0],
-			(unsigned char)supla_esp_cfg.GUID[1],
-			(unsigned char)supla_esp_cfg.GUID[2],
-			(unsigned char)supla_esp_cfg.GUID[3],
-			(unsigned char)supla_esp_cfg.GUID[4],
-			(unsigned char)supla_esp_cfg.GUID[5],
-			(unsigned char)supla_esp_cfg.GUID[6],
-			(unsigned char)supla_esp_cfg.GUID[7],
-			(unsigned char)supla_esp_cfg.GUID[8],
-			(unsigned char)supla_esp_cfg.GUID[9],
-			(unsigned char)supla_esp_cfg.GUID[10],
-			(unsigned char)supla_esp_cfg.GUID[11],
-			(unsigned char)supla_esp_cfg.GUID[12],
-			(unsigned char)supla_esp_cfg.GUID[13],
-			(unsigned char)supla_esp_cfg.GUID[14],
-			(unsigned char)supla_esp_cfg.GUID[15],
-			(unsigned char)mac[0],
-			(unsigned char)mac[1],
-			(unsigned char)mac[2],
-			(unsigned char)mac[3],
-			(unsigned char)mac[4],
-			(unsigned char)mac[5], 
-			supla_esp_devconn_laststate(),
-			supla_esp_cfg.WIFI_SSID,
-			supla_esp_cfg.Server,
-			supla_esp_cfg.LocationID,
-			supla_esp_cfg.CfgButtonType == BTN_TYPE_BUTTON ? "selected" : "",
-			supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ? "selected" : "",
-			data_saved == 1 ? "Data saved!" : "");
+		int bufflen = 830+strlen(dev_name)+strlen(supla_esp_cfg.WIFI_SSID)+strlen(supla_esp_cfg.Server);
+		buffer = (char*)os_malloc(bufflen);
 
-	#elif defined(BTN1_2_TYPE_SELECTION)
+		#ifdef CFGBTN_TYPE_SELECTION
 
-	ets_snprintf(buffer,
-			bufflen,
- 			"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Input1 type:<select name=\"bt1\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br>Input2 type:<select name=\"bt2\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
- 			dev_name,
- 			(unsigned char)supla_esp_cfg.GUID[0],
-			(unsigned char)supla_esp_cfg.GUID[1],
-			(unsigned char)supla_esp_cfg.GUID[2],
-			(unsigned char)supla_esp_cfg.GUID[3],
-			(unsigned char)supla_esp_cfg.GUID[4],
-			(unsigned char)supla_esp_cfg.GUID[5],
-			(unsigned char)supla_esp_cfg.GUID[6],
-			(unsigned char)supla_esp_cfg.GUID[7],
-			(unsigned char)supla_esp_cfg.GUID[8],
-			(unsigned char)supla_esp_cfg.GUID[9],
-			(unsigned char)supla_esp_cfg.GUID[10],
-			(unsigned char)supla_esp_cfg.GUID[11],
-			(unsigned char)supla_esp_cfg.GUID[12],
-			(unsigned char)supla_esp_cfg.GUID[13],
-			(unsigned char)supla_esp_cfg.GUID[14],
-			(unsigned char)supla_esp_cfg.GUID[15],
-			(unsigned char)mac[0],
-			(unsigned char)mac[1],
-			(unsigned char)mac[2],
-			(unsigned char)mac[3],
-			(unsigned char)mac[4],
-			(unsigned char)mac[5],
-			supla_esp_devconn_laststate(),
-			supla_esp_cfg.WIFI_SSID,
-			supla_esp_cfg.Server,
-			supla_esp_cfg.LocationID,
-			supla_esp_cfg.Button1Type == BTN_TYPE_BUTTON ? "selected" : "",
-			supla_esp_cfg.Button1Type == BTN_TYPE_SWITCH ? "selected" : "",
-			supla_esp_cfg.Button2Type == BTN_TYPE_BUTTON ? "selected" : "",
-			supla_esp_cfg.Button2Type == BTN_TYPE_SWITCH ? "selected" : "",
-			data_saved == 1 ? "Data saved!" : "");
+		ets_snprintf(buffer,
+				bufflen,
+				"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Button type:<select name=\"cfg\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+				dev_name,
+				(unsigned char)supla_esp_cfg.GUID[0],
+				(unsigned char)supla_esp_cfg.GUID[1],
+				(unsigned char)supla_esp_cfg.GUID[2],
+				(unsigned char)supla_esp_cfg.GUID[3],
+				(unsigned char)supla_esp_cfg.GUID[4],
+				(unsigned char)supla_esp_cfg.GUID[5],
+				(unsigned char)supla_esp_cfg.GUID[6],
+				(unsigned char)supla_esp_cfg.GUID[7],
+				(unsigned char)supla_esp_cfg.GUID[8],
+				(unsigned char)supla_esp_cfg.GUID[9],
+				(unsigned char)supla_esp_cfg.GUID[10],
+				(unsigned char)supla_esp_cfg.GUID[11],
+				(unsigned char)supla_esp_cfg.GUID[12],
+				(unsigned char)supla_esp_cfg.GUID[13],
+				(unsigned char)supla_esp_cfg.GUID[14],
+				(unsigned char)supla_esp_cfg.GUID[15],
+				(unsigned char)mac[0],
+				(unsigned char)mac[1],
+				(unsigned char)mac[2],
+				(unsigned char)mac[3],
+				(unsigned char)mac[4],
+				(unsigned char)mac[5],
+				supla_esp_devconn_laststate(),
+				supla_esp_cfg.WIFI_SSID,
+				supla_esp_cfg.Server,
+				supla_esp_cfg.LocationID,
+				supla_esp_cfg.CfgButtonType == BTN_TYPE_BUTTON ? "selected" : "",
+				supla_esp_cfg.CfgButtonType == BTN_TYPE_SWITCH ? "selected" : "",
+				data_saved == 1 ? "Data saved!" : "");
 
-    #else
+		#elif defined(BTN1_2_TYPE_SELECTION)
 
-	ets_snprintf(buffer,
-			bufflen,
- 			"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br><input type=\"submit\" value=\"Save\"></form>%s",
- 			dev_name,
- 			(unsigned char)supla_esp_cfg.GUID[0],
-			(unsigned char)supla_esp_cfg.GUID[1],
-			(unsigned char)supla_esp_cfg.GUID[2],
-			(unsigned char)supla_esp_cfg.GUID[3],
-			(unsigned char)supla_esp_cfg.GUID[4],
-			(unsigned char)supla_esp_cfg.GUID[5],
-			(unsigned char)supla_esp_cfg.GUID[6],
-			(unsigned char)supla_esp_cfg.GUID[7],
-			(unsigned char)supla_esp_cfg.GUID[8],
-			(unsigned char)supla_esp_cfg.GUID[9],
-			(unsigned char)supla_esp_cfg.GUID[10],
-			(unsigned char)supla_esp_cfg.GUID[11],
-			(unsigned char)supla_esp_cfg.GUID[12],
-			(unsigned char)supla_esp_cfg.GUID[13],
-			(unsigned char)supla_esp_cfg.GUID[14],
-			(unsigned char)supla_esp_cfg.GUID[15],
-			(unsigned char)mac[0],
-			(unsigned char)mac[1],
-			(unsigned char)mac[2],
-			(unsigned char)mac[3],
-			(unsigned char)mac[4],
-			(unsigned char)mac[5],
-			supla_esp_devconn_laststate(),
-			supla_esp_cfg.WIFI_SSID,
-			supla_esp_cfg.Server,
-			supla_esp_cfg.LocationID,
-			data_saved == 1 ? "Data saved!" : "");
-    #endif
+		ets_snprintf(buffer,
+				bufflen,
+				"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br>Input1 type:<select name=\"bt1\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br>Input2 type:<select name=\"bt2\"><option value=\"0\" %s>button</option><option value=\"1\" %s>switch</option></select><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+				dev_name,
+				(unsigned char)supla_esp_cfg.GUID[0],
+				(unsigned char)supla_esp_cfg.GUID[1],
+				(unsigned char)supla_esp_cfg.GUID[2],
+				(unsigned char)supla_esp_cfg.GUID[3],
+				(unsigned char)supla_esp_cfg.GUID[4],
+				(unsigned char)supla_esp_cfg.GUID[5],
+				(unsigned char)supla_esp_cfg.GUID[6],
+				(unsigned char)supla_esp_cfg.GUID[7],
+				(unsigned char)supla_esp_cfg.GUID[8],
+				(unsigned char)supla_esp_cfg.GUID[9],
+				(unsigned char)supla_esp_cfg.GUID[10],
+				(unsigned char)supla_esp_cfg.GUID[11],
+				(unsigned char)supla_esp_cfg.GUID[12],
+				(unsigned char)supla_esp_cfg.GUID[13],
+				(unsigned char)supla_esp_cfg.GUID[14],
+				(unsigned char)supla_esp_cfg.GUID[15],
+				(unsigned char)mac[0],
+				(unsigned char)mac[1],
+				(unsigned char)mac[2],
+				(unsigned char)mac[3],
+				(unsigned char)mac[4],
+				(unsigned char)mac[5],
+				supla_esp_devconn_laststate(),
+				supla_esp_cfg.WIFI_SSID,
+				supla_esp_cfg.Server,
+				supla_esp_cfg.LocationID,
+				supla_esp_cfg.Button1Type == BTN_TYPE_BUTTON ? "selected" : "",
+				supla_esp_cfg.Button1Type == BTN_TYPE_SWITCH ? "selected" : "",
+				supla_esp_cfg.Button2Type == BTN_TYPE_BUTTON ? "selected" : "",
+				supla_esp_cfg.Button2Type == BTN_TYPE_SWITCH ? "selected" : "",
+				data_saved == 1 ? "Data saved!" : "");
+
+		#else
+
+		ets_snprintf(buffer,
+				bufflen,
+				"<h1>%s</h1>GUID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X<br>MAC: %02X:%02X:%02X:%02X:%02X:%02X<br>LAST STATE: %s<br><br><form method=\"post\">WiFi SSID: <input type=\"text\" name=\"sid\" value=\"%s\"><br>WiFi Password: <input type=\"text\" name=\"wpw\" value=\"\"><br><br>Server: <input type=\"text\" name=\"svr\" value=\"%s\"><br>Location ID:<input type=\"number\" name=\"lid\" value=\"%i\"><br>Location password:<input type=\"text\" name=\"pwd\" value=\"\"><br><br><input type=\"submit\" value=\"Save\"></form>%s",
+				dev_name,
+				(unsigned char)supla_esp_cfg.GUID[0],
+				(unsigned char)supla_esp_cfg.GUID[1],
+				(unsigned char)supla_esp_cfg.GUID[2],
+				(unsigned char)supla_esp_cfg.GUID[3],
+				(unsigned char)supla_esp_cfg.GUID[4],
+				(unsigned char)supla_esp_cfg.GUID[5],
+				(unsigned char)supla_esp_cfg.GUID[6],
+				(unsigned char)supla_esp_cfg.GUID[7],
+				(unsigned char)supla_esp_cfg.GUID[8],
+				(unsigned char)supla_esp_cfg.GUID[9],
+				(unsigned char)supla_esp_cfg.GUID[10],
+				(unsigned char)supla_esp_cfg.GUID[11],
+				(unsigned char)supla_esp_cfg.GUID[12],
+				(unsigned char)supla_esp_cfg.GUID[13],
+				(unsigned char)supla_esp_cfg.GUID[14],
+				(unsigned char)supla_esp_cfg.GUID[15],
+				(unsigned char)mac[0],
+				(unsigned char)mac[1],
+				(unsigned char)mac[2],
+				(unsigned char)mac[3],
+				(unsigned char)mac[4],
+				(unsigned char)mac[5],
+				supla_esp_devconn_laststate(),
+				supla_esp_cfg.WIFI_SSID,
+				supla_esp_cfg.Server,
+				supla_esp_cfg.LocationID,
+				data_saved == 1 ? "Data saved!" : "");
+		#endif
+
+	#endif
 	
-	supla_esp_http_ok((struct espconn *)arg, buffer);
-	os_free(buffer);
+	if ( buffer ) {
+		supla_esp_http_ok((struct espconn *)arg, buffer);
+		os_free(buffer);
+	}
 	
 	
 }
@@ -561,15 +585,23 @@ supla_esp_cfgmode_start(void) {
 	char APSSID[] = AP_SSID;
 	char mac[6];
 
+	#ifdef BOARD_BEFORE_CFGMODE_START
+	supla_esp_board_before_cfgmode_start();
+	#endif
+
+	supla_esp_devconn_before_cfgmode_start();
+
 	wifi_get_macaddr(SOFTAP_IF, mac);
 
 	struct softap_config apconfig;
 	struct espconn *conn;
 	
-	if ( supla_esp_cfgmode == 1 ) 
+	if ( supla_esp_cfgmode_entertime != 0 )
 		return;
 	
-	supla_esp_cfgmode = 1;
+	supla_esp_devconn_stop();
+
+	supla_esp_cfgmode_entertime = system_get_time();
 	
 	supla_log(LOG_DEBUG, "ENTER CFG MODE");
 	supla_esp_gpio_state_cfgmode();
@@ -622,6 +654,6 @@ supla_esp_cfgmode_start(void) {
 char ICACHE_FLASH_ATTR
 supla_esp_cfgmode_started(void) {
 
-	return supla_esp_cfgmode == 1 ? 1 : 0;
+	return supla_esp_cfgmode_entertime == 0 ? 0 : 1;
 }
 

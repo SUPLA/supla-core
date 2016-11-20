@@ -58,6 +58,19 @@
 
 #include "board/sonoff.c"
 
+#elif defined(__BOARD_sonoff_touch)
+
+#include "board/sonoff_touch.c"
+
+#elif defined(__BOARD_sonoff_socket)
+
+#include "board/sonoff_socket.c"
+
+#elif defined(__BOARD_sonoff_th10) \
+	  || defined(__BOARD_sonoff_th16)
+
+#include "board/sonoff_th.c"
+
 #elif defined(__BOARD_dimmer)
 
 #elif defined(__BOARD_EgyIOT)
@@ -65,6 +78,10 @@
 #elif defined(__BOARD_zam_row_01)
 
 #include "board/acs_zam_row_01.c"
+
+#elif defined(__BOARD_zam_sbp_01)
+
+#include "board/acs_zam_sbp_01.c"
 
 #elif defined(__BOARD_lightswitch_x2) \
         || defined(__BOARD_lightswitch_x2_DHT11) \

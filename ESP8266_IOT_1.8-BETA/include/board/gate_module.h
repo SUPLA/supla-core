@@ -13,11 +13,12 @@
 #if defined(__BOARD_gate_module_dht11) \
     || defined(__BOARD_gate_module_dht22)
    #define DHTSENSOR
+   #define TEMPERATURE_HUMIDITY_CHANNEL 4
 #else
    #define DS18B20
+   #define TEMPERATURE_CHANNEL 4
 #endif
 
-#define TEMPERATURE_CHANNEL 4
 
 #define LED_GREEN_PORT  12
 #define LED_BLUE_PORT   14

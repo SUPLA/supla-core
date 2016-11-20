@@ -1,15 +1,15 @@
 /*
  ============================================================================
- Name        : dht_esp01.h
+ Name        : sonoff_touch.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
  Copyright   : GPLv2
  ============================================================================
 */
 
-#ifndef DHT_ESP01_H_
-#define DHT_ESP01_H_
+#ifndef SONOFF_TOUCH_H_
+#define SONOFF_TOUCHH_
 
-#define DHTSENSOR
-#define TEMPERATURE_HUMIDITY_CHANNEL 0
+#define LED_RED_PORT    13
+#define ESP8285
 
 #endif
