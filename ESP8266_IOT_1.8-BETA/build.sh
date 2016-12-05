@@ -119,6 +119,8 @@ case $1 in
    "zam_row_01")
    ;;
    "zam_sbp_01")
+      FLASH_SIZE="2048"
+      UPGRADE=1
    ;;
    "rgbw_wroom")
      DEP_LIBS="-lpwm -lssl"
@@ -180,13 +182,20 @@ case $FLASH_SIZE in
    "512")
      CFG_SECTOR=0x3C
      SDK154=0
+     SPI_SIZE_MAP=0
+   ;;
+   "2048")
+     CFG_SECTOR=0xC0
+     SPI_SIZE_MAP=3
    ;;
    "4096")
      CFG_SECTOR=0xC0
+     SPI_SIZE_MAP=4
    ;;
    *)
      FLASH_SIZE="1024"
      CFG_SECTOR=0xBC
+     SPI_SIZE_MAP=2
    ;;
 esac
 
@@ -214,11 +223,18 @@ else
 fi
 
 
+if [ "$UPGRADE" -eq 1 ];then
+ make SUPLA_DEP_LIBS="$DEP_LIBS"  BOARD=$1 CFG_SECTOR="$CFG_SECTOR" BOOT=new APP=2 SPI_SPEED=40 SPI_MODE="$SPI_MODE" SPI_SIZE_MAP="$SPI_SIZE_MAP" $EXTRA && \
+   cp $BIN_PATH/upgrade/user1."$FLASH_SIZE".new."$SPI_SIZE_MAP".bin /media/sf_Public/"$BOARD_NAME"_user1."$FLASH_SIZE".new.bin && \
+   cp $SDK_PATH/bin/boot_v1.2.bin /media/sf_Public/boot_v1.2.bin
 
-   make SUPLA_DEP_LIBS="$DEP_LIBS" BOARD=$1 CFG_SECTOR=$CFG_SECTOR BOOT=new APP=0 SPI_SPEED=40 SPI_MODE="$SPI_MODE" SPI_SIZE_MAP=0 $EXTRA && \
+else
+
+   make SUPLA_DEP_LIBS="$DEP_LIBS" BOARD=$1 CFG_SECTOR=$CFG_SECTOR BOOT=new APP=0 SPI_SPEED=40 SPI_MODE="$SPI_MODE" SPI_SIZE_MAP="$SPI_SIZE_MAP" $EXTRA && \
    cp $BIN_PATH/eagle.flash.bin /media/sf_Public/"$BOARD_NAME"_"$FLASH_SIZE"_eagle.flash.bin && \
    cp $BIN_PATH/eagle.irom0text.bin /media/sf_Public/"$BOARD_NAME"_"$FLASH_SIZE"_eagle.irom0text.bin &&
    
    exit 0
+fi
 
 exit 1
