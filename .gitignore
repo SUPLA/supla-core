@@ -50,3 +50,9 @@ local.properties
 
 # acs
 /ESP8266_IOT/include/board/acs_*
+
+# Valgring cfg
+valgrind-suppressions.cfg
+
+# Eclipse
+/RemoteSystemsTempFiles/
