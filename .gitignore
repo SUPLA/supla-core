@@ -37,6 +37,7 @@ local.properties
 
 # Build tmp files
 *.o
+/**/*.o
 *.d
 
 # acs
