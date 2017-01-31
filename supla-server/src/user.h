@@ -53,6 +53,8 @@ public:
     static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value);
     static bool get_channel_temperature_value(int UserID, int DeviceID, int ChannelID, double *Value);
     static bool get_channel_humidity_value(int UserID, int DeviceID, int ChannelID, double *Value);
+    static bool get_channel_char_value(int UserID, int DeviceID, int ChannelID, char *Value);
+    static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID, int *color, char *color_brightness, char *brightness);
     static int user_count(void);
     static supla_user *get_user(int idx);
 
@@ -65,6 +67,8 @@ public:
     bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
     bool get_channel_temperature_value(int DeviceID, int ChannelID, double *Value);
     bool get_channel_humidity_value(int DeviceID, int ChannelID, double *Value);
+    bool get_channel_char_value(int DeviceID, int ChannelID, char *Value);
+    bool get_channel_rgbw_value(int DeviceID, int ChannelID, int *color, char *color_brightness, char *brightness);
 
     bool is_device_online(int DeviceID);
     bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value, char *online);

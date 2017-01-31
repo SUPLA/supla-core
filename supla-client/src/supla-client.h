@@ -2,7 +2,6 @@
  ============================================================================
  Name        : supla-client.h
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.1.2
  Copyright   : GPLv2
  ============================================================================
  */
@@ -80,6 +79,8 @@ char supla_client_connect(void *_suplaclient);
 char supla_client_connected(void *_suplaclient);
 char supla_client_registered(void *_suplaclient);
 void supla_client_disconnect(void *_suplaclient);
+
+// For _WIN32 wait_usec mean wait_msec
 char supla_client_iterate(void *_suplaclient, int wait_usec);
 void* supla_client_get_userdata(void *_suplaclient);
 

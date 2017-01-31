@@ -25,6 +25,7 @@ const char cmd_user_reconnect[] = "USER-RECONNECT:";
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
 const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
 const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
+const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
 	this->sfd = sfd;
@@ -94,8 +95,43 @@ void svr_ipcctrl::cmd_get_double(const char *cmd, char Type) {
 			break;
 		}
 
-		if ( r )
+		if ( r ) {
 			send_result("VALUE:", Value);
+			return;
+		}
+
+
+	}
+
+	send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::cmd_get_rgbw(const char *cmd) {
+
+	int UserID = 0;
+	int DeviceID = 0;
+	int ChannelID = 0;
+
+	int color;
+	char color_brightness;
+	char brightness;
+
+	sscanf (&buffer[strlen(cmd)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+
+	if ( UserID
+		 && DeviceID
+		 && ChannelID ) {
+
+		bool r = supla_user::get_channel_rgbw_value(UserID, DeviceID, ChannelID, &color, &color_brightness, &brightness);
+
+		if ( r ) {
+
+			snprintf(buffer, 255, "VALUE:%i,%i,%i\n", color, color_brightness, brightness);
+			send(sfd, buffer, strlen(buffer), 0);
+
+			return;
+		}
+
 
 	}
 

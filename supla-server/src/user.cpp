@@ -20,22 +20,27 @@
 
 void *supla_user::user_arr = NULL;
 
+//static
 char supla_user::find_user_byid(void *ptr, void *UserID) {
 	return ((supla_user*)ptr)->getUserID() == *(int*)UserID ? 1 : 0;
 }
 
+//static
 char supla_user::find_device_byid(void *ptr, void *ID) {
 	return ((supla_device*)ptr)->getID() == *(int*)ID ? 1 : 0;
 }
 
+//static
 char supla_user::find_device_byguid(void *ptr, void *GUID) {
 	return ((supla_device*)ptr)->cmpGUID((char*)GUID) ? 1 : 0;
 }
 
+//static
 char supla_user::find_client_byid(void *ptr, void *ID) {
 	return ((supla_client*)ptr)->getID() == *(int*)ID ? 1 : 0;
 }
 
+//static
 char supla_user::find_client_byguid(void *ptr, void *GUID) {
 	return ((supla_client*)ptr)->cmpGUID((char*)GUID) ? 1 : 0;
 }
@@ -78,10 +83,12 @@ int supla_user::getUserID(void) {
 	return UserID;
 }
 
+//static
 int supla_user::user_count(void) {
 	return safe_array_count(supla_user::user_arr);
 }
 
+//static
 supla_user *supla_user::get_user(int idx) {
 	return (supla_user *)safe_array_get(supla_user::user_arr, idx);
 }
@@ -195,6 +202,7 @@ bool supla_user::is_device_online(int DeviceID) {
 	return find_device(DeviceID) != NULL;
 }
 
+// static
 bool supla_user::is_device_online(int UserID, int DeviceID) {
 
 	bool result = false;
@@ -250,6 +258,41 @@ bool supla_user::get_channel_humidity_value(int DeviceID, int ChannelID, double 
 	return get_channel_double_value(DeviceID, ChannelID, Value, 2);
 }
 
+bool supla_user::get_channel_char_value(int DeviceID, int ChannelID, char *Value) {
+
+	bool result = false;
+
+	safe_array_lock(device_arr);
+
+	supla_device *device = find_device(DeviceID);
+
+	if ( device != NULL ) {
+		result = device->get_channel_char_value(ChannelID, Value) == 1;
+	}
+
+	safe_array_unlock(device_arr);
+
+	return result;
+}
+
+bool supla_user::get_channel_rgbw_value(int DeviceID, int ChannelID, int *color, char *color_brightness, char *brightness) {
+
+	bool result = false;
+
+	safe_array_lock(device_arr);
+
+	supla_device *device = find_device(DeviceID);
+	if ( device != NULL ) {
+			result = device->get_channel_rgbw_value(ChannelID, color, color_brightness, brightness) == 1;
+	}
+
+	safe_array_unlock(device_arr);
+
+	return result;
+
+}
+
+//static
 bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value, char Type) {
 
 	bool result = false;
@@ -278,16 +321,57 @@ bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelI
 
 }
 
+//static
 bool supla_user::get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value) {
      return get_channel_double_value(UserID, DeviceID, ChannelID, Value, 0);
 }
 
+//static
 bool supla_user::get_channel_temperature_value(int UserID, int DeviceID, int ChannelID, double *Value) {
     return get_channel_double_value(UserID, DeviceID, ChannelID, Value, 1);
 }
 
+//static
 bool supla_user::get_channel_humidity_value(int UserID, int DeviceID, int ChannelID, double *Value) {
     return get_channel_double_value(UserID, DeviceID, ChannelID, Value, 2);
+}
+
+//static
+bool supla_user::get_channel_char_value(int UserID, int DeviceID, int ChannelID, char *Value) {
+
+	bool result = false;
+
+	safe_array_lock(supla_user::user_arr);
+
+	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+	if ( user ) {
+		result = user->get_channel_char_value(DeviceID, ChannelID, Value) == true;
+	}
+
+	safe_array_unlock(supla_user::user_arr);
+
+	return result;
+
+}
+
+//static
+bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID, int *color, char *color_brightness, char *brightness) {
+
+	bool result = false;
+
+	safe_array_lock(supla_user::user_arr);
+
+	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+	if ( user ) {
+		result = user->get_channel_rgbw_value(DeviceID, ChannelID, color, color_brightness, brightness) == true;
+	}
+
+	safe_array_unlock(supla_user::user_arr);
+
+	return result;
+
 }
 
 supla_device *supla_user::device_by_channel_id(supla_device *suspect, int ChannelID) {
@@ -460,6 +544,7 @@ void supla_user::reconnect() {
 
 }
 
+//static
 bool supla_user::reconnect(int UserID) {
 
 	supla_user *user = find(UserID, true);

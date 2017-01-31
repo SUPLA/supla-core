@@ -39,6 +39,8 @@ public:
 	bool get_channel_temperature_value(int ChannelID, double *Value);
 	bool get_channel_humidity_value(int ChannelID, double *Value);
 	void get_temp_and_humidity(void *tarr);
+	bool get_channel_char_value(int ChannelID, char *Value);
+	bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness, char *brightness);
 };
 
 #endif /* DEVICE_H_ */

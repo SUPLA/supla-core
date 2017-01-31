@@ -50,7 +50,7 @@ extern "C" {
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #ifdef __AVR__
-	#define SUPLA_MAX_DATA_SIZE                 512
+	#define SUPLA_MAX_DATA_SIZE                 1024
 #else
 	#define SUPLA_MAX_DATA_SIZE                 10240
 #endif
@@ -126,7 +126,7 @@ extern "C" {
 
 #ifdef __AVR__
 	#ifdef __AVR_ATmega2560__
-		#define SUPLA_CHANNELMAXCOUNT                      16
+		#define SUPLA_CHANNELMAXCOUNT                      32
 	#else
 		#define SUPLA_CHANNELMAXCOUNT                      1
 	#endif

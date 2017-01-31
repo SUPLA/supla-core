@@ -55,6 +55,8 @@ public:
 	void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
 	void getDouble(double *Value);
 	void getChar(char *Value);
+	bool getRGBW(int *color, char *color_brightness, char *brightness);
+
 	int master_channel(void);
 	int slave_channel(void);
 	supla_channel_temphum *getTempHum(void);
@@ -85,6 +87,7 @@ public:
 	bool get_channel_temperature_value(int ChannelID, double *Value);
 	bool get_channel_humidity_value(int ChannelID, double *Value);
 	bool get_channel_char_value(int ChannelID, char *Value);
+	bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness, char *brightness);
 	unsigned int get_channel_value_duration(int ChannelID);
 	int get_channel_func(int ChannelID);
 	void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);

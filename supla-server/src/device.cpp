@@ -271,3 +271,11 @@ void supla_device::get_temp_and_humidity(void *tarr) {
 	channels->get_temp_and_humidity(tarr);
 }
 
+bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
+	return channels->get_channel_char_value(ChannelID, Value);
+}
+
+bool supla_device::get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness, char *brightness) {
+	return channels->get_channel_rgbw_value(ChannelID, color, color_brightness, brightness);
+}
+

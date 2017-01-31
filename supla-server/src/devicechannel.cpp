@@ -120,6 +120,68 @@ void supla_device_channel::getChar(char *Value) {
 
 }
 
+bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *brightness) {
+
+	if ( color != NULL )
+		*color = 0;
+
+	if ( color_brightness != NULL )
+		*color_brightness = 0;
+
+	if ( brightness != NULL )
+		*brightness = 0;
+
+
+
+#define SUPLA_CHANNELFNC_DIMMER                           180
+#define SUPLA_CHANNELFNC_RGBLIGHTING                      190
+#define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING             200
+
+		if ( brightness != NULL
+			 && ( Type == SUPLA_CHANNELFNC_DIMMER
+			      || Type == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ) ) {
+
+			*brightness = this->value[0];
+
+			if ( *brightness < 0 || *brightness > 100 )
+				*brightness = 0;
+		}
+
+		if (  Type == SUPLA_CHANNELFNC_RGBLIGHTING
+			  || Type == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ) {
+
+
+			if ( color_brightness != NULL ) {
+
+				*color_brightness = this->value[1];
+
+				if ( *color_brightness < 0 || *color_brightness > 100 )
+					*color_brightness = 0;
+			}
+
+			if ( color != NULL ) {
+
+				*color = 0;
+
+				*color = (int)this->value[4];
+				(*color)<<=8;
+
+				*color |= (int)this->value[3];
+				(*color)<<=8;
+
+				(*color) |= (int)this->value[2];
+
+			}
+
+
+		}
+
+
+
+
+	return false;
+}
+
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 	memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -611,5 +673,44 @@ void supla_device_channels::get_temp_and_humidity(void *tarr) {
 
 	safe_array_unlock(arr);
 
+}
+
+bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness, char *brightness) {
+
+	int a;
+	bool result = false;
+
+	safe_array_lock(arr);
+
+	for(a=0;a<safe_array_count(arr);a++) {
+
+		supla_device_channel *channel = (supla_device_channel *)safe_array_get(arr, a);
+
+		if ( channel != NULL ) {
+
+			   int _color;
+			   char _color_brightness;
+			   char _brightness;
+
+			   result = channel->getRGBW(&_color, &_color_brightness, &_brightness);
+
+			   if ( result == true ) {
+
+				   if ( color != NULL )
+					   *color = _color;
+
+				   if ( color_brightness )
+					   *color_brightness = _color_brightness;
+
+				   if ( brightness != NULL )
+					   *brightness = _brightness;
+			   }
+		}
+
+	}
+
+	safe_array_unlock(arr);
+
+	return result;
 }
 

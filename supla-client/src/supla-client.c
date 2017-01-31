@@ -2,7 +2,6 @@
  ============================================================================
  Name        : supla-client.c
  Author      : Przemyslaw Zygmunt przemek@supla.org
- Version     : 1.1.2
  Copyright   : GPLv2
  ============================================================================
  */
@@ -34,6 +33,32 @@ typedef struct {
 
 }TSuplaClientData;
 
+#ifdef _WIN32
+
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <stdint.h>
+
+//http://stackoverflow.com/questions/10905892/equivalent-of-gettimeday-for-windows
+int gettimeofday(struct timeval * tp, struct timezone * tzp)
+{
+	// Note: some broken versions only have 8 trailing zero's, the correct epoch has 9 trailing zero's
+	static const uint64_t EPOCH = ((uint64_t)116444736000000000ULL);
+
+	SYSTEMTIME  system_time;
+	FILETIME    file_time;
+	uint64_t    time;
+
+	GetSystemTime(&system_time);
+	SystemTimeToFileTime(&system_time, &file_time);
+	time = ((uint64_t)file_time.dwLowDateTime);
+	time += ((uint64_t)file_time.dwHighDateTime) << 32;
+
+	tp->tv_sec = (long)((time - EPOCH) / 10000000L);
+	tp->tv_usec = (long)(system_time.wMilliseconds * 1000);
+	return 0;
+}
+#endif
 
 int supla_client_socket_read(void *buf, int count, void *scd) {
 	return ssocket_read(((TSuplaClientData*)scd)->ssd, NULL, buf, count);
@@ -43,7 +68,7 @@ int supla_client_socket_write(void *buf, int count, void *scd) {
 	return ssocket_write(((TSuplaClientData*)scd)->ssd, NULL, buf, count);
 }
 
-void supla_client_before_async_call(void *_srpc, unsigned int call_type, void *_scd) {
+void supla_client_before_async_call(void *_srpc, unsigned _supla_int_t call_type, void *_scd) {
 
 	TSuplaClientData *scd = (TSuplaClientData*)_scd;
 	gettimeofday(&scd->last_call, NULL);
@@ -257,7 +282,11 @@ void supla_client_cfginit(TSuplaClientCfg *sclient_cfg) {
 	sclient_cfg->ssl_port = 2015;
 	sclient_cfg->tcp_port = 2016;
 	sclient_cfg->ssl_enabled = 1;
-	sclient_cfg->iterate_wait_usec = 1000000;
+	#ifdef _WIN32
+		sclient_cfg->iterate_wait_usec = 1000;
+	#else
+		sclient_cfg->iterate_wait_usec = 1000000;
+	#endif
 }
 
 void *supla_client_init(TSuplaClientCfg *sclient_cfg) {
@@ -271,14 +300,17 @@ void *supla_client_init(TSuplaClientCfg *sclient_cfg) {
 	scd->cfg.Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
 	scd->cfg.host = NULL;
 
-	if ( sclient_cfg->host != NULL
-			&& strlen(sclient_cfg->host) > 0 )
-
-		scd->cfg.host = strdup(sclient_cfg->host);
+	if (sclient_cfg->host != NULL
+		&& strlen(sclient_cfg->host) > 0) {
+		#ifdef _WIN32
+				scd->cfg.host = _strdup(sclient_cfg->host);
+		#else
+				scd->cfg.host = strdup(sclient_cfg->host);
+		#endif
+	}
 
 	scd->ssd = ssocket_client_init(scd->cfg.host, scd->cfg.ssl_enabled == 1 ? scd->cfg.tcp_port : scd->cfg.ssl_port,
 			scd->cfg.ssl_enabled == 1);
-
 
 	return scd;
 }
@@ -407,9 +439,16 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 	memset(&src, 0, sizeof(TCS_SuplaRegisterClient));
 
 	src.AccessID = suplaclient->cfg.AccessID;
+
+#ifdef _WIN32
+	_snprintf_s(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.AccessIDpwd);
+	_snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.Name);
+	_snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.SoftVer);
+#else
 	snprintf(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "%s", suplaclient->cfg.AccessIDpwd);
 	snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
 	snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", suplaclient->cfg.SoftVer);
+#endif
 
 	memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
 
