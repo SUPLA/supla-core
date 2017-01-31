@@ -131,11 +131,7 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *bri
 	if ( brightness != NULL )
 		*brightness = 0;
 
-
-
-#define SUPLA_CHANNELFNC_DIMMER                           180
-#define SUPLA_CHANNELFNC_RGBLIGHTING                      190
-#define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING             200
+	bool result = false;
 
 		if ( brightness != NULL
 			 && ( Type == SUPLA_CHANNELFNC_DIMMER
@@ -145,6 +141,8 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *bri
 
 			if ( *brightness < 0 || *brightness > 100 )
 				*brightness = 0;
+
+			result = true;
 		}
 
 		if (  Type == SUPLA_CHANNELFNC_RGBLIGHTING
@@ -157,6 +155,8 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *bri
 
 				if ( *color_brightness < 0 || *color_brightness > 100 )
 					*color_brightness = 0;
+
+				result = true;
 			}
 
 			if ( color != NULL ) {
@@ -173,13 +173,14 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *bri
 
 			}
 
+			result = true;
 
 		}
 
 
 
 
-	return false;
+	return result;
 }
 
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
