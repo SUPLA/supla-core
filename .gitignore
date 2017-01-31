@@ -37,8 +37,11 @@ local.properties
 
 # Build tmp files
 *.o
-/**/*.o
+**/*.o
 *.d
+**/*.d
+*.a
+**/*.a
 
 # acs
 /ESP8266_IOT/include/board/acs_*
