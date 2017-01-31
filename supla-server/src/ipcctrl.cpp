@@ -195,6 +195,10 @@ void svr_ipcctrl::execute(void *sthread) {
 
 					cmd_get_double(cmd_get_humidity_value, 2);
 
+				} else if ( match_command(cmd_get_rgbw_value, len) ) {
+
+					cmd_get_rgbw(cmd_get_rgbw_value);
+
 				}
 
 
