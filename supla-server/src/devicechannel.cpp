@@ -133,49 +133,51 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *bri
 
 	bool result = false;
 
-		if ( brightness != NULL
-			 && ( Type == SUPLA_CHANNELFNC_DIMMER
-			      || Type == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ) ) {
+	if ( Type == SUPLA_CHANNELTYPE_DIMMER
+		 || Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED ) {
+
+		if ( brightness != NULL ) {
 
 			*brightness = this->value[0];
 
 			if ( *brightness < 0 || *brightness > 100 )
 				*brightness = 0;
 
-			result = true;
 		}
 
-		if (  Type == SUPLA_CHANNELFNC_RGBLIGHTING
-			  || Type == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ) {
+		result = true;
+	}
+
+	if (  Type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER
+		  || Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED ) {
 
 
-			if ( color_brightness != NULL ) {
+		if ( color_brightness != NULL ) {
 
-				*color_brightness = this->value[1];
+			*color_brightness = this->value[1];
 
-				if ( *color_brightness < 0 || *color_brightness > 100 )
-					*color_brightness = 0;
-
-				result = true;
-			}
-
-			if ( color != NULL ) {
-
-				*color = 0;
-
-				*color = (int)this->value[4];
-				(*color)<<=8;
-
-				*color |= (int)this->value[3];
-				(*color)<<=8;
-
-				(*color) |= (int)this->value[2];
-
-			}
-
-			result = true;
+			if ( *color_brightness < 0 || *color_brightness > 100 )
+				*color_brightness = 0;
 
 		}
+
+		if ( color != NULL ) {
+
+			*color = 0;
+
+			*color = (int)this->value[4];
+			(*color)<<=8;
+
+			*color |= (int)this->value[3];
+			(*color)<<=8;
+
+			(*color) |= (int)this->value[2];
+
+		}
+
+		result = true;
+
+	}
 
 
 
