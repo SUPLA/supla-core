@@ -72,6 +72,8 @@ public:
 	void add_temperature(int ChannelID, double temperature);
 	void add_temperature_and_humidity(int ChannelID, double temperature, double humidity);
 
+	bool get_oauth_user(char *access_token, int *OAuthUserID, int *UserID, int *expires_at);
+
 };
 
 #endif /* DB_H_ */

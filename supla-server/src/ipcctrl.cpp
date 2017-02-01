@@ -18,6 +18,7 @@
 #include "sthread.h"
 #include "log.h"
 #include "user.h"
+#include "db.h"
 
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
@@ -28,7 +29,14 @@ const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
 const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 
+const char cmd_oauth[] = "OAUTH:";
+const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
+const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
+
 svr_ipcctrl::svr_ipcctrl(int sfd) {
+
+	set_unauthorized();
+
 	this->sfd = sfd;
 
 	this->eh = eh_init();
@@ -69,7 +77,7 @@ void svr_ipcctrl::send_result(const char *result, double i) {
 
 }
 
-void svr_ipcctrl::cmd_get_double(const char *cmd, char Type) {
+void svr_ipcctrl::get_double(const char *cmd, char Type) {
 
 	int UserID = 0;
 	int DeviceID = 0;
@@ -107,7 +115,7 @@ void svr_ipcctrl::cmd_get_double(const char *cmd, char Type) {
 	send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::cmd_get_char(const char *cmd) {
+void svr_ipcctrl::get_char(const char *cmd) {
 
 	int UserID = 0;
 	int DeviceID = 0;
@@ -133,7 +141,81 @@ void svr_ipcctrl::cmd_get_char(const char *cmd) {
 	send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::cmd_get_rgbw(const char *cmd) {
+void svr_ipcctrl::set_unauthorized(void) {
+
+	auth_level = IPC_AUTH_LEVEL_UNAUTHORIZED;
+	oauth_user_id = 0;
+	user_id = 0;
+	auth_expires_at = 0;
+
+}
+
+void svr_ipcctrl::oauth(const char *cmd) {
+
+	set_unauthorized();
+
+	int _auth_expires_at = 0;
+	int _user_id = 0;
+	int _oauth_user_id = 0;
+
+	bool result = false;
+
+	char access_token[256];
+	memset(access_token, 0, 256);
+
+	sscanf (&buffer[strlen(cmd)], "%s\n", access_token);
+	access_token[255] = 0;
+
+	database *db = new database();
+
+	if ( db->connect() == true ) {
+
+		if ( db->get_oauth_user(access_token, &_oauth_user_id, &_user_id, &_auth_expires_at)
+			 && _user_id > 0 ) {
+
+			oauth_user_id = _oauth_user_id;
+			user_id = _user_id;
+			auth_expires_at = _auth_expires_at;
+
+			result = true;
+		}
+	}
+
+	delete db;
+
+	if ( result ) {
+
+		send_result("AUTH_OK:", user_id);
+		return;
+	};
+
+	send_result("UNAUTHORIZED");
+
+}
+
+bool svr_ipcctrl::is_authorized(char level, int UserID, bool _send_result) {
+
+	bool result =  auth_level == IPC_AUTH_LEVEL_SUPERUSER
+			       || ( auth_level == IPC_AUTH_LEVEL_OAUTH_USER
+			    		&& user_id == UserID );
+
+	if ( result && auth_expires_at > 0 ) {
+
+		struct timeval now;
+		gettimeofday(&now, NULL);
+
+		if ( auth_expires_at < now.tv_sec )
+			result = false;
+	}
+
+	if ( result == false ) {
+		send_result("UNAUTHORIZED");
+	}
+
+	return result;
+}
+
+void svr_ipcctrl::get_rgbw(const char *cmd) {
 
 	int UserID = 0;
 	int DeviceID = 0;
@@ -212,23 +294,27 @@ void svr_ipcctrl::execute(void *sthread) {
 					}
 				} else if ( match_command(cmd_get_double_value, len) ) {
 
-					cmd_get_double(cmd_get_double_value, 0);
+					get_double(cmd_get_double_value, 0);
 
 				} else if ( match_command(cmd_get_temperature_value, len) ) {
 
-					cmd_get_double(cmd_get_temperature_value, 1);
+					get_double(cmd_get_temperature_value, 1);
 
 				} else if ( match_command(cmd_get_humidity_value, len) ) {
 
-					cmd_get_double(cmd_get_humidity_value, 2);
+					get_double(cmd_get_humidity_value, 2);
 
 				} else if ( match_command(cmd_get_rgbw_value, len) ) {
 
-					cmd_get_rgbw(cmd_get_rgbw_value);
+					get_rgbw(cmd_get_rgbw_value);
 
 				} else if ( match_command(cmd_get_char_value, len) ) {
 
-					cmd_get_char(cmd_get_char_value);
+					get_char(cmd_get_char_value);
+
+				} else if ( match_command(cmd_oauth, len) ) {
+
+					oauth(cmd_oauth);
 
 				} else {
 					send_result("COMMAND_UNKNOWN");

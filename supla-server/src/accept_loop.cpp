@@ -99,6 +99,7 @@ void accept_loop(void *ssd, void *al_sthread) {
 
 void accept_loop_ipcctrl_execute(void *ipcctrl, void *sthread) {
 
+	database::thread_init();
 	((svr_ipcctrl *)ipcctrl)->execute(sthread);
 
 }
@@ -106,6 +107,7 @@ void accept_loop_ipcctrl_execute(void *ipcctrl, void *sthread) {
 void accept_loop_ipcctrl_finish(void *ipcctrl, void *sthread) {
 
 	delete (svr_ipcctrl *)ipcctrl;
+	database::thread_end();
 
 }
 
