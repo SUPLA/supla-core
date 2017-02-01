@@ -18,7 +18,8 @@ private:
 	int sfd;
 	TEventHandler *eh;
 	bool match_command(const char *cmd, int len);
-	void cmd_get_double(const char *cmd, char Type) ;
+	void cmd_get_double(const char *cmd, char Type);
+	void cmd_get_char(const char *cmd);
 	void cmd_get_rgbw(const char *cmd);
 	void send_result(const char *result);
 	void send_result(const char *result, int i);

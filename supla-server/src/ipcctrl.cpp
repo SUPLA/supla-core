@@ -25,6 +25,7 @@ const char cmd_user_reconnect[] = "USER-RECONNECT:";
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
 const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
 const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
+const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
@@ -97,6 +98,32 @@ void svr_ipcctrl::cmd_get_double(const char *cmd, char Type) {
 
 		if ( r ) {
 			send_result("VALUE:", Value);
+			return;
+		}
+
+
+	}
+
+	send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::cmd_get_char(const char *cmd) {
+
+	int UserID = 0;
+	int DeviceID = 0;
+	int ChannelID = 0;
+	char Value;
+
+	sscanf (&buffer[strlen(cmd)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+
+	if ( UserID
+		 && DeviceID
+		 && ChannelID ) {
+
+		bool r = supla_user::get_channel_char_value(UserID, DeviceID, ChannelID, &Value);
+
+		if ( r ) {
+			send_result("VALUE:", (int)Value);
 			return;
 		}
 
@@ -199,6 +226,12 @@ void svr_ipcctrl::execute(void *sthread) {
 
 					cmd_get_rgbw(cmd_get_rgbw_value);
 
+				} else if ( match_command(cmd_get_char_value, len) ) {
+
+					cmd_get_char(cmd_get_char_value);
+
+				} else {
+					send_result("COMMAND_UNKNOWN");
 				}
 
 
