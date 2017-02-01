@@ -165,13 +165,13 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness, char *bri
 
 			*color = 0;
 
-			*color = (int)this->value[4];
-			(*color)<<=8;
+            *color = this->value[4] & 0xFF;
+            (*color)<<=8;
 
-			*color |= (int)this->value[3];
-			(*color)<<=8;
+            *color |= this->value[3] & 0xFF;
+            (*color)<<=8;
 
-			(*color) |= (int)this->value[2];
+            (*color) |= this->value[2] & 0xFF;
 
 		}
 
