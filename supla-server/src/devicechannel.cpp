@@ -680,36 +680,31 @@ void supla_device_channels::get_temp_and_humidity(void *tarr) {
 
 bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness, char *brightness) {
 
-	int a;
 	bool result = false;
 
 	safe_array_lock(arr);
 
-	for(a=0;a<safe_array_count(arr);a++) {
+	supla_device_channel *channel = find_channel(ChannelID);
 
-		supla_device_channel *channel = (supla_device_channel *)safe_array_get(arr, a);
+	if ( channel != NULL ) {
 
-		if ( channel != NULL ) {
+		   int _color;
+		   char _color_brightness;
+		   char _brightness;
 
-			   int _color;
-			   char _color_brightness;
-			   char _brightness;
+		   result = channel->getRGBW(&_color, &_color_brightness, &_brightness);
 
-			   result = channel->getRGBW(&_color, &_color_brightness, &_brightness);
+		   if ( result == true ) {
 
-			   if ( result == true ) {
+			   if ( color != NULL )
+				   *color = _color;
 
-				   if ( color != NULL )
-					   *color = _color;
+			   if ( color_brightness )
+				   *color_brightness = _color_brightness;
 
-				   if ( color_brightness )
-					   *color_brightness = _color_brightness;
-
-				   if ( brightness != NULL )
-					   *brightness = _brightness;
-			   }
-		}
-
+			   if ( brightness != NULL )
+				   *brightness = _brightness;
+		   }
 	}
 
 	safe_array_unlock(arr);
