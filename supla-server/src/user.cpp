@@ -488,7 +488,7 @@ bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID, int C
 
 	supla_device *device = find_device(DeviceID);
 	if ( device )
-		device->set_device_channel_char_value(SenderID, ChannelID, value);
+		result = device->set_device_channel_char_value(SenderID, ChannelID, value);
 
 	safe_array_unlock(device_arr);
 
@@ -504,7 +504,7 @@ bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID, int C
 
 	supla_device *device = find_device(DeviceID);
 	if ( device )
-		device->set_device_channel_rgbw_value(SenderID, ChannelID, color, color_brightness, brightness);
+		result = device->set_device_channel_rgbw_value(SenderID, ChannelID, color, color_brightness, brightness);
 
 	safe_array_unlock(device_arr);
 

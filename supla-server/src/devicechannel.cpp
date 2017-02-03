@@ -757,7 +757,6 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc, int Sender
 }
 
 bool supla_device_channels::set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID, int color, char color_brightness, char brightness) {
-	//assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness, char brightness)
 
 	bool result = false;
 	safe_array_lock(arr);

@@ -183,6 +183,7 @@ void svr_ipcctrl::oauth(const char *cmd) {
 			oauth_user_id = _oauth_user_id;
 			user_id = _user_id;
 			auth_expires_at = _auth_expires_at;
+			auth_level = IPC_AUTH_LEVEL_OAUTH_USER;
 
 			result = true;
 		}
@@ -333,7 +334,9 @@ void svr_ipcctrl::execute(void *sthread) {
 	send(sfd, hello, sizeof(hello), 0);
 
 	while(sthread_isterminated(sthread) == 0) {
+
 		eh_wait(eh, 1000000);
+		memset(buffer, 0, 255);
 
 		if ( (len = recv(sfd, buffer, sizeof(buffer), 0)) != 0 ) {
 
@@ -401,7 +404,7 @@ void svr_ipcctrl::execute(void *sthread) {
 					send_result("COMMAND_UNKNOWN");
 				}
 
-
+				gettimeofday(&last_action, NULL);
 			}
 
 		} else {
