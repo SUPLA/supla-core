@@ -200,7 +200,7 @@ void svr_ipcctrl::oauth(const char *cmd) {
 
 }
 
-bool svr_ipcctrl::is_authorized(char level, int UserID, bool _send_result) {
+bool svr_ipcctrl::is_authorized(int UserID, bool _send_result) {
 
 	bool result =  auth_level == IPC_AUTH_LEVEL_SUPERUSER
 			       || ( auth_level == IPC_AUTH_LEVEL_OAUTH_USER
@@ -249,6 +249,72 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
 		}
 
 
+	}
+
+	send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::set_char(const char *cmd) {
+
+	int UserID = 0;
+	int DeviceID = 0;
+	int ChannelID = 0;
+	int Value = 0;
+
+	sscanf (&buffer[strlen(cmd)], "%i,%i,%i,%i", &UserID, &DeviceID, &ChannelID, &Value);
+
+	if ( UserID
+		 && DeviceID
+		 && ChannelID ) {
+
+		if ( false == is_authorized(UserID, true) )
+			return;
+
+		if ( Value < 0 || Value > 255 )
+			send_result("VALUE OUT OF RANGE");
+
+		if ( true == supla_user::set_device_channel_char_value(UserID, 0, DeviceID, ChannelID, Value) ) {
+			send_result("OK:", ChannelID);
+		} else {
+			send_result("FAIL:", ChannelID);
+		}
+
+		return;
+	}
+
+	send_result("UNKNOWN:", ChannelID);
+
+}
+
+void svr_ipcctrl::set_rgbw(const char *cmd) {
+
+	int UserID = 0;
+	int DeviceID = 0;
+	int ChannelID = 0;
+	int Color = 0;
+	int ColorBrightness = 0;
+	int Brightness = 0;
+
+	sscanf (&buffer[strlen(cmd)], "%i,%i,%i,%i,%i,%i", &UserID, &DeviceID, &ChannelID, &Color, &ColorBrightness, &Brightness);
+
+	if ( UserID
+		 && DeviceID
+		 && ChannelID ) {
+
+		if ( false == is_authorized(UserID, true) )
+			return;
+
+		if ( ColorBrightness < 0 || ColorBrightness > 100
+			 || Brightness < 0  || Brightness > 100 )
+			send_result("VALUE OUT OF RANGE");
+
+		if ( true == supla_user::set_device_channel_rgbw_value(UserID, 0, DeviceID, ChannelID, Color, ColorBrightness, Brightness) ) {
+			send_result("OK:", ChannelID);
+		} else {
+			send_result("FAIL:", ChannelID);
+		}
+
+		return;
 	}
 
 	send_result("UNKNOWN:", ChannelID);
@@ -322,6 +388,14 @@ void svr_ipcctrl::execute(void *sthread) {
 				} else if ( match_command(cmd_oauth, len) ) {
 
 					oauth(cmd_oauth);
+
+				} else if ( match_command(cmd_set_char_value, len) ) {
+
+					set_char(cmd_set_char_value);
+
+				} else if ( match_command(cmd_set_rgbw_value, len) ) {
+
+					set_rgbw(cmd_set_rgbw_value);
 
 				} else {
 					send_result("COMMAND_UNKNOWN");

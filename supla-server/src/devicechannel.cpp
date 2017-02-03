@@ -202,6 +202,38 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 }
 
+void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness, char brightness) {
+
+	if ( Func == SUPLA_CHANNELFNC_DIMMER
+		 || Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ) {
+
+		if ( brightness < 0 || brightness > 100 )
+			brightness = 0;
+
+		value[0] = brightness;
+	}
+
+	if ( Func == SUPLA_CHANNELFNC_RGBLIGHTING
+		 || Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING ) {
+
+		if ( color_brightness < 0 || color_brightness > 100 )
+			color_brightness = 0;
+
+		value[1] = color_brightness;
+		value[2] = (char)((color & 0x000000FF));
+		value[3] = (char)((color & 0x0000FF00) >> 8);
+		value[4] = (char)((color & 0x00FF0000) >> 16);
+	}
+
+}
+
+void supla_device_channel::assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue) {
+
+	memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+	value[0] = cvalue;
+
+}
+
 bool supla_device_channel::isValueWritable(void) {
 
 	switch(Func) {
@@ -221,6 +253,40 @@ bool supla_device_channel::isValueWritable(void) {
 	}
 
 	return 0;
+}
+
+bool supla_device_channel::isCharValueWritable(void) {
+
+	switch(Func) {
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+	case  SUPLA_CHANNELFNC_POWERSWITCH:
+	case  SUPLA_CHANNELFNC_LIGHTSWITCH:
+		return 1;
+
+		break;
+	}
+
+	return 0;
+
+}
+
+bool supla_device_channel::isRgbwValueWritable(void) {
+
+	switch(Func) {
+	case  SUPLA_CHANNELFNC_DIMMER:
+	case  SUPLA_CHANNELFNC_RGBLIGHTING:
+	case  SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+		return 1;
+
+		break;
+	}
+
+	return 0;
+
 }
 
 unsigned int supla_device_channel::getValueDuration(void) {
@@ -660,6 +726,62 @@ void supla_device_channels::set_device_channel_value(void *srpc, int SenderID, i
 
 	safe_array_unlock(arr);
 
+}
+
+bool supla_device_channels::set_device_channel_char_value(void *srpc, int SenderID, int ChannelID, const char value) {
+
+	bool result = false;
+	safe_array_lock(arr);
+
+	supla_device_channel *channel = find_channel(ChannelID);
+
+	if ( channel
+		 && channel->isCharValueWritable() ) {
+
+		TSD_SuplaChannelNewValue s;
+		s.ChannelNumber = channel->getNumber();
+		s.DurationMS = channel->getValueDuration();
+		s.SenderID = SenderID;
+
+		channel->assignCharValue(s.value, value);
+
+
+		srpc_sd_async_set_channel_value(srpc, &s);
+		result = true;
+	}
+
+	safe_array_unlock(arr);
+
+	return result;
+
+}
+
+bool supla_device_channels::set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID, int color, char color_brightness, char brightness) {
+	//assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness, char brightness)
+
+	bool result = false;
+	safe_array_lock(arr);
+
+	supla_device_channel *channel = find_channel(ChannelID);
+
+	if ( channel
+		 && channel->isRgbwValueWritable() ) {
+
+		TSD_SuplaChannelNewValue s;
+		s.ChannelNumber = channel->getNumber();
+		s.DurationMS = channel->getValueDuration();
+		s.SenderID = SenderID;
+
+		channel->assignRgbwValue(s.value, color, color_brightness, brightness);
+
+
+		srpc_sd_async_set_channel_value(srpc, &s);
+		result = true;
+	}
+
+	safe_array_unlock(arr);
+
+	return result;
 }
 
 void supla_device_channels::get_temp_and_humidity(void *tarr) {

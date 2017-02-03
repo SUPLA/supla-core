@@ -36,6 +36,8 @@ public:
 
 	bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
 	void set_device_channel_value(int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]);
+    bool set_device_channel_char_value(int SenderID, int ChannelID, const char value);
+    bool set_device_channel_rgbw_value(int SenderID, int ChannelID, int color, char color_brightness, char brightness);
 
 	bool channel_exists(int ChannelID);
 	void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value);

@@ -57,9 +57,13 @@ public:
 	int getFunc(void);
 	int getType(void);
 	bool isValueWritable(void);
+	bool isCharValueWritable(void);
+	bool isRgbwValueWritable(void);
 	unsigned int getValueDuration(void);
 	void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
 	void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+	void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color, char color_brightness, char brightness);
+	void assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
 	void getDouble(double *Value);
 	void getChar(char *Value);
 	bool getRGBW(int *color, char *color_brightness, char *brightness);
@@ -100,7 +104,9 @@ public:
 	void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
 	void set_channels_value(TDS_SuplaDeviceChannel_B *schannel, int count);
 
-	void set_device_channel_value(void *srpc, int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) ;
+	void set_device_channel_value(void *srpc, int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]);
+    bool set_device_channel_char_value(void *srpc, int SenderID, int ChannelID, const char value);
+    bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID, int color, char color_brightness, char brightness);
 
 	int master_channel(int ChannelID);
 	int slave_channel(int ChannelID);

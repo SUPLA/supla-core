@@ -40,12 +40,14 @@ private:
 
 	void set_unauthorized(void);
 	void oauth(const char *cmd);
-	bool is_authorized(char level, int UserID, bool _send_result);
+	bool is_authorized(int UserID, bool _send_result);
 
 	bool match_command(const char *cmd, int len);
 	void get_double(const char *cmd, char Type);
 	void get_char(const char *cmd);
 	void get_rgbw(const char *cmd);
+	void set_char(const char *cmd);
+	void set_rgbw(const char *cmd);
 	void send_result(const char *result);
 	void send_result(const char *result, int i);
 	void send_result(const char *result, double i);

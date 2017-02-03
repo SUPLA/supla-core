@@ -64,6 +64,8 @@ public:
     static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID, int *color, char *color_brightness, char *brightness);
     static int user_count(void);
     static supla_user *get_user(int idx);
+    static bool set_device_channel_char_value(int UserID, int SenderID, int DeviceID, int ChannelID, const char value);
+    static bool set_device_channel_rgbw_value(int UserID, int SenderID, int DeviceID, int ChannelID, int color, char color_brightness, char brightness);
 
     void remove_device(supla_device *device);
     void remove_client(supla_client *client);
@@ -79,7 +81,11 @@ public:
 
     bool is_device_online(int DeviceID);
     bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value, char *online);
+
     bool set_device_channel_value(int SenderID, int DeviceID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]);
+    bool set_device_channel_char_value(int SenderID, int DeviceID, int ChannelID, const char value);
+    bool set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID, int color, char color_brightness, char brightness);
+
     void update_client_device_channels(int LocationID, int DeviceID);
     void on_channel_value_changed(int DeviceId, int ChannelId = 0);
 

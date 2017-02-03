@@ -429,6 +429,42 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID, TSuplaChannelVal
 	return result;
 }
 
+//static
+bool supla_user::set_device_channel_char_value(int UserID, int SenderID, int DeviceID, int ChannelID, const char value) {
+
+	bool result = false;
+
+	safe_array_lock(supla_user::user_arr);
+
+	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+	if ( user )
+		result = user->set_device_channel_char_value(SenderID, DeviceID, ChannelID, value) == true;
+
+	safe_array_unlock(supla_user::user_arr);
+
+	return result;
+
+}
+
+//static
+bool supla_user::set_device_channel_rgbw_value(int UserID, int SenderID, int DeviceID, int ChannelID, int color, char color_brightness, char brightness) {
+
+	bool result = false;
+
+	safe_array_lock(supla_user::user_arr);
+
+	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+	if ( user )
+		result = user->set_device_channel_rgbw_value(SenderID, DeviceID, ChannelID, color, color_brightness, brightness) == true;
+
+	safe_array_unlock(supla_user::user_arr);
+
+	return result;
+
+}
+
 bool supla_user::set_device_channel_value(int SenderID, int DeviceID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 	bool result = false;
@@ -442,6 +478,38 @@ bool supla_user::set_device_channel_value(int SenderID, int DeviceID, int Channe
 	safe_array_unlock(device_arr);
 
 	return result;
+}
+
+bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID, int ChannelID, const char value) {
+
+	bool result = false;
+
+	safe_array_lock(device_arr);
+
+	supla_device *device = find_device(DeviceID);
+	if ( device )
+		device->set_device_channel_char_value(SenderID, ChannelID, value);
+
+	safe_array_unlock(device_arr);
+
+	return result;
+
+}
+
+bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID, int color, char color_brightness, char brightness) {
+
+	bool result = false;
+
+	safe_array_lock(device_arr);
+
+	supla_device *device = find_device(DeviceID);
+	if ( device )
+		device->set_device_channel_rgbw_value(SenderID, ChannelID, color, color_brightness, brightness);
+
+	safe_array_unlock(device_arr);
+
+	return result;
+
 }
 
 void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
