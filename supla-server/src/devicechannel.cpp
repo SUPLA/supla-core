@@ -716,6 +716,8 @@ void supla_device_channels::set_device_channel_value(void *srpc, int SenderID, i
 		 && channel->isValueWritable() ) {
 
 		TSD_SuplaChannelNewValue s;
+		memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
+
 		s.ChannelNumber = channel->getNumber();
 		s.DurationMS = channel->getValueDuration();
 		s.SenderID = SenderID;
@@ -739,6 +741,8 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc, int Sender
 		 && channel->isCharValueWritable() ) {
 
 		TSD_SuplaChannelNewValue s;
+		memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
+
 		s.ChannelNumber = channel->getNumber();
 		s.DurationMS = channel->getValueDuration();
 		s.SenderID = SenderID;
@@ -767,6 +771,8 @@ bool supla_device_channels::set_device_channel_rgbw_value(void *srpc, int Sender
 		 && channel->isRgbwValueWritable() ) {
 
 		TSD_SuplaChannelNewValue s;
+		memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
+
 		s.ChannelNumber = channel->getNumber();
 		s.DurationMS = channel->getValueDuration();
 		s.SenderID = SenderID;
