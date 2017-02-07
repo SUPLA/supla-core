@@ -253,8 +253,12 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 			case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
 				device->on_channel_set_value_result(rd.data.ds_channel_new_value_result);
 				break;
-			default:
 
+			case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
+				device->get_firmware_update_url();
+				break;
+
+			default:
 				sthread_terminate(sthread);
 			}
 

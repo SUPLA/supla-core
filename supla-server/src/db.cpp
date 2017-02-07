@@ -1077,4 +1077,90 @@ bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
 	return result;
 }
 
+bool database::get_device_firmware_update_url(int DeviceID, TSD_FirmwareUpdate_UrlResult *url) {
+
+	MYSQL_STMT *stmt;
+	MYSQL_BIND pbind[1];
+	memset(pbind, 0, sizeof(pbind));
+	memset(url, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
+
+	bool result = false;
+
+
+	pbind[0].buffer_type= MYSQL_TYPE_LONG;
+	pbind[0].buffer= (char *)&DeviceID;
+
+	const char sql[] = "SET @p0=?; CALL `supla_get_device_firmware_url`(@p0, @p1, @p2, @p3, @p4); SELECT @p1 AS `protocols`, @p2 AS `host`, @p3 AS `path`, @p4 AS `signature`;";
+
+	if ( stmt_execute((void**)&stmt, sql, pbind, 1, true) ) {
+
+		mysql_stmt_store_result(stmt);
+
+		if ( mysql_stmt_num_rows(stmt) > 0 ) {
+
+			MYSQL_BIND rbind[4];
+			memset(rbind, 0, sizeof(rbind));
+
+			unsigned long host_size;
+			my_bool       host_is_null;
+
+			unsigned long path_size;
+			my_bool       path_is_null;
+
+			unsigned long signature_size;
+			my_bool       signature_is_null;
+
+			rbind[0].buffer_type= MYSQL_TYPE_TINY;
+			rbind[0].buffer= (char *)&url->url.available_protocols;
+
+			rbind[1].buffer_type= MYSQL_TYPE_STRING;
+			rbind[1].buffer= url->url.host;
+			rbind[1].is_null= &host_is_null;
+			rbind[1].buffer_length = SUPLA_URL_HOST_MAXSIZE;
+			rbind[1].length = &host_size;
+
+			rbind[2].buffer_type= MYSQL_TYPE_STRING;
+			rbind[2].buffer= url->url.path;
+			rbind[2].is_null= &path_is_null;
+			rbind[2].buffer_length = SUPLA_URL_PATH_MAXSIZE;
+			rbind[2].length = &path_size;
+
+			rbind[3].buffer_type= MYSQL_TYPE_BLOB;
+			rbind[3].buffer= url->signature;
+			rbind[3].is_null= &signature_is_null;
+			rbind[3].buffer_length = SUPLA_FIRMWARE_SIGNATURE_SIZE;
+			rbind[3].length = &signature_size;
+
+			if ( mysql_stmt_bind_result(stmt, rbind) ) {
+				supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
+
+			} else if ( mysql_stmt_fetch(stmt) == 0 ) {
+
+				if ( host_is_null || host_size == 0 || host_size >= SUPLA_URL_HOST_MAXSIZE )
+					url->url.host[0] = 0;
+
+				if ( path_is_null || path_size == 0 || path_size >= SUPLA_URL_PATH_MAXSIZE )
+					url->url.path[0] = 0;
+
+				if ( signature_is_null || signature_size != SUPLA_FIRMWARE_SIGNATURE_SIZE )
+					memset(url->signature, 0, SUPLA_FIRMWARE_SIGNATURE_SIZE);
+
+
+				if ( url->url.available_protocols > 0
+					 && strlen(url->url.host) > 0
+					 && strlen(url->url.path) > 0 )
+					url->exists = 1;
+
+				result = true;
+
+			}
+
+		}
+
+		mysql_stmt_free_result(stmt);
+		mysql_stmt_close(stmt);
+	}
+
+	return result;
+}
 
