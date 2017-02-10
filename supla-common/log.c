@@ -44,10 +44,8 @@
         #endif
         #include <mem.h>	
 
-	#define malloc os_malloc
-	#define free os_free
-	#define realloc os_realloc
-	#define vsnprintf ets_vsnprintf
+		#include <user_interface.h>
+		#include "espmissingincludes.h"
 
 #else
 

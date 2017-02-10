@@ -57,8 +57,10 @@ extern "C" {
 #define SUPLA_PROTO_VERSION                 5
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
-#ifdef __AVR__
+#if defined(__AVR__)
 	#define SUPLA_MAX_DATA_SIZE                 1024
+#elif defined(ESP8266)
+	#define SUPLA_MAX_DATA_SIZE                 1536
 #else
 	#define SUPLA_MAX_DATA_SIZE                 10240
 #endif
@@ -77,7 +79,6 @@ extern "C" {
 #define SUPLA_CHANNELPACK_MAXSIZE           20
 #define SUPLA_URL_HOST_MAXSIZE              101
 #define SUPLA_URL_PATH_MAXSIZE              101
-#define SUPLA_FIRMWARE_SIGNATURE_SIZE       256
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -212,8 +213,11 @@ extern "C" {
 #define SUPLA_EVENT_POWERONOFF                              60
 #define SUPLA_EVENT_LIGHTONOFF                              70
 
-#define SUPLA_URL_PROTO_HTTP   0x01;
-#define SUPLA_URL_PROTO_HTTPS  0x02;
+#define SUPLA_URL_PROTO_HTTP   0x01
+#define SUPLA_URL_PROTO_HTTPS  0x02
+
+#define SUPLA_PLATFORM_UNKNOWN  0
+#define SUPLA_PLATFORM_ESP8266  1
 
 #pragma pack(push, 1)
 
@@ -488,8 +492,20 @@ typedef struct {
 
 typedef struct {
 
+	char Platform;
+
+	int Param1;
+	int Param2;
+	int Param3;
+	int Param4;
+
+}TDS_FirmwareUpdateParams;
+
+typedef struct {
+
 	char available_protocols;
 	char host[SUPLA_URL_HOST_MAXSIZE];
+	int port;
 	char path[SUPLA_URL_PATH_MAXSIZE];
 
 }TSD_FirmwareUpdate_Url;
@@ -498,7 +514,6 @@ typedef struct {
 
 	char exists;
 	TSD_FirmwareUpdate_Url url;
-	char signature[SUPLA_FIRMWARE_SIGNATURE_SIZE];
 
 }TSD_FirmwareUpdate_UrlResult;
 

@@ -28,6 +28,7 @@
 #include "tools.h"
 #include "svrcfg.h"
 
+
 #define REGISTER_WAIT_TIMEOUT  5
 #define REG_NONE    0
 #define REG_DEVICE  1
@@ -255,7 +256,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 				break;
 
 			case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
-				device->get_firmware_update_url();
+				device->get_firmware_update_url(rd.data.ds_firmware_update_params);
 				break;
 
 			default:

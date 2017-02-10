@@ -296,7 +296,7 @@ bool supla_device::get_channel_rgbw_value(int ChannelID, int *color, char *color
 	return channels->get_channel_rgbw_value(ChannelID, color, color_brightness, brightness);
 }
 
-void supla_device::get_firmware_update_url(void) {
+void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 
 	TSD_FirmwareUpdate_UrlResult result;
 	memset(&result, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
@@ -304,7 +304,7 @@ void supla_device::get_firmware_update_url(void) {
 	database *db = new database();
 
 	if ( db->connect() == true )
-		db->get_device_firmware_update_url(getID(), &result);
+		db->get_device_firmware_update_url(getID(), params, &result);
 
 	delete db;
 

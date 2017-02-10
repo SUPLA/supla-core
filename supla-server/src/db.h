@@ -65,7 +65,7 @@ public:
 	int get_device_channel_type(int DeviceID, int ChannelNumber);
 	void get_device_channels(int DeviceID, supla_device_channels *channels);
 
-	bool get_device_firmware_update_url(int DeviceID, TSD_FirmwareUpdate_UrlResult *url);
+	bool get_device_firmware_update_url(int DeviceID, TDS_FirmwareUpdateParams *params, TSD_FirmwareUpdate_UrlResult *url);
 
 	bool on_newdevice(int DeviceID);
 	bool on_channeladded(int DeviceID, int ChannelID);

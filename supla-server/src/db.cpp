@@ -142,30 +142,43 @@ bool database::stmt_execute(void **_stmt, const char *stmt_str, void *bind, int 
 
 	} else {
 
-		int param_count = mysql_stmt_param_count(stmt);
+		bool err = false;
 
-		if ( param_count != bind_size ) {
+		if ( bind != NULL ) {
 
-			supla_log(LOG_ERR, "MySQL - invalid parameter count %i/%i", param_count, bind_size);
+			int param_count = mysql_stmt_param_count(stmt);
 
-		} else if ( mysql_stmt_bind_param(stmt, (MYSQL_BIND*)bind) != 0 ) {
+			if ( param_count != bind_size ) {
 
-			supla_log(LOG_ERR, "MySQL - bind param error: %s", mysql_stmt_error(stmt));
+				supla_log(LOG_ERR, "MySQL - invalid parameter count %i/%i", param_count, bind_size);
+				err = true;
 
-		} else if ( mysql_stmt_execute(stmt) != 0 ) {
+			} else if ( mysql_stmt_bind_param(stmt, (MYSQL_BIND*)bind) != 0 ) {
 
-			if ( exec_errors  )
-			  supla_log(LOG_ERR, "MySQL - execute error: %s", mysql_stmt_error(stmt));
+				supla_log(LOG_ERR, "MySQL - bind param error: %s", mysql_stmt_error(stmt));
+				err = true;
 
-		} else {
+			}
 
-			*_stmt = stmt;
-			return true;
+		}
 
-		};
+		if ( err == false ) {
+
+			if ( mysql_stmt_execute(stmt) != 0 ) {
+
+				if ( exec_errors  )
+				  supla_log(LOG_ERR, "MySQL - execute error: %s", mysql_stmt_error(stmt));
+
+			} else {
+
+				*_stmt = stmt;
+				return true;
+
+			};
+
+		}
 
 	}
-
 
 	if ( exec_errors  )
        mysql_stmt_close(stmt);
@@ -1077,22 +1090,53 @@ bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
 	return result;
 }
 
-bool database::get_device_firmware_update_url(int DeviceID, TSD_FirmwareUpdate_UrlResult *url) {
+bool database::get_device_firmware_update_url(int DeviceID, TDS_FirmwareUpdateParams *params, TSD_FirmwareUpdate_UrlResult *url) {
 
 	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[1];
+	MYSQL_BIND pbind[6];
 	memset(pbind, 0, sizeof(pbind));
 	memset(url, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
 
 	bool result = false;
 
-
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&DeviceID;
 
-	const char sql[] = "SET @p0=?; CALL `supla_get_device_firmware_url`(@p0, @p1, @p2, @p3, @p4); SELECT @p1 AS `protocols`, @p2 AS `host`, @p3 AS `path`, @p4 AS `signature`;";
+	pbind[1].buffer_type= MYSQL_TYPE_TINY;
+	pbind[1].buffer= (char *)&params->Platform;
 
-	if ( stmt_execute((void**)&stmt, sql, pbind, 1, true) ) {
+	pbind[2].buffer_type= MYSQL_TYPE_LONG;
+	pbind[2].buffer= (char *)&params->Param1;
+
+	pbind[3].buffer_type= MYSQL_TYPE_LONG;
+	pbind[3].buffer= (char *)&params->Param2;
+
+	pbind[4].buffer_type= MYSQL_TYPE_LONG;
+	pbind[4].buffer= (char *)&params->Param3;
+
+	pbind[5].buffer_type= MYSQL_TYPE_LONG;
+	pbind[5].buffer= (char *)&params->Param4;
+
+	const char sql1[] = "SET @p0=?, @p1=?, @p2=?, @p3=?, @p4=?, @p5=?";
+	const char sql2[] = "CALL `supla_get_device_firmware_url`(@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)";
+	const char sql3[] = "SELECT @p6 AS `protocols`, @p7 AS `host`, @p8 AS `port`, @p9 AS `path`";
+
+	char q_executed = 0;
+
+	if ( stmt_execute((void**)&stmt, sql1, pbind, 6, true) ) {
+
+		 mysql_stmt_close((MYSQL_STMT *)stmt);
+		 q_executed++;
+	}
+
+	if ( stmt_execute((void**)&stmt, sql2, NULL, 0, true) ) {
+
+		 mysql_stmt_close((MYSQL_STMT *)stmt);
+		 q_executed++;
+	}
+
+	if ( q_executed == 2
+		 && stmt_execute((void**)&stmt, sql3, NULL, 0, true) ) {
 
 		mysql_stmt_store_result(stmt);
 
@@ -1107,9 +1151,6 @@ bool database::get_device_firmware_update_url(int DeviceID, TSD_FirmwareUpdate_U
 			unsigned long path_size;
 			my_bool       path_is_null;
 
-			unsigned long signature_size;
-			my_bool       signature_is_null;
-
 			rbind[0].buffer_type= MYSQL_TYPE_TINY;
 			rbind[0].buffer= (char *)&url->url.available_protocols;
 
@@ -1119,17 +1160,15 @@ bool database::get_device_firmware_update_url(int DeviceID, TSD_FirmwareUpdate_U
 			rbind[1].buffer_length = SUPLA_URL_HOST_MAXSIZE;
 			rbind[1].length = &host_size;
 
-			rbind[2].buffer_type= MYSQL_TYPE_STRING;
-			rbind[2].buffer= url->url.path;
-			rbind[2].is_null= &path_is_null;
-			rbind[2].buffer_length = SUPLA_URL_PATH_MAXSIZE;
-			rbind[2].length = &path_size;
+			rbind[2].buffer_type= MYSQL_TYPE_LONG;
+			rbind[2].buffer= (char *)&url->url.port;
 
-			rbind[3].buffer_type= MYSQL_TYPE_BLOB;
-			rbind[3].buffer= url->signature;
-			rbind[3].is_null= &signature_is_null;
-			rbind[3].buffer_length = SUPLA_FIRMWARE_SIGNATURE_SIZE;
-			rbind[3].length = &signature_size;
+			rbind[3].buffer_type= MYSQL_TYPE_STRING;
+			rbind[3].buffer= url->url.path;
+			rbind[3].is_null= &path_is_null;
+			rbind[3].buffer_length = SUPLA_URL_PATH_MAXSIZE;
+			rbind[3].length = &path_size;
+
 
 			if ( mysql_stmt_bind_result(stmt, rbind) ) {
 				supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
@@ -1141,9 +1180,6 @@ bool database::get_device_firmware_update_url(int DeviceID, TSD_FirmwareUpdate_U
 
 				if ( path_is_null || path_size == 0 || path_size >= SUPLA_URL_PATH_MAXSIZE )
 					url->url.path[0] = 0;
-
-				if ( signature_is_null || signature_size != SUPLA_FIRMWARE_SIGNATURE_SIZE )
-					memset(url->signature, 0, SUPLA_FIRMWARE_SIGNATURE_SIZE);
 
 
 				if ( url->url.available_protocols > 0

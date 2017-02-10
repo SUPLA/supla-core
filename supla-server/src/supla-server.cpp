@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
 	//INIT BLOCK
 	supla_log(LOG_DEBUG, "Version 1.5 [Protocol v%i]", SUPLA_PROTO_VERSION);
 
+
 	if ( svrcfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;
 
