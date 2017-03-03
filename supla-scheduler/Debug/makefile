@@ -44,7 +44,7 @@ all: supla-scheduler
 supla-scheduler: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++  -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/usr/include/mysql -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
