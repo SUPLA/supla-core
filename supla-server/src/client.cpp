@@ -20,7 +20,7 @@
 #include "client.h"
 #include "safearray.h"
 #include "user.h"
-#include "db.h"
+#include "database.h"
 #include "srpc.h"
 #include "lck.h"
 #include "log.h"

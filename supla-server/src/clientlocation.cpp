@@ -20,7 +20,7 @@
 #include "clientlocation.h"
 #include "lck.h"
 #include "safearray.h"
-#include "db.h"
+#include "database.h"
 #include "srpc.h"
 #include "log.h"
 

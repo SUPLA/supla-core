@@ -19,7 +19,7 @@
 
 #include "devicechannel.h"
 #include "safearray.h"
-#include "db.h"
+#include "database.h"
 #include "log.h"
 #include "srpc.h"
 

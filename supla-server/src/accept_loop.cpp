@@ -26,7 +26,7 @@
 #include "serverconnection.h"
 #include "device.h"
 #include "client.h"
-#include "db.h"
+#include "database.h"
 #include "ipcctrl.h"
 
 

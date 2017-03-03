@@ -22,7 +22,7 @@
 #include "client.h"
 #include "user.h"
 #include "safearray.h"
-#include "db.h"
+#include "database.h"
 #include "log.h"
 #include "proto.h"
 #include "srpc.h"

@@ -23,7 +23,7 @@
 extern "C" {
 #endif
 
-#define SERVER_VERSION "1.0"
+#define SERVER_VERSION "1.5"
 
 #define CFG_UID           0
 #define CFG_GID           1

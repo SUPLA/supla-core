@@ -25,7 +25,7 @@
 #include "sthread.h"
 #include "log.h"
 #include "user.h"
-#include "db.h"
+#include "database.h"
 
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";

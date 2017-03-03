@@ -17,7 +17,7 @@
 #ifndef DATALOGGER_H_
 #define DATALOGGER_H_
 
-#include "db.h"
+#include "database.h"
 
 #define TEMPLOG_INTERVAL 600
 //#define TEMPLOG_INTERVAL 6

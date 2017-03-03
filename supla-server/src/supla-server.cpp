@@ -29,7 +29,7 @@
 #include "proto.h"
 #include "sthread.h"
 #include "accept_loop.h"
-#include "db.h"
+#include "database.h"
 #include "user.h"
 #include "datalogger.h"
 
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 	void *datalogger_loop_t = NULL;
 
 	//INIT BLOCK
-	supla_log(LOG_DEBUG, "Version 1.5 [Protocol v%i]", SUPLA_PROTO_VERSION);
+	supla_log(LOG_DEBUG, "Version %s [Protocol v%i]", SERVER_VERSION, SUPLA_PROTO_VERSION);
 
 
 	if ( svrcfg_init(argc, argv) == 0 )

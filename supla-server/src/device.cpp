@@ -20,7 +20,7 @@
 #include "device.h"
 #include "safearray.h"
 #include "unistd.h"
-#include "db.h"
+#include "database.h"
 #include "srpc.h"
 #include "log.h"
 #include "user.h"
