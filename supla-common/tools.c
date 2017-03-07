@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <pthread.h>
+#include <time.h>
+
 #include "tools.h"
 #include "log.h"
 #include "eh.h"
@@ -291,4 +293,12 @@ char st_read_guid_from_file(char *file, char *GUID, char create) {
     }
 
 	return result;
+}
+
+time_t st_get_utc_time(void) {
+
+	time_t now = time(0);
+	struct tm* now_tm = gmtime(&now);
+	return mktime(now_tm);
+
 }

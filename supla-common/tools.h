@@ -43,6 +43,8 @@ char *st_str2hex(char *buffer, const char *str);
 
 char st_read_guid_from_file(char *file, char *GUID, char create);
 
+time_t st_get_utc_time(void);
+
 #ifdef __cplusplus
 }
 #endif
