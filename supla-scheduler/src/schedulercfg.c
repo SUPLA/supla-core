@@ -34,7 +34,7 @@ unsigned char schedulercfg_init(int argc, char* argv[]) {
 	scfg_add_str_param(s_mysql, "password", NULL);
 
 	char *s_scheduler = "SCHEDULER";
-	scfg_add_int_param(s_scheduler, "max_workers", 10);
+	scfg_add_int_param(s_scheduler, "max_workers", 30);
 
 	result =  scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
 	scfg_names_free();
