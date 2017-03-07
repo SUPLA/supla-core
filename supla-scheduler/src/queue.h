@@ -21,8 +21,9 @@
 
 class queue  {
 private:
-	void *workers_arr;
+	void *workers_thread_arr;
 	int max_workers;
+	s_exec_t *s_exec;
 protected:
 	database *db;
 public:

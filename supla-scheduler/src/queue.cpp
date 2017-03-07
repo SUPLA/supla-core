@@ -17,6 +17,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "queue.h"
 #include "sthread.h"
@@ -24,19 +25,42 @@
 #include "log.h"
 #include "eh.h"
 #include "schedulercfg.h"
+#include "worker.h"
 
 char queue_loop_worker_thread_twt(void *worker_sthread) {
 	sthread_twf(worker_sthread);
 	return 1;
 }
 
+char queue_loop_worker_thread_cnd(void *worker_sthread) {
+   if ( sthread_isfinished(worker_sthread) == 1 ) {
+
+	   sthread_free(worker_sthread);
+	   return 1;
+   }
+
+   return 0;
+}
+
+void queue_loop_worker_execute(void *worker, void *sthread) {
+
+	database::thread_init();
+	((s_worker *)worker)->execute(sthread);
+
+}
+
+void queue_loop_worker_finish(void *worker, void *sthread) {
+
+	delete (s_worker *)worker;
+	database::thread_end();
+}
+
 queue::queue() {
 
 	max_workers = scfg_int(CFG_MAX_WORKERS);
+	s_exec = NULL;
 
-	supla_log(LOG_DEBUG, "Maximum workers: %i", max_workers);
-
-	workers_arr = safe_array_init();
+	workers_thread_arr = safe_array_init();
 	db = new database();
 
 }
@@ -45,12 +69,49 @@ queue::~queue() {
 
 	delete db;
 
-	safe_array_clean(workers_arr, queue_loop_worker_thread_twt);
-	safe_array_free(workers_arr);
+	safe_array_clean(workers_thread_arr, queue_loop_worker_thread_twt);
+	safe_array_free(workers_thread_arr);
+
+	if ( s_exec != NULL ) {
+		free(s_exec);
+		s_exec = NULL;
+	}
 }
 
 void queue::load(void) {
 
+	safe_array_clean(workers_thread_arr, queue_loop_worker_thread_cnd);
+
+	int _max_workers = max_workers - safe_array_count(workers_thread_arr);
+
+	if ( _max_workers <= 0 )
+		return;
+
+	if ( s_exec != NULL ) {
+		free(s_exec);
+		s_exec = NULL;
+	}
+
+	db->connect();
+	int count = db->get_s_executions(&s_exec, 5, _max_workers);
+
+	supla_log(LOG_DEBUG, "Count: %i/%i", count, _max_workers);
+
+	for(int a=0;a<count;a++) {
+
+		Tsthread_params stp;
+
+		stp.execute = queue_loop_worker_execute;
+		stp.finish = queue_loop_worker_finish;
+		stp.user_data = new s_worker(&s_exec[a]);
+		stp.free_on_finish = 0;
+		stp.initialize = NULL;
+
+		safe_array_add(workers_thread_arr, sthread_run(&stp));
+
+	}
+
+	db->disconnect();
 
 }
 
@@ -60,11 +121,10 @@ void queue_loop(void *ssd, void *q_sthread) {
 	database::thread_init();
 	queue *q = new queue();
 
-
 	while(sthread_isterminated(q_sthread) == 0) {
 
 		q->load();
-		eh_wait(eh, 1000000);
+		eh_wait(eh, 5000000);
 	}
 
 	delete q;
