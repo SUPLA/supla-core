@@ -46,11 +46,10 @@ int main(int argc, char* argv[]) {
 	void *datalogger_loop_t = NULL;
 
 	//INIT BLOCK
-	supla_log(LOG_DEBUG, "Version %s [Protocol v%i]", SERVER_VERSION, SUPLA_PROTO_VERSION);
-
-
 	if ( svrcfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;
+
+	supla_log(LOG_DEBUG, "Version %s [Protocol v%i]", SERVER_VERSION, SUPLA_PROTO_VERSION);
 
 	if ( run_as_daemon
 		 && 0 == st_try_fork() ) {
