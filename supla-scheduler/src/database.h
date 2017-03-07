@@ -19,6 +19,20 @@
 
 #include "db.h"
 
+typedef struct {
+
+	int id;
+	int schedule_id;
+	int user_id;
+	int channel_id;
+	int action;
+	int action_param;
+	int planned_timestamp;
+	int retry_timestamp;
+	int retry_count;
+
+}s_exec_t;
+
 class database : public dbcommon {
 private:
 
@@ -32,6 +46,9 @@ private:
 public:
 
 
+	int get_s_executions(s_exec_t **s_exec, int time_margin_sec, int limit);
+	bool set_fetched(int id);
+	void set_unfetched(int id);
 };
 
 #endif /* DATABASE_H_ */
