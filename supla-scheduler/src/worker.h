@@ -17,8 +17,20 @@
 #ifndef WORKER_H_
 #define WORKER_H_
 
+#include "database.h"
 
-void _worker(void *ssd, void *sthread);
+
+class s_worker {
+private:
+	s_exec_t s_exec;
+	database *db;
+public:
+
+	s_worker(s_exec_t *s_exec);
+	~s_worker();
+	void execute(void *sthread);
+};
+
 
 
 #endif /* QUEUE_H_ */
