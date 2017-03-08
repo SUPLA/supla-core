@@ -78,6 +78,30 @@ queue::~queue() {
 	}
 }
 
+void queue::set_overdue_result(void) {
+
+	database *_db = new database();
+	if ( _db->connect() ) {
+
+		_db->set_overdue_result(OVERDUE_TIME);
+
+	};
+	delete _db;
+
+}
+
+void queue::set_zombie_result(void) {
+
+	database *_db = new database();
+	if ( _db->connect() ) {
+
+		_db->set_zombie_result(ZOMBIE_TIME);
+
+	};
+	delete _db;
+
+}
+
 void queue::load(void) {
 
 	safe_array_clean(workers_thread_arr, queue_loop_worker_thread_cnd);
@@ -92,10 +116,13 @@ void queue::load(void) {
 		s_exec = NULL;
 	}
 
-	db->connect();
-	int count = db->get_s_executions(&s_exec, 5, _max_workers);
+	if ( !db->connect() )
+		return;
 
-	supla_log(LOG_DEBUG, "Count: %i/%i", count, _max_workers);
+
+	int count = db->get_s_executions(&s_exec, _max_workers);
+
+	//supla_log(LOG_DEBUG, "Count: %i/%i", count, _max_workers);
 
 	for(int a=0;a<count;a++) {
 
@@ -121,10 +148,12 @@ void queue_loop(void *ssd, void *q_sthread) {
 	database::thread_init();
 	queue *q = new queue();
 
-	while(sthread_isterminated(q_sthread) == 0) {
+	q->set_zombie_result();
+	q->set_overdue_result();
 
+	while(sthread_isterminated(q_sthread) == 0) {
 		q->load();
-		eh_wait(eh, 5000000);
+		eh_wait(eh, 1000000);
 	}
 
 	delete q;

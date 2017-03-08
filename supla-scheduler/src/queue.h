@@ -19,6 +19,7 @@
 
 #include "database.h"
 
+
 class queue  {
 private:
 	void *workers_thread_arr;
@@ -32,6 +33,8 @@ public:
     ~queue();
 
     void load(void);
+    void set_overdue_result(void);
+    void set_zombie_result(void);
 
 };
 
