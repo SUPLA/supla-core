@@ -18,20 +18,8 @@
 #define DATABASE_H_
 
 #include "db.h"
+#include "supla-scheduler.h"
 
-typedef struct {
-
-	int id;
-	int schedule_id;
-	int user_id;
-	int channel_id;
-	int action;
-	int action_param;
-	int planned_timestamp;
-	int retry_timestamp;
-	int retry_count;
-
-}s_exec_t;
 
 class database : public dbcommon {
 private:
@@ -45,8 +33,10 @@ private:
 
 public:
 
+	void set_overdue_result(int overdue_time);
+	void set_zombie_result(int zombie_time);
 
-	int get_s_executions(s_exec_t **s_exec, int time_margin_sec, int limit);
+	int get_s_executions(s_exec_t **s_exec, int limit);
 	bool set_fetched(int id);
 	void set_unfetched(int id);
 };

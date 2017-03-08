@@ -45,24 +45,60 @@ int database::cfg_get_port(void) {
 	return scfg_int(CFG_MYSQL_PORT);
 }
 
+void database::set_overdue_result(int overdue_time) {
 
-int database::get_s_executions(s_exec_t **s_exec, int time_margin_sec, int limit) {
+	MYSQL_STMT *stmt;
+	MYSQL_BIND pbind[2];
+	memset(pbind, 0, sizeof(pbind));
+
+	int result = ACTION_EXECUTION_RESULT_OVERDUE;
+
+	pbind[0].buffer_type= MYSQL_TYPE_LONG;
+	pbind[0].buffer= (char *)&result;
+
+	pbind[1].buffer_type= MYSQL_TYPE_LONG;
+	pbind[1].buffer= (char *)&overdue_time;
+
+	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE fetched_timestamp IS NULL AND planned_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()", pbind, 2, true) ) {
+		mysql_stmt_close(stmt);
+	}
+
+}
+
+void database::set_zombie_result(int zombie_time) {
+
+	MYSQL_STMT *stmt;
+	MYSQL_BIND pbind[2];
+	memset(pbind, 0, sizeof(pbind));
+
+	int result = ACTION_EXECUTION_RESULT_ZOMBIE;
+
+	pbind[0].buffer_type= MYSQL_TYPE_LONG;
+	pbind[0].buffer= (char *)&result;
+
+	pbind[1].buffer_type= MYSQL_TYPE_LONG;
+	pbind[1].buffer= (char *)&zombie_time;
+
+	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE result IS NULL AND fetched_timestamp IS NOT NULL AND fetched_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()", pbind, 2, true) ) {
+		mysql_stmt_close(stmt);
+	}
+
+}
+
+int database::get_s_executions(s_exec_t **s_exec, int limit) {
 
 	MYSQL_STMT *stmt;
 
-	MYSQL_BIND pbind[2];
+	MYSQL_BIND pbind[1];
 	memset(pbind, 0, sizeof(pbind));
 
 	int result = 0;
 	*s_exec = NULL;
 
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&time_margin_sec;
+	pbind[0].buffer= (char *)&limit;
 
-	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&limit;
-
-	if ( stmt_execute((void**)&stmt, "SELECT e.`id`, e.`schedule_id`, s.`user_id`, s.`channel_id`, s.`action`, s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s WHERE e.`schedule_id` = s.`id` AND `fetched_timestamp` IS NULL AND ( (retry_timestamp IS NULL AND planned_timestamp - INTERVAL ? SECOND <= UTC_TIMESTAMP()) OR (retry_timestamp IS NOT NULL AND retry_timestamp <= UTC_TIMESTAMP())) LIMIT ?", pbind, 2, true) ) {
+	if ( stmt_execute((void**)&stmt, "SELECT e.`id`, e.`schedule_id`, s.`user_id`, s.`channel_id`, s.`action`, s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s WHERE e.`schedule_id` = s.`id` AND `fetched_timestamp` IS NULL AND ( (retry_timestamp IS NULL AND planned_timestamp <= UTC_TIMESTAMP()) OR (retry_timestamp IS NOT NULL AND retry_timestamp <= UTC_TIMESTAMP())) LIMIT ?", pbind, 1, true) ) {
 
 		my_bool is_null[3];
 
