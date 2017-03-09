@@ -18,6 +18,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/un.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -25,6 +27,8 @@
 
 #include "log.h"
 #include "tools.h"
+#include "ipcsocket.h"
+
 
 typedef struct {
 
@@ -32,6 +36,41 @@ typedef struct {
 	struct sockaddr_un saun, fsaun;
 
 }TSuplaIPC_socket;
+
+char *ipc_sauth_key = NULL;
+int ipc_shmid = -1;
+
+void ipcsauth_create_key(const char *address) {
+
+	int  a;
+	key_t key;
+	key = ftok(address, 'S');
+
+	ipc_sauth_key = NULL;
+
+	if((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, IPC_CREAT|IPC_EXCL|0600)) == -1)
+		return;
+
+	if ( (ipc_sauth_key = (char *)shmat(ipc_shmid, 0, 0)) == (char*)-1 )
+		ipc_sauth_key = NULL;
+
+	if ( ipc_sauth_key != NULL ) {
+
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		srand(tv.tv_usec);
+
+		for(a=0;a<IPC_SAUTH_KEY_SIZE;a++) {
+			ipc_sauth_key[a] = (unsigned char)(rand());
+
+			if ( ipc_sauth_key[a] == 0 || ipc_sauth_key[a] == '\n' )
+				ipc_sauth_key[a] = 1;
+		}
+
+	}
+
+
+}
 
 void *ipcsocket_init(const char *address) {
 
@@ -81,6 +120,8 @@ void *ipcsocket_init(const char *address) {
 	}
 
     ipc->sfd = sfd;
+
+    ipcsauth_create_key(address);
 
 	return ipc;
 }

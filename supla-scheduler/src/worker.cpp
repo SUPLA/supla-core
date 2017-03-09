@@ -23,6 +23,7 @@
 #include "sthread.h"
 #include "log.h"
 #include "tools.h"
+#include "ipcclient.h"
 
 
 s_worker::s_worker(s_exec_t *s_exec) {
@@ -52,6 +53,12 @@ void s_worker::execute(void *sthread) {
 	if ( sthread_isterminated(sthread) )
 		db->set_unfetched(s_exec.id);
 
-	supla_log(LOG_DEBUG, "WORK!, %i", now_utc-s_exec.planned_timestamp);
+
+	ipc_client *ipcc = new ipc_client();
+
+	supla_log(LOG_DEBUG, "IPC AUTH: %i", ipcc->auth());
+
+	delete ipcc;
+	supla_log(LOG_DEBUG, "WORK!, %i, %i", now_utc-s_exec.planned_timestamp, now_utc-s_exec.retry_timestamp);
 
 }

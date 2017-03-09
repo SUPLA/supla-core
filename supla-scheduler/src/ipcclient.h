@@ -14,25 +14,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef IPCCLIENT_H_
+#define IPCCLIENT_H_
 
-#ifndef IPCSOCKET_H_
-#define IPCSOCKET_H_
+#include "supla-scheduler.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#define IPC_BUFFER_SIZE 256
 
-#define IPC_SAUTH_KEY_SIZE 16
+class ipc_client  {
+private:
+	int sfd;
+	char buffer[IPC_BUFFER_SIZE];
+	int read(void);
 
-extern char *ipc_sauth_key;
+	char *ipc_sauth_key;
 
-void* ipcsocket_init(const char *address);
-void ipcsocket_close(void *ipc);
-void ipcsocket_free(void *ipc);
-int ipcsocket_accept(void *ipc);
+public:
 
-#ifdef __cplusplus
-}
-#endif
+	ipc_client();
+	~ipc_client();
+	bool ipc_connect(void);
+	bool ipc_disconnect(void);
+	bool auth(void);
 
-#endif /* IPCSOCKET_H_ */
+};
+
+#endif /* IPCCLIENT_H_ */

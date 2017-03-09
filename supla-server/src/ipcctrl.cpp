@@ -21,6 +21,7 @@
 #include <sys/socket.h>
 #include <string.h>
 
+#include "ipcsocket.h"
 #include "ipcctrl.h"
 #include "sthread.h"
 #include "log.h"
@@ -37,6 +38,7 @@ const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 
 const char cmd_oauth[] = "OAUTH:";
+const char cmd_sauth[] = "SAUTH:"; // SUPER USER AUTH
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
 
@@ -199,6 +201,22 @@ void svr_ipcctrl::oauth(const char *cmd) {
 
 	send_result("UNAUTHORIZED");
 
+}
+
+void svr_ipcctrl::sauth(const char *cmd) {
+
+	set_unauthorized();
+
+	if ( ipc_sauth_key != NULL
+		 && memcmp(&buffer[strlen(cmd)], ipc_sauth_key, IPC_SAUTH_KEY_SIZE) == 0 ) {
+
+		auth_level = IPC_AUTH_LEVEL_SUPERUSER;
+
+		send_result("AUTH_OK");
+		return;
+	}
+
+	send_result("UNAUTHORIZED");
 }
 
 bool svr_ipcctrl::is_authorized(int UserID, bool _send_result) {
@@ -391,6 +409,10 @@ void svr_ipcctrl::execute(void *sthread) {
 				} else if ( match_command(cmd_oauth, len) ) {
 
 					oauth(cmd_oauth);
+
+				} else if ( match_command(cmd_sauth, len) ) {
+
+					sauth(cmd_sauth);
 
 				} else if ( match_command(cmd_set_char_value, len) ) {
 

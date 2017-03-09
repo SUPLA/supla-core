@@ -27,7 +27,6 @@
 
 #include "eh.h"
 
-
 class svr_ipcctrl {
 private:
 	int sfd;
@@ -40,6 +39,7 @@ private:
 
 	void set_unauthorized(void);
 	void oauth(const char *cmd);
+	void sauth(const char *cmd);
 	bool is_authorized(int UserID, bool _send_result);
 
 	bool match_command(const char *cmd, int len);
