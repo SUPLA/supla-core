@@ -35,6 +35,8 @@
 const char socket_path[] = "/tmp/supla-server-ctrl.sock";
 const char hello[] = "SUPLA SERVER CTRL\n";
 
+const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
+
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE";
 const char cmd_get_char_value[] = "GET-CHAR-VALUE";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE";
@@ -44,6 +46,8 @@ const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
 
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
+const char ipc_result_connected[] = "CONNECTED:";
+const char ipc_result_disconnected[] = "DISCONNECTED:";
 
 ipc_client::ipc_client() {
 
@@ -129,6 +133,7 @@ bool ipc_client::ipc_connect(void) {
 	return false;
 }
 
+
 bool ipc_client::ipc_disconnect(void) {
 
 	if ( sfd == -1 )
@@ -174,6 +179,28 @@ bool ipc_client::get_value(const char *cmd, int user_id, int device_id, int chan
 
 	return false;
 
+}
+
+char ipc_client::is_connected(int user_id, int device_id) {
+
+	if ( ipc_connect() ) {
+
+
+		snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_is_iodev_connected, user_id, device_id);
+		send(sfd, buffer, strlen(buffer), 0);
+
+	    if ( read() ) {
+
+	    	if ( memcmp(buffer, ipc_result_connected, strlen(ipc_result_connected)) == 0 )
+		    	return IPC_RESULT_CONNECTED;
+
+	    	if ( memcmp(buffer, ipc_result_disconnected, strlen(ipc_result_disconnected)) == 0 )
+		    	return IPC_RESULT_DISCONNECTED;
+	    }
+	}
+
+
+	return IPC_RESULT_SERVER_UNREACHABLE;
 }
 
 bool ipc_client::get_double_value(int user_id, int device_id, int channel_id, double *value) {

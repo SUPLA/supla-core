@@ -21,6 +21,11 @@
 
 #define IPC_BUFFER_SIZE 256
 
+#define IPC_RESULT_SERVER_UNREACHABLE      -1
+#define IPC_RESULT_DISCONNECTED             0
+#define IPC_RESULT_CONNECTED                1
+
+
 class ipc_client  {
 private:
 	int sfd;
@@ -38,6 +43,9 @@ public:
 	bool ipc_connect(void);
 	bool ipc_disconnect(void);
 	bool auth(void);
+
+	char is_connected(int user_id, int device_id);
+
 	bool get_double_value(int user_id, int device_id, int channel_id, double *value);
 	bool get_char_value(int user_id, int device_id, int channel_id, char *value);
 	bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color, char *color_brightness, char *brightness);
