@@ -25,6 +25,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ipcclient.h"
 #include "log.h"
@@ -33,6 +34,16 @@
 
 const char socket_path[] = "/tmp/supla-server-ctrl.sock";
 const char hello[] = "SUPLA SERVER CTRL\n";
+
+const char cmd_get_double_value[] = "GET-DOUBLE-VALUE";
+const char cmd_get_char_value[] = "GET-CHAR-VALUE";
+const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE";
+
+const char cmd_set_char_value[] = "SET-CHAR-VALUE";
+const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
+
+const char ipc_result_value[] = "VALUE:";
+const char ipc_result_ok[] = "OK:";
 
 ipc_client::ipc_client() {
 
@@ -82,6 +93,7 @@ int ipc_client::read(void) {
     		len = IPC_BUFFER_SIZE;
 
     	buffer[len] = 0;
+    	//supla_log(LOG_DEBUG, "%s", buffer);
     	return len;
     }
 
@@ -111,8 +123,6 @@ bool ipc_client::ipc_connect(void) {
 
     if ( read() && strcmp(buffer, hello) == 0 )
     	return true;
-
-    supla_log(LOG_DEBUG, "CONNECTED");
 
     ipc_disconnect();
 
@@ -146,4 +156,107 @@ bool ipc_client::auth(void) {
 		return true;
 
 	return false;
+}
+
+bool ipc_client::get_value(const char *cmd, int user_id, int device_id, int channel_id) {
+
+	if ( !ipc_connect() )
+		return false;
+
+	snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd, user_id, device_id, channel_id);
+	send(sfd, buffer, strlen(buffer), 0);
+
+    if ( read()
+    	 && memcmp(buffer, ipc_result_value, strlen(ipc_result_value)) == 0 ) {
+
+    	return true;
+    }
+
+	return false;
+
+}
+
+bool ipc_client::get_double_value(int user_id, int device_id, int channel_id, double *value) {
+
+	if ( value == NULL
+		 || !get_value(cmd_get_double_value, user_id, device_id, channel_id)
+		 || sscanf (&buffer[strlen(ipc_result_value)], "%lf", value) != 1  )
+		return false;
+
+
+	return true;
+}
+
+bool ipc_client::get_char_value(int user_id, int device_id, int channel_id, char *value) {
+
+	int x = 0;
+
+	if ( value == NULL
+		 || !get_value(cmd_get_char_value, user_id, device_id, channel_id)
+		 || sscanf (&buffer[strlen(ipc_result_value)], "%i", &x) != 1  )
+		return false;
+
+	if ( (unsigned int)x >= 255 )
+		return false;
+
+	*value = x;
+
+	return true;
+}
+
+bool ipc_client::get_rgbw_value(int user_id, int device_id, int channel_id, int *color, char *color_brightness, char *brightness) {
+
+	int _color_brightness = 0;
+	int _brightness = 0;
+
+	if ( color == NULL
+		 || color_brightness == NULL
+		 || brightness == NULL
+		 || !get_value(cmd_get_rgbw_value, user_id, device_id, channel_id)
+		 || sscanf (&buffer[strlen(ipc_result_value)], "%i,%i,%i", color, &_color_brightness, &_brightness) != 3  )
+		return false;
+
+	if ( _color_brightness < 0
+		 || _color_brightness > 100
+		 || _brightness < 0
+		 || _brightness > 100 )
+		return false;
+
+	*color_brightness = _color_brightness;
+	*brightness = _brightness;
+
+	return true;
+}
+
+bool ipc_client::check_set_result(void) {
+
+    if ( read()
+    	 && memcmp(buffer, ipc_result_ok, strlen(ipc_result_ok)) == 0 ) {
+
+    	return true;
+    }
+
+    return false;
+}
+
+bool ipc_client::set_char_value(int user_id, int device_id, int channel_id, char value) {
+
+	if ( !auth() )
+		return false;
+
+	snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_char_value, user_id, device_id, channel_id, value);
+	send(sfd, buffer, strlen(buffer), 0);
+
+	return check_set_result();
+}
+
+bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id, int color, char color_brightness, char brightness) {
+
+	if ( !auth() )
+		return false;
+
+	snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n", cmd_set_rgbw_value, user_id, device_id, channel_id, color, color_brightness, brightness);
+	send(sfd, buffer, strlen(buffer), 0);
+
+	return check_set_result();
 }
