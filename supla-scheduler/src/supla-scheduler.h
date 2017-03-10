@@ -57,6 +57,9 @@ typedef struct {
 #define GATEOPENCLOSE_RETRY_LIMIT  4
 #define GATEOPENCLOSE_RETRY_TIME   60
 
+#define RS_RETRY_LIMIT  2
+#define RS_RETRY_TIME   30
+
 #define ACTION_OPEN                   10
 #define ACTION_CLOSE                  20
 #define ACTION_SHUT                   30

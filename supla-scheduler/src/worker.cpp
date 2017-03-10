@@ -156,6 +156,32 @@ void s_worker::action_gate_open_close(char _close) {
 
 }
 
+void s_worker::action_shut_reveal(char shut) {
+
+	int func[] = { SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER };
+
+	if ( !check_function_allowed(func, sizeof(func)/sizeof(int)) )
+		return;
+
+	bool success = false;
+	char sensor_value = opening_sensor_value();
+
+	if ( sensor_value != shut
+		 || sensor_value == -1 ) {
+
+		bool _s = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, shut == 1 ? 3 : 4);
+
+		if ( sensor_value == -1 )
+			success = _s;
+
+	} else if ( sensor_value == shut ) {
+		success = true;
+	}
+
+	set_result(success, RS_RETRY_LIMIT, RS_RETRY_TIME, false);
+
+}
+
 void s_worker::execute(void *sthread) {
 
 	if ( !db->connect()
@@ -174,8 +200,10 @@ void s_worker::execute(void *sthread) {
 		action_gate_open_close(0);
 		break;
 	case ACTION_SHUT:
+		action_shut_reveal(1);
 		break;
 	case ACTION_REVEAL:
+		action_shut_reveal(0);
 		break;
 	case ACTION_TURN_ON:
 		action_turn_on_off(1);

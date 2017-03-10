@@ -32,6 +32,7 @@ private:
 
 	void action_turn_on_off(char on);
 	void action_gate_open_close(char _close);
+	void action_shut_reveal(char shut);
 
 public:
 
