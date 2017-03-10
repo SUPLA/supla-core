@@ -26,6 +26,7 @@
 #include "eh.h"
 #include "schedulercfg.h"
 #include "worker.h"
+#include "ipcclient.h"
 
 char queue_loop_worker_thread_twt(void *worker_sthread) {
 	sthread_twf(worker_sthread);
@@ -148,10 +149,11 @@ void queue_loop(void *ssd, void *q_sthread) {
 	database::thread_init();
 	queue *q = new queue();
 
-	q->set_zombie_result();
-	q->set_overdue_result();
+	//q->set_zombie_result();
+	//q->set_overdue_result();
 
 	while(sthread_isterminated(q_sthread) == 0) {
+
 		q->load();
 		eh_wait(eh, 1000000);
 	}

@@ -25,6 +25,7 @@
 #include "database.h"
 #include "sthread.h"
 #include "queue.h"
+#include "ipcclient.h"
 
 int main(int argc, char* argv[]) {
 
@@ -54,7 +55,6 @@ int main(int argc, char* argv[]) {
 	st_setpidfile(pidfile_path);
 	st_mainloop_init();
 	st_hook_signals();
-
 
 	// INIT QUEUE LOOP
 	queue_loop_t = sthread_simple_run(queue_loop, NULL, 0);

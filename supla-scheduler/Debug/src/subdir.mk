@@ -6,6 +6,7 @@
 CPP_SRCS += \
 ../src/database.cpp \
 ../src/db.cpp \
+../src/ipcclient.cpp \
 ../src/queue.cpp \
 ../src/supla-scheduler.cpp \
 ../src/worker.cpp 
@@ -27,6 +28,7 @@ OBJS += \
 ./src/db.o \
 ./src/eh.o \
 ./src/ini.o \
+./src/ipcclient.o \
 ./src/lck.o \
 ./src/log.o \
 ./src/queue.o \
@@ -51,6 +53,7 @@ C_DEPS += \
 CPP_DEPS += \
 ./src/database.d \
 ./src/db.d \
+./src/ipcclient.d \
 ./src/queue.d \
 ./src/supla-scheduler.d \
 ./src/worker.d 

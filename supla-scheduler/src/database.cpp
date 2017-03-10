@@ -98,14 +98,14 @@ int database::get_s_executions(s_exec_t **s_exec, int limit) {
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&limit;
 
-	if ( stmt_execute((void**)&stmt, "SELECT e.`id`, e.`schedule_id`, s.`user_id`, s.`channel_id`, s.`action`, s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s WHERE e.`schedule_id` = s.`id` AND `fetched_timestamp` IS NULL AND ( (retry_timestamp IS NULL AND planned_timestamp <= UTC_TIMESTAMP()) OR (retry_timestamp IS NOT NULL AND retry_timestamp <= UTC_TIMESTAMP())) LIMIT ?", pbind, 1, true) ) {
+	if ( stmt_execute((void**)&stmt, "SELECT e.`id`, e.`schedule_id`, s.`user_id`, c.`iodevice_id`, s.`channel_id`, s.`action`, s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s, `supla_dev_channel` AS c WHERE e.`schedule_id` = s.`id` AND s.`channel_id` = c.`id` AND e.`result_timestamp` IS NULL AND e.`fetched_timestamp` IS NULL AND ( (e.`retry_timestamp` IS NULL AND e.`planned_timestamp` <= UTC_TIMESTAMP()) OR (e.`retry_timestamp` IS NOT NULL AND e.`retry_timestamp` <= UTC_TIMESTAMP())) LIMIT ?", pbind, 1, true) ) {
 
 		my_bool is_null[3];
 
-		MYSQL_BIND rbind[9];
+		MYSQL_BIND rbind[10];
 		memset(rbind, 0, sizeof(rbind));
 
-		int id, schedule_id, user_id, channel_id, action, planned_timestamp, retry_timestamp, retry_count;
+		int id, schedule_id, user_id, device_id, channel_id, action, planned_timestamp, retry_timestamp, retry_count;
 		unsigned long length;
 		char action_param[256];
 
@@ -120,27 +120,30 @@ int database::get_s_executions(s_exec_t **s_exec, int limit) {
 		rbind[2].buffer= (char *)&user_id;
 
 		rbind[3].buffer_type= MYSQL_TYPE_LONG;
-		rbind[3].buffer= (char *)&channel_id;
+		rbind[3].buffer= (char *)&device_id;
 
 		rbind[4].buffer_type= MYSQL_TYPE_LONG;
-		rbind[4].buffer= (char *)&action;
+		rbind[4].buffer= (char *)&channel_id;
 
-		rbind[5].buffer_type= MYSQL_TYPE_STRING;
-		rbind[5].buffer= action_param;
-		rbind[5].is_null= &is_null[0];
-		rbind[5].buffer_length = 256;
-		rbind[5].length = &length;
+		rbind[5].buffer_type= MYSQL_TYPE_LONG;
+		rbind[5].buffer= (char *)&action;
 
-		rbind[6].buffer_type= MYSQL_TYPE_LONG;
-		rbind[6].buffer= &planned_timestamp;
+		rbind[6].buffer_type= MYSQL_TYPE_STRING;
+		rbind[6].buffer= action_param;
+		rbind[6].is_null= &is_null[0];
+		rbind[6].buffer_length = 256;
+		rbind[6].length = &length;
 
 		rbind[7].buffer_type= MYSQL_TYPE_LONG;
-		rbind[7].buffer= &retry_timestamp;
-		rbind[7].is_null= &is_null[1];
+		rbind[7].buffer= &planned_timestamp;
 
 		rbind[8].buffer_type= MYSQL_TYPE_LONG;
-		rbind[8].buffer= &retry_count;
-		rbind[8].is_null= &is_null[2];
+		rbind[8].buffer= &retry_timestamp;
+		rbind[8].is_null= &is_null[1];
+
+		rbind[9].buffer_type= MYSQL_TYPE_LONG;
+		rbind[9].buffer= &retry_count;
+		rbind[9].is_null= &is_null[2];
 
 		if ( mysql_stmt_bind_result(stmt, rbind) ) {
 			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
@@ -159,6 +162,7 @@ int database::get_s_executions(s_exec_t **s_exec, int limit) {
 					(*s_exec)[result].id = id;
 					(*s_exec)[result].schedule_id = schedule_id;
 					(*s_exec)[result].user_id = user_id;
+					(*s_exec)[result].device_id = device_id;
 					(*s_exec)[result].channel_id = channel_id;
 					(*s_exec)[result].action = action;
 					(*s_exec)[result].planned_timestamp = planned_timestamp;
@@ -218,5 +222,52 @@ void database::set_unfetched(int id) {
 	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= NULL WHERE `id` = ?", pbind, 1, true) ) {
 		mysql_stmt_close(stmt);
 	}
+
+}
+
+bool database::set_retry(int id, int sec) {
+
+	bool result = false;
+	MYSQL_STMT *stmt;
+	MYSQL_BIND pbind[2];
+	memset(pbind, 0, sizeof(pbind));
+
+	pbind[0].buffer_type= MYSQL_TYPE_LONG;
+	pbind[0].buffer= (char *)&sec;
+
+	pbind[1].buffer_type= MYSQL_TYPE_LONG;
+	pbind[1].buffer= (char *)&id;
+
+
+	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= NULL, `retry_timestamp`= UTC_TIMESTAMP() + INTERVAL ? SECOND, `retry_count` = IFNULL(`retry_count`, 0)+1 WHERE `id` = ? AND `fetched_timestamp` IS NOT NULL", pbind, 2, true) ) {
+
+		result = mysql_stmt_affected_rows(stmt) == 1;
+		mysql_stmt_close(stmt);
+	}
+
+	return result;
+}
+
+bool database::set_result(int id, int result) {
+
+	bool success = false;
+	MYSQL_STMT *stmt;
+	MYSQL_BIND pbind[2];
+	memset(pbind, 0, sizeof(pbind));
+
+	pbind[0].buffer_type= MYSQL_TYPE_LONG;
+	pbind[0].buffer= (char *)&result;
+
+	pbind[1].buffer_type= MYSQL_TYPE_LONG;
+	pbind[1].buffer= (char *)&id;
+
+
+	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= NULL, `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE `id` = ? AND `fetched_timestamp` IS NOT NULL", pbind, 2, true) ) {
+
+		success = mysql_stmt_affected_rows(stmt) == 1;
+		mysql_stmt_close(stmt);
+	}
+
+	return success;
 
 }

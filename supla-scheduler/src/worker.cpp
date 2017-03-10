@@ -30,12 +30,57 @@ s_worker::s_worker(s_exec_t *s_exec) {
 
 	memcpy(&this->s_exec, s_exec, sizeof(s_exec_t));
 	db = new database();
-
+	ipcc = new ipc_client();
 }
 
 
 s_worker::~s_worker(void) {
 	delete db;
+	delete ipcc;
+}
+
+void s_worker::set_result(bool success, int retry_limit, int retry_time, bool no_sensor) {
+
+	if ( success ) {
+
+		//supla_log(LOG_DEBUG, "SUCCESS");
+		db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_SUCCESS);
+
+	} else if ( s_exec.retry_count < retry_limit ) {
+
+		//supla_log(LOG_DEBUG, "RETRY %i", s_exec.retry_count);
+		db->set_retry(s_exec.id, retry_time);
+
+	} else if ( no_sensor ) {
+
+		db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_NO_SENSOR);
+
+	} else {
+
+		switch(ipcc->is_connected(s_exec.user_id, s_exec.device_id)) {
+		case IPC_RESULT_CONNECTED:
+			db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_FAILURE);
+			//supla_log(LOG_DEBUG, "RESULT_FAILURE");
+			break;
+		case IPC_RESULT_DISCONNECTED:
+			db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_DEVICE_UNREACHABLE);
+			//supla_log(LOG_DEBUG, "DEVICE_UNREACHABLE");
+			break;
+		case IPC_RESULT_SERVER_UNREACHABLE:
+			db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE);
+			//supla_log(LOG_DEBUG, "SERVER_UNREACHABLE");
+			break;
+		}
+
+	}
+}
+
+void s_worker::action_turn_on_off(char on) {
+
+	supla_log(LOG_DEBUG, "ACTION ON/OFF channel:%i try:%i", s_exec.channel_id, s_exec.retry_count+1);
+
+	bool success = ipcc->set_char_value(s_exec.user_id, s_exec.device_id, s_exec.channel_id, on == 1 ? 1 : 0);
+	set_result(success, ONOFF_RETRY_LIMIT, ONOFF_RETRY_TIME, false);
 }
 
 void s_worker::execute(void *sthread) {
@@ -54,11 +99,28 @@ void s_worker::execute(void *sthread) {
 		db->set_unfetched(s_exec.id);
 
 
-	ipc_client *ipcc = new ipc_client();
+	switch(s_exec.action) {
+	case ACTION_OPEN:
+		break;
+	case ACTION_CLOSE:
+		break;
+	case ACTION_SHUT:
+		break;
+	case ACTION_REVEAL:
+		break;
+	case ACTION_TURN_ON:
+		action_turn_on_off(1);
+		break;
+	case ACTION_TURN_OFF:
+		action_turn_on_off(0);
+		break;
+	case ACTION_DIM:
+		break;
+	case ACTION_SET_RGB_COLOR:
+		break;
+	case ACTION_SET_RANDOM_RGB_COLOR:
+		break;
+	}
 
-	supla_log(LOG_DEBUG, "IPC AUTH: %i", ipcc->auth());
-
-	delete ipcc;
-	supla_log(LOG_DEBUG, "WORK!, %i, %i", now_utc-s_exec.planned_timestamp, now_utc-s_exec.retry_timestamp);
 
 }

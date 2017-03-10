@@ -18,12 +18,17 @@
 #define WORKER_H_
 
 #include "database.h"
-
+#include "ipcclient.h"
 
 class s_worker {
 private:
 	s_exec_t s_exec;
 	database *db;
+	ipc_client *ipcc;
+
+	void action_turn_on_off(char on);
+	void set_result(bool success, int retry_limit, int retry_time, bool no_sensor) ;
+
 public:
 
 	s_worker(s_exec_t *s_exec);

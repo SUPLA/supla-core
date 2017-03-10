@@ -22,6 +22,7 @@ typedef struct {
 	int id;
 	int schedule_id;
 	int user_id;
+	int device_id;
 	int channel_id;
 	int action;
 	int action_param;
@@ -34,11 +35,26 @@ typedef struct {
 #define OVERDUE_TIME   300 // 5 min since planned_time
 #define ZOMBIE_TIME    60  // 1 min since fetched_time
 
+#define ONOFF_RETRY_LIMIT  2
+#define ONOFF_RETRY_TIME   30
+
+#define ACTION_OPEN                   10
+#define ACTION_CLOSE                  20
+#define ACTION_SHUT                   30
+#define ACTION_REVEAL                 40
+#define ACTION_TURN_ON                50
+#define ACTION_TURN_OFF               60
+#define ACTION_DIM                    70
+#define ACTION_SET_RGB_COLOR          80
+#define ACTION_SET_RANDOM_RGB_COLOR   90
+
 #define ACTION_EXECUTION_RESULT_UNKNOWN              0
 #define ACTION_EXECUTION_RESULT_SUCCESS              1
 #define ACTION_EXECUTION_RESULT_DEVICE_UNREACHABLE   2
 #define ACTION_EXECUTION_RESULT_NO_SENSOR            3
 #define ACTION_EXECUTION_RESULT_OVERDUE              4
 #define ACTION_EXECUTION_RESULT_ZOMBIE               5
+#define ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE   6
+#define ACTION_EXECUTION_RESULT_FAILURE              7
 
 #endif /*SUPLA_SCHEDULER_H_*/
