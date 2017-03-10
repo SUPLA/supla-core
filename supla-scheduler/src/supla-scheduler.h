@@ -20,10 +20,26 @@
 typedef struct {
 
 	int id;
+	int type;
+	int func;
+	int param1;
+	int param2;
+	int param3;
+	int iodevice_id;
+
+}supla_channel;
+
+typedef struct {
+
+	int id;
 	int schedule_id;
 	int user_id;
-	int device_id;
+	int iodevice_id;
 	int channel_id;
+	int channel_func;
+	int channel_param1;
+	int channel_param2;
+	int channel_param3;
 	int action;
 	int action_param;
 	int planned_timestamp;
@@ -37,6 +53,9 @@ typedef struct {
 
 #define ONOFF_RETRY_LIMIT  2
 #define ONOFF_RETRY_TIME   30
+
+#define GATEOPENCLOSE_RETRY_LIMIT  4
+#define GATEOPENCLOSE_RETRY_TIME   60
 
 #define ACTION_OPEN                   10
 #define ACTION_CLOSE                  20
@@ -56,5 +75,6 @@ typedef struct {
 #define ACTION_EXECUTION_RESULT_ZOMBIE               5
 #define ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE   6
 #define ACTION_EXECUTION_RESULT_FAILURE              7
+#define ACTION_EXECUTION_RESULT_CANCELLED            8
 
 #endif /*SUPLA_SCHEDULER_H_*/

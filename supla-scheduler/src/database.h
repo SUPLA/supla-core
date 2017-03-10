@@ -33,14 +33,17 @@ private:
 
 public:
 
+	int get_s_executions(s_exec_t **s_exec, int limit);
+	bool get_channel(supla_channel *channel);
+
 	void set_overdue_result(int overdue_time);
 	void set_zombie_result(int zombie_time);
 	bool set_result(int id, int result);
 
-	int get_s_executions(s_exec_t **s_exec, int limit);
 	bool set_fetched(int id);
 	bool set_retry(int id, int sec);
 	void set_unfetched(int id);
+
 };
 
 #endif /* DATABASE_H_ */

@@ -53,11 +53,12 @@ void s_worker::set_result(bool success, int retry_limit, int retry_time, bool no
 
 	} else if ( no_sensor ) {
 
+		//supla_log(LOG_DEBUG, "NO SENSOR");
 		db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_NO_SENSOR);
 
 	} else {
 
-		switch(ipcc->is_connected(s_exec.user_id, s_exec.device_id)) {
+		switch(ipcc->is_connected(s_exec.user_id, s_exec.iodevice_id)) {
 		case IPC_RESULT_CONNECTED:
 			db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_FAILURE);
 			//supla_log(LOG_DEBUG, "RESULT_FAILURE");
@@ -75,12 +76,84 @@ void s_worker::set_result(bool success, int retry_limit, int retry_time, bool no
 	}
 }
 
+bool s_worker::check_function_allowed(int *func, int func_count) {
+
+	int a;
+	for(a=0;a<func_count;a++)
+		if ( func[a] == s_exec.channel_func ) return true;
+
+	db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_CANCELLED);
+	return false;
+}
+
+char s_worker::opening_sensor_value() {
+
+	char value = -1;
+
+	supla_channel sensor_channel;
+	memset(&sensor_channel, 0, sizeof(supla_channel));
+
+	sensor_channel.id = s_exec.channel_param2;
+
+	if ( sensor_channel.id != 0
+		 && db->get_channel(&sensor_channel)
+		 && sensor_channel.param1 == s_exec.channel_id
+		 && ( sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNO || sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC )
+		 && ipcc->is_connected(s_exec.user_id, sensor_channel.iodevice_id) == IPC_RESULT_CONNECTED ) {
+
+ 		if ( !ipcc->get_char_value(s_exec.user_id, sensor_channel.iodevice_id, sensor_channel.id, &value) ) {
+			value = -1;
+		} else {
+
+			value = !!value;
+
+			if ( sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC )
+				value = value == 1 ? 0 : 1;
+
+		}
+
+	}
+
+	return value;
+}
+
 void s_worker::action_turn_on_off(char on) {
 
-	supla_log(LOG_DEBUG, "ACTION ON/OFF channel:%i try:%i", s_exec.channel_id, s_exec.retry_count+1);
+	int func[] = { SUPLA_CHANNELFNC_LIGHTSWITCH,
+			       SUPLA_CHANNELFNC_POWERSWITCH };
 
-	bool success = ipcc->set_char_value(s_exec.user_id, s_exec.device_id, s_exec.channel_id, on == 1 ? 1 : 0);
+	if ( !check_function_allowed(func, sizeof(func)/sizeof(int)) )
+		return;
+
+	bool success = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, on == 1 ? 1 : 0);
 	set_result(success, ONOFF_RETRY_LIMIT, ONOFF_RETRY_TIME, false);
+}
+
+void s_worker::action_gate_open_close(char _close) {
+
+	int func[] = { SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR,
+			       SUPLA_CHANNELFNC_CONTROLLINGTHEGATE };
+
+	if ( !check_function_allowed(func, sizeof(func)/sizeof(int)) )
+		return;
+
+	//supla_log(LOG_DEBUG, "ACTION OPEN/CLOSE channel:%i try:%i", s_exec.channel_id, s_exec.retry_count+1);
+
+	bool success = false;
+	char sensor_value = opening_sensor_value();
+
+	if ( sensor_value != -1 ) {
+
+		if ( sensor_value == _close ) {
+			success = true;
+		} else if ( s_exec.retry_count < GATEOPENCLOSE_RETRY_LIMIT ) { // last one only for sensor check
+			ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, 1);
+		}
+	}
+
+	set_result(success, GATEOPENCLOSE_RETRY_LIMIT, GATEOPENCLOSE_RETRY_TIME, sensor_value == -1);
+
+
 }
 
 void s_worker::execute(void *sthread) {
@@ -89,20 +162,16 @@ void s_worker::execute(void *sthread) {
 		 || !db->set_fetched(s_exec.id) )
 		return;
 
-	time_t now_utc = st_get_utc_time();
-	int delay = now_utc-s_exec.planned_timestamp;
-
-	if ( delay < 0 )
-		sleep(delay*-1);
-
 	if ( sthread_isterminated(sthread) )
 		db->set_unfetched(s_exec.id);
 
 
 	switch(s_exec.action) {
-	case ACTION_OPEN:
-		break;
 	case ACTION_CLOSE:
+		action_gate_open_close(1);
+		break;
+	case ACTION_OPEN:
+		action_gate_open_close(0);
 		break;
 	case ACTION_SHUT:
 		break;

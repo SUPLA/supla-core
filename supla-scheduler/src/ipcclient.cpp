@@ -35,7 +35,7 @@
 const char socket_path[] = "/tmp/supla-server-ctrl.sock";
 const char hello[] = "SUPLA SERVER CTRL\n";
 
-const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
+const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED";
 
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE";
 const char cmd_get_char_value[] = "GET-CHAR-VALUE";
@@ -187,6 +187,7 @@ char ipc_client::is_connected(int user_id, int device_id) {
 
 
 		snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_is_iodev_connected, user_id, device_id);
+		//supla_log(LOG_DEBUG, "%s", buffer);
 		send(sfd, buffer, strlen(buffer), 0);
 
 	    if ( read() ) {

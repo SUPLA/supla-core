@@ -26,8 +26,12 @@ private:
 	database *db;
 	ipc_client *ipcc;
 
+	void set_result(bool success, int retry_limit, int retry_time, bool no_sensor);
+	bool check_function_allowed(int *func, int func_count);
+	char opening_sensor_value(void);
+
 	void action_turn_on_off(char on);
-	void set_result(bool success, int retry_limit, int retry_time, bool no_sensor) ;
+	void action_gate_open_close(char _close);
 
 public:
 
