@@ -22,6 +22,7 @@
 #include "schedulercfg.h"
 #include "log.h"
 #include "tools.h"
+#include "safearray.h"
 
 char *database::cfg_get_host(void) {
 
@@ -45,15 +46,15 @@ int database::cfg_get_port(void) {
 	return scfg_int(CFG_MYSQL_PORT);
 }
 
-int database::get_s_executions(s_exec_t **s_exec, int limit) {
+void database::get_s_executions(void *s_exec_arr, int limit) {
 
 	MYSQL_STMT *stmt;
 
 	MYSQL_BIND pbind[1];
 	memset(pbind, 0, sizeof(pbind));
 
-	int result = 0;
-	*s_exec = NULL;
+	if ( s_exec_arr == NULL )
+		return;
 
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&limit;
@@ -127,33 +128,32 @@ int database::get_s_executions(s_exec_t **s_exec, int limit) {
 
 			if ( mysql_stmt_num_rows(stmt) > 0 ) {
 
-				int s_exec_size = sizeof(s_exec_t) * mysql_stmt_num_rows(stmt);
-				*s_exec = (s_exec_t*)malloc(s_exec_size);
-				memset(*s_exec, 0, s_exec_size);
-
 				while (!mysql_stmt_fetch(stmt)) {
 
-					(*s_exec)[result].id = id;
-					(*s_exec)[result].schedule_id = schedule_id;
-					(*s_exec)[result].user_id = user_id;
-					(*s_exec)[result].iodevice_id = device_id;
-					(*s_exec)[result].channel_id = channel_id;
-					(*s_exec)[result].channel_func = channel_func;
-					(*s_exec)[result].channel_param1 = channel_param1;
-					(*s_exec)[result].channel_param2 = channel_param2;
-					(*s_exec)[result].channel_param3 = channel_param3;
-					(*s_exec)[result].action = action;
-					(*s_exec)[result].planned_timestamp = planned_timestamp;
+					s_exec_t *s_exec = (s_exec_t*)malloc(sizeof(s_exec_t));
+					memset(s_exec, 0, sizeof(s_exec_t));
+
+					s_exec->id = id;
+					s_exec->schedule_id = schedule_id;
+					s_exec->user_id = user_id;
+					s_exec->iodevice_id = device_id;
+					s_exec->channel_id = channel_id;
+					s_exec->channel_func = channel_func;
+					s_exec->channel_param1 = channel_param1;
+					s_exec->channel_param2 = channel_param2;
+					s_exec->channel_param3 = channel_param3;
+					s_exec->action = action;
+					s_exec->planned_timestamp = planned_timestamp;
 
 					if ( is_null[0] == false ) {
 						action_param[255] = 0;
-						(*s_exec)[result].action_param = atoi(action_param);
+						s_exec->action_param = atoi(action_param);
 					}
 
-					(*s_exec)[result].retry_timestamp = is_null[1] ? 0 : retry_timestamp;
-					(*s_exec)[result].retry_count = is_null[2] ? 0 : retry_count;
+					s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
+					s_exec->retry_count = is_null[2] ? 0 : retry_count;
 
-					result++;
+					safe_array_add(s_exec_arr, s_exec);
 
 				}
 
@@ -165,7 +165,6 @@ int database::get_s_executions(s_exec_t **s_exec, int limit) {
 		mysql_stmt_close(stmt);
 	}
 
-	return result;
 }
 
 bool database::get_channel(supla_channel *channel) {

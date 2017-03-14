@@ -24,13 +24,14 @@
 #include "log.h"
 #include "tools.h"
 #include "ipcclient.h"
+#include "queue.h"
 
 
-s_worker::s_worker(s_exec_t *s_exec) {
+s_worker::s_worker(queue *q) {
 
-	memcpy(&this->s_exec, s_exec, sizeof(s_exec_t));
 	db = new database();
 	ipcc = new ipc_client();
+	this->q = q;
 }
 
 
@@ -184,40 +185,49 @@ void s_worker::action_shut_reveal(char shut) {
 
 void s_worker::execute(void *sthread) {
 
-	if ( !db->connect()
-		 || !db->set_fetched(s_exec.id) )
+	if ( !db->connect() )
 		return;
 
-	if ( sthread_isterminated(sthread) )
-		db->set_unfetched(s_exec.id);
+	s_exec = q->get_job();
 
+	while( s_exec.id
+		   && !sthread_isterminated(sthread)) {
 
-	switch(s_exec.action) {
-	case ACTION_CLOSE:
-		action_gate_open_close(1);
-		break;
-	case ACTION_OPEN:
-		action_gate_open_close(0);
-		break;
-	case ACTION_SHUT:
-		action_shut_reveal(1);
-		break;
-	case ACTION_REVEAL:
-		action_shut_reveal(0);
-		break;
-	case ACTION_TURN_ON:
-		action_turn_on_off(1);
-		break;
-	case ACTION_TURN_OFF:
-		action_turn_on_off(0);
-		break;
-	case ACTION_DIM:
-		break;
-	case ACTION_SET_RGB_COLOR:
-		break;
-	case ACTION_SET_RANDOM_RGB_COLOR:
-		break;
+		if ( db->set_fetched(s_exec.id) )
+			q->mark_fetched();
+
+		switch(s_exec.action) {
+		case ACTION_CLOSE:
+			action_gate_open_close(1);
+			break;
+		case ACTION_OPEN:
+			action_gate_open_close(0);
+			break;
+		case ACTION_SHUT:
+			action_shut_reveal(1);
+			break;
+		case ACTION_REVEAL:
+			action_shut_reveal(0);
+			break;
+		case ACTION_TURN_ON:
+			action_turn_on_off(1);
+			break;
+		case ACTION_TURN_OFF:
+			action_turn_on_off(0);
+			break;
+		case ACTION_DIM:
+			break;
+		case ACTION_SET_RGB_COLOR:
+			break;
+		case ACTION_SET_RANDOM_RGB_COLOR:
+			break;
+		}
+
+		s_exec = q->get_job();
+
 	}
+
+	q->raise_loop_event();
 
 
 }

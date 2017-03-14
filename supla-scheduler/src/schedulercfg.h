@@ -34,7 +34,8 @@ extern "C" {
 #define CFG_MYSQL_USER      5
 #define CFG_MYSQL_PASSWORD  6
 
-#define CFG_MAX_WORKERS     7
+#define CFG_MAX_WORKERS         7
+#define CFG_MAX_JOB_PER_SECOND  8
 
 unsigned char schedulercfg_init(int argc, char* argv[]);
 

@@ -33,7 +33,7 @@ private:
 
 public:
 
-	int get_s_executions(s_exec_t **s_exec, int limit);
+	void get_s_executions(void *s_exec_arr, int limit);
 	bool get_channel(supla_channel *channel);
 
 	void set_overdue_result(int overdue_time);

@@ -18,27 +18,58 @@
 #define QUEUE_H_
 
 #include "database.h"
-
+#include "eh.h"
 
 class queue  {
 private:
+
+	void *user;
+	void *q_sthread;
+
+	TEventHandler *loop_eh;
+	void *lck;
 	void *workers_thread_arr;
+	void *s_exec_arr;
+
 	int max_workers;
-	s_exec_t *s_exec;
+	int max_job_per_second;
+
+	int job_counter;
+	int total_fetch_count;
+	int wait_for_fetch_counter;
+
+	struct timeval last_get;
+	struct timeval timer;
+
+
+	void new_worker(void);
+	bool wait_for_fetch(void);
+
 protected:
 	database *db;
 public:
 
-	queue();
+	queue(void *user, void *q_sthread);
     ~queue();
 
+    void loop(void);
+
     void load(void);
+    void raise_loop_event(void);
+
     void set_overdue_result(void);
     void set_zombie_result(void);
 
+    s_exec_t get_job(void);
+    void mark_fetched();
+
+    bool limit_exceeded();
+
+    void print_statistics(void);
+
 };
 
-void queue_loop(void *ssd, void *sthread);
+void queue_loop(void *user, void *q_sthread);
 
 
 #endif /* QUEUE_H_ */

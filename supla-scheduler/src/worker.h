@@ -20,11 +20,13 @@
 #include "database.h"
 #include "ipcclient.h"
 
+class queue;
 class s_worker {
 private:
 	s_exec_t s_exec;
 	database *db;
 	ipc_client *ipcc;
+	queue *q;
 
 	void set_result(bool success, int retry_limit, int retry_time, bool no_sensor);
 	bool check_function_allowed(int *func, int func_count);
@@ -36,7 +38,7 @@ private:
 
 public:
 
-	s_worker(s_exec_t *s_exec);
+	s_worker(queue *q);
 	~s_worker();
 	void execute(void *sthread);
 };

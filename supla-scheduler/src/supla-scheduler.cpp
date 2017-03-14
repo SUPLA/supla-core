@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 	if ( schedulercfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;
 
-	supla_log(LOG_DEBUG, "Version %s [Protocol v%i]", SCHEDULER_VERSION);
+	supla_log(LOG_DEBUG, "Version %s", SCHEDULER_VERSION);
 
 	if ( run_as_daemon
 		 && 0 == st_try_fork() ) {
