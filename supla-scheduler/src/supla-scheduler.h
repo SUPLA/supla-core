@@ -41,7 +41,7 @@ typedef struct {
 	int channel_param2;
 	int channel_param3;
 	int action;
-	int action_param;
+	char *action_param;
 	int planned_timestamp;
 	int retry_timestamp;
 	int retry_count;
@@ -59,6 +59,9 @@ typedef struct {
 
 #define RS_RETRY_LIMIT  2
 #define RS_RETRY_TIME   30
+
+#define RGBW_RETRY_LIMIT  2
+#define RGBW_RETRY_TIME   30
 
 #define ACTION_OPEN                   10
 #define ACTION_CLOSE                  20

@@ -147,7 +147,7 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 
 					if ( is_null[0] == false ) {
 						action_param[255] = 0;
-						s_exec->action_param = atoi(action_param);
+						s_exec->action_param = strdup(action_param);
 					}
 
 					s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;

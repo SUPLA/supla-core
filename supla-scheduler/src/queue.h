@@ -40,6 +40,7 @@ private:
 
 	struct timeval last_get;
 	struct timeval timer;
+	struct timeval timer_one_min;
 
 
 	void new_worker(void);

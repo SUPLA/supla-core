@@ -31,8 +31,12 @@
 #include "ipcclient.h"
 
 char queue_loop_s_exec_arr_free(void *s_exec) {
-     free(s_exec);
-     return 1;
+
+	if ( ((s_exec_t*)s_exec)->action_param )
+		free(((s_exec_t*)s_exec)->action_param);
+
+    free(s_exec);
+    return 1;
 }
 
 char queue_loop_worker_thread_twt(void *worker_sthread) {
@@ -70,6 +74,9 @@ queue::queue(void *user, void *q_sthread) {
 
 	timer.tv_sec = 0;
 	timer.tv_usec = 0;
+
+	timer_one_min.tv_sec = 0;
+	timer_one_min.tv_usec = 0;
 
 	loop_eh = eh_init();
 
@@ -186,6 +193,12 @@ s_exec_t queue::get_job(void) {
 
 
 		result = *s_exec;
+
+		if ( result.action_param != NULL ) {
+			result.action_param = strdup(s_exec->action_param);
+			free(s_exec->action_param);
+		}
+
 		free(s_exec);
 	}
 
@@ -237,13 +250,25 @@ void queue::load(void) {
 		 || wait_for_fetch()
 		 || limit_exceeded() ) return;
 
-	int limit = max_workers*100 - safe_array_count(s_exec_arr);
+	int limit = max_workers*10 - safe_array_count(s_exec_arr);
 
 	if ( limit <= 0 )
 		return;
 
 	if ( !db->connect() )
 		return;
+
+	struct timeval now;
+	gettimeofday(&now, NULL);
+
+	if ( now.tv_sec - timer_one_min.tv_sec >= 60 ) {
+
+		timer_one_min = now;
+
+		set_zombie_result();
+		set_overdue_result();
+	}
+
 
 	db->get_s_executions(s_exec_arr, limit);
 	db->disconnect();
@@ -253,8 +278,6 @@ void queue::load(void) {
 
 void queue::loop(void) {
 
-	//q->set_zombie_result();
-	//q->set_overdue_result();
 
 	int a=0;
 	struct timeval now;

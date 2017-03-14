@@ -19,6 +19,7 @@
 
 #include "database.h"
 #include "ipcclient.h"
+#include "jsmn.h"
 
 class queue;
 class s_worker {
@@ -35,6 +36,10 @@ private:
 	void action_turn_on_off(char on);
 	void action_gate_open_close(char _close);
 	void action_shut_reveal(char shut);
+
+	char json_get_int(jsmntok_t *token, int *value);
+	char parse_rgbw_params(int *color, char *color_brightness, char *brightness);
+	void action_set_rgbw(char random);
 
 public:
 

@@ -26,6 +26,13 @@
 #include "ipcclient.h"
 #include "queue.h"
 
+static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
+			strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+		return 0;
+	}
+	return -1;
+}
 
 s_worker::s_worker(queue *q) {
 
@@ -170,7 +177,7 @@ void s_worker::action_shut_reveal(char shut) {
 	if ( sensor_value != shut
 		 || sensor_value == -1 ) {
 
-		bool _s = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, shut == 1 ? 3 : 4);
+		bool _s = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, shut == 1 ? 100 : 200);
 
 		if ( sensor_value == -1 )
 			success = _s;
@@ -180,6 +187,114 @@ void s_worker::action_shut_reveal(char shut) {
 	}
 
 	set_result(success, RS_RETRY_LIMIT, RS_RETRY_TIME, false);
+
+}
+
+char s_worker::json_get_int(jsmntok_t *token, int *value) {
+
+	char buffer[12];
+	memset(buffer, 0, sizeof(buffer));
+
+	if ( value == NULL
+		 || token->type != JSMN_PRIMITIVE
+		 || (unsigned int)(token->end-token->start) >= sizeof(buffer)
+		 || token->end <= token->start )
+		return 0;
+
+	memcpy(buffer, &s_exec.action_param[token->start], token->end-token->start);
+
+	*value = atoi(buffer);
+
+	return 1;
+}
+
+char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brightness) {
+
+	jsmn_parser p;
+	jsmntok_t t[10];
+	int a;
+	int result = 0;
+	int value = 0;
+
+	if ( color )
+		*color = 0;
+
+	if ( color_brightness )
+		*color_brightness = 0;
+
+	if ( brightness )
+		*brightness = 0;
+
+	if ( s_exec.action_param == NULL ) {
+		return 0;
+	}
+
+	jsmn_init(&p);
+	int r = jsmn_parse(&p, s_exec.action_param, strlen(s_exec.action_param), t, sizeof(t)/sizeof(t[0]));
+
+	if (r < 1 || t[0].type != JSMN_OBJECT) {
+			return 0;
+	}
+
+	for (a = 1; a < r-1; a++) {
+
+		if ( jsoneq(s_exec.action_param, &t[a], "color") == 0 ) {
+
+			if ( json_get_int(&t[a+1], &value) ) {
+
+				if ( color )
+					*color = value;
+
+				result++;
+
+			}
+
+		} else if ( jsoneq(s_exec.action_param, &t[a], "color_brightness") == 0 ) {
+
+			if ( json_get_int(&t[a+1], &value)
+				 && value >= 0
+				 && value <= 100 ) {
+
+				if ( color_brightness )
+					*color_brightness = value;
+
+				result++;
+			}
+		} else if ( jsoneq(s_exec.action_param, &t[a], "brightness") == 0 ) {
+
+			if ( json_get_int(&t[a+1], &value)
+				 && value >= 0
+				 && value <= 100 ) {
+
+				if ( brightness )
+					*brightness = value;
+
+				result++;
+			}
+		}
+	}
+
+	return result;
+}
+
+void s_worker::action_set_rgbw(char random) {
+
+	int color = 0;
+	char color_brightness = 0;
+	char brightness = 0;
+
+	int func[] = { SUPLA_CHANNELFNC_DIMMER,
+			       SUPLA_CHANNELFNC_RGBLIGHTING,
+			       SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING};
+
+	if ( !check_function_allowed(func, sizeof(func)/sizeof(int)) )
+		return;
+
+	parse_rgbw_params(&color, &color_brightness, &brightness);
+
+
+	bool success = ipcc->set_rgbw_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, color, color_brightness, brightness);
+	set_result(success, RGBW_RETRY_LIMIT, RGBW_RETRY_TIME, false);
 
 }
 
@@ -216,12 +331,18 @@ void s_worker::execute(void *sthread) {
 			action_turn_on_off(0);
 			break;
 		case ACTION_DIM:
+			action_set_rgbw(0);
 			break;
 		case ACTION_SET_RGB_COLOR:
+			action_set_rgbw(0);
 			break;
 		case ACTION_SET_RANDOM_RGB_COLOR:
+			action_set_rgbw(1);
 			break;
 		}
+
+		if ( s_exec.action_param != NULL )
+			free(s_exec.action_param);
 
 		s_exec = q->get_job();
 
