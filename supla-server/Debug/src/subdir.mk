@@ -11,6 +11,7 @@ CPP_SRCS += \
 ../src/clientlocation.cpp \
 ../src/datalogger.cpp \
 ../src/db.cpp \
+../src/dbatabase.cpp \
 ../src/device.cpp \
 ../src/devicechannel.cpp \
 ../src/ipcctrl.cpp \
@@ -42,6 +43,7 @@ OBJS += \
 ./src/clientlocation.o \
 ./src/datalogger.o \
 ./src/db.o \
+./src/dbatabase.o \
 ./src/device.o \
 ./src/devicechannel.o \
 ./src/eh.o \
@@ -84,6 +86,7 @@ CPP_DEPS += \
 ./src/clientlocation.d \
 ./src/datalogger.d \
 ./src/db.d \
+./src/dbatabase.d \
 ./src/device.d \
 ./src/devicechannel.d \
 ./src/ipcctrl.d \

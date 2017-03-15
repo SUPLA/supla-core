@@ -15,6 +15,7 @@ C_SRCS += \
 ../src/cfg.c \
 ../src/eh.c \
 ../src/ini.c \
+../src/jsmn.c \
 ../src/lck.c \
 ../src/log.c \
 ../src/safearray.c \
@@ -29,6 +30,7 @@ OBJS += \
 ./src/eh.o \
 ./src/ini.o \
 ./src/ipcclient.o \
+./src/jsmn.o \
 ./src/lck.o \
 ./src/log.o \
 ./src/queue.o \
@@ -43,6 +45,7 @@ C_DEPS += \
 ./src/cfg.d \
 ./src/eh.d \
 ./src/ini.d \
+./src/jsmn.d \
 ./src/lck.d \
 ./src/log.d \
 ./src/safearray.d \
