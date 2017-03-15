@@ -294,7 +294,7 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 
 	for (a = 1; a < r-1; a++) {
 
-		if ( jsoneq(s_exec.action_param, &t[a], "color") == 0 ) {
+		if ( jsoneq(s_exec.action_param, &t[a], "hue") == 0 ) {
 
 			if ( jsoneq(s_exec.action_param, &t[a+1], "random") == 0 ) {
 
@@ -312,7 +312,7 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 			} else if ( json_get_int(&t[a+1], &value) ) {
 
 				if ( color ) {
-					*color = value;
+					*color = hue2rgb(value);
 				}
 
 				result++;
