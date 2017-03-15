@@ -67,11 +67,10 @@ typedef struct {
 #define ACTION_CLOSE                  20
 #define ACTION_SHUT                   30
 #define ACTION_REVEAL                 40
-#define ACTION_TURN_ON                50
-#define ACTION_TURN_OFF               60
-#define ACTION_DIM                    70
-#define ACTION_SET_RGB_COLOR          80
-#define ACTION_SET_RANDOM_RGB_COLOR   90
+#define ACTION_REVEAL_PARTIALLY       50
+#define ACTION_TURN_ON                60
+#define ACTION_TURN_OFF               70
+#define ACTION_SET_RGBW_PARAMETERS    80
 
 #define ACTION_EXECUTION_RESULT_UNKNOWN              0
 #define ACTION_EXECUTION_RESULT_SUCCESS              1

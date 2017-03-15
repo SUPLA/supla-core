@@ -208,6 +208,62 @@ char s_worker::json_get_int(jsmntok_t *token, int *value) {
 	return 1;
 }
 
+int s_worker::hue2rgb(double hue) {
+
+	double r = 0, g = 0, b = 0;
+
+	if (hue >= 360)
+		hue = 0;
+
+	hue /= 60.00;
+
+	long i = (long)hue;
+	double f, q, t;
+	f = hue - i;
+
+	q = 1.0 - f;
+	t = 1.0 - (1.0 - f);
+
+	switch (i)
+	{
+	case 0:
+		r = 1.00; g = t; b = 0.00;
+		break;
+
+	case 1:
+		r = q; g = 1.00; b = 0.00;
+		break;
+
+	case 2:
+		r = 0.00; g = 1.00; b = t;
+		break;
+
+	case 3:
+		r = 0.00; g = q; b = 1.00;
+		break;
+
+	case 4:
+		r = t; g = 0.00; b = 1.00;
+		break;
+
+	default:
+		r = 1.00; g = 0.00; b = q;
+		break;
+	}
+
+	int rgb = 0;
+
+	rgb |= (unsigned char)(r * 255.00);
+	rgb<<=8;
+
+	rgb |= (unsigned char)(g * 255.00);
+	rgb<<=8;
+
+	rgb |= (unsigned char)(b * 255.00);
+
+	return rgb;
+}
+
 char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brightness) {
 
 	jsmn_parser p;
@@ -240,10 +296,24 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 
 		if ( jsoneq(s_exec.action_param, &t[a], "color") == 0 ) {
 
-			if ( json_get_int(&t[a+1], &value) ) {
+			if ( jsoneq(s_exec.action_param, &t[a+1], "random") == 0 ) {
 
-				if ( color )
+				if ( color ) {
+
+					 struct timeval now;
+					 gettimeofday(&now, NULL);
+					 srand(now.tv_usec);
+					 *color = hue2rgb(rand()%360);
+
+				}
+
+				result++;
+
+			} else if ( json_get_int(&t[a+1], &value) ) {
+
+				if ( color ) {
 					*color = value;
+				}
 
 				result++;
 
@@ -255,8 +325,9 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 				 && value >= 0
 				 && value <= 100 ) {
 
-				if ( color_brightness )
+				if ( color_brightness ) {
 					*color_brightness = value;
+				}
 
 				result++;
 			}
@@ -266,8 +337,9 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 				 && value >= 0
 				 && value <= 100 ) {
 
-				if ( brightness )
+				if ( brightness ) {
 					*brightness = value;
+				}
 
 				result++;
 			}
@@ -277,7 +349,7 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 	return result;
 }
 
-void s_worker::action_set_rgbw(char random) {
+void s_worker::action_set_rgbw() {
 
 	int color = 0;
 	char color_brightness = 0;
@@ -330,14 +402,9 @@ void s_worker::execute(void *sthread) {
 		case ACTION_TURN_OFF:
 			action_turn_on_off(0);
 			break;
-		case ACTION_DIM:
-			action_set_rgbw(0);
+		case ACTION_SET_RGBW_PARAMETERS:
+			action_set_rgbw();
 			break;
-		case ACTION_SET_RGB_COLOR:
-			action_set_rgbw(0);
-			break;
-		case ACTION_SET_RANDOM_RGB_COLOR:
-			action_set_rgbw(1);
 			break;
 		}
 
