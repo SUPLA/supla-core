@@ -48,7 +48,7 @@ void ipcsauth_create_key(const char *address) {
 
 	ipc_sauth_key = NULL;
 
-	if((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, IPC_CREAT|IPC_EXCL|0600)) == -1)
+	if((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, IPC_CREAT|0600)) == -1)
 		return;
 
 	if ( (ipc_sauth_key = (char *)shmat(ipc_shmid, 0, 0)) == (char*)-1 )
