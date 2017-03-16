@@ -258,6 +258,8 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 			_OriginalLocationID = 0;
 		}
 
+		my_bool is_null = true;
+
 		MYSQL_BIND pbind[7];
 		memset(pbind, 0, sizeof(pbind));
 
@@ -276,18 +278,15 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 		pbind[3].buffer= (char *)&proto_version;
 
 		pbind[4].buffer_type= MYSQL_TYPE_LONG;
-		pbind[4].buffer= (char *)&device_id;
+		pbind[4].buffer= (char *)&_LocationID;
 
 		pbind[5].buffer_type= MYSQL_TYPE_LONG;
-		pbind[5].buffer= (char *)&_LocationID;
+		pbind[5].buffer= (char *)&_OriginalLocationID;
 
 		pbind[6].buffer_type= MYSQL_TYPE_LONG;
-		pbind[6].buffer= (char *)&_OriginalLocationID;
+		pbind[6].buffer= (char *)&device_id;
 
-		if ( _OriginalLocationID == 0 )
-			pbind[6].is_null_value = true;
-
-		const char sql[] = "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = NOW(), `last_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, location_id = ?, original_location_id = ? WHERE id = ?";
+		const char sql[] = "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = NOW(), `last_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, location_id = ?, original_location_id = NULLIF(?, 0) WHERE id = ?";
 
 		MYSQL_STMT *stmt;
 		if ( !stmt_execute((void**)&stmt, sql, pbind, 7) ) {
