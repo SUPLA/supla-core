@@ -45,7 +45,7 @@ public:
 	int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func, int FList, int UserID, bool *new_channel);
 
 	int get_device_count(int UserID);
-	int get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, bool *is_enabled);
+	int get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, int *oryginal_location_id, bool *is_enabled);
 	int get_device_channel_id(int DeviceID, int ChannelNumber, int *Type);
 	int get_device_channel_count(int DeviceID);
 	int get_device_channel_type(int DeviceID, int ChannelNumber);
