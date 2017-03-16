@@ -102,7 +102,7 @@ bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID, bool 
 
 }
 
-int database::get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, int *oryginal_location_id, bool *is_enabled) {
+int database::get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, int *original_location_id, bool *is_enabled) {
 
 	if ( _mysql == NULL )
 		return false;
@@ -121,7 +121,7 @@ int database::get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, 
 
 	MYSQL_STMT *stmt;
 	int dev_id;
-	if ( stmt_get_int((void**)&stmt, &dev_id, location_id, oryginal_location_id, &_is_enabled, "SELECT id, location_id, oryginal_location_id, CAST(`enabled` AS unsigned integer) `enabled` FROM supla_iodevice WHERE guid = unhex(?)", pbind, 1) ) {
+	if ( stmt_get_int((void**)&stmt, &dev_id, location_id, original_location_id, &_is_enabled, "SELECT id, location_id, original_location_id, CAST(`enabled` AS unsigned integer) `enabled` FROM supla_iodevice WHERE guid = unhex(?)", pbind, 1) ) {
 		*is_enabled = _is_enabled == 1;
         return dev_id;
 	}
@@ -159,7 +159,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 		                   unsigned int ipv4, char softver[SUPLA_SOFTVER_MAXSIZE], int proto_version,
 		                   int UserID, bool *new_device, bool *is_enabled, int *Limit) {
 
-	int _LocationID = 0, _OryginalLocationID = 0;
+	int _LocationID = 0, _OriginalLocationID = 0;
 	bool _is_enabled;
 
 	if ( is_enabled == NULL )
@@ -167,7 +167,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 
 	*is_enabled = true;
 
-	int device_id = get_device_id(GUID, &_LocationID, &_OryginalLocationID, is_enabled);
+	int device_id = get_device_id(GUID, &_LocationID, &_OriginalLocationID, is_enabled);
 
 	if ( device_id != 0
 			&& is_enabled
@@ -222,7 +222,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 		pbind[7].buffer_type= MYSQL_TYPE_LONG;
 		pbind[7].buffer= (char *)&proto_version;
 
-		const char sql[] = "INSERT INTO `supla_iodevice`(`location_id`, `oryginal_location_id`, `name`, `enabled`, `reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, `guid`, `software_version`, `protocol_version`) VALUES (?,NULL,unhex(?),1,NOW(),NOW(),?,?,?,unhex(?),?, ?)";
+		const char sql[] = "INSERT INTO `supla_iodevice`(`location_id`, `original_location_id`, `name`, `enabled`, `reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, `guid`, `software_version`, `protocol_version`) VALUES (?,NULL,unhex(?),1,NOW(),NOW(),?,?,?,unhex(?),?, ?)";
 
 		MYSQL_STMT *stmt;
 		stmt_execute((void**)&stmt, sql, pbind, 8, false);
@@ -230,11 +230,11 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 		if ( stmt != NULL )
 			  mysql_stmt_close(stmt);
 
-		device_id = get_device_id(GUID, &_LocationID, &_OryginalLocationID, is_enabled);
+		device_id = get_device_id(GUID, &_LocationID, &_OriginalLocationID, is_enabled);
 
 		if ( device_id != 0
 			 && _LocationID != *LocationID
-			 && _OryginalLocationID != *LocationID
+			 && _OriginalLocationID != *LocationID
 			 && ( is_enabled == NULL || *is_enabled == true ) ) {
 
 				 *LocationID = 0;
@@ -247,7 +247,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 
 
 	} else if ( _LocationID != *LocationID
-			    && _OryginalLocationID != *LocationID ) {
+			    && _OriginalLocationID != *LocationID ) {
 
 		*LocationID = 0;
 		device_id = 0;
@@ -255,7 +255,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 	} else {
 
 		if ( *LocationID == _LocationID ) {
-			_OryginalLocationID = 0;
+			_OriginalLocationID = 0;
 		}
 
 		MYSQL_BIND pbind[7];
@@ -282,12 +282,12 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 		pbind[5].buffer= (char *)&_LocationID;
 
 		pbind[6].buffer_type= MYSQL_TYPE_LONG;
-		pbind[6].buffer= (char *)&_OryginalLocationID;
+		pbind[6].buffer= (char *)&_OriginalLocationID;
 
-		if ( _OryginalLocationID == 0 )
+		if ( _OriginalLocationID == 0 )
 			pbind[6].is_null_value = true;
 
-		const char sql[] = "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = NOW(), `last_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, location_id = ?, oryginal_location_id = ? WHERE id = ?";
+		const char sql[] = "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = NOW(), `last_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, location_id = ?, original_location_id = ? WHERE id = ?";
 
 		MYSQL_STMT *stmt;
 		if ( !stmt_execute((void**)&stmt, sql, pbind, 7) ) {
