@@ -229,19 +229,19 @@ bool database::get_channel(supla_channel *channel) {
 
 }
 
-void database::set_overdue_result(int overdue_time) {
+void database::set_expired_result(int expired_time) {
 
 	MYSQL_STMT *stmt;
 	MYSQL_BIND pbind[2];
 	memset(pbind, 0, sizeof(pbind));
 
-	int result = ACTION_EXECUTION_RESULT_OVERDUE;
+	int result = ACTION_EXECUTION_RESULT_EXPIRED;
 
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&result;
 
 	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&overdue_time;
+	pbind[1].buffer= (char *)&expired_time;
 
 	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE result IS NULL AND fetched_timestamp IS NULL AND planned_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()", pbind, 2, true) ) {
 		mysql_stmt_close(stmt);

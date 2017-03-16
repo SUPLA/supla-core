@@ -114,7 +114,7 @@ void queue::set_overdue_result(void) {
 	database *_db = new database();
 	if ( _db->connect() ) {
 
-		_db->set_overdue_result(OVERDUE_TIME);
+		_db->set_expired_result(EXPIRE_TIME);
 
 	};
 	delete _db;

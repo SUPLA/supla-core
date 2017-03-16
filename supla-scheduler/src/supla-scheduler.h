@@ -48,7 +48,7 @@ typedef struct {
 
 }s_exec_t;
 
-#define OVERDUE_TIME   300 // 5 min since planned_time
+#define EXPIRE_TIME   300 // 5 min since planned_time
 #define ZOMBIE_TIME    60  // 1 min since fetched_time
 
 #define ONOFF_RETRY_LIMIT  2
@@ -76,7 +76,7 @@ typedef struct {
 #define ACTION_EXECUTION_RESULT_SUCCESS              1
 #define ACTION_EXECUTION_RESULT_DEVICE_UNREACHABLE   2
 #define ACTION_EXECUTION_RESULT_NO_SENSOR            3
-#define ACTION_EXECUTION_RESULT_OVERDUE              4
+#define ACTION_EXECUTION_RESULT_EXPIRED              4
 #define ACTION_EXECUTION_RESULT_ZOMBIE               5
 #define ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE   6
 #define ACTION_EXECUTION_RESULT_FAILURE              7

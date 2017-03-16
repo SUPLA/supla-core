@@ -36,7 +36,7 @@ public:
 	void get_s_executions(void *s_exec_arr, int limit);
 	bool get_channel(supla_channel *channel);
 
-	void set_overdue_result(int overdue_time);
+	void set_expired_result(int expired_time);
 	void set_zombie_result(int zombie_time);
 	bool set_result(int id, int result);
 
