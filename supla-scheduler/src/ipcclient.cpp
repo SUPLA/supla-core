@@ -119,7 +119,7 @@ bool ipc_client::ipc_connect(void) {
 	remote.sun_family = AF_UNIX;
 	strcpy(remote.sun_path, socket_path);
 
-    len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+    len = strnlen(remote.sun_path, 107) + sizeof(remote.sun_family);
     if (connect(sfd, (struct sockaddr *)&remote, len) == -1) {
     	ipc_disconnect();
     	return false;
@@ -155,7 +155,7 @@ bool ipc_client::auth(void) {
 
 	buffer[6+IPC_SAUTH_KEY_SIZE] = '\n';
 
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE-1), 0);
 
 	if ( read() && strcmp(buffer, "AUTH_OK\n") == 0 )
 		return true;
@@ -169,10 +169,10 @@ bool ipc_client::get_value(const char *cmd, int user_id, int device_id, int chan
 		return false;
 
 	snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd, user_id, device_id, channel_id);
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE-1), 0);
 
     if ( read()
-    	 && memcmp(buffer, ipc_result_value, strlen(ipc_result_value)) == 0 ) {
+    	 && memcmp(buffer, ipc_result_value, strnlen(ipc_result_value, 255)) == 0 ) {
 
     	return true;
     }
@@ -188,14 +188,14 @@ char ipc_client::is_connected(int user_id, int device_id) {
 
 		snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_is_iodev_connected, user_id, device_id);
 		//supla_log(LOG_DEBUG, "%s", buffer);
-		send(sfd, buffer, strlen(buffer), 0);
+		send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE-1), 0);
 
 	    if ( read() ) {
 
-	    	if ( memcmp(buffer, ipc_result_connected, strlen(ipc_result_connected)) == 0 )
+	    	if ( memcmp(buffer, ipc_result_connected, strnlen(ipc_result_connected, 255)) == 0 )
 		    	return IPC_RESULT_CONNECTED;
 
-	    	if ( memcmp(buffer, ipc_result_disconnected, strlen(ipc_result_disconnected)) == 0 )
+	    	if ( memcmp(buffer, ipc_result_disconnected, strnlen(ipc_result_disconnected, 255)) == 0 )
 		    	return IPC_RESULT_DISCONNECTED;
 	    }
 	}
@@ -208,7 +208,7 @@ bool ipc_client::get_double_value(int user_id, int device_id, int channel_id, do
 
 	if ( value == NULL
 		 || !get_value(cmd_get_double_value, user_id, device_id, channel_id)
-		 || sscanf (&buffer[strlen(ipc_result_value)], "%lf", value) != 1  )
+		 || sscanf (&buffer[strnlen(ipc_result_value, 255)], "%lf", value) != 1  )
 		return false;
 
 
@@ -221,7 +221,7 @@ bool ipc_client::get_char_value(int user_id, int device_id, int channel_id, char
 
 	if ( value == NULL
 		 || !get_value(cmd_get_char_value, user_id, device_id, channel_id)
-		 || sscanf (&buffer[strlen(ipc_result_value)], "%i", &x) != 1  )
+		 || sscanf (&buffer[strnlen(ipc_result_value, 255)], "%i", &x) != 1  )
 		return false;
 
 	if ( (unsigned int)x >= 255 )
@@ -241,7 +241,7 @@ bool ipc_client::get_rgbw_value(int user_id, int device_id, int channel_id, int 
 		 || color_brightness == NULL
 		 || brightness == NULL
 		 || !get_value(cmd_get_rgbw_value, user_id, device_id, channel_id)
-		 || sscanf (&buffer[strlen(ipc_result_value)], "%i,%i,%i", color, &_color_brightness, &_brightness) != 3  )
+		 || sscanf (&buffer[strnlen(ipc_result_value, 255)], "%i,%i,%i", color, &_color_brightness, &_brightness) != 3  )
 		return false;
 
 	if ( _color_brightness < 0
@@ -259,7 +259,7 @@ bool ipc_client::get_rgbw_value(int user_id, int device_id, int channel_id, int 
 bool ipc_client::check_set_result(void) {
 
     if ( read()
-    	 && memcmp(buffer, ipc_result_ok, strlen(ipc_result_ok)) == 0 ) {
+    	 && memcmp(buffer, ipc_result_ok, strnlen(ipc_result_ok, 255)) == 0 ) {
 
     	return true;
     }
@@ -273,7 +273,7 @@ bool ipc_client::set_char_value(int user_id, int device_id, int channel_id, char
 		return false;
 
 	snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_char_value, user_id, device_id, channel_id, value);
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE-1), 0);
 
 	return check_set_result();
 }
@@ -284,7 +284,7 @@ bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id, int 
 		return false;
 
 	snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n", cmd_set_rgbw_value, user_id, device_id, channel_id, color, color_brightness, brightness);
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE-1), 0);
 
 	return check_set_result();
 }

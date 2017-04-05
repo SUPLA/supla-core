@@ -123,8 +123,8 @@ void scfg_add_param(char *section_name, const char *param_name, unsigned char vt
 
 	TSuplaCfgParam *param;
 
-	assert( section_name != NULL && strlen(section_name) > 0);
-	assert( param_name != NULL && strlen(param_name) > 0);
+	assert( section_name != NULL && strnlen(section_name, 128) > 0);
+	assert( param_name != NULL && strnlen(param_name, 128) > 0);
 
 	if ( scfg == NULL ) {
 		scfg = malloc(sizeof(TSuplaCfg));
@@ -183,7 +183,7 @@ unsigned char scfg_load(int argc, char* argv[], char default_file[]) {
 	           if ( strcmp("-c", argv[a]) == 0 && a<argc-1 ) {
 	                   cfg_path = argv[a+1];
 	                   a++;
-	           } else if ( strcmp("-p", argv[a]) == 0 && a<argc-1 && strlen(argv[a+1]) < 1024 ) {
+	           } else if ( strcmp("-p", argv[a]) == 0 && a<argc-1 && strnlen(argv[a+1], 1030) < 1024 ) {
 	        	       pidfile_path = strdup(argv[a+1]);
 	                           a++;
 	           } else if ( strcmp("-d", argv[a]) == 0 ) {
@@ -278,7 +278,7 @@ int scfg_getuid(unsigned char param_id) {
 	char *name = scfg_string(param_id);
 
 	if( name
-		&& strlen(name) > 0 ) {
+		&& strnlen(name, 256) > 0 ) {
 
         struct passwd *pwd = getpwnam(name); /* don't free, see man getpwnam() for details */
         if( pwd )
@@ -293,7 +293,7 @@ int scfg_getgid(unsigned char param_id) {
 	char *name = scfg_string(param_id);
 
 	if( name
-		&& strlen(name) > 0 ) {
+		&& strnlen(name, 256) > 0 ) {
 
         struct group *gr = getgrnam(name); /* don't free, see man getgrnam() for details */
         if( gr )

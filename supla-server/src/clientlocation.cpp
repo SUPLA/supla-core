@@ -50,7 +50,7 @@ void supla_client_location::proto_get_location(TSC_SuplaLocation *location) {
 
 	if ( Caption ) {
 		snprintf(location->Caption, SUPLA_LOCATION_CAPTION_MAXSIZE, "%s", Caption);
-		location->CaptionSize = strlen(location->Caption)+1;
+		location->CaptionSize = strnlen(location->Caption, SUPLA_LOCATION_CAPTION_MAXSIZE-1)+1;
 	} else {
 		location->CaptionSize = 1;
 		location->Caption[0] = 0;

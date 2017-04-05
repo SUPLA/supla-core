@@ -146,7 +146,7 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel, supla_cl
 
 	if ( Caption ) {
 		snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s", Caption);
-		channel->CaptionSize = strlen(channel->Caption)+1;
+		channel->CaptionSize = strnlen(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE-1)+1;
 	} else {
 		channel->CaptionSize = 1;
 		channel->Caption[0] = 0;

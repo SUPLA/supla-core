@@ -20,7 +20,7 @@ http://code.google.com/p/inih/
 /* Strip whitespace chars off end of given string, in place. Return s. */
 static char* rstrip(char* s)
 {
-    char* p = s + strlen(s);
+    char* p = s + strnlen(s, 10240);
     while (p > s && isspace(*--p))
         *p = '\0';
     return s;

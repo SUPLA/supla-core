@@ -69,7 +69,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_B *register_device, u
 				bool new_device = false;
 				bool is_enabled = false;
 
-				if ( strlen(register_device->Name) < 1 ) {
+				if ( strnlen(register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE-1) < 1 ) {
 					snprintf(register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
 				}
 
@@ -208,7 +208,7 @@ void supla_device::on_channel_set_value_result(TDS_SuplaChannelNewValueResult *r
 		event.SenderID = result->SenderID;
 		event.DurationMS = channels->get_channel_value_duration(ChannelID);
 		getUser()->getClientName(result->SenderID, event.SenderName, SUPLA_SENDER_NAME_MAXSIZE);
-		event.SenderNameSize = strlen(event.SenderName)+1;
+		event.SenderNameSize = strnlen(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE-1)+1;
 
 		switch(channels->get_channel_func(ChannelID)) {
 

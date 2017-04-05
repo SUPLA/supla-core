@@ -27,7 +27,7 @@
 #include "queue.h"
 
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-	if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
+	if (tok->type == JSMN_STRING && (int) strnlen(s, 255) == tok->end - tok->start &&
 			strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
 		return 0;
 	}
@@ -286,7 +286,7 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 	}
 
 	jsmn_init(&p);
-	int r = jsmn_parse(&p, s_exec.action_param, strlen(s_exec.action_param), t, sizeof(t)/sizeof(t[0]));
+	int r = jsmn_parse(&p, s_exec.action_param, strnlen(s_exec.action_param, 255), t, sizeof(t)/sizeof(t[0]));
 
 	if (r < 1 || t[0].type != JSMN_OBJECT) {
 			return 0;

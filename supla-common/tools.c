@@ -59,7 +59,7 @@ unsigned char st_file_exists(const char *fp) {
 	unsigned char file_exists = 0;
 
 	if ( fp != NULL
-		  && strlen(fp) >  0 ) {
+		  && strnlen(fp, 1024) >  0 ) {
 
 		file_exists = access(fp, R_OK ) != -1;
 		/*
@@ -130,14 +130,14 @@ char st_set_ug_id(int uid, int gid) {
 char st_setpidfile(char *pidfile_path) {
 
         if ( pidfile_path != 0
-        	 && strlen(pidfile_path) > 0 ) {
+        	 && strnlen(pidfile_path, 1024) > 0 ) {
 
                 FILE *F = fopen(pidfile_path, "w");
                 if ( F ) {
 
                         char str[32];
                         snprintf(str, 31,"%i\n",getpid());
-                        fwrite(str, (int)1, strlen(str), F);
+                        fwrite(str, (int)1, strnlen(str, 31), F);
                         fclose(F);
 
                         return 1;
@@ -176,7 +176,7 @@ void st_mainloop_wait(int usec) {
 size_t st_strlen(char *str, size_t maxlen) {
 
 	str[maxlen] = 0;
-	return strlen(str);
+	return strnlen(str, maxlen-1);
 }
 
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]) {
@@ -203,7 +203,7 @@ void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SI
 
 }
 
-char *st_str2hex(char *buffer, const char *str) {
+char *st_str2hex(char *buffer, const char *str, size_t maxlen) {
 
 	int a, b;
 
@@ -212,7 +212,7 @@ char *st_str2hex(char *buffer, const char *str) {
 
 	b=0;
 
-	for(a=0;a<strlen(str);a++) {
+	for(a=0;a<strnlen(str, maxlen);a++) {
 		snprintf(&buffer[b], 3, "%02X", (unsigned char)str[a]);
 		b+=2;
 	}
@@ -228,7 +228,7 @@ char st_read_guid_from_file(char *file, char *GUID, char create) {
 
 	if ( st_file_exists(file) != 1 ) {
 
-		if ( create == 1&& file != 0 && strlen(file) > 0 ) {
+		if ( create == 1 && file != 0 && strnlen(file, 1024) > 0 ) {
 
              F = fopen(file, "w");
              if ( F ) {

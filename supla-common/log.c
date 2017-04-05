@@ -74,7 +74,7 @@ char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
     int n;
 
     if ( *size == 0 ) {
-        *size = strlen(__fmt)+10;
+        *size = strnlen(__fmt, 10240)+10;
         *buffer = (char *)malloc(*size);
     }
 
@@ -126,7 +126,7 @@ void supla_vlog(int __pri, const char *message) {
 		wstr,
 		2048,
 		message,
-		strlen(message)
+		strnlen(message, 10240)
 	);
 
 	OutputDebugStringW(wstr);
@@ -136,7 +136,9 @@ void supla_vlog(int __pri, const char *message) {
 #elif defined(ESP8266) || defined(__AVR__)
 	void supla_vlog(int __pri, const char *message) {
         #if defined(ESP8266) && !defined(ARDUINO_ARCH_ESP8266)
+		#ifndef ESP8266_LOG_DISABLED
 		os_printf("%s\r\n", message);
+		#endif
         #else
 		Serial.println(message);
         #endif
@@ -277,11 +279,11 @@ void supla_write_state_file(const char *file, int __pri, const char *__fmt, ...)
 	int fd;
 
 	if ( file != 0
-			&& strlen(file) > 0 ) {
+			&& strnlen(file, 1024) > 0 ) {
 	
 			fd = open(file, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
 			if ( fd != -1 ) {
-				write(fd, buffer, strlen(buffer));
+				write(fd, buffer, strnlen(buffer, size));
 				close(fd);
 			}
 	}

@@ -39,7 +39,7 @@ void st_mainloop_free();
 
 size_t st_strlen(char *str, size_t maxlen);
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]);
-char *st_str2hex(char *buffer, const char *str);
+char *st_str2hex(char *buffer, const char *str, size_t maxlen);
 
 char st_read_guid_from_file(char *file, char *GUID, char create);
 

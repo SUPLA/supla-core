@@ -65,7 +65,7 @@ int supla_client::getName(char *buffer, int size) {
 	lck_unlock(lck);
 
 	buffer[size-1] = 0;
-	return strlen(buffer);
+	return strnlen(buffer, size-1);
 }
 
 char supla_client::register_client(TCS_SuplaRegisterClient *register_client, unsigned char proto_version) {

@@ -52,21 +52,21 @@ bool database::auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int
 
 	if ( _mysql == NULL
 			|| ID == 0
-			|| strlen(_PWD) < 1 )
+			|| strnlen(_PWD, 64) < 1 )
 		return false;
 
 	MYSQL_BIND pbind[2];
 	memset(pbind, 0, sizeof(pbind));
 
 	char PWD[_PWD_HEXSIZE];
-	st_str2hex(PWD, _PWD);
+	st_str2hex(PWD, _PWD, 64);
 
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&ID;
 
 	pbind[1].buffer_type= MYSQL_TYPE_STRING;
 	pbind[1].buffer= (char *)PWD;
-	pbind[1].buffer_length = strlen(PWD);
+	pbind[1].buffer_length = strnlen(PWD, 64);
 
 	int __ID = 0;
 	int __is_enabled = 1;
@@ -177,7 +177,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 
 	char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
 
-	st_str2hex(NameHEX, Name);
+	st_str2hex(NameHEX, Name, SUPLA_DEVICE_NAME_MAXSIZE);
 
 	if ( device_id == 0 ) {
 
@@ -200,7 +200,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 
 		pbind[1].buffer_type= MYSQL_TYPE_STRING;
 		pbind[1].buffer= (char *)NameHEX;
-		pbind[1].buffer_length = strlen(NameHEX);
+		pbind[1].buffer_length = strnlen(NameHEX, 256);
 
 		pbind[2].buffer_type= MYSQL_TYPE_LONG;
 		pbind[2].buffer= (char *)&UserID;
@@ -217,7 +217,7 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 
 		pbind[6].buffer_type= MYSQL_TYPE_STRING;
 		pbind[6].buffer= (char *)softver;
-		pbind[6].buffer_length = strlen(softver);
+		pbind[6].buffer_length = strnlen(softver, 32);
 
 		pbind[7].buffer_type= MYSQL_TYPE_LONG;
 		pbind[7].buffer= (char *)&proto_version;
@@ -258,21 +258,19 @@ int database::add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], cons
 			_OriginalLocationID = 0;
 		}
 
-		my_bool is_null = true;
-
 		MYSQL_BIND pbind[7];
 		memset(pbind, 0, sizeof(pbind));
 
 		pbind[0].buffer_type= MYSQL_TYPE_STRING;
 		pbind[0].buffer= (char *)NameHEX;
-		pbind[0].buffer_length = strlen(NameHEX);
+		pbind[0].buffer_length = strnlen(NameHEX, 256);
 
 		pbind[1].buffer_type= MYSQL_TYPE_LONG;
 		pbind[1].buffer= (char *)&ipv4;
 
 		pbind[2].buffer_type= MYSQL_TYPE_STRING;
 		pbind[2].buffer= (char *)softver;
-		pbind[2].buffer_length = strlen(softver);
+		pbind[2].buffer_length = strnlen(softver, 32);
 
 		pbind[3].buffer_type= MYSQL_TYPE_LONG;
 		pbind[3].buffer= (char *)&proto_version;
@@ -525,7 +523,7 @@ int database::add_client(int AccessID, const char GUID[SUPLA_GUID_SIZE], const c
 
 	char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
 
-	st_str2hex(NameHEX, Name);
+	st_str2hex(NameHEX, Name, SUPLA_DEVICE_NAME_MAXSIZE);
 
 
 	if ( client_id == 0 ) {
@@ -552,7 +550,7 @@ int database::add_client(int AccessID, const char GUID[SUPLA_GUID_SIZE], const c
 
 		pbind[2].buffer_type= MYSQL_TYPE_STRING;
 		pbind[2].buffer= (char *)NameHEX;
-		pbind[2].buffer_length = strlen(NameHEX);
+		pbind[2].buffer_length = strnlen(NameHEX, 256);
 
 		pbind[3].buffer_type= MYSQL_TYPE_LONG;
 		pbind[3].buffer= (char *)&ipv4;
@@ -562,7 +560,7 @@ int database::add_client(int AccessID, const char GUID[SUPLA_GUID_SIZE], const c
 
 		pbind[5].buffer_type= MYSQL_TYPE_STRING;
 		pbind[5].buffer= (char *)softver;
-		pbind[5].buffer_length = strlen(softver);
+		pbind[5].buffer_length = strnlen(softver, 32);
 
 		pbind[6].buffer_type= MYSQL_TYPE_LONG;
 		pbind[6].buffer= (char *)&proto_version;
@@ -585,14 +583,14 @@ int database::add_client(int AccessID, const char GUID[SUPLA_GUID_SIZE], const c
 
 		pbind[0].buffer_type= MYSQL_TYPE_STRING;
 		pbind[0].buffer= (char *)NameHEX;
-		pbind[0].buffer_length = strlen(NameHEX);
+		pbind[0].buffer_length = strnlen(NameHEX, 256);
 
 		pbind[1].buffer_type= MYSQL_TYPE_LONG;
 		pbind[1].buffer= (char *)&ipv4;
 
 		pbind[2].buffer_type= MYSQL_TYPE_STRING;
 		pbind[2].buffer= (char *)softver;
-		pbind[2].buffer_length = strlen(softver);
+		pbind[2].buffer_length = strnlen(softver, 32);
 
 		pbind[3].buffer_type= MYSQL_TYPE_LONG;
 		pbind[3].buffer= (char *)&proto_version;
@@ -765,7 +763,7 @@ void database::add_temperature(int ChannelID, double temperature) {
 
 	pbind[1].buffer_type= MYSQL_TYPE_DECIMAL;
 	pbind[1].buffer= (char *)buff;
-	pbind[1].buffer_length = strlen(buff);
+	pbind[1].buffer_length = strnlen(buff, 20);
 
 
 	const char sql[] = "INSERT INTO `supla_temperature_log`(`channel_id`, `date`, `temperature`) VALUES (?,NOW(),?)";
@@ -797,11 +795,11 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature, d
 
 	pbind[1].buffer_type= MYSQL_TYPE_DECIMAL;
 	pbind[1].buffer= (char *)buff1;
-	pbind[1].buffer_length = strlen(buff1);
+	pbind[1].buffer_length = strnlen(buff1, 20);
 
 	pbind[2].buffer_type= MYSQL_TYPE_DECIMAL;
 	pbind[2].buffer= (char *)buff2;
-	pbind[2].buffer_length = strlen(buff2);
+	pbind[2].buffer_length = strnlen(buff2, 20);
 
 	const char sql[] = "INSERT INTO `supla_temphumidity_log`(`channel_id`, `date`, `temperature`, `humidity`) VALUES (?,NOW(),?,?)";
 
@@ -823,7 +821,7 @@ bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
 
 	pbind[0].buffer_type= MYSQL_TYPE_STRING;
 	pbind[0].buffer= (char *)access_token;
-	pbind[0].buffer_length = strlen(access_token);
+	pbind[0].buffer_length = strnlen(access_token, 512);
 
 	const char sql[] = "SELECT  t.user_id, c.parent_id, t.expires_at FROM `supla_oauth_access_tokens` AS t, `supla_oauth_clients` AS c WHERE c.id = t.client_id AND c.parent_id != 0 AND t.expires_at > UNIX_TIMESTAMP(NOW()) AND t.scope = 'restapi' AND token = ? LIMIT 1";
 
@@ -968,8 +966,8 @@ bool database::get_device_firmware_update_url(int DeviceID, TDS_FirmwareUpdatePa
 
 
 				if ( url->url.available_protocols > 0
-					 && strlen(url->url.host) > 0
-					 && strlen(url->url.path) > 0 )
+					 && strnlen(url->url.host, SUPLA_URL_HOST_MAXSIZE) > 0
+					 && strnlen(url->url.path, SUPLA_URL_PATH_MAXSIZE) > 0 )
 					url->exists = 1;
 
 				result = true;

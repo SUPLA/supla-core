@@ -54,8 +54,8 @@ svr_ipcctrl::svr_ipcctrl(int sfd) {
 
 bool svr_ipcctrl::match_command(const char *cmd, int len) {
 
-	if ( len > (int)strlen(cmd)
-						 && memcmp(buffer, cmd, strlen(cmd)) == 0
+	if ( len > (int)strnlen(cmd, 255)
+						 && memcmp(buffer, cmd, strnlen(cmd, 255)) == 0
 						 && buffer[len-1] == '\n' ) {
 
 		buffer[len-1] = 0;
@@ -68,21 +68,21 @@ bool svr_ipcctrl::match_command(const char *cmd, int len) {
 void svr_ipcctrl::send_result(const char *result) {
 
 	snprintf(buffer, 255, "%s\n", result);
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, 255), 0);
 
 }
 
 void svr_ipcctrl::send_result(const char *result, int i) {
 
 	snprintf(buffer, 255, "%s%i\n", result, i);
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, 255), 0);
 
 }
 
 void svr_ipcctrl::send_result(const char *result, double i) {
 
 	snprintf(buffer, 255, "%s%f\n", result, i);
-	send(sfd, buffer, strlen(buffer), 0);
+	send(sfd, buffer, strnlen(buffer, 255), 0);
 
 }
 
@@ -93,7 +93,7 @@ void svr_ipcctrl::get_double(const char *cmd, char Type) {
 	int ChannelID = 0;
 	double Value;
 
-	sscanf (&buffer[strlen(cmd)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+	sscanf (&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
 
 	if ( UserID
 		 && DeviceID
@@ -131,7 +131,7 @@ void svr_ipcctrl::get_char(const char *cmd) {
 	int ChannelID = 0;
 	char Value;
 
-	sscanf (&buffer[strlen(cmd)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+	sscanf (&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
 
 	if ( UserID
 		 && DeviceID
@@ -172,7 +172,7 @@ void svr_ipcctrl::oauth(const char *cmd) {
 	char access_token[256];
 	memset(access_token, 0, 256);
 
-	sscanf (&buffer[strlen(cmd)], "%s\n", access_token);
+	sscanf (&buffer[strnlen(cmd, 255)], "%s\n", access_token);
 	access_token[255] = 0;
 
 	database *db = new database();
@@ -208,7 +208,7 @@ void svr_ipcctrl::sauth(const char *cmd) {
 	set_unauthorized();
 
 	if ( ipc_sauth_key != NULL
-		 && memcmp(&buffer[strlen(cmd)], ipc_sauth_key, IPC_SAUTH_KEY_SIZE) == 0 ) {
+		 && memcmp(&buffer[strnlen(cmd, 255)], ipc_sauth_key, IPC_SAUTH_KEY_SIZE) == 0 ) {
 
 		auth_level = IPC_AUTH_LEVEL_SUPERUSER;
 
@@ -251,7 +251,7 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
 	char color_brightness;
 	char brightness;
 
-	sscanf (&buffer[strlen(cmd)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+	sscanf (&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
 
 	if ( UserID
 		 && DeviceID
@@ -262,7 +262,7 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
 		if ( r ) {
 
 			snprintf(buffer, 255, "VALUE:%i,%i,%i\n", color, color_brightness, brightness);
-			send(sfd, buffer, strlen(buffer), 0);
+			send(sfd, buffer, strnlen(buffer, 255), 0);
 
 			return;
 		}
@@ -280,7 +280,7 @@ void svr_ipcctrl::set_char(const char *cmd) {
 	int ChannelID = 0;
 	int Value = 0;
 
-	sscanf (&buffer[strlen(cmd)], "%i,%i,%i,%i", &UserID, &DeviceID, &ChannelID, &Value);
+	sscanf (&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i", &UserID, &DeviceID, &ChannelID, &Value);
 
 	if ( UserID
 		 && DeviceID
@@ -314,7 +314,7 @@ void svr_ipcctrl::set_rgbw(const char *cmd) {
 	int ColorBrightness = 0;
 	int Brightness = 0;
 
-	sscanf (&buffer[strlen(cmd)], "%i,%i,%i,%i,%i,%i", &UserID, &DeviceID, &ChannelID, &Color, &ColorBrightness, &Brightness);
+	sscanf (&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i,%i", &UserID, &DeviceID, &ChannelID, &Color, &ColorBrightness, &Brightness);
 
 	if ( UserID
 		 && DeviceID
@@ -366,7 +366,7 @@ void svr_ipcctrl::execute(void *sthread) {
 
 					int UserID = 0;
 					int DeviceID = 0;
-					sscanf (&buffer[strlen(cmd_is_iodev_connected)], "%i,%i", &UserID, &DeviceID);
+					sscanf (&buffer[strnlen(cmd_is_iodev_connected, 255)], "%i,%i", &UserID, &DeviceID);
 
 					if ( UserID
 						 && DeviceID
@@ -378,7 +378,7 @@ void svr_ipcctrl::execute(void *sthread) {
 				} else if ( match_command(cmd_user_reconnect, len) ) {
 
 					int UserID = 0;
-					sscanf (&buffer[strlen(cmd_user_reconnect)], "%i", &UserID);
+					sscanf (&buffer[strnlen(cmd_user_reconnect, 255)], "%i", &UserID);
 
 					if ( UserID
 						 && supla_user::reconnect(UserID) ) {

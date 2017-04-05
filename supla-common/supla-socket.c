@@ -636,7 +636,7 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
 
 
 	if ( ssd->host != NULL 
-			&& strlen(ssd->host) > 0 ) {
+			&& strnlen(ssd->host, 1024) > 0 ) {
 
 		/*
 		#if defined(_WIN32) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP

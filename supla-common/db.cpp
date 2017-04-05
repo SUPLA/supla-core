@@ -132,7 +132,7 @@ bool dbcommon::stmt_execute(void **_stmt, const char *stmt_str, void *bind, int 
 
 	  supla_log(LOG_ERR, "MySQL - mysql_stmt_init(), out of memory");
 
-	} else if ( mysql_stmt_prepare(stmt, stmt_str, strlen(stmt_str)) ) {
+	} else if ( mysql_stmt_prepare(stmt, stmt_str, strnlen(stmt_str, 10240)) ) {
 
 	  supla_log(LOG_ERR, "MySQL - stmt prepare error - %s", mysql_stmt_error(stmt));
 

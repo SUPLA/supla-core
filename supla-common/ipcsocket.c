@@ -77,12 +77,12 @@ void *ipcsocket_init(const char *address) {
 	int sfd;
 	TSuplaIPC_socket *ipc;
 
-	if ( address == 0 || strlen(address) == 0 ) {
+	if ( address == 0 || strnlen(address, 110) == 0 ) {
 		supla_log(LOG_ERR, "IPC unknown address");
 	    return 0;
 	}
 
-	if ( strlen(address) > 107 ) {
+	if ( strnlen(address, 110) > 107 ) {
 		supla_log(LOG_ERR, "IPC address too long");
 	    return 0;
 	}
