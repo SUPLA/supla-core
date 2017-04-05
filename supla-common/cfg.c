@@ -140,29 +140,32 @@ void scfg_add_param(char *section_name, const char *param_name, unsigned char vt
 		memset(scfg, 0, sizeof(TSuplaCfg));
 	}
 
+	param = malloc(sizeof(TSuplaCfgParam));
+
+	if ( param == NULL )
+		return;
+
 	scfg_param = realloc(scfg->param, sizeof(void*)*(scfg->count+1));
 
-	if ( scfg_param != NULL ) {
+	if ( scfg_param == NULL ) {
 
-		param = malloc(sizeof(TSuplaCfgParam));
+		free(param);
 
-		if ( param != NULL ) {
+	} else {
 
-			memset(param, 0, sizeof(TSuplaCfgParam));
+		memset(param, 0, sizeof(TSuplaCfgParam));
 
-			scfg->count++;
-			scfg->param = scfg_param;
+		scfg->count++;
+		scfg->param = scfg_param;
 
-			param->section_name = section_name;
-			param->name = strdup(param_name);
-			param->vtype = vtype;
-			param->cval = cval == NULL ? NULL : strdup(cval);
-			param->bval = bval;
-			param->dval = dval;
-			param->ival = ival;
-			scfg->param[scfg->count-1] = param;
-
-		}
+		param->section_name = section_name;
+		param->name = strdup(param_name);
+		param->vtype = vtype;
+		param->cval = cval == NULL ? NULL : strdup(cval);
+		param->bval = bval;
+		param->dval = dval;
+		param->ival = ival;
+		scfg->param[scfg->count-1] = param;
 
 	}
 
