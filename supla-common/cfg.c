@@ -113,6 +113,10 @@ void scfg_set_callback(_func_cfg_callback cb) {
 
 	if ( scfg == NULL ) {
 		scfg = malloc(sizeof(TSuplaCfg));
+
+		if ( scfg == NULL )
+			return;
+
 		memset(scfg, 0, sizeof(TSuplaCfg));
 	}
 
@@ -122,28 +126,46 @@ void scfg_set_callback(_func_cfg_callback cb) {
 void scfg_add_param(char *section_name, const char *param_name, unsigned char vtype, char *cval, unsigned char bval, double dval, int ival) {
 
 	TSuplaCfgParam *param;
+	TSuplaCfgParam **scfg_param = NULL;
 
 	assert( section_name != NULL && strnlen(section_name, 128) > 0);
 	assert( param_name != NULL && strnlen(param_name, 128) > 0);
 
 	if ( scfg == NULL ) {
 		scfg = malloc(sizeof(TSuplaCfg));
+
+		if ( scfg == NULL )
+			return;
+
 		memset(scfg, 0, sizeof(TSuplaCfg));
 	}
 
-	scfg->count++;
+	scfg_param = realloc(scfg->param, sizeof(void*)*(scfg->count+1));
 
-	scfg->param = realloc(scfg->param, sizeof(void*)*scfg->count);
-	param = malloc(sizeof(TSuplaCfgParam));
-	memset(param, 0, sizeof(TSuplaCfgParam));
-	param->section_name = section_name;
-	param->name = strdup(param_name);
-	param->vtype = vtype;
-	param->cval = cval == NULL ? NULL : strdup(cval);
-	param->bval = bval;
-	param->dval = dval;
-	param->ival = ival;
-	scfg->param[scfg->count-1] = param;
+	if ( scfg_param != NULL ) {
+
+		param = malloc(sizeof(TSuplaCfgParam));
+
+		if ( param != NULL ) {
+
+			memset(param, 0, sizeof(TSuplaCfgParam));
+
+			scfg->count++;
+			scfg->param = scfg_param;
+
+			param->section_name = section_name;
+			param->name = strdup(param_name);
+			param->vtype = vtype;
+			param->cval = cval == NULL ? NULL : strdup(cval);
+			param->bval = bval;
+			param->dval = dval;
+			param->ival = ival;
+			scfg->param[scfg->count-1] = param;
+
+		}
+
+	}
+
 
 }
 

@@ -75,6 +75,10 @@ void SRPC_ICACHE_FLASH  srpc_params_init(TsrpcParams *params) {
 void* SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params) {
 
 	Tsrpc *srpc = (Tsrpc *)malloc(sizeof(Tsrpc));
+
+	if ( srpc == NULL )
+		return NULL;
+
 	memset(srpc, 0, sizeof(Tsrpc));
 	srpc->proto = sproto_init();
 
@@ -132,14 +136,15 @@ char SRPC_ICACHE_FLASH srpc_queue_push(TSuplaDataPacket ***queue, unsigned char 
 	if ( sdp_new == 0 )
 		return SUPLA_RESULT_FALSE;
 
-	(*size)++;
 
-    *queue = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
+    TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
 
-	if ( *queue == 0 ) {
-			*size = 0;
-			free(sdp_new);
-			return SUPLA_RESULT_FALSE;
+	if ( queue_new == 0 && (*size) != 0 ) {
+		free(sdp_new);
+		return SUPLA_RESULT_FALSE;
+	} else {
+		(*size)++;
+		*queue = queue_new;
 	}
 
 
@@ -164,17 +169,19 @@ char SRPC_ICACHE_FLASH srpc_queue_pop(TSuplaDataPacket ***queue, unsigned char *
 			} else {
 
 				free((*queue)[a]);
+				(*queue)[a] = NULL;
 
                 for(b=a;b<((*size)-1);b++)
                 	(*queue)[b] = (*queue)[b+1];
 
                 (*size)--;
 
-                *queue = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
+                TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
 
-            	if ( *queue == 0 ) {
-            			*size = 0;
-            			return SUPLA_RESULT_FALSE;
+            	if ( *queue == 0 && (*size) != 0 ) {
+            		return SUPLA_RESULT_FALSE;
+            	} else {
+                    *queue = queue_new;
             	}
 			}
 
@@ -315,6 +322,10 @@ void SRPC_ICACHE_FLASH srpc_getchannelpack(Tsrpc *srpc, TsrpcReceivedData *rd) {
 
 	pack_size = header_size+(sizeof(TSC_SuplaChannel)*count);
 	pack = (TSC_SuplaChannelPack *)malloc(pack_size);
+
+	if ( pack == NULL )
+		return;
+
 	memset(pack, 0, pack_size);
 	memcpy(pack, srpc->sdp.data, header_size);
 
@@ -371,6 +382,10 @@ void SRPC_ICACHE_FLASH srpc_getlocationpack(Tsrpc *srpc, TsrpcReceivedData *rd) 
 
 	pack_size = header_size+(sizeof(TSC_SuplaLocation)*count);
 	pack = (TSC_SuplaLocationPack *)malloc(pack_size);
+
+	if ( pack == NULL )
+		return;
+
 	memset(pack, 0, pack_size);
 	memcpy(pack, srpc->sdp.data, header_size);
 
@@ -606,7 +621,8 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 				   rd->data.sc_firmware_update_url_result = (TSD_FirmwareUpdate_UrlResult*)malloc(sizeof(TSD_FirmwareUpdate_UrlResult));
 
-				   if ( srpc->sdp.data_size == sizeof(char) )
+				   if ( srpc->sdp.data_size == sizeof(char)
+						&& rd->data.sc_firmware_update_url_result != NULL )
 					   memset(rd->data.sc_firmware_update_url_result, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
 			   }
 
@@ -863,13 +879,24 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TS
 	offset = size;
 
 	char *buffer = malloc(size);
+
+	if ( buffer == NULL )
+		return 0;
+
 	memcpy(buffer, location_pack, size);
 
 	for(a=0;a<location_pack->count;a++) {
 
 		if ( location_pack->locations[a].CaptionSize <= SUPLA_LOCATION_CAPTION_MAXSIZE ) {
 			size+=sizeof(TSC_SuplaLocation)-SUPLA_LOCATION_CAPTION_MAXSIZE+location_pack->locations[a].CaptionSize;
-			buffer = (char *)realloc(buffer, size);
+			char *new_buffer = (char *)realloc(buffer, size);
+
+			if ( new_buffer == NULL && size != 0 ) {
+				free(buffer);
+				return 0;
+			}
+
+			buffer = new_buffer;
 			memcpy(&buffer[offset], &location_pack->locations[a], size-offset);
 			offset+=size-offset;
 			n++;
@@ -914,13 +941,23 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC
 	offset = size;
 
 	char *buffer = malloc(size);
+
+	if ( buffer == NULL )
+		return 0;
+
 	memcpy(buffer, channel_pack, size);
 
 	for(a=0;a<channel_pack->count;a++) {
 
 		if ( channel_pack->channels[a].CaptionSize <= SUPLA_CHANNEL_CAPTION_MAXSIZE ) {
 			size+=sizeof(TSC_SuplaChannel)-SUPLA_CHANNEL_CAPTION_MAXSIZE+channel_pack->channels[a].CaptionSize;
-			buffer = (char *)realloc(buffer, size);
+			char *new_buffer = (char *)realloc(buffer, size);
+
+			if ( new_buffer == NULL && size != 0 ) {
+				free(buffer);
+				return 0;
+			}
+
 			memcpy(&buffer[offset], &channel_pack->channels[a], size-offset);
 			offset+=size-offset;
 			n++;

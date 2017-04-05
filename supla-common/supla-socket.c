@@ -116,8 +116,8 @@ static struct CRYPTO_dynlock_value *ssocket_ssl_dyn_create_function(const char *
 {
     struct CRYPTO_dynlock_value *value;
 
-    value = (struct CRYPTO_dynlock_value *)
-        malloc(sizeof(struct CRYPTO_dynlock_value));
+    value = (struct CRYPTO_dynlock_value *)malloc(sizeof(struct CRYPTO_dynlock_value));
+
     if (!value) {
         goto err;
     }
@@ -337,6 +337,10 @@ void *ssocket_server_init(const char cert[], const char key[], int port, unsigne
 	int i;
 
 	TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
+
+	if ( ssd == NULL )
+		return NULL;
+
     memset(ssd, 0, sizeof(TSuplaSocketData));
 
     ssd->port = port;
@@ -452,26 +456,32 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 			      //supla_log(LOG_DEBUG, "Connection: %i, %s:%d\n",client_sd, inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
 
 		    	  supla_socket = malloc(sizeof(TSuplaSocket));
-		    	  memset(supla_socket, 0, sizeof(TSuplaSocket));
-		    	  supla_socket->sfd = -1;
 
-		    	  *ipv4 = addr.sin_addr.s_addr;
+		    	  if ( supla_socket != NULL ) {
 
-			      if ( client_sd != -1
-			    	   && ssd->secure != 1 ) {
+			    	  memset(supla_socket, 0, sizeof(TSuplaSocket));
+			    	  supla_socket->sfd = -1;
 
-			    	  if ( -1 == fcntl(client_sd, F_SETFL, O_NONBLOCK) ) {
+			    	  *ipv4 = addr.sin_addr.s_addr;
 
-			    		  supla_log(LOG_ERR,  "O_NONBLOCK");
+				      if ( client_sd != -1
+				    	   && ssd->secure != 1 ) {
 
-			    		  supla_socket->sfd = client_sd;
-			    		  ssocket_supla_socket_close(supla_socket);
-			    		  client_sd = -1;
-			    	  }
-			      }
+				    	  if ( -1 == fcntl(client_sd, F_SETFL, O_NONBLOCK) ) {
 
-			      supla_socket->sfd = client_sd;
-			      result = 1;
+				    		  supla_log(LOG_ERR,  "O_NONBLOCK");
+
+				    		  supla_socket->sfd = client_sd;
+				    		  ssocket_supla_socket_close(supla_socket);
+				    		  client_sd = -1;
+				    	  }
+				      }
+
+				      supla_socket->sfd = client_sd;
+				      result = 1;
+
+		    	  }
+
 		      }
 
 		}
@@ -718,6 +728,10 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
 void *ssocket_client_init(const char host[], int port, unsigned char secure) {
 
 	TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
+
+	if ( ssd == NULL )
+		return NULL;
+
     memset(ssd, 0, sizeof(TSuplaSocketData));
 
     ssd->port = port;

@@ -152,20 +152,25 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 			if ( rd.data.ds_register_device != NULL ) {
 				TDS_SuplaRegisterDevice_B *register_device_b = (TDS_SuplaRegisterDevice_B *)malloc(sizeof(TDS_SuplaRegisterDevice_B));
-				memset(register_device_b, 0, sizeof(TDS_SuplaRegisterDevice_B));
 
-				register_device_b->LocationID = rd.data.ds_register_device->LocationID;
-				memcpy(register_device_b->LocationPWD, rd.data.ds_register_device->LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE);
-				memcpy(register_device_b->GUID, rd.data.ds_register_device->GUID, SUPLA_GUID_SIZE);
-				memcpy(register_device_b->Name, rd.data.ds_register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE);
-				memcpy(register_device_b->SoftVer, rd.data.ds_register_device->SoftVer, SUPLA_SOFTVER_MAXSIZE);
+				if ( register_device_b != NULL ) {
 
-				register_device_b->channel_count = rd.data.ds_register_device->channel_count;
+					memset(register_device_b, 0, sizeof(TDS_SuplaRegisterDevice_B));
 
-				for(int c=0;c<register_device_b->channel_count;c++) {
-					register_device_b->channels[c].Number = rd.data.ds_register_device->channels[c].Number;
-					register_device_b->channels[c].Type = rd.data.ds_register_device->channels[c].Type;
-					memcpy(register_device_b->channels[c].value, rd.data.ds_register_device->channels[c].value, SUPLA_CHANNELVALUE_SIZE);
+					register_device_b->LocationID = rd.data.ds_register_device->LocationID;
+					memcpy(register_device_b->LocationPWD, rd.data.ds_register_device->LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE);
+					memcpy(register_device_b->GUID, rd.data.ds_register_device->GUID, SUPLA_GUID_SIZE);
+					memcpy(register_device_b->Name, rd.data.ds_register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE);
+					memcpy(register_device_b->SoftVer, rd.data.ds_register_device->SoftVer, SUPLA_SOFTVER_MAXSIZE);
+
+					register_device_b->channel_count = rd.data.ds_register_device->channel_count;
+
+					for(int c=0;c<register_device_b->channel_count;c++) {
+						register_device_b->channels[c].Number = rd.data.ds_register_device->channels[c].Number;
+						register_device_b->channels[c].Type = rd.data.ds_register_device->channels[c].Type;
+						memcpy(register_device_b->channels[c].value, rd.data.ds_register_device->channels[c].value, SUPLA_CHANNELVALUE_SIZE);
+					}
+
 				}
 
 				free(rd.data.ds_register_device);
@@ -177,15 +182,22 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 			supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_B");
 
-			if ( cdptr == NULL ) {
-				device = new supla_device(this);
-				rd.data.ds_register_device->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
-				rd.data.ds_register_device->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
-				rd.data.ds_register_device->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+			if ( cdptr == NULL && rd.data.ds_register_device_b != NULL ) {
 
-				if ( device->register_device(rd.data.ds_register_device_b, proto_version) == 1 ) {
-					registered = REG_DEVICE;
-				};
+				device = new supla_device(this);
+
+				if ( device != NULL ) {
+
+					rd.data.ds_register_device->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
+					rd.data.ds_register_device->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
+					rd.data.ds_register_device->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+
+					if ( device->register_device(rd.data.ds_register_device_b, proto_version) == 1 ) {
+						registered = REG_DEVICE;
+					};
+
+				}
+
 			}
 
 		break;
@@ -196,13 +208,19 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 			if ( cdptr == NULL ) {
 				client = new supla_client(this);
-				rd.data.cs_register_client->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE-1] = 0;
-				rd.data.cs_register_client->Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
-				rd.data.cs_register_client->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
 
-				if ( client->register_client(rd.data.cs_register_client, proto_version) == 1 ) {
-					registered = REG_CLIENT;
-				};
+				if ( client != NULL ) {
+
+					rd.data.cs_register_client->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE-1] = 0;
+					rd.data.cs_register_client->Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
+					rd.data.cs_register_client->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+
+					if ( client->register_client(rd.data.cs_register_client, proto_version) == 1 ) {
+						registered = REG_CLIENT;
+					};
+
+				}
+
 			}
 
 		break;
@@ -270,24 +288,30 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 				client->get_next();
 				break;
 			case SUPLA_CS_CALL_CHANNEL_SET_VALUE:
+
 				supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE");
 
 				if ( rd.data.cs_channel_new_value != NULL ) {
 
 					TCS_SuplaChannelNewValue_B *cs_channel_new_value_b = (TCS_SuplaChannelNewValue_B *)malloc(sizeof(TCS_SuplaChannelNewValue_B));
-					memset(cs_channel_new_value_b, 0, sizeof(TCS_SuplaChannelNewValue_B));
 
-					cs_channel_new_value_b->ChannelId = rd.data.cs_channel_new_value->ChannelId;
-
-					memcpy(cs_channel_new_value_b->value, rd.data.cs_channel_new_value->value, SUPLA_CHANNELVALUE_SIZE);
+					if ( cs_channel_new_value_b != NULL ) {
+						memset(cs_channel_new_value_b, 0, sizeof(TCS_SuplaChannelNewValue_B));
+						cs_channel_new_value_b->ChannelId = rd.data.cs_channel_new_value->ChannelId;
+						memcpy(cs_channel_new_value_b->value, rd.data.cs_channel_new_value->value, SUPLA_CHANNELVALUE_SIZE);
+					}
 
 					free(rd.data.cs_channel_new_value);
 					rd.data.cs_channel_new_value_b = cs_channel_new_value_b;
 				}
 			/* no break between SUPLA_CS_CALL_CHANNEL_SET_VALUE and SUPLA_CS_CALL_CHANNEL_SET_VALUE_B!!! */
 			case SUPLA_CS_CALL_CHANNEL_SET_VALUE_B:
-				supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE_B");
-				client->set_device_channel_new_value(rd.data.cs_channel_new_value_b);
+
+				if ( rd.data.cs_channel_new_value_b != NULL ) {
+					supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE_B");
+					client->set_device_channel_new_value(rd.data.cs_channel_new_value_b);
+				}
+
 			break;
 
 			default:

@@ -88,10 +88,21 @@ int safe_array_add(void *_arr, void *ptr) {
 		return -1;
 
 	safe_array_lock(_arr);
-	arr->arr = realloc(arr->arr, sizeof(void *) * (arr->count+1));
-	arr->arr[arr->count] = ptr;
-	result = arr->count;
-	arr->count++;
+
+	void **new_arr = realloc(arr->arr, sizeof(void *) * (arr->count+1));
+
+	if ( new_arr == NULL ) {
+
+		result = -1;
+
+	} else {
+
+		arr->arr = new_arr;
+		arr->arr[arr->count] = ptr;
+		result = arr->count;
+		arr->count++;
+
+	}
 
     safe_array_unlock(_arr);
 
@@ -114,8 +125,15 @@ void safe_array_delete(void *_arr, int idx) {
 		if ( idx < arr->count-1 )
 			arr->arr[idx] = arr->arr[arr->count-1];
 
-		arr->arr = realloc(arr->arr, sizeof(void *) * (arr->count-1));
-		arr->count--;
+		void **new_arr = realloc(arr->arr, sizeof(void *) * (arr->count-1));
+
+		if ( new_arr != NULL || arr->count == 1 ) {
+
+			arr->arr = new_arr;
+			arr->count--;
+
+		}
+
 	}
 
 	safe_array_unlock(_arr);

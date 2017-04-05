@@ -131,29 +131,34 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 				while (!mysql_stmt_fetch(stmt)) {
 
 					s_exec_t *s_exec = (s_exec_t*)malloc(sizeof(s_exec_t));
-					memset(s_exec, 0, sizeof(s_exec_t));
 
-					s_exec->id = id;
-					s_exec->schedule_id = schedule_id;
-					s_exec->user_id = user_id;
-					s_exec->iodevice_id = device_id;
-					s_exec->channel_id = channel_id;
-					s_exec->channel_func = channel_func;
-					s_exec->channel_param1 = channel_param1;
-					s_exec->channel_param2 = channel_param2;
-					s_exec->channel_param3 = channel_param3;
-					s_exec->action = action;
-					s_exec->planned_timestamp = planned_timestamp;
+					if ( s_exec != NULL ) {
 
-					if ( is_null[0] == false ) {
-						action_param[255] = 0;
-						s_exec->action_param = strdup(action_param);
+						memset(s_exec, 0, sizeof(s_exec_t));
+
+						s_exec->id = id;
+						s_exec->schedule_id = schedule_id;
+						s_exec->user_id = user_id;
+						s_exec->iodevice_id = device_id;
+						s_exec->channel_id = channel_id;
+						s_exec->channel_func = channel_func;
+						s_exec->channel_param1 = channel_param1;
+						s_exec->channel_param2 = channel_param2;
+						s_exec->channel_param3 = channel_param3;
+						s_exec->action = action;
+						s_exec->planned_timestamp = planned_timestamp;
+
+						if ( is_null[0] == false ) {
+							action_param[255] = 0;
+							s_exec->action_param = strdup(action_param);
+						}
+
+						s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
+						s_exec->retry_count = is_null[2] ? 0 : retry_count;
+
+						safe_array_add(s_exec_arr, s_exec);
+
 					}
-
-					s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
-					s_exec->retry_count = is_null[2] ? 0 : retry_count;
-
-					safe_array_add(s_exec_arr, s_exec);
 
 				}
 

@@ -97,6 +97,13 @@ void *ipcsocket_init(const char *address) {
 		unlink(address);
 
 	ipc = malloc(sizeof(TSuplaIPC_socket));
+
+	if ( ipc == NULL ) {
+
+		close(sfd);
+	    return 0;
+	}
+
 	memset(ipc, 0, sizeof(TSuplaIPC_socket));
 	ipc->sfd = -1;
 

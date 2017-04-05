@@ -115,15 +115,23 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned _supla
 	if ( size >= BUFFER_MAX_SIZE ) 
 		return (SUPLA_RESULT_BUFFER_OVERFLOW);
 		
-	if ( size != (*buffer_size) )
-		*buffer = (char *)realloc(*buffer, size);
+	if ( size != (*buffer_size) ) {
 
-    #ifndef ESP8266
-    #ifndef __AVR__
-    if ( errno == ENOMEM )
-    	return (SUPLA_RESULT_FALSE);
-    #endif
-    #endif
+		char *new_buffer = (char *)realloc(*buffer, size);
+
+		if ( size != 0 && new_buffer == NULL ) {
+			return (SUPLA_RESULT_FALSE);
+		}
+
+		#ifndef ESP8266
+		#ifndef __AVR__
+		if ( errno == ENOMEM )
+			return (SUPLA_RESULT_FALSE);
+		#endif
+		#endif
+
+		*buffer = new_buffer;
+	}
 
     memcpy(&(*buffer)[(*buffer_data_size)], data, data_size);
 
@@ -190,8 +198,18 @@ unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer, unsigned 
     	if ( spd->out.size < BUFFER_MIN_SIZE )
     		spd->out.size = BUFFER_MIN_SIZE;
 
-    	if ( b != spd->out.size )
-    	  spd->out.buffer = (char *)realloc(spd->out.buffer, spd->out.size);
+    	if ( b != spd->out.size ) {
+
+    		char *new_out_buffer = (char *)realloc(spd->out.buffer, spd->out.size);
+
+    		if ( new_out_buffer == NULL && spd->out.size != 0 ) {
+    			spd->out.size = b;
+    		} else {
+    			spd->out.buffer = new_out_buffer;
+    		}
+
+    	}
+
     }
 
     return (buffer_size);
@@ -227,8 +245,18 @@ void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in, unsigned _supla_int_t size
 		if ( in->size < BUFFER_MIN_SIZE )
 			in->size = BUFFER_MIN_SIZE;
 
-		if ( old_size != in->size )
-			in->buffer = (char *)realloc(in->buffer, in->size);
+		if ( old_size != in->size ) {
+
+			char *new_in_buffer = (char *)realloc(in->buffer, in->size);
+
+			if ( new_in_buffer == NULL && in->size != 0 ) {
+				in->size = old_size;
+			} else {
+				in->buffer = new_in_buffer;
+			}
+
+		}
+
 	}
 
 }

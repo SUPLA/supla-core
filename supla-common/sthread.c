@@ -58,6 +58,10 @@ void* _sthread_run(void *ptr) {
 void* sthread_run(Tsthread_params *sthread_params) {
 
 	Tsthread *sthread = malloc(sizeof(Tsthread));
+
+	if ( sthread == NULL )
+		return NULL;
+
 	memset(sthread, 0, sizeof(Tsthread));
 
 	sthread->lck = lck_init();
