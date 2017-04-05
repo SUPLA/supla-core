@@ -457,7 +457,10 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 
 		    	  supla_socket = malloc(sizeof(TSuplaSocket));
 
-		    	  if ( supla_socket != NULL ) {
+		    	  if ( supla_socket == NULL ) {
+		    		  close(client_sd);
+		    		  client_sd = -1;
+		    	  } else {
 
 			    	  memset(supla_socket, 0, sizeof(TSuplaSocket));
 			    	  supla_socket->sfd = -1;
