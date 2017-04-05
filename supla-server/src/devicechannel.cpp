@@ -441,7 +441,13 @@ void supla_device_channels::add_channel(int Id, int Number, int Type, int Func, 
 	safe_array_lock(arr);
 
 	if ( find_channel(Id) == 0 ) {
-		safe_array_add(arr, new supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3));
+
+		supla_device_channel *c = new supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3);
+
+		if ( c != NULL && safe_array_add(arr, c) == -1 ) {
+			delete c;
+			c=NULL;
+		}
 	}
 
 	safe_array_unlock(arr);

@@ -211,7 +211,11 @@ void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID,
 
 	if ( ( channel = find_channel(Id) ) == NULL ) {
 		channel = new supla_client_channel(Id, DeviceId, LocationID, Func, Param1, Caption);
-		safe_array_add(arr, channel);
+		if ( safe_array_add(arr, channel) == -1 ) {
+			delete channel;
+			channel = NULL;
+		}
+
 	} else {
         channel->setCaption(Caption);
 	}

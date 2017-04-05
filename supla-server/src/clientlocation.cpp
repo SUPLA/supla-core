@@ -124,7 +124,13 @@ void supla_client_locations::add_location(int Id, const char *Caption) {
 	safe_array_lock(arr);
 
 	if ( safe_array_findcnd(arr, arr_findcmp, &Id) == 0 ) {
-		safe_array_add(arr, new supla_client_location(Id, Caption));
+
+		supla_client_location *l = new supla_client_location(Id, Caption);
+
+		if ( l != NULL && safe_array_add(arr, l) == -1 ) {
+			delete l;
+			l=NULL;
+		}
 	}
 
 	safe_array_unlock(arr);

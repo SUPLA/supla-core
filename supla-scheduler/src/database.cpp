@@ -156,7 +156,14 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 						s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
 						s_exec->retry_count = is_null[2] ? 0 : retry_count;
 
-						safe_array_add(s_exec_arr, s_exec);
+						if ( safe_array_add(s_exec_arr, s_exec) == -1 ) {
+
+							if ( s_exec->action_param != NULL ) {
+								free(s_exec->action_param);
+							}
+
+							free(s_exec);
+						}
 
 					}
 
