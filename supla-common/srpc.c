@@ -136,17 +136,17 @@ char SRPC_ICACHE_FLASH srpc_queue_push(TSuplaDataPacket ***queue, unsigned char 
 	if ( sdp_new == 0 )
 		return SUPLA_RESULT_FALSE;
 
+	(*size)++;
 
     TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
 
-	if ( queue_new == 0 && (*size) != 0 ) {
+	if ( queue_new == 0 ) {
+		(*size)--;
 		free(sdp_new);
 		return SUPLA_RESULT_FALSE;
 	} else {
-		(*size)++;
 		*queue = queue_new;
 	}
-
 
 	memcpy(sdp_new, sdp, sizeof(TSuplaDataPacket));
 
@@ -178,7 +178,7 @@ char SRPC_ICACHE_FLASH srpc_queue_pop(TSuplaDataPacket ***queue, unsigned char *
 
                 TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
 
-            	if ( *queue == 0 && (*size) != 0 ) {
+            	if ( *queue == 0 && (*size) > 0 ) {
             		return SUPLA_RESULT_FALSE;
             	} else {
                     *queue = queue_new;
@@ -889,9 +889,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TS
 
 		if ( location_pack->locations[a].CaptionSize <= SUPLA_LOCATION_CAPTION_MAXSIZE ) {
 			size+=sizeof(TSC_SuplaLocation)-SUPLA_LOCATION_CAPTION_MAXSIZE+location_pack->locations[a].CaptionSize;
+
 			char *new_buffer = (char *)realloc(buffer, size);
 
-			if ( new_buffer == NULL && size != 0 ) {
+			if ( new_buffer == NULL ) {
 				free(buffer);
 				return 0;
 			}
@@ -951,6 +952,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC
 
 		if ( channel_pack->channels[a].CaptionSize <= SUPLA_CHANNEL_CAPTION_MAXSIZE ) {
 			size+=sizeof(TSC_SuplaChannel)-SUPLA_CHANNEL_CAPTION_MAXSIZE+channel_pack->channels[a].CaptionSize;
+
 			char *new_buffer = (char *)realloc(buffer, size);
 
 			if ( new_buffer == NULL ) {
@@ -959,7 +961,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC
 			}
 
 			buffer = new_buffer;
-
 			memcpy(&buffer[offset], &channel_pack->channels[a], size-offset);
 			offset+=size-offset;
 			n++;

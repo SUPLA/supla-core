@@ -119,7 +119,7 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer, unsigned _supla
 
 		char *new_buffer = (char *)realloc(*buffer, size);
 
-		if ( size != 0 && new_buffer == NULL ) {
+		if ( size > 0 && new_buffer == NULL ) {
 			return (SUPLA_RESULT_FALSE);
 		}
 
@@ -202,7 +202,7 @@ unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer, unsigned 
 
     		char *new_out_buffer = (char *)realloc(spd->out.buffer, spd->out.size);
 
-    		if ( new_out_buffer == NULL && spd->out.size != 0 ) {
+    		if ( new_out_buffer == NULL && spd->out.size > 0 ) {
     			spd->out.size = b;
     		} else {
     			spd->out.buffer = new_out_buffer;
@@ -249,7 +249,7 @@ void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in, unsigned _supla_int_t size
 
 			char *new_in_buffer = (char *)realloc(in->buffer, in->size);
 
-			if ( new_in_buffer == NULL && in->size != 0 ) {
+			if ( new_in_buffer == NULL && in->size > 0 ) {
 				in->size = old_size;
 			} else {
 				in->buffer = new_in_buffer;
