@@ -174,11 +174,12 @@ char SRPC_ICACHE_FLASH srpc_queue_pop(TSuplaDataPacket ***queue, unsigned char *
                 for(b=a;b<((*size)-1);b++)
                 	(*queue)[b] = (*queue)[b+1];
 
+                // before "--" size is always > 1
                 (*size)--;
 
                 TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
 
-            	if ( *queue == 0 && (*size) > 0 ) {
+            	if ( *queue_new == 0 ) {
             		return SUPLA_RESULT_FALSE;
             	} else {
                     *queue = queue_new;
