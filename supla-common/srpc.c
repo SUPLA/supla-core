@@ -953,10 +953,12 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC
 			size+=sizeof(TSC_SuplaChannel)-SUPLA_CHANNEL_CAPTION_MAXSIZE+channel_pack->channels[a].CaptionSize;
 			char *new_buffer = (char *)realloc(buffer, size);
 
-			if ( new_buffer == NULL && size != 0 ) {
+			if ( new_buffer == NULL ) {
 				free(buffer);
 				return 0;
 			}
+
+			buffer = new_buffer;
 
 			memcpy(&buffer[offset], &channel_pack->channels[a], size-offset);
 			offset+=size-offset;
