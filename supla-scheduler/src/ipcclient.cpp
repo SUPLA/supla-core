@@ -97,7 +97,7 @@ int ipc_client::read(void) {
     		len = IPC_BUFFER_SIZE;
 
     	buffer[len] = 0;
-    	supla_log(LOG_DEBUG, "%s", buffer);
+    	//supla_log(LOG_DEBUG, "%s", buffer);
     	return len;
     }
 
