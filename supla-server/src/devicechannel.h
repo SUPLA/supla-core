@@ -56,6 +56,7 @@ public:
 	int getNumber(void);
 	int getFunc(void);
 	int getType(void);
+	int getParam1(void);
 	bool isValueWritable(void);
 	bool isCharValueWritable(void);
 	bool isRgbwValueWritable(void);

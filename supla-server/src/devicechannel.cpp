@@ -95,6 +95,10 @@ int supla_device_channel::getType(void) {
 	return Type;
 }
 
+int supla_device_channel::getParam1(void) {
+	return Param1;
+}
+
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 	memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
@@ -755,6 +759,12 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc, int Sender
 
 		channel->assignCharValue(s.value, value);
 
+		if ( channel->getFunc() == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER
+			 && sizeof(int) == 4 ) {
+
+			int OpeningTime = channel->getParam1();
+			memcpy(&s.value[1], &OpeningTime, 4);
+		}
 
 		srpc_sd_async_set_channel_value(srpc, &s);
 		result = true;
