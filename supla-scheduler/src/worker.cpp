@@ -173,11 +173,19 @@ void s_worker::action_shut_reveal(char shut) {
 
 	bool success = false;
 	char sensor_value = opening_sensor_value();
+	char percent;
+	parse_percentage(&percent);
 
 	if ( sensor_value != shut
-		 || sensor_value == -1 ) {
+		 || sensor_value == -1
+		 || percent > 0 ) {
 
-		bool _s = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, shut == 1 ? 100 : 200);
+		char value = shut == 1 ? 110 : 10;
+
+		if ( percent > 0 )
+			value = 110-percent;
+
+		bool _s = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, value);
 
 		if ( sensor_value == -1 )
 			success = _s;
@@ -262,6 +270,44 @@ int s_worker::hue2rgb(double hue) {
 	rgb |= (unsigned char)(b * 255.00);
 
 	return rgb;
+}
+
+
+char s_worker::parse_percentage(char *percent) {
+
+	jsmn_parser p;
+	jsmntok_t t[10];
+	int a;
+	int result = 0;
+	int value = 0;
+
+	if ( s_exec.action_param == NULL || percent == NULL ) {
+		return 0;
+	}
+
+	jsmn_init(&p);
+	int r = jsmn_parse(&p, s_exec.action_param, strnlen(s_exec.action_param, 255), t, sizeof(t)/sizeof(t[0]));
+
+	if (r < 1 || t[0].type != JSMN_OBJECT) {
+			return 0;
+	}
+
+	for (a = 1; a < r-1; a++) {
+
+		if ( jsoneq(s_exec.action_param, &t[a], "color_brightness") == 0 ) {
+
+			if ( json_get_int(&t[a+1], &value)
+				 && value >= 0
+				 && value <= 100 ) {
+
+				*percent = value;
+				return 1;
+			}
+		};
+	}
+
+	return result;
+
 }
 
 char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brightness) {

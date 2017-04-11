@@ -40,6 +40,7 @@ private:
 	int hue2rgb(double hue);
 	char json_get_int(jsmntok_t *token, int *value);
 	char parse_rgbw_params(int *color, char *color_brightness, char *brightness);
+	char parse_percentage(char *percent);
 	void action_set_rgbw(void);
 
 public:
