@@ -174,13 +174,39 @@ void s_worker::action_shut_reveal(char shut) {
 	bool success = false;
 	char sensor_value = opening_sensor_value();
 	char percent;
-	parse_percentage(&percent);
+
+	if ( parse_percentage(&percent) == 1 ) {
+
+		if ( shut ) {
+
+			if ( percent == 100 ) {
+				percent = 0;
+			} else if ( percent == 0 ) {
+				shut = 0;
+				percent = 0;
+			}
+
+		} else {
+
+			if ( percent == 100 ) {
+				percent = 0;
+			} else if ( percent == 0 ) {
+				shut = 1;
+				percent = 0;
+			}
+		}
+
+		if ( percent > 0 ) {
+			sensor_value = -1;
+		}
+
+
+	}
 
 	if ( sensor_value != shut
-		 || sensor_value == -1
-		 || percent > 0 ) {
+		 || sensor_value == -1 ) {
 
-		char value = shut == 1 ? 110 : 10;
+		char value = shut == 1 ? 1 : 2;
 
 		if ( percent > 0 )
 			value = 110-percent;
