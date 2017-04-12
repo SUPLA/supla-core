@@ -300,6 +300,7 @@ unsigned int supla_device_channel::getValueDuration(void) {
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
 
 		return Param1;
 
@@ -758,13 +759,6 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc, int Sender
 		s.SenderID = SenderID;
 
 		channel->assignCharValue(s.value, value);
-
-		if ( channel->getFunc() == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER
-			 && sizeof(int) == 4 ) {
-
-			int OpeningTime = channel->getParam1();
-			memcpy(&s.value[1], &OpeningTime, 4);
-		}
 
 		srpc_sd_async_set_channel_value(srpc, &s);
 		result = true;
