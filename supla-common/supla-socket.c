@@ -147,6 +147,18 @@ static void ssocket_ssl_dyn_destroy_function(struct CRYPTO_dynlock_value *l,
     free(l);
 }
 
+void ssocket_ssl_error_log(void) {
+	char *errstr;
+	int code;
+	do {
+		code = ERR_get_error();
+		if (code) {
+			errstr = ERR_error_string(code, NULL);
+			supla_log(LOG_ERR, errstr);
+		}
+	} while (code);
+}
+
 SSL_CTX* ssocket_initserverctx(void) {
 
 	SSL_METHOD *method;
@@ -215,17 +227,6 @@ void ssocket_showcerts(SSL* ssl) {
     	supla_log(LOG_DEBUG, "No certificates.");
 }
 
-void ssocket_ssl_error_log(void) {
-	char *errstr;
-	int code;
-	do {
-		code = ERR_get_error();
-		if (code) {
-			errstr = ERR_error_string(code, NULL);
-			supla_log(LOG_ERR, errstr);
-		}
-	} while (code);
-}
 
 int32_t ssocket_ssl_error(TSuplaSocket *supla_socket, int ret_code) {
 
