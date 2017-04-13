@@ -466,6 +466,7 @@ void s_worker::execute(void *sthread) {
 			action_shut_reveal(1);
 			break;
 		case ACTION_REVEAL:
+		case ACTION_REVEAL_PARTIALLY:
 			action_shut_reveal(0);
 			break;
 		case ACTION_TURN_ON:
