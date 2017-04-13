@@ -320,7 +320,7 @@ char s_worker::parse_percentage(char *percent) {
 
 	for (a = 1; a < r-1; a++) {
 
-		if ( jsoneq(s_exec.action_param, &t[a], "color_brightness") == 0 ) {
+		if ( jsoneq(s_exec.action_param, &t[a], "percentage") == 0 ) {
 
 			if ( json_get_int(&t[a+1], &value)
 				 && value >= 0
