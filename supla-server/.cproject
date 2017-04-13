@@ -43,11 +43,12 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1525833655" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__OPEN_SSL=1"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.647780356" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.867359269" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1878067022" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
-								<option id="gnu.cpp.link.option.flags.1493839867" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt" valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.1493839867" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt " valueType="string"/>
 								<option id="gnu.cpp.link.option.libs.1986842540" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="ssl"/>
 									<listOptionValue builtIn="false" value="mysqlclient"/>
@@ -112,6 +113,7 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.def.584360873" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__OPEN_SSL=1"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.282121379" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.149911714" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
