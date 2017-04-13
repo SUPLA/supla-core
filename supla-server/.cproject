@@ -30,6 +30,7 @@
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2062866975" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
 								</option>
+								<option id="gnu.c.compiler.option.misc.other.592483975" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.31395286" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.776925702" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -98,6 +99,7 @@
 								<option id="gnu.c.compiler.option.include.paths.106907262" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
 								</option>
+								<option id="gnu.c.compiler.option.misc.other.2147088608" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.462173459" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.133247513" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
