@@ -292,7 +292,7 @@ bool database::set_fetched(int id) {
 	pbind[0].buffer= (char *)&id;
 
 
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= UTC_TIMESTAMP() WHERE `id` = ? AND `fetched_timestamp` IS NULL", pbind, 1, true) ) {
+	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `consumed` = 1, `fetched_timestamp`= UTC_TIMESTAMP() WHERE `id` = ? AND `fetched_timestamp` IS NULL", pbind, 1, true) ) {
 
 		result = mysql_stmt_affected_rows(stmt) == 1;
 		mysql_stmt_close(stmt);
