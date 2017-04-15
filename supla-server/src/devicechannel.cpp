@@ -307,7 +307,7 @@ unsigned int supla_device_channel::getValueDuration(void) {
 
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
 	{
-	    int result = 0 ;
+		unsigned int result = 0 ;
 
 	    result = (unsigned short)Param1;
 	    result<<=16;
