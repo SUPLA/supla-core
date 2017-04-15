@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "devicechannel.h"
 #include "safearray.h"
@@ -295,16 +296,26 @@ bool supla_device_channel::isRgbwValueWritable(void) {
 
 unsigned int supla_device_channel::getValueDuration(void) {
 
+	assert(sizeof(int) == 4 && sizeof(short) == 2 );
+
 	switch(Func) {
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-	case  SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-
 		return Param1;
 
-		break;
+	case  SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+	{
+	    int result = 0 ;
+	    unsigned short closing_time = Param1;
+	    unsigned short opening_time = Param3;
+
+	    memcpy(&result, &opening_time, 2);
+	    memcpy(&((char*)&result)[2], &closing_time, 2);
+
+		return result;
+	}
 	}
 
 	return 0;
