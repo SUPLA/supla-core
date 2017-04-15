@@ -308,11 +308,10 @@ unsigned int supla_device_channel::getValueDuration(void) {
 	case  SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
 	{
 	    int result = 0 ;
-	    unsigned short closing_time = Param1;
-	    unsigned short opening_time = Param3;
 
-	    memcpy(&result, &opening_time, 2);
-	    memcpy(&((char*)&result)[2], &closing_time, 2);
+	    result = (unsigned short)Param1;
+	    result<<=16;
+	    result |= (unsigned short)Param3;
 
 		return result;
 	}
