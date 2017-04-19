@@ -509,7 +509,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 			   break;
 
-		   case SUPLA_DS_CALL_REGISTER_DEVICE_C: // ver. >= 5
+		   case SUPLA_DS_CALL_REGISTER_DEVICE_C: // ver. >= 6
 
 			   if ( srpc->sdp.data_size >= (sizeof(TDS_SuplaRegisterDevice_C)-(sizeof(TDS_SuplaDeviceChannel_B)*SUPLA_CHANNELMAXCOUNT))
 					&& srpc->sdp.data_size <= sizeof(TDS_SuplaRegisterDevice_C) ) {
@@ -533,7 +533,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 			   break;
 
-		   case SUPLA_CS_CALL_REGISTER_CLIENT_B: // ver. >= 5
+		   case SUPLA_CS_CALL_REGISTER_CLIENT_B: // ver. >= 6
 
 			   if ( srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient_B) )
 				   rd->data.cs_register_client_b = (TCS_SuplaRegisterClient_B*)malloc(sizeof(TCS_SuplaRegisterClient_B));

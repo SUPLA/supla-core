@@ -54,7 +54,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 5
+#define SUPLA_PROTO_VERSION                 6
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #if defined(__AVR__)
@@ -88,10 +88,10 @@ extern "C" {
 #define SUPLA_SDC_CALL_PING_SERVER_RESULT                 50
 #define SUPLA_DS_CALL_REGISTER_DEVICE                     60
 #define SUPLA_DS_CALL_REGISTER_DEVICE_B                   65 // ver. >= 2
-#define SUPLA_DS_CALL_REGISTER_DEVICE_C                   67 // ver. >= 5
+#define SUPLA_DS_CALL_REGISTER_DEVICE_C                   67 // ver. >= 6
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT              70
 #define SUPLA_CS_CALL_REGISTER_CLIENT                     80
-#define SUPLA_CS_CALL_REGISTER_CLIENT_B                   85 // ver. >= 5
+#define SUPLA_CS_CALL_REGISTER_CLIENT_B                   85 // ver. >= 6
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT              90
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED        100
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE                   110
@@ -380,7 +380,7 @@ typedef struct {
 	unsigned char channel_count;
 	TDS_SuplaDeviceChannel_B channels[SUPLA_CHANNELMAXCOUNT]; // Last variable in struct!
 
-}TDS_SuplaRegisterDevice_C; // ver. >= 5
+}TDS_SuplaRegisterDevice_C; // ver. >= 6
 
 typedef struct {
 	// server -> device
@@ -482,7 +482,7 @@ typedef struct {
 
 	char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
 
-}TCS_SuplaRegisterClient_B;
+}TCS_SuplaRegisterClient_B; // ver. >= 6
 
 
 typedef struct {
