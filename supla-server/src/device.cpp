@@ -44,7 +44,7 @@ supla_device::~supla_device() {
 
 }
 
-char supla_device::register_device(TDS_SuplaRegisterDevice_B *register_device, unsigned char proto_version) {
+char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device, unsigned char proto_version) {
 
 	int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
 	char result = 0;

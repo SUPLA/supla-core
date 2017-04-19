@@ -68,7 +68,7 @@ int supla_client::getName(char *buffer, int size) {
 	return strnlen(buffer, size-1);
 }
 
-char supla_client::register_client(TCS_SuplaRegisterClient *register_client, unsigned char proto_version) {
+char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client, unsigned char proto_version) {
 
 	int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
 	char result = 0;

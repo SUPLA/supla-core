@@ -135,7 +135,9 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 		switch(call_type) {
 		case SUPLA_DS_CALL_REGISTER_DEVICE:
 		case SUPLA_DS_CALL_REGISTER_DEVICE_B:
+		case SUPLA_DS_CALL_REGISTER_DEVICE_C:
 		case SUPLA_CS_CALL_REGISTER_CLIENT:
+		case SUPLA_CS_CALL_REGISTER_CLIENT_B:
 
 			if ( srpc_get_proto_version(_srpc) != proto_version ) {
 				// Adjust version to client/device protocol
@@ -182,40 +184,93 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 			supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_B");
 
-			if ( cdptr == NULL && rd.data.ds_register_device_b != NULL ) {
+			if ( rd.data.ds_register_device_b != NULL ) {
+				TDS_SuplaRegisterDevice_C *register_device_c = (TDS_SuplaRegisterDevice_C *)malloc(sizeof(TDS_SuplaRegisterDevice_C));
 
-				device = new supla_device(this);
+				if ( register_device_c != NULL ) {
 
-				if ( device != NULL ) {
+					memset(register_device_c, 0, sizeof(TDS_SuplaRegisterDevice_C));
 
-					rd.data.ds_register_device->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
-					rd.data.ds_register_device->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
-					rd.data.ds_register_device->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+					register_device_c->LocationID = rd.data.ds_register_device_b->LocationID;
+					memcpy(register_device_c->LocationPWD, rd.data.ds_register_device_b->LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE);
+					memcpy(register_device_c->GUID, rd.data.ds_register_device_b->GUID, SUPLA_GUID_SIZE);
+					memcpy(register_device_c->Name, rd.data.ds_register_device_b->Name, SUPLA_DEVICE_NAME_MAXSIZE);
+					memcpy(register_device_c->SoftVer, rd.data.ds_register_device_b->SoftVer, SUPLA_SOFTVER_MAXSIZE);
 
-					if ( device->register_device(rd.data.ds_register_device_b, proto_version) == 1 ) {
-						registered = REG_DEVICE;
-					};
+					register_device_c->channel_count = rd.data.ds_register_device_b->channel_count;
+
+					for(int c=0;c<register_device_c->channel_count;c++) {
+						memcpy(&register_device_c->channels[c], &rd.data.ds_register_device_b->channels[c], sizeof(TDS_SuplaDeviceChannel_B));
+					}
 
 				}
 
+				free(rd.data.ds_register_device_b);
+				rd.data.ds_register_device_c = register_device_c;
 			}
 
+			/* no break between SUPLA_DS_CALL_REGISTER_DEVICE_B and SUPLA_DS_CALL_REGISTER_DEVICE_C!!! */
+			case SUPLA_DS_CALL_REGISTER_DEVICE_C:
+
+				supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_C");
+
+				if ( cdptr == NULL && rd.data.ds_register_device_c != NULL ) {
+
+					device = new supla_device(this);
+
+					if ( device != NULL ) {
+
+						rd.data.ds_register_device_c->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
+						rd.data.ds_register_device_c->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
+						rd.data.ds_register_device_c->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+
+						if ( device->register_device(rd.data.ds_register_device_c, proto_version) == 1 ) {
+							registered = REG_DEVICE;
+						};
+
+					}
+
+				}
 		break;
 
 		case SUPLA_CS_CALL_REGISTER_CLIENT:
 
 			supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT");
 
+			if ( rd.data.cs_register_client != NULL ) {
+				TCS_SuplaRegisterClient_B *register_client_b = (TCS_SuplaRegisterClient_B *)malloc(sizeof(TCS_SuplaRegisterClient_B));
+
+				if ( register_client_b != NULL ) {
+
+					memset(register_client_b, 0, sizeof(TCS_SuplaRegisterClient_B));
+
+					register_client_b->AccessID = rd.data.cs_register_client->AccessID;
+					memcpy(register_client_b->AccessIDpwd, rd.data.cs_register_client->AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE);
+					memcpy(register_client_b->GUID, rd.data.cs_register_client->GUID, SUPLA_GUID_SIZE);
+					memcpy(register_client_b->Name, rd.data.cs_register_client->Name, SUPLA_CLIENT_NAME_MAXSIZE);
+					memcpy(register_client_b->SoftVer, rd.data.cs_register_client->SoftVer, SUPLA_SOFTVER_MAXSIZE);
+
+				}
+
+				free(rd.data.cs_register_client);
+				rd.data.cs_register_client_b = register_client_b;
+			}
+
+		/* no break between SUPLA_CS_CALL_REGISTER_CLIENT and SUPLA_CS_CALL_REGISTER_CLIENT_B!!! */
+		case SUPLA_CS_CALL_REGISTER_CLIENT_B:
+
+			supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_B");
+
 			if ( cdptr == NULL ) {
 				client = new supla_client(this);
 
 				if ( client != NULL ) {
 
-					rd.data.cs_register_client->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE-1] = 0;
-					rd.data.cs_register_client->Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
-					rd.data.cs_register_client->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_b->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_b->Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_b->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
 
-					if ( client->register_client(rd.data.cs_register_client, proto_version) == 1 ) {
+					if ( client->register_client(rd.data.cs_register_client_b, proto_version) == 1 ) {
 						registered = REG_CLIENT;
 					};
 

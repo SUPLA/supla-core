@@ -39,7 +39,7 @@ protected:
 public:
 	supla_client(serverconnection *svrconn);
 
-	char register_client(TCS_SuplaRegisterClient *register_client, unsigned char proto_version);
+	char register_client(TCS_SuplaRegisterClient_B *register_client, unsigned char proto_version);
 	void update_device_channels(int LocationID, int DeviceID);
 	void on_channel_value_changed(int DeviceId, int ChannelId = 0);
 

@@ -79,6 +79,7 @@ extern "C" {
 #define SUPLA_CHANNELPACK_MAXSIZE           20
 #define SUPLA_URL_HOST_MAXSIZE              101
 #define SUPLA_URL_PATH_MAXSIZE              101
+#define SUPLA_SERVER_NAME_MAXSIZE           65
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -87,8 +88,10 @@ extern "C" {
 #define SUPLA_SDC_CALL_PING_SERVER_RESULT                 50
 #define SUPLA_DS_CALL_REGISTER_DEVICE                     60
 #define SUPLA_DS_CALL_REGISTER_DEVICE_B                   65 // ver. >= 2
+#define SUPLA_DS_CALL_REGISTER_DEVICE_C                   67 // ver. >= 5
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT              70
 #define SUPLA_CS_CALL_REGISTER_CLIENT                     80
+#define SUPLA_CS_CALL_REGISTER_CLIENT_B                   85 // ver. >= 5
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT              90
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED        100
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE                   110
@@ -363,6 +366,23 @@ typedef struct {
 }TDS_SuplaRegisterDevice_B; // ver. >= 2
 
 typedef struct {
+	// device -> server
+
+	_supla_int_t LocationID;
+	char LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE]; // UTF8
+
+	char GUID[SUPLA_GUID_SIZE];
+	char Name[SUPLA_DEVICE_NAME_MAXSIZE]; // UTF8
+	char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+	char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+	unsigned char channel_count;
+	TDS_SuplaDeviceChannel_B channels[SUPLA_CHANNELMAXCOUNT]; // Last variable in struct!
+
+}TDS_SuplaRegisterDevice_C; // ver. >= 5
+
+typedef struct {
 	// server -> device
 
 	_supla_int_t result_code;
@@ -449,6 +469,21 @@ typedef struct {
 
 
 }TCS_SuplaRegisterClient;
+
+typedef struct {
+	// client -> server
+
+	_supla_int_t AccessID;
+	char AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE]; // UTF8
+
+	char GUID[SUPLA_GUID_SIZE];
+	char Name[SUPLA_CLIENT_NAME_MAXSIZE]; // UTF8
+	char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+	char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+}TCS_SuplaRegisterClient_B;
+
 
 typedef struct {
 	// server -> client
