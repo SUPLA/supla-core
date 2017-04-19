@@ -270,6 +270,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 					rd.data.cs_register_client_b->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE-1] = 0;
 					rd.data.cs_register_client_b->Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
 					rd.data.cs_register_client_b->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_b->ServerName[SUPLA_SERVER_NAME_MAXSIZE-1] = 0;
 
 					if ( client->register_client(rd.data.cs_register_client_b, proto_version) == 1 ) {
 						registered = REG_CLIENT;
