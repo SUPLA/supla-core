@@ -223,6 +223,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 						rd.data.ds_register_device_c->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
 						rd.data.ds_register_device_c->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
 						rd.data.ds_register_device_c->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+						rd.data.ds_register_device_c->ServerName[SUPLA_SERVER_NAME_MAXSIZE-1] = 0;
 
 						if ( device->register_device(rd.data.ds_register_device_c, proto_version) == 1 ) {
 							registered = REG_DEVICE;
