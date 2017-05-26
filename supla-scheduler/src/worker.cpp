@@ -164,6 +164,20 @@ void s_worker::action_gate_open_close(char _close) {
 
 }
 
+void s_worker::action_open(void) {
+
+	int func[] = { SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK,
+			SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK };
+
+	if ( !check_function_allowed(func, sizeof(func)/sizeof(int)) )
+		return;
+
+	bool success = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, 1);
+	set_result(success, OPEN_RETRY_LIMIT, OPEN_RETRY_TIME, false);
+
+
+}
+
 void s_worker::action_shut_reveal(char shut) {
 
 	int func[] = { SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER };
@@ -460,7 +474,19 @@ void s_worker::execute(void *sthread) {
 			action_gate_open_close(1);
 			break;
 		case ACTION_OPEN:
-			action_gate_open_close(0);
+
+			if ( s_exec.channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR
+			     || s_exec.channel_func == SUPLA_CHANNELFNC_CONTROLLINGTHEGATE ) {
+
+				action_gate_open_close(0);
+
+			} else {
+
+				action_open();
+
+			}
+
+
 			break;
 		case ACTION_SHUT:
 			action_shut_reveal(1);

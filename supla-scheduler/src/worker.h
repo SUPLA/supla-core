@@ -33,6 +33,7 @@ private:
 	bool check_function_allowed(int *func, int func_count);
 	char opening_sensor_value(void);
 
+	void action_open(void);
 	void action_turn_on_off(char on);
 	void action_gate_open_close(char _close);
 	void action_shut_reveal(char shut);
