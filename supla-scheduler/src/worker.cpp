@@ -395,6 +395,14 @@ char s_worker::parse_rgbw_params(int *color, char *color_brightness, char *brigh
 
 				result++;
 
+			} if ( jsoneq(s_exec.action_param, &t[a+1], "white") == 0 ) {
+
+				if ( color ) {
+					*color = 0xFFFFFF;
+				}
+
+				result++;
+
 			} else if ( json_get_int(&t[a+1], &value) ) {
 
 				if ( color ) {
