@@ -180,11 +180,6 @@ void s_worker::action_open(void) {
 
 void s_worker::action_shut_reveal(char shut) {
 
-	int func[] = { SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER };
-
-	if ( !check_function_allowed(func, sizeof(func)/sizeof(int)) )
-		return;
-
 	bool success = false;
 	char sensor_value = opening_sensor_value();
 	char percent;
@@ -210,29 +205,28 @@ void s_worker::action_shut_reveal(char shut) {
 			}
 		}
 
-		if ( percent > 0 ) {
-			sensor_value = -1;
-		}
-
-
 	}
 
-	if ( sensor_value != shut
-		 || sensor_value == -1 ) {
 
-		char value = shut == 1 ? 1 : 2;
+	char value = shut == 1 ? 1 : 2;
 
-		if ( percent > 0 )
-			value = 110-percent;
+	if ( percent > 0 )
+		value = 110-percent;
 
-		bool _s = ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, value);
+	ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, value);
 
-		if ( sensor_value == -1 )
-			success = _s;
+	if ( sensor_value == 1 && ( shut == 1 || percent == 100 ) )
+		success = 1;
+	else {
+		value = -100;
+		ipcc->get_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, &value);
 
-	} else if ( sensor_value == shut ) {
-		success = true;
+		if ( value >= 0 )
+			value = 100-value;
+
+		success = ( percent-value <= 2 && percent-value >= 0 ) || ( percent-value >= -2 && percent-value <= 0 ) ; // tolerance 2%
 	}
+
 
 	set_result(success, RS_RETRY_LIMIT, RS_RETRY_TIME, false);
 

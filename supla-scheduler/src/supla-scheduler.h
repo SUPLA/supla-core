@@ -61,7 +61,7 @@ typedef struct {
 #define GATEOPENCLOSE_RETRY_TIME   60
 
 #define RS_RETRY_LIMIT  2
-#define RS_RETRY_TIME   30
+#define RS_RETRY_TIME   90
 
 #define RGBW_RETRY_LIMIT  2
 #define RGBW_RETRY_TIME   30
