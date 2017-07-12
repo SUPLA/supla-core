@@ -182,7 +182,7 @@ void s_worker::action_shut_reveal(char shut) {
 
 	bool success = false;
 	char sensor_value = opening_sensor_value();
-	char percent;
+	char percent = 0;
 
 	if ( parse_percentage(&percent) == 1 ) {
 
@@ -210,23 +210,47 @@ void s_worker::action_shut_reveal(char shut) {
 
 	char value = shut == 1 ? 1 : 2;
 
-	if ( percent > 0 )
-		value = 110-percent;
+	if ( percent > 0 ) {
 
-	ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, value);
+		if ( shut != 1 )
+			percent = 100 - percent;
 
-	if ( sensor_value == 1 && ( shut == 1 || percent == 100 ) )
-		success = 1;
-	else {
-		value = -100;
-		ipcc->get_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, &value);
+		value = 10+percent;
 
-		if ( value >= 0 )
-			value = 100-value;
+	} else if ( value == 1 ) {
 
-		success = ( percent-value <= 2 && percent-value >= 0 ) || ( percent-value >= -2 && percent-value <= 0 ) ; // tolerance 2%
+		percent = 100;
+
 	}
 
+
+    {
+		char v = -2;
+		ipcc->get_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, &v);
+
+		success = ( percent-v <= 2 && percent-v >= 0 ) || ( percent-v >= -2 && percent-v <= 0 ) ; // tolerance 2%
+
+		//supla_log(LOG_DEBUG, "value = %i, percent = %i, v=%i, success = %i", value, percent, v, success);
+
+		if ( success == true
+			 && sensor_value != -1
+			 && sensor_value != 1
+			 && percent == 100 ) success = false;
+
+		if ( success == true
+			 && s_exec.retry_count == 0 ) {
+			//supla_log(LOG_DEBUG, "s_exec.retry_count == 0", success);
+			success = false;
+		}
+
+		//supla_log(LOG_DEBUG, "success = %i", success);
+
+	}
+
+
+
+	if ( success == false )
+		ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id, s_exec.channel_id, value);
 
 	set_result(success, RS_RETRY_LIMIT, RS_RETRY_TIME, false);
 
