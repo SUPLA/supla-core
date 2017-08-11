@@ -1257,7 +1257,7 @@ char channelio_get_hi_value(unsigned char number, char *hi) {
 	return 0;
 }
 
-void channelio_channels_to_srd(TDS_SuplaRegisterDevice *srd) {
+void channelio_channels_to_srd(TDS_SuplaRegisterDevice_B *srd) {
 
 	int a;
 	srd->channel_count = cio->channel_count;

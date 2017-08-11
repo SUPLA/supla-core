@@ -184,8 +184,8 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id, unsi
 
 void devconnection_register(TDeviceConnectionData *dcd) {
 
-	TDS_SuplaRegisterDevice srd;
-	memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice));
+	TDS_SuplaRegisterDevice_B srd;
+	memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice_B));
 
 	srd.channel_count = 0;
 	srd.LocationID = scfg_int(CFG_LOCATION_ID);
@@ -196,7 +196,7 @@ void devconnection_register(TDeviceConnectionData *dcd) {
 
 	channelio_channels_to_srd(&srd);
 
-	srpc_ds_async_registerdevice(dcd->srpc, &srd);
+	srpc_ds_async_registerdevice_b(dcd->srpc, &srd);
 
 }
 

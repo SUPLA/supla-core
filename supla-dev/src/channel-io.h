@@ -44,7 +44,7 @@ void channelio_set_mcp23008_gpio_port(unsigned char number, unsigned char port);
 char channelio_get_value(unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE]);
 char channelio_get_hi_value(unsigned char number, char *hi);
 char channelio_set_hi_value(unsigned char number, char hi, unsigned int time_ms);
-void channelio_channels_to_srd(TDS_SuplaRegisterDevice *srd);
+void channelio_channels_to_srd(TDS_SuplaRegisterDevice_B *srd);
 
 //TMP TEST
 void tmp_channelio_raise_valuechanged(unsigned char number);
