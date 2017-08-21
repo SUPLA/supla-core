@@ -54,7 +54,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 6
+#define SUPLA_PROTO_VERSION                 7
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #if defined(__AVR__)
@@ -80,6 +80,7 @@ extern "C" {
 #define SUPLA_URL_HOST_MAXSIZE              101
 #define SUPLA_URL_PATH_MAXSIZE              101
 #define SUPLA_SERVER_NAME_MAXSIZE           65
+#define SUPLA_EMAIL_MAXSIZE                 256 // ver. >= 7
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -89,9 +90,11 @@ extern "C" {
 #define SUPLA_DS_CALL_REGISTER_DEVICE                     60
 #define SUPLA_DS_CALL_REGISTER_DEVICE_B                   65 // ver. >= 2
 #define SUPLA_DS_CALL_REGISTER_DEVICE_C                   67 // ver. >= 6
+#define SUPLA_DS_CALL_REGISTER_DEVICE_D                   68 // ver. >= 7
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT              70
 #define SUPLA_CS_CALL_REGISTER_CLIENT                     80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B                   85 // ver. >= 6
+#define SUPLA_CS_CALL_REGISTER_CLIENT_C                   86 // ver. >= 7
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT              90
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED        100
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE                   110
@@ -132,8 +135,10 @@ extern "C" {
 #define SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED      12
 #define SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED      13
 #define SUPLA_RESULTCODE_GUID_ERROR                14
-#define SUPLA_RESULTCODE_HOSTNOTFOUND              15 // ver. >= 5
-#define SUPLA_RESULTCODE_CANTCONNECTTOHOST         16 // ver. >= 5
+#define SUPLA_RESULTCODE_HOSTNOTFOUND              15  // ver. >= 5
+#define SUPLA_RESULTCODE_CANTCONNECTTOHOST         16  // ver. >= 5
+#define SUPLA_RESULTCODE_REGISTRATION_DISABLED     17  // ver. >= 7
+#define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED     18  // ver. >= 7
 
 #define SUPLA_DEVICE_NAME_MAXSIZE                  201
 #define SUPLA_DEVICE_NAMEHEX_MAXSIZE               401
@@ -383,6 +388,22 @@ typedef struct {
 }TDS_SuplaRegisterDevice_C; // ver. >= 6
 
 typedef struct {
+	// device -> server
+
+	char Email[SUPLA_EMAIL_MAXSIZE]; // UTF8
+
+	char GUID[SUPLA_GUID_SIZE];
+	char Name[SUPLA_DEVICE_NAME_MAXSIZE]; // UTF8
+	char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+	char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+	unsigned char channel_count;
+	TDS_SuplaDeviceChannel_B channels[SUPLA_CHANNELMAXCOUNT]; // Last variable in struct!
+
+}TDS_SuplaRegisterDevice_D; // ver. >= 7
+
+typedef struct {
 	// server -> device
 
 	_supla_int_t result_code;
@@ -483,6 +504,20 @@ typedef struct {
 	char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
 
 }TCS_SuplaRegisterClient_B; // ver. >= 6
+
+
+typedef struct {
+	// client -> server
+
+	char Email[SUPLA_EMAIL_MAXSIZE]; // UTF8
+
+	char GUID[SUPLA_GUID_SIZE];
+	char Name[SUPLA_CLIENT_NAME_MAXSIZE]; // UTF8
+	char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+	char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+}TCS_SuplaRegisterClient_C; // ver. >= 7
 
 
 typedef struct {
