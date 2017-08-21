@@ -81,6 +81,7 @@ extern "C" {
 #define SUPLA_URL_PATH_MAXSIZE              101
 #define SUPLA_SERVER_NAME_MAXSIZE           65
 #define SUPLA_EMAIL_MAXSIZE                 256 // ver. >= 7
+#define SUPLA_AUTHKEY_SIZE                  16  // ver. >= 7
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -139,6 +140,7 @@ extern "C" {
 #define SUPLA_RESULTCODE_CANTCONNECTTOHOST         16  // ver. >= 5
 #define SUPLA_RESULTCODE_REGISTRATION_DISABLED     17  // ver. >= 7
 #define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED     18  // ver. >= 7
+#define SUPLA_RESULTCODE_AUTHKEY_ERROR             19  // ver. >= 7
 
 #define SUPLA_DEVICE_NAME_MAXSIZE                  201
 #define SUPLA_DEVICE_NAMEHEX_MAXSIZE               401
@@ -390,9 +392,11 @@ typedef struct {
 typedef struct {
 	// device -> server
 
-	char Email[SUPLA_EMAIL_MAXSIZE]; // UTF8
+	char Email[SUPLA_EMAIL_MAXSIZE];   // UTF8
+	char AuthKey[SUPLA_AUTHKEY_SIZE];
 
 	char GUID[SUPLA_GUID_SIZE];
+
 	char Name[SUPLA_DEVICE_NAME_MAXSIZE]; // UTF8
 	char SoftVer[SUPLA_SOFTVER_MAXSIZE];
 
@@ -510,6 +514,7 @@ typedef struct {
 	// client -> server
 
 	char Email[SUPLA_EMAIL_MAXSIZE]; // UTF8
+	char AuthKey[SUPLA_AUTHKEY_SIZE];
 
 	char GUID[SUPLA_GUID_SIZE];
 	char Name[SUPLA_CLIENT_NAME_MAXSIZE]; // UTF8
