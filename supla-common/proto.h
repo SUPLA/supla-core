@@ -141,6 +141,7 @@ extern "C" {
 #define SUPLA_RESULTCODE_REGISTRATION_DISABLED     17  // ver. >= 7
 #define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED     18  // ver. >= 7
 #define SUPLA_RESULTCODE_AUTHKEY_ERROR             19  // ver. >= 7
+#define SUPLA_RESULTCODE_LOCATION_NOT_ASSIGNED     20  // ver. >= 7
 
 #define SUPLA_DEVICE_NAME_MAXSIZE                  201
 #define SUPLA_DEVICE_NAMEHEX_MAXSIZE               401
