@@ -861,7 +861,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_c(void *_srpc, TDS_S
 	return srpc_async_call(_srpc, SUPLA_DS_CALL_REGISTER_DEVICE_C, (char*)registerdevice, size);
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_c(void *_srpc, TDS_SuplaRegisterDevice_D *registerdevice) {
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_d(void *_srpc, TDS_SuplaRegisterDevice_D *registerdevice) {
 
 	_supla_int_t size = sizeof(TDS_SuplaRegisterDevice_D)
 			- ( sizeof(TDS_SuplaDeviceChannel_B) * SUPLA_CHANNELMAXCOUNT )
