@@ -69,8 +69,11 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1805968868" name="x86.S" rcbsApplicability="disable" resourcePath="src/crypt_blowfish/x86.S" toolsToInvoke="cdt.managedbuild.tool.gnu.cross.assembler.161232218.299561362">
+						<tool command="gcc -c" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cross.assembler.161232218.299561362" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler.161232218"/>
+					</fileInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="bcrypt|crypt_blowfish/Makefile" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -127,7 +130,7 @@
 									<listOptionValue builtIn="false" value="crypto"/>
 									<listOptionValue builtIn="false" value="mysqlclient"/>
 								</option>
-								<option id="gnu.cpp.link.option.flags.25664506" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt " valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.25664506" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt " valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1831015923" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -139,8 +142,13 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="cdt.managedbuild.config.gnu.cross.exe.release.44564803.948364385" name="x86.S" rcbsApplicability="disable" resourcePath="src/crypt_blowfish/x86.S" toolsToInvoke="cdt.managedbuild.tool.gnu.cross.assembler.1379367383.1990165234">
+						<tool command="gcc -c" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cross.assembler.1379367383.1990165234" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler.1379367383">
+							<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1231997288" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="bcrypt|crypt_blowfish/Makefile" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
