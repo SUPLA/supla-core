@@ -706,8 +706,13 @@ int database::add_client(int AccessID, const char *GUID, const char *AuthKey, co
 	char GUIDHEX[SUPLA_GUID_HEXSIZE];
 	st_guid2hex(GUIDHEX, GUID);
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&AccessID;
+	if ( AccessID == 0 ) {
+		pbind[0].buffer_type= MYSQL_TYPE_NULL;
+	} else {
+		pbind[0].buffer_type= MYSQL_TYPE_LONG;
+		pbind[0].buffer= (char *)&AccessID;
+	}
+
 
 	pbind[1].buffer_type= MYSQL_TYPE_STRING;
 	pbind[1].buffer= (char *)GUIDHEX;
