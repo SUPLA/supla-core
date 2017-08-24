@@ -32,12 +32,17 @@ private:
 	virtual int cfg_get_port(void);
 
 	bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int *UserID, bool *is_enabled);
+	bool get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null, const char *sql);
+
 public:
 
 	bool location_auth(int LocationID, char *LocationPWD, int *UserID, bool *is_enabled, int *limit_iodev);
 	bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID, bool *is_enabled);
 
-	bool client_authkey_auth(const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
+	int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
+
+	bool client_get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null);
+	bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
 
 	int add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], const char Name[SUPLA_DEVICE_NAME_MAXSIZE],
 			        unsigned int ipv4, char softver[SUPLA_SOFTVER_MAXSIZE], int proto_version,

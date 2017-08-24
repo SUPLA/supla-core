@@ -125,7 +125,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 				supla_log(LOG_DEBUG, "1 SUPLA_RESULTCODE_BAD_CREDENTIALS");
 
 			} else if ( register_client_c != NULL
-				        && false == db->client_authkey_auth(register_client_c->Email,  register_client_c->AuthKey, &UserID) ) {
+				        && false == db->client_authkey_auth(GUID, register_client_c->Email,  register_client_c->AuthKey, &UserID) ) {
 
 				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 				supla_log(LOG_DEBUG, "2 SUPLA_RESULTCODE_BAD_CREDENTIALS");

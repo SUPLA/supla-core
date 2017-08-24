@@ -24,6 +24,7 @@
 extern "C" {
 #endif
 
+#define BCRYPT_HASH_MAXSIZE 65
 
 extern unsigned char st_app_terminate;
 
@@ -39,7 +40,10 @@ void st_mainloop_free();
 
 size_t st_strlen(char *str, size_t maxlen);
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]);
+void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE]);
+
 char *st_str2hex(char *buffer, const char *str, size_t maxlen);
+char *st_bin2hex(char *buffer, const char *src, size_t len);
 
 char st_read_randkey_from_file(char *file, char *KEY, int size, char create);
 char st_read_guid_from_file(char *file, char *GUID, char create);
@@ -53,6 +57,7 @@ char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds);
 char st_bcrypt_hash(char *str, char *salt, char *hash, int hash_buffer_size);
 char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds);
 char st_bcrypt_check(char *str, char *hash, int hash_len);
+char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 
 #endif
 

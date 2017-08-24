@@ -70,7 +70,10 @@ bool database::auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int
 
 	int __ID = 0;
 	MYSQL_STMT *stmt;
-	stmt_get_int((void**)&stmt, &__ID, UserID, &_is_enabled, NULL, query, pbind, 2);
+	if ( !stmt_get_int((void**)&stmt, &__ID, UserID, &_is_enabled, NULL, query, pbind, 2) ) {
+		__ID = 0;
+		_is_enabled = 0;
+	}
 
 	*is_enabled = _is_enabled == 1;
 
@@ -105,7 +108,133 @@ bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID, bool 
 
 }
 
-bool database::client_authkey_auth(const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID) {
+int database::get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]) {
+
+	if ( _mysql == NULL || strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0 )
+		return 0;
+
+	MYSQL_BIND pbind[1];
+	memset(pbind, 0, sizeof(pbind));
+
+	char EmailHEX[SUPLA_EMAILHEX_MAXSIZE];
+	memset(EmailHEX, 0, SUPLA_EMAILHEX_MAXSIZE);
+
+	st_str2hex(EmailHEX, Email, SUPLA_EMAILHEX_MAXSIZE);
+
+	pbind[0].buffer_type= MYSQL_TYPE_STRING;
+	pbind[0].buffer= (char *)EmailHEX;
+	pbind[0].buffer_length= strnlen(EmailHEX, SUPLA_EMAILHEX_MAXSIZE);
+
+	int UserID = 0;
+	MYSQL_STMT *stmt;
+
+	if ( stmt_get_int((void**)&stmt, &UserID, NULL, NULL, NULL, "SELECT id FROM supla_user WHERE email = unhex(?)", pbind, 1) ) {
+        return UserID;
+	}
+
+
+	return 0;
+}
+
+bool database::get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null, const char *sql) {
+
+	MYSQL_STMT *stmt = NULL;
+
+	MYSQL_BIND pbind[1];
+	memset(pbind, 0, sizeof(pbind));
+
+	pbind[0].buffer_type= MYSQL_TYPE_LONG;
+	pbind[0].buffer= (char *)&ID;
+
+	bool result = false;
+
+	if ( stmt_execute((void**)&stmt, sql, pbind, 1, true) ) {
+
+		my_bool       _is_null = false;
+		unsigned long size = 0;
+
+		MYSQL_BIND rbind[1];
+		memset(rbind, 0, sizeof(rbind));
+
+		rbind[0].buffer_type= MYSQL_TYPE_STRING;
+		rbind[0].buffer= buffer;
+		rbind[0].buffer_length =  buffer_size;
+		rbind[0].length = &size;
+		rbind[0].is_null= &_is_null;
+
+		if ( mysql_stmt_bind_result(stmt, rbind) ) {
+			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
+		} else {
+
+			mysql_stmt_store_result(stmt);
+
+			if ( mysql_stmt_num_rows(stmt) > 0
+				 && !mysql_stmt_fetch(stmt)
+				 && size <= buffer_size ) {
+
+				buffer[size] = 0;
+				*is_null = _is_null > 0;
+
+				result = true;
+			}
+
+		}
+
+		mysql_stmt_close(stmt);
+	}
+
+	return result;
+
+}
+
+bool database::client_get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null) {
+
+	return get_authkey_hash(ID, buffer, buffer_size, is_null, "SELECT auth_key FROM supla_client WHERE id = ?");
+
+}
+
+bool database::client_authkey_auth(const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID) {
+
+	if ( _mysql == NULL ) {
+		return false;
+	}
+
+	int _UserID = get_user_id_by_email(Email);
+
+	if ( _UserID == 0 )
+		return false;
+
+	int ClientID = get_client_id(_UserID, GUID);
+
+	if ( ClientID == 0 ) { // Yes. When client not exists then is authorized
+		*UserID = _UserID;
+		return true;
+	};
+
+	bool is_null = false;
+	char ClientAuthKeyHash[BCRYPT_HASH_MAXSIZE];
+	memset(ClientAuthKeyHash, 0, BCRYPT_HASH_MAXSIZE);
+
+	if ( !client_get_authkey_hash(ClientID, ClientAuthKeyHash, BCRYPT_HASH_MAXSIZE, &is_null) ) {
+		return false;
+	}
+
+	if ( is_null ) { // Yes. When is null then is authorized
+		*UserID = _UserID;
+		return true;
+	}
+
+	char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
+	memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
+
+	st_authkey2hex(AuthKeyHEX, AuthKey);
+
+	if ( st_bcrypt_check(AuthKeyHEX, ClientAuthKeyHash, strnlen(ClientAuthKeyHash, BCRYPT_HASH_MAXSIZE)) ) {
+
+		*UserID = _UserID;
+		return true;
+	}
+
 
 	return false;
 }
@@ -532,7 +661,7 @@ int database::get_client_limit_left(int UserID) {
 }
 
 int database::get_client_count(int UserID) {
-    return get_count(UserID, "SELECT COUNT(*) FROM supla_client WHERE c.user_id = ?");
+    return get_count(UserID, "SELECT COUNT(*) FROM supla_client WHERE user_id = ?");
 }
 
 int database::get_access_id(int UserID, bool enabled) {
@@ -563,8 +692,13 @@ bool database::get_client_reg_enabled(int UserID) {
 int database::add_client(int AccessID, const char *GUID, const char *AuthKey, const char *Name,
 							unsigned int ipv4, char *softver, int proto_version, int UserID) {
 
+
+	int ClientID = 0;
+
 	char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
 	st_str2hex(NameHEX, Name, SUPLA_DEVICE_NAME_MAXSIZE);
+
+	char *AuthKeyHashHEX = NULL;
 
 	MYSQL_BIND pbind[9];
 	memset(pbind, 0, sizeof(pbind));
@@ -599,18 +733,41 @@ int database::add_client(int AccessID, const char *GUID, const char *AuthKey, co
 	pbind[7].buffer_type= MYSQL_TYPE_LONG;
 	pbind[7].buffer= (char *)&UserID;
 
-	pbind[8].buffer_type= MYSQL_TYPE_NULL;
+	if ( AuthKey == NULL ) {
+		pbind[8].buffer_type= MYSQL_TYPE_NULL;
+	} else {
+
+		AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
+
+		if ( AuthKeyHashHEX == NULL )
+			return 0;
+
+		pbind[8].buffer_type= MYSQL_TYPE_STRING;
+		pbind[8].buffer= (char *)AuthKeyHashHEX;
+		pbind[8].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE*2);
+
+	}
+
 
 	const char sql[] = "INSERT INTO `supla_client`(`access_id`, `guid`, `name`, `enabled`, `reg_ipv4`, `reg_date`, `last_access_ipv4`, `last_access_date`, `software_version`, `protocol_version`, `user_id`, `auth_key`) VALUES (?,unhex(?),unhex(?),1,?,NOW(),?,NOW(),?,?,?,unhex(?))";
 
 
 	MYSQL_STMT *stmt;
-	stmt_execute((void**)&stmt, sql, pbind, 9, false);
+	if ( stmt_execute((void**)&stmt, sql, pbind, 9, false) ) {
+		ClientID = get_last_insert_id();
+	}
 
 	if ( stmt != NULL )
 		  mysql_stmt_close(stmt);
 
-	return get_last_insert_id();
+	if ( AuthKeyHashHEX ) {
+
+		free(AuthKeyHashHEX);
+		AuthKeyHashHEX = NULL;
+
+	}
+
+	return ClientID;
 
 }
 
@@ -624,6 +781,8 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 
 	MYSQL_BIND pbind[7];
 	memset(pbind, 0, sizeof(pbind));
+
+	char *AuthKeyHashHEX = NULL;
 
 	pbind[0].buffer_type= MYSQL_TYPE_LONG;
 	pbind[0].buffer= (char *)&AccessID;
@@ -642,7 +801,20 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 	pbind[4].buffer_type= MYSQL_TYPE_LONG;
 	pbind[4].buffer= (char *)&proto_version;
 
-	pbind[5].buffer_type= MYSQL_TYPE_NULL;
+	if ( AuthKey == NULL ) {
+		pbind[5].buffer_type= MYSQL_TYPE_NULL;
+	} else {
+
+		AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
+
+		if ( AuthKeyHashHEX == NULL )
+			return 0;
+
+		pbind[5].buffer_type= MYSQL_TYPE_STRING;
+		pbind[5].buffer= (char *)AuthKeyHashHEX;
+		pbind[5].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE*2);
+
+	}
 
 	pbind[6].buffer_type= MYSQL_TYPE_LONG;
 	pbind[6].buffer= (char *)&ClientID;
@@ -656,6 +828,13 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 
 	if ( stmt != NULL )
 		  mysql_stmt_close(stmt);
+
+	if ( AuthKeyHashHEX ) {
+
+		free(AuthKeyHashHEX);
+		AuthKeyHashHEX = NULL;
+
+	}
 
 	return result;
 

@@ -184,45 +184,41 @@ size_t st_strlen(char *str, size_t maxlen) {
 	return strnlen(str, maxlen-1);
 }
 
+char *st_bin2hex(char *buffer, const char *src, size_t len) {
+
+	int a, b;
+
+	buffer[0] = 0;
+
+	if ( src == 0 || buffer == 0 )
+		return buffer;
+
+	b=0;
+
+	for(a=0;a<len;a++) {
+		snprintf(&buffer[b], 3, "%02X", (unsigned char)src[a]);
+		b+=2;
+	}
+
+	return buffer;
+
+}
+
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]) {
 
-	snprintf(GUIDHEX,
-			 SUPLA_GUID_HEXSIZE,
-	                        "%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-	                        (unsigned char)GUID[0],
-	                        (unsigned char)GUID[1],
-	                        (unsigned char)GUID[2],
-	                        (unsigned char)GUID[3],
-	                        (unsigned char)GUID[4],
-	                        (unsigned char)GUID[5],
-	                        (unsigned char)GUID[6],
-	                        (unsigned char)GUID[7],
-	                        (unsigned char)GUID[8],
-	                        (unsigned char)GUID[9],
-	                        (unsigned char)GUID[10],
-	                        (unsigned char)GUID[11],
-	                        (unsigned char)GUID[12],
-	                        (unsigned char)GUID[13],
-	                        (unsigned char)GUID[14],
-	                        (unsigned char)GUID[15]);
+	st_bin2hex(GUIDHEX, GUID, SUPLA_GUID_SIZE);
+}
+
+void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+
+	st_bin2hex(AuthKeyHEX, AuthKey, SUPLA_AUTHKEY_SIZE);
 
 }
 
 char *st_str2hex(char *buffer, const char *str, size_t maxlen) {
 
-	int a, b;
+	return st_bin2hex(buffer, str, strnlen(str, maxlen));
 
-	if ( str == 0 || buffer == 0 )
-		return buffer;
-
-	b=0;
-
-	for(a=0;a<strnlen(str, maxlen);a++) {
-		snprintf(&buffer[b], 3, "%02X", (unsigned char)str[a]);
-		b+=2;
-	}
-
-	return buffer;
 }
 
 char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
@@ -390,6 +386,30 @@ char st_bcrypt_check(char *str, char *hash, int hash_len) {
 	free(cmp_hash);
 	return result;
 
+}
+
+char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+
+	char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
+	memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
+
+	st_authkey2hex(AuthKeyHEX, AuthKey);
+
+	char hash[BCRYPT_HASH_MAXSIZE];
+
+	if ( st_bcrypt_crypt(AuthKeyHEX, hash, BCRYPT_HASH_MAXSIZE, 4) ) {
+
+		int size = strnlen(hash, BCRYPT_HASH_MAXSIZE);
+		char *hash_hex = (char*)malloc(size*2 + 1);
+
+		st_str2hex(hash_hex, hash, strnlen(hash, BCRYPT_HASH_MAXSIZE));
+		hash_hex[size*2] = 0;
+
+		return hash_hex;
+	}
+
+
+	return NULL;
 }
 
 #endif
