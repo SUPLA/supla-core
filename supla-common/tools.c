@@ -220,7 +220,7 @@ char *st_str2hex(char *buffer, const char *str, size_t maxlen) {
 	return buffer;
 }
 
-char st_read_guid_from_file(char *file, char *GUID, char create) {
+char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
 
 	FILE *F;
 	int a;
@@ -239,10 +239,10 @@ char st_read_guid_from_file(char *file, char *GUID, char create) {
             	     srand(tv.tv_usec);
             	     gettimeofday(&tv, NULL);
 
-            	     for(a=0;a<SUPLA_GUID_SIZE;a++)
-            	    	 GUID[a] = (unsigned char)(rand()+tv.tv_usec);
+            	     for(a=0;a<size;a++)
+            	    	 KEY[a] = (unsigned char)(rand()+tv.tv_usec);
 
-                     if ( fwrite(GUID, SUPLA_GUID_SIZE, (int)1, F) == 1 ) {
+                     if ( fwrite(KEY, size, (int)1, F) == 1 ) {
                     	 result = 1;
                      } else {
                     	 supla_log(LOG_ERR, "Can't write to file %s", file);
@@ -263,10 +263,10 @@ char st_read_guid_from_file(char *file, char *GUID, char create) {
     F = fopen(file, "r");
     if ( F ) {
     	fseek(F, 0, SEEK_END);
-    	if ( ftell(F) == SUPLA_GUID_SIZE ) {
+    	if ( ftell(F) == size ) {
     		fseek(F, 0, SEEK_SET);
 
-            if ( fread(GUID, SUPLA_GUID_SIZE, (int)1, F) == 1 ) {
+            if ( fread(KEY, size, (int)1, F) == 1 ) {
            	 result = 1;
             } else {
            	 supla_log(LOG_ERR, "Can't read file %s", file);
@@ -282,8 +282,8 @@ char st_read_guid_from_file(char *file, char *GUID, char create) {
 
     if ( result == 1 ) {
     	result = 0;
-    	for(a=0;a<SUPLA_GUID_SIZE;a++)
-    		if ( (int)GUID[a] != 0 ) {
+    	for(a=0;a<size;a++)
+    		if ( (int)KEY[a] != 0 ) {
     			result = 1;
     			break;
     		}
@@ -293,6 +293,14 @@ char st_read_guid_from_file(char *file, char *GUID, char create) {
     }
 
 	return result;
+}
+
+char st_read_guid_from_file(char *file, char *GUID, char create) {
+	return st_read_randkey_from_file(file, GUID, SUPLA_GUID_SIZE, create);
+}
+
+char st_read_authkey_from_file(char *file, char *AuthKey, char create) {
+	return st_read_randkey_from_file(file, AuthKey, SUPLA_AUTHKEY_SIZE, create);
 }
 
 time_t st_get_utc_time(void) {

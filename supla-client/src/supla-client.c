@@ -157,6 +157,18 @@ void supla_client_on_register_result(TSuplaClientData *scd, TSC_SuplaRegisterCli
 			supla_log(LOG_NOTICE, "Incorrect client GUID!");
 			break;
 
+		case SUPLA_RESULTCODE_REGISTRATION_DISABLED:
+			supla_log(LOG_NOTICE, "Registration disabled!");
+			break;
+
+		case SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED:
+			supla_log(LOG_NOTICE, "Access Identifier not assigned!");
+			break;
+
+		case SUPLA_RESULTCODE_AUTHKEY_ERROR:
+			supla_log(LOG_NOTICE, "Incorrect AuthKey!");
+			break;
+
 		}
 
 		if ( scd->cfg.cb_on_registererror )
@@ -244,6 +256,7 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id, unsig
 	char result;
 	TSuplaClientData *scd = (TSuplaClientData*)_scd;
 
+	supla_log(LOG_DEBUG, "on_remote_call_received: %i", call_type);
 
 
 	if ( SUPLA_RESULT_TRUE == ( result = srpc_getdata(_srpc, &rd, 0)) ) {
@@ -304,6 +317,7 @@ void *supla_client_init(TSuplaClientCfg *sclient_cfg) {
 	memcpy(&scd->cfg, sclient_cfg, sizeof(TSuplaClientCfg));
 
 	scd->lck = lck_init();
+	scd->cfg.Email[SUPLA_EMAIL_MAXSIZE-1] = 0;
 	scd->cfg.AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE-1] = 0;
 	scd->cfg.Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
 	scd->cfg.host = NULL;
@@ -442,26 +456,55 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 	if ( suplaclient->cfg.cb_on_registering )
 		suplaclient->cfg.cb_on_registering(suplaclient, suplaclient->cfg.user_data);
 
+	supla_log(LOG_DEBUG, "EMAIL: %s", suplaclient->cfg.Email);
 
-	TCS_SuplaRegisterClient src;
-	memset(&src, 0, sizeof(TCS_SuplaRegisterClient));
+	if ( strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 ) {
 
-	src.AccessID = suplaclient->cfg.AccessID;
+		TCS_SuplaRegisterClient_C src;
+		memset(&src, 0, sizeof(TCS_SuplaRegisterClient_C));
 
-#ifdef _WIN32
-	_snprintf_s(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.AccessIDpwd);
-	_snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.Name);
-	_snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.SoftVer);
-#else
-	snprintf(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "%s", suplaclient->cfg.AccessIDpwd);
-	snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
-	snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", suplaclient->cfg.SoftVer);
-#endif
+		#ifdef _WIN32
+		    _snprintf_s(src.Email, SUPLA_EMAIL_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.Email);
+			_snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.Name);
+			_snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.SoftVer);
+			_snprintf_s(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.host);
+		#else
+			snprintf(src.Email, SUPLA_EMAIL_MAXSIZE, "%s", suplaclient->cfg.Email);
+			snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
+			snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", suplaclient->cfg.SoftVer);
+			snprintf(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s", suplaclient->cfg.host);
+		#endif
 
-	memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+		memcpy(src.AuthKey, suplaclient->cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
+		memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+		srpc_cs_async_registerclient_c(suplaclient->srpc, &src);
+
+	} else {
+
+		TCS_SuplaRegisterClient_B src;
+		memset(&src, 0, sizeof(TCS_SuplaRegisterClient_B));
+
+		src.AccessID = suplaclient->cfg.AccessID;
+
+		#ifdef _WIN32
+			_snprintf_s(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.AccessIDpwd);
+			_snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.Name);
+			_snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.SoftVer);
+			_snprintf_s(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.host);
+		#else
+			snprintf(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "%s", suplaclient->cfg.AccessIDpwd);
+			snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
+			snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", suplaclient->cfg.SoftVer);
+			snprintf(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s", suplaclient->cfg.host);
+		#endif
+
+		memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+		srpc_cs_async_registerclient_b(suplaclient->srpc, &src);
+
+	}
 
 
-	srpc_cs_async_registerclient(suplaclient->srpc, &src);
+
 }
 
 void supla_client_ping(TSuplaClientData *suplaclient) {

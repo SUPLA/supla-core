@@ -272,7 +272,31 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 					rd.data.cs_register_client_b->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
 					rd.data.cs_register_client_b->ServerName[SUPLA_SERVER_NAME_MAXSIZE-1] = 0;
 
-					if ( client->register_client(rd.data.cs_register_client_b, proto_version) == 1 ) {
+					if ( client->register_client(rd.data.cs_register_client_b, NULL, proto_version) == 1 ) {
+						registered = REG_CLIENT;
+					};
+
+				}
+
+			}
+
+		break;
+
+		case SUPLA_CS_CALL_REGISTER_CLIENT_C:
+
+			supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_C");
+
+			if ( cdptr == NULL ) {
+				client = new supla_client(this);
+
+				if ( client != NULL ) {
+
+					rd.data.cs_register_client_c->Email[SUPLA_EMAIL_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_c->Name[SUPLA_CLIENT_NAME_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_c->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+					rd.data.cs_register_client_c->ServerName[SUPLA_SERVER_NAME_MAXSIZE-1] = 0;
+
+					if ( client->register_client(NULL, rd.data.cs_register_client_c, proto_version) == 1 ) {
 						registered = REG_CLIENT;
 					};
 

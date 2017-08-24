@@ -75,6 +75,28 @@ bool cdcommon::cmpGUID(const char GUID[SUPLA_GUID_SIZE]) {
 	return result;
 }
 
+bool cdcommon::setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+
+	char _AuthKey[SUPLA_AUTHKEY_SIZE];
+	memset(_AuthKey, 0 , SUPLA_AUTHKEY_SIZE);
+
+	if ( memcmp(_AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE) == 0 )
+		return false;
+
+	lck_lock(lck);
+	memcpy(this->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+	lck_unlock(lck);
+
+	return true;
+}
+
+void cdcommon::getAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]) {
+
+	lck_lock(lck);
+	memcpy(AuthKey, this->AuthKey, SUPLA_AUTHKEY_SIZE);
+	lck_unlock(lck);
+}
+
 int cdcommon::getID(void) {
 
 	int result = false;

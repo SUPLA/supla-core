@@ -28,6 +28,7 @@
 
 void client_loop_on_registererror(void *_suplaclient, void *sthread, int code) {
 
+
 	if ( code == SUPLA_RESULTCODE_BAD_CREDENTIALS ) {
 
 		st_app_terminate = 1;
@@ -95,11 +96,15 @@ void *client_loop_init(void *sthread) {
 	snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Console client");
 	snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
 
+	if ( cfg_email != NULL )
+		snprintf(scc.Email, SUPLA_EMAIL_MAXSIZE, "%s", cfg_email);
+
 	if ( cfg_pwd != NULL )
 		snprintf(scc.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "%s", cfg_pwd);
 
 	scc.AccessID = cfg_aid;
 	memcpy(scc.clientGUID, cfg_client_GUID, SUPLA_GUID_SIZE);
+	memcpy(scc.AuthKey, cfg_client_AuthKey, SUPLA_AUTHKEY_SIZE);
 
 	scc.host = cfg_host;
 	if ( cfg_ssl_enabled ) {

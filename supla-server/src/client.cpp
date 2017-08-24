@@ -68,64 +68,202 @@ int supla_client::getName(char *buffer, int size) {
 	return strnlen(buffer, size-1);
 }
 
-char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client, unsigned char proto_version) {
+char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b, TCS_SuplaRegisterClient_C *register_client_c,  unsigned char proto_version) {
 
 	int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
 	char result = 0;
 
-	if ( !setGUID(register_client->GUID) ) {
+	char *GUID = NULL;
+	char *AuthKey = NULL;
+	char *Name = NULL;
+	char *SoftVer = NULL;
+	_supla_int_t AccessID = 0;
+
+	if ( register_client_b != NULL ) {
+		GUID = register_client_b->GUID;
+		Name = register_client_b->Name;
+		AccessID = register_client_b->AccessID;
+		SoftVer = register_client_b->SoftVer;
+	} else {
+		GUID = register_client_c->GUID;
+		Name = register_client_c->Name;
+		AuthKey = register_client_c->AuthKey;
+		SoftVer = register_client_c->SoftVer;
+	}
+
+	if ( !setGUID(GUID) ) {
+
 		resultcode = SUPLA_RESULTCODE_GUID_ERROR;
+		supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_GUID_ERROR");
+
+	} else if ( register_client_c != NULL
+			    && !setAuthKey(register_client_c->AuthKey) ) {
+
+		resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
+		supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_AUTHKEY_ERROR");
+
+	} else if ( register_client_b == NULL && register_client_c == NULL ) {
+
+		resultcode = SUPLA_RESULTCODE_UNSUPORTED;
+		supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_UNSUPORTED");
+
 	} else {
 
 		database *db = new database();
 
 		if ( db->connect() == true ) {
 
-			int UserID;
-			int Limit;
-			bool is_enabled = true;
+			int UserID = 0;
+			bool accessid_enabled = false;
 
-			if ( db->accessid_auth(register_client->AccessID, register_client->AccessIDpwd, &UserID, &is_enabled, &Limit) == false ) {
-				resultcode = is_enabled ? SUPLA_RESULTCODE_BAD_CREDENTIALS : SUPLA_RESULTCODE_ACCESSID_DISABLED;
+			supla_log(LOG_DEBUG, "AccessID = %i, PWD = %s", AccessID, register_client_b ? register_client_b->AccessIDpwd : "NULL");
+
+			if ( register_client_b != NULL
+				 && false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd, &UserID, &accessid_enabled) ) {
+
+				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+				supla_log(LOG_DEBUG, "1 SUPLA_RESULTCODE_BAD_CREDENTIALS");
+
+			} else if ( register_client_c != NULL
+				        && false == db->client_authkey_auth(register_client_c->Email,  register_client_c->AuthKey, &UserID) ) {
+
+				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+				supla_log(LOG_DEBUG, "2 SUPLA_RESULTCODE_BAD_CREDENTIALS");
+
+			} else if ( UserID == 0 ) {
+
+				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+				supla_log(LOG_DEBUG, "3 SUPLA_RESULTCODE_BAD_CREDENTIALS");
+
 			} else {
 
-				is_enabled = true;
+				_supla_int_t _AccessID = AccessID;
+
+				bool client_enabled = true;
+				bool do_update = true;
+				bool _accessid_enabled = false;
 
 				db->start_transaction();
 
-				int ClientID = db->add_client(register_client->AccessID, register_client->GUID, register_client->Name,
-						getSvrConn()->getClientIpv4(), register_client->SoftVer, proto_version, UserID, &is_enabled, &Limit);
+				int ClientID = db->get_client(db->get_client_id(UserID, GUID), &client_enabled, &_AccessID, &_accessid_enabled);
+
+				if ( _accessid_enabled )
+					accessid_enabled = true;
 
 				if ( ClientID == 0 ) {
 
-					db->rollback();
+					supla_log(LOG_DEBUG, "Client == 0");
 
-					if ( Limit <= 0 ) {
+					do_update = false;
+
+					if ( false == db->get_client_reg_enabled(UserID) ) {
+
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
+						supla_log(LOG_DEBUG, "4 SUPLA_RESULTCODE_REGISTRATION_DISABLED");
+
+					} else if ( db->get_client_limit_left(UserID) <= 0 ) {
+
+						db->rollback();
 						resultcode = SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED;
-					} else if ( !is_enabled ) {
-						resultcode = SUPLA_RESULTCODE_CLIENT_DISABLED;
-					}
-
-				} else {
-
-					db->commit();
-
-					if ( is_enabled ) {
-
-						setID(ClientID);
-						setName(register_client->Name);
-
-						loadConfig();
-
-						resultcode = SUPLA_RESULTCODE_TRUE;
-						result = 1;
-						setUser(supla_user::add_client(this, UserID));
+						supla_log(LOG_DEBUG, "5 SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED");
 
 					} else {
-						resultcode = SUPLA_RESULTCODE_CLIENT_DISABLED;
+
+						if ( AccessID == 0
+							 && register_client_c != NULL
+							 && db->get_client_count(UserID) == 0 ) {
+
+							AccessID = db->get_access_id(UserID, true);
+
+							if ( AccessID > 0 ) {
+								accessid_enabled = true;
+							} else {
+								accessid_enabled = false;
+								AccessID = db->get_access_id(UserID, false);
+							}
+
+						}
+
+						supla_log(LOG_DEBUG, "Add Client");
+
+						ClientID = db->add_client(AccessID, GUID, AuthKey, Name, getSvrConn()->getClientIpv4(),
+												  SoftVer, proto_version, UserID);
+
+						if ( ClientID == 0 ) {
+
+							// something goes wrong
+							db->rollback();
+							supla_log(LOG_DEBUG, "6 SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE");
+
+						} else {
+							 client_enabled = true;
+						}
+
 					}
+
+				} else if ( _AccessID > 0
+						    && register_client_c != NULL ) {
+
+					AccessID = _AccessID;
 				}
 
+
+				if ( ClientID != 0 ) {
+
+
+					if ( AccessID == 0 ) {
+
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
+						supla_log(LOG_DEBUG, "7 SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED");
+
+					} else if ( !accessid_enabled ) {
+
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
+						supla_log(LOG_DEBUG, "8 SUPLA_RESULTCODE_ACCESSID_DISABLED");
+
+					} else if ( !client_enabled ) {
+
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_CLIENT_DISABLED;
+						supla_log(LOG_DEBUG, "9 SUPLA_RESULTCODE_CLIENT_DISABLED");
+
+					} else {
+
+						if ( do_update ) {
+
+							supla_log(LOG_DEBUG, "Update Client %i", ClientID);
+
+							if ( false == db->update_client(ClientID, AccessID, AuthKey, Name, getSvrConn()->getClientIpv4(), SoftVer, proto_version) ) {
+
+								// something goes wrong
+								ClientID = 0;
+								db->rollback();
+
+							}
+						}
+
+						if ( ClientID ) {
+
+							db->commit();
+
+							setID(ClientID);
+							setName(Name);
+
+							loadConfig();
+
+							resultcode = SUPLA_RESULTCODE_TRUE;
+							result = 1;
+							setUser(supla_user::add_client(this, UserID));
+
+						}
+
+
+					}
+
+				}
 
 
 			}
@@ -154,6 +292,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client, u
 
 	return result;
 }
+
 
 void supla_client::update_device_channels(int LocationID, int DeviceID) {
 

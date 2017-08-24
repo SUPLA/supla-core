@@ -26,6 +26,7 @@ protected:
 	bool stmt_execute(void **_stmt, const char *stmt_str, void *bind, int bind_size, bool exec_errors = false);
 	bool stmt_get_int(void **_stmt, int *value1, int *value2, int *value3, int *value4, const char *stmt_str, void *bind, int bind_size, bool exec_errors = false);
 	void stmt_close(void *_stmt);
+	int get_int(int ID, int default_value, const char *sql);
 	int get_count(int ID, const char *sql);
 
 	virtual char *cfg_get_host(void) = 0;
@@ -49,6 +50,8 @@ public:
 	void start_transaction(void);
 	void commit(void);
 	void rollback(void);
+
+	int get_last_insert_id(void);
 
 };
 

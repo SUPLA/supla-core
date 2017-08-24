@@ -253,10 +253,10 @@ bool dbcommon::stmt_get_int(void **_stmt, int *value1, int *value2, int *value3,
 	return result;
 }
 
-int dbcommon::get_count(int ID, const char *sql) {
+int dbcommon::get_int(int ID, int default_value, const char *sql) {
 
 	MYSQL_STMT *stmt;
-	int Result = 0;
+	int Result = default_value;
 
 	MYSQL_BIND pbind[1];
 	memset(pbind, 0, sizeof(pbind));
@@ -265,6 +265,23 @@ int dbcommon::get_count(int ID, const char *sql) {
 	pbind[0].buffer= (char *)&ID;
 
     if ( !stmt_get_int((void**)&stmt, &Result, NULL, NULL, NULL, sql, pbind, 1))
+    	return default_value;
+
+    return Result;
+
+}
+
+int dbcommon::get_count(int ID, const char *sql) {
+
+    return get_int(ID, 0, sql);
+}
+
+int dbcommon::get_last_insert_id(void) {
+
+	MYSQL_STMT *stmt;
+	int Result = 0;
+
+    if ( !stmt_get_int((void**)&stmt, &Result, NULL, NULL, NULL, "SELECT LAST_INSERT_ID()", NULL, 0))
     	return 0;
 
     return Result;

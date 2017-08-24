@@ -26,6 +26,7 @@ class cdcommon {
 private:
 	struct timeval last_activity_time;
 	char GUID[SUPLA_GUID_SIZE];
+	char AuthKey[SUPLA_AUTHKEY_SIZE];
 	serverconnection *svrconn;
 	int ID;
 	supla_user *user;
@@ -37,6 +38,7 @@ protected:
 
     // Thread safe start
     bool setGUID(char GUID[SUPLA_GUID_SIZE]);
+    bool setAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]);
     void setID(int ID);
     void setUser(supla_user *user);
     // Thread safe end
@@ -51,6 +53,7 @@ public:
     // Thread safe start
 	void terminate(void);
     void getGUID(char GUID[SUPLA_GUID_SIZE]);
+    void getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
     int getID(void);
     supla_user *getUser(void);
     bool cmpGUID(const char GUID1[SUPLA_GUID_SIZE]);

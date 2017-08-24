@@ -28,7 +28,9 @@
 #include "supla-client-lib/tools.h"
 
 char *cfg_id_file = NULL;
+char *cfg_authkey_file = NULL;
 
+char *cfg_email = NULL;
 char *cfg_host = NULL;
 int cfg_port = 0;
 char cfg_ssl_enabled = 1;
@@ -37,6 +39,7 @@ int cfg_aid = 0;
 char *cfg_pwd = NULL;
 
 char cfg_client_GUID[SUPLA_GUID_SIZE];
+char cfg_client_AuthKey[SUPLA_AUTHKEY_SIZE];
 
 unsigned char clientcfg_init(int argc, char* argv[]) {
 
@@ -63,7 +66,10 @@ unsigned char clientcfg_init(int argc, char* argv[]) {
 	           } else if ( strcmp("-pwd", argv[a]) == 0 && a<argc-1 ) {
 	        	   cfg_pwd = strdup(argv[a+1]);
 	        	   a++;
-	           };
+	           } else if ( strcmp("-email", argv[a]) == 0 && a<argc-1 ) {
+   	        	   cfg_email = strdup(argv[a+1]);
+   	        	   a++;
+   	           };
 	   }
 
 	   if ( cfg_port == 0 )
@@ -111,6 +117,14 @@ unsigned char clientcfg_init(int argc, char* argv[]) {
 	}
 
 
+	a = malloc(strlen(cfg_id_file)+10);
+	cfg_authkey_file = a;
+	snprintf(cfg_authkey_file, a, "%s.authkey", cfg_id_file);
+
+	if ( st_read_authkey_from_file(cfg_authkey_file, cfg_client_AuthKey, 1) == 0 ) {
+		return 0;
+	}
+
     st_guid2hex(GUIDHEX, cfg_client_GUID);
     GUIDHEX[SUPLA_GUID_HEXSIZE] = 0;
     supla_log(LOG_INFO, "Client GUID: %s", GUIDHEX);
@@ -126,6 +140,11 @@ void  clientcfg_free(void) {
 		cfg_id_file = NULL;
 	}
 
+	if ( cfg_authkey_file ) {
+		free(cfg_authkey_file);
+		cfg_authkey_file = NULL;
+	}
+
 	if ( cfg_host ) {
 		free(cfg_host);
 		cfg_host = NULL;
@@ -134,6 +153,11 @@ void  clientcfg_free(void) {
 	if ( cfg_pwd ) {
 		free(cfg_pwd);
 		cfg_pwd = NULL;
+	}
+
+	if ( cfg_email ) {
+		free(cfg_email);
+		cfg_email = NULL;
 	}
 
 

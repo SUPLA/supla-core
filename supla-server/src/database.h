@@ -31,11 +31,13 @@ private:
 	virtual char *cfg_get_database(void);
 	virtual int cfg_get_port(void);
 
-	bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int *UserID, bool *is_enabled, int *limit);
+	bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int *UserID, bool *is_enabled);
 public:
 
 	bool location_auth(int LocationID, char *LocationPWD, int *UserID, bool *is_enabled, int *limit_iodev);
-	bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID, bool *is_enabled, int *limit_client);
+	bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID, bool *is_enabled);
+
+	bool client_authkey_auth(const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
 
 	int add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], const char Name[SUPLA_DEVICE_NAME_MAXSIZE],
 			        unsigned int ipv4, char softver[SUPLA_SOFTVER_MAXSIZE], int proto_version,
@@ -56,10 +58,20 @@ public:
 	bool on_newdevice(int DeviceID);
 	bool on_channeladded(int DeviceID, int ChannelID);
 
+	int get_client_limit_left(int UserID);
 	int get_client_count(int UserID);
-	int get_client_id(const char GUID[SUPLA_GUID_SIZE], int access_id, bool *is_enabled);
-	int add_client(int AccessID, const char GUID[SUPLA_GUID_SIZE], const char Name[SUPLA_DEVICE_NAME_MAXSIZE],
-			                   unsigned int ipv4, char softver[SUPLA_SOFTVER_MAXSIZE], int proto_version, int UserID, bool *is_enabled, int *Limit);
+
+	int get_access_id(int UserID, bool enabled);
+
+	bool get_client_reg_enabled(int UserID);
+	int get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
+	int get_client(int ClientID, bool *client_enabled, int *access_id, bool *accessid_enabled);
+
+	int add_client(int AccessID, const char *GUID, const char *AuthKey, const char *Name,
+			                   unsigned int ipv4, char *softver, int proto_version, int UserID);
+
+	bool update_client(int ClientID, int AccessID, const char *AuthKey, const char *Name,
+			unsigned int ipv4, char *softver, int proto_version);
 
 	void get_client_locations(int ClientID, supla_client_locations *locs);
 	void get_client_channels(int ClientID, int *DeviceID, supla_client_channels *channels);
