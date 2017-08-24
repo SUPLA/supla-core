@@ -26,6 +26,11 @@
 #include "log.h"
 #include "eh.h"
 
+#ifdef __BCRYPT
+#include "crypt_blowfish/ow-crypt.h"
+#define BCRYPT_RABD_SIZE 16
+#endif
+
 unsigned char st_app_terminate = 0;
 pthread_t main_thread;
 
@@ -310,3 +315,82 @@ time_t st_get_utc_time(void) {
 	return mktime(now_tm);
 
 }
+
+#ifdef __BCRYPT
+char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
+
+	if ( salt == NULL || salt_buffer_size == 0 )
+		return 0;
+
+	char random[BCRYPT_RABD_SIZE];
+	int a;
+
+	if ( rounds > 31 )
+		rounds = 31;
+	else if ( rounds < 4 )
+		rounds = 4;
+
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+
+    srand(tv.tv_usec);
+
+    for(a=0;a<BCRYPT_RABD_SIZE;a++)
+    	random[a] = rand()+tv.tv_usec;
+
+
+    return crypt_gensalt_rn("$2a$", rounds, random, BCRYPT_RABD_SIZE,
+    			       salt, salt_buffer_size) == NULL ? 0 : 1;
+
+}
+
+char st_bcrypt_hash(char *str, char *salt, char *hash, int hash_buffer_size) {
+
+	if ( str == NULL || hash == NULL || salt == NULL || hash_buffer_size == 0 )
+		return 0;
+
+	return crypt_rn(str, salt, hash, hash_buffer_size) == NULL ? 0 : 1;
+
+}
+
+char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds) {
+
+	if ( str == NULL || hash == NULL || hash_buffer_size == 0 )
+		return 0;
+
+	char salt[32];
+	if ( 1 == st_bcrypt_gensalt(salt, 32, rounds) ) {
+
+		return st_bcrypt_hash(str, salt, hash, hash_buffer_size);
+	}
+
+	return 0;
+}
+
+char st_bcrypt_check(char *str, char *hash, int hash_len) {
+
+	if ( str == NULL || hash == NULL || hash_len == 0 )
+		return 0;
+
+	char *cmp_hash = malloc(hash_len+1);
+	char result = 0;
+
+	if ( st_bcrypt_hash(str, hash, cmp_hash, hash_len+1) == 1 ) {
+
+		cmp_hash[hash_len] = 0;
+
+		if ( hash_len == strnlen(cmp_hash, hash_len)
+			 && memcmp(hash, cmp_hash, hash_len) == 0 ) {
+
+			result = 1;
+		}
+
+	}
+
+	free(cmp_hash);
+	return result;
+
+}
+
+#endif
+

@@ -45,8 +45,16 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create);
 char st_read_guid_from_file(char *file, char *GUID, char create);
 char st_read_authkey_from_file(char *file, char *AuthKey, char create);
 
-
 time_t st_get_utc_time(void);
+
+#ifdef __BCRYPT
+
+char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds);
+char st_bcrypt_hash(char *str, char *salt, char *hash, int hash_buffer_size);
+char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds);
+char st_bcrypt_check(char *str, char *hash, int hash_len);
+
+#endif
 
 #ifdef __cplusplus
 }
