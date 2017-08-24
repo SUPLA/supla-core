@@ -212,13 +212,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 				if ( ClientID != 0 ) {
 
 
-					if ( AccessID == 0 ) {
-
-						db->rollback();
-						resultcode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
-						supla_log(LOG_DEBUG, "7 SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED");
-
-					} else if ( !accessid_enabled ) {
+					if ( AccessID != 0  && !accessid_enabled ) {
 
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
@@ -249,14 +243,23 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
 							db->commit();
 
-							setID(ClientID);
-							setName(Name);
+							if ( AccessID == 0 ) {
 
-							loadConfig();
+								resultcode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
+								supla_log(LOG_DEBUG, "7 SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED");
 
-							resultcode = SUPLA_RESULTCODE_TRUE;
-							result = 1;
-							setUser(supla_user::add_client(this, UserID));
+							} else {
+
+								setID(ClientID);
+								setName(Name);
+
+								loadConfig();
+
+								resultcode = SUPLA_RESULTCODE_TRUE;
+								result = 1;
+								setUser(supla_user::add_client(this, UserID));
+
+							}
 
 						}
 

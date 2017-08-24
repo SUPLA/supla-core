@@ -789,8 +789,12 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 
 	char *AuthKeyHashHEX = NULL;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&AccessID;
+	if ( AccessID == 0 ) {
+		pbind[0].buffer_type= MYSQL_TYPE_NULL;
+	} else {
+		pbind[0].buffer_type= MYSQL_TYPE_LONG;
+		pbind[0].buffer= (char *)&AccessID;
+	}
 
 	pbind[1].buffer_type= MYSQL_TYPE_STRING;
 	pbind[1].buffer= (char *)NameHEX;
