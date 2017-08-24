@@ -82,6 +82,7 @@ extern "C" {
 #define SUPLA_SERVER_NAME_MAXSIZE           65
 #define SUPLA_EMAIL_MAXSIZE                 256 // ver. >= 7
 #define SUPLA_AUTHKEY_SIZE                  16  // ver. >= 7
+#define SUPLA_GUID_HEXSIZE                  33  // ver. >= 7
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
