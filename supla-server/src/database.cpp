@@ -679,7 +679,7 @@ int database::get_access_id(int UserID, bool enabled) {
 	pbind[1].buffer_type= MYSQL_TYPE_LONG;
 	pbind[1].buffer= (char *)&_enabled;
 
-    if ( !stmt_get_int((void**)&stmt, &Result, NULL, NULL, NULL, "SELECT id FROM `supla_accessid` WHERE user_id = ? AND enabled = ?", pbind, 2))
+    if ( !stmt_get_int((void**)&stmt, &Result, NULL, NULL, NULL, "SELECT id FROM `supla_accessid` WHERE user_id = ? AND enabled = ? LIMIT 1", pbind, 2))
     	return 0;
 
     return Result;
@@ -784,7 +784,7 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 	char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
 	st_str2hex(NameHEX, Name, SUPLA_DEVICE_NAME_MAXSIZE);
 
-	MYSQL_BIND pbind[7];
+	MYSQL_BIND pbind[8];
 	memset(pbind, 0, sizeof(pbind));
 
 	char *AuthKeyHashHEX = NULL;
@@ -812,6 +812,7 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 
 	if ( AuthKey == NULL ) {
 		pbind[5].buffer_type= MYSQL_TYPE_NULL;
+		pbind[6].buffer_type= MYSQL_TYPE_NULL;
 	} else {
 
 		AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
@@ -819,19 +820,23 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 		if ( AuthKeyHashHEX == NULL )
 			return 0;
 
-		pbind[5].buffer_type= MYSQL_TYPE_STRING;
-		pbind[5].buffer= (char *)AuthKeyHashHEX;
+		pbind[5].buffer_type = MYSQL_TYPE_STRING;
+		pbind[5].buffer = (char *)AuthKeyHashHEX;
 		pbind[5].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE*2);
 
+		pbind[6].buffer_type = pbind[5].buffer_type;
+		pbind[6].buffer = pbind[5].buffer;
+		pbind[6].buffer_length = pbind[5].buffer_length;
 	}
 
-	pbind[6].buffer_type= MYSQL_TYPE_LONG;
-	pbind[6].buffer= (char *)&ClientID;
 
-	const char sql[] = "UPDATE `supla_client` SET `access_id` = ?, `name` = unhex(?), `last_access_date` = NOW(), `last_access_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, `auth_key` = unhex(?) WHERE id = ?";
+	pbind[7].buffer_type= MYSQL_TYPE_LONG;
+	pbind[7].buffer= (char *)&ClientID;
+
+	const char sql[] = "UPDATE `supla_client` SET `access_id` = ?, `name` = unhex(?), `last_access_date` = NOW(), `last_access_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, `auth_key` =  CASE `auth_key` WHEN NULL THEN unhex(?) ELSE IFNULL(unhex(?), NULL) END WHERE id = ?";
 
 	MYSQL_STMT *stmt;
-	if ( stmt_execute((void**)&stmt, sql, pbind, 7) ) {
+	if ( stmt_execute((void**)&stmt, sql, pbind, 8) ) {
 		result = true;
 	}
 

@@ -94,18 +94,15 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 	if ( !setGUID(GUID) ) {
 
 		resultcode = SUPLA_RESULTCODE_GUID_ERROR;
-		supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_GUID_ERROR");
 
 	} else if ( register_client_c != NULL
 			    && !setAuthKey(register_client_c->AuthKey) ) {
 
 		resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
-		supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_AUTHKEY_ERROR");
 
 	} else if ( register_client_b == NULL && register_client_c == NULL ) {
 
 		resultcode = SUPLA_RESULTCODE_UNSUPORTED;
-		supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_UNSUPORTED");
 
 	} else {
 
@@ -116,24 +113,19 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 			int UserID = 0;
 			bool accessid_enabled = false;
 
-			supla_log(LOG_DEBUG, "AccessID = %i, PWD = %s", AccessID, register_client_b ? register_client_b->AccessIDpwd : "NULL");
-
 			if ( register_client_b != NULL
 				 && false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd, &UserID, &accessid_enabled) ) {
 
 				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-				supla_log(LOG_DEBUG, "1 SUPLA_RESULTCODE_BAD_CREDENTIALS");
 
 			} else if ( register_client_c != NULL
 				        && false == db->client_authkey_auth(GUID, register_client_c->Email,  register_client_c->AuthKey, &UserID) ) {
 
 				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-				supla_log(LOG_DEBUG, "2 SUPLA_RESULTCODE_BAD_CREDENTIALS");
 
 			} else if ( UserID == 0 ) {
 
 				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-				supla_log(LOG_DEBUG, "3 SUPLA_RESULTCODE_BAD_CREDENTIALS");
 
 			} else {
 
@@ -152,21 +144,17 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
 				if ( ClientID == 0 ) {
 
-					supla_log(LOG_DEBUG, "Client == 0");
-
 					do_update = false;
 
 					if ( false == db->get_client_reg_enabled(UserID) ) {
 
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
-						supla_log(LOG_DEBUG, "4 SUPLA_RESULTCODE_REGISTRATION_DISABLED");
 
 					} else if ( db->get_client_limit_left(UserID) <= 0 ) {
 
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED;
-						supla_log(LOG_DEBUG, "5 SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED");
 
 					} else {
 
@@ -185,8 +173,6 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
 						}
 
-						supla_log(LOG_DEBUG, "Add Client");
-
 						ClientID = db->add_client(AccessID, GUID, AuthKey, Name, getSvrConn()->getClientIpv4(),
 												  SoftVer, proto_version, UserID);
 
@@ -194,7 +180,6 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
 							// something goes wrong
 							db->rollback();
-							supla_log(LOG_DEBUG, "6 SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE");
 
 						} else {
 							 client_enabled = true;
@@ -212,23 +197,14 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 				if ( ClientID != 0 ) {
 
 
-					if ( AccessID != 0  && !accessid_enabled ) {
-
-						db->rollback();
-						resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
-						supla_log(LOG_DEBUG, "8 SUPLA_RESULTCODE_ACCESSID_DISABLED");
-
-					} else if ( !client_enabled ) {
+					if ( !client_enabled ) {
 
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_CLIENT_DISABLED;
-						supla_log(LOG_DEBUG, "9 SUPLA_RESULTCODE_CLIENT_DISABLED");
 
 					} else {
 
 						if ( do_update ) {
-
-							supla_log(LOG_DEBUG, "Update Client %i", ClientID);
 
 							if ( false == db->update_client(ClientID, AccessID, AuthKey, Name, getSvrConn()->getClientIpv4(), SoftVer, proto_version) ) {
 
@@ -246,7 +222,10 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 							if ( AccessID == 0 ) {
 
 								resultcode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
-								supla_log(LOG_DEBUG, "7 SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED");
+
+							} else if ( !accessid_enabled ) {
+
+								resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
 
 							} else {
 
