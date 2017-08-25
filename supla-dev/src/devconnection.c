@@ -133,6 +133,24 @@ void devconnection_on_register_result(TDeviceConnectionData *dcd, TSD_SuplaRegis
 	case SUPLA_RESULTCODE_GUID_ERROR:
 		supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE, "Incorrect device GUID!");
 		break;
+
+	case SUPLA_RESULTCODE_REGISTRATION_DISABLED:
+		supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE, "Registration disabled!");
+		break;
+
+	case SUPLA_RESULTCODE_AUTHKEY_ERROR:
+		supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE, "Incorrect AuthKey!");
+		break;
+
+	case SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE:
+		supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE, "No location available!");
+		break;
+
+	case SUPLA_RESULTCODE_USER_CONFLICT:
+		supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE, "User conflict!");
+		break;
+
+
 	}
 
 }

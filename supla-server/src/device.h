@@ -31,7 +31,7 @@ protected:
 
 public:
     supla_device(serverconnection *svrconn);
-	char register_device(TDS_SuplaRegisterDevice_C *register_device, unsigned char proto_version);
+	char register_device(TDS_SuplaRegisterDevice_C *register_device_c, TDS_SuplaRegisterDevice_D *register_device_d, unsigned char proto_version);
 	virtual ~supla_device();
 
 	bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);

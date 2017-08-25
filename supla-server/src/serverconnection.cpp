@@ -225,7 +225,30 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 						rd.data.ds_register_device_c->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
 						rd.data.ds_register_device_c->ServerName[SUPLA_SERVER_NAME_MAXSIZE-1] = 0;
 
-						if ( device->register_device(rd.data.ds_register_device_c, proto_version) == 1 ) {
+						if ( device->register_device(rd.data.ds_register_device_c, NULL, proto_version) == 1 ) {
+							registered = REG_DEVICE;
+						};
+
+					}
+
+				}
+		break;
+			case SUPLA_DS_CALL_REGISTER_DEVICE_D:
+
+				supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_D");
+
+				if ( cdptr == NULL && rd.data.ds_register_device_d != NULL ) {
+
+					device = new supla_device(this);
+
+					if ( device != NULL ) {
+
+						rd.data.ds_register_device_d->Email[SUPLA_LOCATION_PWD_MAXSIZE-1] = 0;
+						rd.data.ds_register_device_d->Name[SUPLA_DEVICE_NAME_MAXSIZE-1] = 0;
+						rd.data.ds_register_device_d->SoftVer[SUPLA_SOFTVER_MAXSIZE-1] = 0;
+						rd.data.ds_register_device_d->ServerName[SUPLA_SERVER_NAME_MAXSIZE-1] = 0;
+
+						if ( device->register_device(NULL, rd.data.ds_register_device_d, proto_version) == 1 ) {
 							registered = REG_DEVICE;
 						};
 

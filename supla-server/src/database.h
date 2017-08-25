@@ -32,28 +32,40 @@ private:
 	virtual int cfg_get_port(void);
 
 	bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int *UserID, bool *is_enabled);
+	bool authkey_auth(const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID, bool Client, const char *sql);
+
 	bool get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null, const char *sql);
+
 
 public:
 
-	bool location_auth(int LocationID, char *LocationPWD, int *UserID, bool *is_enabled, int *limit_iodev);
+	bool location_auth(int LocationID, char *LocationPWD, int *UserID, bool *is_enabled);
 	bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID, bool *is_enabled);
 
 	int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
 
-	bool client_get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null);
 	bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
+	bool device_authkey_auth(const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
 
-	int add_device(int *LocationID, const char GUID[SUPLA_GUID_SIZE], const char Name[SUPLA_DEVICE_NAME_MAXSIZE],
-			        unsigned int ipv4, char softver[SUPLA_SOFTVER_MAXSIZE], int proto_version,
-			        int UserID, bool *new_device, bool *is_enabled, int *Limit);
+	int add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE], const char *AuthKey, const char *Name,
+			        unsigned int ipv4, const char *softver, int proto_version, int UserID);
+
+	int update_device(int DeviceID, int OriginalLocationID, int LocationID, const char *AuthKey, const char *Name,
+	                unsigned int ipv4, const char *softver, int proto_version) ;
 
 	int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
 	int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func, int FList, int UserID, bool *new_channel);
 
+	int get_device_limit_left(int UserID);
 	int get_device_count(int UserID);
-	int get_device_id(const char GUID[SUPLA_GUID_SIZE], int *location_id, int *oryginal_location_id, bool *is_enabled);
-	int get_device_channel_id(int DeviceID, int ChannelNumber, int *Type);
+
+	int get_location_id(int UserID, bool enabled);
+
+	bool get_device_reg_enabled(int UserID);
+	int get_device_id(const char GUID[SUPLA_GUID_SIZE]);
+	int get_device(int DeviceID, bool *device_enabled, int *original_location_id, int *location_id, bool *location_enabled, int *UserID);
+
+	int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
 	int get_device_channel_count(int DeviceID);
 	int get_device_channel_type(int DeviceID, int ChannelNumber);
 	void get_device_channels(int DeviceID, supla_device_channels *channels);
@@ -73,10 +85,10 @@ public:
 	int get_client(int ClientID, bool *client_enabled, int *access_id, bool *accessid_enabled);
 
 	int add_client(int AccessID, const char *GUID, const char *AuthKey, const char *Name,
-			                   unsigned int ipv4, char *softver, int proto_version, int UserID);
+			                   unsigned int ipv4, const char *softver, int proto_version, int UserID);
 
 	bool update_client(int ClientID, int AccessID, const char *AuthKey, const char *Name,
-			unsigned int ipv4, char *softver, int proto_version);
+			unsigned int ipv4, const char *softver, int proto_version);
 
 	void get_client_locations(int ClientID, supla_client_locations *locs);
 	void get_client_channels(int ClientID, int *DeviceID, supla_client_channels *channels);

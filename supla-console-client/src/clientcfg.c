@@ -125,6 +125,7 @@ unsigned char clientcfg_init(int argc, char* argv[]) {
 		return 0;
 	}
 
+
     st_guid2hex(GUIDHEX, cfg_client_GUID);
     GUIDHEX[SUPLA_GUID_HEXSIZE] = 0;
     supla_log(LOG_INFO, "Client GUID: %s", GUIDHEX);

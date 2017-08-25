@@ -44,80 +44,192 @@ supla_device::~supla_device() {
 
 }
 
-char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device, unsigned char proto_version) {
+char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c, TDS_SuplaRegisterDevice_D *register_device_d, unsigned char proto_version) {
 
 	int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
 	char result = 0;
 
-	if ( !setGUID(register_device->GUID) ) {
+	char *GUID = NULL;
+	char *AuthKey = NULL;
+	char *Name = NULL;
+	char *SoftVer = NULL;
+	unsigned char channel_count = 0;
+	TDS_SuplaDeviceChannel_B *dev_channels = NULL;
+	int LocationID = 0;
+
+	if ( register_device_c != NULL ) {
+		GUID = register_device_c->GUID;
+		Name = register_device_c->Name;
+		SoftVer = register_device_c->SoftVer;
+		channel_count = register_device_c->channel_count;
+		dev_channels = register_device_c->channels;
+		LocationID = register_device_c->LocationID;
+	} else {
+		GUID = register_device_d->GUID;
+		AuthKey = register_device_d->AuthKey;
+		Name = register_device_d->Name;
+		SoftVer = register_device_d->SoftVer;
+		channel_count = register_device_d->channel_count;
+		dev_channels = register_device_d->channels;
+	}
+
+	if ( !setGUID(GUID) ) {
 		resultcode = SUPLA_RESULTCODE_GUID_ERROR;
+
+	} else if ( register_device_d != NULL
+	            && !setAuthKey(register_device_d->AuthKey) ) {
+
+		resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
+
 	} else {
 
 		database *db = new database();
 
 		if ( db->connect() == true ) {
 
-			int UserID;
-			int Limit;
-			bool LocationEnabled = true;
+			int UserID = 0;
+			int _UserID = 0;
+			bool LocationEnabled = false;
+			bool DeviceEnabled = true;
+			int _LocationID = 0;
+			int _OriginalLocationID = 0;
+			bool new_device = false;
 
-			if ( db->location_auth(register_device->LocationID, register_device->LocationPWD, &UserID, &LocationEnabled, &Limit) == false ) {
-				resultcode = LocationEnabled ? SUPLA_RESULTCODE_BAD_CREDENTIALS : SUPLA_RESULTCODE_LOCATION_DISABLED;
+			if ( register_device_c != NULL
+				 && db->location_auth(LocationID, register_device_c->LocationPWD, &UserID, &LocationEnabled) == false ) {
+
+				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+
+			} else if ( register_device_d != NULL
+					    && false == db->device_authkey_auth(GUID, register_device_d->Email,  AuthKey, &UserID) ) {
+
+				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+
+			} else if ( UserID == 0 ) {
+
+				resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+
 			} else {
 
-				db->start_transaction();
-				bool new_device = false;
-				bool is_enabled = false;
-
-				if ( strnlen(register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE-1) < 1 ) {
-					snprintf(register_device->Name, SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
+				if ( strnlen(Name, SUPLA_DEVICE_NAME_MAXSIZE-1) < 1 ) {
+					snprintf(Name, SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
 				}
 
-				int LocationID = register_device->LocationID;
-				int DeviceID = db->add_device(&LocationID,
-						                      register_device->GUID,
-						                      register_device->Name,
-						                      getSvrConn()->getClientIpv4(),
-						                      register_device->SoftVer,
-						                      proto_version,
-						                      UserID,
-						                      &new_device,
-						                      &is_enabled,
-						                      &Limit);
+				db->start_transaction();
+
+				int DeviceID = db->get_device(db->get_device_id(GUID), &DeviceEnabled, &_OriginalLocationID, &_LocationID, &LocationEnabled, &_UserID);
+
+				supla_log(LOG_DEBUG, "1. LocationID: %i, _LocationID: %i", LocationID, _LocationID);
+
+				if ( LocationID == 0 )
+					LocationID = _LocationID;
+
+				supla_log(LOG_DEBUG, "DeviceID = %i", DeviceID);
 
 				if ( DeviceID == 0 ) {
 
-					db->rollback();
+					if ( false == db->get_device_reg_enabled(UserID) ) {
 
-					if ( Limit <= 0 ) {
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
+						supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_REGISTRATION_DISABLED");
+
+					} else if ( db->get_device_limit_left(UserID) <= 0 ) {
+
+						db->rollback();
 						resultcode = SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED;
-					} else if ( is_enabled == false ) {
-						resultcode = SUPLA_RESULTCODE_DEVICE_DISABLED;
-					} else if ( LocationID == 0 ) {
-						resultcode = SUPLA_RESULTCODE_LOCATION_CONFLICT;
-				    }
+						supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED");
 
-				} else {
+					} else {
+
+						supla_log(LOG_DEBUG, "LocationID: %i", LocationID);
+
+						if ( LocationID == 0
+							 && register_device_d != NULL ) {
+
+							if ( ( LocationID = db->get_location_id(UserID, true) ) != 0 ) {
+
+								LocationEnabled = true;
+
+							} else if ( ( LocationID = db->get_location_id(UserID, false) ) != 0 ) {
+
+								LocationEnabled = false;
+
+							} else {
+								db->rollback();
+								resultcode = SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE;
+							}
+
+						}
+
+						if ( LocationID != 0 ) {
+							new_device = true;
+
+							_UserID = UserID;
+							_LocationID = LocationID;
+
+							DeviceID = db->add_device(LocationID, GUID, AuthKey, Name, getSvrConn()->getClientIpv4(), SoftVer, proto_version, UserID);
+						}
+					}
+
+				};
+
+
+				if ( DeviceID != 0 ) {
+
+					supla_log(LOG_DEBUG, "UserID: %i, _UserID: %i", UserID, _UserID);
+
+					if ( UserID != _UserID ) {
+
+						DeviceID = 0;
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_USER_CONFLICT;
+
+					} else if ( !LocationEnabled ) {
+
+						DeviceID = 0;
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_LOCATION_DISABLED;
+
+					} else if ( LocationID == 0
+							    || ( LocationID != _LocationID
+						             && LocationID != _OriginalLocationID ) ) {
+
+						DeviceID = 0;
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_LOCATION_CONFLICT;
+
+					} else if ( !LocationEnabled ) {
+
+						DeviceID = 0;
+						db->rollback();
+						resultcode = SUPLA_RESULTCODE_LOCATION_DISABLED;
+
+					}
+
+				}
+
+				if ( DeviceID != 0 ) {
 
 					int ChannelCount = 0;
-					int ChannelType;
+					int ChannelType = 0;
 
 					for(int a=0;a<SUPLA_CHANNELMAXCOUNT;a++)
-						if ( a >= register_device->channel_count ) {
+						if ( a >= channel_count ) {
 							break;
 						} else {
 							ChannelCount++;
-							if ( db->get_device_channel_id(DeviceID, register_device->channels[a].Number, &ChannelType) == 0 ) {
+							if ( db->get_device_channel(DeviceID, dev_channels[a].Number, &ChannelType) == 0 ) {
 								ChannelType = 0;
 							}
 
 							if ( ChannelType == 0 ) {
 
 								bool new_channel = false;
-								int ChannelID = db->add_device_channel(DeviceID, register_device->channels[a].Number,
-										                                         register_device->channels[a].Type,
-										                                         register_device->channels[a].Default ? register_device->channels[a].Default : 0,
-										                                         register_device->channels[a].FuncList,
+								int ChannelID = db->add_device_channel(DeviceID, dev_channels[a].Number,
+																				 dev_channels[a].Type,
+																				 dev_channels[a].Default ? dev_channels[a].Default : 0,
+																			     dev_channels[a].FuncList,
 										                                         UserID, &new_channel);
 
 								if ( ChannelID == 0 ) {
@@ -127,7 +239,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device, u
 									db->on_channeladded(DeviceID, ChannelID);
 								}
 
-							} else if ( ChannelType != register_device->channels[a].Type ) {
+							} else if ( ChannelType != dev_channels[a].Type ) {
 								ChannelCount = -1;
 								break;
 							}
@@ -141,24 +253,41 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device, u
 
 					} else {
 
-						if ( new_device )
+						if ( new_device ) {
 							db->on_newdevice(DeviceID);
+						} else {
 
-						db->commit();
+							supla_log(LOG_DEBUG, "2. LocationID: %i, _LocationID: %i", LocationID, _LocationID);
 
-						setID(DeviceID);
+							if ( LocationID == _LocationID || AuthKey != NULL )
+								_OriginalLocationID = 0;
 
-						load_config();
+							DeviceID = db->update_device(DeviceID, _OriginalLocationID, _LocationID, AuthKey, Name,
+									                     getSvrConn()->getClientIpv4(), SoftVer, proto_version);
+						}
 
-						channels->set_channels_value(register_device->channels, register_device->channel_count);
+						if ( DeviceID != 0 ) {
 
-						resultcode = SUPLA_RESULTCODE_TRUE;
-						result = 1;
-						setUser(supla_user::add_device(this, UserID));
-						getUser()->update_client_device_channels(LocationID, getID());
+							db->commit();
+
+							setID(DeviceID);
+
+							load_config();
+
+							channels->set_channels_value(dev_channels, channel_count);
+
+							resultcode = SUPLA_RESULTCODE_TRUE;
+							result = 1;
+							setUser(supla_user::add_device(this, UserID));
+							getUser()->update_client_device_channels(LocationID, getID());
+
+						}
+
 
 					}
+
 				}
+
 			}
 
 		}
