@@ -74,6 +74,11 @@ int main(int argc, char* argv[]) {
     	exit_fail();
     }
 
+    if ( devcfg_getdev_authkey() == 0 ) {
+    	supla_log(LOG_ERR, "AuthKey error!");
+    	exit_fail();
+    }
+
 	if ( run_as_daemon
 		 && 0 == st_try_fork() ) {
 		exit_fail();

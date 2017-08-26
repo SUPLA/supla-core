@@ -21,6 +21,7 @@
 #include "proto.h"
 
 extern char DEVICE_GUID[SUPLA_GUID_SIZE];
+extern char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,9 +37,11 @@ extern "C" {
 #define CFG_SERVER_SSLENABLED 7
 #define CFG_LOCATION_ID       8
 #define CFG_LOCATION_PWD      9
+#define CFG_EMAIL             10
 
 unsigned char devcfg_init(int argc, char* argv[]);
 char devcfg_getdev_guid();
+char devcfg_getdev_authkey();
 void devcfg_free(void);
 
 #ifdef __cplusplus

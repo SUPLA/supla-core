@@ -259,10 +259,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
 							supla_log(LOG_DEBUG, "2. LocationID: %i, _LocationID: %i", LocationID, _LocationID);
 
-							if ( LocationID == _LocationID || AuthKey != NULL )
-								_OriginalLocationID = 0;
+							if ( LocationID == _LocationID )
+								_OriginalLocationID = LocationID;
 
-							DeviceID = db->update_device(DeviceID, _OriginalLocationID, _LocationID, AuthKey, Name,
+							DeviceID = db->update_device(DeviceID, _OriginalLocationID, AuthKey, Name,
 									                     getSvrConn()->getClientIpv4(), SoftVer, proto_version);
 						}
 

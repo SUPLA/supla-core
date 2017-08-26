@@ -24,6 +24,7 @@
 #include "mcp23008.h"
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
+char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
 
 /**
  * Use type names to process supla configuration file
@@ -114,6 +115,8 @@ void devcfg_channel_cfg(const char* section, const char* name, const char* value
 unsigned char devcfg_init(int argc, char* argv[]) {
 
 	memset(DEVICE_GUID, 0, SUPLA_GUID_SIZE);
+	memset(DEVICE_AUTHKEY, 0, SUPLA_AUTHKEY_SIZE);
+
 	unsigned char result = 0;
 
 	scfg_set_callback(devcfg_channel_cfg);
@@ -136,6 +139,9 @@ unsigned char devcfg_init(int argc, char* argv[]) {
 	scfg_add_int_param(s_location, "ID", 0);
 	scfg_add_str_param(s_location, "PASSWORD", 0);
 
+	char *s_auth = "AUTH";
+	scfg_add_str_param(s_auth, "email", "");
+
 	result = scfg_load(argc, argv, "/etc/supla-dev/supla.cfg");
 
 	if ( result == 1
@@ -151,6 +157,26 @@ unsigned char devcfg_init(int argc, char* argv[]) {
 
 char devcfg_getdev_guid() {
 	return st_read_guid_from_file(scfg_string(CFG_GUID_FILE), DEVICE_GUID, 1);
+}
+
+char devcfg_getdev_authkey() {
+
+	char *guid_file = scfg_string(CFG_GUID_FILE);
+
+	if ( guid_file == NULL || strnlen(guid_file, 1024) == 0 )
+		return 0;
+
+	int len = strnlen(guid_file, 1024)+1;
+	char result = 0;
+
+	char *authkey_file = malloc(len);
+	snprintf(authkey_file, len, "%s.authkey", guid_file);
+
+	result = st_read_authkey_from_file(authkey_file, DEVICE_AUTHKEY, 1);
+
+	free(authkey_file);
+
+	return result;
 }
 
 void devcfg_free(void) {

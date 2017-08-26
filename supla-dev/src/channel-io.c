@@ -1257,17 +1257,17 @@ char channelio_get_hi_value(unsigned char number, char *hi) {
 	return 0;
 }
 
-void channelio_channels_to_srd(TDS_SuplaRegisterDevice_B *srd) {
+void channelio_channels_to_srd(unsigned char *channel_count, TDS_SuplaDeviceChannel_B *channels) {
 
 	int a;
-	srd->channel_count = cio->channel_count;
+	*channel_count = cio->channel_count;
 
 	for(a=0;a<cio->channel_count;a++) {
-		srd->channels[a].Number = cio->channels[a].number;
-		srd->channels[a].Type = cio->channels[a].type;
+		channels[a].Number = cio->channels[a].number;
+		channels[a].Type = cio->channels[a].type;
 
-		if  ( channelio_get_cvalue(&cio->channels[a], srd->channels[a].value) == 0 ) {
-			memset(srd->channels[a].value, 0, SUPLA_CHANNELVALUE_SIZE);
+		if  ( channelio_get_cvalue(&cio->channels[a], channels[a].value) == 0 ) {
+			memset(channels[a].value, 0, SUPLA_CHANNELVALUE_SIZE);
 		}
 
 	}

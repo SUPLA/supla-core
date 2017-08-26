@@ -202,19 +202,48 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id, unsi
 
 void devconnection_register(TDeviceConnectionData *dcd) {
 
-	TDS_SuplaRegisterDevice_B srd;
-	memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice_B));
+	char *Email = scfg_string(CFG_EMAIL);
 
-	srd.channel_count = 0;
-	srd.LocationID = scfg_int(CFG_LOCATION_ID);
-	snprintf(srd.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s", scfg_string(CFG_LOCATION_PWD));
-	snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", scfg_string(CFG_DEVNAME));
-	strcpy(srd.SoftVer, "1.0");
-	memcpy(srd.GUID, DEVICE_GUID, SUPLA_GUID_SIZE);
+	if ( Email == NULL || strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0 ) {
 
-	channelio_channels_to_srd(&srd);
+		TDS_SuplaRegisterDevice_C srd;
+		memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice_C));
 
-	srpc_ds_async_registerdevice_b(dcd->srpc, &srd);
+		srd.channel_count = 0;
+		srd.LocationID = scfg_int(CFG_LOCATION_ID);
+		snprintf(srd.LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, "%s", scfg_string(CFG_LOCATION_PWD));
+		snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", scfg_string(CFG_DEVNAME));
+		snprintf(srd.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s", scfg_string(CFG_SERVER_HOST));
+		strcpy(srd.SoftVer, "1.0");
+		memcpy(srd.GUID, DEVICE_GUID, SUPLA_GUID_SIZE);
+
+		channelio_channels_to_srd(&srd.channel_count, srd.channels);
+
+		srpc_ds_async_registerdevice_c(dcd->srpc, &srd);
+
+	} else {
+
+		TDS_SuplaRegisterDevice_D srd;
+		memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice_D));
+
+		srd.channel_count = 0;
+
+		snprintf(srd.Email, SUPLA_EMAIL_MAXSIZE, "%s", Email);
+		snprintf(srd.Name, SUPLA_DEVICE_NAME_MAXSIZE, "%s", scfg_string(CFG_DEVNAME));
+		snprintf(srd.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s", scfg_string(CFG_SERVER_HOST));
+		strcpy(srd.SoftVer, "1.0");
+
+		memcpy(srd.GUID, DEVICE_GUID, SUPLA_GUID_SIZE);
+		memcpy(srd.AuthKey, DEVICE_AUTHKEY, SUPLA_AUTHKEY_SIZE);
+
+		channelio_channels_to_srd(&srd.channel_count, srd.channels);
+
+		srpc_ds_async_registerdevice_d(dcd->srpc, &srd);
+
+
+	}
+
+
 
 }
 

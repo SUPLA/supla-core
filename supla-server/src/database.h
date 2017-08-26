@@ -50,7 +50,7 @@ public:
 	int add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE], const char *AuthKey, const char *Name,
 			        unsigned int ipv4, const char *softver, int proto_version, int UserID);
 
-	int update_device(int DeviceID, int OriginalLocationID, int LocationID, const char *AuthKey, const char *Name,
+	int update_device(int DeviceID, int OriginalLocationID, const char *AuthKey, const char *Name,
 	                unsigned int ipv4, const char *softver, int proto_version) ;
 
 	int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
@@ -62,6 +62,7 @@ public:
 	int get_location_id(int UserID, bool enabled);
 
 	bool get_device_reg_enabled(int UserID);
+	int get_device_id_and_user(const char GUID[SUPLA_GUID_SIZE], int *UserID);
 	int get_device_id(const char GUID[SUPLA_GUID_SIZE]);
 	int get_device(int DeviceID, bool *device_enabled, int *original_location_id, int *location_id, bool *location_enabled, int *UserID);
 
