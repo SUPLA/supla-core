@@ -312,6 +312,17 @@ time_t st_get_utc_time(void) {
 
 }
 
+char *st_get_datetime_str(char buffer[64]) {
+
+	memset(buffer, 0 , 64);
+
+	time_t t = time(NULL);
+	struct tm *tm = localtime(&t);
+	strftime(buffer, 64, "%c", tm);
+
+	return buffer;
+}
+
 #ifdef __BCRYPT
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
 
@@ -411,6 +422,8 @@ char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
 
 	return NULL;
 }
+
+
 
 #endif
 

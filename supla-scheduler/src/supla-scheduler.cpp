@@ -36,7 +36,12 @@ int main(int argc, char* argv[]) {
 	if ( schedulercfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;
 
-	supla_log(LOG_DEBUG, "Version %s", SCHEDULER_VERSION);
+	{
+		char dt[64];
+
+		supla_log(LOG_INFO, "Scheduler version %s", SCHEDULER_VERSION);
+		supla_log(LOG_INFO, "Started at %s", st_get_datetime_str(dt));
+	}
 
 	if ( run_as_daemon
 		 && 0 == st_try_fork() ) {
@@ -78,6 +83,12 @@ int main(int argc, char* argv[]) {
 	database::mainthread_end();
 
 	scfg_free();
+
+	{
+		char dt[64];
+		supla_log(LOG_INFO, "Stopped at %s", st_get_datetime_str(dt));
+	}
+
 
 	return EXIT_SUCCESS;
 

@@ -51,6 +51,9 @@ char st_read_authkey_from_file(char *file, char *AuthKey, char create);
 
 time_t st_get_utc_time(void);
 
+char *st_get_datetime_str(char buffer[64]);
+
+
 #ifdef __BCRYPT
 
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds);
