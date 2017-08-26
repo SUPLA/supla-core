@@ -438,6 +438,7 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 
 	 struct sockaddr_in addr;
 	 int client_sd = -1;
+	 unsigned int _ipv4 = 0;
 	 char result = 0;
 	 socklen_t len;
      TSuplaSocket *supla_socket = NULL;
@@ -466,7 +467,7 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 			    	  memset(supla_socket, 0, sizeof(TSuplaSocket));
 			    	  supla_socket->sfd = -1;
 
-			    	  *ipv4 = addr.sin_addr.s_addr;
+			    	  *ipv4 = htonl(addr.sin_addr.s_addr);
 
 				      if ( client_sd != -1
 				    	   && ssd->secure != 1 ) {
