@@ -190,6 +190,9 @@ void channelio_free(void) {
 		if ( cio->w1_sthread )
 			sthread_twf(cio->w1_sthread);
 
+		if ( cio->mcp_sthread )
+			sthread_twf(cio->mcp_sthread);
+
 		while(safe_array_count(cio->gpio_thread_arr) > 0) {
 
 			safe_array_lock(cio->gpio_thread_arr);
