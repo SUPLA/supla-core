@@ -119,12 +119,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
 				int DeviceID = db->get_device(db->get_device_id(GUID), &DeviceEnabled, &_OriginalLocationID, &_LocationID, &LocationEnabled, &_UserID);
 
-				supla_log(LOG_DEBUG, "1. LocationID: %i, _LocationID: %i", LocationID, _LocationID);
-
 				if ( LocationID == 0 )
 					LocationID = _LocationID;
-
-				supla_log(LOG_DEBUG, "DeviceID = %i", DeviceID);
 
 				if ( DeviceID == 0 ) {
 
@@ -132,17 +128,13 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
-						supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_REGISTRATION_DISABLED");
 
 					} else if ( db->get_device_limit_left(UserID) <= 0 ) {
 
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED;
-						supla_log(LOG_DEBUG, "SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED");
 
 					} else {
-
-						supla_log(LOG_DEBUG, "LocationID: %i", LocationID);
 
 						if ( LocationID == 0
 							 && register_device_d != NULL ) {
@@ -177,8 +169,6 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
 				if ( DeviceID != 0 ) {
 
-					supla_log(LOG_DEBUG, "UserID: %i, _UserID: %i", UserID, _UserID);
-
 					if ( UserID != _UserID ) {
 
 						DeviceID = 0;
@@ -199,13 +189,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 						db->rollback();
 						resultcode = SUPLA_RESULTCODE_LOCATION_CONFLICT;
 
-					} else if ( !LocationEnabled ) {
-
-						DeviceID = 0;
-						db->rollback();
-						resultcode = SUPLA_RESULTCODE_LOCATION_DISABLED;
-
-					}
+					};
 
 				}
 
@@ -257,10 +241,12 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 							db->on_newdevice(DeviceID);
 						} else {
 
-							supla_log(LOG_DEBUG, "2. LocationID: %i, _LocationID: %i", LocationID, _LocationID);
-
-							if ( LocationID == _LocationID )
-								_OriginalLocationID = LocationID;
+							if ( AuthKey != NULL ) {
+								_OriginalLocationID = 0;
+							} else {
+								if ( LocationID == _LocationID )
+									_OriginalLocationID = LocationID;
+							}
 
 							DeviceID = db->update_device(DeviceID, _OriginalLocationID, AuthKey, Name,
 									                     getSvrConn()->getClientIpv4(), SoftVer, proto_version);
