@@ -364,7 +364,7 @@ void svr_ipcctrl::execute(void *sthread) {
 
 				buffer[255] = 0;
 
-				if ( match_command(cmd_is_iodev_connected, len) ) {
+				if ( match_command(cmd_is_client_connected, len) ) {
 
 					int UserID = 0;
 					int ClientID = 0;
@@ -408,7 +408,7 @@ void svr_ipcctrl::execute(void *sthread) {
 					int UserID = 0;
 					int ClientID = 0;
 
-					sscanf (&buffer[strnlen(cmd_user_reconnect, 255)], "%i,%i", &UserID, &ClientID);
+					sscanf (&buffer[strnlen(cmd_client_reconnect, 255)], "%i,%i", &UserID, &ClientID);
 
 					if ( UserID
 						 && ClientID ) {
