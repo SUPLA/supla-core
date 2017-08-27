@@ -513,7 +513,7 @@ void channelio_channel_init(void) {
 
 		lck_unlock(cio->wl_lck);
 
-	 cio->mcp_sthread = sthread_simple_run(channelio_mcp23008_execute, NULL, 1);
+	 cio->mcp_sthread = sthread_simple_run(channelio_mcp23008_execute, NULL, 0);
 #endif
 
 }
