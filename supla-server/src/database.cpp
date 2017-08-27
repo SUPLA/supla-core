@@ -170,7 +170,7 @@ bool database::get_authkey_hash(int ID, char *buffer, unsigned int buffer_size, 
 
 			if ( mysql_stmt_num_rows(stmt) > 0
 				 && !mysql_stmt_fetch(stmt)
-				 && buffer_size >= size ) {
+				 && buffer_size > size ) {
 
 				buffer[size] = 0;
 				*is_null = _is_null > 0;
