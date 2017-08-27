@@ -9,9 +9,9 @@ CPP_SRCS += \
 ../src/client.cpp \
 ../src/clientchannel.cpp \
 ../src/clientlocation.cpp \
+../src/database.cpp \
 ../src/datalogger.cpp \
 ../src/db.cpp \
-../src/dbatabase.cpp \
 ../src/device.cpp \
 ../src/devicechannel.cpp \
 ../src/ipcctrl.cpp \
@@ -41,9 +41,9 @@ OBJS += \
 ./src/client.o \
 ./src/clientchannel.o \
 ./src/clientlocation.o \
+./src/database.o \
 ./src/datalogger.o \
 ./src/db.o \
-./src/dbatabase.o \
 ./src/device.o \
 ./src/devicechannel.o \
 ./src/eh.o \
@@ -84,9 +84,9 @@ CPP_DEPS += \
 ./src/client.d \
 ./src/clientchannel.d \
 ./src/clientlocation.d \
+./src/database.d \
 ./src/datalogger.d \
 ./src/db.d \
-./src/dbatabase.d \
 ./src/device.d \
 ./src/devicechannel.d \
 ./src/ipcctrl.d \
@@ -99,14 +99,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__OPEN_SSL=1 -I/usr/include/mysql -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -D__OPEN_SSL=1 -D__BCRYPT=1 -I/usr/include/mysql -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -D__BCRYPT=1 -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
