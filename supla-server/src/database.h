@@ -34,7 +34,7 @@ private:
 	bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE, int *UserID, bool *is_enabled);
 	bool authkey_auth(const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID, bool Client, const char *sql);
 
-	bool get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null, const char *sql);
+	bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size, bool *is_null, const char *sql);
 
 
 public:

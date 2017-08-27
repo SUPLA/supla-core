@@ -136,7 +136,7 @@ int database::get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]) {
 	return 0;
 }
 
-bool database::get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_null, const char *sql) {
+bool database::get_authkey_hash(int ID, char *buffer, unsigned int buffer_size, bool *is_null, const char *sql) {
 
 	MYSQL_STMT *stmt = NULL;
 
@@ -170,7 +170,7 @@ bool database::get_authkey_hash(int ID, char *buffer, int buffer_size, bool *is_
 
 			if ( mysql_stmt_num_rows(stmt) > 0
 				 && !mysql_stmt_fetch(stmt)
-				 && size <= buffer_size ) {
+				 && buffer_size >= size ) {
 
 				buffer[size] = 0;
 				*is_null = _is_null > 0;
