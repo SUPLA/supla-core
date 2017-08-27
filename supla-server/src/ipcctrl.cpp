@@ -29,8 +29,10 @@
 #include "database.h"
 
 const char hello[] = "SUPLA SERVER CTRL\n";
+const char cmd_is_client_connected[] = "IS-CLIENT-CONNECTED:";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
 const char cmd_user_reconnect[] = "USER-RECONNECT:";
+const char cmd_client_reconnect[] = "CLIENT-RECONNECT:";
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
 const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
 const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
@@ -365,6 +367,20 @@ void svr_ipcctrl::execute(void *sthread) {
 				if ( match_command(cmd_is_iodev_connected, len) ) {
 
 					int UserID = 0;
+					int ClientID = 0;
+					sscanf (&buffer[strnlen(cmd_is_client_connected, 255)], "%i,%i", &UserID, &ClientID);
+
+					if ( UserID
+						 && ClientID
+						 && supla_user::is_client_online(UserID, ClientID) ) {
+						send_result("CONNECTED:",ClientID);
+					} else {
+						send_result("DISCONNECTED:",ClientID);
+					}
+
+				} else if ( match_command(cmd_is_iodev_connected, len) ) {
+
+					int UserID = 0;
 					int DeviceID = 0;
 					sscanf (&buffer[strnlen(cmd_is_iodev_connected, 255)], "%i,%i", &UserID, &DeviceID);
 
@@ -386,6 +402,22 @@ void svr_ipcctrl::execute(void *sthread) {
 					} else {
 						send_result("USER_UNKNOWN:", UserID);
 					}
+
+				} else if ( match_command(cmd_client_reconnect, len) ) {
+
+					int UserID = 0;
+					int ClientID = 0;
+
+					sscanf (&buffer[strnlen(cmd_user_reconnect, 255)], "%i,%i", &UserID, &ClientID);
+
+					if ( UserID
+						 && ClientID ) {
+						supla_user::client_reconnect(UserID, ClientID);
+						send_result("OK:", ClientID);
+					} else {
+						send_result("USER_OR_CLIENT_UNKNOWN");
+					}
+
 				} else if ( match_command(cmd_get_double_value, len) ) {
 
 					get_double(cmd_get_double_value, 0);

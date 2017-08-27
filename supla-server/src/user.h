@@ -46,6 +46,7 @@ protected:
     bool get_channel_double_value(int DeviceID, int ChannelID, double *Value, char Type);
 
     void reconnect();
+    bool client_reconnect(int ClientID);
 
 public:
 
@@ -56,6 +57,8 @@ public:
     static supla_user *add_client(supla_client *client, int UserID);
     static supla_user *find(int UserID, bool create);
     static bool reconnect(int UserID);
+    static bool client_reconnect(int UserID, int ClientID);
+    static bool is_client_online(int UserID, int ClientID);
     static bool is_device_online(int UserID, int DeviceID);
     static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID, double *Value);
     static bool get_channel_temperature_value(int UserID, int DeviceID, int ChannelID, double *Value);
@@ -79,6 +82,7 @@ public:
     bool get_channel_char_value(int DeviceID, int ChannelID, char *Value);
     bool get_channel_rgbw_value(int DeviceID, int ChannelID, int *color, char *color_brightness, char *brightness);
 
+    bool is_client_online(int DeviceID);
     bool is_device_online(int DeviceID);
     bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value, char *online);
 

@@ -205,8 +205,30 @@ supla_client *supla_user::find_client(int ClientID) {
 	return (supla_client *)safe_array_findcnd(client_arr, find_client_byid, &ClientID);
 }
 
+bool supla_user::is_client_online(int ClientID) {
+	return find_client(ClientID) != NULL;
+}
+
 bool supla_user::is_device_online(int DeviceID) {
 	return find_device(DeviceID) != NULL;
+}
+
+// static
+bool supla_user::is_client_online(int UserID, int ClientID) {
+
+	bool result = false;
+
+	safe_array_lock(supla_user::user_arr);
+
+	supla_user *user =  (supla_user*)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+	if ( user
+		  && user->is_client_online(ClientID) == true )
+		result = true;
+
+	safe_array_unlock(supla_user::user_arr);
+
+	return result;
 }
 
 // static
@@ -619,6 +641,24 @@ void supla_user::reconnect() {
 
 }
 
+bool supla_user::client_reconnect(int ClientID) {
+
+	bool result = false;
+
+	safe_array_lock(client_arr);
+
+	supla_client *client = find_client(ClientID);
+
+	if ( client ) {
+		client->terminate();
+		result = true;
+	}
+
+	safe_array_unlock(client_arr);
+
+	return result;
+}
+
 //static
 bool supla_user::reconnect(int UserID) {
 
@@ -633,4 +673,16 @@ bool supla_user::reconnect(int UserID) {
 
 }
 
+//static
+bool supla_user::client_reconnect(int UserID, int ClientID) {
+
+	supla_user *user = find(UserID, true);
+
+	if ( user ) {
+		return user->client_reconnect(ClientID);
+	}
+
+	return false;
+
+}
 
