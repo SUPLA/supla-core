@@ -55,6 +55,7 @@ public:
     void getGUID(char GUID[SUPLA_GUID_SIZE]);
     void getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
     int getID(void);
+    int getUserID(void);
     supla_user *getUser(void);
     bool cmpGUID(const char GUID1[SUPLA_GUID_SIZE]);
     void updateLastActivity(void);

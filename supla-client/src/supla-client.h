@@ -38,6 +38,7 @@ typedef void (*_suplaclient_cb_location_update)(void *_suplaclient, void *user_d
 typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient, void *user_data, TSC_SuplaChannel *channel);
 typedef void (*_suplaclient_cb_channel_value_update)(void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value);
 typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data, TSC_SuplaEvent *event);
+typedef void (*_suplaclient_cb_on_registration_enabled)(void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled);
 
 typedef struct {
 
@@ -73,6 +74,7 @@ typedef struct {
    _suplaclient_cb_channel_value_update cb_channel_value_update;
 
    _suplaclient_cb_on_event cb_on_event;
+   _suplaclient_cb_on_registration_enabled cb_on_registration_enabled;
 
 }TSuplaClientCfg;
 
@@ -98,6 +100,7 @@ void* supla_client_get_userdata(void *_suplaclient);
 char supla_client_open(void *_suplaclient, int ChannelID, char open);
 char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color, char color_brightness, char brightness);
 char supla_client_set_dimmer(void *_suplaclient, int ChannelID, char brightness);
+char supla_client_get_registration_enabled(void *_suplaclient);
 
 #ifdef __cplusplus
 }

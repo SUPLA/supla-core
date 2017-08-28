@@ -88,6 +88,12 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread, TSC_Sup
 
 }
 
+void client_on_registration_enabled(void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled) {
+
+	supla_log(LOG_DEBUG, "Client registration enabled to: %u", reg_enabled->client_timestamp);
+	supla_log(LOG_DEBUG, "I/O Device registration enabled to: %u", reg_enabled->iodevice_timestamp);
+}
+
 void *client_loop_init(void *sthread) {
 
 	TSuplaClientCfg scc;
@@ -119,6 +125,7 @@ void *client_loop_init(void *sthread) {
 	scc.cb_channel_update = &client_loop_channel_update;
 	scc.cb_channel_value_update = &client_loop_channel_value_update;
 	scc.cb_on_event = &client_loop_on_event;
+	scc.cb_on_registration_enabled = &client_on_registration_enabled;
 
 	return supla_client_init(&scc);
 }

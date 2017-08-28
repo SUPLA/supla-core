@@ -87,6 +87,9 @@ int main(int argc, char* argv[]) {
             case '6':
             	supla_client_open(sclient, 30, 1);
             	break;
+            case '7':
+            	supla_client_get_registration_enabled(sclient);
+            	break;
             }
 		}
 

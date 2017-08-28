@@ -286,6 +286,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id, unsig
 		case SUPLA_SC_CALL_EVENT:
 			supla_client_on_event(scd, rd.data.sc_event);
 			break;
+		case SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT:
+
+			if ( scd->cfg.cb_on_registration_enabled )
+				scd->cfg.cb_on_registration_enabled(scd, scd->cfg.user_data, rd.data.sdc_reg_enabled);
+
+			break;
 		}
 
 		srpc_rd_free(&rd);
@@ -608,4 +614,9 @@ char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color, char co
 
 char supla_client_set_dimmer(void *_suplaclient, int ChannelID, char brightness) {
 	return supla_client_set_rgbw(_suplaclient, ChannelID, 0, 0, brightness);
+}
+
+char supla_client_get_registration_enabled(void *_suplaclient) {
+
+	return srpc_dcs_async_get_registration_enabled(((TSuplaClientData *)_suplaclient)->srpc);
 }

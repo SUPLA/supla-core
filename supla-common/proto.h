@@ -115,6 +115,8 @@ extern "C" {
 #define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT        220 // ver. >= 2
 #define SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL             300 // ver. >= 5
 #define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT      310 // ver. >= 5
+#define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED           320 // ver. >= 7
+#define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT    330 // ver. >= 7
 
 #define SUPLA_RESULT_DATA_TOO_LARGE         -4
 #define SUPLA_RESULT_BUFFER_OVERFLOW        -3
@@ -596,6 +598,13 @@ typedef struct {
 	TSD_FirmwareUpdate_Url url;
 
 }TSD_FirmwareUpdate_UrlResult;
+
+typedef struct {
+
+	unsigned int client_timestamp;    // time >= now == enabled
+	unsigned int iodevice_timestamp;  // time >= now == enabled
+
+}TSDC_RegistrationEnabled;
 
 #pragma pack(pop)
 

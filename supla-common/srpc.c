@@ -438,11 +438,11 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 		// first one
 		rd->data.dcs_ping = NULL;
 
-
 		switch(srpc->sdp.call_type) {
 
 		   case SUPLA_DCS_CALL_GETVERSION:
 		   case SUPLA_CS_CALL_GET_NEXT:
+		   case SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED:
 			   call_with_no_data = 1;
 			   break;
 
@@ -485,6 +485,13 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 			   if ( srpc->sdp.data_size == sizeof(TSDC_SuplaSetActivityTimeoutResult) )
                   rd->data.sdc_set_activity_timeout_result = (TSDC_SuplaSetActivityTimeoutResult*)malloc(sizeof(TSDC_SuplaSetActivityTimeoutResult));
+
+			   break;
+
+		   case SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT:
+
+			   if ( srpc->sdp.data_size == sizeof(TSDC_RegistrationEnabled) )
+                  rd->data.sdc_reg_enabled = (TSDC_RegistrationEnabled*)malloc(sizeof(TSDC_RegistrationEnabled));
 
 			   break;
 
@@ -668,12 +675,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 		}
 
-		if ( rd->data.dcs_ping != NULL || call_with_no_data == 1 ) {
+		if ( call_with_no_data == 1 ) {
+			return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
+		}
 
-			if ( srpc->sdp.data_size > 0 ) {
+		if ( rd->data.dcs_ping != NULL ) {
+
+			if ( srpc->sdp.data_size > 0 )
 				memcpy(rd->data.dcs_ping, srpc->sdp.data, srpc->sdp.data_size);
-			}
-
 
 			return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
 		}
@@ -814,6 +823,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_set_activity_timeout(void *_srpc, 
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result) {
 	return srpc_async_call(_srpc, SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT, (char*)sdc_set_activity_timeout_result, sizeof(TSDC_SuplaSetActivityTimeoutResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_registration_enabled(void *_srpc) {
+
+	return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED, NULL, 0);
+
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(void *_srpc, TSDC_RegistrationEnabled *reg_enabled) {
+
+	return srpc_async_call(_srpc, SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT, (char*)reg_enabled, sizeof(TSDC_RegistrationEnabled));
+
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(void *_srpc, TDS_FirmwareUpdateParams *result) {

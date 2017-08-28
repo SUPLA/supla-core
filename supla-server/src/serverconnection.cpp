@@ -27,6 +27,7 @@
 #include "log.h"
 #include "tools.h"
 #include "svrcfg.h"
+#include "database.h"
 
 
 #define REGISTER_WAIT_TIMEOUT  5
@@ -365,6 +366,27 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 
 
 			srpc_sdc_async_ping_server_result(_srpc);
+
+		} else if ( call_type == SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED
+					&& ( registered == REG_DEVICE
+						  || registered == REG_CLIENT ) ) {
+
+			TSDC_RegistrationEnabled reg_en;
+			memset(&reg_en, 0, sizeof(TSDC_RegistrationEnabled));
+
+			database *db = new database();
+
+			if ( !db->connect()
+				 || !db->get_reg_enabled(cdptr->getUserID(), &reg_en.client_timestamp, &reg_en.iodevice_timestamp) ) {
+
+				reg_en.client_timestamp = 0;
+				reg_en.iodevice_timestamp = 0;
+
+			}
+
+			delete db;
+
+			srpc_sdc_async_get_registration_enabled_result(_srpc, &reg_en);
 
 		} else if ( registered == REG_DEVICE ) {
 

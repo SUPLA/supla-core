@@ -81,6 +81,7 @@ union TsrpcDataPacketData {
 	TCS_SuplaChannelNewValue_B *cs_channel_new_value_b;
 	TDS_FirmwareUpdateParams *ds_firmware_update_params;
 	TSD_FirmwareUpdate_UrlResult *sc_firmware_update_url_result;
+	TSDC_RegistrationEnabled *sdc_reg_enabled;
 
 };
 
@@ -114,6 +115,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_ping_server_result(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_set_activity_timeout(void *_srpc, TDCS_SuplaSetActivityTimeout *dcs_set_activity_timeout);
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_set_activity_timeout_result(void *_srpc, TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_registration_enabled(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(void *_srpc, TSDC_RegistrationEnabled *reg_enabled);
 
 // device <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice(void *_srpc, TDS_SuplaRegisterDevice *registerdevice);

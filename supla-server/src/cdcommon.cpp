@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "cdcommon.h"
+#include "user.h"
 #include "lck.h"
 
 cdcommon::cdcommon(serverconnection *svrconn) {
@@ -134,6 +135,15 @@ supla_user *cdcommon::getUser(void) {
 	return result;
 }
 
+int cdcommon::getUserID(void) {
+
+	supla_user *user = getUser();
+
+	if ( user != NULL )
+		return user->getUserID();
+
+	return 0;
+}
 
 serverconnection * cdcommon::getSvrConn(void) {
 	return svrconn;
