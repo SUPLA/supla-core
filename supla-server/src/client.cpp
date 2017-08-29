@@ -269,6 +269,8 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 	// !After srpc_async_registerclient_result
 	if ( resultcode == SUPLA_RESULTCODE_TRUE ) {
 		remote_update_lists();
+	} else {
+		usleep(2000000);
 	}
 
 
