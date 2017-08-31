@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "client.h"
 #include "safearray.h"
@@ -25,6 +26,7 @@
 #include "lck.h"
 #include "log.h"
 #include "clientlocation.h"
+
 
 supla_client::supla_client(serverconnection *svrconn)
              :cdcommon(svrconn)  {
