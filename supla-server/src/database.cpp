@@ -467,7 +467,7 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE], const
 		pbind[9].buffer_type= MYSQL_TYPE_NULL;
 	}
 
-	const char sql[] = "INSERT INTO `supla_iodevice`(`location_id`, `name`, `enabled`, `reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, `guid`, `software_version`, `protocol_version`, `auth_key`, `original_location_id`) VALUES (?,unhex(?),1,NOW(),NOW(),?,?,?,unhex(?),?, ?,unhex(?),?)";
+	const char sql[] = "INSERT INTO `supla_iodevice`(`location_id`, `name`, `enabled`, `reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, `guid`, `software_version`, `protocol_version`, `auth_key`, `original_location_id`) VALUES (?,unhex(?),1,UTC_TIMESTAMP(),UTC_TIMESTAMP(),?,?,?,unhex(?),?, ?,unhex(?),?)";
 
 	MYSQL_STMT *stmt;
 	if ( stmt_execute((void**)&stmt, sql, pbind, 10, false) ) {
@@ -545,7 +545,7 @@ int database::update_device(int DeviceID, int OriginalLocationID, const char *Au
 	pbind[7].buffer_type= MYSQL_TYPE_LONG;
 	pbind[7].buffer= (char *)&DeviceID;
 
-	const char sql[] = "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = NOW(), `last_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, original_location_id = ?, `auth_key` =  CASE `auth_key` WHEN NULL THEN unhex(?) ELSE IFNULL(unhex(?), NULL) END WHERE id = ?";
+	const char sql[] = "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = UTC_TIMESTAMP(), `last_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, original_location_id = ?, `auth_key` =  CASE `auth_key` WHEN NULL THEN unhex(?) ELSE IFNULL(unhex(?), NULL) END WHERE id = ?";
 
 	MYSQL_STMT *stmt;
 	if ( !stmt_execute((void**)&stmt, sql, pbind, 8) ) {
@@ -883,7 +883,7 @@ int database::add_client(int AccessID, const char *GUID, const char *AuthKey, co
 	}
 
 
-	const char sql[] = "INSERT INTO `supla_client`(`access_id`, `guid`, `name`, `enabled`, `reg_ipv4`, `reg_date`, `last_access_ipv4`, `last_access_date`, `software_version`, `protocol_version`, `user_id`, `auth_key`) VALUES (?,unhex(?),unhex(?),1,?,NOW(),?,NOW(),?,?,?,unhex(?))";
+	const char sql[] = "INSERT INTO `supla_client`(`access_id`, `guid`, `name`, `enabled`, `reg_ipv4`, `reg_date`, `last_access_ipv4`, `last_access_date`, `software_version`, `protocol_version`, `user_id`, `auth_key`) VALUES (?,unhex(?),unhex(?),1,?,UTC_TIMESTAMP(),?,UTC_TIMESTAMP(),?,?,?,unhex(?))";
 
 
 	MYSQL_STMT *stmt;
@@ -962,7 +962,7 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 	pbind[7].buffer_type= MYSQL_TYPE_LONG;
 	pbind[7].buffer= (char *)&ClientID;
 
-	const char sql[] = "UPDATE `supla_client` SET `access_id` = ?, `name` = unhex(?), `last_access_date` = NOW(), `last_access_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, `auth_key` =  CASE `auth_key` WHEN NULL THEN unhex(?) ELSE IFNULL(unhex(?), NULL) END WHERE id = ?";
+	const char sql[] = "UPDATE `supla_client` SET `access_id` = ?, `name` = unhex(?), `last_access_date` = UTC_TIMESTAMP(), `last_access_ipv4` = ?, `software_version` = ?, `protocol_version` = ?, `auth_key` =  CASE `auth_key` WHEN NULL THEN unhex(?) ELSE IFNULL(unhex(?), NULL) END WHERE id = ?";
 
 	MYSQL_STMT *stmt;
 	if ( stmt_execute((void**)&stmt, sql, pbind, 8) ) {
