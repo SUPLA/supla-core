@@ -84,6 +84,11 @@ extern "C" {
 #define SUPLA_EMAILHEX_MAXSIZE              513 // ver. >= 7
 #define SUPLA_AUTHKEY_SIZE                  16  // ver. >= 7
 #define SUPLA_AUTHKEY_HEXSIZE               33  // ver. >= 7
+#define SUPLA_OAUTH_SERVER_MAXSIZE          256 // ver. >= 7
+#define SUPLA_OAUTH_CLIENTID_MAXSIZE        276 // ver. >= 7
+#define SUPLA_OAUTH_SECRET_MAXSIZE          276 // ver. >= 7
+#define SUPLA_OAUTH_USERNAME_MAXSIZE        65  // ver. >= 7
+#define SUPLA_OAUTH_PASSWORD_MAXSIZE        65  // ver. >= 7
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -117,6 +122,8 @@ extern "C" {
 #define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT      310 // ver. >= 5
 #define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED           320 // ver. >= 7
 #define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT    330 // ver. >= 7
+#define SUPLA_CS_CALL_GET_OAUTH_PARAMETERS                340 // ver. >= 7
+#define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT         350 // ver. >= 7
 
 #define SUPLA_RESULT_DATA_TOO_LARGE         -4
 #define SUPLA_RESULT_BUFFER_OVERFLOW        -3
@@ -605,6 +612,21 @@ typedef struct {
 	unsigned int iodevice_timestamp;  // time >= now == enabled
 
 }TSDC_RegistrationEnabled;
+
+typedef struct {
+
+	char password[SUPLA_OAUTH_PASSWORD_MAXSIZE];
+
+}TCS_OAuthParametersRequest;
+
+typedef struct {
+
+	char server[SUPLA_OAUTH_SERVER_MAXSIZE];
+	char username[SUPLA_OAUTH_USERNAME_MAXSIZE];
+	char client_id[SUPLA_OAUTH_CLIENTID_MAXSIZE];
+	char secret[SUPLA_OAUTH_SECRET_MAXSIZE];
+
+}TSC_OAuthParameters;
 
 #pragma pack(pop)
 

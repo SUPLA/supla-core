@@ -673,6 +673,19 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 			   break;
 
+		   case SUPLA_CS_CALL_GET_OAUTH_PARAMETERS:
+
+			   if ( srpc->sdp.data_size == sizeof(TCS_OAuthParametersRequest) )
+				   rd->data.cs_oauth_parameters_request = (TCS_OAuthParametersRequest*)malloc(sizeof(TCS_OAuthParametersRequest));
+
+			   break;
+
+		   case SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT:
+
+			   if ( srpc->sdp.data_size == sizeof(TSC_OAuthParameters) )
+				   rd->data.sc_oauth_parameters = (TSC_OAuthParameters*)malloc(sizeof(TSC_OAuthParameters));
+
+			   break;
 		}
 
 		if ( call_with_no_data == 1 ) {
@@ -1097,4 +1110,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(void *_srpc, TC
 	return srpc_async_call(_srpc, SUPLA_CS_CALL_CHANNEL_SET_VALUE_B, (char*)value, sizeof(TCS_SuplaChannelNewValue_B));
 }
 
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_oauth_parameters(void *_srpc, TCS_OAuthParametersRequest *req) {
+	return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_OAUTH_PARAMETERS, (char*)req, sizeof(TCS_OAuthParametersRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_oauth_parameters_result(void *_srpc, TSC_OAuthParameters *params) {
+	return srpc_async_call(_srpc, SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT, (char*)params, sizeof(TSC_OAuthParameters));
+}
 
