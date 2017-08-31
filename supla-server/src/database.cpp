@@ -1135,7 +1135,7 @@ void database::add_temperature(int ChannelID, double temperature) {
 	pbind[1].buffer_length = strnlen(buff, 20);
 
 
-	const char sql[] = "INSERT INTO `supla_temperature_log`(`channel_id`, `date`, `temperature`) VALUES (?,NOW(),?)";
+	const char sql[] = "INSERT INTO `supla_temperature_log`(`channel_id`, `date`, `temperature`) VALUES (?,UTC_TIMESTAMP(),?)";
 
 	MYSQL_STMT *stmt;
 	stmt_execute((void**)&stmt, sql, pbind, 2, false);
@@ -1170,7 +1170,7 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature, d
 	pbind[2].buffer= (char *)buff2;
 	pbind[2].buffer_length = strnlen(buff2, 20);
 
-	const char sql[] = "INSERT INTO `supla_temphumidity_log`(`channel_id`, `date`, `temperature`, `humidity`) VALUES (?,NOW(),?,?)";
+	const char sql[] = "INSERT INTO `supla_temphumidity_log`(`channel_id`, `date`, `temperature`, `humidity`) VALUES (?,UTC_TIMESTAMP(),?,?)";
 
 	MYSQL_STMT *stmt;
 	stmt_execute((void**)&stmt, sql, pbind, 3, false);
