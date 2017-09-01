@@ -326,7 +326,12 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
 }
 
 void sproto_set_version(void *spd_ptr, unsigned char version) {
-	((TSuplaProtoData *)spd_ptr)->version = version;
+
+	if ( version >= SUPLA_PROTO_VERSION_MIN && version <= SUPLA_PROTO_VERSION ) {
+		((TSuplaProtoData *)spd_ptr)->version = version;
+	} else {
+		((TSuplaProtoData *)spd_ptr)->version = SUPLA_PROTO_VERSION;
+	}
 }
 
 unsigned char sproto_get_version(void *spd_ptr) {

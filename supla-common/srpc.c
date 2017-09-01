@@ -718,12 +718,67 @@ void SRPC_ICACHE_FLASH srpc_rd_free(TsrpcReceivedData *rd) {
     }
 }
 
+unsigned char SRPC_ICACHE_FLASH srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
+
+	switch(call_type) {
+
+
+		case SUPLA_DS_CALL_REGISTER_DEVICE_B:
+		case SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT:
+		case SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT:
+		return 2;
+
+		case SUPLA_CS_CALL_CHANNEL_SET_VALUE_B:
+		return 3;
+
+		case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
+		case SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT:
+		return 5;
+
+		case SUPLA_DS_CALL_REGISTER_DEVICE_C:
+		case SUPLA_CS_CALL_REGISTER_CLIENT_B:
+		return 6;
+
+		case SUPLA_CS_CALL_REGISTER_CLIENT_C:
+		case SUPLA_DS_CALL_REGISTER_DEVICE_D:
+		case SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED:
+		case SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT:
+		case SUPLA_CS_CALL_GET_OAUTH_PARAMETERS:
+		case SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT:
+		return 7;
+
+	}
+
+	return 0;
+}
+
+unsigned char SRPC_ICACHE_FLASH srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_type) {
+
+	unsigned char min_ver = srpc_call_min_version_required(_srpc, call_type);
+
+	if ( min_ver == 0 || srpc_get_proto_version(_srpc) >= min_ver ) {
+		return 1;
+	}
+
+	return 0;
+}
+
 _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc, unsigned _supla_int_t call_type, char *data, unsigned _supla_int_t data_size, unsigned char *version) {
 
 	Tsrpc *srpc = (Tsrpc*)_srpc;
 
-	if ( srpc->params.before_async_call != NULL )
+	if ( !srpc_call_allowed(_srpc, call_type) ) {
+
+		if ( srpc->params.on_min_version_required != NULL ) {
+			srpc->params.on_min_version_required(_srpc, call_type, srpc_call_min_version_required(_srpc, call_type), srpc->params.user_params);
+		}
+
+		return 0;
+	}
+
+	if ( srpc->params.before_async_call != NULL ) {
 		srpc->params.before_async_call(_srpc, call_type, srpc->params.user_params);
+	};
 
 	lck_lock(srpc->lck);
 
