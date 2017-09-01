@@ -37,6 +37,7 @@ typedef _supla_int_t (*_func_srpc_DataRW)(void *buf, _supla_int_t count, void *u
 typedef void (*_func_srpc_event_OnRemoteCallReceived)(void *_srpc, unsigned _supla_int_t rr_id, unsigned _supla_int_t call_type, void *user_params, unsigned char proto_version);
 typedef void (*_func_srpc_event_BeforeCall)(void *_srpc, unsigned _supla_int_t call_type, void *user_params);
 typedef void (*_func_srpc_event_OnVersionError)(void *_srpc, unsigned char remote_version, void *user_params);
+typedef void (*_func_srpc_event_OnMinVersionRequired)(void *_srpc, unsigned _supla_int_t call_type, unsigned char min_version, void *user_params);
 
 typedef struct {
 
@@ -45,6 +46,8 @@ typedef struct {
 	_func_srpc_event_OnRemoteCallReceived on_remote_call_received;
 	_func_srpc_event_OnVersionError on_version_error;
 	_func_srpc_event_BeforeCall before_async_call;
+	_func_srpc_event_OnMinVersionRequired on_min_version_required;
+
 	TEventHandler *eh;
 
 	void *user_params;
@@ -108,6 +111,9 @@ void SRPC_ICACHE_FLASH srpc_rd_free(TsrpcReceivedData *rd);
 
 unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc);
 void SRPC_ICACHE_FLASH srpc_set_proto_version(void *_srpc, unsigned char version);
+
+unsigned char SRPC_ICACHE_FLASH srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type);
+unsigned char SRPC_ICACHE_FLASH srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_type);
 
 // device/client <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc);
