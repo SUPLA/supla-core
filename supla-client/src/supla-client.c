@@ -533,7 +533,7 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 		#endif
 
 		memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
-		srpc_cs_async_registerclient_b(suplaclient->srpc, &src);
+		srpc_cs_async_registerclient(suplaclient->srpc, &src);
 
 	}
 
