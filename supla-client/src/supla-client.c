@@ -648,3 +648,13 @@ char supla_client_get_registration_enabled(void *_suplaclient) {
 
 	return srpc_dcs_async_get_registration_enabled(((TSuplaClientData *)_suplaclient)->srpc);
 }
+
+unsigned char supla_client_get_proto_version(void *_suplaclient) {
+
+	return srpc_get_proto_version(_suplaclient);
+}
+
+void supla_client_set_proto_version(void *_suplaclient, unsigned char version) {
+
+	srpc_set_proto_version(_suplaclient, version);
+}

@@ -103,8 +103,8 @@ char supla_client_open(void *_suplaclient, int ChannelID, char open);
 char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color, char color_brightness, char brightness);
 char supla_client_set_dimmer(void *_suplaclient, int ChannelID, char brightness);
 char supla_client_get_registration_enabled(void *_suplaclient);
-char supla_client_get_proto_version(void *_suplaclient);
-char supla_client_set_proto_version(void *_suplaclient, unsigned char version);
+unsigned char supla_client_get_proto_version(void *_suplaclient);
+void supla_client_set_proto_version(void *_suplaclient, unsigned char version);
 
 #ifdef __cplusplus
 }
