@@ -41,7 +41,7 @@ typedef struct {
     jmethodID j_mid_channel_update;
     jmethodID j_mid_channel_value_update;
     jmethodID j_mid_on_event;
-    
+    jmethodID j_mid_on_registration_enabled;
 }TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -438,6 +438,33 @@ void supla_android_client_cb_on_event(void *_suplaclient, void *user_data, TSC_S
     
 }
 
+void supla_android_client_cb_on_registration_enabled(void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled) {
+    
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_on_registration_enabled ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaRegistrationEnabled");
+        
+        jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "()V");
+        jobject re = (*env)->NewObject(env, cls, methodID);
+        jclass cre = (*env)->GetObjectClass(env, re);
+        
+    
+        fid = supla_client_GetFieldID(env, cre, "ClientTimestamp", "J");
+        (*env)->SetLongField(env, re, fid, reg_enabled->client_timestamp);
+        
+        fid = supla_client_GetFieldID(env, cre, "IODeviceTimestamp", "J");
+        (*env)->SetLongField(env, re, fid, reg_enabled->iodevice_timestamp);
+        
+        supla_android_client(asc, asc->j_mid_on_registration_enabled, re);
+        
+    }
+    
+}
+
 
 
 void supla_android_client_jstring_to_buffer(JNIEnv* env, jobject cfg, jclass jcs, const char *name, char *buff, int size) {
@@ -450,6 +477,22 @@ void supla_android_client_jstring_to_buffer(JNIEnv* env, jobject cfg, jclass jcs
         memcpy(buff, str, strlen(str) >= size ? size-1 : strlen(str));
         (*env)->ReleaseStringUTFChars(env, js_str, str);
     }
+}
+
+void supla_android_client_barr_to_buffer(JNIEnv* env, jobject cfg, jclass jcs, const char *name, char *buff, int size) {
+    
+    jfieldID fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
+    jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
+    
+    if ( size == (*env)->GetArrayLength(env, barr) ) {
+        
+        jbyte *data = (jbyte *)(*env)->GetByteArrayElements(env, barr, NULL);
+        if ( data ) {
+            memcpy(buff, data, size);
+            (*env)->ReleaseByteArrayElements(env, barr, data, 0 );
+        }
+    }
+    
 }
 
 void* supla_client_ptr(jlong _asc) {
@@ -502,6 +545,12 @@ Java_org_supla_android_lib_SuplaClient_CfgInit(JNIEnv* env, jobject thiz, jobjec
         fid = supla_client_GetFieldID(env, jcs, "AccessID", "I");
         (*env)->SetIntField(env, cfg, fid, sclient_cfg.AccessID);
         
+        fid = supla_client_GetFieldID(env, jcs, "protocol_version", "I");
+        (*env)->SetIntField(env, cfg, fid, 0);
+        
+        fid = supla_client_GetFieldID(env, jcs, "Email", "Ljava/lang/String;");
+        (*env)->SetObjectField(env, cfg, fid, (*env)->NewStringUTF(env, sclient_cfg.Email));
+        
         fid = supla_client_GetFieldID(env, jcs, "Name", "Ljava/lang/String;");
         (*env)->SetObjectField(env, cfg, fid, (*env)->NewStringUTF(env, sclient_cfg.Name));
         
@@ -511,6 +560,11 @@ Java_org_supla_android_lib_SuplaClient_CfgInit(JNIEnv* env, jobject thiz, jobjec
         fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
         (*env)->SetObjectField(env, cfg, fid, arr);
         
+        arr = (*env)->NewByteArray(env, SUPLA_AUTHKEY_SIZE);
+        (*env)->SetByteArrayRegion (env, arr, 0, SUPLA_AUTHKEY_SIZE, sclient_cfg.AuthKey);
+        
+        fid = supla_client_GetFieldID(env, jcs, "AuthKey", "[B");
+        (*env)->SetObjectField(env, cfg, fid, arr);
     };
     
     
@@ -548,19 +602,24 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         fid = supla_client_GetFieldID(env, jcs, "AccessID", "I");
         sclient_cfg.AccessID = (*env)->GetIntField(env, cfg, fid);
         
+        fid = supla_client_GetFieldID(env, jcs, "protocol_version", "I");
+        sclient_cfg.protocol_version = (*env)->GetIntField(env, cfg, fid);
+        
+        if ( sclient_cfg.protocol_version < SUPLA_PROTO_VERSION_MIN
+            || sclient_cfg.protocol_version > SUPLA_PROTO_VERSION ) {
+            sclient_cfg.protocol_version = SUPLA_PROTO_VERSION;
+        }
+        
+        supla_android_client_jstring_to_buffer(env, cfg, jcs, "Email", sclient_cfg.Email, SUPLA_EMAIL_MAXSIZE);
+        
         supla_android_client_jstring_to_buffer(env, cfg, jcs, "Name", sclient_cfg.Name, SUPLA_CLIENT_NAME_MAXSIZE);
+        
+        supla_android_client_barr_to_buffer(env, cfg, jcs, "clientGUID", sclient_cfg.clientGUID, SUPLA_GUID_SIZE);
+        
+        supla_android_client_barr_to_buffer(env, cfg, jcs, "AuthKey", sclient_cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
         
         fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
         jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
-        
-        if ( SUPLA_GUID_SIZE == (*env)->GetArrayLength(env, barr) ) {
-            
-            jbyte *data = (jbyte *)(*env)->GetByteArrayElements(env, barr, NULL);
-            if ( data ) {
-                memcpy(sclient_cfg.clientGUID, data, SUPLA_GUID_SIZE);
-                (*env)->ReleaseByteArrayElements(env, barr, data, 0 );
-            }
-        }
         
         TAndroidSuplaClient *_asc = malloc(sizeof(TAndroidSuplaClient));
         memset(_asc, 0, sizeof(TAndroidSuplaClient));
@@ -580,7 +639,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         _asc->j_mid_channel_update = supla_client_GetMethodID(env, oclass, "ChannelUpdate", "(Lorg/supla/android/lib/SuplaChannel;)V");
         _asc->j_mid_channel_value_update = supla_client_GetMethodID(env, oclass, "ChannelValueUpdate", "(Lorg/supla/android/lib/SuplaChannelValueUpdate;)V");
         _asc->j_mid_on_event = supla_client_GetMethodID(env, oclass, "onEvent", "(Lorg/supla/android/lib/SuplaEvent;)V");
-        
+        _asc->j_mid_on_registration_enabled = supla_client_GetMethodID(env, oclass, "onRegistrationEnabled", "(Lorg/supla/android/lib/SuplaRegistrationEnabled;)V");
     
         sclient_cfg.user_data = _asc;
         sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -594,6 +653,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         sclient_cfg.cb_channel_update = supla_android_client_cb_channel_update;
         sclient_cfg.cb_channel_value_update = supla_android_client_cb_channel_value_update;
         sclient_cfg.cb_on_event = supla_android_client_cb_on_event;
+        sclient_cfg.cb_on_registration_enabled = supla_android_client_cb_on_registration_enabled;
         
         _asc->_supla_client = supla_client_init(&sclient_cfg);
         
@@ -735,3 +795,44 @@ Java_org_supla_android_lib_SuplaClient_scSetRGBW(JNIEnv* env, jobject thiz, jlon
 
     return JNI_FALSE;
 };
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scGetRegistrationEnabled(JNIEnv* env, jobject thiz, jlong _asc) {
+    
+    void *supla_client = supla_client_ptr(_asc);
+    
+    if ( supla_client ) {
+        supla_client_get_registration_enabled(supla_client);
+        return JNI_TRUE;
+    }
+    
+    return JNI_FALSE;
+    
+};
+
+JNIEXPORT jint JNICALL
+Java_org_supla_android_lib_SuplaClient_scGetProtoVersion(JNIEnv* env, jobject thiz, jlong _asc) {
+    
+    void *supla_client = supla_client_ptr(_asc);
+    
+    if ( supla_client ) {
+        return supla_client_get_proto_version(supla_client);
+    }
+    
+    return 0;
+};
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scGetRegistrationEnabled(JNIEnv* env, jobject thiz, jlong _asc, int call_type) {
+    
+    void *supla_client = supla_client_ptr(_asc);
+    
+    if ( supla_client ) {
+        supla_client_get_registration_enabled(supla_client);
+        return JNI_TRUE;
+    }
+    
+    return JNI_FALSE;
+    
+};
+

@@ -15,12 +15,13 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 NDK_ROOT="/Users/AC/Devel/projekty/Android/ndk-r10c"
+SUPLA_ANDROID=~/AndroidStudioProjects/supla-android
 
 export OPENSSL_ANDROID=/Users/AC/Public/openssl
 
 $NDK_ROOT/ndk-build clean
 $NDK_ROOT/ndk-build -C ./ NDK_DEBUG=1
 
-cp  libs/armeabi/libsuplaclient.so ~/AndroidStudioProjects/SUPLA/app/src/main/libs/armeabi
-cp  libs/armeabi-v7a/libsuplaclient.so ~/AndroidStudioProjects/SUPLA/app/src/main/libs/armeabi-v7a
-cp  libs/x86/libsuplaclient.so ~/AndroidStudioProjects/SUPLA/app/src/main/libs/x86
+cp  libs/armeabi/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi/
+cp  libs/armeabi-v7a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi-v7a/
+cp  libs/x86/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/x86/
