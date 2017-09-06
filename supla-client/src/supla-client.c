@@ -654,7 +654,3 @@ unsigned char supla_client_get_proto_version(void *_suplaclient) {
 	return srpc_get_proto_version(_suplaclient);
 }
 
-void supla_client_set_proto_version(void *_suplaclient, unsigned char version) {
-
-	srpc_set_proto_version(_suplaclient, version);
-}
