@@ -36,6 +36,8 @@ extern char *cfg_pwd;
 extern char cfg_client_GUID[SUPLA_GUID_SIZE];
 extern char cfg_client_AuthKey[SUPLA_AUTHKEY_SIZE];
 
+extern unsigned char proto_version;
+
 unsigned char clientcfg_init(int argc, char* argv[]);
 void clientcfg_free();
 

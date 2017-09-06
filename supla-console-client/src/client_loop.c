@@ -99,6 +99,8 @@ void *client_loop_init(void *sthread) {
 	TSuplaClientCfg scc;
 	supla_client_cfginit(&scc);
 
+	scc.protocol_version = proto_version;
+
 	snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Console client");
 	snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
 

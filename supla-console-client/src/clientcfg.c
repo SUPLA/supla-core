@@ -41,9 +41,11 @@ char *cfg_pwd = NULL;
 char cfg_client_GUID[SUPLA_GUID_SIZE];
 char cfg_client_AuthKey[SUPLA_AUTHKEY_SIZE];
 
+unsigned char proto_version = 0;
+
 unsigned char clientcfg_init(int argc, char* argv[]) {
 
-	   int a;
+	   int a,x;
 	   struct passwd *pw;
 	   char *buffer;
 	   char GUIDHEX[SUPLA_GUID_HEXSIZE+1];
@@ -68,6 +70,12 @@ unsigned char clientcfg_init(int argc, char* argv[]) {
 	        	   a++;
 	           } else if ( strcmp("-email", argv[a]) == 0 && a<argc-1 ) {
    	        	   cfg_email = strdup(argv[a+1]);
+   	        	   a++;
+	           } else if ( strcmp("-proto", argv[a]) == 0 && a<argc-1 ) {
+	        	   x = atoi(argv[a+1]);
+	        	   if ( x>=SUPLA_PROTO_VERSION_MIN && x<=SUPLA_PROTO_VERSION) {
+	        		   proto_version = x;
+	        	   }
    	        	   a++;
    	           };
 	   }

@@ -61,6 +61,8 @@ typedef struct {
    void *user_data;
    int iterate_wait_usec;
 
+   unsigned char protocol_version;
+
    _suplaclient_cb_on_versionerror cb_on_versionerror;
    _suplaclient_cb_on_error cb_on_connerror;
    _suplaclient_cb_on_action cb_on_connected;
@@ -101,6 +103,8 @@ char supla_client_open(void *_suplaclient, int ChannelID, char open);
 char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color, char color_brightness, char brightness);
 char supla_client_set_dimmer(void *_suplaclient, int ChannelID, char brightness);
 char supla_client_get_registration_enabled(void *_suplaclient);
+char supla_client_get_proto_version(void *_suplaclient);
+char supla_client_set_proto_version(void *_suplaclient, unsigned char version);
 
 #ifdef __cplusplus
 }

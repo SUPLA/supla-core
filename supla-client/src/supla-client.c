@@ -91,8 +91,10 @@ void supla_client_on_version_error(TSuplaClientData *scd, TSDC_SuplaVersionError
 			SUPLA_PROTO_VERSION);
 
 
-	if ( scd->cfg.cb_on_versionerror )
+	if ( scd->cfg.cb_on_versionerror ) {
 		scd->cfg.cb_on_versionerror(scd, scd->cfg.user_data, SUPLA_PROTO_VERSION, version_error->server_version_min, version_error->server_version);
+	}
+
 
 	supla_client_disconnect(scd);
 }
@@ -436,6 +438,11 @@ char supla_client_connect(void *_suplaclient) {
 		srpc_params.eh = suplaclient->eh;
 		suplaclient->srpc = srpc_init(&srpc_params);
 
+		if ( suplaclient->cfg.protocol_version > 0 ) {
+			srpc_set_proto_version(suplaclient->srpc, suplaclient->cfg.protocol_version);
+		}
+
+
 		eh_add_fd(suplaclient->eh, ssocket_get_fd(suplaclient->ssd));
 		suplaclient->connected = 1;
 
@@ -464,7 +471,8 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 
 	supla_log(LOG_DEBUG, "EMAIL: %s", suplaclient->cfg.Email);
 
-	if ( strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 ) {
+	if ( strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0
+		 && srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_C) ) {
 
 		TCS_SuplaRegisterClient_C src;
 		memset(&src, 0, sizeof(TCS_SuplaRegisterClient_C));
@@ -485,7 +493,7 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 		memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
 		srpc_cs_async_registerclient_c(suplaclient->srpc, &src);
 
-	} else {
+	} else if ( srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_B) ) {
 
 		TCS_SuplaRegisterClient_B src;
 		memset(&src, 0, sizeof(TCS_SuplaRegisterClient_B));
@@ -502,6 +510,26 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 			snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
 			snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", suplaclient->cfg.SoftVer);
 			snprintf(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s", suplaclient->cfg.host);
+		#endif
+
+		memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+		srpc_cs_async_registerclient_b(suplaclient->srpc, &src);
+
+	} else if ( srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT) ) {
+
+		TCS_SuplaRegisterClient src;
+		memset(&src, 0, sizeof(TCS_SuplaRegisterClient));
+
+		src.AccessID = suplaclient->cfg.AccessID;
+
+		#ifdef _WIN32
+			_snprintf_s(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.AccessIDpwd);
+			_snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.Name);
+			_snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s", suplaclient->cfg.SoftVer);
+		#else
+			snprintf(src.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "%s", suplaclient->cfg.AccessIDpwd);
+			snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
+			snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s", suplaclient->cfg.SoftVer);
 		#endif
 
 		memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
