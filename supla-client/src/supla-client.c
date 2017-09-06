@@ -651,6 +651,6 @@ char supla_client_get_registration_enabled(void *_suplaclient) {
 
 unsigned char supla_client_get_proto_version(void *_suplaclient) {
 
-	return srpc_get_proto_version(_suplaclient);
+	return srpc_get_proto_version(((TSuplaClientData *)_suplaclient)->srpc);
 }
 
