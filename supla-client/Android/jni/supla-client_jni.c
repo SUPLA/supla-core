@@ -42,6 +42,7 @@ typedef struct {
     jmethodID j_mid_channel_value_update;
     jmethodID j_mid_on_event;
     jmethodID j_mid_on_registration_enabled;
+    jmethodID j_mid_on_min_version_required;
 }TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -465,6 +466,33 @@ void supla_android_client_cb_on_registration_enabled(void *_suplaclient, void *u
     
 }
 
+void supla_android_client_cb_on_min_version_required(void *_suplaclient, void *user_data, unsigned int call_type, unsigned char min_version) {
+    
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_on_min_version_required ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaMinVersionRequired");
+        
+        jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "()V");
+        jobject mv = (*env)->NewObject(env, cls, methodID);
+        jclass cmv = (*env)->GetObjectClass(env, mv);
+        
+        
+        fid = supla_client_GetFieldID(env, cmv, "CallType", "J");
+        (*env)->SetLongField(env, mv, fid, call_type);
+        
+        fid = supla_client_GetFieldID(env, cmv, "MinVersion", "I");
+        (*env)->SetIntField(env, mv, fid, min_version);
+        
+        supla_android_client(asc, asc->j_mid_on_min_version_required, mv);
+        
+    }
+    
+}
+
 
 
 void supla_android_client_jstring_to_buffer(JNIEnv* env, jobject cfg, jclass jcs, const char *name, char *buff, int size) {
@@ -640,6 +668,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         _asc->j_mid_channel_value_update = supla_client_GetMethodID(env, oclass, "ChannelValueUpdate", "(Lorg/supla/android/lib/SuplaChannelValueUpdate;)V");
         _asc->j_mid_on_event = supla_client_GetMethodID(env, oclass, "onEvent", "(Lorg/supla/android/lib/SuplaEvent;)V");
         _asc->j_mid_on_registration_enabled = supla_client_GetMethodID(env, oclass, "onRegistrationEnabled", "(Lorg/supla/android/lib/SuplaRegistrationEnabled;)V");
+        _asc->j_mid_on_min_version_required= supla_client_GetMethodID(env, oclass, "onMinVersionRequired", "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
     
         sclient_cfg.user_data = _asc;
         sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -654,6 +683,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         sclient_cfg.cb_channel_value_update = supla_android_client_cb_channel_value_update;
         sclient_cfg.cb_on_event = supla_android_client_cb_on_event;
         sclient_cfg.cb_on_registration_enabled = supla_android_client_cb_on_registration_enabled;
+        sclient_cfg.cb_on_min_version_required = supla_android_client_cb_on_min_version_required;
         
         _asc->_supla_client = supla_client_init(&sclient_cfg);
         
