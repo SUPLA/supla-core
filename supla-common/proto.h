@@ -125,6 +125,7 @@ extern "C" {
 #define SUPLA_CS_CALL_GET_OAUTH_PARAMETERS                340 // ver. >= 7
 #define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT         350 // ver. >= 7
 
+#define SUPLA_RESULT_CALL_NOT_ALLOWED       -5
 #define SUPLA_RESULT_DATA_TOO_LARGE         -4
 #define SUPLA_RESULT_BUFFER_OVERFLOW        -3
 #define SUPLA_RESULT_DATA_ERROR             -2

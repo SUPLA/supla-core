@@ -773,7 +773,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc, unsigned _supla_int
 			srpc->params.on_min_version_required(_srpc, call_type, srpc_call_min_version_required(_srpc, call_type), srpc->params.user_params);
 		}
 
-		return 0;
+		return SUPLA_RESULT_CALL_NOT_ALLOWED;
 	}
 
 	if ( srpc->params.before_async_call != NULL ) {
