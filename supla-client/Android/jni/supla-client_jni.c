@@ -822,17 +822,4 @@ Java_org_supla_android_lib_SuplaClient_scGetProtoVersion(JNIEnv* env, jobject th
     return 0;
 };
 
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scGetRegistrationEnabled(JNIEnv* env, jobject thiz, jlong _asc, int call_type) {
-    
-    void *supla_client = supla_client_ptr(_asc);
-    
-    if ( supla_client ) {
-        supla_client_get_registration_enabled(supla_client);
-        return JNI_TRUE;
-    }
-    
-    return JNI_FALSE;
-    
-};
 
