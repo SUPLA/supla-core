@@ -83,6 +83,16 @@ void supla_client_before_async_call(void *_srpc, unsigned _supla_int_t call_type
 
 }
 
+void supla_client_on_min_version_required(void *_srpc, unsigned _supla_int_t call_type, unsigned char min_version, void *_scd) {
+
+	TSuplaClientData *scd = (TSuplaClientData*)_scd;
+
+	if ( scd->cfg.cb_on_min_version_required ) {
+		scd->cfg.cb_on_min_version_required(scd, scd->cfg.user_data, call_type, min_version);
+	}
+
+}
+
 void supla_client_on_version_error(TSuplaClientData *scd, TSDC_SuplaVersionError *version_error) {
 
 	supla_log(LOG_ERR, "Protocol version error. Server doesn't support this client. S:%d-%d/C:%d",
@@ -435,6 +445,7 @@ char supla_client_connect(void *_suplaclient) {
 		srpc_params.data_write = &supla_client_socket_write;
 		srpc_params.on_remote_call_received = &supla_client_on_remote_call_received;
 		srpc_params.before_async_call = &supla_client_before_async_call;
+		srpc_params.on_min_version_required = &supla_client_on_min_version_required;
 		srpc_params.eh = suplaclient->eh;
 		suplaclient->srpc = srpc_init(&srpc_params);
 

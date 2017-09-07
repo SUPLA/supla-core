@@ -39,6 +39,7 @@ typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient, void *user_da
 typedef void (*_suplaclient_cb_channel_value_update)(void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value);
 typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data, TSC_SuplaEvent *event);
 typedef void (*_suplaclient_cb_on_registration_enabled)(void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled);
+typedef void (*_suplaclient_cb_on_min_version_required)(void *_suplaclient, void *user_data, unsigned int call_type, unsigned char min_version);
 
 typedef struct {
 
@@ -77,6 +78,8 @@ typedef struct {
 
    _suplaclient_cb_on_event cb_on_event;
    _suplaclient_cb_on_registration_enabled cb_on_registration_enabled;
+
+   _suplaclient_cb_on_min_version_required cb_on_min_version_required;
 
 }TSuplaClientCfg;
 
