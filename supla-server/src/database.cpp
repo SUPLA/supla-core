@@ -434,9 +434,11 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE], const
 
 	pbind[3].buffer_type= MYSQL_TYPE_LONG;
 	pbind[3].buffer= (char *)&ipv4;
+	pbind[3].is_unsigned = true;
 
 	pbind[4].buffer_type= MYSQL_TYPE_LONG;
 	pbind[4].buffer= (char *)&ipv4;
+	pbind[4].is_unsigned = true;
 
 	pbind[5].buffer_type= MYSQL_TYPE_STRING;
 	pbind[5].buffer= (char *)GUIDHEX;
@@ -506,6 +508,7 @@ int database::update_device(int DeviceID, int OriginalLocationID, const char *Au
 
 	pbind[1].buffer_type= MYSQL_TYPE_LONG;
 	pbind[1].buffer= (char *)&ipv4;
+	pbind[1].is_unsigned = true;
 
 	pbind[2].buffer_type= MYSQL_TYPE_STRING;
 	pbind[2].buffer= (char *)softver;
@@ -855,9 +858,11 @@ int database::add_client(int AccessID, const char *GUID, const char *AuthKey, co
 
 	pbind[3].buffer_type= MYSQL_TYPE_LONG;
 	pbind[3].buffer= (char *)&ipv4;
+	pbind[3].is_unsigned = true;
 
 	pbind[4].buffer_type= MYSQL_TYPE_LONG;
 	pbind[4].buffer= (char *)&ipv4;
+	pbind[4].is_unsigned = true;
 
 	pbind[5].buffer_type= MYSQL_TYPE_STRING;
 	pbind[5].buffer= (char *)softver;
@@ -933,6 +938,7 @@ bool database::update_client(int ClientID, int AccessID, const char *AuthKey, co
 
 	pbind[2].buffer_type= MYSQL_TYPE_LONG;
 	pbind[2].buffer= (char *)&ipv4;
+	pbind[2].is_unsigned = true;
 
 	pbind[3].buffer_type= MYSQL_TYPE_STRING;
 	pbind[3].buffer= (char *)softver;
