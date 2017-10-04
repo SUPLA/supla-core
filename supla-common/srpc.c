@@ -253,7 +253,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 
     } else if ( result != SUPLA_RESULT_FALSE ) {
 
-    	if ( result == SUPLA_RESULT_VERSION_ERROR ) {
+    	if ( result == (char)SUPLA_RESULT_VERSION_ERROR ) {
 
     		if ( srpc->params.on_version_error ) {
 
