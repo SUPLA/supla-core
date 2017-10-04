@@ -310,7 +310,7 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id, unsig
 
 		srpc_rd_free(&rd);
 
-	} else if ( result == SUPLA_RESULT_DATA_ERROR ) {
+	} else if ( result == (char)SUPLA_RESULT_DATA_ERROR ) {
 
 		supla_log(LOG_DEBUG, "DATA ERROR!");
 	}
