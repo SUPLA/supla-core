@@ -56,7 +56,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION                 7
+#define SUPLA_PROTO_VERSION                 8
 #define SUPLA_PROTO_VERSION_MIN             1
 #define SUPLA_TAG_SIZE                      5
 #if defined(__AVR__)
@@ -91,6 +91,9 @@ extern "C" {
 #define SUPLA_OAUTH_SECRET_MAXSIZE          276 // ver. >= 7
 #define SUPLA_OAUTH_USERNAME_MAXSIZE        65  // ver. >= 7
 #define SUPLA_OAUTH_PASSWORD_MAXSIZE        65  // ver. >= 7
+#define SUPLA_CHANNELGROUP_PACK_MAXSIZE     20  // ver. >= 8
+#define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE  401 // ver. >= 8
+#define SUPLA_CHANNELGROUP_RELATION_PACK_MAXSIZE  100 // ver. >= 8
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -165,6 +168,9 @@ extern "C" {
 #define SUPLA_CLIENT_NAMEHEX_MAXSIZE               401
 #define SUPLA_SENDER_NAME_MAXSIZE                  201
 
+#define SUPLA_DEVICE_CFGDATA_MAXSIZE               512
+
+
 #ifdef __AVR__
 	#ifdef __AVR_ATmega2560__
 		#define SUPLA_CHANNELMAXCOUNT                      32
@@ -191,6 +197,16 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DHT21                    3022  // ver. >= 5
 #define SUPLA_CHANNELTYPE_AM2302                   3030  // ver. >= 4
 #define SUPLA_CHANNELTYPE_AM2301                   3032  // ver. >= 5
+
+#define SUPLA_CHANNELTYPE_THERMOMETER              3034  // ver. >= 8
+#define SUPLA_CHANNELTYPE_HUMIDITYSENSOR           3036  // ver. >= 8
+#define SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR    3038  // ver. >= 8
+#define SUPLA_CHANNELTYPE_WINDSENSOR               3042  // ver. >= 8
+#define SUPLA_CHANNELTYPE_PRESSURESENSOR           3044  // ver. >= 8
+#define SUPLA_CHANNELTYPE_RAINSENSOR               3048  // ver. >= 8
+#define SUPLA_CHANNELTYPE_WEIGHTSENSOR             3050  // ver. >= 8
+#define SUPLA_CHANNELTYPE_WEATHER_STATION          3100  // ver. >= 8
+
 #define SUPLA_CHANNELTYPE_DIMMER                   4000  // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER         4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED          4020  // ver. >= 4
@@ -222,7 +238,14 @@ extern "C" {
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING             200
 #define SUPLA_CHANNELFNC_DEPTHSENSOR                      210  // ver. >= 5
 #define SUPLA_CHANNELFNC_DISTANCESENSOR                   220  // ver. >= 5
-
+#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW             230  // ver. >= 8
+#define SUPLA_CHANNELFNC_MAILSENSOR                       240  // ver. >= 8
+#define SUPLA_CHANNELFNC_WINDSENSOR                       250  // ver. >= 8
+#define SUPLA_CHANNELFNC_PRESSURESENSOR                   260  // ver. >= 8
+#define SUPLA_CHANNELFNC_RAINSENSOR                       270  // ver. >= 8
+#define SUPLA_CHANNELFNC_WEIGHTSENSOR                     280  // ver. >= 8
+#define SUPLA_CHANNELFNC_WEATHER_STATION                  290  // ver. >= 8
+#define SUPLA_CHANNELFNC_STAIRCASETIMER                   300  // ver. >= 8
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK         0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE                0x0002
@@ -231,6 +254,7 @@ extern "C" {
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEROLLERSHUTTER       0x0010
 #define SUPLA_BIT_RELAYFUNC_POWERSWITCH                       0x0020
 #define SUPLA_BIT_RELAYFUNC_LIGHTSWITCH                       0x0040
+#define SUPLA_BIT_RELAYFUNC_STAIRCASETIMER                    0x0080  // ver. >= 8
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK               10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE                      20
@@ -245,6 +269,9 @@ extern "C" {
 
 #define SUPLA_PLATFORM_UNKNOWN  0
 #define SUPLA_PLATFORM_ESP8266  1
+
+
+#define SUPLA_CHANNEL_FLAG_HIDDEN                           0x01 // ver. >= 8
 
 #pragma pack(push, 1)
 
@@ -488,7 +515,6 @@ typedef struct {
 
 }TSC_SuplaChannel;
 
-
 typedef struct {
 	// server -> client
 
@@ -497,6 +523,82 @@ typedef struct {
 	TSC_SuplaChannel channels[SUPLA_CHANNELPACK_MAXSIZE]; // Last variable in struct!
 
 }TSC_SuplaChannelPack;
+
+typedef struct {
+	// server -> client
+	char EOL; // End Of List
+
+	_supla_int_t Id;
+	_supla_int_t LocationID;
+	_supla_int_t Func;
+	_supla_int_t AltIcon;
+	_supla_int_t Flags;
+	unsigned char ProtocolVersion;
+	char online;
+
+	TSuplaChannelValue value;
+
+	unsigned _supla_int_t CaptionSize; // including the terminating null byte ('\0')
+	char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE]; // Last variable in struct!
+
+}TSC_SuplaChannel_B; // ver. >= 8
+
+
+typedef struct {
+	// server -> client
+
+	_supla_int_t count;
+	_supla_int_t total_left;
+	TSC_SuplaChannel_B channels[SUPLA_CHANNELPACK_MAXSIZE]; // Last variable in struct!
+
+}TSC_SuplaChannelPack_B; // ver. >= 8
+
+
+typedef struct {
+	// server -> client
+	char EOL; // End Of List
+
+	_supla_int_t Id;
+	_supla_int_t LocationID;
+	_supla_int_t Func;
+	_supla_int_t AltIcon;
+	_supla_int_t Flags;
+	unsigned char ProtocolVersion;
+
+	unsigned _supla_int_t CaptionSize; // including the terminating null byte ('\0')
+	char Caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE]; // Last variable in struct!
+
+}TSC_SuplaChannelGroup; // ver. >= 8
+
+
+typedef struct {
+	// server -> client
+
+	_supla_int_t count;
+	_supla_int_t total_left;
+	TSC_SuplaChannelGroup groups[SUPLA_CHANNELGROUP_PACK_MAXSIZE]; // Last variable in struct!
+
+}TSC_SuplaChannelGroupPack; // ver. >= 8
+
+
+typedef struct {
+	// server -> client
+	char EOL; // End Of List
+
+	_supla_int_t ChennelGroupID;
+	_supla_int_t ChennelID;
+
+}TSC_SuplaChannelGroupRelation; // ver. >= 8
+
+
+typedef struct {
+	// server -> client
+
+	_supla_int_t count;
+	_supla_int_t total_left;
+	TSC_SuplaChannelGroup groups[SUPLA_CHANNELGROUP_RELATION_PACK_MAXSIZE]; // Last variable in struct!
+
+}TSC_SuplaChannelGroupRelationPack; // ver. >= 8
 
 
 typedef struct {
@@ -630,6 +732,7 @@ typedef struct {
 	char secret[SUPLA_OAUTH_SECRET_MAXSIZE];
 
 }TSC_OAuthParameters;
+
 
 #pragma pack(pop)
 
