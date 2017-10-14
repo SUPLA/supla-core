@@ -62,6 +62,7 @@ public:
 	void *srpc(void);
 	unsigned int getClientIpv4(void);
 	unsigned char GetActivityTimeout(void);
+	unsigned char getProtocolVersion(void);
 
 };
 

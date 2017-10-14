@@ -521,3 +521,9 @@ void* serverconnection::srpc(void) {
 unsigned char serverconnection::GetActivityTimeout(void) {
 	return activity_timeout;
 }
+
+unsigned char serverconnection::getProtocolVersion(void) {
+
+	return srpc_get_proto_version(_srpc);
+
+}

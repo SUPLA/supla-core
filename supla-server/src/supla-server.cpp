@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
 	void *ipc_accept_loop_t = NULL;
 	void *datalogger_loop_t = NULL;
 
+
 	//INIT BLOCK
 	if ( svrcfg_init(argc, argv) == 0 )
 		return EXIT_FAILURE;

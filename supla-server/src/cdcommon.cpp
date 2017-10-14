@@ -169,3 +169,11 @@ int cdcommon::getActivityDelay(void) {
 
 	return result;
 }
+
+unsigned char cdcommon::getProtocolVersion(void) {
+
+	unsigned char result = 0;
+	lck_lock(lck);
+	lck_unlock(lck);
+	return result;
+}

@@ -76,9 +76,9 @@ extern "C" {
 #define SUPLA_ACCESSID_PWDHEX_MAXSIZE       65
 #define SUPLA_ACCESSID_PWD_MAXSIZE          33
 #define SUPLA_LOCATION_CAPTION_MAXSIZE      401
-#define SUPLA_LOCATIONPACK_MAXSIZE          20
+#define SUPLA_LOCATIONPACK_MAXCOUNT         20
 #define SUPLA_CHANNEL_CAPTION_MAXSIZE       401
-#define SUPLA_CHANNELPACK_MAXSIZE           20
+#define SUPLA_CHANNELPACK_MAXCOUNT          20
 #define SUPLA_URL_HOST_MAXSIZE              101
 #define SUPLA_URL_PATH_MAXSIZE              101
 #define SUPLA_SERVER_NAME_MAXSIZE           65
@@ -91,9 +91,9 @@ extern "C" {
 #define SUPLA_OAUTH_SECRET_MAXSIZE          276 // ver. >= 7
 #define SUPLA_OAUTH_USERNAME_MAXSIZE        65  // ver. >= 7
 #define SUPLA_OAUTH_PASSWORD_MAXSIZE        65  // ver. >= 7
-#define SUPLA_CHANNELGROUP_PACK_MAXSIZE     20  // ver. >= 8
+#define SUPLA_CHANNELGROUP_PACK_MAXCOUNT    20  // ver. >= 8
 #define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE  401 // ver. >= 8
-#define SUPLA_CHANNELGROUP_RELATION_PACK_MAXSIZE  100 // ver. >= 8
+#define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT  100 // ver. >= 8
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
@@ -129,6 +129,7 @@ extern "C" {
 #define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT    330 // ver. >= 7
 #define SUPLA_CS_CALL_GET_OAUTH_PARAMETERS                340 // ver. >= 7
 #define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT         350 // ver. >= 7
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B                360 // ver. >= 8
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED       -5
 #define SUPLA_RESULT_DATA_TOO_LARGE         -4
@@ -358,7 +359,7 @@ typedef struct {
 
 	_supla_int_t count;
 	_supla_int_t total_left;
-	TSC_SuplaLocation locations[SUPLA_LOCATIONPACK_MAXSIZE]; // Last variable in struct!
+	TSC_SuplaLocation locations[SUPLA_LOCATIONPACK_MAXCOUNT]; // Last variable in struct!
 
 }TSC_SuplaLocationPack;
 
@@ -520,7 +521,7 @@ typedef struct {
 
 	_supla_int_t count;
 	_supla_int_t total_left;
-	TSC_SuplaChannel channels[SUPLA_CHANNELPACK_MAXSIZE]; // Last variable in struct!
+	TSC_SuplaChannel channels[SUPLA_CHANNELPACK_MAXCOUNT]; // Last variable in struct!
 
 }TSC_SuplaChannelPack;
 
@@ -549,7 +550,7 @@ typedef struct {
 
 	_supla_int_t count;
 	_supla_int_t total_left;
-	TSC_SuplaChannel_B channels[SUPLA_CHANNELPACK_MAXSIZE]; // Last variable in struct!
+	TSC_SuplaChannel_B channels[SUPLA_CHANNELPACK_MAXCOUNT]; // Last variable in struct!
 
 }TSC_SuplaChannelPack_B; // ver. >= 8
 
@@ -576,7 +577,7 @@ typedef struct {
 
 	_supla_int_t count;
 	_supla_int_t total_left;
-	TSC_SuplaChannelGroup groups[SUPLA_CHANNELGROUP_PACK_MAXSIZE]; // Last variable in struct!
+	TSC_SuplaChannelGroup groups[SUPLA_CHANNELGROUP_PACK_MAXCOUNT]; // Last variable in struct!
 
 }TSC_SuplaChannelGroupPack; // ver. >= 8
 
@@ -596,7 +597,7 @@ typedef struct {
 
 	_supla_int_t count;
 	_supla_int_t total_left;
-	TSC_SuplaChannelGroup groups[SUPLA_CHANNELGROUP_RELATION_PACK_MAXSIZE]; // Last variable in struct!
+	TSC_SuplaChannelGroup groups[SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT]; // Last variable in struct!
 
 }TSC_SuplaChannelGroupRelationPack; // ver. >= 8
 

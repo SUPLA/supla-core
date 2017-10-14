@@ -33,13 +33,15 @@
 #define CC_REMOTEUPDATE_CHANNEL          1
 #define CC_REMOTEUPDATE_CHANNELVALUE     2
 
-supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption) {
+supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion) {
 
 	this->Id = Id;
 	this->DeviceId = DeviceId;
 	this->LocationId = LocationID;
 	this->Func = Func;
 	this->Param1 = Param1;
+	this->AltIcon = AltIcon;
+	this->ProtocolVersion = ProtocolVersion;
 
 	if ( Caption ) {
 		this->Caption = strdup(Caption);
@@ -156,6 +158,30 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel, supla_cl
 
 }
 
+void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel, supla_client *client) {
+
+	memset(channel, 0, sizeof(TSC_SuplaChannel_B));
+
+	channel->Id = Id;
+	channel->Func = Func;
+	channel->LocationID = this->LocationId;
+	channel->AltIcon = this->AltIcon;
+	channel->ProtocolVersion = this->ProtocolVersion;
+
+	if ( client && client->getUser() ) {
+		client->getUser()->get_channel_value(DeviceId, Id, &channel->value, &channel->online);
+	}
+
+	if ( Caption ) {
+		snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s", Caption);
+		channel->CaptionSize = strnlen(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE-1)+1;
+	} else {
+		channel->CaptionSize = 1;
+		channel->Caption[0] = 0;
+	}
+
+}
+
 void supla_client_channel::proto_get_channel_value(TSC_SuplaChannelValue *channel_value, supla_client *client) {
 
 	memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
@@ -205,14 +231,14 @@ supla_client_channel *supla_client_channels::find_channel(int Id) {
 	return (supla_client_channel *)safe_array_findcnd(arr, arr_findcmp, &Id);
 }
 
-void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption) {
+void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion) {
 
 	safe_array_lock(arr);
 
 	supla_client_channel *channel = NULL;
 
 	if ( ( channel = find_channel(Id) ) == NULL ) {
-		channel = new supla_client_channel(Id, DeviceId, LocationID, Func, Param1, Caption);
+		channel = new supla_client_channel(Id, DeviceId, LocationID, Func, Param1, Caption, AltIcon, ProtocolVersion);
 		if ( safe_array_add(arr, channel) == -1 ) {
 			delete channel;
 			channel = NULL;
@@ -378,10 +404,60 @@ bool supla_client_channels::remote_update_c(void *srpc) {
 
 }
 
+bool supla_client_channels::remote_update_c_b(void *srpc) {
+
+	TSC_SuplaChannelPack_B pack;
+	memset(&pack, 0, sizeof(TSC_SuplaChannelPack_B));
+
+	safe_array_lock(arr);
+
+	for(int a=0;a<safe_array_count(arr);a++) {
+
+		supla_client_channel *channel = (supla_client_channel *)safe_array_get(arr, a);
+
+		if ( channel->marked_for_remote_update() == CC_REMOTEUPDATE_CHANNEL ) {
+
+			if ( pack.count < SUPLA_CHANNELPACK_MAXSIZE ) {
+
+				channel->proto_get_channel(&pack.channels[pack.count], client);
+				pack.channels[pack.count].EOL = 0;
+				channel->mark_for_remote_update(CC_REMOTEUPDATE_NONE);
+		        pack.count++;
+
+			} else {
+				pack.total_left++;
+			}
+
+		}
+	}
+
+	safe_array_unlock(arr);
+
+	if ( pack.count > 0 ) {
+
+		if ( pack.total_left == 0 )
+	    	pack.channels[pack.count-1].EOL = 1;
+
+		srpc_sc_async_channelpack_update_b(srpc, &pack);
+	}
+
+	return pack.count > 0;
+
+
+}
+
 bool supla_client_channels::remote_update(void *srpc) {
 
-	if ( remote_update_c(srpc) )
-		return true;
+	if ( client->getProtocolVersion() >= 7 ) {
+		if ( remote_update_c_b(srpc) ) {
+			return true;
+		}
+	} else {
+		if ( remote_update_c(srpc) ) {
+			return true;
+		}
+	}
+
 
 	return remote_update_cv(srpc);
 

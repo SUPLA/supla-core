@@ -62,6 +62,7 @@ public:
     bool cmpGUID(const char GUID1[SUPLA_GUID_SIZE]);
     void updateLastActivity(void);
     int getActivityDelay(void);
+    unsigned char getProtocolVersion(void);
     // Thread safe end
 };
 
