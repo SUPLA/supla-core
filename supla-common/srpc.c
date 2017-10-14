@@ -303,6 +303,73 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
     return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
 }
 
+typedef unsigned _supla_int_t (*_func_srpc_pack_get_caption_size)(void *pack, _supla_int_t idx);
+typedef void* (*_func_srpc_pack_get_item_ptr)(void *pack, _supla_int_t idx);
+typedef _supla_int_t (*_func_srpc_pack_get_pack_count)(void *pack);
+typedef void (*_func_srpc_pack_set_pack_count)(void *pack, _supla_int_t count, unsigned char increment);
+typedef unsigned _supla_int_t (*_func_srpc_pack_get_item_caption_size)(void *item);
+
+void SRPC_ICACHE_FLASH srpc_getpack(Tsrpc *srpc, TsrpcReceivedData *rd, unsigned _supla_int_t pack_sizeof
+		, unsigned _supla_int_t item_sizeof, unsigned _supla_int_t pack_max_count, unsigned _supla_int_t caption_max_size,
+		_func_srpc_pack_get_pack_count pack_get_count,
+		_func_srpc_pack_set_pack_count pack_set_count,
+		_func_srpc_pack_get_item_ptr get_item_ptr,
+		_func_srpc_pack_get_item_caption_size get_item_caption_size) {
+
+	_supla_int_t header_size = pack_sizeof-(item_sizeof*pack_max_count);
+	_supla_int_t c_header_size = item_sizeof-caption_max_size;
+	_supla_int_t a, count, size, offset, pack_size;
+	void *pack = NULL;
+
+	if ( srpc->sdp.data_size < header_size
+		 || srpc->sdp.data_size > pack_sizeof )
+		return;
+
+	count = pack_get_count(srpc->sdp.data);
+
+    if ( count < 0 || count > pack_max_count )
+    	return;
+
+	pack_size = header_size+(item_sizeof*count);
+	pack = (TSC_SuplaChannelPack *)malloc(pack_size);
+
+	if ( pack == NULL )
+		return;
+
+	memset(pack, 0, pack_size);
+	memcpy(pack, srpc->sdp.data, header_size);
+
+	offset = header_size;
+	pack_set_count(pack, 0, 0);
+
+	for(a=0;a<count;a++)
+		if ( srpc->sdp.data_size-offset >= c_header_size ) {
+
+			size = get_item_caption_size(&srpc->sdp.data[offset]);
+
+			if ( size >= 0
+				 && size <= caption_max_size
+				 && srpc->sdp.data_size-offset >= c_header_size+size ) {
+
+				memcpy(get_item_ptr(pack, a), &srpc->sdp.data[offset], c_header_size+size);
+				offset += c_header_size+size;
+				pack_set_count(pack, 1, 1);
+
+			} else {
+				break;
+			}
+    	}
+
+	if ( count == pack_get_count(pack) ) {
+
+		srpc->sdp.data_size = 0;
+		rd->data.sc_channel_pack = pack;
+
+	} else {
+		free(pack);
+	}
+}
+
 // TODO srpc_getchannelpack and srpc_getlocationpack should be supported by one common function
 void SRPC_ICACHE_FLASH srpc_getchannelpack(Tsrpc *srpc, TsrpcReceivedData *rd) {
 
@@ -1028,9 +1095,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_location_update(void *_srpc, TSC_Su
 
 typedef unsigned _supla_int_t (*_func_srpc_pack_get_caption_size)(void *pack, _supla_int_t idx);
 typedef void* (*_func_srpc_pack_get_item_ptr)(void *pack, _supla_int_t idx);
-typedef void (*_func_srpc_pack_set_pack_count)(void *pack, _supla_int_t count);
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_pack_update(void *_srpc, void *pack, _supla_int_t count,
+_supla_int_t SRPC_ICACHE_FLASH srpc_set_pack(void *_srpc, void *pack, _supla_int_t count,
 														_func_srpc_pack_get_caption_size get_caption_size,
 														_func_srpc_pack_get_item_ptr get_item_ptr,
 														_func_srpc_pack_set_pack_count set_pack_count,
@@ -1061,8 +1127,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_pack_update(void *_srpc, void *pack
 
 	for(a=0;a<count;a++) {
 
-		if ( get_caption_size(a) <= caption_max_size ) {
-			size+=item_sizeof-caption_max_size+get_caption_size(a);
+		if ( get_caption_size(pack, a) <= caption_max_size ) {
+			size+=item_sizeof-caption_max_size+get_caption_size(pack, a);
 
 			char *new_buffer = (char *)realloc(buffer, size);
 
@@ -1072,14 +1138,14 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_pack_update(void *_srpc, void *pack
 			}
 
 			buffer = new_buffer;
-			memcpy(&buffer[offset], get_item_ptr(a), size-offset);
+			memcpy(&buffer[offset], get_item_ptr(pack, a), size-offset);
 			offset+=size-offset;
 			n++;
 		}
 
 	}
 
-	set_pack_count(buffer, n);
+	set_pack_count(buffer, n, 0);
 
 	result = srpc_async_call(_srpc, call_type, buffer, size);
 
@@ -1087,24 +1153,24 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_pack_update(void *_srpc, void *pack
 	return result;
 }
 
-unsigned _supla_int_t srpc_sc_async_locationpack_get_caption_size(void *pack, _supla_int_t idx) {
+unsigned _supla_int_t srpc_locationpack_get_caption_size(void *pack, _supla_int_t idx) {
 	return ((TSC_SuplaLocationPack *)pack)->locations[idx].CaptionSize;
 };
 
-void* srpc_sc_async_locationpack_get_item_ptr(void *pack, _supla_int_t idx) {
+void* srpc_locationpack_get_item_ptr(void *pack, _supla_int_t idx) {
 	return &((TSC_SuplaLocationPack *)pack)->locations[idx];
 };
 
-void srpc_sc_async_locationpack_set_pack_count(void *pack, _supla_int_t count) {
+void srpc_locationpack_set_pack_count(void *pack, _supla_int_t count, unsigned char increment) {
 	((TSC_SuplaLocationPack *)pack)->count = count;
 };
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack) {
 
-	return SRPC_ICACHE_FLASH srpc_sc_async_pack_update(_srpc, location_pack, location_pack->count,
-			&srpc_sc_async_locationpack_get_caption_size,
-			&srpc_sc_async_locationpack_get_item_ptr,
-			&srpc_sc_async_locationpack_set_pack_count,
+	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, location_pack, location_pack->count,
+			&srpc_locationpack_get_caption_size,
+			&srpc_locationpack_get_item_ptr,
+			&srpc_locationpack_set_pack_count,
 			sizeof(TSC_SuplaLocationPack),
 			SUPLA_LOCATIONPACK_MAXCOUNT,
 			SUPLA_LOCATION_CAPTION_MAXSIZE,
@@ -1124,37 +1190,37 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update(void *_srpc, TSC_Sup
 
 }
 
-unsigned _supla_int_t srpc_sc_async_channelpack_get_caption_size(void *pack, _supla_int_t idx) {
+unsigned _supla_int_t srpc_channelpack_get_caption_size(void *pack, _supla_int_t idx) {
 	return ((TSC_SuplaChannelPack *)pack)->channels[idx].CaptionSize;
 };
 
-void* srpc_sc_async_channelpack_get_item_ptr(void *pack, _supla_int_t idx) {
+void* srpc_channelpack_get_item_ptr(void *pack, _supla_int_t idx) {
 	return &((TSC_SuplaChannelPack *)pack)->channels[idx];
 };
 
-void srpc_sc_async_channelpack_set_pack_count(void *pack, _supla_int_t count) {
+void srpc_channelpack_set_pack_count(void *pack, _supla_int_t count) {
 	((TSC_SuplaChannelPack *)pack)->count = count;
 };
 
-unsigned _supla_int_t srpc_sc_async_channelpack_get_caption_size_b(void *pack, _supla_int_t idx) {
+unsigned _supla_int_t srpc_channelpack_get_caption_size_b(void *pack, _supla_int_t idx) {
 	return ((TSC_SuplaChannelPack_B *)pack)->channels[idx].CaptionSize;
 };
 
-void* srpc_sc_async_channelpack_get_item_ptr_b(void *pack, _supla_int_t idx) {
+void* srpc_channelpack_get_item_ptr_b(void *pack, _supla_int_t idx) {
 	return &((TSC_SuplaChannelPack_B *)pack)->channels[idx];
 };
 
-void srpc_sc_async_channelpack_set_pack_count_b(void *pack, _supla_int_t count) {
+void srpc_channelpack_set_pack_count_b(void *pack, _supla_int_t count, unsigned char increment) {
 	((TSC_SuplaChannelPack_B *)pack)->count = count;
 };
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack) {
 
 
-	return SRPC_ICACHE_FLASH srpc_sc_async_pack_update(_srpc, channel_pack, channel_pack->count,
-			&srpc_sc_async_channelpack_get_caption_size,
-			&srpc_sc_async_channelpack_get_item_ptr,
-			&srpc_sc_async_channelpack_set_pack_count,
+	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, channel_pack, channel_pack->count,
+			&srpc_channelpack_get_caption_size,
+			&srpc_channelpack_get_item_ptr,
+			&srpc_channelpack_set_pack_count,
 			sizeof(TSC_SuplaChannelPack),
 			SUPLA_CHANNELPACK_MAXCOUNT,
 			SUPLA_CHANNEL_CAPTION_MAXSIZE,
@@ -1164,10 +1230,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(void *_srpc, TSC_SuplaChannelPack_B *channel_pack) {
 
-	return SRPC_ICACHE_FLASH srpc_sc_async_pack_update(_srpc, channel_pack, channel_pack->count,
-			&srpc_sc_async_channelpack_get_caption_size_b,
-			&srpc_sc_async_channelpack_get_item_ptr_b,
-			&srpc_sc_async_channelpack_set_pack_count_b,
+	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, channel_pack, channel_pack->count,
+			&srpc_channelpack_get_caption_size_b,
+			&srpc_channelpack_get_item_ptr_b,
+			&srpc_channelpack_set_pack_count_b,
 			sizeof(TSC_SuplaChannelPack_B),
 			SUPLA_CHANNELPACK_MAXCOUNT,
 			SUPLA_CHANNEL_CAPTION_MAXSIZE,

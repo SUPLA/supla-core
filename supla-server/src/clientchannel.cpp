@@ -375,7 +375,7 @@ bool supla_client_channels::remote_update_c(void *srpc) {
 
 		if ( channel->marked_for_remote_update() == CC_REMOTEUPDATE_CHANNEL ) {
 
-			if ( pack.count < SUPLA_CHANNELPACK_MAXSIZE ) {
+			if ( pack.count < SUPLA_CHANNELPACK_MAXCOUNT ) {
 
 				channel->proto_get_channel(&pack.channels[pack.count], client);
 				pack.channels[pack.count].EOL = 0;
@@ -417,7 +417,7 @@ bool supla_client_channels::remote_update_c_b(void *srpc) {
 
 		if ( channel->marked_for_remote_update() == CC_REMOTEUPDATE_CHANNEL ) {
 
-			if ( pack.count < SUPLA_CHANNELPACK_MAXSIZE ) {
+			if ( pack.count < SUPLA_CHANNELPACK_MAXCOUNT ) {
 
 				channel->proto_get_channel(&pack.channels[pack.count], client);
 				pack.channels[pack.count].EOL = 0;
