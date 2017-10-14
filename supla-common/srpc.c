@@ -308,6 +308,7 @@ typedef void* (*_func_srpc_pack_get_item_ptr)(void *pack, _supla_int_t idx);
 typedef _supla_int_t (*_func_srpc_pack_get_pack_count)(void *pack);
 typedef void (*_func_srpc_pack_set_pack_count)(void *pack, _supla_int_t count, unsigned char increment);
 typedef unsigned _supla_int_t (*_func_srpc_pack_get_item_caption_size)(void *item);
+typedef unsigned _supla_int_t (*_func_srpc_pack_get_caption_size)(void *pack, _supla_int_t idx);
 
 void SRPC_ICACHE_FLASH srpc_getpack(Tsrpc *srpc, TsrpcReceivedData *rd, unsigned _supla_int_t pack_sizeof
 		, unsigned _supla_int_t item_sizeof, unsigned _supla_int_t pack_max_count, unsigned _supla_int_t caption_max_size,
@@ -363,132 +364,95 @@ void SRPC_ICACHE_FLASH srpc_getpack(Tsrpc *srpc, TsrpcReceivedData *rd, unsigned
 	if ( count == pack_get_count(pack) ) {
 
 		srpc->sdp.data_size = 0;
-		rd->data.sc_channel_pack = pack;
+		// dcs_ping is 1st variable in union
+		rd->data.dcs_ping = pack;
 
 	} else {
 		free(pack);
 	}
 }
 
-// TODO srpc_getchannelpack and srpc_getlocationpack should be supported by one common function
+
+void* srpc_channelpack_get_item_ptr(void *pack, _supla_int_t idx) {
+	return &((TSC_SuplaChannelPack *)pack)->channels[idx];
+};
+
+_supla_int_t srpc_channelpack_get_pack_count(void *pack) {
+	return ((TSC_SuplaChannelPack*)pack)->count;
+}
+
+void srpc_channelpack_set_pack_count(void *pack, _supla_int_t count, unsigned char increment) {
+	if ( increment == 0 ) { ((TSC_SuplaChannelPack *)pack)->count = count; } else { ((TSC_SuplaChannelPack *)pack)->count+=count; };
+}
+
+unsigned _supla_int_t srpc_channelpack_get_item_caption_size(void *item) {
+	return ((TSC_SuplaChannel*)item)->CaptionSize;
+}
+
+
 void SRPC_ICACHE_FLASH srpc_getchannelpack(Tsrpc *srpc, TsrpcReceivedData *rd) {
 
-	_supla_int_t header_size = sizeof(TSC_SuplaChannelPack)-(sizeof(TSC_SuplaChannel)*SUPLA_CHANNELPACK_MAXCOUNT);
-	_supla_int_t c_header_size = sizeof(TSC_SuplaChannel)-SUPLA_CHANNEL_CAPTION_MAXSIZE;
-	_supla_int_t a, count, size, offset, pack_size;
-	TSC_SuplaChannel *_channel = NULL;
-	TSC_SuplaChannelPack *_pack = NULL;
-	TSC_SuplaChannelPack *pack = NULL;
+	srpc_getpack(srpc, rd, sizeof(TSC_SuplaChannelPack)
+			, sizeof(TSC_SuplaChannel), SUPLA_CHANNELPACK_MAXCOUNT, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+			&srpc_channelpack_get_pack_count,
+			&srpc_channelpack_set_pack_count,
+			&srpc_channelpack_get_item_ptr,
+			&srpc_channelpack_get_item_caption_size);
 
-	if ( srpc->sdp.data_size < header_size
-		 || srpc->sdp.data_size > sizeof(TSC_SuplaChannelPack) )
-		return;
+}
 
-	_pack = (TSC_SuplaChannelPack*)srpc->sdp.data;
-	count = _pack->count;
+void* srpc_channelpack_get_item_ptr_b(void *pack, _supla_int_t idx) {
+	return &((TSC_SuplaChannelPack_B *)pack)->channels[idx];
+};
 
-    if ( count < 0 || count > SUPLA_CHANNELPACK_MAXCOUNT )
-    	return;
+_supla_int_t srpc_channelpack_get_pack_count_b(void *pack) {
+	return ((TSC_SuplaChannelPack_B*)pack)->count;
+}
 
-	pack_size = header_size+(sizeof(TSC_SuplaChannel)*count);
-	pack = (TSC_SuplaChannelPack *)malloc(pack_size);
+void srpc_channelpack_set_pack_count_b(void *pack, _supla_int_t count, unsigned char increment) {
+	if ( increment == 0 ) { ((TSC_SuplaChannelPack_B *)pack)->count = count; } else { ((TSC_SuplaChannelPack_B *)pack)->count+=count; };
+}
 
-	if ( pack == NULL )
-		return;
+unsigned _supla_int_t srpc_channelpack_get_item_caption_size_b(void *item) {
+	return ((TSC_SuplaChannel_B*)item)->CaptionSize;
+}
 
-	memset(pack, 0, pack_size);
-	memcpy(pack, srpc->sdp.data, header_size);
+void SRPC_ICACHE_FLASH srpc_getchannelpack_b(Tsrpc *srpc, TsrpcReceivedData *rd) {
 
-	offset = header_size;
-	pack->count=0;
+	srpc_getpack(srpc, rd, sizeof(TSC_SuplaChannelPack_B)
+			, sizeof(TSC_SuplaChannel_B), SUPLA_CHANNELPACK_MAXCOUNT, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+			&srpc_channelpack_get_pack_count_b,
+			&srpc_channelpack_set_pack_count_b,
+			&srpc_channelpack_get_item_ptr_b,
+			&srpc_channelpack_get_item_caption_size_b);
 
-	for(a=0;a<count;a++)
-		if ( srpc->sdp.data_size-offset >= c_header_size ) {
+}
 
-			_channel = (TSC_SuplaChannel*)&srpc->sdp.data[offset];
-			size = _channel->CaptionSize;
+void* srpc_locationpack_get_item_ptr(void *pack, _supla_int_t idx) {
+	return &((TSC_SuplaLocationPack *)pack)->locations[idx];
+};
 
-			if ( size >= 0
-				 && size <= SUPLA_CHANNEL_CAPTION_MAXSIZE
-				 && srpc->sdp.data_size-offset >= c_header_size+size ) {
+_supla_int_t srpc_locationpack_get_pack_count(void *pack) {
+	return ((TSC_SuplaLocationPack*)pack)->count;
+}
 
-				memcpy(&pack->channels[a], &srpc->sdp.data[offset], c_header_size+size);
-				offset += c_header_size+size;
-				pack->count++;
+void srpc_locationpack_set_pack_count(void *pack, _supla_int_t count, unsigned char increment) {
+	if ( increment == 0 ) { ((TSC_SuplaLocationPack *)pack)->count = count; } else { ((TSC_SuplaLocationPack *)pack)->count+=count; };
+}
 
-			} else {
-				break;
-			}
-    	}
-
-	if ( count == pack->count ) {
-
-		srpc->sdp.data_size = 0;
-		rd->data.sc_channel_pack = pack;
-
-	} else {
-		free(pack);
-	}
+unsigned _supla_int_t srpc_locationpack_get_item_caption_size(void *item) {
+	return ((TSC_SuplaLocation*)item)->CaptionSize;
 }
 
 void SRPC_ICACHE_FLASH srpc_getlocationpack(Tsrpc *srpc, TsrpcReceivedData *rd) {
 
-	_supla_int_t header_size = sizeof(TSC_SuplaLocationPack)-(sizeof(TSC_SuplaLocation)*SUPLA_LOCATIONPACK_MAXCOUNT);
-	_supla_int_t c_header_size = sizeof(TSC_SuplaLocation)-SUPLA_LOCATION_CAPTION_MAXSIZE;
-	_supla_int_t a, count, size, offset, pack_size;
-	TSC_SuplaLocation *_location = NULL;
-	TSC_SuplaLocationPack *_pack = NULL;
-	TSC_SuplaLocationPack *pack = NULL;
+	srpc_getpack(srpc, rd, sizeof(TSC_SuplaLocationPack)
+			, sizeof(TSC_SuplaLocation), SUPLA_LOCATIONPACK_MAXCOUNT, SUPLA_LOCATION_CAPTION_MAXSIZE,
+			&srpc_locationpack_get_pack_count,
+			&srpc_locationpack_set_pack_count,
+			&srpc_locationpack_get_item_ptr,
+			&srpc_locationpack_get_item_caption_size);
 
-	if ( srpc->sdp.data_size < header_size
-		 || srpc->sdp.data_size > sizeof(TSC_SuplaLocationPack) )
-		return;
-
-    _pack = (TSC_SuplaLocationPack*)srpc->sdp.data;
-    count = _pack->count;
-
-    if ( count < 0 || count > SUPLA_LOCATIONPACK_MAXCOUNT )
-    	return;
-
-	pack_size = header_size+(sizeof(TSC_SuplaLocation)*count);
-	pack = (TSC_SuplaLocationPack *)malloc(pack_size);
-
-	if ( pack == NULL )
-		return;
-
-	memset(pack, 0, pack_size);
-	memcpy(pack, srpc->sdp.data, header_size);
-
-	offset = header_size;
-	pack->count=0;
-
-	for(a=0;a<count;a++)
-		if ( srpc->sdp.data_size-offset >= c_header_size ) {
-
-	        _location = (TSC_SuplaLocation*)&srpc->sdp.data[offset];
-			size = _location->CaptionSize;
-
-			if ( size >= 0
-				 && size <= SUPLA_LOCATION_CAPTION_MAXSIZE
-				 && srpc->sdp.data_size-offset >= c_header_size+size ) {
-
-				memcpy(&pack->locations[a], &srpc->sdp.data[offset], c_header_size+size);
-				offset += c_header_size+size;
-				pack->count++;
-
-			} else {
-				break;
-			}
-    	}
-
-	if ( count == pack->count ) {
-
-		srpc->sdp.data_size = 0;
-		rd->data.sc_location_pack = pack;
-
-	} else {
-		free(pack);
-	}
 }
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned _supla_int_t rr_id) {
@@ -686,6 +650,10 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd, unsigned
 
 		   case SUPLA_SC_CALL_CHANNELPACK_UPDATE:
 			   srpc_getchannelpack(srpc, rd);
+			   break;
+
+		   case SUPLA_SC_CALL_CHANNELPACK_UPDATE_B:
+			   srpc_getchannelpack_b(srpc, rd);
 			   break;
 
 		   case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
@@ -1093,9 +1061,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_location_update(void *_srpc, TSC_Su
 	return srpc_async_call(_srpc, SUPLA_SC_CALL_LOCATION_UPDATE, (char*)location, size);
 }
 
-typedef unsigned _supla_int_t (*_func_srpc_pack_get_caption_size)(void *pack, _supla_int_t idx);
-typedef void* (*_func_srpc_pack_get_item_ptr)(void *pack, _supla_int_t idx);
-
 _supla_int_t SRPC_ICACHE_FLASH srpc_set_pack(void *_srpc, void *pack, _supla_int_t count,
 														_func_srpc_pack_get_caption_size get_caption_size,
 														_func_srpc_pack_get_item_ptr get_item_ptr,
@@ -1157,14 +1122,6 @@ unsigned _supla_int_t srpc_locationpack_get_caption_size(void *pack, _supla_int_
 	return ((TSC_SuplaLocationPack *)pack)->locations[idx].CaptionSize;
 };
 
-void* srpc_locationpack_get_item_ptr(void *pack, _supla_int_t idx) {
-	return &((TSC_SuplaLocationPack *)pack)->locations[idx];
-};
-
-void srpc_locationpack_set_pack_count(void *pack, _supla_int_t count, unsigned char increment) {
-	((TSC_SuplaLocationPack *)pack)->count = count;
-};
-
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack) {
 
 	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, location_pack, location_pack->count,
@@ -1194,24 +1151,8 @@ unsigned _supla_int_t srpc_channelpack_get_caption_size(void *pack, _supla_int_t
 	return ((TSC_SuplaChannelPack *)pack)->channels[idx].CaptionSize;
 };
 
-void* srpc_channelpack_get_item_ptr(void *pack, _supla_int_t idx) {
-	return &((TSC_SuplaChannelPack *)pack)->channels[idx];
-};
-
-void srpc_channelpack_set_pack_count(void *pack, _supla_int_t count) {
-	((TSC_SuplaChannelPack *)pack)->count = count;
-};
-
 unsigned _supla_int_t srpc_channelpack_get_caption_size_b(void *pack, _supla_int_t idx) {
 	return ((TSC_SuplaChannelPack_B *)pack)->channels[idx].CaptionSize;
-};
-
-void* srpc_channelpack_get_item_ptr_b(void *pack, _supla_int_t idx) {
-	return &((TSC_SuplaChannelPack_B *)pack)->channels[idx];
-};
-
-void srpc_channelpack_set_pack_count_b(void *pack, _supla_int_t count, unsigned char increment) {
-	((TSC_SuplaChannelPack_B *)pack)->count = count;
 };
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack) {
