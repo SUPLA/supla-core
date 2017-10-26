@@ -405,6 +405,18 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
 
 }
 
+supla_device * supla_user::channel_master_device(supla_device *suspect, int ChannelID) {
+
+	if ( suspect != NULL
+			&& suspect->master_channel(ChannelID) ) return suspect;
+
+	for(int a=0;a<safe_array_count(device_arr);a++)
+		if ( NULL != ( suspect = (supla_device *)safe_array_get(device_arr, a) )
+			 && suspect->master_channel(ChannelID) ) return suspect;
+
+	return NULL;
+}
+
 supla_device *supla_user::device_by_channel_id(supla_device *suspect, int ChannelID) {
 
 	if ( suspect != NULL
@@ -555,15 +567,10 @@ void supla_user::on_channel_value_changed(int DeviceId, int ChannelId) {
 
 	safe_array_lock(device_arr);
 	{
-		supla_device *device = find_device(DeviceId);
+		supla_device *device = channel_master_device(find_device(DeviceId), ChannelId);
 		if ( device ) {
-
-				int master_channel_id = device->master_channel(ChannelId);
-
-				if ( master_channel_id != 0 ) {
-					DeviceId = device->getID();
-					ChannelId = master_channel_id;
-				}
+			DeviceId = device->getID();
+		    ChannelId = device->master_channel(ChannelId);
 		}
 	}
 	safe_array_unlock(device_arr);

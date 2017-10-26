@@ -38,6 +38,7 @@ protected:
 	supla_device *find_device(int DeviceID);
 	supla_client *find_client(int ClientID);
 	supla_device *device_by_channel_id(supla_device *suspect, int ChannelID);
+	supla_device * channel_master_device(supla_device *suspect, int ChannelID);
 
 	static char find_user_byid(void *ptr, void *UserID);
     static char find_device_byid(void *ptr, void *ID);
