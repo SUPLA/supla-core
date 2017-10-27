@@ -37,7 +37,7 @@ typedef void (*_suplaclient_cb_on_action)(void *_suplaclient, void *user_data);
 typedef void (*_suplaclient_cb_on_registered)(void *_suplaclient, void *user_data, TSC_SuplaRegisterClientResult *result);
 typedef void (*_suplaclient_cb_on_error)(void *_suplaclient, void *user_data, int code);
 typedef void (*_suplaclient_cb_location_update)(void *_suplaclient, void *user_data, TSC_SuplaLocation *location);
-typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient, void *user_data, TSC_SuplaChannel *channel);
+typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient, void *user_data, TSC_SuplaChannel_B *channel);
 typedef void (*_suplaclient_cb_channel_value_update)(void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value);
 typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data, TSC_SuplaEvent *event);
 typedef void (*_suplaclient_cb_on_registration_enabled)(void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled);

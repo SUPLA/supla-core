@@ -77,6 +77,7 @@ union TsrpcDataPacketData {
 	TSC_SuplaLocation *sc_location;
 	TSC_SuplaLocationPack *sc_location_pack;
 	TSC_SuplaChannel *sc_channel;
+	TSC_SuplaChannel_B *sc_channel_b;
 	TSC_SuplaChannelPack *sc_channel_pack;
 	TSC_SuplaChannelPack_B *sc_channel_pack_b;
 	TSC_SuplaChannelValue *sc_channel_value;
@@ -149,6 +150,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(void *_srpc, 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update(void *_srpc, TSC_SuplaChannel *channel);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_b(void *_srpc, TSC_SuplaChannel_B *channel); // ver. >= 8
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(void *_srpc, TSC_SuplaChannelPack_B *channel_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(void *_srpc, TSC_SuplaChannelValue *channel_item_value);

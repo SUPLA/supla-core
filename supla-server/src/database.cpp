@@ -1099,11 +1099,11 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 		rbind[5].buffer_length = 401;
 		rbind[5].length = &size;
 
-		rbind[5].buffer_type= MYSQL_TYPE_LONG;
-		rbind[5].buffer= (char *)&alt_icon;
-
 		rbind[6].buffer_type= MYSQL_TYPE_LONG;
-		rbind[6].buffer= (char *)&protocol_version;
+		rbind[6].buffer= (char *)&alt_icon;
+
+		rbind[7].buffer_type= MYSQL_TYPE_LONG;
+		rbind[7].buffer= (char *)&protocol_version;
 
 		if ( mysql_stmt_bind_result(stmt, rbind) ) {
 			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
@@ -1115,8 +1115,9 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 
 				while (!mysql_stmt_fetch(stmt)) {
 
-					if ( is_null == false )
+					if ( is_null == false ) {
 						caption[size] = 0;
+					}
 
 					channels->update_channel(id, iodevice_id, location_id, func, param1, is_null ? NULL : caption, alt_icon, protocol_version);
 				}

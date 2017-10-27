@@ -48,20 +48,22 @@ void client_loop_location_update(void *_suplaclient, void *sthread, TSC_SuplaLoc
 
 }
 
-void client_loop_channel_update(void *_suplaclient, void *sthread, TSC_SuplaChannel *channel) {
+void client_loop_channel_update(void *_suplaclient, void *sthread, TSC_SuplaChannel_B *channel) {
 
 	double temp;
 	if ( channel->Func == 40 ) {
 		memcpy(&temp, channel->value.value, sizeof(double));
 		supla_log(LOG_DEBUG, "-> Channel #%i: %f st. EOL=%i", channel->Id, temp, channel->EOL);
 	} else {
-		supla_log(LOG_DEBUG, "Channel #%i: %s LocationID=%i, Function=%i, online=%i, value[0]: %i sub_value[0]: %i, EOL=%i", channel->Id,
+		supla_log(LOG_DEBUG, "Channel #%i: %s LocationID=%i, Function=%i, online=%i, value[0]: %i sub_value[0]: %i, altIcon=%i, ProtoVersion=%i, EOL=%i", channel->Id,
 				channel->Caption,
 				channel->LocationID,
 				channel->Func,
 				channel->online,
 				channel->value.value[0],
 				channel->value.sub_value[0],
+				channel->AltIcon,
+				channel->ProtocolVersion,
 				channel->EOL);
 	}
 
@@ -102,6 +104,7 @@ void *client_loop_init(void *sthread) {
 	supla_client_cfginit(&scc);
 
 	scc.protocol_version = proto_version;
+	supla_log(LOG_DEBUG, "Proto %i", scc.protocol_version);
 
 	snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Console client");
 	snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");

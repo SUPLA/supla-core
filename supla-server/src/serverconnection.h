@@ -61,6 +61,7 @@ public:
 	void on_remote_call_received(void *_srpc, unsigned int rr_id, unsigned int call_type, unsigned char proto_version);
 	void *srpc(void);
 	unsigned int getClientIpv4(void);
+	int getClientSD(void);
 	unsigned char GetActivityTimeout(void);
 	unsigned char getProtocolVersion(void);
 

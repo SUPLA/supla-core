@@ -418,7 +418,6 @@ bool supla_client_channels::remote_update_c_b(void *srpc) {
 		if ( channel->marked_for_remote_update() == CC_REMOTEUPDATE_CHANNEL ) {
 
 			if ( pack.count < SUPLA_CHANNELPACK_MAXCOUNT ) {
-
 				channel->proto_get_channel(&pack.channels[pack.count], client);
 				pack.channels[pack.count].EOL = 0;
 				channel->mark_for_remote_update(CC_REMOTEUPDATE_NONE);
@@ -448,7 +447,7 @@ bool supla_client_channels::remote_update_c_b(void *srpc) {
 
 bool supla_client_channels::remote_update(void *srpc) {
 
-	if ( client->getProtocolVersion() >= 7 ) {
+	if ( client->getProtocolVersion() > 7 ) {
 		if ( remote_update_c_b(srpc) ) {
 			return true;
 		}

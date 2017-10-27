@@ -174,6 +174,7 @@ unsigned char cdcommon::getProtocolVersion(void) {
 
 	unsigned char result = 0;
 	lck_lock(lck);
+	result = getSvrConn()->getProtocolVersion();
 	lck_unlock(lck);
 	return result;
 }

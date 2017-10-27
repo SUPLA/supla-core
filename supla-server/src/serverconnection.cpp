@@ -139,8 +139,10 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id, 
 		case SUPLA_DS_CALL_REGISTER_DEVICE:
 		case SUPLA_DS_CALL_REGISTER_DEVICE_B:
 		case SUPLA_DS_CALL_REGISTER_DEVICE_C:
+		case SUPLA_DS_CALL_REGISTER_DEVICE_D:
 		case SUPLA_CS_CALL_REGISTER_CLIENT:
 		case SUPLA_CS_CALL_REGISTER_CLIENT_B:
+		case SUPLA_CS_CALL_REGISTER_CLIENT_C:
 
 			if ( srpc_get_proto_version(_srpc) != proto_version ) {
 				// Adjust version to client/device protocol
@@ -512,6 +514,10 @@ void serverconnection::terminate(void) {
 
 unsigned int serverconnection::getClientIpv4(void) {
     return client_ipv4;
+}
+
+int serverconnection::getClientSD(void) {
+    return ssocket_supla_socket_getsfd(supla_socket);
 }
 
 void* serverconnection::srpc(void) {
