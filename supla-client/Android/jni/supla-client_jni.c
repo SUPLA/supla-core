@@ -327,7 +327,7 @@ jobject supla_android_client_channelvalue_to_jobject(void *_suplaclient, void *u
     return NULL;
 }
 
-void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel *channel) {
+void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel_B *channel) {
    
     //int a; 
     jfieldID fid;
@@ -366,6 +366,15 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
         
         fid = supla_client_GetFieldID(env, cch, "Caption", "Ljava/lang/String;");
         (*env)->SetObjectField(env, ch, fid, (*env)->NewStringUTF(env, channel->Caption));
+        
+        fid = supla_client_GetFieldID(env, cch, "AltIcon", "I");
+        (*env)->SetIntField(env, ch, fid, channel->AltIcon);
+        
+        fid = supla_client_GetFieldID(env, cch, "Flags", "I");
+        (*env)->SetIntField(env, ch, fid, channel->Flags);
+        
+        fid = supla_client_GetFieldID(env, cch, "ProtocolVersion", "I");
+        (*env)->SetIntField(env, ch, fid, channel->ProtocolVersion);
         
         supla_android_client(asc, asc->j_mid_channel_update, ch);
     }
@@ -854,4 +863,8 @@ Java_org_supla_android_lib_SuplaClient_scGetProtoVersion(JNIEnv* env, jobject th
     return 0;
 };
 
-
+JNIEXPORT jint JNICALL
+Java_org_supla_android_lib_SuplaClient_scGetMaxProtoVersion(JNIEnv* env, jobject thiz, jlong _asc) {
+   
+    return SUPLA_PROTO_VERSION;
+};
