@@ -246,6 +246,7 @@ void supla_client_channel_a2b(TSC_SuplaChannel *a, TSC_SuplaChannel_B *b) {
 	b->AltIcon = 0;
 	b->Flags = 0;
 	b->ProtocolVersion = 0;
+	b->online = a->online;
 	memcpy(&b->value, &a->value, sizeof(TSuplaChannelValue));
 	b->CaptionSize = a->CaptionSize;
 	memcpy(b->Caption, a->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
