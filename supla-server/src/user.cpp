@@ -40,6 +40,11 @@ char supla_user::find_device_byid(void *ptr, void *ID) {
 }
 
 //static
+char supla_user::find_device_by_channelid(void *ptr, void *ID) {
+	return ((supla_device*)ptr)->channel_exists(*(int*)ID) ? 1 : 0;
+}
+
+//static
 char supla_user::find_device_byguid(void *ptr, void *GUID) {
 	return ((supla_device*)ptr)->cmpGUID((char*)GUID) ? 1 : 0;
 }
@@ -201,6 +206,10 @@ void supla_user::remove_client(supla_client *client) {
 
 supla_device *supla_user::find_device(int DeviceID) {
 	return (supla_device *)safe_array_findcnd(device_arr, find_device_byid, &DeviceID);
+}
+
+supla_device *supla_user::find_device_by_channelid(int ChannelID) {
+	return (supla_device *)safe_array_findcnd(device_arr, find_device_by_channelid, &ChannelID);
 }
 
 supla_client *supla_user::find_client(int ClientID) {
@@ -405,18 +414,6 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
 
 }
 
-supla_device * supla_user::channel_master_device(supla_device *suspect, int ChannelID) {
-
-	if ( suspect != NULL
-			&& suspect->master_channel(ChannelID) ) return suspect;
-
-	for(int a=0;a<safe_array_count(device_arr);a++)
-		if ( NULL != ( suspect = (supla_device *)safe_array_get(device_arr, a) )
-			 && suspect->master_channel(ChannelID) ) return suspect;
-
-	return NULL;
-}
-
 supla_device *supla_user::device_by_channel_id(supla_device *suspect, int ChannelID) {
 
 	if ( suspect != NULL
@@ -567,13 +564,23 @@ void supla_user::on_channel_value_changed(int DeviceId, int ChannelId) {
 
 	safe_array_lock(device_arr);
 	{
-		supla_device *device = channel_master_device(find_device(DeviceId), ChannelId);
+		supla_device *device = find_device(DeviceId);
 		if ( device ) {
-			DeviceId = device->getID();
-		    ChannelId = device->master_channel(ChannelId);
+
+			int master_channel_id = device->master_channel(ChannelId);
+			if ( master_channel_id != 0 ) {
+				device = find_device_by_channelid(master_channel_id);
+
+				if ( device ) {
+					DeviceId = device->getID();
+				    ChannelId = master_channel_id;
+				}
+			}
+
 		}
 	}
 	safe_array_unlock(device_arr);
+
 
 	safe_array_lock(client_arr);
 	{

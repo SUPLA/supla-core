@@ -36,12 +36,14 @@ protected:
 	bool connections_allowed;
 
 	supla_device *find_device(int DeviceID);
+	supla_device *find_device_by_channelid(int ChannelID);
 	supla_client *find_client(int ClientID);
 	supla_device *device_by_channel_id(supla_device *suspect, int ChannelID);
 	supla_device * channel_master_device(supla_device *suspect, int ChannelID);
 
 	static char find_user_byid(void *ptr, void *UserID);
     static char find_device_byid(void *ptr, void *ID);
+    static char find_device_by_channelid(void *ptr, void *ID);
     static char find_device_byguid(void *ptr, void *GUID);
     static char find_client_byid(void *ptr, void *ID);
     static char find_client_byguid(void *ptr, void *GUID);
