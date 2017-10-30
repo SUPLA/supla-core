@@ -793,6 +793,10 @@ unsigned char SRPC_ICACHE_FLASH srpc_call_min_version_required(void *_srpc, unsi
 		case SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT:
 		return 7;
 
+		case SUPLA_SC_CALL_CHANNELPACK_UPDATE_B:
+		case SUPLA_SC_CALL_CHANNEL_UPDATE_B:
+		return 8;
+
 	}
 
 	return 0;
