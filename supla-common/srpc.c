@@ -323,13 +323,15 @@ void SRPC_ICACHE_FLASH srpc_getpack(Tsrpc *srpc, TsrpcReceivedData *rd, unsigned
 	void *pack = NULL;
 
 	if ( srpc->sdp.data_size < header_size
-		 || srpc->sdp.data_size > pack_sizeof )
+		 || srpc->sdp.data_size > pack_sizeof ) {
 		return;
+	};
 
 	count = pack_get_count(srpc->sdp.data);
 
-    if ( count < 0 || count > pack_max_count )
+    if ( count < 0 || count > pack_max_count ) {
     	return;
+    };
 
 	pack_size = header_size+(item_sizeof*count);
 	pack = (TSC_SuplaChannelPack *)malloc(pack_size);
