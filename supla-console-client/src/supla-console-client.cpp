@@ -60,6 +60,10 @@ int main(int argc, char* argv[]) {
 	struct timeval runtime;
 	gettimeofday(&runtime, NULL);
 
+	if (  lifetime > 0 ) {
+		supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
+	}
+
 	st_mainloop_init();
 	st_hook_signals();
 
@@ -102,6 +106,7 @@ int main(int argc, char* argv[]) {
 
 			struct timeval now;
 			gettimeofday(&now, NULL);
+
 
 			if ( now.tv_sec-runtime.tv_sec >= lifetime ) {
 				return EXIT_FAILURE; // Exit with leaks
