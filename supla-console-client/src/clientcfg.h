@@ -40,6 +40,8 @@ extern char cfg_client_AuthKey[SUPLA_AUTHKEY_SIZE];
 
 extern unsigned char proto_version;
 
+extern int lifetime;
+
 unsigned char clientcfg_init(int argc, char* argv[]);
 void clientcfg_free();
 

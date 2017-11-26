@@ -57,6 +57,9 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	struct timeval runtime;
+	gettimeofday(&runtime, NULL);
+
 	st_mainloop_init();
 	st_hook_signals();
 
@@ -95,7 +98,18 @@ int main(int argc, char* argv[]) {
             }
 		}
 
-		st_mainloop_wait(10000);
+		if ( lifetime > 0 ) {
+
+			struct timeval now;
+			gettimeofday(&now, NULL);
+
+			if ( now.tv_sec-runtime.tv_sec >= lifetime ) {
+				return EXIT_FAILURE; // Exit with leaks
+			}
+
+		}
+
+		st_mainloop_wait(1000);
 	}
 
 	// RELEASE BLOCK

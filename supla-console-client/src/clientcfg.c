@@ -43,6 +43,8 @@ char *cfg_pwd = NULL;
 char cfg_client_GUID[SUPLA_GUID_SIZE];
 char cfg_client_AuthKey[SUPLA_AUTHKEY_SIZE];
 
+int lifetime = 0;
+
 unsigned char proto_version = 0;
 
 unsigned char clientcfg_init(int argc, char* argv[]) {
@@ -79,7 +81,10 @@ unsigned char clientcfg_init(int argc, char* argv[]) {
 	        		   proto_version = x;
 	        	   }
    	        	   a++;
-   	           };
+   	           } else if ( strcmp("-lifetime", argv[a]) == 0 && a<argc-1 ) {
+   	        	   lifetime = atoi(argv[a+1]);
+ 	        	   a++;
+   	           }
 	   }
 
 	   if ( cfg_port == 0 )
