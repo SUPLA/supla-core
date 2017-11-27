@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "ipcclient.h"
 #include "log.h"
@@ -115,6 +116,7 @@ bool ipc_client::ipc_connect(void) {
 		return true;
 
 	if ((sfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		   supla_log(LOG_ERR, "Socket error %i", errno);
 	       return false;
 	}
 
@@ -123,6 +125,9 @@ bool ipc_client::ipc_connect(void) {
 
     len = strnlen(remote.sun_path, 107) + sizeof(remote.sun_family);
     if (connect(sfd, (struct sockaddr *)&remote, len) == -1) {
+
+    	supla_log(LOG_ERR, "IPC connect error %i", errno);
+
     	ipc_disconnect();
     	return false;
     }

@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "log.h"
 #include "tools.h"
@@ -140,8 +141,12 @@ int ipcsocket_accept(void *_ipc) {
 	TSuplaIPC_socket *ipc = (TSuplaIPC_socket *)_ipc;
 	int client_sd = accept(ipc->sfd, (struct sockaddr *)&ipc->fsaun, &fromlen);
 
-	if ( client_sd != -1 )
+	if ( client_sd == -1 ) {
+		supla_log(LOG_ERR, "IPC connection accept error %i", errno);
+	} else {
 		fcntl(client_sd, F_SETFL, O_NONBLOCK);
+	}
+
 
 	return client_sd;
 }

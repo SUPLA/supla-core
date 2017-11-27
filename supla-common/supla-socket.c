@@ -454,7 +454,11 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 
 		      client_sd = accept(ssd->supla_socket.sfd, (struct sockaddr*)&addr, &len);
 
-		      if ( client_sd != -1 ) {
+		      if ( client_sd == -1 ) {
+
+		    	  supla_log(LOG_ERR, "Connection accept error %i", errno);
+
+		      } else {
 
 			      supla_log(LOG_INFO, "Connection accepted: %s:%d ClientSD: %i Secure: %i", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port),client_sd, ssd->secure);
 
