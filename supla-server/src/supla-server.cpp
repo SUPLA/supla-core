@@ -38,6 +38,7 @@
 
 int main(int argc, char* argv[]) {
 
+
 	void *ssd_ssl = NULL;
 	void *ssd_tcp = NULL;
 	void* ipc = NULL;
@@ -125,6 +126,7 @@ int main(int argc, char* argv[]) {
 		st_mainloop_wait(1000000);
 	}
 
+	supla_log(LOG_INFO, "Shutting down...");
 
 	// RELEASE BLOCK
 

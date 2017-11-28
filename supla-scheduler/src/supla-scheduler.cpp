@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	// RELEASE BLOCK
+	supla_log(LOG_INFO, "Shutting down...");
 
 
 	sthread_twf(queue_loop_t);
