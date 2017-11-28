@@ -109,7 +109,8 @@ int main(int argc, char* argv[]) {
 
 
 			if ( now.tv_sec-runtime.tv_sec >= lifetime ) {
-				return EXIT_FAILURE; // Exit with leaks
+				supla_log(LOG_INFO, "Timeout");
+				break;
 			}
 
 		}
