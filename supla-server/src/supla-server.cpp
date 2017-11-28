@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sys/resource.h>
 
 #include "supla-socket.h"
 #include "ipcsocket.h"
@@ -62,6 +63,15 @@ int main(int argc, char* argv[]) {
 	if ( run_as_daemon
 		 && 0 == st_try_fork() ) {
 		goto exit_fail;
+	}
+
+	{
+		struct rlimit limit;
+
+		limit.rlim_cur = 10240;
+		limit.rlim_max = 10240;
+		setrlimit(RLIMIT_NOFILE, &limit);
+
 	}
 
 	if ( database::mainthread_init() == false  ) {
