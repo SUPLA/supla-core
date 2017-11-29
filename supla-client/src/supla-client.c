@@ -397,18 +397,25 @@ void *supla_client_init(TSuplaClientCfg *sclient_cfg) {
 
 void supla_client_clean(void *_suplaclient) {
 
+	void *eh;
+	void *srpc;
+
 	TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
 
 	if ( suplaclient ) {
 
 		if ( suplaclient->eh ) {
-			eh_free(suplaclient->eh);
+
+			eh = suplaclient->eh;
 			suplaclient->eh = NULL;
+			eh_free(eh);
+
 		}
 
 		if ( suplaclient->srpc ) {
-			srpc_free(suplaclient->srpc);
+			srpc = suplaclient->srpc;
 			suplaclient->srpc = NULL;
+			srpc_free(srpc);
 		}
 	}
 }
