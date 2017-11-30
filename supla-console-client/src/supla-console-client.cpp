@@ -64,6 +64,10 @@ int main(int argc, char* argv[]) {
 		supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
 	}
 
+	if ( input_off == 1 ) {
+		supla_log(LOG_INFO, "Input: off");
+	}
+
 	st_mainloop_init();
 	st_hook_signals();
 
@@ -75,7 +79,7 @@ int main(int argc, char* argv[]) {
 
 	while(st_app_terminate == 0) {
 
-		if ( kbhit() > 0 && sclient != NULL) {
+		if ( input_off == 0 && kbhit() > 0 && sclient != NULL) {
             switch(getch()) {
             case '0':
             	supla_client_open(sclient, 151, 0);
