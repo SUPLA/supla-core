@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 
 	while(st_app_terminate == 0) {
 
-		if ( input_off == 0 && kbhit() > 0 && sclient != NULL) {
+		if ( input_off == 0 && sclient != NULL && kbhit() > 0 ) {
             switch(getch()) {
             case '0':
             	supla_client_open(sclient, 151, 0);
