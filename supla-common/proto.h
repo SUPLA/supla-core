@@ -61,6 +61,7 @@ extern "C" {
 #define SUPLA_TAG_SIZE                      5
 #if defined(__AVR__)
 	#define SUPLA_MAX_DATA_SIZE                 1024
+    #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT  25
 #elif defined(ESP8266)
 	#define SUPLA_MAX_DATA_SIZE                 1536
 #else
@@ -93,7 +94,10 @@ extern "C" {
 #define SUPLA_OAUTH_PASSWORD_MAXSIZE        65  // ver. >= 7
 #define SUPLA_CHANNELGROUP_PACK_MAXCOUNT    20  // ver. >= 8
 #define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE  401 // ver. >= 8
+
+#ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT  100 // ver. >= 8
+#endif /*SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT*/
 
 #define SUPLA_DCS_CALL_GETVERSION                         10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT                  20
