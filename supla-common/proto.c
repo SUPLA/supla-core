@@ -38,13 +38,15 @@
 	#define BUFFER_MIN_SIZE    32
 	#define BUFFER_MAX_SIZE    1024
 
-#else
-
-	#define BUFFER_MIN_SIZE    0
-	//sizeof(TSuplaDataPacket)
-	#define BUFFER_MAX_SIZE    131072
-
 #endif
+
+#ifndef BUFFER_MIN_SIZE
+	#define BUFFER_MIN_SIZE    0
+#endif /*BUFFER_MIN_SIZE*/
+
+#ifndef BUFFER_MAX_SIZE
+	#define BUFFER_MAX_SIZE    131072
+#endif /*BUFFER_MAX_SIZE*/
 
 static char sproto_tag[SUPLA_TAG_SIZE] = { 'S', 'U', 'P', 'L', 'A' };
 
