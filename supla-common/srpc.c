@@ -33,7 +33,8 @@
 	#include <mem.h>
 	
 	#define srpc_BUFFER_SIZE      1024
-	#define srpc_QUEUE_MAX_SIZE   2
+	#define srpc_QUEUE_SIZE   2
+	#define srpc_QUEUE_MIN_ALLOC_COUNT 2
 
 	#include <user_interface.h>
 	#include "espmissingincludes.h"
@@ -41,17 +42,35 @@
 #elif defined(__AVR__)
 
 	#define srpc_BUFFER_SIZE      1024
-	#define srpc_QUEUE_MAX_SIZE   2
+	#define srpc_QUEUE_SIZE   2
+	#define srpc_QUEUE_MIN_ALLOC_COUNT 2
     #define __EH_DISABLED
 
 #else
-
 	#include <assert.h>
-	
-	#define srpc_BUFFER_SIZE      32768
-	#define srpc_QUEUE_MAX_SIZE   10
-
 #endif
+
+
+#ifndef srpc_BUFFER_SIZE
+	#define srpc_BUFFER_SIZE      32768
+#endif /*srpc_BUFFER_SIZE*/
+
+#ifndef srpc_QUEUE_SIZE
+	#define srpc_QUEUE_SIZE   10
+#endif /*srpc_QUEUE_SIZE*/
+
+#ifndef srpc_QUEUE_MIN_ALLOC_COUNT
+	#define srpc_QUEUE_MIN_ALLOC_COUNT   0
+#endif /*srpc_QUEUE_MIN_ALLOC_COUNT*/
+
+typedef struct {
+
+	unsigned char item_count;
+	unsigned char alloc_count;
+
+	TSuplaDataPacket *item[srpc_QUEUE_SIZE];
+
+}Tsrpc_Queue;
 
 typedef struct {
 
@@ -60,11 +79,8 @@ typedef struct {
 
    TSuplaDataPacket sdp;
 
-   TSuplaDataPacket **in_queue;
-   unsigned char in_queue_size;
-
-   TSuplaDataPacket **out_queue;
-   unsigned char out_queue_size;
+   Tsrpc_Queue in_queue;
+   Tsrpc_Queue out_queue;
 
    void *lck;
 
@@ -99,15 +115,17 @@ void* SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params) {
 return srpc;
 }
 
-void SRPC_ICACHE_FLASH srpc_queue_free(TSuplaDataPacket ***queue, unsigned char *size) {
+void SRPC_ICACHE_FLASH srpc_queue_free(Tsrpc_Queue *queue) {
 
 	_supla_int_t a;
-    for(a=0;a<(*size);a++)
-    	free((*queue)[a]);
+    for(a=0;a<srpc_QUEUE_SIZE;a++) {
+    	if ( queue->item[a] != NULL ) {
+    		free(queue->item[a]);
+    	}
+    }
 
-    free(*queue);
-    *queue = 0;
-    *size = 0;
+    queue->item_count = 0;
+    queue->alloc_count = 0;
 
 }
 
@@ -118,8 +136,8 @@ void SRPC_ICACHE_FLASH srpc_free(void *_srpc) {
 		Tsrpc *srpc = (Tsrpc*)_srpc;
 
         sproto_free(srpc->proto);
-        srpc_queue_free(&srpc->in_queue, &srpc->in_queue_size);
-        srpc_queue_free(&srpc->out_queue, &srpc->out_queue_size);
+        srpc_queue_free(&srpc->in_queue);
+        srpc_queue_free(&srpc->out_queue);
 
         lck_free(srpc->lck);
 
@@ -128,65 +146,53 @@ void SRPC_ICACHE_FLASH srpc_free(void *_srpc) {
 
 }
 
-char SRPC_ICACHE_FLASH srpc_queue_push(TSuplaDataPacket ***queue, unsigned char *size, TSuplaDataPacket *sdp) {
+char SRPC_ICACHE_FLASH srpc_queue_push(Tsrpc_Queue *queue, TSuplaDataPacket *sdp) {
 
-	if ( *size >= srpc_QUEUE_MAX_SIZE )
+	if ( queue->item_count >= srpc_QUEUE_SIZE ) {
 		return SUPLA_RESULT_FALSE;
-
-	TSuplaDataPacket *sdp_new = (TSuplaDataPacket *)malloc(sizeof(TSuplaDataPacket));
-
-	if ( sdp_new == 0 )
-		return SUPLA_RESULT_FALSE;
-
-	(*size)++;
-
-    TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
-
-	if ( queue_new == 0 ) {
-		(*size)--;
-		free(sdp_new);
-		return SUPLA_RESULT_FALSE;
-	} else {
-		*queue = queue_new;
 	}
 
-	memcpy(sdp_new, sdp, sizeof(TSuplaDataPacket));
+	if ( queue->item[queue->item_count] == NULL ) {
+		queue->item[queue->item_count] = (TSuplaDataPacket *)malloc(sizeof(TSuplaDataPacket));
+	}
 
-	(*queue)[(*size)-1] = sdp_new;
+	if ( queue->item[queue->item_count] == NULL ) {
+		return SUPLA_RESULT_FALSE;
+	} else {
+		queue->alloc_count++;
+	}
+
+	memcpy(queue->item[queue->item_count], sdp, sizeof(TSuplaDataPacket));
+	queue->item_count++;
 
 	return SUPLA_RESULT_TRUE;
 }
 
-char SRPC_ICACHE_FLASH srpc_queue_pop(TSuplaDataPacket ***queue, unsigned char *size, TSuplaDataPacket *sdp, unsigned _supla_int_t rr_id) {
+char SRPC_ICACHE_FLASH srpc_queue_pop(Tsrpc_Queue *queue, TSuplaDataPacket *sdp, unsigned _supla_int_t rr_id) {
 
 	_supla_int_t a, b;
 
-	for(a=0;a<(*size);a++)
-		if ( rr_id == 0 || ((*queue)[a])->rr_id == rr_id ) {
+	for(a=0;a<queue->item_count;a++)
+		if ( rr_id == 0 || queue->item[a]->rr_id == rr_id ) {
 
-			memcpy(sdp, (*queue)[a], sizeof(TSuplaDataPacket));
+			memcpy(sdp, queue->item[a], sizeof(TSuplaDataPacket));
 
-			if ( *size == 1 ) {
-				srpc_queue_free(queue, size);
-			} else {
+			if ( queue->alloc_count > srpc_QUEUE_MIN_ALLOC_COUNT ) {
 
-				free((*queue)[a]);
-				(*queue)[a] = NULL;
+				queue->alloc_count--;
+				free(queue->item[a]);
+				queue->item[a] = NULL;
 
-                for(b=a;b<((*size)-1);b++)
-                	(*queue)[b] = (*queue)[b+1];
-
-                // before "--" size is always > 1
-                (*size)--;
-
-                TSuplaDataPacket **queue_new = (TSuplaDataPacket **)realloc(*queue, sizeof(TSuplaDataPacket *)*(*size));
-
-            	if ( *queue_new == 0 ) {
-            		return SUPLA_RESULT_FALSE;
-            	} else {
-                    *queue = queue_new;
-            	}
 			}
+
+			TSuplaDataPacket *item = queue->item[a];
+
+			for(b=a;b<queue->item_count-1;b++) {
+				queue->item[b] = queue->item[b+1];
+			}
+
+			queue->item_count--;
+			queue->item[queue->item_count] = item;
 
 			return SUPLA_RESULT_TRUE;
 		}
@@ -195,20 +201,19 @@ char SRPC_ICACHE_FLASH srpc_queue_pop(TSuplaDataPacket ***queue, unsigned char *
 }
 
 char SRPC_ICACHE_FLASH srpc_in_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
-	return srpc_queue_push(&srpc->in_queue, &srpc->in_queue_size, sdp);
+	return srpc_queue_push(&srpc->in_queue, sdp);
 }
 
 char SRPC_ICACHE_FLASH srpc_in_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp, unsigned _supla_int_t rr_id) {
-
-	return srpc_queue_pop(&srpc->in_queue, &srpc->in_queue_size, sdp, rr_id);
+	return srpc_queue_pop(&srpc->in_queue, sdp, rr_id);
 }
 
 char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
-	return srpc_queue_push(&srpc->out_queue, &srpc->out_queue_size, sdp);
+	return srpc_queue_push(&srpc->out_queue, sdp);
 }
 
 char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp, unsigned _supla_int_t rr_id) {
-	return srpc_queue_pop(&srpc->out_queue, &srpc->out_queue_size, sdp, rr_id);
+	return srpc_queue_pop(&srpc->out_queue, sdp, rr_id);
 }
 
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
