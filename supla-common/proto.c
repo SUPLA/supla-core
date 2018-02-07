@@ -30,8 +30,10 @@
 	#define BUFFER_MIN_SIZE    512
 	#define BUFFER_MAX_SIZE    2048
 
-	#include <user_interface.h>
-	#include "espmissingincludes.h"
+    #ifndef ARDUINO_ARCH_ESP8266
+		#include <user_interface.h>
+		#include "espmissingincludes.h"
+	#endif
 
 #elif defined(__AVR__)
 

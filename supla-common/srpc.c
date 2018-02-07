@@ -26,18 +26,21 @@
 #ifdef ESP8266
 
 	#include <osapi.h>
-        #ifdef ARDUINO_ARCH_ESP8266
-           #include <ets_sys.h>
- 	   #define __EH_DISABLED
-	#endif
 	#include <mem.h>
+
+    #ifdef ARDUINO_ARCH_ESP8266
+         #include <ets_sys.h>
+ 	     #define __EH_DISABLED
+	#else
+		#include <user_interface.h>
+		#include "espmissingincludes.h"
+	#endif
 	
 	#define srpc_BUFFER_SIZE      1024
 	#define srpc_QUEUE_SIZE   2
 	#define srpc_QUEUE_MIN_ALLOC_COUNT 2
 
-	#include <user_interface.h>
-	#include "espmissingincludes.h"
+
 
 #elif defined(__AVR__)
 
@@ -1144,7 +1147,7 @@ unsigned _supla_int_t srpc_locationpack_get_caption_size(void *pack, _supla_int_
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(void *_srpc, TSC_SuplaLocationPack *location_pack) {
 
-	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, location_pack, location_pack->count,
+	return srpc_set_pack(_srpc, location_pack, location_pack->count,
 			&srpc_locationpack_get_caption_size,
 			&srpc_locationpack_get_item_ptr,
 			&srpc_locationpack_set_pack_count,
@@ -1189,7 +1192,7 @@ unsigned _supla_int_t srpc_channelpack_get_caption_size_b(void *pack, _supla_int
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC_SuplaChannelPack *channel_pack) {
 
 
-	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, channel_pack, channel_pack->count,
+	return srpc_set_pack(_srpc, channel_pack, channel_pack->count,
 			&srpc_channelpack_get_caption_size,
 			&srpc_channelpack_get_item_ptr,
 			&srpc_channelpack_set_pack_count,
@@ -1202,7 +1205,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(void *_srpc, TSC
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(void *_srpc, TSC_SuplaChannelPack_B *channel_pack) {
 
-	return SRPC_ICACHE_FLASH srpc_set_pack(_srpc, channel_pack, channel_pack->count,
+	return srpc_set_pack(_srpc, channel_pack, channel_pack->count,
 			&srpc_channelpack_get_caption_size_b,
 			&srpc_channelpack_get_item_ptr_b,
 			&srpc_channelpack_set_pack_count_b,

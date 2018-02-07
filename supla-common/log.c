@@ -39,15 +39,18 @@
 
 
 #ifdef ESP8266
-        #include <osapi.h>
-        #ifdef ARDUINO_ARCH_ESP8266
-        #include <Arduino.h>
-        #include <ets_sys.h>
-        #endif
-        #include <mem.h>	
 
-		#include <user_interface.h>
-		#include "espmissingincludes.h"
+        #include <osapi.h>
+        #include <mem.h>
+
+        #ifdef ARDUINO_ARCH_ESP8266
+			#include <Arduino.h>
+			#include <ets_sys.h>
+		#else
+			#include <user_interface.h>
+			#include "espmissingincludes.h"
+        #endif
+
 
 #else
 

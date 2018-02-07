@@ -25,10 +25,11 @@
 #include "eh.h"
 
 #ifdef ESP8266
-  #include <os_type.h>
-  #define SRPC_ICACHE_FLASH ICACHE_FLASH_ATTR
+	#include <os_type.h>
+	#include <mem.h>
+	#define SRPC_ICACHE_FLASH ICACHE_FLASH_ATTR
 #else 
-  #define SRPC_ICACHE_FLASH 
+	#define SRPC_ICACHE_FLASH
 #endif
 
 #ifdef __cplusplus
