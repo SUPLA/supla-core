@@ -25,4 +25,6 @@ CPP_DEPS :=
 SUBDIRS := \
 src \
 src/crypt_blowfish \
+src/test \
+src/test/gtest \
 

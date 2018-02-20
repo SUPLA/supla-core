@@ -31,7 +31,6 @@ CPP_SRCS += \
 ../src/devicechannel.cpp \
 ../src/ipcctrl.cpp \
 ../src/serverconnection.cpp \
-../src/supla-server.cpp \
 ../src/user.cpp 
 
 OBJS += \
@@ -57,7 +56,6 @@ OBJS += \
 ./src/serverconnection.o \
 ./src/srpc.o \
 ./src/sthread.o \
-./src/supla-server.o \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
 ./src/tools.o \
@@ -91,7 +89,6 @@ CPP_DEPS += \
 ./src/devicechannel.d \
 ./src/ipcctrl.d \
 ./src/serverconnection.d \
-./src/supla-server.d \
 ./src/user.d 
 
 
@@ -99,14 +96,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__OPEN_SSL=1 -D__BCRYPT=1 -I/usr/include/mysql -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__OPEN_SSL=1 -D__DEBUG=1 -D__BCRYPT=1 -I/usr/include/mysql -I/usr/src/openssl/include -I../src/test -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__BCRYPT=1 -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -D__BCRYPT=1 -I/usr/src/openssl/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

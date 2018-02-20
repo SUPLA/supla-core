@@ -8,6 +8,8 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/test/gtest/subdir.mk
+-include src/test/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/subdir.mk
 -include subdir.mk

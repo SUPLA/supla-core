@@ -3,6 +3,21 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
+C_SRCS += \
+../src/cfg.c \
+../src/eh.c \
+../src/ini.c \
+../src/ipcsocket.c \
+../src/lck.c \
+../src/log.c \
+../src/proto.c \
+../src/safearray.c \
+../src/srpc.c \
+../src/sthread.c \
+../src/supla-socket.c \
+../src/svrcfg.c \
+../src/tools.c 
+
 CPP_SRCS += \
 ../src/accept_loop.cpp \
 ../src/cdcommon.cpp \
@@ -18,21 +33,6 @@ CPP_SRCS += \
 ../src/serverconnection.cpp \
 ../src/supla-server.cpp \
 ../src/user.cpp 
-
-C_SRCS += \
-../src/cfg.c \
-../src/eh.c \
-../src/ini.c \
-../src/ipcsocket.c \
-../src/lck.c \
-../src/log.c \
-../src/proto.c \
-../src/safearray.c \
-../src/srpc.c \
-../src/sthread.c \
-../src/supla-socket.c \
-../src/svrcfg.c \
-../src/tools.c 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -99,14 +99,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__OPEN_SSL=1 -D__DEBUG=1 -D__BCRYPT=1 -I/usr/include/mysql -I/usr/src/openssl/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -D__OPEN_SSL=1 -D__DEBUG=1 -D__BCRYPT=1 -I/usr/include/mysql -I/usr/src/openssl/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -D__BCRYPT=1 -I/usr/src/openssl/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -D__BCRYPT=1 -I/usr/src/openssl/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
