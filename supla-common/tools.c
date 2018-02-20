@@ -184,10 +184,10 @@ char *st_bin2hex(char *buffer, const char *src, size_t len) {
 
 	int a, b;
 
-	buffer[0] = 0;
-
 	if ( src == 0 || buffer == 0 )
 		return buffer;
+
+	buffer[0] = 0;
 
 	b=0;
 
