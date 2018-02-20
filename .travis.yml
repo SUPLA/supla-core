@@ -1,0 +1,13 @@
+sudo: false
+language:  cpp
+os: linux
+
+compiler:
+  - gcc
+  - clang
+
+script: 
+  - cd Test
+  - make clean && make all
+  - ./supla-server
+
