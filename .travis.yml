@@ -4,10 +4,10 @@ os: linux
 
 compiler:
   - gcc
-  - clang
 
 script: 
-  - cd supla-server/Test
+  - supla-server/Test
   - make clean && make all
   - ./supla-server
-
+  - cd ../Release
+  - make clean && make all 
