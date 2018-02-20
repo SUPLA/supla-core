@@ -39,7 +39,6 @@ void st_mainloop_init();
 void st_mainloop_wait(int usec);
 void st_mainloop_free();
 
-size_t st_strlen(char *str, size_t maxlen);
 void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]);
 void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 

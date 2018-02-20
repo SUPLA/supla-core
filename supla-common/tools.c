@@ -180,12 +180,6 @@ void st_mainloop_wait(int usec) {
 	eh_wait(st_eh, usec);
 }
 
-size_t st_strlen(char *str, size_t maxlen) {
-
-	str[maxlen] = 0;
-	return strnlen(str, maxlen-1);
-}
-
 char *st_bin2hex(char *buffer, const char *src, size_t len) {
 
 	int a, b;
