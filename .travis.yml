@@ -7,7 +7,7 @@ compiler:
   - clang
 
 script: 
-  - cd Test
+  - cd supla-server/Test
   - make clean && make all
   - ./supla-server
 
