@@ -176,7 +176,6 @@ namespace {
 		char *AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
 		ASSERT_TRUE(AuthKeyHashHEX != NULL);
 		EXPECT_EQ((size_t)120, strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE*2));
-		free(AuthKeyHashHEX);
 
 		char hash[BCRYPT_HASH_MAXSIZE];
 		st_bcrypt_crypt(AuthKeyHashHEX, hash, BCRYPT_HASH_MAXSIZE, 8);
@@ -187,6 +186,7 @@ namespace {
 		hash[0] = hash[0] == 'A' ? 'B' : 'A';
 
 		ASSERT_FALSE(st_bcrypt_check(AuthKeyHashHEX, hash, 60));
+		free(AuthKeyHashHEX);
 	}
 }
 
