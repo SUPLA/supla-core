@@ -137,6 +137,57 @@ namespace {
 		unlink(file);
 
 	}
+
+	TEST_F(ToolsTest, st_read_guid_from_file) {
+
+		char file[] = "/tmp/t7oosvsTZS88";
+		char GUID1[SUPLA_GUID_SIZE];
+		char GUID2[SUPLA_GUID_SIZE];
+
+		memset(GUID1, 0 ,SUPLA_GUID_SIZE);
+		memset(GUID1, 0 ,SUPLA_GUID_SIZE);
+
+		EXPECT_EQ(1, st_read_guid_from_file(file, GUID1, 1));
+		ASSERT_TRUE(st_file_exists(file) == 1);
+		EXPECT_NE(0, memcmp(GUID1, GUID2, SUPLA_GUID_SIZE));
+		unlink(file);
+
+	}
+
+	TEST_F(ToolsTest, st_read_authkey_from_file) {
+
+		char file[] = "/tmp/t7oosvsTZS87";
+		char AUTHKEY1[SUPLA_AUTHKEY_SIZE];
+		char AUTHKEY2[SUPLA_AUTHKEY_SIZE];
+
+		memset(AUTHKEY1, 0 ,SUPLA_AUTHKEY_SIZE);
+		memset(AUTHKEY1, 0 ,SUPLA_AUTHKEY_SIZE);
+
+		EXPECT_EQ(1, st_read_authkey_from_file(file, AUTHKEY1, 1));
+		ASSERT_TRUE(st_file_exists(file) == 1);
+		EXPECT_NE(0, memcmp(AUTHKEY1, AUTHKEY2, SUPLA_AUTHKEY_SIZE));
+		unlink(file);
+
+	}
+
+	TEST_F(ToolsTest, st_bcrypt) {
+
+		char AuthKey[SUPLA_AUTHKEY_SIZE];
+		char *AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
+		ASSERT_TRUE(AuthKeyHashHEX != NULL);
+		EXPECT_EQ((size_t)120, strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE*2));
+		free(AuthKeyHashHEX);
+
+		char hash[BCRYPT_HASH_MAXSIZE];
+		st_bcrypt_crypt(AuthKeyHashHEX, hash, BCRYPT_HASH_MAXSIZE, 8);
+
+		EXPECT_EQ((size_t)60, strnlen(hash, BCRYPT_HASH_MAXSIZE));
+		ASSERT_TRUE(st_bcrypt_check(AuthKeyHashHEX, hash, 60));
+
+		hash[0] = hash[0] == 'A' ? 'B' : 'A';
+
+		ASSERT_FALSE(st_bcrypt_check(AuthKeyHashHEX, hash, 60));
+	}
 }
 
 
