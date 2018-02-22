@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/AllTests.cpp \
+../src/test/SafeArrayTest.cpp \
 ../src/test/ToolsTest.cpp 
 
 OBJS += \
 ./src/test/AllTests.o \
+./src/test/SafeArrayTest.o \
 ./src/test/ToolsTest.o 
 
 CPP_DEPS += \
 ./src/test/AllTests.d \
+./src/test/SafeArrayTest.d \
 ./src/test/ToolsTest.d 
 
 
