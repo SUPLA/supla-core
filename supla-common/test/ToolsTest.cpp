@@ -36,9 +36,24 @@ namespace {
 
 		char file[] = "/tmp/QDZgKvbTrNh8.pid";
 
+		st_delpidfile(file);
+
 		ASSERT_FALSE(st_file_exists(file) == 1);
 		st_setpidfile(file);
 		ASSERT_TRUE(st_file_exists(file) == 1);
+
+		char str1[32], str2[32];
+		snprintf(str1, 31,"%i\n",getpid());
+
+		FILE *F = fopen(file, "r");
+		if ( F ) {
+           fread(str2, 1, 32, F);
+		};
+
+		size_t len = strnlen(str1, 32);
+		ASSERT_TRUE(len == strnlen(str2, 32));
+		ASSERT_TRUE(memcmp(str1, str2, len) == 0);
+
 		st_delpidfile(file);
 		ASSERT_FALSE(st_file_exists(file) == 1);
 	}
