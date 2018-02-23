@@ -43,6 +43,7 @@ namespace {
 		ASSERT_TRUE(st_file_exists(file) == 1);
 
 		char str1[32], str2[32];
+		memset(str2, 0, 32);
 		snprintf(str1, 31,"%i\n",getpid());
 
 		FILE *F = fopen(file, "r");
@@ -51,6 +52,7 @@ namespace {
 		};
 
 		size_t len = strnlen(str1, 32);
+
 		ASSERT_TRUE(len == strnlen(str2, 32));
 		ASSERT_TRUE(memcmp(str1, str2, len) == 0);
 
