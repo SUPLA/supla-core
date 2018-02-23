@@ -276,8 +276,7 @@ extern "C" {
 #define SUPLA_PLATFORM_UNKNOWN  0
 #define SUPLA_PLATFORM_ESP8266  1
 
-// FLAGS SERVER->CLIENT
-#define SC_SUPLA_CHANNEL_FLAG_HIDDEN                           0x01 // ver. >= 8
+#define SUPLA_CHANNEL_FLAG_HIDDEN                           0x01 // ver. >= 8
 
 #pragma pack(push, 1)
 
@@ -538,7 +537,7 @@ typedef struct {
 	_supla_int_t LocationID;
 	_supla_int_t Func;
 	_supla_int_t AltIcon;
-	_supla_int_t Flags;
+	unsigned _supla_int_t Flags;
 	unsigned char ProtocolVersion;
 	char online;
 
@@ -568,7 +567,7 @@ typedef struct {
 	_supla_int_t LocationID;
 	_supla_int_t Func;
 	_supla_int_t AltIcon;
-	_supla_int_t Flags;
+	unsigned _supla_int_t Flags;
 	unsigned char ProtocolVersion;
 
 	unsigned _supla_int_t CaptionSize; // including the terminating null byte ('\0')
