@@ -16,3 +16,8 @@ script:
   - ./supla-server
   - cd ../Release
   - make clean && make all 
+  - cd ../../supla-scheduler/Test
+  - make clean && make all
+  - ./supla-scheduler
+  - cd ../Release
+  - make clean && make all
