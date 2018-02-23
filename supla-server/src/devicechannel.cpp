@@ -86,7 +86,7 @@ double supla_channel_temphum::getHumidity(void) {
 }
 
 void supla_channel_temphum::setTemperature(double Temperature) {
-	this->Temperature;
+	this->Temperature = Temperature;
 }
 
 void supla_channel_temphum::setHumidity(double Humidity) {
