@@ -52,6 +52,8 @@ public:
 	void rollback(void);
 
 	int get_last_insert_id(void);
+	bool get_db_version(char *buffer, int buffer_size);
+	bool check_db_version(char *expected_version);
 
 };
 

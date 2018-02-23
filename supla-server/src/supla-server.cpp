@@ -78,6 +78,16 @@ int main(int argc, char* argv[]) {
 		goto exit_fail;
 	}
 
+	{
+		database *db = new database();
+		if (!db->check_db_version("20180208145738")) {
+			delete db;
+			goto exit_fail;
+		} else {
+			delete db;
+		}
+
+	}
 
     #ifdef __OPEN_SSL
 	if ( scfg_bool(CFG_SSL_ENABLED) == 1 ) {

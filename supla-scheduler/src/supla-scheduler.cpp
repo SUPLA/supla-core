@@ -54,6 +54,16 @@ int main(int argc, char* argv[]) {
 		goto exit_fail;
 	}
 
+	{
+		database *db = new database();
+		if (!db->check_db_version("20180208145738")) {
+			delete db;
+			goto exit_fail;
+		} else {
+			delete db;
+		}
+
+	}
 
 	if ( 0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID)) ) {
 		goto exit_fail;

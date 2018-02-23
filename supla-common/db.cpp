@@ -287,3 +287,72 @@ int dbcommon::get_last_insert_id(void) {
     return Result;
 
 }
+
+bool dbcommon::get_db_version(char *buffer, int buffer_size) {
+
+	if ( buffer == NULL || buffer_size < 15 ) {
+		return false;
+	}
+
+	bool result = false;
+	memset(buffer, 0 , buffer_size);
+
+	MYSQL_STMT *stmt = NULL;
+	if ( stmt_execute((void**)&stmt, "SELECT MAX(version) FROM `migration_versions` ", NULL, 0, true) ) {
+
+		unsigned long size;
+		MYSQL_BIND rbind[1];
+		memset(rbind, 0, sizeof(rbind));
+
+		rbind[0].buffer_type= MYSQL_TYPE_STRING;
+		rbind[0].buffer= buffer;
+		rbind[0].buffer_length = buffer_size;
+		rbind[0].length = &size;
+
+		if ( mysql_stmt_bind_result(stmt, rbind) ) {
+			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
+		} else {
+
+			mysql_stmt_store_result(stmt);
+
+			if ( mysql_stmt_num_rows(stmt) == 1
+					&& !mysql_stmt_fetch(stmt) ) {
+				result = true;
+			}
+
+		}
+
+
+		mysql_stmt_close(stmt);
+	}
+
+	return result;
+}
+
+bool dbcommon::check_db_version(char *expected_version) {
+
+	if ( expected_version == NULL || expected_version[0] == 0 ) {
+		return true;
+	}
+
+	if (!connect()) {
+		supla_log(LOG_ERR, "Can't connect to database!");
+		return false;
+	}
+
+	char version[15];
+	if (!get_db_version(version, 15)) {
+		disconnect();
+		supla_log(LOG_ERR, "The version of the database can not be determined!");
+	} else {
+		disconnect();
+		if (strncmp(version, expected_version, 14) == 0) {
+			return true;
+		} else {
+			supla_log(LOG_ERR, "Incorrect database version!");
+		}
+	}
+
+
+    return false;
+}
