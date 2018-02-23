@@ -662,7 +662,7 @@ void database::get_device_channels(int DeviceID, supla_device_channels *channels
 
 
 	MYSQL_STMT *stmt;
-	const char sql[] = "SELECT `type`, `func`, `param1`, `param2`, `param3`, `channel_number`, `id` FROM `supla_dev_channel` WHERE `iodevice_id` = ? ORDER BY `channel_number`";
+	const char sql[] = "SELECT `type`, `func`, `param1`, `param2`, `param3`, `channel_number`, `id`, `hidden` FROM `supla_dev_channel` WHERE `iodevice_id` = ? ORDER BY `channel_number`";
 
 	MYSQL_BIND pbind[1];
 	memset(pbind, 0, sizeof(pbind));
@@ -674,10 +674,10 @@ void database::get_device_channels(int DeviceID, supla_device_channels *channels
 
 		my_bool       is_null[5];
 
-		MYSQL_BIND rbind[7];
+		MYSQL_BIND rbind[8];
 		memset(rbind, 0, sizeof(rbind));
 
-		int type, func, param1, param2, param3, number, id;
+		int type, func, param1, param2, param3, number, id, hidden;
 
 		rbind[0].buffer_type= MYSQL_TYPE_LONG;
 		rbind[0].buffer= (char *)&type;
@@ -705,7 +705,8 @@ void database::get_device_channels(int DeviceID, supla_device_channels *channels
 		rbind[6].buffer_type= MYSQL_TYPE_LONG;
 		rbind[6].buffer= (char *)&id;
 
-
+		rbind[7].buffer_type= MYSQL_TYPE_LONG;
+		rbind[7].buffer= (char *)&hidden;
 
 		if ( mysql_stmt_bind_result(stmt, rbind) ) {
 			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
@@ -724,7 +725,7 @@ void database::get_device_channels(int DeviceID, supla_device_channels *channels
 					if ( is_null[3] == true ) param2 = 0;
 					if ( is_null[4] == true ) param3 = 0;
 
-					channels->add_channel(id, number, type, func, param1, param2, param3);
+					channels->add_channel(id, number, type, func, param1, param2, param3, hidden > 0);
 				}
 
 			}
@@ -1054,8 +1055,8 @@ void database::get_client_locations(int ClientID, supla_client_locations *locs) 
 void database::get_client_channels(int ClientID, int *DeviceID, supla_client_channels *channels) {
 
 	MYSQL_STMT *stmt;
-	const char sql1[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
-	const char sql2[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
+	const char sql1[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version`, `hidden` FROM `supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
+	const char sql2[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version`, `hidden` FROM `supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
 
 
 	MYSQL_BIND pbind[2];
@@ -1071,10 +1072,10 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 
 		my_bool       is_null;
 
-		MYSQL_BIND rbind[8];
+		MYSQL_BIND rbind[9];
 		memset(rbind, 0, sizeof(rbind));
 
-		int id, func, param1, iodevice_id, location_id, alt_icon, protocol_version;
+		int id, func, param1, iodevice_id, location_id, alt_icon, protocol_version, hidden;
 		unsigned long size;
 		char caption[401];
 
@@ -1105,6 +1106,9 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 		rbind[7].buffer_type= MYSQL_TYPE_LONG;
 		rbind[7].buffer= (char *)&protocol_version;
 
+		rbind[8].buffer_type= MYSQL_TYPE_LONG;
+		rbind[8].buffer= (char *)&hidden;
+
 		if ( mysql_stmt_bind_result(stmt, rbind) ) {
 			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
 		} else {
@@ -1119,7 +1123,7 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 						caption[size] = 0;
 					}
 
-					channels->update_channel(id, iodevice_id, location_id, func, param1, is_null ? NULL : caption, alt_icon, protocol_version);
+					channels->update_channel(id, iodevice_id, location_id, func, param1, is_null ? NULL : caption, alt_icon, protocol_version, hidden > 0);
 				}
 
 			}

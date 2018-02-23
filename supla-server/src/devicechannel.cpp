@@ -64,7 +64,7 @@ void supla_channel_temphum::free(void *tarr) {
 
 //-----------------------------------------------------
 
-supla_device_channel::supla_device_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3) {
+supla_device_channel::supla_device_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3, bool Hidden) {
 
 	this->Id = Id;
 	this->Number = Number;
@@ -73,6 +73,11 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type, int Fun
 	this->Param1 = Param1;
 	this->Param2 = Param2;
 	this->Param3 = Param3;
+	this->Flags = 0;
+
+	if ( Hidden ) {
+		this->Flags |= SUPLA_CHANNEL_FLAG_HIDDEN;
+	}
 
 	memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 
@@ -100,6 +105,10 @@ int supla_device_channel::getType(void) {
 
 int supla_device_channel::getParam1(void) {
 	return Param1;
+}
+
+unsigned int supla_device_channel::getFlags(void) {
+	return Flags;
 }
 
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -454,13 +463,13 @@ supla_device_channel *supla_device_channels::find_channel_by_number(int Number) 
 
 }
 
-void supla_device_channels::add_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3) {
+void supla_device_channels::add_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3, bool Hidden) {
 
 	safe_array_lock(arr);
 
 	if ( find_channel(Id) == 0 ) {
 
-		supla_device_channel *c = new supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3);
+		supla_device_channel *c = new supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3, Hidden);
 
 		if ( c != NULL && safe_array_add(arr, c) == -1 ) {
 			delete c;

@@ -49,16 +49,18 @@ private:
     int Param1;
     int Param2;
     int Param3;
+    unsigned int Flags;
 
     char value[8];
 
 public:
-	supla_device_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3);
+	supla_device_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3, bool Hidden);
 	int getId(void);
 	int getNumber(void);
 	int getFunc(void);
 	int getType(void);
 	int getParam1(void);
+	unsigned int getFlags(void);
 	bool isValueWritable(void);
 	bool isCharValueWritable(void);
 	bool isRgbwValueWritable(void);
@@ -94,7 +96,7 @@ public:
 
 	supla_device_channels();
 	virtual ~supla_device_channels();
-	void add_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3);
+	void add_channel(int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3, bool Hidden);
 	bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
 	bool get_channel_double_value(int ChannelID, double *Value);
 	supla_channel_temphum* get_channel_temp_and_humidity_value(int ChannelID);
