@@ -3,14 +3,6 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-CPP_SRCS += \
-../src/database.cpp \
-../src/db.cpp \
-../src/ipcclient.cpp \
-../src/queue.cpp \
-../src/supla-scheduler.cpp \
-../src/worker.cpp 
-
 C_SRCS += \
 ../src/cfg.c \
 ../src/eh.c \
@@ -22,6 +14,14 @@ C_SRCS += \
 ../src/schedulercfg.c \
 ../src/sthread.c \
 ../src/tools.c 
+
+CPP_SRCS += \
+../src/database.cpp \
+../src/db.cpp \
+../src/ipcclient.cpp \
+../src/queue.cpp \
+../src/supla-scheduler.cpp \
+../src/worker.cpp 
 
 OBJS += \
 ./src/cfg.o \
@@ -66,14 +66,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -I/usr/include/mysql -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -I/usr/include/mysql -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -I/usr/include/mysql -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -I/usr/include/mysql -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
