@@ -39,6 +39,36 @@ supla_channel_temphum::supla_channel_temphum(char TempAndHumidity, int ChannelId
 	this->Humidity = Humidity;
 }
 
+supla_channel_temphum::supla_channel_temphum(char TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]) {
+
+	this->ChannelId = ChannelId;
+	this->TempAndHumidity = TempAndHumidity;
+	this->Temperature = -273;
+	this->Humidity = -1;
+
+	if ( TempAndHumidity ) {
+
+		int n;
+
+		memcpy(&n, value, 4);
+		this->Temperature = n/1000.00;
+
+		memcpy(&n, &value[4], 4);
+		this->Humidity = n/1000.00;
+
+	} else {
+		memcpy(&this->Temperature, value, sizeof(double));
+	}
+
+	if (this->Temperature < -273 || this->Temperature > 1000) {
+		this->Temperature = -273;
+	}
+
+	if (this->Humidity < -1  || this->Humidity > 100) {
+		this->Humidity = -1;
+	}
+}
+
 int supla_channel_temphum::getChannelId(void) {
 	return ChannelId;
 }
@@ -55,6 +85,34 @@ double supla_channel_temphum::getHumidity(void) {
 	return Humidity;
 }
 
+void supla_channel_temphum::setTemperature(double Temperature) {
+	this->Temperature;
+}
+
+void supla_channel_temphum::setHumidity(double Humidity) {
+	this->Humidity = Humidity;
+}
+
+void supla_channel_temphum::toValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
+
+	memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+	if ( isTempAndHumidity() ) {
+
+		int n;
+
+		n = this->Temperature * 1000;
+		memcpy(value, &n, 4);
+
+		n = this->Humidity * 1000;
+		memcpy(&value[4], &n, 4);
+
+
+	} else {
+		memcpy(value, &this->Temperature, sizeof(double));
+	}
+
+}
 
 void supla_channel_temphum::free(void *tarr) {
 
@@ -213,8 +271,27 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 	memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
     if ( Type == SUPLA_CHANNELTYPE_SENSORNC ) {
+
     	this->value[0] = this->value[0] == 0 ? 1 : 0;
+
+    } else {
+    	supla_channel_temphum *TempHum = getTempHum();
+
+    	if ( TempHum && (Param2 > 0 || Param3 > 0)) {
+
+    		if (Param2>0) {
+    			TempHum->setTemperature(TempHum->getTemperature()+(Param2 / 100.00));
+    		}
+
+    		if (Param3>0) {
+    			TempHum->setHumidity(TempHum->getHumidity()+(Param3 / 100.00));
+    		}
+
+    		TempHum->toValue(this->value);
+    		delete TempHum;
+    	}
     }
+
 
 }
 
@@ -379,7 +456,7 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
 			getDouble(&temp);
 
 			if ( temp > -273 && temp <= 1000 ) {
-				return new supla_channel_temphum(0, getId(), temp, 0);
+				return new supla_channel_temphum(0, getId(), value);
 			}
 
  	} else if ( ( getType() == SUPLA_CHANNELTYPE_DHT11
@@ -407,7 +484,7 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
 				 && humidity >= 0
 				 && humidity <= 100 ) {
 
-				return new supla_channel_temphum(1, getId(), temp, humidity);
+				return new supla_channel_temphum(1, getId(), value);
 			}
 	}
 
