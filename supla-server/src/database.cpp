@@ -1055,8 +1055,8 @@ void database::get_client_locations(int ClientID, supla_client_locations *locs) 
 void database::get_client_channels(int ClientID, int *DeviceID, supla_client_channels *channels) {
 
 	MYSQL_STMT *stmt;
-	const char sql1[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version`, `hidden` FROM `supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
-	const char sql2[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version`, `hidden` FROM `supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
+	const char sql1[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
+	const char sql2[] = "SELECT `id`, `func`, `param1`, `iodevice_id`, `location_id`, `caption`, `alt_icon`, `protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
 
 
 	MYSQL_BIND pbind[2];
@@ -1072,10 +1072,10 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 
 		my_bool       is_null;
 
-		MYSQL_BIND rbind[9];
+		MYSQL_BIND rbind[8];
 		memset(rbind, 0, sizeof(rbind));
 
-		int id, func, param1, iodevice_id, location_id, alt_icon, protocol_version, hidden;
+		int id, func, param1, iodevice_id, location_id, alt_icon, protocol_version;
 		unsigned long size;
 		char caption[401];
 
@@ -1106,9 +1106,6 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 		rbind[7].buffer_type= MYSQL_TYPE_LONG;
 		rbind[7].buffer= (char *)&protocol_version;
 
-		rbind[8].buffer_type= MYSQL_TYPE_LONG;
-		rbind[8].buffer= (char *)&hidden;
-
 		if ( mysql_stmt_bind_result(stmt, rbind) ) {
 			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
 		} else {
@@ -1123,7 +1120,7 @@ void database::get_client_channels(int ClientID, int *DeviceID, supla_client_cha
 						caption[size] = 0;
 					}
 
-					channels->update_channel(id, iodevice_id, location_id, func, param1, is_null ? NULL : caption, alt_icon, protocol_version, hidden > 0);
+					channels->update_channel(id, iodevice_id, location_id, func, param1, is_null ? NULL : caption, alt_icon, protocol_version);
 				}
 
 			}

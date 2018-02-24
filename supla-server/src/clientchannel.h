@@ -37,7 +37,7 @@ class supla_client_channel {
 	char remote_update;
 
 public:
-	supla_client_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion, bool Hidden);
+	supla_client_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion);
 	void setCaption(const char *Caption);
 	void mark_for_remote_update(char mark);
 	char marked_for_remote_update(void);
@@ -67,7 +67,7 @@ public:
 	supla_client_channels(supla_client *client);
 	virtual ~supla_client_channels();
 
-	void update_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion, bool Hidden);
+	void update_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion);
 	void update_device_channels(int DeviceId);
 	void on_channel_value_changed(void *srpc, int DeviceId, int ChannelId = 0);//ChannelId == 0 - All channels
     bool channel_exists(int ChannelID);

@@ -131,11 +131,7 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type, int Fun
 	this->Param1 = Param1;
 	this->Param2 = Param2;
 	this->Param3 = Param3;
-	this->Flags = 0;
-
-	if ( Hidden ) {
-		this->Flags |= SUPLA_CHANNEL_FLAG_HIDDEN;
-	}
+	this->Hidden = Hidden;
 
 	memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 
@@ -165,8 +161,8 @@ int supla_device_channel::getParam1(void) {
 	return Param1;
 }
 
-unsigned int supla_device_channel::getFlags(void) {
-	return Flags;
+bool supla_device_channel::getHidden(void) {
+	return Hidden;
 }
 
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -275,6 +271,7 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
     	this->value[0] = this->value[0] == 0 ? 1 : 0;
 
     } else {
+
     	supla_channel_temphum *TempHum = getTempHum();
 
     	if ( TempHum && (Param2 > 0 || Param3 > 0)) {

@@ -53,7 +53,7 @@ private:
     int Param1;
     int Param2;
     int Param3;
-    unsigned int Flags;
+    bool Hidden;
 
     char value[8];
 
@@ -64,7 +64,7 @@ public:
 	int getFunc(void);
 	int getType(void);
 	int getParam1(void);
-	unsigned int getFlags(void);
+	bool getHidden(void);
 	bool isValueWritable(void);
 	bool isCharValueWritable(void);
 	bool isRgbwValueWritable(void);

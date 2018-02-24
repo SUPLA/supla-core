@@ -276,8 +276,6 @@ extern "C" {
 #define SUPLA_PLATFORM_UNKNOWN  0
 #define SUPLA_PLATFORM_ESP8266  1
 
-#define SUPLA_CHANNEL_FLAG_HIDDEN                           0x01 // ver. >= 8
-
 #pragma pack(push, 1)
 
 

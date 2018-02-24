@@ -33,7 +33,7 @@
 #define CC_REMOTEUPDATE_CHANNEL          1
 #define CC_REMOTEUPDATE_CHANNELVALUE     2
 
-supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion, bool Hidden) {
+supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion) {
 
 	this->Id = Id;
 	this->DeviceId = DeviceId;
@@ -43,10 +43,6 @@ supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
 	this->AltIcon = AltIcon;
 	this->ProtocolVersion = ProtocolVersion;
 	this->Flags = 0;
-
-	if ( Hidden ) {
-		this->Flags |= SUPLA_CHANNEL_FLAG_HIDDEN;
-	}
 
 	if ( Caption ) {
 		this->Caption = strdup(Caption);
@@ -245,14 +241,14 @@ supla_client_channel *supla_client_channels::find_channel(int Id) {
 	return (supla_client_channel *)safe_array_findcnd(arr, arr_findcmp, &Id);
 }
 
-void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion, bool Hidden) {
+void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID, int Func, int Param1, const char *Caption, int AltIcon, unsigned char ProtocolVersion) {
 
 	safe_array_lock(arr);
 
 	supla_client_channel *channel = NULL;
 
 	if ( ( channel = find_channel(Id) ) == NULL ) {
-		channel = new supla_client_channel(Id, DeviceId, LocationID, Func, Param1, Caption, AltIcon, ProtocolVersion, Hidden);
+		channel = new supla_client_channel(Id, DeviceId, LocationID, Func, Param1, Caption, AltIcon, ProtocolVersion);
 		if ( safe_array_add(arr, channel) == -1 ) {
 			delete channel;
 			channel = NULL;
