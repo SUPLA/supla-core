@@ -274,17 +274,20 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
     	supla_channel_temphum *TempHum = getTempHum();
 
-    	if ( TempHum && (Param2 > 0 || Param3 > 0)) {
+    	if ( TempHum ) {
 
-    		if (Param2>0) {
-    			TempHum->setTemperature(TempHum->getTemperature()+(Param2 / 100.00));
+    		if ((Param2 != 0 || Param3 != 0)) {
+        		if (Param2 != 0) {
+        			TempHum->setTemperature(TempHum->getTemperature()+(Param2 / 100.00));
+        		}
+
+        		if (Param3 != 0) {
+        			TempHum->setHumidity(TempHum->getHumidity()+(Param3 / 100.00));
+        		}
+
+        		TempHum->toValue(this->value);
     		}
 
-    		if (Param3>0) {
-    			TempHum->setHumidity(TempHum->getHumidity()+(Param3 / 100.00));
-    		}
-
-    		TempHum->toValue(this->value);
     		delete TempHum;
     	}
     }
