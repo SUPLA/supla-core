@@ -31,15 +31,24 @@ char supla_channel_tarr_clean(void *ptr) {
 	return 1;
 }
 
-supla_channel_temphum::supla_channel_temphum(char TempAndHumidity, int ChannelId, double Temperature, double Humidity) {
+
+supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity, int ChannelId, double Temperature, double Humidity) {
 
 	this->ChannelId = ChannelId;
 	this->TempAndHumidity = TempAndHumidity;
 	this->Temperature = Temperature;
 	this->Humidity = Humidity;
+
+	if (this->Temperature < -273 || this->Temperature > 1000) {
+		this->Temperature = -273;
+	}
+
+	if (this->Humidity < -1  || this->Humidity > 100) {
+		this->Humidity = -1;
+	}
 }
 
-supla_channel_temphum::supla_channel_temphum(char TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]) {
+supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]) {
 
 	this->ChannelId = ChannelId;
 	this->TempAndHumidity = TempAndHumidity;
@@ -60,20 +69,14 @@ supla_channel_temphum::supla_channel_temphum(char TempAndHumidity, int ChannelId
 		memcpy(&this->Temperature, value, sizeof(double));
 	}
 
-	if (this->Temperature < -273 || this->Temperature > 1000) {
-		this->Temperature = -273;
-	}
-
-	if (this->Humidity < -1  || this->Humidity > 100) {
-		this->Humidity = -1;
-	}
+	supla_channel_temphum(TempAndHumidity, ChannelId, this->Temperature, this->Humidity);
 }
 
 int supla_channel_temphum::getChannelId(void) {
 	return ChannelId;
 }
 
-char supla_channel_temphum::isTempAndHumidity(void) {
+bool supla_channel_temphum::isTempAndHumidity(void) {
 	return TempAndHumidity;
 }
 

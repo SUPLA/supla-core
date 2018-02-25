@@ -25,15 +25,15 @@ class supla_channel_temphum {
 
 private:
 	int ChannelId;
-	char TempAndHumidity;
+	bool TempAndHumidity;
 	double Temperature;
 	double Humidity;
 public:
-	supla_channel_temphum(char TempAndHumidity, int ChannelId, double Temperature, double Humidity);
-	supla_channel_temphum(char TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]);
+	supla_channel_temphum(bool TempAndHumidity, int ChannelId, double Temperature, double Humidity);
+	supla_channel_temphum(bool TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]);
 
 	int getChannelId(void);
-	char isTempAndHumidity(void);
+	bool isTempAndHumidity(void);
 	double getTemperature(void);
 	double getHumidity(void);
 	void setTemperature(double Temperature);
