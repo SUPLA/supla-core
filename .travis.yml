@@ -11,6 +11,8 @@ compiler:
   - gcc
 
 script: 
+  - ./tools/lint.sh "./supla-server/src/*"
+  - ./tools/lint.sh "./supla-server/src/test/*"
   - cd supla-server/Test
   - make clean && make all
   - ./supla-server
