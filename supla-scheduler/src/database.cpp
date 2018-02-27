@@ -21,346 +21,338 @@
 #include <string.h>
 
 #include "database.h"
-#include "schedulercfg.h"
 #include "log.h"
-#include "tools.h"
 #include "safearray.h"
+#include "schedulercfg.h"
+#include "tools.h"
 
-char *database::cfg_get_host(void) {
+char *database::cfg_get_host(void) { return scfg_string(CFG_MYSQL_HOST); }
 
-	return scfg_string(CFG_MYSQL_HOST);
-}
-
-char *database::cfg_get_user(void) {
-
-	return scfg_string(CFG_MYSQL_USER);
-}
+char *database::cfg_get_user(void) { return scfg_string(CFG_MYSQL_USER); }
 char *database::cfg_get_password(void) {
-
-	return scfg_string(CFG_MYSQL_PASSWORD);
+  return scfg_string(CFG_MYSQL_PASSWORD);
 }
-char *database::cfg_get_database(void) {
-
-	return scfg_string(CFG_MYSQL_DB);
-}
-int database::cfg_get_port(void) {
-
-	return scfg_int(CFG_MYSQL_PORT);
-}
+char *database::cfg_get_database(void) { return scfg_string(CFG_MYSQL_DB); }
+int database::cfg_get_port(void) { return scfg_int(CFG_MYSQL_PORT); }
 
 void database::get_s_executions(void *s_exec_arr, int limit) {
+  MYSQL_STMT *stmt;
 
-	MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
 
-	MYSQL_BIND pbind[1];
-	memset(pbind, 0, sizeof(pbind));
+  if (s_exec_arr == NULL) return;
 
-	if ( s_exec_arr == NULL )
-		return;
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&limit;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&limit;
+  if (stmt_execute((void **)&stmt,
+                   "SELECT e.`id`, e.`schedule_id`, s.`user_id`, "
+                   "c.`iodevice_id`, s.`channel_id`, c.`func`, c.`param1`, "
+                   "c.`param2`, c.`param3`, s.`action`, s.`action_param`, "
+                   "UNIX_TIMESTAMP(e.`planned_timestamp`), "
+                   "UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM "
+                   "`supla_scheduled_executions` AS e, `supla_schedule` AS s, "
+                   "`supla_dev_channel` AS c WHERE e.`schedule_id` = s.`id` "
+                   "AND s.`channel_id` = c.`id` AND e.`result_timestamp` IS "
+                   "NULL AND e.`fetched_timestamp` IS NULL AND ( "
+                   "(e.`retry_timestamp` IS NULL AND e.`planned_timestamp` <= "
+                   "UTC_TIMESTAMP()) OR (e.`retry_timestamp` IS NOT NULL AND "
+                   "e.`retry_timestamp` <= UTC_TIMESTAMP())) LIMIT ?",
+                   pbind, 1, true)) {
+    my_bool is_null[3];
 
-	if ( stmt_execute((void**)&stmt, "SELECT e.`id`, e.`schedule_id`, s.`user_id`, c.`iodevice_id`, s.`channel_id`, c.`func`, c.`param1`, c.`param2`, c.`param3`, s.`action`, s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s, `supla_dev_channel` AS c WHERE e.`schedule_id` = s.`id` AND s.`channel_id` = c.`id` AND e.`result_timestamp` IS NULL AND e.`fetched_timestamp` IS NULL AND ( (e.`retry_timestamp` IS NULL AND e.`planned_timestamp` <= UTC_TIMESTAMP()) OR (e.`retry_timestamp` IS NOT NULL AND e.`retry_timestamp` <= UTC_TIMESTAMP())) LIMIT ?", pbind, 1, true) ) {
+    MYSQL_BIND rbind[14];
+    memset(rbind, 0, sizeof(rbind));
 
-		my_bool is_null[3];
+    int id, schedule_id, user_id, device_id, channel_id, channel_func,
+        channel_param1, channel_param2, channel_param3;
+    int action, planned_timestamp, retry_timestamp, retry_count;
 
-		MYSQL_BIND rbind[14];
-		memset(rbind, 0, sizeof(rbind));
+    unsigned long length;
+    char action_param[256];
 
-		int id, schedule_id, user_id, device_id, channel_id, channel_func, channel_param1, channel_param2, channel_param3;
-		int action, planned_timestamp, retry_timestamp, retry_count;
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&id;
 
-		unsigned long length;
-		char action_param[256];
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&schedule_id;
 
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&user_id;
 
-		rbind[0].buffer_type= MYSQL_TYPE_LONG;
-		rbind[0].buffer= (char *)&id;
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&device_id;
 
-		rbind[1].buffer_type= MYSQL_TYPE_LONG;
-		rbind[1].buffer= (char *)&schedule_id;
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&channel_id;
 
-		rbind[2].buffer_type= MYSQL_TYPE_LONG;
-		rbind[2].buffer= (char *)&user_id;
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&channel_func;
 
-		rbind[3].buffer_type= MYSQL_TYPE_LONG;
-		rbind[3].buffer= (char *)&device_id;
+    rbind[6].buffer_type = MYSQL_TYPE_LONG;
+    rbind[6].buffer = (char *)&channel_param1;
 
-		rbind[4].buffer_type= MYSQL_TYPE_LONG;
-		rbind[4].buffer= (char *)&channel_id;
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&channel_param2;
 
-		rbind[5].buffer_type= MYSQL_TYPE_LONG;
-		rbind[5].buffer= (char *)&channel_func;
+    rbind[8].buffer_type = MYSQL_TYPE_LONG;
+    rbind[8].buffer = (char *)&channel_param3;
 
-		rbind[6].buffer_type= MYSQL_TYPE_LONG;
-		rbind[6].buffer= (char *)&channel_param1;
+    rbind[9].buffer_type = MYSQL_TYPE_LONG;
+    rbind[9].buffer = (char *)&action;
 
-		rbind[7].buffer_type= MYSQL_TYPE_LONG;
-		rbind[7].buffer= (char *)&channel_param2;
+    rbind[10].buffer_type = MYSQL_TYPE_STRING;
+    rbind[10].buffer = action_param;
+    rbind[10].is_null = &is_null[0];
+    rbind[10].buffer_length = 256;
+    rbind[10].length = &length;
 
-		rbind[8].buffer_type= MYSQL_TYPE_LONG;
-		rbind[8].buffer= (char *)&channel_param3;
+    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer = &planned_timestamp;
 
-		rbind[9].buffer_type= MYSQL_TYPE_LONG;
-		rbind[9].buffer= (char *)&action;
+    rbind[12].buffer_type = MYSQL_TYPE_LONG;
+    rbind[12].buffer = &retry_timestamp;
+    rbind[12].is_null = &is_null[1];
 
-		rbind[10].buffer_type= MYSQL_TYPE_STRING;
-		rbind[10].buffer= action_param;
-		rbind[10].is_null= &is_null[0];
-		rbind[10].buffer_length = 256;
-		rbind[10].length = &length;
+    rbind[13].buffer_type = MYSQL_TYPE_LONG;
+    rbind[13].buffer = &retry_count;
+    rbind[13].is_null = &is_null[2];
 
-		rbind[11].buffer_type= MYSQL_TYPE_LONG;
-		rbind[11].buffer= &planned_timestamp;
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
 
-		rbind[12].buffer_type= MYSQL_TYPE_LONG;
-		rbind[12].buffer= &retry_timestamp;
-		rbind[12].is_null= &is_null[1];
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          s_exec_t *s_exec = (s_exec_t *)malloc(sizeof(s_exec_t));
 
-		rbind[13].buffer_type= MYSQL_TYPE_LONG;
-		rbind[13].buffer= &retry_count;
-		rbind[13].is_null= &is_null[2];
+          if (s_exec != NULL) {
+            memset(s_exec, 0, sizeof(s_exec_t));
 
-		if ( mysql_stmt_bind_result(stmt, rbind) ) {
-			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
-		} else {
+            s_exec->id = id;
+            s_exec->schedule_id = schedule_id;
+            s_exec->user_id = user_id;
+            s_exec->iodevice_id = device_id;
+            s_exec->channel_id = channel_id;
+            s_exec->channel_func = channel_func;
+            s_exec->channel_param1 = channel_param1;
+            s_exec->channel_param2 = channel_param2;
+            s_exec->channel_param3 = channel_param3;
+            s_exec->action = action;
+            s_exec->planned_timestamp = planned_timestamp;
 
-			mysql_stmt_store_result(stmt);
+            if (is_null[0] == false) {
+              action_param[255] = 0;
+              s_exec->action_param = strdup(action_param);
+            }
 
-			if ( mysql_stmt_num_rows(stmt) > 0 ) {
+            s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
+            s_exec->retry_count = is_null[2] ? 0 : retry_count;
 
-				while (!mysql_stmt_fetch(stmt)) {
+            if (safe_array_add(s_exec_arr, s_exec) == -1) {
+              if (s_exec->action_param != NULL) {
+                free(s_exec->action_param);
+              }
 
-					s_exec_t *s_exec = (s_exec_t*)malloc(sizeof(s_exec_t));
+              free(s_exec);
+            }
+          }
+        }
+      }
+    }
 
-					if ( s_exec != NULL ) {
-
-						memset(s_exec, 0, sizeof(s_exec_t));
-
-						s_exec->id = id;
-						s_exec->schedule_id = schedule_id;
-						s_exec->user_id = user_id;
-						s_exec->iodevice_id = device_id;
-						s_exec->channel_id = channel_id;
-						s_exec->channel_func = channel_func;
-						s_exec->channel_param1 = channel_param1;
-						s_exec->channel_param2 = channel_param2;
-						s_exec->channel_param3 = channel_param3;
-						s_exec->action = action;
-						s_exec->planned_timestamp = planned_timestamp;
-
-						if ( is_null[0] == false ) {
-							action_param[255] = 0;
-							s_exec->action_param = strdup(action_param);
-						}
-
-						s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
-						s_exec->retry_count = is_null[2] ? 0 : retry_count;
-
-						if ( safe_array_add(s_exec_arr, s_exec) == -1 ) {
-
-							if ( s_exec->action_param != NULL ) {
-								free(s_exec->action_param);
-							}
-
-							free(s_exec);
-						}
-
-					}
-
-				}
-
-			}
-
-		}
-
-
-		mysql_stmt_close(stmt);
-	}
-
+    mysql_stmt_close(stmt);
+  }
 }
 
 bool database::get_channel(supla_channel *channel) {
+  if (channel == NULL || channel->id == 0) return false;
 
-	if ( channel == NULL || channel->id == 0 )
-		return false;
+  MYSQL_STMT *stmt;
 
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
 
-	MYSQL_STMT *stmt;
+  bool result = false;
 
-	MYSQL_BIND pbind[1];
-	memset(pbind, 0, sizeof(pbind));
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel->id;
 
-	bool result = false;
+  if (stmt_execute((void **)&stmt,
+                   "SELECT  `type`, `func`, `param1`, `param2`, `param3`, "
+                   "`iodevice_id` FROM `supla_dev_channel`  WHERE `id` = ?",
+                   pbind, 1, true)) {
+    MYSQL_BIND rbind[6];
+    memset(rbind, 0, sizeof(rbind));
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&channel->id;
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&channel->type;
 
-	if ( stmt_execute((void**)&stmt, "SELECT  `type`, `func`, `param1`, `param2`, `param3`, `iodevice_id` FROM `supla_dev_channel`  WHERE `id` = ?", pbind, 1, true) ) {
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&channel->func;
 
-		MYSQL_BIND rbind[6];
-		memset(rbind, 0, sizeof(rbind));
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&channel->param1;
 
-		rbind[0].buffer_type= MYSQL_TYPE_LONG;
-		rbind[0].buffer= (char *)&channel->type;
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&channel->param2;
 
-		rbind[1].buffer_type= MYSQL_TYPE_LONG;
-		rbind[1].buffer= (char *)&channel->func;
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&channel->param3;
 
-		rbind[2].buffer_type= MYSQL_TYPE_LONG;
-		rbind[2].buffer= (char *)&channel->param1;
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&channel->iodevice_id;
 
-		rbind[3].buffer_type= MYSQL_TYPE_LONG;
-		rbind[3].buffer= (char *)&channel->param2;
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
 
-		rbind[4].buffer_type= MYSQL_TYPE_LONG;
-		rbind[4].buffer= (char *)&channel->param3;
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        result = true;
+      }
+    }
 
-		rbind[5].buffer_type= MYSQL_TYPE_LONG;
-		rbind[5].buffer= (char *)&channel->iodevice_id;
+    mysql_stmt_close(stmt);
+  }
 
-		if ( mysql_stmt_bind_result(stmt, rbind) ) {
-			supla_log(LOG_ERR, "MySQL - stmt bind error - %s", mysql_stmt_error(stmt));
-		} else {
-
-			mysql_stmt_store_result(stmt);
-
-			if ( mysql_stmt_num_rows(stmt) > 0
-				 && !mysql_stmt_fetch(stmt) ) {
-
-				result = true;
-
-			}
-
-		}
-
-
-		mysql_stmt_close(stmt);
-	}
-
-	return result;
-
+  return result;
 }
 
 void database::set_expired_result(int expired_time) {
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
 
-	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[2];
-	memset(pbind, 0, sizeof(pbind));
+  int result = ACTION_EXECUTION_RESULT_EXPIRED;
 
-	int result = ACTION_EXECUTION_RESULT_EXPIRED;
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&result;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&result;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&expired_time;
 
-	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&expired_time;
-
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE result IS NULL AND fetched_timestamp IS NULL AND planned_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()", pbind, 2, true) ) {
-		mysql_stmt_close(stmt);
-	}
-
+  if (stmt_execute((void **)&stmt,
+                   "UPDATE `supla_scheduled_executions` SET "
+                   "`result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE "
+                   "result IS NULL AND fetched_timestamp IS NULL AND "
+                   "planned_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()",
+                   pbind, 2, true)) {
+    mysql_stmt_close(stmt);
+  }
 }
 
 void database::set_zombie_result(int zombie_time) {
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
 
-	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[2];
-	memset(pbind, 0, sizeof(pbind));
+  int result = ACTION_EXECUTION_RESULT_ZOMBIE;
 
-	int result = ACTION_EXECUTION_RESULT_ZOMBIE;
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&result;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&result;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&zombie_time;
 
-	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&zombie_time;
-
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE result IS NULL AND fetched_timestamp IS NOT NULL AND fetched_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()", pbind, 2, true) ) {
-		mysql_stmt_close(stmt);
-	}
-
+  if (stmt_execute((void **)&stmt,
+                   "UPDATE `supla_scheduled_executions` SET "
+                   "`result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE "
+                   "result IS NULL AND fetched_timestamp IS NOT NULL AND "
+                   "fetched_timestamp + INTERVAL ? SECOND <= UTC_TIMESTAMP()",
+                   pbind, 2, true)) {
+    mysql_stmt_close(stmt);
+  }
 }
 
 bool database::set_fetched(int id) {
+  bool result = false;
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
 
-	bool result = false;
-	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[1];
-	memset(pbind, 0, sizeof(pbind));
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&id;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&id;
+  if (stmt_execute((void **)&stmt,
+                   "UPDATE `supla_scheduled_executions` SET `consumed` = 1, "
+                   "`fetched_timestamp`= UTC_TIMESTAMP() WHERE `id` = ? AND "
+                   "`fetched_timestamp` IS NULL",
+                   pbind, 1, true)) {
+    result = mysql_stmt_affected_rows(stmt) == 1;
+    mysql_stmt_close(stmt);
+  }
 
-
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `consumed` = 1, `fetched_timestamp`= UTC_TIMESTAMP() WHERE `id` = ? AND `fetched_timestamp` IS NULL", pbind, 1, true) ) {
-
-		result = mysql_stmt_affected_rows(stmt) == 1;
-		mysql_stmt_close(stmt);
-	}
-
-	return result;
+  return result;
 }
 
 void database::set_unfetched(int id) {
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
 
-	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[1];
-	memset(pbind, 0, sizeof(pbind));
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&id;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&id;
-
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= NULL WHERE `id` = ?", pbind, 1, true) ) {
-		mysql_stmt_close(stmt);
-	}
-
+  if (stmt_execute((void **)&stmt,
+                   "UPDATE `supla_scheduled_executions` SET "
+                   "`fetched_timestamp`= NULL WHERE `id` = ?",
+                   pbind, 1, true)) {
+    mysql_stmt_close(stmt);
+  }
 }
 
 bool database::set_retry(int id, int sec) {
+  bool result = false;
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
 
-	bool result = false;
-	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[2];
-	memset(pbind, 0, sizeof(pbind));
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&sec;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&sec;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&id;
 
-	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&id;
+  if (stmt_execute((void **)&stmt,
+                   "UPDATE `supla_scheduled_executions` SET "
+                   "`fetched_timestamp`= NULL, `retry_timestamp`= "
+                   "UTC_TIMESTAMP() + INTERVAL ? SECOND, `retry_count` = "
+                   "IFNULL(`retry_count`, 0)+1 WHERE `id` = ? AND "
+                   "`fetched_timestamp` IS NOT NULL",
+                   pbind, 2, true)) {
+    result = mysql_stmt_affected_rows(stmt) == 1;
+    mysql_stmt_close(stmt);
+  }
 
-
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= NULL, `retry_timestamp`= UTC_TIMESTAMP() + INTERVAL ? SECOND, `retry_count` = IFNULL(`retry_count`, 0)+1 WHERE `id` = ? AND `fetched_timestamp` IS NOT NULL", pbind, 2, true) ) {
-
-		result = mysql_stmt_affected_rows(stmt) == 1;
-		mysql_stmt_close(stmt);
-	}
-
-	return result;
+  return result;
 }
 
 bool database::set_result(int id, int result) {
+  bool success = false;
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
 
-	bool success = false;
-	MYSQL_STMT *stmt;
-	MYSQL_BIND pbind[2];
-	memset(pbind, 0, sizeof(pbind));
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&result;
 
-	pbind[0].buffer_type= MYSQL_TYPE_LONG;
-	pbind[0].buffer= (char *)&result;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&id;
 
-	pbind[1].buffer_type= MYSQL_TYPE_LONG;
-	pbind[1].buffer= (char *)&id;
+  if (stmt_execute((void **)&stmt,
+                   "UPDATE `supla_scheduled_executions` SET "
+                   "`fetched_timestamp`= NULL, `result_timestamp`= "
+                   "UTC_TIMESTAMP(), `result` = ? WHERE `id` = ? AND "
+                   "`fetched_timestamp` IS NOT NULL",
+                   pbind, 2, true)) {
+    success = mysql_stmt_affected_rows(stmt) == 1;
+    mysql_stmt_close(stmt);
+  }
 
-
-	if ( stmt_execute((void**)&stmt, "UPDATE `supla_scheduled_executions` SET `fetched_timestamp`= NULL, `result_timestamp`= UTC_TIMESTAMP(), `result` = ? WHERE `id` = ? AND `fetched_timestamp` IS NOT NULL", pbind, 2, true) ) {
-
-		success = mysql_stmt_affected_rows(stmt) == 1;
-		mysql_stmt_close(stmt);
-	}
-
-	return success;
-
+  return success;
 }

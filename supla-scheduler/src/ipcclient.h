@@ -23,37 +23,38 @@
 
 #define IPC_BUFFER_SIZE 256
 
-#define IPC_RESULT_SERVER_UNREACHABLE      -1
-#define IPC_RESULT_DISCONNECTED             0
-#define IPC_RESULT_CONNECTED                1
+#define IPC_RESULT_SERVER_UNREACHABLE -1
+#define IPC_RESULT_DISCONNECTED 0
+#define IPC_RESULT_CONNECTED 1
 
+class ipc_client {
+ private:
+  int sfd;
+  char buffer[IPC_BUFFER_SIZE];
+  int read(void);
 
-class ipc_client  {
-private:
-	int sfd;
-	char buffer[IPC_BUFFER_SIZE];
-	int read(void);
+  char *ipc_sauth_key;
+  bool get_value(const char *cmd, int user_id, int device_id, int channel_id);
+  bool check_set_result(void);
 
-	char *ipc_sauth_key;
-	bool get_value(const char *cmd, int user_id, int device_id, int channel_id);
-	bool check_set_result(void);
+ public:
+  ipc_client();
+  ~ipc_client();
+  bool ipc_connect(void);
+  bool ipc_disconnect(void);
+  bool auth(void);
 
-public:
+  char is_connected(int user_id, int device_id);
 
-	ipc_client();
-	~ipc_client();
-	bool ipc_connect(void);
-	bool ipc_disconnect(void);
-	bool auth(void);
+  bool get_double_value(int user_id, int device_id, int channel_id,
+                        double *value);
+  bool get_char_value(int user_id, int device_id, int channel_id, char *value);
+  bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color,
+                      char *color_brightness, char *brightness);
 
-	char is_connected(int user_id, int device_id);
-
-	bool get_double_value(int user_id, int device_id, int channel_id, double *value);
-	bool get_char_value(int user_id, int device_id, int channel_id, char *value);
-	bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color, char *color_brightness, char *brightness);
-
-	bool set_char_value(int user_id, int device_id, int channel_id, char value);
-	bool set_rgbw_value(int user_id, int device_id, int channel_id, int color, char color_brightness, char brightness);
+  bool set_char_value(int user_id, int device_id, int channel_id, char value);
+  bool set_rgbw_value(int user_id, int device_id, int channel_id, int color,
+                      char color_brightness, char brightness);
 };
 
 #endif /* IPCCLIENT_H_ */

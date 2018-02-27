@@ -22,57 +22,53 @@
 #include "database.h"
 #include "eh.h"
 
-class queue  {
-private:
+class queue {
+ private:
+  void *user;
+  void *q_sthread;
 
-	void *user;
-	void *q_sthread;
+  TEventHandler *loop_eh;
+  void *lck;
+  void *workers_thread_arr;
+  void *s_exec_arr;
 
-	TEventHandler *loop_eh;
-	void *lck;
-	void *workers_thread_arr;
-	void *s_exec_arr;
+  int max_workers;
+  int max_job_per_second;
 
-	int max_workers;
-	int max_job_per_second;
+  int job_counter;
+  int total_fetch_count;
+  int wait_for_fetch_counter;
 
-	int job_counter;
-	int total_fetch_count;
-	int wait_for_fetch_counter;
+  struct timeval last_get;
+  struct timeval timer;
+  struct timeval timer_one_min;
 
-	struct timeval last_get;
-	struct timeval timer;
-	struct timeval timer_one_min;
+  void new_worker(void);
+  bool wait_for_fetch(void);
 
+ protected:
+  database *db;
 
-	void new_worker(void);
-	bool wait_for_fetch(void);
+ public:
+  queue(void *user, void *q_sthread);
+  ~queue();
 
-protected:
-	database *db;
-public:
+  void loop(void);
 
-	queue(void *user, void *q_sthread);
-    ~queue();
+  void load(void);
+  void raise_loop_event(void);
 
-    void loop(void);
+  void set_overdue_result(void);
+  void set_zombie_result(void);
 
-    void load(void);
-    void raise_loop_event(void);
+  s_exec_t get_job(void);
+  void mark_fetched();
 
-    void set_overdue_result(void);
-    void set_zombie_result(void);
+  bool limit_exceeded();
 
-    s_exec_t get_job(void);
-    void mark_fetched();
-
-    bool limit_exceeded();
-
-    void print_statistics(void);
-
+  void print_statistics(void);
 };
 
 void queue_loop(void *user, void *q_sthread);
-
 
 #endif /* QUEUE_H_ */

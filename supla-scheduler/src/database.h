@@ -22,30 +22,25 @@
 #include "db.h"
 #include "supla-scheduler.h"
 
-
 class database : public dbcommon {
-private:
+ private:
+  virtual char *cfg_get_host(void);
+  virtual char *cfg_get_user(void);
+  virtual char *cfg_get_password(void);
+  virtual char *cfg_get_database(void);
+  virtual int cfg_get_port(void);
 
-	virtual char *cfg_get_host(void);
-	virtual char *cfg_get_user(void);
-	virtual char *cfg_get_password(void);
-	virtual char *cfg_get_database(void);
-	virtual int cfg_get_port(void);
+ public:
+  void get_s_executions(void *s_exec_arr, int limit);
+  bool get_channel(supla_channel *channel);
 
+  void set_expired_result(int expired_time);
+  void set_zombie_result(int zombie_time);
+  bool set_result(int id, int result);
 
-public:
-
-	void get_s_executions(void *s_exec_arr, int limit);
-	bool get_channel(supla_channel *channel);
-
-	void set_expired_result(int expired_time);
-	void set_zombie_result(int zombie_time);
-	bool set_result(int id, int result);
-
-	bool set_fetched(int id);
-	bool set_retry(int id, int sec);
-	void set_unfetched(int id);
-
+  bool set_fetched(int id);
+  bool set_retry(int id, int sec);
+  void set_unfetched(int id);
 };
 
 #endif /* DATABASE_H_ */

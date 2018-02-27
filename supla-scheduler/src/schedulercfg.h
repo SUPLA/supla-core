@@ -27,20 +27,19 @@ extern "C" {
 
 #define SCHEDULER_VERSION "1.0.2"
 
-#define CFG_UID           0
-#define CFG_GID           1
+#define CFG_UID 0
+#define CFG_GID 1
 
-#define CFG_MYSQL_HOST      2
-#define CFG_MYSQL_PORT      3
-#define CFG_MYSQL_DB        4
-#define CFG_MYSQL_USER      5
-#define CFG_MYSQL_PASSWORD  6
+#define CFG_MYSQL_HOST 2
+#define CFG_MYSQL_PORT 3
+#define CFG_MYSQL_DB 4
+#define CFG_MYSQL_USER 5
+#define CFG_MYSQL_PASSWORD 6
 
-#define CFG_MAX_WORKERS         7
-#define CFG_MAX_JOB_PER_SECOND  8
+#define CFG_MAX_WORKERS 7
+#define CFG_MAX_JOB_PER_SECOND 8
 
 unsigned char schedulercfg_init(int argc, char* argv[]);
-
 
 #ifdef __cplusplus
 }

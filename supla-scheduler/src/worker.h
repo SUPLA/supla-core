@@ -25,34 +25,32 @@
 
 class queue;
 class s_worker {
-private:
-	s_exec_t s_exec;
-	database *db;
-	ipc_client *ipcc;
-	queue *q;
+ private:
+  s_exec_t s_exec;
+  database *db;
+  ipc_client *ipcc;
+  queue *q;
 
-	void set_result(bool success, int retry_limit, int retry_time, bool no_sensor);
-	bool check_function_allowed(int *func, int func_count);
-	char opening_sensor_value(void);
+  void set_result(bool success, int retry_limit, int retry_time,
+                  bool no_sensor);
+  bool check_function_allowed(int *func, int func_count);
+  char opening_sensor_value(void);
 
-	void action_open(void);
-	void action_turn_on_off(char on);
-	void action_gate_open_close(char _close);
-	void action_shut_reveal(char shut);
+  void action_open(void);
+  void action_turn_on_off(char on);
+  void action_gate_open_close(char _close);
+  void action_shut_reveal(char shut);
 
-	int hue2rgb(double hue);
-	char json_get_int(jsmntok_t *token, int *value);
-	char parse_rgbw_params(int *color, char *color_brightness, char *brightness);
-	char parse_percentage(char *percent);
-	void action_set_rgbw(void);
+  int hue2rgb(double hue);
+  char json_get_int(jsmntok_t *token, int *value);
+  char parse_rgbw_params(int *color, char *color_brightness, char *brightness);
+  char parse_percentage(char *percent);
+  void action_set_rgbw(void);
 
-public:
-
-	s_worker(queue *q);
-	~s_worker();
-	void execute(void *sthread);
+ public:
+  explicit s_worker(queue *q);
+  ~s_worker();
+  void execute(void *sthread);
 };
-
-
 
 #endif /* QUEUE_H_ */
