@@ -295,6 +295,13 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
     	}
     }
 
+    if ( Param3 == 1
+    		&& ( Type == SUPLA_CHANNELTYPE_SENSORNC
+    	         || Type == SUPLA_CHANNELTYPE_SENSORNO ) ) {
+
+    	this->value[0] = this->value[0] == 0 ? 1 : 0;
+    }
+
 
 }
 
