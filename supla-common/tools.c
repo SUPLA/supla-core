@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <pthread.h>
+#include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <pthread.h>
 #include <time.h>
+#include <unistd.h>
 
-#include "tools.h"
-#include "log.h"
 #include "eh.h"
+#include "log.h"
+#include "tools.h"
 
 #ifdef __BCRYPT
 #include "crypt_blowfish/ow-crypt.h"
@@ -39,387 +39,317 @@ pthread_t main_thread;
 TEventHandler *st_eh = NULL;
 
 void st_signal_handler(int sig) {
+  if (pthread_self() == main_thread) {
+    st_app_terminate = 1;
+  }
 
-	  if ( pthread_self() == main_thread ) {
-		  st_app_terminate = 1;
-	  }
-
-
-      if ( st_eh != 0 )
-    	  eh_raise_event(st_eh);
+  if (st_eh != 0) eh_raise_event(st_eh);
 }
 
 void st_hook_signals(void) {
+  main_thread = pthread_self();
 
-	main_thread = pthread_self();
-
-	signal(SIGHUP, st_signal_handler);
-	signal(SIGINT, st_signal_handler);
-	signal(SIGTERM, st_signal_handler);
-	signal(SIGQUIT, st_signal_handler);
-	signal(SIGPIPE, SIG_IGN);
-
+  signal(SIGHUP, st_signal_handler);
+  signal(SIGINT, st_signal_handler);
+  signal(SIGTERM, st_signal_handler);
+  signal(SIGQUIT, st_signal_handler);
+  signal(SIGPIPE, SIG_IGN);
 }
 
 unsigned char st_file_exists(const char *fp) {
+  unsigned char file_exists = 0;
 
-	unsigned char file_exists = 0;
+  if (fp != NULL && strnlen(fp, 1024) > 0) {
+    file_exists = access(fp, R_OK) != -1;
+    /*
+     FILE *F = fopen(fp, "r");
 
-	if ( fp != NULL
-		  && strnlen(fp, 1024) >  0 ) {
+     if ( F ) {
+         file_exists = 1;
+         fclose(F);
+     }
+    */
+  }
 
-		file_exists = access(fp, R_OK ) != -1;
-		/*
-		 FILE *F = fopen(fp, "r");
-
-		 if ( F ) {
-		     file_exists = 1;
-		     fclose(F);
-		 }
-		*/
-
-	}
-
-    return file_exists;
-
+  return file_exists;
 }
 
 char st_try_fork(void) {
+  pid_t pid, sid;
+  pid = fork();
+  if (pid < 0) {
+    supla_log(LOG_ERR, "Can't fork");
+    return 0;
+  }
 
+  if (pid > 0) {
+    exit(EXIT_SUCCESS);
+  }
 
-	    pid_t pid, sid;
-	    pid = fork();
-	    if (pid < 0) {
-	       supla_log(LOG_ERR, "Can't fork");
-	       return 0;
-	    }
+  sid = setsid();
+  if (sid < 0) {
+    supla_log(LOG_ERR, "Can't fork");
+    return 0;
+  }
 
-	    if (pid > 0) {
-	        exit(EXIT_SUCCESS);
-	    }
+  if ((chdir("/")) < 0) {
+    supla_log(LOG_ERR, "Can't fork");
+    return 0;
+  }
 
-	    sid = setsid();
-	    if (sid < 0) {
+  close(STDIN_FILENO);
+  close(STDOUT_FILENO);
+  close(STDERR_FILENO);
 
-	    	 supla_log(LOG_ERR, "Can't fork");
-		     return 0;
-	    }
-
-	    if ((chdir("/")) < 0) {
-
-	    	 supla_log(LOG_ERR, "Can't fork");
-		     return 0;
-	    }
-
-	    close(STDIN_FILENO);
-	    close(STDOUT_FILENO);
-	    close(STDERR_FILENO);
-
-return 1;
-
+  return 1;
 }
 
 char st_set_ug_id(int uid, int gid) {
+  if (setgid(gid) != 0) {
+    supla_log(LOG_ERR, "Can't change group");
+    return 0;
+  }
 
-	if ( setgid(gid) != 0 ) {
-    	supla_log(LOG_ERR, "Can't change group");
-    	return 0;
-    }
+  if (setuid(uid) != 0) {
+    supla_log(LOG_ERR, "Can't change user");
+    return 0;
+  }
 
-    if ( setuid(uid) != 0 ) {
-    	supla_log(LOG_ERR, "Can't change user");
-    	return 0;
-    }
-
-    return 1;
+  return 1;
 }
 
 char st_setpidfile(char *pidfile_path) {
+  if (pidfile_path != 0 && strnlen(pidfile_path, 1024) > 0) {
+    FILE *F = fopen(pidfile_path, "w");
+    if (F) {
+      char str[32];
+      snprintf(str, sizeof(str), "%i\n", getpid());
+      fwrite(str, (int)1, strnlen(str, 31), F);
+      fclose(F);
 
-        if ( pidfile_path != 0
-        	 && strnlen(pidfile_path, 1024) > 0 ) {
+      return 1;
+    }
 
-                FILE *F = fopen(pidfile_path, "w");
-                if ( F ) {
+    supla_log(LOG_ERR, "Can't create pid file: %s", pidfile_path);
+  }
 
-                        char str[32];
-                        snprintf(str, 31,"%i\n",getpid());
-                        fwrite(str, (int)1, strnlen(str, 31), F);
-                        fclose(F);
-
-                        return 1;
-                }
-
-                supla_log(LOG_ERR, "Can't create pid file: %s", pidfile_path);
-        }
-
-        return 0;
+  return 0;
 }
 
 void st_delpidfile(char *pidfile_path) {
-
-
-   if ( st_file_exists(pidfile_path) == 1 )
-		unlink(pidfile_path);
-
+  if (st_file_exists(pidfile_path) == 1) unlink(pidfile_path);
 }
 
-void st_mainloop_init(void) {
+void st_mainloop_init(void) { st_eh = eh_init(); }
 
-	st_eh = eh_init();
+void st_mainloop_free(void) { eh_free(st_eh); }
 
-}
-
-void st_mainloop_free(void) {
-
-	eh_free(st_eh);
-
-}
-
-void st_mainloop_wait(int usec) {
-	eh_wait(st_eh, usec);
-}
+void st_mainloop_wait(int usec) { eh_wait(st_eh, usec); }
 
 char *st_bin2hex(char *buffer, const char *src, size_t len) {
+  int a, b;
 
-	int a, b;
+  if (src == 0 || buffer == 0) return buffer;
 
-	if ( src == 0 || buffer == 0 )
-		return buffer;
+  buffer[0] = 0;
 
-	buffer[0] = 0;
+  b = 0;
 
-	b=0;
+  for (a = 0; a < len; a++) {
+    snprintf(&buffer[b], 3, "%02X", (unsigned char)src[a]); // NOLINT
+    b += 2;
+  }
 
-	for(a=0;a<len;a++) {
-		snprintf(&buffer[b], 3, "%02X", (unsigned char)src[a]);
-		b+=2;
-	}
-
-	return buffer;
-
+  return buffer;
 }
 
-void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]) {
-
-	st_bin2hex(GUIDHEX, GUID, SUPLA_GUID_SIZE);
+void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE],
+                 const char GUID[SUPLA_GUID_SIZE]) {
+  st_bin2hex(GUIDHEX, GUID, SUPLA_GUID_SIZE);
 }
 
-void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
-
-	st_bin2hex(AuthKeyHEX, AuthKey, SUPLA_AUTHKEY_SIZE);
-
+void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE],
+                    const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+  st_bin2hex(AuthKeyHEX, AuthKey, SUPLA_AUTHKEY_SIZE);
 }
 
 char *st_str2hex(char *buffer, const char *str, size_t maxlen) {
-
-	return st_bin2hex(buffer, str, strnlen(str, maxlen));
-
+  return st_bin2hex(buffer, str, strnlen(str, maxlen));
 }
 
 char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
+  FILE *F;
+  int a;
+  char result = 0;
 
-	FILE *F;
-	int a;
-	char result = 0;
+  if (st_file_exists(file) != 1) {
+    if (create == 1 && file != 0 && strnlen(file, 1024) > 0) {
+      F = fopen(file, "w");
+      if (F) {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
 
-	if ( st_file_exists(file) != 1 ) {
+        unsigned int seed = time(NULL);
 
-		if ( create == 1 && file != 0 && strnlen(file, 1024) > 0 ) {
+        for (a = 0; a < size; a++)
+          KEY[a] = (unsigned char)(rand_r(&seed) + tv.tv_usec);
 
-             F = fopen(file, "w");
-             if ( F ) {
+        if (fwrite(KEY, size, (int)1, F) == 1) {
+          result = 1;
+        } else {
+          supla_log(LOG_ERR, "Can't write to file %s", file);
+        }
 
-            	     struct timeval tv;
-            	     gettimeofday(&tv, NULL);
+        fclose(F);
+        return result;
 
-            	     srand(tv.tv_usec);
-            	     gettimeofday(&tv, NULL);
+      } else {
+        supla_log(LOG_ERR, "Can't create file %s", file);
+      }
+    }
 
-            	     for(a=0;a<size;a++)
-            	    	 KEY[a] = (unsigned char)(rand()+tv.tv_usec);
+    return 0;
+  }
 
-                     if ( fwrite(KEY, size, (int)1, F) == 1 ) {
-                    	 result = 1;
-                     } else {
-                    	 supla_log(LOG_ERR, "Can't write to file %s", file);
-                     }
+  F = fopen(file, "r");
+  if (F) {
+    fseek(F, 0, SEEK_END);
+    if (ftell(F) == size) {
+      fseek(F, 0, SEEK_SET);
 
-                     fclose(F);
-                     return result;
-
-             } else {
-            	 supla_log(LOG_ERR, "Can't create file %s", file);
-             }
-
-		}
-
-		return 0;
-	};
-
-    F = fopen(file, "r");
-    if ( F ) {
-    	fseek(F, 0, SEEK_END);
-    	if ( ftell(F) == size ) {
-    		fseek(F, 0, SEEK_SET);
-
-            if ( fread(KEY, size, (int)1, F) == 1 ) {
-           	 result = 1;
-            } else {
-           	 supla_log(LOG_ERR, "Can't read file %s", file);
-            }
-
-    	} else {
-    		supla_log(LOG_ERR, "%s - wrong size", file);
-    	}
+      if (fread(KEY, size, (int)1, F) == 1) {
+        result = 1;
+      } else {
+        supla_log(LOG_ERR, "Can't read file %s", file);
+      }
 
     } else {
-    	supla_log(LOG_ERR, "Can't open file %s", file);
+      supla_log(LOG_ERR, "%s - wrong size", file);
     }
 
-    if ( result == 1 ) {
-    	result = 0;
-    	for(a=0;a<size;a++)
-    		if ( (int)KEY[a] != 0 ) {
-    			result = 1;
-    			break;
-    		}
+  } else {
+    supla_log(LOG_ERR, "Can't open file %s", file);
+  }
 
-    	if ( result == 0 )
-    		supla_log(LOG_ERR, "%s - format error", file);
-    }
+  if (result == 1) {
+    result = 0;
+    for (a = 0; a < size; a++)
+      if ((int)KEY[a] != 0) {
+        result = 1;
+        break;
+      }
 
-	return result;
+    if (result == 0) supla_log(LOG_ERR, "%s - format error", file);
+  }
+
+  return result;
 }
 
 char st_read_guid_from_file(char *file, char *GUID, char create) {
-	return st_read_randkey_from_file(file, GUID, SUPLA_GUID_SIZE, create);
+  return st_read_randkey_from_file(file, GUID, SUPLA_GUID_SIZE, create);
 }
 
 char st_read_authkey_from_file(char *file, char *AuthKey, char create) {
-	return st_read_randkey_from_file(file, AuthKey, SUPLA_AUTHKEY_SIZE, create);
+  return st_read_randkey_from_file(file, AuthKey, SUPLA_AUTHKEY_SIZE, create);
 }
 
 time_t st_get_utc_time(void) {
-
-	time_t now = time(0);
-	struct tm* now_tm = gmtime(&now);
-	return mktime(now_tm);
-
+  time_t now = time(0);
+  struct tm *now_tm = gmtime(&now); // NOLINT
+  return mktime(now_tm);
 }
 
 char *st_get_datetime_str(char buffer[64]) {
+  memset(buffer, 0, 64);
 
-	memset(buffer, 0 , 64);
+  time_t t = time(NULL);
+  struct tm *tm = localtime(&t); // NOLINT
+  strftime(buffer, 64, "%c", tm);
 
-	time_t t = time(NULL);
-	struct tm *tm = localtime(&t);
-	strftime(buffer, 64, "%c", tm);
-
-	return buffer;
+  return buffer;
 }
 
 #ifdef __BCRYPT
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
+  if (salt == NULL || salt_buffer_size == 0) return 0;
 
-	if ( salt == NULL || salt_buffer_size == 0 )
-		return 0;
+  char random[BCRYPT_RABD_SIZE];
+  int a;
 
-	char random[BCRYPT_RABD_SIZE];
-	int a;
+  if (rounds > 31)
+    rounds = 31;
+  else if (rounds < 4)
+    rounds = 4;
 
-	if ( rounds > 31 )
-		rounds = 31;
-	else if ( rounds < 4 )
-		rounds = 4;
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
+  unsigned int seed = time(NULL);
 
-    srand(tv.tv_usec);
+  for (a = 0; a < BCRYPT_RABD_SIZE; a++) random[a] = rand_r(&seed) + tv.tv_usec;
 
-    for(a=0;a<BCRYPT_RABD_SIZE;a++)
-    	random[a] = rand()+tv.tv_usec;
-
-
-    return crypt_gensalt_rn("$2a$", rounds, random, BCRYPT_RABD_SIZE,
-    			       salt, salt_buffer_size) == NULL ? 0 : 1;
-
+  return crypt_gensalt_rn("$2a$", rounds, random, BCRYPT_RABD_SIZE, salt,
+                          salt_buffer_size) == NULL
+             ? 0
+             : 1;
 }
 
 char st_bcrypt_hash(char *str, char *salt, char *hash, int hash_buffer_size) {
+  if (str == NULL || hash == NULL || salt == NULL || hash_buffer_size == 0)
+    return 0;
 
-	if ( str == NULL || hash == NULL || salt == NULL || hash_buffer_size == 0 )
-		return 0;
-
-	return crypt_rn(str, salt, hash, hash_buffer_size) == NULL ? 0 : 1;
-
+  return crypt_rn(str, salt, hash, hash_buffer_size) == NULL ? 0 : 1;
 }
 
 char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds) {
+  if (str == NULL || hash == NULL || hash_buffer_size == 0) return 0;
 
-	if ( str == NULL || hash == NULL || hash_buffer_size == 0 )
-		return 0;
+  char salt[32];
+  if (1 == st_bcrypt_gensalt(salt, 32, rounds)) {
+    return st_bcrypt_hash(str, salt, hash, hash_buffer_size);
+  }
 
-	char salt[32];
-	if ( 1 == st_bcrypt_gensalt(salt, 32, rounds) ) {
-
-		return st_bcrypt_hash(str, salt, hash, hash_buffer_size);
-	}
-
-	return 0;
+  return 0;
 }
 
 char st_bcrypt_check(char *str, char *hash, int hash_len) {
+  if (str == NULL || hash == NULL || hash_len == 0) return 0;
 
-	if ( str == NULL || hash == NULL || hash_len == 0 )
-		return 0;
+  char *cmp_hash = malloc(hash_len + 1);
+  char result = 0;
 
-	char *cmp_hash = malloc(hash_len+1);
-	char result = 0;
+  if (st_bcrypt_hash(str, hash, cmp_hash, hash_len + 1) == 1) {
+    cmp_hash[hash_len] = 0;
 
-	if ( st_bcrypt_hash(str, hash, cmp_hash, hash_len+1) == 1 ) {
+    if (hash_len == strnlen(cmp_hash, hash_len) &&
+        memcmp(hash, cmp_hash, hash_len) == 0) {
+      result = 1;
+    }
+  }
 
-		cmp_hash[hash_len] = 0;
-
-		if ( hash_len == strnlen(cmp_hash, hash_len)
-			 && memcmp(hash, cmp_hash, hash_len) == 0 ) {
-
-			result = 1;
-		}
-
-	}
-
-	free(cmp_hash);
-	return result;
-
+  free(cmp_hash);
+  return result;
 }
 
 char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+  char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
+  memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
 
-	char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE];
-	memset(AuthKeyHEX, 0, SUPLA_AUTHKEY_HEXSIZE);
+  st_authkey2hex(AuthKeyHEX, AuthKey);
 
-	st_authkey2hex(AuthKeyHEX, AuthKey);
+  char hash[BCRYPT_HASH_MAXSIZE];
 
-	char hash[BCRYPT_HASH_MAXSIZE];
+  if (st_bcrypt_crypt(AuthKeyHEX, hash, BCRYPT_HASH_MAXSIZE, 4)) {
+    int size = strnlen(hash, BCRYPT_HASH_MAXSIZE);
+    char *hash_hex = (char *)malloc(size * 2 + 1);
 
-	if ( st_bcrypt_crypt(AuthKeyHEX, hash, BCRYPT_HASH_MAXSIZE, 4) ) {
+    st_str2hex(hash_hex, hash, strnlen(hash, BCRYPT_HASH_MAXSIZE));
+    hash_hex[size * 2] = 0;
 
-		int size = strnlen(hash, BCRYPT_HASH_MAXSIZE);
-		char *hash_hex = (char*)malloc(size*2 + 1);
+    return hash_hex;
+  }
 
-		st_str2hex(hash_hex, hash, strnlen(hash, BCRYPT_HASH_MAXSIZE));
-		hash_hex[size*2] = 0;
-
-		return hash_hex;
-	}
-
-
-	return NULL;
+  return NULL;
 }
 
-
-
 #endif
-

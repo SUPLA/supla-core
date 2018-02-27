@@ -1,10 +1,12 @@
-/* inih -- simple .INI file parser
+/*
+Copyright (c) 2009, Ben Hoyt
+
+inih -- simple .INI file parser
 
 inih is released under the New BSD license (see LICENSE.txt). Go to the project
 home page for more info:
 
 http://code.google.com/p/inih/
-
 */
 
 #ifndef __INI_H__
@@ -30,8 +32,8 @@ extern "C" {
    stop on first error), or -1 on file open error.
 */
 int ini_parse(const char* filename,
-              int (*handler)(void* user, const char* section,
-                             const char* name, const char* value),
+              int (*handler)(void* user, const char* section, const char* name,
+                             const char* value),
               void* user);
 
 /* Same as ini_parse(), but takes a FILE* instead of filename. This doesn't

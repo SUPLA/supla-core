@@ -16,14 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #ifndef H_SAFEARRAY_TEST_H_
 #define H_SAFEARRAY_TEST_H_
 
 class SafeArrayTest {
-public:
-	virtual ~SafeArrayTest();
-	SafeArrayTest();
+ public:
+  virtual ~SafeArrayTest();
+  SafeArrayTest();
 };
 
 #endif /*H_SAFEARRAY_TEST_H_*/

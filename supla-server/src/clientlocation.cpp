@@ -16,226 +16,201 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "clientlocation.h"
-#include "lck.h"
-#include "safearray.h"
 #include "database.h"
-#include "srpc.h"
+#include "lck.h"
 #include "log.h"
+#include "safearray.h"
+#include "srpc.h"
 
 supla_client_location::supla_client_location(int Id, const char *Caption) {
+  this->Id = Id;
+  this->Caption = NULL;
 
-   this->Id = Id;
-   this->Caption = NULL;
-
-   if ( Caption ) {
-	   this->Caption = strdup(Caption);
-   }
-
-
+  if (Caption) {
+    this->Caption = strdup(Caption);
+  }
 }
 
 supla_client_location::~supla_client_location() {
-	if ( Caption ) {
-		free(Caption);
-	}
+  if (Caption) {
+    free(Caption);
+  }
 }
-
 
 void supla_client_location::proto_get_location(TSC_SuplaLocation *location) {
+  memset(location, 0, sizeof(TSC_SuplaLocation));
+  location->Id = Id;
 
-	memset(location, 0, sizeof(TSC_SuplaLocation));
-	location->Id = Id;
-
-	if ( Caption ) {
-		snprintf(location->Caption, SUPLA_LOCATION_CAPTION_MAXSIZE, "%s", Caption);
-		location->CaptionSize = strnlen(location->Caption, SUPLA_LOCATION_CAPTION_MAXSIZE-1)+1;
-	} else {
-		location->CaptionSize = 1;
-		location->Caption[0] = 0;
-	};
-
+  if (Caption) {
+    snprintf(location->Caption, SUPLA_LOCATION_CAPTION_MAXSIZE, "%s", Caption);
+    location->CaptionSize =
+        strnlen(location->Caption, SUPLA_LOCATION_CAPTION_MAXSIZE - 1) + 1;
+  } else {
+    location->CaptionSize = 1;
+    location->Caption[0] = 0;
+  }
 }
 
-int supla_client_location::getId(void) {
-	return Id;
-}
+int supla_client_location::getId(void) { return Id; }
 // ------------------------------------------------------------
 
 char supla_client_locations::arr_findcmp(void *ptr, void *id) {
-	return ((supla_client_location*)ptr)->getId() == *((int*)id) ? 1 : 0;
+  return ((supla_client_location *)ptr)->getId() == *((int *)id) ? 1
+                                                                 : 0;
 }
 
 char supla_client_locations::arr_delcnd(void *ptr) {
-
-	delete (supla_client_location*)ptr;
-	return 1;
+  delete (supla_client_location *)ptr;
+  return 1;
 }
 
 supla_client_locations::supla_client_locations() {
+  this->arr = safe_array_init();
 
-   this->arr = safe_array_init();
-
-   this->lck = lck_init();
-   ids = NULL;
-   ids_count = 0;
+  this->lck = lck_init();
+  ids = NULL;
+  ids_count = 0;
 }
 
 supla_client_locations::~supla_client_locations() {
-
-	ids_clean();
-	arr_clean();
-	safe_array_free(arr);
-	lck_free(this->lck);
-
+  ids_clean();
+  arr_clean();
+  safe_array_free(arr);
+  lck_free(this->lck);
 }
 
 void supla_client_locations::ids_clean(void) {
-	lck_lock(lck);
+  lck_lock(lck);
 
-	if ( ids )
-		free(ids);
+  if (ids) free(ids);
 
-	ids_count = 0;
+  ids_count = 0;
 
-	lck_unlock(lck);
+  lck_unlock(lck);
 }
 
 void supla_client_locations::arr_clean(void) {
-
-	safe_array_lock(arr);
-	safe_array_clean(arr, arr_delcnd);
-	safe_array_unlock(arr);
-
+  safe_array_lock(arr);
+  safe_array_clean(arr, arr_delcnd);
+  safe_array_unlock(arr);
 }
 
 int supla_client_locations::count() {
-	int result = 0;
+  int result = 0;
 
-	lck_lock(lck);
-	result = ids_count;
-	lck_unlock(lck);
+  lck_lock(lck);
+  result = ids_count;
+  lck_unlock(lck);
 
-	return result;
+  return result;
 }
 
 void supla_client_locations::add_location(int Id, const char *Caption) {
-	safe_array_lock(arr);
+  safe_array_lock(arr);
 
-	if ( safe_array_findcnd(arr, arr_findcmp, &Id) == 0 ) {
+  if (safe_array_findcnd(arr, arr_findcmp, &Id) == 0) {
+    supla_client_location *l = new supla_client_location(Id, Caption);
 
-		supla_client_location *l = new supla_client_location(Id, Caption);
+    if (l != NULL && safe_array_add(arr, l) == -1) {
+      delete l;
+      l = NULL;
+    }
+  }
 
-		if ( l != NULL && safe_array_add(arr, l) == -1 ) {
-			delete l;
-			l=NULL;
-		}
-	}
-
-	safe_array_unlock(arr);
+  safe_array_unlock(arr);
 }
 
-
 void supla_client_locations::load(int ClientID) {
+  database *db = new database();
+  int a, n;
 
-	database *db = new database();
-	int a, n;
+  if (db->connect() == true) {
+    safe_array_lock(arr);
+    arr_clean();
 
-	if ( db->connect() == true ) {
+    db->get_client_locations(ClientID, this);
 
-		safe_array_lock(arr);
-		arr_clean();
+    lck_lock(lck);
+    ids_clean();
 
-		db->get_client_locations(ClientID, this);
+    n = safe_array_count(arr);
 
-		lck_lock(lck);
-		ids_clean();
+    if (n > 0) {
+      ids = (int *)malloc(sizeof(int) * n);
+    }
 
-		n = safe_array_count(arr);
+    if (ids) {
+      for (a = 0; a < n; a++) {
+        supla_client_location *loc =
+            (supla_client_location *)safe_array_get(arr, a);
+        if (loc != NULL) {
+          ids[ids_count] = loc->getId();
+          ids_count++;
+        }
+      }
+    }
 
-		if ( n > 0 ) {
-			ids = (int*)malloc(sizeof(int)*n);
-		}
+    lck_unlock(lck);
 
-		if ( ids )
-			for(a=0;a<n;a++) {
-				supla_client_location *loc = (supla_client_location *)safe_array_get(arr, a);
-				if ( loc != NULL ) {
-					ids[ids_count] = loc->getId();
-					ids_count++;
-				}
-			}
+    safe_array_unlock(arr);
+  }
 
-		lck_unlock(lck);
-
-		safe_array_unlock(arr);
-
-	}
-
-	delete db;
-
+  delete db;
 }
 
 bool supla_client_locations::remote_update(void *srpc) {
+  TSC_SuplaLocationPack location_pack;
+  memset(&location_pack, 0, sizeof(TSC_SuplaLocationPack));
 
+  safe_array_lock(arr);
 
-	TSC_SuplaLocationPack location_pack;
-	memset(&location_pack, 0, sizeof(TSC_SuplaLocationPack));
+  supla_client_location *loc = NULL;
 
-	safe_array_lock(arr);
+  do {
+    loc = (supla_client_location *)safe_array_pop(arr);
 
-	supla_client_location *loc = NULL;
+    if (loc && location_pack.count < SUPLA_LOCATIONPACK_MAXCOUNT) {
+      loc->proto_get_location(&location_pack.locations[location_pack.count]);
+      location_pack.locations[location_pack.count].EOL = 0;
+      location_pack.count++;
 
-	do {
+      delete loc;
 
-		loc = (supla_client_location *)safe_array_pop(arr);
+      if (location_pack.count >= SUPLA_LOCATIONPACK_MAXCOUNT) {
+        loc = NULL;
+      }
 
-		if ( loc && location_pack.count < SUPLA_LOCATIONPACK_MAXCOUNT ) {
-			loc->proto_get_location(&location_pack.locations[location_pack.count]);
-			location_pack.locations[location_pack.count].EOL = 0;
-			location_pack.count++;
+    } else {
+      loc = NULL;
+    }
+  } while (loc != NULL);
 
-			delete loc;
+  safe_array_unlock(arr);
 
-			if ( location_pack.count >= SUPLA_LOCATIONPACK_MAXCOUNT ) {
-				loc = NULL;
-			}
+  if (location_pack.count > 0) {
+    location_pack.locations[location_pack.count - 1].EOL = 1;
 
-		} else {
-			loc = NULL;
-		}
+    srpc_sc_async_locationpack_update(srpc, &location_pack);
+    return true;
+  }
 
-	} while(loc != NULL);
-
-
-	safe_array_unlock(arr);
-
-	if ( location_pack.count > 0 ) {
-
-		location_pack.locations[location_pack.count-1].EOL = 1;
-
-		srpc_sc_async_locationpack_update(srpc, &location_pack);
-		return true;
-	}
-
-
-	return false;
+  return false;
 }
 
 bool supla_client_locations::location_exists(int Id) {
+  bool result = false;
 
-	bool result = false;
+  lck_lock(lck);
+  for (int a = 0; a < ids_count; a++)
+    if (ids[a] == Id) {
+      result = true;
+      break;
+    }
+  lck_unlock(lck);
 
-	lck_lock(lck);
-	for(int a=0;a<ids_count;a++)
-		if ( ids[a] == Id ) {
-			result = true;
-			break;
-		}
-	lck_unlock(lck);
-
-	return result;
+  return result;
 }

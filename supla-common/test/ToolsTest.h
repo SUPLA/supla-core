@@ -16,14 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #ifndef H_TOOLS_TEST_H_
 #define H_TOOLS_TEST_H_
 
 class ToolsTest {
-public:
-	virtual ~ToolsTest();
-	ToolsTest();
+ public:
+  virtual ~ToolsTest();
+  ToolsTest();
 };
 
 #endif /*H_TOOLS_TEST_H_*/

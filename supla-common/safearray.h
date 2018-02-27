@@ -34,11 +34,12 @@ int safe_array_add(void *arr, void *ptr);
 void safe_array_delete(void *arr, int idx);
 void safe_array_remove(void *arr, void *ptr);
 int safe_array_find(void *arr, void *ptr);
-void* safe_array_get(void *arr, int idx);
-void* safe_array_pop(void *arr);
+void *safe_array_get(void *arr, int idx);
+void *safe_array_pop(void *arr);
 void safe_array_free(void *arr);
 void safe_array_clean(void *arr, _func_sa_cnd del_cnd);
-void* safe_array_findcnd(void *arr, _func_sa_cnd_param find_cnd, void *user_param);
+void *safe_array_findcnd(void *arr, _func_sa_cnd_param find_cnd,
+                         void *user_param);
 
 #ifdef __cplusplus
 }

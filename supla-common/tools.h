@@ -19,6 +19,7 @@
 #ifndef suplatools_H_
 #define suplatools_H_
 
+#include <stdlib.h>
 #include "proto.h"
 
 #ifdef __cplusplus
@@ -39,8 +40,10 @@ void st_mainloop_init();
 void st_mainloop_wait(int usec);
 void st_mainloop_free();
 
-void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE], const char GUID[SUPLA_GUID_SIZE]);
-void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE], const char AuthKey[SUPLA_AUTHKEY_SIZE]);
+void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE],
+                 const char GUID[SUPLA_GUID_SIZE]);
+void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE],
+                    const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 
 char *st_str2hex(char *buffer, const char *str, size_t maxlen);
 char *st_bin2hex(char *buffer, const char *src, size_t len);
@@ -52,7 +55,6 @@ char st_read_authkey_from_file(char *file, char *AuthKey, char create);
 time_t st_get_utc_time(void);
 
 char *st_get_datetime_str(char buffer[64]);
-
 
 #ifdef __BCRYPT
 

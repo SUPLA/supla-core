@@ -22,25 +22,22 @@
 #include "database.h"
 
 #define TEMPLOG_INTERVAL 600
-//#define TEMPLOG_INTERVAL 6
-
+// #define TEMPLOG_INTERVAL 6
 
 class supla_datalogger {
-private:
+ private:
+  database *db;
+  struct timeval now;
+  struct timeval temperature_tv;
 
-	database *db;
-	struct timeval now;
-	struct timeval temperature_tv;
+  void log_temperature();
+  bool dbinit(void);
 
-	void log_temperature();
-	bool dbinit(void);
-
-public:
-	supla_datalogger();
-	void log(void);
+ public:
+  supla_datalogger();
+  void log(void);
 };
 
 void datalogger_loop(void *ssd, void *dl_sthread);
-
 
 #endif /* DATALOGGER_H_ */

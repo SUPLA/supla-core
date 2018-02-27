@@ -1,4 +1,6 @@
 /*
+ Copyright (C) AC SOFTWARE SP. Z O.O.
+
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
  as published by the Free Software Foundation; either version 2
@@ -14,164 +16,145 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/un.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "ipcsocket.h"
 #include <assert.h>
 #include <errno.h>
-
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <time.h>
+#include <unistd.h>
 #include "log.h"
 #include "tools.h"
-#include "ipcsocket.h"
-
 
 typedef struct {
-
-	int sfd;
-	struct sockaddr_un saun, fsaun;
-
-}TSuplaIPC_socket;
+  int sfd;
+  struct sockaddr_un saun, fsaun;
+} TSuplaIPC_socket;
 
 char *ipc_sauth_key = NULL;
 int ipc_shmid = -1;
 
 void ipcsauth_create_key(const char *address) {
+  int a;
+  key_t key;
+  key = ftok(address, 'S');
 
-	int  a;
-	key_t key;
-	key = ftok(address, 'S');
+  ipc_sauth_key = NULL;
 
-	ipc_sauth_key = NULL;
+  if ((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, IPC_CREAT | 0600)) == -1)
+    return;
 
-	if((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, IPC_CREAT|0600)) == -1)
-		return;
+  if ((ipc_sauth_key = (char *)shmat(ipc_shmid, 0, 0)) == (char *)-1)
+    ipc_sauth_key = NULL;
 
-	if ( (ipc_sauth_key = (char *)shmat(ipc_shmid, 0, 0)) == (char*)-1 )
-		ipc_sauth_key = NULL;
+  if (ipc_sauth_key != NULL) {
+    unsigned int seed = time(NULL);
 
-	if ( ipc_sauth_key != NULL ) {
+    for (a = 0; a < IPC_SAUTH_KEY_SIZE; a++) {
+      ipc_sauth_key[a] = (unsigned char)rand_r(&seed);
 
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		srand(tv.tv_usec);
-
-		for(a=0;a<IPC_SAUTH_KEY_SIZE;a++) {
-			ipc_sauth_key[a] = (unsigned char)(rand());
-
-			if ( ipc_sauth_key[a] == 0 || ipc_sauth_key[a] == '\n' )
-				ipc_sauth_key[a] = 1;
-		}
-
-	}
-
-
+      if (ipc_sauth_key[a] == 0 || ipc_sauth_key[a] == '\n')
+        ipc_sauth_key[a] = 1;
+    }
+  }
 }
 
 void *ipcsocket_init(const char *address) {
+  int sfd;
+  TSuplaIPC_socket *ipc;
 
-	int sfd;
-	TSuplaIPC_socket *ipc;
+  if (address == 0 || strnlen(address, 110) == 0) {
+    supla_log(LOG_ERR, "IPC unknown address");
+    return 0;
+  }
 
-	if ( address == 0 || strnlen(address, 110) == 0 ) {
-		supla_log(LOG_ERR, "IPC unknown address");
-	    return 0;
-	}
+  if (strnlen(address, 110) > 107) {
+    supla_log(LOG_ERR, "IPC address too long");
+    return 0;
+  }
 
-	if ( strnlen(address, 110) > 107 ) {
-		supla_log(LOG_ERR, "IPC address too long");
-	    return 0;
-	}
+  if ((sfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
+    supla_log(LOG_ERR, "Can't create ipc socket");
+    return 0;
+  }
 
-	if ( ( sfd = socket(AF_UNIX, SOCK_STREAM, 0) ) < 0 ) {
-		supla_log(LOG_ERR, "Can't create ipc socket");
-	    return 0;
-	}
+  if (st_file_exists(address)) unlink(address);
 
+  ipc = malloc(sizeof(TSuplaIPC_socket));
 
-	if ( st_file_exists(address) )
-		unlink(address);
+  if (ipc == NULL) {
+    close(sfd);
+    return 0;
+  }
 
-	ipc = malloc(sizeof(TSuplaIPC_socket));
+  memset(ipc, 0, sizeof(TSuplaIPC_socket));
+  ipc->sfd = -1;
 
-	if ( ipc == NULL ) {
+  ipc->saun.sun_family = AF_UNIX;
+  snprintf(ipc->saun.sun_path, sizeof(ipc->saun.sun_path), "%s", address);
 
-		close(sfd);
-	    return 0;
-	}
+  if (bind(sfd, (struct sockaddr *)&ipc->saun, sizeof(ipc->saun)) == -1) {
+    free(ipc);
+    close(sfd);
+    supla_log(LOG_ERR, "Can't bind ipc socket");
+    return 0;
+  }
 
-	memset(ipc, 0, sizeof(TSuplaIPC_socket));
-	ipc->sfd = -1;
+  if (listen(sfd, 5) == -1) {
+    free(ipc);
+    close(sfd);
+    supla_log(LOG_ERR, "IPC listen error");
+    return 0;
+  } else {
+    chmod(address, 0777);
+  }
 
-	ipc->saun.sun_family = AF_UNIX;
-	strcpy(ipc->saun.sun_path, address);
+  ipc->sfd = sfd;
 
-    if (bind(sfd, (struct sockaddr *)&ipc->saun, sizeof(ipc->saun)) == -1) {
-    	free(ipc);
-    	close(sfd);
-    	supla_log(LOG_ERR, "Can't bind ipc socket");
-    	return 0;
-    }
+  ipcsauth_create_key(address);
 
-	if ( listen(sfd, 5) == -1 ) {
-		free(ipc);
-		close(sfd);
-		supla_log(LOG_ERR, "IPC listen error");
-	    return 0;
-	} else {
-		chmod(address, 0777);
-	}
-
-    ipc->sfd = sfd;
-
-    ipcsauth_create_key(address);
-
-	return ipc;
+  return ipc;
 }
 
 int ipcsocket_accept(void *_ipc) {
-	assert(_ipc != 0);
+  assert(_ipc != 0);
 
-	socklen_t fromlen = 0;
-	TSuplaIPC_socket *ipc = (TSuplaIPC_socket *)_ipc;
-	int client_sd = accept(ipc->sfd, (struct sockaddr *)&ipc->fsaun, &fromlen);
+  socklen_t fromlen = 0;
+  TSuplaIPC_socket *ipc = (TSuplaIPC_socket *)_ipc;
+  int client_sd = accept(ipc->sfd, (struct sockaddr *)&ipc->fsaun, &fromlen);
 
-	if ( client_sd == -1 ) {
-		supla_log(LOG_ERR, "IPC connection accept error %i", errno);
-	} else {
-		fcntl(client_sd, F_SETFL, O_NONBLOCK);
-	}
+  if (client_sd == -1) {
+    supla_log(LOG_ERR, "IPC connection accept error %i", errno);
+  } else {
+    fcntl(client_sd, F_SETFL, O_NONBLOCK);
+  }
 
-
-	return client_sd;
+  return client_sd;
 }
 
 void ipcsocket_close(void *_ipc) {
+  TSuplaIPC_socket *ipc = (TSuplaIPC_socket *)_ipc;
 
-	TSuplaIPC_socket *ipc = (TSuplaIPC_socket *)_ipc;
+  assert(_ipc != 0);
 
-	assert(_ipc != 0);
+  if (ipc->sfd != -1) {
+    close(ipc->sfd);
+    ipc->sfd = -1;
 
-    if ( ipc->sfd != -1 ) {
-    	 close(ipc->sfd);
-    	 ipc->sfd = -1;
-
-    	 if ( st_file_exists(ipc->saun.sun_path) )
-    		 unlink(ipc->saun.sun_path);
-    }
-
+    if (st_file_exists(ipc->saun.sun_path)) unlink(ipc->saun.sun_path);
+  }
 }
 
 void ipcsocket_free(void *_ipc) {
+  assert(_ipc != 0);
 
-	assert(_ipc != 0);
-
-	ipcsocket_close(_ipc);
-    free(_ipc);
-
+  ipcsocket_close(_ipc);
+  free(_ipc);
 }

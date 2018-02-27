@@ -24,46 +24,42 @@
 
 class supla_user;
 class cdcommon {
+ private:
+  struct timeval last_activity_time;
+  char GUID[SUPLA_GUID_SIZE];
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+  serverconnection *svrconn;
+  int ID;
+  supla_user *user;
 
-private:
-	struct timeval last_activity_time;
-	char GUID[SUPLA_GUID_SIZE];
-	char AuthKey[SUPLA_AUTHKEY_SIZE];
-	serverconnection *svrconn;
-	int ID;
-	supla_user *user;
+ protected:
+  void *lck;
 
-protected:
+  // Thread safe start
+  bool setGUID(char GUID[SUPLA_GUID_SIZE]);
+  bool setAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]);
+  void setID(int ID);
+  void setUser(supla_user *user);
+  // Thread safe end
 
-    void *lck;
+  serverconnection *getSvrConn(void);
 
+ public:
+  explicit cdcommon(serverconnection *svrconn);
+  virtual ~cdcommon();
 
-    // Thread safe start
-    bool setGUID(char GUID[SUPLA_GUID_SIZE]);
-    bool setAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]);
-    void setID(int ID);
-    void setUser(supla_user *user);
-    // Thread safe end
-
-    serverconnection *getSvrConn(void);
-
-public:
-	cdcommon(serverconnection *svrconn);
-	virtual ~cdcommon();
-
-
-    // Thread safe start
-	void terminate(void);
-    void getGUID(char GUID[SUPLA_GUID_SIZE]);
-    void getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
-    int getID(void);
-    int getUserID(void);
-    supla_user *getUser(void);
-    bool cmpGUID(const char GUID1[SUPLA_GUID_SIZE]);
-    void updateLastActivity(void);
-    int getActivityDelay(void);
-    unsigned char getProtocolVersion(void);
-    // Thread safe end
+  // Thread safe start
+  void terminate(void);
+  void getGUID(char GUID[SUPLA_GUID_SIZE]);
+  void getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
+  int getID(void);
+  int getUserID(void);
+  supla_user *getUser(void);
+  bool cmpGUID(const char GUID1[SUPLA_GUID_SIZE]);
+  void updateLastActivity(void);
+  int getActivityDelay(void);
+  unsigned char getProtocolVersion(void);
+  // Thread safe end
 };
 
 #endif /* CDCOMMON_H_ */

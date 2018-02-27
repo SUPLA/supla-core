@@ -16,180 +16,166 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
-#include "supla-socket.h"
-#include "ipcsocket.h"
-#include "srpc.h"
-#include "svrcfg.h"
-#include "log.h"
-#include "tools.h"
-#include "proto.h"
-#include "sthread.h"
 #include "accept_loop.h"
 #include "database.h"
-#include "user.h"
 #include "datalogger.h"
+#include "ipcsocket.h"
+#include "log.h"
+#include "proto.h"
+#include "srpc.h"
+#include "sthread.h"
+#include "supla-socket.h"
+#include "svrcfg.h"
+#include "tools.h"
+#include "user.h"
 
+int main(int argc, char *argv[]) {
+  void *ssd_ssl = NULL;
+  void *ssd_tcp = NULL;
+  void *ipc = NULL;
+  void *tcp_accept_loop_t = NULL;
+  void *ssl_accept_loop_t = NULL;
+  void *ipc_accept_loop_t = NULL;
+  void *datalogger_loop_t = NULL;
 
-int main(int argc, char* argv[]) {
+  // INIT BLOCK
+  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
+  {
+    char dt[64];
 
-	void *ssd_ssl = NULL;
-	void *ssd_tcp = NULL;
-	void* ipc = NULL;
-	void *tcp_accept_loop_t = NULL;
-	void *ssl_accept_loop_t = NULL;
-	void *ipc_accept_loop_t = NULL;
-	void *datalogger_loop_t = NULL;
+    supla_log(LOG_INFO, "Server version %s [Protocol v%i]", SERVER_VERSION,
+              SUPLA_PROTO_VERSION);
+    supla_log(LOG_INFO, "Started at %s", st_get_datetime_str(dt));
+  }
 
+  if (run_as_daemon && 0 == st_try_fork()) {
+    goto exit_fail;
+  }
 
-	//INIT BLOCK
-	if ( svrcfg_init(argc, argv) == 0 )
-		return EXIT_FAILURE;
+  {
+    struct rlimit limit;
 
-	{
-		char dt[64];
+    limit.rlim_cur = 10240;
+    limit.rlim_max = 10240;
+    setrlimit(RLIMIT_NOFILE, &limit);
+  }
 
-		supla_log(LOG_INFO, "Server version %s [Protocol v%i]", SERVER_VERSION, SUPLA_PROTO_VERSION);
-		supla_log(LOG_INFO, "Started at %s", st_get_datetime_str(dt));
-	}
+  if (database::mainthread_init() == false) {
+    goto exit_fail;
+  }
 
-	if ( run_as_daemon
-		 && 0 == st_try_fork() ) {
-		goto exit_fail;
-	}
+  {
+    database *db = new database();
+    if (!db->check_db_version("20180224184251")) {
+      delete db;
+      goto exit_fail;
+    } else {
+      delete db;
+    }
+  }
 
-	{
-		struct rlimit limit;
+#ifdef __OPEN_SSL
+  if (scfg_bool(CFG_SSL_ENABLED) == 1) {
+    if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
+                                            scfg_string(CFG_SSL_KEY),
+                                            scfg_int(CFG_SSL_PORT), 1)) ||
+        0 == ssocket_openlistener(ssd_ssl)) {
+      goto exit_fail;
+    }
+  }
+#endif
 
-		limit.rlim_cur = 10240;
-		limit.rlim_max = 10240;
-		setrlimit(RLIMIT_NOFILE, &limit);
+  if (scfg_bool(CFG_TCP_ENABLED) == 1) {
+    if (0 == (ssd_tcp =
+                  ssocket_server_init("", "", scfg_int(CFG_TCP_PORT), 0)) ||
+        0 == ssocket_openlistener(ssd_tcp)) {
+      goto exit_fail;
+    }
+  }
 
-	}
+  if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
+    goto exit_fail;
+  }
 
-	if ( database::mainthread_init() == false  ) {
-		goto exit_fail;
-	}
+  supla_user::init();
 
-	{
-		database *db = new database();
-		if (!db->check_db_version("20180208145738")) {
-			delete db;
-			goto exit_fail;
-		} else {
-			delete db;
-		}
+  st_setpidfile(pidfile_path);
+  st_mainloop_init();
+  st_hook_signals();
+  ipc = ipcsocket_init("/tmp/supla-server-ctrl.sock");
 
-	}
+  // INI ACCEPT LOOP
 
-    #ifdef __OPEN_SSL
-	if ( scfg_bool(CFG_SSL_ENABLED) == 1 ) {
+  if (ssd_ssl != NULL)
+    ssl_accept_loop_t = sthread_simple_run(accept_loop, ssd_ssl, 0);
 
-		if ( 0 == ( ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
-                scfg_string(CFG_SSL_KEY),
-                scfg_int(CFG_SSL_PORT),
-                1) )
-			 || 0 == ssocket_openlistener(ssd_ssl) ) {
-			goto exit_fail;
-		}
+  if (ssd_tcp != NULL)
+    tcp_accept_loop_t = sthread_simple_run(accept_loop, ssd_tcp, 0);
 
-	}
-    #endif
+  if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
 
-	if ( scfg_bool(CFG_TCP_ENABLED) == 1 ) {
+  // DATA LOGGER
+  datalogger_loop_t = sthread_simple_run(datalogger_loop, NULL, 0);
 
-		if ( 0 == ( ssd_tcp = ssocket_server_init("", "",
-                scfg_int(CFG_TCP_PORT), 0) )
-			 || 0 == ssocket_openlistener(ssd_tcp) ) {
-			goto exit_fail;
-		}
+  // MAIN LOOP
 
-	}
+  while (st_app_terminate == 0) {
+    st_mainloop_wait(1000000);
+  }
 
-	if ( 0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID)) ) {
-		goto exit_fail;
-	}
+  supla_log(LOG_INFO, "Shutting down...");
 
+  // RELEASE BLOCK
 
-	supla_user::init();
+  if (ipc != NULL) {
+    ipcsocket_close(ipc);
+    sthread_twf(ipc_accept_loop_t);  // ! after ipcsocket_close and before
+                                     // ipcsocket_free !
+    ipcsocket_free(ipc);
+  }
 
-	st_setpidfile(pidfile_path);
-	st_mainloop_init();
-	st_hook_signals();
-	ipc = ipcsocket_init("/tmp/supla-server-ctrl.sock");
+  if (ssd_ssl != NULL) {
+    ssocket_close(ssd_ssl);
+    sthread_twf(
+        ssl_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
+    ssocket_free(ssd_ssl);
+  }
 
-	// INI ACCEPT LOOP
+  if (ssd_tcp != NULL) {
+    ssocket_close(ssd_tcp);
+    sthread_twf(
+        tcp_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
+    ssocket_free(ssd_tcp);
+  }
 
-	if ( ssd_ssl != NULL )
-		ssl_accept_loop_t = sthread_simple_run(accept_loop, ssd_ssl, 0);
+  sthread_twf(datalogger_loop_t);
 
-	if ( ssd_tcp != NULL )
-		tcp_accept_loop_t = sthread_simple_run(accept_loop, ssd_tcp, 0);
+  st_mainloop_free();
+  st_delpidfile(pidfile_path);
 
-	if ( ipc )
-		ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
+  supla_user::free();
+  database::mainthread_end();
 
-	// DATA LOGGER
-	datalogger_loop_t = sthread_simple_run(datalogger_loop, NULL, 0);
+  scfg_free();
 
+  {
+    char dt[64];
+    supla_log(LOG_INFO, "Stopped at %s", st_get_datetime_str(dt));
+  }
 
-	// MAIN LOOP
-
-	while(st_app_terminate == 0) {
-		st_mainloop_wait(1000000);
-	}
-
-	supla_log(LOG_INFO, "Shutting down...");
-
-	// RELEASE BLOCK
-
-	if ( ipc != NULL ) {
-		ipcsocket_close(ipc);
-		sthread_twf(ipc_accept_loop_t);  // ! after ipcsocket_close and before ipcsocket_free !
-		ipcsocket_free(ipc);
-	}
-
-	if ( ssd_ssl != NULL ) {
-		ssocket_close(ssd_ssl);
-		sthread_twf(ssl_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
-		ssocket_free(ssd_ssl);
-	}
-
-	if ( ssd_tcp != NULL ) {
-		ssocket_close(ssd_tcp);
-		sthread_twf(tcp_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
-		ssocket_free(ssd_tcp);
-	}
-
-	sthread_twf(datalogger_loop_t);
-
-	st_mainloop_free();
-	st_delpidfile(pidfile_path);
-
-	supla_user::free();
-	database::mainthread_end();
-
-	scfg_free();
-
-	{
-		char dt[64];
-		supla_log(LOG_INFO, "Stopped at %s", st_get_datetime_str(dt));
-	}
-
-	return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 
 exit_fail:
 
-    ssocket_free(ssd_ssl);
-    ssocket_free(ssd_tcp);
-    scfg_free();
-    exit(EXIT_FAILURE);
-
+  ssocket_free(ssd_ssl);
+  ssocket_free(ssd_tcp);
+  scfg_free();
+  exit(EXIT_FAILURE);
 }

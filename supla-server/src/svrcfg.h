@@ -27,25 +27,24 @@ extern "C" {
 
 #define SERVER_VERSION "1.8.8"
 
-#define CFG_UID           0
-#define CFG_GID           1
+#define CFG_UID 0
+#define CFG_GID 1
 
-#define CFG_TCP_PORT      2
-#define CFG_TCP_ENABLED   3
+#define CFG_TCP_PORT 2
+#define CFG_TCP_ENABLED 3
 
-#define CFG_SSL_PORT      4
-#define CFG_SSL_ENABLED   5
-#define CFG_SSL_CERT      6
-#define CFG_SSL_KEY       7
+#define CFG_SSL_PORT 4
+#define CFG_SSL_ENABLED 5
+#define CFG_SSL_CERT 6
+#define CFG_SSL_KEY 7
 
-#define CFG_MYSQL_HOST      8
-#define CFG_MYSQL_PORT      9
-#define CFG_MYSQL_DB        10
-#define CFG_MYSQL_USER      11
-#define CFG_MYSQL_PASSWORD  12
+#define CFG_MYSQL_HOST 8
+#define CFG_MYSQL_PORT 9
+#define CFG_MYSQL_DB 10
+#define CFG_MYSQL_USER 11
+#define CFG_MYSQL_PASSWORD 12
 
 unsigned char svrcfg_init(int argc, char* argv[]);
-
 
 #ifdef __cplusplus
 }

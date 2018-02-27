@@ -16,73 +16,63 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "gtest/gtest.h"
 #include "SafeArrayTest.h"
-#include "../safearray.h"
+#include "../safearray.h" // NOLINT
+#include "gtest/gtest.h"
 
 char safe_array_test_find_cnd(void *ptr, void *user_param) {
-	return ptr == user_param ? 1 : 0;
+  return ptr == user_param ? 1 : 0;
 }
 
-char safe_array_test_del_cnd1(void *ptr) {
-	return 0;
-}
+char safe_array_test_del_cnd1(void *ptr) { return 0; }
 
-char safe_array_test_del_cnd2(void *ptr) {
-	return 1;
-}
+char safe_array_test_del_cnd2(void *ptr) { return 1; }
 
 namespace {
 
-	class SafeArrayTest : public ::testing::Test {
-	protected:
-	};
+class SafeArrayTest : public ::testing::Test {
+ protected:
+};
 
-	TEST_F(SafeArrayTest, all) {
+TEST_F(SafeArrayTest, all) {
+  void *arr = safe_array_init();
+  ASSERT_FALSE(arr == NULL);
 
-		void *arr = safe_array_init();
-		ASSERT_FALSE(arr == NULL);
+  ASSERT_EQ(0, safe_array_add(arr, (void *)10));
+  ASSERT_EQ(1, safe_array_add(arr, (void *)20));
+  ASSERT_EQ(2, safe_array_add(arr, (void *)30));
+  ASSERT_EQ(3, safe_array_add(arr, (void *)40));
 
-		EXPECT_EQ(0, safe_array_add(arr, (void*)10));
-		EXPECT_EQ(1, safe_array_add(arr, (void*)20));
-		EXPECT_EQ(2, safe_array_add(arr, (void*)30));
-		EXPECT_EQ(3, safe_array_add(arr, (void*)40));
+  ASSERT_EQ(4, safe_array_count(arr));
 
-		EXPECT_EQ(4, safe_array_count(arr));
+  safe_array_delete(arr, 1);
+  ASSERT_EQ(3, safe_array_count(arr));
 
-		safe_array_delete(arr, 1);
-		EXPECT_EQ(3, safe_array_count(arr));
+  safe_array_remove(arr, (void *)20);
+  ASSERT_EQ(3, safe_array_count(arr));
 
-		safe_array_remove(arr, (void*)20);
-		EXPECT_EQ(3, safe_array_count(arr));
+  safe_array_remove(arr, (void *)30);
+  ASSERT_EQ(2, safe_array_count(arr));
 
-		safe_array_remove(arr, (void*)30);
-		EXPECT_EQ(2, safe_array_count(arr));
+  ASSERT_EQ(1, safe_array_find(arr, (void *)40));
 
-		EXPECT_EQ(1, safe_array_find(arr, (void*)40));
+  ASSERT_TRUE((void *)10 == safe_array_get(arr, 0));
 
-		ASSERT_TRUE((void*)10 == safe_array_get(arr, 0));
+  ASSERT_EQ(2, safe_array_add(arr, (void *)50));
+  ASSERT_EQ(3, safe_array_add(arr, (void *)60));
+  ASSERT_EQ(4, safe_array_add(arr, (void *)70));
 
-		EXPECT_EQ(2, safe_array_add(arr, (void*)50));
-		EXPECT_EQ(3, safe_array_add(arr, (void*)60));
-		EXPECT_EQ(4, safe_array_add(arr, (void*)70));
+  ASSERT_TRUE((void *)10 == safe_array_pop(arr));
+  ASSERT_TRUE((void *)40 == safe_array_pop(arr));
+  ASSERT_TRUE(safe_array_findcnd(arr, &safe_array_test_find_cnd, (void *)60));
+  ASSERT_FALSE(safe_array_findcnd(arr, &safe_array_test_find_cnd, (void *)100));
 
-		ASSERT_TRUE((void*)10 == safe_array_pop(arr));
-		ASSERT_TRUE((void*)40 == safe_array_pop(arr));
-		ASSERT_TRUE(safe_array_findcnd(arr, &safe_array_test_find_cnd, (void*)60));
-		ASSERT_FALSE(safe_array_findcnd(arr, &safe_array_test_find_cnd, (void*)100));
+  safe_array_clean(arr, &safe_array_test_del_cnd1);
+  ASSERT_EQ(3, safe_array_count(arr));
 
-		safe_array_clean(arr, &safe_array_test_del_cnd1);
-		EXPECT_EQ(3, safe_array_count(arr));
+  safe_array_clean(arr, &safe_array_test_del_cnd2);
+  ASSERT_EQ(0, safe_array_count(arr));
 
-		safe_array_clean(arr, &safe_array_test_del_cnd2);
-		EXPECT_EQ(0, safe_array_count(arr));
-
-		safe_array_free(arr);
-
-
-
-	}
+  safe_array_free(arr);
 }
-
-
+}  // namespace
