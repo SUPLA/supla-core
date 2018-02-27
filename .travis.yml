@@ -11,8 +11,8 @@ matrix:
         - pip install cpplint
 
       script:
-        - ./tools/lint.sh "./supla-server/src/*"
-        - ./tools/lint.sh "./supla-server/src/test/*"
+        - cpplint ./supla-server/src/*
+        - cpplint ./supla-server/src/test/*
 
     - language: cpp
       sudo: false
