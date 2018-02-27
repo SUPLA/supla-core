@@ -1,25 +1,32 @@
-sudo: false
-language:  cpp
-os: linux
-
 notifications:
   slack:
     rooms:
       - supla:dauFpwhgEGeyy9ERzqOYeJyY#github
 
-compiler:
-  - gcc
+matrix:
+  include:
+    - language: python
+      python: 2.7
+      install:
+        - pip install cpplint
 
-script: 
-  - ./tools/lint.sh "./supla-server/src/*"
-  - ./tools/lint.sh "./supla-server/src/test/*"
-  - cd supla-server/Test
-  - make clean && make all
-  - ./supla-server
-  - cd ../Release
-  - make clean && make all 
-  - cd ../../supla-scheduler/Test
-  - make clean && make all
-  - ./supla-scheduler
-  - cd ../Release
-  - make clean && make all
+      script:
+        - ./tools/lint.sh "./supla-server/src/*"
+        - ./tools/lint.sh "./supla-server/src/test/*"
+
+    - language: cpp
+      sudo: false
+      os: linux
+      compiler: gcc
+      script:
+        - cd supla-server/Test
+        - make clean && make all
+        - ./supla-server
+        - cd ../Release
+        - make clean && make all 
+        - cd ../../supla-scheduler/Test
+        - make clean && make all
+        - ./supla-scheduler
+        - cd ../Release
+        - make clean && make all
+
