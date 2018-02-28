@@ -26,6 +26,15 @@
 #include "safearray.h"
 #include "srpc.h"
 
+channel_address::channel_address(int DeviceId, int ChannelId) {
+  this->DeviceId = DeviceId;
+  this->ChannelId = ChannelId;
+}
+
+int channel_address::getDeviceId(void) { return this->DeviceId; }
+
+int channel_address::getChannelId(void) { return this->ChannelId; }
+
 char supla_channel_tarr_clean(void *ptr) {
   delete (supla_channel_temphum *)ptr;
   return 1;
@@ -352,7 +361,9 @@ unsigned int supla_device_channel::getValueDuration(void) {
   return 0;
 }
 
-int supla_device_channel::slave_channel(void) {
+std::list<int> supla_device_channel::slave_channel(void) {
+  std::list<int> result;
+
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -360,15 +371,27 @@ int supla_device_channel::slave_channel(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
 
-      return Param2;
+      // The order is important !!!
+      // 1st Param2
+      // 2nd Param3
+
+      if (Param2) {
+        result.push_back(Param2);
+      }
+
+      if (Param3) {
+        result.push_back(Param3);
+      }
 
       break;
   }
 
-  return 0;
+  return result;
 }
 
-int supla_device_channel::master_channel(void) {
+std::list<int> supla_device_channel::master_channel(void) {
+  std::list<int> result;
+
   switch (Func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -376,12 +399,18 @@ int supla_device_channel::master_channel(void) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
 
-      return Param1;
+      if (Param1) {
+        result.push_back(Param1);
+      }
+
+      if (Param2) {
+        result.push_back(Param2);
+      }
 
       break;
   }
 
-  return 0;
+  return result;
 }
 
 supla_channel_temphum *supla_device_channel::getTempHum(void) {
@@ -644,29 +673,27 @@ int supla_device_channels::get_channel_func(int ChannelID) {
   return Func;
 }
 
-int supla_device_channels::ms_channel(int ChannelID, bool Master) {
-  if (ChannelID == 0) return 0;
-
-  int SubChannelId = 0;
+std::list<int> supla_device_channels::ms_channel(int ChannelID, bool Master) {
+  std::list<int> result;
+  if (ChannelID == 0) return result;
 
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel)
-    SubChannelId =
-        Master ? channel->master_channel() : channel->slave_channel();
+    result = Master ? channel->master_channel() : channel->slave_channel();
 
   safe_array_unlock(arr);
 
-  return SubChannelId;
+  return result;
 }
 
-int supla_device_channels::master_channel(int ChannelID) {
+std::list<int> supla_device_channels::master_channel(int ChannelID) {
   return ms_channel(ChannelID, true);
 }
 
-int supla_device_channels::slave_channel(int ChannelID) {
+std::list<int> supla_device_channels::slave_channel(int ChannelID) {
   return ms_channel(ChannelID, false);
 }
 

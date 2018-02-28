@@ -352,11 +352,11 @@ bool supla_device::channel_exists(int ChannelID) {
   return channels->channel_exists(ChannelID);
 }
 
-int supla_device::master_channel(int ChannelID) {
+std::list<int> supla_device::master_channel(int ChannelID) {
   return channels->master_channel(ChannelID);
 }
 
-int supla_device::slave_channel(int ChannelID) {
+std::list<int> supla_device::slave_channel(int ChannelID) {
   return channels->slave_channel(ChannelID);
 }
 

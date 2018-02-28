@@ -18,6 +18,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <list>
 
 #include "client.h"
 #include "device.h"
@@ -190,6 +191,7 @@ supla_device *supla_user::find_device(int DeviceID) {
 }
 
 supla_device *supla_user::find_device_by_channelid(int ChannelID) {
+  if (ChannelID == 0) return NULL;
   return (supla_device *)safe_array_findcnd(
       device_arr, find_device_by_channelid, &ChannelID);
 }
@@ -408,6 +410,7 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
 
 supla_device *supla_user::device_by_channel_id(supla_device *suspect,
                                                int ChannelID) {
+  if (ChannelID == 0) return NULL;
   if (suspect != NULL && suspect->channel_exists(ChannelID)) return suspect;
 
   for (int a = 0; a < safe_array_count(device_arr); a++)
@@ -432,14 +435,33 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
     result = device->get_channel_value(ChannelID, value->value);
 
     if (result) {
-      int slave_channel_id = device->slave_channel(ChannelID);
+      std::list<int> slave_list = device->slave_channel(ChannelID);
 
-      if (slave_channel_id != 0) {
-        device = device_by_channel_id(device, slave_channel_id);
+      std::list<int>::iterator it = slave_list.begin();
 
+      if (slave_list.size() == 1) {
+        device = device_by_channel_id(device, *it);
         if (device) {
-          device->get_channel_value(slave_channel_id, value->sub_value);
+          device->get_channel_value(*it, value->sub_value);
         }
+      } else if (slave_list.size() > 1) {
+        // For more than one sub-channel
+        // copy only first byte of sub_value
+        // At this version only SENSORNO/SENSORNC are supported.
+        // See supla_device_channel::slave_channel
+        char sub_value[SUPLA_CHANNELVALUE_SIZE];
+        int n = 0;
+        do {
+          device = device_by_channel_id(device, *it);
+          if (device) {
+            device->get_channel_value(*it, sub_value);
+            value->sub_value[n] = sub_value[0];
+            n++;
+          }
+
+          it++;
+
+        } while (it != slave_list.end() && n < SUPLA_CHANNELVALUE_SIZE);
       }
     }
   }
@@ -554,22 +576,28 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
 }
 
 void supla_user::on_channel_value_changed(int DeviceId, int ChannelId) {
+  std::list<channel_address> ca_list;
+
   safe_array_lock(device_arr);
   {
     supla_device *device = find_device(DeviceId);
     if (device) {
-      int master_channel_id = device->master_channel(ChannelId);
-      if (master_channel_id != 0) {
-        device = find_device_by_channelid(master_channel_id);
+      std::list<int> master_list = device->master_channel(ChannelId);
+      for (std::list<int>::iterator it = master_list.begin();
+           it != master_list.end(); it++) {
+        device = find_device_by_channelid(*it);
 
         if (device) {
-          DeviceId = device->getID();
-          ChannelId = master_channel_id;
+          ca_list.push_back(channel_address(device->getID(), *it));
         }
       }
     }
   }
   safe_array_unlock(device_arr);
+
+  if (ca_list.empty()) {
+    ca_list.push_back(channel_address(DeviceId, ChannelId));
+  }
 
   safe_array_lock(client_arr);
   {
@@ -577,7 +605,11 @@ void supla_user::on_channel_value_changed(int DeviceId, int ChannelId) {
 
     for (int a = 0; a < safe_array_count(client_arr); a++)
       if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
-        client->on_channel_value_changed(DeviceId, ChannelId);
+
+        for (std::list<channel_address>::iterator it = ca_list.begin();
+             it != ca_list.end(); it++) {
+        	client->on_channel_value_changed(it->getDeviceId(), it->getChannelId());
+        }
       }
   }
   safe_array_unlock(client_arr);

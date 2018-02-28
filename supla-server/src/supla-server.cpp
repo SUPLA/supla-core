@@ -49,9 +49,9 @@ int main(int argc, char *argv[]) {
 
   {
     char dt[64];
-
-    supla_log(LOG_INFO, "Server version %s [Protocol v%i]", SERVER_VERSION,
-              SUPLA_PROTO_VERSION);
+int iid[2];
+    supla_log(LOG_INFO, "Server version %s [Protocol v%i], %i", SERVER_VERSION,
+              SUPLA_PROTO_VERSION, sizeof(iid) * sizeof(int));
     supla_log(LOG_INFO, "Started at %s", st_get_datetime_str(dt));
   }
 

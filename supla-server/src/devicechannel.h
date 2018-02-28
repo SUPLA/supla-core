@@ -19,7 +19,18 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
+#include <list>
 #include "proto.h"
+
+class channel_address {
+private:
+	  int DeviceId;
+	  int ChannelId;
+public:
+	  channel_address(int DeviceId, int ChannelId);
+	  int getDeviceId(void);
+	  int getChannelId(void);
+};
 
 class supla_channel_temphum {
  private:
@@ -80,8 +91,8 @@ class supla_device_channel {
   void getChar(char *Value);
   bool getRGBW(int *color, char *color_brightness, char *brightness);
 
-  int master_channel(void);
-  int slave_channel(void);
+  std::list<int> master_channel(void);
+  std::list<int> slave_channel(void);
   supla_channel_temphum *getTempHum(void);
 };
 
@@ -97,7 +108,7 @@ class supla_device_channels {
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
 
-  int ms_channel(int ChannelID, bool Master);
+  std::list<int> ms_channel(int ChannelID, bool Master);
 
  public:
   supla_device_channels();
@@ -125,8 +136,8 @@ class supla_device_channels {
                                      int color, char color_brightness,
                                      char brightness);
 
-  int master_channel(int ChannelID);
-  int slave_channel(int ChannelID);
+  std::list<int> master_channel(int ChannelID);
+  std::list<int> slave_channel(int ChannelID);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
   void load(int DeviceID);

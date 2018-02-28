@@ -28,6 +28,7 @@ class supla_client_channel {
   int LocationId;
   int Func;
   int Param1;
+  int Param2;
   int AltIcon;
   unsigned char ProtocolVersion;
   unsigned int Flags;
@@ -37,7 +38,7 @@ class supla_client_channel {
 
  public:
   supla_client_channel(int Id, int DeviceId, int LocationID, int Func,
-                       int Param1, const char *Caption, int AltIcon,
+                       int Param1, int Param2, const char *Caption, int AltIcon,
                        unsigned char ProtocolVersion);
   void setCaption(const char *Caption);
   void mark_for_remote_update(char mark);
@@ -71,7 +72,7 @@ class supla_client_channels {
   virtual ~supla_client_channels();
 
   void update_channel(int Id, int DeviceId, int LocationID, int Func,
-                      int Param1, const char *Caption, int AltIcon,
+                      int Param1, int Param2, const char *Caption, int AltIcon,
                       unsigned char ProtocolVersion);
   void update_device_channels(int DeviceId);
   void on_channel_value_changed(

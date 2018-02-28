@@ -48,8 +48,8 @@ class supla_device : public cdcommon {
   bool channel_exists(int ChannelID);
   void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);
-  int master_channel(int ChannelID);
-  int slave_channel(int ChannelID);
+  std::list<int> master_channel(int ChannelID);
+  std::list<int> slave_channel(int ChannelID);
   bool get_channel_double_value(int ChannelID, double *Value);
   bool get_channel_temperature_value(int ChannelID, double *Value);
   bool get_channel_humidity_value(int ChannelID, double *Value);

@@ -34,7 +34,7 @@
 #define CC_REMOTEUPDATE_CHANNELVALUE 2
 
 supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
-                                           int Func, int Param1,
+                                           int Func, int Param1, int Param2,
                                            const char *Caption, int AltIcon,
                                            unsigned char ProtocolVersion) {
   this->Id = Id;
@@ -42,6 +42,7 @@ supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
   this->LocationId = LocationID;
   this->Func = Func;
   this->Param1 = Param1;
+  this->Param2 = Param2;
   this->AltIcon = AltIcon;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = 0;
@@ -117,7 +118,7 @@ void supla_client_channel::mark_for_remote_update(char mark) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
 
-      if (Param1 == 0) {
+      if (Param1 == 0 && Param2 == 0) {
         remote_update = mark;
       }
 
@@ -223,7 +224,7 @@ supla_client_channel *supla_client_channels::find_channel(int Id) {
 }
 
 void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID,
-                                           int Func, int Param1,
+                                           int Func, int Param1, int Param2,
                                            const char *Caption, int AltIcon,
                                            unsigned char ProtocolVersion) {
   safe_array_lock(arr);
@@ -231,8 +232,9 @@ void supla_client_channels::update_channel(int Id, int DeviceId, int LocationID,
   supla_client_channel *channel = NULL;
 
   if ((channel = find_channel(Id)) == NULL) {
-    channel = new supla_client_channel(Id, DeviceId, LocationID, Func, Param1,
-                                       Caption, AltIcon, ProtocolVersion);
+    channel =
+        new supla_client_channel(Id, DeviceId, LocationID, Func, Param1, Param2,
+                                 Caption, AltIcon, ProtocolVersion);
     if (safe_array_add(arr, channel) == -1) {
       delete channel;
       channel = NULL;
