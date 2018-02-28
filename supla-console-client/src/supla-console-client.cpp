@@ -16,117 +16,107 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
-#include "supla-client-lib/supla-client.h"
+#include "client_loop.h"
+#include "clientcfg.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/sthread.h"
+#include "supla-client-lib/supla-client.h"
 #include "supla-client-lib/tools.h"
-#include "clientcfg.h"
-#include "client_loop.h"
 
-int getch()
-{
-    int r;
-    unsigned char c;
-    if ((r = read(0, &c, sizeof(c))) < 0)
-        return r;
+int getch() {
+  int r;
+  unsigned char c;
+  if ((r = read(0, &c, sizeof(c))) < 0) return r;
 
-    return c;
+  return c;
 }
 
-int kbhit()
-{
-    struct timeval tv = { 0L, 0L };
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(0, &fds);
-    return select(1, &fds, NULL, NULL, &tv);
+int kbhit() {
+  struct timeval tv = {0L, 0L};
+  fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(0, &fds);
+  return select(1, &fds, NULL, NULL, &tv);
 }
 
+int main(int argc, char *argv[]) {
+  void *client_loop_t = NULL;
 
-int main(int argc, char* argv[]) {
+  if (clientcfg_init(argc, argv) == 0) {
+    clientcfg_free();
+    return EXIT_FAILURE;
+  }
 
-	void *client_loop_t = NULL;
+  struct timeval runtime;
+  gettimeofday(&runtime, NULL);
 
-	if ( clientcfg_init(argc, argv) == 0 ) {
-		clientcfg_free();
-		return EXIT_FAILURE;
-	}
+  if (lifetime > 0) {
+    supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
+  }
 
-	struct timeval runtime;
-	gettimeofday(&runtime, NULL);
+  if (input_off == 1) {
+    supla_log(LOG_INFO, "Input: off");
+  }
 
-	if (  lifetime > 0 ) {
-		supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
-	}
+  st_mainloop_init();
+  st_hook_signals();
 
-	if ( input_off == 1 ) {
-		supla_log(LOG_INFO, "Input: off");
-	}
+  // CLIENT LOOP
+  void *sclient = NULL;
+  client_loop_t = sthread_simple_run(client_loop, (void *)&sclient, 0);
 
-	st_mainloop_init();
-	st_hook_signals();
+  // MAIN LOOP
 
-	// CLIENT LOOP
-	void *sclient = NULL;
-	client_loop_t = sthread_simple_run(client_loop, (void*)&sclient, 0);
+  while (st_app_terminate == 0) {
+    if (input_off == 0 && sclient != NULL && kbhit() > 0) {
+      switch (getch()) {
+        case '0':
+          supla_client_open(sclient, 151, 0);
+          break;
+        case '1':
+          supla_client_open(sclient, 151, 1);
+          break;
+        case '2':
+          supla_client_open(sclient, 151, 2);
+          break;
 
-	// MAIN LOOP
+        case '4':
+          supla_client_open(sclient, 28, 1);
+          break;
+        case '5':
+          supla_client_open(sclient, 29, 1);
+          break;
+        case '6':
+          supla_client_open(sclient, 30, 1);
+          break;
+        case '7':
+          supla_client_get_registration_enabled(sclient);
+          break;
+      }
+    }
 
-	while(st_app_terminate == 0) {
+    if (lifetime > 0) {
+      struct timeval now;
+      gettimeofday(&now, NULL);
 
-		if ( input_off == 0 && sclient != NULL && kbhit() > 0 ) {
-            switch(getch()) {
-            case '0':
-            	supla_client_open(sclient, 151, 0);
-            	break;
-            case '1':
-            	supla_client_open(sclient, 151, 1);
-            	break;
-            case '2':
-            	supla_client_open(sclient, 151, 2);
-            	break;
+      if (now.tv_sec - runtime.tv_sec >= lifetime) {
+        supla_log(LOG_INFO, "Timeout");
+        break;
+      }
+    }
 
-            case '4':
-            	supla_client_open(sclient, 28, 1);
-            	break;
-            case '5':
-            	supla_client_open(sclient, 29, 1);
-            	break;
-            case '6':
-            	supla_client_open(sclient, 30, 1);
-            	break;
-            case '7':
-            	supla_client_get_registration_enabled(sclient);
-            	break;
-            }
-		}
+    st_mainloop_wait(1000);
+  }
 
-		if ( lifetime > 0 ) {
+  // RELEASE BLOCK
+  sthread_twf(client_loop_t);
+  st_mainloop_free();
+  clientcfg_free();
 
-			struct timeval now;
-			gettimeofday(&now, NULL);
-
-
-			if ( now.tv_sec-runtime.tv_sec >= lifetime ) {
-				supla_log(LOG_INFO, "Timeout");
-				break;
-			}
-
-		}
-
-		st_mainloop_wait(1000);
-	}
-
-	// RELEASE BLOCK
-	sthread_twf(client_loop_t);
-	st_mainloop_free();
-	clientcfg_free();
-
-	return EXIT_SUCCESS;
-
+  return EXIT_SUCCESS;
 }
