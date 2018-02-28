@@ -55,10 +55,11 @@ void client_loop_channel_update(void *_suplaclient, void *sthread,
     supla_log(
         LOG_DEBUG,
         "Channel #%i: %s LocationID=%i, Function=%i, online=%i, value[0]: %i "
-        "sub_value[0]: %i, altIcon=%i, ProtoVersion=%i, EOL=%i",
+        "sub_value[0;1]: %i;%i, altIcon=%i, ProtoVersion=%i, EOL=%i",
         channel->Id, channel->Caption, channel->LocationID, channel->Func,
         channel->online, channel->value.value[0], channel->value.sub_value[0],
-        channel->AltIcon, channel->ProtocolVersion, channel->EOL);
+        channel->value.sub_value[1], channel->AltIcon, channel->ProtocolVersion,
+        channel->EOL);
   }
 }
 
@@ -76,12 +77,13 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread,
     memcpy(&temp, channel_value->value.value, sizeof(double));
     supla_log(LOG_DEBUG, "Channel #%i: %f st.", channel_value->Id, temp);
   } else {
-    supla_log(LOG_DEBUG,
-              "Channel #%i: Value: online %i, value[0]: %i, sub_value[0]: %i, "
-              "EOL: %i",
-              channel_value->Id, channel_value->online,
-              channel_value->value.value[0], channel_value->value.sub_value[0],
-              channel_value->EOL);
+    supla_log(
+        LOG_DEBUG,
+        "Channel #%i: Value: online %i, value[0]: %i, sub_value[0;1]: %i;%i, "
+        "EOL: %i",
+        channel_value->Id, channel_value->online, channel_value->value.value[0],
+        channel_value->value.sub_value[0], channel_value->value.sub_value[1],
+        channel_value->EOL);
   }
 }
 
