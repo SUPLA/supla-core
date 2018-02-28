@@ -18,6 +18,15 @@
 
 #include <my_global.h>
 #include <mysql.h>
+
+// https://bugs.mysql.com/bug.php?id=28184
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+
 #include <string.h>
 
 #include "database.h"
