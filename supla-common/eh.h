@@ -22,6 +22,10 @@
 #include <sys/select.h>
 #endif
 
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
