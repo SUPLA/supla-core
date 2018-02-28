@@ -460,7 +460,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
           }
 
           it++;
-
         } while (it != slave_list.end() && n < SUPLA_CHANNELVALUE_SIZE);
       }
     }
@@ -605,10 +604,10 @@ void supla_user::on_channel_value_changed(int DeviceId, int ChannelId) {
 
     for (int a = 0; a < safe_array_count(client_arr); a++)
       if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
-
         for (std::list<channel_address>::iterator it = ca_list.begin();
              it != ca_list.end(); it++) {
-        	client->on_channel_value_changed(it->getDeviceId(), it->getChannelId());
+          client->on_channel_value_changed(it->getDeviceId(),
+                                           it->getChannelId());
         }
       }
   }

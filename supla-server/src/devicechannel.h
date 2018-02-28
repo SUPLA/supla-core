@@ -23,13 +23,14 @@
 #include "proto.h"
 
 class channel_address {
-private:
-	  int DeviceId;
-	  int ChannelId;
-public:
-	  channel_address(int DeviceId, int ChannelId);
-	  int getDeviceId(void);
-	  int getChannelId(void);
+ private:
+  int DeviceId;
+  int ChannelId;
+
+ public:
+  channel_address(int DeviceId, int ChannelId);
+  int getDeviceId(void);
+  int getChannelId(void);
 };
 
 class supla_channel_temphum {

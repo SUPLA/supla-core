@@ -19,6 +19,7 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
+#include <list>
 #include "cdcommon.h"
 #include "devicechannel.h"
 
