@@ -11,32 +11,12 @@ matrix:
         - pip install cpplint
 
       script:
-        - cpplint ./supla-server/src/*
-        - cpplint ./supla-server/src/test/*
-        - cpplint ./supla-scheduler/src/*
-        - cpplint ./supla-scheduler/src/test/*
-        - cpplint ./supla-dev/src/*
-        - cpplint ./supla-client/src/*
-        - cpplint ./supla-console-client/src/*
-        - cpplint ./supla-console-client/src/supla-client-lib/*
+        - ./tools/lint.sh
 
     - language: cpp
       sudo: false
       os: linux
       compiler: gcc
       script:
-        - cd supla-server/Test
-        - make clean && make all
-        - ./supla-server
-        - cd ../Release
-        - make clean && make all 
-        - cd ../../supla-scheduler/Test
-        - make clean && make all
-        - ./supla-scheduler
-        - cd ../Release
-        - make clean && make all
-        - cd ../../supla-dev/Release
-        - make clean && make
-        - cd ../../supla-console-client/Debug
-        - make clean && make
+        - ./tools/test.sh
 
