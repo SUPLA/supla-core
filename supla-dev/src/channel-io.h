@@ -21,7 +21,8 @@
 
 #include "proto.h"
 
-typedef void (*_func_channelio_valuechanged)(unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE], void *user_data);
+typedef void (*_func_channelio_valuechanged)(
+    unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE], void *user_data);
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,20 +39,24 @@ void channelio_set_gpio2(unsigned char number, unsigned char gpio2);
 void channelio_set_bistable_flag(unsigned char number, unsigned char bistable);
 void channelio_set_w1(unsigned char number, const char *w1);
 void channelio_set_mcp23008_driver(unsigned char number, int driver);
-void channelio_set_mcp23008_addr(unsigned char number,  unsigned char addr);
+void channelio_set_mcp23008_addr(unsigned char number, unsigned char addr);
 void channelio_set_mcp23008_reset(unsigned char number, unsigned char reset);
 void channelio_set_mcp23008_gpio_dir(unsigned char number, unsigned char value);
 void channelio_set_mcp23008_gpio_val(unsigned char number, unsigned char value);
 void channelio_set_mcp23008_gpio_port(unsigned char number, unsigned char port);
-char channelio_get_value(unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE]);
+char channelio_get_value(unsigned char number,
+                         char value[SUPLA_CHANNELVALUE_SIZE]);
 char channelio_get_hi_value(unsigned char number, char *hi);
-char channelio_set_hi_value(unsigned char number, char hi, unsigned int time_ms);
-void channelio_channels_to_srd(unsigned char *channel_count, TDS_SuplaDeviceChannel_B *channels);
+char channelio_set_hi_value(unsigned char number, char hi,
+                            unsigned int time_ms);
+void channelio_channels_to_srd(unsigned char *channel_count,
+                               TDS_SuplaDeviceChannel_B *channels);
 
-//TMP TEST
+// TMP TEST
 void tmp_channelio_raise_valuechanged(unsigned char number);
 
-void channelio_setcalback_on_channel_value_changed(_func_channelio_valuechanged on_valuechanged, void *user_data);
+void channelio_setcalback_on_channel_value_changed(
+    _func_channelio_valuechanged on_valuechanged, void *user_data);
 
 #ifdef __SINGLE_THREAD
 void channelio_iterate(void);
@@ -60,6 +65,5 @@ void channelio_iterate(void);
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* CHANNEL_IO_H_ */

@@ -24,14 +24,15 @@ extern "C" {
 #endif
 
 #define MCP23008_PIN_START 100
-#define MCP23008_MAX_GPIO  8
-#define MCP23008_GPIO_OUT  0
-#define MCP23008_GPIO_IN   1
+#define MCP23008_MAX_GPIO 8
+#define MCP23008_GPIO_OUT 0
+#define MCP23008_GPIO_IN 1
 
 char mcp23008_gpio_set_value(unsigned char port_number, char value);
 char mcp23008_gpio_get_value(unsigned char port_number);
-char mcp23008_gpio_port_init(unsigned char port_number, unsigned char in, char value);
-char mcp23008_init(unsigned char reset, unsigned char addr );
+char mcp23008_gpio_port_init(unsigned char port_number, unsigned char in,
+                             char value);
+char mcp23008_init(unsigned char reset, unsigned char addr);
 
 #ifdef __cplusplus
 }

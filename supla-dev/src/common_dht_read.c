@@ -8,7 +8,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 
-// The above copyright notice and this permission notice shall be included in all
+// The above copyright notice and this permission notice shall be included in
+// all
 // copies or substantial portions of the Software.
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -47,13 +48,16 @@ void sleep_milliseconds(uint32_t millis) {
   struct timespec sleep;
   sleep.tv_sec = millis / 1000;
   sleep.tv_nsec = (millis % 1000) * 1000000L;
-  while (clock_nanosleep(CLOCK_MONOTONIC, 0, &sleep, &sleep) && errno == EINTR);
+  while (clock_nanosleep(CLOCK_MONOTONIC, 0, &sleep, &sleep) &&
+         errno == EINTR) {
+  }
 }
 
 void set_max_priority(void) {
   struct sched_param sched;
   memset(&sched, 0, sizeof(sched));
-  // Use FIFO scheduler with highest priority for the lowest chance of the kernel context switching.
+  // Use FIFO scheduler with highest priority for the lowest chance of the
+  // kernel context switching.
   sched.sched_priority = sched_get_priority_max(SCHED_FIFO);
   sched_setscheduler(0, SCHED_FIFO, &sched);
 }

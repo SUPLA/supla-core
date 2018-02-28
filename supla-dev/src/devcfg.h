@@ -29,17 +29,17 @@ extern char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
 extern "C" {
 #endif
 
-#define CFG_GUID_FILE         0
-#define CFG_ALTCFG_FILE       1
-#define CFG_STATE_FILE        2
-#define CFG_DEVNAME           3
-#define CFG_SERVER_HOST       4
-#define CFG_SERVER_TCPPORT    5
-#define CFG_SERVER_SSLPORT    6
+#define CFG_GUID_FILE 0
+#define CFG_ALTCFG_FILE 1
+#define CFG_STATE_FILE 2
+#define CFG_DEVNAME 3
+#define CFG_SERVER_HOST 4
+#define CFG_SERVER_TCPPORT 5
+#define CFG_SERVER_SSLPORT 6
 #define CFG_SERVER_SSLENABLED 7
-#define CFG_LOCATION_ID       8
-#define CFG_LOCATION_PWD      9
-#define CFG_EMAIL             10
+#define CFG_LOCATION_ID 8
+#define CFG_LOCATION_PWD 9
+#define CFG_EMAIL 10
 
 unsigned char devcfg_init(int argc, char* argv[]);
 char devcfg_getdev_guid();
@@ -49,6 +49,5 @@ void devcfg_free(void);
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* supladevcfg_H_ */

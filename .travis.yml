@@ -15,6 +15,7 @@ matrix:
         - cpplint ./supla-server/src/test/*
         - cpplint ./supla-scheduler/src/*
         - cpplint ./supla-scheduler/src/test/*
+        - cpplint ./supla-dev/src/*
         - cpplint ./supla-client/src/*
         - cpplint ./supla-console-client/src/*
         - cpplint ./supla-console-client/src/supla-client-lib/*
@@ -34,6 +35,8 @@ matrix:
         - ./supla-scheduler
         - cd ../Release
         - make clean && make all
+        - cd ../../supla-dev/Release
+        - make clean && make
         - cd ../../supla-console-client/Debug
         - make clean && make
 

@@ -24,7 +24,7 @@ extern "C" {
 #endif
 
 void* devconnection_start(void);
-void devconnection_stop(void *dconn_thread);
+void devconnection_stop(void* dconn_thread);
 
 #ifdef __cplusplus
 }
