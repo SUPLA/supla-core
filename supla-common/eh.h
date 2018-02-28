@@ -22,8 +22,12 @@
 #include <sys/select.h>
 #endif
 
-#ifndef _WIN32
+#if !defined(__AVR__) && !defined(_WIN32)
 #include <sys/time.h>
+#endif
+
+#ifdef __AVR__
+#include "proto.h"
 #endif
 
 #ifdef __cplusplus
