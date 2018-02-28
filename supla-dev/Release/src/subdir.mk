@@ -3,11 +3,6 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
-CPP_SRCS += \
-../src/accept_loop.cpp \
-../src/ipcctrl.cpp \
-../src/supla-dev.cpp 
-
 C_SRCS += \
 ../src/cfg.c \
 ../src/channel-io.c \
@@ -30,6 +25,11 @@ C_SRCS += \
 ../src/supla-socket.c \
 ../src/tools.c \
 ../src/w1.c 
+
+CPP_SRCS += \
+../src/accept_loop.cpp \
+../src/ipcctrl.cpp \
+../src/supla-dev.cpp 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -90,14 +90,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__OPEN_SSL=1 -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	gcc -I/usr/src/openssl/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
