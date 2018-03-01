@@ -44,6 +44,9 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_mysql, "user", NULL);
   scfg_add_str_param(s_mysql, "password", NULL);
 
+  char *s_ipc = "IPC";
+  scfg_add_str_param(s_ipc, "socket_path", "/tmp/supla-server-ctrl.sock");
+
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();
   return result;

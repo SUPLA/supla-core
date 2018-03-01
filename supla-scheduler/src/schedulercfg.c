@@ -38,6 +38,9 @@ unsigned char schedulercfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_scheduler, "max_workers", 30);
   scfg_add_int_param(s_scheduler, "max_job_per_second", 50);
 
+  char *s_ipc = "IPC";
+  scfg_add_str_param(s_ipc, "socket_path", "/tmp/supla-server-ctrl.sock");
+
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();
   return result;

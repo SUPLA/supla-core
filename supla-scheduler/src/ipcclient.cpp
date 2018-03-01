@@ -32,10 +32,10 @@
 
 #include "ipcclient.h"
 #include "log.h"
+#include "schedulercfg.h"
 
 #define IPC_SAUTH_KEY_SIZE 16
 
-const char socket_path[] = "/tmp/supla-server-ctrl.sock";
 const char hello[] = "SUPLA SERVER CTRL\n";
 
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED";
@@ -58,7 +58,7 @@ ipc_client::ipc_client() {
 
   int ipc_shmid = -1;
   key_t key;
-  key = ftok(socket_path, 'S');
+  key = ftok(scfg_string(CFG_IPC_SOCKET_PATH), 'S');
 
   if ((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, 0)) == -1) return;
 
@@ -111,7 +111,8 @@ bool ipc_client::ipc_connect(void) {
   }
 
   remote.sun_family = AF_UNIX;
-  snprintf(remote.sun_path, sizeof(remote.sun_path), "%s", socket_path);
+  snprintf(remote.sun_path, sizeof(remote.sun_path), "%s",
+           scfg_string(CFG_IPC_SOCKET_PATH));
 
   len = strnlen(remote.sun_path, 107) + sizeof(remote.sun_family);
   if (connect(sfd, (struct sockaddr *)&remote, len) == -1) {

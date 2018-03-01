@@ -44,6 +44,8 @@ extern "C" {
 #define CFG_MYSQL_USER 11
 #define CFG_MYSQL_PASSWORD 12
 
+#define CFG_IPC_SOCKET_PATH 13
+
 unsigned char svrcfg_init(int argc, char* argv[]);
 
 #ifdef __cplusplus

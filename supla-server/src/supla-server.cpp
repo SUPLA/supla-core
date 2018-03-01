@@ -109,7 +109,7 @@ int iid[2];
   st_setpidfile(pidfile_path);
   st_mainloop_init();
   st_hook_signals();
-  ipc = ipcsocket_init("/tmp/supla-server-ctrl.sock");
+  ipc = ipcsocket_init(scfg_string(CFG_IPC_SOCKET_PATH));
 
   // INI ACCEPT LOOP
 

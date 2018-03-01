@@ -39,6 +39,8 @@ extern "C" {
 #define CFG_MAX_WORKERS 7
 #define CFG_MAX_JOB_PER_SECOND 8
 
+#define CFG_IPC_SOCKET_PATH 9
+
 unsigned char schedulercfg_init(int argc, char* argv[]);
 
 #ifdef __cplusplus
