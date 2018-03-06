@@ -16,6 +16,8 @@ C_SRCS += \
 ../src/tools.c 
 
 CPP_SRCS += \
+../src/action.cpp \
+../src/action_turn_onoff.cpp \
 ../src/database.cpp \
 ../src/db.cpp \
 ../src/ipcclient.cpp \
@@ -23,6 +25,8 @@ CPP_SRCS += \
 ../src/worker.cpp 
 
 OBJS += \
+./src/action.o \
+./src/action_turn_onoff.o \
 ./src/cfg.o \
 ./src/database.o \
 ./src/db.o \
@@ -52,6 +56,8 @@ C_DEPS += \
 ./src/tools.d 
 
 CPP_DEPS += \
+./src/action.d \
+./src/action_turn_onoff.d \
 ./src/database.d \
 ./src/db.d \
 ./src/ipcclient.d \
@@ -60,17 +66,17 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-src/%.o: ../src/%.c
-	@echo 'Building file: $<'
-	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -I/usr/include/mysql -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
-	@echo 'Finished building: $<'
-	@echo ' '
-
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
 	g++ -D__DEBUG=1 -I/usr/include/mysql -I../src/test -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+src/%.o: ../src/%.c
+	@echo 'Building file: $<'
+	@echo 'Invoking: Cross GCC Compiler'
+	gcc -D__DEBUG=1 -I/usr/include/mysql -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

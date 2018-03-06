@@ -22,6 +22,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "action_turn_onoff.h"
 #include "ipcclient.h"
 #include "log.h"
 #include "queue.h"
@@ -207,6 +208,12 @@ void s_worker::action_shut_reveal(char shut) {
 
     success = (percent - v <= 2 && percent - v >= 0) ||
               (percent - v >= -2 && percent - v <= 0);  // tolerance 2%
+
+    supla_log(LOG_DEBUG,
+              "channel_id: %i, percent = %i, v = %i, sensor_value = %i, "
+              "success = %i, diff = %i",
+              s_exec.channel_id, percent, v, sensor_value, success,
+              percent - v);
 
     // supla_log(LOG_DEBUG, "value = %i, percent = %i, v=%i, success = %i",
     // value, percent, v, success);
@@ -465,6 +472,7 @@ void s_worker::execute(void *sthread) {
         break;
       case ACTION_TURN_ON:
         action_turn_on_off(1);
+        s_worker_action_turn_onoff(this, true).execute();
         break;
       case ACTION_TURN_OFF:
         action_turn_on_off(0);
@@ -481,4 +489,20 @@ void s_worker::execute(void *sthread) {
   }
 
   q->raise_loop_event();
+}
+
+database *s_worker::get_db(void) { return this->db; }
+
+int s_worker::get_channel_func(void) { return s_exec.channel_func; }
+
+int s_worker::get_id(void) { return s_exec.id; }
+
+bool s_worker::ipcc_set_char_value(char value) {
+  return ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id,
+                              s_exec.channel_id, value);
+}
+
+bool s_worker::ipcc_get_char_value(char *value) {
+  return ipcc->get_char_value(s_exec.user_id, s_exec.iodevice_id,
+                              s_exec.channel_id, value);
 }

@@ -51,6 +51,13 @@ class s_worker {
   explicit s_worker(queue *q);
   ~s_worker();
   void execute(void *sthread);
+  database *get_db(void);
+
+  int get_channel_func(void);
+  int get_id(void);
+
+  bool ipcc_set_char_value(char value);
+  bool ipcc_get_char_value(char *value);
 };
 
 #endif /* QUEUE_H_ */
