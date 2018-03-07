@@ -27,11 +27,18 @@
 class s_worker_action {
  private:
   bool check_function_allowed(void);
+  void _check_result(void);
+  int _retry_limit(void);
+  int _waiting_time_to_retry(void);
+  int _waiting_time_to_check(void);
 
  protected:
   s_worker *worker;
 
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]) = 0;
+  virtual int retry_limit(void) = 0;
+  virtual int waiting_time_to_retry(void) = 0;  // return seconds
+  virtual int waiting_time_to_check(void) = 0;  // return seconds
   virtual void do_action(void) = 0;
   virtual bool check_result(void) = 0;
 

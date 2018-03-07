@@ -497,6 +497,8 @@ int s_worker::get_channel_func(void) { return s_exec.channel_func; }
 
 int s_worker::get_id(void) { return s_exec.id; }
 
+int s_worker::get_retry_count(void) { return s_exec.retry_count; }
+
 bool s_worker::ipcc_set_char_value(char value) {
   return ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id,
                               s_exec.channel_id, value);

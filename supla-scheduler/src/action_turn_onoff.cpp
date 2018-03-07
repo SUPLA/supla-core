@@ -30,6 +30,19 @@ void s_worker_action_turn_onoff::get_function_list(
   list[1] = SUPLA_CHANNELFNC_POWERSWITCH;
 }
 
-bool s_worker_action_turn_onoff::check_result() { return false; }
+int s_worker_action_turn_onoff::retry_limit(void) { return 2; }
 
-void s_worker_action_turn_onoff::do_action() {}
+int s_worker_action_turn_onoff::waiting_time_to_retry(void) { return 30; }
+
+int s_worker_action_turn_onoff::waiting_time_to_check(void) { return 5; }
+
+bool s_worker_action_turn_onoff::check_result() {
+  char value = 0;
+  worker->ipcc_get_char_value(&value);
+
+  return value == 1;
+}
+
+void s_worker_action_turn_onoff::do_action() {
+  worker->ipcc_set_char_value(setOn ? 1 : 0);
+}

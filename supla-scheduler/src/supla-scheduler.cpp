@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <pthread.h> // NOLINT
+#include <pthread.h>  // NOLINT
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
   if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
     goto exit_fail;
   }
+
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
