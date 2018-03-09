@@ -47,9 +47,6 @@ TEST_F(ActionTest, time) {
     delete action;
   }
 
-  for (auto &&factory : AbstractActionFactory::factories) {
-  }
-
   delete worker;
 }
 
