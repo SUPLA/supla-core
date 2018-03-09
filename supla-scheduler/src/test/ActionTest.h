@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "gtest/gtest.h"
-#include "../schedulercfg.h"
+#ifndef H_ACTION_TEST_H_
+#define H_ACTION_TEST_H_
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+class ActionTest {
+ public:
+  virtual ~ActionTest();
+  ActionTest();
+};
 
-  schedulercfg_init(argc, argv);
-
-  return RUN_ALL_TESTS();
-}
+#endif /*H_ACTION_TEST_H_*/

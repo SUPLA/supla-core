@@ -15,14 +15,14 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "WorkerTest.h"
+#include "../worker.h"
+#include "gtest/gtest.h"  // NOLINT
 
-#include "gtest/gtest.h"
-#include "../schedulercfg.h"
+namespace {
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+class WorkerTest : public ::testing::Test {
+ protected:
+};
 
-  schedulercfg_init(argc, argv);
-
-  return RUN_ALL_TESTS();
-}
+}  // namespace

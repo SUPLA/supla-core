@@ -37,12 +37,12 @@ class s_worker_action {
 
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]) = 0;
   virtual int retry_limit(void) = 0;
-  virtual int waiting_time_to_retry(void) = 0;  // return seconds
-  virtual int waiting_time_to_check(void) = 0;  // return seconds
   virtual void do_action(void) = 0;
   virtual bool check_result(void) = 0;
 
  public:
+  virtual int waiting_time_to_retry(void) = 0;  // return seconds
+  virtual int waiting_time_to_check(void) = 0;  // return seconds
   explicit s_worker_action(s_worker *worker);
   virtual ~s_worker_action();
   void execute(void);
