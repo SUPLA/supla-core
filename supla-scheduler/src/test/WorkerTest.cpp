@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "WorkerTest.h"
-#include "../worker.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "../worker.h"  // NOLINT
+#include "gtest/gtest.h"
 
 namespace {
 

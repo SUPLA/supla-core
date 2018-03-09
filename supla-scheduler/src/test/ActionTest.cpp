@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "ActionTest.h"
-#include "../action.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "../action.h"  // NOLINT
+#include "gtest/gtest.h"
 
 #define MIN_RETRY_TIME 5
 #define MIN_CHECK_TIME 1

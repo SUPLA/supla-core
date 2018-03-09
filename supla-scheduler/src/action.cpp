@@ -72,7 +72,9 @@ AbstractActionFactory::AbstractActionFactory(int action_type,
 
 int AbstractActionFactory::getActionType(void) { return action_type; }
 
-std::string AbstractActionFactory::getActionClassName(void) { return classname; }
+std::string AbstractActionFactory::getActionClassName(void) {
+  return classname;
+}
 
 AbstractActionFactory *AbstractActionFactory::factoryByActionType(
     int action_type) {
@@ -94,5 +96,3 @@ s_worker_action *AbstractActionFactory::createByActionType(int action_type,
 
   return NULL;
 }
-
-
