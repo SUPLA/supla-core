@@ -19,6 +19,8 @@
 #ifndef ACTION_H_
 #define ACTION_H_
 
+#include <list>
+#include <string>
 #include "proto.h"
 #include "worker.h"
 
@@ -47,5 +49,35 @@ class s_worker_action {
   virtual ~s_worker_action();
   void execute(void);
 };
+
+class AbstractActionFactory {
+ private:
+  int action_type;
+  std::string classname;
+
+ public:
+  explicit AbstractActionFactory(int action_type, std::string classname);
+  std::string getActionClassName(void);
+  int getActionType(void);
+  virtual s_worker_action *create(s_worker *worker) = 0;
+  virtual ~AbstractActionFactory(void);
+
+  static AbstractActionFactory *factoryByActionType(int action_type);
+  static s_worker_action *createByActionType(int action_type, s_worker *worker);
+  static std::list<AbstractActionFactory *> factories;
+};
+
+#define REGISTER_ACTION(actionclass, actiontype)                    \
+  class actionclass##Factory : public AbstractActionFactory {       \
+   public:                                                          \
+    actionclass##Factory();                                         \
+    s_worker_action *create(s_worker *worker);                      \
+  };                                                                \
+  actionclass##Factory::actionclass##Factory()                      \
+      : AbstractActionFactory(actiontype, #actionclass) {}         \
+  s_worker_action *actionclass##Factory::create(s_worker *worker) { \
+    return new actionclass(worker);                                 \
+  }                                                                 \
+  static actionclass##Factory global_##actionclass##Factory;
 
 #endif /*ACTION_H_*/

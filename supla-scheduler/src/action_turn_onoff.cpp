@@ -24,6 +24,12 @@ s_worker_action_turn_onoff::s_worker_action_turn_onoff(s_worker *worker,
   this->setOn = setOn;
 }
 
+s_worker_action_turn_on::s_worker_action_turn_on(s_worker *worker)
+    : s_worker_action_turn_onoff(worker, true) {}
+
+s_worker_action_turn_off::s_worker_action_turn_off(s_worker *worker)
+    : s_worker_action_turn_onoff(worker, false) {}
+
 void s_worker_action_turn_onoff::get_function_list(
     int list[FUNCTION_LIST_SIZE]) {
   list[0] = SUPLA_CHANNELFNC_LIGHTSWITCH;
@@ -46,3 +52,6 @@ bool s_worker_action_turn_onoff::check_result() {
 void s_worker_action_turn_onoff::do_action() {
   worker->ipcc_set_char_value(setOn ? 1 : 0);
 }
+
+REGISTER_ACTION(s_worker_action_turn_on, ACTION_TURN_ON);
+REGISTER_ACTION(s_worker_action_turn_off, ACTION_TURN_OFF);

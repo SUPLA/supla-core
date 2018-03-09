@@ -17,6 +17,7 @@
  */
 
 #include "action.h"
+#include <assert.h>
 #include "string.h"
 
 s_worker_action::s_worker_action(s_worker *worker) { this->worker = worker; }
@@ -71,3 +72,47 @@ void s_worker_action::execute(void) {
 
   // CHECK
 }
+
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
+
+std::list<AbstractActionFactory *> AbstractActionFactory::factories;
+
+AbstractActionFactory::~AbstractActionFactory(void) {}
+
+AbstractActionFactory::AbstractActionFactory(int action_type,
+                                             std::string classname) {
+  assert(AbstractActionFactory::factoryByActionType(action_type) == NULL);
+
+  this->action_type = action_type;
+  this->classname = classname;
+  factories.push_back(this);
+}
+
+int AbstractActionFactory::getActionType(void) { return action_type; }
+
+std::string AbstractActionFactory::getActionClassName(void) { return classname; }
+
+AbstractActionFactory *AbstractActionFactory::factoryByActionType(
+    int action_type) {
+  for (auto &&factory : AbstractActionFactory::factories) {
+    if (factory->getActionType() == action_type) return factory;
+  }
+
+  return NULL;
+}
+
+s_worker_action *AbstractActionFactory::createByActionType(int action_type,
+                                                           s_worker *worker) {
+  AbstractActionFactory *factory = NULL;
+
+  if (NULL !=
+      (factory = AbstractActionFactory::factoryByActionType(action_type))) {
+    return factory->create(worker);
+  }
+
+  return NULL;
+}
+
+

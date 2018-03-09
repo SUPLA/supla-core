@@ -37,4 +37,14 @@ class s_worker_action_turn_onoff : public s_worker_action {
   s_worker_action_turn_onoff(s_worker *worker, bool setOn);
 };
 
+class s_worker_action_turn_on : public s_worker_action_turn_onoff {
+ public:
+  explicit s_worker_action_turn_on(s_worker *worker);
+};
+
+class s_worker_action_turn_off : public s_worker_action_turn_onoff {
+ public:
+  explicit s_worker_action_turn_off(s_worker *worker);
+};
+
 #endif /*ACTION_TURN_ONOFF_*/
