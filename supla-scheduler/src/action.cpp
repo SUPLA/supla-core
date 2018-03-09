@@ -38,26 +38,6 @@ bool s_worker_action::check_function_allowed(void) {
 
 int s_worker_action::_retry_limit(void) { return retry_limit() * 2; }
 
-int s_worker_action::_waiting_time_to_retry(void) {
-  int time = waiting_time_to_retry();
-
-  return time <= MIN_RETRY_TIME ? MIN_RETRY_TIME : time;
-}
-
-int s_worker_action::_waiting_time_to_check(void) {
-  int time = waiting_time_to_check();
-
-  if (time < MIN_CHECK_TIME) {
-    time = MIN_CHECK_TIME;
-  }
-
-  if (time > _waiting_time_to_retry() - 1) {
-    time = _waiting_time_to_retry() - 1;
-  }
-
-  return time;
-}
-
 void s_worker_action::_check_result(void) { bool success = check_result(); }
 
 void s_worker_action::execute(void) {
@@ -66,7 +46,7 @@ void s_worker_action::execute(void) {
 
   if (worker->get_retry_count() % 2 == 0) {  // SET
     do_action();
-    worker->get_db()->set_retry(worker->get_id(), _waiting_time_to_check());
+    worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
     return;
   }
 

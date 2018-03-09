@@ -31,8 +31,6 @@ class s_worker_action {
   bool check_function_allowed(void);
   void _check_result(void);
   int _retry_limit(void);
-  int _waiting_time_to_retry(void);
-  int _waiting_time_to_check(void);
 
  protected:
   s_worker *worker;

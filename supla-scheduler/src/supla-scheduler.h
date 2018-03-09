@@ -46,9 +46,6 @@ typedef struct {
   int retry_count;
 } s_exec_t;
 
-#define MIN_RETRY_TIME  5
-#define MIN_CHECK_TIME  1
-
 #define EXPIRE_TIME 300  // 5 min since planned_time
 #define ZOMBIE_TIME 60   // 1 min since fetched_time
 
