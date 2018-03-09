@@ -32,8 +32,10 @@ TEST_F(ActionTest, time) {
   s_worker *worker = new s_worker(NULL);
   ASSERT_FALSE(worker == NULL);
 
-  for (auto &&factory : AbstractActionFactory::factories) {
-    s_worker_action *action = factory->create(worker);
+  for (std::list<AbstractActionFactory *>::iterator it =
+           AbstractActionFactory::factories.begin();
+       it != AbstractActionFactory::factories.end(); it++) {
+    s_worker_action *action = (*it)->create(worker);
     ASSERT_FALSE(action == NULL);
     ASSERT_GE(action->waiting_time_to_retry(), MIN_RETRY_TIME);
     ASSERT_GE(action->waiting_time_to_check(), MIN_CHECK_TIME);
@@ -43,6 +45,9 @@ TEST_F(ActionTest, time) {
     ASSERT_GT(diff, 0);
 
     delete action;
+  }
+
+  for (auto &&factory : AbstractActionFactory::factories) {
   }
 
   delete worker;

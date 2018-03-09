@@ -78,8 +78,10 @@ std::string AbstractActionFactory::getActionClassName(void) {
 
 AbstractActionFactory *AbstractActionFactory::factoryByActionType(
     int action_type) {
-  for (auto &&factory : AbstractActionFactory::factories) {
-    if (factory->getActionType() == action_type) return factory;
+  for (std::list<AbstractActionFactory *>::iterator it =
+           AbstractActionFactory::factories.begin();
+       it != AbstractActionFactory::factories.end(); it++) {
+    if ((*it)->getActionType() == action_type) return *it;
   }
 
   return NULL;
