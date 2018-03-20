@@ -448,6 +448,14 @@ void s_worker::execute(void *sthread) {
   while (s_exec.id && !sthread_isterminated(sthread)) {
     if (db->set_fetched(s_exec.id)) q->mark_fetched();
 
+    s_worker_action *action =
+        AbstractActionFactory::createByActionType(s_exec.action, this);
+
+    if (action) {
+      action->execute();
+      delete action;
+    }
+    /*
     switch (s_exec.action) {
       case ACTION_CLOSE:
         action_gate_open_close(1);
@@ -482,6 +490,7 @@ void s_worker::execute(void *sthread) {
         break;
         break;
     }
+    */
 
     if (s_exec.action_param != NULL) free(s_exec.action_param);
 
@@ -499,6 +508,8 @@ int s_worker::get_id(void) { return s_exec.id; }
 
 int s_worker::get_retry_count(void) { return s_exec.retry_count; }
 
+bool s_worker::retry_when_fail(void) { return s_exec.retry_when_fail; }
+
 bool s_worker::ipcc_set_char_value(char value) {
   return ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id,
                               s_exec.channel_id, value);
@@ -507,4 +518,8 @@ bool s_worker::ipcc_set_char_value(char value) {
 bool s_worker::ipcc_get_char_value(char *value) {
   return ipcc->get_char_value(s_exec.user_id, s_exec.iodevice_id,
                               s_exec.channel_id, value);
+}
+
+char s_worker::ipcc_is_connected(void) {
+  return ipcc->is_connected(s_exec.user_id, s_exec.iodevice_id);
 }

@@ -56,9 +56,11 @@ class s_worker {
   int get_channel_func(void);
   int get_id(void);
   int get_retry_count(void);
+  bool retry_when_fail(void);
 
   bool ipcc_set_char_value(char value);
   bool ipcc_get_char_value(char *value);
+  char ipcc_is_connected(void);
 };
 
 #endif /* QUEUE_H_ */

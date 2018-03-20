@@ -44,6 +44,7 @@ typedef struct {
   int planned_timestamp;
   int retry_timestamp;
   int retry_count;
+  bool retry_when_fail;
 } s_exec_t;
 
 #define EXPIRE_TIME 300  // 5 min since planned_time

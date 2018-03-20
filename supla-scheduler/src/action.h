@@ -29,8 +29,6 @@
 class s_worker_action {
  private:
   bool check_function_allowed(void);
-  void _check_result(void);
-  int _retry_limit(void);
 
  protected:
   s_worker *worker;
@@ -39,6 +37,9 @@ class s_worker_action {
   virtual int retry_limit(void) = 0;
   virtual void do_action(void) = 0;
   virtual bool check_result(void) = 0;
+
+  virtual bool no_sensor(void);
+  virtual bool retry_when_fail(void);
 
  public:
   virtual int waiting_time_to_retry(void) = 0;  // return seconds
@@ -72,7 +73,7 @@ class AbstractActionFactory {
     s_worker_action *create(s_worker *worker);                      \
   };                                                                \
   actionclass##Factory::actionclass##Factory()                      \
-      : AbstractActionFactory(actiontype, #actionclass) {}         \
+      : AbstractActionFactory(actiontype, #actionclass) {}          \
   s_worker_action *actionclass##Factory::create(s_worker *worker) { \
     return new actionclass(worker);                                 \
   }                                                                 \

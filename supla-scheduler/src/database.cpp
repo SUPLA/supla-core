@@ -51,23 +51,25 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
                    "c.`iodevice_id`, s.`channel_id`, c.`func`, c.`param1`, "
                    "c.`param2`, c.`param3`, s.`action`, s.`action_param`, "
                    "UNIX_TIMESTAMP(e.`planned_timestamp`), "
-                   "UNIX_TIMESTAMP(e.`retry_timestamp`), retry_count FROM "
-                   "`supla_scheduled_executions` AS e, `supla_schedule` AS s, "
-                   "`supla_dev_channel` AS c WHERE e.`schedule_id` = s.`id` "
-                   "AND s.`channel_id` = c.`id` AND e.`result_timestamp` IS "
-                   "NULL AND e.`fetched_timestamp` IS NULL AND ( "
-                   "(e.`retry_timestamp` IS NULL AND e.`planned_timestamp` <= "
-                   "UTC_TIMESTAMP()) OR (e.`retry_timestamp` IS NOT NULL AND "
-                   "e.`retry_timestamp` <= UTC_TIMESTAMP())) LIMIT ?",
+                   "UNIX_TIMESTAMP(e.`retry_timestamp`), e.`retry_count`, "
+                   "s.`retry` FROM `supla_scheduled_executions` AS e, "
+                   "`supla_schedule` AS s, `supla_dev_channel` AS c WHERE "
+                   "e.`schedule_id` = s.`id` AND s.`channel_id` = c.`id` AND "
+                   "e.`result_timestamp` IS NULL AND e.`fetched_timestamp` IS "
+                   "NULL AND ( (e.`retry_timestamp` IS NULL AND "
+                   "e.`planned_timestamp` <= UTC_TIMESTAMP()) OR "
+                   "(e.`retry_timestamp` IS NOT NULL AND e.`retry_timestamp` "
+                   "<= UTC_TIMESTAMP())) LIMIT ?",
                    pbind, 1, true)) {
-    my_bool is_null[3];
+    my_bool is_null[4];
 
-    MYSQL_BIND rbind[14];
+    MYSQL_BIND rbind[15];
     memset(rbind, 0, sizeof(rbind));
 
     int id, schedule_id, user_id, device_id, channel_id, channel_func,
         channel_param1, channel_param2, channel_param3;
-    int action, planned_timestamp, retry_timestamp, retry_count;
+    int action, planned_timestamp, retry_timestamp, retry_count,
+        retry_when_fail;
 
     unsigned long length;
     char action_param[256];
@@ -119,6 +121,10 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
     rbind[13].buffer = &retry_count;
     rbind[13].is_null = &is_null[2];
 
+    rbind[14].buffer_type = MYSQL_TYPE_LONG;
+    rbind[14].buffer = &retry_when_fail;
+    rbind[14].is_null = &is_null[3];
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -151,6 +157,7 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 
             s_exec->retry_timestamp = is_null[1] ? 0 : retry_timestamp;
             s_exec->retry_count = is_null[2] ? 0 : retry_count;
+            s_exec->retry_when_fail = !is_null[3] && retry_when_fail > 0;
 
             if (safe_array_add(s_exec_arr, s_exec) == -1) {
               if (s_exec->action_param != NULL) {
