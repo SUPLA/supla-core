@@ -268,7 +268,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           if (device != NULL) {
             rd.data.ds_register_device_d
-                ->Email[SUPLA_LOCATION_PWD_MAXSIZE - 1] = 0;
+                ->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
             rd.data.ds_register_device_d->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] =
                 0;
             rd.data.ds_register_device_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
