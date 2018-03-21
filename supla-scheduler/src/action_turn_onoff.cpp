@@ -46,7 +46,7 @@ bool s_worker_action_turn_onoff::check_result() {
   char value = 0;
   worker->ipcc_get_char_value(&value);
 
-  return value == 1;
+  return (value == 1) == setOn;
 }
 
 void s_worker_action_turn_onoff::do_action() {
