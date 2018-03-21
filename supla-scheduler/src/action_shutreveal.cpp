@@ -41,7 +41,7 @@ void s_worker_action_shutreveal::get_function_list(
   list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
 }
 
-int s_worker_action_shutreveal::retry_limit(void) { return 2; }
+int s_worker_action_shutreveal::try_limit(void) { return 2; }
 
 int s_worker_action_shutreveal::waiting_time_to_retry(void) { return 120; }
 

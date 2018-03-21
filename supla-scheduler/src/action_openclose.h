@@ -28,7 +28,7 @@ class s_worker_action_openclose : public s_worker_action {
 
  protected:
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
-  int retry_limit(void);
+  int try_limit(void);
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
   bool check_result();

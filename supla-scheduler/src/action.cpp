@@ -74,7 +74,7 @@ void s_worker_action::execute(void) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
   } else if (retry_when_fail() &&
-             worker->get_retry_count() + 1 < (retry_limit() * 2)) {
+             worker->get_retry_count() + 1 < (try_limit() * 2)) {
     supla_log(LOG_DEBUG, "RETRY WHEN FAIL");
     worker->get_db()->set_retry(
         worker->get_id(), waiting_time_to_retry() - waiting_time_to_check());

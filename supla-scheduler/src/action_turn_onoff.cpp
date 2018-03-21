@@ -36,7 +36,7 @@ void s_worker_action_turn_onoff::get_function_list(
   list[1] = SUPLA_CHANNELFNC_POWERSWITCH;
 }
 
-int s_worker_action_turn_onoff::retry_limit(void) { return 2; }
+int s_worker_action_turn_onoff::try_limit(void) { return 2; }
 
 int s_worker_action_turn_onoff::waiting_time_to_retry(void) { return 30; }
 

@@ -61,7 +61,7 @@ void s_worker_action_open::get_function_list(int list[FUNCTION_LIST_SIZE]) {
 s_worker_action_close::s_worker_action_close(s_worker *worker)
     : s_worker_action_openclose(worker, false) {}
 
-int s_worker_action_openclose::retry_limit(void) {
+int s_worker_action_openclose::try_limit(void) {
   return garage_group() ? 4 : 1;
 }
 
