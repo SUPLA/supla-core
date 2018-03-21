@@ -17,7 +17,7 @@
  */
 
 #ifndef ACTION_TURN_ONOFF_H_
-#define ACTION_TURN_ONOFF_ACTION_H_
+#define ACTION_TURN_ONOFF_H_
 
 #include "action.h"
 
