@@ -64,7 +64,7 @@ void s_worker_action::execute(void) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
   } else if (retry_when_fail() &&
-             worker->get_retry_count()+1 < (retry_limit() * 2)) {
+             worker->get_retry_count() + 1 < (retry_limit() * 2)) {
     supla_log(LOG_DEBUG, "RETRY WHEN FAIL");
     worker->get_db()->set_retry(
         worker->get_id(), waiting_time_to_retry() - waiting_time_to_check());
@@ -93,6 +93,64 @@ void s_worker_action::execute(void) {
         break;
     }
   }
+}
+
+bool s_worker_action::parse_percentage(char *percent) {
+  jsmn_parser p;
+  jsmntok_t t[10];
+  int a;
+  int value = 0;
+
+  if (worker->get_action_param() == NULL || percent == NULL) {
+    return false;
+  }
+
+  jsmn_init(&p);
+  int r = jsmn_parse(&p, worker->get_action_param(),
+                     strnlen(worker->get_action_param(), 255), t,
+                     sizeof(t) / sizeof(t[0]));
+
+  if (r < 1 || t[0].type != JSMN_OBJECT) {
+    return false;
+  }
+
+  for (a = 1; a < r - 1; a++) {
+    if (jsoneq(worker->get_action_param(), &t[a], "percentage") == 0) {
+      if (json_get_int(&t[a + 1], &value) && value >= 0 && value <= 100) {
+        *percent = value;
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+int s_worker_action::jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+  if (tok->type == JSMN_STRING &&
+      (int)strnlen(s, 255) == tok->end - tok->start &&
+      strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
+    return 0;
+  }
+  return -1;
+}
+
+char s_worker_action::json_get_int(jsmntok_t *token, int *value) {
+  char buffer[12];
+  memset(buffer, 0, sizeof(buffer));
+
+  if (value == NULL || token->type != JSMN_PRIMITIVE ||
+      (unsigned int)(token->end - token->start) >= sizeof(buffer) ||
+      token->end <= token->start)
+    return 0;
+
+  const char *action_param = worker->get_action_param();
+
+  memcpy(buffer, &action_param[token->start], token->end - token->start);
+
+  *value = atoi(buffer);
+
+  return 1;
 }
 
 //-----------------------------------------------------------------

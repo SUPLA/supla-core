@@ -21,6 +21,7 @@
 
 #include <list>
 #include <string>
+#include "jsmn.h"
 #include "proto.h"
 #include "worker.h"
 
@@ -47,6 +48,10 @@ class s_worker_action {
   explicit s_worker_action(s_worker *worker);
   virtual ~s_worker_action();
   void execute(void);
+
+  bool parse_percentage(char *percent);
+  int jsoneq(const char *json, jsmntok_t *tok, const char *s);
+  char json_get_int(jsmntok_t *token, int *value);
 };
 
 class AbstractActionFactory {

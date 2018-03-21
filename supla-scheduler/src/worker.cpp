@@ -30,15 +30,6 @@
 #include "tools.h"
 #include "worker.h"
 
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-  if (tok->type == JSMN_STRING &&
-      (int)strnlen(s, 255) == tok->end - tok->start &&
-      strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-    return 0;
-  }
-  return -1;
-}
-
 s_worker::s_worker(queue *q) {
   db = new database();
   ipcc = new ipc_client();
@@ -49,7 +40,7 @@ s_worker::~s_worker(void) {
   delete db;
   delete ipcc;
 }
-
+/*
 void s_worker::set_result(bool success, int retry_limit, int retry_time,
                           bool no_sensor) {
   if (success) {
@@ -89,34 +80,6 @@ bool s_worker::check_function_allowed(int *func, int func_count) {
 
   db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_CANCELLED);
   return false;
-}
-
-char s_worker::opening_sensor_value() {
-  char value = -1;
-
-  supla_channel sensor_channel;
-  memset(&sensor_channel, 0, sizeof(supla_channel));
-
-  sensor_channel.id = s_exec.channel_param2;
-
-  if (sensor_channel.id != 0 && db->get_channel(&sensor_channel) &&
-      sensor_channel.param1 == s_exec.channel_id &&
-      (sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNO ||
-       sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC) &&
-      ipcc->is_connected(s_exec.user_id, sensor_channel.iodevice_id) ==
-          IPC_RESULT_CONNECTED) {
-    if (!ipcc->get_char_value(s_exec.user_id, sensor_channel.iodevice_id,
-                              sensor_channel.id, &value)) {
-      value = -1;
-    } else {
-      value = !!value;
-
-      if (sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC)
-        value = value == 1 ? 0 : 1;
-    }
-  }
-
-  return value;
 }
 
 void s_worker::action_turn_on_off(char on) {
@@ -237,21 +200,7 @@ void s_worker::action_shut_reveal(char shut) {
   set_result(success, RS_RETRY_LIMIT, RS_RETRY_TIME, false);
 }
 
-char s_worker::json_get_int(jsmntok_t *token, int *value) {
-  char buffer[12];
-  memset(buffer, 0, sizeof(buffer));
 
-  if (value == NULL || token->type != JSMN_PRIMITIVE ||
-      (unsigned int)(token->end - token->start) >= sizeof(buffer) ||
-      token->end <= token->start)
-    return 0;
-
-  memcpy(buffer, &s_exec.action_param[token->start], token->end - token->start);
-
-  *value = atoi(buffer);
-
-  return 1;
-}
 
 int s_worker::hue2rgb(double hue) {
   double r = 0, g = 0, b = 0;
@@ -439,7 +388,7 @@ void s_worker::action_set_rgbw() {
                                       color_brightness, brightness);
   set_result(success, RGBW_RETRY_LIMIT, RGBW_RETRY_TIME, false);
 }
-
+*/
 void s_worker::execute(void *sthread) {
   if (!db->connect()) return;
 
@@ -454,6 +403,9 @@ void s_worker::execute(void *sthread) {
     if (action) {
       action->execute();
       delete action;
+    } else {
+      db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_CANCELLED);
+      supla_log(LOG_ERR, "Action %i is not supported!", s_exec.action);
     }
     /*
     switch (s_exec.action) {
@@ -508,7 +460,37 @@ int s_worker::get_id(void) { return s_exec.id; }
 
 int s_worker::get_retry_count(void) { return s_exec.retry_count; }
 
+const char *s_worker::get_action_param(void) { return s_exec.action_param; }
+
 bool s_worker::retry_when_fail(void) { return s_exec.retry_when_fail; }
+
+char s_worker::ipcc_get_opening_sensor_value() {
+  char value = -1;
+
+  supla_channel sensor_channel;
+  memset(&sensor_channel, 0, sizeof(supla_channel));
+
+  sensor_channel.id = s_exec.channel_param2;
+
+  if (sensor_channel.id != 0 && db->get_channel(&sensor_channel) &&
+      sensor_channel.param1 == s_exec.channel_id &&
+      (sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNO ||
+       sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC) &&
+      ipcc->is_connected(s_exec.user_id, sensor_channel.iodevice_id) ==
+          IPC_RESULT_CONNECTED) {
+    if (!ipcc->get_char_value(s_exec.user_id, sensor_channel.iodevice_id,
+                              sensor_channel.id, &value)) {
+      value = -1;
+    } else {
+      value = !!value;
+      if (s_exec.channel_param3 == 1) {
+        value = !value;
+      }
+    }
+  }
+
+  return value;
+}
 
 bool s_worker::ipcc_set_char_value(char value) {
   return ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id,

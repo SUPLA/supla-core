@@ -21,7 +21,6 @@
 
 #include "database.h"
 #include "ipcclient.h"
-#include "jsmn.h"
 
 class queue;
 class s_worker {
@@ -30,11 +29,10 @@ class s_worker {
   database *db;
   ipc_client *ipcc;
   queue *q;
-
+/*
   void set_result(bool success, int retry_limit, int retry_time,
                   bool no_sensor);
   bool check_function_allowed(int *func, int func_count);
-  char opening_sensor_value(void);
 
   void action_open(void);
   void action_turn_on_off(char on);
@@ -46,7 +44,7 @@ class s_worker {
   char parse_rgbw_params(int *color, char *color_brightness, char *brightness);
   char parse_percentage(char *percent);
   void action_set_rgbw(void);
-
+*/
  public:
   explicit s_worker(queue *q);
   ~s_worker();
@@ -56,8 +54,10 @@ class s_worker {
   int get_channel_func(void);
   int get_id(void);
   int get_retry_count(void);
+  const char *get_action_param(void);
   bool retry_when_fail(void);
 
+  char ipcc_get_opening_sensor_value(void);
   bool ipcc_set_char_value(char value);
   bool ipcc_get_char_value(char *value);
   char ipcc_is_connected(void);
