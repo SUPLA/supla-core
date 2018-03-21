@@ -39,6 +39,8 @@ bool s_worker_action::check_function_allowed(void) {
   return false;
 }
 
+bool s_worker_action::check_before_start(void) { return false; }
+
 bool s_worker_action::no_sensor(void) { return false; }
 
 bool s_worker_action::retry_when_fail(void) {
@@ -50,6 +52,13 @@ void s_worker_action::execute(void) {
     return;
 
   supla_log(LOG_DEBUG, "EXECUTE %i", worker->get_retry_count());
+
+  if (check_before_start() && worker->get_retry_count() == 0 &&
+      check_result()) {
+    worker->get_db()->set_result(worker->get_id(),
+                                 ACTION_EXECUTION_RESULT_SUCCESS);
+    return;
+  }
 
   if (worker->get_retry_count() % 2 == 0) {  // SET
     supla_log(LOG_DEBUG, "DO ACTION");

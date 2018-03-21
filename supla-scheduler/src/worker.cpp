@@ -423,20 +423,6 @@ void s_worker::execute(void *sthread) {
         }
 
         break;
-      case ACTION_SHUT:
-        action_shut_reveal(1);
-        break;
-      case ACTION_REVEAL:
-      case ACTION_REVEAL_PARTIALLY:
-        action_shut_reveal(0);
-        break;
-      case ACTION_TURN_ON:
-        action_turn_on_off(1);
-        s_worker_action_turn_onoff(this, true).execute();
-        break;
-      case ACTION_TURN_OFF:
-        action_turn_on_off(0);
-        break;
       case ACTION_SET_RGBW_PARAMETERS:
         action_set_rgbw();
         break;

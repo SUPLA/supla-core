@@ -39,6 +39,7 @@ class s_worker_action {
   virtual void do_action(void) = 0;
   virtual bool check_result(void) = 0;
 
+  virtual bool check_before_start(void);
   virtual bool no_sensor(void);
   virtual bool retry_when_fail(void);
 
