@@ -54,4 +54,4 @@ class s_worker_action_reveal_partially : public s_worker_action_shutreveal {
   explicit s_worker_action_reveal_partially(s_worker *worker);
 };
 
-#endif /*ACTION_TURN_ONOFF_*/
+#endif /*ACTION_SHUTREVEAL_H_*/
