@@ -134,10 +134,6 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->Hidden = Hidden;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-  if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
-    this->value[0] = 1;
-  }
 }
 
 int supla_device_channel::getId(void) { return Id; }
