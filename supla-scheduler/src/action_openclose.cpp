@@ -65,12 +65,16 @@ int s_worker_action_openclose::try_limit(void) {
   return garage_group() ? 4 : 1;
 }
 
+bool s_worker_action_openclose::retry_when_fail(void) {
+  return garage_group() ? true : s_worker_action::retry_when_fail();
+}
+
 int s_worker_action_openclose::waiting_time_to_retry(void) {
-  return garage_group() ? 60 : 30;
+  return garage_group() ? 65 : 30;
 }
 
 int s_worker_action_openclose::waiting_time_to_check(void) {
-  return garage_group() ? 55 : 2;
+  return garage_group() ? 60 : 2;
 }
 
 bool s_worker_action_openclose::check_result() {
@@ -79,21 +83,22 @@ bool s_worker_action_openclose::check_result() {
   if (garage_group()) {
     char sensor_value = worker->ipcc_get_opening_sensor_value();
     if (sensor_value == -1) {
-      supla_log(LOG_DEBUG, "RESULT NO SENSOR");
       noSensor = true;
     } else {
-      supla_log(LOG_DEBUG, "RESULT %i",
-                doOpen == (sensor_value == 1 ? false : true));
       return doOpen == (sensor_value == 1 ? false : true);
     }
-    supla_log(LOG_DEBUG, "RESULT false");
+
     return false;
   }
-  supla_log(LOG_DEBUG, "RESULT true");
+
   return true;
 }
 
-void s_worker_action_openclose::do_action() { worker->ipcc_set_char_value(1); }
+void s_worker_action_openclose::do_action() {
+  if (!garage_group() || worker->ipcc_get_opening_sensor_value() != -1) {
+    worker->ipcc_set_char_value(1);
+  }
+}
 
 REGISTER_ACTION(s_worker_action_open, ACTION_OPEN);
 REGISTER_ACTION(s_worker_action_close, ACTION_CLOSE);
