@@ -70,11 +70,11 @@ bool s_worker_action_openclose::retry_when_fail(void) {
 }
 
 int s_worker_action_openclose::waiting_time_to_retry(void) {
-  return garage_group() ? 65 : 30;
+  return garage_group() ? 60 : 30;
 }
 
 int s_worker_action_openclose::waiting_time_to_check(void) {
-  return garage_group() ? 60 : 2;
+  return garage_group() ? 55 : 2;
 }
 
 bool s_worker_action_openclose::check_result() {
