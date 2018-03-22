@@ -52,8 +52,6 @@ void s_worker_action::execute(void) {
   if (worker == NULL || worker->get_db() == NULL || !check_function_allowed())
     return;
 
-  supla_log(LOG_DEBUG, "EXECUTE %i", worker->get_retry_count());
-
   if (check_before_start() && worker->get_retry_count() == 0 &&
       check_result()) {
     worker->get_db()->set_result(worker->get_id(),
@@ -62,25 +60,21 @@ void s_worker_action::execute(void) {
   }
 
   if (worker->get_retry_count() % 2 == 0) {  // SET
-    supla_log(LOG_DEBUG, "DO ACTION");
     do_action();
     worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
     return;
   }
 
   // CHECK
-  supla_log(LOG_DEBUG, "CHECK RESULT");
   if (check_result()) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
   } else if (retry_when_fail() &&
              worker->get_retry_count() + 1 < (try_limit() * 2)) {
-    supla_log(LOG_DEBUG, "RETRY WHEN FAIL");
     worker->get_db()->set_retry(
         worker->get_id(), waiting_time_to_retry() - waiting_time_to_check());
 
   } else if (no_sensor()) {
-    supla_log(LOG_DEBUG, "NO SENSOR");
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_NO_SENSOR);
 
@@ -89,17 +83,14 @@ void s_worker_action::execute(void) {
       case IPC_RESULT_CONNECTED:
         worker->get_db()->set_result(worker->get_id(),
                                      ACTION_EXECUTION_RESULT_FAILURE);
-        supla_log(LOG_DEBUG, "RESULT_FAILURE");
         break;
       case IPC_RESULT_DISCONNECTED:
         worker->get_db()->set_result(
             worker->get_id(), ACTION_EXECUTION_RESULT_DEVICE_UNREACHABLE);
-        supla_log(LOG_DEBUG, "DEVICE_UNREACHABLE");
         break;
       case IPC_RESULT_SERVER_UNREACHABLE:
         worker->get_db()->set_result(
             worker->get_id(), ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE);
-        supla_log(LOG_DEBUG, "SERVER_UNREACHABLE");
         break;
     }
   }

@@ -50,18 +50,6 @@ typedef struct {
 #define EXPIRE_TIME 300  // 5 min since planned_time
 #define ZOMBIE_TIME 60   // 1 min since fetched_time
 
-#define OPEN_RETRY_LIMIT 2
-#define OPEN_RETRY_TIME 30
-
-#define GATEOPENCLOSE_RETRY_LIMIT 4
-#define GATEOPENCLOSE_RETRY_TIME 60
-
-#define RS_RETRY_LIMIT 2
-#define RS_RETRY_TIME 90
-
-#define RGBW_RETRY_LIMIT 2
-#define RGBW_RETRY_TIME 30
-
 #define ACTION_OPEN 10
 #define ACTION_CLOSE 20
 #define ACTION_SHUT 30
