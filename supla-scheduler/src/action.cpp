@@ -136,6 +136,10 @@ bool s_worker_action::parse_percentage(char *percent) {
   return false;
 }
 
+int s_worker_action::get_max_time(void) {
+  return try_limit() * waiting_time_to_retry();
+}
+
 int s_worker_action::jsoneq(const char *json, jsmntok_t *tok, const char *s) {
   if (tok->type == JSMN_STRING &&
       (int)strnlen(s, 255) == tok->end - tok->start &&

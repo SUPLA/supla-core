@@ -50,6 +50,7 @@ class s_worker_action {
   virtual ~s_worker_action();
   void execute(void);
 
+  int get_max_time(void);
   bool parse_percentage(char *percent);
   int jsoneq(const char *json, jsmntok_t *tok, const char *s);
   char json_get_int(jsmntok_t *token, int *value);

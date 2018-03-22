@@ -44,6 +44,8 @@ TEST_F(ActionTest, time) {
         action->waiting_time_to_retry() - action->waiting_time_to_check();
     ASSERT_GT(diff, 0);
 
+    ASSERT_LT(action->get_max_time(), 280);  // Max time 4 min 40 sec.
+
     delete action;
   }
 
