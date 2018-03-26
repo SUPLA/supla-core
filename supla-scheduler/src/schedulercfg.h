@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#define SCHEDULER_VERSION "1.0.2"
+#define SCHEDULER_VERSION "2.2"
 
 #define CFG_UID 0
 #define CFG_GID 1
