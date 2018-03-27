@@ -504,6 +504,9 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
         supla_log(LOG_ERR, "O_NONBLOCK");
         ssocket_supla_socket_close(supla_socket);
       }
+
+      supla_log(LOG_INFO, "Cipher: %s, ClientSD: %i",
+                SSL_get_cipher(supla_socket->ssl), supla_socket->sfd);
     }
   }
 
