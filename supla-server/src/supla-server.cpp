@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
     supla_log(LOG_INFO, "Server version %s [Protocol v%i], %i", SERVER_VERSION,
               SUPLA_PROTO_VERSION, sizeof(iid) * sizeof(int));
 #ifndef NOSSL
-    supla_log(LOG_INFO, "SSL version: %s", OpenSSL_version(OPENSSL_VERSION));
+    supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
 #endif
     supla_log(LOG_INFO, "Started at %s", st_get_datetime_str(dt));
   }
