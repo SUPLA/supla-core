@@ -261,7 +261,11 @@ SSL_CTX *ssocket_client_initctx(void) {
 
   OpenSSL_add_all_algorithms();
   SSL_load_error_strings();
+#ifdef OPENSSL_NO_SSL3_METHOD
+  method = (SSL_METHOD *)SSLv23_client_method();
+#else
   method = (SSL_METHOD *)SSLv3_client_method();
+#endif
   ctx = SSL_CTX_new(method);
 
   if (ctx == NULL) ssocket_ssl_error_log();
