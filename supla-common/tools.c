@@ -156,7 +156,7 @@ char *st_bin2hex(char *buffer, const char *src, size_t len) {
   b = 0;
 
   for (a = 0; a < len; a++) {
-    snprintf(&buffer[b], 3, "%02X", (unsigned char)src[a]); // NOLINT
+    snprintf(&buffer[b], 3, "%02X", (unsigned char)src[a]);  // NOLINT
     b += 2;
   }
 
@@ -189,10 +189,18 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
 
+#ifdef __ANDROID__
+        srand(tv.tv_usec);
+        gettimeofday(&tv, NULL);
+
+        for (a = 0; a < size; a++)
+          KEY[a] = (unsigned char)(rand() + tv.tv_usec);
+#else
         unsigned int seed = time(NULL);
 
         for (a = 0; a < size; a++)
           KEY[a] = (unsigned char)(rand_r(&seed) + tv.tv_usec);
+#endif
 
         if (fwrite(KEY, size, (int)1, F) == 1) {
           result = 1;
@@ -255,7 +263,7 @@ char st_read_authkey_from_file(char *file, char *AuthKey, char create) {
 
 time_t st_get_utc_time(void) {
   time_t now = time(0);
-  struct tm *now_tm = gmtime(&now); // NOLINT
+  struct tm *now_tm = gmtime(&now);  // NOLINT
   return mktime(now_tm);
 }
 
@@ -263,7 +271,7 @@ char *st_get_datetime_str(char buffer[64]) {
   memset(buffer, 0, 64);
 
   time_t t = time(NULL);
-  struct tm *tm = localtime(&t); // NOLINT
+  struct tm *tm = localtime(&t);  // NOLINT
   strftime(buffer, 64, "%c", tm);
 
   return buffer;
