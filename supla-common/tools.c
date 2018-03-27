@@ -194,7 +194,7 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
         gettimeofday(&tv, NULL);
 
         for (a = 0; a < size; a++)
-          KEY[a] = (unsigned char)(rand() + tv.tv_usec);
+          KEY[a] = (unsigned char)(rand() + tv.tv_usec);  // NOLINT
 #else
         unsigned int seed = time(NULL);
 
