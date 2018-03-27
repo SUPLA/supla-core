@@ -1,7 +1,3 @@
-ifndef SSLDIR
-SSLDIR=/usr/src/openssl
-endif
-
 ifdef MARIADB
 LIBMYSQL=mariadbclient
 else
