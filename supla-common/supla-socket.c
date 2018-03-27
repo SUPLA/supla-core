@@ -362,6 +362,7 @@ void *ssocket_server_init(const char cert[], const char key[], int port,
 
   return ssd;
 }
+
 #endif /*ifndef _SERVER_EXCLUDED*/
 
 void ssocket_free(void *_ssd) {
@@ -389,6 +390,13 @@ void ssocket_free(void *_ssd) {
       free(ssl_locks);
       ssl_locks = NULL;
     }
+
+    EVP_cleanup();
+    ERR_clear_error();
+    ERR_remove_thread_state(NULL);
+    ERR_free_strings();
+    CRYPTO_cleanup_all_ex_data();
+
 #endif /*ndef _SERVER_EXCLUDED*/
 #endif /*ifndef NOSSL*/
 
@@ -519,11 +527,16 @@ void ssocket_supla_socket_close(void *_supla_socket) {
   TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
   if (supla_socket) {
 #ifndef NOSSL
+
     if (supla_socket->ssl) {
       SSL_shutdown(supla_socket->ssl);
       SSL_free(supla_socket->ssl);
       supla_socket->ssl = NULL;
     }
+
+    ERR_clear_error();
+    ERR_remove_thread_state(NULL);
+
 #endif /*ifndef NOSSL */
 
     if (supla_socket->sfd != -1) {
@@ -567,8 +580,8 @@ void ssocket_close(void *_ssd) {
       SSL_CTX_free(ssd->ctx);
       ssd->ctx = NULL;
 
-      ERR_free_strings();
       EVP_cleanup();
+      ERR_free_strings();
     }
 #endif /*ifndef NOSSL*/
   }
