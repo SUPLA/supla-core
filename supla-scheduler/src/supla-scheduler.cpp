@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
     database *db = new database();
     if (!db->check_db_version("20180324222844")) {
       delete db;
+      database::mainthread_end();
       goto exit_fail;
     } else {
       delete db;
