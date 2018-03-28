@@ -22,10 +22,6 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
-#ifndef NOSSL
-#include <openssl/ssl.h>
-#endif
-
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
@@ -56,9 +52,7 @@ int main(int argc, char *argv[]) {
     int iid[2];
     supla_log(LOG_INFO, "Server version %s [Protocol v%i], %i", SERVER_VERSION,
               SUPLA_PROTO_VERSION, sizeof(iid) * sizeof(int));
-#ifndef NOSSL
-    supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
-#endif
+
     supla_log(LOG_INFO, "Started at %s", st_get_datetime_str(dt));
   }
 

@@ -331,6 +331,10 @@ void *ssocket_server_init(const char cert[], const char key[], int port,
     assert(secure == 0);
 #else
 
+#ifndef NOSSL
+    supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
+#endif
+
     SSL_library_init();
 
     ssl_locks = malloc(CRYPTO_num_locks() * sizeof(void *));
@@ -681,6 +685,8 @@ void *ssocket_client_init(const char host[], int port, unsigned char secure) {
   TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
 
   if (ssd == NULL) return NULL;
+
+  supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
 
   memset(ssd, 0, sizeof(TSuplaSocketData));
 
