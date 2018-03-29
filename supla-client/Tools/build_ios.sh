@@ -16,9 +16,9 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-SDK_VERSION="8.4"
+SDK_VERSION="8.2"
 BUILD_CFG="Release"
-IOS_OPENSSL_LIB_INC="../../../openssl/include"
+IOS_OPENSSL_LIB_INC="/Users/AC/Public/openssl/include"
 
 if [ ! -z $1 ]; then
 
@@ -29,7 +29,7 @@ if [ ! -z $1 ]; then
    fi
 fi
 
-BUILD_DIR="./"$BUILD_CFG
+BUILD_DIR="../"$BUILD_CFG
 DEVELOPER=`xcode-select -print-path`
 
 if [ ! -d $BUILD_DIR ]; then
