@@ -1,3 +1,3 @@
 #!/bin/sh
 
-valgrind --tool=memcheck --leak-check=full --track-origins=yes --undef-value-errors=no $i
+valgrind --tool=memcheck --leak-check=full --undef-value-errors=no $1
