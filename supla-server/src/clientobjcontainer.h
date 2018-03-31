@@ -19,8 +19,7 @@
 #ifndef CLIENTOBJCONTAINER_H_
 #define CLIENTOBJCONTAINER_H_
 
-#include "client.h"
-
+class supla_client;
 class supla_client_objcontainer {
  private:
   supla_client *client;

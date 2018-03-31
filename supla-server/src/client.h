@@ -20,7 +20,7 @@
 #define CLIENT_H_
 
 #include "cdcommon.h"
-#include "clientchannel.h"
+#include "clientchannels.h"
 #include "clientlocation.h"
 #include "clientchannelgroups.h"
 
