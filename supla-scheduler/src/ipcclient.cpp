@@ -89,7 +89,7 @@ int ipc_client::read(void) {
   ssize_t len = recv(sfd, buffer, IPC_BUFFER_SIZE, 0);
 
   if (len > 0) {
-    if (len >= IPC_BUFFER_SIZE) len = IPC_BUFFER_SIZE;
+    if (len >= IPC_BUFFER_SIZE) len = IPC_BUFFER_SIZE-1;
 
     buffer[len] = 0;
     // supla_log(LOG_DEBUG, "%s", buffer);
