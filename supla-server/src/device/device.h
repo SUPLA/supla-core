@@ -20,7 +20,7 @@
 #define DEVICE_H_
 
 #include <list>
-#include "cdcommon.h"
+#include "../cdcommon.h"
 #include "devicechannel.h"
 
 class supla_user;

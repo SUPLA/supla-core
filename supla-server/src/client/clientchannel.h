@@ -19,7 +19,7 @@
 #ifndef CLIENTCHANNEL_H_
 #define CLIENTCHANNEL_H_
 
-#include "proto.h"
+#include "../proto.h"
 #include "clientchannels.h"
 
 #define CC_REMOTEUPDATE_NONE 0

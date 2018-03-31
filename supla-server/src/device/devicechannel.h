@@ -20,7 +20,7 @@
 #define DEVICECHANNEL_H_
 
 #include <list>
-#include "proto.h"
+#include "../proto.h"
 
 class channel_address {
  private:

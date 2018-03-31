@@ -20,11 +20,11 @@
 #include <string.h>
 
 #include "clientlocation.h"
-#include "database.h"
-#include "lck.h"
-#include "log.h"
-#include "safearray.h"
-#include "srpc.h"
+#include "../database.h"
+#include "../lck.h"
+#include "../log.h"
+#include "../safearray.h"
+#include "../srpc.h"
 
 supla_client_location::supla_client_location(int Id, const char *Caption) {
   this->Id = Id;

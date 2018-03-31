@@ -19,7 +19,7 @@
 #ifndef CLIENTLOCATION_H_
 #define CLIENTLOCATION_H_
 
-#include "proto.h"
+#include "../proto.h"
 
 class supla_client_location {
  private:

@@ -20,9 +20,9 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "client.h"
+#include "client/client.h"
 #include "database.h"
-#include "device.h"
+#include "device/device.h"
 #include "log.h"
 #include "serverconnection.h"
 #include "srpc.h"

@@ -19,9 +19,9 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
-#include "client.h"
+#include "client/client.h"
 #include "db.h"
-#include "device.h"
+#include "device/device.h"
 #include "proto.h"
 
 class database : public dbcommon {

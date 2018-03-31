@@ -20,11 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "database.h"
+#include "../database.h"
+#include "../log.h"
+#include "../safearray.h"
+#include "../srpc.h"
 #include "devicechannel.h"
-#include "log.h"
-#include "safearray.h"
-#include "srpc.h"
 
 channel_address::channel_address(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;

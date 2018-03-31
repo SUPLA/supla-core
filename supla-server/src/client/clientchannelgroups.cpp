@@ -17,8 +17,8 @@
  */
 
 #include "client.h"
+#include "../safearray.h"
 #include "clientchannelgroups.h"
-#include "safearray.h"
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
     : supla_client_objcontainer(client) {}

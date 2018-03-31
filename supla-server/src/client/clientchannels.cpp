@@ -22,11 +22,11 @@
 
 #include "clientchannel.h"
 #include "clientchannels.h"
-#include "database.h"
-#include "log.h"
-#include "safearray.h"
-#include "srpc.h"
-#include "user.h"
+#include "../database.h"
+#include "../log.h"
+#include "../safearray.h"
+#include "../srpc.h"
+#include "../user.h"
 
 supla_client_channels::supla_client_channels(supla_client *client)
     : supla_client_objcontainer(client) {}

@@ -37,7 +37,7 @@ class supla_client_channels : public supla_client_objcontainer {
   bool remote_update_c_b(void *srpc);
 
  public:
-  supla_client_channels(supla_client *client);
+  explicit supla_client_channels(supla_client *client);
   void update_channel(int Id, int DeviceId, int LocationID, int Func,
                       int Param1, int Param2, const char *Caption, int AltIcon,
                       unsigned char ProtocolVersion);

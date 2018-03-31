@@ -22,12 +22,12 @@
 
 #include "client.h"
 #include "clientchannel.h"
-#include "database.h"
-#include "log.h"
-#include "proto.h"
-#include "safearray.h"
-#include "srpc.h"
-#include "user.h"
+#include "../database.h"
+#include "../log.h"
+#include "../proto.h"
+#include "../safearray.h"
+#include "../srpc.h"
+#include "../user.h"
 
 supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
                                            int Func, int Param1, int Param2,

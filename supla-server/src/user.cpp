@@ -20,8 +20,8 @@
 #include <unistd.h>
 #include <list>
 
-#include "client.h"
-#include "device.h"
+#include "client/client.h"
+#include "device/device.h"
 #include "log.h"
 #include "safearray.h"
 #include "user.h"

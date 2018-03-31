@@ -16,15 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CLIENTCHANNELGROUPS_H_
-#define CLIENTCHANNELGROUPS_H_
-
+#include "client.h"
 #include "clientobjcontainer.h"
+#include "../safearray.h"
 
-class supla_client_channelgroups : public supla_client_objcontainer {
- private:
- public:
-  supla_client_channelgroups(supla_client *client);
-};
+// static
+char supla_client_objcontainer::arr_delcnd(void *ptr) {
+  delete (supla_client_location *)ptr;
+  return 1;
+}
 
-#endif /* CLIENTCHANNELGROUPS_H_ */
+void supla_client_objcontainer::arr_clean(void) {
+  safe_array_lock(arr);
+  safe_array_clean(arr, arr_delcnd);
+  safe_array_unlock(arr);
+}
+
+supla_client_objcontainer::supla_client_objcontainer(supla_client *client) {
+  this->client = client;
+  this->arr = safe_array_init();
+}
+
+supla_client_objcontainer::~supla_client_objcontainer() {}
+
+int supla_client_objcontainer::count(void) { return safe_array_count(arr); }

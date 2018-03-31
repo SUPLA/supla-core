@@ -21,14 +21,9 @@ C_SRCS += \
 CPP_SRCS += \
 ../src/accept_loop.cpp \
 ../src/cdcommon.cpp \
-../src/client.cpp \
-../src/clientchannel.cpp \
-../src/clientlocation.cpp \
 ../src/database.cpp \
 ../src/datalogger.cpp \
 ../src/db.cpp \
-../src/device.cpp \
-../src/devicechannel.cpp \
 ../src/ipcctrl.cpp \
 ../src/serverconnection.cpp \
 ../src/supla-server.cpp \
@@ -38,14 +33,9 @@ OBJS += \
 ./src/accept_loop.o \
 ./src/cdcommon.o \
 ./src/cfg.o \
-./src/client.o \
-./src/clientchannel.o \
-./src/clientlocation.o \
 ./src/database.o \
 ./src/datalogger.o \
 ./src/db.o \
-./src/device.o \
-./src/devicechannel.o \
 ./src/eh.o \
 ./src/ini.o \
 ./src/ipcctrl.o \
@@ -81,14 +71,9 @@ C_DEPS += \
 CPP_DEPS += \
 ./src/accept_loop.d \
 ./src/cdcommon.d \
-./src/client.d \
-./src/clientchannel.d \
-./src/clientlocation.d \
 ./src/database.d \
 ./src/datalogger.d \
 ./src/db.d \
-./src/device.d \
-./src/devicechannel.d \
 ./src/ipcctrl.d \
 ./src/serverconnection.d \
 ./src/supla-server.d \

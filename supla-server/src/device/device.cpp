@@ -18,15 +18,15 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#include "database.h"
+#include "../database.h"
+#include "../lck.h"
+#include "../log.h"
+#include "../safearray.h"
+#include "../srpc.h"
+#include "../user.h"
 #include "device.h"
-#include "lck.h"
-#include "log.h"
-#include "safearray.h"
-#include "srpc.h"
-#include "unistd.h"
-#include "user.h"
 
 supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
   this->channels = new supla_device_channels();

@@ -19,7 +19,7 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include "cdcommon.h"
+#include "../cdcommon.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
 #include "clientchannelgroups.h"
