@@ -179,7 +179,7 @@ void supla_client_channel::proto_get_channel_value(
   channel_value->Id = getId();
 
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), &channel_value->value,
-                                         &channel_value->online);
+    client->getUser()->get_channel_value(
+        DeviceId, getId(), &channel_value->value, &channel_value->online);
   }
 }
