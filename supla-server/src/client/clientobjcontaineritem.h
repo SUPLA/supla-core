@@ -26,7 +26,7 @@ class supla_client_objcontainer_item {
 
  protected:
  public:
-  supla_client_objcontainer_item(int Id);
+  explicit supla_client_objcontainer_item(int Id);
   int getId();
 };
 
