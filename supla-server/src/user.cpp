@@ -689,6 +689,7 @@ bool supla_user::reconnect(int UserID) {
 
   if (user) {
     user->reconnect();
+    // cppcheck-suppress memleak
     return true;
   }
 
