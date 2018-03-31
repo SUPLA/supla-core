@@ -18,6 +18,6 @@ matrix:
       os: linux
       compiler: gcc
       script:
-        - ./tools/test.sh
         - ./tools/cppcheck.sh
+        - ./tools/test.sh
 
