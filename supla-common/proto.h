@@ -56,7 +56,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 8
+#define SUPLA_PROTO_VERSION 9
 #define SUPLA_PROTO_VERSION_MIN 1
 #define SUPLA_TAG_SIZE 5
 #if defined(__AVR__)
@@ -113,6 +113,7 @@ extern "C" {
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
 #define SUPLA_CS_CALL_REGISTER_CLIENT_C 86  // ver. >= 7
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
+#define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
@@ -389,7 +390,7 @@ typedef struct {
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_B
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
-} TDS_SuplaRegisterDevice_B;  // ver. >= 2
+} TDS_SuplaRegisterDevice_B;            // ver. >= 2
 
 typedef struct {
   // device -> server
@@ -406,7 +407,7 @@ typedef struct {
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_B
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
-} TDS_SuplaRegisterDevice_C;  // ver. >= 6
+} TDS_SuplaRegisterDevice_C;            // ver. >= 6
 
 typedef struct {
   // device -> server
@@ -423,8 +424,8 @@ typedef struct {
 
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_B
-  channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
-} TDS_SuplaRegisterDevice_D;  // ver. >= 7
+      channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+} TDS_SuplaRegisterDevice_D;            // ver. >= 7
 
 typedef struct {
   // server -> device
@@ -510,7 +511,7 @@ typedef struct {
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaChannel_B;  // ver. >= 8
+} TSC_SuplaChannel_B;                           // ver. >= 8
 
 typedef struct {
   // server -> client
@@ -518,8 +519,8 @@ typedef struct {
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannel_B
-  channels[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelPack_B;  // ver. >= 8
+      channels[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelPack_B;                    // ver. >= 8
 
 typedef struct {
   // server -> client
@@ -535,7 +536,7 @@ typedef struct {
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaChannelGroup;  // ver. >= 9
+} TSC_SuplaChannelGroup;                             // ver. >= 9
 
 typedef struct {
   // server -> client
@@ -544,7 +545,7 @@ typedef struct {
   _supla_int_t total_left;
   TSC_SuplaChannelGroup
       groups[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupPack;  // ver. >= 9
+} TSC_SuplaChannelGroupPack;                     // ver. >= 9
 
 typedef struct {
   // server -> client
@@ -561,7 +562,7 @@ typedef struct {
   _supla_int_t total_left;
   TSC_SuplaChannelGroup groups
       [SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupRelationPack;  // ver. >= 9
+} TSC_SuplaChannelGroupRelationPack;                // ver. >= 9
 
 typedef struct {
   // client -> server
@@ -611,6 +612,20 @@ typedef struct {
   unsigned char version;
   unsigned char version_min;
 } TSC_SuplaRegisterClientResult;
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t result_code;
+  _supla_int_t ClientID;
+  _supla_int_t LocationCount;
+  _supla_int_t ChannelCount;
+  _supla_int_t ChannelGroupCount;
+  _supla_int_t Flags;
+  unsigned char activity_timeout;
+  unsigned char version;
+  unsigned char version_min;
+} TSC_SuplaRegisterClientResult_B;  // ver. >= 9
 
 typedef struct {
   // client -> server

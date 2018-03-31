@@ -25,8 +25,8 @@
 #include "proto.h"
 
 #ifdef ESP8266
-#include <os_type.h>
 #include <mem.h>
+#include <os_type.h>
 #define SRPC_ICACHE_FLASH ICACHE_FLASH_ATTR
 #else
 #define SRPC_ICACHE_FLASH
@@ -80,6 +80,7 @@ union TsrpcDataPacketData {
   TCS_SuplaRegisterClient_B *cs_register_client_b;
   TCS_SuplaRegisterClient_C *cs_register_client_c;
   TSC_SuplaRegisterClientResult *sc_register_client_result;
+  TSC_SuplaRegisterClientResult_B *sc_register_client_result_b;
   TDS_SuplaDeviceChannelValue *ds_device_channel_value;
   TSC_SuplaLocation *sc_location;
   TSC_SuplaLocationPack *sc_location_pack;
@@ -177,6 +178,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_c(
     void *_srpc, TCS_SuplaRegisterClient_C *registerclient);  // ver. >= 7
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(
     void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
+    void *_srpc,
+    TSC_SuplaRegisterClientResult_B *registerclient_result);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(
