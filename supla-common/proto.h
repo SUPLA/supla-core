@@ -92,11 +92,11 @@ extern "C" {
 #define SUPLA_OAUTH_SECRET_MAXSIZE 276          // ver. >= 7
 #define SUPLA_OAUTH_USERNAME_MAXSIZE 65         // ver. >= 7
 #define SUPLA_OAUTH_PASSWORD_MAXSIZE 65         // ver. >= 7
-#define SUPLA_CHANNELGROUP_PACK_MAXCOUNT 20     // ver. >= 8
-#define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401  // ver. >= 8
+#define SUPLA_CHANNELGROUP_PACK_MAXCOUNT 20     // ver. >= 9
+#define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401  // ver. >= 9
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
-#define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 8
+#define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
 #endif /*SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT*/
 
 #define SUPLA_DCS_CALL_GETVERSION 10
@@ -535,7 +535,7 @@ typedef struct {
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaChannelGroup;  // ver. >= 8
+} TSC_SuplaChannelGroup;  // ver. >= 9
 
 typedef struct {
   // server -> client
@@ -544,7 +544,7 @@ typedef struct {
   _supla_int_t total_left;
   TSC_SuplaChannelGroup
       groups[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupPack;  // ver. >= 8
+} TSC_SuplaChannelGroupPack;  // ver. >= 9
 
 typedef struct {
   // server -> client
@@ -552,7 +552,7 @@ typedef struct {
 
   _supla_int_t ChennelGroupID;
   _supla_int_t ChennelID;
-} TSC_SuplaChannelGroupRelation;  // ver. >= 8
+} TSC_SuplaChannelGroupRelation;  // ver. >= 9
 
 typedef struct {
   // server -> client
@@ -561,7 +561,7 @@ typedef struct {
   _supla_int_t total_left;
   TSC_SuplaChannelGroup groups
       [SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupRelationPack;  // ver. >= 8
+} TSC_SuplaChannelGroupRelationPack;  // ver. >= 9
 
 typedef struct {
   // client -> server
