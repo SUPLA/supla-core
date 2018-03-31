@@ -17,8 +17,26 @@
  */
 
 #include "client.h"
-#include "clientchannelgroups.h"
+#include "clientobjcontainer.h"
 #include "safearray.h"
 
-supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
-    : supla_client_objcontainer(client) {}
+// static
+char supla_client_objcontainer::arr_delcnd(void *ptr) {
+  delete (supla_client_location *)ptr;
+  return 1;
+}
+
+void supla_client_objcontainer::arr_clean(void) {
+  safe_array_lock(arr);
+  safe_array_clean(arr, arr_delcnd);
+  safe_array_unlock(arr);
+}
+
+supla_client_objcontainer::supla_client_objcontainer(supla_client *client) {
+  this->client = client;
+  this->arr = safe_array_init();
+}
+
+supla_client_objcontainer::~supla_client_objcontainer() {}
+
+int supla_client_objcontainer::count(void) { return safe_array_count(arr); }

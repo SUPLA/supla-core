@@ -22,6 +22,7 @@
 #include "cdcommon.h"
 #include "clientchannel.h"
 #include "clientlocation.h"
+#include "clientchannelgroups.h"
 
 class supla_user;
 class supla_client : public cdcommon {
@@ -31,6 +32,7 @@ class supla_client : public cdcommon {
  protected:
   supla_client_locations *locations;
   supla_client_channels *channels;
+  supla_client_channelgroups *cgroups;
 
   void loadIODevices(void);
   void loadConfig(void);

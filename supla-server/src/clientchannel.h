@@ -20,6 +20,7 @@
 #define CLIENTCHANNEL_H_
 
 #include "proto.h"
+#include "clientobjcontainer.h"
 
 class supla_client;
 class supla_client_channel {
@@ -52,14 +53,12 @@ class supla_client_channel {
   int getDeviceId();
 };
 
-class supla_client_channels {
+class supla_client_channels : public supla_client_objcontainer {
  private:
   supla_client *client;
   void *arr;
 
   static char arr_findcmp(void *ptr, void *id);
-  static char arr_delcnd(void *ptr);
-  void arr_clean(void);
 
   supla_client_channel *get_marked(void);
   supla_client_channel *find_channel(int Id);
@@ -68,9 +67,7 @@ class supla_client_channels {
   bool remote_update_c_b(void *srpc);
 
  public:
-  explicit supla_client_channels(supla_client *client);
-  virtual ~supla_client_channels();
-
+  supla_client_channels(supla_client *client);
   void update_channel(int Id, int DeviceId, int LocationID, int Func,
                       int Param1, int Param2, const char *Caption, int AltIcon,
                       unsigned char ProtocolVersion);
@@ -80,7 +77,6 @@ class supla_client_channels {
       int ChannelId = 0);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
   void load(void);
-  int count(void);
   bool remote_update(void *srpc);
 
   bool set_device_channel_new_value(

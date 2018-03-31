@@ -32,6 +32,7 @@
 supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
+  this->cgroups = new supla_client_channelgroups(this);
   this->name[0] = 0;
 }
 
@@ -39,6 +40,7 @@ supla_client::~supla_client() {
   if (getUser())  // 1st line !!!
     getUser()->remove_client(this);
 
+  delete cgroups;
   delete channels;
   delete locations;
 }
@@ -221,15 +223,29 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     delete db;
   }
 
-  TSC_SuplaRegisterClientResult srcr;
-  srcr.result_code = resultcode;
-  srcr.ClientID = getID();
-  srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
-  srcr.version_min = SUPLA_PROTO_VERSION;
-  srcr.version = SUPLA_PROTO_VERSION;
-  srcr.LocationCount = locations->count();
-  srcr.ChannelCount = channels->count();
-  srpc_sc_async_registerclient_result(getSvrConn()->srpc(), &srcr);
+  if ( proto_version >= 9 ) {
+	  TSC_SuplaRegisterClientResult_B srcr;
+	  srcr.result_code = resultcode;
+	  srcr.ClientID = getID();
+	  srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+	  srcr.version_min = SUPLA_PROTO_VERSION;
+	  srcr.version = SUPLA_PROTO_VERSION;
+	  srcr.LocationCount = locations->count();
+	  srcr.ChannelCount = channels->count();
+	  srcr.ChannelGroupCount = cgroups->count();
+	  srcr.Flags = 0;
+	  srpc_sc_async_registerclient_result_b(getSvrConn()->srpc(), &srcr);
+  } else {
+	  TSC_SuplaRegisterClientResult srcr;
+	  srcr.result_code = resultcode;
+	  srcr.ClientID = getID();
+	  srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+	  srcr.version_min = SUPLA_PROTO_VERSION;
+	  srcr.version = SUPLA_PROTO_VERSION;
+	  srcr.LocationCount = locations->count();
+	  srcr.ChannelCount = channels->count();
+	  srpc_sc_async_registerclient_result(getSvrConn()->srpc(), &srcr);
+  }
 
   // !After srpc_async_registerclient_result
   if (resultcode == SUPLA_RESULTCODE_TRUE) {

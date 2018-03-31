@@ -194,29 +194,11 @@ void supla_client_channel::proto_get_channel_value(
 // -----------------------------------------
 // -----------------------------------------
 
+supla_client_channels::supla_client_channels(supla_client *client)
+    : supla_client_objcontainer(client) {}
+
 char supla_client_channels::arr_findcmp(void *ptr, void *id) {
   return ((supla_client_channel *)ptr)->getId() == *((int *)id) ? 1 : 0;
-}
-
-char supla_client_channels::arr_delcnd(void *ptr) {
-  delete (supla_client_location *)ptr;
-  return 1;
-}
-
-void supla_client_channels::arr_clean(void) {
-  safe_array_lock(arr);
-  safe_array_clean(arr, arr_delcnd);
-  safe_array_unlock(arr);
-}
-
-supla_client_channels::supla_client_channels(supla_client *client) {
-  this->client = client;
-  this->arr = safe_array_init();
-}
-
-supla_client_channels::~supla_client_channels() {
-  arr_clean();
-  safe_array_free(arr);
 }
 
 supla_client_channel *supla_client_channels::find_channel(int Id) {
@@ -277,8 +259,6 @@ void supla_client_channels::load(void) {
 
   delete db;
 }
-
-int supla_client_channels::count(void) { return safe_array_count(arr); }
 
 void supla_client_channels::update_device_channels(int DeviceId) {
   database *db = new database();
