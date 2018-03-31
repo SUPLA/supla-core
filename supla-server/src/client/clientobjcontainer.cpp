@@ -17,13 +17,18 @@
  */
 
 #include "client.h"
-#include "clientobjcontainer.h"
 #include "../safearray.h"
+#include "clientobjcontainer.h"
 
 // static
 char supla_client_objcontainer::arr_delcnd(void *ptr) {
   delete (supla_client_location *)ptr;
   return 1;
+}
+
+// static
+char supla_client_objcontainer::arr_findcmp(void *ptr, void *id) {
+  return ((supla_client_channel *)ptr)->getId() == *((int *)id) ? 1 : 0;
 }
 
 void supla_client_objcontainer::arr_clean(void) {
@@ -32,11 +37,19 @@ void supla_client_objcontainer::arr_clean(void) {
   safe_array_unlock(arr);
 }
 
+supla_client_objcontainer_item *supla_client_objcontainer::find(int Id) {
+  return (supla_client_channel *)safe_array_findcnd(arr, arr_findcmp, &Id);
+}
+
 supla_client_objcontainer::supla_client_objcontainer(supla_client *client) {
   this->client = client;
   this->arr = safe_array_init();
 }
 
 supla_client_objcontainer::~supla_client_objcontainer() {}
+
+void *supla_client_objcontainer::getArr(void) { return arr; }
+
+supla_client *supla_client_objcontainer::getClient() { return client; }
 
 int supla_client_objcontainer::count(void) { return safe_array_count(arr); }

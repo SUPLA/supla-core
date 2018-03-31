@@ -25,11 +25,6 @@
 class supla_client_channel;
 class supla_client_channels : public supla_client_objcontainer {
  private:
-  supla_client *client;
-  void *arr;
-
-  static char arr_findcmp(void *ptr, void *id);
-
   supla_client_channel *get_marked(void);
   supla_client_channel *find_channel(int Id);
   bool remote_update_cv(void *srpc);

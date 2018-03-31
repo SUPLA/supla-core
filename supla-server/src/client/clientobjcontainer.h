@@ -20,6 +20,7 @@
 #define CLIENTOBJCONTAINER_H_
 
 class supla_client;
+class supla_client_objcontainer_item;
 class supla_client_objcontainer {
  private:
   supla_client *client;
@@ -27,12 +28,17 @@ class supla_client_objcontainer {
 
  protected:
   static char arr_delcnd(void *ptr);
+  static char arr_findcmp(void *ptr, void *id);
+
   void arr_clean(void);
+  void *getArr(void);
+  supla_client_objcontainer_item *find(int Id);
 
  public:
   explicit supla_client_objcontainer(supla_client *client);
   virtual ~supla_client_objcontainer();
 
+  supla_client *getClient();
   int count(void);
 };
 
