@@ -11,6 +11,7 @@ RM := rm -rf
 -include src/test/gtest/subdir.mk
 -include src/test/subdir.mk
 -include src/crypt_blowfish/subdir.mk
+-include src/clientchannelgroup/subdir.mk
 -include src/subdir.mk
 -include subdir.mk
 -include objects.mk
