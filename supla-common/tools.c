@@ -235,6 +235,7 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
       supla_log(LOG_ERR, "%s - wrong size", file);
     }
 
+    fclose(F);
   } else {
     supla_log(LOG_ERR, "Can't open file %s", file);
   }
