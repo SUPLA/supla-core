@@ -19,4 +19,5 @@ matrix:
       compiler: gcc
       script:
         - ./tools/test.sh
+        - ./tools/cppcheck.sh
 
