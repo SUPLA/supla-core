@@ -20,20 +20,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "client.h"
-#include "clientchannel.h"
 #include "../database.h"
 #include "../log.h"
 #include "../proto.h"
 #include "../safearray.h"
 #include "../srpc.h"
 #include "../user.h"
+#include "client.h"
+#include "clientchannel.h"
 
 supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
                                            int Func, int Param1, int Param2,
                                            const char *Caption, int AltIcon,
-                                           unsigned char ProtocolVersion) {
-  this->Id = Id;
+                                           unsigned char ProtocolVersion)
+    : supla_client_objcontainer_item(Id) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
   this->Func = Func;
@@ -53,8 +53,6 @@ supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
 }
 
 supla_client_channel::~supla_client_channel() { setCaption(NULL); }
-
-int supla_client_channel::getId(void) { return Id; }
 
 int supla_client_channel::getDeviceId() { return DeviceId; }
 
@@ -130,12 +128,12 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel,
                                              supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel));
 
-  channel->Id = Id;
+  channel->Id = getId();
   channel->Func = Func;
   channel->LocationID = this->LocationId;
 
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, Id, &channel->value,
+    client->getUser()->get_channel_value(DeviceId, getId(), &channel->value,
                                          &channel->online);
   }
 
@@ -153,7 +151,7 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel,
                                              supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel_B));
 
-  channel->Id = Id;
+  channel->Id = getId();
   channel->Func = Func;
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
@@ -161,7 +159,7 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel,
   channel->Flags = this->Flags;
 
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, Id, &channel->value,
+    client->getUser()->get_channel_value(DeviceId, getId(), &channel->value,
                                          &channel->online);
   }
 
@@ -178,11 +176,10 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel,
 void supla_client_channel::proto_get_channel_value(
     TSC_SuplaChannelValue *channel_value, supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
-  channel_value->Id = Id;
+  channel_value->Id = getId();
 
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, Id, &channel_value->value,
+    client->getUser()->get_channel_value(DeviceId, getId(), &channel_value->value,
                                          &channel_value->online);
   }
 }
-

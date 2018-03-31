@@ -21,14 +21,14 @@
 
 #include "../proto.h"
 #include "clientchannels.h"
+#include "clientobjcontaineritem.h"
 
 #define CC_REMOTEUPDATE_NONE 0
 #define CC_REMOTEUPDATE_CHANNEL 1
 #define CC_REMOTEUPDATE_CHANNELVALUE 2
 
 class supla_client;
-class supla_client_channel {
-  int Id;
+class supla_client_channel : public supla_client_objcontainer_item {
   int DeviceId;
   int LocationId;
   int Func;
@@ -53,7 +53,6 @@ class supla_client_channel {
   void proto_get_channel_value(TSC_SuplaChannelValue *channel_value,
                                supla_client *client);
   virtual ~supla_client_channel();
-  int getId();
   int getDeviceId();
 };
 
