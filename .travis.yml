@@ -18,7 +18,7 @@ matrix:
       os: linux
       compiler: gcc
       install:
-        - apt-get -y install cppcheck
+        - sudo apt-get -y install cppcheck
       script:
         - ./tools/cppcheck.sh
         - ./tools/test.sh
