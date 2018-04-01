@@ -10,7 +10,8 @@ CPP_SRCS += \
 ../src/client/clientchannelgroups.cpp \
 ../src/client/clientchannels.cpp \
 ../src/client/clientlocation.cpp \
-../src/client/clientobjcontainer.cpp 
+../src/client/clientobjcontainer.cpp \
+../src/client/clientobjcontaineritem.cpp 
 
 OBJS += \
 ./src/client/client.o \
@@ -19,7 +20,8 @@ OBJS += \
 ./src/client/clientchannelgroups.o \
 ./src/client/clientchannels.o \
 ./src/client/clientlocation.o \
-./src/client/clientobjcontainer.o 
+./src/client/clientobjcontainer.o \
+./src/client/clientobjcontaineritem.o 
 
 CPP_DEPS += \
 ./src/client/client.d \
@@ -28,7 +30,8 @@ CPP_DEPS += \
 ./src/client/clientchannelgroups.d \
 ./src/client/clientchannels.d \
 ./src/client/clientlocation.d \
-./src/client/clientobjcontainer.d 
+./src/client/clientobjcontainer.d \
+./src/client/clientobjcontaineritem.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
