@@ -37,7 +37,9 @@ void supla_client_objcontainer_item::update(
   setCaption(item->Caption);
 }
 
-supla_client_objcontainer_item::~supla_client_objcontainer_item(void) {}
+supla_client_objcontainer_item::~supla_client_objcontainer_item(void) {
+  setCaption(NULL);
+}
 
 int supla_client_objcontainer_item::getId() { return Id; }
 
