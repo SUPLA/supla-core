@@ -23,13 +23,13 @@
 
 // static
 char supla_client_objcontainer::arr_delcnd(void *ptr) {
-  delete (supla_client_location *)ptr;
+  delete static_cast<supla_client_objcontainer_item *>(ptr);
   return 1;
 }
 
 // static
 char supla_client_objcontainer::arr_findcmp(void *ptr, void *id) {
-  return ((supla_client_channel *)ptr)->getId() == *((int *)id) ? 1 : 0;
+  return static_cast<supla_client_objcontainer_item *>(ptr)->getId() == *((int *)id) ? 1 : 0;
 }
 
 void supla_client_objcontainer::arr_clean(void) {
@@ -47,7 +47,11 @@ supla_client_objcontainer::supla_client_objcontainer(supla_client *client) {
   this->arr = safe_array_init();
 }
 
-supla_client_objcontainer::~supla_client_objcontainer() {}
+supla_client_objcontainer::~supla_client_objcontainer() {
+	arr_clean();
+	safe_array_free(arr);
+	arr = NULL;
+}
 
 void *supla_client_objcontainer::getArr(void) { return arr; }
 
