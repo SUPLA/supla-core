@@ -20,11 +20,14 @@
 #define CLIENTOBJCONTAINER_H_
 
 class supla_client;
+class database;
 class supla_client_objcontainer_item;
 class supla_client_objcontainer {
  private:
   supla_client *client;
   void *arr;
+  supla_client_objcontainer_item *get_marked(void);
+  bool do_remote_update(void *srpc, bool full);
 
  protected:
   static char arr_delcnd(void *ptr);
@@ -34,12 +37,28 @@ class supla_client_objcontainer {
   void *getArr(void);
   supla_client_objcontainer_item *find(int Id);
 
+  virtual void _load(database *db) = 0;
+  virtual void _update(supla_client_objcontainer_item *obj,
+                       supla_client_objcontainer_item *source) = 0;
+  virtual supla_client_objcontainer_item *new_item(
+      supla_client_objcontainer_item *obj) = 0;
+  virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
+                                   void **data, bool full, bool EOL,
+                                   bool *check_more) = 0;
+  virtual void send_data_to_remote_and_free(void *srpc, void *data,
+                                            bool full) = 0;
+
  public:
   explicit supla_client_objcontainer(supla_client *client);
   virtual ~supla_client_objcontainer();
 
   supla_client *getClient();
   int count(void);
+  void load(void);
+  void update(supla_client_objcontainer_item *_obj);
+  bool remote_update(void *srpc);
+  void on_value_changed(void *srpc, int objId, int extraId);
+  void on_value_changed(void *srpc, int objId);
 };
 
 #endif /* CLIENTOBJCONTAINER_H_ */

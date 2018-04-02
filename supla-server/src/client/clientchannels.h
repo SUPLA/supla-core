@@ -25,24 +25,25 @@
 class supla_client_channel;
 class supla_client_channels : public supla_client_objcontainer {
  private:
-  supla_client_channel *get_marked(void);
   supla_client_channel *find_channel(int Id);
-  bool remote_update_cv(void *srpc);
-  bool remote_update_c(void *srpc);
-  bool remote_update_c_b(void *srpc);
+
+ protected:
+  bool get_data_for_remote(supla_client_objcontainer_item *obj, void **data,
+                           bool full, bool EOL, bool *check_more);
+  void send_data_to_remote_and_free(void *srpc, void *data, bool full);
+
+  void _load(database *db);
+  void _update(supla_client_objcontainer_item *obj,
+               supla_client_objcontainer_item *source);
+  supla_client_objcontainer_item *new_item(supla_client_objcontainer_item *obj);
 
  public:
   explicit supla_client_channels(supla_client *client);
-  void update_channel(int Id, int DeviceId, int LocationID, int Func,
-                      int Param1, int Param2, const char *Caption, int AltIcon,
-                      unsigned char ProtocolVersion);
   void update_device_channels(int DeviceId);
   void on_channel_value_changed(
       void *srpc, int DeviceId,
       int ChannelId = 0);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
-  void load(void);
-  bool remote_update(void *srpc);
 
   bool set_device_channel_new_value(
       TCS_SuplaChannelNewValue_B *channel_new_value);

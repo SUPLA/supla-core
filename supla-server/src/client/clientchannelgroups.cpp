@@ -22,3 +22,24 @@
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
     : supla_client_objcontainer(client) {}
+
+void supla_client_channelgroups::_load(database *db) {}
+
+void supla_client_channelgroups::_update(
+    supla_client_objcontainer_item *obj,
+    supla_client_objcontainer_item *source) {}
+
+supla_client_objcontainer_item *supla_client_channelgroups::new_item(
+    supla_client_objcontainer_item *obj) {
+  return NULL;
+}
+
+bool supla_client_channelgroups::get_data_for_remote(
+    supla_client_objcontainer_item *obj, void **data, bool full, bool EOL,
+    bool *check_more) {
+  return false;
+}
+
+void supla_client_channelgroups::send_data_to_remote_and_free(void *srpc,
+                                                              void *data,
+                                                              bool full) {}

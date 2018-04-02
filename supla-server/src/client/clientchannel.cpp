@@ -33,7 +33,7 @@ supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
                                            int Func, int Param1, int Param2,
                                            const char *Caption, int AltIcon,
                                            unsigned char ProtocolVersion)
-    : supla_client_objcontainer_item(Id) {
+    : supla_client_objcontainer_item(Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
   this->Func = Func;
@@ -42,41 +42,30 @@ supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
   this->AltIcon = AltIcon;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = 0;
-
-  if (Caption) {
-    this->Caption = strdup(Caption);
-  } else {
-    this->Caption = NULL;
-  }
-
-  remote_update = CC_REMOTEUPDATE_NONE;
 }
 
-supla_client_channel::~supla_client_channel() { setCaption(NULL); }
+supla_client_channel::supla_client_channel(supla_client_channel *channel)
+    : supla_client_objcontainer_item(channel) {
+  update(channel);
+}
+
+void supla_client_channel::update(supla_client_channel *channel) {
+  supla_client_objcontainer_item::update(channel);
+  this->DeviceId = channel->DeviceId;
+  this->LocationId = channel->LocationId;
+  this->Func = channel->Func;
+  this->Param1 = channel->Param1;
+  this->Param2 = channel->Param2;
+  this->AltIcon = channel->AltIcon;
+  this->ProtocolVersion = channel->ProtocolVersion;
+  this->Flags = channel->Flags;
+}
 
 int supla_client_channel::getDeviceId() { return DeviceId; }
 
-void supla_client_channel::setCaption(const char *Caption) {
-  if (this->Caption != NULL) {
-    free(this->Caption);
-    this->Caption = NULL;
-  }
+int supla_client_channel::getExtraId() { return DeviceId; }
 
-  if (Caption) {
-    this->Caption = strdup(Caption);
-  }
-}
-
-void supla_client_channel::mark_for_remote_update(char mark) {
-  if (mark == CC_REMOTEUPDATE_NONE) {
-    remote_update = CC_REMOTEUPDATE_NONE;
-    return;
-
-  } else if (mark == CC_REMOTEUPDATE_CHANNELVALUE &&
-             remote_update == CC_REMOTEUPDATE_CHANNEL) {
-    mark = CC_REMOTEUPDATE_CHANNEL;
-  }
-
+bool supla_client_channel::remote_update_is_possible(void) {
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
@@ -102,8 +91,7 @@ void supla_client_channel::mark_for_remote_update(char mark) {
     case SUPLA_CHANNELFNC_WEATHER_STATION:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
 
-      remote_update = mark;
-      break;
+      return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -113,15 +101,13 @@ void supla_client_channel::mark_for_remote_update(char mark) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
 
       if (Param1 == 0 && Param2 == 0) {
-        remote_update = mark;
+        return true;
       }
 
       break;
   }
-}
 
-char supla_client_channel::marked_for_remote_update(void) {
-  return remote_update;
+  return false;
 }
 
 void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel,
@@ -137,8 +123,9 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel,
                                          &channel->online);
   }
 
-  if (Caption) {
-    snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s", Caption);
+  if (getCaption()) {
+    snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s",
+             getCaption());
     channel->CaptionSize =
         strnlen(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE - 1) + 1;
   } else {
@@ -163,8 +150,9 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel,
                                          &channel->online);
   }
 
-  if (Caption) {
-    snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s", Caption);
+  if (getCaption()) {
+    snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s",
+             getCaption());
     channel->CaptionSize =
         strnlen(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE - 1) + 1;
   } else {

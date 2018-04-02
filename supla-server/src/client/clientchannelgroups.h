@@ -23,6 +23,15 @@
 
 class supla_client_channelgroups : public supla_client_objcontainer {
  private:
+ protected:
+  void _load(database *db);
+  void _update(supla_client_objcontainer_item *obj,
+               supla_client_objcontainer_item *source);
+  supla_client_objcontainer_item *new_item(supla_client_objcontainer_item *obj);
+  bool get_data_for_remote(supla_client_objcontainer_item *obj, void **data,
+                           bool full, bool EOL, bool *check_more);
+  void send_data_to_remote_and_free(void *srpc, void *data, bool full);
+
  public:
   explicit supla_client_channelgroups(supla_client *client);
 };

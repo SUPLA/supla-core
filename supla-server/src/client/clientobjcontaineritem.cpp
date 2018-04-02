@@ -17,9 +17,60 @@
  */
 
 #include "clientobjcontaineritem.h"
+#include <stdlib.h>
+#include <string.h>
 
-supla_client_objcontainer_item::supla_client_objcontainer_item(int Id) {
+supla_client_objcontainer_item::supla_client_objcontainer_item(
+    int Id, const char *Caption) {
   this->Id = Id;
+  this->Caption = NULL;
+  this->RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
+  setCaption(Caption);
 }
 
+supla_client_objcontainer_item::supla_client_objcontainer_item(
+    supla_client_objcontainer_item *obj)
+    : supla_client_objcontainer_item(obj->Id, obj->Caption) {}
+
+void supla_client_objcontainer_item::update(
+    supla_client_objcontainer_item *item) {
+  setCaption(item->Caption);
+}
+
+supla_client_objcontainer_item::~supla_client_objcontainer_item(void) {}
+
 int supla_client_objcontainer_item::getId() { return Id; }
+
+int supla_client_objcontainer_item::getExtraId() { return -1; }
+
+void supla_client_objcontainer_item::setCaption(const char *Caption) {
+  if (this->Caption != NULL) {
+    free(this->Caption);
+    this->Caption = NULL;
+  }
+
+  if (Caption) {
+    this->Caption = strdup(Caption);
+  }
+}
+
+char *supla_client_objcontainer_item::getCaption(void) { return Caption; }
+
+void supla_client_objcontainer_item::mark_for_remote_update(char mark) {
+  if (mark == OI_REMOTEUPDATE_NONE) {
+    RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
+    return;
+
+  } else if (mark == OI_REMOTEUPDATE_VALUE &&
+             RemoteUpdateMark == OI_REMOTEUPDATE_FULL) {
+    mark = OI_REMOTEUPDATE_FULL;
+  }
+
+  if (remote_update_is_possible()) {
+    RemoteUpdateMark = mark;
+  }
+}
+
+char supla_client_objcontainer_item::marked_for_remote_update(void) {
+  return RemoteUpdateMark;
+}

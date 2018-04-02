@@ -1115,9 +1115,12 @@ void database::get_client_channels(int ClientID, int *DeviceID,
             caption[size] = 0;
           }
 
-          channels->update_channel(id, iodevice_id, location_id, func, param1,
-                                   param2, is_null ? NULL : caption, alt_icon,
-                                   protocol_version);
+          supla_client_channel *channel = new supla_client_channel(
+              id, iodevice_id, location_id, func, param1, param2,
+              is_null ? NULL : caption, alt_icon, protocol_version);
+
+          channels->update(channel);
+          delete channel;
         }
       }
     }
