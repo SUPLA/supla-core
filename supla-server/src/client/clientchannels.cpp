@@ -48,7 +48,7 @@ bool supla_client_channels::channel_exists(int ChannelID) {
 }
 
 void supla_client_channels::_load(database *db) {
-    db->get_client_channels(getClient()->getID(), NULL, this);
+  db->get_client_channels(getClient()->getID(), NULL, this);
 }
 
 void supla_client_channels::update_device_channels(int DeviceId) {
@@ -145,6 +145,9 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
     }
   } else {
     srpc_sc_async_channel_value_update(srpc, (TSC_SuplaChannelValue *)data);
+  }
+
+  if (data) {
     free(data);
   }
 }
