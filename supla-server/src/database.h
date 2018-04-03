@@ -114,7 +114,8 @@ class database : public dbcommon {
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);
 
-  void get_client_channel_groups(int ClientID, supla_client_channelgroups *cgroups);
+  void get_client_channel_groups(int ClientID,
+                                 supla_client_channelgroups *cgroups);
 
   void add_temperature(int ChannelID, double temperature);
   void add_temperature_and_humidity(int ChannelID, double temperature,

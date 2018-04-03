@@ -1129,9 +1129,8 @@ void database::get_client_channels(int ClientID, int *DeviceID,
   }
 }
 
-void database::get_client_channel_groups(int ClientID, supla_client_channelgroups *cgroups) {
-
-}
+void database::get_client_channel_groups(int ClientID,
+                                         supla_client_channelgroups *cgroups) {}
 
 void database::add_temperature(int ChannelID, double temperature) {
   char buff[20];
