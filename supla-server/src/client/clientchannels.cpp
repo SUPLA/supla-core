@@ -156,7 +156,7 @@ void supla_client_channels::_update(supla_client_objcontainer_item *obj,
                                     supla_client_objcontainer_item *source) {
   supla_client_channel *channel = dynamic_cast<supla_client_channel *>(obj);
   supla_client_channel *src = dynamic_cast<supla_client_channel *>(source);
-  if (channel) {
+  if (channel && src) {
     channel->update(src);
   }
 }

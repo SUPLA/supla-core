@@ -18,19 +18,37 @@
 
 #include "client.h"
 #include "../safearray.h"
+#include "../database.h"
+#include "clientchannelgroup.h"
 #include "clientchannelgroups.h"
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
     : supla_client_objcontainer(client) {}
 
-void supla_client_channelgroups::_load(database *db) {}
+void supla_client_channelgroups::_load(database *db) {
+  db->get_client_channel_groups(getClient()->getID(), this);
+}
 
 void supla_client_channelgroups::_update(
     supla_client_objcontainer_item *obj,
-    supla_client_objcontainer_item *source) {}
+    supla_client_objcontainer_item *source) {
+  supla_client_channelgroup *cg =
+      dynamic_cast<supla_client_channelgroup *>(obj);
+  supla_client_channelgroup *src =
+      dynamic_cast<supla_client_channelgroup *>(source);
+  if (cg && src) {
+    cg->update(src);
+  }
+}
 
 supla_client_objcontainer_item *supla_client_channelgroups::new_item(
     supla_client_objcontainer_item *obj) {
+  supla_client_channelgroup *cg =
+      dynamic_cast<supla_client_channelgroup *>(obj);
+  if (cg) {
+    return new supla_client_channelgroup(cg);
+  }
+
   return NULL;
 }
 

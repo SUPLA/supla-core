@@ -18,4 +18,10 @@
 
 #include "clientchannelgroup.h"
 
+supla_client_channelgroup::supla_client_channelgroup(
+    supla_client_channelgroup *cg)
+    : supla_client_objcontainer_item(cg) {}
 
+bool supla_client_channelgroup::remote_update_is_possible(void) { return true; }
+
+void supla_client_channelgroup::update(supla_client_channelgroup *cg) {}

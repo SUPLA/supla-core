@@ -19,8 +19,18 @@
 #ifndef CLIENTCHANNELGROUP_H_
 #define CLIENTCHANNELGROUP_H_
 
+#include "clientobjcontaineritem.h"
 
+class supla_client;
+class supla_client_channelgroup : public supla_client_objcontainer_item {
+ private:
+ protected:
+  bool remote_update_is_possible(void);
 
+ public:
+  explicit supla_client_channelgroup(supla_client_channelgroup *cg);
+  void update(supla_client_channelgroup *cg);
+};
 
 
 #endif /* CLIENTCHANNELGROUP_H_ */

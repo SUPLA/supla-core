@@ -274,11 +274,14 @@ void supla_client::remote_update_lists(void) {
   if (locations->remote_update(getSvrConn()->srpc())) return;
 
   if (channels->remote_update(getSvrConn()->srpc())) return;
+
+  if (cgroups->remote_update(getSvrConn()->srpc())) return;
 }
 
 void supla_client::loadConfig(void) {
   locations->load(getID());
   channels->load();
+  cgroups->load();
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }
