@@ -2,6 +2,18 @@ ifndef SSLDIR
 SSLDIR=/usr/src/openssl
 endif
 
+ifndef CC
+CC=gcc
+endif
+
+ifndef CXX
+CXX=g++
+endif
+
+ifeq ($(CC), cc)
+CC=gcc
+endif
+
 ifdef MARIADB
 LIBMYSQL=mariadbclient
 else

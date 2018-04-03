@@ -27,7 +27,7 @@ C_DEPS += \
 src/crypt_blowfish/%.o: ../src/crypt_blowfish/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -D__BCRYPT=1 -I$(SSLDIR)/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	$(CC) -D__DEBUG=1 -D__BCRYPT=1 -I$(SSLDIR)/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
