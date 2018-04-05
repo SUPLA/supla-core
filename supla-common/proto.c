@@ -279,7 +279,7 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
       }
 
       if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) >
-              sizeof(TSuplaDataPacket)) {
+          sizeof(TSuplaDataPacket)) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
         return SUPLA_RESULT_DATA_ERROR;
       }
@@ -287,8 +287,8 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
       if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) > spd->in.data_size)
         return SUPLA_RESULT_FALSE;
 
-      if (header_size + _sdp->data_size >= spd->in.size
-    	  || memcmp(&spd->in.buffer[header_size + _sdp->data_size], sproto_tag,
+      if (header_size + _sdp->data_size >= spd->in.size ||
+          memcmp(&spd->in.buffer[header_size + _sdp->data_size], sproto_tag,
                  SUPLA_TAG_SIZE) != 0) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
 
