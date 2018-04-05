@@ -44,7 +44,7 @@ all: supla-afl
 supla-afl: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	/usr/src/afl/afl-g++ -pthread -o "supla-afl" $(OBJS) $(USER_OBJS) $(LIBS)
+	$(AFL_PATH)/afl-g++ -pthread -o "supla-afl" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

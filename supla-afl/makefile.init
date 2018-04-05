@@ -1,0 +1,4 @@
+ifndef AFL_PATH
+AFL_PATH=/usr/src/afl
+endif
+
