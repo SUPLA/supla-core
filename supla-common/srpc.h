@@ -113,6 +113,8 @@ void SRPC_ICACHE_FLASH srpc_params_init(TsrpcParams *params);
 void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params);
 void SRPC_ICACHE_FLASH srpc_free(void *_srpc);
 
+char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc);
+
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,

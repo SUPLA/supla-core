@@ -205,6 +205,14 @@ char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
   return srpc_queue_pop(&srpc->out_queue, sdp, rr_id);
 }
 
+char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc) {
+  int result = SUPLA_RESULT_FALSE;
+  Tsrpc *srpc = (Tsrpc *)_srpc;
+  lck_lock(srpc->lck);
+  result = sproto_in_dataexists(srpc->proto);
+  return lck_unlock_r(srpc->lck, result);
+}
+
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
   Tsrpc *srpc = (Tsrpc *)_srpc;
   char data_buffer[SRPC_BUFFER_SIZE];
