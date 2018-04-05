@@ -702,6 +702,7 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
 unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
                                           unsigned _supla_int_t buffer_size);
 char sproto_out_dataexists(void *spd_ptr);
+char sproto_in_dataexists(void *spd_ptr);
 
 unsigned char sproto_get_version(void *spd_ptr);
 void sproto_set_version(void *spd_ptr, unsigned char version);

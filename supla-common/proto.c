@@ -24,8 +24,8 @@
 
 #ifdef ESP8266
 
-#include <osapi.h>
 #include <mem.h>
+#include <osapi.h>
 
 #define BUFFER_MIN_SIZE 512
 #define BUFFER_MAX_SIZE 2048
@@ -210,6 +210,11 @@ char sproto_out_dataexists(void *spd_ptr) {
                                                          : SUPLA_RESULT_FALSE;
 }
 
+char sproto_in_dataexists(void *spd_ptr) {
+  return ((TSuplaProtoData *)spd_ptr)->in.data_size > 0 ? SUPLA_RESULT_TRUE
+                                                        : SUPLA_RESULT_FALSE;
+}
+
 void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in,
                              unsigned _supla_int_t size) {
   unsigned _supla_int_t old_size = in->size;
@@ -274,7 +279,7 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
       }
 
       if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) >
-          sizeof(TSuplaDataPacket)) {
+              sizeof(TSuplaDataPacket)) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
         return SUPLA_RESULT_DATA_ERROR;
       }
@@ -282,7 +287,8 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
       if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) > spd->in.data_size)
         return SUPLA_RESULT_FALSE;
 
-      if (memcmp(&spd->in.buffer[header_size + _sdp->data_size], sproto_tag,
+      if (header_size + _sdp->data_size >= spd->in.size
+    	  || memcmp(&spd->in.buffer[header_size + _sdp->data_size], sproto_tag,
                  SUPLA_TAG_SIZE) != 0) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
 
