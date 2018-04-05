@@ -24,6 +24,7 @@
 								<option id="gnu.c.compiler.option.debugging.level.2108093184" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.533696882" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.164279687" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
@@ -36,6 +37,10 @@
 								<option id="gnu.cpp.compiler.option.include.paths.1024356782" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.573551753" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.239261390" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1163518956" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -45,7 +50,7 @@
 									<listOptionValue builtIn="false" value="ssl"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.363289448" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt" valueType="string"/>
-								<option id="gnu.cpp.link.option.paths.27774724" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+								<option id="gnu.cpp.link.option.paths.27774724" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="/usr/src/openssl/lib"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1842944501" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -155,4 +160,5 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
