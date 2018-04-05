@@ -55,6 +55,10 @@ int main(int argc, char *argv[]) {
   struct timeval runtime;
   gettimeofday(&runtime, NULL);
 
+#if defined(__DEBUG) && defined(__SSOCKET_WRITE_TO_FILE)
+  unlink("ssocket_write.raw");
+#endif
+
   if (lifetime > 0) {
     supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
   }

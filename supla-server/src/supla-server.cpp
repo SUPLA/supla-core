@@ -47,9 +47,15 @@ int main(int argc, char *argv[]) {
   // INIT BLOCK
   if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
+#if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
+  unlink("ssocket_read.raw");
+  unlink("ssocket_write.raw");
+#endif /* defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1 */
+
   {
     char dt[64];
     int iid[2];
+
     supla_log(LOG_INFO, "Server version %s [Protocol v%i], %i", SERVER_VERSION,
               SUPLA_PROTO_VERSION, sizeof(iid) * sizeof(int));
 
@@ -83,7 +89,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-#ifdef __OPEN_SSL
+#ifndef NOSSL
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
     if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
                                             scfg_string(CFG_SSL_KEY),
@@ -111,6 +117,7 @@ int main(int argc, char *argv[]) {
   st_setpidfile(pidfile_path);
   st_mainloop_init();
   st_hook_signals();
+
   ipc = ipcsocket_init(scfg_string(CFG_IPC_SOCKET_PATH));
 
   // INI ACCEPT LOOP

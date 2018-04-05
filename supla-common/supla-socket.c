@@ -315,7 +315,9 @@ char ssocket_openlistener(void *_ssd) {
 
 void *ssocket_server_init(const char cert[], const char key[], int port,
                           unsigned char secure) {
+#ifndef NOSSL
   int i;
+#endif /*NOSSL*/
 
   TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
 
@@ -415,11 +417,11 @@ void ssocket_free(void *_ssd) {
 
 #ifndef _SERVER_EXCLUDED
 char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
-  struct sockaddr_in addr;
+  TSuplaSocket *supla_socket = NULL;
   int client_sd = -1;
   char result = 0;
+  struct sockaddr_in addr;
   socklen_t len;
-  TSuplaSocket *supla_socket = NULL;
   TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
 
   *_supla_socket = NULL;
@@ -475,12 +477,10 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
 }
 
 char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
-#ifdef NOSSL
-  return 0;
-#else
+  TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
+#ifndef NOSSL
   int n;
   struct timeval tv;
-  TSuplaSocket *supla_socket = (TSuplaSocket *)_supla_socket;
   TSuplaSocketData *ssd = (TSuplaSocketData *)_ssd;
 
   if (_supla_socket && supla_socket->sfd != -1 && ssd->secure == 1) {
@@ -522,8 +522,8 @@ char ssocket_accept_ssl(void *_ssd, void *_supla_socket) {
     }
   }
 
-  return supla_socket->sfd == -1 ? 0 : 1;
 #endif /*ifdef NOSSL*/
+  return supla_socket->sfd == -1 ? 0 : 1;
 }
 #endif /*ifndef _SERVER_EXCLUDED*/
 
@@ -786,6 +786,16 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     count = recv(supla_socket->sfd, buf, count, MSG_DONTWAIT);
   }
 
+#if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
+  if (count > 0) {
+    FILE *f = fopen("ssocket_read.raw", "ab");
+    if (f) {
+      fwrite(buf, count, 1, f);
+      fclose(f);
+    }
+  }
+#endif /*defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1*/
+
   return count;
 }
 
@@ -796,6 +806,16 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
                                    : (TSuplaSocket *)_supla_socket;
 
   assert(ssd != NULL);
+
+#if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
+  if (count > 0) {
+    FILE *f = fopen("ssocket_write.raw", "ab");
+    if (f) {
+      fwrite(buf, count, 1, f);
+      fclose(f);
+    }
+  }
+#endif /*defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1*/
 
   if (ssd->secure == 1) {
 #ifndef NOSSL

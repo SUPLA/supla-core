@@ -19,7 +19,7 @@
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.1442703427" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1200039106" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder buildPath="${workspace_loc:/supla-server}/Debug" command="make" id="cdt.managedbuild.builder.gnu.cross.1883751744" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool command="$(CC)" id="cdt.managedbuild.tool.gnu.cross.c.compiler.1209578269" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+							<tool command="$(CC)" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cross.c.compiler.1209578269" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.812257215" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.c.optimization.level.more" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.872388052" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.1034719321" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
@@ -27,13 +27,14 @@
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2062866975" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.592483975" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
 								<option id="gnu.c.compiler.option.dialect.std.1559922112" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.31395286" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
-							<tool command="$(CXX)" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.776925702" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
+							<tool command="$(CXX)" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.776925702" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.1995277643" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.more" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.406314809" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.5018346" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
@@ -41,11 +42,12 @@
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1525833655" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__OPEN_SSL=1"/>
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.dialect.std.424424703" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.647780356" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.867359269" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -124,7 +126,6 @@
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.584360873" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__OPEN_SSL=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
@@ -208,7 +209,6 @@
 									<listOptionValue builtIn="false" value="../src/test"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1785983890" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="__OPEN_SSL=1"/>
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
