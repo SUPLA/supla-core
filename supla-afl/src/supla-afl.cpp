@@ -61,14 +61,14 @@ int main(int argc, char **argv) {
   TEventHandler *eh = eh_init();
 
   if (argc < 2) {
-	  supla_log(LOG_ERR, "Use: ./supla-afl input_file");
-	  return 1;
+    supla_log(LOG_ERR, "Use: ./supla-afl input_file");
+    return 1;
   }
 
   fd = open(argv[1], O_RDONLY);
 
   if (fd == -1) {
-    supla_log(LOG_ERR, "Can't open file /tmp/supla_afl.raw");
+    supla_log(LOG_ERR, "Can't open file %s", argv[1]);
     return 1;
   }
 
