@@ -56,14 +56,19 @@ void supla_on_remote_call_received(void *_srpc, unsigned int rr_id,
 void supla_on_version_error(void *_srpc, unsigned char remote_version,
                             void *sc) {}
 
-int main() {
+int main(int argc, char **argv) {
   void *srpc = NULL;
   TEventHandler *eh = eh_init();
 
-  fd = open("/tmp/supla_afl.raw", O_RDONLY);
+  if (argc < 2) {
+	  supla_log(LOG_ERR, "Use: ./supla-afl input_file");
+	  return 1;
+  }
+
+  fd = open(argv[1], O_RDONLY);
 
   if (fd == -1) {
-    supla_log(LOG_DEBUG, "Can't open file /tmp/supla_afl.raw");
+    supla_log(LOG_ERR, "Can't open file /tmp/supla_afl.raw");
     return 1;
   }
 
