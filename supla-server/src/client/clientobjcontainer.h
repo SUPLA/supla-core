@@ -19,29 +19,35 @@
 #ifndef CLIENTOBJCONTAINER_H_
 #define CLIENTOBJCONTAINER_H_
 
+enum e_objc_scope { master = 0, detail1 = 1, detail2 = 2 };
+
+#define OBJC_SCOPE_COUNT 3
+
 class supla_client;
 class database;
 class supla_client_objcontainer_item;
 class supla_client_objcontainer {
  private:
   supla_client *client;
-  void *arr;
-  supla_client_objcontainer_item *get_marked(void);
-  bool do_remote_update(void *srpc, bool full);
+  void *arr[OBJC_SCOPE_COUNT];
+  supla_client_objcontainer_item *get_marked(e_objc_scope scope);
+  bool do_remote_update(void *srpc, bool full, e_objc_scope scope);
 
  protected:
   static char arr_delcnd(void *ptr);
   static char arr_findcmp(void *ptr, void *id);
 
-  void arr_clean(void);
+  void arr_clean(void *arr);
+  void *getArr(e_objc_scope scope);
   void *getArr(void);
-  supla_client_objcontainer_item *find(int Id);
+  supla_client_objcontainer_item *find(int Id, e_objc_scope scope);
 
-  virtual void _load(database *db) = 0;
+  virtual void _load(database *db, e_objc_scope scope) = 0;
   virtual void _update(supla_client_objcontainer_item *obj,
-                       supla_client_objcontainer_item *source) = 0;
+                       supla_client_objcontainer_item *source,
+                       e_objc_scope scope) = 0;
   virtual supla_client_objcontainer_item *new_item(
-      supla_client_objcontainer_item *obj) = 0;
+      supla_client_objcontainer_item *obj, e_objc_scope scope) = 0;
   virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
                                    void **data, bool full, bool EOL,
                                    bool *check_more) = 0;
@@ -53,8 +59,11 @@ class supla_client_objcontainer {
   virtual ~supla_client_objcontainer();
 
   supla_client *getClient();
+  int count(e_objc_scope scope);
   int count(void);
+  void load(e_objc_scope scope);
   void load(void);
+  void update(supla_client_objcontainer_item *_obj, e_objc_scope scope);
   void update(supla_client_objcontainer_item *_obj);
   bool remote_update(void *srpc);
   void on_value_changed(void *srpc, int objId, int extraId);

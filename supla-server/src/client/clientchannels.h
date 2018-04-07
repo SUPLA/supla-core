@@ -32,10 +32,11 @@ class supla_client_channels : public supla_client_objcontainer {
                            bool full, bool EOL, bool *check_more);
   void send_data_to_remote_and_free(void *srpc, void *data, bool full);
 
-  void _load(database *db);
+  void _load(database *db, e_objc_scope scope);
   void _update(supla_client_objcontainer_item *obj,
-               supla_client_objcontainer_item *source);
-  supla_client_objcontainer_item *new_item(supla_client_objcontainer_item *obj);
+               supla_client_objcontainer_item *source, e_objc_scope scope);
+  supla_client_objcontainer_item *new_item(supla_client_objcontainer_item *obj,
+                                           e_objc_scope scope);
 
  public:
   explicit supla_client_channels(supla_client *client);

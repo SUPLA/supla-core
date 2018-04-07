@@ -32,7 +32,7 @@ supla_client_channels::supla_client_channels(supla_client *client)
     : supla_client_objcontainer(client) {}
 
 supla_client_channel *supla_client_channels::find_channel(int Id) {
-  return static_cast<supla_client_channel *>(find(Id));
+  return static_cast<supla_client_channel *>(find(Id, master));
 }
 
 bool supla_client_channels::channel_exists(int ChannelID) {
@@ -47,7 +47,7 @@ bool supla_client_channels::channel_exists(int ChannelID) {
   return result;
 }
 
-void supla_client_channels::_load(database *db) {
+void supla_client_channels::_load(database *db, e_objc_scope scope) {
   db->get_client_channels(getClient()->getID(), NULL, this);
 }
 
@@ -153,7 +153,8 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
 }
 
 void supla_client_channels::_update(supla_client_objcontainer_item *obj,
-                                    supla_client_objcontainer_item *source) {
+                                    supla_client_objcontainer_item *source,
+                                    e_objc_scope scope) {
   supla_client_channel *channel = dynamic_cast<supla_client_channel *>(obj);
   supla_client_channel *src = dynamic_cast<supla_client_channel *>(source);
   if (channel && src) {
@@ -162,7 +163,7 @@ void supla_client_channels::_update(supla_client_objcontainer_item *obj,
 }
 
 supla_client_objcontainer_item *supla_client_channels::new_item(
-    supla_client_objcontainer_item *obj) {
+    supla_client_objcontainer_item *obj, e_objc_scope scope) {
   supla_client_channel *channel = dynamic_cast<supla_client_channel *>(obj);
   if (channel) {
     return new supla_client_channel(channel);

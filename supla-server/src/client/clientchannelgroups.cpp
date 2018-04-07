@@ -17,21 +17,21 @@
  */
 
 #include "client.h"
-#include "../safearray.h"
 #include "../database.h"
+#include "../safearray.h"
 #include "clientchannelgroup.h"
 #include "clientchannelgroups.h"
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
     : supla_client_objcontainer(client) {}
 
-void supla_client_channelgroups::_load(database *db) {
+void supla_client_channelgroups::_load(database *db, e_objc_scope scope) {
   db->get_client_channel_groups(getClient()->getID(), this);
 }
 
-void supla_client_channelgroups::_update(
-    supla_client_objcontainer_item *obj,
-    supla_client_objcontainer_item *source) {
+void supla_client_channelgroups::_update(supla_client_objcontainer_item *obj,
+                                         supla_client_objcontainer_item *source,
+                                         e_objc_scope scope) {
   supla_client_channelgroup *cg =
       dynamic_cast<supla_client_channelgroup *>(obj);
   supla_client_channelgroup *src =
@@ -42,7 +42,7 @@ void supla_client_channelgroups::_update(
 }
 
 supla_client_objcontainer_item *supla_client_channelgroups::new_item(
-    supla_client_objcontainer_item *obj) {
+    supla_client_objcontainer_item *obj, e_objc_scope scope) {
   supla_client_channelgroup *cg =
       dynamic_cast<supla_client_channelgroup *>(obj);
   if (cg) {
