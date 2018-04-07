@@ -7,7 +7,9 @@ CPP_SRCS += \
 ../src/client/client.cpp \
 ../src/client/clientchannel.cpp \
 ../src/client/clientchannelgroup.cpp \
+../src/client/clientchannelgrouprelation.cpp \
 ../src/client/clientchannelgroups.cpp \
+../src/client/clientchannelgroupvalue.cpp \
 ../src/client/clientchannels.cpp \
 ../src/client/clientlocation.cpp \
 ../src/client/clientobjcontainer.cpp \
@@ -17,7 +19,9 @@ OBJS += \
 ./src/client/client.o \
 ./src/client/clientchannel.o \
 ./src/client/clientchannelgroup.o \
+./src/client/clientchannelgrouprelation.o \
 ./src/client/clientchannelgroups.o \
+./src/client/clientchannelgroupvalue.o \
 ./src/client/clientchannels.o \
 ./src/client/clientlocation.o \
 ./src/client/clientobjcontainer.o \
@@ -27,7 +31,9 @@ CPP_DEPS += \
 ./src/client/client.d \
 ./src/client/clientchannel.d \
 ./src/client/clientchannelgroup.d \
+./src/client/clientchannelgrouprelation.d \
 ./src/client/clientchannelgroups.d \
+./src/client/clientchannelgroupvalue.d \
 ./src/client/clientchannels.d \
 ./src/client/clientlocation.d \
 ./src/client/clientobjcontainer.d \
