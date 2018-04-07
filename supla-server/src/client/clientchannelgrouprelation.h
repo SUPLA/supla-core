@@ -29,7 +29,8 @@ class supla_client_channelgroup_relation
   bool remote_update_is_possible(void);
 
  public:
-  supla_client_channelgroup_relation(supla_client_channelgroup_relation *cgr);
+  explicit supla_client_channelgroup_relation(
+      supla_client_channelgroup_relation *cgr);
   void update(supla_client_channelgroup_relation *cgr);
 };
 

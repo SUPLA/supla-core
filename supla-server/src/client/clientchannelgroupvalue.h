@@ -28,7 +28,7 @@ class supla_client_channelgroup_value : public supla_client_objcontainer_item {
   bool remote_update_is_possible(void);
 
  public:
-  supla_client_channelgroup_value(supla_client_channelgroup_value *cg);
+  explicit supla_client_channelgroup_value(supla_client_channelgroup_value *cg);
   void update(supla_client_channelgroup_value *cgv);
 };
 
