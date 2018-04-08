@@ -560,7 +560,7 @@ typedef struct {
 
   _supla_int_t count;
   _supla_int_t total_left;
-  TSC_SuplaChannelGroup groups
+  TSC_SuplaChannelGroupRelation relations
       [SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelGroupRelationPack;                // ver. >= 9
 
