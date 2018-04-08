@@ -1010,7 +1010,7 @@ void database::get_client_locations(int ClientID,
 
     int id;
     unsigned long size;
-    char caption[401];  // utf8
+    char caption[SUPLA_LOCATION_CAPTION_MAXSIZE];  // utf8
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -1018,7 +1018,7 @@ void database::get_client_locations(int ClientID,
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
     rbind[1].buffer = caption;
-    rbind[1].buffer_length = 401;
+    rbind[1].buffer_length = SUPLA_LOCATION_CAPTION_MAXSIZE;
     rbind[1].length = &size;
     rbind[1].is_null = &is_null[1];
 
@@ -1030,6 +1030,9 @@ void database::get_client_locations(int ClientID,
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
+          if (size >= SUPLA_LOCATION_CAPTION_MAXSIZE) {
+            size = SUPLA_LOCATION_CAPTION_MAXSIZE - 1;
+          }
           caption[size] = 0;
           locs->add_location(id, caption);
         }
@@ -1071,7 +1074,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     int id, func, param1, param2, iodevice_id, location_id, alt_icon,
         protocol_version;
     unsigned long size;
-    char caption[401];
+    char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -1094,7 +1097,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[6].buffer_type = MYSQL_TYPE_STRING;
     rbind[6].buffer = caption;
     rbind[6].is_null = &is_null;
-    rbind[6].buffer_length = 401;
+    rbind[6].buffer_length = SUPLA_CHANNEL_CAPTION_MAXSIZE;
     rbind[6].length = &size;
 
     rbind[7].buffer_type = MYSQL_TYPE_LONG;
@@ -1112,7 +1115,12 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
           if (is_null == false) {
+            if (size >= SUPLA_CHANNEL_CAPTION_MAXSIZE) {
+              size = SUPLA_CHANNEL_CAPTION_MAXSIZE - 1;
+            }
             caption[size] = 0;
+          } else {
+            caption[0] = 0;
           }
 
           supla_client_channel *channel = new supla_client_channel(
@@ -1130,7 +1138,76 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 }
 
 void database::get_client_channel_groups(int ClientID,
-                                         supla_client_channelgroups *cgroups) {}
+                                         supla_client_channelgroups *cgroups) {
+  MYSQL_STMT *stmt;
+  const char sql[] =
+      "SELECT `id`, `func`, `location_id`, `caption`, `alt_icon` FROM "
+      "`supla_v_client_channel_group` "
+      "WHERE `client_id` = ? ORDER BY `id`";
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ClientID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    my_bool is_null;
+
+    MYSQL_BIND rbind[5];
+    memset(rbind, 0, sizeof(rbind));
+
+    int id, func, location_id, alt_icon;
+    unsigned long size;
+    char caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&id;
+
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&func;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&location_id;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = caption;
+    rbind[3].is_null = &is_null;
+    rbind[3].buffer_length = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE;
+    rbind[3].length = &size;
+
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&alt_icon;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          if (is_null == false) {
+            if (size >= SUPLA_CHANNELGROUP_CAPTION_MAXSIZE) {
+              size = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE - 1;
+            }
+            caption[size] = 0;
+          } else {
+            caption[0] = 0;
+          }
+
+          supla_client_channelgroup *cg = new supla_client_channelgroup(
+              id, location_id, func, is_null ? NULL : caption, alt_icon);
+supla_log(LOG_DEBUG, "Group: %i", id);
+          cgroups->update(cg);
+          delete cg;
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+}
 
 void database::add_temperature(int ChannelID, double temperature) {
   char buff[20];

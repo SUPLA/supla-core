@@ -24,13 +24,20 @@
 class supla_client;
 class supla_client_channelgroup : public supla_client_objcontainer_item {
  private:
+  int LocationID;
+  int Func;
+  int AltIcon;
+  unsigned int Flags;
+
  protected:
   bool remote_update_is_possible(void);
 
  public:
+  supla_client_channelgroup(int Id, int LocationID, int Func,
+                            const char *Caption, int AltIcon);
+
   explicit supla_client_channelgroup(supla_client_channelgroup *cg);
   void update(supla_client_channelgroup *cg);
 };
-
 
 #endif /* CLIENTCHANNELGROUP_H_ */

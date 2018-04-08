@@ -18,10 +18,30 @@
 
 #include "clientchannelgroup.h"
 
+supla_client_channelgroup::supla_client_channelgroup(int Id, int LocationID,
+                                                     int Func,
+                                                     const char *Caption,
+                                                     int AltIcon)
+    : supla_client_objcontainer_item(Id, Caption) {
+  this->LocationID = LocationID;
+  this->Func = Func;
+  this->AltIcon = AltIcon;
+  this->Flags = 0;
+}
+
 supla_client_channelgroup::supla_client_channelgroup(
     supla_client_channelgroup *cg)
-    : supla_client_objcontainer_item(cg) {}
+    : supla_client_objcontainer_item(cg) {
+  update(cg);
+}
+
+void supla_client_channelgroup::update(supla_client_channelgroup *cg) {
+  supla_client_objcontainer_item::update(cg);
+
+  this->LocationID = cg->LocationID;
+  this->Func = cg->Func;
+  this->AltIcon = cg->AltIcon;
+  this->Flags = cg->Flags;
+}
 
 bool supla_client_channelgroup::remote_update_is_possible(void) { return true; }
-
-void supla_client_channelgroup::update(supla_client_channelgroup *cg) {}
