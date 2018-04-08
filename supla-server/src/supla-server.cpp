@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 
   {
     database *db = new database();
-    if (!db->check_db_version("20180326134725")) {
+    if (!db->check_db_version("20180403203101")) {
       delete db;
       database::mainthread_end();
       goto exit_fail;
