@@ -1255,7 +1255,7 @@ void database::get_client_channel_group_relations(
           if (hidden > 0) {
             supla_client_channelgroup_value *cg_value =
                 new supla_client_channelgroup_value(channel_id);
-            if (!cgroups->add(cg_rel, detail2)) {
+            if (!cgroups->add(cg_value, detail2)) {
               delete cg_value;
             }
           }
