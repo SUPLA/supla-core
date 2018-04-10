@@ -154,7 +154,7 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, bool full,
     obj = static_cast<supla_client_objcontainer_item *>(
         safe_array_get(getArr(scope), a));
     if (obj->marked_for_remote_update() == mark) {
-      if (get_data_for_remote(obj, &data, full, &check_more, scope), scope) {
+      if (get_data_for_remote(obj, &data, full, &check_more, scope)) {
         obj->mark_for_remote_update(OI_REMOTEUPDATE_NONE);
         result = true;
       }
