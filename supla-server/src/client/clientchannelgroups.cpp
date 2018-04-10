@@ -26,18 +26,42 @@ supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
     : supla_client_objcontainer(client) {}
 
 void supla_client_channelgroups::_load(database *db, e_objc_scope scope) {
-  db->get_client_channel_groups(getClient()->getID(), this);
+  switch (scope) {
+    case master:
+      db->get_client_channel_groups(getClient()->getID(), this);
+      break;
+    case detail1:
+      db->get_client_channel_group_relations(getClient()->getID(), this);
+      break;
+    case detail2:
+      break;
+  }
+}
+
+void supla_client_channelgroups::load(void) {
+  supla_client_objcontainer::load(master);
+  supla_client_objcontainer::load(detail1);
 }
 
 void supla_client_channelgroups::_update(supla_client_objcontainer_item *obj,
                                          supla_client_objcontainer_item *source,
                                          e_objc_scope scope) {
-  supla_client_channelgroup *cg =
-      dynamic_cast<supla_client_channelgroup *>(obj);
-  supla_client_channelgroup *src =
-      dynamic_cast<supla_client_channelgroup *>(source);
-  if (cg && src) {
-    cg->update(src);
+  if (scope == master) {
+    supla_client_channelgroup *cg =
+        dynamic_cast<supla_client_channelgroup *>(obj);
+    supla_client_channelgroup *src =
+        dynamic_cast<supla_client_channelgroup *>(source);
+    if (cg && src) {
+      cg->update(src);
+    }
+  } else if (scope == detail1) {
+    supla_client_channelgroup_relation *cg_rel =
+        dynamic_cast<supla_client_channelgroup_relation *>(obj);
+    supla_client_channelgroup_relation *src =
+        dynamic_cast<supla_client_channelgroup_relation *>(source);
+    if (cg_rel && src) {
+      cg_rel->update(src);
+    }
   }
 }
 

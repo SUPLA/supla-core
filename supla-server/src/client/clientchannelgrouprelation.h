@@ -25,13 +25,21 @@ class supla_client;
 class supla_client_channelgroup_relation
     : public supla_client_objcontainer_item {
  private:
+  int GroupId;
+
  protected:
   bool remote_update_is_possible(void);
 
  public:
+  supla_client_channelgroup_relation(int ChannelId, int GroupId);
+
   explicit supla_client_channelgroup_relation(
       supla_client_channelgroup_relation *cgr);
   void update(supla_client_channelgroup_relation *cgr);
+
+  int getExtraId(void);
+  int getChannelId(void);
+  int getGroupId(void);
 };
 
 #endif /* CLIENT_CLIENTCHANNELGROUPRELATION_H_ */

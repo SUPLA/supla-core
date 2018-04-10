@@ -17,14 +17,31 @@
  */
 
 #include "clientchannelgrouprelation.h"
+#include <string.h>
+
+supla_client_channelgroup_relation::supla_client_channelgroup_relation(
+    int ChannelId, int GroupId)
+    : supla_client_objcontainer_item(ChannelId, NULL) {
+  this->GroupId = GroupId;
+}
 
 supla_client_channelgroup_relation::supla_client_channelgroup_relation(
     supla_client_channelgroup_relation *cgr)
-    : supla_client_objcontainer_item(cgr) {}
+    : supla_client_objcontainer_item(cgr) {
+  this->GroupId = cgr->GroupId;
+}
 
 bool supla_client_channelgroup_relation::remote_update_is_possible(void) {
   return true;
 }
 
 void supla_client_channelgroup_relation::update(
-    supla_client_channelgroup_relation *cgr) {}
+    supla_client_channelgroup_relation *cgr) {
+  this->GroupId = cgr->GroupId;
+}
+
+int supla_client_channelgroup_relation::getExtraId() { return GroupId; }
+
+int supla_client_channelgroup_relation::getChannelId(void) { return getId(); }
+
+int supla_client_channelgroup_relation::getGroupId(void) { return GroupId; }

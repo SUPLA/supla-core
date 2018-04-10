@@ -19,8 +19,9 @@
 #ifndef CLIENTCHANNELGROUPS_H_
 #define CLIENTCHANNELGROUPS_H_
 
-#include "clientobjcontainer.h"
 #include "clientchannelgroup.h"
+#include "clientchannelgrouprelation.h"
+#include "clientobjcontainer.h"
 
 class supla_client_channelgroups : public supla_client_objcontainer {
  private:
@@ -36,6 +37,7 @@ class supla_client_channelgroups : public supla_client_objcontainer {
 
  public:
   explicit supla_client_channelgroups(supla_client *client);
+  void load(void);
 };
 
 #endif /* CLIENTCHANNELGROUPS_H_ */

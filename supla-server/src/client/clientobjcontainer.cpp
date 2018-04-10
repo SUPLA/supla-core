@@ -28,9 +28,13 @@ char supla_client_objcontainer::arr_delcnd(void *ptr) {
 }
 
 // static
-char supla_client_objcontainer::arr_findcmp(void *ptr, void *id) {
-  return static_cast<supla_client_objcontainer_item *>(ptr)->getId() ==
-                 *((int *)id)
+char supla_client_objcontainer::arr_findcmp(void *ptr, void *_f) {
+  supla_client_objcontainer_item *item =
+      static_cast<supla_client_objcontainer_item *>(ptr);
+  _t_objc_search_fields *f = static_cast<_t_objc_search_fields *>(_f);
+
+  return (f->id == item->getId() &&
+          (!f->use_both || (f->use_both && f->extra_id == item->getExtraId())))
              ? 1
              : 0;
 }
@@ -42,15 +46,25 @@ void supla_client_objcontainer::arr_clean(void *arr) {
 }
 
 supla_client_objcontainer_item *supla_client_objcontainer::find(
-    int Id, e_objc_scope scope) {
+    _t_objc_search_fields *f, e_objc_scope scope) {
   return (supla_client_channel *)safe_array_findcnd(getArr(scope), arr_findcmp,
-                                                    &Id);
+                                                    f);
+}
+
+supla_client_objcontainer_item *supla_client_objcontainer::find(
+    int id, e_objc_scope scope) {
+  _t_objc_search_fields f;
+  f.id = id;
+  f.extra_id = 0;
+  f.use_both = false;
+  return supla_client_objcontainer::find(&f, scope);
 }
 
 supla_client_objcontainer::supla_client_objcontainer(supla_client *client) {
   this->client = client;
   for (int a = 0; a < OBJC_SCOPE_COUNT; a++) {
     this->arr[a] = safe_array_init();
+    this->id_cmp_use_both[a] = false;
   }
 }
 
@@ -98,8 +112,13 @@ void supla_client_objcontainer::update(supla_client_objcontainer_item *_obj,
   safe_array_lock(getArr(scope));
 
   supla_client_objcontainer_item *obj = NULL;
+  _t_objc_search_fields f;
 
-  if ((obj = find(_obj->getId(), scope)) == NULL) {
+  f.id = _obj->getId();
+  f.extra_id = _obj->getExtraId();
+  f.use_both = id_cmp_use_both[scope];
+
+  if ((obj = find(&f, scope)) == NULL) {
     obj = new_item(_obj, scope);
     if (obj && safe_array_add(getArr(scope), obj) == -1) {
       delete obj;
