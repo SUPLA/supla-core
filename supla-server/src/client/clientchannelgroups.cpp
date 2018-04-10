@@ -67,10 +67,18 @@ void supla_client_channelgroups::_update(supla_client_objcontainer_item *obj,
 
 supla_client_objcontainer_item *supla_client_channelgroups::new_item(
     supla_client_objcontainer_item *obj, e_objc_scope scope) {
-  supla_client_channelgroup *cg =
-      dynamic_cast<supla_client_channelgroup *>(obj);
-  if (cg) {
-    return new supla_client_channelgroup(cg);
+  if (scope == master) {
+    supla_client_channelgroup *cg =
+        dynamic_cast<supla_client_channelgroup *>(obj);
+    if (cg) {
+      return new supla_client_channelgroup(cg);
+    }
+  } else if (scope == detail1) {
+    supla_client_channelgroup_relation *cg_rel =
+        dynamic_cast<supla_client_channelgroup_relation *>(obj);
+    if (cg_rel) {
+      return new supla_client_channelgroup_relation(cg_rel);
+    }
   }
 
   return NULL;
