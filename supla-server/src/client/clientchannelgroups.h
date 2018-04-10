@@ -21,6 +21,7 @@
 
 #include "clientchannelgroup.h"
 #include "clientchannelgrouprelation.h"
+#include "clientchannelgroupvalue.h"
 #include "clientobjcontainer.h"
 
 class supla_client_channelgroups : public supla_client_objcontainer {

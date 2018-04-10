@@ -28,6 +28,7 @@ class supla_client_channelgroup_value : public supla_client_objcontainer_item {
   bool remote_update_is_possible(void);
 
  public:
+  explicit supla_client_channelgroup_value(int ChannelId);
 };
 
 #endif /* CLIENT_CLIENTCHANNELGROUPVALUE_H_ */

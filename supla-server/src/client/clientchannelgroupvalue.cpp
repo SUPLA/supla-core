@@ -17,8 +17,11 @@
  */
 
 #include "clientchannelgroupvalue.h"
+#include <string.h>
+
+supla_client_channelgroup_value::supla_client_channelgroup_value(int ChannelId)
+    : supla_client_objcontainer_item(ChannelId, NULL) {}
 
 bool supla_client_channelgroup_value::remote_update_is_possible(void) {
   return true;
 }
-
