@@ -15,7 +15,6 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
 #ifndef supladex_H_
 #define supladex_H_
 
@@ -99,6 +98,7 @@ union TsrpcDataPacketData {
   TSDC_RegistrationEnabled *sdc_reg_enabled;
   TCS_OAuthParametersRequest *cs_oauth_parameters_request;
   TSC_OAuthParameters *sc_oauth_parameters;
+  TSC_SuplaChannelGroupPack *sc_channelgroup_pack;
 };
 
 typedef struct {
@@ -148,6 +148,7 @@ srpc_dcs_async_get_registration_enabled(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
     void *_srpc, TSDC_RegistrationEnabled *reg_enabled);
 
+#ifndef SRPC_EXCLUDE_DEVICE
 // device <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice(
     void *_srpc, TDS_SuplaRegisterDevice *registerdevice);
@@ -170,7 +171,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
     void *_srpc, TDS_FirmwareUpdateParams *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
+#endif /*SRPC_EXCLUDE_DEVICE*/
 
+#ifndef SRPC_EXCLUDE_CLIENT
 // client <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient(
     void *_srpc, TCS_SuplaRegisterClient *registerclient);
@@ -197,6 +200,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(
     void *_srpc, TSC_SuplaChannelPack_B *channel_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_item_value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
+    void *_srpc, TSC_SuplaChannelGroupPack *channelgroup_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc,
                                                    TSC_SuplaEvent *event);
@@ -208,6 +213,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_oauth_parameters(
     void *_srpc, TCS_OAuthParametersRequest *req);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_oauth_parameters_result(
     void *_srpc, TSC_OAuthParameters *params);
+#endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifdef __cplusplus
 }

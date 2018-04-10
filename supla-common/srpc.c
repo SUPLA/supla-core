@@ -366,7 +366,7 @@ void SRPC_ICACHE_FLASH srpc_getpack(
 }
 
 void *srpc_channelpack_get_item_ptr(void *pack, _supla_int_t idx) {
-  return &((TSC_SuplaChannelPack *)pack)->channels[idx];  // NOLINT
+  return &((TSC_SuplaChannelPack *)pack)->items[idx];  // NOLINT
 }
 
 _supla_int_t srpc_channelpack_get_pack_count(void *pack) {
@@ -395,7 +395,7 @@ void SRPC_ICACHE_FLASH srpc_getchannelpack(Tsrpc *srpc, TsrpcReceivedData *rd) {
 }
 
 void *srpc_channelpack_get_item_ptr_b(void *pack, _supla_int_t idx) {
-  return &((TSC_SuplaChannelPack_B *)pack)->channels[idx];  // NOLINT
+  return &((TSC_SuplaChannelPack_B *)pack)->items[idx];  // NOLINT
 }
 
 _supla_int_t srpc_channelpack_get_pack_count_b(void *pack) {
@@ -425,8 +425,40 @@ void SRPC_ICACHE_FLASH srpc_getchannelpack_b(Tsrpc *srpc,
       &srpc_channelpack_get_item_caption_size_b);
 }
 
+void *srpc_channelgroup_pack_get_item_ptr(void *pack, _supla_int_t idx) {
+  return &((TSC_SuplaChannelGroupPack *)pack)->items[idx];  // NOLINT
+}
+
+_supla_int_t srpc_channelgroup_pack_get_pack_count(void *pack) {
+  return ((TSC_SuplaChannelGroupPack *)pack)->count;
+}
+
+void srpc_channelgroup_pack_set_pack_count(void *pack, _supla_int_t count,
+                                           unsigned char increment) {
+  if (increment == 0) {
+    ((TSC_SuplaChannelGroupPack *)pack)->count = count;
+  } else {
+    ((TSC_SuplaChannelGroupPack *)pack)->count += count;
+  }
+}
+
+unsigned _supla_int_t srpc_channelgroup_pack_get_item_caption_size(void *item) {
+  return ((TSC_SuplaChannelGroup *)item)->CaptionSize;
+}
+
+void SRPC_ICACHE_FLASH srpc_getchannelgroup_pack(Tsrpc *srpc,
+                                                 TsrpcReceivedData *rd) {
+  srpc_getpack(srpc, rd, sizeof(TSC_SuplaChannelGroupPack),
+               sizeof(TSC_SuplaChannelGroup), SUPLA_CHANNELGROUP_PACK_MAXCOUNT,
+               SUPLA_CHANNELGROUP_CAPTION_MAXSIZE,
+               &srpc_channelgroup_pack_get_pack_count,
+               &srpc_channelgroup_pack_set_pack_count,
+               &srpc_channelgroup_pack_get_item_ptr,
+               &srpc_channelgroup_pack_get_item_caption_size);
+}
+
 void *srpc_locationpack_get_item_ptr(void *pack, _supla_int_t idx) {
-  return &((TSC_SuplaLocationPack *)pack)->locations[idx];  // NOLINT
+  return &((TSC_SuplaLocationPack *)pack)->items[idx];  // NOLINT
 }
 
 _supla_int_t srpc_locationpack_get_pack_count(void *pack) {
@@ -535,7 +567,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               sizeof(TSDC_RegistrationEnabled));
 
         break;
-
+#ifndef SRPC_EXCLUDE_DEVICE
       case SUPLA_DS_CALL_REGISTER_DEVICE:
 
         if (srpc->sdp.data_size >=
@@ -592,6 +624,58 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSD_SuplaRegisterDeviceResult));
         break;
 
+      case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
+
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaDeviceChannelValue))
+          rd->data.ds_device_channel_value =
+              (TDS_SuplaDeviceChannelValue *)malloc(
+                  sizeof(TDS_SuplaDeviceChannelValue));
+
+        break;
+
+      case SUPLA_SD_CALL_CHANNEL_SET_VALUE:
+
+        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelNewValue))
+          rd->data.sd_channel_new_value = (TSD_SuplaChannelNewValue *)malloc(
+              sizeof(TSD_SuplaChannelNewValue));
+
+        break;
+
+      case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
+
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaChannelNewValueResult))
+          rd->data.ds_channel_new_value_result =
+              (TDS_SuplaChannelNewValueResult *)malloc(
+                  sizeof(TDS_SuplaChannelNewValueResult));
+
+        break;
+
+      case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
+
+        if (srpc->sdp.data_size == sizeof(TDS_FirmwareUpdateParams))
+          rd->data.ds_firmware_update_params =
+              (TDS_FirmwareUpdateParams *)malloc(
+                  sizeof(TDS_FirmwareUpdateParams));
+
+        break;
+
+      case SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT:
+
+        if (srpc->sdp.data_size == sizeof(TSD_FirmwareUpdate_UrlResult) ||
+            srpc->sdp.data_size == sizeof(char)) {
+          rd->data.sc_firmware_update_url_result =
+              (TSD_FirmwareUpdate_UrlResult *)malloc(
+                  sizeof(TSD_FirmwareUpdate_UrlResult));
+
+          if (srpc->sdp.data_size == sizeof(char) &&
+              rd->data.sc_firmware_update_url_result != NULL)
+            memset(rd->data.sc_firmware_update_url_result, 0,
+                   sizeof(TSD_FirmwareUpdate_UrlResult));
+        }
+
+        break;
+#endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
+
       case SUPLA_CS_CALL_REGISTER_CLIENT:
 
         if (srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient))
@@ -631,32 +715,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
           rd->data.sc_register_client_result_b =
               (TSC_SuplaRegisterClientResult_B *)malloc(
                   sizeof(TSC_SuplaRegisterClientResult_B));
-
-        break;
-
-      case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
-
-        if (srpc->sdp.data_size == sizeof(TDS_SuplaDeviceChannelValue))
-          rd->data.ds_device_channel_value =
-              (TDS_SuplaDeviceChannelValue *)malloc(
-                  sizeof(TDS_SuplaDeviceChannelValue));
-
-        break;
-
-      case SUPLA_SD_CALL_CHANNEL_SET_VALUE:
-
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelNewValue))
-          rd->data.sd_channel_new_value = (TSD_SuplaChannelNewValue *)malloc(
-              sizeof(TSD_SuplaChannelNewValue));
-
-        break;
-
-      case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
-
-        if (srpc->sdp.data_size == sizeof(TDS_SuplaChannelNewValueResult))
-          rd->data.ds_channel_new_value_result =
-              (TDS_SuplaChannelNewValueResult *)malloc(
-                  sizeof(TDS_SuplaChannelNewValueResult));
 
         break;
 
@@ -713,6 +771,10 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
+        srpc_getchannelgroup_pack(srpc, rd);
+        break;
+
       case SUPLA_CS_CALL_CHANNEL_SET_VALUE:
 
         if (srpc->sdp.data_size == sizeof(TCS_SuplaChannelNewValue))
@@ -736,31 +798,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                 (sizeof(TSC_SuplaEvent) - SUPLA_SENDER_NAME_MAXSIZE) &&
             srpc->sdp.data_size <= sizeof(TSC_SuplaEvent)) {
           rd->data.sc_event = (TSC_SuplaEvent *)malloc(sizeof(TSC_SuplaEvent));
-        }
-
-        break;
-
-      case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
-
-        if (srpc->sdp.data_size == sizeof(TDS_FirmwareUpdateParams))
-          rd->data.ds_firmware_update_params =
-              (TDS_FirmwareUpdateParams *)malloc(
-                  sizeof(TDS_FirmwareUpdateParams));
-
-        break;
-
-      case SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT:
-
-        if (srpc->sdp.data_size == sizeof(TSD_FirmwareUpdate_UrlResult) ||
-            srpc->sdp.data_size == sizeof(char)) {
-          rd->data.sc_firmware_update_url_result =
-              (TSD_FirmwareUpdate_UrlResult *)malloc(
-                  sizeof(TSD_FirmwareUpdate_UrlResult));
-
-          if (srpc->sdp.data_size == sizeof(char) &&
-              rd->data.sc_firmware_update_url_result != NULL)
-            memset(rd->data.sc_firmware_update_url_result, 0,
-                   sizeof(TSD_FirmwareUpdate_UrlResult));
         }
 
         break;
@@ -864,6 +901,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
       return 8;
 
     case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B:
+    case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
       return 9;
   }
 
@@ -1036,6 +1074,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
                          (char *)reg_enabled, sizeof(TSDC_RegistrationEnabled));
 }
 
+#ifndef SRPC_EXCLUDE_DEVICE
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
     void *_srpc, TDS_FirmwareUpdateParams *result) {
   return srpc_async_call(_srpc, SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL,
@@ -1101,6 +1140,46 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
                          sizeof(TSD_SuplaRegisterDeviceResult));
 }
 
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value) {
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_SET_VALUE, (char *)value,
+                         sizeof(TSD_SuplaChannelNewValue));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
+                                 _supla_int_t SenderID, char Success) {
+  TDS_SuplaChannelNewValueResult result;
+  result.ChannelNumber = ChannelNumber;
+  result.SenderID = SenderID;
+  result.Success = Success;
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
+                         (char *)&result,
+                         sizeof(TDS_SuplaChannelNewValueResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
+    void *_srpc, TSD_FirmwareUpdate_UrlResult *result) {
+  return srpc_async_call(
+      _srpc, SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT, (char *)result,
+      result->exists == 1 ? sizeof(TSD_FirmwareUpdate_UrlResult)
+                          : sizeof(char));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
+    void *_srpc, unsigned char channel_number, char *value) {
+  TDS_SuplaDeviceChannelValue ncsc;
+  ncsc.ChannelNumber = channel_number;
+  memcpy(ncsc.value, value, SUPLA_CHANNELVALUE_SIZE);
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED,
+                         (char *)&ncsc, sizeof(TDS_SuplaDeviceChannelValue));
+}
+
+#endif /*SRPC_EXCLUDE_DEVICE*/
+
+#ifndef SRPC_EXCLUDE_CLIENT
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient(
     void *_srpc, TCS_SuplaRegisterClient *registerclient) {
   return srpc_async_call(_srpc, SUPLA_CS_CALL_REGISTER_CLIENT,
@@ -1134,43 +1213,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
                          (char *)registerclient_result,
                          sizeof(TSC_SuplaRegisterClientResult_B));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
-    void *_srpc, unsigned char channel_number, char *value) {
-  TDS_SuplaDeviceChannelValue ncsc;
-  ncsc.ChannelNumber = channel_number;
-  memcpy(ncsc.value, value, SUPLA_CHANNELVALUE_SIZE);
-
-  return srpc_async_call(_srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED,
-                         (char *)&ncsc, sizeof(TDS_SuplaDeviceChannelValue));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value) {
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_SET_VALUE, (char *)value,
-                         sizeof(TSD_SuplaChannelNewValue));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
-                                 _supla_int_t SenderID, char Success) {
-  TDS_SuplaChannelNewValueResult result;
-  result.ChannelNumber = ChannelNumber;
-  result.SenderID = SenderID;
-  result.Success = Success;
-
-  return srpc_async_call(_srpc, SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
-                         (char *)&result,
-                         sizeof(TDS_SuplaChannelNewValueResult));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
-    void *_srpc, TSD_FirmwareUpdate_UrlResult *result) {
-  return srpc_async_call(
-      _srpc, SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT, (char *)result,
-      result->exists == 1 ? sizeof(TSD_FirmwareUpdate_UrlResult)
-                          : sizeof(char));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
@@ -1237,7 +1279,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_set_pack(
 
 unsigned _supla_int_t srpc_locationpack_get_caption_size(void *pack,
                                                          _supla_int_t idx) {
-  return ((TSC_SuplaLocationPack *)pack)->locations[idx].CaptionSize;
+  return ((TSC_SuplaLocationPack *)pack)->items[idx].CaptionSize;
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(
@@ -1274,12 +1316,12 @@ srpc_sc_async_channel_update_b(void *_srpc, TSC_SuplaChannel_B *channel_b) {
 
 unsigned _supla_int_t srpc_channelpack_get_caption_size(void *pack,
                                                         _supla_int_t idx) {
-  return ((TSC_SuplaChannelPack *)pack)->channels[idx].CaptionSize;
+  return ((TSC_SuplaChannelPack *)pack)->items[idx].CaptionSize;
 }
 
 unsigned _supla_int_t srpc_channelpack_get_caption_size_b(void *pack,
                                                           _supla_int_t idx) {
-  return ((TSC_SuplaChannelPack_B *)pack)->channels[idx].CaptionSize;
+  return ((TSC_SuplaChannelPack_B *)pack)->items[idx].CaptionSize;
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(
@@ -1306,6 +1348,22 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_value) {
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE,
                          (char *)channel_value, sizeof(TSC_SuplaChannelValue));
+}
+
+unsigned _supla_int_t
+srpc_channelgroup_pack_get_caption_size(void *pack, _supla_int_t idx) {
+  return ((TSC_SuplaChannelGroupPack *)pack)->items[idx].CaptionSize;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
+    void *_srpc, TSC_SuplaChannelGroupPack *channelgroup_pack) {
+  return srpc_set_pack(
+      _srpc, channelgroup_pack, channelgroup_pack->count,
+      &srpc_channelgroup_pack_get_caption_size,
+      &srpc_channelgroup_pack_get_item_ptr,
+      &srpc_channelgroup_pack_set_pack_count, sizeof(TSC_SuplaChannelGroupPack),
+      SUPLA_CHANNELGROUP_PACK_MAXCOUNT, SUPLA_CHANNELGROUP_CAPTION_MAXSIZE,
+      sizeof(TSC_SuplaChannelGroup), SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc) {
@@ -1345,3 +1403,5 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_oauth_parameters_result(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT,
                          (char *)params, sizeof(TSC_OAuthParameters));
 }
+
+#endif /*SRPC_EXCLUDE_CLIENT*/
