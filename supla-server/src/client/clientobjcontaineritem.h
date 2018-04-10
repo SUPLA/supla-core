@@ -35,9 +35,7 @@ class supla_client_objcontainer_item {
 
  public:
   explicit supla_client_objcontainer_item(int Id, const char *Caption);
-  explicit supla_client_objcontainer_item(supla_client_objcontainer_item *obj);
   virtual ~supla_client_objcontainer_item(void);
-  virtual void update(supla_client_objcontainer_item *item);
   int getId();
   virtual int getExtraId();
   char *getCaption(void);

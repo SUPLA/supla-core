@@ -18,6 +18,7 @@
 
 #include "client.h"
 #include "../database.h"
+#include "../log.h"
 #include "../safearray.h"
 #include "clientchannelgroup.h"
 #include "clientchannelgroups.h"
@@ -43,45 +44,23 @@ void supla_client_channelgroups::load(void) {
   supla_client_objcontainer::load(detail1);
 }
 
-void supla_client_channelgroups::_update(supla_client_objcontainer_item *obj,
-                                         supla_client_objcontainer_item *source,
-                                         e_objc_scope scope) {
-  if (scope == master) {
-    supla_client_channelgroup *cg =
-        dynamic_cast<supla_client_channelgroup *>(obj);
-    supla_client_channelgroup *src =
-        dynamic_cast<supla_client_channelgroup *>(source);
-    if (cg && src) {
-      cg->update(src);
-    }
-  } else if (scope == detail1) {
-    supla_client_channelgroup_relation *cg_rel =
-        dynamic_cast<supla_client_channelgroup_relation *>(obj);
-    supla_client_channelgroup_relation *src =
-        dynamic_cast<supla_client_channelgroup_relation *>(source);
-    if (cg_rel && src) {
-      cg_rel->update(src);
-    }
-  }
-}
+bool supla_client_channelgroups::add(supla_client_objcontainer_item *obj,
+                                     e_objc_scope scope) {
+  bool result = supla_client_objcontainer::add(obj, scope);
 
-supla_client_objcontainer_item *supla_client_channelgroups::new_item(
-    supla_client_objcontainer_item *obj, e_objc_scope scope) {
-  if (scope == master) {
-    supla_client_channelgroup *cg =
-        dynamic_cast<supla_client_channelgroup *>(obj);
-    if (cg) {
-      return new supla_client_channelgroup(cg);
-    }
-  } else if (scope == detail1) {
+  if (result && scope == detail1) {
     supla_client_channelgroup_relation *cg_rel =
-        dynamic_cast<supla_client_channelgroup_relation *>(obj);
+        static_cast<supla_client_channelgroup_relation *>(obj);
     if (cg_rel) {
-      return new supla_client_channelgroup_relation(cg_rel);
+      supla_client_channelgroup *cg = static_cast<supla_client_channelgroup *>(
+          find(cg_rel->getGroupId(), master));
+      if (cg) {
+        cg->add_relation(cg_rel);
+      }
     }
   }
 
-  return NULL;
+  return result;
 }
 
 bool supla_client_channelgroups::get_data_for_remote(

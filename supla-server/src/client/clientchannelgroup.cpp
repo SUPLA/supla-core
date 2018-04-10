@@ -17,6 +17,9 @@
  */
 
 #include "clientchannelgroup.h"
+#include <string.h>
+#include "../log.h"
+#include "../safearray.h"
 
 supla_client_channelgroup::supla_client_channelgroup(int Id, int LocationID,
                                                      int Func,
@@ -27,21 +30,39 @@ supla_client_channelgroup::supla_client_channelgroup(int Id, int LocationID,
   this->Func = Func;
   this->AltIcon = AltIcon;
   this->Flags = 0;
+  this->relarr = safe_array_init();
 }
 
-supla_client_channelgroup::supla_client_channelgroup(
-    supla_client_channelgroup *cg)
-    : supla_client_objcontainer_item(cg) {
-  update(cg);
+supla_client_channelgroup::~supla_client_channelgroup(void) {
+  safe_array_free(this->relarr);
 }
 
-void supla_client_channelgroup::update(supla_client_channelgroup *cg) {
-  supla_client_objcontainer_item::update(cg);
+bool supla_client_channelgroup::add_relation(
+    supla_client_channelgroup_relation *cg_rel) {
+  if (cg_rel->getGroupId() != getId()) {
+    return false;
+  }
 
-  this->LocationID = cg->LocationID;
-  this->Func = cg->Func;
-  this->AltIcon = cg->AltIcon;
-  this->Flags = cg->Flags;
+  bool result = true;
+  supla_client_channelgroup_relation *item = NULL;
+
+  safe_array_lock(relarr);
+  for (int a = 0; a < safe_array_count(relarr); a++) {
+    item = static_cast<supla_client_channelgroup_relation *>(
+        safe_array_get(relarr, a));
+    if (item && item->getChannelId() == cg_rel->getChannelId()) {
+      result = false;
+      break;
+    }
+  }
+
+  if (result) {
+    safe_array_add(relarr, cg_rel);
+  }
+
+  safe_array_unlock(relarr);
+
+  return result;
 }
 
 bool supla_client_channelgroup::remote_update_is_possible(void) { return true; }

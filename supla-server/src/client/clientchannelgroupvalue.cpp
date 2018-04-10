@@ -18,13 +18,7 @@
 
 #include "clientchannelgroupvalue.h"
 
-supla_client_channelgroup_value::supla_client_channelgroup_value(
-    supla_client_channelgroup_value *cgv)
-    : supla_client_objcontainer_item(cgv) {}
-
 bool supla_client_channelgroup_value::remote_update_is_possible(void) {
   return true;
 }
 
-void supla_client_channelgroup_value::update(
-    supla_client_channelgroup_value *cg) {}

@@ -152,26 +152,6 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
   }
 }
 
-void supla_client_channels::_update(supla_client_objcontainer_item *obj,
-                                    supla_client_objcontainer_item *source,
-                                    e_objc_scope scope) {
-  supla_client_channel *channel = dynamic_cast<supla_client_channel *>(obj);
-  supla_client_channel *src = dynamic_cast<supla_client_channel *>(source);
-  if (channel && src) {
-    channel->update(src);
-  }
-}
-
-supla_client_objcontainer_item *supla_client_channels::new_item(
-    supla_client_objcontainer_item *obj, e_objc_scope scope) {
-  supla_client_channel *channel = dynamic_cast<supla_client_channel *>(obj);
-  if (channel) {
-    return new supla_client_channel(channel);
-  }
-
-  return NULL;
-}
-
 void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
                                                      int ChannelId) {
   on_value_changed(srpc, ChannelId, DeviceId);

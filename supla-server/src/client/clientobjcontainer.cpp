@@ -107,38 +107,35 @@ void supla_client_objcontainer::load(e_objc_scope scope) {
 
 void supla_client_objcontainer::load(void) { load(master); }
 
-void supla_client_objcontainer::update(supla_client_objcontainer_item *_obj,
-                                       e_objc_scope scope) {
+bool supla_client_objcontainer::add(supla_client_objcontainer_item *obj,
+                                    e_objc_scope scope) {
+  bool result = false;
+  if (obj == NULL) {
+    return false;
+  }
+
   safe_array_lock(getArr(scope));
 
-  supla_client_objcontainer_item *obj = NULL;
   _t_objc_search_fields f;
 
-  f.id = _obj->getId();
-  f.extra_id = _obj->getExtraId();
+  f.id = obj->getId();
+  f.extra_id = obj->getExtraId();
   f.use_both = id_cmp_use_both[scope];
 
-  if ((obj = find(&f, scope)) == NULL) {
-    obj = new_item(_obj, scope);
-    if (obj && safe_array_add(getArr(scope), obj) == -1) {
-      delete obj;
-      obj = NULL;
+  if (find(&f, scope) == NULL && safe_array_add(getArr(scope), obj) != -1) {
+    result = true;
+
+    if (obj) {
+      obj->mark_for_remote_update(OI_REMOTEUPDATE_FULL);
     }
-
-  } else {
-    obj->setCaption(_obj->getCaption());
-    _update(obj, _obj, scope);
   }
-
-  if (obj) {
-    obj->mark_for_remote_update(OI_REMOTEUPDATE_FULL);
-  }
-
   safe_array_unlock(getArr(scope));
+
+  return result;
 }
 
-void supla_client_objcontainer::update(supla_client_objcontainer_item *_obj) {
-  update(_obj, master);
+bool supla_client_objcontainer::add(supla_client_objcontainer_item *obj) {
+  return add(obj, master);
 }
 
 supla_client_objcontainer_item *supla_client_objcontainer::get_marked(

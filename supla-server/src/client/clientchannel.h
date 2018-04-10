@@ -42,8 +42,6 @@ class supla_client_channel : public supla_client_objcontainer_item {
   supla_client_channel(int Id, int DeviceId, int LocationID, int Func,
                        int Param1, int Param2, const char *Caption, int AltIcon,
                        unsigned char ProtocolVersion);
-  explicit supla_client_channel(supla_client_channel *channel);
-  void update(supla_client_channel *channel);
 
   void proto_get_channel(TSC_SuplaChannel *channel, supla_client *client);
   void proto_get_channel(TSC_SuplaChannel_B *channel, supla_client *client);

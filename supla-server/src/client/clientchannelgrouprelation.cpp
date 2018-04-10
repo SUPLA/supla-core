@@ -25,19 +25,8 @@ supla_client_channelgroup_relation::supla_client_channelgroup_relation(
   this->GroupId = GroupId;
 }
 
-supla_client_channelgroup_relation::supla_client_channelgroup_relation(
-    supla_client_channelgroup_relation *cgr)
-    : supla_client_objcontainer_item(cgr) {
-  this->GroupId = cgr->GroupId;
-}
-
 bool supla_client_channelgroup_relation::remote_update_is_possible(void) {
   return true;
-}
-
-void supla_client_channelgroup_relation::update(
-    supla_client_channelgroup_relation *cgr) {
-  this->GroupId = cgr->GroupId;
 }
 
 int supla_client_channelgroup_relation::getExtraId() { return GroupId; }

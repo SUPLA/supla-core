@@ -44,23 +44,6 @@ supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
   this->Flags = 0;
 }
 
-supla_client_channel::supla_client_channel(supla_client_channel *channel)
-    : supla_client_objcontainer_item(channel) {
-  update(channel);
-}
-
-void supla_client_channel::update(supla_client_channel *channel) {
-  supla_client_objcontainer_item::update(channel);
-  this->DeviceId = channel->DeviceId;
-  this->LocationId = channel->LocationId;
-  this->Func = channel->Func;
-  this->Param1 = channel->Param1;
-  this->Param2 = channel->Param2;
-  this->AltIcon = channel->AltIcon;
-  this->ProtocolVersion = channel->ProtocolVersion;
-  this->Flags = channel->Flags;
-}
-
 int supla_client_channel::getDeviceId() { return DeviceId; }
 
 int supla_client_channel::getExtraId() { return DeviceId; }

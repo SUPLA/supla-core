@@ -33,10 +33,6 @@ class supla_client_channelgroup_relation
  public:
   supla_client_channelgroup_relation(int ChannelId, int GroupId);
 
-  explicit supla_client_channelgroup_relation(
-      supla_client_channelgroup_relation *cgr);
-  void update(supla_client_channelgroup_relation *cgr);
-
   int getExtraId(void);
   int getChannelId(void);
   int getGroupId(void);

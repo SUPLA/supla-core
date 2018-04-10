@@ -52,11 +52,6 @@ class supla_client_objcontainer {
   supla_client_objcontainer_item *find(int id, e_objc_scope scope);
 
   virtual void _load(database *db, e_objc_scope scope) = 0;
-  virtual void _update(supla_client_objcontainer_item *obj,
-                       supla_client_objcontainer_item *source,
-                       e_objc_scope scope) = 0;
-  virtual supla_client_objcontainer_item *new_item(
-      supla_client_objcontainer_item *obj, e_objc_scope scope) = 0;
   virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
                                    void **data, bool full, bool EOL,
                                    bool *check_more) = 0;
@@ -72,8 +67,8 @@ class supla_client_objcontainer {
   int count(void);
   void load(e_objc_scope scope);
   virtual void load(void);
-  void update(supla_client_objcontainer_item *_obj, e_objc_scope scope);
-  void update(supla_client_objcontainer_item *_obj);
+  virtual bool add(supla_client_objcontainer_item *obj, e_objc_scope scope);
+  virtual bool add(supla_client_objcontainer_item *obj);
   bool remote_update(void *srpc);
   void on_value_changed(void *srpc, int objId, int extraId);
   void on_value_changed(void *srpc, int objId);

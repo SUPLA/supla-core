@@ -28,15 +28,6 @@ supla_client_objcontainer_item::supla_client_objcontainer_item(
   setCaption(Caption);
 }
 
-supla_client_objcontainer_item::supla_client_objcontainer_item(
-    supla_client_objcontainer_item *obj)
-    : supla_client_objcontainer_item(obj->Id, obj->Caption) {}
-
-void supla_client_objcontainer_item::update(
-    supla_client_objcontainer_item *item) {
-  setCaption(item->Caption);
-}
-
 supla_client_objcontainer_item::~supla_client_objcontainer_item(void) {
   setCaption(NULL);
 }
