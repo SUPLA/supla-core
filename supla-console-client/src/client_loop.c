@@ -63,6 +63,13 @@ void client_loop_channel_update(void *_suplaclient, void *sthread,
   }
 }
 
+void client_loop_channelgroup_update(void *_suplaclient, void *sthread,
+                                     TSC_SuplaChannelGroup *channel_group) {
+  supla_log(LOG_DEBUG, "ChannelGroup #%i %s LocationID=%i, Function=%i EOL=%i",
+            channel_group->Id, channel_group->Caption,
+            channel_group->LocationID, channel_group->Func, channel_group->EOL);
+}
+
 void client_loop_on_event(void *_suplaclient, void *user_data,
                           TSC_SuplaEvent *event) {
   supla_log(LOG_DEBUG, "Event: %i, SenderID: %i, SenderName: %s", event->Event,
@@ -127,6 +134,7 @@ void *client_loop_init(void *sthread) {
   scc.cb_location_update = &client_loop_location_update;
   scc.cb_channel_update = &client_loop_channel_update;
   scc.cb_channel_value_update = &client_loop_channel_value_update;
+  scc.cb_channelgroup_update = &client_loop_channelgroup_update;
   scc.cb_on_event = &client_loop_on_event;
   scc.cb_on_registration_enabled = &client_on_registration_enabled;
 
