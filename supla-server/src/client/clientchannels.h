@@ -35,7 +35,7 @@ class supla_client_channels : public supla_client_objcontainer {
   void _load(database *db, e_objc_scope scope);
  public:
   explicit supla_client_channels(supla_client *client);
-  void update_device_channels(int DeviceId);
+  void add_device_channels(int DeviceId);
   void on_channel_value_changed(
       void *srpc, int DeviceId,
       int ChannelId = 0);  // ChannelId == 0 - All channels

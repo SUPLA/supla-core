@@ -51,7 +51,7 @@ void supla_client_channels::_load(database *db, e_objc_scope scope) {
   db->get_client_channels(getClient()->getID(), NULL, this);
 }
 
-void supla_client_channels::update_device_channels(int DeviceId) {
+void supla_client_channels::add_device_channels(int DeviceId) {
   database *db = new database();
 
   if (db->connect() == true) {

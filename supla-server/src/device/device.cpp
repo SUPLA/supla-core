@@ -239,7 +239,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
               setUser(supla_user::add_device(this, UserID));
-              getUser()->update_client_device_channels(LocationID, getID());
+              getUser()->add_client_device_channels(LocationID, getID());
             }
           }
         }

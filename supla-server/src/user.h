@@ -112,7 +112,7 @@ class supla_user {
                                      int color, char color_brightness,
                                      char brightness);
 
-  void update_client_device_channels(int LocationID, int DeviceID);
+  void add_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(int DeviceId, int ChannelId = 0);
 
   void call_event(TSC_SuplaEvent *event);
