@@ -24,23 +24,26 @@
 #define OI_REMOTEUPDATE_VALUE 2
 
 class supla_client;
+class supla_client_objcontainer;
 class supla_client_objcontainer_item {
  private:
+  supla_client_objcontainer *Container;
   int Id;
   char *Caption;
   char RemoteUpdateMark;
 
  protected:
-  virtual bool remote_update_is_possible(void) = 0;
-
  public:
-  explicit supla_client_objcontainer_item(int Id, const char *Caption);
+  explicit supla_client_objcontainer_item(supla_client_objcontainer *Container,
+                                          int Id, const char *Caption);
   virtual ~supla_client_objcontainer_item(void);
+  supla_client_objcontainer *getContainer(void);
   int getId();
   virtual int getExtraId();
   char *getCaption(void);
   void setCaption(const char *Caption);
 
+  virtual bool remote_update_is_possible(void) = 0;
   void mark_for_remote_update(char mark);
   char marked_for_remote_update(void);
 };

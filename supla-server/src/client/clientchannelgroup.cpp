@@ -19,13 +19,14 @@
 #include "clientchannelgroup.h"
 #include <string.h>
 #include "../log.h"
+#include "../proto.h"
 #include "../safearray.h"
+#include "client.h"
 
-supla_client_channelgroup::supla_client_channelgroup(int Id, int LocationID,
-                                                     int Func,
-                                                     const char *Caption,
-                                                     int AltIcon)
-    : supla_client_objcontainer_item(Id, Caption) {
+supla_client_channelgroup::supla_client_channelgroup(
+    supla_client_channelgroups *Container, int Id, int LocationID, int Func,
+    const char *Caption, int AltIcon)
+    : supla_client_objcontainer_item(Container, Id, Caption) {
   this->LocationID = LocationID;
   this->Func = Func;
   this->AltIcon = AltIcon;
@@ -65,4 +66,26 @@ bool supla_client_channelgroup::add_relation(
   return result;
 }
 
-bool supla_client_channelgroup::remote_update_is_possible(void) { return true; }
+bool supla_client_channelgroup::remote_update_is_possible(void) {
+  if (getContainer()->getClient()->getProtocolVersion() < 9) {
+    return false;
+  }
+
+  switch (Func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+
+      return true;
+  }
+
+  return false;
+}

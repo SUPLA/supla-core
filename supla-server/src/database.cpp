@@ -1124,7 +1124,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
           }
 
           supla_client_channel *channel = new supla_client_channel(
-              id, iodevice_id, location_id, func, param1, param2,
+              channels, id, iodevice_id, location_id, func, param1, param2,
               is_null ? NULL : caption, alt_icon, protocol_version);
 
           if (!channels->add(channel)) {
@@ -1197,8 +1197,9 @@ void database::get_client_channel_groups(int ClientID,
             caption[0] = 0;
           }
 
-          supla_client_channelgroup *cg = new supla_client_channelgroup(
-              id, location_id, func, is_null ? NULL : caption, alt_icon);
+          supla_client_channelgroup *cg =
+              new supla_client_channelgroup(cgroups, id, location_id, func,
+                                            is_null ? NULL : caption, alt_icon);
           if (!cgroups->add(cg, master)) {
             delete cg;
           }
@@ -1248,13 +1249,14 @@ void database::get_client_channel_group_relations(
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
           supla_client_channelgroup_relation *cg_rel =
-              new supla_client_channelgroup_relation(channel_id, group_id);
+              new supla_client_channelgroup_relation(cgroups, channel_id,
+                                                     group_id);
           if (!cgroups->add(cg_rel, detail1)) {
             delete cg_rel;
           }
           if (hidden > 0) {
             supla_client_channelgroup_value *cg_value =
-                new supla_client_channelgroup_value(channel_id);
+                new supla_client_channelgroup_value(cgroups, channel_id);
             if (!cgroups->add(cg_value, detail2)) {
               delete cg_value;
             }

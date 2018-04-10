@@ -29,11 +29,12 @@
 #include "client.h"
 #include "clientchannel.h"
 
-supla_client_channel::supla_client_channel(int Id, int DeviceId, int LocationID,
+supla_client_channel::supla_client_channel(supla_client_channels *Container,
+                                           int Id, int DeviceId, int LocationID,
                                            int Func, int Param1, int Param2,
                                            const char *Caption, int AltIcon,
                                            unsigned char ProtocolVersion)
-    : supla_client_objcontainer_item(Id, Caption) {
+    : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
   this->Func = Func;

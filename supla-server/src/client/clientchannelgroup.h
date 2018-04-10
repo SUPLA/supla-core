@@ -23,6 +23,7 @@
 #include "clientobjcontaineritem.h"
 
 class supla_client;
+class supla_client_channelgroups;
 class supla_client_channelgroup : public supla_client_objcontainer_item {
  private:
   int LocationID;
@@ -32,14 +33,14 @@ class supla_client_channelgroup : public supla_client_objcontainer_item {
   void *relarr;  // This is just index. Don't free related objects
 
  protected:
-  bool remote_update_is_possible(void);
-
  public:
-  supla_client_channelgroup(int Id, int LocationID, int Func,
-                            const char *Caption, int AltIcon);
+  supla_client_channelgroup(supla_client_channelgroups *Container, int Id,
+                            int LocationID, int Func, const char *Caption,
+                            int AltIcon);
 
   virtual ~supla_client_channelgroup(void);
   bool add_relation(supla_client_channelgroup_relation *cg_rel);
+  bool remote_update_is_possible(void);
 };
 
 #endif /* CLIENTCHANNELGROUP_H_ */

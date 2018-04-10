@@ -18,10 +18,11 @@
 
 #include "clientchannelgrouprelation.h"
 #include <string.h>
+#include "clientchannelgroups.h"
 
 supla_client_channelgroup_relation::supla_client_channelgroup_relation(
-    int ChannelId, int GroupId)
-    : supla_client_objcontainer_item(ChannelId, NULL) {
+    supla_client_channelgroups *Container, int ChannelId, int GroupId)
+    : supla_client_objcontainer_item(Container, ChannelId, NULL) {
   this->GroupId = GroupId;
 }
 

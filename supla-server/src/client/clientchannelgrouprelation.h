@@ -22,17 +22,17 @@
 #include "clientobjcontaineritem.h"
 
 class supla_client;
+class supla_client_channelgroups;
 class supla_client_channelgroup_relation
     : public supla_client_objcontainer_item {
  private:
   int GroupId;
 
  protected:
-  bool remote_update_is_possible(void);
-
  public:
-  supla_client_channelgroup_relation(int ChannelId, int GroupId);
-
+  supla_client_channelgroup_relation(supla_client_channelgroups *Container,
+                                     int ChannelId, int GroupId);
+  bool remote_update_is_possible(void);
   int getExtraId(void);
   int getChannelId(void);
   int getGroupId(void);

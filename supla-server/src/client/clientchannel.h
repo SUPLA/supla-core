@@ -24,6 +24,7 @@
 #include "clientobjcontaineritem.h"
 
 class supla_client;
+class supla_client_channels;
 class supla_client_channel : public supla_client_objcontainer_item {
  private:
   int DeviceId;
@@ -35,14 +36,13 @@ class supla_client_channel : public supla_client_objcontainer_item {
   unsigned char ProtocolVersion;
   unsigned int Flags;
 
- protected:
-  bool remote_update_is_possible(void);
-
  public:
-  supla_client_channel(int Id, int DeviceId, int LocationID, int Func,
-                       int Param1, int Param2, const char *Caption, int AltIcon,
+  supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
+                       int LocationID, int Func, int Param1, int Param2,
+                       const char *Caption, int AltIcon,
                        unsigned char ProtocolVersion);
 
+  bool remote_update_is_possible(void);
   void proto_get_channel(TSC_SuplaChannel *channel, supla_client *client);
   void proto_get_channel(TSC_SuplaChannel_B *channel, supla_client *client);
   void proto_get_channel_value(TSC_SuplaChannelValue *channel_value,

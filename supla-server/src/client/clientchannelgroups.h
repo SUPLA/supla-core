@@ -26,6 +26,8 @@
 
 class supla_client_channelgroups : public supla_client_objcontainer {
  private:
+  bool channelRelationExists(int ChannelId);
+
  protected:
   void _load(database *db, e_objc_scope scope);
   bool get_data_for_remote(supla_client_objcontainer_item *obj, void **data,
@@ -36,6 +38,7 @@ class supla_client_channelgroups : public supla_client_objcontainer {
   explicit supla_client_channelgroups(supla_client *client);
   void load(void);
   virtual bool add(supla_client_objcontainer_item *obj, e_objc_scope scope);
+  supla_client_channelgroup *findGroup(int Id);
 };
 
 #endif /* CLIENTCHANNELGROUPS_H_ */

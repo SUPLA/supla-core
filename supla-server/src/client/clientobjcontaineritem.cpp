@@ -21,7 +21,8 @@
 #include <string.h>
 
 supla_client_objcontainer_item::supla_client_objcontainer_item(
-    int Id, const char *Caption) {
+    supla_client_objcontainer *Container, int Id, const char *Caption) {
+  this->Container = Container;
   this->Id = Id;
   this->Caption = NULL;
   this->RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
@@ -30,6 +31,10 @@ supla_client_objcontainer_item::supla_client_objcontainer_item(
 
 supla_client_objcontainer_item::~supla_client_objcontainer_item(void) {
   setCaption(NULL);
+}
+
+supla_client_objcontainer *supla_client_objcontainer_item::getContainer(void) {
+  return Container;
 }
 
 int supla_client_objcontainer_item::getId() { return Id; }

@@ -46,21 +46,61 @@ void supla_client_channelgroups::load(void) {
 
 bool supla_client_channelgroups::add(supla_client_objcontainer_item *obj,
                                      e_objc_scope scope) {
-  bool result = supla_client_objcontainer::add(obj, scope);
+  bool result = false;
+  supla_client_channelgroup *cg = NULL;
 
-  if (result && scope == detail1) {
+  if (scope == master) {
+    cg = static_cast<supla_client_channelgroup *>(obj);
+    result = cg && cg->remote_update_is_possible() &&
+             supla_client_objcontainer::add(obj, scope);
+
+  } else if (scope == detail1) {
     supla_client_channelgroup_relation *cg_rel =
         static_cast<supla_client_channelgroup_relation *>(obj);
     if (cg_rel) {
-      supla_client_channelgroup *cg = static_cast<supla_client_channelgroup *>(
-          find(cg_rel->getGroupId(), master));
-      if (cg) {
-        cg->add_relation(cg_rel);
+      cg = findGroup(cg_rel->getGroupId());
+      if (cg && cg->remote_update_is_possible()) {
+        result = supla_client_objcontainer::add(obj, scope);
+        if (result) {
+          cg->add_relation(cg_rel);
+        }
       }
+    }
+
+  } else if (scope == detail2) {
+    supla_client_channelgroup_value *cg_val =
+        static_cast<supla_client_channelgroup_value *>(obj);
+
+    if (channelRelationExists(cg_val->getId())) {
+      result = supla_client_objcontainer::add(obj, scope);
     }
   }
 
   return result;
+}
+
+bool supla_client_channelgroups::channelRelationExists(int ChannelId) {
+  bool result = false;
+  supla_client_channelgroup_relation *cg_rel = NULL;
+  void *arr = getArr(detail1);
+
+  safe_array_lock(arr);
+
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    cg_rel = static_cast<supla_client_channelgroup_relation *>(
+        safe_array_get(arr, a));
+    if (cg_rel && cg_rel->getChannelId() == ChannelId) {
+      result = true;
+      break;
+    }
+  }
+
+  safe_array_unlock(arr);
+  return result;
+}
+
+supla_client_channelgroup *supla_client_channelgroups::findGroup(int Id) {
+  return static_cast<supla_client_channelgroup *>(find(Id, master));
 }
 
 bool supla_client_channelgroups::get_data_for_remote(
