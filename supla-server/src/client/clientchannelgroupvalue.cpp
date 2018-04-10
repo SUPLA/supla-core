@@ -27,3 +27,5 @@ supla_client_channelgroup_value::supla_client_channelgroup_value(
 bool supla_client_channelgroup_value::remote_update_is_possible(void) {
   return true;
 }
+
+int supla_client_channelgroup_value::getChannelId(void) { return getId(); }

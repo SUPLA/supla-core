@@ -51,6 +51,7 @@ bool supla_client_channelgroups::add(supla_client_objcontainer_item *obj,
 
   if (scope == master) {
     cg = static_cast<supla_client_channelgroup *>(obj);
+    // Add only this groups that remote update is possible
     result = cg && cg->remote_update_is_possible() &&
              supla_client_objcontainer::add(obj, scope);
 
@@ -59,7 +60,7 @@ bool supla_client_channelgroups::add(supla_client_objcontainer_item *obj,
         static_cast<supla_client_channelgroup_relation *>(obj);
     if (cg_rel) {
       cg = findGroup(cg_rel->getGroupId());
-      if (cg && cg->remote_update_is_possible()) {
+      if (cg) {
         result = supla_client_objcontainer::add(obj, scope);
         if (result) {
           cg->add_relation(cg_rel);
@@ -71,7 +72,7 @@ bool supla_client_channelgroups::add(supla_client_objcontainer_item *obj,
     supla_client_channelgroup_value *cg_val =
         static_cast<supla_client_channelgroup_value *>(obj);
 
-    if (channelRelationExists(cg_val->getId())) {
+    if (channelRelationExists(cg_val->getChannelId())) {
       result = supla_client_objcontainer::add(obj, scope);
     }
   }
