@@ -234,7 +234,8 @@ void supla_client_channel_update_b(TSuplaClientData *scd,
 }
 
 void supla_client_channelgroup_update(TSuplaClientData *scd,
-                                   TSC_SuplaChannelGroup *channel_group, char gn) {
+                                      TSC_SuplaChannelGroup *channel_group,
+                                      char gn) {
   supla_client_set_str(channel_group->Caption, &channel_group->CaptionSize,
                        SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 
@@ -245,7 +246,7 @@ void supla_client_channelgroup_update(TSuplaClientData *scd,
 }
 
 void supla_client_channelgroup_pack_update(TSuplaClientData *scd,
-                                       TSC_SuplaChannelGroupPack *pack) {
+                                           TSC_SuplaChannelGroupPack *pack) {
   int a;
 
   for (a = 0; a < pack->count; a++)
@@ -349,7 +350,8 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         supla_client_channel_value_update(scd, rd.data.sc_channel_value);
         break;
       case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
-        supla_client_channelgroup_pack_update(scd, rd.data.sc_channelgroup_pack);
+        supla_client_channelgroup_pack_update(scd,
+                                              rd.data.sc_channelgroup_pack);
         break;
       case SUPLA_SC_CALL_EVENT:
         supla_client_on_event(scd, rd.data.sc_event);
