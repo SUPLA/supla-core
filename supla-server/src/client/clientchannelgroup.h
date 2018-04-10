@@ -39,6 +39,7 @@ class supla_client_channelgroup : public supla_client_objcontainer_item {
                             int AltIcon);
 
   virtual ~supla_client_channelgroup(void);
+  void proto_get(TSC_SuplaChannelGroup *group);
   bool add_relation(supla_client_channelgroup_relation *cg_rel);
   bool remote_update_is_possible(void);
 };

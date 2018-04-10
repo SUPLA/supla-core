@@ -63,57 +63,52 @@ void supla_client_channels::add_device_channels(int DeviceId) {
   delete db;
 }
 
+template <typename TSuplaDataPack, class TObjClass>
+bool supla_client_channels::get_datapack_for_remote(
+    supla_client_objcontainer_item *obj, void **data, int max_count) {
+  TSuplaDataPack *pack = static_cast<TSuplaDataPack *>(*data);
+  if (pack == NULL) {
+    pack = (TSuplaDataPack *)malloc(sizeof(TSuplaDataPack));
+    memset(pack, 0, sizeof(TSuplaDataPack));
+  }
+
+  *data = pack;
+
+  if (pack->count < max_count) {
+    static_cast<TObjClass *>(obj)->proto_get(&pack->items[pack->count],
+                                             getClient());
+    pack->items[pack->count].EOL = 0;
+    pack->count++;
+    return true;
+  } else {
+    pack->total_left++;
+  }
+
+  return false;
+}
+
 bool supla_client_channels::get_data_for_remote(
-    supla_client_objcontainer_item *obj, void **data, bool full, bool EOL,
-    bool *check_more) {
+    supla_client_objcontainer_item *obj, void **data, bool full,
+    bool *check_more, e_objc_scope scope) {
   if (full) {
     *check_more = true;
 
     if (getClient()->getProtocolVersion() > 7) {
-      TSC_SuplaChannelPack_B *pack =
-          static_cast<TSC_SuplaChannelPack_B *>(*data);
-      if (pack == NULL) {
-        pack = (TSC_SuplaChannelPack_B *)malloc(sizeof(TSC_SuplaChannelPack_B));
-        memset(pack, 0, sizeof(TSC_SuplaChannelPack_B));
-      }
-
-      *data = pack;
-
-      if (pack->count < SUPLA_CHANNELPACK_MAXCOUNT) {
-        static_cast<supla_client_channel *>(obj)->proto_get_channel(
-            &pack->channels[pack->count], getClient());
-        pack->channels[pack->count].EOL = 0;
-        pack->count++;
-        return true;
-      } else {
-        pack->total_left++;
-      }
+      return get_datapack_for_remote<TSC_SuplaChannelPack_B,
+                                     supla_client_channel>(
+          obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
 
     } else {
-      TSC_SuplaChannelPack *pack = static_cast<TSC_SuplaChannelPack *>(*data);
-      if (pack == NULL) {
-        pack = (TSC_SuplaChannelPack *)malloc(sizeof(TSC_SuplaChannelPack));
-        memset(pack, 0, sizeof(TSC_SuplaChannelPack));
-      }
-
-      *data = pack;
-
-      if (pack->count < SUPLA_CHANNELPACK_MAXCOUNT) {
-        static_cast<supla_client_channel *>(obj)->proto_get_channel(
-            &pack->channels[pack->count], getClient());
-        pack->channels[pack->count].EOL = 0;
-        pack->count++;
-        return true;
-      } else {
-        pack->total_left++;
-      }
+      return get_datapack_for_remote<TSC_SuplaChannelPack,
+                                     supla_client_channel>(
+          obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
     }
   } else {
     if (*data == NULL) {
       *data = malloc(sizeof(TSC_SuplaChannelValue));
     }
 
-    static_cast<supla_client_channel *>(obj)->proto_get_channel_value(
+    static_cast<supla_client_channel *>(obj)->proto_get_value(
         (TSC_SuplaChannelValue *)*data, getClient());
 
     return true;
@@ -122,34 +117,34 @@ bool supla_client_channels::get_data_for_remote(
   return false;
 }
 
+template <typename TSuplaDataPack>
+void supla_client_channels::set_pack_eol(void *data) {
+  TSuplaDataPack *pack = static_cast<TSuplaDataPack *>(data);
+
+  if (pack && pack->count > 0) {
+    if (pack->total_left == 0) pack->items[pack->count - 1].EOL = 1;
+  }
+}
+
 void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
-                                                         bool full) {
+                                                         bool full,
+                                                         e_objc_scope scope) {
   if (full) {
     if (getClient()->getProtocolVersion() > 7) {
-      TSC_SuplaChannelPack_B *pack =
-          static_cast<TSC_SuplaChannelPack_B *>(data);
+      set_pack_eol<TSC_SuplaChannelPack_B>(data);
+      srpc_sc_async_channelpack_update_b(
+          srpc, static_cast<TSC_SuplaChannelPack_B *>(data));
 
-      if (pack->count > 0) {
-        if (pack->total_left == 0) pack->channels[pack->count - 1].EOL = 1;
-
-        srpc_sc_async_channelpack_update_b(srpc, pack);
-      }
     } else {
-      TSC_SuplaChannelPack *pack = static_cast<TSC_SuplaChannelPack *>(data);
-
-      if (pack->count > 0) {
-        if (pack->total_left == 0) pack->channels[pack->count - 1].EOL = 1;
-
-        srpc_sc_async_channelpack_update(srpc, pack);
-      }
+      set_pack_eol<TSC_SuplaChannelPack>(data);
+      srpc_sc_async_channelpack_update(
+          srpc, static_cast<TSC_SuplaChannelPack *>(data));
     }
   } else {
     srpc_sc_async_channel_value_update(srpc, (TSC_SuplaChannelValue *)data);
   }
 
-  if (data) {
-    free(data);
-  }
+  free(data);
 }
 
 void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,

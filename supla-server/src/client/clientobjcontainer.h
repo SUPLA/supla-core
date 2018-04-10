@@ -36,7 +36,6 @@ class supla_client_objcontainer {
  private:
   supla_client *client;
   void *arr[OBJC_SCOPE_COUNT];
-  supla_client_objcontainer_item *get_marked(e_objc_scope scope);
   bool do_remote_update(void *srpc, bool full, e_objc_scope scope);
 
  protected:
@@ -53,10 +52,10 @@ class supla_client_objcontainer {
 
   virtual void _load(database *db, e_objc_scope scope) = 0;
   virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
-                                   void **data, bool full, bool EOL,
-                                   bool *check_more) = 0;
-  virtual void send_data_to_remote_and_free(void *srpc, void *data,
-                                            bool full) = 0;
+                                   void **data, bool full, bool *check_more,
+                                   e_objc_scope scope) = 0;
+  virtual void send_data_to_remote_and_free(void *srpc, void *data, bool full,
+                                            e_objc_scope scope) = 0;
 
  public:
   explicit supla_client_objcontainer(supla_client *client);

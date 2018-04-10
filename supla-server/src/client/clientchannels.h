@@ -26,13 +26,21 @@ class supla_client_channel;
 class supla_client_channels : public supla_client_objcontainer {
  private:
   supla_client_channel *find_channel(int Id);
+  template <typename TSuplaDataPack, class TObjClass>
+  bool get_datapack_for_remote(supla_client_objcontainer_item *obj, void **data,
+                               int max_count);
+
+  template <typename TSuplaDataPack>
+  void set_pack_eol(void *data);
 
  protected:
   bool get_data_for_remote(supla_client_objcontainer_item *obj, void **data,
-                           bool full, bool EOL, bool *check_more);
-  void send_data_to_remote_and_free(void *srpc, void *data, bool full);
+                           bool full, bool *check_more, e_objc_scope scope);
+  void send_data_to_remote_and_free(void *srpc, void *data, bool full,
+                                    e_objc_scope scope);
 
   void _load(database *db, e_objc_scope scope);
+
  public:
   explicit supla_client_channels(supla_client *client);
   void add_device_channels(int DeviceId);

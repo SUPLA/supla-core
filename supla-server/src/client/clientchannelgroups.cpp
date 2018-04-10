@@ -17,9 +17,12 @@
  */
 
 #include "client.h"
+#include <stdlib.h>  // NOLINT
+#include <string.h>  // NOLINT
 #include "../database.h"
 #include "../log.h"
 #include "../safearray.h"
+#include "../srpc.h"
 #include "clientchannelgroup.h"
 #include "clientchannelgroups.h"
 
@@ -104,12 +107,60 @@ supla_client_channelgroup *supla_client_channelgroups::findGroup(int Id) {
   return static_cast<supla_client_channelgroup *>(find(Id, master));
 }
 
-bool supla_client_channelgroups::get_data_for_remote(
-    supla_client_objcontainer_item *obj, void **data, bool full, bool EOL,
-    bool *check_more) {
+template <typename TSuplaDataPack, class TObjClass>
+bool supla_client_channelgroups::get_datapack_for_remote(
+    supla_client_objcontainer_item *obj, void **data, int max_count) {
+  TSuplaDataPack *pack = static_cast<TSuplaDataPack *>(*data);
+  if (pack == NULL) {
+    pack = (TSuplaDataPack *)malloc(sizeof(TSuplaDataPack));
+    memset(pack, 0, sizeof(TSuplaDataPack));
+  }
+
+  *data = pack;
+
+  if (pack->count < max_count) {
+    static_cast<TObjClass *>(obj)->proto_get(&pack->items[pack->count]);
+    pack->items[pack->count].EOL = 0;
+    pack->count++;
+    return true;
+  } else {
+    pack->total_left++;
+  }
+
   return false;
 }
 
-void supla_client_channelgroups::send_data_to_remote_and_free(void *srpc,
-                                                              void *data,
-                                                              bool full) {}
+template <typename TSuplaDataPack>
+void supla_client_channelgroups::set_pack_eol(void *data) {
+  TSuplaDataPack *pack = static_cast<TSuplaDataPack *>(data);
+
+  if (pack && pack->count > 0) {
+    if (pack->total_left == 0) pack->items[pack->count - 1].EOL = 1;
+  }
+}
+
+bool supla_client_channelgroups::get_data_for_remote(
+    supla_client_objcontainer_item *obj, void **data, bool full,
+    bool *check_more, e_objc_scope scope) {
+  *check_more = true;
+
+  if (scope == master) {
+    return get_datapack_for_remote<TSC_SuplaChannelGroupPack,
+                                   supla_client_channelgroup>(
+        obj, data, SUPLA_CHANNELGROUP_PACK_MAXCOUNT);
+  }
+
+  return false;
+}
+
+void supla_client_channelgroups::send_data_to_remote_and_free(
+    void *srpc, void *data, bool full, e_objc_scope scope) {
+  if (scope == master) {
+    set_pack_eol<TSC_SuplaChannelGroupPack>(data);
+
+    srpc_sc_async_channelgroup_pack_update(
+        srpc, static_cast<TSC_SuplaChannelGroupPack *>(data));
+  }
+
+  free(data);
+}

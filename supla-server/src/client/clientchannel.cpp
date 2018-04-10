@@ -94,7 +94,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
   return false;
 }
 
-void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel,
+void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
                                              supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel));
 
@@ -107,18 +107,11 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel *channel,
                                          &channel->online);
   }
 
-  if (getCaption()) {
-    snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s",
-             getCaption());
-    channel->CaptionSize =
-        strnlen(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE - 1) + 1;
-  } else {
-    channel->CaptionSize = 1;
-    channel->Caption[0] = 0;
-  }
+  proto_get_caption(channel->Caption, &channel->CaptionSize,
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
-void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel,
+void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
                                              supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel_B));
 
@@ -134,18 +127,11 @@ void supla_client_channel::proto_get_channel(TSC_SuplaChannel_B *channel,
                                          &channel->online);
   }
 
-  if (getCaption()) {
-    snprintf(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s",
-             getCaption());
-    channel->CaptionSize =
-        strnlen(channel->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE - 1) + 1;
-  } else {
-    channel->CaptionSize = 1;
-    channel->Caption[0] = 0;
-  }
+  proto_get_caption(channel->Caption, &channel->CaptionSize,
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
-void supla_client_channel::proto_get_channel_value(
+void supla_client_channel::proto_get_value(
     TSC_SuplaChannelValue *channel_value, supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = getId();

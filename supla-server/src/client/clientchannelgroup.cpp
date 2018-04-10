@@ -89,3 +89,16 @@ bool supla_client_channelgroup::remote_update_is_possible(void) {
 
   return false;
 }
+
+void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
+  memset(group, 0, sizeof(TSC_SuplaChannelGroup));
+
+  group->Id = getId();
+  group->LocationID = LocationID;
+  group->Func = Func;
+  group->AltIcon = AltIcon;
+  group->Flags = Flags;
+
+  proto_get_caption(group->Caption, &group->CaptionSize,
+                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+}

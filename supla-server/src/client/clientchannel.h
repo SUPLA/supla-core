@@ -43,9 +43,9 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        unsigned char ProtocolVersion);
 
   bool remote_update_is_possible(void);
-  void proto_get_channel(TSC_SuplaChannel *channel, supla_client *client);
-  void proto_get_channel(TSC_SuplaChannel_B *channel, supla_client *client);
-  void proto_get_channel_value(TSC_SuplaChannelValue *channel_value,
+  void proto_get(TSC_SuplaChannel *channel, supla_client *client);
+  void proto_get(TSC_SuplaChannel_B *channel, supla_client *client);
+  void proto_get_value(TSC_SuplaChannelValue *channel_value,
                                supla_client *client);
   int getDeviceId();
   int getExtraId();

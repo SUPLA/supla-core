@@ -174,8 +174,8 @@ bool supla_client_locations::remote_update(void *srpc) {
     loc = (supla_client_location *)safe_array_pop(arr);
 
     if (loc && location_pack.count < SUPLA_LOCATIONPACK_MAXCOUNT) {
-      loc->proto_get_location(&location_pack.locations[location_pack.count]);
-      location_pack.locations[location_pack.count].EOL = 0;
+      loc->proto_get_location(&location_pack.items[location_pack.count]);
+      location_pack.items[location_pack.count].EOL = 0;
       location_pack.count++;
 
       delete loc;
@@ -192,7 +192,7 @@ bool supla_client_locations::remote_update(void *srpc) {
   safe_array_unlock(arr);
 
   if (location_pack.count > 0) {
-    location_pack.locations[location_pack.count - 1].EOL = 1;
+    location_pack.items[location_pack.count - 1].EOL = 1;
 
     srpc_sc_async_locationpack_update(srpc, &location_pack);
     return true;

@@ -17,6 +17,7 @@
  */
 
 #include "client.h"
+#include <stdlib.h>  // NOLINT
 #include "../database.h"
 #include "../safearray.h"
 #include "clientobjcontainer.h"
@@ -138,23 +139,6 @@ bool supla_client_objcontainer::add(supla_client_objcontainer_item *obj) {
   return add(obj, master);
 }
 
-supla_client_objcontainer_item *supla_client_objcontainer::get_marked(
-    e_objc_scope scope) {
-  supla_client_objcontainer_item *obj = NULL;
-
-  for (int a = 0; a < safe_array_count(getArr(scope)); a++) {
-    obj = static_cast<supla_client_objcontainer_item *>(
-        safe_array_get(getArr(scope), a));
-    if (obj->marked_for_remote_update() != OI_REMOTEUPDATE_NONE) {
-      break;
-    } else {
-      obj = NULL;
-    }
-  }
-
-  return obj;
-}
-
 bool supla_client_objcontainer::do_remote_update(void *srpc, bool full,
                                                  e_objc_scope scope) {
   void *data = NULL;
@@ -170,8 +154,7 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, bool full,
     obj = static_cast<supla_client_objcontainer_item *>(
         safe_array_get(getArr(scope), a));
     if (obj->marked_for_remote_update() == mark) {
-      if (get_data_for_remote(obj, &data, full,
-                              get_marked(scope) == NULL ? 1 : 0, &check_more)) {
+      if (get_data_for_remote(obj, &data, full, &check_more, scope), scope) {
         obj->mark_for_remote_update(OI_REMOTEUPDATE_NONE);
         result = true;
       }
@@ -185,7 +168,7 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, bool full,
   safe_array_unlock(getArr(scope));
 
   if (data) {
-    send_data_to_remote_and_free(srpc, data, full);
+    send_data_to_remote_and_free(srpc, data, full, scope);
   }
 
   return result;

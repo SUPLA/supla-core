@@ -17,6 +17,7 @@
  */
 
 #include "clientobjcontaineritem.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -71,4 +72,15 @@ void supla_client_objcontainer_item::mark_for_remote_update(char mark) {
 
 char supla_client_objcontainer_item::marked_for_remote_update(void) {
   return RemoteUpdateMark;
+}
+
+void supla_client_objcontainer_item::proto_get_caption(
+    char *Caption, unsigned _supla_int_t *CaptionSize, unsigned int MaxSize) {
+  if (getCaption()) {
+    snprintf(Caption, MaxSize, "%s", getCaption());
+    *CaptionSize = strnlen(Caption, MaxSize - 1) + 1;
+  } else {
+    *CaptionSize = 1;
+    Caption[0] = 0;
+  }
 }

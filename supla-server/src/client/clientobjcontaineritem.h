@@ -23,6 +23,8 @@
 #define OI_REMOTEUPDATE_FULL 1
 #define OI_REMOTEUPDATE_VALUE 2
 
+#include "../proto.h"
+
 class supla_client;
 class supla_client_objcontainer;
 class supla_client_objcontainer_item {
@@ -33,6 +35,9 @@ class supla_client_objcontainer_item {
   char RemoteUpdateMark;
 
  protected:
+  void proto_get_caption(char *Caption, unsigned _supla_int_t *CaptionSize,
+                         unsigned int MaxSize);
+
  public:
   explicit supla_client_objcontainer_item(supla_client_objcontainer *Container,
                                           int Id, const char *Caption);
