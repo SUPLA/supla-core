@@ -217,7 +217,7 @@ void supla_client_locationpack_update(TSuplaClientData *scd,
   int a;
 
   for (a = 0; a < pack->count; a++)
-    supla_client_location_update(scd, &pack->locations[a], 0);
+    supla_client_location_update(scd, &pack->items[a], 0);
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -261,7 +261,7 @@ void supla_client_channelpack_update(TSuplaClientData *scd,
   int a;
 
   for (a = 0; a < pack->count; a++)
-    supla_client_channel_update(scd, &pack->channels[a], 0);
+    supla_client_channel_update(scd, &pack->items[a], 0);
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -271,7 +271,7 @@ void supla_client_channelpack_update_b(TSuplaClientData *scd,
   int a;
 
   for (a = 0; a < pack->count; a++)
-    supla_client_channel_update_b(scd, &pack->channels[a], 0);
+    supla_client_channel_update_b(scd, &pack->items[a], 0);
 
   srpc_cs_async_get_next(scd->srpc);
 }

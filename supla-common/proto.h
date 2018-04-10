@@ -136,6 +136,7 @@ extern "C" {
 #define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT 350       // ver. >= 7
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360              // ver. >= 8
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                  // ver. >= 8
+#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE  380         // ver. >= 9
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -340,7 +341,7 @@ typedef struct {
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaLocation
-      locations[SUPLA_LOCATIONPACK_MAXCOUNT];  // Last variable in struct!
+      items[SUPLA_LOCATIONPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaLocationPack;
 
 typedef struct {
@@ -491,7 +492,7 @@ typedef struct {
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannel
-      channels[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack;
 
 typedef struct {
@@ -519,8 +520,8 @@ typedef struct {
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannel_B
-      channels[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelPack_B;                    // ver. >= 8
+      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelPack_B;                 // ver. >= 8
 
 typedef struct {
   // server -> client
@@ -531,7 +532,6 @@ typedef struct {
   _supla_int_t Func;
   _supla_int_t AltIcon;
   unsigned _supla_int_t Flags;
-  unsigned char ProtocolVersion;
 
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
@@ -544,8 +544,8 @@ typedef struct {
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannelGroup
-      groups[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupPack;                     // ver. >= 9
+      items[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelGroupPack;                    // ver. >= 9
 
 typedef struct {
   // server -> client
@@ -560,7 +560,7 @@ typedef struct {
 
   _supla_int_t count;
   _supla_int_t total_left;
-  TSC_SuplaChannelGroupRelation relations
+  TSC_SuplaChannelGroupRelation items
       [SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelGroupRelationPack;                // ver. >= 9
 
