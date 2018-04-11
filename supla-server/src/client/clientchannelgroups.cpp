@@ -19,10 +19,12 @@
 #include "client.h"
 #include <stdlib.h>  // NOLINT
 #include <string.h>  // NOLINT
+#include <list>      // NOLINT
 #include "../database.h"
 #include "../log.h"
 #include "../safearray.h"
 #include "../srpc.h"
+#include "../user.h"
 #include "clientchannelgroup.h"
 #include "clientchannelgroups.h"
 
@@ -188,4 +190,33 @@ void supla_client_channelgroups::on_channel_value_changed(void *srpc,
                                                           int DeviceId,
                                                           int ChannelId) {
   on_value_changed(srpc, ChannelId, DeviceId, detail2, OI_REMOTEUPDATE_FULL);
+}
+
+bool supla_client_channelgroups::set_device_channel_new_value(
+    TCS_SuplaNewValue *new_value) {
+  bool r1 = false;
+  bool r2 = true;
+
+  std::list<t_dc_pair> pairs;
+  void *arr = getArr(master);
+
+  safe_array_lock(arr);
+  supla_client_channelgroup *cgroup = findGroup(new_value->Id);
+  if (cgroup) {
+    pairs = cgroup->get_channel_list();
+  }
+  safe_array_unlock(arr);
+
+  for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
+       it++) {
+    if (getClient()->getUser()->set_device_channel_value(
+            getClient()->getID(), it->DeviceId, it->ChannelId,
+            new_value->value)) {
+      r1 = true;
+    } else {
+      r2 = false;
+    }
+  }
+
+  return r1 && r2;
 }

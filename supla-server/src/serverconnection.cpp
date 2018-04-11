@@ -267,8 +267,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           device = new supla_device(this);
 
           if (device != NULL) {
-            rd.data.ds_register_device_d
-                ->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+            rd.data.ds_register_device_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
             rd.data.ds_register_device_d->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] =
                 0;
             rd.data.ds_register_device_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
@@ -470,6 +469,15 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE_B");
             client->set_device_channel_new_value(
                 rd.data.cs_channel_new_value_b);
+          }
+
+          break;
+
+        case SUPLA_CS_CALL_SET_VALUE:
+
+          if (rd.data.cs_new_value != NULL) {
+            supla_log(LOG_DEBUG, "SUPLA_CS_CALL_SET_VALUE");
+            client->set_new_value(rd.data.cs_new_value);
           }
 
           break;

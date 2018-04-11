@@ -35,7 +35,8 @@ typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
                                                 int remote_version);
 typedef void (*_suplaclient_cb_on_action)(void *_suplaclient, void *user_data);
 typedef void (*_suplaclient_cb_on_registered)(
-    void *_suplaclient, void *user_data, TSC_SuplaRegisterClientResult *result);
+    void *_suplaclient, void *user_data,
+    TSC_SuplaRegisterClientResult_B *result);
 typedef void (*_suplaclient_cb_on_error)(void *_suplaclient, void *user_data,
                                          int code);
 typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
@@ -120,10 +121,10 @@ void supla_client_disconnect(void *_suplaclient);
 char supla_client_iterate(void *_suplaclient, int wait_usec);
 void *supla_client_get_userdata(void *_suplaclient);
 
-char supla_client_open(void *_suplaclient, int ChannelID, char open);
-char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color,
+char supla_client_open(void *_suplaclient, int ID, char group, char open);
+char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
                            char color_brightness, char brightness);
-char supla_client_set_dimmer(void *_suplaclient, int ChannelID,
+char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
                              char brightness);
 char supla_client_get_registration_enabled(void *_suplaclient);
 unsigned char supla_client_get_proto_version(void *_suplaclient);

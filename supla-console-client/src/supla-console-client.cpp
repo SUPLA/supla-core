@@ -80,23 +80,23 @@ int main(int argc, char *argv[]) {
     if (input_off == 0 && sclient != NULL && kbhit() > 0) {
       switch (getch()) {
         case '0':
-          supla_client_open(sclient, 151, 0);
+          supla_client_open(sclient, 14, 1, 0);
           break;
         case '1':
-          supla_client_open(sclient, 151, 1);
+          supla_client_open(sclient, 14, 1, 1);
           break;
         case '2':
-          supla_client_open(sclient, 151, 2);
+          supla_client_open(sclient, 14, 1, 2);
           break;
 
         case '4':
-          supla_client_open(sclient, 28, 1);
+          supla_client_open(sclient, 28, 0, 1);
           break;
         case '5':
-          supla_client_open(sclient, 29, 1);
+          supla_client_open(sclient, 29, 0, 1);
           break;
         case '6':
-          supla_client_open(sclient, 30, 1);
+          supla_client_open(sclient, 30, 0, 1);
           break;
         case '7':
           supla_client_get_registration_enabled(sclient);

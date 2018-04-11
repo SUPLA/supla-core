@@ -27,13 +27,15 @@ class supla_client_channelgroup_relation
     : public supla_client_objcontainer_item {
  private:
   int GroupId;
+  int DeviceId;
 
  protected:
  public:
   supla_client_channelgroup_relation(supla_client_channelgroups *Container,
-                                     int ChannelId, int GroupId);
+                                     int DeviceId, int ChannelId, int GroupId);
   bool remote_update_is_possible(void);
   int getExtraId(void);
+  int getDeviceId(void);
   int getChannelId(void);
   int getGroupId(void);
   void proto_get(TSC_SuplaChannelGroupRelation *group_relation);

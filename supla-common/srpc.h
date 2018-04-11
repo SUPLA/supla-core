@@ -24,6 +24,7 @@
 #include "proto.h"
 
 #ifdef ESP8266
+#define SRPC_EXCLUDE_CLIENT
 #include <mem.h>
 #include <os_type.h>
 #define SRPC_ICACHE_FLASH ICACHE_FLASH_ATTR
@@ -101,6 +102,7 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelGroupPack *sc_channelgroup_pack;
   TSC_SuplaChannelGroupRelationPack *sc_channelgroup_relation_pack;
   TSC_SuplaChannelValuePack *sc_channelvalue_pack;
+  TCS_SuplaNewValue *cs_new_value;
 };
 
 typedef struct {
@@ -203,16 +205,19 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_item_value);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
-    void *_srpc, TSC_SuplaChannelGroupPack *channelgroup_pack);
+    void *_srpc, TSC_SuplaChannelGroupPack *channelgroup_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
-    void *_srpc, TSC_SuplaChannelGroupRelationPack *channelgroup_relation_pack);
+    void *_srpc, TSC_SuplaChannelGroupRelationPack
+                     *channelgroup_relation_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
-    void *_srpc, TSC_SuplaChannelValuePack *channelvalue_pack);
+    void *_srpc, TSC_SuplaChannelValuePack *channelvalue_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc,
                                                    TSC_SuplaEvent *event);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_value(void *_srpc, TCS_SuplaNewValue *value);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
     void *_srpc, TCS_SuplaChannelNewValue_B *value);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_oauth_parameters(

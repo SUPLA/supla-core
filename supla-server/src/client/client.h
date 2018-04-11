@@ -20,9 +20,9 @@
 #define CLIENT_H_
 
 #include "../cdcommon.h"
+#include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
-#include "clientchannelgroups.h"
 
 class supla_user;
 class supla_client : public cdcommon {
@@ -52,6 +52,7 @@ class supla_client : public cdcommon {
   void get_next(void);
   void set_device_channel_new_value(
       TCS_SuplaChannelNewValue_B *channel_new_value);
+  void set_new_value(TCS_SuplaNewValue *new_value);
   int getName(char *buffer, int size);
 
   void call_event(TSC_SuplaEvent *event);

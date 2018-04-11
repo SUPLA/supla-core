@@ -19,8 +19,14 @@
 #ifndef CLIENTCHANNELGROUP_H_
 #define CLIENTCHANNELGROUP_H_
 
+#include <list>
 #include "clientchannelgrouprelation.h"
 #include "clientobjcontaineritem.h"
+
+typedef struct {
+  int DeviceId;
+  int ChannelId;
+} t_dc_pair;
 
 class supla_client;
 class supla_client_channelgroups;
@@ -42,6 +48,7 @@ class supla_client_channelgroup : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannelGroup *group);
   bool add_relation(supla_client_channelgroup_relation *cg_rel);
   bool remote_update_is_possible(void);
+  std::list<t_dc_pair> get_channel_list(void);
 };
 
 #endif /* CLIENTCHANNELGROUP_H_ */

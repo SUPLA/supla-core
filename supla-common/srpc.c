@@ -806,6 +806,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_CS_CALL_SET_VALUE:
+
+        if (srpc->sdp.data_size == sizeof(TCS_SuplaNewValue))
+          rd->data.cs_new_value = (TCS_SuplaNewValue *)malloc(
+              sizeof(TCS_SuplaNewValue));
+
+        break;
+
       case SUPLA_CS_CALL_CHANNEL_SET_VALUE_B:
 
         if (srpc->sdp.data_size == sizeof(TCS_SuplaChannelNewValue_B))
@@ -928,6 +936,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
     case SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE:
     case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE:
+    case SUPLA_CS_CALL_SET_VALUE:
       return 9;
   }
 
@@ -1447,6 +1456,12 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
     void *_srpc, TCS_SuplaChannelNewValue_B *value) {
   return srpc_async_call(_srpc, SUPLA_CS_CALL_CHANNEL_SET_VALUE_B,
                          (char *)value, sizeof(TCS_SuplaChannelNewValue_B));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_value(void *_srpc, TCS_SuplaNewValue *value) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_VALUE, (char *)value,
+                         sizeof(TCS_SuplaNewValue));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_oauth_parameters(

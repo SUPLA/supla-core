@@ -132,7 +132,7 @@ void supla_client_set_registered(void *_suplaclient, char registered) {
 
 void supla_client_on_register_result(
     TSuplaClientData *scd,
-    TSC_SuplaRegisterClientResult *register_client_result) {
+    TSC_SuplaRegisterClientResult_B *register_client_result) {
   if (register_client_result->result_code == SUPLA_RESULTCODE_TRUE) {
     supla_client_set_registered(scd, 1);
 
@@ -275,12 +275,24 @@ void supla_client_channelgroup_relation_pack_update(
   srpc_cs_async_get_next(scd->srpc);
 }
 
+void supla_client_channel_value_update(TSuplaClientData *scd,
+                                       TSC_SuplaChannelValue *channel_value,
+                                       char gn) {
+  if (scd->cfg.cb_channel_value_update)
+    scd->cfg.cb_channel_value_update(scd, scd->cfg.user_data, channel_value);
+
+  if (gn == 1) {
+    srpc_cs_async_get_next(scd->srpc);
+  }
+}
+
 void supla_client_channelvalue_pack_update(TSuplaClientData *scd,
                                            TSC_SuplaChannelValuePack *pack) {
   int a;
 
-  for (a = 0; a < pack->count; a++)
+  for (a = 0; a < pack->count; a++) {
     supla_client_channel_value_update(scd, &pack->items[a], 0);
+  }
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -328,17 +340,6 @@ void supla_client_channelpack_update_b(TSuplaClientData *scd,
   srpc_cs_async_get_next(scd->srpc);
 }
 
-void supla_client_channel_value_update(TSuplaClientData *scd,
-                                       TSC_SuplaChannelValue *channel_value,
-                                       char gn) {
-  if (scd->cfg.cb_channel_value_update)
-    scd->cfg.cb_channel_value_update(scd, scd->cfg.user_data, channel_value);
-
-  if (gn == 1) {
-    srpc_cs_async_get_next(scd->srpc);
-  }
-}
-
 void supla_client_on_event(TSuplaClientData *scd, TSC_SuplaEvent *event) {
   supla_client_set_str(event->SenderName, &event->SenderNameSize,
                        SUPLA_SENDER_NAME_MAXSIZE);
@@ -362,7 +363,53 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         supla_client_on_version_error(scd, rd.data.sdc_version_error);
         break;
       case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT:
-        supla_client_on_register_result(scd, rd.data.sc_register_client_result);
+
+        if (rd.data.sc_register_client_result == NULL) {
+          break;
+        }
+
+        {
+          TSC_SuplaRegisterClientResult_B *sc_register_client_result_b =
+              (TSC_SuplaRegisterClientResult_B *)malloc(
+                  sizeof(TSC_SuplaRegisterClientResult_B));
+
+          if (sc_register_client_result_b == NULL) {
+            break;
+          } else {
+            sc_register_client_result_b->result_code =
+                rd.data.sc_register_client_result->result_code;
+
+            sc_register_client_result_b->ClientID =
+                rd.data.sc_register_client_result->ClientID;
+
+            sc_register_client_result_b->LocationCount =
+                rd.data.sc_register_client_result->LocationCount;
+
+            sc_register_client_result_b->ChannelCount =
+                rd.data.sc_register_client_result->ChannelCount;
+
+            sc_register_client_result_b->ChannelGroupCount = 0;
+            sc_register_client_result_b->Flags = 0;
+
+            sc_register_client_result_b->activity_timeout =
+                rd.data.sc_register_client_result->activity_timeout;
+
+            sc_register_client_result_b->version =
+                rd.data.sc_register_client_result->version;
+
+            sc_register_client_result_b->version_min =
+                rd.data.sc_register_client_result->version_min;
+
+            free(rd.data.sc_register_client_result);
+            rd.data.sc_register_client_result_b = sc_register_client_result_b;
+          }
+        }
+
+      /* no break between SUPLA_SC_CALL_REGISTER_CLIENT_RESULT and
+       * SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B!!! */
+      case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B:
+        supla_client_on_register_result(scd,
+                                        rd.data.sc_register_client_result_b);
         break;
       case SUPLA_SC_CALL_LOCATION_UPDATE:
         supla_client_location_update(scd, rd.data.sc_location, 1);
@@ -692,56 +739,85 @@ void *supla_client_get_userdata(void *_suplaclient) {
   return suplaclient->cfg.user_data;
 }
 
-char supla_client_open(void *_suplaclient, int ChannelID, char open) {
-  TCS_SuplaChannelNewValue_B value;
+char supla_client_open(void *_suplaclient, int ID, char group, char open) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
   lck_lock(suplaclient->lck);
   if (supla_client_registered(_suplaclient) == 1) {
-    memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
-    value.ChannelId = ChannelID;
-    value.value[0] = open;
-    result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
-                     SUPLA_RESULT_FALSE
-                 ? 0
-                 : 1;
+    if (srpc_get_proto_version(suplaclient->srpc) >= 9) {
+      TCS_SuplaNewValue value;
+      memset(&value, 0, sizeof(TCS_SuplaNewValue));
+      value.Id = ID;
+      value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
+                               : SUPLA_NEW_VALUE_TARGET_CHANNEL;
+      value.value[0] = open;
+      result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
+                       SUPLA_RESULT_FALSE
+                   ? 0
+                   : 1;
+    } else {
+      TCS_SuplaChannelNewValue_B value;
+      memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
+      value.ChannelId = ID;
+      value.value[0] = open;
+      result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
+                       SUPLA_RESULT_FALSE
+                   ? 0
+                   : 1;
+    }
   }
   lck_unlock(suplaclient->lck);
 
   return result;
 }
 
-char supla_client_set_rgbw(void *_suplaclient, int ChannelID, int color,
+void _supla_client_set_rgbw(char *value, int color, char color_brightness,
+                            char brightness) {
+  value[0] = brightness;
+  value[1] = color_brightness;
+  value[2] = (char)((color & 0x000000FF));        // BLUE
+  value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
+  value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
+}
+char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
                            char color_brightness, char brightness) {
-  TCS_SuplaChannelNewValue_B value;
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
   lck_lock(suplaclient->lck);
   if (supla_client_registered(_suplaclient) == 1) {
-    memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
-    value.ChannelId = ChannelID;
-    value.value[0] = brightness;
+    if (srpc_get_proto_version(suplaclient->srpc) >= 9) {
+      TCS_SuplaNewValue value;
+      memset(&value, 0, sizeof(TCS_SuplaNewValue));
+      _supla_client_set_rgbw(value.value, color, color_brightness, brightness);
+      value.Id = ID;
+      value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
+                               : SUPLA_NEW_VALUE_TARGET_CHANNEL;
+      result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
+                       SUPLA_RESULT_FALSE
+                   ? 0
+                   : 1;
+    } else {
+      TCS_SuplaChannelNewValue_B value;
+      memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
+      _supla_client_set_rgbw(value.value, color, color_brightness, brightness);
+      value.ChannelId = ID;
 
-    value.value[1] = color_brightness;
-    value.value[2] = (char)((color & 0x000000FF));        // BLUE
-    value.value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
-    value.value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
-
-    result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
-                     SUPLA_RESULT_FALSE
-                 ? 0
-                 : 1;
+      result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
+                       SUPLA_RESULT_FALSE
+                   ? 0
+                   : 1;
+    }
   }
   lck_unlock(suplaclient->lck);
 
   return result;
 }
 
-char supla_client_set_dimmer(void *_suplaclient, int ChannelID,
+char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
                              char brightness) {
-  return supla_client_set_rgbw(_suplaclient, ChannelID, 0, 0, brightness);
+  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness);
 }
 
 char supla_client_get_registration_enabled(void *_suplaclient) {

@@ -1253,8 +1253,8 @@ void database::get_client_channel_group_relations(
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
           supla_client_channelgroup_relation *cg_rel =
-              new supla_client_channelgroup_relation(cgroups, channel_id,
-                                                     group_id);
+              new supla_client_channelgroup_relation(cgroups, iodevice_id,
+                                                     channel_id, group_id);
           if (!cgroups->add(cg_rel, detail1)) {
             delete cg_rel;
           }

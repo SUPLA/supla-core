@@ -40,6 +40,7 @@ class supla_client_channels : public supla_client_objcontainer {
                                     e_objc_scope scope);
 
   void _load(database *db, e_objc_scope scope);
+  bool set_device_channel_new_value(int ChannelId, char *value);
 
  public:
   explicit supla_client_channels(supla_client *client);
@@ -51,6 +52,7 @@ class supla_client_channels : public supla_client_objcontainer {
 
   bool set_device_channel_new_value(
       TCS_SuplaChannelNewValue_B *channel_new_value);
+  bool set_device_channel_new_value(TCS_SuplaNewValue *new_value);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

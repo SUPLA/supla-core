@@ -292,6 +292,14 @@ void supla_client::set_device_channel_new_value(
   channels->set_device_channel_new_value(channel_new_value);
 }
 
+void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
+  if (new_value->Target == SUPLA_NEW_VALUE_TARGET_CHANNEL) {
+    channels->set_device_channel_new_value(new_value);
+  } else if (new_value->Target == SUPLA_NEW_VALUE_TARGET_GROUP) {
+    cgroups->set_device_channel_new_value(new_value);
+  }
+}
+
 void supla_client::call_event(TSC_SuplaEvent *event) {
   srpc_sc_async_event(getSvrConn()->srpc(), event);
 }

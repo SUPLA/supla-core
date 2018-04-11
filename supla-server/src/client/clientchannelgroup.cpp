@@ -102,3 +102,23 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
   proto_get_caption(group->Caption, &group->CaptionSize,
                     SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
+
+std::list<t_dc_pair> supla_client_channelgroup::get_channel_list(void) {
+  std::list<t_dc_pair> result;
+
+  supla_client_channelgroup_relation *rel = NULL;
+  safe_array_lock(relarr);
+
+  for (int a = 0; a < safe_array_count(relarr); a++) {
+    rel = static_cast<supla_client_channelgroup_relation *>(
+        safe_array_get(relarr, a));
+    if (rel) {
+      t_dc_pair p;
+      p.DeviceId = rel->getDeviceId();
+      p.ChannelId = rel->getChannelId();
+      result.push_back(p);
+    }
+  }
+  safe_array_unlock(relarr);
+  return result;
+}

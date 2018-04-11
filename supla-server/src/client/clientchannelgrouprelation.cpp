@@ -21,8 +21,10 @@
 #include "clientchannelgroups.h"
 
 supla_client_channelgroup_relation::supla_client_channelgroup_relation(
-    supla_client_channelgroups *Container, int ChannelId, int GroupId)
+    supla_client_channelgroups *Container, int DeviceId, int ChannelId,
+    int GroupId)
     : supla_client_objcontainer_item(Container, ChannelId, NULL) {
+  this->DeviceId = DeviceId;
   this->GroupId = GroupId;
 }
 
@@ -31,6 +33,8 @@ bool supla_client_channelgroup_relation::remote_update_is_possible(void) {
 }
 
 int supla_client_channelgroup_relation::getExtraId() { return GroupId; }
+
+int supla_client_channelgroup_relation::getDeviceId() { return DeviceId; }
 
 int supla_client_channelgroup_relation::getChannelId(void) { return getId(); }
 

@@ -140,6 +140,7 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
+#define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -278,6 +279,9 @@ extern "C" {
 
 #define SUPLA_PLATFORM_UNKNOWN 0
 #define SUPLA_PLATFORM_ESP8266 1
+
+#define SUPLA_NEW_VALUE_TARGET_CHANNEL 0
+#define SUPLA_NEW_VALUE_TARGET_GROUP 1
 
 #pragma pack(push, 1)
 
@@ -651,6 +655,13 @@ typedef struct {
   _supla_int_t ChannelId;
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TCS_SuplaChannelNewValue_B;
+
+typedef struct {
+  // client -> server
+  _supla_int_t Id;
+  char Target;  // SUPLA_NEW_VALUE_TARGET_
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TCS_SuplaNewValue;  // ver. >= 9
 
 typedef struct {
   // server -> client
