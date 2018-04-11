@@ -676,6 +676,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
+#ifndef SRPC_EXCLUDE_CLIENT
       case SUPLA_CS_CALL_REGISTER_CLIENT:
 
         if (srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient))
@@ -775,6 +776,18 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         srpc_getchannelgroup_pack(srpc, rd);
         break;
 
+      case SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE:
+        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelGroupRelationPack) &&
+            srpc->sdp.data_size >=
+                (sizeof(TSC_SuplaChannelGroupRelationPack) -
+                 (sizeof(TSC_SuplaChannelGroupRelation) *
+                  SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT))) {
+          rd->data.sc_channelgroup_relation_pack =
+              (TSC_SuplaChannelGroupRelationPack *)malloc(
+                  sizeof(TSC_SuplaChannelGroupRelationPack));
+        }
+        break;
+
       case SUPLA_CS_CALL_CHANNEL_SET_VALUE:
 
         if (srpc->sdp.data_size == sizeof(TCS_SuplaChannelNewValue))
@@ -818,6 +831,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TSC_OAuthParameters *)malloc(sizeof(TSC_OAuthParameters));
 
         break;
+#endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
     if (call_with_no_data == 1) {
@@ -902,6 +916,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
 
     case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B:
     case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
+    case SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE:
       return 9;
   }
 
@@ -1364,6 +1379,23 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
       &srpc_channelgroup_pack_set_pack_count, sizeof(TSC_SuplaChannelGroupPack),
       SUPLA_CHANNELGROUP_PACK_MAXCOUNT, SUPLA_CHANNELGROUP_CAPTION_MAXSIZE,
       sizeof(TSC_SuplaChannelGroup), SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
+    void *_srpc,
+    TSC_SuplaChannelGroupRelationPack *channelgroup_relation_pack) {
+  if (channelgroup_relation_pack->count >
+      SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT) {
+    return 0;
+  }
+
+  unsigned _supla_int_t size = sizeof(TSC_SuplaChannelGroupRelationPack) -
+                               sizeof(channelgroup_relation_pack->items) +
+                               (sizeof(TSC_SuplaChannelGroupRelation) *
+                                channelgroup_relation_pack->count);
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE,
+                         (char *)channelgroup_relation_pack, size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc) {

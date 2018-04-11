@@ -36,6 +36,7 @@ class supla_client_channelgroup_relation
   int getExtraId(void);
   int getChannelId(void);
   int getGroupId(void);
+  void proto_get(TSC_SuplaChannelGroupRelation *group_relation);
 };
 
 #endif /* CLIENT_CLIENTCHANNELGROUPRELATION_H_ */

@@ -99,6 +99,7 @@ union TsrpcDataPacketData {
   TCS_OAuthParametersRequest *cs_oauth_parameters_request;
   TSC_OAuthParameters *sc_oauth_parameters;
   TSC_SuplaChannelGroupPack *sc_channelgroup_pack;
+  TSC_SuplaChannelGroupRelationPack *sc_channelgroup_relation_pack;
 };
 
 typedef struct {
@@ -202,6 +203,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_item_value);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
     void *_srpc, TSC_SuplaChannelGroupPack *channelgroup_pack);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
+    void *_srpc, TSC_SuplaChannelGroupRelationPack *channelgroup_relation_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc,
                                                    TSC_SuplaEvent *event);

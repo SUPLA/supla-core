@@ -125,18 +125,19 @@ extern "C" {
 #define SUPLA_CS_CALL_GET_NEXT 180
 #define SUPLA_SC_CALL_EVENT 190
 #define SUPLA_CS_CALL_CHANNEL_SET_VALUE 200
-#define SUPLA_CS_CALL_CHANNEL_SET_VALUE_B 205               // ver. >= 3
-#define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT 210             // ver. >= 2
-#define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT 220      // ver. >= 2
-#define SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL 300           // ver. >= 5
-#define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT 310    // ver. >= 5
-#define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED 320         // ver. >= 7
-#define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT 330  // ver. >= 7
-#define SUPLA_CS_CALL_GET_OAUTH_PARAMETERS 340              // ver. >= 7
-#define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT 350       // ver. >= 7
-#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360              // ver. >= 8
-#define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                  // ver. >= 8
-#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE  380         // ver. >= 9
+#define SUPLA_CS_CALL_CHANNEL_SET_VALUE_B 205                // ver. >= 3
+#define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT 210              // ver. >= 2
+#define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT 220       // ver. >= 2
+#define SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL 300            // ver. >= 5
+#define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT 310     // ver. >= 5
+#define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED 320          // ver. >= 7
+#define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT 330   // ver. >= 7
+#define SUPLA_CS_CALL_GET_OAUTH_PARAMETERS 340               // ver. >= 7
+#define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT 350        // ver. >= 7
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360               // ver. >= 8
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                   // ver. >= 8
+#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4

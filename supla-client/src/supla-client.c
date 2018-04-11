@@ -255,6 +255,26 @@ void supla_client_channelgroup_pack_update(TSuplaClientData *scd,
   srpc_cs_async_get_next(scd->srpc);
 }
 
+void supla_client_channelgroup_relation_update(
+    TSuplaClientData *scd, TSC_SuplaChannelGroupRelation *channelgroup_relation,
+    char gn) {
+  if (scd->cfg.cb_channelgroup_relation_update)
+    scd->cfg.cb_channelgroup_relation_update(scd, scd->cfg.user_data,
+                                             channelgroup_relation);
+
+  if (gn == 1) srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelgroup_relation_pack_update(
+    TSuplaClientData *scd, TSC_SuplaChannelGroupRelationPack *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channelgroup_relation_update(scd, &pack->items[a], 0);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
 void supla_client_channel_a2b(TSC_SuplaChannel *a, TSC_SuplaChannel_B *b) {
   b->EOL = a->EOL;
   b->Id = a->Id;
@@ -352,6 +372,10 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
         supla_client_channelgroup_pack_update(scd,
                                               rd.data.sc_channelgroup_pack);
+        break;
+      case SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE:
+        supla_client_channelgroup_relation_pack_update(
+            scd, rd.data.sc_channelgroup_relation_pack);
         break;
       case SUPLA_SC_CALL_EVENT:
         supla_client_on_event(scd, rd.data.sc_event);

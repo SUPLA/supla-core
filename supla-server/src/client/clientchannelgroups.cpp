@@ -148,6 +148,10 @@ bool supla_client_channelgroups::get_data_for_remote(
     return get_datapack_for_remote<TSC_SuplaChannelGroupPack,
                                    supla_client_channelgroup>(
         obj, data, SUPLA_CHANNELGROUP_PACK_MAXCOUNT);
+  } else if (scope == detail1) {
+    return get_datapack_for_remote<TSC_SuplaChannelGroupRelationPack,
+                                   supla_client_channelgroup_relation>(
+        obj, data, SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT);
   }
 
   return false;
@@ -160,6 +164,12 @@ void supla_client_channelgroups::send_data_to_remote_and_free(
 
     srpc_sc_async_channelgroup_pack_update(
         srpc, static_cast<TSC_SuplaChannelGroupPack *>(data));
+
+  } else if (scope == detail1) {
+    set_pack_eol<TSC_SuplaChannelGroupRelationPack>(data);
+
+    srpc_sc_async_channelgroup_relation_pack_update(
+        srpc, static_cast<TSC_SuplaChannelGroupRelationPack *>(data));
   }
 
   free(data);

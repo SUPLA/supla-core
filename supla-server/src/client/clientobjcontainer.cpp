@@ -19,6 +19,7 @@
 #include "client.h"
 #include <stdlib.h>  // NOLINT
 #include "../database.h"
+#include "../log.h"
 #include "../safearray.h"
 #include "clientobjcontainer.h"
 
@@ -177,7 +178,6 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, bool full,
 bool supla_client_objcontainer::remote_update(void *srpc) {
   for (int a = 0; a < OBJC_SCOPE_COUNT; a++) {
     e_objc_scope scope = static_cast<e_objc_scope>(a);
-
     if (count(scope) > 0) {
       if (do_remote_update(srpc, true, scope)) {
         return true;
