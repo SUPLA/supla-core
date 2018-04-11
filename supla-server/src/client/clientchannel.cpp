@@ -95,7 +95,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
-                                             supla_client *client) {
+                                     supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel));
 
   channel->Id = getId();
@@ -112,7 +112,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
-                                             supla_client *client) {
+                                     supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel_B));
 
   channel->Id = getId();
@@ -131,8 +131,8 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
-void supla_client_channel::proto_get_value(
-    TSC_SuplaChannelValue *channel_value, supla_client *client) {
+void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
+                                     supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = getId();
 

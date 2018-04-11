@@ -275,6 +275,16 @@ void supla_client_channelgroup_relation_pack_update(
   srpc_cs_async_get_next(scd->srpc);
 }
 
+void supla_client_channelvalue_pack_update(TSuplaClientData *scd,
+                                           TSC_SuplaChannelValuePack *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channel_value_update(scd, &pack->items[a], 0);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
 void supla_client_channel_a2b(TSC_SuplaChannel *a, TSC_SuplaChannel_B *b) {
   b->EOL = a->EOL;
   b->Id = a->Id;
@@ -319,11 +329,14 @@ void supla_client_channelpack_update_b(TSuplaClientData *scd,
 }
 
 void supla_client_channel_value_update(TSuplaClientData *scd,
-                                       TSC_SuplaChannelValue *channel_value) {
+                                       TSC_SuplaChannelValue *channel_value,
+                                       char gn) {
   if (scd->cfg.cb_channel_value_update)
     scd->cfg.cb_channel_value_update(scd, scd->cfg.user_data, channel_value);
 
-  srpc_cs_async_get_next(scd->srpc);
+  if (gn == 1) {
+    srpc_cs_async_get_next(scd->srpc);
+  }
 }
 
 void supla_client_on_event(TSuplaClientData *scd, TSC_SuplaEvent *event) {
@@ -367,7 +380,7 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         supla_client_channelpack_update_b(scd, rd.data.sc_channel_pack_b);
         break;
       case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
-        supla_client_channel_value_update(scd, rd.data.sc_channel_value);
+        supla_client_channel_value_update(scd, rd.data.sc_channel_value, 1);
         break;
       case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE:
         supla_client_channelgroup_pack_update(scd,
@@ -376,6 +389,10 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE:
         supla_client_channelgroup_relation_pack_update(
             scd, rd.data.sc_channelgroup_relation_pack);
+        break;
+      case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE:
+        supla_client_channelvalue_pack_update(scd,
+                                              rd.data.sc_channelvalue_pack);
         break;
       case SUPLA_SC_CALL_EVENT:
         supla_client_on_event(scd, rd.data.sc_event);

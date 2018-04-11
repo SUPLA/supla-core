@@ -94,6 +94,7 @@ extern "C" {
 #define SUPLA_OAUTH_PASSWORD_MAXSIZE 65         // ver. >= 7
 #define SUPLA_CHANNELGROUP_PACK_MAXCOUNT 20     // ver. >= 9
 #define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401  // ver. >= 9
+#define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20     // ver. >= 9
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -138,6 +139,7 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                   // ver. >= 8
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -470,6 +472,16 @@ typedef struct {
 
   TSuplaChannelValue value;
 } TSC_SuplaChannelValue;
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+
+  TSC_SuplaChannelValue
+      items[SUPLA_CHANNELVALUE_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelValuePack;                    // ver. >= 9
 
 typedef struct {
   // server -> client
