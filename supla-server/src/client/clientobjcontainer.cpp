@@ -192,30 +192,29 @@ bool supla_client_objcontainer::remote_update(void *srpc) {
   return false;
 }
 
-void supla_client_objcontainer::on_value_changed(void *srpc, int objId,
-                                                 int extraId) {
+void supla_client_objcontainer::on_value_changed(void *srpc, int Id,
+                                                 int ExtraId,
+                                                 e_objc_scope scope,
+                                                 char mark) {
   supla_client_objcontainer_item *obj;
   bool r = false;
 
-  safe_array_lock(getArr());
+  void *arr = getArr(scope);
 
-  for (int a = 0; a < safe_array_count(getArr()); a++) {
-    obj = static_cast<supla_client_objcontainer_item *>(
-        safe_array_get(getArr(), a));
-    if (obj && obj->getExtraId() == extraId &&
-        (objId == 0 || obj->getId() == objId)) {
-      obj->mark_for_remote_update(OI_REMOTEUPDATE_VALUE);
+  safe_array_lock(arr);
+
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    obj = static_cast<supla_client_objcontainer_item *>(safe_array_get(arr, a));
+    if (obj && obj->getExtraId() == ExtraId &&
+        (Id == 0 || obj->getId() == Id)) {
+      obj->mark_for_remote_update(mark);
       r = true;
     }
   }
 
-  safe_array_unlock(getArr());
+  safe_array_unlock(arr);
 
   if (srpc && r) {
     remote_update(srpc);
   }
-}
-
-void supla_client_objcontainer::on_value_changed(void *srpc, int objId) {
-  on_value_changed(srpc, objId, 0);
 }

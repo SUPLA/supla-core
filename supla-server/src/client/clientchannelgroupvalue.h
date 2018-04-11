@@ -21,16 +21,24 @@
 
 #include "clientobjcontaineritem.h"
 
+// This class is used to send the channel value when the channel is hidden on
+// the main list
+
 class supla_client;
 class supla_client_channelgroups;
 class supla_client_channelgroup_value : public supla_client_objcontainer_item {
  private:
+  int DeviceId;
+
  protected:
  public:
   explicit supla_client_channelgroup_value(
-      supla_client_channelgroups *Container, int ChannelId);
+      supla_client_channelgroups *Container, int ChannelId, int DeviceId);
   bool remote_update_is_possible(void);
   int getChannelId(void);
+  int getDeviceId(void);
+  virtual int getExtraId();
+  void proto_get(TSC_SuplaChannelValue *channel_value);
 };
 
 #endif /* CLIENT_CLIENTCHANNELGROUPVALUE_H_ */

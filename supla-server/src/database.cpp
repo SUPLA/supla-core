@@ -1215,7 +1215,8 @@ void database::get_client_channel_group_relations(
     int ClientID, supla_client_channelgroups *cgroups) {
   MYSQL_STMT *stmt;
   const char sql[] =
-      "SELECT `channel_id`, `group_id`, `channel_hidden` FROM `supla_v_rel_cg` "
+      "SELECT `channel_id`, `group_id`, `channel_hidden`, `iodevice_id` FROM "
+      "`supla_v_rel_cg` "
       "WHERE `client_id` "
       "= ? ORDER BY `channel_id`";
 
@@ -1226,10 +1227,10 @@ void database::get_client_channel_group_relations(
   pbind[0].buffer = (char *)&ClientID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[3];
+    MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 
-    int channel_id, group_id, hidden;
+    int channel_id, group_id, hidden, iodevice_id;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&channel_id;
@@ -1239,6 +1240,9 @@ void database::get_client_channel_group_relations(
 
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
     rbind[2].buffer = (char *)&hidden;
+
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&iodevice_id;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1256,7 +1260,8 @@ void database::get_client_channel_group_relations(
           }
           if (hidden > 0) {
             supla_client_channelgroup_value *cg_value =
-                new supla_client_channelgroup_value(cgroups, channel_id);
+                new supla_client_channelgroup_value(cgroups, channel_id,
+                                                    iodevice_id);
             if (!cgroups->add(cg_value, detail2)) {
               delete cg_value;
             }

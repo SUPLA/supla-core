@@ -18,14 +18,31 @@
 
 #include "clientchannelgroupvalue.h"
 #include <string.h>
+#include "../user.h"
+#include "client.h"
 #include "clientchannelgroups.h"
 
 supla_client_channelgroup_value::supla_client_channelgroup_value(
-    supla_client_channelgroups *Container, int ChannelId)
-    : supla_client_objcontainer_item(Container, ChannelId, NULL) {}
+    supla_client_channelgroups *Container, int ChannelId, int DeviceId)
+    : supla_client_objcontainer_item(Container, ChannelId, NULL) {
+  this->DeviceId = DeviceId;
+}
 
 bool supla_client_channelgroup_value::remote_update_is_possible(void) {
   return true;
 }
 
 int supla_client_channelgroup_value::getChannelId(void) { return getId(); }
+
+int supla_client_channelgroup_value::getDeviceId(void) { return DeviceId; }
+
+int supla_client_channelgroup_value::getExtraId(void) { return DeviceId; }
+
+void supla_client_channelgroup_value::proto_get(
+    TSC_SuplaChannelValue *channel_value) {
+  memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
+  channel_value->Id = getId();
+
+  getContainer()->getClient()->getUser()->get_channel_value(
+      DeviceId, getId(), &channel_value->value, &channel_value->online);
+}

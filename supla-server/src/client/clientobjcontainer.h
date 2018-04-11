@@ -57,6 +57,9 @@ class supla_client_objcontainer {
   virtual void send_data_to_remote_and_free(void *srpc, void *data, bool full,
                                             e_objc_scope scope) = 0;
 
+  void on_value_changed(void *srpc, int Id, int ExtraId, e_objc_scope scope,
+                        char mark);
+
  public:
   explicit supla_client_objcontainer(supla_client *client);
   virtual ~supla_client_objcontainer();
@@ -69,8 +72,6 @@ class supla_client_objcontainer {
   virtual bool add(supla_client_objcontainer_item *obj, e_objc_scope scope);
   virtual bool add(supla_client_objcontainer_item *obj);
   bool remote_update(void *srpc);
-  void on_value_changed(void *srpc, int objId, int extraId);
-  void on_value_changed(void *srpc, int objId);
 };
 
 #endif /* CLIENTOBJCONTAINER_H_ */

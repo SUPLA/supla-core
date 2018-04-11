@@ -174,7 +174,7 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
 
 void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
                                                      int ChannelId) {
-  on_value_changed(srpc, ChannelId, DeviceId);
+  on_value_changed(srpc, ChannelId, DeviceId, master, OI_REMOTEUPDATE_VALUE);
 }
 
 bool supla_client_channels::set_device_channel_new_value(

@@ -152,6 +152,10 @@ bool supla_client_channelgroups::get_data_for_remote(
     return get_datapack_for_remote<TSC_SuplaChannelGroupRelationPack,
                                    supla_client_channelgroup_relation>(
         obj, data, SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT);
+  } else if (scope == detail2) {
+    return get_datapack_for_remote<TSC_SuplaChannelValuePack,
+                                   supla_client_channelgroup_value>(
+        obj, data, SUPLA_CHANNELVALUE_PACK_MAXCOUNT);
   }
 
   return false;
@@ -170,7 +174,18 @@ void supla_client_channelgroups::send_data_to_remote_and_free(
 
     srpc_sc_async_channelgroup_relation_pack_update(
         srpc, static_cast<TSC_SuplaChannelGroupRelationPack *>(data));
+  } else if (scope == detail2) {
+    set_pack_eol<TSC_SuplaChannelValuePack>(data);
+
+    srpc_sc_async_channelvalue_pack_update(
+        srpc, static_cast<TSC_SuplaChannelValuePack *>(data));
   }
 
   free(data);
+}
+
+void supla_client_channelgroups::on_channel_value_changed(void *srpc,
+                                                          int DeviceId,
+                                                          int ChannelId) {
+  on_value_changed(srpc, ChannelId, DeviceId, detail2, OI_REMOTEUPDATE_FULL);
 }
