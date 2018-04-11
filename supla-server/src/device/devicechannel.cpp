@@ -741,7 +741,6 @@ void supla_device_channels::set_device_channel_value(
     s.SenderID = SenderID;
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
-    supla_log(LOG_DEBUG, "Set channel value %i", ChannelID);
     srpc_sd_async_set_channel_value(srpc, &s);
   }
 
