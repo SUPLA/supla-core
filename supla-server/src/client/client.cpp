@@ -259,9 +259,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
   return result;
 }
 
-void supla_client::add_device_channels(int LocationID, int DeviceID) {
+void supla_client::update_device_channels(int LocationID, int DeviceID) {
   if (locations->location_exists(LocationID)) {
-    channels->add_device_channels(DeviceID);
+    channels->update_device_channels(DeviceID);
     remote_update_lists();
   }
 }

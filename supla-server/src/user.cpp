@@ -561,14 +561,14 @@ bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
   return result;
 }
 
-void supla_user::add_client_device_channels(int LocationID, int DeviceID) {
+void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
   safe_array_lock(client_arr);
   {
     supla_client *client;
 
     for (int a = 0; a < safe_array_count(client_arr); a++)
       if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
-        client->add_device_channels(LocationID, DeviceID);
+        client->update_device_channels(LocationID, DeviceID);
       }
   }
   safe_array_unlock(client_arr);

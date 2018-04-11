@@ -51,16 +51,26 @@ void supla_client_channels::_load(database *db, e_objc_scope scope) {
   db->get_client_channels(getClient()->getID(), NULL, this);
 }
 
-void supla_client_channels::add_device_channels(int DeviceId) {
+void supla_client_channels::update_device_channels(int DeviceId) {
   database *db = new database();
-
   if (db->connect() == true) {
     safe_array_lock(getArr());
     db->get_client_channels(getClient()->getID(), &DeviceId, this);
     safe_array_unlock(getArr());
   }
-
   delete db;
+
+  void *arr = getArr();
+  supla_client_channel *channel = NULL;
+
+  safe_array_lock(arr);
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    channel = static_cast<supla_client_channel *>(safe_array_get(arr, 0));
+    if (channel && channel->getDeviceId() == DeviceId) {
+      channel->mark_for_remote_update(OI_REMOTEUPDATE_VALUE);
+    }
+  }
+  safe_array_unlock(arr);
 }
 
 template <typename TSuplaDataPack, class TObjClass>
