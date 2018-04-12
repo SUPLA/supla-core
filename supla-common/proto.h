@@ -568,8 +568,8 @@ typedef struct {
   // server -> client
   char EOL;  // End Of List
 
-  _supla_int_t ChennelGroupID;
-  _supla_int_t ChennelID;
+  _supla_int_t ChannelGroupID;
+  _supla_int_t ChannelID;
 } TSC_SuplaChannelGroupRelation;  // ver. >= 9
 
 typedef struct {
