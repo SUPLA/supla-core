@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#define SERVER_VERSION "2.2"
+#define SERVER_VERSION "2.2.0"
 
 #define CFG_UID 0
 #define CFG_GID 1
