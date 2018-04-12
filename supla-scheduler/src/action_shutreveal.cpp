@@ -63,7 +63,7 @@ bool s_worker_action_shutreveal::check_result() {
     if (!parse_percentage(&expected_value)) {
       return false;
     }
-    expected_value = 100 - expected_value;  // Convert shut to reveal
+    expected_value = 100 - expected_value;  // Convert reveal to shut
   }
 
   char sensor_value = worker->ipcc_get_opening_sensor_value();
