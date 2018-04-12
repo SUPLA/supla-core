@@ -23,6 +23,10 @@
 #include "eh.h"
 #include "proto.h"
 
+#ifdef __ANDROID__
+#define SRPC_EXCLUDE_DEVICE
+#endif /*__ANDROID__*/
+
 #ifdef ESP8266
 #define SRPC_EXCLUDE_CLIENT
 #include <mem.h>
