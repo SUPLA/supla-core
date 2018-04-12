@@ -44,6 +44,6 @@ void supla_client_channelgroup_relation::proto_get(
     TSC_SuplaChannelGroupRelation *group_relation) {
   memset(group_relation, 0, sizeof(TSC_SuplaChannelGroupRelation));
 
-  group_relation->ChennelGroupID = GroupId;
-  group_relation->ChennelID = getId();
+  group_relation->ChannelGroupID = GroupId;
+  group_relation->ChannelID = getId();
 }

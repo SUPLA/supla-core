@@ -75,8 +75,8 @@ void client_loop_channelgroup_relation_update(
     TSC_SuplaChannelGroupRelation *channelgroup_realtion) {
   supla_log(LOG_DEBUG,
             "ChannelGroupRelation GroupId: %i ChannelId: %i, EOL: %i",
-            channelgroup_realtion->ChennelGroupID,
-            channelgroup_realtion->ChennelID, channelgroup_realtion->EOL);
+            channelgroup_realtion->ChannelGroupID,
+            channelgroup_realtion->ChannelID, channelgroup_realtion->EOL);
 }
 
 void client_loop_on_event(void *_suplaclient, void *user_data,
