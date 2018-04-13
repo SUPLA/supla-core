@@ -27,7 +27,7 @@
 									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.164279687" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
+									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.624568646" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -35,7 +35,7 @@
 								<option id="gnu.cpp.compiler.option.optimization.level.1027172260" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.2133470006" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1024356782" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
+									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.573551753" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
@@ -51,7 +51,7 @@
 								</option>
 								<option id="gnu.cpp.link.option.flags.363289448" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt" valueType="string"/>
 								<option id="gnu.cpp.link.option.paths.27774724" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
-									<listOptionValue builtIn="false" value="/usr/src/openssl/lib"/>
+									<listOptionValue builtIn="false" value="$(SSLDIR)/lib"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1842944501" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
@@ -95,11 +95,17 @@
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1392140687" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__LOG_CALLBACK=1"/>
 								</option>
+								<option id="gnu.c.compiler.option.include.paths.1430797926" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1161557042" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.658304142" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.519261466" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.187897249" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.2143888428" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.317419379" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.136620912" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -109,6 +115,9 @@
 									<listOptionValue builtIn="false" value="crypto"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.285907750" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-pthread -lrt" valueType="string"/>
+								<option id="gnu.cpp.link.option.paths.778685272" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="$(SSLDIR)/lib"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.598462090" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
