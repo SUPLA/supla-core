@@ -4,13 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/user/user.cpp 
+../src/user/user.cpp \
+../src/user/userchannelgroup.cpp \
+../src/user/userchannelgroups.cpp 
 
 OBJS += \
-./src/user/user.o 
+./src/user/user.o \
+./src/user/userchannelgroup.o \
+./src/user/userchannelgroups.o 
 
 CPP_DEPS += \
-./src/user/user.d 
+./src/user/user.d \
+./src/user/userchannelgroup.d \
+./src/user/userchannelgroups.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
