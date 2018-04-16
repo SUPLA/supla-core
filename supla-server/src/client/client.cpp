@@ -20,12 +20,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../database.h"
-#include "../lck.h"
-#include "../log.h"
-#include "../safearray.h"
-#include "../srpc.h"
-#include "../user.h"
+#include "database.h"
+#include "lck.h"
+#include "log.h"
+#include "safearray.h"
+#include "srpc.h"
+#include "user.h"
 #include "client.h"
 #include "clientlocation.h"
 

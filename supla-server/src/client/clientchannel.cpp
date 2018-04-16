@@ -20,12 +20,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../database.h"
-#include "../log.h"
-#include "../proto.h"
-#include "../safearray.h"
-#include "../srpc.h"
-#include "../user.h"
+#include "database.h"
+#include "log.h"
+#include "proto.h"
+#include "safearray.h"
+#include "srpc.h"
+#include "user.h"
 #include "client.h"
 #include "clientchannel.h"
 

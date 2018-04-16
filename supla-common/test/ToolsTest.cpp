@@ -17,7 +17,7 @@
  */
 
 #include "ToolsTest.h"
-#include "../tools.h"  // NOLINT
+#include "tools.h"  // NOLINT
 #include "gtest/gtest.h"
 
 namespace {

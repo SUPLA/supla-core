@@ -25,9 +25,10 @@ CPP_SRCS += \
 ../src/datalogger.cpp \
 ../src/db.cpp \
 ../src/ipcctrl.cpp \
+../src/objcontainer.cpp \
+../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
-../src/supla-server.cpp \
-../src/user.cpp 
+../src/supla-server.cpp 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -42,6 +43,8 @@ OBJS += \
 ./src/ipcsocket.o \
 ./src/lck.o \
 ./src/log.o \
+./src/objcontainer.o \
+./src/objcontaineritem.o \
 ./src/proto.o \
 ./src/safearray.o \
 ./src/serverconnection.o \
@@ -50,8 +53,7 @@ OBJS += \
 ./src/supla-server.o \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
-./src/tools.o \
-./src/user.o 
+./src/tools.o 
 
 C_DEPS += \
 ./src/cfg.d \
@@ -75,23 +77,24 @@ CPP_DEPS += \
 ./src/datalogger.d \
 ./src/db.d \
 ./src/ipcctrl.d \
+./src/objcontainer.d \
+./src/objcontaineritem.d \
 ./src/serverconnection.d \
-./src/supla-server.d \
-./src/user.d 
+./src/supla-server.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	$(CXX) -D__DEBUG=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I/usr/include/mysql -I$(SSLDIR)/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	$(CXX) -D__DEBUG=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I/usr/include/mysql -I../src/device -I../src/user -I../src -I$(SSLDIR)/include -I../src/client -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	$(CC) -D__DEBUG=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I$(SSLDIR)/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	$(CC) -D__DEBUG=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -D__BCRYPT=1 -I$(SSLDIR)/include -I../src/user -I../src/device -I../src/client -I../src -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

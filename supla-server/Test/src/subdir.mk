@@ -25,8 +25,9 @@ CPP_SRCS += \
 ../src/datalogger.cpp \
 ../src/db.cpp \
 ../src/ipcctrl.cpp \
-../src/serverconnection.cpp \
-../src/user.cpp 
+../src/objcontainer.cpp \
+../src/objcontaineritem.cpp \
+../src/serverconnection.cpp 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -41,6 +42,8 @@ OBJS += \
 ./src/ipcsocket.o \
 ./src/lck.o \
 ./src/log.o \
+./src/objcontainer.o \
+./src/objcontaineritem.o \
 ./src/proto.o \
 ./src/safearray.o \
 ./src/serverconnection.o \
@@ -48,8 +51,7 @@ OBJS += \
 ./src/sthread.o \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
-./src/tools.o \
-./src/user.o 
+./src/tools.o 
 
 C_DEPS += \
 ./src/cfg.d \
@@ -73,22 +75,23 @@ CPP_DEPS += \
 ./src/datalogger.d \
 ./src/db.d \
 ./src/ipcctrl.d \
-./src/serverconnection.d \
-./src/user.d 
+./src/objcontainer.d \
+./src/objcontaineritem.d \
+./src/serverconnection.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -D__BCRYPT=1 -I/usr/include/mysql -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -D__BCRYPT=1 -I/usr/include/mysql -I../src -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -D__BCRYPT=1 -I$(SSLDIR)/include -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -D__BCRYPT=1 -I$(SSLDIR)/include -I../src/client -I../src/user -I../src/device -I../src -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

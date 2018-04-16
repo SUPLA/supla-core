@@ -18,7 +18,7 @@
 
 #include "clientchannelgroupvalue.h"
 #include <string.h>
-#include "../user.h"
+#include "user.h"
 #include "client.h"
 #include "clientchannelgroups.h"
 

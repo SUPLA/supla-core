@@ -17,7 +17,7 @@
  */
 
 #include "SafeArrayTest.h"
-#include "../safearray.h" // NOLINT
+#include "safearray.h" // NOLINT
 #include "gtest/gtest.h"
 
 char safe_array_test_find_cnd(void *ptr, void *user_param) {

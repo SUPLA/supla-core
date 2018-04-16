@@ -18,9 +18,9 @@
 
 #include "clientchannelgroup.h"
 #include <string.h>
-#include "../log.h"
-#include "../proto.h"
-#include "../safearray.h"
+#include "log.h"
+#include "proto.h"
+#include "safearray.h"
 #include "client.h"
 
 supla_client_channelgroup::supla_client_channelgroup(

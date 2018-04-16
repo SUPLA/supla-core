@@ -16,45 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CLIENTLOCATION_H_
-#define CLIENTLOCATION_H_
+#ifndef OBJCONTAINERITEM_H_
+#define OBJCONTAINERITEM_H_
 
+#define OI_REMOTEUPDATE_NONE 0
+#define OI_REMOTEUPDATE_FULL 1
+#define OI_REMOTEUPDATE_VALUE 2
+
+#include "objcontainer.h"
 #include "proto.h"
 
-class supla_client_location {
+class supla_objcontainer;
+class supla_objcontainer_item {
  private:
+  supla_objcontainer *Container;
   int Id;
-  char *Caption;
 
+ protected:
  public:
-  supla_client_location(int Id, const char *Caption);
-  virtual ~supla_client_location();
-  int getId(void);
-  void proto_get_location(TSC_SuplaLocation *location);
+  supla_objcontainer_item(supla_objcontainer *Container, int Id);
+  virtual ~supla_objcontainer_item(void);
+  supla_objcontainer *getContainer(void);
+  int getId();
+  virtual int getExtraId();
+  virtual void mark_for_remote_update(char mark);
 };
 
-class supla_client_locations {
- private:
-  void *arr;
-  // -------------
-
-  void *lck;
-  int *ids;
-  int ids_count;
-
-  void ids_clean();
-  void arr_clean(void);
-  static char arr_findcmp(void *ptr, void *id);
-  static char arr_delcnd(void *ptr);
-
- public:
-  supla_client_locations();
-  virtual ~supla_client_locations();
-  void load(int ClientID);
-  int count();
-  void add_location(int Id, const char *Caption);
-  bool remote_update(void *srpc);
-  bool location_exists(int Id);
-};
-
-#endif /* CLIENTLOCATION_H_ */
+#endif /* OBJCONTAINERITEM_H_ */

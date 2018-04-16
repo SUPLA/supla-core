@@ -17,14 +17,14 @@
  */
 
 #include "clientobjcontaineritem.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h>   // NOLINT
+#include <stdlib.h>  // NOLINT
+#include <string.h>  // NOLINT
+#include "clientobjcontainer.h"
 
 supla_client_objcontainer_item::supla_client_objcontainer_item(
-    supla_client_objcontainer *Container, int Id, const char *Caption) {
-  this->Container = Container;
-  this->Id = Id;
+    supla_client_objcontainer *Container, int Id, const char *Caption)
+    : supla_objcontainer_item(Container, Id) {
   this->Caption = NULL;
   this->RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
   setCaption(Caption);
@@ -35,12 +35,9 @@ supla_client_objcontainer_item::~supla_client_objcontainer_item(void) {
 }
 
 supla_client_objcontainer *supla_client_objcontainer_item::getContainer(void) {
-  return Container;
+  return static_cast<supla_client_objcontainer *>(
+      supla_objcontainer_item::getContainer());
 }
-
-int supla_client_objcontainer_item::getId() { return Id; }
-
-int supla_client_objcontainer_item::getExtraId() { return -1; }
 
 void supla_client_objcontainer_item::setCaption(const char *Caption) {
   if (this->Caption != NULL) {

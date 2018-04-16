@@ -20,9 +20,9 @@
 #include <unistd.h>
 
 #include "accept_loop.h"
-#include "client/client.h"
+#include "client.h"
 #include "database.h"
-#include "device/device.h"
+#include "device.h"
 #include "ipcctrl.h"
 #include "ipcsocket.h"
 #include "log.h"

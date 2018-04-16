@@ -25,9 +25,10 @@ CPP_SRCS += \
 ../src/datalogger.cpp \
 ../src/db.cpp \
 ../src/ipcctrl.cpp \
+../src/objcontainer.cpp \
+../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
-../src/supla-server.cpp \
-../src/user.cpp 
+../src/supla-server.cpp 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -42,6 +43,8 @@ OBJS += \
 ./src/ipcsocket.o \
 ./src/lck.o \
 ./src/log.o \
+./src/objcontainer.o \
+./src/objcontaineritem.o \
 ./src/proto.o \
 ./src/safearray.o \
 ./src/serverconnection.o \
@@ -50,8 +53,7 @@ OBJS += \
 ./src/supla-server.o \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
-./src/tools.o \
-./src/user.o 
+./src/tools.o 
 
 C_DEPS += \
 ./src/cfg.d \
@@ -75,23 +77,24 @@ CPP_DEPS += \
 ./src/datalogger.d \
 ./src/db.d \
 ./src/ipcctrl.d \
+./src/objcontainer.d \
+./src/objcontaineritem.d \
 ./src/serverconnection.d \
-./src/supla-server.d \
-./src/user.d 
+./src/supla-server.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__BCRYPT=1 -I/usr/include/mysql -I$(SSLDIR)/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__BCRYPT=1 -I/usr/include/mysql -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__BCRYPT=1 -I$(SSLDIR)/include -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__BCRYPT=1 -I$(SSLDIR)/include -I../src -I../src/user -I../src/device -I../src/client -O3 -Wall -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

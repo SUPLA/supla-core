@@ -27,4 +27,5 @@ src \
 src/client \
 src/crypt_blowfish \
 src/device \
+src/user \
 

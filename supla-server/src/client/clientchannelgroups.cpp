@@ -20,11 +20,11 @@
 #include <stdlib.h>  // NOLINT
 #include <string.h>  // NOLINT
 #include <list>      // NOLINT
-#include "../database.h"
-#include "../log.h"
-#include "../safearray.h"
-#include "../srpc.h"
-#include "../user.h"
+#include "database.h"
+#include "log.h"
+#include "safearray.h"
+#include "srpc.h"
+#include "user.h"
 #include "clientchannelgroup.h"
 #include "clientchannelgroups.h"
 

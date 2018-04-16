@@ -17,7 +17,7 @@
  */
 
 #include "DeviceChannelTest.h"
-#include "../device/devicechannel.h"  // NOLINT
+#include "devicechannel.h"  // NOLINT
 #include "gtest/gtest.h"
 
 namespace {

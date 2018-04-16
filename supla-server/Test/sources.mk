@@ -29,4 +29,5 @@ src/crypt_blowfish \
 src/device \
 src/test \
 src/test/gtest \
+src/user \
 

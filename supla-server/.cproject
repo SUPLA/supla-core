@@ -24,6 +24,10 @@
 								<option id="gnu.c.compiler.option.debugging.level.872388052" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.1034719321" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/user"/>
+									<listOptionValue builtIn="false" value="../src/device"/>
+									<listOptionValue builtIn="false" value="../src/client"/>
+									<listOptionValue builtIn="false" value="../src"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2062866975" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
@@ -32,6 +36,7 @@
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.592483975" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
 								<option id="gnu.c.compiler.option.dialect.std.1559922112" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.include.files.211128902" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.31395286" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool command="$(CXX)" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.776925702" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -39,7 +44,11 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.406314809" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.5018346" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/mysql"/>
+									<listOptionValue builtIn="false" value="../src/device"/>
+									<listOptionValue builtIn="false" value="../src/user"/>
+									<listOptionValue builtIn="false" value="../src"/>
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/client"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1525833655" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
@@ -48,6 +57,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.424424703" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.files.1351686790" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.647780356" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.867359269" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -111,6 +121,10 @@
 								<option id="gnu.c.compiler.option.debugging.level.1827163415" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.106907262" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src"/>
+									<listOptionValue builtIn="false" value="../src/user"/>
+									<listOptionValue builtIn="false" value="../src/device"/>
+									<listOptionValue builtIn="false" value="../src/client"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.2147088608" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.439526132" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
@@ -123,6 +137,10 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.2066481019" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1208656589" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/mysql"/>
+									<listOptionValue builtIn="false" value="../src/client"/>
+									<listOptionValue builtIn="false" value="../src/user"/>
+									<listOptionValue builtIn="false" value="../src/device"/>
+									<listOptionValue builtIn="false" value="../src"/>
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.preprocessor.def.584360873" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
@@ -192,6 +210,10 @@
 								<option id="gnu.c.compiler.option.debugging.level.740365011" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.include.paths.1809027190" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
+									<listOptionValue builtIn="false" value="../src/client"/>
+									<listOptionValue builtIn="false" value="../src/user"/>
+									<listOptionValue builtIn="false" value="../src/device"/>
+									<listOptionValue builtIn="false" value="../src"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.332366282" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
@@ -205,6 +227,10 @@
 								<option id="gnu.cpp.compiler.option.debugging.level.27162558" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1974356639" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/include/mysql"/>
+									<listOptionValue builtIn="false" value="../src"/>
+									<listOptionValue builtIn="false" value="../src/user"/>
+									<listOptionValue builtIn="false" value="../src/device"/>
+									<listOptionValue builtIn="false" value="../src/client"/>
 									<listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
 									<listOptionValue builtIn="false" value="../src/test"/>
 								</option>

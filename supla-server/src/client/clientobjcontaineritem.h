@@ -23,14 +23,13 @@
 #define OI_REMOTEUPDATE_FULL 1
 #define OI_REMOTEUPDATE_VALUE 2
 
-#include "../proto.h"
+#include "proto.h"
+#include "objcontaineritem.h"
 
 class supla_client;
 class supla_client_objcontainer;
-class supla_client_objcontainer_item {
+class supla_client_objcontainer_item : public supla_objcontainer_item {
  private:
-  supla_client_objcontainer *Container;
-  int Id;
   char *Caption;
   char RemoteUpdateMark;
 
@@ -43,8 +42,6 @@ class supla_client_objcontainer_item {
                                           int Id, const char *Caption);
   virtual ~supla_client_objcontainer_item(void);
   supla_client_objcontainer *getContainer(void);
-  int getId();
-  virtual int getExtraId();
   char *getCaption(void);
   void setCaption(const char *Caption);
 

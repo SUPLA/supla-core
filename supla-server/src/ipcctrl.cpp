@@ -45,6 +45,12 @@ const char cmd_sauth[] = "SAUTH:";  // SUPER USER AUTH
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
 
+/*
+const char cmd_client_reconnect[] = "CLIENT-CG-RELOAD:";
+const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
+const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
+*/
+
 svr_ipcctrl::svr_ipcctrl(int sfd) {
   set_unauthorized();
 

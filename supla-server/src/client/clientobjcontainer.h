@@ -19,38 +19,17 @@
 #ifndef CLIENTOBJCONTAINER_H_
 #define CLIENTOBJCONTAINER_H_
 
-enum e_objc_scope { master = 0, detail1 = 1, detail2 = 2 };
-
-#define OBJC_SCOPE_COUNT 3
-
-typedef struct {
-  int id;
-  int extra_id;
-  bool use_both;
-} _t_objc_search_fields;
+#include "objcontainer.h"
+#include "objcontaineritem.h"
 
 class supla_client;
-class database;
 class supla_client_objcontainer_item;
-class supla_client_objcontainer {
+class supla_client_objcontainer : public supla_objcontainer {
  private:
   supla_client *client;
-  void *arr[OBJC_SCOPE_COUNT];
   bool do_remote_update(void *srpc, bool full, e_objc_scope scope);
 
  protected:
-  bool id_cmp_use_both[OBJC_SCOPE_COUNT];
-  static char arr_delcnd(void *ptr);
-  static char arr_findcmp(void *ptr, void *_f);
-
-  void arr_clean(void *arr);
-  void *getArr(e_objc_scope scope);
-  void *getArr(void);
-  supla_client_objcontainer_item *find(_t_objc_search_fields *f,
-                                       e_objc_scope scope);
-  supla_client_objcontainer_item *find(int id, e_objc_scope scope);
-
-  virtual void _load(database *db, e_objc_scope scope) = 0;
   virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
                                    void **data, bool full, bool *check_more,
                                    e_objc_scope scope) = 0;
@@ -62,15 +41,9 @@ class supla_client_objcontainer {
 
  public:
   explicit supla_client_objcontainer(supla_client *client);
-  virtual ~supla_client_objcontainer();
+  virtual ~supla_client_objcontainer(void);
 
   supla_client *getClient();
-  int count(e_objc_scope scope);
-  int count(void);
-  void load(e_objc_scope scope);
-  virtual void load(void);
-  virtual bool add(supla_client_objcontainer_item *obj, e_objc_scope scope);
-  virtual bool add(supla_client_objcontainer_item *obj);
   bool remote_update(void *srpc);
 };
 
