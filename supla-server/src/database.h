@@ -19,9 +19,10 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
-#include "client/client.h"
+#include "client.h"
 #include "db.h"
-#include "device/device.h"
+#include "device.h"
+#include "user.h"
 #include "proto.h"
 
 class database : public dbcommon {
@@ -113,6 +114,9 @@ class database : public dbcommon {
   void get_client_locations(int ClientID, supla_client_locations *locs);
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);
+
+  void get_user_channel_groups(int UserID,
+                                 supla_user_channelgroups *cgroups);
 
   void get_client_channel_groups(int ClientID,
                                  supla_client_channelgroups *cgroups);

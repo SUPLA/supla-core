@@ -17,3 +17,16 @@
  */
 
 #include "userchannelgroup.h"
+
+supla_user_channelgroup::supla_user_channelgroup(
+    supla_user_channelgroups *Container, int GroupId, int ChannelId,
+    int DeviceId)
+    : supla_objcontainer_item(Container, GroupId) {
+  this->ChannelId = ChannelId;
+  this->DeviceId = DeviceId;
+}
+
+int supla_user_channelgroup::getGroupId() { return getId(); }
+int supla_user_channelgroup::getChannelId() { return ChannelId; }
+int supla_user_channelgroup::getDeviceId() { return DeviceId; }
+int supla_user_channelgroup::getExtraId() { return ChannelId; }

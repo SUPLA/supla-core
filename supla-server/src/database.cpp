@@ -33,6 +33,7 @@
 #include "log.h"
 #include "svrcfg.h"
 #include "tools.h"
+#include "userchannelgroups.h"
 
 char *database::cfg_get_host(void) { return scfg_string(CFG_MYSQL_HOST); }
 
@@ -1129,6 +1130,58 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
           if (!channels->add(channel)) {
             delete channel;
+          }
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+}
+
+void database::get_user_channel_groups(int UserID,
+                                       supla_user_channelgroups *cgroups) {
+  MYSQL_STMT *stmt;
+  const char sql[] =
+      "SELECT `id`, `channel_id`, `iodevice_id` FROM "
+      "`supla_v_user_channel_group` "
+      "WHERE `user_id` = ? ORDER BY `id`";
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[3];
+    memset(rbind, 0, sizeof(rbind));
+
+    int group_id, channel_id, iodevice_id;
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&group_id;
+
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)&channel_id;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&iodevice_id;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        while (!mysql_stmt_fetch(stmt)) {
+          supla_user_channelgroup *cg = new supla_user_channelgroup(
+              cgroups, group_id, channel_id, iodevice_id);
+          supla_log(LOG_DEBUG, "Load groups %i, %i, %i", UserID, group_id,
+                    channel_id);
+          if (!cgroups->add(cg, master)) {
+            delete cg;
           }
         }
       }

@@ -19,8 +19,20 @@
 #ifndef USERCHANNELGROUPS_H_
 #define USERCHANNELGROUPS_H_
 
+#include "objcontainer.h"
+#include "user.h"
+#include "userchannelgroup.h"
 
+class supla_user;
+class supla_user_channelgroups : public supla_objcontainer {
+ private:
+  supla_user *user;
 
+ protected:
+  void _load(database *db, e_objc_scope scope);
 
+ public:
+  supla_user_channelgroups(supla_user *user);
+};
 
 #endif /* USERCHANNELGROUPS_H_ */

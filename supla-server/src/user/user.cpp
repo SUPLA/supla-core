@@ -25,6 +25,7 @@
 #include "log.h"
 #include "safearray.h"
 #include "user.h"
+#include "userchannelgroups.h"
 
 void *supla_user::user_arr = NULL;
 
@@ -67,6 +68,7 @@ supla_user::supla_user(int UserID) {
   this->UserID = UserID;
   this->device_arr = safe_array_init();
   this->client_arr = safe_array_init();
+  this->cgroups = new supla_user_channelgroups(this);
   this->connections_allowed = true;
 
   safe_array_add(supla_user::user_arr, this);
@@ -75,6 +77,7 @@ supla_user::supla_user(int UserID) {
 supla_user::~supla_user() {
   safe_array_remove(supla_user::user_arr, this);
 
+  delete cgroups;
   safe_array_free(device_arr);
   safe_array_free(client_arr);
 }
@@ -642,6 +645,8 @@ void supla_user::get_temp_and_humidity(void *tarr) {
 
 void supla_user::reconnect() {
   int a;
+
+  cgroups->load();  // load == reload
 
   safe_array_lock(device_arr);
   {

@@ -23,6 +23,7 @@
 
 class supla_device;
 class supla_client;
+class supla_user_channelgroups;
 
 class supla_user {
  protected:
@@ -30,6 +31,7 @@ class supla_user {
 
   void *device_arr;
   void *client_arr;
+  supla_user_channelgroups *cgroups;
   int UserID;
   bool connections_allowed;
 

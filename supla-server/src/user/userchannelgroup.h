@@ -20,7 +20,24 @@
 #ifndef USERCHANNELGROUP_H_
 #define USERCHANNELGROUP_H_
 
+#include "objcontaineritem.h"
+#include "userchannelgroups.h"
 
+class supla_user_channelgroups;
+class supla_user_channelgroup : public supla_objcontainer_item {
+ private:
+  int ChannelId;
+  int DeviceId;
+
+ public:
+  supla_user_channelgroup(supla_user_channelgroups *Container, int GroupId,
+                            int ChannelId, int DeviceId);
+
+  int getGroupId();
+  int getChannelId();
+  int getDeviceId();
+  int getExtraId();
+};
 
 
 

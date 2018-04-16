@@ -17,6 +17,15 @@
  */
 
 #include "userchannelgroups.h"
+#include "database.h"
 
+supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
+  this->user = user;
+  id_cmp_use_both[master] = true;
+  load();
+}
 
+void supla_user_channelgroups::_load(database *db, e_objc_scope scope) {
+  db->get_user_channel_groups(user->getUserID(), this);
+}
 
