@@ -1178,8 +1178,6 @@ void database::get_user_channel_groups(int UserID,
         while (!mysql_stmt_fetch(stmt)) {
           supla_user_channelgroup *cg = new supla_user_channelgroup(
               cgroups, group_id, channel_id, iodevice_id);
-          supla_log(LOG_DEBUG, "Load groups %i, %i, %i", UserID, group_id,
-                    channel_id);
           if (!cgroups->add(cg, master)) {
             delete cg;
           }
