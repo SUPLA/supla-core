@@ -515,6 +515,45 @@ bool supla_user::set_device_channel_rgbw_value(int UserID, int SenderID,
   return result;
 }
 
+// static
+bool supla_user::set_channelgroup_char_value(int UserID, int GroupID,
+                                             const char value) {
+  bool result = false;
+
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user)
+    result =
+        user->set_channelgroup_char_value(GroupID, value) == true;
+
+  safe_array_unlock(supla_user::user_arr);
+
+  return result;
+}
+
+// static
+bool supla_user::set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
+                                             char color_brightness,
+                                             char brightness) {
+  bool result = false;
+
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user)
+    result = user->set_channelgroup_rgbw_value(GroupID, color, color_brightness,
+                                               brightness) == true;
+
+  safe_array_unlock(supla_user::user_arr);
+
+  return result;
+}
+
 bool supla_user::set_device_channel_value(
     int SenderID, int DeviceID, int ChannelID,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -562,6 +601,16 @@ bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
   safe_array_unlock(device_arr);
 
   return result;
+}
+
+bool supla_user::set_channelgroup_char_value(int GroupID, const char value) {
+  return cgroups->set_char_value(GroupID, value);
+}
+
+bool supla_user::set_channelgroup_rgbw_value(int GroupID, int color,
+                                             char color_brightness,
+                                             char brightness) {
+  return cgroups->set_rgbw_value(GroupID, color, color_brightness, brightness);
 }
 
 void supla_user::update_client_device_channels(int LocationID, int DeviceID) {

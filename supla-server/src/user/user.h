@@ -86,6 +86,11 @@ class supla_user {
                                             int DeviceID, int ChannelID,
                                             int color, char color_brightness,
                                             char brightness);
+  static bool set_channelgroup_char_value(int UserID, int GroupID,
+                                          const char value);
+  static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
+                                          char color_brightness,
+                                          char brightness);
 
   void remove_device(supla_device *device);
   void remove_client(supla_client *client);
@@ -113,6 +118,10 @@ class supla_user {
   bool set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID,
                                      int color, char color_brightness,
                                      char brightness);
+
+  bool set_channelgroup_char_value(int GroupID, const char value);
+  bool set_channelgroup_rgbw_value(int GroupID, int color,
+                                   char color_brightness, char brightness);
 
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(int DeviceId, int ChannelId = 0);

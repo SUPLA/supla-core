@@ -20,13 +20,13 @@
 #include <stdlib.h>  // NOLINT
 #include <string.h>  // NOLINT
 #include <list>      // NOLINT
+#include "clientchannelgroup.h"
+#include "clientchannelgroups.h"
 #include "database.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
-#include "clientchannelgroup.h"
-#include "clientchannelgroups.h"
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
     : supla_client_objcontainer(client) {}
@@ -194,8 +194,7 @@ void supla_client_channelgroups::on_channel_value_changed(void *srpc,
 
 bool supla_client_channelgroups::set_device_channel_new_value(
     TCS_SuplaNewValue *new_value) {
-  bool r1 = false;
-  bool r2 = true;
+  bool result = false;
 
   std::list<t_dc_pair> pairs;
   void *arr = getArr(master);
@@ -210,13 +209,10 @@ bool supla_client_channelgroups::set_device_channel_new_value(
   for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
     if (getClient()->getUser()->set_device_channel_value(
-            getClient()->getID(), it->DeviceId, it->ChannelId,
-            new_value->value)) {
-      r1 = true;
-    } else {
-      r2 = false;
+            0, it->DeviceId, it->ChannelId, new_value->value)) {
+      result = true;
     }
   }
 
-  return r1 && r2;
+  return result;
 }

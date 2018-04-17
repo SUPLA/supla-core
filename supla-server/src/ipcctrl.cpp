@@ -45,11 +45,8 @@ const char cmd_sauth[] = "SAUTH:";  // SUPER USER AUTH
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
 
-/*
-const char cmd_client_reconnect[] = "CLIENT-CG-RELOAD:";
 const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
-*/
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
   set_unauthorized();
@@ -251,63 +248,89 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::set_char(const char *cmd) {
+void svr_ipcctrl::set_char(const char *cmd, bool group) {
   int UserID = 0;
+  int CGID = 0;
   int DeviceID = 0;
-  int ChannelID = 0;
   int Value = 0;
 
-  sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i", &UserID, &DeviceID,
-         &ChannelID, &Value);
+  if (group) {
+    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &CGID, &Value);
+  } else {
+    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i", &UserID, &DeviceID, &CGID,
+           &Value);
+  }
 
-  if (UserID && DeviceID && ChannelID) {
+  if (UserID && CGID) {
     if (false == is_authorized(UserID, true)) return;
 
     if (Value < 0 || Value > 255) send_result("VALUE OUT OF RANGE");
 
-    if (true == supla_user::set_device_channel_char_value(UserID, 0, DeviceID,
-                                                          ChannelID, Value)) {
-      send_result("OK:", ChannelID);
+    bool result = false;
+
+    if (group) {
+      result = supla_user::set_channelgroup_char_value(UserID, CGID, Value);
+    } else if (!group && DeviceID) {
+      result = supla_user::set_device_channel_char_value(UserID, 0, DeviceID,
+                                                         CGID, Value);
+    }
+
+    if (result) {
+      send_result("OK:", CGID);
     } else {
-      send_result("FAIL:", ChannelID);
+      send_result("FAIL:", CGID);
     }
 
     return;
   }
 
-  send_result("UNKNOWN:", ChannelID);
+  send_result("UNKNOWN:", CGID);
 }
 
-void svr_ipcctrl::set_rgbw(const char *cmd) {
+void svr_ipcctrl::set_rgbw(const char *cmd, bool group) {
   int UserID = 0;
   int DeviceID = 0;
-  int ChannelID = 0;
+  int CGID = 0;
   int Color = 0;
   int ColorBrightness = 0;
   int Brightness = 0;
 
-  sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i,%i", &UserID, &DeviceID,
-         &ChannelID, &Color, &ColorBrightness, &Brightness);
+  if (group) {
+    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i", &UserID, &CGID, &Color,
+           &ColorBrightness, &Brightness);
 
-  if (UserID && DeviceID && ChannelID) {
+  } else {
+    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i,%i", &UserID, &DeviceID,
+           &CGID, &Color, &ColorBrightness, &Brightness);
+  }
+
+  if (UserID && CGID) {
     if (false == is_authorized(UserID, true)) return;
 
     if (ColorBrightness < 0 || ColorBrightness > 100 || Brightness < 0 ||
         Brightness > 100)
       send_result("VALUE OUT OF RANGE");
 
-    if (true == supla_user::set_device_channel_rgbw_value(
-                    UserID, 0, DeviceID, ChannelID, Color, ColorBrightness,
-                    Brightness)) {
-      send_result("OK:", ChannelID);
+    bool result = false;
+
+    if (group) {
+      result = supla_user::set_channelgroup_rgbw_value(
+          UserID, CGID, Color, ColorBrightness, Brightness);
+    } else if (!group && DeviceID) {
+      result = supla_user::set_device_channel_rgbw_value(
+          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness);
+    }
+
+    if (result) {
+      send_result("OK:", CGID);
     } else {
-      send_result("FAIL:", ChannelID);
+      send_result("FAIL:", CGID);
     }
 
     return;
   }
 
-  send_result("UNKNOWN:", ChannelID);
+  send_result("UNKNOWN:", CGID);
 }
 
 void svr_ipcctrl::execute(void *sthread) {
@@ -399,10 +422,16 @@ void svr_ipcctrl::execute(void *sthread) {
           sauth(cmd_sauth);
 
         } else if (match_command(cmd_set_char_value, len)) {
-          set_char(cmd_set_char_value);
+          set_char(cmd_set_char_value, false);
 
         } else if (match_command(cmd_set_rgbw_value, len)) {
-          set_rgbw(cmd_set_rgbw_value);
+          set_rgbw(cmd_set_rgbw_value, false);
+
+        } else if (match_command(cmd_set_cg_char_value, len)) {
+          set_char(cmd_set_cg_char_value, true);
+
+        } else if (match_command(cmd_set_rgbw_value, len)) {
+          set_rgbw(cmd_set_cg_rgbw_value, true);
 
         } else {
           send_result("COMMAND_UNKNOWN");

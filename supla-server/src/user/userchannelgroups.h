@@ -19,6 +19,7 @@
 #ifndef USERCHANNELGROUPS_H_
 #define USERCHANNELGROUPS_H_
 
+#include <list>
 #include "objcontainer.h"
 #include "user.h"
 #include "userchannelgroup.h"
@@ -30,9 +31,13 @@ class supla_user_channelgroups : public supla_objcontainer {
 
  protected:
   void _load(database *db, e_objc_scope scope);
+  std::list<t_dc_pair> find_channels(int GroupId);
 
  public:
   supla_user_channelgroups(supla_user *user);
+  bool set_char_value(int GroupID, const char value);
+  bool set_rgbw_value(int GroupID, int color, char color_brightness,
+                      char brightness);
 };
 
 #endif /* USERCHANNELGROUPS_H_ */

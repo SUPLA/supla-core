@@ -45,8 +45,8 @@ class svr_ipcctrl {
   void get_double(const char *cmd, char Type);
   void get_char(const char *cmd);
   void get_rgbw(const char *cmd);
-  void set_char(const char *cmd);
-  void set_rgbw(const char *cmd);
+  void set_char(const char *cmd, bool group);
+  void set_rgbw(const char *cmd, bool group);
   void send_result(const char *result);
   void send_result(const char *result, int i);
   void send_result(const char *result, double i);

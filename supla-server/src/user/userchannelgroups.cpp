@@ -18,6 +18,7 @@
 
 #include "userchannelgroups.h"
 #include "database.h"
+#include "safearray.h"
 
 supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   this->user = user;
@@ -29,3 +30,59 @@ void supla_user_channelgroups::_load(database *db, e_objc_scope scope) {
   db->get_user_channel_groups(user->getUserID(), this);
 }
 
+std::list<t_dc_pair> supla_user_channelgroups::find_channels(int GroupId) {
+  std::list<t_dc_pair> pairs;
+  void *arr = getArr(master);
+
+  safe_array_lock(arr);
+
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    supla_user_channelgroup *g =
+        static_cast<supla_user_channelgroup *>(safe_array_get(arr, a));
+    if (g && g->getGroupId() == GroupId) {
+      t_dc_pair p;
+      p.ChannelId = g->getChannelId();
+      p.DeviceId = g->getDeviceId();
+      pairs.push_back(p);
+    }
+  }
+
+  safe_array_unlock(arr);
+
+  return pairs;
+}
+
+bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
+  bool result = false;
+
+  std::list<t_dc_pair> pairs = find_channels(GroupID);
+
+  for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
+       it++) {
+    if (user->set_device_channel_char_value(0, it->DeviceId, it->ChannelId,
+                                            value)) {
+      result = true;
+    }
+  }
+
+  return result;
+}
+
+bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
+                                              char color_brightness,
+                                              char brightness) {
+  bool result = false;
+
+  std::list<t_dc_pair> pairs = find_channels(GroupID);
+
+  for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
+       it++) {
+    if (user->set_device_channel_rgbw_value(0, it->DeviceId, it->ChannelId,
+                                            color, color_brightness,
+                                            brightness)) {
+      result = true;
+    }
+  }
+
+  return result;
+}

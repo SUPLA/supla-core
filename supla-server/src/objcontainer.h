@@ -21,6 +21,11 @@
 
 #include "objcontaineritem.h"
 
+typedef struct {
+  int DeviceId;
+  int ChannelId;
+} t_dc_pair;
+
 enum e_objc_scope { master = 0, detail1 = 1, detail2 = 2 };
 
 #define OBJC_SCOPE_COUNT 3

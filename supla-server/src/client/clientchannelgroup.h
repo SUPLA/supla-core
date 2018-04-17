@@ -23,11 +23,6 @@
 #include "clientchannelgrouprelation.h"
 #include "clientobjcontaineritem.h"
 
-typedef struct {
-  int DeviceId;
-  int ChannelId;
-} t_dc_pair;
-
 class supla_client;
 class supla_client_channelgroups;
 class supla_client_channelgroup : public supla_client_objcontainer_item {
