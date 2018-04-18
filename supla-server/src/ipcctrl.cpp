@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "database.h"
@@ -27,6 +28,7 @@
 #include "ipcsocket.h"
 #include "log.h"
 #include "sthread.h"
+#include "tools.h"
 #include "user.h"
 
 const char hello[] = "SUPLA SERVER CTRL\n";
@@ -44,9 +46,11 @@ const char cmd_oauth[] = "OAUTH:";
 const char cmd_sauth[] = "SAUTH:";  // SUPER USER AUTH
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
+const char cmd_set_rand_rgbw_value[] = "SET-RAND-RGBW-VALUE:";
 
 const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
+const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
   set_unauthorized();
@@ -287,7 +291,7 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
   send_result("UNKNOWN:", CGID);
 }
 
-void svr_ipcctrl::set_rgbw(const char *cmd, bool group) {
+void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   int UserID = 0;
   int DeviceID = 0;
   int CGID = 0;
@@ -295,13 +299,28 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group) {
   int ColorBrightness = 0;
   int Brightness = 0;
 
-  if (group) {
-    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i", &UserID, &CGID, &Color,
-           &ColorBrightness, &Brightness);
+  if (random) {
+    if (group) {
+      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i", &UserID, &CGID,
+             &ColorBrightness, &Brightness);
+
+    } else {
+      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i", &UserID, &DeviceID,
+             &CGID, &ColorBrightness, &Brightness);
+    }
+
+    unsigned int seed = time(NULL);
+    Color = st_hue2rgb(rand_r(&seed) % 360);
 
   } else {
-    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i,%i", &UserID, &DeviceID,
-           &CGID, &Color, &ColorBrightness, &Brightness);
+    if (group) {
+      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i", &UserID, &CGID,
+             &Color, &ColorBrightness, &Brightness);
+
+    } else {
+      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i,%i", &UserID,
+             &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness);
+    }
   }
 
   if (UserID && CGID) {
@@ -425,13 +444,19 @@ void svr_ipcctrl::execute(void *sthread) {
           set_char(cmd_set_char_value, false);
 
         } else if (match_command(cmd_set_rgbw_value, len)) {
-          set_rgbw(cmd_set_rgbw_value, false);
+          set_rgbw(cmd_set_rgbw_value, false, false);
+
+        } else if (match_command(cmd_set_rand_rgbw_value, len)) {
+          set_rgbw(cmd_set_rand_rgbw_value, false, true);
 
         } else if (match_command(cmd_set_cg_char_value, len)) {
           set_char(cmd_set_cg_char_value, true);
 
-        } else if (match_command(cmd_set_rgbw_value, len)) {
-          set_rgbw(cmd_set_cg_rgbw_value, true);
+        } else if (match_command(cmd_set_cg_rgbw_value, len)) {
+          set_rgbw(cmd_set_cg_rgbw_value, true, false);
+
+        } else if (match_command(cmd_set_cg_rand_rgbw_value, len)) {
+          set_rgbw(cmd_set_cg_rand_rgbw_value, true, true);
 
         } else {
           send_result("COMMAND_UNKNOWN");
