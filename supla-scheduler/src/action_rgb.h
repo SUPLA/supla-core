@@ -23,7 +23,6 @@
 
 class s_worker_action_rgb : public s_worker_action {
  private:
-  int hue2rgb(double hue);
   char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
                          bool *random);
 

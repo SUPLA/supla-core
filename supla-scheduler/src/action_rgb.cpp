@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "log.h"
+#include "tools.h"
 
 s_worker_action_rgb::s_worker_action_rgb(s_worker *worker)
     : s_worker_action(worker) {}
@@ -36,71 +37,6 @@ int s_worker_action_rgb::try_limit(void) { return 2; }
 int s_worker_action_rgb::waiting_time_to_retry(void) { return 30; }
 
 int s_worker_action_rgb::waiting_time_to_check(void) { return 5; }
-
-int s_worker_action_rgb::hue2rgb(double hue) {
-  double r = 0, g = 0, b = 0;
-
-  if (hue >= 360) hue = 0;
-
-  hue /= 60.00;
-
-  long i = (long)hue;
-  double f, q, t;
-  f = hue - i;
-
-  q = 1.0 - f;
-  t = 1.0 - (1.0 - f);
-
-  switch (i) {
-    case 0:
-      r = 1.00;
-      g = t;
-      b = 0.00;
-      break;
-
-    case 1:
-      r = q;
-      g = 1.00;
-      b = 0.00;
-      break;
-
-    case 2:
-      r = 0.00;
-      g = 1.00;
-      b = t;
-      break;
-
-    case 3:
-      r = 0.00;
-      g = q;
-      b = 1.00;
-      break;
-
-    case 4:
-      r = t;
-      g = 0.00;
-      b = 1.00;
-      break;
-
-    default:
-      r = 1.00;
-      g = 0.00;
-      b = q;
-      break;
-  }
-
-  int rgb = 0;
-
-  rgb |= (unsigned char)(r * 255.00);
-  rgb <<= 8;
-
-  rgb |= (unsigned char)(g * 255.00);
-  rgb <<= 8;
-
-  rgb |= (unsigned char)(b * 255.00);
-
-  return rgb;
-}
 
 char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
                                             char *brightness, bool *random) {
@@ -134,7 +70,7 @@ char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
       if (jsoneq(worker->get_action_param(), &t[a + 1], "random") == 0) {
         if (color) {
           unsigned int seed = time(NULL);
-          *color = hue2rgb(rand_r(&seed) % 360);
+          *color = st_hue2rgb(rand_r(&seed) % 360);
 
           if (random) {
             *random = true;
@@ -152,7 +88,7 @@ char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
 
       } else if (json_get_int(&t[a + 1], &value)) {
         if (color) {
-          *color = hue2rgb(value);
+          *color = st_hue2rgb(value);
         }
 
         result++;

@@ -56,6 +56,8 @@ time_t st_get_utc_time(void);
 
 char *st_get_datetime_str(char buffer[64]);
 
+int st_hue2rgb(double hue);
+
 #ifdef __BCRYPT
 
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds);

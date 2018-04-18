@@ -278,6 +278,71 @@ char *st_get_datetime_str(char buffer[64]) {
   return buffer;
 }
 
+int st_hue2rgb(double hue) {
+  double r = 0, g = 0, b = 0;
+
+  if (hue >= 360) hue = 0;
+
+  hue /= 60.00;
+
+  long i = (long)hue;
+  double f, q, t;
+  f = hue - i;
+
+  q = 1.0 - f;
+  t = 1.0 - (1.0 - f);
+
+  switch (i) {
+    case 0:
+      r = 1.00;
+      g = t;
+      b = 0.00;
+      break;
+
+    case 1:
+      r = q;
+      g = 1.00;
+      b = 0.00;
+      break;
+
+    case 2:
+      r = 0.00;
+      g = 1.00;
+      b = t;
+      break;
+
+    case 3:
+      r = 0.00;
+      g = q;
+      b = 1.00;
+      break;
+
+    case 4:
+      r = t;
+      g = 0.00;
+      b = 1.00;
+      break;
+
+    default:
+      r = 1.00;
+      g = 0.00;
+      b = q;
+      break;
+  }
+
+  int rgb = 0;
+
+  rgb |= (unsigned char)(r * 255.00);
+  rgb <<= 8;
+
+  rgb |= (unsigned char)(g * 255.00);
+  rgb <<= 8;
+
+  rgb |= (unsigned char)(b * 255.00);
+
+  return rgb;
+}
+
 #ifdef __BCRYPT
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
   if (salt == NULL || salt_buffer_size == 0) return 0;
