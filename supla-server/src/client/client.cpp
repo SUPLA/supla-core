@@ -161,7 +161,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               }
             }
 
-            ClientID = db->add_client(AccessID, GUID, AuthKey, Name,
+            ClientID = db->add_client(&AccessID, GUID, AuthKey, Name,
                                       getSvrConn()->getClientIpv4(), SoftVer,
                                       proto_version, UserID);
 

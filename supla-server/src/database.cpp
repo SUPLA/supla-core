@@ -346,6 +346,13 @@ bool database::on_newdevice(int DeviceID) {
   return query(sql) != 0;
 }
 
+bool database::on_newclient(int ClientID) {
+  char sql[51];
+  snprintf(sql, sizeof(sql), "CALL `supla_on_newclient`(%i)", ClientID);
+
+  return query(sql) != 0;
+}
+
 bool database::on_channeladded(int DeviceID, int ChannelID) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_on_channeladded`(%i, %i)", DeviceID,
@@ -820,6 +827,24 @@ int database::get_access_id(int UserID, bool enabled) {
   return Result;
 }
 
+int database::get_client_access_id(int ClientID) {
+  MYSQL_STMT *stmt;
+  int Result = 0;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ClientID;
+
+  if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
+                    "SELECT access_id FROM `supla_client` WHERE id = ?",
+                    pbind, 1))
+    return 0;
+
+  return Result;
+}
+
 bool database::get_client_reg_enabled(int UserID) {
   return get_count(UserID,
                    "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND "
@@ -829,7 +854,7 @@ bool database::get_client_reg_enabled(int UserID) {
              : false;
 }
 
-int database::add_client(int AccessID, const char *GUID, const char *AuthKey,
+int database::add_client(int *AccessID, const char *GUID, const char *AuthKey,
                          const char *Name, unsigned int ipv4,
                          const char *softver, int proto_version, int UserID) {
   int ClientID = 0;
@@ -845,11 +870,11 @@ int database::add_client(int AccessID, const char *GUID, const char *AuthKey,
   char GUIDHEX[SUPLA_GUID_HEXSIZE];
   st_guid2hex(GUIDHEX, GUID);
 
-  if (AccessID == 0) {
+  if (*AccessID == 0) {
     pbind[0].buffer_type = MYSQL_TYPE_NULL;
   } else {
     pbind[0].buffer_type = MYSQL_TYPE_LONG;
-    pbind[0].buffer = (char *)&AccessID;
+    pbind[0].buffer = (char *)AccessID;
   }
 
   pbind[1].buffer_type = MYSQL_TYPE_STRING;
@@ -907,6 +932,14 @@ int database::add_client(int AccessID, const char *GUID, const char *AuthKey,
   if (AuthKeyHashHEX) {
     free(AuthKeyHashHEX);
     AuthKeyHashHEX = NULL;
+  }
+
+  if (ClientID != 0) {
+    on_newclient(ClientID);
+
+    if (*AccessID == 0) {
+    	*AccessID = get_client_access_id(ClientID);
+    }
   }
 
   return ClientID;

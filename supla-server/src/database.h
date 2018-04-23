@@ -91,19 +91,21 @@ class database : public dbcommon {
                                       TSD_FirmwareUpdate_UrlResult *url);
 
   bool on_newdevice(int DeviceID);
+  bool on_newclient(int ClientID);
   bool on_channeladded(int DeviceID, int ChannelID);
 
   int get_client_limit_left(int UserID);
   int get_client_count(int UserID);
 
   int get_access_id(int UserID, bool enabled);
+  int get_client_access_id(int ClientID);
 
   bool get_client_reg_enabled(int UserID);
   int get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
   int get_client(int ClientID, bool *client_enabled, int *access_id,
                  bool *accessid_enabled);
 
-  int add_client(int AccessID, const char *GUID, const char *AuthKey,
+  int add_client(int *AccessID, const char *GUID, const char *AuthKey,
                  const char *Name, unsigned int ipv4, const char *softver,
                  int proto_version, int UserID);
 
