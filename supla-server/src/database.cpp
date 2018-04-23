@@ -838,8 +838,8 @@ int database::get_client_access_id(int ClientID) {
   pbind[0].buffer = (char *)&ClientID;
 
   if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
-                    "SELECT access_id FROM `supla_client` WHERE id = ?",
-                    pbind, 1))
+                    "SELECT access_id FROM `supla_client` WHERE id = ?", pbind,
+                    1))
     return 0;
 
   return Result;
@@ -938,7 +938,7 @@ int database::add_client(int *AccessID, const char *GUID, const char *AuthKey,
     on_newclient(ClientID);
 
     if (*AccessID == 0) {
-    	*AccessID = get_client_access_id(ClientID);
+      *AccessID = get_client_access_id(ClientID);
     }
   }
 
