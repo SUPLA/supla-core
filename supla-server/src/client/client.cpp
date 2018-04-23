@@ -20,14 +20,14 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "client.h"
+#include "clientlocation.h"
 #include "database.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
-#include "client.h"
-#include "clientlocation.h"
 
 supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
   this->locations = new supla_client_locations();
@@ -161,7 +161,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               }
             }
 
-            ClientID = db->add_client(&AccessID, GUID, AuthKey, Name,
+            ClientID = db->add_client(AccessID, GUID, AuthKey, Name,
                                       getSvrConn()->getClientIpv4(), SoftVer,
                                       proto_version, UserID);
 
@@ -171,6 +171,16 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
             } else {
               client_enabled = true;
+
+              if (AccessID == 0) {
+                _accessid_enabled = false;
+                AccessID =
+                    db->get_client_access_id(ClientID, &_accessid_enabled);
+
+                if (AccessID && _accessid_enabled) {
+                  accessid_enabled = true;
+                }
+              }
             }
           }
 

@@ -22,8 +22,8 @@
 #include "client.h"
 #include "db.h"
 #include "device.h"
-#include "user.h"
 #include "proto.h"
+#include "user.h"
 
 class database : public dbcommon {
  private:
@@ -98,14 +98,14 @@ class database : public dbcommon {
   int get_client_count(int UserID);
 
   int get_access_id(int UserID, bool enabled);
-  int get_client_access_id(int ClientID);
+  int get_client_access_id(int ClientID, bool *accessid_enabled);
 
   bool get_client_reg_enabled(int UserID);
   int get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
   int get_client(int ClientID, bool *client_enabled, int *access_id,
                  bool *accessid_enabled);
 
-  int add_client(int *AccessID, const char *GUID, const char *AuthKey,
+  int add_client(int AccessID, const char *GUID, const char *AuthKey,
                  const char *Name, unsigned int ipv4, const char *softver,
                  int proto_version, int UserID);
 
@@ -117,8 +117,7 @@ class database : public dbcommon {
   void get_client_channels(int ClientID, int *DeviceID,
                            supla_client_channels *channels);
 
-  void get_user_channel_groups(int UserID,
-                                 supla_user_channelgroups *cgroups);
+  void get_user_channel_groups(int UserID, supla_user_channelgroups *cgroups);
 
   void get_client_channel_groups(int ClientID,
                                  supla_client_channelgroups *cgroups);

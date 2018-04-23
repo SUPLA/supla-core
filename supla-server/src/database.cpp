@@ -827,20 +827,27 @@ int database::get_access_id(int UserID, bool enabled) {
   return Result;
 }
 
-int database::get_client_access_id(int ClientID) {
+int database::get_client_access_id(int ClientID, bool *accessid_enabled) {
   MYSQL_STMT *stmt;
   int Result = 0;
 
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
 
+  int _accessid_enabled = 0;
+
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&ClientID;
 
-  if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
-                    "SELECT access_id FROM `supla_client` WHERE id = ?", pbind,
-                    1))
+  if (!stmt_get_int((void **)&stmt, &Result, &_accessid_enabled, NULL, NULL,
+                    "SELECT c.access_id, a.enabled FROM `supla_client` c JOIN "
+                    "`supla_accessid` a ON a.id = c.access_id WHERE c.id = ?",
+                    pbind, 1))
     return 0;
+
+  if (accessid_enabled && _accessid_enabled == 1) {
+    *accessid_enabled = true;
+  }
 
   return Result;
 }
@@ -854,7 +861,7 @@ bool database::get_client_reg_enabled(int UserID) {
              : false;
 }
 
-int database::add_client(int *AccessID, const char *GUID, const char *AuthKey,
+int database::add_client(int AccessID, const char *GUID, const char *AuthKey,
                          const char *Name, unsigned int ipv4,
                          const char *softver, int proto_version, int UserID) {
   int ClientID = 0;
@@ -870,11 +877,11 @@ int database::add_client(int *AccessID, const char *GUID, const char *AuthKey,
   char GUIDHEX[SUPLA_GUID_HEXSIZE];
   st_guid2hex(GUIDHEX, GUID);
 
-  if (*AccessID == 0) {
+  if (AccessID == 0) {
     pbind[0].buffer_type = MYSQL_TYPE_NULL;
   } else {
     pbind[0].buffer_type = MYSQL_TYPE_LONG;
-    pbind[0].buffer = (char *)AccessID;
+    pbind[0].buffer = (char *)&AccessID;
   }
 
   pbind[1].buffer_type = MYSQL_TYPE_STRING;
@@ -936,10 +943,6 @@ int database::add_client(int *AccessID, const char *GUID, const char *AuthKey,
 
   if (ClientID != 0) {
     on_newclient(ClientID);
-
-    if (*AccessID == 0) {
-      *AccessID = get_client_access_id(ClientID);
-    }
   }
 
   return ClientID;
