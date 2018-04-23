@@ -37,9 +37,10 @@ extern "C" {
 #define CFG_SERVER_TCPPORT 5
 #define CFG_SERVER_SSLPORT 6
 #define CFG_SERVER_SSLENABLED 7
-#define CFG_LOCATION_ID 8
-#define CFG_LOCATION_PWD 9
-#define CFG_EMAIL 10
+#define CFG_PROTO 8
+#define CFG_LOCATION_ID 9
+#define CFG_LOCATION_PWD 10
+#define CFG_EMAIL 11
 
 unsigned char devcfg_init(int argc, char* argv[]);
 char devcfg_getdev_guid();

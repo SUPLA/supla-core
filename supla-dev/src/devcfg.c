@@ -131,6 +131,7 @@ unsigned char devcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_server, "tcp_port", 2015);
   scfg_add_int_param(s_server, "ssl_port", 2016);
   scfg_add_bool_param(s_server, "ssl_enabled", 1);
+  scfg_add_int_param(s_server, "protocol_version", SUPLA_PROTO_VERSION);
 
   char *s_location = "LOCATION";
 

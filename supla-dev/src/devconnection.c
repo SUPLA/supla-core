@@ -305,6 +305,7 @@ void devconnection_execute(void *user_data, void *sthread) {
         srpc_params.before_async_call = &devconnection_before_async_call;
         srpc_params.eh = eh;
         dcd.srpc = srpc_init(&srpc_params);
+        srpc_set_proto_version(dcd.srpc, scfg_int(CFG_PROTO));
 
         eh_add_fd(eh, ssocket_get_fd(dcd.ssd));
 
