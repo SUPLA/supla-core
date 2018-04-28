@@ -442,7 +442,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
 
       std::list<int>::iterator it = slave_list.begin();
 
-      if (slave_list.size() == 1) {
+      if (slave_list.size() == 1 && *it > 0) {
         device = device_by_channel_id(device, *it);
         if (device) {
           device->get_channel_value(*it, value->sub_value);
@@ -455,13 +455,14 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
         char sub_value[SUPLA_CHANNELVALUE_SIZE];
         int n = 0;
         do {
-          device = device_by_channel_id(device, *it);
-          if (device) {
-            device->get_channel_value(*it, sub_value);
-            value->sub_value[n] = sub_value[0];
-            n++;
+          if (*it > 0) {
+            device = device_by_channel_id(device, *it);
+            if (device) {
+              device->get_channel_value(*it, sub_value);
+              value->sub_value[n] = sub_value[0];
+            }
           }
-
+          n++;
           it++;
         } while (it != slave_list.end() && n < SUPLA_CHANNELVALUE_SIZE);
       }
@@ -525,9 +526,7 @@ bool supla_user::set_channelgroup_char_value(int UserID, int GroupID,
   supla_user *user =
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
-  if (user)
-    result =
-        user->set_channelgroup_char_value(GroupID, value) == true;
+  if (user) result = user->set_channelgroup_char_value(GroupID, value) == true;
 
   safe_array_unlock(supla_user::user_arr);
 
