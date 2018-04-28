@@ -371,9 +371,8 @@ std::list<int> supla_device_channel::slave_channel(void) {
       // 1st Param2
       // 2nd Param3
 
-      if (Param2) {
-        result.push_back(Param2);
-      }
+      // Always add Param2
+      result.push_back(Param2);
 
       if (Param3) {
         result.push_back(Param3);
