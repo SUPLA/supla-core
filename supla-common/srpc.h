@@ -36,6 +36,10 @@
 #define SRPC_ICACHE_FLASH
 #endif
 
+#ifdef __AVR__
+#define SRPC_EXCLUDE_CLIENT
+#endif /*__AVR__*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
