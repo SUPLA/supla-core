@@ -29,7 +29,9 @@
 #include "user.h"
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
-    : supla_client_objcontainer(client) {}
+    : supla_client_objcontainer(client) {
+  id_cmp_use_both[detail1] = true;
+}
 
 void supla_client_channelgroups::_load(database *db, e_objc_scope scope) {
   switch (scope) {
