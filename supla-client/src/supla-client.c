@@ -33,7 +33,8 @@ typedef struct {
 
   int client_id;
 
-  struct timeval last_call;
+  struct timeval last_call_sent;
+  struct timeval last_call_recv;
   char connected;
   char registered;
   int server_activity_timeout;
@@ -80,7 +81,7 @@ void supla_client_before_async_call(void *_srpc,
                                     unsigned _supla_int_t call_type,
                                     void *_scd) {
   TSuplaClientData *scd = (TSuplaClientData *)_scd;
-  gettimeofday(&scd->last_call, NULL);
+  gettimeofday(&scd->last_call_sent, NULL);
 }
 
 void supla_client_on_min_version_required(void *_srpc,
@@ -354,6 +355,8 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
   TsrpcReceivedData rd;
   char result;
   TSuplaClientData *scd = (TSuplaClientData *)_scd;
+
+  gettimeofday(&scd->last_call_recv, NULL);
 
   supla_log(LOG_DEBUG, "on_remote_call_received: %i", call_type);
 
@@ -701,8 +704,13 @@ void supla_client_ping(TSuplaClientData *suplaclient) {
   if (suplaclient->server_activity_timeout > 0) {
     gettimeofday(&now, NULL);
 
-    if ((now.tv_sec - suplaclient->last_call.tv_sec) >=
-        (suplaclient->server_activity_timeout - 5)) {
+    int server_activity_timeout = suplaclient->server_activity_timeout - 5;
+
+    if ((now.tv_sec - suplaclient->last_call_sent.tv_sec) >=
+            server_activity_timeout ||
+        (now.tv_sec - suplaclient->last_call_recv.tv_sec) >=
+            server_activity_timeout) {
+      supla_log(LOG_DEBUG, "PING");
       srpc_dcs_async_ping_server(suplaclient->srpc);
     }
   }
