@@ -316,6 +316,9 @@ void supla_device::on_channel_set_value_result(
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
         event.Event = SUPLA_EVENT_LIGHTONOFF;
         break;
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
+        break;
     }
 
     getUser()->call_event(&event);

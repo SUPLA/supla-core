@@ -294,6 +294,7 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
       return 1;
 
       break;
@@ -311,6 +312,7 @@ bool supla_device_channel::isCharValueWritable(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
       return 1;
 
       break;
@@ -340,8 +342,10 @@ unsigned int supla_device_channel::getValueDuration(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
       return Param1;
+
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return Param1 * 100;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
       unsigned int result = 0;
