@@ -33,6 +33,7 @@ typedef struct {
 
   int client_id;
 
+  struct timeval last_ping;
   struct timeval last_call_sent;
   struct timeval last_call_recv;
   char connected;
@@ -704,13 +705,14 @@ void supla_client_ping(TSuplaClientData *suplaclient) {
   if (suplaclient->server_activity_timeout > 0) {
     gettimeofday(&now, NULL);
 
-    int server_activity_timeout = suplaclient->server_activity_timeout - 5;
+    int server_activity_timeout = suplaclient->server_activity_timeout - 10;
 
-    if ((now.tv_sec - suplaclient->last_call_sent.tv_sec) >=
-            server_activity_timeout ||
-        (now.tv_sec - suplaclient->last_call_recv.tv_sec) >=
-            server_activity_timeout) {
-      supla_log(LOG_DEBUG, "PING");
+    if (now.tv_sec - suplaclient->last_ping.tv_sec >= 2 &&
+        ((now.tv_sec - suplaclient->last_call_sent.tv_sec) >=
+             server_activity_timeout ||
+         (now.tv_sec - suplaclient->last_call_recv.tv_sec) >=
+             server_activity_timeout)) {
+      gettimeofday(&suplaclient->last_ping, NULL);
       srpc_dcs_async_ping_server(suplaclient->srpc);
     }
   }
