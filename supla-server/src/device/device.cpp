@@ -21,12 +21,12 @@
 #include <unistd.h>
 
 #include "database.h"
+#include "device.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
-#include "device.h"
 
 supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
   this->channels = new supla_device_channels();
@@ -282,7 +282,7 @@ void supla_device::on_channel_set_value_result(
     TDS_SuplaChannelNewValueResult *result) {
   int ChannelID;
 
-  if (result->Success == 1 &&
+  if (result->Success == 1 && result->SenderID != 0 &&
       (ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
     TSC_SuplaEvent event;
     memset(&event, 0, sizeof(TSC_SuplaEvent));
