@@ -593,9 +593,13 @@ void ssocket_close(void *_ssd) {
 
 int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
                                   int *err) {
-  struct sockaddr_in addr;
-  long ip = 0;
-  struct hostent *host;
+  struct in6_addr serveraddr;
+  struct addrinfo hints, *res = NULL;
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_flags = AI_NUMERICSERV;
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
 
   ssd->supla_socket.sfd = -1;
 
@@ -607,38 +611,33 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
   }
 #endif
 
+  char port[15];
+  snprintf(port, sizeof(port), "%i", ssd->port);
+
+  char empty[] = "";
+  char *server = empty;
+
   if (ssd->host != NULL && strnlen(ssd->host, 1024) > 0) {
-    /*
-    #if defined(_WIN32) && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-
-    if ( getaddrinfo(ssd->host, NULL, &hints, &res) == 0
-             && res != NULL
-             && res->ai_family == AF_INET ) {
-
-            ip = ((struct sockaddr_in*)res->ai_addr)->sin_addr.S_un.S_addr;
-    }
-    #else
-    */
-    if ((host = gethostbyname(ssd->host)) != NULL) {
-      ip = *(long *)(host->h_addr);
-    }
-
-    // #endif
+    server = ssd->host;
   }
 
-  if (ip == 0) {
+  if (inet_pton(AF_INET, server, &serveraddr) == 1) {
+    hints.ai_family = AF_INET;
+    hints.ai_flags |= AI_NUMERICHOST;
+  } else if (inet_pton(AF_INET6, server, &serveraddr) == 1) {
+    hints.ai_family = AF_INET6;
+    hints.ai_flags |= AI_NUMERICHOST;
+  }
+
+  if (getaddrinfo(server, port, &hints, &res) != 0) {
     if (err) *err = SUPLA_RESULTCODE_HOSTNOTFOUND;
 
-    supla_write_state_file(state_file, LOG_ERR, "Host not found %s",
-                           ssd->host == NULL ? "" : ssd->host);
+    supla_write_state_file(state_file, LOG_ERR, "Host not found %s", server);
     return -1;
-  }
+  };
 
-  ssd->supla_socket.sfd = socket(PF_INET, SOCK_STREAM, 0);
+  ssd->supla_socket.sfd =
+      socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
   if (ssd->supla_socket.sfd == -1) {
 #ifdef _WIN32
@@ -648,13 +647,7 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
     return -1;
   }
 
-  memset(&addr, 0, sizeof(addr));
-  addr.sin_family = AF_INET;
-  addr.sin_port = htons(ssd->port);
-  addr.sin_addr.s_addr = ip;
-
-  if (connect(ssd->supla_socket.sfd, (struct sockaddr *)&addr, sizeof(addr)) !=
-      0) {
+  if (connect(ssd->supla_socket.sfd, res->ai_addr, res->ai_addrlen) != 0) {
 #ifdef _WIN32
     shutdown(ssd->supla_socket.sfd, SD_SEND);
     closesocket(ssd->supla_socket.sfd);
