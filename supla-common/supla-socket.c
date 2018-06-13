@@ -664,6 +664,8 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
                            ssd->host == NULL ? "" : ssd->host);
   }
 
+  freeaddrinfo(res);
+
 #ifdef _WIN32
   if (ssd->secure == 0) {
     u_long iMode = 1;
