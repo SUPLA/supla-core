@@ -95,7 +95,7 @@ unsigned char clientcfg_init(int argc, char *argv[]) {
   if (cfg_host == NULL) cfg_host = strdup("127.0.0.1");
 
   if (cfg_id_file == NULL) {
-    pw = getpwuid(getuid()); // NOLINT
+    pw = getpwuid(getuid());  // NOLINT
     a = strlen(pw->pw_dir) + 50;
 
     buffer = malloc(a);
