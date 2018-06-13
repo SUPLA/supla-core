@@ -466,8 +466,8 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
 
 void supla_client_cfginit(TSuplaClientCfg *sclient_cfg) {
   memset(sclient_cfg, 0, sizeof(TSuplaClientCfg));
-  sclient_cfg->ssl_port = 2015;
-  sclient_cfg->tcp_port = 2016;
+  sclient_cfg->tcp_port = 2015;
+  sclient_cfg->ssl_port = 2016;
   sclient_cfg->ssl_enabled = 1;
 #ifdef _WIN32
   sclient_cfg->iterate_wait_usec = 1000;
@@ -497,7 +497,7 @@ void *supla_client_init(TSuplaClientCfg *sclient_cfg) {
 
   scd->ssd = ssocket_client_init(
       scd->cfg.host,
-      scd->cfg.ssl_enabled == 1 ? scd->cfg.tcp_port : scd->cfg.ssl_port,
+      scd->cfg.ssl_enabled == 1 ? scd->cfg.ssl_port : scd->cfg.tcp_port,
       scd->cfg.ssl_enabled == 1);
 
   return scd;
