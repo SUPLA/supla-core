@@ -634,7 +634,7 @@ int ssocket_client_openconnection(TSuplaSocketData *ssd, const char *state_file,
 
     supla_write_state_file(state_file, LOG_ERR, "Host not found %s", server);
     return -1;
-  };
+  }
 
   ssd->supla_socket.sfd =
       socket(res->ai_family, res->ai_socktype, res->ai_protocol);
