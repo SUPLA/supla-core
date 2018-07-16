@@ -87,11 +87,7 @@ extern "C" {
 #define SUPLA_EMAILHEX_MAXSIZE 513              // ver. >= 7
 #define SUPLA_AUTHKEY_SIZE 16                   // ver. >= 7
 #define SUPLA_AUTHKEY_HEXSIZE 33                // ver. >= 7
-#define SUPLA_OAUTH_SERVER_MAXSIZE 256          // ver. >= 7
-#define SUPLA_OAUTH_CLIENTID_MAXSIZE 276        // ver. >= 7
-#define SUPLA_OAUTH_SECRET_MAXSIZE 276          // ver. >= 7
-#define SUPLA_OAUTH_USERNAME_MAXSIZE 65         // ver. >= 7
-#define SUPLA_OAUTH_PASSWORD_MAXSIZE 65         // ver. >= 7
+#define SUPLA_OAUTH_TOKEN_MAXSIZE 513           // ver. >= 10
 #define SUPLA_CHANNELGROUP_PACK_MAXCOUNT 20     // ver. >= 9
 #define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401  // ver. >= 9
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20     // ver. >= 9
@@ -133,8 +129,8 @@ extern "C" {
 #define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT 310     // ver. >= 5
 #define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED 320          // ver. >= 7
 #define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT 330   // ver. >= 7
-#define SUPLA_CS_CALL_GET_OAUTH_PARAMETERS 340               // ver. >= 7
-#define SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT 350        // ver. >= 7
+#define SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST 340                // ver. >= 10
+#define SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT 350         // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360               // ver. >= 8
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                   // ver. >= 8
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
@@ -704,15 +700,13 @@ typedef struct {
 } TSDC_RegistrationEnabled;
 
 typedef struct {
-  char password[SUPLA_OAUTH_PASSWORD_MAXSIZE];
-} TCS_OAuthParametersRequest;
+  char Host[SUPLA_URL_HOST_MAXSIZE];
+  _supla_int_t Port;
 
-typedef struct {
-  char server[SUPLA_OAUTH_SERVER_MAXSIZE];
-  char username[SUPLA_OAUTH_USERNAME_MAXSIZE];
-  char client_id[SUPLA_OAUTH_CLIENTID_MAXSIZE];
-  char secret[SUPLA_OAUTH_SECRET_MAXSIZE];
-} TSC_OAuthParameters;
+  unsigned int ExpiresIn;
+  _supla_int_t TokenSize;  // including the terminating null byte ('\0')
+  char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
+} TSC_OAuthToken;
 
 #pragma pack(pop)
 
