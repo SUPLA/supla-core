@@ -105,8 +105,6 @@ union TsrpcDataPacketData {
   TDS_FirmwareUpdateParams *ds_firmware_update_params;
   TSD_FirmwareUpdate_UrlResult *sc_firmware_update_url_result;
   TSDC_RegistrationEnabled *sdc_reg_enabled;
-  TCS_OAuthParametersRequest *cs_oauth_parameters_request;
-  TSC_OAuthParameters *sc_oauth_parameters;
   TSC_SuplaChannelGroupPack *sc_channelgroup_pack;
   TSC_SuplaChannelGroupRelationPack *sc_channelgroup_relation_pack;
   TSC_SuplaChannelValuePack *sc_channelvalue_pack;
@@ -228,10 +226,6 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_value(void *_srpc, TCS_SuplaNewValue *value);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
     void *_srpc, TCS_SuplaChannelNewValue_B *value);
-_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_oauth_parameters(
-    void *_srpc, TCS_OAuthParametersRequest *req);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_oauth_parameters_result(
-    void *_srpc, TSC_OAuthParameters *params);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifdef __cplusplus

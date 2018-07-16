@@ -833,22 +833,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
-      case SUPLA_CS_CALL_GET_OAUTH_PARAMETERS:
-
-        if (srpc->sdp.data_size == sizeof(TCS_OAuthParametersRequest))
-          rd->data.cs_oauth_parameters_request =
-              (TCS_OAuthParametersRequest *)malloc(
-                  sizeof(TCS_OAuthParametersRequest));
-
-        break;
-
-      case SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT:
-
-        if (srpc->sdp.data_size == sizeof(TSC_OAuthParameters))
-          rd->data.sc_oauth_parameters =
-              (TSC_OAuthParameters *)malloc(sizeof(TSC_OAuthParameters));
-
-        break;
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -924,8 +908,6 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DS_CALL_REGISTER_DEVICE_D:
     case SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED:
     case SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT:
-    case SUPLA_CS_CALL_GET_OAUTH_PARAMETERS:
-    case SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT:
       return 7;
 
     case SUPLA_SC_CALL_CHANNELPACK_UPDATE_B:
@@ -1462,18 +1444,6 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_value(void *_srpc, TCS_SuplaNewValue *value) {
   return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_VALUE, (char *)value,
                          sizeof(TCS_SuplaNewValue));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_oauth_parameters(
-    void *_srpc, TCS_OAuthParametersRequest *req) {
-  return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_OAUTH_PARAMETERS, (char *)req,
-                         sizeof(TCS_OAuthParametersRequest));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_get_oauth_parameters_result(
-    void *_srpc, TSC_OAuthParameters *params) {
-  return srpc_async_call(_srpc, SUPLA_SC_CALL_GET_OAUTH_PARAMETERS_RESULT,
-                         (char *)params, sizeof(TSC_OAuthParameters));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
