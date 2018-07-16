@@ -676,16 +676,16 @@ typedef struct {
 typedef struct {
   char Platform;
 
-  int Param1;
-  int Param2;
-  int Param3;
-  int Param4;
+  _supla_int_t Param1;
+  _supla_int_t Param2;
+  _supla_int_t Param3;
+  _supla_int_t Param4;
 } TDS_FirmwareUpdateParams;
 
 typedef struct {
   char available_protocols;
   char host[SUPLA_URL_HOST_MAXSIZE];
-  int port;
+  _supla_int_t port;
   char path[SUPLA_URL_PATH_MAXSIZE];
 } TSD_FirmwareUpdate_Url;
 
@@ -695,15 +695,15 @@ typedef struct {
 } TSD_FirmwareUpdate_UrlResult;
 
 typedef struct {
-  unsigned int client_timestamp;    // time >= now == enabled
-  unsigned int iodevice_timestamp;  // time >= now == enabled
+  unsigned _supla_int_t client_timestamp;    // time >= now == enabled
+  unsigned _supla_int_t iodevice_timestamp;  // time >= now == enabled
 } TSDC_RegistrationEnabled;
 
 typedef struct {
   char Host[SUPLA_URL_HOST_MAXSIZE];
   _supla_int_t Port;
 
-  unsigned int ExpiresIn;
+  unsigned _supla_int_t ExpiresIn;
   _supla_int_t TokenSize;  // including the terminating null byte ('\0')
   char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
 } TSC_OAuthToken;
