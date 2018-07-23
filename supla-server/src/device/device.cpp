@@ -278,6 +278,16 @@ void supla_device::on_device_channel_value_changed(
   }
 }
 
+void supla_device::on_device_channel_extendedvalue_changed(
+    TDS_SuplaDeviceChannelExtendedValue *ev) {
+  int ChannelId = channels->get_channel_id(ev->ChannelNumber);
+
+  if (ChannelId != 0) {
+    channels->set_channel_extendedvalue(ChannelId, &ev->value);
+    getUser()->on_channel_value_changed(getID(), ChannelId, true);
+  }
+}
+
 void supla_device::on_channel_set_value_result(
     TDS_SuplaChannelNewValueResult *result) {
   int ChannelID;
@@ -330,6 +340,11 @@ bool supla_device::get_channel_value(int ChannelID,
   return channels->get_channel_value(ChannelID, value);
 }
 
+bool supla_device::get_channel_extendedvalue(
+    int ChannelID, TSuplaChannelExtendedValue *value) {
+  return channels->get_channel_extendedvalue(ChannelID, value);
+}
+
 void supla_device::set_device_channel_value(
     int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
   channels->set_device_channel_value(getSvrConn()->srpc(), SenderID, ChannelID,
@@ -377,6 +392,10 @@ bool supla_device::get_channel_humidity_value(int ChannelID, double *Value) {
 
 void supla_device::get_temp_and_humidity(void *tarr) {
   channels->get_temp_and_humidity(tarr);
+}
+
+void supla_device::get_electricity_measurement(void *emarr) {
+  channels->get_electricity_measurement(emarr);
 }
 
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {

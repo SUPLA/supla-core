@@ -29,16 +29,18 @@ class supla_client_channels : public supla_client_objcontainer {
   template <typename TSuplaDataPack, class TObjClass>
   bool get_datapack_for_remote(supla_client_objcontainer_item *obj, void **data,
                                int max_count);
+  bool get_ev_datapack_for_remote(supla_client_objcontainer_item *obj,
+                                  void **data);
 
   template <typename TSuplaDataPack>
   void set_pack_eol(void *data);
 
  protected:
   bool get_data_for_remote(supla_client_objcontainer_item *obj, void **data,
-                           bool full, bool *check_more, e_objc_scope scope);
-  void send_data_to_remote_and_free(void *srpc, void *data, bool full,
+                           int data_type, bool *check_more, e_objc_scope scope);
+  void send_data_to_remote_and_free(void *srpc, void *data, int data_type,
                                     e_objc_scope scope);
-
+  int available_data_types_for_remote(e_objc_scope scope);
   void _load(database *db, e_objc_scope scope);
   bool set_device_channel_new_value(int ChannelId, char *value);
 
@@ -46,8 +48,8 @@ class supla_client_channels : public supla_client_objcontainer {
   explicit supla_client_channels(supla_client *client);
   void update_device_channels(int DeviceId);
   void on_channel_value_changed(
-      void *srpc, int DeviceId,
-      int ChannelId = 0);  // ChannelId == 0 - All channels
+      void *srpc, int DeviceId, int ChannelId = 0,
+      bool Extended = false);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
 
   bool set_device_channel_new_value(

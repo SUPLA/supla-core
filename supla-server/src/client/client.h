@@ -47,8 +47,8 @@ class supla_client : public cdcommon {
                        TCS_SuplaRegisterClient_C *register_client_c,
                        unsigned char proto_version);
   void update_device_channels(int LocationID, int DeviceID);
-  void on_channel_value_changed(int DeviceId, int ChannelId = 0);
-
+  void on_channel_value_changed(int DeviceId, int ChannelId = 0,
+                                bool Extended = false);
   void get_next(void);
   void set_device_channel_new_value(
       TCS_SuplaChannelNewValue_B *channel_new_value);

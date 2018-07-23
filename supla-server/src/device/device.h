@@ -39,6 +39,8 @@ class supla_device : public cdcommon {
   virtual ~supla_device();
 
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+  bool get_channel_extendedvalue(int ChannelID,
+                                 TSuplaChannelExtendedValue *value);
   void set_device_channel_value(int SenderID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(int SenderID, int ChannelID,
@@ -48,6 +50,8 @@ class supla_device : public cdcommon {
 
   bool channel_exists(int ChannelID);
   void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value);
+  void on_device_channel_extendedvalue_changed(
+      TDS_SuplaDeviceChannelExtendedValue *ev);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);
   std::list<int> master_channel(int ChannelID);
   std::list<int> slave_channel(int ChannelID);
@@ -55,6 +59,7 @@ class supla_device : public cdcommon {
   bool get_channel_temperature_value(int ChannelID, double *Value);
   bool get_channel_humidity_value(int ChannelID, double *Value);
   void get_temp_and_humidity(void *tarr);
+  void get_electricity_measurement(void *emarr);
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness);

@@ -22,15 +22,17 @@
 #include "database.h"
 
 #define TEMPLOG_INTERVAL 600
-// #define TEMPLOG_INTERVAL 6
+#define ELECTRICITYMETERLOG_INTERVAL 600
 
 class supla_datalogger {
  private:
   database *db;
   struct timeval now;
   struct timeval temperature_tv;
+  struct timeval electricitymeter_tv;
 
   void log_temperature();
+  void log_electricity_measurement(void);
   bool dbinit(void);
 
  public:

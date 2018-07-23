@@ -27,17 +27,18 @@ class supla_client_objcontainer_item;
 class supla_client_objcontainer : public supla_objcontainer {
  private:
   supla_client *client;
-  bool do_remote_update(void *srpc, bool full, e_objc_scope scope);
+  bool do_remote_update(void *srpc, int data_type, e_objc_scope scope);
 
  protected:
   virtual bool get_data_for_remote(supla_client_objcontainer_item *obj,
-                                   void **data, bool full, bool *check_more,
+                                   void **data, int data_type, bool *check_more,
                                    e_objc_scope scope) = 0;
-  virtual void send_data_to_remote_and_free(void *srpc, void *data, bool full,
+  virtual void send_data_to_remote_and_free(void *srpc, void *data,
+                                            int data_type,
                                             e_objc_scope scope) = 0;
 
   void on_value_changed(void *srpc, int Id, int ExtraId, e_objc_scope scope,
-                        char mark);
+                        int data_type);
 
  public:
   explicit supla_client_objcontainer(supla_client *client);

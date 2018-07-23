@@ -276,9 +276,14 @@ void supla_client::update_device_channels(int LocationID, int DeviceID) {
   }
 }
 
-void supla_client::on_channel_value_changed(int DeviceId, int ChannelId) {
-  channels->on_channel_value_changed(getSvrConn()->srpc(), DeviceId, ChannelId);
-  cgroups->on_channel_value_changed(getSvrConn()->srpc(), DeviceId, ChannelId);
+void supla_client::on_channel_value_changed(int DeviceId, int ChannelId,
+                                            bool Extended) {
+  channels->on_channel_value_changed(getSvrConn()->srpc(), DeviceId, ChannelId,
+                                     Extended);
+  if (!Extended) {
+    cgroups->on_channel_value_changed(getSvrConn()->srpc(), DeviceId,
+                                      ChannelId);
+  }
 }
 
 void supla_client::remote_update_lists(void) {

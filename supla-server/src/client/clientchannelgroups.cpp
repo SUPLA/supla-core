@@ -144,7 +144,7 @@ void supla_client_channelgroups::set_pack_eol(void *data) {
 }
 
 bool supla_client_channelgroups::get_data_for_remote(
-    supla_client_objcontainer_item *obj, void **data, bool full,
+    supla_client_objcontainer_item *obj, void **data, int data_type,
     bool *check_more, e_objc_scope scope) {
   *check_more = true;
 
@@ -166,7 +166,7 @@ bool supla_client_channelgroups::get_data_for_remote(
 }
 
 void supla_client_channelgroups::send_data_to_remote_and_free(
-    void *srpc, void *data, bool full, e_objc_scope scope) {
+    void *srpc, void *data, int data_type, e_objc_scope scope) {
   if (scope == master) {
     set_pack_eol<TSC_SuplaChannelGroupPack>(data);
 
@@ -188,10 +188,16 @@ void supla_client_channelgroups::send_data_to_remote_and_free(
   free(data);
 }
 
+int supla_client_channelgroups::available_data_types_for_remote(
+    e_objc_scope scope) {
+  return OI_REMOTEUPDATE_DATATYPE1;
+}
+
 void supla_client_channelgroups::on_channel_value_changed(void *srpc,
                                                           int DeviceId,
                                                           int ChannelId) {
-  on_value_changed(srpc, ChannelId, DeviceId, detail2, OI_REMOTEUPDATE_FULL);
+  on_value_changed(srpc, ChannelId, DeviceId, detail2,
+                   OI_REMOTEUPDATE_DATATYPE1);
 }
 
 bool supla_client_channelgroups::set_device_channel_new_value(

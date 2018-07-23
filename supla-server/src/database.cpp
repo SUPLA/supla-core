@@ -1422,6 +1422,44 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature,
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
+void database::add_electricity_measurement(
+    supla_channel_electricity_measurement *em) {
+  MYSQL_BIND pbind[14];
+  memset(pbind, 0, sizeof(pbind));
+
+  int ChannelID = em->getChannelId();
+  TElectricityMeter_ExtendedValue em_ev;
+  em->getMeasurement(&em_ev);
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ChannelID;
+
+  int n = 0;
+  for (int a = 0; a < 3; a++) {
+    pbind[1 + n].buffer_type = MYSQL_TYPE_LONGLONG;
+    pbind[1 + n].buffer = (char *)&em_ev.total_forward_active_energy[a];
+    pbind[2 + n].buffer_type = MYSQL_TYPE_LONGLONG;
+    pbind[2 + n].buffer = (char *)&em_ev.total_reverse_active_energy[a];
+    pbind[3 + n].buffer_type = MYSQL_TYPE_LONGLONG;
+    pbind[3 + n].buffer = (char *)&em_ev.total_forward_reactive_energy[a];
+    pbind[4 + n].buffer_type = MYSQL_TYPE_LONGLONG;
+    pbind[4 + n].buffer = (char *)&em_ev.total_reverse_reactive_energy[a];
+    n+=4;
+  }
+
+  const char sql[] =
+      "INSERT INTO `supla_em_log`(`channel_id`, `date`, "
+      "`phase1_fae`,`phase1_rae`, `phase1_fre`, `phase1_rre`, `phase2_fae`, "
+      "`phase2_rae`, `phase2_fre`,`phase2_rre`, `phase3_fae`, `phase3_rae`, "
+      "`phase3_fre`, `phase3_rre`) VALUES "
+      "(?,UTC_TIMESTAMP(),?,?,?,?,?,?,?,?,?,?,?,?)";
+
+  MYSQL_STMT *stmt;
+  stmt_execute((void **)&stmt, sql, pbind, 13, false);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
                               int *expires_at) {
   MYSQL_STMT *stmt;

@@ -474,6 +474,22 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   return result;
 }
 
+bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
+                                           TSuplaChannelExtendedValue *value) {
+  bool result = false;
+  memset(value, 0, sizeof(TSuplaChannelExtendedValue));
+  safe_array_lock(device_arr);
+
+  supla_device *device = find_device(DeviceID);
+  if (device) {
+    result = device->get_channel_extendedvalue(ChannelID, value) > 0;
+  }
+
+  safe_array_unlock(device_arr);
+
+  return result;
+}
+
 // static
 bool supla_user::set_device_channel_char_value(int UserID, int SenderID,
                                                int DeviceID, int ChannelID,
@@ -625,8 +641,23 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
   safe_array_unlock(client_arr);
 }
 
-void supla_user::on_channel_value_changed(int DeviceId, int ChannelId) {
+void supla_user::on_channel_value_changed(int DeviceId, int ChannelId,
+                                          bool Extended) {
   std::list<channel_address> ca_list;
+
+  if (Extended) {
+    safe_array_lock(client_arr);
+    {
+      supla_client *client;
+
+      for (int a = 0; a < safe_array_count(client_arr); a++)
+        if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
+          client->on_channel_value_changed(DeviceId, ChannelId, true);
+        }
+    }
+    safe_array_unlock(client_arr);
+    return;
+  }
 
   safe_array_lock(device_arr);
   {
@@ -686,6 +717,19 @@ void supla_user::get_temp_and_humidity(void *tarr) {
   for (a = 0; a < safe_array_count(device_arr); a++) {
     ((supla_device *)safe_array_get(device_arr, a))
         ->get_temp_and_humidity(tarr);
+  }
+
+  safe_array_unlock(device_arr);
+}
+
+void supla_user::get_electricity_measurement(void *emarr) {
+  int a;
+
+  safe_array_lock(device_arr);
+
+  for (a = 0; a < safe_array_count(device_arr); a++) {
+    ((supla_device *)safe_array_get(device_arr, a))
+        ->get_electricity_measurement(emarr);
   }
 
   safe_array_unlock(device_arr);

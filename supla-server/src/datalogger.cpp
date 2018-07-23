@@ -27,6 +27,7 @@
 supla_datalogger::supla_datalogger() {
   this->temperature_tv.tv_sec = 0;
   this->temperature_tv.tv_usec = 0;
+  this->electricitymeter_tv = this->temperature_tv;
   this->db = NULL;
 }
 
@@ -55,6 +56,28 @@ void supla_datalogger::log_temperature() {
   supla_channel_temphum::free(tarr);
 }
 
+void supla_datalogger::log_electricity_measurement(void) {
+  supla_user *user;
+  int a;
+  int n = 0;
+  void *emarr = safe_array_init();
+
+  while ((user = supla_user::get_user(n)) != NULL) {
+    n++;
+    user->get_electricity_measurement(emarr);
+  }
+
+  for (a = 0; a < safe_array_count(emarr); a++) {
+    supla_channel_electricity_measurement *em =
+        (supla_channel_electricity_measurement *)safe_array_get(emarr, a);
+    if (em) {
+      db->add_electricity_measurement(em);
+    }
+  }
+
+  supla_channel_electricity_measurement::free(emarr);
+}
+
 bool supla_datalogger::dbinit(void) {
   if (db == NULL) {
     db = new database();
@@ -75,6 +98,12 @@ void supla_datalogger::log(void) {
     temperature_tv = now;
 
     if (dbinit()) log_temperature();
+  }
+
+  if (now.tv_sec - electricitymeter_tv.tv_sec >= ELECTRICITYMETERLOG_INTERVAL) {
+    electricitymeter_tv = now;
+
+    if (dbinit()) log_electricity_measurement();
   }
 
   if (db != NULL) {

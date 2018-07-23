@@ -57,6 +57,21 @@ class supla_channel_temphum {
   static void free(void *tarr);
 };
 
+class supla_channel_electricity_measurement {
+ private:
+  TElectricityMeter_ExtendedValue em_ev;
+  int ChannelId;
+
+ public:
+  supla_channel_electricity_measurement(int ChannelId,
+                                        TElectricityMeter_ExtendedValue *em_ev);
+
+  int getChannelId(void);
+  void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
+
+  static void free(void *emarr);
+};
+
 class supla_device_channel {
  private:
   int Id;
@@ -69,10 +84,13 @@ class supla_device_channel {
   bool Hidden;
 
   char value[8];
+  TSuplaChannelExtendedValue *extendedValue;
 
  public:
   supla_device_channel(int Id, int Number, int Type, int Func, int Param1,
                        int Param2, int Param3, bool Hidden);
+  virtual ~supla_device_channel();
+
   int getId(void);
   int getNumber(void);
   int getFunc(void);
@@ -85,6 +103,8 @@ class supla_device_channel {
   unsigned int getValueDuration(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void getExtendedValue(TSuplaChannelExtendedValue *ev);
+  void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                        char color_brightness, char brightness);
   void assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
@@ -95,6 +115,7 @@ class supla_device_channel {
   std::list<int> master_channel(void);
   std::list<int> slave_channel(void);
   supla_channel_temphum *getTempHum(void);
+  supla_channel_electricity_measurement *getElectricityMeasurement(void);
 };
 
 class supla_device_channels {
@@ -117,6 +138,8 @@ class supla_device_channels {
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, bool Hidden);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+  bool get_channel_extendedvalue(int ChannelID,
+                                 TSuplaChannelExtendedValue *value);
   bool get_channel_double_value(int ChannelID, double *Value);
   supla_channel_temphum *get_channel_temp_and_humidity_value(int ChannelID);
   bool get_channel_temperature_value(int ChannelID, double *Value);
@@ -127,6 +150,7 @@ class supla_device_channels {
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+  void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel, int count);
 
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
@@ -144,6 +168,7 @@ class supla_device_channels {
   void load(int DeviceID);
 
   void get_temp_and_humidity(void *tarr);
+  void get_electricity_measurement(void *emarr);
 };
 
 #endif /* DEVICECHANNEL_H_ */

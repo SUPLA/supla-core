@@ -20,14 +20,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "client.h"
+#include "clientchannel.h"
 #include "database.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
-#include "client.h"
-#include "clientchannel.h"
 
 supla_client_channel::supla_client_channel(supla_client_channels *Container,
                                            int Id, int DeviceId, int LocationID,
@@ -139,5 +139,30 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
   if (client && client->getUser()) {
     client->getUser()->get_channel_value(
         DeviceId, getId(), &channel_value->value, &channel_value->online);
+  }
+}
+
+bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
+                                     supla_client *client) {
+  if (cev == NULL) {
+    return false;
+  }
+
+  memset(cev, 0, sizeof(TSC_SuplaChannelExtendedValue));
+  cev->Id = getId();
+
+  if (client && client->getUser()) {
+    return client->getUser()->get_channel_extendedvalue(DeviceId, getId(),
+                                                        &cev->value);
+  }
+
+  return false;
+}
+
+void supla_client_channel::mark_for_remote_update(int mark) {
+  supla_client_objcontainer_item::mark_for_remote_update(mark);
+  mark = marked_for_remote_update();
+  if ((mark & OI_REMOTEUPDATE_DATA1) && (mark & OI_REMOTEUPDATE_DATA2)) {
+    unmark_for_remote_update(OI_REMOTEUPDATE_DATA2);
   }
 }

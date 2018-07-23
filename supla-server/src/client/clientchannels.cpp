@@ -20,13 +20,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "clientchannel.h"
+#include "clientchannels.h"
 #include "database.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
-#include "clientchannel.h"
-#include "clientchannels.h"
 
 supla_client_channels::supla_client_channels(supla_client *client)
     : supla_client_objcontainer(client) {}
@@ -67,7 +67,7 @@ void supla_client_channels::update_device_channels(int DeviceId) {
   for (int a = 0; a < safe_array_count(arr); a++) {
     channel = static_cast<supla_client_channel *>(safe_array_get(arr, a));
     if (channel && channel->getDeviceId() == DeviceId) {
-      channel->mark_for_remote_update(OI_REMOTEUPDATE_VALUE);
+      channel->mark_for_remote_update(OI_REMOTEUPDATE_DATA2);
     }
   }
   safe_array_unlock(arr);
@@ -97,10 +97,43 @@ bool supla_client_channels::get_datapack_for_remote(
   return false;
 }
 
+bool supla_client_channels::get_ev_datapack_for_remote(
+    supla_client_objcontainer_item *obj, void **data) {
+  TSC_SuplaChannelExtendedValuePack *pack =
+      static_cast<TSC_SuplaChannelExtendedValuePack *>(*data);
+  if (pack == NULL) {
+    pack = (TSC_SuplaChannelExtendedValuePack *)malloc(
+        sizeof(TSC_SuplaChannelExtendedValuePack));
+    memset(pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+  }
+
+  *data = pack;
+
+  if (pack->count < SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT &&
+      pack->pack_size >= 0 &&
+      pack->pack_size < SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
+    TSC_SuplaChannelExtendedValue cev;
+    if (static_cast<supla_client_channel *>(obj)->proto_get(&cev,
+                                                            getClient())) {
+      _supla_int_t cev_size = sizeof(TSC_SuplaChannelExtendedValue) -
+                              SUPLA_CHANNELEXTENDEDVALUE_SIZE + cev.value.size;
+      if (cev_size + pack->pack_size <=
+          SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
+        memcpy(&pack->pack[pack->pack_size], &cev, cev_size);
+        pack->count++;
+        return true;
+      }
+    }
+  }
+
+  pack->total_left++;
+  return false;
+}
+
 bool supla_client_channels::get_data_for_remote(
-    supla_client_objcontainer_item *obj, void **data, bool full,
+    supla_client_objcontainer_item *obj, void **data, int data_type,
     bool *check_more, e_objc_scope scope) {
-  if (full) {
+  if (data_type & OI_REMOTEUPDATE_DATA1) {
     *check_more = true;
 
     if (getClient()->getProtocolVersion() >= 8) {
@@ -113,7 +146,7 @@ bool supla_client_channels::get_data_for_remote(
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
     }
-  } else {
+  } else if (data_type & OI_REMOTEUPDATE_DATA2) {
     if (getClient()->getProtocolVersion() >= 9) {
       *check_more = true;
 
@@ -131,6 +164,10 @@ bool supla_client_channels::get_data_for_remote(
     }
 
     return true;
+  } else if (data_type & OI_REMOTEUPDATE_DATA3) {
+    if (getClient()->getProtocolVersion() >= 10) {
+      return get_ev_datapack_for_remote(obj, data);
+    }
   }
 
   return false;
@@ -146,9 +183,9 @@ void supla_client_channels::set_pack_eol(void *data) {
 }
 
 void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
-                                                         bool full,
+                                                         int data_type,
                                                          e_objc_scope scope) {
-  if (full) {
+  if (data_type & OI_REMOTEUPDATE_DATA1) {
     if (getClient()->getProtocolVersion() >= 8) {
       set_pack_eol<TSC_SuplaChannelPack_B>(data);
       srpc_sc_async_channelpack_update_b(
@@ -159,7 +196,7 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
       srpc_sc_async_channelpack_update(
           srpc, static_cast<TSC_SuplaChannelPack *>(data));
     }
-  } else {
+  } else if (data_type & OI_REMOTEUPDATE_DATA2) {
     if (getClient()->getProtocolVersion() >= 9) {
       set_pack_eol<TSC_SuplaChannelValuePack>(data);
       srpc_sc_async_channelvalue_pack_update(
@@ -167,14 +204,23 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
     } else {
       srpc_sc_async_channel_value_update(srpc, (TSC_SuplaChannelValue *)data);
     }
+  } else if (data_type & OI_REMOTEUPDATE_DATA3) {
+      srpc_sc_async_channelextendedvalue_pack_update(
+          srpc, static_cast<TSC_SuplaChannelExtendedValuePack *>(data));
   }
 
   free(data);
 }
 
+int supla_client_channels::available_data_types_for_remote(e_objc_scope scope) {
+  return OI_REMOTEUPDATE_DATA1 & OI_REMOTEUPDATE_DATA2 & OI_REMOTEUPDATE_DATA3;
+}
+
 void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
-                                                     int ChannelId) {
-  on_value_changed(srpc, ChannelId, DeviceId, master, OI_REMOTEUPDATE_VALUE);
+                                                     int ChannelId,
+                                                     bool Extended) {
+  on_value_changed(srpc, ChannelId, DeviceId, master,
+                   Extended ? OI_REMOTEUPDATE_DATA3 : OI_REMOTEUPDATE_DATA2);
 }
 
 bool supla_client_channels::set_device_channel_new_value(int ChannelId,

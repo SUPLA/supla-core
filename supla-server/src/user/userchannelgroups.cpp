@@ -52,6 +52,11 @@ std::list<t_dc_pair> supla_user_channelgroups::find_channels(int GroupId) {
   return pairs;
 }
 
+int supla_user_channelgroups::available_data_types_for_remote(
+    e_objc_scope scope) {
+  return 0;
+}
+
 bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
   bool result = false;
 

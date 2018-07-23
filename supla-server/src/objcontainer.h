@@ -54,6 +54,7 @@ class supla_objcontainer {
   supla_objcontainer_item *find(int id, e_objc_scope scope);
 
   virtual void _load(database *db, e_objc_scope scope) = 0;
+  virtual int available_data_types_for_remote(e_objc_scope scope) = 0;
 
  public:
   supla_objcontainer(void);

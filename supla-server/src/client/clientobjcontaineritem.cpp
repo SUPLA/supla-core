@@ -52,22 +52,18 @@ void supla_client_objcontainer_item::setCaption(const char *Caption) {
 
 char *supla_client_objcontainer_item::getCaption(void) { return Caption; }
 
-void supla_client_objcontainer_item::mark_for_remote_update(char mark) {
-  if (mark == OI_REMOTEUPDATE_NONE) {
-    RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
-    return;
-
-  } else if (mark == OI_REMOTEUPDATE_VALUE &&
-             RemoteUpdateMark == OI_REMOTEUPDATE_FULL) {
-    mark = OI_REMOTEUPDATE_FULL;
-  }
-
+void supla_client_objcontainer_item::mark_for_remote_update(int mark) {
   if (remote_update_is_possible()) {
-    RemoteUpdateMark = mark;
+    RemoteUpdateMark |= mark;
   }
 }
 
-char supla_client_objcontainer_item::marked_for_remote_update(void) {
+void supla_client_objcontainer_item::unmark_for_remote_update(int unmark) {
+    RemoteUpdateMark ^= unmark;
+}
+
+
+int supla_client_objcontainer_item::marked_for_remote_update(void) {
   return RemoteUpdateMark;
 }
 
