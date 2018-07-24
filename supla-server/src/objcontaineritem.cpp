@@ -17,11 +17,13 @@
  */
 
 #include "objcontaineritem.h"
+#include "log.h"
 
 supla_objcontainer_item::supla_objcontainer_item(supla_objcontainer *Container,
                                                  int Id) {
   this->Container = Container;
   this->Id = Id;
+  this->RemoteUpdateMark = 0;
 }
 
 supla_objcontainer_item::~supla_objcontainer_item(void) {}
@@ -34,4 +36,16 @@ int supla_objcontainer_item::getId() { return Id; }
 
 int supla_objcontainer_item::getExtraId() { return -1; }
 
-void supla_objcontainer_item::mark_for_remote_update(char mark) {}
+void supla_objcontainer_item::mark_for_remote_update(int mark) {
+  if (remote_update_is_possible()) {
+    RemoteUpdateMark |= mark;
+  }
+}
+
+void supla_objcontainer_item::unmark_for_remote_update(int unmark) {
+  RemoteUpdateMark ^= unmark;
+}
+
+int supla_objcontainer_item::marked_for_remote_update(void) {
+  return RemoteUpdateMark;
+}

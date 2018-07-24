@@ -250,8 +250,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   }
 
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
-    supla_log(LOG_INFO, "Device registered. ClientSD: %i Protocol Version: %i",
-              getSvrConn()->getClientSD(), getSvrConn()->getProtocolVersion());
+    supla_log(LOG_INFO,
+              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i",
+              getID(), getSvrConn()->getClientSD(),
+              getSvrConn()->getProtocolVersion());
   } else {
     usleep(2000000);
   }

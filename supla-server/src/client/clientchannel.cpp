@@ -74,6 +74,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
     case SUPLA_CHANNELFNC_WEATHER_STATION:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
 
       return true;
 

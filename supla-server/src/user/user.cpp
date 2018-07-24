@@ -479,7 +479,6 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
   bool result = false;
   memset(value, 0, sizeof(TSuplaChannelExtendedValue));
   safe_array_lock(device_arr);
-
   supla_device *device = find_device(DeviceID);
   if (device) {
     result = device->get_channel_extendedvalue(ChannelID, value) > 0;

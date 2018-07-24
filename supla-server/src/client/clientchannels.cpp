@@ -99,44 +99,53 @@ bool supla_client_channels::get_datapack_for_remote(
 
 bool supla_client_channels::get_ev_datapack_for_remote(
     supla_client_objcontainer_item *obj, void **data) {
+  _supla_int_t pack_size = 0;
   TSC_SuplaChannelExtendedValuePack *pack =
       static_cast<TSC_SuplaChannelExtendedValuePack *>(*data);
-  if (pack == NULL) {
-    pack = (TSC_SuplaChannelExtendedValuePack *)malloc(
-        sizeof(TSC_SuplaChannelExtendedValuePack));
-    memset(pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+
+  if (pack != NULL) {
+    if (pack->count > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT ||
+        pack->pack_size < 0 ||
+        pack->pack_size > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
+      pack->total_left++;
+      return false;
+    }
+
+    pack_size = pack->pack_size;
   }
 
-  *data = pack;
+  TSC_SuplaChannelExtendedValue cev;
+  if (static_cast<supla_client_channel *>(obj)->proto_get(&cev, getClient())) {
+    _supla_int_t cev_size = sizeof(TSC_SuplaChannelExtendedValue) -
+                            SUPLA_CHANNELEXTENDEDVALUE_SIZE + cev.value.size;
+    if (cev_size + pack_size <= SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
+      if (pack == NULL) {
+        pack = (TSC_SuplaChannelExtendedValuePack *)malloc(
+            sizeof(TSC_SuplaChannelExtendedValuePack));
+        memset(pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+        *data = pack;
+      }
 
-  if (pack->count < SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT &&
-      pack->pack_size >= 0 &&
-      pack->pack_size < SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
-    TSC_SuplaChannelExtendedValue cev;
-    if (static_cast<supla_client_channel *>(obj)->proto_get(&cev,
-                                                            getClient())) {
-      _supla_int_t cev_size = sizeof(TSC_SuplaChannelExtendedValue) -
-                              SUPLA_CHANNELEXTENDEDVALUE_SIZE + cev.value.size;
-      if (cev_size + pack->pack_size <=
-          SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
+      if (pack != NULL) {
         memcpy(&pack->pack[pack->pack_size], &cev, cev_size);
         pack->count++;
-        supla_log(LOG_DEBUG, "aaaa");
         return true;
       }
     }
   }
 
-  pack->total_left++;
+  if (pack != NULL) {
+    pack->total_left++;
+  }
+
   return false;
 }
 
 bool supla_client_channels::get_data_for_remote(
     supla_client_objcontainer_item *obj, void **data, int data_type,
     bool *check_more, e_objc_scope scope) {
+  *check_more = true;
   if (data_type & OI_REMOTEUPDATE_DATA1) {
-    *check_more = true;
-
     if (getClient()->getProtocolVersion() >= 8) {
       return get_datapack_for_remote<TSC_SuplaChannelPack_B,
                                      supla_client_channel>(
@@ -149,8 +158,6 @@ bool supla_client_channels::get_data_for_remote(
     }
   } else if (data_type & OI_REMOTEUPDATE_DATA2) {
     if (getClient()->getProtocolVersion() >= 9) {
-      *check_more = true;
-
       return get_datapack_for_remote<TSC_SuplaChannelValuePack,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELVALUE_PACK_MAXCOUNT);
@@ -167,7 +174,7 @@ bool supla_client_channels::get_data_for_remote(
     return true;
   } else if (data_type & OI_REMOTEUPDATE_DATA3) {
     if (getClient()->getProtocolVersion() >= 10) {
-      //return get_ev_datapack_for_remote(obj, data);
+      return get_ev_datapack_for_remote(obj, data);
     }
   }
 

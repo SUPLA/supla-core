@@ -1163,7 +1163,6 @@ void database::get_client_channels(int ClientID, int *DeviceID,
           supla_client_channel *channel = new supla_client_channel(
               channels, id, iodevice_id, location_id, func, param1, param2,
               is_null ? NULL : caption, alt_icon, protocol_version);
-
           if (!channels->add(channel)) {
             delete channel;
           }

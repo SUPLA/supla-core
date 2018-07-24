@@ -33,6 +33,7 @@ class supla_user_channelgroup : public supla_objcontainer_item {
   supla_user_channelgroup(supla_user_channelgroups *Container, int GroupId,
                             int ChannelId, int DeviceId);
 
+  bool remote_update_is_possible(void);
   int getGroupId();
   int getChannelId();
   int getDeviceId();
