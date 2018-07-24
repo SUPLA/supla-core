@@ -108,6 +108,7 @@ void client_loop_channel_extendedalue_update(
     void *_suplaclient, void *sthread,
     TSC_SuplaChannelExtendedValue *channel_extendedvalue) {
   TElectricityMeter_ExtendedValue em_ev;
+  int a;
   if (srpc_evtool_v1_extended2emextended(&channel_extendedvalue->value,
                                          &em_ev) == 1) {
     supla_log(LOG_DEBUG, "*************************");
@@ -118,7 +119,7 @@ void client_loop_channel_extendedalue_update(
       supla_log(LOG_DEBUG, "FREQ: %i Hz", em_ev.m[0].freq / 100.00);
     }
 
-    for (int a = 0; a < 3; a++) {
+    for (a = 0; a < 3; a++) {
       if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
         supla_log(LOG_DEBUG, "PHASE: %i", a);
         supla_log(LOG_DEBUG, "   total_forward_active_energy=%f kW",
