@@ -32,7 +32,7 @@ class supla_objcontainer_item {
  private:
   supla_objcontainer *Container;
   int Id;
-
+  int RemoteUpdateMark;
  protected:
  public:
   supla_objcontainer_item(supla_objcontainer *Container, int Id);
@@ -40,7 +40,10 @@ class supla_objcontainer_item {
   supla_objcontainer *getContainer(void);
   int getId();
   virtual int getExtraId();
-  virtual void mark_for_remote_update(char mark);
+  virtual bool remote_update_is_possible(void) = 0;
+  virtual void mark_for_remote_update(int mark);
+  virtual void unmark_for_remote_update(int unmark);
+  virtual int marked_for_remote_update(void);
 };
 
 #endif /* OBJCONTAINERITEM_H_ */
