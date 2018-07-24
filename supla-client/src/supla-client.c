@@ -294,7 +294,6 @@ void supla_client_channel_extendedvalue_update(
   if (scd->cfg.cb_channel_extendedvalue_update)
     scd->cfg.cb_channel_extendedvalue_update(scd, scd->cfg.user_data,
                                              channel_extendedvalue);
-
 }
 
 void supla_client_channelvalue_pack_update(TSuplaClientData *scd,
@@ -320,7 +319,6 @@ void supla_client_channelextendedvalue_pack_update(
 
   if (pack != NULL) {
     while (pack->pack_size - offset >= min_size && n < pack->count) {
-
       memset(&ev, 0, sizeof(TSC_SuplaChannelExtendedValue));
       memcpy(&ev, &pack->pack[offset], min_size);
       offset += min_size;

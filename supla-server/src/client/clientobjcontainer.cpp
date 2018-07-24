@@ -78,7 +78,7 @@ bool supla_client_objcontainer::remote_update(void *srpc) {
             return true;
           }
         } else {
-        	break;
+          break;
         }
         data_type <<= 1;
       }

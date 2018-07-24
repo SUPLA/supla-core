@@ -25,15 +25,14 @@
 #define OI_REMOTEUPDATE_DATA3 0x04
 #define OI_REMOTEUPDATE_DATA4 0x08
 
-#include "proto.h"
 #include "objcontaineritem.h"
+#include "proto.h"
 
 class supla_client;
 class supla_client_objcontainer;
 class supla_client_objcontainer_item : public supla_objcontainer_item {
  private:
   char *Caption;
-
 
  protected:
   void proto_get_caption(char *Caption, unsigned _supla_int_t *CaptionSize,
@@ -46,7 +45,6 @@ class supla_client_objcontainer_item : public supla_objcontainer_item {
   supla_client_objcontainer *getContainer(void);
   char *getCaption(void);
   void setCaption(const char *Caption);
-
 };
 
 #endif /* CLIENT_CLIENTOBJCONTAINERITEM_H_ */

@@ -53,7 +53,8 @@ typedef void (*_suplaclient_cb_channelgroup_relation_update)(
 typedef void (*_suplaclient_cb_channel_value_update)(
     void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value);
 typedef void (*_suplaclient_cb_channel_extendedvalue_update)(
-    void *_suplaclient, void *user_data, TSC_SuplaChannelExtendedValue *channel_extendedvalue);
+    void *_suplaclient, void *user_data,
+    TSC_SuplaChannelExtendedValue *channel_extendedvalue);
 typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data,
                                          TSC_SuplaEvent *event);
 typedef void (*_suplaclient_cb_on_registration_enabled)(
