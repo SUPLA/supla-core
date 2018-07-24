@@ -421,6 +421,11 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
               rd.data.ds_device_channel_value);
           break;
 
+        case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
+          device->on_device_channel_extendedvalue_changed(
+              rd.data.ds_device_channel_extendedvalue);
+          break;
+
         case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
           device->on_channel_set_value_result(
               rd.data.ds_channel_new_value_result);

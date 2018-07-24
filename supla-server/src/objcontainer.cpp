@@ -119,7 +119,7 @@ bool supla_objcontainer::add(supla_objcontainer_item *obj, e_objc_scope scope) {
     result = true;
 
     if (obj) {
-      obj->mark_for_remote_update(OI_REMOTEUPDATE_FULL);
+      obj->mark_for_remote_update(available_data_types_for_remote(scope));
     }
   }
   safe_array_unlock(getArr(scope));

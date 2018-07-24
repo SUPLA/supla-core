@@ -37,9 +37,10 @@ class supla_client_channelgroups : public supla_client_objcontainer {
  protected:
   void _load(database *db, e_objc_scope scope);
   bool get_data_for_remote(supla_client_objcontainer_item *obj, void **data,
-                           bool full, bool *check_more, e_objc_scope scope);
-  void send_data_to_remote_and_free(void *srpc, void *data, bool full,
+                           int data_type, bool *check_more, e_objc_scope scope);
+  void send_data_to_remote_and_free(void *srpc, void *data, int data_type,
                                     e_objc_scope scope);
+  int available_data_types_for_remote(e_objc_scope scope);
 
  public:
   explicit supla_client_channelgroups(supla_client *client);

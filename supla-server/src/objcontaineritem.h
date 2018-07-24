@@ -19,9 +19,10 @@
 #ifndef OBJCONTAINERITEM_H_
 #define OBJCONTAINERITEM_H_
 
-#define OI_REMOTEUPDATE_NONE 0
-#define OI_REMOTEUPDATE_FULL 1
-#define OI_REMOTEUPDATE_VALUE 2
+#define OI_REMOTEUPDATE_DATATYPE1 0x001
+#define OI_REMOTEUPDATE_DATATYPE2 0x002
+#define OI_REMOTEUPDATE_DATATYPE3 0x004
+#define OI_REMOTEUPDATE_DATATYPE4 0x008
 
 #include "objcontainer.h"
 #include "proto.h"
@@ -31,7 +32,7 @@ class supla_objcontainer_item {
  private:
   supla_objcontainer *Container;
   int Id;
-
+  int RemoteUpdateMark;
  protected:
  public:
   supla_objcontainer_item(supla_objcontainer *Container, int Id);
@@ -39,7 +40,10 @@ class supla_objcontainer_item {
   supla_objcontainer *getContainer(void);
   int getId();
   virtual int getExtraId();
-  virtual void mark_for_remote_update(char mark);
+  virtual bool remote_update_is_possible(void) = 0;
+  virtual void mark_for_remote_update(int mark);
+  virtual void unmark_for_remote_update(int unmark);
+  virtual int marked_for_remote_update(void);
 };
 
 #endif /* OBJCONTAINERITEM_H_ */

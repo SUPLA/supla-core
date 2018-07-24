@@ -20,8 +20,10 @@
 #define CLIENT_CLIENTOBJCONTAINERITEM_H_
 
 #define OI_REMOTEUPDATE_NONE 0
-#define OI_REMOTEUPDATE_FULL 1
-#define OI_REMOTEUPDATE_VALUE 2
+#define OI_REMOTEUPDATE_DATA1 0x01
+#define OI_REMOTEUPDATE_DATA2 0x02
+#define OI_REMOTEUPDATE_DATA3 0x04
+#define OI_REMOTEUPDATE_DATA4 0x08
 
 #include "proto.h"
 #include "objcontaineritem.h"
@@ -31,7 +33,7 @@ class supla_client_objcontainer;
 class supla_client_objcontainer_item : public supla_objcontainer_item {
  private:
   char *Caption;
-  char RemoteUpdateMark;
+
 
  protected:
   void proto_get_caption(char *Caption, unsigned _supla_int_t *CaptionSize,
@@ -45,9 +47,6 @@ class supla_client_objcontainer_item : public supla_objcontainer_item {
   char *getCaption(void);
   void setCaption(const char *Caption);
 
-  virtual bool remote_update_is_possible(void) = 0;
-  void mark_for_remote_update(char mark);
-  char marked_for_remote_update(void);
 };
 
 #endif /* CLIENT_CLIENTOBJCONTAINERITEM_H_ */

@@ -114,9 +114,42 @@ void supla_channel_temphum::toValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   }
 }
 
+// static
 void supla_channel_temphum::free(void *tarr) {
   safe_array_clean(tarr, supla_channel_tarr_clean);
   safe_array_free(tarr);
+}
+
+char supla_channel_emarr_clean(void *ptr) {
+  delete (supla_channel_electricity_measurement *)ptr;
+  return 1;
+}
+
+supla_channel_electricity_measurement::supla_channel_electricity_measurement(
+    int ChannelId, TElectricityMeter_ExtendedValue *em_ev) {
+  this->ChannelId = ChannelId;
+  if (em_ev == NULL) {
+    memset(&this->em_ev, 0, sizeof(TElectricityMeter_ExtendedValue));
+  } else {
+    memcpy(&this->em_ev, em_ev, sizeof(TElectricityMeter_ExtendedValue));
+  }
+}
+
+int supla_channel_electricity_measurement::getChannelId(void) {
+  return ChannelId;
+}
+
+void supla_channel_electricity_measurement::getMeasurement(
+    TElectricityMeter_ExtendedValue *em_ev) {
+  if (em_ev) {
+    memcpy(em_ev, &this->em_ev, sizeof(TElectricityMeter_ExtendedValue));
+  }
+}
+
+// static
+void supla_channel_electricity_measurement::free(void *emarr) {
+  safe_array_clean(emarr, supla_channel_emarr_clean);
+  safe_array_free(emarr);
 }
 
 //-----------------------------------------------------
@@ -132,9 +165,12 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->Param2 = Param2;
   this->Param3 = Param3;
   this->Hidden = Hidden;
+  this->extendedValue = NULL;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
+
+supla_device_channel::~supla_device_channel() { setExtendedValue(NULL); }
 
 int supla_device_channel::getId(void) { return Id; }
 
@@ -150,6 +186,18 @@ bool supla_device_channel::getHidden(void) { return Hidden; }
 
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+void supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
+  if (ev == NULL) {
+    return;
+  }
+
+  if (extendedValue == NULL) {
+    memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+  } else {
+    memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
+  }
 }
 
 void supla_device_channel::getDouble(double *Value) {
@@ -252,6 +300,20 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   if (Param3 == 1 && (Type == SUPLA_CHANNELTYPE_SENSORNC ||
                       Type == SUPLA_CHANNELTYPE_SENSORNO)) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
+  }
+}
+
+void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
+  if (ev == NULL) {
+    if (extendedValue != NULL) {
+      delete extendedValue;
+      extendedValue = NULL;
+    }
+  } else {
+    if (extendedValue == NULL) {
+      extendedValue = new TSuplaChannelExtendedValue;
+    }
+    memcpy(extendedValue, ev, sizeof(TSuplaChannelExtendedValue));
   }
 }
 
@@ -450,6 +512,21 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
   return NULL;
 }
 
+supla_channel_electricity_measurement *
+supla_device_channel::getElectricityMeasurement(void) {
+  if (getType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
+      getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
+      extendedValue != NULL) {
+    TElectricityMeter_ExtendedValue em_ev;
+
+    if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev) == 1) {
+      return new supla_channel_electricity_measurement(getId(), &em_ev);
+    }
+  }
+
+  return NULL;
+}
+
 // ---------------------------------------------
 // ---------------------------------------------
 // ---------------------------------------------
@@ -532,6 +609,25 @@ bool supla_device_channels::get_channel_value(
 
     if (channel) {
       channel->getValue(value);
+      result = true;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
+bool supla_device_channels::get_channel_extendedvalue(
+    int ChannelID, TSuplaChannelExtendedValue *value) {
+  bool result = false;
+
+  if (ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel) {
+      channel->getExtendedValue(value);
       result = true;
     }
 
@@ -636,6 +732,19 @@ void supla_device_channels::set_channel_value(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) channel->setValue(value);
+
+  safe_array_unlock(arr);
+}
+
+void supla_device_channels::set_channel_extendedvalue(
+    int ChannelID, TSuplaChannelExtendedValue *ev) {
+  if (ChannelID == 0) return;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) channel->setExtendedValue(ev);
 
   safe_array_unlock(arr);
 }
@@ -851,4 +960,24 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
   safe_array_unlock(arr);
 
   return result;
+}
+
+void supla_device_channels::get_electricity_measurement(void *emarr) {
+  int a;
+  safe_array_lock(arr);
+
+  for (a = 0; a < safe_array_count(arr); a++) {
+    supla_device_channel *channel =
+        (supla_device_channel *)safe_array_get(arr, a);
+
+    if (channel != NULL) {
+      supla_channel_electricity_measurement *em =
+          channel->getElectricityMeasurement();
+      if (em) {
+        safe_array_add(emarr, em);
+      }
+    }
+  }
+
+  safe_array_unlock(arr);
 }

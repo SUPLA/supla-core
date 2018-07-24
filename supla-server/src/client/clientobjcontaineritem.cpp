@@ -22,11 +22,11 @@
 #include <string.h>  // NOLINT
 #include "clientobjcontainer.h"
 
+
 supla_client_objcontainer_item::supla_client_objcontainer_item(
     supla_client_objcontainer *Container, int Id, const char *Caption)
     : supla_objcontainer_item(Container, Id) {
   this->Caption = NULL;
-  this->RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
   setCaption(Caption);
 }
 
@@ -51,25 +51,6 @@ void supla_client_objcontainer_item::setCaption(const char *Caption) {
 }
 
 char *supla_client_objcontainer_item::getCaption(void) { return Caption; }
-
-void supla_client_objcontainer_item::mark_for_remote_update(char mark) {
-  if (mark == OI_REMOTEUPDATE_NONE) {
-    RemoteUpdateMark = OI_REMOTEUPDATE_NONE;
-    return;
-
-  } else if (mark == OI_REMOTEUPDATE_VALUE &&
-             RemoteUpdateMark == OI_REMOTEUPDATE_FULL) {
-    mark = OI_REMOTEUPDATE_FULL;
-  }
-
-  if (remote_update_is_possible()) {
-    RemoteUpdateMark = mark;
-  }
-}
-
-char supla_client_objcontainer_item::marked_for_remote_update(void) {
-  return RemoteUpdateMark;
-}
 
 void supla_client_objcontainer_item::proto_get_caption(
     char *Caption, unsigned _supla_int_t *CaptionSize, unsigned int MaxSize) {

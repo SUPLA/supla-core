@@ -110,6 +110,7 @@ class supla_user {
   bool is_device_online(int DeviceID);
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
                          char *online);
+  bool get_channel_extendedvalue(int DeviceID, int ChannelID, TSuplaChannelExtendedValue *value);
 
   bool set_device_channel_value(int SenderID, int DeviceID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -124,10 +125,11 @@ class supla_user {
                                    char color_brightness, char brightness);
 
   void update_client_device_channels(int LocationID, int DeviceID);
-  void on_channel_value_changed(int DeviceId, int ChannelId = 0);
+  void on_channel_value_changed(int DeviceId, int ChannelId = 0, bool Extended = false);
 
   void call_event(TSC_SuplaEvent *event);
   void get_temp_and_humidity(void *tarr);
+  void get_electricity_measurement(void *emarr);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

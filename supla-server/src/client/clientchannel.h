@@ -19,9 +19,9 @@
 #ifndef CLIENTCHANNEL_H_
 #define CLIENTCHANNEL_H_
 
-#include "proto.h"
 #include "clientchannels.h"
 #include "clientobjcontaineritem.h"
+#include "proto.h"
 
 class supla_client;
 class supla_client_channels;
@@ -41,11 +41,12 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        int LocationID, int Func, int Param1, int Param2,
                        const char *Caption, int AltIcon,
                        unsigned char ProtocolVersion);
-
+  void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);
   void proto_get(TSC_SuplaChannel *channel, supla_client *client);
   void proto_get(TSC_SuplaChannel_B *channel, supla_client *client);
   void proto_get(TSC_SuplaChannelValue *channel_value, supla_client *client);
+  bool proto_get(TSC_SuplaChannelExtendedValue *cev, supla_client *client);
   int getDeviceId();
   int getExtraId();
 };

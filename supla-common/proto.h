@@ -23,6 +23,7 @@
 
 #include <WinSock2.h>
 #define _supla_int_t int
+#define _supla_int64_t __int64
 
 #elif defined(__AVR__)
 
@@ -39,10 +40,12 @@ struct timeval {
 };
 #endif
 #define _supla_int_t long
+#define _supla_int64_t long long
 
 #else
 #include <sys/time.h>
 #define _supla_int_t int
+#define _supla_int64_t long long
 #endif
 
 #ifdef __cplusplus
@@ -56,7 +59,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 9
+#define SUPLA_PROTO_VERSION 10
 #define SUPLA_PROTO_VERSION_MIN 1
 #define SUPLA_TAG_SIZE 5
 #if defined(__AVR__)
@@ -83,14 +86,16 @@ extern "C" {
 #define SUPLA_URL_HOST_MAXSIZE 101
 #define SUPLA_URL_PATH_MAXSIZE 101
 #define SUPLA_SERVER_NAME_MAXSIZE 65
-#define SUPLA_EMAIL_MAXSIZE 256                 // ver. >= 7
-#define SUPLA_EMAILHEX_MAXSIZE 513              // ver. >= 7
-#define SUPLA_AUTHKEY_SIZE 16                   // ver. >= 7
-#define SUPLA_AUTHKEY_HEXSIZE 33                // ver. >= 7
-#define SUPLA_OAUTH_TOKEN_MAXSIZE 513           // ver. >= 10
-#define SUPLA_CHANNELGROUP_PACK_MAXCOUNT 20     // ver. >= 9
-#define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401  // ver. >= 9
-#define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20     // ver. >= 9
+#define SUPLA_EMAIL_MAXSIZE 256                     // ver. >= 7
+#define SUPLA_EMAILHEX_MAXSIZE 513                  // ver. >= 7
+#define SUPLA_AUTHKEY_SIZE 16                       // ver. >= 7
+#define SUPLA_AUTHKEY_HEXSIZE 33                    // ver. >= 7
+#define SUPLA_OAUTH_TOKEN_MAXSIZE 513               // ver. >= 10
+#define SUPLA_CHANNELGROUP_PACK_MAXCOUNT 20         // ver. >= 9
+#define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401      // ver. >= 9
+#define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
+#define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
+#define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE (SUPLA_MAX_DATA_SIZE - 50)
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -112,6 +117,7 @@ extern "C" {
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
+#define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
 #define SUPLA_SC_CALL_LOCATION_UPDATE 130
@@ -136,6 +142,7 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
@@ -191,6 +198,7 @@ extern "C" {
 #endif
 
 #define SUPLA_CHANNELVALUE_SIZE 8
+#define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
 
 #define SUPLA_CHANNELTYPE_SENSORNO 1000
 #define SUPLA_CHANNELTYPE_SENSORNC 1010        // ver. >= 4
@@ -219,6 +227,8 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DIMMER 4000            // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
+
+#define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -255,6 +265,7 @@ extern "C" {
 #define SUPLA_CHANNELFNC_WEIGHTSENSOR 280          // ver. >= 8
 #define SUPLA_CHANNELFNC_WEATHER_STATION 290       // ver. >= 8
 #define SUPLA_CHANNELFNC_STAIRCASETIMER 300        // ver. >= 8
+#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE 0x0002
@@ -333,6 +344,14 @@ typedef struct {
   char value[SUPLA_CHANNELVALUE_SIZE];
   char sub_value[SUPLA_CHANNELVALUE_SIZE];  // For example sensor value
 } TSuplaChannelValue;
+
+#define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
+
+typedef struct {
+  char type;  // EV_TYPE_
+  unsigned _supla_int_t size;
+  char value[SUPLA_CHANNELEXTENDEDVALUE_SIZE];  // Last variable in struct!
+} TSuplaChannelExtendedValue;                   // v. >= 10
 
 typedef struct {
   // server -> client
@@ -452,6 +471,13 @@ typedef struct {
 } TDS_SuplaDeviceChannelValue;
 
 typedef struct {
+  // device -> server
+
+  unsigned char ChannelNumber;
+  TSuplaChannelExtendedValue value;     // Last variable in struct!
+} TDS_SuplaDeviceChannelExtendedValue;  // v. >= 10
+
+typedef struct {
   // server -> device
   _supla_int_t SenderID;
   unsigned char ChannelNumber;
@@ -479,6 +505,13 @@ typedef struct {
 
 typedef struct {
   // server -> client
+  _supla_int_t Id;
+
+  TSuplaChannelExtendedValue value;  // Last variable in struct!
+} TSC_SuplaChannelExtendedValue;
+
+typedef struct {
+  // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
@@ -486,6 +519,17 @@ typedef struct {
   TSC_SuplaChannelValue
       items[SUPLA_CHANNELVALUE_PACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelValuePack;                    // ver. >= 9
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  _supla_int_t pack_size;
+
+  char pack[SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE];  // Last variable in
+                                                           // struct!
+} TSC_SuplaChannelExtendedValuePack;                       // ver. >= 10
 
 typedef struct {
   // server -> client
@@ -715,6 +759,56 @@ typedef struct {
   unsigned char ResultCode;
   TSC_OAuthToken Token;
 } TSC_OAuthTokenRequestResult;
+
+typedef struct {
+  // 3 phases
+  unsigned _supla_int_t freq;               // * 0.01 Hz
+  unsigned _supla_int_t voltage[3];         // * 0.01 V
+  unsigned _supla_int_t current[3];         // * 0.001 A
+  unsigned _supla_int_t power_active[3];    // * 0.00001 kW
+  _supla_int_t power_reactive[3];           // * 0.00001 kvar
+  unsigned _supla_int_t power_apparent[3];  // * 0.00001 kVA
+  _supla_int_t power_factor[3];             // * 0.001
+  unsigned _supla_int_t phase_angle[3];     // * 0.00001
+} TElectricityMeter_Measurement;            // v. >= 10
+
+#define EM_VAR_FREQ 0x0001
+#define EM_VAR_VOLTAGE 0x0002
+#define EM_VAR_CURRENT 0x0004
+#define EM_VAR_POWER_ACTIVE 0x0008
+#define EM_VAR_POWER_REACTIVE 0x0010
+#define EM_VAR_POWER_APPARENT 0x0020
+#define EM_VAR_POWER_FACTOR 0x0040
+#define EM_VAR_PHASE_ANGLE 0x0080
+#define EM_VAR_FORWARD_ACTIVE_ENERGY 0x0100
+#define EM_VAR_REVERSE_ACTIVE_ENERGY 0x0200
+#define EM_VAR_FORWARD_REACTIVE_ENERGY 0x0400
+#define EM_VAR_REVERSE_REACTIVE_ENERGY 0x0800
+#define EM_VAR_ALL 0xFFFF
+
+#define EM_MEASUREMENT_COUNT 5
+
+typedef struct {
+  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kW
+  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kW
+  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvar
+  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvar
+
+  _supla_int_t measured_values;
+  _supla_int_t period;  // Approximate period between measurements in seconds
+  _supla_int_t m_count;
+  TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
+                                                          // struct!
+} TElectricityMeter_ExtendedValue;                        // v. >= 10
+
+#define EM_VALUE_FLAG_PHASE1_ON 0x01
+#define EM_VALUE_FLAG_PHASE2_ON 0x02
+#define EM_VALUE_FLAG_PHASE3_ON 0x04
+
+typedef struct {
+  char flags;
+  unsigned _supla_int_t total_forward_active_energy;  // * 0.01 kW
+} TElectricityMeter_Value;
 
 #pragma pack(pop)
 
