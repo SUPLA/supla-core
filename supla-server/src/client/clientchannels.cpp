@@ -128,6 +128,7 @@ bool supla_client_channels::get_ev_datapack_for_remote(
 
       if (pack != NULL) {
         memcpy(&pack->pack[pack->pack_size], &cev, cev_size);
+        pack->pack_size+=cev_size;
         pack->count++;
         return true;
       }

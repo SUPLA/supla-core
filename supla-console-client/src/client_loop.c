@@ -24,6 +24,7 @@
 #include "client_loop.h"
 #include "clientcfg.h"
 #include "supla-client-lib/log.h"
+#include "supla-client-lib/srpc.h"
 #include "supla-client-lib/sthread.h"
 #include "supla-client-lib/supla-client.h"
 #include "supla-client-lib/tools.h"
@@ -103,6 +104,50 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread,
   }
 }
 
+void client_loop_channel_extendedalue_update(
+    void *_suplaclient, void *sthread,
+    TSC_SuplaChannelExtendedValue *channel_extendedvalue) {
+  TElectricityMeter_ExtendedValue em_ev;
+  if (srpc_evtool_v1_extended2emextended(&channel_extendedvalue->value,
+                                         &em_ev) == 1) {
+    supla_log(LOG_DEBUG, "*************************");
+    supla_log(LOG_DEBUG, "m_count=%i", em_ev.m_count);
+    supla_log(LOG_DEBUG, "measured_values=%i", em_ev.measured_values);
+    supla_log(LOG_DEBUG, "period=%i sec.", em_ev.period);
+    if (em_ev.m_count > 0) {
+      supla_log(LOG_DEBUG, "FREQ: %i Hz", em_ev.m[0].freq / 100.00);
+    }
+
+    for (int a = 0; a < 3; a++) {
+      if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
+        supla_log(LOG_DEBUG, "PHASE: %i", a);
+        supla_log(LOG_DEBUG, "   total_forward_active_energy=%f kW",
+                  em_ev.total_forward_active_energy[a] / 1000000.00);
+        supla_log(LOG_DEBUG, "   total_reverse_active_energy=%f kW",
+                  em_ev.total_reverse_active_energy[a] / 1000000.00);
+        supla_log(LOG_DEBUG, "   total_forward_reactive_energy=%f kvar",
+                  em_ev.total_forward_reactive_energy[a] / 1000000.00);
+        supla_log(LOG_DEBUG, "   total_reverse_reactive_energy=%f kvar",
+                  em_ev.total_reverse_reactive_energy[a] / 1000000.00);
+
+        supla_log(LOG_DEBUG, "   voltage=%f V", em_ev.m[0].voltage[a] / 100.00);
+        supla_log(LOG_DEBUG, "   current=%f A",
+                  em_ev.m[0].current[a] / 1000.00);
+        supla_log(LOG_DEBUG, "   power_active=%f kW",
+                  em_ev.m[0].power_active[a] / 100000.00);
+        supla_log(LOG_DEBUG, "   power_reactive=%f kvar",
+                  em_ev.m[0].power_reactive[a] / 100000.00);
+        supla_log(LOG_DEBUG, "   power_apparent=%f kVA",
+                  em_ev.m[0].power_apparent[a] / 100000.00);
+        supla_log(LOG_DEBUG, "   power_factor=%f",
+                  em_ev.m[0].power_factor[a] / 1000.00);
+        supla_log(LOG_DEBUG, "   phase_angle=%f",
+                  em_ev.m[0].phase_angle[a] / 100000.00);
+      }
+    }
+  }
+}
+
 void client_on_registration_enabled(void *_suplaclient, void *user_data,
                                     TSDC_RegistrationEnabled *reg_enabled) {
   supla_log(LOG_DEBUG, "Client registration enabled to: %u",
@@ -143,6 +188,8 @@ void *client_loop_init(void *sthread) {
   scc.cb_location_update = &client_loop_location_update;
   scc.cb_channel_update = &client_loop_channel_update;
   scc.cb_channel_value_update = &client_loop_channel_value_update;
+  scc.cb_channel_extendedvalue_update =
+      &client_loop_channel_extendedalue_update;
   scc.cb_channelgroup_update = &client_loop_channelgroup_update;
   scc.cb_channelgroup_relation_update =
       &client_loop_channelgroup_relation_update;

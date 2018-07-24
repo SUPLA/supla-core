@@ -52,6 +52,8 @@ typedef void (*_suplaclient_cb_channelgroup_relation_update)(
     TSC_SuplaChannelGroupRelation *channelgroup_relation);
 typedef void (*_suplaclient_cb_channel_value_update)(
     void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value);
+typedef void (*_suplaclient_cb_channel_extendedvalue_update)(
+    void *_suplaclient, void *user_data, TSC_SuplaChannelExtendedValue *channel_extendedvalue);
 typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data,
                                          TSC_SuplaEvent *event);
 typedef void (*_suplaclient_cb_on_registration_enabled)(
@@ -93,6 +95,7 @@ typedef struct {
   _suplaclient_cb_location_update cb_location_update;
   _suplaclient_cb_channel_update cb_channel_update;
   _suplaclient_cb_channel_value_update cb_channel_value_update;
+  _suplaclient_cb_channel_extendedvalue_update cb_channel_extendedvalue_update;
 
   _suplaclient_cb_channelgroup_update cb_channelgroup_update;
   _suplaclient_cb_channelgroup_relation_update cb_channelgroup_relation_update;

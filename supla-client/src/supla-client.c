@@ -288,12 +288,53 @@ void supla_client_channel_value_update(TSuplaClientData *scd,
   }
 }
 
+void supla_client_channel_extendedvalue_update(
+    TSuplaClientData *scd,
+    TSC_SuplaChannelExtendedValue *channel_extendedvalue) {
+  if (scd->cfg.cb_channel_extendedvalue_update)
+    scd->cfg.cb_channel_extendedvalue_update(scd, scd->cfg.user_data,
+                                             channel_extendedvalue);
+
+}
+
 void supla_client_channelvalue_pack_update(TSuplaClientData *scd,
                                            TSC_SuplaChannelValuePack *pack) {
   int a;
 
-  for (a = 0; a < pack->count; a++) {
-    supla_client_channel_value_update(scd, &pack->items[a], 0);
+  if (pack && pack->count <= SUPLA_CHANNELVALUE_PACK_MAXCOUNT) {
+    for (a = 0; a < pack->count; a++) {
+      supla_client_channel_value_update(scd, &pack->items[a], 0);
+    }
+  }
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelextendedvalue_pack_update(
+    TSuplaClientData *scd, TSC_SuplaChannelExtendedValuePack *pack) {
+  TSC_SuplaChannelExtendedValue ev;
+  int n = 0;
+  int offset = 0;
+  int min_size =
+      sizeof(TSC_SuplaChannelExtendedValue) - SUPLA_CHANNELEXTENDEDVALUE_SIZE;
+
+  if (pack != NULL) {
+    while (pack->pack_size - offset >= min_size && n < pack->count) {
+
+      memset(&ev, 0, sizeof(TSC_SuplaChannelExtendedValue));
+      memcpy(&ev, &pack->pack[offset], min_size);
+      offset += min_size;
+
+      if (ev.value.size > 0 && ev.value.type != 0 &&
+          pack->pack_size - offset >= ev.value.size) {
+        memcpy(ev.value.value, &pack->pack[offset], ev.value.size);
+
+        offset += ev.value.size;
+        supla_client_channel_extendedvalue_update(scd, &ev);
+      }
+
+      n++;
+    }
   }
 
   srpc_cs_async_get_next(scd->srpc);
@@ -444,6 +485,10 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE:
         supla_client_channelvalue_pack_update(scd,
                                               rd.data.sc_channelvalue_pack);
+        break;
+      case SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE:
+        supla_client_channelextendedvalue_pack_update(
+            scd, rd.data.sc_channelextendedvalue_pack);
         break;
       case SUPLA_SC_CALL_EVENT:
         supla_client_on_event(scd, rd.data.sc_event);
