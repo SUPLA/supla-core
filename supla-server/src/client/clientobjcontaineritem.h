@@ -33,7 +33,7 @@ class supla_client_objcontainer;
 class supla_client_objcontainer_item : public supla_objcontainer_item {
  private:
   char *Caption;
-  int RemoteUpdateMark;
+
 
  protected:
   void proto_get_caption(char *Caption, unsigned _supla_int_t *CaptionSize,
@@ -47,10 +47,6 @@ class supla_client_objcontainer_item : public supla_objcontainer_item {
   char *getCaption(void);
   void setCaption(const char *Caption);
 
-  virtual bool remote_update_is_possible(void) = 0;
-  void mark_for_remote_update(int mark);
-  void unmark_for_remote_update(int unmark);
-  int marked_for_remote_update(void);
 };
 
 #endif /* CLIENT_CLIENTOBJCONTAINERITEM_H_ */

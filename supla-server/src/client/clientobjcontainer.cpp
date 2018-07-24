@@ -41,12 +41,14 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, int data_type,
 
   bool check_more = false;
   bool result = false;
+  supla_log(LOG_DEBUG, "|do_remote_update");
 
   for (int a = 0; a < safe_array_count(getArr(scope)); a++) {
     obj = static_cast<supla_client_objcontainer_item *>(
         safe_array_get(getArr(scope), a));
     if (obj->marked_for_remote_update() & data_type) {
       if (get_data_for_remote(obj, &data, data_type, &check_more, scope)) {
+    	  supla_log(LOG_DEBUG, "unmark %i", data_type);
         obj->unmark_for_remote_update(data_type);
         result = true;
       }
@@ -67,6 +69,7 @@ bool supla_client_objcontainer::do_remote_update(void *srpc, int data_type,
 }
 
 bool supla_client_objcontainer::remote_update(void *srpc) {
+	supla_log(LOG_DEBUG, "ZZZZZ");
   for (int a = 0; a < OBJC_SCOPE_COUNT; a++) {
     e_objc_scope scope = static_cast<e_objc_scope>(a);
     int a_data_types = available_data_types_for_remote(scope);
@@ -109,6 +112,7 @@ void supla_client_objcontainer::on_value_changed(void *srpc, int Id,
   safe_array_unlock(arr);
 
   if (srpc && r) {
+	  supla_log(LOG_DEBUG, "on_value_changed");
     remote_update(srpc);
   }
 }

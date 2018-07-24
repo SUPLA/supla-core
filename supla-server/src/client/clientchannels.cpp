@@ -121,6 +121,7 @@ bool supla_client_channels::get_ev_datapack_for_remote(
           SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
         memcpy(&pack->pack[pack->pack_size], &cev, cev_size);
         pack->count++;
+        supla_log(LOG_DEBUG, "aaaa");
         return true;
       }
     }
@@ -166,7 +167,7 @@ bool supla_client_channels::get_data_for_remote(
     return true;
   } else if (data_type & OI_REMOTEUPDATE_DATA3) {
     if (getClient()->getProtocolVersion() >= 10) {
-      return get_ev_datapack_for_remote(obj, data);
+      //return get_ev_datapack_for_remote(obj, data);
     }
   }
 
@@ -205,15 +206,15 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
       srpc_sc_async_channel_value_update(srpc, (TSC_SuplaChannelValue *)data);
     }
   } else if (data_type & OI_REMOTEUPDATE_DATA3) {
-      srpc_sc_async_channelextendedvalue_pack_update(
-          srpc, static_cast<TSC_SuplaChannelExtendedValuePack *>(data));
+    srpc_sc_async_channelextendedvalue_pack_update(
+        srpc, static_cast<TSC_SuplaChannelExtendedValuePack *>(data));
   }
 
   free(data);
 }
 
 int supla_client_channels::available_data_types_for_remote(e_objc_scope scope) {
-  return OI_REMOTEUPDATE_DATA1 & OI_REMOTEUPDATE_DATA2 & OI_REMOTEUPDATE_DATA3;
+  return OI_REMOTEUPDATE_DATA1 | OI_REMOTEUPDATE_DATA2 | OI_REMOTEUPDATE_DATA3;
 }
 
 void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
