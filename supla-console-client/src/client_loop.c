@@ -90,11 +90,13 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread,
                                       TSC_SuplaChannelValue *channel_value) {
   double temp;
   if (channel_value->Id == 2944) {
-	  TElectricityMeter_Value v;
-	  memcpy(&v, channel_value->value.value, sizeof(TElectricityMeter_Value));
-	  supla_log(LOG_DEBUG, "Channel #%i: Value: %f kWh Flags: %i", channel_value->Id, v.total_forward_active_energy / 100.00, v.flags);
+    TElectricityMeter_Value v;
+    memcpy(&v, channel_value->value.value, sizeof(TElectricityMeter_Value));
+    supla_log(LOG_DEBUG, "Channel #%i: Value: %f kWh Flags: %i",
+              channel_value->Id, v.total_forward_active_energy / 100.00,
+              v.flags);
   } else if (channel_value->Id == 82 || channel_value->Id == 83 ||
-      channel_value->Id == 97 || channel_value->Id == 127) {
+             channel_value->Id == 97 || channel_value->Id == 127) {
     memcpy(&temp, channel_value->value.value, sizeof(double));
     supla_log(LOG_DEBUG, "Channel #%i: %f st.", channel_value->Id, temp);
   } else {
