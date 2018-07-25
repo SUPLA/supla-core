@@ -134,11 +134,11 @@ void client_loop_channel_extendedalue_update(
         supla_log(LOG_DEBUG, "   voltage=%f V", em_ev.m[0].voltage[a] / 100.00);
         supla_log(LOG_DEBUG, "   current=%f A",
                   em_ev.m[0].current[a] / 1000.00);
-        supla_log(LOG_DEBUG, "   power_active=%f kW",
+        supla_log(LOG_DEBUG, "   power_active=%f W",
                   em_ev.m[0].power_active[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   power_reactive=%f kvar",
+        supla_log(LOG_DEBUG, "   power_reactive=%f var",
                   em_ev.m[0].power_reactive[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   power_apparent=%f kVA",
+        supla_log(LOG_DEBUG, "   power_apparent=%f VA",
                   em_ev.m[0].power_apparent[a] / 100000.00);
         supla_log(LOG_DEBUG, "   power_factor=%f",
                   em_ev.m[0].power_factor[a] / 1000.00);
