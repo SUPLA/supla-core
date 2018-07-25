@@ -89,7 +89,11 @@ void client_loop_on_event(void *_suplaclient, void *user_data,
 void client_loop_channel_value_update(void *_suplaclient, void *sthread,
                                       TSC_SuplaChannelValue *channel_value) {
   double temp;
-  if (channel_value->Id == 82 || channel_value->Id == 83 ||
+  if (channel_value->Id == 2944) {
+	  TElectricityMeter_Value v;
+	  memcpy(&v, channel_value->value.value, sizeof(TElectricityMeter_Value));
+	  supla_log(LOG_DEBUG, "Channel #%i: Value: %f kWh Flags: %i", channel_value->Id, v.total_forward_active_energy / 100.00, v.flags);
+  } else if (channel_value->Id == 82 || channel_value->Id == 83 ||
       channel_value->Id == 97 || channel_value->Id == 127) {
     memcpy(&temp, channel_value->value.value, sizeof(double));
     supla_log(LOG_DEBUG, "Channel #%i: %f st.", channel_value->Id, temp);
@@ -123,13 +127,13 @@ void client_loop_channel_extendedalue_update(
       if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
         supla_log(LOG_DEBUG, "PHASE: %i", a);
         supla_log(LOG_DEBUG, "   total_forward_active_energy=%f kW",
-                  em_ev.total_forward_active_energy[a] / 1000000.00);
+                  em_ev.total_forward_active_energy[a] / 100000.00);
         supla_log(LOG_DEBUG, "   total_reverse_active_energy=%f kW",
-                  em_ev.total_reverse_active_energy[a] / 1000000.00);
+                  em_ev.total_reverse_active_energy[a] / 100000.00);
         supla_log(LOG_DEBUG, "   total_forward_reactive_energy=%f kvar",
-                  em_ev.total_forward_reactive_energy[a] / 1000000.00);
+                  em_ev.total_forward_reactive_energy[a] / 100000.00);
         supla_log(LOG_DEBUG, "   total_reverse_reactive_energy=%f kvar",
-                  em_ev.total_reverse_reactive_energy[a] / 1000000.00);
+                  em_ev.total_reverse_reactive_energy[a] / 100000.00);
 
         supla_log(LOG_DEBUG, "   voltage=%f V", em_ev.m[0].voltage[a] / 100.00);
         supla_log(LOG_DEBUG, "   current=%f A",
