@@ -96,6 +96,7 @@ extern "C" {
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE (SUPLA_MAX_DATA_SIZE - 50)
+#define SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE 256 // ver. >= 10
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -144,6 +145,8 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
+#define SUPLA_CS_CALL_CHANNEL_CALIBRATE 420                  // ver. >= 10
+#define SUPLA_SD_CALL_CHANNEL_CALIBRATE 430                  // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -809,6 +812,20 @@ typedef struct {
   char flags;
   unsigned _supla_int_t total_forward_active_energy;  // * 0.01 kW
 } TElectricityMeter_Value;
+
+typedef struct {
+  // server -> device
+  _supla_int_t SenderID;
+  unsigned char ChannelNumber;
+
+  char parameters[SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE];
+} TSD_SuplaChannelCalibrate;
+
+typedef struct {
+  // client -> server
+  _supla_int_t ChannelId;
+  char parameters[SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE];
+} TCS_SuplaChannelCalibrate;
 
 #pragma pack(pop)
 
