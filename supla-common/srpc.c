@@ -685,11 +685,10 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 
       case SUPLA_SD_CALL_CHANNEL_CALIBRATE:
-          if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelCalibrate))
-            rd->data.sd_channel_calibrate =
-                (TSD_SuplaChannelCalibrate *)malloc(
-                    sizeof(TSD_SuplaChannelCalibrate));
-    	  break;
+        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelCalibrate))
+          rd->data.sd_channel_calibrate = (TSD_SuplaChannelCalibrate *)malloc(
+              sizeof(TSD_SuplaChannelCalibrate));
+        break;
 
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
@@ -860,12 +859,11 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
       case SUPLA_CS_CALL_CHANNEL_CALIBRATE:
 
-          if (srpc->sdp.data_size == sizeof(TCS_SuplaChannelCalibrate))
-            rd->data.cs_channel_calibrate =
-                (TCS_SuplaChannelCalibrate *)malloc(
-                    sizeof(TCS_SuplaChannelCalibrate));
+        if (srpc->sdp.data_size == sizeof(TCS_SuplaChannelCalibrate))
+          rd->data.cs_channel_calibrate = (TCS_SuplaChannelCalibrate *)malloc(
+              sizeof(TCS_SuplaChannelCalibrate));
 
-    	  break;
+        break;
 
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
@@ -1253,8 +1251,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_channel_calibrate(
     void *_srpc, TSD_SuplaChannelCalibrate *params) {
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_CALIBRATE,
-		  (char *)params, sizeof(TSD_SuplaChannelCalibrate));
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_CALIBRATE, (char *)params,
+                         sizeof(TSD_SuplaChannelCalibrate));
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
