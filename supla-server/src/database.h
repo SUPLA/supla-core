@@ -134,8 +134,8 @@ class database : public dbcommon {
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
 
-  [[deprecated("Method temporarily left for compatibility")]] bool
-  get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
+  [[deprecated("Method temporarily left for compatibility")]]
+  bool get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
                  int *expires_at);
 
   int oauth_add_client_id(void);
