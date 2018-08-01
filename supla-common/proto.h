@@ -750,9 +750,6 @@ typedef struct {
 } TSDC_RegistrationEnabled;
 
 typedef struct {
-  char Host[SUPLA_URL_HOST_MAXSIZE];
-  _supla_int_t Port;
-
   unsigned _supla_int_t ExpiresIn;
   _supla_int_t TokenSize;  // including the terminating null byte ('\0')
   char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
