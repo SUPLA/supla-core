@@ -58,6 +58,8 @@ char *st_get_datetime_str(char buffer[64]);
 
 int st_hue2rgb(double hue);
 
+void st_random_alpha_string(char *buffer, int buffer_size);
+
 #ifdef __BCRYPT
 
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds);

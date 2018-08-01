@@ -131,11 +131,15 @@ class database : public dbcommon {
 
   void add_electricity_measurement(supla_channel_electricity_measurement *em);
 
-  bool get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
-                      int *expires_at);
-
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
+
+  [[deprecated("Method temporarily left for compatibility")]] bool
+  get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
+                 int *expires_at);
+
+  int oauth_add_client_id(void);
+  int oauth_get_client_id(bool create);
 };
 
 #endif /* DATABASE_H_ */

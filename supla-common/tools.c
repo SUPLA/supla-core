@@ -343,6 +343,20 @@ int st_hue2rgb(double hue) {
   return rgb;
 }
 
+void st_random_alpha_string(char *buffer, int buffer_size) {
+  int a;
+
+  const char charset[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+  char max = sizeof(charset) - 1;
+  unsigned int seed = time(NULL);
+
+  buffer[buffer_size - 1] = 0;
+
+  for (a = 0; a < buffer_size - 1; a++) {
+    buffer[a] = charset[rand_r(&seed) % max];
+  }
+}
+
 #ifdef __BCRYPT
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
   if (salt == NULL || salt_buffer_size == 0) return 0;

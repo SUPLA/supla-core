@@ -1443,7 +1443,7 @@ void database::add_electricity_measurement(
     pbind[3 + n].buffer = (char *)&em_ev.total_forward_reactive_energy[a];
     pbind[4 + n].buffer_type = MYSQL_TYPE_LONGLONG;
     pbind[4 + n].buffer = (char *)&em_ev.total_reverse_reactive_energy[a];
-    n+=4;
+    n += 4;
   }
 
   const char sql[] =
@@ -1457,66 +1457,6 @@ void database::add_electricity_measurement(
   stmt_execute((void **)&stmt, sql, pbind, 13, false);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
-}
-
-bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
-                              int *expires_at) {
-  MYSQL_STMT *stmt;
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  bool result = false;
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)access_token;
-  pbind[0].buffer_length = strnlen(access_token, 512);
-
-  const char sql[] =
-      "SELECT  t.user_id, c.parent_id, t.expires_at FROM "
-      "`supla_oauth_access_tokens` AS t, `supla_oauth_clients` AS c WHERE c.id "
-      "= t.client_id AND c.parent_id != 0 AND t.expires_at > "
-      "UNIX_TIMESTAMP(NOW()) AND t.scope = 'restapi' AND token = ? LIMIT 1";
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    mysql_stmt_store_result(stmt);
-
-    if (mysql_stmt_num_rows(stmt) > 0) {
-      MYSQL_BIND rbind[3];
-      memset(rbind, 0, sizeof(rbind));
-
-      int _OAuthUserID, _UserID, _expires_at;
-
-      rbind[0].buffer_type = MYSQL_TYPE_LONG;
-      rbind[0].buffer = (char *)&_OAuthUserID;
-
-      rbind[1].buffer_type = MYSQL_TYPE_LONG;
-      rbind[1].buffer = (char *)&_UserID;
-
-      rbind[2].buffer_type = MYSQL_TYPE_LONG;
-      rbind[2].buffer = (char *)&_expires_at;
-
-      if (mysql_stmt_bind_result(stmt, rbind)) {
-        supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                  mysql_stmt_error(stmt));
-
-      } else if (mysql_stmt_fetch(stmt) == 0) {
-        if (OAuthUserID != NULL) *OAuthUserID = _OAuthUserID;
-
-        if (UserID != NULL) *UserID = _UserID;
-
-        if (expires_at != NULL) {
-          *expires_at = _expires_at;
-        }
-
-        result = true;
-      }
-    }
-
-    mysql_stmt_free_result(stmt);
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
 }
 
 bool database::get_device_firmware_update_url(
@@ -1650,4 +1590,128 @@ bool database::get_reg_enabled(int UserID, unsigned int *client,
     return false;
 
   return true;
+}
+
+bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
+                              int *expires_at) {
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  bool result = false;
+
+  pbind[0].buffer_type = MYSQL_TYPE_STRING;
+  pbind[0].buffer = (char *)access_token;
+  pbind[0].buffer_length = strnlen(access_token, 512);
+
+  const char sql[] =
+      "SELECT  t.user_id, c.parent_id, t.expires_at FROM "
+      "`supla_oauth_access_tokens` AS t, `supla_oauth_clients` AS c WHERE c.id "
+      "= t.client_id AND c.parent_id != 0 AND t.expires_at > "
+      "UNIX_TIMESTAMP(NOW()) AND t.scope = 'restapi' AND token = ? LIMIT 1";
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    mysql_stmt_store_result(stmt);
+
+    if (mysql_stmt_num_rows(stmt) > 0) {
+      MYSQL_BIND rbind[3];
+      memset(rbind, 0, sizeof(rbind));
+
+      int _OAuthUserID, _UserID, _expires_at;
+
+      rbind[0].buffer_type = MYSQL_TYPE_LONG;
+      rbind[0].buffer = (char *)&_OAuthUserID;
+
+      rbind[1].buffer_type = MYSQL_TYPE_LONG;
+      rbind[1].buffer = (char *)&_UserID;
+
+      rbind[2].buffer_type = MYSQL_TYPE_LONG;
+      rbind[2].buffer = (char *)&_expires_at;
+
+      if (mysql_stmt_bind_result(stmt, rbind)) {
+        supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                  mysql_stmt_error(stmt));
+
+      } else if (mysql_stmt_fetch(stmt) == 0) {
+        if (OAuthUserID != NULL) *OAuthUserID = _OAuthUserID;
+
+        if (UserID != NULL) *UserID = _UserID;
+
+        if (expires_at != NULL) {
+          *expires_at = _expires_at;
+        }
+
+        result = true;
+      }
+    }
+
+    mysql_stmt_free_result(stmt);
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+int database::oauth_add_client_id(void) {
+  int lck = 0, result = 0;
+  MYSQL_STMT *stmt;
+
+  if (stmt_get_int((void **)&stmt, &lck, NULL, NULL, NULL,
+                   "SELECT GET_LOCK('oauth_add_client', 2)", NULL, 0) &&
+      lck == 1) {
+    result = oauth_get_client_id(false);
+    if (result == 0) {
+      char random_id[51];
+      char secret[51];
+
+      st_random_alpha_string(random_id, 51);
+      st_random_alpha_string(secret, 51);
+
+      char sql[] =
+          "INSERT INTO `supla_oauth_clients`(`random_id`, `redirect_uris`, "
+          "`secret`, `allowed_grant_types`, `type`, `is_public`) VALUES (?, "
+          "'a:0:{}', ?, "
+          "'a:2:{i:0;s:8:\"password\";i:1;s:13:\"refresh_token\";}', 2, 0)";
+
+      MYSQL_BIND pbind[2];
+      memset(pbind, 0, sizeof(pbind));
+
+      pbind[0].buffer_type = MYSQL_TYPE_STRING;
+      pbind[0].buffer = (char *)random_id;
+      pbind[0].buffer_length = strnlen(random_id, 50);
+
+      pbind[1].buffer_type = MYSQL_TYPE_STRING;
+      pbind[1].buffer = (char *)secret;
+      pbind[1].buffer_length = strnlen(secret, 50);
+
+      if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+        result = get_last_insert_id();
+      }
+      if (stmt) mysql_stmt_close(stmt);
+    }
+
+    stmt_execute((void **)&stmt, "SELECT RELEASE_LOCK('oauth_add_client')",
+                 NULL, 0, true);
+    if (stmt) mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+int database::oauth_get_client_id(bool create) {
+  int id = 0;
+  MYSQL_STMT *stmt;
+
+  if (!stmt_get_int(
+          (void **)&stmt, &id, NULL, NULL, NULL,
+          "SELECT `id` FROM `supla_oauth_clients` WHERE `type` = 2 LIMIT 1",
+          NULL, 0)) {
+    id = 0;
+  }
+
+  if (id == 0 && create) {
+    id = oauth_add_client_id();
+  }
+
+  return id;
 }
