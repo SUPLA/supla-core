@@ -36,9 +36,17 @@
 #include "espmissingincludes.h"
 #endif
 
+#ifndef SRPC_BUFFER_SIZE
 #define SRPC_BUFFER_SIZE 1024
+#endif /*SRPC_BUFFER_SIZE*/
+
+#ifndef SRPC_QUEUE_SIZE
 #define SRPC_QUEUE_SIZE 2
+#endif /*SRPC_QUEUE_SIZE*/
+
+#ifndef SRPC_QUEUE_MIN_ALLOC_COUNT
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 2
+#endif /* SRPC_QUEUE_MIN_ALLOC_COUNT */
 
 #elif defined(__AVR__)
 
