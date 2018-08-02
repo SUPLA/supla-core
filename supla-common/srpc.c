@@ -882,7 +882,8 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                     SUPLA_OAUTH_TOKEN_MAXSIZE) &&
             srpc->sdp.data_size <= sizeof(TSC_OAuthTokenRequestResult)) {
           rd->data.sc_oauth_tokenrequest_result =
-              (TSC_SuplaEvent *)malloc(sizeof(TSC_OAuthTokenRequestResult));
+              (TSC_OAuthTokenRequestResult *)malloc(
+                  sizeof(TSC_OAuthTokenRequestResult));
         }
         break;
 
