@@ -363,7 +363,7 @@ void st_random_alpha_string(char *buffer, int buffer_size) {
   gettimeofday(&tv, NULL);
 
   for (a = 0; a < buffer_size - 1; a++) {
-    buffer[a] = charset[(rand() + tv.tv_usec) % max];
+    buffer[a] = charset[(rand() + tv.tv_usec) % max];  // NOLINT
   }
 #else
   unsigned int seed = time(NULL);
