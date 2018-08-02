@@ -887,3 +887,8 @@ char supla_client_get_registration_enabled(void *_suplaclient) {
 unsigned char supla_client_get_proto_version(void *_suplaclient) {
   return srpc_get_proto_version(((TSuplaClientData *)_suplaclient)->srpc);
 }
+
+char supla_client_oauth_token_request(void *_suplaclient) {
+  return srpc_cs_async_oauth_token_request(
+             ((TSuplaClientData *)_suplaclient)->srpc) > 0;
+}

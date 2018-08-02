@@ -137,6 +137,7 @@ char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
                              char brightness);
 char supla_client_get_registration_enabled(void *_suplaclient);
 unsigned char supla_client_get_proto_version(void *_suplaclient);
+char supla_client_oauth_token_request(void *_suplaclient);
 
 #ifdef __cplusplus
 }
