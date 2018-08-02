@@ -389,6 +389,15 @@ void supla_client_on_event(TSuplaClientData *scd, TSC_SuplaEvent *event) {
     scd->cfg.cb_on_event(scd, scd->cfg.user_data, event);
 }
 
+supla_client_on_oauth_token_request_result(
+    TSuplaClientData *scd, TSC_OAuthTokenRequestResult *result) {
+  supla_client_set_str(result->Token.Token, &result->Token.TokenSize,
+                       SUPLA_OAUTH_TOKEN_MAXSIZE);
+
+  if (scd->cfg.cb_on_oauth_token_request_result)
+    scd->cfg.cb_on_oauth_token_request_result(scd, scd->cfg.user_data, result);
+}
+
 void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                           unsigned int call_type, void *_scd,
                                           unsigned char proto_version) {
@@ -498,11 +507,9 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                               rd.data.sdc_reg_enabled);
         break;
       case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
-        if (scd->cfg.cb_on_oauth_token_request_result &&
-            rd.data.sc_oauth_tokenrequest_result->Token.TokenSize <=
-                SUPLA_OAUTH_TOKEN_MAXSIZE)
-          scd->cfg.cb_on_oauth_token_request_result(
-              scd, scd->cfg.user_data, rd.data.sc_oauth_tokenrequest_result);
+        if (scd->cfg.cb_on_oauth_token_request_result)
+          supla_client_on_oauth_token_request_result(
+              scd, rd.data.sc_oauth_tokenrequest_result);
         break;
     }
 
