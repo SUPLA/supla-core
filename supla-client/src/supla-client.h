@@ -108,7 +108,8 @@ typedef struct {
 
   _suplaclient_cb_on_min_version_required cb_on_min_version_required;
 
-  _suplaclient_cb_on_oauth_token_request_result cb_on_oauth_token_request_result;
+  _suplaclient_cb_on_oauth_token_request_result
+      cb_on_oauth_token_request_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
