@@ -17,7 +17,10 @@
  */
 
 #include "svrcfg.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
@@ -46,6 +49,17 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
 
   char *s_ipc = "IPC";
   scfg_add_str_param(s_ipc, "socket_path", "/tmp/supla-server-ctrl.sock");
+
+  char *s_oauth = "OAUTH";
+  char hostname[256];
+  memset(hostname, 0, sizeof(hostname));
+  gethostname(hostname, sizeof(hostname) - 1);
+
+  char url[266];
+  snprintf(url, sizeof(url), "https://%s", hostname);
+
+  scfg_add_str_param(s_oauth, "url", url);
+  scfg_add_int_param(s_oauth, "access_token_lifetime", 300);
 
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();

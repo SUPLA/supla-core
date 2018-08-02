@@ -46,6 +46,9 @@ extern "C" {
 
 #define CFG_IPC_SOCKET_PATH 13
 
+#define CFG_OAUTH_URL 14
+#define CFG_OAUTH_TOKEN_LIFETIME 15
+
 unsigned char svrcfg_init(int argc, char* argv[]);
 
 #ifdef __cplusplus
