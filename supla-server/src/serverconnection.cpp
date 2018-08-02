@@ -488,8 +488,8 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
 
         case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
-        	client->oauth_token_request();
-        	break;
+          client->oauth_token_request();
+          break;
 
         default:
           sthread_terminate(sthread);
