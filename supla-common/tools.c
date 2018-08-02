@@ -355,13 +355,24 @@ void st_random_alpha_string(char *buffer, int buffer_size) {
   const char charset[] =
       "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   char max = sizeof(charset) - 1;
+
+#ifdef __ANDROID__
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  srand(tv.tv_usec);
+  gettimeofday(&tv, NULL);
+
+  for (a = 0; a < buffer_size - 1; a++) {
+    buffer[a] = charset[(rand() + tv.tv_usec) % max];
+  }
+#else
   unsigned int seed = time(NULL);
-
-  buffer[buffer_size - 1] = 0;
-
   for (a = 0; a < buffer_size - 1; a++) {
     buffer[a] = charset[rand_r(&seed) % max];
   }
+#endif
+
+  buffer[buffer_size - 1] = 0;
 }
 
 #ifdef __BCRYPT
