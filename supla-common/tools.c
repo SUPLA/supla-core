@@ -457,7 +457,7 @@ char *st_openssl_base64_encode(char *src, int src_len) {
   char *result = NULL;
 
   if (src_len <= 0 || src == NULL) {
-	  return NULL;
+    return NULL;
   }
 
   b64 = BIO_new(BIO_f_base64());
