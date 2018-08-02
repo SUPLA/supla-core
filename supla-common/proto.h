@@ -752,7 +752,7 @@ typedef struct {
 
 typedef struct {
   unsigned _supla_int_t ExpiresIn;
-  _supla_int_t TokenSize;  // including the terminating null byte ('\0')
+  unsigned _supla_int_t TokenSize;  // including the terminating null byte ('\0')
   char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
 } TSC_OAuthToken;
 
