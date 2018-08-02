@@ -51,12 +51,12 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_ipc, "socket_path", "/tmp/supla-server-ctrl.sock");
 
   char *s_oauth = "OAUTH";
-  char hostname[256];
+  char hostname[CFG_OAUTH_URL_MAXSIZE-10];
   memset(hostname, 0, sizeof(hostname));
   gethostname(hostname, sizeof(hostname) - 1);
 
-  char url[266];
-  snprintf(url, sizeof(url), "https://%s", hostname);
+  char url[CFG_OAUTH_URL_MAXSIZE];
+  snprintf(url, CFG_OAUTH_URL_MAXSIZE, "https://%s", hostname);
 
   scfg_add_str_param(s_oauth, "url", url);
   scfg_add_int_param(s_oauth, "access_token_lifetime", 300);
