@@ -28,6 +28,12 @@
 #include "log.h"
 #include "tools.h"
 
+#ifdef __OPENSSL_TOOLS
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include <openssl/evp.h>
+#endif /*__OPENSSL_TOOLS*/
+
 #ifdef __BCRYPT
 #include "crypt_blowfish/ow-crypt.h"
 #define BCRYPT_RABD_SIZE 16
@@ -441,4 +447,38 @@ char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   return NULL;
 }
 
-#endif
+#endif /* __BCRYPT*/
+
+#ifdef __OPENSSL_TOOLS
+
+char *st_openssl_base64_encode(char *src, int src_len) {
+  BIO *bio, *b64;
+  BUF_MEM *bufferPtr;
+  char *result = NULL;
+
+  if (src_len <= 0 || src == NULL) {
+	  return NULL;
+  }
+
+  b64 = BIO_new(BIO_f_base64());
+  bio = BIO_new(BIO_s_mem());
+  bio = BIO_push(b64, bio);
+  BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+  (void)BIO_set_close(bio, BIO_NOCLOSE);
+
+  BIO_write(bio, src, src_len);
+  (void)BIO_flush(bio);
+
+  BIO_get_mem_ptr(bio, &bufferPtr);
+
+  result = malloc(bufferPtr->length + 1);
+  memcpy(result, bufferPtr->data, bufferPtr->length);
+  result[bufferPtr->length] = 0;
+
+  BIO_free_all(bio);
+  BUF_MEM_free(bufferPtr);
+
+  return result;
+}
+
+#endif /*__OPENSSL_TOOLS*/

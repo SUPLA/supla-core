@@ -30,13 +30,14 @@
 									<listOptionValue builtIn="false" value="../src"/>
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.2062866975" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
 									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.592483975" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
 								<option id="gnu.c.compiler.option.dialect.std.1559922112" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
-								<option id="gnu.c.compiler.option.include.files.211128902" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles"/>
+								<option id="gnu.c.compiler.option.include.files.211128902" name="Include files (-include)" superClass="gnu.c.compiler.option.include.files" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.31395286" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool command="$(CXX)" commandLinePattern="${COMMAND} ${FLAGS} ${OUTPUT_FLAG} ${OUTPUT_PREFIX}${OUTPUT} ${INPUTS}" id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.776925702" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -57,7 +58,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.424424703" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.include.files.1351686790" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false" valueType="includeFiles"/>
+								<option id="gnu.cpp.compiler.option.include.files.1351686790" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.647780356" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.867359269" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -129,6 +130,7 @@
 								<option id="gnu.c.compiler.option.misc.other.2147088608" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.439526132" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
+									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.462173459" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -217,6 +219,7 @@
 								</option>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.332366282" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
+									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.2082316085" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>

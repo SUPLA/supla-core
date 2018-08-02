@@ -53,6 +53,7 @@ extern "C" {
 #define CFG_OAUTH_TOKEN_LIFETIME 15
 
 extern char *svrcfg_oauth_url_base64;
+extern int svrcfg_oauth_url_base64_len;
 
 unsigned char svrcfg_init(int argc, char* argv[]);
 void svrcfg_free(void);
