@@ -49,6 +49,7 @@ typedef struct {
     jmethodID j_mid_on_min_version_required;
     jmethodID j_mid_channelgroup_update;
     jmethodID j_mid_channelgroup_relation_update;
+    jmethodID j_mid_on_oauth_token_request_result;
 }TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -611,6 +612,25 @@ void supla_android_client_cb_channelgroup_relation_update(void *_suplaclient, vo
         supla_android_client(asc, asc->j_mid_channelgroup_relation_update, chg);
     }
 }
+
+void supla_android_client_cb_on_oauth_token_request_result(void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result) {
+    jfieldID fid;
+    TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
+    JNIEnv* env = supla_client_get_env(asc);
+    
+    if ( env && asc && asc->j_mid_on_oauth_token_request_result ) {
+        
+        jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaOAuthToken");
+        jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IILjava/lang/String;)V");
+        jobject token_obj = (*env)->NewObject(env,cls, methodID,
+                                              result->ResultCode,
+                                              result->Token.ExpiresIn,
+                                              (*env)->NewStringUTF(env, result->Token.Token));
+        
+        supla_android_client(asc, asc->j_mid_on_oauth_token_request_result, token_obj);
+    }
+}
+
 void supla_android_client_cb_on_event(void *_suplaclient, void *user_data, TSC_SuplaEvent *event) {
     
     jfieldID fid;
@@ -879,6 +899,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         _asc->j_mid_on_min_version_required= supla_client_GetMethodID(env, oclass, "onMinVersionRequired", "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
         _asc->j_mid_channelgroup_update = supla_client_GetMethodID(env, oclass, "ChannelGroupUpdate", "(Lorg/supla/android/lib/SuplaChannelGroup;)V");
         _asc->j_mid_channelgroup_relation_update = supla_client_GetMethodID(env, oclass, "ChannelGroupRelationUpdate", "(Lorg/supla/android/lib/SuplaChannelGroupRelation;)V");
+        _asc->j_mid_on_oauth_token_request_result = supla_client_GetMethodID(env, oclass, "onOAuthTokenRequestResult", "(Lorg/supla/android/lib/SuplaOAuthToken;)V");
         
         sclient_cfg.user_data = _asc;
         sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -897,6 +918,7 @@ Java_org_supla_android_lib_SuplaClient_scInit(JNIEnv* env, jobject thiz, jobject
         sclient_cfg.cb_on_min_version_required = supla_android_client_cb_on_min_version_required;
         sclient_cfg.cb_channelgroup_update = supla_android_client_cb_channelgroup_update;
         sclient_cfg.cb_channelgroup_relation_update = supla_android_client_cb_channelgroup_relation_update;
+        sclient_cfg.cb_on_oauth_token_request_result = supla_android_client_cb_on_oauth_token_request_result;
         
         _asc->_supla_client = supla_client_init(&sclient_cfg);
         
@@ -1069,4 +1091,15 @@ JNIEXPORT jint JNICALL
 Java_org_supla_android_lib_SuplaClient_scGetMaxProtoVersion(JNIEnv* env, jobject thiz, jlong _asc) {
    
     return SUPLA_PROTO_VERSION;
+};
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scOAuthTokenRequest(JNIEnv* env, jobject thiz, jlong _asc) {
+    
+    void *supla_client = supla_client_ptr(_asc);
+    
+    if ( supla_client )
+        return supla_client_oauth_token_request(supla_client) == 1 ? JNI_TRUE : JNI_FALSE;
+    
+    return JNI_FALSE;
 };
