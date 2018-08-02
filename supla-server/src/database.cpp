@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <ctype.h>
 #include <my_global.h>
 #include <mysql.h>
 
@@ -1653,7 +1654,7 @@ bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
 }
 
 int database::oauth_add_client_id(void) {
-  int lck = 0, result = 0;
+  int a = 0, lck = 0, result = 0;
   MYSQL_STMT *stmt;
 
   if (stmt_get_int((void **)&stmt, &lck, NULL, NULL, NULL,
@@ -1666,6 +1667,11 @@ int database::oauth_add_client_id(void) {
 
       st_random_alpha_string(random_id, 51);
       st_random_alpha_string(secret, 51);
+
+      for (a = 0; a < 51; a++) {
+        random_id[a] = tolower(random_id[a]);
+        secret[a] = tolower(secret[a]);
+      }
 
       char sql[] =
           "INSERT INTO `supla_oauth_clients`(`random_id`, `redirect_uris`, "

@@ -346,7 +346,8 @@ int st_hue2rgb(double hue) {
 void st_random_alpha_string(char *buffer, int buffer_size) {
   int a;
 
-  const char charset[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const char charset[] =
+      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   char max = sizeof(charset) - 1;
   unsigned int seed = time(NULL);
 
