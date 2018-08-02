@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#define CFG_OAUTH_URL_MAXSIZE 128
+#define CFG_OAUTH_URL_MAXSIZE 96
 #define CFG_OAUTH_TOKEN_SIZE 86
 
 #define SERVER_VERSION "2.2.0"
@@ -52,7 +52,10 @@ extern "C" {
 #define CFG_OAUTH_URL 14
 #define CFG_OAUTH_TOKEN_LIFETIME 15
 
+extern char *svrcfg_oauth_url_base64;
+
 unsigned char svrcfg_init(int argc, char* argv[]);
+void svrcfg_free(void);
 
 #ifdef __cplusplus
 }

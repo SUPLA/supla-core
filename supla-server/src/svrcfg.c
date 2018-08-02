@@ -17,13 +17,20 @@
  */
 
 #include "svrcfg.h"
+#include <openssl/bio.h>
+#include <openssl/buffer.h>
+#include <openssl/evp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+char *svrcfg_oauth_url_base64 = NULL;
+
 unsigned char svrcfg_init(int argc, char *argv[]) {
   char result;
+  BIO *bio, *b64;
+  BUF_MEM *bufferPtr;
   // !!! order is important !!!
 
   char *s_global = "GLOBAL";
@@ -51,7 +58,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_ipc, "socket_path", "/tmp/supla-server-ctrl.sock");
 
   char *s_oauth = "OAUTH";
-  char hostname[CFG_OAUTH_URL_MAXSIZE-10];
+  char hostname[CFG_OAUTH_URL_MAXSIZE - 10];
   memset(hostname, 0, sizeof(hostname));
   gethostname(hostname, sizeof(hostname) - 1);
 
@@ -63,5 +70,36 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
 
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();
+
+  if (result != 0) {
+    int n = strnlen(scfg_string(CFG_OAUTH_URL), CFG_OAUTH_URL_MAXSIZE);
+    if (n > 0) {
+      b64 = BIO_new(BIO_f_base64());
+      bio = BIO_new(BIO_s_mem());
+      bio = BIO_push(b64, bio);
+      BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+      BIO_write(bio, scfg_string(CFG_OAUTH_URL), n);
+
+      BIO_get_mem_ptr(bio, &bufferPtr);
+      (void)BIO_set_close(bio, BIO_NOCLOSE);
+
+      svrcfg_oauth_url_base64 = malloc(bufferPtr->length + 1);
+      memcpy(svrcfg_oauth_url_base64, bufferPtr->data, bufferPtr->length);
+      svrcfg_oauth_url_base64[bufferPtr->length] = 0;
+
+      BUF_MEM_free(bufferPtr);
+      (void)BIO_flush(b64);
+      BIO_free_all(b64);
+    }
+  }
+
   return result;
+}
+
+void svrcfg_free(void) {
+  if (svrcfg_oauth_url_base64) {
+    free(svrcfg_oauth_url_base64);
+    svrcfg_oauth_url_base64 = NULL;
+  }
+  scfg_free();
 }
