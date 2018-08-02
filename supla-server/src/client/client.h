@@ -57,6 +57,8 @@ class supla_client : public cdcommon {
 
   void call_event(TSC_SuplaEvent *event);
 
+  void oauth_token_request(void);
+
   virtual ~supla_client();
 };
 

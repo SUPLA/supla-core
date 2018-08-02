@@ -113,6 +113,7 @@ union TsrpcDataPacketData {
   TCS_SuplaNewValue *cs_new_value;
   TSD_SuplaChannelCalibrate *sd_channel_calibrate;
   TCS_SuplaChannelCalibrate *cs_channel_calibrate;
+  TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
 };
 
 typedef struct {
@@ -240,6 +241,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
     void *_srpc, TCS_SuplaChannelNewValue_B *value);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_calibrate(
     void *_srpc, TCS_SuplaChannelCalibrate *params);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
+    void *_srpc, TSC_OAuthTokenRequestResult *result);
+
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS

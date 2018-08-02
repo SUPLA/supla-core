@@ -318,3 +318,26 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
 void supla_client::call_event(TSC_SuplaEvent *event) {
   srpc_sc_async_event(getSvrConn()->srpc(), event);
 }
+
+void supla_client::oauth_token_request(void) {
+  TSC_OAuthTokenRequestResult result;
+  memset(&result, 0, sizeof(TSC_OAuthTokenRequestResult));
+
+  result.ResultCode = SUPLA_OAUTH_RESULTCODE_ERROR;
+
+  if (getUser()) {
+    database *db = new database();
+
+    if (db->connect() == true) {
+      if (db->oauth_get_token(&result.Token, getUser()->getUserID())) {
+        result.ResultCode = SUPLA_OAUTH_RESULTCODE_SUCCESS;
+      }
+    } else {
+      result.ResultCode = SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE;
+    }
+
+    delete db;
+  }
+
+  srpc_cs_async_oauth_token_request_result(getSvrConn()->srpc(), &result);
+}

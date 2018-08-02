@@ -139,6 +139,7 @@ class database : public dbcommon {
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
+  bool oauth_get_token(TSC_OAuthToken *token, int user_id);
 };
 
 #endif /* DATABASE_H_ */

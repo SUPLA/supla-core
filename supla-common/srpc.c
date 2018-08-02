@@ -873,6 +873,19 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
+        call_with_no_data = 1;
+        break;
+
+      case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
+        if (srpc->sdp.data_size >= (sizeof(TSC_OAuthTokenRequestResult) -
+                                    SUPLA_OAUTH_TOKEN_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_OAuthTokenRequestResult)) {
+          rd->data.sc_oauth_tokenrequest_result =
+              (TSC_SuplaEvent *)malloc(sizeof(TSC_OAuthTokenRequestResult));
+        }
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -965,6 +978,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE:
     case SUPLA_SD_CALL_CHANNEL_CALIBRATE:
     case SUPLA_CS_CALL_CHANNEL_CALIBRATE:
+    case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
+    case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
       return 10;
   }
 
@@ -1533,6 +1548,22 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_calibrate(
     void *_srpc, TCS_SuplaChannelCalibrate *params) {
   return srpc_async_call(_srpc, SUPLA_CS_CALL_CHANNEL_CALIBRATE, (char *)params,
                          sizeof(TCS_SuplaChannelCalibrate));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST, NULL, 0);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
+    void *_srpc, TSC_OAuthTokenRequestResult *result) {
+  if (result == NULL || result->Token.TokenSize > SUPLA_OAUTH_TOKEN_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(
+      _srpc, SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT, (char *)result,
+      sizeof(TSC_OAuthTokenRequestResult) -
+          (SUPLA_OAUTH_TOKEN_MAXSIZE - result->Token.TokenSize));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

@@ -1721,3 +1721,62 @@ int database::oauth_get_client_id(bool create) {
 
   return id;
 }
+
+bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
+  if (token == NULL) {
+    return false;
+  }
+
+  memset(token, 0, sizeof(TSC_OAuthToken));
+
+  int client_id = oauth_get_client_id(true);
+
+  if (client_id == 0 || svrcfg_oauth_url_base64 == NULL ||
+      svrcfg_oauth_url_base64_len <= 0 ||
+      svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 2 >
+          SUPLA_OAUTH_TOKEN_MAXSIZE) {
+    return false;
+  }
+
+  st_random_alpha_string(token->Token, CFG_OAUTH_TOKEN_SIZE + 1);
+  token->Token[CFG_OAUTH_TOKEN_SIZE] = '.';
+
+  memcpy(&token->Token[CFG_OAUTH_TOKEN_SIZE + 1], svrcfg_oauth_url_base64,
+         svrcfg_oauth_url_base64_len);
+  token->Token[svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 1] = 0;
+  token->TokenSize = svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 2;
+  token->ExpiresIn =
+      (unsigned)time(NULL) + (unsigned)scfg_int(CFG_OAUTH_TOKEN_LIFETIME);
+
+  char sql[] =
+      "INSERT INTO `supla_oauth_access_tokens`(`client_id`, `user_id`, "
+      "`token`, `expires_at`, `scope`) VALUES (?,?,?,?,'restapi')";
+
+  MYSQL_BIND pbind[4];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&client_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)token->Token;
+  pbind[2].buffer_length = token->TokenSize - 1;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&token->ExpiresIn;
+
+  MYSQL_STMT *stmt;
+  bool result = false;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+    result = true;
+  } else {
+    memset(token, 0, sizeof(TSC_OAuthToken));
+  }
+  if (stmt) mysql_stmt_close(stmt);
+
+  return result;
+}

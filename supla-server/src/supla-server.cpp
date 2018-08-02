@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
   supla_user::free();
   database::mainthread_end();
 
-  scfg_free();
+  svrcfg_free();
 
   {
     char dt[64];
@@ -184,6 +184,6 @@ exit_fail:
 
   ssocket_free(ssd_ssl);
   ssocket_free(ssd_tcp);
-  scfg_free();
+  svrcfg_free();
   exit(EXIT_FAILURE);
 }

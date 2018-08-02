@@ -181,6 +181,7 @@ extern "C" {
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0    // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1  // ver. >= 10
+#define SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE 2 // ver. >= 10
 
 #define SUPLA_DEVICE_NAME_MAXSIZE 201
 #define SUPLA_DEVICE_NAMEHEX_MAXSIZE 401
@@ -754,6 +755,7 @@ typedef struct {
   _supla_int_t TokenSize;  // including the terminating null byte ('\0')
   char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
 } TSC_OAuthToken;
+
 
 typedef struct {
   unsigned char ResultCode;
