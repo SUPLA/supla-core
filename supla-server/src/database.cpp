@@ -1745,8 +1745,9 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
          svrcfg_oauth_url_base64_len);
   token->Token[svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 1] = 0;
   token->TokenSize = svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 2;
-  token->ExpiresIn =
-      (unsigned)time(NULL) + (unsigned)scfg_int(CFG_OAUTH_TOKEN_LIFETIME);
+  token->ExpiresIn = (unsigned)scfg_int(CFG_OAUTH_TOKEN_LIFETIME);
+
+  int ExpiresIn = token->ExpiresIn + (unsigned)time(NULL);
 
   char sql[] =
       "INSERT INTO `supla_oauth_access_tokens`(`client_id`, `user_id`, "
@@ -1766,7 +1767,7 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
   pbind[2].buffer_length = token->TokenSize - 1;
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&token->ExpiresIn;
+  pbind[3].buffer = (char *)&ExpiresIn;
 
   MYSQL_STMT *stmt;
   bool result = false;
