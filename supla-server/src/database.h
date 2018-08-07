@@ -43,6 +43,8 @@ class database : public dbcommon {
   bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                         bool *is_null, const char *sql);
 
+  void em_set_longlong(unsigned _supla_int64_t *v, void *_is_null, void *pbind);
+
  public:
   bool location_auth(int LocationID, char *LocationPWD, int *UserID,
                      bool *is_enabled);
