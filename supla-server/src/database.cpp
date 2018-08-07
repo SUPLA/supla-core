@@ -1421,12 +1421,11 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature,
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
-void database::em_set_longlong(unsigned _supla_int64_t *v, void *is_null,
-                               void *pbind) {
-  ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_LONGLONG;
+void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind) {
   if (*v == 0) {
-    ((MYSQL_BIND *)pbind)->is_null = (my_bool *)is_null;
+    ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_NULL;
   } else {
+    ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_LONGLONG;
     ((MYSQL_BIND *)pbind)->buffer = (char *)v;
   }
 }
@@ -1443,18 +1442,12 @@ void database::add_electricity_measurement(
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&ChannelID;
 
-  my_bool _is_null = true;
-
   int n = 0;
   for (int a = 0; a < 3; a++) {
-    em_set_longlong(&em_ev.total_forward_active_energy[a], &_is_null,
-                    &pbind[1 + n]);
-    em_set_longlong(&em_ev.total_reverse_active_energy[a], &_is_null,
-                    &pbind[2 + n]);
-    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &_is_null,
-                    &pbind[3 + n]);
-    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &_is_null,
-                    &pbind[4 + n]);
+    em_set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n]);
+    em_set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n]);
+    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n]);
+    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n]);
 
     n += 4;
   }
