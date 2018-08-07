@@ -1460,7 +1460,7 @@ void database::add_electricity_measurement(
       "(?,UTC_TIMESTAMP(),?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt;
-  stmt_execute((void **)&stmt, sql, pbind, 13, false);
+  stmt_execute((void **)&stmt, sql, pbind, 13, true);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
