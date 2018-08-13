@@ -33,7 +33,6 @@ class ipc_client {
   char buffer[IPC_BUFFER_SIZE];
   int read(void);
 
-  char *ipc_sauth_key;
   bool get_value(const char *cmd, int user_id, int device_id, int channel_id);
   bool check_set_result(void);
 
@@ -42,7 +41,6 @@ class ipc_client {
   ~ipc_client();
   bool ipc_connect(void);
   bool ipc_disconnect(void);
-  bool auth(void);
 
   char is_connected(int user_id, int device_id);
 

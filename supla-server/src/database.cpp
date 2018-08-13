@@ -1598,66 +1598,6 @@ bool database::get_reg_enabled(int UserID, unsigned int *client,
   return true;
 }
 
-bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
-                              int *expires_at) {
-  MYSQL_STMT *stmt;
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  bool result = false;
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)access_token;
-  pbind[0].buffer_length = strnlen(access_token, 512);
-
-  const char sql[] =
-      "SELECT  t.user_id, c.parent_id, t.expires_at FROM "
-      "`supla_oauth_access_tokens` AS t, `supla_oauth_clients` AS c WHERE c.id "
-      "= t.client_id AND c.parent_id != 0 AND t.expires_at > "
-      "UNIX_TIMESTAMP(NOW()) AND t.scope = 'restapi' AND token = ? LIMIT 1";
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    mysql_stmt_store_result(stmt);
-
-    if (mysql_stmt_num_rows(stmt) > 0) {
-      MYSQL_BIND rbind[3];
-      memset(rbind, 0, sizeof(rbind));
-
-      int _OAuthUserID, _UserID, _expires_at;
-
-      rbind[0].buffer_type = MYSQL_TYPE_LONG;
-      rbind[0].buffer = (char *)&_OAuthUserID;
-
-      rbind[1].buffer_type = MYSQL_TYPE_LONG;
-      rbind[1].buffer = (char *)&_UserID;
-
-      rbind[2].buffer_type = MYSQL_TYPE_LONG;
-      rbind[2].buffer = (char *)&_expires_at;
-
-      if (mysql_stmt_bind_result(stmt, rbind)) {
-        supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                  mysql_stmt_error(stmt));
-
-      } else if (mysql_stmt_fetch(stmt) == 0) {
-        if (OAuthUserID != NULL) *OAuthUserID = _OAuthUserID;
-
-        if (UserID != NULL) *UserID = _UserID;
-
-        if (expires_at != NULL) {
-          *expires_at = _expires_at;
-        }
-
-        result = true;
-      }
-    }
-
-    mysql_stmt_free_result(stmt);
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
 int database::oauth_add_client_id(void) {
   int a = 0, lck = 0, result = 0;
   MYSQL_STMT *stmt;

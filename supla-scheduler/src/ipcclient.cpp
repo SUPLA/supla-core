@@ -34,8 +34,6 @@
 #include "log.h"
 #include "schedulercfg.h"
 
-#define IPC_SAUTH_KEY_SIZE 16
-
 const char hello[] = "SUPLA SERVER CTRL\n";
 
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED";
@@ -54,16 +52,6 @@ const char ipc_result_disconnected[] = "DISCONNECTED:";
 
 ipc_client::ipc_client() {
   this->sfd = -1;
-  ipc_sauth_key = NULL;
-
-  int ipc_shmid = -1;
-  key_t key;
-  key = ftok(scfg_string(CFG_IPC_SOCKET_PATH), 'S');
-
-  if ((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, 0)) == -1) return;
-
-  if ((ipc_sauth_key = (char *)shmat(ipc_shmid, 0, 0)) == (char *)-1)
-    ipc_sauth_key = NULL;
 }
 
 ipc_client::~ipc_client() { ipc_disconnect(); }
@@ -136,21 +124,6 @@ bool ipc_client::ipc_disconnect(void) {
   sfd = -1;
 
   return true;
-}
-
-bool ipc_client::auth(void) {
-  if (!ipc_connect() || ipc_sauth_key == NULL) return false;
-
-  snprintf(buffer, IPC_BUFFER_SIZE, "SAUTH:");
-  memcpy(&buffer[6], ipc_sauth_key, IPC_SAUTH_KEY_SIZE);
-
-  buffer[6 + IPC_SAUTH_KEY_SIZE] = '\n';
-
-  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
-
-  if (read() && strcmp(buffer, "AUTH_OK\n") == 0) return true;
-
-  return false;
 }
 
 bool ipc_client::get_value(const char *cmd, int user_id, int device_id,
@@ -249,8 +222,6 @@ bool ipc_client::check_set_result(void) {
 
 bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
                                 char value) {
-  if (!auth()) return false;
-
   snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_char_value,
            user_id, device_id, channel_id, value);
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
@@ -261,8 +232,6 @@ bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
 bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id,
                                 int color, char color_brightness,
                                 char brightness) {
-  if (!auth()) return false;
-
   snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n",
            cmd_set_rgbw_value, user_id, device_id, channel_id, color,
            color_brightness, brightness);

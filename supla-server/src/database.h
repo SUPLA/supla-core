@@ -136,9 +136,6 @@ class database : public dbcommon {
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
 
-  bool get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
-                      int *expires_at) __attribute__((deprecated));
-
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
   bool oauth_get_token(TSC_OAuthToken *token, int user_id);

@@ -36,11 +36,6 @@ class svr_ipcctrl {
   int user_id;
   int oauth_user_id;
 
-  void set_unauthorized(void);
-  void oauth(const char *cmd);
-  void sauth(const char *cmd);
-  bool is_authorized(int UserID, bool _send_result);
-
   bool match_command(const char *cmd, int len);
   void get_double(const char *cmd, char Type);
   void get_char(const char *cmd);
