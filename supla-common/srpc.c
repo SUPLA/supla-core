@@ -624,6 +624,18 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_DS_CALL_REGISTER_DEVICE_E:  // ver. >= 10
+
+        if (srpc->sdp.data_size >=
+                (sizeof(TDS_SuplaRegisterDevice_E) -
+                 (sizeof(TDS_SuplaDeviceChannel_C) * SUPLA_CHANNELMAXCOUNT)) &&
+            srpc->sdp.data_size <= sizeof(TDS_SuplaRegisterDevice_E)) {
+          rd->data.ds_register_device_e = (TDS_SuplaRegisterDevice_E *)malloc(
+              sizeof(TDS_SuplaRegisterDevice_E));
+        }
+
+        break;
+
       case SUPLA_SD_CALL_REGISTER_DEVICE_RESULT:
 
         if (srpc->sdp.data_size == sizeof(TSD_SuplaRegisterDeviceResult))
@@ -981,6 +993,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_CHANNEL_CALIBRATE:
     case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
     case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
+    case SUPLA_DS_CALL_REGISTER_DEVICE_E:
       return 10;
   }
 
@@ -1209,6 +1222,19 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_d(
   if (size > sizeof(TDS_SuplaRegisterDevice_D)) return 0;
 
   return srpc_async_call(_srpc, SUPLA_DS_CALL_REGISTER_DEVICE_D,
+                         (char *)registerdevice, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_e(
+    void *_srpc, TDS_SuplaRegisterDevice_E *registerdevice) {
+  _supla_int_t size =
+      sizeof(TDS_SuplaRegisterDevice_E) -
+      (sizeof(TDS_SuplaDeviceChannel_C) * SUPLA_CHANNELMAXCOUNT) +
+      (sizeof(TDS_SuplaDeviceChannel_C) * registerdevice->channel_count);
+
+  if (size > sizeof(TDS_SuplaRegisterDevice_E)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_REGISTER_DEVICE_E,
                          (char *)registerdevice, size);
 }
 

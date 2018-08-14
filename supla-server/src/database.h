@@ -62,7 +62,7 @@ class database : public dbcommon {
 
   int add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
                  const char *AuthKey, const char *Name, unsigned int ipv4,
-                 const char *softver, int proto_version, int UserID);
+                 const char *softver, int proto_version, int Flags, int UserID);
 
   int update_device(int DeviceID, int OriginalLocationID, const char *AuthKey,
                     const char *Name, unsigned int ipv4, const char *softver,
@@ -70,7 +70,7 @@ class database : public dbcommon {
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
   int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
-                         int FList, int UserID, bool *new_channel);
+                         int FList, int Flags, int UserID, bool *new_channel);
 
   int get_device_limit_left(int UserID);
   int get_device_count(int UserID);

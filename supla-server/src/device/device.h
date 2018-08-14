@@ -34,7 +34,7 @@ class supla_device : public cdcommon {
  public:
   explicit supla_device(serverconnection *svrconn);
   char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_D *register_device_d,
+                       TDS_SuplaRegisterDevice_E *register_device_e,
                        unsigned char proto_version);
   virtual ~supla_device();
 

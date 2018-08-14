@@ -151,7 +151,8 @@ class supla_device_channels {
   int get_channel_func(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
-  void set_channels_value(TDS_SuplaDeviceChannel_B *schannel, int count);
+  void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
+                          TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);

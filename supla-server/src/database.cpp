@@ -409,7 +409,7 @@ bool database::get_device_reg_enabled(int UserID) {
 int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
                          const char *AuthKey, const char *Name,
                          unsigned int ipv4, const char *softver,
-                         int proto_version, int UserID) {
+                         int proto_version, int Flags, int UserID) {
   int DeviceID = 0;
 
   char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
@@ -417,7 +417,7 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
 
   char *AuthKeyHashHEX = NULL;
 
-  MYSQL_BIND pbind[10];
+  MYSQL_BIND pbind[11];
   memset(pbind, 0, sizeof(pbind));
 
   char GUIDHEX[SUPLA_GUID_HEXSIZE];
@@ -470,13 +470,16 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
     pbind[9].buffer_type = MYSQL_TYPE_NULL;
   }
 
+  pbind[10].buffer_type = MYSQL_TYPE_LONG;
+  pbind[10].buffer = (char *)&Flags;
+
   const char sql[] =
       "INSERT INTO `supla_iodevice`(`location_id`, `name`, `enabled`, "
       "`reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, "
       "`guid`, `software_version`, `protocol_version`, `auth_key`, "
-      "`original_location_id`) VALUES "
+      "`original_location_id`, `flags`) VALUES "
       "(?,unhex(?),1,UTC_TIMESTAMP(),UTC_TIMESTAMP(),?,?,?,unhex(?),?, "
-      "?,unhex(?),?)";
+      "?,unhex(?),?,?)";
 
   MYSQL_STMT *stmt;
   if (stmt_execute((void **)&stmt, sql, pbind, 10, false)) {
@@ -617,9 +620,9 @@ int database::get_device_channel(int DeviceID, int ChannelNumber, int *Type) {
 }
 
 int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
-                                 int Func, int FList, int UserID,
+                                 int Func, int FList, int Flags, int UserID,
                                  bool *new_channel) {
-  MYSQL_BIND pbind[6];
+  MYSQL_BIND pbind[7];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -640,11 +643,15 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   pbind[5].buffer_type = MYSQL_TYPE_LONG;
   pbind[5].buffer = (char *)&FList;
 
+  pbind[6].buffer_type = MYSQL_TYPE_LONG;
+  pbind[6].buffer = (char *)&Flags;
+
   {
     const char sql[] =
         "INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, "
-        "`param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`) VALUES "
-        "(?,?,0,0,0,?,?,?,?)";
+        "`param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`, "
+        "`flags`) VALUES "
+        "(?,?,0,0,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt;
     if (!stmt_execute((void **)&stmt, sql, pbind, 6, false)) {

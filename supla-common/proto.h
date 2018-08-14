@@ -111,6 +111,7 @@ extern "C" {
 #define SUPLA_DS_CALL_REGISTER_DEVICE_B 65  // ver. >= 2
 #define SUPLA_DS_CALL_REGISTER_DEVICE_C 67  // ver. >= 6
 #define SUPLA_DS_CALL_REGISTER_DEVICE_D 68  // ver. >= 7
+#define SUPLA_DS_CALL_REGISTER_DEVICE_E 69  // ver. >= 10
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT 70
 #define SUPLA_CS_CALL_REGISTER_CLIENT 80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
@@ -411,6 +412,19 @@ typedef struct {
 typedef struct {
   // device -> server
 
+  unsigned char Number;
+  _supla_int_t Type;
+
+  _supla_int_t FuncList;
+  _supla_int_t Default;
+  _supla_int_t Flags;
+
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TDS_SuplaDeviceChannel_C;  // ver. >= 10
+
+typedef struct {
+  // device -> server
+
   _supla_int_t LocationID;
   char LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE];  // UTF8
 
@@ -457,6 +471,27 @@ typedef struct {
   TDS_SuplaDeviceChannel_B
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
 } TDS_SuplaRegisterDevice_D;            // ver. >= 7
+
+
+typedef struct {
+  // device -> server
+
+  char Email[SUPLA_EMAIL_MAXSIZE];  // UTF8
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  char GUID[SUPLA_GUID_SIZE];
+
+  char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+  _supla_int_t Flags;
+
+  unsigned char channel_count;
+  TDS_SuplaDeviceChannel_C
+      channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+} TDS_SuplaRegisterDevice_E;            // ver. >= 10
 
 typedef struct {
   // server -> device

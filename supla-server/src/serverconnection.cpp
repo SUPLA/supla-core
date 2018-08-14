@@ -136,6 +136,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_DS_CALL_REGISTER_DEVICE_B:
       case SUPLA_DS_CALL_REGISTER_DEVICE_C:
       case SUPLA_DS_CALL_REGISTER_DEVICE_D:
+      case SUPLA_DS_CALL_REGISTER_DEVICE_E:
       case SUPLA_CS_CALL_REGISTER_CLIENT:
       case SUPLA_CS_CALL_REGISTER_CLIENT_B:
       case SUPLA_CS_CALL_REGISTER_CLIENT_C:
@@ -264,18 +265,69 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
         supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_D");
 
         if (cdptr == NULL && rd.data.ds_register_device_d != NULL) {
+          TDS_SuplaRegisterDevice_E *register_device_e =
+              (TDS_SuplaRegisterDevice_E *)malloc(
+                  sizeof(TDS_SuplaRegisterDevice_E));
+          if (register_device_e != NULL) {
+            memset(register_device_e, 0, sizeof(TDS_SuplaRegisterDevice_E));
+
+            memcpy(register_device_e->Email,
+                   rd.data.ds_register_device_d->Email, SUPLA_EMAIL_MAXSIZE);
+            memcpy(register_device_e->AuthKey,
+                   rd.data.ds_register_device_d->AuthKey, SUPLA_AUTHKEY_SIZE);
+
+            memcpy(register_device_e->GUID, rd.data.ds_register_device_d->GUID,
+                   SUPLA_GUID_SIZE);
+            memcpy(register_device_e->Name, rd.data.ds_register_device_d->Name,
+                   SUPLA_DEVICE_NAME_MAXSIZE);
+            memcpy(register_device_e->SoftVer,
+                   rd.data.ds_register_device_d->SoftVer,
+                   SUPLA_SOFTVER_MAXSIZE);
+            memcpy(register_device_e->ServerName,
+                   rd.data.ds_register_device_d->ServerName,
+                   SUPLA_SERVER_NAME_MAXSIZE);
+
+            register_device_e->channel_count =
+                rd.data.ds_register_device_d->channel_count;
+
+            for (int c = 0; c < register_device_e->channel_count; c++) {
+              memset(&register_device_e->channels[c], 0,
+                     sizeof(TDS_SuplaDeviceChannel_C));
+              register_device_e->channels[c].Number =
+                  rd.data.ds_register_device_d->channels[c].Number;
+              register_device_e->channels[c].Type =
+                  rd.data.ds_register_device_d->channels[c].Type;
+              register_device_e->channels[c].FuncList =
+                  rd.data.ds_register_device_d->channels[c].FuncList;
+              register_device_e->channels[c].Default =
+                  rd.data.ds_register_device_d->channels[c].Default;
+              memcpy(register_device_e->channels[c].value,
+                     rd.data.ds_register_device_d->channels[c].value,
+                     SUPLA_CHANNELVALUE_SIZE);
+            }
+          }
+
+          free(rd.data.ds_register_device_d);
+          rd.data.ds_register_device_e = register_device_e;
+        }
+      /* no break between SUPLA_DS_CALL_REGISTER_DEVICE_D and
+       * SUPLA_DS_CALL_REGISTER_DEVICE_E!!! */
+      case SUPLA_DS_CALL_REGISTER_DEVICE_E:
+        supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_E");
+
+        if (cdptr == NULL && rd.data.ds_register_device_e != NULL) {
           device = new supla_device(this);
 
           if (device != NULL) {
-            rd.data.ds_register_device_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
-            rd.data.ds_register_device_d->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] =
+            rd.data.ds_register_device_e->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+            rd.data.ds_register_device_e->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] =
                 0;
-            rd.data.ds_register_device_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
+            rd.data.ds_register_device_e->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
                 0;
-            rd.data.ds_register_device_d
+            rd.data.ds_register_device_e
                 ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-            if (device->register_device(NULL, rd.data.ds_register_device_d,
+            if (device->register_device(NULL, rd.data.ds_register_device_e,
                                         proto_version) == 1) {
               registered = REG_DEVICE;
             }
