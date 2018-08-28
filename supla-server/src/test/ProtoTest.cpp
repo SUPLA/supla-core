@@ -17,8 +17,8 @@
  */
 
 #include "ProtoTest.h"
-#include "gtest/gtest.h"
-#include "proto.h"  // NOLINT
+#include "gtest/gtest.h"  // NOLINT
+#include "proto.h"
 
 namespace {
 
@@ -29,6 +29,7 @@ class ProtoTest : public ::testing::Test {
 TEST_F(ProtoTest, init) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
+  ASSERT_EQ(SUPLA_PROTO_VERSION, sproto_get_version(sproto));
   sproto_free(sproto);
 }
 
