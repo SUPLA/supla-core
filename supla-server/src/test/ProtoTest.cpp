@@ -33,4 +33,20 @@ TEST_F(ProtoTest, init) {
   sproto_free(sproto);
 }
 
+TEST_F(ProtoTest, set_version) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  sproto_set_version(sproto, SUPLA_PROTO_VERSION_MIN - 1);
+  ASSERT_EQ(SUPLA_PROTO_VERSION, sproto_get_version(sproto));
+
+  sproto_set_version(sproto, SUPLA_PROTO_VERSION + 1);
+  ASSERT_EQ(SUPLA_PROTO_VERSION, sproto_get_version(sproto));
+
+  sproto_set_version(sproto, SUPLA_PROTO_VERSION - 1);
+  ASSERT_EQ(SUPLA_PROTO_VERSION - 1, sproto_get_version(sproto));
+
+  sproto_free(sproto);
+}
+
 }  // namespace
