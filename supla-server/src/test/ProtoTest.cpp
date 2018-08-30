@@ -49,4 +49,33 @@ TEST_F(ProtoTest, set_version) {
   sproto_free(sproto);
 }
 
+TEST_F(ProtoTest, out_dataexists) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, sproto_out_dataexists(sproto));
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_out_buffer_append(sproto, &sdp));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_out_dataexists(sproto));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, in_dataexists) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, sproto_in_dataexists(sproto));
+  char c = 'S';
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_buffer_append(sproto, &c, 1));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_dataexists(sproto));
+
+  sproto_free(sproto);
+}
+
 }  // namespace
