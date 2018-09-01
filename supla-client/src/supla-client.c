@@ -389,7 +389,7 @@ void supla_client_on_event(TSuplaClientData *scd, TSC_SuplaEvent *event) {
     scd->cfg.cb_on_event(scd, scd->cfg.user_data, event);
 }
 
-supla_client_on_oauth_token_request_result(
+void supla_client_on_oauth_token_request_result(
     TSuplaClientData *scd, TSC_OAuthTokenRequestResult *result) {
   supla_client_set_str(result->Token.Token, &result->Token.TokenSize,
                        SUPLA_OAUTH_TOKEN_MAXSIZE);
