@@ -20,6 +20,8 @@
 #include "gtest/gtest.h"  // NOLINT
 #include "proto.h"
 
+#define BUFFER_MAX_SIZE 131072
+
 namespace {
 
 class ProtoTest : public ::testing::Test {
@@ -72,6 +74,31 @@ TEST_F(ProtoTest, in_dataexists) {
   char c = 'S';
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_buffer_append(sproto, &c, 1));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_dataexists(sproto));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, in_buffer_append) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  char data[BUFFER_MAX_SIZE];
+  memset(data, 123, BUFFER_MAX_SIZE);
+
+  ASSERT_EQ(SUPLA_RESULT_BUFFER_OVERFLOW,
+            sproto_in_buffer_append(sproto, data, BUFFER_MAX_SIZE));
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, sproto_in_dataexists(sproto));
+
+  ASSERT_EQ(SUPLA_RESULT_BUFFER_OVERFLOW,
+            sproto_in_buffer_append(sproto, data, BUFFER_MAX_SIZE + 1));
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, sproto_in_dataexists(sproto));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, data, BUFFER_MAX_SIZE - 1));
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_dataexists(sproto));
 
