@@ -21,6 +21,7 @@
 #include "proto.h"
 
 #define BUFFER_MAX_SIZE 131072
+static char sproto_tag[SUPLA_TAG_SIZE] = {'S', 'U', 'P', 'L', 'A'};
 
 namespace {
 
@@ -101,6 +102,172 @@ TEST_F(ProtoTest, in_buffer_append) {
             sproto_in_buffer_append(sproto, data, BUFFER_MAX_SIZE - 1));
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_dataexists(sproto));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test1) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  ASSERT_EQ(
+      SUPLA_RESULT_TRUE,
+      sproto_in_buffer_append(sproto, (char *)&sdp,
+                              sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE));
+
+  TSuplaDataPacket sdp_rcv;
+  memset(&sdp_rcv, 0, sizeof(TSuplaDataPacket));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_pop_in_sdp(sproto, &sdp_rcv));
+
+  ASSERT_EQ(0, memcmp(&sdp_rcv, &sdp, sizeof(TSuplaDataPacket)));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test2) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  sdp.tag[2] = 'X';
+
+  ASSERT_EQ(
+      SUPLA_RESULT_TRUE,
+      sproto_in_buffer_append(sproto, (char *)&sdp,
+                              sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE));
+
+  TSuplaDataPacket sdp_rcv;
+  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, sproto_pop_in_sdp(sproto, &sdp_rcv));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test3) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  ASSERT_EQ(
+      SUPLA_RESULT_TRUE,
+      sproto_in_buffer_append(sproto, (char *)&sdp,
+                              sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE - 1));
+
+  char c[] = "x";
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_buffer_append(sproto, c, 1));
+
+  TSuplaDataPacket sdp_rcv;
+  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, sproto_pop_in_sdp(sproto, &sdp_rcv));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test4) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  sdp.data_size = 1;
+
+  ASSERT_EQ(
+      SUPLA_RESULT_TRUE,
+      sproto_in_buffer_append(sproto, (char *)&sdp,
+                              sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE));
+
+  TSuplaDataPacket sdp_rcv;
+  ASSERT_EQ(SUPLA_RESULT_FALSE, sproto_pop_in_sdp(sproto, &sdp_rcv));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test5) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(
+                sproto, (char *)&sdp,
+                sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE + 1));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE));
+
+  TSuplaDataPacket sdp_rcv;
+  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, sproto_pop_in_sdp(sproto, &sdp_rcv));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test6) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  sdp.data_size = SUPLA_MAX_DATA_SIZE + 1;
+
+  ASSERT_EQ(
+      SUPLA_RESULT_TRUE,
+      sproto_in_buffer_append(sproto, (char *)&sdp, sizeof(TSuplaDataPacket)));
+
+  char c[] = "x";
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_in_buffer_append(sproto, c, 1));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE));
+
+  TSuplaDataPacket sdp_rcv;
+  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, sproto_pop_in_sdp(sproto, &sdp_rcv));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_in_sdp_test7) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  sdp.version = SUPLA_PROTO_VERSION + 1;
+
+  ASSERT_EQ(
+      SUPLA_RESULT_TRUE,
+      sproto_in_buffer_append(sproto, (char *)&sdp,
+                              sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE));
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE,
+            sproto_in_buffer_append(sproto, sproto_tag, SUPLA_TAG_SIZE));
+
+  TSuplaDataPacket sdp_rcv;
+  ASSERT_EQ(SUPLA_RESULT_VERSION_ERROR, sproto_pop_in_sdp(sproto, &sdp_rcv));
 
   sproto_free(sproto);
 }
