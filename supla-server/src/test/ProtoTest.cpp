@@ -272,4 +272,74 @@ TEST_F(ProtoTest, pop_in_sdp_test7) {
   sproto_free(sproto);
 }
 
+TEST_F(ProtoTest, out_buffer_append_test1) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_out_buffer_append(sproto, &sdp));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, out_buffer_append_test2) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+  sdp.data_size = SUPLA_MAX_DATA_SIZE;
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_out_buffer_append(sproto, &sdp));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, out_buffer_append_test3) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+  sdp.data_size = SUPLA_MAX_DATA_SIZE + 1;
+
+  ASSERT_EQ(SUPLA_RESULT_DATA_TOO_LARGE,
+            sproto_out_buffer_append(sproto, &sdp));
+
+  sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, pop_out_data) {
+  void *sproto = sproto_init();
+  ASSERT_FALSE(sproto == NULL);
+
+  TSuplaDataPacket sdp;
+  sproto_sdp_init(sproto, &sdp);
+  sdp.data_size = 100;
+
+  for (int a = 0; a < 100; a++) {
+    sdp.data[a] = a;
+  }
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, sproto_out_buffer_append(sproto, &sdp));
+
+  unsigned int expected_size = sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE +
+                               sdp.data_size + SUPLA_TAG_SIZE;
+
+  char *buffer = (char *)malloc(expected_size + 10);
+
+  ASSERT_EQ(expected_size,
+            sproto_pop_out_data(sproto, buffer, expected_size + 10));
+
+  ASSERT_EQ(0, memcmp(buffer, &sdp, expected_size - SUPLA_TAG_SIZE));
+  ASSERT_EQ(0, memcmp(&buffer[expected_size - SUPLA_TAG_SIZE],
+                      (void *)sproto_tag, SUPLA_TAG_SIZE));
+
+  free(buffer);
+
+  sproto_free(sproto);
+}
+
 }  // namespace
