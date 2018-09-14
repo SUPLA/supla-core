@@ -115,6 +115,8 @@ union TsrpcDataPacketData {
   TSD_SuplaChannelCalibrate *sd_channel_calibrate;
   TCS_SuplaChannelCalibrate *cs_channel_calibrate;
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
+  TSD_SuplaChannelEraseData *sd_channel_erase_data;
+  TDS_SuplaChannelEraseDataResult *ds_channel_erase_data_result;
 };
 
 typedef struct {
@@ -194,6 +196,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_channel_calibrate(void *_srpc, TSD_SuplaChannelCalibrate *params);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sd_async_channel_erase_data(void *_srpc, unsigned char ChannelNumber);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_erase_data_result(
+    void *_srpc, unsigned char ChannelNumber, char Result);
+
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT

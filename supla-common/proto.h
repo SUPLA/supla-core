@@ -149,6 +149,7 @@ extern "C" {
 #define SUPLA_CS_CALL_CHANNEL_CALIBRATE 420                  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_CALIBRATE 430                  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_ERASE_DATA 440                 // ver. >= 10
+#define SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT 450          // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -794,12 +795,23 @@ typedef struct {
   unsigned _supla_int_t
       TokenSize;  // including the terminating null byte ('\0')
   char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
-} TSC_OAuthToken;
+} TSC_OAuthToken;                         // ver. >= 10
 
 typedef struct {
   unsigned char ResultCode;
   TSC_OAuthToken Token;
-} TSC_OAuthTokenRequestResult;
+} TSC_OAuthTokenRequestResult;  // ver. >= 10
+
+typedef struct {
+  // server -> device
+  unsigned char ChannelNumber;
+} TSD_SuplaChannelEraseData;  // ver. >= 10
+
+typedef struct {
+  // server -> device
+  unsigned char ChannelNumber;
+  char Result;
+} TDS_SuplaChannelEraseDataResult;  // ver. >= 10
 
 typedef struct {
   // 3 phases
