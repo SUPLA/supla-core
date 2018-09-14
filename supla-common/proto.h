@@ -890,8 +890,7 @@ typedef struct {
   char currency[3];
 
   unsigned _supla_int64_t counter;
-  _supla_int64_t calculated_value;  // * 0.001
-
+  _supla_int64_t calculated_value;   // * 0.001
 } TSC_ImpulseCounter_ExtendedValue;  // v. >= 10
 
 typedef struct { unsigned _supla_int64_t counter; } TDS_ImpulseCounter_Value;
