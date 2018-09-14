@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/test/DeviceChannelTest.cpp \
 ../src/test/ProtoTest.cpp \
 ../src/test/SafeArrayTest.cpp \
+../src/test/SrpcTest.cpp \
 ../src/test/ToolsTest.cpp 
 
 OBJS += \
@@ -15,6 +16,7 @@ OBJS += \
 ./src/test/DeviceChannelTest.o \
 ./src/test/ProtoTest.o \
 ./src/test/SafeArrayTest.o \
+./src/test/SrpcTest.o \
 ./src/test/ToolsTest.o 
 
 CPP_DEPS += \
@@ -22,6 +24,7 @@ CPP_DEPS += \
 ./src/test/DeviceChannelTest.d \
 ./src/test/ProtoTest.d \
 ./src/test/SafeArrayTest.d \
+./src/test/SrpcTest.d \
 ./src/test/ToolsTest.d 
 
 
