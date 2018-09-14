@@ -148,6 +148,7 @@ extern "C" {
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
 #define SUPLA_CS_CALL_CHANNEL_CALIBRATE 420                  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_CALIBRATE 430                  // ver. >= 10
+#define SUPLA_SD_CALL_CHANNEL_ERASE_DATA 440                 // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -234,6 +235,7 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
 
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
+#define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -271,6 +273,8 @@ extern "C" {
 #define SUPLA_CHANNELFNC_WEATHER_STATION 290       // ver. >= 8
 #define SUPLA_CHANNELFNC_STAIRCASETIMER 300        // ver. >= 8
 #define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
+#define SUPLA_CHANNELFNC_GAS_METER 320             // ver. >= 10
+#define SUPLA_CHANNELFNC_WATER_METER 330           // ver. >= 10
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE 0x0002
@@ -351,6 +355,7 @@ typedef struct {
 } TSuplaChannelValue;
 
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
+#define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 
 typedef struct {
   char type;  // EV_TYPE_
@@ -471,7 +476,6 @@ typedef struct {
   TDS_SuplaDeviceChannel_B
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
 } TDS_SuplaRegisterDevice_D;            // ver. >= 7
-
 
 typedef struct {
   // device -> server
@@ -825,11 +829,17 @@ typedef struct {
 
 #define EM_MEASUREMENT_COUNT 5
 
+// [IODevice->Server->Client]
 typedef struct {
   unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kW
   unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kW
   unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvar
   unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvar
+
+  // The price per unit, total cost and currency is overwritten by the server
+  _supla_int_t total_cost;      // * 0.01
+  _supla_int_t price_per_unit;  // * 0.0001
+  char currency[3];
 
   _supla_int_t measured_values;
   _supla_int_t period;  // Approximate period between measurements in seconds
@@ -842,10 +852,11 @@ typedef struct {
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
 #define EM_VALUE_FLAG_PHASE3_ON 0x04
 
+// [IODevice->Server->Client]
 typedef struct {
   char flags;
   unsigned _supla_int_t total_forward_active_energy;  // * 0.01 kW
-} TElectricityMeter_Value;
+} TElectricityMeter_Value;                            // v. >= 10
 
 typedef struct {
   // server -> device
@@ -853,13 +864,29 @@ typedef struct {
   unsigned char ChannelNumber;
 
   char parameters[SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE];
-} TSD_SuplaChannelCalibrate;
+} TSD_SuplaChannelCalibrate;  // v. >= 10
 
 typedef struct {
   // client -> server
   _supla_int_t ChannelId;
   char parameters[SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE];
-} TCS_SuplaChannelCalibrate;
+} TCS_SuplaChannelCalibrate;  // v. >= 10
+
+typedef struct {
+  _supla_int_t total_cost;      // * 0.01
+  _supla_int_t price_per_unit;  // * 0.0001
+  char currency[3];
+
+  unsigned _supla_int64_t counter;
+  _supla_int64_t calculated_value;  // * 0.001
+
+} TSC_ImpulseCounter_ExtendedValue;  // v. >= 10
+
+typedef struct { unsigned _supla_int64_t counter; } TDS_ImpulseCounter_Value;
+
+typedef struct {
+  unsigned _supla_int64_t calculated_value;  // * 0.001
+} TSC_ImpulseCounter_Value;
 
 #pragma pack(pop)
 
