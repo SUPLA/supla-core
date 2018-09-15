@@ -18,7 +18,7 @@
 
 #include "SrpcTest.h"
 #include "gtest/gtest.h"  // NOLINT
-#include "proto.h"
+#include "srpc.h"
 
 namespace {
 
@@ -26,5 +26,13 @@ class SrpcTest : public ::testing::Test {
  protected:
 };
 
+TEST_F(SrpcTest, init) {
+  TsrpcParams params;
+  srpc_params_init(&params);
+  void *srpc = srpc_init(&params);
+  ASSERT_FALSE(srpc == NULL);
+  ASSERT_EQ(SUPLA_PROTO_VERSION, srpc_get_proto_version(srpc));
+  srpc_free(srpc);
+}
 
 }  // namespace
