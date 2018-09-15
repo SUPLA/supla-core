@@ -22,14 +22,30 @@
 
 namespace {
 
+_supla_int_t srpc_data_read(void *buf, _supla_int_t count, void *user_params) {
+  return 0;
+}
+
+_supla_int_t srpc_data_write(void *buf, _supla_int_t count, void *user_params) {
+  return 0;
+}
+
 class SrpcTest : public ::testing::Test {
  protected:
+  void *srpcInit(void);
 };
 
-TEST_F(SrpcTest, init) {
+void *SrpcTest::srpcInit(void) {
   TsrpcParams params;
   srpc_params_init(&params);
-  void *srpc = srpc_init(&params);
+  params.data_read = &srpc_data_read;
+  params.data_write = &srpc_data_write;
+
+  return srpc_init(&params);
+}
+
+TEST_F(SrpcTest, init) {
+  void *srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
   ASSERT_EQ(SUPLA_PROTO_VERSION, srpc_get_proto_version(srpc));
   srpc_free(srpc);
