@@ -51,4 +51,13 @@ TEST_F(SrpcTest, init) {
   srpc_free(srpc);
 }
 
+TEST_F(SrpcTest, set_proto) {
+  void *srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+  ASSERT_EQ(SUPLA_PROTO_VERSION, srpc_get_proto_version(srpc));
+  srpc_set_proto_version(srpc, SUPLA_PROTO_VERSION_MIN);
+  ASSERT_EQ(SUPLA_PROTO_VERSION_MIN, srpc_get_proto_version(srpc));
+  srpc_free(srpc);
+}
+
 }  // namespace
