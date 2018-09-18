@@ -819,10 +819,10 @@ typedef struct {
   unsigned _supla_int_t voltage[3];         // * 0.01 V
   unsigned _supla_int_t current[3];         // * 0.001 A
   unsigned _supla_int_t power_active[3];    // * 0.00001 kW
-  _supla_int_t power_reactive[3];           // * 0.00001 kvar
+  unsigned _supla_int_t power_reactive[3];  // * 0.00001 kvar
   unsigned _supla_int_t power_apparent[3];  // * 0.00001 kVA
   _supla_int_t power_factor[3];             // * 0.001
-  unsigned _supla_int_t phase_angle[3];     // * 0.00001
+  unsigned _supla_int_t phase_angle[3];     // * 0.1 degree
 } TElectricityMeter_Measurement;            // v. >= 10
 
 #define EM_VAR_FREQ 0x0001
