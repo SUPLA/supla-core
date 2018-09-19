@@ -18,7 +18,6 @@
 
 #include "SrpcTest.h"
 #include "gtest/gtest.h"  // NOLINT
-#include "srpc.h"
 
 namespace {
 
@@ -27,23 +26,30 @@ namespace {
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
 
+class SrpcTest : public ::testing::Test {
+ protected:
+  _supla_int_t data_read_result;
+  _supla_int_t data_write_result;
+  void *srpcInit(void);
+  void srpcCallAllowed(int min_version, int *calls);
+
+ public:
+  _supla_int_t DataRead(void *buf, _supla_int_t count);
+  _supla_int_t DataWrite(void *buf, _supla_int_t count);
+};
+
 _supla_int_t srpc_data_read(void *buf, _supla_int_t count, void *user_params) {
-  return 0;
+  return static_cast<SrpcTest *>(user_params)->DataRead(buf, count);
 }
 
 _supla_int_t srpc_data_write(void *buf, _supla_int_t count, void *user_params) {
-  return 0;
+  return static_cast<SrpcTest *>(user_params)->DataWrite(buf, count);
 }
-
-class SrpcTest : public ::testing::Test {
- protected:
-  void *srpcInit(void);
-  void srpcCallAllowed(int min_version, int *calls);
-};
 
 void *SrpcTest::srpcInit(void) {
   TsrpcParams params;
   srpc_params_init(&params);
+  params.user_params = this;
   params.data_read = &srpc_data_read;
   params.data_write = &srpc_data_write;
 
@@ -199,6 +205,26 @@ TEST_F(SrpcTest, call_not_allowed) {
       ASSERT_EQ(srpc_call_allowed(srpc, a), 0);
     }
   }
+
+  srpc_free(srpc);
+}
+
+_supla_int_t SrpcTest::DataRead(void *buf, _supla_int_t count) {
+  return data_read_result;
+}
+
+_supla_int_t SrpcTest::DataWrite(void *buf, _supla_int_t count) {
+  return data_write_result;
+}
+
+TEST_F(SrpcTest, iterate_t1) {
+  data_read_result = 0;
+  data_write_result = 0;
+
+  void *srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
 
   srpc_free(srpc);
 }

@@ -19,6 +19,8 @@
 #ifndef H_SRPC_TEST_H_
 #define H_SRPC_TEST_H_
 
+#include "srpc.h"
+
 class SrpcTest {
  public:
   virtual ~SrpcTest();
