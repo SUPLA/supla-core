@@ -23,8 +23,6 @@
 
 class SrpcTest {
  public:
-  virtual ~SrpcTest();
-  SrpcTest();
 };
 
 #endif /*H_SRPC_TEST_H_*/

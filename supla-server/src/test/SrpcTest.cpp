@@ -26,16 +26,25 @@ namespace {
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
 
+static char sproto_tag[SUPLA_TAG_SIZE] = {'S', 'U', 'P', 'L', 'A'};
+
 class SrpcTest : public ::testing::Test {
  protected:
   _supla_int_t data_read_result;
   _supla_int_t data_write_result;
+  unsigned char remote_version;
+
+  void *srpc;
+  char *data;
   void *srpcInit(void);
   void srpcCallAllowed(int min_version, int *calls);
 
  public:
+  virtual void SetUp();
+  virtual void TearDown();
   _supla_int_t DataRead(void *buf, _supla_int_t count);
   _supla_int_t DataWrite(void *buf, _supla_int_t count);
+  void OnVersionError(unsigned char remote_version);
 };
 
 _supla_int_t srpc_data_read(void *buf, _supla_int_t count, void *user_params) {
@@ -46,34 +55,60 @@ _supla_int_t srpc_data_write(void *buf, _supla_int_t count, void *user_params) {
   return static_cast<SrpcTest *>(user_params)->DataWrite(buf, count);
 }
 
+void srpc_event_OnVersionError(void *_srpc, unsigned char remote_version,
+                               void *user_params) {
+  return static_cast<SrpcTest *>(user_params)->OnVersionError(remote_version);
+}
+
+void SrpcTest::SetUp() {
+  data = NULL;
+  srpc = NULL;
+  remote_version = 0;
+}
+
+void SrpcTest::TearDown() {
+  if (data != NULL) {
+    free(data);
+    data = NULL;
+  }
+
+  if (srpc != NULL) {
+    srpc_free(srpc);
+    srpc = NULL;
+  }
+}
+
 void *SrpcTest::srpcInit(void) {
   TsrpcParams params;
   srpc_params_init(&params);
   params.user_params = this;
   params.data_read = &srpc_data_read;
   params.data_write = &srpc_data_write;
+  params.on_version_error = &srpc_event_OnVersionError;
 
   return srpc_init(&params);
 }
 
 TEST_F(SrpcTest, init) {
-  void *srpc = srpcInit();
+  srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
   ASSERT_EQ(SUPLA_PROTO_VERSION, srpc_get_proto_version(srpc));
   srpc_free(srpc);
+  srpc = NULL;
 }
 
 TEST_F(SrpcTest, set_proto) {
-  void *srpc = srpcInit();
+  srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
   ASSERT_EQ(SUPLA_PROTO_VERSION, srpc_get_proto_version(srpc));
   srpc_set_proto_version(srpc, SUPLA_PROTO_VERSION_MIN);
   ASSERT_EQ(SUPLA_PROTO_VERSION_MIN, srpc_get_proto_version(srpc));
   srpc_free(srpc);
+  srpc = NULL;
 }
 
 void SrpcTest::srpcCallAllowed(int min_version, int *calls) {
-  void *srpc = srpcInit();
+  srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
   srpc_set_proto_version(srpc, min_version);
 
@@ -91,6 +126,7 @@ void SrpcTest::srpcCallAllowed(int min_version, int *calls) {
   }
 
   srpc_free(srpc);
+  srpc = NULL;
 }
 
 TEST_F(SrpcTest, call_allowed_v1) {
@@ -192,7 +228,7 @@ TEST_F(SrpcTest, call_not_allowed) {
   ASSERT_TRUE(all_calls != NULL);
   ASSERT_GT(all_calls_size, 0);
 
-  void *srpc = srpcInit();
+  srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
   for (int a = 0; a <= MAX_CALL_ID; a++) {
@@ -206,10 +242,20 @@ TEST_F(SrpcTest, call_not_allowed) {
     }
   }
 
+  free(all_calls);
+  all_calls = NULL;
+
   srpc_free(srpc);
+  srpc = NULL;
 }
 
 _supla_int_t SrpcTest::DataRead(void *buf, _supla_int_t count) {
+  if (data_read_result > 0 && data != NULL) {
+    int size = data_read_result > count ? count : data_read_result;
+    memcpy(buf, data, size);
+    printf("data %i, %i, %i", data[0], data[1], data[2]);
+    return size;
+  }
   return data_read_result;
 }
 
@@ -217,16 +263,62 @@ _supla_int_t SrpcTest::DataWrite(void *buf, _supla_int_t count) {
   return data_write_result;
 }
 
+void SrpcTest::OnVersionError(unsigned char remote_version) {
+  this->remote_version = remote_version;
+}
+
 TEST_F(SrpcTest, iterate_t1) {
   data_read_result = 0;
   data_write_result = 0;
 
-  void *srpc = srpcInit();
+  srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
 
   srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, iterate_t2) {
+  data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
+  data_write_result = 0;
+
+  data = (char *)malloc(data_read_result);
+  memset(data, 0, data_read_result);
+
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(0, remote_version);
+  ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(0, remote_version);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, iterate_t3) {
+  data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
+  data_write_result = 0;
+
+  data = (char *)malloc(data_read_result);
+  memset(data, 0, data_read_result);
+  ((TSuplaDataPacket *)data)->version = SUPLA_PROTO_VERSION + 1;
+  ((TSuplaDataPacket *)data)->data_size = SUPLA_MAX_DATA_SIZE;
+
+  memcpy(((TSuplaDataPacket *)data)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
+
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(0, remote_version);
+  ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+  ASSERT_EQ(SUPLA_PROTO_VERSION + 1, remote_version);
+
+  srpc_free(srpc);
+  srpc = NULL;
 }
 
 }  // namespace
