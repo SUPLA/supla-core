@@ -277,8 +277,7 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
         return SUPLA_RESULT_VERSION_ERROR;
       }
 
-      if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) >
-          sizeof(TSuplaDataPacket)) {
+      if ((header_size + _sdp->data_size) > sizeof(TSuplaDataPacket)) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
         return SUPLA_RESULT_DATA_ERROR;
       }
