@@ -21,6 +21,7 @@
 
 namespace {
 
+#define SRPC_QUEUE_SIZE 10
 #define MAX_CALL_ID 10000
 
 int *all_calls = NULL;  // Possible memory leak
@@ -253,7 +254,6 @@ _supla_int_t SrpcTest::DataRead(void *buf, _supla_int_t count) {
   if (data_read_result > 0 && data != NULL) {
     int size = data_read_result > count ? count : data_read_result;
     memcpy(buf, data, size);
-    printf("data %i, %i, %i", data[0], data[1], data[2]);
     return size;
   }
   return data_read_result;
@@ -267,7 +267,7 @@ void SrpcTest::OnVersionError(unsigned char remote_version) {
   this->remote_version = remote_version;
 }
 
-TEST_F(SrpcTest, iterate_t1) {
+TEST_F(SrpcTest, iterate_t1_read_error_when_zero) {
   data_read_result = 0;
   data_write_result = 0;
 
@@ -280,7 +280,7 @@ TEST_F(SrpcTest, iterate_t1) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t2) {
+TEST_F(SrpcTest, iterate_t2_incorrect_data) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
@@ -298,7 +298,7 @@ TEST_F(SrpcTest, iterate_t2) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t3) {
+TEST_F(SrpcTest, iterate_t3_incorrect_version) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
@@ -316,6 +316,31 @@ TEST_F(SrpcTest, iterate_t3) {
   ASSERT_EQ(0, remote_version);
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
   ASSERT_EQ(SUPLA_PROTO_VERSION + 1, remote_version);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, iterate_t4_input_queue_size) {
+  data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
+  data_write_result = 0;
+
+  data = (char *)malloc(data_read_result);
+  memset(data, 0, data_read_result);
+  ((TSuplaDataPacket *)data)->version = SUPLA_PROTO_VERSION;
+  ((TSuplaDataPacket *)data)->data_size = SUPLA_MAX_DATA_SIZE;
+
+  memcpy(((TSuplaDataPacket *)data)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
+
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  for (int a = 0; a < SRPC_QUEUE_SIZE; a++) {
+    ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  }
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
 
   srpc_free(srpc);
   srpc = NULL;
