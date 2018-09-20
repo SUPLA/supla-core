@@ -23,6 +23,7 @@ namespace {
 
 #define SRPC_QUEUE_SIZE 10
 #define MAX_CALL_ID 10000
+#define BUFFER_MAX_SIZE 131072
 
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
@@ -65,6 +66,8 @@ void SrpcTest::SetUp() {
   data = NULL;
   srpc = NULL;
   remote_version = 0;
+  data_read_result = 0;
+  data_write_result = 0;
 }
 
 void SrpcTest::TearDown() {
@@ -339,6 +342,32 @@ TEST_F(SrpcTest, iterate_t4_input_queue_size) {
   for (int a = 0; a < SRPC_QUEUE_SIZE; a++) {
     ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
   }
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, iterate_t5_buffer_overflow) {
+  data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
+  data_write_result = 0;
+
+  data = (char *)malloc(data_read_result);
+  memset(data, 0, data_read_result);
+  ((TSuplaDataPacket *)data)->version = SUPLA_PROTO_VERSION;
+  ((TSuplaDataPacket *)data)->data_size = SUPLA_MAX_DATA_SIZE;
+
+  memcpy(((TSuplaDataPacket *)data)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+
+  data_read_result = BUFFER_MAX_SIZE;
+  free(data);
+  data = NULL;
 
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
 
