@@ -23,6 +23,7 @@
 
 #include <WinSock2.h>
 #define _supla_int_t int
+#define _supla_int16_t short
 #define _supla_int64_t __int64
 
 #elif defined(__AVR__)
@@ -39,11 +40,13 @@ struct timeval {
   suseconds_t tv_usec[2];
 };
 #endif
+#define _supla_int16_t int
 #define _supla_int_t long
 #define _supla_int64_t long long
 
 #else
 #include <sys/time.h>
+#define _supla_int16_t short
 #define _supla_int_t int
 #define _supla_int64_t long long
 #endif
@@ -303,6 +306,8 @@ extern "C" {
 
 #define SUPLA_NEW_VALUE_TARGET_CHANNEL 0
 #define SUPLA_NEW_VALUE_TARGET_GROUP 1
+
+#define USER_ICON_MAXCOUNT 4  // ver. >= 10
 
 #pragma pack(push, 1)
 
@@ -627,6 +632,35 @@ typedef struct {
   TSC_SuplaChannel_B
       items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack_B;                 // ver. >= 8
+
+typedef struct {
+  // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t LocationID;
+  _supla_int_t Func;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon[USER_ICON_MAXCOUNT];
+  unsigned _supla_int_t Flags;
+  unsigned char ProtocolVersion;
+  char online;
+
+  TSuplaChannelValue value;
+
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaChannel_C;                           // ver. >= 10
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannel_C
+      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelPack_C;                 // ver. >= 10
 
 typedef struct {
   // server -> client
