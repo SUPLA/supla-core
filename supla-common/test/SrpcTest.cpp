@@ -37,7 +37,9 @@ class SrpcTest : public ::testing::Test {
   unsigned char remote_version;
 
   void *srpc;
-  char *data;
+  char *data_read;
+  char *data_write;
+  _supla_int_t data_write_size;
   void *srpcInit(void);
   void srpcCallAllowed(int min_version, int *calls);
 
@@ -63,7 +65,9 @@ void srpc_event_OnVersionError(void *_srpc, unsigned char remote_version,
 }
 
 void SrpcTest::SetUp() {
-  data = NULL;
+  data_read = NULL;
+  data_write = NULL;
+  data_write_size = 0;
   srpc = NULL;
   remote_version = 0;
   data_read_result = 0;
@@ -71,9 +75,14 @@ void SrpcTest::SetUp() {
 }
 
 void SrpcTest::TearDown() {
-  if (data != NULL) {
-    free(data);
-    data = NULL;
+  if (data_read != NULL) {
+    free(data_read);
+    data_read = NULL;
+  }
+
+  if (data_write != NULL) {
+    free(data_write);
+    data_write = NULL;
   }
 
   if (srpc != NULL) {
@@ -254,16 +263,25 @@ TEST_F(SrpcTest, call_not_allowed) {
 }
 
 _supla_int_t SrpcTest::DataRead(void *buf, _supla_int_t count) {
-  if (data_read_result > 0 && data != NULL) {
+  if (data_read_result > 0 && data_read != NULL) {
     int size = data_read_result > count ? count : data_read_result;
-    memcpy(buf, data, size);
+    memcpy(buf, data_read, size);
     return size;
   }
   return data_read_result;
 }
 
 _supla_int_t SrpcTest::DataWrite(void *buf, _supla_int_t count) {
-  return data_write_result;
+  if (count > 0) {
+    data_write = (char *)realloc(data_write, count);
+    if (data_write == NULL) {
+      data_write_size = 0;
+    } else {
+      memcpy(data_write, buf, count);
+      data_write_size = count;
+    }
+  }
+  return data_write_result == 0 ? count : data_write_result;
 }
 
 void SrpcTest::OnVersionError(unsigned char remote_version) {
@@ -287,8 +305,8 @@ TEST_F(SrpcTest, iterate_t2_incorrect_data) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
-  data = (char *)malloc(data_read_result);
-  memset(data, 0, data_read_result);
+  data_read = (char *)malloc(data_read_result);
+  memset(data_read, 0, data_read_result);
 
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
@@ -305,13 +323,13 @@ TEST_F(SrpcTest, iterate_t3_incorrect_version) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
-  data = (char *)malloc(data_read_result);
-  memset(data, 0, data_read_result);
-  ((TSuplaDataPacket *)data)->version = SUPLA_PROTO_VERSION + 1;
-  ((TSuplaDataPacket *)data)->data_size = SUPLA_MAX_DATA_SIZE;
+  data_read = (char *)malloc(data_read_result);
+  memset(data_read, 0, data_read_result);
+  ((TSuplaDataPacket *)data_read)->version = SUPLA_PROTO_VERSION + 1;
+  ((TSuplaDataPacket *)data_read)->data_size = SUPLA_MAX_DATA_SIZE;
 
-  memcpy(((TSuplaDataPacket *)data)->tag, sproto_tag, SUPLA_TAG_SIZE);
-  memcpy(&data[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(((TSuplaDataPacket *)data_read)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data_read[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
 
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
@@ -328,13 +346,13 @@ TEST_F(SrpcTest, iterate_t4_input_queue_size) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
-  data = (char *)malloc(data_read_result);
-  memset(data, 0, data_read_result);
-  ((TSuplaDataPacket *)data)->version = SUPLA_PROTO_VERSION;
-  ((TSuplaDataPacket *)data)->data_size = SUPLA_MAX_DATA_SIZE;
+  data_read = (char *)malloc(data_read_result);
+  memset(data_read, 0, data_read_result);
+  ((TSuplaDataPacket *)data_read)->version = SUPLA_PROTO_VERSION;
+  ((TSuplaDataPacket *)data_read)->data_size = SUPLA_MAX_DATA_SIZE;
 
-  memcpy(((TSuplaDataPacket *)data)->tag, sproto_tag, SUPLA_TAG_SIZE);
-  memcpy(&data[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(((TSuplaDataPacket *)data_read)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data_read[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
 
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
@@ -353,23 +371,39 @@ TEST_F(SrpcTest, iterate_t5_buffer_overflow) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
-  data = (char *)malloc(data_read_result);
-  memset(data, 0, data_read_result);
-  ((TSuplaDataPacket *)data)->version = SUPLA_PROTO_VERSION;
-  ((TSuplaDataPacket *)data)->data_size = SUPLA_MAX_DATA_SIZE;
+  data_read = (char *)malloc(data_read_result);
+  memset(data_read, 0, data_read_result);
+  ((TSuplaDataPacket *)data_read)->version = SUPLA_PROTO_VERSION;
+  ((TSuplaDataPacket *)data_read)->data_size = SUPLA_MAX_DATA_SIZE;
 
-  memcpy(((TSuplaDataPacket *)data)->tag, sproto_tag, SUPLA_TAG_SIZE);
-  memcpy(&data[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(((TSuplaDataPacket *)data_read)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data_read[sizeof(TSuplaDataPacket)], sproto_tag, SUPLA_TAG_SIZE);
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
 
   data_read_result = BUFFER_MAX_SIZE;
-  free(data);
-  data = NULL;
+  free(data_read);
+  data_read = NULL;
 
   ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_iterate(srpc));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, iterate_t6_out_queue_pop) {
+  data_read_result = -1;
+  data_write_result = 0;
+
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_dcs_async_getversion(srpc), 0);
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  ASSERT_FALSE(data_write == NULL);
+  ASSERT_EQ(23, data_write_size);
 
   srpc_free(srpc);
   srpc = NULL;
