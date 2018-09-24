@@ -309,6 +309,14 @@ extern "C" {
 
 #define USER_ICON_MAXCOUNT 4  // ver. >= 10
 
+#define SUPLA_MFR_UNKNOWN 0
+#define SUPLA_MFR_ACSOFTWARE 1
+#define SUPLA_MFR_TRANSCOM 2
+#define SUPLA_MFR_LOGI 3
+#define SUPLA_MFR_ZAMEL 4
+#define SUPLA_MFR_NICE 5
+#define SUPLA_MFR_ITEAD 6
+
 #pragma pack(push, 1)
 
 typedef struct {
@@ -497,6 +505,7 @@ typedef struct {
   char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
 
   _supla_int_t Flags;
+  _supla_int16_t ManufacturerID;
 
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_C
@@ -642,6 +651,8 @@ typedef struct {
   _supla_int_t Func;
   _supla_int_t AltIcon;
   _supla_int_t UserIcon[USER_ICON_MAXCOUNT];
+  _supla_int16_t ManufacturerID;
+
   unsigned _supla_int_t Flags;
   unsigned char ProtocolVersion;
   char online;
@@ -849,15 +860,15 @@ typedef struct {
 
 typedef struct {
   // 3 phases
-  unsigned _supla_int_t freq;               // * 0.01 Hz
-  unsigned _supla_int_t voltage[3];         // * 0.01 V
-  unsigned _supla_int_t current[3];         // * 0.001 A
-  unsigned _supla_int_t power_active[3];    // * 0.00001 kW
-  unsigned _supla_int_t power_reactive[3];  // * 0.00001 kvar
-  unsigned _supla_int_t power_apparent[3];  // * 0.00001 kVA
-  _supla_int_t power_factor[3];             // * 0.001
-  unsigned _supla_int_t phase_angle[3];     // * 0.1 degree
-} TElectricityMeter_Measurement;            // v. >= 10
+  unsigned _supla_int16_t freq;        // * 0.01 Hz
+  unsigned _supla_int16_t voltage[3];  // * 0.01 V
+  unsigned _supla_int16_t current[3];  // * 0.001 A
+  _supla_int_t power_active[3];        // * 0.00001 kW
+  _supla_int_t power_reactive[3];      // * 0.00001 kvar
+  _supla_int_t power_apparent[3];      // * 0.00001 kVA
+  _supla_int16_t power_factor[3];      // * 0.001
+  _supla_int16_t phase_angle[3];       // * 0.1 degree
+} TElectricityMeter_Measurement;       // v. >= 10
 
 #define EM_VAR_FREQ 0x0001
 #define EM_VAR_VOLTAGE 0x0002
