@@ -288,7 +288,7 @@ void SrpcTest::OnVersionError(unsigned char remote_version) {
   this->remote_version = remote_version;
 }
 
-TEST_F(SrpcTest, iterate_t1_read_error_when_zero) {
+TEST_F(SrpcTest, iterate_read_error_when_zero) {
   data_read_result = 0;
   data_write_result = 0;
 
@@ -301,7 +301,7 @@ TEST_F(SrpcTest, iterate_t1_read_error_when_zero) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t2_incorrect_data) {
+TEST_F(SrpcTest, iterate_incorrect_data) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
@@ -319,7 +319,7 @@ TEST_F(SrpcTest, iterate_t2_incorrect_data) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t3_incorrect_version) {
+TEST_F(SrpcTest, iterate_incorrect_version) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
@@ -342,7 +342,7 @@ TEST_F(SrpcTest, iterate_t3_incorrect_version) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t4_input_queue_size) {
+TEST_F(SrpcTest, iterate_input_queue_size) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
@@ -367,7 +367,7 @@ TEST_F(SrpcTest, iterate_t4_input_queue_size) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t5_buffer_overflow) {
+TEST_F(SrpcTest, iterate_buffer_overflow) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
   data_write_result = 0;
 
@@ -393,7 +393,28 @@ TEST_F(SrpcTest, iterate_t5_buffer_overflow) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, iterate_t6_out_queue_pop) {
+TEST_F(SrpcTest, iterate_no_data) {
+  data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
+  data_write_result = 0;
+
+  data_read = (char *)malloc(data_read_result);
+  memset(data_read, 0, data_read_result);
+  ((TSuplaDataPacket *)data_read)->version = SUPLA_PROTO_VERSION;
+  ((TSuplaDataPacket *)data_read)->data_size = 0;
+  memcpy(((TSuplaDataPacket *)data_read)->tag, sproto_tag, SUPLA_TAG_SIZE);
+  memcpy(&data_read[sizeof(TSuplaDataPacket) - SUPLA_MAX_DATA_SIZE], sproto_tag,
+         SUPLA_TAG_SIZE);
+
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, iterate_out_queue_pop) {
   data_read_result = -1;
   data_write_result = 0;
 
