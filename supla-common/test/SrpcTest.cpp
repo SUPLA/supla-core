@@ -43,12 +43,21 @@ class SrpcTest : public ::testing::Test {
   void *srpcInit(void);
   void srpcCallAllowed(int min_version, int *calls);
 
+  unsigned _supla_int_t cr_rr_id;
+  unsigned _supla_int_t cr_call_type;
+  unsigned char cr_proto_version;
+  TsrpcReceivedData cr_rd;
+
  public:
   virtual void SetUp();
   virtual void TearDown();
   _supla_int_t DataRead(void *buf, _supla_int_t count);
   _supla_int_t DataWrite(void *buf, _supla_int_t count);
+  void SendAndReceive(int ExpectedCallType, int ExpectedSize);
   void OnVersionError(unsigned char remote_version);
+  void OnRemoteCallReceived(unsigned _supla_int_t rr_id,
+                            unsigned _supla_int_t call_type,
+                            unsigned char proto_version);
 };
 
 _supla_int_t srpc_data_read(void *buf, _supla_int_t count, void *user_params) {
@@ -64,6 +73,14 @@ void srpc_event_OnVersionError(void *_srpc, unsigned char remote_version,
   return static_cast<SrpcTest *>(user_params)->OnVersionError(remote_version);
 }
 
+void srpc_on_remote_call_received(void *_srpc, unsigned _supla_int_t rr_id,
+                                  unsigned _supla_int_t call_type,
+                                  void *user_params,
+                                  unsigned char proto_version) {
+  return static_cast<SrpcTest *>(user_params)
+      ->OnRemoteCallReceived(rr_id, call_type, proto_version);
+}
+
 void SrpcTest::SetUp() {
   data_read = NULL;
   data_write = NULL;
@@ -72,6 +89,9 @@ void SrpcTest::SetUp() {
   remote_version = 0;
   data_read_result = 0;
   data_write_result = 0;
+  cr_rr_id = 0;
+  cr_call_type = 0;
+  cr_proto_version = 0;
 }
 
 void SrpcTest::TearDown() {
@@ -98,6 +118,7 @@ void *SrpcTest::srpcInit(void) {
   params.data_read = &srpc_data_read;
   params.data_write = &srpc_data_write;
   params.on_version_error = &srpc_event_OnVersionError;
+  params.on_remote_call_received = &srpc_on_remote_call_received;
 
   return srpc_init(&params);
 }
@@ -288,6 +309,14 @@ void SrpcTest::OnVersionError(unsigned char remote_version) {
   this->remote_version = remote_version;
 }
 
+void SrpcTest::OnRemoteCallReceived(unsigned _supla_int_t rr_id,
+                                    unsigned _supla_int_t call_type,
+                                    unsigned char proto_version) {
+  cr_rr_id = rr_id;
+  cr_call_type = call_type;
+  cr_proto_version = proto_version;
+}
+
 TEST_F(SrpcTest, iterate_read_error_when_zero) {
   data_read_result = 0;
   data_write_result = 0;
@@ -429,5 +458,86 @@ TEST_F(SrpcTest, iterate_out_queue_pop) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+void SrpcTest::SendAndReceive(int ExpectedCallType, int ExpectedSize) {
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+  ASSERT_FALSE(data_write == NULL);
+  ASSERT_EQ(ExpectedSize, data_write_size);
+  ASSERT_TRUE(data_read == NULL);
+  data_read = (char *)malloc(data_write_size);
+  ASSERT_FALSE(data_read == NULL);
+  data_read_result = data_write_size;
+
+  memcpy(data_read, data_write, data_write_size);
+
+  data_write_size = 0;
+  free(data_write);
+  data_write = NULL;
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
+
+  ASSERT_EQ(1, cr_rr_id);
+  ASSERT_EQ(ExpectedCallType, cr_call_type);
+  ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
+
+  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+  ASSERT_EQ(ExpectedCallType, cr_rd.call_type);
+  ASSERT_EQ(cr_rr_id, cr_rd.rr_id);
+}
+
+TEST_F(SrpcTest, call_getversion) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_dcs_async_getversion(srpc), 0);
+
+  SendAndReceive(SUPLA_DCS_CALL_GETVERSION, 23);
+
+  // No Data
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_getversion_reasult) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+  memset(SoftVer, 0, SUPLA_SOFTVER_MAXSIZE);
+  snprintf(SoftVer, SUPLA_SOFTVER_MAXSIZE, "UTEST");
+
+  ASSERT_GT(srpc_sdc_async_getversion_result(srpc, SoftVer), 0);
+
+  SendAndReceive(SUPLA_SDC_CALL_GETVERSION_RESULT, 46);
+
+  ASSERT_FALSE(cr_rd.data.sdc_getversion_result == NULL);
+
+  ASSERT_EQ(SUPLA_PROTO_VERSION,
+            cr_rd.data.sdc_getversion_result->proto_version);
+  ASSERT_EQ(SUPLA_PROTO_VERSION_MIN,
+            cr_rd.data.sdc_getversion_result->proto_version_min);
+  ASSERT_EQ(0, memcmp(SoftVer, cr_rd.data.sdc_getversion_result->SoftVer,
+                      SUPLA_SOFTVER_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+/*
+ *
+ *   ASSERT_GE(now.tv_sec, cr_rd.data.dcs_ping->now.tv_sec);
+  ASSERT_TRUE(cr_rd.data.dcs_ping->now.tv_sec > now.tv_sec ||
+              cr_rd.data.dcs_ping->now.tv_usec > now.tv_usec);
+ */
 
 }  // namespace
