@@ -1098,8 +1098,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc) {
   return srpc_async_call(_srpc, SUPLA_DCS_CALL_GETVERSION, NULL, 0);
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(void *_srpc,
-                                                                char *SoftVer) {
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(
+    void *_srpc, char SoftVer[SUPLA_SOFTVER_MAXSIZE]) {
   TSDC_SuplaGetVersionResult gvr;
 
   gvr.proto_version = SUPLA_PROTO_VERSION;

@@ -150,8 +150,8 @@ srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_type);
 
 // device/client <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(void *_srpc,
-                                                                char *SoftVer);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(
+    void *_srpc, char SoftVer[SUPLA_SOFTVER_MAXSIZE]);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc);
