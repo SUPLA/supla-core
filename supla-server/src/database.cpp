@@ -482,7 +482,7 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
       "?,unhex(?),?,?)";
 
   MYSQL_STMT *stmt;
-  if (stmt_execute((void **)&stmt, sql, pbind, 10, false)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 11, false)) {
     DeviceID = get_last_insert_id();
   }
 
@@ -654,7 +654,7 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
         "(?,?,0,0,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt;
-    if (!stmt_execute((void **)&stmt, sql, pbind, 6, false)) {
+    if (!stmt_execute((void **)&stmt, sql, pbind, 7, false)) {
       mysql_stmt_close(stmt);
       return 0;
     } else if (new_channel) {
