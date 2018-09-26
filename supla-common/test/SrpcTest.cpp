@@ -92,6 +92,7 @@ void SrpcTest::SetUp() {
   cr_rr_id = 0;
   cr_call_type = 0;
   cr_proto_version = 0;
+  memset(&cr_rd, 0, sizeof(TsrpcReceivedData));
 }
 
 void SrpcTest::TearDown() {
@@ -486,9 +487,6 @@ void SrpcTest::SendAndReceive(int ExpectedCallType, int ExpectedSize) {
 }
 
 TEST_F(SrpcTest, call_getversion) {
-  struct timeval now;
-  gettimeofday(&now, NULL);
-
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
@@ -505,9 +503,6 @@ TEST_F(SrpcTest, call_getversion) {
 }
 
 TEST_F(SrpcTest, call_getversion_reasult) {
-  struct timeval now;
-  gettimeofday(&now, NULL);
-
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
@@ -533,11 +528,48 @@ TEST_F(SrpcTest, call_getversion_reasult) {
   srpc = NULL;
 }
 
-/*
- *
- *   ASSERT_GE(now.tv_sec, cr_rd.data.dcs_ping->now.tv_sec);
+TEST_F(SrpcTest, call_ping_server) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_dcs_async_ping_server(srpc), 0);
+
+  SendAndReceive(SUPLA_DCS_CALL_PING_SERVER, 39);
+
+  ASSERT_FALSE(cr_rd.data.dcs_ping == NULL);
+
+  ASSERT_GE(now.tv_sec, cr_rd.data.dcs_ping->now.tv_sec);
   ASSERT_TRUE(cr_rd.data.dcs_ping->now.tv_sec > now.tv_sec ||
               cr_rd.data.dcs_ping->now.tv_usec > now.tv_usec);
- */
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_ping_server_result) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_sdc_async_ping_server_result(srpc), 0);
+
+  SendAndReceive(SUPLA_SDC_CALL_PING_SERVER_RESULT, 39);
+
+  ASSERT_FALSE(cr_rd.data.sdc_ping_result == NULL);
+
+  ASSERT_GE(now.tv_sec, cr_rd.data.sdc_ping_result->now.tv_sec);
+  ASSERT_TRUE(cr_rd.data.sdc_ping_result->now.tv_sec > now.tv_sec ||
+              cr_rd.data.sdc_ping_result->now.tv_usec > now.tv_usec);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
 
 }  // namespace
