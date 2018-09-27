@@ -570,4 +570,52 @@ TEST_F(SrpcTest, call_ping_server_result) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_set_activity_timeout) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDCS_SuplaSetActivityTimeout timeout;
+  timeout.activity_timeout = 123;
+
+  ASSERT_GT(srpc_dcs_async_set_activity_timeout(srpc, &timeout), 0);
+
+  SendAndReceive(SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT, 24);
+
+  ASSERT_FALSE(cr_rd.data.dcs_set_activity_timeout == NULL);
+  ASSERT_EQ(123, cr_rd.data.dcs_set_activity_timeout->activity_timeout);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_set_activity_timeout_result) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSDC_SuplaSetActivityTimeoutResult result;
+  result.min = 5;
+  result.activity_timeout = 10;
+  result.max = 20;
+
+  ASSERT_GT(srpc_dcs_async_set_activity_timeout_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT, 26);
+
+  ASSERT_FALSE(cr_rd.data.sdc_set_activity_timeout_result == NULL);
+  ASSERT_EQ(5, cr_rd.data.sdc_set_activity_timeout_result->min);
+  ASSERT_EQ(10, cr_rd.data.sdc_set_activity_timeout_result->activity_timeout);
+  ASSERT_EQ(20, cr_rd.data.sdc_set_activity_timeout_result->max);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 }  // namespace
