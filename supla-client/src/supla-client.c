@@ -805,29 +805,30 @@ void *supla_client_get_userdata(void *_suplaclient) {
   return suplaclient->cfg.user_data;
 }
 
-char supla_client_open(void *_suplaclient, int ID, char group, char open) {
+char supla_client_send_raw_value(void *_suplaclient, int ID,
+                                 char value[SUPLA_CHANNELVALUE_SIZE],
+                                 char Target) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
   lck_lock(suplaclient->lck);
   if (supla_client_registered(_suplaclient) == 1) {
     if (srpc_get_proto_version(suplaclient->srpc) >= 9) {
-      TCS_SuplaNewValue value;
-      memset(&value, 0, sizeof(TCS_SuplaNewValue));
-      value.Id = ID;
-      value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
-                               : SUPLA_NEW_VALUE_TARGET_CHANNEL;
-      value.value[0] = open;
-      result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
+      TCS_SuplaNewValue _value;
+      memset(&_value, 0, sizeof(TCS_SuplaNewValue));
+      _value.Id = ID;
+      _value.Target = Target;
+      memcpy(_value.value, value, SUPLA_CHANNELVALUE_SIZE);
+      result = srpc_cs_async_set_value(suplaclient->srpc, &_value) ==
                        SUPLA_RESULT_FALSE
                    ? 0
                    : 1;
     } else {
-      TCS_SuplaChannelNewValue_B value;
-      memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
-      value.ChannelId = ID;
-      value.value[0] = open;
-      result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
+      TCS_SuplaChannelNewValue_B _value;
+      memset(&_value, 0, sizeof(TCS_SuplaChannelNewValue_B));
+      _value.ChannelId = ID;
+      memcpy(_value.value, value, SUPLA_CHANNELVALUE_SIZE);
+      result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &_value) ==
                        SUPLA_RESULT_FALSE
                    ? 0
                    : 1;
@@ -838,14 +839,25 @@ char supla_client_open(void *_suplaclient, int ID, char group, char open) {
   return result;
 }
 
-void _supla_client_set_rgbw(char *value, int color, char color_brightness,
-                            char brightness) {
+char supla_client_open(void *_suplaclient, int ID, char group, char open) {
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+  value[0] = open;
+
+  return supla_client_send_raw_value(
+      _suplaclient, ID, value, group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
+                                         : SUPLA_NEW_VALUE_TARGET_CHANNEL);
+}
+
+void _supla_client_set_rgbw_value(char *value, int color, char color_brightness,
+                                  char brightness) {
   value[0] = brightness;
   value[1] = color_brightness;
   value[2] = (char)((color & 0x000000FF));        // BLUE
   value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
   value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
 }
+
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
                            char color_brightness, char brightness) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
@@ -856,7 +868,8 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
     if (srpc_get_proto_version(suplaclient->srpc) >= 9) {
       TCS_SuplaNewValue value;
       memset(&value, 0, sizeof(TCS_SuplaNewValue));
-      _supla_client_set_rgbw(value.value, color, color_brightness, brightness);
+      _supla_client_set_rgbw_value(value.value, color, color_brightness,
+                                   brightness);
       value.Id = ID;
       value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
                                : SUPLA_NEW_VALUE_TARGET_CHANNEL;
@@ -867,7 +880,8 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
     } else {
       TCS_SuplaChannelNewValue_B value;
       memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
-      _supla_client_set_rgbw(value.value, color, color_brightness, brightness);
+      _supla_client_set_rgbw_value(value.value, color, color_brightness,
+                                   brightness);
       value.ChannelId = ID;
 
       result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
