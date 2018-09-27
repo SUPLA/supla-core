@@ -131,7 +131,8 @@ char supla_client_iterate(void *_suplaclient, int wait_usec);
 void *supla_client_get_userdata(void *_suplaclient);
 
 char supla_client_send_raw_value(void *_suplaclient, int ID,
-                                 char value[SUPLA_CHANNELVALUE_SIZE], char Target);
+                                 char value[SUPLA_CHANNELVALUE_SIZE],
+                                 char Target);
 char supla_client_open(void *_suplaclient, int ID, char group, char open);
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
                            char color_brightness, char brightness);
