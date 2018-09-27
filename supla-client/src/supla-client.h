@@ -128,6 +128,7 @@ void supla_client_disconnect(void *_suplaclient);
 
 // For _WIN32 wait_usec mean wait_msec
 char supla_client_iterate(void *_suplaclient, int wait_usec);
+void supla_client_raise_event(void *_suplaclient);
 void *supla_client_get_userdata(void *_suplaclient);
 
 char supla_client_send_raw_value(void *_suplaclient, int ID,

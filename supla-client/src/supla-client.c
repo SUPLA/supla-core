@@ -800,6 +800,10 @@ char supla_client_iterate(void *_suplaclient, int wait_usec) {
   return 1;
 }
 
+void supla_client_raise_event(void *_suplaclient) {
+  eh_raise_event(((TSuplaClientData *)_suplaclient)->eh);
+}
+
 void *supla_client_get_userdata(void *_suplaclient) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   return suplaclient->cfg.user_data;
