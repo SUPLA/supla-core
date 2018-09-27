@@ -704,12 +704,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
-      case SUPLA_SD_CALL_CHANNEL_CALIBRATE:
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelCalibrate))
-          rd->data.sd_channel_calibrate = (TSD_SuplaChannelCalibrate *)malloc(
-              sizeof(TSD_SuplaChannelCalibrate));
-        break;
-
       case SUPLA_SD_CALL_CHANNEL_ERASE_DATA:
         if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelEraseData))
           rd->data.sd_channel_erase_data = (TSD_SuplaChannelEraseData *)malloc(
@@ -890,14 +884,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
-      case SUPLA_CS_CALL_CHANNEL_CALIBRATE:
-
-        if (srpc->sdp.data_size == sizeof(TCS_SuplaChannelCalibrate))
-          rd->data.cs_channel_calibrate = (TCS_SuplaChannelCalibrate *)malloc(
-              sizeof(TCS_SuplaChannelCalibrate));
-
-        break;
-
       case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
         call_with_no_data = 1;
         break;
@@ -1002,8 +988,6 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
 
     case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
     case SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE:
-    case SUPLA_SD_CALL_CHANNEL_CALIBRATE:
-    case SUPLA_CS_CALL_CHANNEL_CALIBRATE:
     case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
     case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
     case SUPLA_DS_CALL_REGISTER_DEVICE_E:
@@ -1314,12 +1298,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
           (SUPLA_CHANNELEXTENDEDVALUE_SIZE - ncsc.value.size));
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_channel_calibrate(
-    void *_srpc, TSD_SuplaChannelCalibrate *params) {
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_CALIBRATE, (char *)params,
-                         sizeof(TSD_SuplaChannelCalibrate));
-}
-
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_channel_erase_data(void *_srpc, unsigned char ChannelNumber) {
   TSD_SuplaChannelEraseData ed;
@@ -1603,12 +1581,6 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_value(void *_srpc, TCS_SuplaNewValue *value) {
   return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_VALUE, (char *)value,
                          sizeof(TCS_SuplaNewValue));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_calibrate(
-    void *_srpc, TCS_SuplaChannelCalibrate *params) {
-  return srpc_async_call(_srpc, SUPLA_CS_CALL_CHANNEL_CALIBRATE, (char *)params,
-                         sizeof(TCS_SuplaChannelCalibrate));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc) {
