@@ -53,7 +53,7 @@ class SrpcTest : public ::testing::Test {
   virtual void TearDown();
   _supla_int_t DataRead(void *buf, _supla_int_t count);
   _supla_int_t DataWrite(void *buf, _supla_int_t count);
-  void SendAndReceive(int ExpectedCallType, int ExpectedSize);
+  void SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize);
   void OnVersionError(unsigned char remote_version);
   void OnRemoteCallReceived(unsigned _supla_int_t rr_id,
                             unsigned _supla_int_t call_type,
@@ -458,7 +458,7 @@ TEST_F(SrpcTest, iterate_out_queue_pop) {
   srpc = NULL;
 }
 
-void SrpcTest::SendAndReceive(int ExpectedCallType, int ExpectedSize) {
+void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
   ASSERT_FALSE(data_write == NULL);
   ASSERT_EQ(ExpectedSize, data_write_size);
@@ -475,8 +475,8 @@ void SrpcTest::SendAndReceive(int ExpectedCallType, int ExpectedSize) {
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
 
-  ASSERT_EQ(1, cr_rr_id);
-  ASSERT_EQ(ExpectedCallType, cr_call_type);
+  ASSERT_EQ((unsigned int)1, (unsigned int)cr_rr_id);
+  ASSERT_TRUE(ExpectedCallType == cr_call_type);
   ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
 
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
@@ -613,6 +613,43 @@ TEST_F(SrpcTest, call_set_activity_timeout_result) {
   ASSERT_EQ(5, cr_rd.data.sdc_set_activity_timeout_result->min);
   ASSERT_EQ(10, cr_rd.data.sdc_set_activity_timeout_result->activity_timeout);
   ASSERT_EQ(20, cr_rd.data.sdc_set_activity_timeout_result->max);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_get_registration_enabled) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_dcs_async_get_registration_enabled(srpc), 0);
+  SendAndReceive(SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED, 23);
+
+  // No Data
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_get_registration_enabled_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSDC_RegistrationEnabled result;
+  result.client_timestamp = 10;
+  result.iodevice_timestamp = 20;
+
+  ASSERT_GT(srpc_sdc_async_get_registration_enabled_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT, 31);
+
+  ASSERT_FALSE(cr_rd.data.sdc_reg_enabled == NULL);
+  ASSERT_EQ(cr_rd.data.sdc_reg_enabled->client_timestamp,
+            result.client_timestamp);
+  ASSERT_EQ(cr_rd.data.sdc_reg_enabled->iodevice_timestamp,
+            result.iodevice_timestamp);
 
   srpc_free(srpc);
   srpc = NULL;
