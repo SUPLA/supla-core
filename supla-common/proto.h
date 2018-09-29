@@ -99,8 +99,8 @@ extern "C" {
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
-  (SUPLA_MAX_DATA_SIZE - 50)            // ver. >= 10
-#define SUPLA_DEVICE_CONFIG_MAXSIZE 64  // ver. >= 10
+  (SUPLA_MAX_DATA_SIZE - 50)             // ver. >= 10
+#define SUPLA_CONFIG_FIELDS_MAXCOUNT 16  // ver. >= 10
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -152,6 +152,8 @@ extern "C" {
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
 #define SUPLA_SD_CALL_CHANNEL_ERASE_DATA 420                 // ver. >= 10
 #define SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT 430          // ver. >= 10
+#define SUPLA_DS_CALL_CONFIGURATION_REQUEST 440              // ver. >= 10
+#define SUPLA_SS_CALL_CONFIGURATION_RESPONSE 450             // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -929,14 +931,26 @@ typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
 } TSC_ImpulseCounter_Value;
 
+typedef struct {
+  unsigned char ChannelNumber;
+
+  _supla_int_t A_Fields;     // CFG_A_FIELD_
+  _supla_int_t B_Fields;     // CFG_B_FIELD_
+  _supla_int_t C_Fields;     // CFG_C_FIELD_
+} TSD_ConfigurationRequest;  // v. >= 10
+
+typedef struct {
+  char Group;  // Group (A/B/C)
+  _supla_int_t Field;
+  _supla_int_t Value;
+} TSD_ConfigurationField;
 
 typedef struct {
   unsigned char ChannelNumber;
-  char Type;  // DEV_CFG_TYPE_
-
-  unsigned _supla_int_t Size;
-  char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
-} TSD_DeviceConfiguration;                   // v. >= 10
+  unsigned char Count;
+  TSD_ConfigurationField
+      Fields[SUPLA_CONFIG_FIELDS_MAXCOUNT];  // Last variable in struct!
+} TSD_ConfigurationResponse;                 // v. >= 10
 
 #pragma pack(pop)
 
