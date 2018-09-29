@@ -237,8 +237,6 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
 
-#define SUPLA_CHANNELTYPE_VL_DIMMER_A 4200  // ver. >= 10
-
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
 #define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
 
@@ -931,17 +929,13 @@ typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
 } TSC_ImpulseCounter_Value;
 
-typedef struct {
-  unsigned char min;
-  unsigned char max;
-  unsigned char mode;
-  unsigned char drive;
-} TCFG_VL_DimmerA_Parameters;  // v. >= 10
 
 typedef struct {
-  char type;  // DEV_CFG_TYPE_
-  unsigned _supla_int_t size;
-  char config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
+  unsigned char ChannelNumber;
+  char Type;  // DEV_CFG_TYPE_
+
+  unsigned _supla_int_t Size;
+  char Config[SUPLA_DEVICE_CONFIG_MAXSIZE];  // Last variable in struct!
 } TSD_DeviceConfiguration;                   // v. >= 10
 
 #pragma pack(pop)
