@@ -42,8 +42,6 @@ const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
 const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 
-const char cmd_oauth[] = "OAUTH:";
-const char cmd_sauth[] = "SAUTH:";  // SUPER USER AUTH
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
 const char cmd_set_rand_rgbw_value[] = "SET-RAND-RGBW-VALUE:";
@@ -53,8 +51,6 @@ const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
 const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
-  set_unauthorized();
-
   this->sfd = sfd;
 
   this->eh = eh_init();
@@ -144,86 +140,6 @@ void svr_ipcctrl::get_char(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::set_unauthorized(void) {
-  auth_level = IPC_AUTH_LEVEL_UNAUTHORIZED;
-  oauth_user_id = 0;
-  user_id = 0;
-  auth_expires_at = 0;
-}
-
-void svr_ipcctrl::oauth(const char *cmd) {
-  set_unauthorized();
-
-  int _auth_expires_at = 0;
-  int _user_id = 0;
-  int _oauth_user_id = 0;
-
-  bool result = false;
-
-  char access_token[256];
-  memset(access_token, 0, 256);
-
-  sscanf(&buffer[strnlen(cmd, 255)], "%s\n", access_token);
-  access_token[255] = 0;
-
-  database *db = new database();
-
-  if (db->connect() == true) {
-    if (db->get_oauth_user(access_token, &_oauth_user_id, &_user_id,
-                           &_auth_expires_at) &&
-        _user_id > 0) {
-      oauth_user_id = _oauth_user_id;
-      user_id = _user_id;
-      auth_expires_at = _auth_expires_at;
-      auth_level = IPC_AUTH_LEVEL_OAUTH_USER;
-
-      result = true;
-    }
-  }
-
-  delete db;
-
-  if (result) {
-    send_result("AUTH_OK:", user_id);
-    return;
-  }
-
-  send_result("UNAUTHORIZED");
-}
-
-void svr_ipcctrl::sauth(const char *cmd) {
-  set_unauthorized();
-
-  if (ipc_sauth_key != NULL &&
-      memcmp(&buffer[strnlen(cmd, 255)], ipc_sauth_key, IPC_SAUTH_KEY_SIZE) ==
-          0) {
-    auth_level = IPC_AUTH_LEVEL_SUPERUSER;
-
-    send_result("AUTH_OK");
-    return;
-  }
-
-  send_result("UNAUTHORIZED");
-}
-
-bool svr_ipcctrl::is_authorized(int UserID, bool _send_result) {
-  bool result = auth_level == IPC_AUTH_LEVEL_SUPERUSER ||
-                (auth_level == IPC_AUTH_LEVEL_OAUTH_USER && user_id == UserID);
-
-  if (result && auth_expires_at > 0) {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-
-    if (auth_expires_at < now.tv_sec) result = false;
-  }
-
-  if (result == false) {
-    send_result("UNAUTHORIZED");
-  }
-
-  return result;
-}
-
 void svr_ipcctrl::get_rgbw(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
@@ -266,8 +182,6 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
   }
 
   if (UserID && CGID) {
-    if (false == is_authorized(UserID, true)) return;
-
     if (Value < 0 || Value > 255) send_result("VALUE OUT OF RANGE");
 
     bool result = false;
@@ -324,8 +238,6 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   }
 
   if (UserID && CGID) {
-    if (false == is_authorized(UserID, true)) return;
-
     if (ColorBrightness < 0 || ColorBrightness > 100 || Brightness < 0 ||
         Brightness > 100)
       send_result("VALUE OUT OF RANGE");
@@ -433,12 +345,6 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_get_char_value, len)) {
           get_char(cmd_get_char_value);
-
-        } else if (match_command(cmd_oauth, len)) {
-          oauth(cmd_oauth);
-
-        } else if (match_command(cmd_sauth, len)) {
-          sauth(cmd_sauth);
 
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);

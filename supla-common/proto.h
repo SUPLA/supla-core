@@ -23,6 +23,7 @@
 
 #include <WinSock2.h>
 #define _supla_int_t int
+#define _supla_int16_t short
 #define _supla_int64_t __int64
 
 #elif defined(__AVR__)
@@ -39,11 +40,13 @@ struct timeval {
   suseconds_t tv_usec[2];
 };
 #endif
+#define _supla_int16_t int
 #define _supla_int_t long
 #define _supla_int64_t long long
 
 #else
 #include <sys/time.h>
+#define _supla_int16_t short
 #define _supla_int_t int
 #define _supla_int64_t long long
 #endif
@@ -95,8 +98,9 @@ extern "C" {
 #define SUPLA_CHANNELGROUP_CAPTION_MAXSIZE 401      // ver. >= 9
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
-#define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE (SUPLA_MAX_DATA_SIZE - 50)
-#define SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE 256  // ver. >= 10
+#define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
+  (SUPLA_MAX_DATA_SIZE - 50)             // ver. >= 10
+#define SUPLA_CONFIG_FIELDS_MAXCOUNT 16  // ver. >= 10
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -111,6 +115,7 @@ extern "C" {
 #define SUPLA_DS_CALL_REGISTER_DEVICE_B 65  // ver. >= 2
 #define SUPLA_DS_CALL_REGISTER_DEVICE_C 67  // ver. >= 6
 #define SUPLA_DS_CALL_REGISTER_DEVICE_D 68  // ver. >= 7
+#define SUPLA_DS_CALL_REGISTER_DEVICE_E 69  // ver. >= 10
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT 70
 #define SUPLA_CS_CALL_REGISTER_CLIENT 80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
@@ -145,8 +150,10 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
-#define SUPLA_CS_CALL_CHANNEL_CALIBRATE 420                  // ver. >= 10
-#define SUPLA_SD_CALL_CHANNEL_CALIBRATE 430                  // ver. >= 10
+#define SUPLA_SD_CALL_CHANNEL_ERASE_DATA 420                 // ver. >= 10
+#define SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT 430          // ver. >= 10
+#define SUPLA_DS_CALL_CONFIGURATION_REQUEST 440              // ver. >= 10
+#define SUPLA_SS_CALL_CONFIGURATION_RESPONSE 450             // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -233,6 +240,7 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
 
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
+#define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -270,6 +278,8 @@ extern "C" {
 #define SUPLA_CHANNELFNC_WEATHER_STATION 290       // ver. >= 8
 #define SUPLA_CHANNELFNC_STAIRCASETIMER 300        // ver. >= 8
 #define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
+#define SUPLA_CHANNELFNC_GAS_METER 320             // ver. >= 10
+#define SUPLA_CHANNELFNC_WATER_METER 330           // ver. >= 10
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE 0x0002
@@ -297,6 +307,16 @@ extern "C" {
 
 #define SUPLA_NEW_VALUE_TARGET_CHANNEL 0
 #define SUPLA_NEW_VALUE_TARGET_GROUP 1
+
+#define USER_ICON_MAXCOUNT 4  // ver. >= 10
+
+#define SUPLA_MFR_UNKNOWN 0
+#define SUPLA_MFR_ACSOFTWARE 1
+#define SUPLA_MFR_TRANSCOM 2
+#define SUPLA_MFR_LOGI 3
+#define SUPLA_MFR_ZAMEL 4
+#define SUPLA_MFR_NICE 5
+#define SUPLA_MFR_ITEAD 6
 
 #pragma pack(push, 1)
 
@@ -350,6 +370,7 @@ typedef struct {
 } TSuplaChannelValue;
 
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
+#define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 
 typedef struct {
   char type;  // EV_TYPE_
@@ -411,6 +432,19 @@ typedef struct {
 typedef struct {
   // device -> server
 
+  unsigned char Number;
+  _supla_int_t Type;
+
+  _supla_int_t FuncList;
+  _supla_int_t Default;
+  _supla_int_t Flags;
+
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TDS_SuplaDeviceChannel_C;  // ver. >= 10
+
+typedef struct {
+  // device -> server
+
   _supla_int_t LocationID;
   char LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE];  // UTF8
 
@@ -457,6 +491,27 @@ typedef struct {
   TDS_SuplaDeviceChannel_B
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
 } TDS_SuplaRegisterDevice_D;            // ver. >= 7
+
+typedef struct {
+  // device -> server
+
+  char Email[SUPLA_EMAIL_MAXSIZE];  // UTF8
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  char GUID[SUPLA_GUID_SIZE];
+
+  char Name[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+
+  _supla_int_t Flags;
+  _supla_int16_t ManufacturerID;
+
+  unsigned char channel_count;
+  TDS_SuplaDeviceChannel_C
+      channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+} TDS_SuplaRegisterDevice_E;            // ver. >= 10
 
 typedef struct {
   // server -> device
@@ -587,6 +642,37 @@ typedef struct {
   TSC_SuplaChannel_B
       items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack_B;                 // ver. >= 8
+
+typedef struct {
+  // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t LocationID;
+  _supla_int_t Func;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon[USER_ICON_MAXCOUNT];
+  _supla_int16_t ManufacturerID;
+
+  unsigned _supla_int_t Flags;
+  unsigned char ProtocolVersion;
+  char online;
+
+  TSuplaChannelValue value;
+
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaChannel_C;                           // ver. >= 10
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannel_C
+      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelPack_C;                 // ver. >= 10
 
 typedef struct {
   // server -> client
@@ -752,26 +838,38 @@ typedef struct {
 
 typedef struct {
   unsigned _supla_int_t ExpiresIn;
-  unsigned _supla_int_t TokenSize;  // including the terminating null byte ('\0')
+  unsigned _supla_int_t
+      TokenSize;  // including the terminating null byte ('\0')
   char Token[SUPLA_OAUTH_TOKEN_MAXSIZE];  // Last variable in struct!
-} TSC_OAuthToken;
+} TSC_OAuthToken;                         // ver. >= 10
 
 typedef struct {
   unsigned char ResultCode;
   TSC_OAuthToken Token;
-} TSC_OAuthTokenRequestResult;
+} TSC_OAuthTokenRequestResult;  // ver. >= 10
+
+typedef struct {
+  // server -> device
+  unsigned char ChannelNumber;
+} TSD_SuplaChannelEraseData;  // ver. >= 10
+
+typedef struct {
+  // server -> device
+  unsigned char ChannelNumber;
+  char Result;
+} TDS_SuplaChannelEraseDataResult;  // ver. >= 10
 
 typedef struct {
   // 3 phases
-  unsigned _supla_int_t freq;               // * 0.01 Hz
-  unsigned _supla_int_t voltage[3];         // * 0.01 V
-  unsigned _supla_int_t current[3];         // * 0.001 A
-  unsigned _supla_int_t power_active[3];    // * 0.00001 kW
-  _supla_int_t power_reactive[3];           // * 0.00001 kvar
-  unsigned _supla_int_t power_apparent[3];  // * 0.00001 kVA
-  _supla_int_t power_factor[3];             // * 0.001
-  unsigned _supla_int_t phase_angle[3];     // * 0.00001
-} TElectricityMeter_Measurement;            // v. >= 10
+  unsigned _supla_int16_t freq;        // * 0.01 Hz
+  unsigned _supla_int16_t voltage[3];  // * 0.01 V
+  unsigned _supla_int16_t current[3];  // * 0.001 A
+  _supla_int_t power_active[3];        // * 0.00001 kW
+  _supla_int_t power_reactive[3];      // * 0.00001 kvar
+  _supla_int_t power_apparent[3];      // * 0.00001 kVA
+  _supla_int16_t power_factor[3];      // * 0.001
+  _supla_int16_t phase_angle[3];       // * 0.1 degree
+} TElectricityMeter_Measurement;       // v. >= 10
 
 #define EM_VAR_FREQ 0x0001
 #define EM_VAR_VOLTAGE 0x0002
@@ -789,11 +887,17 @@ typedef struct {
 
 #define EM_MEASUREMENT_COUNT 5
 
+// [IODevice->Server->Client]
 typedef struct {
   unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kW
   unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kW
   unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvar
   unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvar
+
+  // The price per unit, total cost and currency is overwritten by the server
+  _supla_int_t total_cost;      // * 0.01
+  _supla_int_t price_per_unit;  // * 0.0001
+  char currency[3];
 
   _supla_int_t measured_values;
   _supla_int_t period;  // Approximate period between measurements in seconds
@@ -806,24 +910,47 @@ typedef struct {
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
 #define EM_VALUE_FLAG_PHASE3_ON 0x04
 
+// [IODevice->Server->Client]
 typedef struct {
   char flags;
   unsigned _supla_int_t total_forward_active_energy;  // * 0.01 kW
-} TElectricityMeter_Value;
+} TElectricityMeter_Value;                            // v. >= 10
 
 typedef struct {
-  // server -> device
-  _supla_int_t SenderID;
+  _supla_int_t total_cost;      // * 0.01
+  _supla_int_t price_per_unit;  // * 0.0001
+  char currency[3];
+
+  unsigned _supla_int64_t counter;
+  _supla_int64_t calculated_value;   // * 0.001
+} TSC_ImpulseCounter_ExtendedValue;  // v. >= 10
+
+typedef struct { unsigned _supla_int64_t counter; } TDS_ImpulseCounter_Value;
+
+typedef struct {
+  unsigned _supla_int64_t calculated_value;  // * 0.001
+} TSC_ImpulseCounter_Value;
+
+typedef struct {
   unsigned char ChannelNumber;
 
-  char parameters[SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE];
-} TSD_SuplaChannelCalibrate;
+  _supla_int_t A_Fields;     // CFG_A_FIELD_
+  _supla_int_t B_Fields;     // CFG_B_FIELD_
+  _supla_int_t C_Fields;     // CFG_C_FIELD_
+} TSD_ConfigurationRequest;  // v. >= 10
 
 typedef struct {
-  // client -> server
-  _supla_int_t ChannelId;
-  char parameters[SUPLA_CHANNELCALIBRATION_PARAMETERS_SIZE];
-} TCS_SuplaChannelCalibrate;
+  char Group;  // Group (A/B/C)
+  _supla_int_t Field;
+  _supla_int_t Value;
+} TSD_ConfigurationField;
+
+typedef struct {
+  unsigned char ChannelNumber;
+  unsigned char Count;
+  TSD_ConfigurationField
+      Fields[SUPLA_CONFIG_FIELDS_MAXCOUNT];  // Last variable in struct!
+} TSD_ConfigurationResponse;                 // v. >= 10
 
 #pragma pack(pop)
 

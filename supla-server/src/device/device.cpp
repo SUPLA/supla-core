@@ -42,7 +42,7 @@ supla_device::~supla_device() {
 }
 
 char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
-                                   TDS_SuplaRegisterDevice_D *register_device_d,
+                                   TDS_SuplaRegisterDevice_E *register_device_e,
                                    unsigned char proto_version) {
   int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
   char result = 0;
@@ -52,30 +52,33 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   char *Name = NULL;
   char *SoftVer = NULL;
   unsigned char channel_count = 0;
-  TDS_SuplaDeviceChannel_B *dev_channels = NULL;
+  TDS_SuplaDeviceChannel_B *dev_channels_b = NULL;
+  TDS_SuplaDeviceChannel_C *dev_channels_c = NULL;
   int LocationID = 0;
+  int DeviceFlags = 0;
 
   if (register_device_c != NULL) {
     GUID = register_device_c->GUID;
     Name = register_device_c->Name;
     SoftVer = register_device_c->SoftVer;
     channel_count = register_device_c->channel_count;
-    dev_channels = register_device_c->channels;
+    dev_channels_b = register_device_c->channels;
     LocationID = register_device_c->LocationID;
   } else {
-    GUID = register_device_d->GUID;
-    AuthKey = register_device_d->AuthKey;
-    Name = register_device_d->Name;
-    SoftVer = register_device_d->SoftVer;
-    channel_count = register_device_d->channel_count;
-    dev_channels = register_device_d->channels;
+    GUID = register_device_e->GUID;
+    AuthKey = register_device_e->AuthKey;
+    Name = register_device_e->Name;
+    SoftVer = register_device_e->SoftVer;
+    DeviceFlags = register_device_e->Flags;
+    channel_count = register_device_e->channel_count;
+    dev_channels_c = register_device_e->channels;
   }
 
   if (!setGUID(GUID)) {
     resultcode = SUPLA_RESULTCODE_GUID_ERROR;
 
-  } else if (register_device_d != NULL &&
-             !setAuthKey(register_device_d->AuthKey)) {
+  } else if (register_device_e != NULL &&
+             !setAuthKey(register_device_e->AuthKey)) {
     resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
 
   } else {
@@ -95,9 +98,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                             &LocationEnabled) == false) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
-      } else if (register_device_d != NULL &&
+      } else if (register_device_e != NULL &&
                  false ==
-                     db->device_authkey_auth(GUID, register_device_d->Email,
+                     db->device_authkey_auth(GUID, register_device_e->Email,
                                              AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
@@ -127,7 +130,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
             resultcode = SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED;
 
           } else {
-            if (LocationID == 0 && register_device_d != NULL) {
+            if (LocationID == 0 && register_device_e != NULL) {
               if ((LocationID = db->get_location_id(UserID, true)) != 0) {
                 LocationEnabled = true;
 
@@ -149,7 +152,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               DeviceID = db->add_device(LocationID, GUID, AuthKey, Name,
                                         getSvrConn()->getClientIpv4(), SoftVer,
-                                        proto_version, UserID);
+                                        proto_version, DeviceFlags, UserID);
             }
           }
         }
@@ -182,17 +185,35 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               break;
             } else {
               ChannelCount++;
-              if (db->get_device_channel(DeviceID, dev_channels[a].Number,
-                                         &ChannelType) == 0) {
+
+              unsigned char Number = 0;
+              _supla_int_t Type = 0;
+              _supla_int_t FuncList = 0;
+              _supla_int_t Default = 0;
+              _supla_int_t ChannelFlags = 0;
+
+              if (dev_channels_b != NULL) {
+                Number = dev_channels_b[a].Number;
+                Type = dev_channels_b[a].Type;
+                FuncList = dev_channels_b[a].FuncList;
+                Default = dev_channels_b[a].Default;
+              } else {
+                Number = dev_channels_c[a].Number;
+                Type = dev_channels_c[a].Type;
+                FuncList = dev_channels_c[a].FuncList;
+                Default = dev_channels_c[a].Default;
+                ChannelFlags = dev_channels_c[a].Flags;
+              }
+
+              if (db->get_device_channel(DeviceID, Number, &ChannelType) == 0) {
                 ChannelType = 0;
               }
 
               if (ChannelType == 0) {
                 bool new_channel = false;
                 int ChannelID = db->add_device_channel(
-                    DeviceID, dev_channels[a].Number, dev_channels[a].Type,
-                    dev_channels[a].Default ? dev_channels[a].Default : 0,
-                    dev_channels[a].FuncList, UserID, &new_channel);
+                    DeviceID, Number, Type, Default ? Default : 0, FuncList,
+                    ChannelFlags, UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
@@ -201,7 +222,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                   db->on_channeladded(DeviceID, ChannelID);
                 }
 
-              } else if (ChannelType != dev_channels[a].Type) {
+              } else if (ChannelType != Type) {
                 ChannelCount = -1;
                 break;
               }
@@ -234,7 +255,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               load_config();
 
-              channels->set_channels_value(dev_channels, channel_count);
+              channels->set_channels_value(dev_channels_b, dev_channels_c,
+                                           channel_count);
 
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;

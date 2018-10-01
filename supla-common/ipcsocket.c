@@ -38,34 +38,6 @@ typedef struct {
   struct sockaddr_un saun, fsaun;
 } TSuplaIPC_socket;
 
-char *ipc_sauth_key = NULL;
-int ipc_shmid = -1;
-
-void ipcsauth_create_key(const char *address) {
-  int a;
-  key_t key;
-  key = ftok(address, 'S');
-
-  ipc_sauth_key = NULL;
-
-  if ((ipc_shmid = shmget(key, IPC_SAUTH_KEY_SIZE, IPC_CREAT | 0600)) == -1)
-    return;
-
-  if ((ipc_sauth_key = (char *)shmat(ipc_shmid, 0, 0)) == (char *)-1)
-    ipc_sauth_key = NULL;
-
-  if (ipc_sauth_key != NULL) {
-    unsigned int seed = time(NULL);
-
-    for (a = 0; a < IPC_SAUTH_KEY_SIZE; a++) {
-      ipc_sauth_key[a] = (unsigned char)rand_r(&seed);
-
-      if (ipc_sauth_key[a] == 0 || ipc_sauth_key[a] == '\n')
-        ipc_sauth_key[a] = 1;
-    }
-  }
-}
-
 void *ipcsocket_init(const char *address) {
   int sfd;
   TSuplaIPC_socket *ipc;
@@ -107,18 +79,16 @@ void *ipcsocket_init(const char *address) {
     return 0;
   }
 
+  chmod(address, 0770);
+
   if (listen(sfd, 5) == -1) {
     free(ipc);
     close(sfd);
     supla_log(LOG_ERR, "IPC listen error");
     return 0;
-  } else {
-    chmod(address, 0777);
   }
 
   ipc->sfd = sfd;
-
-  ipcsauth_create_key(address);
 
   return ipc;
 }

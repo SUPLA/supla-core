@@ -149,8 +149,7 @@ char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp) {
   unsigned _supla_int_t packet_size =
       sdp_size - SUPLA_MAX_DATA_SIZE + sdp->data_size;
 
-  if (packet_size + SUPLA_TAG_SIZE > sdp_size)
-    return SUPLA_RESULT_DATA_TOO_LARGE;
+  if (packet_size > sdp_size) return SUPLA_RESULT_DATA_TOO_LARGE;
 
   if (SUPLA_RESULT_TRUE ==
       sproto_buffer_append(spd_ptr, &spd->out.buffer, &spd->out.size,
@@ -278,8 +277,7 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
         return SUPLA_RESULT_VERSION_ERROR;
       }
 
-      if ((header_size + _sdp->data_size + SUPLA_TAG_SIZE) >
-          sizeof(TSuplaDataPacket)) {
+      if ((header_size + _sdp->data_size) > sizeof(TSuplaDataPacket)) {
         sproto_shrink_in_buffer(&spd->in, spd->in.data_size);
         return SUPLA_RESULT_DATA_ERROR;
       }

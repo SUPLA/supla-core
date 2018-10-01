@@ -83,6 +83,7 @@ union TsrpcDataPacketData {
   TDS_SuplaRegisterDevice_B *ds_register_device_b;
   TDS_SuplaRegisterDevice_C *ds_register_device_c;
   TDS_SuplaRegisterDevice_D *ds_register_device_d;
+  TDS_SuplaRegisterDevice_E *ds_register_device_e;
   TSD_SuplaRegisterDeviceResult *sd_register_device_result;
   TCS_SuplaRegisterClient *cs_register_client;
   TCS_SuplaRegisterClient_B *cs_register_client_b;
@@ -111,9 +112,9 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelValuePack *sc_channelvalue_pack;
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
   TCS_SuplaNewValue *cs_new_value;
-  TSD_SuplaChannelCalibrate *sd_channel_calibrate;
-  TCS_SuplaChannelCalibrate *cs_channel_calibrate;
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
+  TSD_SuplaChannelEraseData *sd_channel_erase_data;
+  TDS_SuplaChannelEraseDataResult *ds_channel_erase_data_result;
 };
 
 typedef struct {
@@ -147,8 +148,8 @@ srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_type);
 
 // device/client <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(void *_srpc,
-                                                                char *SoftVer);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_getversion_result(
+    void *_srpc, char SoftVer[SUPLA_SOFTVER_MAXSIZE]);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version);
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc);
@@ -173,6 +174,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_c(
     void *_srpc, TDS_SuplaRegisterDevice_C *registerdevice);  // ver. >= 6
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_d(
     void *_srpc, TDS_SuplaRegisterDevice_D *registerdevice);  // ver. >= 7
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_e(
+    void *_srpc, TDS_SuplaRegisterDevice_E *registerdevice);  // ver. >= 10
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
     void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
@@ -190,7 +193,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_sd_async_channel_calibrate(void *_srpc, TSD_SuplaChannelCalibrate *params);
+srpc_sd_async_channel_erase_data(void *_srpc, unsigned char ChannelNumber);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_erase_data_result(
+    void *_srpc, unsigned char ChannelNumber, char Result);
+
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -239,8 +245,6 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_value(void *_srpc, TCS_SuplaNewValue *value);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
     void *_srpc, TCS_SuplaChannelNewValue_B *value);
-_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_calibrate(
-    void *_srpc, TCS_SuplaChannelCalibrate *params);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result);

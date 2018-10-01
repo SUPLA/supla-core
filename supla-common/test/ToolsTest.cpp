@@ -17,8 +17,8 @@
  */
 
 #include "ToolsTest.h"
-#include "tools.h"  // NOLINT
-#include "gtest/gtest.h"
+#include "gtest/gtest.h"  // NOLINT
+#include "tools.h"        // NOLINT
 
 namespace {
 
@@ -47,6 +47,7 @@ TEST_F(ToolsTest, pid_file) {
   FILE *F = fopen(file, "r");
   if (F) {
     fread(str2, 1, 32, F);
+    fclose(F);
   }
 
   size_t len = strnlen(str1, 32);

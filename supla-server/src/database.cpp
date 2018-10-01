@@ -409,7 +409,7 @@ bool database::get_device_reg_enabled(int UserID) {
 int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
                          const char *AuthKey, const char *Name,
                          unsigned int ipv4, const char *softver,
-                         int proto_version, int UserID) {
+                         int proto_version, int Flags, int UserID) {
   int DeviceID = 0;
 
   char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
@@ -417,7 +417,7 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
 
   char *AuthKeyHashHEX = NULL;
 
-  MYSQL_BIND pbind[10];
+  MYSQL_BIND pbind[11];
   memset(pbind, 0, sizeof(pbind));
 
   char GUIDHEX[SUPLA_GUID_HEXSIZE];
@@ -470,16 +470,19 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
     pbind[9].buffer_type = MYSQL_TYPE_NULL;
   }
 
+  pbind[10].buffer_type = MYSQL_TYPE_LONG;
+  pbind[10].buffer = (char *)&Flags;
+
   const char sql[] =
       "INSERT INTO `supla_iodevice`(`location_id`, `name`, `enabled`, "
       "`reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, "
       "`guid`, `software_version`, `protocol_version`, `auth_key`, "
-      "`original_location_id`) VALUES "
+      "`original_location_id`, `flags`) VALUES "
       "(?,unhex(?),1,UTC_TIMESTAMP(),UTC_TIMESTAMP(),?,?,?,unhex(?),?, "
-      "?,unhex(?),?)";
+      "?,unhex(?),?,?)";
 
   MYSQL_STMT *stmt;
-  if (stmt_execute((void **)&stmt, sql, pbind, 10, false)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 11, false)) {
     DeviceID = get_last_insert_id();
   }
 
@@ -617,9 +620,9 @@ int database::get_device_channel(int DeviceID, int ChannelNumber, int *Type) {
 }
 
 int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
-                                 int Func, int FList, int UserID,
+                                 int Func, int FList, int Flags, int UserID,
                                  bool *new_channel) {
-  MYSQL_BIND pbind[6];
+  MYSQL_BIND pbind[7];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -640,14 +643,18 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   pbind[5].buffer_type = MYSQL_TYPE_LONG;
   pbind[5].buffer = (char *)&FList;
 
+  pbind[6].buffer_type = MYSQL_TYPE_LONG;
+  pbind[6].buffer = (char *)&Flags;
+
   {
     const char sql[] =
         "INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, "
-        "`param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`) VALUES "
-        "(?,?,0,0,0,?,?,?,?)";
+        "`param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`, "
+        "`flags`) VALUES "
+        "(?,?,0,0,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt;
-    if (!stmt_execute((void **)&stmt, sql, pbind, 6, false)) {
+    if (!stmt_execute((void **)&stmt, sql, pbind, 7, false)) {
       mysql_stmt_close(stmt);
       return 0;
     } else if (new_channel) {
@@ -1421,6 +1428,14 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature,
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
+void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind) {
+  if (*v == 0) {
+    ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_NULL;
+  } else {
+    ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_LONGLONG;
+    ((MYSQL_BIND *)pbind)->buffer = (char *)v;
+  }
+}
 
 void database::add_electricity_measurement(
     supla_channel_electricity_measurement *em) {
@@ -1436,14 +1451,11 @@ void database::add_electricity_measurement(
 
   int n = 0;
   for (int a = 0; a < 3; a++) {
-    pbind[1 + n].buffer_type = MYSQL_TYPE_LONGLONG;
-    pbind[1 + n].buffer = (char *)&em_ev.total_forward_active_energy[a];
-    pbind[2 + n].buffer_type = MYSQL_TYPE_LONGLONG;
-    pbind[2 + n].buffer = (char *)&em_ev.total_reverse_active_energy[a];
-    pbind[3 + n].buffer_type = MYSQL_TYPE_LONGLONG;
-    pbind[3 + n].buffer = (char *)&em_ev.total_forward_reactive_energy[a];
-    pbind[4 + n].buffer_type = MYSQL_TYPE_LONGLONG;
-    pbind[4 + n].buffer = (char *)&em_ev.total_reverse_reactive_energy[a];
+    em_set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n]);
+    em_set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n]);
+    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n]);
+    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n]);
+
     n += 4;
   }
 
@@ -1455,7 +1467,7 @@ void database::add_electricity_measurement(
       "(?,UTC_TIMESTAMP(),?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt;
-  stmt_execute((void **)&stmt, sql, pbind, 13, false);
+  stmt_execute((void **)&stmt, sql, pbind, 13, true);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
@@ -1593,66 +1605,6 @@ bool database::get_reg_enabled(int UserID, unsigned int *client,
   return true;
 }
 
-bool database::get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
-                              int *expires_at) {
-  MYSQL_STMT *stmt;
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  bool result = false;
-
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)access_token;
-  pbind[0].buffer_length = strnlen(access_token, 512);
-
-  const char sql[] =
-      "SELECT  t.user_id, c.parent_id, t.expires_at FROM "
-      "`supla_oauth_access_tokens` AS t, `supla_oauth_clients` AS c WHERE c.id "
-      "= t.client_id AND c.parent_id != 0 AND t.expires_at > "
-      "UNIX_TIMESTAMP(NOW()) AND t.scope = 'restapi' AND token = ? LIMIT 1";
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    mysql_stmt_store_result(stmt);
-
-    if (mysql_stmt_num_rows(stmt) > 0) {
-      MYSQL_BIND rbind[3];
-      memset(rbind, 0, sizeof(rbind));
-
-      int _OAuthUserID, _UserID, _expires_at;
-
-      rbind[0].buffer_type = MYSQL_TYPE_LONG;
-      rbind[0].buffer = (char *)&_OAuthUserID;
-
-      rbind[1].buffer_type = MYSQL_TYPE_LONG;
-      rbind[1].buffer = (char *)&_UserID;
-
-      rbind[2].buffer_type = MYSQL_TYPE_LONG;
-      rbind[2].buffer = (char *)&_expires_at;
-
-      if (mysql_stmt_bind_result(stmt, rbind)) {
-        supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                  mysql_stmt_error(stmt));
-
-      } else if (mysql_stmt_fetch(stmt) == 0) {
-        if (OAuthUserID != NULL) *OAuthUserID = _OAuthUserID;
-
-        if (UserID != NULL) *UserID = _UserID;
-
-        if (expires_at != NULL) {
-          *expires_at = _expires_at;
-        }
-
-        result = true;
-      }
-    }
-
-    mysql_stmt_free_result(stmt);
-    mysql_stmt_close(stmt);
-  }
-
-  return result;
-}
-
 int database::oauth_add_client_id(void) {
   int a = 0, lck = 0, result = 0;
   MYSQL_STMT *stmt;
@@ -1745,8 +1697,9 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
          svrcfg_oauth_url_base64_len);
   token->Token[svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 1] = 0;
   token->TokenSize = svrcfg_oauth_url_base64_len + CFG_OAUTH_TOKEN_SIZE + 2;
-  token->ExpiresIn =
-      (unsigned)time(NULL) + (unsigned)scfg_int(CFG_OAUTH_TOKEN_LIFETIME);
+  token->ExpiresIn = (unsigned)scfg_int(CFG_OAUTH_TOKEN_LIFETIME);
+
+  int ExpiresIn = token->ExpiresIn + (unsigned)time(NULL);
 
   char sql[] =
       "INSERT INTO `supla_oauth_access_tokens`(`client_id`, `user_id`, "
@@ -1766,7 +1719,7 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
   pbind[2].buffer_length = token->TokenSize - 1;
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&token->ExpiresIn;
+  pbind[3].buffer = (char *)&ExpiresIn;
 
   MYSQL_STMT *stmt;
   bool result = false;

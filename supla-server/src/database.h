@@ -43,6 +43,8 @@ class database : public dbcommon {
   bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                         bool *is_null, const char *sql);
 
+  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind);
+
  public:
   bool location_auth(int LocationID, char *LocationPWD, int *UserID,
                      bool *is_enabled);
@@ -60,7 +62,7 @@ class database : public dbcommon {
 
   int add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
                  const char *AuthKey, const char *Name, unsigned int ipv4,
-                 const char *softver, int proto_version, int UserID);
+                 const char *softver, int proto_version, int Flags, int UserID);
 
   int update_device(int DeviceID, int OriginalLocationID, const char *AuthKey,
                     const char *Name, unsigned int ipv4, const char *softver,
@@ -68,7 +70,7 @@ class database : public dbcommon {
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
   int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
-                         int FList, int UserID, bool *new_channel);
+                         int FList, int Flags, int UserID, bool *new_channel);
 
   int get_device_limit_left(int UserID);
   int get_device_count(int UserID);
@@ -133,9 +135,6 @@ class database : public dbcommon {
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
-
-  bool get_oauth_user(char *access_token, int *OAuthUserID, int *UserID,
-                      int *expires_at) __attribute__((deprecated));
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);

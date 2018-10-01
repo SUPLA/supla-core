@@ -357,6 +357,7 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:  // Calibration purposes
       return 1;
 
       break;
@@ -818,9 +819,17 @@ bool supla_device_channels::channel_exists(int ChannelID) {
 }
 
 void supla_device_channels::set_channels_value(
-    TDS_SuplaDeviceChannel_B *schannel, int count) {
-  for (int a = 0; a < count; a++)
-    set_channel_value(get_channel_id(schannel[a].Number), schannel[a].value);
+    TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_C *schannel_c,
+    int count) {
+  if (schannel_b != NULL) {
+    for (int a = 0; a < count; a++)
+      set_channel_value(get_channel_id(schannel_b[a].Number),
+                        schannel_b[a].value);
+  } else {
+    for (int a = 0; a < count; a++)
+      set_channel_value(get_channel_id(schannel_c[a].Number),
+                        schannel_c[a].value);
+  }
 }
 
 int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
