@@ -701,20 +701,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
             memset(rd->data.sc_firmware_update_url_result, 0,
                    sizeof(TSD_FirmwareUpdate_UrlResult));
         }
-
-        break;
-
-      case SUPLA_SD_CALL_CHANNEL_ERASE_DATA:
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelEraseData))
-          rd->data.sd_channel_erase_data = (TSD_SuplaChannelEraseData *)malloc(
-              sizeof(TSD_SuplaChannelEraseData));
-        break;
-
-      case SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT:
-        if (srpc->sdp.data_size == sizeof(TDS_SuplaChannelEraseDataResult))
-          rd->data.ds_channel_erase_data_result =
-              (TDS_SuplaChannelEraseDataResult *)malloc(
-                  sizeof(TDS_SuplaChannelEraseDataResult));
         break;
 
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
@@ -991,8 +977,6 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
     case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
     case SUPLA_DS_CALL_REGISTER_DEVICE_E:
-    case SUPLA_SD_CALL_CHANNEL_ERASE_DATA:
-    case SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT:
       return 10;
   }
 
@@ -1296,25 +1280,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
       _srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, (char *)&ncsc,
       sizeof(TDS_SuplaDeviceChannelExtendedValue) -
           (SUPLA_CHANNELEXTENDEDVALUE_SIZE - ncsc.value.size));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_sd_async_channel_erase_data(void *_srpc, unsigned char ChannelNumber) {
-  TSD_SuplaChannelEraseData ed;
-  ed.ChannelNumber = ChannelNumber;
-
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_ERASE_DATA, (char *)&ed,
-                         sizeof(TSD_SuplaChannelEraseData));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_erase_data_result(
-    void *_srpc, unsigned char ChannelNumber, char Result) {
-  TDS_SuplaChannelEraseDataResult edr;
-  edr.ChannelNumber = ChannelNumber;
-  edr.Result = Result;
-
-  return srpc_async_call(_srpc, SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT,
-                         (char *)&edr, sizeof(TDS_SuplaChannelEraseDataResult));
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/

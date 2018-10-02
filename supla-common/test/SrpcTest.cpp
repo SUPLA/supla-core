@@ -252,8 +252,6 @@ TEST_F(SrpcTest, call_allowed_v10) {
                  SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST,
                  SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT,
                  SUPLA_DS_CALL_REGISTER_DEVICE_E,
-                 SUPLA_SD_CALL_CHANNEL_ERASE_DATA,
-                 SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT,
                  0};
 
   srpcCallAllowed(10, calls);

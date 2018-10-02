@@ -113,8 +113,6 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
   TCS_SuplaNewValue *cs_new_value;
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
-  TSD_SuplaChannelEraseData *sd_channel_erase_data;
-  TDS_SuplaChannelEraseDataResult *ds_channel_erase_data_result;
 };
 
 typedef struct {
