@@ -150,8 +150,6 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
-#define SUPLA_SD_CALL_CHANNEL_ERASE_DATA 420                 // ver. >= 10
-#define SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT 430          // ver. >= 10
 #define SUPLA_DS_CALL_CONFIGURATION_REQUEST 440              // ver. >= 10
 #define SUPLA_SS_CALL_CONFIGURATION_RESPONSE 450             // ver. >= 10
 
@@ -847,17 +845,6 @@ typedef struct {
   unsigned char ResultCode;
   TSC_OAuthToken Token;
 } TSC_OAuthTokenRequestResult;  // ver. >= 10
-
-typedef struct {
-  // server -> device
-  unsigned char ChannelNumber;
-} TSD_SuplaChannelEraseData;  // ver. >= 10
-
-typedef struct {
-  // server -> device
-  unsigned char ChannelNumber;
-  char Result;
-} TDS_SuplaChannelEraseDataResult;  // ver. >= 10
 
 typedef struct {
   // 3 phases
