@@ -1268,13 +1268,14 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     void *_srpc, unsigned char channel_number,
     TSuplaChannelExtendedValue *value) {
+  if (value == NULL || value->size > SUPLA_CHANNELEXTENDEDVALUE_SIZE ||
+      value->size == 0) {
+    return 0;
+  }
+
   TDS_SuplaDeviceChannelExtendedValue ncsc;
   ncsc.ChannelNumber = channel_number;
   memcpy(&ncsc.value, value, sizeof(TSuplaChannelExtendedValue));
-
-  if (ncsc.value.size > SUPLA_CHANNELEXTENDEDVALUE_SIZE) {
-    ncsc.value.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE;
-  }
 
   return srpc_async_call(
       _srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, (char *)&ncsc,
