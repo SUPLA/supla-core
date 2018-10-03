@@ -1323,4 +1323,80 @@ TEST_F(SrpcTest, call_channel_value_changed) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSuplaChannelExtendedValue ev;
+  memset(&ev, 0, sizeof(TSuplaChannelExtendedValue));
+
+  ASSERT_EQ(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSuplaChannelExtendedValue ev;
+  memset(&ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE + 1;
+
+  ASSERT_EQ(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_small_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSuplaChannelExtendedValue ev;
+  memset(&ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev.size = 1;
+  ev.value[0] = rand_r(&seed);
+
+  ASSERT_GT(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, 30);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_channel_extendedvalue == NULL);
+
+  ASSERT_EQ(1, cr_rd.data.ds_device_channel_extendedvalue->ChannelNumber);
+  ASSERT_EQ(0, memcmp(&cr_rd.data.ds_device_channel_extendedvalue->value, &ev,
+                      sizeof(TSuplaChannelExtendedValue) -
+                          SUPLA_CHANNELEXTENDEDVALUE_SIZE + 1));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSuplaChannelExtendedValue ev;
+  memset(&ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE;
+  memset(ev.value, rand_r(&seed), SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+
+  ASSERT_GT(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, 1053);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_channel_extendedvalue == NULL);
+
+  ASSERT_EQ(1, cr_rd.data.ds_device_channel_extendedvalue->ChannelNumber);
+  ASSERT_EQ(0, memcmp(&cr_rd.data.ds_device_channel_extendedvalue->value, &ev,
+                      sizeof(TSuplaChannelExtendedValue)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 }  // namespace
