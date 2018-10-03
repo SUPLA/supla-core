@@ -757,6 +757,22 @@ TEST_F(SrpcTest, call_registerdevice_without_channels) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_registerdevice_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_SuplaRegisterDevice registerdevice;
+  memset(&registerdevice, 0, sizeof(TDS_SuplaRegisterDevice));
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice(srpc, &registerdevice), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 TEST_F(SrpcTest, call_registerdevice_b) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -856,6 +872,22 @@ TEST_F(SrpcTest, call_registerdevice_b_without_channels) {
              sizeof(TDS_SuplaRegisterDevice_B) -
                  (sizeof(TDS_SuplaDeviceChannel_B) * (SUPLA_CHANNELMAXCOUNT))),
       0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_b_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_SuplaRegisterDevice_B registerdevice;
+  memset(&registerdevice, 0, sizeof(TDS_SuplaRegisterDevice_B));
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice_b(srpc, &registerdevice), 0);
 
   srpc_free(srpc);
   srpc = NULL;
@@ -964,6 +996,22 @@ TEST_F(SrpcTest, call_registerdevice_c_without_channels) {
              sizeof(TDS_SuplaRegisterDevice_C) -
                  (sizeof(TDS_SuplaDeviceChannel_B) * (SUPLA_CHANNELMAXCOUNT))),
       0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_c_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_SuplaRegisterDevice_C registerdevice;
+  memset(&registerdevice, 0, sizeof(TDS_SuplaRegisterDevice_C));
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice_c(srpc, &registerdevice), 0);
 
   srpc_free(srpc);
   srpc = NULL;
@@ -1079,6 +1127,22 @@ TEST_F(SrpcTest, call_registerdevice_d_without_channels) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_registerdevice_d_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_SuplaRegisterDevice_D registerdevice;
+  memset(&registerdevice, 0, sizeof(TDS_SuplaRegisterDevice_D));
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice_d(srpc, &registerdevice), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 TEST_F(SrpcTest, call_registerdevice_e) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -1188,6 +1252,22 @@ TEST_F(SrpcTest, call_registerdevice_e_without_channels) {
              sizeof(TDS_SuplaRegisterDevice_E) -
                  (sizeof(TDS_SuplaDeviceChannel_C) * (SUPLA_CHANNELMAXCOUNT))),
       0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerdevice_e_wrong_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_SuplaRegisterDevice_E registerdevice;
+  memset(&registerdevice, 0, sizeof(TDS_SuplaRegisterDevice_E));
+
+  registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
 
   srpc_free(srpc);
   srpc = NULL;
