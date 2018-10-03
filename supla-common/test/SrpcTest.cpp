@@ -1301,4 +1301,26 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_channel_value_changed) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  memset(value, rand_r(&seed), SUPLA_CHANNELVALUE_SIZE);
+
+  ASSERT_GT(srpc_ds_async_channel_value_changed(srpc, 1, value), 0);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED, 32);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_channel_value == NULL);
+
+  ASSERT_EQ(cr_rd.data.ds_device_channel_value->ChannelNumber, 1);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_device_channel_value->value, value,
+                   SUPLA_CHANNELVALUE_SIZE),
+            0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 }  // namespace
