@@ -91,6 +91,8 @@ extern "C" {
 #define SUPLA_SERVER_NAME_MAXSIZE 65
 #define SUPLA_EMAIL_MAXSIZE 256                     // ver. >= 7
 #define SUPLA_EMAILHEX_MAXSIZE 513                  // ver. >= 7
+#define SUPLA_PASSWORD_MAXSIZE 64                   // ver. >= 10
+#define SUPLA_PASSWORDHEX_MAXSIZE 129               // ver. >= 10
 #define SUPLA_AUTHKEY_SIZE 16                       // ver. >= 7
 #define SUPLA_AUTHKEY_HEXSIZE 33                    // ver. >= 7
 #define SUPLA_OAUTH_TOKEN_MAXSIZE 256               // ver. >= 10
@@ -99,8 +101,7 @@ extern "C" {
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
-  (SUPLA_MAX_DATA_SIZE - 50)             // ver. >= 10
-#define SUPLA_CONFIG_FIELDS_MAXCOUNT 16  // ver. >= 10
+  (SUPLA_MAX_DATA_SIZE - 50)  // ver. >= 10
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -150,8 +151,8 @@ extern "C" {
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
-#define SUPLA_DS_CALL_CONFIGURATION_REQUEST 440              // ver. >= 10
-#define SUPLA_SS_CALL_CONFIGURATION_RESPONSE 450             // ver. >= 10
+#define SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST 420    // ver. >= 10
+#define SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT 430     // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -193,8 +194,6 @@ extern "C" {
 #define SUPLA_CLIENT_NAME_MAXSIZE 201
 #define SUPLA_CLIENT_NAMEHEX_MAXSIZE 401
 #define SUPLA_SENDER_NAME_MAXSIZE 201
-
-#define SUPLA_DEVICE_CFGDATA_MAXSIZE 512
 
 #ifdef __AVR__
 #ifdef __AVR_ATmega2560__
@@ -919,25 +918,11 @@ typedef struct {
 } TSC_ImpulseCounter_Value;
 
 typedef struct {
-  unsigned char ChannelNumber;
+  char Email[SUPLA_EMAIL_MAXSIZE];        // UTF8
+  char Password[SUPLA_PASSWORD_MAXSIZE];  // UTF8
+} TCS_SuperUserAuthorizationRequest;
 
-  _supla_int_t A_Fields;     // CFG_A_FIELD_
-  _supla_int_t B_Fields;     // CFG_B_FIELD_
-  _supla_int_t C_Fields;     // CFG_C_FIELD_
-} TSD_ConfigurationRequest;  // v. >= 10
-
-typedef struct {
-  char Group;  // Group (A/B/C)
-  _supla_int_t Field;
-  _supla_int_t Value;
-} TSD_ConfigurationField;
-
-typedef struct {
-  unsigned char ChannelNumber;
-  unsigned char Count;
-  TSD_ConfigurationField
-      Fields[SUPLA_CONFIG_FIELDS_MAXCOUNT];  // Last variable in struct!
-} TSD_ConfigurationResponse;                 // v. >= 10
+typedef struct { _supla_int_t Result; } TSC_SuperUserAuthorizationResult;
 
 #pragma pack(pop)
 

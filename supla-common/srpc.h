@@ -113,6 +113,8 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
   TCS_SuplaNewValue *cs_new_value;
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
+  TCS_SuperUserAuthorizationRequest *cs_superuser_authorization_request;
+  TSC_SuperUserAuthorizationResult *sc_superuser_authorization_result;
 };
 
 typedef struct {
@@ -246,7 +248,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result);
-
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
+    void *_srpc, TCS_SuperUserAuthorizationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
+    void *_srpc, TSC_SuperUserAuthorizationResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS

@@ -883,6 +883,18 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSC_OAuthTokenRequestResult));
         }
         break;
+      case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
+        if (srpc->sdp.data_size == sizeof(TCS_SuperUserAuthorizationRequest))
+          rd->data.cs_superuser_authorization_request =
+              (TCS_SuperUserAuthorizationRequest *)malloc(
+                  sizeof(TCS_SuperUserAuthorizationRequest));
+        break;
+      case SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SuperUserAuthorizationResult))
+          rd->data.sc_superuser_authorization_result =
+              (TSC_SuperUserAuthorizationResult *)malloc(
+                  sizeof(TSC_SuperUserAuthorizationResult));
+        break;
 
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
@@ -977,6 +989,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
     case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
     case SUPLA_DS_CALL_REGISTER_DEVICE_E:
+    case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
+    case SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT:
       return 10;
   }
 
@@ -1563,6 +1577,20 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
       _srpc, SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT, (char *)result,
       sizeof(TSC_OAuthTokenRequestResult) -
           (SUPLA_OAUTH_TOKEN_MAXSIZE - result->Token.TokenSize));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
+    void *_srpc, TCS_SuperUserAuthorizationRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
+                         (char *)request,
+                         sizeof(TCS_SuperUserAuthorizationRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
+    void *_srpc, TSC_SuperUserAuthorizationResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
+                         (char *)result,
+                         sizeof(TSC_SuperUserAuthorizationResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

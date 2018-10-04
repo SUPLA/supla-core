@@ -252,6 +252,8 @@ TEST_F(SrpcTest, call_allowed_v10) {
                  SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST,
                  SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT,
                  SUPLA_DS_CALL_REGISTER_DEVICE_E,
+                 SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
+                 SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
                  0};
 
   srpcCallAllowed(10, calls);
@@ -1394,6 +1396,46 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
   ASSERT_EQ(1, cr_rd.data.ds_device_channel_extendedvalue->ChannelNumber);
   ASSERT_EQ(0, memcmp(&cr_rd.data.ds_device_channel_extendedvalue->value, &ev,
                       sizeof(TSuplaChannelExtendedValue)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_superuser_authorization_request) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_SuperUserAuthorizationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_SuperUserAuthorizationRequest));
+
+  ASSERT_GT(srpc_cs_async_superuser_authorization_request(srpc, &request), 0);
+  SendAndReceive(SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST, 343);
+
+  ASSERT_FALSE(cr_rd.data.cs_superuser_authorization_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_superuser_authorization_request, &request,
+                      sizeof(TCS_SuperUserAuthorizationRequest)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_superuser_authorization_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuperUserAuthorizationResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_SuperUserAuthorizationResult));
+
+  ASSERT_GT(srpc_sc_async_superuser_authorization_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT, 27);
+
+  ASSERT_FALSE(cr_rd.data.sc_superuser_authorization_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_superuser_authorization_result, &result,
+                      sizeof(TSC_SuperUserAuthorizationResult)));
 
   srpc_free(srpc);
   srpc = NULL;
