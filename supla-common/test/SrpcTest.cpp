@@ -166,6 +166,9 @@ void SrpcTest::srpcCallAllowed(int min_version, int *calls) {
   srpc = NULL;
 }
 
+//---------------------------------------------------------
+// CALL ALLOWED
+//---------------------------------------------------------
 TEST_F(SrpcTest, call_allowed_v1) {
   int calls[] = {SUPLA_DCS_CALL_GETVERSION,
                  SUPLA_SDC_CALL_GETVERSION_RESULT,
@@ -254,6 +257,10 @@ TEST_F(SrpcTest, call_allowed_v10) {
                  SUPLA_DS_CALL_REGISTER_DEVICE_E,
                  SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
                  SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
+                 SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST,
+                 SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT,
+                 SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST,
+                 SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT,
                  0};
 
   srpcCallAllowed(10, calls);
@@ -330,6 +337,10 @@ TEST_F(SrpcTest, iterate_read_error_when_zero) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// ITERATE
+//---------------------------------------------------------
 
 TEST_F(SrpcTest, iterate_incorrect_data) {
   data_read_result = sizeof(TSuplaDataPacket) + sizeof(sproto_tag);
@@ -486,6 +497,10 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_EQ(cr_rr_id, cr_rd.rr_id);
 }
 
+//---------------------------------------------------------
+// GET VERSION
+//---------------------------------------------------------
+
 TEST_F(SrpcTest, call_getversion) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -527,6 +542,10 @@ TEST_F(SrpcTest, call_getversion_reasult) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// PING
+//---------------------------------------------------------
 
 TEST_F(SrpcTest, call_ping_server) {
   struct timeval now;
@@ -571,6 +590,10 @@ TEST_F(SrpcTest, call_ping_server_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// ACTIVITY TIMEOUT
+//---------------------------------------------------------
 
 TEST_F(SrpcTest, call_set_activity_timeout) {
   struct timeval now;
@@ -620,6 +643,10 @@ TEST_F(SrpcTest, call_set_activity_timeout_result) {
   srpc = NULL;
 }
 
+//---------------------------------------------------------
+// IS REGISTRATION ENABLED
+//---------------------------------------------------------
+
 TEST_F(SrpcTest, call_get_registration_enabled) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -656,6 +683,10 @@ TEST_F(SrpcTest, call_get_registration_enabled_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// DEVICE REGISTRATION
+//---------------------------------------------------------
 
 TEST_F(SrpcTest, call_registerdevice) {
   data_read_result = -1;
@@ -1303,6 +1334,10 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   srpc = NULL;
 }
 
+//---------------------------------------------------------
+// DS CHANNEL VALUE CHANGED
+//---------------------------------------------------------
+
 TEST_F(SrpcTest, call_channel_value_changed) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -1324,6 +1359,10 @@ TEST_F(SrpcTest, call_channel_value_changed) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// DS CHANNEL EXTENDED-VALUE CHANGED
+//---------------------------------------------------------
 
 TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_zero_size) {
   data_read_result = -1;
@@ -1400,6 +1439,258 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// DEVICE CALIBRATION
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_sd_device_calibration_request_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_DeviceCalibrationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalibrationRequest));
+  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_sd_async_device_calibration_request(srpc, &request), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sd_device_calibration_request_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_DeviceCalibrationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalibrationRequest));
+  request.DataSize = 0;
+
+  ASSERT_GT(srpc_sd_async_device_calibration_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 40);
+
+  ASSERT_FALSE(cr_rd.data.sd_device_calibration_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calibration_request, &request,
+                      sizeof(TSD_DeviceCalibrationRequest) -
+                          SUPLA_CALIBRATION_DATA_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sd_device_calibration_request_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_DeviceCalibrationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalibrationRequest));
+  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
+
+  ASSERT_GT(srpc_sd_async_device_calibration_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 168);
+
+  ASSERT_FALSE(cr_rd.data.sd_device_calibration_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calibration_request, &request,
+                      sizeof(TSD_DeviceCalibrationRequest)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_ds_device_calibration_result_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_DeviceCalibrationResult result;
+  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalibrationResult));
+  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_ds_async_device_calibration_result(srpc, &result), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_ds_device_calibration_result_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_DeviceCalibrationResult result;
+  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalibrationResult));
+  result.DataSize = 0;
+
+  ASSERT_GT(srpc_ds_async_device_calibration_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 39);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_calibration_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.ds_device_calibration_result, &result,
+                      sizeof(TDS_DeviceCalibrationResult) -
+                          SUPLA_CALIBRATION_DATA_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_ds_device_calibration_result_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_DeviceCalibrationResult result;
+  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalibrationResult));
+  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
+
+  ASSERT_GT(srpc_ds_async_device_calibration_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 167);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_calibration_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.ds_device_calibration_result, &result,
+                      sizeof(TDS_DeviceCalibrationResult)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+//---------------------------------------------------------
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_cs_device_calibration_request_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_DeviceCalibrationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalibrationRequest));
+  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_cs_async_device_calibration_request(srpc, &request), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_cs_device_calibration_request_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_DeviceCalibrationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalibrationRequest));
+  request.DataSize = 0;
+
+  ASSERT_GT(srpc_cs_async_device_calibration_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST, 39);
+
+  ASSERT_FALSE(cr_rd.data.cs_device_calibration_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_device_calibration_request, &request,
+                      sizeof(TCS_DeviceCalibrationRequest) -
+                          SUPLA_CALIBRATION_DATA_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_cs_device_calibration_request_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_DeviceCalibrationRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalibrationRequest));
+  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
+
+  ASSERT_GT(srpc_cs_async_device_calibration_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST, 167);
+
+  ASSERT_FALSE(cr_rd.data.cs_device_calibration_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calibration_request, &request,
+                      sizeof(TCS_DeviceCalibrationRequest)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_device_calibration_result_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_DeviceCalibrationResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalibrationResult));
+  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_sc_async_device_calibration_result(srpc, &result), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_device_calibration_result_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_DeviceCalibrationResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalibrationResult));
+  result.DataSize = 0;
+
+  ASSERT_GT(srpc_sc_async_device_calibration_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT, 39);
+
+  ASSERT_FALSE(cr_rd.data.sc_device_calibration_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_device_calibration_result, &result,
+                      sizeof(TSC_DeviceCalibrationResult) -
+                          SUPLA_CALIBRATION_DATA_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_device_calibration_result_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_DeviceCalibrationResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalibrationResult));
+  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
+
+  ASSERT_GT(srpc_sc_async_device_calibration_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT, 167);
+
+  ASSERT_FALSE(cr_rd.data.sc_device_calibration_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_device_calibration_result, &result,
+                      sizeof(TSC_DeviceCalibrationResult)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// SUPER USER AUTHORIZATION
+//---------------------------------------------------------
 
 TEST_F(SrpcTest, call_superuser_authorization_request) {
   data_read_result = -1;
