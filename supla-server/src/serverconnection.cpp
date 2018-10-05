@@ -119,6 +119,7 @@ int serverconnection::socket_write(const void *buf, size_t count) {
 void serverconnection::catch_incorrect_call(unsigned int call_type) {
   incorrect_call_counter++;
   if (incorrect_call_counter >= INCORRECT_CALL_MAXCOUNT) {
+    supla_log(LOG_DEBUG, "The number of incorrect calls has been exceeded.");
     sthread_terminate(sthread);
   }
 }
