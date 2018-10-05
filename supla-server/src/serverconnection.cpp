@@ -40,6 +40,8 @@
 #define ACTIVITY_TIMEOUT_MIN 10
 #define ACTIVITY_TIMEOUT_MAX 240
 
+#define INCORRECT_CALL_MAXCOUNT 5
+
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
 }
@@ -74,6 +76,7 @@ serverconnection::serverconnection(void *ssd, void *supla_socket,
   this->ssd = ssd;
   this->supla_socket = supla_socket;
   this->activity_timeout = ACTIVITY_TIMEOUT;
+  this->incorrect_call_counter = 0;
 
   eh = eh_init();
   eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
@@ -111,6 +114,13 @@ int serverconnection::socket_read(void *buf, size_t count) {
 
 int serverconnection::socket_write(const void *buf, size_t count) {
   return ssocket_write(ssd, supla_socket, buf, count);
+}
+
+void serverconnection::catch_incorrect_call(unsigned int call_type) {
+  incorrect_call_counter++;
+  if (incorrect_call_counter >= INCORRECT_CALL_MAXCOUNT) {
+    sthread_terminate(sthread);
+  }
 }
 
 void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
@@ -417,7 +427,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
         break;
 
       default:
-        sthread_terminate(sthread);
+        catch_incorrect_call(call_type);
     }
 
   } else {
@@ -488,7 +498,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
 
         default:
-          sthread_terminate(sthread);
+          catch_incorrect_call(call_type);
       }
 
     } else if (registered == REG_CLIENT) {
@@ -544,7 +554,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
 
         default:
-          sthread_terminate(sthread);
+          catch_incorrect_call(call_type);
       }
 
     } else {
