@@ -1440,6 +1440,51 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
 }
 
 //---------------------------------------------------------
+// SET CHANNEL NEW VALUE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_sd_set_channel_value) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_SuplaChannelNewValue value;
+  memset(&value, rand_r(&seed), sizeof(TSD_SuplaChannelNewValue));
+
+  ASSERT_GT(srpc_sd_async_set_channel_value(srpc, &value), 0);
+  SendAndReceive(SUPLA_SD_CALL_CHANNEL_SET_VALUE, 40);
+
+  ASSERT_FALSE(cr_rd.data.sd_channel_new_value == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sd_channel_new_value, &value,
+                      sizeof(TSD_SuplaChannelNewValue)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_ds_set_channel_value_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_SuplaChannelNewValue value;
+  memset(&value, rand_r(&seed), sizeof(TSD_SuplaChannelNewValue));
+
+  ASSERT_GT(srpc_ds_async_set_channel_result(srpc, 3, 2, 1), 0);
+  SendAndReceive(SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT, 29);
+
+  ASSERT_FALSE(cr_rd.data.ds_channel_new_value_result == NULL);
+
+  ASSERT_EQ(3, cr_rd.data.ds_channel_new_value_result->ChannelNumber);
+  ASSERT_EQ(2, cr_rd.data.ds_channel_new_value_result->SenderID);
+  ASSERT_EQ(1, cr_rd.data.ds_channel_new_value_result->Success);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // DEVICE CALIBRATION
 //---------------------------------------------------------
 
