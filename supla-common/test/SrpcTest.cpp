@@ -562,8 +562,7 @@ TEST_F(SrpcTest, call_ping_server) {
   ASSERT_FALSE(cr_rd.data.dcs_ping == NULL);
 
   ASSERT_GE(now.tv_sec, cr_rd.data.dcs_ping->now.tv_sec);
-  ASSERT_TRUE(cr_rd.data.dcs_ping->now.tv_sec > now.tv_sec ||
-              cr_rd.data.dcs_ping->now.tv_usec > now.tv_usec);
+  ASSERT_TRUE(cr_rd.data.dcs_ping->now.tv_sec >= now.tv_sec);
 
   srpc_free(srpc);
   srpc = NULL;
