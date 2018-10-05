@@ -163,6 +163,11 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
             db->rollback();
             resultcode = SUPLA_RESULTCODE_USER_CONFLICT;
 
+          } else if (!DeviceEnabled) {
+            DeviceID = 0;
+            db->rollback();
+            resultcode = SUPLA_RESULTCODE_DEVICE_DISABLED;
+
           } else if (!LocationEnabled) {
             DeviceID = 0;
             db->rollback();
