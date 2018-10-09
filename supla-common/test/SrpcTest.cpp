@@ -1484,6 +1484,70 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
 }
 
 //---------------------------------------------------------
+// GET FIRMWARE UPDATE URL
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_get_firmware_update_url) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_FirmwareUpdateParams params;
+  memset(&params, rand_r(&seed), sizeof(TDS_FirmwareUpdateParams));
+
+  ASSERT_GT(srpc_sd_async_get_firmware_update_url(srpc, &params), 0);
+  SendAndReceive(SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL, 40);
+
+  ASSERT_FALSE(cr_rd.data.ds_firmware_update_params == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.ds_firmware_update_params, &params,
+                      sizeof(TDS_FirmwareUpdateParams)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_get_firmware_update_url_result_exists) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_FirmwareUpdate_UrlResult result;
+  memset(&result, rand_r(&seed), sizeof(TSD_FirmwareUpdate_UrlResult));
+  result.exists = 1;
+
+  ASSERT_GT(srpc_sd_async_get_firmware_update_url_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT, 231);
+
+  ASSERT_FALSE(cr_rd.data.sc_firmware_update_url_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_firmware_update_url_result, &result,
+                      sizeof(TSD_FirmwareUpdate_UrlResult)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_get_firmware_update_url_result_not_exists) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSD_FirmwareUpdate_UrlResult result;
+  memset(&result, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
+
+  ASSERT_GT(srpc_sd_async_get_firmware_update_url_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT, 24);
+
+  ASSERT_FALSE(cr_rd.data.sc_firmware_update_url_result == NULL);
+
+  ASSERT_EQ(0, cr_rd.data.sc_firmware_update_url_result->exists);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // DEVICE CALIBRATION
 //---------------------------------------------------------
 
