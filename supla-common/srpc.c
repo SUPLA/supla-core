@@ -1204,9 +1204,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
 
 #ifndef SRPC_EXCLUDE_DEVICE
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
-    void *_srpc, TDS_FirmwareUpdateParams *result) {
+    void *_srpc, TDS_FirmwareUpdateParams *params) {
   return srpc_async_call(_srpc, SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL,
-                         (char *)result, sizeof(TDS_FirmwareUpdateParams));
+                         (char *)params, sizeof(TDS_FirmwareUpdateParams));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice(

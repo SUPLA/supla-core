@@ -193,7 +193,7 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
                                  _supla_int_t SenderID, char Success);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
-    void *_srpc, TDS_FirmwareUpdateParams *result);
+    void *_srpc, TDS_FirmwareUpdateParams *params);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calibration_request(
