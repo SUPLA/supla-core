@@ -1796,6 +1796,110 @@ TEST_F(SrpcTest, call_sc_device_calibration_result_full_size) {
 }
 
 //---------------------------------------------------------
+// REGISTER CLIENT
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_registerclient) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_SuplaRegisterClient registerclient;
+  memset(&registerclient, rand_r(&seed), sizeof(TCS_SuplaRegisterClient));
+
+  ASSERT_GT(srpc_cs_async_registerclient(srpc, &registerclient), 0);
+  SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT, 298);
+
+  ASSERT_FALSE(cr_rd.data.cs_register_client == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client, &registerclient,
+                      sizeof(TCS_SuplaRegisterClient)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerclient_b) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_SuplaRegisterClient_B registerclient_b;
+  memset(&registerclient_b, rand_r(&seed), sizeof(TCS_SuplaRegisterClient_B));
+
+  ASSERT_GT(srpc_cs_async_registerclient_b(srpc, &registerclient_b), 0);
+  SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_B, 363);
+
+  ASSERT_FALSE(cr_rd.data.cs_register_client_b == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_b, &registerclient_b,
+                      sizeof(TCS_SuplaRegisterClient_B)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerclient_c) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_SuplaRegisterClient_C registerclient_c;
+  memset(&registerclient_c, rand_r(&seed), sizeof(TCS_SuplaRegisterClient_C));
+
+  ASSERT_GT(srpc_cs_async_registerclient_c(srpc, &registerclient_c), 0);
+  SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_C, 598);
+
+  ASSERT_FALSE(cr_rd.data.cs_register_client_c == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_c, &registerclient_c,
+                      sizeof(TCS_SuplaRegisterClient_C)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerclient_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaRegisterClientResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_SuplaRegisterClientResult));
+
+  ASSERT_GT(srpc_sc_async_registerclient_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT, 42);
+
+  ASSERT_FALSE(cr_rd.data.sc_register_client_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result, &result,
+                      sizeof(TSC_SuplaRegisterClientResult)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerclient_result_b) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaRegisterClientResult_B result;
+  memset(&result, rand_r(&seed), sizeof(TSC_SuplaRegisterClientResult_B));
+
+  ASSERT_GT(srpc_sc_async_registerclient_result_b(srpc, &result), 0);
+  SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B, 50);
+
+  ASSERT_FALSE(cr_rd.data.sc_register_client_result_b == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result_b, &result,
+                      sizeof(TSC_SuplaRegisterClientResult_B)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
