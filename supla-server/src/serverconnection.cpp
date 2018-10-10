@@ -557,6 +557,18 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           client->oauth_token_request();
           break;
 
+        case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
+          if (rd.data.cs_superuser_authorization_request != NULL) {
+            rd.data.cs_superuser_authorization_request
+                ->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+            rd.data.cs_superuser_authorization_request
+                ->Password[SUPLA_PASSWORD_MAXSIZE - 1] = 0;
+            client->superuser_authorization_request(
+                rd.data.cs_superuser_authorization_request);
+          }
+
+          break;
+
         default:
           catch_incorrect_call(call_type);
       }

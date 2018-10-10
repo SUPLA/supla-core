@@ -34,6 +34,7 @@ supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
   this->name[0] = 0;
+  this->superuser_authorized = false;
 }
 
 supla_client::~supla_client() {
@@ -63,6 +64,15 @@ int supla_client::getName(char *buffer, int size) {
 
   buffer[size - 1] = 0;
   return strnlen(buffer, size - 1);
+}
+
+bool supla_client::is_superuser_authorized(void) {
+  bool result = false;
+  lck_lock(lck);
+  result = superuser_authorized;
+  lck_unlock(lck);
+
+  return result;
 }
 
 char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
@@ -340,4 +350,39 @@ void supla_client::oauth_token_request(void) {
   }
 
   srpc_cs_async_oauth_token_request_result(getSvrConn()->srpc(), &result);
+}
+
+void supla_client::superuser_authorization_request(
+    TCS_SuperUserAuthorizationRequest *request) {
+  if (request == NULL) {
+    lck_lock(lck);
+    superuser_authorized = false;
+    lck_unlock(lck);
+    return;
+  }
+
+  TSC_SuperUserAuthorizationResult result;
+  memset(&result, 0, sizeof(TSC_SuperUserAuthorizationResult));
+  result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
+
+  if (getUser()) {
+    database *db = new database();
+
+    if (db->connect() == true) {
+      if (db->superuser_authorization(getUser()->getUserID(), request->Email,
+                                      request->Password)) {
+        lck_lock(lck);
+        superuser_authorized = false;
+        lck_unlock(lck);
+
+        result.Result = SUPLA_RESULTCODE_AUTHORIZED;
+      }
+    } else {
+      result.Result = SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE;
+    }
+
+    delete db;
+  }
+
+  srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
 }

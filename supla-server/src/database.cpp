@@ -1733,3 +1733,9 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
 
   return result;
 }
+
+bool database::superuser_authorization(int UserID,
+                                       char Email[SUPLA_EMAIL_MAXSIZE],
+                                       char Password[SUPLA_PASSWORD_MAXSIZE]) {
+  return false;
+}

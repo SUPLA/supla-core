@@ -189,6 +189,8 @@ extern "C" {
 #define SUPLA_RESULTCODE_AUTHKEY_ERROR 19          // ver. >= 7
 #define SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE 20  // ver. >= 7
 #define SUPLA_RESULTCODE_USER_CONFLICT 21          // ver. >= 7
+#define SUPLA_RESULTCODE_UNAUTHORIZED 22           // ver. >= 10
+#define SUPLA_RESULTCODE_AUTHORIZED 23             // ver. >= 10
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
