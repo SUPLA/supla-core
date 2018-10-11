@@ -140,8 +140,8 @@ class database : public dbcommon {
   int oauth_get_client_id(bool create);
   bool oauth_get_token(TSC_OAuthToken *token, int user_id);
 
-  bool superuser_authorization(int UserID, char Email[SUPLA_EMAIL_MAXSIZE],
-                               char Password[SUPLA_PASSWORD_MAXSIZE]);
+  bool superuser_authorization(int UserID, char email[SUPLA_EMAIL_MAXSIZE],
+                               char password[SUPLA_PASSWORD_MAXSIZE]);
 };
 
 #endif /* DATABASE_H_ */

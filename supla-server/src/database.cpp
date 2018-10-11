@@ -1735,7 +1735,61 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
 }
 
 bool database::superuser_authorization(int UserID,
-                                       char Email[SUPLA_EMAIL_MAXSIZE],
-                                       char Password[SUPLA_PASSWORD_MAXSIZE]) {
-  return false;
+                                       char email[SUPLA_EMAIL_MAXSIZE],
+                                       char password[SUPLA_PASSWORD_MAXSIZE]) {
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  bool result = false;
+
+  if (stmt_execute((void **)&stmt,
+                   "SELECT email, password FROM supla_user WHERE id = ?", pbind,
+                   1, true)) {
+    MYSQL_BIND rbind[2];
+    memset(rbind, 0, sizeof(rbind));
+
+    char buffer_email[256];
+    unsigned long email_size = 0;
+
+    char buffer_password[65];
+    unsigned long password_size = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = buffer_email;
+    rbind[0].buffer_length = sizeof(buffer_email);
+    rbind[0].length = &email_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = buffer_password;
+    rbind[1].buffer_length = sizeof(buffer_password);
+    rbind[1].length = &password_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
+          email_size < rbind[0].buffer_length &&
+          password_size < rbind[1].buffer_length) {
+        buffer_email[email_size] = 0;
+        buffer_password[password_size] = 0;
+
+        if (strncmp(email, buffer_email, email_size) == 0 &&
+            st_bcrypt_check(password, buffer_password, password_size) == 1) {
+          result = 1;
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
 }

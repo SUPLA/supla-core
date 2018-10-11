@@ -64,6 +64,8 @@ typedef void (*_suplaclient_cb_on_min_version_required)(
     unsigned char min_version);
 typedef void (*_suplaclient_cb_on_oauth_token_request_result)(
     void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result);
+typedef void (*_suplaclient_cb_on_superuser_authorization_result)(
+    void *_suplaclient, void *user_data, char authorized, _supla_int_t code);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -110,6 +112,8 @@ typedef struct {
 
   _suplaclient_cb_on_oauth_token_request_result
       cb_on_oauth_token_request_result;
+  _suplaclient_cb_on_superuser_authorization_result
+      cb_on_superuser_authorization_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -142,6 +146,8 @@ char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
 char supla_client_get_registration_enabled(void *_suplaclient);
 unsigned char supla_client_get_proto_version(void *_suplaclient);
 char supla_client_oauth_token_request(void *_suplaclient);
+char supla_client_superuser_authorization_request(
+    void *_suplaclient, char *email, char *password);
 
 #ifdef __cplusplus
 }

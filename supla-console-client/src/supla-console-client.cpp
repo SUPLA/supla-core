@@ -101,6 +101,9 @@ int main(int argc, char *argv[]) {
         case '7':
           supla_client_get_registration_enabled(sclient);
           break;
+        case 's':
+          supla_client_superuser_authorization_request(sclient, NULL, "abcd");
+          break;
       }
     }
 
