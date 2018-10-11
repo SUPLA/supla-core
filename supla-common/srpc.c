@@ -655,7 +655,11 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
       case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
 
-        if (srpc->sdp.data_size <= sizeof(TDS_SuplaDeviceChannelExtendedValue))
+        if (srpc->sdp.data_size <=
+                sizeof(TDS_SuplaDeviceChannelExtendedValue) &&
+            srpc->sdp.data_size >=
+                (sizeof(TDS_SuplaDeviceChannelExtendedValue) -
+                 SUPLA_CHANNELEXTENDEDVALUE_SIZE))
           rd->data.ds_device_channel_extendedvalue =
               (TDS_SuplaDeviceChannelExtendedValue *)malloc(
                   sizeof(TDS_SuplaDeviceChannelExtendedValue));
@@ -845,7 +849,10 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 
       case SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE:
-        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelExtendedValuePack)) {
+        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelExtendedValuePack) &&
+            srpc->sdp.data_size >=
+                (sizeof(TSC_SuplaChannelExtendedValuePack) -
+                 SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE)) {
           rd->data.sc_channelextendedvalue_pack =
               (TSC_SuplaChannelExtendedValuePack *)malloc(
                   sizeof(TSC_SuplaChannelExtendedValuePack));
