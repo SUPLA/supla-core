@@ -1900,6 +1900,144 @@ TEST_F(SrpcTest, call_registerclient_result_b) {
 }
 
 //---------------------------------------------------------
+// LOCATION UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_location_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocation location;
+  memset(&location, 0, sizeof(TSC_SuplaLocation));
+  location.CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_sc_async_location_update(srpc, &location), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_location_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocation location;
+  memset(&location, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  location.CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE;
+
+  ASSERT_GT(srpc_sc_async_location_update(srpc, &location), 0);
+  SendAndReceive(SUPLA_SC_CALL_LOCATION_UPDATE, 433);
+
+  ASSERT_FALSE(cr_rd.data.sc_location == NULL);
+
+  ASSERT_EQ(
+      0, memcmp(cr_rd.data.sc_location, &location, sizeof(TSC_SuplaLocation)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_location_update_without_caption) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocation location;
+  memset(&location, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  location.CaptionSize = 0;
+
+  ASSERT_GT(srpc_sc_async_location_update(srpc, &location), 0);
+  SendAndReceive(SUPLA_SC_CALL_LOCATION_UPDATE, 32);
+
+  ASSERT_FALSE(cr_rd.data.sc_location == NULL);
+
+  ASSERT_EQ(0,
+            memcmp(cr_rd.data.sc_location, &location,
+                   sizeof(TSC_SuplaLocation) - SUPLA_LOCATION_CAPTION_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_locationpack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocationPack location_pack;
+  memset(&location_pack, 0, sizeof(TSC_SuplaLocation));
+  location_pack.count = SUPLA_LOCATIONPACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_locationpack_update(srpc, &location_pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_locationpack_update_with_caption_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocationPack location_pack;
+  memset(&location_pack, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  location_pack.count = SUPLA_LOCATIONPACK_MAXCOUNT;
+
+  location_pack.items[0].CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE + 1;
+
+  for (int a = 1; a < SUPLA_LOCATIONPACK_MAXCOUNT; a++) {
+    location_pack.items[a].CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_locationpack_update(srpc, &location_pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_LOCATIONPACK_UPDATE, 7821);
+
+  ASSERT_FALSE(cr_rd.data.sc_location_pack == NULL);
+  ASSERT_EQ(cr_rd.data.sc_location_pack->count,
+            SUPLA_LOCATIONPACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_location_pack->total_left, location_pack.total_left);
+
+  for (int a = 0; a < SUPLA_LOCATIONPACK_MAXCOUNT - 1; a++) {
+    ASSERT_EQ(
+        memcmp(&cr_rd.data.sc_location_pack->items[a],
+               &location_pack.items[a + 1],
+               sizeof(TSC_SuplaLocation) - SUPLA_LOCATION_CAPTION_MAXSIZE +
+                   location_pack.items[a + 1].CaptionSize),
+        0);
+  }
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_locationpack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocationPack location_pack;
+  memset(&location_pack, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  location_pack.count = SUPLA_LOCATIONPACK_MAXCOUNT;
+
+  for (int a = 0; a < SUPLA_LOCATIONPACK_MAXCOUNT; a++) {
+    location_pack.items[a].CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_locationpack_update(srpc, &location_pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_LOCATIONPACK_UPDATE, 8231);
+
+  ASSERT_FALSE(cr_rd.data.sc_location_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_location_pack, &location_pack,
+                      sizeof(TSC_SuplaLocationPack)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
