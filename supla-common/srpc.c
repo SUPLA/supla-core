@@ -1430,7 +1430,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_set_pack(
   _supla_int_t size = 0;
   _supla_int_t offset = 0;
 
-  if (count > pack_max_count) return 0;
+  if (count < 1 || count > pack_max_count) return 0;
 
   size = pack_sizeof - (item_sizeof * pack_max_count);
   offset = size;
