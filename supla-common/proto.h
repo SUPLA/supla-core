@@ -951,6 +951,7 @@ typedef struct {
 } TSC_DeviceCalibrationResult;                // v. >= 10
 
 typedef struct {
+  _supla_int_t SenderID;
   _supla_int_t ChannelNumber;
   _supla_int_t Command;
   char SuperUserAuthorized;
@@ -960,6 +961,7 @@ typedef struct {
 } TSD_DeviceCalibrationRequest;               // v. >= 10
 
 typedef struct {
+  _supla_int_t SenderID;
   _supla_int_t ChannelNumber;
   _supla_int_t Command;
   _supla_int_t Result;

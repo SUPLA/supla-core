@@ -95,8 +95,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(320, sizeof(TCS_SuperUserAuthorizationRequest));
   ASSERT_EQ(144, sizeof(TCS_DeviceCalibrationRequest));
   ASSERT_EQ(144, sizeof(TSC_DeviceCalibrationResult));
-  ASSERT_EQ(145, sizeof(TSD_DeviceCalibrationRequest));
-  ASSERT_EQ(144, sizeof(TDS_DeviceCalibrationResult));
+  ASSERT_EQ(149, sizeof(TSD_DeviceCalibrationRequest));
+  ASSERT_EQ(148, sizeof(TDS_DeviceCalibrationResult));
 }
 
 TEST_F(ProtoTest, init) {

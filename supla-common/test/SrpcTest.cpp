@@ -1577,7 +1577,7 @@ TEST_F(SrpcTest, call_sd_device_calibration_request_zero_size) {
 
   ASSERT_GT(srpc_sd_async_device_calibration_request(srpc, &request), 0);
 
-  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 40);
+  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 44);
 
   ASSERT_FALSE(cr_rd.data.sd_device_calibration_request == NULL);
 
@@ -1600,7 +1600,7 @@ TEST_F(SrpcTest, call_sd_device_calibration_request_full_size) {
 
   ASSERT_GT(srpc_sd_async_device_calibration_request(srpc, &request), 0);
 
-  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 168);
+  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 172);
 
   ASSERT_FALSE(cr_rd.data.sd_device_calibration_request == NULL);
 
@@ -1637,7 +1637,7 @@ TEST_F(SrpcTest, call_ds_device_calibration_result_zero_size) {
 
   ASSERT_GT(srpc_ds_async_device_calibration_result(srpc, &result), 0);
 
-  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 39);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 43);
 
   ASSERT_FALSE(cr_rd.data.ds_device_calibration_result == NULL);
 
@@ -1660,7 +1660,7 @@ TEST_F(SrpcTest, call_ds_device_calibration_result_full_size) {
 
   ASSERT_GT(srpc_ds_async_device_calibration_result(srpc, &result), 0);
 
-  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 167);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 171);
 
   ASSERT_FALSE(cr_rd.data.ds_device_calibration_result == NULL);
 
