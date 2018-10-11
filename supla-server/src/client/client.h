@@ -63,6 +63,10 @@ class supla_client : public cdcommon {
   void superuser_authorization_request(
       TCS_SuperUserAuthorizationRequest *request);
 
+  void device_calibration_request(TCS_DeviceCalibrationRequest *request);
+  void on_device_calibration_result(int ChannelID,
+                                    TDS_DeviceCalibrationResult *result);
+
   virtual ~supla_client();
 };
 

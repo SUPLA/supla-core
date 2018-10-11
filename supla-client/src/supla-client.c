@@ -550,6 +550,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
               rd.data.sc_superuser_authorization_result->Result);
         }
         break;
+      case SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT:
+        if (scd->cfg.cb_on_device_calibration_result &&
+            rd.data.sc_device_calibration_result) {
+          scd->cfg.cb_on_device_calibration_result(
+              scd, scd->cfg.user_data, rd.data.sc_device_calibration_result);
+        }
     }
 
     srpc_rd_free(&rd);
@@ -967,4 +973,11 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
 
   return srpc_cs_async_superuser_authorization_request(
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
+}
+
+char supla_client_device_calibration_request(
+    void *_suplaclient, TCS_DeviceCalibrationRequest *request) {
+  if (request == NULL) return 0;
+  return srpc_cs_async_device_calibration_request(
+      ((TSuplaClientData *)_suplaclient)->srpc, request);
 }

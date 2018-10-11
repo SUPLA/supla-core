@@ -451,3 +451,16 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 
   srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
 }
+
+bool supla_device::calibration_request(int SenderID, bool SuperUserAuthorized,
+                                       TCS_DeviceCalibrationRequest *request) {
+  return channels->calibration_request(getSvrConn()->srpc(), SenderID,
+                                       SuperUserAuthorized, request);
+}
+
+void supla_device::on_calibration_result(TDS_DeviceCalibrationResult *result) {
+  int ChannelID;
+  if ((ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
+    getUser()->on_device_calibration_result(ChannelID, result);
+  }
+}

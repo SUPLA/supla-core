@@ -97,6 +97,7 @@ class supla_user {
 
   int getUserID(void);
   bool getClientName(int ClientID, char *buffer, int size);
+  bool isSuperUserAuthorized(int ClientID);
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
@@ -110,7 +111,8 @@ class supla_user {
   bool is_device_online(int DeviceID);
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
                          char *online);
-  bool get_channel_extendedvalue(int DeviceID, int ChannelID, TSuplaChannelExtendedValue *value);
+  bool get_channel_extendedvalue(int DeviceID, int ChannelID,
+                                 TSuplaChannelExtendedValue *value);
 
   bool set_device_channel_value(int SenderID, int DeviceID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -125,11 +127,16 @@ class supla_user {
                                    char color_brightness, char brightness);
 
   void update_client_device_channels(int LocationID, int DeviceID);
-  void on_channel_value_changed(int DeviceId, int ChannelId = 0, bool Extended = false);
+  void on_channel_value_changed(int DeviceId, int ChannelId = 0,
+                                bool Extended = false);
 
   void call_event(TSC_SuplaEvent *event);
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
+
+  bool device_calibration_request(int SenderID, int DeviceId,
+                                  TCS_DeviceCalibrationRequest *request);
+  void on_device_calibration_result(int ChannelID, TDS_DeviceCalibrationResult *result);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

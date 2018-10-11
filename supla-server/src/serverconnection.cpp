@@ -483,22 +483,40 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     } else if (registered == REG_DEVICE) {
       switch (call_type) {
         case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
-          device->on_device_channel_value_changed(
-              rd.data.ds_device_channel_value);
+          if (rd.data.ds_device_channel_value) {
+            device->on_device_channel_value_changed(
+                rd.data.ds_device_channel_value);
+          }
           break;
 
         case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
-          device->on_device_channel_extendedvalue_changed(
-              rd.data.ds_device_channel_extendedvalue);
+          if (rd.data.ds_device_channel_extendedvalue) {
+            device->on_device_channel_extendedvalue_changed(
+                rd.data.ds_device_channel_extendedvalue);
+          }
           break;
 
         case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
-          device->on_channel_set_value_result(
-              rd.data.ds_channel_new_value_result);
+          if (rd.data.ds_channel_new_value_result) {
+            device->on_channel_set_value_result(
+                rd.data.ds_channel_new_value_result);
+          }
+
           break;
 
         case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
-          device->get_firmware_update_url(rd.data.ds_firmware_update_params);
+          if (rd.data.ds_firmware_update_params) {
+            device->get_firmware_update_url(rd.data.ds_firmware_update_params);
+          }
+
+          break;
+
+        case SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT:
+          if (rd.data.ds_device_calibration_result) {
+            device->on_calibration_result(
+                rd.data.ds_device_calibration_result);
+          }
+
           break;
 
         default:
@@ -567,6 +585,13 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                 rd.data.cs_superuser_authorization_request);
           }
 
+          break;
+
+        case SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST:
+          if (rd.data.cs_device_calibration_request != NULL) {
+            client->device_calibration_request(
+                rd.data.cs_device_calibration_request);
+          }
           break;
 
         default:

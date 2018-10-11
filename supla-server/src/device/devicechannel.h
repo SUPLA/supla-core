@@ -170,6 +170,9 @@ class supla_device_channels {
 
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
+
+  bool calibration_request(void *srpc, int SenderID, bool SuperUserAuthorized,
+                           TCS_DeviceCalibrationRequest *request);
 };
 
 #endif /* DEVICECHANNEL_H_ */

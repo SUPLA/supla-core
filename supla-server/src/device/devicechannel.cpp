@@ -990,3 +990,34 @@ void supla_device_channels::get_electricity_measurement(void *emarr) {
 
   safe_array_unlock(arr);
 }
+
+bool supla_device_channels::calibration_request(
+    void *srpc, int SenderID, bool SuperUserAuthorized,
+    TCS_DeviceCalibrationRequest *request) {
+  bool result = false;
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(request->ChannelID);
+
+  if (channel) {
+    TSD_DeviceCalibrationRequest drequest;
+    memset(&request, 0, sizeof(TSD_DeviceCalibrationRequest));
+
+    drequest.SenderID = SenderID;
+    drequest.ChannelNumber = channel->getNumber();
+    drequest.Command = request->Command;
+    drequest.SuperUserAuthorized = SuperUserAuthorized;
+    drequest.DataType = request->DataType;
+    drequest.DataSize = request->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE
+                            ? SUPLA_CALIBRATION_DATA_MAXSIZE
+                            : request->DataSize;
+    memcpy(drequest.Data, request->Data, SUPLA_CALIBRATION_DATA_MAXSIZE);
+
+    srpc_sd_async_device_calibration_request(srpc, &drequest);
+    result = true;
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
