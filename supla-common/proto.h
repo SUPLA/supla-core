@@ -589,7 +589,7 @@ typedef struct {
 
   _supla_int_t count;
   _supla_int_t total_left;
-  _supla_int_t pack_size;
+  unsigned _supla_int_t pack_size;
 
   char pack[SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE];  // Last variable in
                                                            // struct!
@@ -938,7 +938,7 @@ typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
   _supla_int_t DataType;
-  _supla_int_t DataSize;
+  unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
 } TCS_DeviceCalibrationRequest;               // v. >= 10
 
@@ -946,7 +946,7 @@ typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
   _supla_int_t Result;
-  _supla_int_t DataSize;
+  unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
 } TSC_DeviceCalibrationResult;                // v. >= 10
 
@@ -955,7 +955,7 @@ typedef struct {
   _supla_int_t Command;
   char SuperUserAuthorized;
   _supla_int_t DataType;
-  _supla_int_t DataSize;
+  unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
 } TSD_DeviceCalibrationRequest;               // v. >= 10
 
@@ -963,7 +963,7 @@ typedef struct {
   _supla_int_t ChannelNumber;
   _supla_int_t Command;
   _supla_int_t Result;
-  _supla_int_t DataSize;
+  unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
 } TDS_DeviceCalibrationResult;                // v. >= 10
 
