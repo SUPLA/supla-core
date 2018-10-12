@@ -357,7 +357,6 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:  // Calibration purposes
       return 1;
 
       break;
@@ -1001,7 +1000,7 @@ bool supla_device_channels::calibration_request(
 
   if (channel) {
     TSD_DeviceCalibrationRequest drequest;
-    memset(&request, 0, sizeof(TSD_DeviceCalibrationRequest));
+    memset(&drequest, 0, sizeof(TSD_DeviceCalibrationRequest));
 
     drequest.SenderID = SenderID;
     drequest.ChannelNumber = channel->getNumber();
