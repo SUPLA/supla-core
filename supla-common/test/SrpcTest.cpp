@@ -1976,6 +1976,21 @@ TEST_F(SrpcTest, call_locationpack_update_with_over_size) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_locationpack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaLocationPack location_pack;
+  memset(&location_pack, 0, sizeof(TSC_SuplaLocationPack));
+  location_pack.count = 0;
+
+  ASSERT_EQ(srpc_sc_async_locationpack_update(srpc, &location_pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 TEST_F(SrpcTest, call_locationpack_update_with_caption_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -2182,6 +2197,21 @@ TEST_F(SrpcTest, call_channelpack_update_with_over_size) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_channelpack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelPack channel_pack;
+  memset(&channel_pack, 0, sizeof(TSC_SuplaChannelPack));
+  channel_pack.count = 0;
+
+  ASSERT_EQ(srpc_sc_async_channelpack_update(srpc, &channel_pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 TEST_F(SrpcTest, call_channelpack_update_with_caption_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
@@ -2251,6 +2281,21 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_over_size) {
   TSC_SuplaChannelPack_B channel_pack;
   memset(&channel_pack, 0, sizeof(TSC_SuplaChannelPack_B));
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelpack_update_b(srpc, &channel_pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelpack_update_b_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelPack_B channel_pack;
+  memset(&channel_pack, 0, sizeof(TSC_SuplaChannelPack_B));
+  channel_pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update_b(srpc, &channel_pack), 0);
 
@@ -2355,6 +2400,21 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_over_size) {
   TSC_SuplaChannelGroupPack pack;
   memset(&pack, 0, sizeof(TSC_SuplaChannelGroupPack));
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelGroupPack));
+  pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
 
