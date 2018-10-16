@@ -2484,6 +2484,84 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_full_size) {
 }
 
 //---------------------------------------------------------
+// CHANNEL GROUP RELATION PACK UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupRelationPack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelGroupRelationPack));
+  pack.count = SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupRelationPack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelGroupRelationPack));
+  pack.count = SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupRelationPack pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupRelationPack));
+  pack.count = SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT;
+
+  ASSERT_GT(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE, 931);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelgroup_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelGroupRelationPack)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupRelationPack pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupRelationPack));
+  pack.count = 1;
+
+  ASSERT_GT(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE, 40);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelgroup_relation_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_relation_pack, &pack,
+                      sizeof(TSC_SuplaChannelGroupRelationPack) -
+                          ((SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT - 1) *
+                           sizeof(TSC_SuplaChannelGroupRelation))));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
