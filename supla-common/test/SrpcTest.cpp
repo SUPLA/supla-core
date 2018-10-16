@@ -2095,8 +2095,7 @@ TEST_F(SrpcTest, call_channel_update_with_full_size) {
   ASSERT_FALSE(cr_rd.data.sc_channel == NULL);
 
   ASSERT_EQ(0,
-            memcmp(cr_rd.data.sc_channel, &channel,
-                   sizeof(TSC_SuplaChannel)));
+            memcmp(cr_rd.data.sc_channel, &channel, sizeof(TSC_SuplaChannel)));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -2157,9 +2156,8 @@ TEST_F(SrpcTest, call_channel_update_b_with_full_size) {
 
   ASSERT_FALSE(cr_rd.data.sc_channel_b == NULL);
 
-  ASSERT_EQ(0,
-            memcmp(cr_rd.data.sc_channel_b, &channel,
-                   sizeof(TSC_SuplaChannel_B)));
+  ASSERT_EQ(
+      0, memcmp(cr_rd.data.sc_channel_b, &channel, sizeof(TSC_SuplaChannel_B)));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -2203,17 +2201,15 @@ TEST_F(SrpcTest, call_channelpack_update_with_caption_over_size) {
   SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE, 8296);
 
   ASSERT_FALSE(cr_rd.data.sc_channel_pack == NULL);
-  ASSERT_EQ(cr_rd.data.sc_channel_pack->count,
-            SUPLA_CHANNELPACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_channel_pack->count, SUPLA_CHANNELPACK_MAXCOUNT - 1);
   ASSERT_EQ(cr_rd.data.sc_channel_pack->total_left, channel_pack.total_left);
 
   for (int a = 0; a < SUPLA_CHANNELPACK_MAXCOUNT - 1; a++) {
-    ASSERT_EQ(
-        memcmp(&cr_rd.data.sc_channel_pack->items[a],
-               &channel_pack.items[a + 1],
-               sizeof(TSC_SuplaChannel) - SUPLA_CHANNEL_CAPTION_MAXSIZE +
-                   channel_pack.items[a + 1].CaptionSize),
-        0);
+    ASSERT_EQ(memcmp(&cr_rd.data.sc_channel_pack->items[a],
+                     &channel_pack.items[a + 1],
+                     sizeof(TSC_SuplaChannel) - SUPLA_CHANNEL_CAPTION_MAXSIZE +
+                         channel_pack.items[a + 1].CaptionSize),
+              0);
   }
 
   srpc_free(srpc);
@@ -2318,6 +2314,110 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_full_size) {
 
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_pack_b, &channel_pack,
                       sizeof(TSC_SuplaChannelPack_B)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// CHANNEL VALUE UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channel_value_update) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelValue value;
+  memset(&value, rand_r(&seed), sizeof(TSC_SuplaChannelValue));
+
+  ASSERT_GT(srpc_sc_async_channel_value_update(srpc, &value), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE, 45);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_value == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_value, &value,
+                      sizeof(TSC_SuplaChannelValue)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// CHANNEL GROUP PACK UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelGroupPack));
+  pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_with_caption_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack));
+  pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
+
+  pack.items[0].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE + 1;
+
+  for (int a = 1; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
+    pack.items[a].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE, 8125);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelgroup_pack == NULL);
+  ASSERT_EQ(cr_rd.data.sc_channelgroup_pack->count,
+            SUPLA_CHANNELGROUP_PACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_channelgroup_pack->total_left, pack.total_left);
+
+  for (int a = 0; a < SUPLA_CHANNELGROUP_PACK_MAXCOUNT - 1; a++) {
+    ASSERT_EQ(
+        memcmp(&cr_rd.data.sc_channelgroup_pack->items[a], &pack.items[a + 1],
+               sizeof(TSC_SuplaChannelGroup) -
+                   SUPLA_CHANNELGROUP_CAPTION_MAXSIZE +
+                   pack.items[a + 1].CaptionSize),
+        0);
+  }
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack));
+  pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
+
+  for (int a = 0; a < SUPLA_CHANNELGROUP_PACK_MAXCOUNT; a++) {
+    pack.items[a].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE, 8551);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelgroup_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_pack, &pack,
+                      sizeof(TSC_SuplaChannelGroupPack)));
 
   srpc_free(srpc);
   srpc = NULL;
