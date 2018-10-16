@@ -1559,8 +1559,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
     void *_srpc,
     TSC_SuplaChannelGroupRelationPack *channelgroup_relation_pack) {
-  if (channelgroup_relation_pack->count >
-      SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT) {
+  if (channelgroup_relation_pack->count < 1 ||
+      channelgroup_relation_pack->count >
+          SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT) {
     return 0;
   }
 
