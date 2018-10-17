@@ -2562,6 +2562,85 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
 }
 
 //---------------------------------------------------------
+// CHANNEL VALUE PACK
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channelvalue_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelValuePack));
+  pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelvalue_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelValuePack));
+  pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelvalue_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelValuePack pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelValuePack));
+  pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT;
+
+  ASSERT_GT(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE, 471);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelvalue_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelvalue_pack, &pack,
+                      sizeof(TSC_SuplaChannelValuePack)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelvalue_pack_update_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelValuePack pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelValuePack));
+  pack.count = 1;
+
+  ASSERT_GT(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE, 53);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelvalue_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelvalue_pack, &pack,
+                      sizeof(TSC_SuplaChannelValuePack) -
+                          ((SUPLA_CHANNELVALUE_PACK_MAXCOUNT - 1) *
+                           sizeof(TSC_SuplaChannelValue))));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
