@@ -1592,7 +1592,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelextendedvalue_pack_update(
     void *_srpc, TSC_SuplaChannelExtendedValuePack *extendedvalue_pack) {
   if (extendedvalue_pack == NULL || extendedvalue_pack->count < 1 ||
-      extendedvalue_pack->count > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT || ||
+      extendedvalue_pack->count > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT ||
       extendedvalue_pack->pack_size < 1 ||
       extendedvalue_pack->pack_size >
           SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
