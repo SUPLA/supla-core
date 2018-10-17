@@ -2639,6 +2639,96 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_minimum_size) {
   srpc = NULL;
 }
 
+//---------------------------------------------------------
+// CHANNEL EXTENDED VALUE PACK
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_over_count) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelExtendedValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+  pack.count = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT + 1;
+  pack.pack_size = 1;
+
+  ASSERT_EQ(srpc_sc_async_channelextendedvalue_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_zero_count) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelExtendedValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+  pack.count = 0;
+  pack.pack_size = 1;
+
+  ASSERT_EQ(srpc_sc_async_channelextendedvalue_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelExtendedValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+  pack.count = 1;
+  pack.pack_size = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelextendedvalue_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelExtendedValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+  pack.count = 1;
+  pack.pack_size = 0;
+
+  ASSERT_EQ(srpc_sc_async_channelextendedvalue_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelExtendedValuePack pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelExtendedValuePack));
+  pack.count = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT;
+  pack.pack_size = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE;
+
+  ASSERT_GT(srpc_sc_async_channelextendedvalue_pack_update(srpc, &pack), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE, 10213);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelextendedvalue_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelextendedvalue_pack, &pack,
+                      sizeof(TSC_SuplaChannelExtendedValuePack)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
 
 //---------------------------------------------------------
 // SUPER USER AUTHORIZATION
