@@ -2750,6 +2750,66 @@ TEST_F(SrpcTest, call_get_next) {
 }
 
 //---------------------------------------------------------
+// EVENT
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_event_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaEvent event;
+  memset(&event, 0, sizeof(TSC_SuplaEvent));
+  event.SenderNameSize = 0;
+
+  ASSERT_GT(srpc_sc_async_event(srpc, &event), 0);
+  SendAndReceive(SUPLA_SC_CALL_EVENT, 43);
+
+  ASSERT_FALSE(cr_rd.data.sc_event == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_event, &event,
+                      sizeof(TSC_SuplaEvent) - SUPLA_SENDER_NAME_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_event_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaEvent event;
+  memset(&event, 0, sizeof(TSC_SuplaEvent));
+  event.SenderNameSize = SUPLA_SENDER_NAME_MAXSIZE;
+
+  ASSERT_GT(srpc_sc_async_event(srpc, &event), 0);
+  SendAndReceive(SUPLA_SC_CALL_EVENT, 244);
+
+  ASSERT_FALSE(cr_rd.data.sc_event == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_event, &event, sizeof(TSC_SuplaEvent)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_event_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaEvent event;
+  memset(&event, 0, sizeof(TSC_SuplaEvent));
+  event.SenderNameSize = SUPLA_SENDER_NAME_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_sc_async_event(srpc, &event), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
