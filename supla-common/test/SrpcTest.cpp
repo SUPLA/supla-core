@@ -2731,6 +2731,25 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_full_size) {
 }
 
 //---------------------------------------------------------
+// GET NEXT
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_get_next) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_cs_async_get_next(srpc), 0);
+  SendAndReceive(SUPLA_CS_CALL_GET_NEXT, 23);
+
+  // No Data
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
