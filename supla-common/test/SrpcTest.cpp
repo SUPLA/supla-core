@@ -2810,6 +2810,50 @@ TEST_F(SrpcTest, call_event_with_over_size) {
 }
 
 //---------------------------------------------------------
+// CS - SET CHANNEL NEW VALUE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_cs_set_channel_value) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_SuplaChannelNewValue value;
+  memset(&value, rand_r(&seed), sizeof(TCS_SuplaChannelNewValue));
+
+  ASSERT_GT(srpc_cs_async_set_channel_value(srpc, &value), 0);
+  SendAndReceive(SUPLA_CS_CALL_CHANNEL_SET_VALUE, 32);
+
+  ASSERT_FALSE(cr_rd.data.cs_channel_new_value == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_channel_new_value, &value,
+                      sizeof(TCS_SuplaChannelNewValue)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_cs_set_channel_value_b) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_SuplaChannelNewValue_B value;
+  memset(&value, rand_r(&seed), sizeof(TCS_SuplaChannelNewValue_B));
+
+  ASSERT_GT(srpc_cs_async_set_channel_value_b(srpc, &value), 0);
+  SendAndReceive(SUPLA_CS_CALL_CHANNEL_SET_VALUE_B, 35);
+
+  ASSERT_FALSE(cr_rd.data.cs_channel_new_value_b == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_channel_new_value_b, &value,
+                      sizeof(TCS_SuplaChannelNewValue_B)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
