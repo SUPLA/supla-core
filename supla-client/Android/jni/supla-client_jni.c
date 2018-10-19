@@ -427,24 +427,32 @@ void supla_android_client_cb_channel_value_update(void *_suplaclient, void *user
 
 void supla_android_client_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv* env, jobject parent, jclass parent_cls, TElectricityMeter_ExtendedValue *em_ev, jint phase) {
     
-    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeter$Summary");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeter;JJJJ)V");
+    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue$Summary");
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJIILjava/lang/String;)V");
+    
+    char currency[4];
+    memcpy(currency, em_ev->currency, 3);
+    currency[3] = 0;
+    
     jobject sum_obj = (*env)->NewObject(env,cls, methodID, parent,
                                         em_ev->total_forward_active_energy[phase],
                                         em_ev->total_reverse_active_energy[phase],
                                         em_ev->total_forward_reactive_energy[phase],
-                                        em_ev->total_reverse_reactive_energy[phase]);
+                                        em_ev->total_reverse_reactive_energy[phase],
+                                        em_ev->total_cost,
+                                        em_ev->price_per_unit,
+                                        (*env)->NewStringUTF(env, currency));
     jclass sum_class = (*env)->GetObjectClass(env, sum_obj);
     
-    jmethodID add_summary_mid = (*env)->GetMethodID(env, parent_cls, "addSummary", "(ILorg/supla/android/lib/SuplaChannelElectricityMeter$Summary;)V");
+    jmethodID add_summary_mid = (*env)->GetMethodID(env, parent_cls, "addSummary", "(ILorg/supla/android/lib/SuplaChannelElectricityMeterValue$Summary;)V");
     phase += 1;
     (*env)->CallVoidMethod(env, parent, add_summary_mid, phase, sum_obj);
 }
 
 void supla_android_client_channel_em_addmeasurement(TAndroidSuplaClient *asc, JNIEnv* env, jobject parent, jclass parent_cls, TElectricityMeter_ExtendedValue *em_ev, jint phase, int midx) {
     
-    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeter$Measurement");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeter;IIIIIIII)V");
+    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue$Measurement");
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;IIIIIIII)V");
     jobject m_obj = (*env)->NewObject(env,cls, methodID, parent,
                                         em_ev->m[midx].freq,
                                         em_ev->m[midx].voltage[phase],
@@ -456,7 +464,7 @@ void supla_android_client_channel_em_addmeasurement(TAndroidSuplaClient *asc, JN
                                         em_ev->m[midx].phase_angle[phase]);
     jclass m_class = (*env)->GetObjectClass(env, m_obj);
     
-    jmethodID add_m_mid = (*env)->GetMethodID(env, parent_cls, "addMeasurement", "(ILorg/supla/android/lib/SuplaChannelElectricityMeter$Measurement;)V");
+    jmethodID add_m_mid = (*env)->GetMethodID(env, parent_cls, "addMeasurement", "(ILorg/supla/android/lib/SuplaChannelElectricityMeterValue$Measurement;)V");
     phase += 1;
     (*env)->CallVoidMethod(env, parent, add_m_mid, phase, m_obj);
 }
@@ -465,7 +473,7 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(TAndroidSup
     int a = 0;
     int b = 0;
     
-    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeter");
+    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue");
     jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(II)V");
     jobject val = (*env)->NewObject(env,cls, methodID, em_ev->measured_values, em_ev->period);
     jclass cval = (*env)->GetObjectClass(env, val);
@@ -479,6 +487,23 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(TAndroidSup
     
     
     return val;
+}
+
+jobject supla_android_client_impulsecountervalue_to_jobject(TAndroidSuplaClient *asc, JNIEnv* env, TSC_ImpulseCounter_ExtendedValue *ic_ev) {
+    
+    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelImpulseCounterValue");
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(JJIILjava/lang/String;)V");
+    
+    char currency[4];
+    memcpy(currency, ic_ev->currency, 3);
+    currency[3] = 0;
+    
+    return (*env)->NewObject(env,cls, methodID,
+                                        ic_ev->counter,
+                                        ic_ev->calculated_value,
+                                        ic_ev->total_cost,
+                                        ic_ev->price_per_unit,
+                                        (*env)->NewStringUTF(env, currency));
 }
 
 jobject supla_android_client_channelextendedvalue_to_jobject(void *_suplaclient, void *user_data, TSuplaChannelExtendedValue *channel_extendedvalue) {
@@ -501,11 +526,19 @@ jobject supla_android_client_channelextendedvalue_to_jobject(void *_suplaclient,
         if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
             TElectricityMeter_ExtendedValue em_ev;
             if (srpc_evtool_v1_extended2emextended(channel_extendedvalue, &em_ev) == 1) {
-                
-                fid = supla_client_GetFieldID(env, cval, "ElectricityMeterValue", "Lorg/supla/android/lib/SuplaChannelElectricityMeter;");
+    
+                fid = supla_client_GetFieldID(env, cval, "ElectricityMeterValue", "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
                 jobject chv = supla_android_client_channelelectricitymetervalue_to_jobject(asc, env, &em_ev);
                 (*env)->SetObjectField(env, val, fid, chv);
-            
+            }
+        } else if (channel_extendedvalue->type == EV_TYPE_IMPULSE_COUNTER_DETAILS_V1) {
+            TSC_ImpulseCounter_ExtendedValue ic_ev;
+            if (srpc_evtool_v1_extended2icextended(channel_extendedvalue, &ic_ev) == 1) {
+                
+                fid = supla_client_GetFieldID(env, cval, "ImpulseCounterValue", "Lorg/supla/android/lib/SuplaChannelImpulseCounterValue;");
+                jobject chv = supla_android_client_impulsecountervalue_to_jobject(asc, env, &ic_ev);
+                (*env)->SetObjectField(env, val, fid, chv);
+                
             }
         } else if (channel_extendedvalue->size > 0) {
             jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
