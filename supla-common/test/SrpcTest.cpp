@@ -2854,6 +2854,78 @@ TEST_F(SrpcTest, call_cs_set_channel_value_b) {
 }
 
 //---------------------------------------------------------
+// OAUTH TOKEN
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_oauth_token_request) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_cs_async_oauth_token_request(srpc), 0);
+
+  SendAndReceive(SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST, 23);
+
+  // No Data
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_oauth_token_request_result_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_OAuthTokenRequestResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_OAuthTokenRequestResult));
+  result.Token.TokenSize = 0;
+
+  ASSERT_EQ(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_oauth_token_request_result_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_OAuthTokenRequestResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_OAuthTokenRequestResult));
+  result.Token.TokenSize = SUPLA_OAUTH_TOKEN_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_oauth_token_request_result_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_OAuthTokenRequestResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_OAuthTokenRequestResult));
+  result.Token.TokenSize = SUPLA_OAUTH_TOKEN_MAXSIZE;
+
+  ASSERT_GT(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT, 288);
+
+  ASSERT_FALSE(cr_rd.data.sc_oauth_tokenrequest_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_oauth_tokenrequest_result, &result,
+                      sizeof(TSC_OAuthTokenRequestResult)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // SUPER USER AUTHORIZATION
 //---------------------------------------------------------
 
