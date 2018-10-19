@@ -113,8 +113,12 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
   TCS_SuplaNewValue *cs_new_value;
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
-  TSD_SuplaChannelEraseData *sd_channel_erase_data;
-  TDS_SuplaChannelEraseDataResult *ds_channel_erase_data_result;
+  TCS_SuperUserAuthorizationRequest *cs_superuser_authorization_request;
+  TSC_SuperUserAuthorizationResult *sc_superuser_authorization_result;
+  TCS_DeviceCalibrationRequest *cs_device_calibration_request;
+  TSC_DeviceCalibrationResult *sc_device_calibration_result;
+  TSD_DeviceCalibrationRequest *sd_device_calibration_request;
+  TDS_DeviceCalibrationResult *ds_device_calibration_result;
 };
 
 typedef struct {
@@ -189,13 +193,13 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
                                  _supla_int_t SenderID, char Success);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
-    void *_srpc, TDS_FirmwareUpdateParams *result);
+    void *_srpc, TDS_FirmwareUpdateParams *params);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_sd_async_channel_erase_data(void *_srpc, unsigned char ChannelNumber);
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_erase_data_result(
-    void *_srpc, unsigned char ChannelNumber, char Result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calibration_request(
+    void *_srpc, TSD_DeviceCalibrationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_device_calibration_result(
+    void *_srpc, TDS_DeviceCalibrationResult *result);
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
@@ -248,6 +252,14 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_channel_value_b(
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
+    void *_srpc, TCS_SuperUserAuthorizationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
+    void *_srpc, TSC_SuperUserAuthorizationResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calibration_request(
+    void *_srpc, TCS_DeviceCalibrationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calibration_result(
+    void *_srpc, TSC_DeviceCalibrationResult *result);
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
 

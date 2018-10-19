@@ -40,6 +40,8 @@
 #define ACTIVITY_TIMEOUT_MIN 10
 #define ACTIVITY_TIMEOUT_MAX 240
 
+#define INCORRECT_CALL_MAXCOUNT 5
+
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
 }
@@ -74,6 +76,7 @@ serverconnection::serverconnection(void *ssd, void *supla_socket,
   this->ssd = ssd;
   this->supla_socket = supla_socket;
   this->activity_timeout = ACTIVITY_TIMEOUT;
+  this->incorrect_call_counter = 0;
 
   eh = eh_init();
   eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
@@ -111,6 +114,17 @@ int serverconnection::socket_read(void *buf, size_t count) {
 
 int serverconnection::socket_write(const void *buf, size_t count) {
   return ssocket_write(ssd, supla_socket, buf, count);
+}
+
+void serverconnection::catch_incorrect_call(unsigned int call_type) {
+  incorrect_call_counter++;
+  supla_log(LOG_DEBUG, "Incorrect call %i/%i", call_type,
+            incorrect_call_counter);
+
+  if (incorrect_call_counter >= INCORRECT_CALL_MAXCOUNT) {
+    supla_log(LOG_DEBUG, "The number of incorrect calls has been exceeded.");
+    sthread_terminate(sthread);
+  }
 }
 
 void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
@@ -417,7 +431,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
         break;
 
       default:
-        sthread_terminate(sthread);
+        catch_incorrect_call(call_type);
     }
 
   } else {
@@ -469,26 +483,44 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     } else if (registered == REG_DEVICE) {
       switch (call_type) {
         case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
-          device->on_device_channel_value_changed(
-              rd.data.ds_device_channel_value);
+          if (rd.data.ds_device_channel_value) {
+            device->on_device_channel_value_changed(
+                rd.data.ds_device_channel_value);
+          }
           break;
 
         case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
-          device->on_device_channel_extendedvalue_changed(
-              rd.data.ds_device_channel_extendedvalue);
+          if (rd.data.ds_device_channel_extendedvalue) {
+            device->on_device_channel_extendedvalue_changed(
+                rd.data.ds_device_channel_extendedvalue);
+          }
           break;
 
         case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
-          device->on_channel_set_value_result(
-              rd.data.ds_channel_new_value_result);
+          if (rd.data.ds_channel_new_value_result) {
+            device->on_channel_set_value_result(
+                rd.data.ds_channel_new_value_result);
+          }
+
           break;
 
         case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
-          device->get_firmware_update_url(rd.data.ds_firmware_update_params);
+          if (rd.data.ds_firmware_update_params) {
+            device->get_firmware_update_url(rd.data.ds_firmware_update_params);
+          }
+
+          break;
+
+        case SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT:
+          if (rd.data.ds_device_calibration_result) {
+            device->on_calibration_result(
+                rd.data.ds_device_calibration_result);
+          }
+
           break;
 
         default:
-          sthread_terminate(sthread);
+          catch_incorrect_call(call_type);
       }
 
     } else if (registered == REG_CLIENT) {
@@ -543,8 +575,27 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           client->oauth_token_request();
           break;
 
+        case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
+          if (rd.data.cs_superuser_authorization_request != NULL) {
+            rd.data.cs_superuser_authorization_request
+                ->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+            rd.data.cs_superuser_authorization_request
+                ->Password[SUPLA_PASSWORD_MAXSIZE - 1] = 0;
+            client->superuser_authorization_request(
+                rd.data.cs_superuser_authorization_request);
+          }
+
+          break;
+
+        case SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST:
+          if (rd.data.cs_device_calibration_request != NULL) {
+            client->device_calibration_request(
+                rd.data.cs_device_calibration_request);
+          }
+          break;
+
         default:
-          sthread_terminate(sthread);
+          catch_incorrect_call(call_type);
       }
 
     } else {

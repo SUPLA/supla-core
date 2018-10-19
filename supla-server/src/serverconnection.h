@@ -47,6 +47,9 @@ class serverconnection {
 
   char registered;
 
+  int incorrect_call_counter;
+  void catch_incorrect_call(unsigned int call_type);
+
  public:
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
   void execute(void *sthread);

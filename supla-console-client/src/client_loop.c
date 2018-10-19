@@ -163,6 +163,18 @@ void client_on_registration_enabled(void *_suplaclient, void *user_data,
             reg_enabled->iodevice_timestamp);
 }
 
+void client_on_superuser_authorization_result(void *_suplaclient,
+                                              void *user_data, char authorized,
+                                              _supla_int_t code) {
+  supla_log(LOG_DEBUG, "Super User %s",
+            authorized == 1 ? "authorized" : "unauthorized");
+}
+
+void client_on_device_calibration_result(void *_suplaclient, void *user_data,
+                                         TSC_DeviceCalibrationResult *result) {
+  supla_log(LOG_DEBUG, "Device calibration result");
+}
+
 void *client_loop_init(void *sthread) {
   TSuplaClientCfg scc;
   supla_client_cfginit(&scc);
@@ -202,6 +214,9 @@ void *client_loop_init(void *sthread) {
       &client_loop_channelgroup_relation_update;
   scc.cb_on_event = &client_loop_on_event;
   scc.cb_on_registration_enabled = &client_on_registration_enabled;
+  scc.cb_on_superuser_authorization_result =
+      &client_on_superuser_authorization_result;
+  scc.cb_on_device_calibration_result = &client_on_device_calibration_result;
 
   return supla_client_init(&scc);
 }

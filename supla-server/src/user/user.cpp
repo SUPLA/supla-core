@@ -117,6 +117,18 @@ bool supla_user::getClientName(int ClientID, char *buffer, int size) {
   return client != NULL;
 }
 
+bool supla_user::isSuperUserAuthorized(int ClientID) {
+  bool result = false;
+  safe_array_lock(client_arr);
+
+  supla_client *client = find_client(ClientID);
+
+  if (client) result = client->is_superuser_authorized();
+
+  safe_array_unlock(client_arr);
+  return result;
+}
+
 supla_user *supla_user::find(int UserID, bool create) {
   safe_array_lock(supla_user::user_arr);
 
@@ -732,6 +744,37 @@ void supla_user::get_electricity_measurement(void *emarr) {
   }
 
   safe_array_unlock(device_arr);
+}
+
+bool supla_user::device_calibration_request(
+    int SenderID, int DeviceId, TCS_DeviceCalibrationRequest *request) {
+  bool result = false;
+
+  safe_array_lock(device_arr);
+
+  supla_device *device = find_device(DeviceId);
+  if (device)
+    result = device->calibration_request(
+        SenderID, SenderID > 0 ? isSuperUserAuthorized(SenderID) : false,
+        request);
+
+  safe_array_unlock(device_arr);
+
+  return result;
+}
+
+void supla_user::on_device_calibration_result(
+    int ChannelID, TDS_DeviceCalibrationResult *result) {
+  if (result == NULL) return;
+  safe_array_lock(client_arr);
+
+  supla_client *client = find_client(result->SenderID);
+
+  if (client) {
+    client->on_device_calibration_result(ChannelID, result);
+  }
+
+  safe_array_unlock(client_arr);
 }
 
 void supla_user::reconnect() {

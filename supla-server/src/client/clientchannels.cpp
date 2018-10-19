@@ -128,7 +128,7 @@ bool supla_client_channels::get_ev_datapack_for_remote(
 
       if (pack != NULL) {
         memcpy(&pack->pack[pack->pack_size], &cev, cev_size);
-        pack->pack_size+=cev_size;
+        pack->pack_size += cev_size;
         pack->count++;
         return true;
       }
@@ -264,4 +264,29 @@ bool supla_client_channels::set_device_channel_new_value(
 bool supla_client_channels::set_device_channel_new_value(
     TCS_SuplaNewValue *new_value) {
   return set_device_channel_new_value(new_value->Id, new_value->value);
+}
+
+bool supla_client_channels::device_calibration_request(
+    TCS_DeviceCalibrationRequest *request) {
+  if (request == NULL) return false;
+
+  if (channel_exists(request->ChannelID)) {
+    safe_array_lock(getArr());
+
+    supla_client_channel *channel;
+    int DeviceID = 0;
+
+    if (NULL != (channel = find_channel(request->ChannelID))) {
+      DeviceID = channel->getDeviceId();
+    }
+
+    safe_array_unlock(getArr());
+
+    if (DeviceID) {
+      return getClient()->getUser()->device_calibration_request(
+          getClient()->getID(), DeviceID, request);
+    }
+  }
+
+  return false;
 }

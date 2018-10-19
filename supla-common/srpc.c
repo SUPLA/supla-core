@@ -655,7 +655,11 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
       case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
 
-        if (srpc->sdp.data_size <= sizeof(TDS_SuplaDeviceChannelExtendedValue))
+        if (srpc->sdp.data_size <=
+                sizeof(TDS_SuplaDeviceChannelExtendedValue) &&
+            srpc->sdp.data_size >=
+                (sizeof(TDS_SuplaDeviceChannelExtendedValue) -
+                 SUPLA_CHANNELEXTENDEDVALUE_SIZE))
           rd->data.ds_device_channel_extendedvalue =
               (TDS_SuplaDeviceChannelExtendedValue *)malloc(
                   sizeof(TDS_SuplaDeviceChannelExtendedValue));
@@ -701,22 +705,25 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
             memset(rd->data.sc_firmware_update_url_result, 0,
                    sizeof(TSD_FirmwareUpdate_UrlResult));
         }
-
         break;
-
-      case SUPLA_SD_CALL_CHANNEL_ERASE_DATA:
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelEraseData))
-          rd->data.sd_channel_erase_data = (TSD_SuplaChannelEraseData *)malloc(
-              sizeof(TSD_SuplaChannelEraseData));
+      case SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST:
+        if (srpc->sdp.data_size <= sizeof(TSD_DeviceCalibrationRequest) &&
+            srpc->sdp.data_size >= (sizeof(TSD_DeviceCalibrationRequest) -
+                                    SUPLA_CALIBRATION_DATA_MAXSIZE)) {
+          rd->data.sd_device_calibration_request =
+              (TSD_DeviceCalibrationRequest *)malloc(
+                  sizeof(TSD_DeviceCalibrationRequest));
+        }
         break;
-
-      case SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT:
-        if (srpc->sdp.data_size == sizeof(TDS_SuplaChannelEraseDataResult))
-          rd->data.ds_channel_erase_data_result =
-              (TDS_SuplaChannelEraseDataResult *)malloc(
-                  sizeof(TDS_SuplaChannelEraseDataResult));
+      case SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT:
+        if (srpc->sdp.data_size <= sizeof(TDS_DeviceCalibrationResult) &&
+            srpc->sdp.data_size >= (sizeof(TDS_DeviceCalibrationResult) -
+                                    SUPLA_CALIBRATION_DATA_MAXSIZE)) {
+          rd->data.ds_device_calibration_result =
+              (TDS_DeviceCalibrationResult *)malloc(
+                  sizeof(TDS_DeviceCalibrationResult));
+        }
         break;
-
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -842,7 +849,10 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 
       case SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE:
-        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelExtendedValuePack)) {
+        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelExtendedValuePack) &&
+            srpc->sdp.data_size >=
+                (sizeof(TSC_SuplaChannelExtendedValuePack) -
+                 SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE)) {
           rd->data.sc_channelextendedvalue_pack =
               (TSC_SuplaChannelExtendedValuePack *)malloc(
                   sizeof(TSC_SuplaChannelExtendedValuePack));
@@ -895,6 +905,36 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
           rd->data.sc_oauth_tokenrequest_result =
               (TSC_OAuthTokenRequestResult *)malloc(
                   sizeof(TSC_OAuthTokenRequestResult));
+        }
+        break;
+      case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
+        if (srpc->sdp.data_size == sizeof(TCS_SuperUserAuthorizationRequest))
+          rd->data.cs_superuser_authorization_request =
+              (TCS_SuperUserAuthorizationRequest *)malloc(
+                  sizeof(TCS_SuperUserAuthorizationRequest));
+        break;
+      case SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SuperUserAuthorizationResult))
+          rd->data.sc_superuser_authorization_result =
+              (TSC_SuperUserAuthorizationResult *)malloc(
+                  sizeof(TSC_SuperUserAuthorizationResult));
+        break;
+      case SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST:
+        if (srpc->sdp.data_size <= sizeof(TCS_DeviceCalibrationRequest) &&
+            srpc->sdp.data_size >= (sizeof(TCS_DeviceCalibrationRequest) -
+                                    SUPLA_CALIBRATION_DATA_MAXSIZE)) {
+          rd->data.cs_device_calibration_request =
+              (TCS_DeviceCalibrationRequest *)malloc(
+                  sizeof(TCS_DeviceCalibrationRequest));
+        }
+        break;
+      case SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT:
+        if (srpc->sdp.data_size <= sizeof(TSC_DeviceCalibrationResult) &&
+            srpc->sdp.data_size >= (sizeof(TSC_DeviceCalibrationResult) -
+                                    SUPLA_CALIBRATION_DATA_MAXSIZE)) {
+          rd->data.sc_device_calibration_result =
+              (TSC_DeviceCalibrationResult *)malloc(
+                  sizeof(TSC_DeviceCalibrationResult));
         }
         break;
 
@@ -991,8 +1031,12 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
     case SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT:
     case SUPLA_DS_CALL_REGISTER_DEVICE_E:
-    case SUPLA_SD_CALL_CHANNEL_ERASE_DATA:
-    case SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT:
+    case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
+    case SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT:
+    case SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST:
+    case SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT:
+    case SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST:
+    case SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT:
       return 10;
   }
 
@@ -1167,9 +1211,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
 
 #ifndef SRPC_EXCLUDE_DEVICE
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
-    void *_srpc, TDS_FirmwareUpdateParams *result) {
+    void *_srpc, TDS_FirmwareUpdateParams *params) {
   return srpc_async_call(_srpc, SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL,
-                         (char *)result, sizeof(TDS_FirmwareUpdateParams));
+                         (char *)params, sizeof(TDS_FirmwareUpdateParams));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice(
@@ -1284,13 +1328,14 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     void *_srpc, unsigned char channel_number,
     TSuplaChannelExtendedValue *value) {
+  if (value == NULL || value->size > SUPLA_CHANNELEXTENDEDVALUE_SIZE ||
+      value->size == 0) {
+    return 0;
+  }
+
   TDS_SuplaDeviceChannelExtendedValue ncsc;
   ncsc.ChannelNumber = channel_number;
   memcpy(&ncsc.value, value, sizeof(TSuplaChannelExtendedValue));
-
-  if (ncsc.value.size > SUPLA_CHANNELEXTENDEDVALUE_SIZE) {
-    ncsc.value.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE;
-  }
 
   return srpc_async_call(
       _srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, (char *)&ncsc,
@@ -1298,23 +1343,28 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
           (SUPLA_CHANNELEXTENDEDVALUE_SIZE - ncsc.value.size));
 }
 
-_supla_int_t SRPC_ICACHE_FLASH
-srpc_sd_async_channel_erase_data(void *_srpc, unsigned char ChannelNumber) {
-  TSD_SuplaChannelEraseData ed;
-  ed.ChannelNumber = ChannelNumber;
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calibration_request(
+    void *_srpc, TSD_DeviceCalibrationRequest *request) {
+  if (request == NULL || request->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE) {
+    return 0;
+  }
 
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_ERASE_DATA, (char *)&ed,
-                         sizeof(TSD_SuplaChannelEraseData));
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST,
+                         (char *)request, sizeof(TSD_DeviceCalibrationRequest) -
+                                              SUPLA_CALIBRATION_DATA_MAXSIZE +
+                                              request->DataSize);
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_erase_data_result(
-    void *_srpc, unsigned char ChannelNumber, char Result) {
-  TDS_SuplaChannelEraseDataResult edr;
-  edr.ChannelNumber = ChannelNumber;
-  edr.Result = Result;
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_device_calibration_result(
+    void *_srpc, TDS_DeviceCalibrationResult *result) {
+  if (result == NULL || result->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE) {
+    return 0;
+  }
 
-  return srpc_async_call(_srpc, SUPLA_DS_CALL_CHANNEL_ERASE_DATA_RESULT,
-                         (char *)&edr, sizeof(TDS_SuplaChannelEraseDataResult));
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT,
+                         (char *)result,
+                         sizeof(TDS_DeviceCalibrationResult) -
+                             SUPLA_CALIBRATION_DATA_MAXSIZE + result->DataSize);
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
@@ -1380,7 +1430,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_set_pack(
   _supla_int_t size = 0;
   _supla_int_t offset = 0;
 
-  if (count > pack_max_count) return 0;
+  if (count < 1 || count > pack_max_count) return 0;
 
   size = pack_sizeof - (item_sizeof * pack_max_count);
   offset = size;
@@ -1509,8 +1559,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
     void *_srpc,
     TSC_SuplaChannelGroupRelationPack *channelgroup_relation_pack) {
-  if (channelgroup_relation_pack->count >
-      SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT) {
+  if (channelgroup_relation_pack->count < 1 ||
+      channelgroup_relation_pack->count >
+          SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT) {
     return 0;
   }
 
@@ -1525,7 +1576,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
     void *_srpc, TSC_SuplaChannelValuePack *channelvalue_pack) {
-  if (channelvalue_pack->count > SUPLA_CHANNELVALUE_PACK_MAXCOUNT) {
+  if (channelvalue_pack->count < 1 ||
+      channelvalue_pack->count > SUPLA_CHANNELVALUE_PACK_MAXCOUNT) {
     return 0;
   }
 
@@ -1539,8 +1591,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelextendedvalue_pack_update(
     void *_srpc, TSC_SuplaChannelExtendedValuePack *extendedvalue_pack) {
-  if (extendedvalue_pack == NULL ||
+  if (extendedvalue_pack == NULL || extendedvalue_pack->count < 1 ||
       extendedvalue_pack->count > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT ||
+      extendedvalue_pack->pack_size < 1 ||
       extendedvalue_pack->pack_size >
           SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
     return 0;
@@ -1597,6 +1650,44 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
       _srpc, SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT, (char *)result,
       sizeof(TSC_OAuthTokenRequestResult) -
           (SUPLA_OAUTH_TOKEN_MAXSIZE - result->Token.TokenSize));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
+    void *_srpc, TCS_SuperUserAuthorizationRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
+                         (char *)request,
+                         sizeof(TCS_SuperUserAuthorizationRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
+    void *_srpc, TSC_SuperUserAuthorizationResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
+                         (char *)result,
+                         sizeof(TSC_SuperUserAuthorizationResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calibration_request(
+    void *_srpc, TCS_DeviceCalibrationRequest *request) {
+  if (request == NULL || request->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST,
+                         (char *)request, sizeof(TCS_DeviceCalibrationRequest) -
+                                              SUPLA_CALIBRATION_DATA_MAXSIZE +
+                                              request->DataSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calibration_result(
+    void *_srpc, TSC_DeviceCalibrationResult *result) {
+  if (result == NULL || result->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT,
+                         (char *)result,
+                         sizeof(TSC_DeviceCalibrationResult) -
+                             SUPLA_CALIBRATION_DATA_MAXSIZE + result->DataSize);
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
