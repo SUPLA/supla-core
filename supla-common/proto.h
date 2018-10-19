@@ -889,8 +889,10 @@ typedef struct {
   unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvar
 
   // The price per unit, total cost and currency is overwritten by the server
+  // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
   _supla_int_t total_cost;      // * 0.01
   _supla_int_t price_per_unit;  // * 0.0001
+  // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
   char currency[3];
 
   _supla_int_t measured_values;
@@ -911,8 +913,10 @@ typedef struct {
 } TElectricityMeter_Value;                            // v. >= 10
 
 typedef struct {
+  // total_cost = calculated_value * price_per_unit
   _supla_int_t total_cost;      // * 0.01
   _supla_int_t price_per_unit;  // * 0.0001
+  // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
   char currency[3];
 
   unsigned _supla_int64_t counter;
