@@ -1694,6 +1694,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calibration_result(
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
+
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
     TElectricityMeter_ExtendedValue *em_ev, TSuplaChannelExtendedValue *ev) {
   if (em_ev == NULL || ev == NULL || em_ev->m_count > EM_MEASUREMENT_COUNT) {
@@ -1744,4 +1745,34 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
   return 1;
 }
 
-#endif
+#ifndef SRPC_EXCLUDE_CLIENT
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
+    TSC_ImpulseCounter_ExtendedValue *ic_ev, TSuplaChannelExtendedValue *ev) {
+  if (ic_ev == NULL || ev == NULL) {
+    return 0;
+  }
+
+  memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev->type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  ev->size = sizeof(TSC_ImpulseCounter_ExtendedValue);
+
+  memcpy(ev->value, ic_ev, ev->size);
+  return 1;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
+    TSuplaChannelExtendedValue *ev, TSC_ImpulseCounter_ExtendedValue *ic_ev) {
+  if (ic_ev == NULL || ev == NULL ||
+      ev->type != EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 || ev->size == 0 ||
+      ev->size != sizeof(TSC_ImpulseCounter_ExtendedValue)) {
+    return 0;
+  }
+
+  memset(ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+  memcpy(ic_ev, ev->value, ev->size);
+
+  return 1;
+}
+#endif /*SRPC_EXCLUDE_CLIENT*/
+
+#endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/
