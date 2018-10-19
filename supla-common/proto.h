@@ -913,6 +913,7 @@ typedef struct {
 } TElectricityMeter_Value;                            // v. >= 10
 
 typedef struct {
+  // The price per unit, total cost and currency is overwritten by the server
   // total_cost = calculated_value * price_per_unit
   _supla_int_t total_cost;      // * 0.01
   _supla_int_t price_per_unit;  // * 0.0001
