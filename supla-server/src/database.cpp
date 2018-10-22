@@ -1674,7 +1674,8 @@ int database::oauth_get_client_id(bool create) {
   return id;
 }
 
-bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
+bool database::oauth_get_token(TSC_OAuthToken *token, int user_id,
+                               int access_id) {
   if (token == NULL) {
     return false;
   }
@@ -1703,9 +1704,10 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
 
   char sql[] =
       "INSERT INTO `supla_oauth_access_tokens`(`client_id`, `user_id`, "
-      "`token`, `expires_at`, `scope`) VALUES (?,?,?,?,'restapi')";
+      "`token`, `expires_at`, `scope`, `access_id_id`) VALUES "
+      "(?,?,?,?,'restapi',?)";
 
-  MYSQL_BIND pbind[4];
+  MYSQL_BIND pbind[5];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1720,6 +1722,9 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id) {
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&ExpiresIn;
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&access_id;
 
   MYSQL_STMT *stmt;
   bool result = false;

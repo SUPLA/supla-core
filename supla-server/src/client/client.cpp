@@ -35,6 +35,7 @@ supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
   this->cgroups = new supla_client_channelgroups(this);
   this->name[0] = 0;
   this->superuser_authorized = false;
+  this->access_id = 0;
 }
 
 supla_client::~supla_client() {
@@ -65,6 +66,10 @@ int supla_client::getName(char *buffer, int size) {
   buffer[size - 1] = 0;
   return strnlen(buffer, size - 1);
 }
+
+void supla_client::setAccessID(int AccessID) { access_id = AccessID; }
+
+int supla_client::getAccessID(void) { return access_id; }
 
 bool supla_client::is_superuser_authorized(void) {
   bool result = false;
@@ -227,6 +232,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               } else {
                 setID(ClientID);
                 setName(Name);
+                setAccessID(AccessID);
 
                 loadConfig();
 
@@ -333,13 +339,16 @@ void supla_client::oauth_token_request(void) {
   TSC_OAuthTokenRequestResult result;
   memset(&result, 0, sizeof(TSC_OAuthTokenRequestResult));
 
+  int AccessID = getAccessID();
+
   result.ResultCode = SUPLA_OAUTH_RESULTCODE_ERROR;
 
-  if (getUser()) {
+  if (getUser() && AccessID) {
     database *db = new database();
 
     if (db->connect() == true) {
-      if (db->oauth_get_token(&result.Token, getUser()->getUserID())) {
+      if (db->oauth_get_token(&result.Token, getUser()->getUserID(),
+                              AccessID)) {
         result.ResultCode = SUPLA_OAUTH_RESULTCODE_SUCCESS;
       }
     } else {
