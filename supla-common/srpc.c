@@ -1697,7 +1697,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calibration_result(
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
     TElectricityMeter_ExtendedValue *em_ev, TSuplaChannelExtendedValue *ev) {
-  if (em_ev == NULL || ev == NULL || em_ev->m_count > EM_MEASUREMENT_COUNT) {
+  if (em_ev == NULL || ev == NULL || em_ev->m_count > EM_MEASUREMENT_COUNT ||
+      em_ev->m_count < 0) {
     return 0;
   }
 
