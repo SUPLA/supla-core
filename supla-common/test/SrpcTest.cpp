@@ -2969,4 +2969,85 @@ TEST_F(SrpcTest, call_superuser_authorization_result) {
   srpc = NULL;
 }
 
+//---------------------------------------------------------
+// EXTENDED VALUE TOOLS
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, evtool_electricity_meter_value_to_extended) {
+  TSuplaChannelExtendedValue ev;
+  TElectricityMeter_ExtendedValue em_ev_src;
+  TElectricityMeter_ExtendedValue em_ev_dst;
+  memset(&em_ev_src, rand_r(&seed), sizeof(TElectricityMeter_ExtendedValue));
+  memset(&em_ev_dst, 0, sizeof(TElectricityMeter_ExtendedValue));
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT;
+
+  ASSERT_EQ(1, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(1, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ASSERT_EQ(0, memcmp(&em_ev_src, &em_ev_dst,
+                      sizeof(TElectricityMeter_ExtendedValue)));
+
+  ASSERT_EQ(1, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(NULL, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(&em_ev_src, NULL));
+
+  em_ev_src.m_count = -1;
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT;
+  ASSERT_EQ(1, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(NULL, &em_ev_dst));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, NULL));
+
+  ev.type = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ev.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1;
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ev.size = sizeof(TElectricityMeter_ExtendedValue) + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ev.size = sizeof(TElectricityMeter_ExtendedValue) - 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+}
+
+TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
+  ASSERT_GE((unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE,
+            sizeof(TSC_ImpulseCounter_ExtendedValue));
+
+  TSuplaChannelExtendedValue ev;
+  TSC_ImpulseCounter_ExtendedValue ic_ev_src;
+  TSC_ImpulseCounter_ExtendedValue ic_ev_dst;
+  memset(&ic_ev_src, rand_r(&seed), sizeof(TSC_ImpulseCounter_ExtendedValue));
+  memset(&ic_ev_dst, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+
+  ASSERT_EQ(1, srpc_evtool_v1_icextended2extended(&ic_ev_src, &ev));
+  ASSERT_EQ(1, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ASSERT_EQ(0, memcmp(&ic_ev_src, &ic_ev_dst,
+                      sizeof(TSC_ImpulseCounter_ExtendedValue)));
+
+  ASSERT_EQ(1, srpc_evtool_v1_icextended2extended(&ic_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_icextended2extended(NULL, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_icextended2extended(&ic_ev_src, NULL));
+
+  ev.type = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ev.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ev.size = sizeof(TSC_ImpulseCounter_ExtendedValue) + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ev.size = sizeof(TSC_ImpulseCounter_ExtendedValue) - 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+}
+
 }  // namespace
