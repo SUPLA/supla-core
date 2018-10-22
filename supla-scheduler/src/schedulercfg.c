@@ -27,6 +27,13 @@ unsigned char schedulercfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_global, "user", NULL);
   scfg_add_str_param(s_global, "group", NULL);
 
+  char *s_scheduler_mysql = "SCHEDULER-MySQL";
+  scfg_add_str_param(s_scheduler_mysql, "host", NULL);
+  scfg_add_int_param(s_scheduler_mysql, "port", 0);
+  scfg_add_str_param(s_scheduler_mysql, "database", "supla");
+  scfg_add_str_param(s_scheduler_mysql, "user", NULL);
+  scfg_add_str_param(s_scheduler_mysql, "password", NULL);
+
   char *s_mysql = "MySQL";
   scfg_add_str_param(s_mysql, "host", NULL);
   scfg_add_int_param(s_mysql, "port", 0);
