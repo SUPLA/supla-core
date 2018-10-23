@@ -415,6 +415,9 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
   char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
   st_str2hex(NameHEX, Name, SUPLA_DEVICE_NAME_MAXSIZE);
 
+  char SoftverHEX[SUPLA_SOFTVER_MAXSIZE];
+  st_str2hex(SoftverHEX, softver, SUPLA_SOFTVERHEX_MAXSIZE);
+
   char *AuthKeyHashHEX = NULL;
 
   MYSQL_BIND pbind[11];
@@ -426,64 +429,88 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&LocationID;
 
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)NameHEX;
-  pbind[1].buffer_length = strnlen(NameHEX, 256);
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&UserID;
 
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&UserID;
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)GUIDHEX;
+  pbind[2].buffer_length = SUPLA_GUID_HEXSIZE - 1;
 
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&ipv4;
-  pbind[3].is_unsigned = true;
+  pbind[3].buffer_type = MYSQL_TYPE_STRING;
+  pbind[3].buffer = (char *)NameHEX;
+  pbind[3].buffer_length = strnlen(NameHEX, SUPLA_DEVICE_NAME_MAXSIZE);
 
   pbind[4].buffer_type = MYSQL_TYPE_LONG;
   pbind[4].buffer = (char *)&ipv4;
   pbind[4].is_unsigned = true;
 
-  pbind[5].buffer_type = MYSQL_TYPE_STRING;
-  pbind[5].buffer = (char *)GUIDHEX;
-  pbind[5].buffer_length = (SUPLA_GUID_SIZE * 2);
+  pbind[5].buffer_type = MYSQL_TYPE_LONG;
+  pbind[5].buffer = (char *)&ipv4;
+  pbind[5].is_unsigned = true;
 
   pbind[6].buffer_type = MYSQL_TYPE_STRING;
-  pbind[6].buffer = (char *)softver;
-  pbind[6].buffer_length = strnlen(softver, 32);
+  pbind[6].buffer = (char *)SoftverHEX;
+  pbind[6].buffer_length = strnlen(SoftverHEX, SUPLA_SOFTVERHEX_MAXSIZE);
 
   pbind[7].buffer_type = MYSQL_TYPE_LONG;
   pbind[7].buffer = (char *)&proto_version;
 
   if (AuthKey == NULL) {
-    pbind[8].buffer_type = MYSQL_TYPE_NULL;
+    pbind[9].buffer_type = MYSQL_TYPE_NULL;
 
-    pbind[9].buffer_type = MYSQL_TYPE_LONG;
-    pbind[9].buffer = (char *)&LocationID;
+    pbind[8].buffer_type = MYSQL_TYPE_LONG;
+    pbind[8].buffer = (char *)&LocationID;
 
   } else {
     AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
 
     if (AuthKeyHashHEX == NULL) return 0;
 
-    pbind[8].buffer_type = MYSQL_TYPE_STRING;
-    pbind[8].buffer = (char *)AuthKeyHashHEX;
-    pbind[8].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2);
+    pbind[9].buffer_type = MYSQL_TYPE_STRING;
+    pbind[9].buffer = (char *)AuthKeyHashHEX;
+    pbind[9].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2);
 
-    pbind[9].buffer_type = MYSQL_TYPE_NULL;
+    pbind[8].buffer_type = MYSQL_TYPE_NULL;
   }
 
   pbind[10].buffer_type = MYSQL_TYPE_LONG;
   pbind[10].buffer = (char *)&Flags;
 
-  const char sql[] =
-      "INSERT INTO `supla_iodevice`(`location_id`, `name`, `enabled`, "
-      "`reg_date`, `last_connected`, `user_id`, `reg_ipv4`, `last_ipv4`, "
-      "`guid`, `software_version`, `protocol_version`, `auth_key`, "
-      "`original_location_id`, `flags`) VALUES "
-      "(?,unhex(?),1,UTC_TIMESTAMP(),UTC_TIMESTAMP(),?,?,?,unhex(?),?, "
-      "?,unhex(?),?,?)";
+  const char sql1[] = "SET @id=0";
+  const char sql2[] =
+      "CALL  "
+      "`supla_add_iodevice`(?,?,unhex(?),unhex(?),?,?,unhex(?),?,?,"
+      "unhex(?),?,@id)";
+  const char sql3[] = "SELECT @id";
 
-  MYSQL_STMT *stmt;
-  if (stmt_execute((void **)&stmt, sql, pbind, 11, false)) {
-    DeviceID = get_last_insert_id();
+  MYSQL_STMT *stmt = NULL;
+
+  char q_executed = 0;
+
+  if (stmt_execute((void **)&stmt, sql1, NULL, 0, true)) {
+    if (stmt != NULL) mysql_stmt_close(stmt);
+    q_executed++;
+  }
+
+  if (stmt_execute((void **)&stmt, sql2, pbind, 11, true)) {
+    if (stmt != NULL) mysql_stmt_close(stmt);
+    q_executed++;
+  }
+
+  if (q_executed == 2 && stmt_execute((void **)&stmt, sql3, NULL, 0, true)) {
+    MYSQL_BIND rbind[1];
+    memset(rbind, 0, sizeof(rbind));
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&DeviceID;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+      mysql_stmt_fetch(stmt);
+    }
   }
 
   if (stmt != NULL) mysql_stmt_close(stmt);
@@ -503,9 +530,12 @@ int database::update_device(int DeviceID, int OriginalLocationID,
   char NameHEX[SUPLA_DEVICE_NAMEHEX_MAXSIZE];
   st_str2hex(NameHEX, Name, SUPLA_DEVICE_NAME_MAXSIZE);
 
+  char SoftverHEX[SUPLA_SOFTVER_MAXSIZE];
+  st_str2hex(SoftverHEX, softver, SUPLA_SOFTVERHEX_MAXSIZE);
+
   char *AuthKeyHashHEX = NULL;
 
-  MYSQL_BIND pbind[8];
+  MYSQL_BIND pbind[7];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_STRING;
@@ -517,8 +547,8 @@ int database::update_device(int DeviceID, int OriginalLocationID,
   pbind[1].is_unsigned = true;
 
   pbind[2].buffer_type = MYSQL_TYPE_STRING;
-  pbind[2].buffer = (char *)softver;
-  pbind[2].buffer_length = strnlen(softver, 32);
+  pbind[2].buffer = (char *)SoftverHEX;
+  pbind[2].buffer_length = strnlen(SoftverHEX, SUPLA_SOFTVERHEX_MAXSIZE);
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&proto_version;
@@ -533,7 +563,6 @@ int database::update_device(int DeviceID, int OriginalLocationID,
 
   if (AuthKey == NULL) {
     pbind[5].buffer_type = MYSQL_TYPE_NULL;
-    pbind[6].buffer_type = MYSQL_TYPE_NULL;
   } else {
     AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
 
@@ -542,24 +571,17 @@ int database::update_device(int DeviceID, int OriginalLocationID,
     pbind[5].buffer_type = MYSQL_TYPE_STRING;
     pbind[5].buffer = (char *)AuthKeyHashHEX;
     pbind[5].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2);
-
-    pbind[6].buffer_type = pbind[5].buffer_type;
-    pbind[6].buffer = pbind[5].buffer;
-    pbind[6].buffer_length = pbind[5].buffer_length;
   }
 
-  pbind[7].buffer_type = MYSQL_TYPE_LONG;
-  pbind[7].buffer = (char *)&DeviceID;
+  pbind[6].buffer_type = MYSQL_TYPE_LONG;
+  pbind[6].buffer = (char *)&DeviceID;
 
   const char sql[] =
-      "UPDATE `supla_iodevice` SET `name` = unhex(?), `last_connected` = "
-      "UTC_TIMESTAMP(), `last_ipv4` = ?, `software_version` = ?, "
-      "`protocol_version` = ?, original_location_id = ?, `auth_key` =  CASE "
-      "`auth_key` WHEN NULL THEN unhex(?) ELSE IFNULL(unhex(?), NULL) END "
-      "WHERE id = ?";
+      "CALL "
+      "`supla_update_iodevice`(unhex(?),?,unhex(?),?,?,unhex(?),?)";
 
   MYSQL_STMT *stmt;
-  if (!stmt_execute((void **)&stmt, sql, pbind, 8)) {
+  if (!stmt_execute((void **)&stmt, sql, pbind, 7)) {
     DeviceID = 0;
   }
 
@@ -647,11 +669,7 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   pbind[6].buffer = (char *)&Flags;
 
   {
-    const char sql[] =
-        "INSERT INTO `supla_dev_channel` (`type`, `func`, `param1`, `param2`, "
-        "`param3`, `user_id`, `channel_number`, `iodevice_id`, `flist`, "
-        "`flags`) VALUES "
-        "(?,?,0,0,0,?,?,?,?,?)";
+    const char sql[] = "CALL`supla_add_channel`(?,?,0,0,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt;
     if (!stmt_execute((void **)&stmt, sql, pbind, 7, false)) {
@@ -1510,17 +1528,17 @@ bool database::get_device_firmware_update_url(
   char q_executed = 0;
 
   if (stmt_execute((void **)&stmt, sql1, pbind, 6, true)) {
-    mysql_stmt_close((MYSQL_STMT *)stmt);
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
     q_executed++;
   }
 
   if (stmt_execute((void **)&stmt, sql2, NULL, 0, true)) {
-    mysql_stmt_close((MYSQL_STMT *)stmt);
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
     q_executed++;
   }
 
   if (q_executed == 2 && stmt_execute((void **)&stmt, sql3, NULL, 0, true)) {
-    mysql_stmt_store_result(stmt);
+    if (stmt != NULL) mysql_stmt_store_result(stmt);
 
     if (mysql_stmt_num_rows(stmt) > 0) {
       MYSQL_BIND rbind[4];
