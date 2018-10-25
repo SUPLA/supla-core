@@ -94,7 +94,10 @@ void SrpcTest::SetUp() {
   cr_call_type = 0;
   cr_proto_version = 0;
   memset(&cr_rd, 0, sizeof(TsrpcReceivedData));
-  seed = time(NULL);
+
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  unsigned int seed = tv.tv_sec+tv.tv_usec;
 }
 
 void SrpcTest::TearDown() {
