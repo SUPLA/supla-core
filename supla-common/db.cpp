@@ -227,6 +227,46 @@ int dbcommon::get_int(int ID, int default_value, const char *sql) {
 
 int dbcommon::get_count(int ID, const char *sql) { return get_int(ID, 0, sql); }
 
+int dbcommon::add_by_proc_call(const char *stmt_str, void *bind,
+                               int bind_size) {
+  int result = 0;
+  MYSQL_STMT *stmt = NULL;
+
+  char q_executed = 0;
+  const char sql_var[] = "SET @id = 0";
+  const char sql_sel[] = "SELECT @id";
+
+  if (stmt_execute((void **)&stmt, sql_var, NULL, 0, true)) {
+    if (stmt != NULL) mysql_stmt_close(stmt);
+    q_executed++;
+  }
+
+  if (stmt_execute((void **)&stmt, stmt_str, bind, bind_size, true)) {
+    if (stmt != NULL) mysql_stmt_close(stmt);
+    q_executed++;
+  }
+
+  if (q_executed == 2 && stmt_execute((void **)&stmt, sql_sel, NULL, 0, true)) {
+    MYSQL_BIND rbind[1];
+    memset(rbind, 0, sizeof(rbind));
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&result;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+      mysql_stmt_fetch(stmt);
+    }
+  }
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+
+  return result;
+}
+
 int dbcommon::get_last_insert_id(void) {
   MYSQL_STMT *stmt;
   int Result = 0;
