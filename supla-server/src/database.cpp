@@ -253,7 +253,6 @@ int database::get_device_id_and_user(const char GUID[SUPLA_GUID_SIZE],
   pbind[0].buffer_type = MYSQL_TYPE_STRING;
   pbind[0].buffer = (char *)GUIDHEX;
   pbind[0].buffer_length = SUPLA_GUID_HEXSIZE - 1;
-  ;
 
   MYSQL_STMT *stmt;
   int dev_id;
@@ -1423,8 +1422,7 @@ void database::add_electricity_measurement(
     n += 4;
   }
 
-  const char sql[] =
-      "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  const char sql[] = "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt;
   stmt_execute((void **)&stmt, sql, pbind, 13, true);
@@ -1589,8 +1587,6 @@ int database::oauth_add_client_id(void) {
   pbind[1].buffer_type = MYSQL_TYPE_STRING;
   pbind[1].buffer = (char *)secret;
   pbind[1].buffer_length = strnlen(secret, 50);
-
-
 
   return add_by_proc_call(sql, pbind, 2);
 }
