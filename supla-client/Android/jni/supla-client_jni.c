@@ -428,20 +428,13 @@ void supla_android_client_cb_channel_value_update(void *_suplaclient, void *user
 void supla_android_client_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv* env, jobject parent, jclass parent_cls, TElectricityMeter_ExtendedValue *em_ev, jint phase) {
     
     jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue$Summary");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJIILjava/lang/String;)V");
-    
-    char currency[4];
-    memcpy(currency, em_ev->currency, 3);
-    currency[3] = 0;
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJ)V");
     
     jobject sum_obj = (*env)->NewObject(env,cls, methodID, parent,
                                         em_ev->total_forward_active_energy[phase],
                                         em_ev->total_reverse_active_energy[phase],
                                         em_ev->total_forward_reactive_energy[phase],
-                                        em_ev->total_reverse_reactive_energy[phase],
-                                        em_ev->total_cost,
-                                        em_ev->price_per_unit,
-                                        (*env)->NewStringUTF(env, currency));
+                                        em_ev->total_reverse_reactive_energy[phase]);
     jclass sum_class = (*env)->GetObjectClass(env, sum_obj);
     
     jmethodID add_summary_mid = (*env)->GetMethodID(env, parent_cls, "addSummary", "(ILorg/supla/android/lib/SuplaChannelElectricityMeterValue$Summary;)V");
@@ -473,9 +466,18 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(TAndroidSup
     int a = 0;
     int b = 0;
     
+    char currency[4];
+    memcpy(currency, em_ev->currency, 3);
+    currency[3] = 0;
+    
     jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(II)V");
-    jobject val = (*env)->NewObject(env,cls, methodID, em_ev->measured_values, em_ev->period);
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IIIILjava/lang/String;)V");
+    jobject val = (*env)->NewObject(env,cls, methodID,
+                                    em_ev->measured_values,
+                                    em_ev->period,
+                                    em_ev->total_cost,
+                                    em_ev->price_per_unit,
+                                    (*env)->NewStringUTF(env, currency));
     jclass cval = (*env)->GetObjectClass(env, val);
 
     for(a=0;a<3;a++) {
