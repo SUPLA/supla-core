@@ -266,8 +266,8 @@ bool supla_client_channels::set_device_channel_new_value(
   return set_device_channel_new_value(new_value->Id, new_value->value);
 }
 
-bool supla_client_channels::device_calibration_request(
-    TCS_DeviceCalibrationRequest *request) {
+bool supla_client_channels::device_calcfg_request(
+    TCS_DeviceCalCfgRequest *request) {
   if (request == NULL) return false;
 
   if (channel_exists(request->ChannelID)) {
@@ -283,7 +283,7 @@ bool supla_client_channels::device_calibration_request(
     safe_array_unlock(getArr());
 
     if (DeviceID) {
-      return getClient()->getUser()->device_calibration_request(
+      return getClient()->getUser()->device_calcfg_request(
           getClient()->getID(), DeviceID, request);
     }
   }

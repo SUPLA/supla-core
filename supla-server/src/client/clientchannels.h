@@ -55,7 +55,7 @@ class supla_client_channels : public supla_client_objcontainer {
   bool set_device_channel_new_value(
       TCS_SuplaChannelNewValue_B *channel_new_value);
   bool set_device_channel_new_value(TCS_SuplaNewValue *new_value);
-  bool device_calibration_request(TCS_DeviceCalibrationRequest *request);
+  bool device_calcfg_request(TCS_DeviceCalCfgRequest *request);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

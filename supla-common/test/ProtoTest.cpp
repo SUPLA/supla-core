@@ -93,10 +93,18 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(27, sizeof(TSC_ImpulseCounter_ExtendedValue));
   ASSERT_EQ(8, sizeof(TSC_ImpulseCounter_Value));
   ASSERT_EQ(320, sizeof(TCS_SuperUserAuthorizationRequest));
-  ASSERT_EQ(144, sizeof(TCS_DeviceCalibrationRequest));
-  ASSERT_EQ(144, sizeof(TSC_DeviceCalibrationResult));
-  ASSERT_EQ(149, sizeof(TSD_DeviceCalibrationRequest));
-  ASSERT_EQ(148, sizeof(TDS_DeviceCalibrationResult));
+  ASSERT_EQ(144, sizeof(TCS_DeviceCalCfgRequest));
+  ASSERT_EQ(144, sizeof(TSC_DeviceCalCfgResult));
+  ASSERT_EQ(149, sizeof(TSD_DeviceCalCfgRequest));
+  ASSERT_EQ(148, sizeof(TDS_DeviceCalCfgResult));
+
+  ASSERT_LE(sizeof(TDS_ImpulseCounter_Value), SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_LE(sizeof(TSC_ImpulseCounter_ExtendedValue),
+            SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+
+  ASSERT_LE(sizeof(TElectricityMeter_Value), SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue),
+            SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 }
 
 TEST_F(ProtoTest, init) {

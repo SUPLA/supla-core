@@ -66,8 +66,8 @@ typedef void (*_suplaclient_cb_on_oauth_token_request_result)(
     void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result);
 typedef void (*_suplaclient_cb_on_superuser_authorization_result)(
     void *_suplaclient, void *user_data, char authorized, _supla_int_t code);
-typedef void (*_suplaclient_cb_on_device_calibration_result)(
-    void *_suplaclient, void *user_data, TSC_DeviceCalibrationResult *result);
+typedef void (*_suplaclient_cb_on_device_calcfg_result)(
+    void *_suplaclient, void *user_data, TSC_DeviceCalCfgResult *result);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -117,7 +117,7 @@ typedef struct {
   _suplaclient_cb_on_superuser_authorization_result
       cb_on_superuser_authorization_result;
 
-  _suplaclient_cb_on_device_calibration_result cb_on_device_calibration_result;
+  _suplaclient_cb_on_device_calcfg_result cb_on_device_calcfg_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -152,8 +152,8 @@ unsigned char supla_client_get_proto_version(void *_suplaclient);
 char supla_client_oauth_token_request(void *_suplaclient);
 char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   char *email, char *password);
-char supla_client_device_calibration_request(
-    void *_suplaclient, TCS_DeviceCalibrationRequest *request);
+char supla_client_device_calcfg_request(void *_suplaclient,
+                                        TCS_DeviceCalCfgRequest *request);
 
 #ifdef __cplusplus
 }

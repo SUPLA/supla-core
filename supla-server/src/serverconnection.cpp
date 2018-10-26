@@ -511,10 +511,9 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           break;
 
-        case SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT:
-          if (rd.data.ds_device_calibration_result) {
-            device->on_calibration_result(
-                rd.data.ds_device_calibration_result);
+        case SUPLA_DS_CALL_DEVICE_CALCFG_RESULT:
+          if (rd.data.ds_device_calcfg_result) {
+            device->on_calcfg_result(rd.data.ds_device_calcfg_result);
           }
 
           break;
@@ -587,10 +586,9 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           break;
 
-        case SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST:
-          if (rd.data.cs_device_calibration_request != NULL) {
-            client->device_calibration_request(
-                rd.data.cs_device_calibration_request);
+        case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST:
+          if (rd.data.cs_device_calcfg_request != NULL) {
+            client->device_calcfg_request(rd.data.cs_device_calcfg_request);
           }
           break;
 

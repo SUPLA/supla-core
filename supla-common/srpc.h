@@ -115,10 +115,10 @@ union TsrpcDataPacketData {
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
   TCS_SuperUserAuthorizationRequest *cs_superuser_authorization_request;
   TSC_SuperUserAuthorizationResult *sc_superuser_authorization_result;
-  TCS_DeviceCalibrationRequest *cs_device_calibration_request;
-  TSC_DeviceCalibrationResult *sc_device_calibration_result;
-  TSD_DeviceCalibrationRequest *sd_device_calibration_request;
-  TDS_DeviceCalibrationResult *ds_device_calibration_result;
+  TCS_DeviceCalCfgRequest *cs_device_calcfg_request;
+  TSC_DeviceCalCfgResult *sc_device_calcfg_result;
+  TSD_DeviceCalCfgRequest *sd_device_calcfg_request;
+  TDS_DeviceCalCfgResult *ds_device_calcfg_result;
 };
 
 typedef struct {
@@ -196,10 +196,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
     void *_srpc, TDS_FirmwareUpdateParams *params);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calibration_request(
-    void *_srpc, TSD_DeviceCalibrationRequest *request);
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_device_calibration_result(
-    void *_srpc, TDS_DeviceCalibrationResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
+    void *_srpc, TSD_DeviceCalCfgRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_device_calcfg_result(
+    void *_srpc, TDS_DeviceCalCfgResult *result);
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
@@ -256,10 +256,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
     void *_srpc, TCS_SuperUserAuthorizationRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
     void *_srpc, TSC_SuperUserAuthorizationResult *result);
-_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calibration_request(
-    void *_srpc, TCS_DeviceCalibrationRequest *request);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calibration_result(
-    void *_srpc, TSC_DeviceCalibrationResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(
+    void *_srpc, TCS_DeviceCalCfgRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calcfg_result(
+    void *_srpc, TSC_DeviceCalCfgResult *result);
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
 

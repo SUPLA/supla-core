@@ -396,25 +396,24 @@ void supla_client::superuser_authorization_request(
   srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
 }
 
-void supla_client::device_calibration_request(
-    TCS_DeviceCalibrationRequest *request) {
-  channels->device_calibration_request(request);
+void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest *request) {
+  channels->device_calcfg_request(request);
 }
 
-void supla_client::on_device_calibration_result(
-    int ChannelID, TDS_DeviceCalibrationResult *result) {
+void supla_client::on_device_calcfg_result(int ChannelID,
+                                           TDS_DeviceCalCfgResult *result) {
   if (result == NULL) return;
 
-  TSC_DeviceCalibrationResult cresult;
-  memset(&cresult, 0, sizeof(TSC_DeviceCalibrationResult));
+  TSC_DeviceCalCfgResult cresult;
+  memset(&cresult, 0, sizeof(TSC_DeviceCalCfgResult));
 
   cresult.ChannelID = ChannelID;
   cresult.Command = result->Command;
   cresult.Result = result->Result;
-  cresult.DataSize = result->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE
-                         ? SUPLA_CALIBRATION_DATA_MAXSIZE
+  cresult.DataSize = result->DataSize > SUPLA_CALCFG_DATA_MAXSIZE
+                         ? SUPLA_CALCFG_DATA_MAXSIZE
                          : result->DataSize;
-  memcpy(cresult.Data, result->Data, SUPLA_CALIBRATION_DATA_MAXSIZE);
+  memcpy(cresult.Data, result->Data, SUPLA_CALCFG_DATA_MAXSIZE);
 
-  srpc_sc_async_device_calibration_result(getSvrConn()->srpc(), &cresult);
+  srpc_sc_async_device_calcfg_result(getSvrConn()->srpc(), &cresult);
 }
