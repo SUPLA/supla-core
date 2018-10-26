@@ -940,6 +940,7 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
+// CALCFG == CALIBRATION / CONSIG
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
