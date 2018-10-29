@@ -1224,7 +1224,7 @@ TEST_F(SrpcTest, call_registerdevice_e) {
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
-  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 3805);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 3807);
 
   ASSERT_FALSE(cr_rd.data.ds_register_device_e == NULL);
   ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_e, &registerdevice,
@@ -1252,7 +1252,7 @@ TEST_F(SrpcTest, call_registerdevice_e_one_channel) {
   registerdevice.channel_count = 1;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
-  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 630);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 632);
 
   ASSERT_FALSE(cr_rd.data.ds_register_device_e == NULL);
   ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_e, &registerdevice,
@@ -1278,7 +1278,7 @@ TEST_F(SrpcTest, call_registerdevice_e_without_channels) {
   registerdevice.channel_count = 0;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
-  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 605);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 607);
 
   ASSERT_FALSE(cr_rd.data.ds_register_device_e == NULL);
   ASSERT_EQ(
