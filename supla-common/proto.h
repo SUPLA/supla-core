@@ -323,6 +323,7 @@ extern "C" {
 #define SUPLA_MFR_NICE 5
 #define SUPLA_MFR_ITEAD 6
 #define SUPLA_MFR_VL 7
+#define SUPLA_MFR_HPOL 8
 
 #pragma pack(push, 1)
 
