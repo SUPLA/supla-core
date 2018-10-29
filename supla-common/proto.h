@@ -922,7 +922,7 @@ typedef struct {
   _supla_int_t price_per_unit;  // * 0.0001
   // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
   char currency[3];
-  char custom_unit[5]; // including the terminating null byte ('\0')
+  char custom_unit[5];  // including the terminating null byte ('\0')
 
   unsigned _supla_int64_t counter;
   _supla_int64_t calculated_value;   // * 0.001
