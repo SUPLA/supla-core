@@ -44,7 +44,7 @@ typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
                                                 TSC_SuplaLocation *location);
 typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient,
                                                void *user_data,
-                                               TSC_SuplaChannel_B *channel);
+                                               TSC_SuplaChannel_C *channel);
 typedef void (*_suplaclient_cb_channelgroup_update)(
     void *_suplaclient, void *user_data, TSC_SuplaChannelGroup *channel_group);
 typedef void (*_suplaclient_cb_channelgroup_relation_update)(

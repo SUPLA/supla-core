@@ -56,6 +56,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   TDS_SuplaDeviceChannel_C *dev_channels_c = NULL;
   int LocationID = 0;
   int DeviceFlags = 0;
+  short ManufacturerID = 0;
+  short ProductID = 0;
 
   if (register_device_c != NULL) {
     GUID = register_device_c->GUID;
@@ -72,6 +74,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     DeviceFlags = register_device_e->Flags;
     channel_count = register_device_e->channel_count;
     dev_channels_c = register_device_e->channels;
+    ManufacturerID = register_device_e->ManufacturerID;
+    ProductID = register_device_e->ProductID;
   }
 
   if (!setGUID(GUID)) {
@@ -152,7 +156,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               DeviceID = db->add_device(LocationID, GUID, AuthKey, Name,
                                         getSvrConn()->getClientIpv4(), SoftVer,
-                                        proto_version, DeviceFlags, UserID);
+                                        proto_version, ManufacturerID,
+                                        ProductID, DeviceFlags, UserID);
             }
           }
         }
@@ -453,9 +458,9 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 }
 
 bool supla_device::calcfg_request(int SenderID, bool SuperUserAuthorized,
-                                       TCS_DeviceCalCfgRequest *request) {
+                                  TCS_DeviceCalCfgRequest *request) {
   return channels->calcfg_request(getSvrConn()->srpc(), SenderID,
-                                       SuperUserAuthorized, request);
+                                  SuperUserAuthorized, request);
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {

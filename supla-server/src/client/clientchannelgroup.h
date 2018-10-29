@@ -30,6 +30,7 @@ class supla_client_channelgroup : public supla_client_objcontainer_item {
   int LocationID;
   int Func;
   int AltIcon;
+  int UserIcon;
   unsigned int Flags;
   void *relarr;  // This is just index. Don't free related objects
 
@@ -37,10 +38,11 @@ class supla_client_channelgroup : public supla_client_objcontainer_item {
  public:
   supla_client_channelgroup(supla_client_channelgroups *Container, int Id,
                             int LocationID, int Func, const char *Caption,
-                            int AltIcon);
+                            int AltIcon, int UserIcon);
 
   virtual ~supla_client_channelgroup(void);
   void proto_get(TSC_SuplaChannelGroup *group);
+  void proto_get(TSC_SuplaChannelGroup_B *group);
   bool add_relation(supla_client_channelgroup_relation *cg_rel);
   bool remote_update_is_possible(void);
   std::list<t_dc_pair> get_channel_list(void);

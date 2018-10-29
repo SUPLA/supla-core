@@ -224,8 +224,8 @@ void supla_client_locationpack_update(TSuplaClientData *scd,
   srpc_cs_async_get_next(scd->srpc);
 }
 
-void supla_client_channel_update_b(TSuplaClientData *scd,
-                                   TSC_SuplaChannel_B *channel, char gn) {
+void supla_client_channel_update_c(TSuplaClientData *scd,
+                                   TSC_SuplaChannel_C *channel, char gn) {
   supla_client_set_str(channel->Caption, &channel->CaptionSize,
                        SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
@@ -352,6 +352,33 @@ void supla_client_channel_a2b(TSC_SuplaChannel *a, TSC_SuplaChannel_B *b) {
   memcpy(b->Caption, a->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
+void supla_client_channel_b2c(TSC_SuplaChannel_B *b, TSC_SuplaChannel_C *c) {
+  c->EOL = b->EOL;
+  c->Id = b->Id;
+  c->DeviceID = 0;
+  c->LocationID = b->LocationID;
+  c->Func = b->Func;
+  c->AltIcon = b->AltIcon;
+  c->Flags = b->Flags;
+  c->UserIcon = 0;
+  c->ManufacturerID = 0;
+  c->ProductID = 0;
+  c->ProtocolVersion = 0;
+  c->online = b->online;
+  memcpy(&c->value, &b->value, sizeof(TSuplaChannelValue));
+  c->CaptionSize = b->CaptionSize;
+  memcpy(c->Caption, b->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+}
+
+void supla_client_channel_update_b(TSuplaClientData *scd,
+                                 TSC_SuplaChannel_B *channel_b, char gn) {
+  TSC_SuplaChannel_C channel_c;
+  memset(&channel_c, 0, sizeof(TSC_SuplaChannel_C));
+
+  supla_client_channel_b2c(channel_b, &channel_c);
+  supla_client_channel_update_c(scd, &channel_c, gn);
+}
+
 void supla_client_channel_update(TSuplaClientData *scd,
                                  TSC_SuplaChannel *channel, char gn) {
   TSC_SuplaChannel_B channel_b;
@@ -377,6 +404,16 @@ void supla_client_channelpack_update_b(TSuplaClientData *scd,
 
   for (a = 0; a < pack->count; a++)
     supla_client_channel_update_b(scd, &pack->items[a], 0);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelpack_update_c(TSuplaClientData *scd,
+                                       TSC_SuplaChannelPack_C *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channel_update_c(scd, &pack->items[a], 0);
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -482,6 +519,16 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           supla_client_channel_update(scd, rd.data.sc_channel, 1);
         }
         break;
+      case SUPLA_SC_CALL_CHANNEL_UPDATE_B:
+        if (rd.data.sc_channel_b) {
+          supla_client_channel_update_b(scd, rd.data.sc_channel_b, 1);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNEL_UPDATE_C:
+        if (rd.data.sc_channel_c) {
+          supla_client_channel_update_c(scd, rd.data.sc_channel_c, 1);
+        }
+        break;
       case SUPLA_SC_CALL_CHANNELPACK_UPDATE:
         if (rd.data.sc_channel_pack) {
           supla_client_channelpack_update(scd, rd.data.sc_channel_pack);
@@ -490,6 +537,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_CHANNELPACK_UPDATE_B:
         if (rd.data.sc_channel_pack_b) {
           supla_client_channelpack_update_b(scd, rd.data.sc_channel_pack_b);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNELPACK_UPDATE_C:
+        if (rd.data.sc_channel_pack_c) {
+          supla_client_channelpack_update_c(scd, rd.data.sc_channel_pack_c);
         }
         break;
       case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
@@ -553,8 +605,8 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_DEVICE_CALCFG_RESULT:
         if (scd->cfg.cb_on_device_calcfg_result &&
             rd.data.sc_device_calcfg_result) {
-          scd->cfg.cb_on_device_calcfg_result(
-              scd, scd->cfg.user_data, rd.data.sc_device_calcfg_result);
+          scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
+                                              rd.data.sc_device_calcfg_result);
         }
     }
 
@@ -975,8 +1027,8 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
 }
 
-char supla_client_device_calcfg_request(
-    void *_suplaclient, TCS_DeviceCalCfgRequest *request) {
+char supla_client_device_calcfg_request(void *_suplaclient,
+                                        TCS_DeviceCalCfgRequest *request) {
   if (request == NULL) return 0;
   return srpc_cs_async_device_calcfg_request(
       ((TSuplaClientData *)_suplaclient)->srpc, request);

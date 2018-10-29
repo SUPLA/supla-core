@@ -147,8 +147,11 @@ extern "C" {
 #define SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST 340                // ver. >= 10
 #define SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT 350         // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360               // ver. >= 8
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361               // ver. >= 10
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                   // ver. >= 8
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                   // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381         // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
@@ -312,8 +315,6 @@ extern "C" {
 
 #define SUPLA_NEW_VALUE_TARGET_CHANNEL 0
 #define SUPLA_NEW_VALUE_TARGET_GROUP 1
-
-#define USER_ICON_MAXCOUNT 4  // ver. >= 10
 
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
@@ -656,10 +657,11 @@ typedef struct {
   char EOL;  // End Of List
 
   _supla_int_t Id;
+  _supla_int_t DeviceID;
   _supla_int_t LocationID;
   _supla_int_t Func;
   _supla_int_t AltIcon;
-  _supla_int_t UserIcon[USER_ICON_MAXCOUNT];
+  _supla_int_t UserIcon;
   _supla_int16_t ManufacturerID;
   _supla_int16_t ProductID;
 
@@ -700,12 +702,37 @@ typedef struct {
 
 typedef struct {
   // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t LocationID;
+  _supla_int_t Func;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon;
+  unsigned _supla_int_t Flags;
+
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaChannelGroup_B;                           // ver. >= 9
+
+typedef struct {
+  // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannelGroup
       items[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelGroupPack;                    // ver. >= 9
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannelGroup_B
+      items[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelGroupPack_B;                  // ver. >= 10
 
 typedef struct {
   // server -> client
