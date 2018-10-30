@@ -481,7 +481,7 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
 
   const char sql[] =
       "CALL  "
-      "`supla_add_iodevice`(?,?,unhex(?),unhex(?),?,unhex(?),?,?,"
+      "`supla_add_iodevice`(?,?,unhex(?),unhex(?),?,unhex(?),?,?,?,?,"
       "unhex(?),?,@id)";
 
   DeviceID = add_by_proc_call(sql, pbind, 12);
