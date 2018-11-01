@@ -62,7 +62,8 @@ class database : public dbcommon {
 
   int add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
                  const char *AuthKey, const char *Name, unsigned int ipv4,
-                 const char *softver, int proto_version, int Flags, int UserID);
+                 const char *softver, int proto_version, short ManufacturerID,
+                 short ProductID, int Flags, int UserID);
 
   int update_device(int DeviceID, int OriginalLocationID, const char *AuthKey,
                     const char *Name, unsigned int ipv4, const char *softver,
@@ -138,7 +139,7 @@ class database : public dbcommon {
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
-  bool oauth_get_token(TSC_OAuthToken *token, int user_id);
+  bool oauth_get_token(TSC_OAuthToken *token, int user_id, int access_id);
 
   bool superuser_authorization(int UserID, char email[SUPLA_EMAIL_MAXSIZE],
                                char password[SUPLA_PASSWORD_MAXSIZE]);

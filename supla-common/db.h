@@ -34,6 +34,8 @@ class dbcommon {
   int get_int(int ID, int default_value, const char *sql);
   int get_count(int ID, const char *sql);
 
+  int add_by_proc_call(const char *stmt_str, void *bind, int bind_size);
+
   virtual char *cfg_get_host(void) = 0;
   virtual char *cfg_get_user(void) = 0;
   virtual char *cfg_get_password(void) = 0;

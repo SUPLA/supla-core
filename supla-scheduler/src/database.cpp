@@ -26,14 +26,32 @@
 #include "schedulercfg.h"
 #include "tools.h"
 
-char *database::cfg_get_host(void) { return scfg_string(CFG_MYSQL_HOST); }
-
-char *database::cfg_get_user(void) { return scfg_string(CFG_MYSQL_USER); }
-char *database::cfg_get_password(void) {
-  return scfg_string(CFG_MYSQL_PASSWORD);
+char *database::cfg_get_host(void) {
+  return scfg_string(CFG_SCHEDULER_MYSQL_HOST) == NULL
+             ? scfg_string(CFG_MYSQL_HOST)
+             : scfg_string(CFG_SCHEDULER_MYSQL_HOST);
 }
-char *database::cfg_get_database(void) { return scfg_string(CFG_MYSQL_DB); }
-int database::cfg_get_port(void) { return scfg_int(CFG_MYSQL_PORT); }
+
+char *database::cfg_get_user(void) {
+  return scfg_string(CFG_SCHEDULER_MYSQL_HOST) == NULL
+             ? scfg_string(CFG_MYSQL_USER)
+             : scfg_string(CFG_SCHEDULER_MYSQL_USER);
+}
+char *database::cfg_get_password(void) {
+  return scfg_string(CFG_SCHEDULER_MYSQL_HOST) == NULL
+             ? scfg_string(CFG_MYSQL_PASSWORD)
+             : scfg_string(CFG_SCHEDULER_MYSQL_PASSWORD);
+}
+char *database::cfg_get_database(void) {
+  return scfg_string(CFG_SCHEDULER_MYSQL_HOST) == NULL
+             ? scfg_string(CFG_MYSQL_DB)
+             : scfg_string(CFG_SCHEDULER_MYSQL_DB);
+}
+int database::cfg_get_port(void) {
+  return scfg_string(CFG_SCHEDULER_MYSQL_HOST) == NULL
+             ? scfg_int(CFG_MYSQL_PORT)
+             : scfg_int(CFG_SCHEDULER_MYSQL_PORT);
+}
 
 void database::get_s_executions(void *s_exec_arr, int limit) {
   MYSQL_STMT *stmt;

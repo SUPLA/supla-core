@@ -202,7 +202,7 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
         for (a = 0; a < size; a++)
           KEY[a] = (unsigned char)(rand() + tv.tv_usec);  // NOLINT
 #else
-        unsigned int seed = time(NULL);
+        unsigned int seed =  tv.tv_sec+tv.tv_usec;
 
         for (a = 0; a < size; a++)
           KEY[a] = (unsigned char)(rand_r(&seed) + tv.tv_usec);
@@ -356,9 +356,10 @@ void st_random_alpha_string(char *buffer, int buffer_size) {
       "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   char max = sizeof(charset) - 1;
 
-#ifdef __ANDROID__
   struct timeval tv;
   gettimeofday(&tv, NULL);
+
+#ifdef __ANDROID__
   srand(tv.tv_usec);
   gettimeofday(&tv, NULL);
 
@@ -366,7 +367,7 @@ void st_random_alpha_string(char *buffer, int buffer_size) {
     buffer[a] = charset[(rand() + tv.tv_usec) % max];  // NOLINT
   }
 #else
-  unsigned int seed = time(NULL);
+  unsigned int seed = tv.tv_sec+tv.tv_usec;
   for (a = 0; a < buffer_size - 1; a++) {
     buffer[a] = charset[rand_r(&seed) % max];
   }
@@ -390,7 +391,7 @@ char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
   struct timeval tv;
   gettimeofday(&tv, NULL);
 
-  unsigned int seed = time(NULL);
+  unsigned int seed = tv.tv_sec+tv.tv_usec;
 
   for (a = 0; a < BCRYPT_RABD_SIZE; a++) random[a] = rand_r(&seed) + tv.tv_usec;
 

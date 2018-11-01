@@ -149,9 +149,16 @@ bool supla_client_channelgroups::get_data_for_remote(
   *check_more = true;
 
   if (scope == master) {
-    return get_datapack_for_remote<TSC_SuplaChannelGroupPack,
-                                   supla_client_channelgroup>(
-        obj, data, SUPLA_CHANNELGROUP_PACK_MAXCOUNT);
+    if (getClient()->getProtocolVersion() >= 10) {
+      return get_datapack_for_remote<TSC_SuplaChannelGroupPack_B,
+                                     supla_client_channelgroup>(
+          obj, data, SUPLA_CHANNELGROUP_PACK_MAXCOUNT);
+    } else {
+      return get_datapack_for_remote<TSC_SuplaChannelGroupPack,
+                                     supla_client_channelgroup>(
+          obj, data, SUPLA_CHANNELGROUP_PACK_MAXCOUNT);
+    }
+
   } else if (scope == detail1) {
     return get_datapack_for_remote<TSC_SuplaChannelGroupRelationPack,
                                    supla_client_channelgroup_relation>(
@@ -168,10 +175,17 @@ bool supla_client_channelgroups::get_data_for_remote(
 void supla_client_channelgroups::send_data_to_remote_and_free(
     void *srpc, void *data, int data_type, e_objc_scope scope) {
   if (scope == master) {
-    set_pack_eol<TSC_SuplaChannelGroupPack>(data);
+    if (getClient()->getProtocolVersion() >= 10) {
+      set_pack_eol<TSC_SuplaChannelGroupPack_B>(data);
 
-    srpc_sc_async_channelgroup_pack_update(
-        srpc, static_cast<TSC_SuplaChannelGroupPack *>(data));
+      srpc_sc_async_channelgroup_pack_update_b(
+          srpc, static_cast<TSC_SuplaChannelGroupPack_B *>(data));
+    } else {
+      set_pack_eol<TSC_SuplaChannelGroupPack_B>(data);
+
+      srpc_sc_async_channelgroup_pack_update(
+          srpc, static_cast<TSC_SuplaChannelGroupPack *>(data));
+    }
 
   } else if (scope == detail1) {
     set_pack_eol<TSC_SuplaChannelGroupRelationPack>(data);

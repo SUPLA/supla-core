@@ -29,20 +29,37 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_client_channel::supla_client_channel(supla_client_channels *Container,
-                                           int Id, int DeviceId, int LocationID,
-                                           int Func, int Param1, int Param2,
-                                           const char *Caption, int AltIcon,
-                                           unsigned char ProtocolVersion)
+supla_client_channel::supla_client_channel(
+    supla_client_channels *Container, int Id, int DeviceId, int LocationID,
+    int Func, int Param1, int Param2, char *TextParam1, char *TextParam2,
+    const char *Caption, int AltIcon, int UserIcon, short ManufacturerID,
+    short ProductID, unsigned char ProtocolVersion)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
   this->Func = Func;
   this->Param1 = Param1;
   this->Param2 = Param2;
+  this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
+  this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->AltIcon = AltIcon;
+  this->UserIcon = UserIcon;
+  this->ManufacturerID = ManufacturerID;
+  this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = 0;
+}
+
+supla_client_channel::~supla_client_channel(void) {
+  if (this->TextParam1) {
+    free(this->TextParam1);
+    this->TextParam1 = NULL;
+  }
+
+  if (this->TextParam2) {
+    free(this->TextParam2);
+    this->TextParam2 = NULL;
+  }
 }
 
 int supla_client_channel::getDeviceId() { return DeviceId; }
@@ -120,6 +137,30 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->Func = Func;
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
+  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->Flags = this->Flags;
+
+  if (client && client->getUser()) {
+    client->getUser()->get_channel_value(DeviceId, getId(), &channel->value,
+                                         &channel->online);
+  }
+
+  proto_get_caption(channel->Caption, &channel->CaptionSize,
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+}
+
+void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
+                                     supla_client *client) {
+  memset(channel, 0, sizeof(TSC_SuplaChannel_C));
+
+  channel->Id = getId();
+  channel->DeviceID = getDeviceId();
+  channel->Func = Func;
+  channel->LocationID = this->LocationId;
+  channel->AltIcon = this->AltIcon;
+  channel->UserIcon = this->UserIcon;
+  channel->ManufacturerID = this->ManufacturerID;
+  channel->ProductID = this->ProductID;
   channel->ProtocolVersion = this->ProtocolVersion;
   channel->Flags = this->Flags;
 

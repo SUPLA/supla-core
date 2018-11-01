@@ -29,6 +29,7 @@ class supla_client : public cdcommon {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
   bool superuser_authorized;
+  int access_id;
 
  protected:
   supla_client_locations *locations;
@@ -40,6 +41,7 @@ class supla_client : public cdcommon {
 
   void remote_update_lists(void);
   void setName(const char *name);
+  void setAccessID(int AccessID);
 
  public:
   explicit supla_client(serverconnection *svrconn);
@@ -56,6 +58,7 @@ class supla_client : public cdcommon {
       TCS_SuplaChannelNewValue_B *channel_new_value);
   void set_new_value(TCS_SuplaNewValue *new_value);
   int getName(char *buffer, int size);
+  int getAccessID(void);
 
   void call_event(TSC_SuplaEvent *event);
 
@@ -63,9 +66,8 @@ class supla_client : public cdcommon {
   void superuser_authorization_request(
       TCS_SuperUserAuthorizationRequest *request);
 
-  void device_calibration_request(TCS_DeviceCalibrationRequest *request);
-  void on_device_calibration_result(int ChannelID,
-                                    TDS_DeviceCalibrationResult *result);
+  void device_calcfg_request(TCS_DeviceCalCfgRequest *request);
+  void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
 
   virtual ~supla_client();
 };

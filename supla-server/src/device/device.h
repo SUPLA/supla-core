@@ -64,9 +64,9 @@ class supla_device : public cdcommon {
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
-  bool calibration_request(int SenderID, bool SuperUserAuthorized,
-                           TCS_DeviceCalibrationRequest *request);
-  void on_calibration_result(TDS_DeviceCalibrationResult *result);
+  bool calcfg_request(int SenderID, bool SuperUserAuthorized,
+                           TCS_DeviceCalCfgRequest *request);
+  void on_calcfg_result(TDS_DeviceCalCfgResult *result);
 };
 
 #endif /* DEVICE_H_ */

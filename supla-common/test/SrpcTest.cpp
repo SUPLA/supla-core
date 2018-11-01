@@ -94,7 +94,10 @@ void SrpcTest::SetUp() {
   cr_call_type = 0;
   cr_proto_version = 0;
   memset(&cr_rd, 0, sizeof(TsrpcReceivedData));
-  seed = time(NULL);
+
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  seed = tv.tv_sec + tv.tv_usec;
 }
 
 void SrpcTest::TearDown() {
@@ -257,10 +260,13 @@ TEST_F(SrpcTest, call_allowed_v10) {
                  SUPLA_DS_CALL_REGISTER_DEVICE_E,
                  SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
                  SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
-                 SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST,
-                 SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT,
-                 SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST,
-                 SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT,
+                 SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST,
+                 SUPLA_SC_CALL_DEVICE_CALCFG_RESULT,
+                 SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST,
+                 SUPLA_DS_CALL_DEVICE_CALCFG_RESULT,
+                 SUPLA_SC_CALL_CHANNELPACK_UPDATE_C,
+                 SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B,
+                 SUPLA_SC_CALL_CHANNEL_UPDATE_C,
                  0};
 
   srpcCallAllowed(10, calls);
@@ -1221,7 +1227,7 @@ TEST_F(SrpcTest, call_registerdevice_e) {
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
-  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 3805);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 3807);
 
   ASSERT_FALSE(cr_rd.data.ds_register_device_e == NULL);
   ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_e, &registerdevice,
@@ -1249,7 +1255,7 @@ TEST_F(SrpcTest, call_registerdevice_e_one_channel) {
   registerdevice.channel_count = 1;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
-  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 630);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 632);
 
   ASSERT_FALSE(cr_rd.data.ds_register_device_e == NULL);
   ASSERT_EQ(memcmp(cr_rd.data.ds_register_device_e, &registerdevice,
@@ -1275,7 +1281,7 @@ TEST_F(SrpcTest, call_registerdevice_e_without_channels) {
   registerdevice.channel_count = 0;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
-  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 605);
+  SendAndReceive(SUPLA_DS_CALL_REGISTER_DEVICE_E, 607);
 
   ASSERT_FALSE(cr_rd.data.ds_register_device_e == NULL);
   ASSERT_EQ(
@@ -1548,248 +1554,124 @@ TEST_F(SrpcTest, call_get_firmware_update_url_result_not_exists) {
 }
 
 //---------------------------------------------------------
-// DEVICE CALIBRATION
+// DEVICE CALIBRATION / CONFIG
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_sd_device_calibration_request_over_size) {
+TEST_F(SrpcTest, call_sd_device_calcfg_request_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_DeviceCalibrationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalibrationRequest));
-  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+  TSD_DeviceCalCfgRequest request;
+  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalCfgRequest));
+  request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
 
-  ASSERT_EQ(srpc_sd_async_device_calibration_request(srpc, &request), 0);
+  ASSERT_EQ(srpc_sd_async_device_calcfg_request(srpc, &request), 0);
 
   srpc_free(srpc);
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_sd_device_calibration_request_zero_size) {
+TEST_F(SrpcTest, call_sd_device_calcfg_request_zero_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_DeviceCalibrationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalibrationRequest));
+  TSD_DeviceCalCfgRequest request;
+  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalCfgRequest));
   request.DataSize = 0;
 
-  ASSERT_GT(srpc_sd_async_device_calibration_request(srpc, &request), 0);
+  ASSERT_GT(srpc_sd_async_device_calcfg_request(srpc, &request), 0);
 
-  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 44);
+  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST, 44);
 
-  ASSERT_FALSE(cr_rd.data.sd_device_calibration_request == NULL);
+  ASSERT_FALSE(cr_rd.data.sd_device_calcfg_request == NULL);
 
-  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calibration_request, &request,
-                      sizeof(TSD_DeviceCalibrationRequest) -
-                          SUPLA_CALIBRATION_DATA_MAXSIZE));
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_sd_device_calibration_request_full_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  TSD_DeviceCalibrationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalibrationRequest));
-  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
-
-  ASSERT_GT(srpc_sd_async_device_calibration_request(srpc, &request), 0);
-
-  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST, 172);
-
-  ASSERT_FALSE(cr_rd.data.sd_device_calibration_request == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calibration_request, &request,
-                      sizeof(TSD_DeviceCalibrationRequest)));
+  ASSERT_EQ(
+      0, memcmp(cr_rd.data.sd_device_calcfg_request, &request,
+                sizeof(TSD_DeviceCalCfgRequest) - SUPLA_CALCFG_DATA_MAXSIZE));
 
   srpc_free(srpc);
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_ds_device_calibration_result_over_size) {
+TEST_F(SrpcTest, call_sd_device_calcfg_request_full_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_DeviceCalibrationResult result;
-  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalibrationResult));
-  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+  TSD_DeviceCalCfgRequest request;
+  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalCfgRequest));
+  request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
 
-  ASSERT_EQ(srpc_ds_async_device_calibration_result(srpc, &result), 0);
+  ASSERT_GT(srpc_sd_async_device_calcfg_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST, 172);
+
+  ASSERT_FALSE(cr_rd.data.sd_device_calcfg_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calcfg_request, &request,
+                      sizeof(TSD_DeviceCalCfgRequest)));
 
   srpc_free(srpc);
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_ds_device_calibration_result_zero_size) {
+TEST_F(SrpcTest, call_ds_device_calcfg_result_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_DeviceCalibrationResult result;
-  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalibrationResult));
+  TDS_DeviceCalCfgResult result;
+  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalCfgResult));
+  result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_ds_async_device_calcfg_result(srpc, &result), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_ds_device_calcfg_result_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TDS_DeviceCalCfgResult result;
+  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalCfgResult));
   result.DataSize = 0;
 
-  ASSERT_GT(srpc_ds_async_device_calibration_result(srpc, &result), 0);
+  ASSERT_GT(srpc_ds_async_device_calcfg_result(srpc, &result), 0);
 
-  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 43);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALCFG_RESULT, 43);
 
-  ASSERT_FALSE(cr_rd.data.ds_device_calibration_result == NULL);
+  ASSERT_FALSE(cr_rd.data.ds_device_calcfg_result == NULL);
 
-  ASSERT_EQ(0, memcmp(cr_rd.data.ds_device_calibration_result, &result,
-                      sizeof(TDS_DeviceCalibrationResult) -
-                          SUPLA_CALIBRATION_DATA_MAXSIZE));
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_ds_device_calibration_result_full_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  TDS_DeviceCalibrationResult result;
-  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalibrationResult));
-  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
-
-  ASSERT_GT(srpc_ds_async_device_calibration_result(srpc, &result), 0);
-
-  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT, 171);
-
-  ASSERT_FALSE(cr_rd.data.ds_device_calibration_result == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.ds_device_calibration_result, &result,
-                      sizeof(TDS_DeviceCalibrationResult)));
+  ASSERT_EQ(0,
+            memcmp(cr_rd.data.ds_device_calcfg_result, &result,
+                   sizeof(TDS_DeviceCalCfgResult) - SUPLA_CALCFG_DATA_MAXSIZE));
 
   srpc_free(srpc);
   srpc = NULL;
 }
 
-//---------------------------------------------------------
-//---------------------------------------------------------
-//---------------------------------------------------------
-
-TEST_F(SrpcTest, call_cs_device_calibration_request_over_size) {
+TEST_F(SrpcTest, call_ds_device_calcfg_result_full_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_DeviceCalibrationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalibrationRequest));
-  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
+  TDS_DeviceCalCfgResult result;
+  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalCfgResult));
+  result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
 
-  ASSERT_EQ(srpc_cs_async_device_calibration_request(srpc, &request), 0);
+  ASSERT_GT(srpc_ds_async_device_calcfg_result(srpc, &result), 0);
 
-  srpc_free(srpc);
-  srpc = NULL;
-}
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CALCFG_RESULT, 171);
 
-TEST_F(SrpcTest, call_cs_device_calibration_request_zero_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+  ASSERT_FALSE(cr_rd.data.ds_device_calcfg_result == NULL);
 
-  TCS_DeviceCalibrationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalibrationRequest));
-  request.DataSize = 0;
-
-  ASSERT_GT(srpc_cs_async_device_calibration_request(srpc, &request), 0);
-
-  SendAndReceive(SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST, 39);
-
-  ASSERT_FALSE(cr_rd.data.cs_device_calibration_request == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.cs_device_calibration_request, &request,
-                      sizeof(TCS_DeviceCalibrationRequest) -
-                          SUPLA_CALIBRATION_DATA_MAXSIZE));
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_cs_device_calibration_request_full_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  TCS_DeviceCalibrationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalibrationRequest));
-  request.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
-
-  ASSERT_GT(srpc_cs_async_device_calibration_request(srpc, &request), 0);
-
-  SendAndReceive(SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST, 167);
-
-  ASSERT_FALSE(cr_rd.data.cs_device_calibration_request == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calibration_request, &request,
-                      sizeof(TCS_DeviceCalibrationRequest)));
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_sc_device_calibration_result_over_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  TSC_DeviceCalibrationResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalibrationResult));
-  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE + 1;
-
-  ASSERT_EQ(srpc_sc_async_device_calibration_result(srpc, &result), 0);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_sc_device_calibration_result_zero_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  TSC_DeviceCalibrationResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalibrationResult));
-  result.DataSize = 0;
-
-  ASSERT_GT(srpc_sc_async_device_calibration_result(srpc, &result), 0);
-
-  SendAndReceive(SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT, 39);
-
-  ASSERT_FALSE(cr_rd.data.sc_device_calibration_result == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_device_calibration_result, &result,
-                      sizeof(TSC_DeviceCalibrationResult) -
-                          SUPLA_CALIBRATION_DATA_MAXSIZE));
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_sc_device_calibration_result_full_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  TSC_DeviceCalibrationResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalibrationResult));
-  result.DataSize = SUPLA_CALIBRATION_DATA_MAXSIZE;
-
-  ASSERT_GT(srpc_sc_async_device_calibration_result(srpc, &result), 0);
-
-  SendAndReceive(SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT, 167);
-
-  ASSERT_FALSE(cr_rd.data.sc_device_calibration_result == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_device_calibration_result, &result,
-                      sizeof(TSC_DeviceCalibrationResult)));
+  ASSERT_EQ(0, memcmp(cr_rd.data.ds_device_calcfg_result, &result,
+                      sizeof(TDS_DeviceCalCfgResult)));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -2179,6 +2061,68 @@ TEST_F(SrpcTest, call_channel_update_b_with_full_size) {
 }
 
 //---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channel_update_c_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannel_C channel;
+  memset(&channel, 0, sizeof(TSC_SuplaChannel_C));
+  channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_sc_async_channel_update_c(srpc, &channel), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channel_update_c_with_minimum_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannel_C channel;
+  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_C));
+  channel.CaptionSize = 0;
+
+  ASSERT_GT(srpc_sc_async_channel_update_c(srpc, &channel), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_UPDATE_C, 78);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_c == NULL);
+
+  ASSERT_EQ(0,
+            memcmp(cr_rd.data.sc_channel_c, &channel,
+                   sizeof(TSC_SuplaChannel_C) - SUPLA_CHANNEL_CAPTION_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channel_update_c_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannel_C channel;
+  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_C));
+  channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+
+  ASSERT_GT(srpc_sc_async_channel_update_c(srpc, &channel), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_UPDATE_C, 479);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_c == NULL);
+
+  ASSERT_EQ(
+      0, memcmp(cr_rd.data.sc_channel_c, &channel, sizeof(TSC_SuplaChannel_C)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // CHANNEL PACK UPDATE
 //---------------------------------------------------------
 
@@ -2270,6 +2214,100 @@ TEST_F(SrpcTest, call_channelpack_update_with_full_size) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channelpack_update_c_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelPack_C channel_pack;
+  memset(&channel_pack, 0, sizeof(TSC_SuplaChannelPack_C));
+  channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelpack_update_c_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelPack_C channel_pack;
+  memset(&channel_pack, 0, sizeof(TSC_SuplaChannelPack_C));
+  channel_pack.count = 0;
+
+  ASSERT_EQ(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelpack_update_c_with_caption_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelPack_C channel_pack;
+  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_C));
+  channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
+
+  channel_pack.items[0].CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
+
+  for (int a = 1; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
+    channel_pack.items[a].CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 8695);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_pack_c == NULL);
+  ASSERT_EQ(cr_rd.data.sc_channel_pack_c->count,
+            SUPLA_CHANNELPACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_channel_pack_c->total_left, channel_pack.total_left);
+
+  for (int a = 0; a < SUPLA_CHANNELPACK_MAXCOUNT - 1; a++) {
+    ASSERT_EQ(
+        memcmp(&cr_rd.data.sc_channel_pack_c->items[a],
+               &channel_pack.items[a + 1],
+               sizeof(TSC_SuplaChannel_C) - SUPLA_CHANNEL_CAPTION_MAXSIZE +
+                   channel_pack.items[a + 1].CaptionSize),
+        0);
+  }
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelpack_update_c_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelPack_C channel_pack;
+  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_C));
+  channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
+
+  for (int a = 0; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
+    channel_pack.items[a].CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 9151);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_pack_c == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_pack_c, &channel_pack,
+                      sizeof(TSC_SuplaChannelPack_C)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 
 //---------------------------------------------------------
 
@@ -2478,6 +2516,101 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_full_size) {
 
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_pack, &pack,
                       sizeof(TSC_SuplaChannelGroupPack)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// CHANNEL GROUP PACK B UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack_B pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelGroupPack_B));
+  pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_channelgroup_pack_update_b(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack_B pack;
+  memset(&pack, 0, sizeof(TSC_SuplaChannelGroupPack_B));
+  pack.count = 0;
+
+  ASSERT_EQ(srpc_sc_async_channelgroup_pack_update_b(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_caption_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack_B pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack_B));
+  pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
+
+  pack.items[0].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE + 1;
+
+  for (int a = 1; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
+    pack.items[a].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_channelgroup_pack_update_b(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B, 8201);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelgroup_pack_b == NULL);
+  ASSERT_EQ(cr_rd.data.sc_channelgroup_pack_b->count,
+            SUPLA_CHANNELGROUP_PACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_channelgroup_pack_b->total_left, pack.total_left);
+
+  for (int a = 0; a < SUPLA_CHANNELGROUP_PACK_MAXCOUNT - 1; a++) {
+    ASSERT_EQ(
+        memcmp(&cr_rd.data.sc_channelgroup_pack_b->items[a], &pack.items[a + 1],
+               sizeof(TSC_SuplaChannelGroup_B) -
+                   SUPLA_CHANNELGROUP_CAPTION_MAXSIZE +
+                   pack.items[a + 1].CaptionSize),
+        0);
+  }
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_SuplaChannelGroupPack_B pack;
+  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack_B));
+  pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
+
+  for (int a = 0; a < SUPLA_CHANNELGROUP_PACK_MAXCOUNT; a++) {
+    pack.items[a].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_channelgroup_pack_update_b(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B, 8631);
+
+  ASSERT_FALSE(cr_rd.data.sc_channelgroup_pack_b == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_pack_b, &pack,
+                      sizeof(TSC_SuplaChannelGroupPack_B)));
 
   srpc_free(srpc);
   srpc = NULL;
@@ -2967,6 +3100,211 @@ TEST_F(SrpcTest, call_superuser_authorization_result) {
 
   srpc_free(srpc);
   srpc = NULL;
+}
+
+//---------------------------------------------------------
+// DEVICE CALIBRATION / CONFIG
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_cs_device_calcfg_request_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_DeviceCalCfgRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalCfgRequest));
+  request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_cs_async_device_calcfg_request(srpc, &request), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_cs_device_calcfg_request_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_DeviceCalCfgRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalCfgRequest));
+  request.DataSize = 0;
+
+  ASSERT_GT(srpc_cs_async_device_calcfg_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST, 39);
+
+  ASSERT_FALSE(cr_rd.data.cs_device_calcfg_request == NULL);
+
+  ASSERT_EQ(
+      0, memcmp(cr_rd.data.cs_device_calcfg_request, &request,
+                sizeof(TCS_DeviceCalCfgRequest) - SUPLA_CALCFG_DATA_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_cs_device_calcfg_request_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TCS_DeviceCalCfgRequest request;
+  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalCfgRequest));
+  request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
+
+  ASSERT_GT(srpc_cs_async_device_calcfg_request(srpc, &request), 0);
+
+  SendAndReceive(SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST, 167);
+
+  ASSERT_FALSE(cr_rd.data.cs_device_calcfg_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calcfg_request, &request,
+                      sizeof(TCS_DeviceCalCfgRequest)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_device_calcfg_result_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_DeviceCalCfgResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalCfgResult));
+  result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
+
+  ASSERT_EQ(srpc_sc_async_device_calcfg_result(srpc, &result), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_device_calcfg_result_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_DeviceCalCfgResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalCfgResult));
+  result.DataSize = 0;
+
+  ASSERT_GT(srpc_sc_async_device_calcfg_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_DEVICE_CALCFG_RESULT, 39);
+
+  ASSERT_FALSE(cr_rd.data.sc_device_calcfg_result == NULL);
+
+  ASSERT_EQ(0,
+            memcmp(cr_rd.data.sc_device_calcfg_result, &result,
+                   sizeof(TSC_DeviceCalCfgResult) - SUPLA_CALCFG_DATA_MAXSIZE));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_device_calcfg_result_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  TSC_DeviceCalCfgResult result;
+  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalCfgResult));
+  result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
+
+  ASSERT_GT(srpc_sc_async_device_calcfg_result(srpc, &result), 0);
+
+  SendAndReceive(SUPLA_SC_CALL_DEVICE_CALCFG_RESULT, 167);
+
+  ASSERT_FALSE(cr_rd.data.sc_device_calcfg_result == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_device_calcfg_result, &result,
+                      sizeof(TSC_DeviceCalCfgResult)));
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// EXTENDED VALUE TOOLS
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, evtool_electricity_meter_value_to_extended) {
+  TSuplaChannelExtendedValue ev;
+  TElectricityMeter_ExtendedValue em_ev_src;
+  TElectricityMeter_ExtendedValue em_ev_dst;
+  memset(&em_ev_src, rand_r(&seed), sizeof(TElectricityMeter_ExtendedValue));
+  memset(&em_ev_dst, 0, sizeof(TElectricityMeter_ExtendedValue));
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT;
+
+  ASSERT_EQ(1, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(1, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ASSERT_EQ(0, memcmp(&em_ev_src, &em_ev_dst,
+                      sizeof(TElectricityMeter_ExtendedValue)));
+
+  ASSERT_EQ(1, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(NULL, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(&em_ev_src, NULL));
+
+  em_ev_src.m_count = -1;
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT;
+  ASSERT_EQ(1, srpc_evtool_v1_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(NULL, &em_ev_dst));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, NULL));
+
+  ev.type = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ev.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1;
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ev.size = sizeof(TElectricityMeter_ExtendedValue) + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+
+  ev.size = sizeof(TElectricityMeter_ExtendedValue) - 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
+}
+
+TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
+  ASSERT_GE((unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE,
+            sizeof(TSC_ImpulseCounter_ExtendedValue));
+
+  TSuplaChannelExtendedValue ev;
+  TSC_ImpulseCounter_ExtendedValue ic_ev_src;
+  TSC_ImpulseCounter_ExtendedValue ic_ev_dst;
+  memset(&ic_ev_src, rand_r(&seed), sizeof(TSC_ImpulseCounter_ExtendedValue));
+  memset(&ic_ev_dst, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+
+  ASSERT_EQ(1, srpc_evtool_v1_icextended2extended(&ic_ev_src, &ev));
+  ASSERT_EQ(1, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ASSERT_EQ(0, memcmp(&ic_ev_src, &ic_ev_dst,
+                      sizeof(TSC_ImpulseCounter_ExtendedValue)));
+
+  ASSERT_EQ(1, srpc_evtool_v1_icextended2extended(&ic_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_icextended2extended(NULL, &ev));
+  ASSERT_EQ(0, srpc_evtool_v1_icextended2extended(&ic_ev_src, NULL));
+
+  ev.type = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ev.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ev.size = sizeof(TSC_ImpulseCounter_ExtendedValue) + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+
+  ev.size = sizeof(TSC_ImpulseCounter_ExtendedValue) - 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
 }
 
 }  // namespace

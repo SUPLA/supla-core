@@ -105,9 +105,9 @@ int main(int argc, char *argv[]) {
           supla_client_superuser_authorization_request(sclient, NULL, "abcd");
           break;
         case 'c':
-          TCS_DeviceCalibrationRequest request;
-          memset(&request, 0, sizeof(TCS_DeviceCalibrationRequest));
-          supla_client_device_calibration_request(sclient, &request);
+          TCS_DeviceCalCfgRequest request;
+          memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest));
+          supla_client_device_calcfg_request(sclient, &request);
           break;
       }
     }

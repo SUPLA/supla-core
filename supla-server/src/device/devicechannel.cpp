@@ -990,29 +990,29 @@ void supla_device_channels::get_electricity_measurement(void *emarr) {
   safe_array_unlock(arr);
 }
 
-bool supla_device_channels::calibration_request(
+bool supla_device_channels::calcfg_request(
     void *srpc, int SenderID, bool SuperUserAuthorized,
-    TCS_DeviceCalibrationRequest *request) {
+    TCS_DeviceCalCfgRequest *request) {
   bool result = false;
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(request->ChannelID);
 
   if (channel) {
-    TSD_DeviceCalibrationRequest drequest;
-    memset(&drequest, 0, sizeof(TSD_DeviceCalibrationRequest));
+    TSD_DeviceCalCfgRequest drequest;
+    memset(&drequest, 0, sizeof(TSD_DeviceCalCfgRequest));
 
     drequest.SenderID = SenderID;
     drequest.ChannelNumber = channel->getNumber();
     drequest.Command = request->Command;
     drequest.SuperUserAuthorized = SuperUserAuthorized;
     drequest.DataType = request->DataType;
-    drequest.DataSize = request->DataSize > SUPLA_CALIBRATION_DATA_MAXSIZE
-                            ? SUPLA_CALIBRATION_DATA_MAXSIZE
+    drequest.DataSize = request->DataSize > SUPLA_CALCFG_DATA_MAXSIZE
+                            ? SUPLA_CALCFG_DATA_MAXSIZE
                             : request->DataSize;
-    memcpy(drequest.Data, request->Data, SUPLA_CALIBRATION_DATA_MAXSIZE);
+    memcpy(drequest.Data, request->Data, SUPLA_CALCFG_DATA_MAXSIZE);
 
-    srpc_sd_async_device_calibration_request(srpc, &drequest);
+    srpc_sd_async_device_calcfg_request(srpc, &drequest);
     result = true;
   }
 

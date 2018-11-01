@@ -75,6 +75,7 @@ extern "C" {
 #endif
 #define SUPLA_RC_MAX_DEV_COUNT 50
 #define SUPLA_SOFTVER_MAXSIZE 21
+#define SUPLA_SOFTVERHEX_MAXSIZE 43
 
 #define SUPLA_GUID_SIZE 16
 #define SUPLA_GUID_HEXSIZE 33
@@ -101,8 +102,8 @@ extern "C" {
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
-  (SUPLA_MAX_DATA_SIZE - 50)                // ver. >= 10
-#define SUPLA_CALIBRATION_DATA_MAXSIZE 128  // ver. >= 10
+  (SUPLA_MAX_DATA_SIZE - 50)           // ver. >= 10
+#define SUPLA_CALCFG_DATA_MAXSIZE 128  // ver. >= 10
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -146,18 +147,21 @@ extern "C" {
 #define SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST 340                // ver. >= 10
 #define SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT 350         // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360               // ver. >= 8
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361               // ver. >= 10
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                   // ver. >= 8
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                   // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381         // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
 #define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
 #define SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST 420    // ver. >= 10
 #define SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT 430     // ver. >= 10
-#define SUPLA_CS_CALL_DEVICE_CALIBRATION_REQUEST 440         // ver. >= 10
-#define SUPLA_SC_CALL_DEVICE_CALIBRATION_RESULT 450          // ver. >= 10
-#define SUPLA_SD_CALL_DEVICE_CALIBRATION_REQUEST 460         // ver. >= 10
-#define SUPLA_DS_CALL_DEVICE_CALIBRATION_RESULT 470          // ver. >= 10
+#define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST 440              // ver. >= 10
+#define SUPLA_SC_CALL_DEVICE_CALCFG_RESULT 450               // ver. >= 10
+#define SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST 460              // ver. >= 10
+#define SUPLA_DS_CALL_DEVICE_CALCFG_RESULT 470               // ver. >= 10
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -312,8 +316,6 @@ extern "C" {
 #define SUPLA_NEW_VALUE_TARGET_CHANNEL 0
 #define SUPLA_NEW_VALUE_TARGET_GROUP 1
 
-#define USER_ICON_MAXCOUNT 4  // ver. >= 10
-
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
 #define SUPLA_MFR_TRANSCOM 2
@@ -322,6 +324,7 @@ extern "C" {
 #define SUPLA_MFR_NICE 5
 #define SUPLA_MFR_ITEAD 6
 #define SUPLA_MFR_VL 7
+#define SUPLA_MFR_HPOL 8
 
 #pragma pack(push, 1)
 
@@ -512,6 +515,7 @@ typedef struct {
 
   _supla_int_t Flags;
   _supla_int16_t ManufacturerID;
+  _supla_int16_t ProductID;
 
   unsigned char channel_count;
   TDS_SuplaDeviceChannel_C
@@ -653,11 +657,13 @@ typedef struct {
   char EOL;  // End Of List
 
   _supla_int_t Id;
+  _supla_int_t DeviceID;
   _supla_int_t LocationID;
   _supla_int_t Func;
   _supla_int_t AltIcon;
-  _supla_int_t UserIcon[USER_ICON_MAXCOUNT];
+  _supla_int_t UserIcon;
   _supla_int16_t ManufacturerID;
+  _supla_int16_t ProductID;
 
   unsigned _supla_int_t Flags;
   unsigned char ProtocolVersion;
@@ -696,12 +702,37 @@ typedef struct {
 
 typedef struct {
   // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t LocationID;
+  _supla_int_t Func;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon;
+  unsigned _supla_int_t Flags;
+
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaChannelGroup_B;                           // ver. >= 9
+
+typedef struct {
+  // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannelGroup
       items[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelGroupPack;                    // ver. >= 9
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannelGroup_B
+      items[SUPLA_CHANNELGROUP_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelGroupPack_B;                  // ver. >= 10
 
 typedef struct {
   // server -> client
@@ -919,6 +950,7 @@ typedef struct {
   _supla_int_t price_per_unit;  // * 0.0001
   // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
   char currency[3];
+  char custom_unit[5];  // including the terminating null byte ('\0')
 
   unsigned _supla_int64_t counter;
   _supla_int64_t calculated_value;   // * 0.001
@@ -939,21 +971,22 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
+// CALCFG == CALIBRATION / CONSIG
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
   _supla_int_t DataType;
   unsigned _supla_int_t DataSize;
-  char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
-} TCS_DeviceCalibrationRequest;               // v. >= 10
+  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
+} TCS_DeviceCalCfgRequest;               // v. >= 10
 
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
   _supla_int_t Result;
   unsigned _supla_int_t DataSize;
-  char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
-} TSC_DeviceCalibrationResult;                // v. >= 10
+  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
+} TSC_DeviceCalCfgResult;                // v. >= 10
 
 typedef struct {
   _supla_int_t SenderID;
@@ -962,8 +995,8 @@ typedef struct {
   char SuperUserAuthorized;
   _supla_int_t DataType;
   unsigned _supla_int_t DataSize;
-  char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
-} TSD_DeviceCalibrationRequest;               // v. >= 10
+  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
+} TSD_DeviceCalCfgRequest;               // v. >= 10
 
 typedef struct {
   _supla_int_t SenderID;
@@ -971,8 +1004,8 @@ typedef struct {
   _supla_int_t Command;
   _supla_int_t Result;
   unsigned _supla_int_t DataSize;
-  char Data[SUPLA_CALIBRATION_DATA_MAXSIZE];  // Last variable in struct!
-} TDS_DeviceCalibrationResult;                // v. >= 10
+  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
+} TDS_DeviceCalCfgResult;                // v. >= 10
 
 #pragma pack(pop)
 

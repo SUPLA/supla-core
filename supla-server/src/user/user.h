@@ -134,9 +134,9 @@ class supla_user {
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
 
-  bool device_calibration_request(int SenderID, int DeviceId,
-                                  TCS_DeviceCalibrationRequest *request);
-  void on_device_calibration_result(int ChannelID, TDS_DeviceCalibrationResult *result);
+  bool device_calcfg_request(int SenderID, int DeviceId,
+                             TCS_DeviceCalCfgRequest *request);
+  void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

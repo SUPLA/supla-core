@@ -52,7 +52,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(2964, sizeof(TDS_SuplaRegisterDevice_B));
   ASSERT_EQ(3029, sizeof(TDS_SuplaRegisterDevice_C));
   ASSERT_EQ(3264, sizeof(TDS_SuplaRegisterDevice_D));
-  ASSERT_EQ(3782, sizeof(TDS_SuplaRegisterDevice_E));
+  ASSERT_EQ(3784, sizeof(TDS_SuplaRegisterDevice_E));
   ASSERT_EQ(7, sizeof(TSD_SuplaRegisterDeviceResult));
   ASSERT_EQ(9, sizeof(TDS_SuplaDeviceChannelValue));
   ASSERT_EQ(1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
@@ -66,10 +66,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(8708, sizeof(TSC_SuplaChannelPack));
   ASSERT_EQ(444, sizeof(TSC_SuplaChannel_B));
   ASSERT_EQ(8888, sizeof(TSC_SuplaChannelPack_B));
-  ASSERT_EQ(462, sizeof(TSC_SuplaChannel_C));
-  ASSERT_EQ(9248, sizeof(TSC_SuplaChannelPack_C));
+  ASSERT_EQ(456, sizeof(TSC_SuplaChannel_C));
+  ASSERT_EQ(9128, sizeof(TSC_SuplaChannelPack_C));
   ASSERT_EQ(426, sizeof(TSC_SuplaChannelGroup));
   ASSERT_EQ(8528, sizeof(TSC_SuplaChannelGroupPack));
+  ASSERT_EQ(430, sizeof(TSC_SuplaChannelGroup_B));
+  ASSERT_EQ(8608, sizeof(TSC_SuplaChannelGroupPack_B));
   ASSERT_EQ(9, sizeof(TSC_SuplaChannelGroupRelation));
   ASSERT_EQ(908, sizeof(TSC_SuplaChannelGroupRelationPack));
   ASSERT_EQ(275, sizeof(TCS_SuplaRegisterClient));
@@ -90,13 +92,21 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(62, sizeof(TElectricityMeter_Measurement));
   ASSERT_EQ(429, sizeof(TElectricityMeter_ExtendedValue));
   ASSERT_EQ(5, sizeof(TElectricityMeter_Value));
-  ASSERT_EQ(27, sizeof(TSC_ImpulseCounter_ExtendedValue));
+  ASSERT_EQ(32, sizeof(TSC_ImpulseCounter_ExtendedValue));
   ASSERT_EQ(8, sizeof(TSC_ImpulseCounter_Value));
   ASSERT_EQ(320, sizeof(TCS_SuperUserAuthorizationRequest));
-  ASSERT_EQ(144, sizeof(TCS_DeviceCalibrationRequest));
-  ASSERT_EQ(144, sizeof(TSC_DeviceCalibrationResult));
-  ASSERT_EQ(149, sizeof(TSD_DeviceCalibrationRequest));
-  ASSERT_EQ(148, sizeof(TDS_DeviceCalibrationResult));
+  ASSERT_EQ(144, sizeof(TCS_DeviceCalCfgRequest));
+  ASSERT_EQ(144, sizeof(TSC_DeviceCalCfgResult));
+  ASSERT_EQ(149, sizeof(TSD_DeviceCalCfgRequest));
+  ASSERT_EQ(148, sizeof(TDS_DeviceCalCfgResult));
+
+  ASSERT_LE(sizeof(TDS_ImpulseCounter_Value), SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_LE(sizeof(TSC_ImpulseCounter_ExtendedValue),
+            SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+
+  ASSERT_LE(sizeof(TElectricityMeter_Value), SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue),
+            SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 }
 
 TEST_F(ProtoTest, init) {

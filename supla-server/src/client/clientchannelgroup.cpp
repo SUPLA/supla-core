@@ -18,18 +18,19 @@
 
 #include "clientchannelgroup.h"
 #include <string.h>
+#include "client.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
-#include "client.h"
 
 supla_client_channelgroup::supla_client_channelgroup(
     supla_client_channelgroups *Container, int Id, int LocationID, int Func,
-    const char *Caption, int AltIcon)
+    const char *Caption, int AltIcon, int UserIcon)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->LocationID = LocationID;
   this->Func = Func;
   this->AltIcon = AltIcon;
+  this->UserIcon = UserIcon;
   this->Flags = 0;
   this->relarr = safe_array_init();
 }
@@ -97,6 +98,20 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
   group->LocationID = LocationID;
   group->Func = Func;
   group->AltIcon = AltIcon;
+  group->Flags = Flags;
+
+  proto_get_caption(group->Caption, &group->CaptionSize,
+                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+}
+
+void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
+  memset(group, 0, sizeof(TSC_SuplaChannelGroup_B));
+
+  group->Id = getId();
+  group->LocationID = LocationID;
+  group->Func = Func;
+  group->AltIcon = AltIcon;
+  group->UserIcon = UserIcon;
   group->Flags = Flags;
 
   proto_get_caption(group->Caption, &group->CaptionSize,
