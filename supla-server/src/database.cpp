@@ -1022,13 +1022,13 @@ void database::get_client_locations(int ClientID,
   pbind[0].buffer = (char *)&ClientID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    my_bool is_null[2];
+    my_bool is_null[2] = {false, false};
 
     MYSQL_BIND rbind[2];
     memset(rbind, 0, sizeof(rbind));
 
-    int id;
-    unsigned long size;
+    int id = 0;
+    unsigned long size = 0;
     char caption[SUPLA_LOCATION_CAPTION_MAXSIZE];  // utf8
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1052,7 +1052,7 @@ void database::get_client_locations(int ClientID,
           if (size >= SUPLA_LOCATION_CAPTION_MAXSIZE) {
             size = SUPLA_LOCATION_CAPTION_MAXSIZE - 1;
           }
-          caption[size] = 0;
+          caption[is_null[1] ? 0 : size] = 0;
           locs->add_location(id, caption);
         }
       }
@@ -1264,8 +1264,12 @@ void database::get_client_channel_groups(int ClientID,
     MYSQL_BIND rbind[6];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, func, location_id, alt_icon, user_icon;
-    unsigned long size;
+    int id = 0;
+    int func = 0;
+    int location_id = 0;
+    int alt_icon = 0;
+    int user_icon = 0;
+    unsigned long size = 0;
     char caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1528,11 +1532,11 @@ bool database::get_device_firmware_update_url(
       MYSQL_BIND rbind[4];
       memset(rbind, 0, sizeof(rbind));
 
-      unsigned long host_size;
-      my_bool host_is_null;
+      unsigned long host_size = 0;
+      my_bool host_is_null = true;
 
-      unsigned long path_size;
-      my_bool path_is_null;
+      unsigned long path_size = 0;
+      my_bool path_is_null = true;
 
       rbind[0].buffer_type = MYSQL_TYPE_TINY;
       rbind[0].buffer = (char *)&url->url.available_protocols;
@@ -1721,19 +1725,23 @@ bool database::superuser_authorization(int UserID,
 
     char buffer_email[256];
     unsigned long email_size = 0;
+    my_bool email_is_null = true;
 
     char buffer_password[65];
     unsigned long password_size = 0;
+    my_bool password_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = buffer_email;
     rbind[0].buffer_length = sizeof(buffer_email);
     rbind[0].length = &email_size;
+    rbind[0].is_null = &email_is_null;
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
     rbind[1].buffer = buffer_password;
     rbind[1].buffer_length = sizeof(buffer_password);
     rbind[1].length = &password_size;
+    rbind[1].is_null = &password_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1742,6 +1750,7 @@ bool database::superuser_authorization(int UserID,
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
+          !email_is_null && !password_is_null &&
           email_size < rbind[0].buffer_length &&
           password_size < rbind[1].buffer_length) {
         buffer_email[email_size] = 0;
