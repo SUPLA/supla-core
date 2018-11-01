@@ -460,7 +460,6 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
     } else if (call_type == SUPLA_DCS_CALL_PING_SERVER &&
                (registered == REG_DEVICE || registered == REG_CLIENT)) {
-
       srpc_sdc_async_ping_server_result(_srpc);
 
     } else if (call_type == SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED &&
