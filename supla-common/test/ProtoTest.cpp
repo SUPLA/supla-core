@@ -38,6 +38,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(23, sizeof(TSDC_SuplaGetVersionResult));
   ASSERT_EQ(2, sizeof(TSDC_SuplaVersionError));
   ASSERT_EQ(16, sizeof(TDCS_SuplaPingServer));
+  ASSERT_EQ(8, sizeof(TDCS_SuplaPingServer_COMPAT));
   ASSERT_EQ(16, sizeof(TSDC_SuplaPingServerResult));
   ASSERT_EQ(1, sizeof(TDCS_SuplaSetActivityTimeout));
   ASSERT_EQ(3, sizeof(TSDC_SuplaSetActivityTimeoutResult));
