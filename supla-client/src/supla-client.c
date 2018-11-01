@@ -236,7 +236,7 @@ void supla_client_channel_update_c(TSuplaClientData *scd,
 }
 
 void supla_client_channelgroup_update(TSuplaClientData *scd,
-                                      TSC_SuplaChannelGroup *channel_group,
+                                      TSC_SuplaChannelGroup_B *channel_group,
                                       char gn) {
   supla_client_set_str(channel_group->Caption, &channel_group->CaptionSize,
                        SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
@@ -249,6 +249,30 @@ void supla_client_channelgroup_update(TSuplaClientData *scd,
 
 void supla_client_channelgroup_pack_update(TSuplaClientData *scd,
                                            TSC_SuplaChannelGroupPack *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++) {
+    TSC_SuplaChannelGroup_B channel_group;
+
+    channel_group.EOL = pack->items[a].EOL;
+    channel_group.Id = pack->items[a].Id;
+    channel_group.LocationID = pack->items[a].LocationID;
+    channel_group.Func = pack->items[a].Func;
+    channel_group.AltIcon = pack->items[a].AltIcon;
+    channel_group.UserIcon = 0;
+    channel_group.Flags = pack->items[a].Flags;
+    channel_group.CaptionSize = pack->items[a].CaptionSize;
+    memcpy(channel_group.Caption, pack->items[a].Caption,
+           SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+
+    supla_client_channelgroup_update(scd, &channel_group, 0);
+  }
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelgroup_pack_update_b(
+    TSuplaClientData *scd, TSC_SuplaChannelGroupPack_B *pack) {
   int a;
 
   for (a = 0; a < pack->count; a++)
@@ -371,7 +395,7 @@ void supla_client_channel_b2c(TSC_SuplaChannel_B *b, TSC_SuplaChannel_C *c) {
 }
 
 void supla_client_channel_update_b(TSuplaClientData *scd,
-                                 TSC_SuplaChannel_B *channel_b, char gn) {
+                                   TSC_SuplaChannel_B *channel_b, char gn) {
   TSC_SuplaChannel_C channel_c;
   memset(&channel_c, 0, sizeof(TSC_SuplaChannel_C));
 
@@ -553,6 +577,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         if (rd.data.sc_channelgroup_pack) {
           supla_client_channelgroup_pack_update(scd,
                                                 rd.data.sc_channelgroup_pack);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B:
+        if (rd.data.sc_channelgroup_pack_b) {
+          supla_client_channelgroup_pack_update_b(
+              scd, rd.data.sc_channelgroup_pack_b);
         }
         break;
       case SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE:
