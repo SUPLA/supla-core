@@ -1022,13 +1022,13 @@ void database::get_client_locations(int ClientID,
   pbind[0].buffer = (char *)&ClientID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    my_bool is_null[2];
+    my_bool is_null[2] = {false, false};
 
     MYSQL_BIND rbind[2];
     memset(rbind, 0, sizeof(rbind));
 
-    int id;
-    unsigned long size;
+    int id = 0;
+    unsigned long size = 0;
     char caption[SUPLA_LOCATION_CAPTION_MAXSIZE];  // utf8
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1052,7 +1052,7 @@ void database::get_client_locations(int ClientID,
           if (size >= SUPLA_LOCATION_CAPTION_MAXSIZE) {
             size = SUPLA_LOCATION_CAPTION_MAXSIZE - 1;
           }
-          caption[size] = 0;
+          caption[is_null[1] ? 0 : size] = 0;
           locs->add_location(id, caption);
         }
       }
@@ -1089,7 +1089,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[13];
+    MYSQL_BIND rbind[14];
     memset(rbind, 0, sizeof(rbind));
 
     int id, func, param1, param2, iodevice_id, location_id, alt_icon, user_icon,
@@ -1127,38 +1127,38 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[4].buffer_length = sizeof(text_param1) - 1;
     rbind[4].length = &text_param1_size;
 
-    rbind[4].buffer_type = MYSQL_TYPE_STRING;
-    rbind[4].buffer = text_param2;
-    rbind[4].is_null = &text_param2_is_null;
-    rbind[4].buffer_length = sizeof(text_param2) - 1;
-    rbind[4].length = &text_param2_size;
-
-    rbind[5].buffer_type = MYSQL_TYPE_LONG;
-    rbind[5].buffer = (char *)&iodevice_id;
+    rbind[5].buffer_type = MYSQL_TYPE_STRING;
+    rbind[5].buffer = text_param2;
+    rbind[5].is_null = &text_param2_is_null;
+    rbind[5].buffer_length = sizeof(text_param2) - 1;
+    rbind[5].length = &text_param2_size;
 
     rbind[6].buffer_type = MYSQL_TYPE_LONG;
-    rbind[6].buffer = (char *)&location_id;
+    rbind[6].buffer = (char *)&iodevice_id;
 
-    rbind[7].buffer_type = MYSQL_TYPE_STRING;
-    rbind[7].buffer = caption;
-    rbind[7].is_null = &caption_is_null;
-    rbind[7].buffer_length = SUPLA_CHANNEL_CAPTION_MAXSIZE - 1;
-    rbind[7].length = &caption_size;
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&location_id;
 
-    rbind[8].buffer_type = MYSQL_TYPE_LONG;
-    rbind[8].buffer = (char *)&alt_icon;
+    rbind[8].buffer_type = MYSQL_TYPE_STRING;
+    rbind[8].buffer = caption;
+    rbind[8].is_null = &caption_is_null;
+    rbind[8].buffer_length = SUPLA_CHANNEL_CAPTION_MAXSIZE - 1;
+    rbind[8].length = &caption_size;
 
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&user_icon;
+    rbind[9].buffer = (char *)&alt_icon;
 
-    rbind[10].buffer_type = MYSQL_TYPE_SHORT;
-    rbind[10].buffer = (char *)&manufacturer_id;
+    rbind[10].buffer_type = MYSQL_TYPE_LONG;
+    rbind[10].buffer = (char *)&user_icon;
 
     rbind[11].buffer_type = MYSQL_TYPE_SHORT;
-    rbind[11].buffer = (char *)&product_id;
+    rbind[11].buffer = (char *)&manufacturer_id;
 
-    rbind[12].buffer_type = MYSQL_TYPE_LONG;
-    rbind[12].buffer = (char *)&protocol_version;
+    rbind[12].buffer_type = MYSQL_TYPE_SHORT;
+    rbind[12].buffer = (char *)&product_id;
+
+    rbind[13].buffer_type = MYSQL_TYPE_LONG;
+    rbind[13].buffer = (char *)&protocol_version;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1264,8 +1264,12 @@ void database::get_client_channel_groups(int ClientID,
     MYSQL_BIND rbind[6];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, func, location_id, alt_icon, user_icon;
-    unsigned long size;
+    int id = 0;
+    int func = 0;
+    int location_id = 0;
+    int alt_icon = 0;
+    int user_icon = 0;
+    unsigned long size = 0;
     char caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1528,11 +1532,11 @@ bool database::get_device_firmware_update_url(
       MYSQL_BIND rbind[4];
       memset(rbind, 0, sizeof(rbind));
 
-      unsigned long host_size;
-      my_bool host_is_null;
+      unsigned long host_size = 0;
+      my_bool host_is_null = true;
 
-      unsigned long path_size;
-      my_bool path_is_null;
+      unsigned long path_size = 0;
+      my_bool path_is_null = true;
 
       rbind[0].buffer_type = MYSQL_TYPE_TINY;
       rbind[0].buffer = (char *)&url->url.available_protocols;
@@ -1721,19 +1725,23 @@ bool database::superuser_authorization(int UserID,
 
     char buffer_email[256];
     unsigned long email_size = 0;
+    my_bool email_is_null = true;
 
     char buffer_password[65];
     unsigned long password_size = 0;
+    my_bool password_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = buffer_email;
     rbind[0].buffer_length = sizeof(buffer_email);
     rbind[0].length = &email_size;
+    rbind[0].is_null = &email_is_null;
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
     rbind[1].buffer = buffer_password;
     rbind[1].buffer_length = sizeof(buffer_password);
     rbind[1].length = &password_size;
+    rbind[1].is_null = &password_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1742,6 +1750,7 @@ bool database::superuser_authorization(int UserID,
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
+          !email_is_null && !password_is_null &&
           email_size < rbind[0].buffer_length &&
           password_size < rbind[1].buffer_length) {
         buffer_email[email_size] = 0;
