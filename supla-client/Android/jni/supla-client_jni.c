@@ -337,7 +337,7 @@ jobject supla_android_client_channelvalue_to_jobject(void *_suplaclient, void *u
     return NULL;
 }
 
-void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel_B *channel) {
+void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel_C *channel) {
    
     //int a; 
     jfieldID fid;
@@ -361,11 +361,20 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
         fid = supla_client_GetFieldID(env, cch, "Id", "I");
         (*env)->SetIntField(env, ch, fid, channel->Id);
         
+        fid = supla_client_GetFieldID(env, cch, "DeviceID", "I");
+        (*env)->SetIntField(env, ch, fid, channel->DeviceID);
+        
         fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
         (*env)->SetIntField(env, ch, fid, channel->LocationID);
         
         fid = supla_client_GetFieldID(env, cch, "Func", "I");
         (*env)->SetIntField(env, ch, fid, channel->Func);
+        
+        fid = supla_client_GetFieldID(env, cch, "ManufacturerID", "S");
+        (*env)->SetShortField(env, ch, fid, channel->ManufacturerID);
+        
+        fid = supla_client_GetFieldID(env, cch, "ProductID", "S");
+        (*env)->SetShortField(env, ch, fid, channel->ProductID);
         
         fid = supla_client_GetFieldID(env, cch, "OnLine", "Z");
         (*env)->SetBooleanField(env, ch, fid, channel->online == 1 ? JNI_TRUE : JNI_FALSE);
@@ -379,6 +388,9 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
         
         fid = supla_client_GetFieldID(env, cch, "AltIcon", "I");
         (*env)->SetIntField(env, ch, fid, channel->AltIcon);
+        
+        fid = supla_client_GetFieldID(env, cch, "UserIcon", "I");
+        (*env)->SetIntField(env, ch, fid, channel->UserIcon);
         
         fid = supla_client_GetFieldID(env, cch, "Flags", "I");
         (*env)->SetIntField(env, ch, fid, channel->Flags);
@@ -584,7 +596,7 @@ void supla_android_client_cb_channel_extendedvalue_update(void *_suplaclient, vo
     
 }
 
-void supla_android_client_cb_channelgroup_update(void *_suplaclient, void *user_data, TSC_SuplaChannelGroup *channel_group) {
+void supla_android_client_cb_channelgroup_update(void *_suplaclient, void *user_data, TSC_SuplaChannelGroup_B *channel_group) {
     jfieldID fid;
     TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
     JNIEnv* env = supla_client_get_env(asc);
@@ -611,6 +623,9 @@ void supla_android_client_cb_channelgroup_update(void *_suplaclient, void *user_
         
         fid = supla_client_GetFieldID(env, cchg, "AltIcon", "I");
         (*env)->SetIntField(env, chg, fid, channel_group->AltIcon);
+        
+        fid = supla_client_GetFieldID(env, cchg, "UserIcon", "I");
+        (*env)->SetIntField(env, chg, fid, channel_group->UserIcon);
         
         fid = supla_client_GetFieldID(env, cchg, "Flags", "I");
         (*env)->SetIntField(env, chg, fid, channel_group->Flags);
