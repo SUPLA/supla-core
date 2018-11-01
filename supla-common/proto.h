@@ -25,30 +25,36 @@
 #define _supla_int_t int
 #define _supla_int16_t short
 #define _supla_int64_t __int64
+#define _supla_timeval timeval
 
 #elif defined(__AVR__)
 
-#ifndef _TIMEVAL_DEFINED
-#define _TIMEVAL_DEFINED
-
-typedef long suseconds_t;
-#define _TIME_T_ long
-typedef _TIME_T_ time_t;
-
-struct timeval {
-  time_t tv_sec[2];
-  suseconds_t tv_usec[2];
+struct _supla_timeval {
+  long tv_sec[2];
+  long tv_usec[2];
 };
-#endif
+
 #define _supla_int16_t int
 #define _supla_int_t long
 #define _supla_int64_t long long
 
-#else
+#elif defined(ESP8266)
+
+struct _supla_timeval {
+  long long tv_sec;
+  long long tv_usec;
+};
+
+#define _supla_int16_t short
+#define _supla_int_t int
+#define _supla_int64_t long long
+
+#else /*defined(ESP8266)*/
 #include <sys/time.h>
 #define _supla_int16_t short
 #define _supla_int_t int
 #define _supla_int64_t long long
+#define _supla_timeval timeval
 #endif
 
 #ifdef __cplusplus
@@ -352,12 +358,23 @@ typedef struct {
 
 typedef struct {
   // device|client -> server
-  struct timeval now;
+  struct _supla_timeval now;
 } TDCS_SuplaPingServer;
+
+// Compatibility with ESP8266
+struct timeval_compat {
+  _supla_int_t tv_sec;
+  _supla_int_t tv_usec;
+};
+
+typedef struct {
+  // device|client -> server
+  struct timeval_compat now;
+} TDCS_SuplaPingServer_COMPAT;
 
 typedef struct {
   // server -> device|client
-  struct timeval now;
+  struct _supla_timeval now;
 } TSDC_SuplaPingServerResult;
 
 typedef struct {

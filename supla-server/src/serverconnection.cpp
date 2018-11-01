@@ -132,7 +132,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                                                unsigned char proto_version) {
   TsrpcReceivedData rd;
 
-  if (srpc_getdata(_srpc, &rd, rr_id) == 0) return;
+  if (srpc_getdata(_srpc, &rd, rr_id) != SUPLA_RESULT_TRUE) return;
 
   if (call_type == SUPLA_DCS_CALL_GETVERSION) {
     char SoftVer[SUPLA_SOFTVER_MAXSIZE];
@@ -617,7 +617,7 @@ void serverconnection::execute(void *sthread) {
             ssocket_is_secure(ssd));
 
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, 1000000);
+    eh_wait(eh, 10000000);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       // supla_log(LOG_DEBUG, "srpc_iterate(_srpc) == SUPLA_RESULT_FALSE");

@@ -433,7 +433,6 @@ void SRPC_ICACHE_FLASH srpc_getchannelpack_b(Tsrpc *srpc,
       &srpc_channelpack_get_item_caption_size_b);
 }
 
-
 void *srpc_channelpack_get_item_ptr_c(void *pack, _supla_int_t idx) {
   return &((TSC_SuplaChannelPack_C *)pack)->items[idx];  // NOLINT
 }
@@ -602,9 +601,20 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
       case SUPLA_DCS_CALL_PING_SERVER:
 
-        if (srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer))
+        if (srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer) ||
+            srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer_COMPAT)) {
           rd->data.dcs_ping =
               (TDCS_SuplaPingServer *)malloc(sizeof(TDCS_SuplaPingServer));
+
+          if (srpc->sdp.data_size == sizeof(TDCS_SuplaPingServer_COMPAT)) {
+            TDCS_SuplaPingServer_COMPAT *compat =
+                (TDCS_SuplaPingServer_COMPAT *)srpc->sdp.data;
+
+            rd->data.dcs_ping->now.tv_sec = compat->now.tv_sec;
+            rd->data.dcs_ping->now.tv_usec = compat->now.tv_usec;
+            call_with_no_data = 1;
+          }
+        }
 
         break;
 
@@ -1027,8 +1037,9 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
     }
 
     if (rd->data.dcs_ping != NULL) {
-      if (srpc->sdp.data_size > 0)
+      if (srpc->sdp.data_size > 0) {
         memcpy(rd->data.dcs_ping, srpc->sdp.data, srpc->sdp.data_size);
+      }
 
       return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
     }
@@ -1237,8 +1248,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
   TDCS_SuplaPingServer ps;
 
 #if defined(ESP8266)
-  ps.now.tv_sec = 0;
-  ps.now.tv_usec = 0;
+  unsigned int time = system_get_time();
+  ps.now.tv_sec = time / 1000000;
+  ps.now.tv_usec = time % 1000000;
 #elif defined(__AVR__)
   ps.now.tv_sec[0] = 0;
   ps.now.tv_sec[1] = 0;

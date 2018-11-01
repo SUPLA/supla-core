@@ -481,7 +481,7 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
 
   const char sql[] =
       "CALL  "
-      "`supla_add_iodevice`(?,?,unhex(?),unhex(?),?,unhex(?),?,?,"
+      "`supla_add_iodevice`(?,?,unhex(?),unhex(?),?,unhex(?),?,?,?,?,"
       "unhex(?),?,@id)";
 
   DeviceID = add_by_proc_call(sql, pbind, 12);
@@ -1103,9 +1103,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     unsigned long text_param1_size = 0;
     unsigned long text_param2_size = 0;
 
-    my_bool caption_is_null;
-    my_bool text_param1_is_null;
-    my_bool text_param2_is_null;
+    my_bool caption_is_null = true;
+    my_bool text_param1_is_null = true;
+    my_bool text_param2_is_null = true;
 
     char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
 
