@@ -1103,9 +1103,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     unsigned long text_param1_size = 0;
     unsigned long text_param2_size = 0;
 
-    my_bool caption_is_null;
-    my_bool text_param1_is_null;
-    my_bool text_param2_is_null;
+    my_bool caption_is_null = true;
+    my_bool text_param1_is_null = true;
+    my_bool text_param2_is_null = true;
 
     char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
 
