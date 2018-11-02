@@ -480,7 +480,7 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(TAndroidSup
     
     char currency[4];
     memcpy(currency, em_ev->currency, 3);
-    currency[3] = 0;
+    currency[sizeof(currency)-1] = 0;
     
     jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue");
     jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IIIILjava/lang/String;)V");
@@ -506,18 +506,22 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(TAndroidSup
 jobject supla_android_client_impulsecountervalue_to_jobject(TAndroidSuplaClient *asc, JNIEnv* env, TSC_ImpulseCounter_ExtendedValue *ic_ev) {
     
     jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelImpulseCounterValue");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(JJIILjava/lang/String;)V");
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IJJIILjava/lang/String;Ljava/lang/String;)V");
     
     char currency[4];
     memcpy(currency, ic_ev->currency, 3);
-    currency[3] = 0;
+    currency[sizeof(currency)-1] = 0;
+    
+    ic_ev->custom_unit[sizeof(ic_ev->custom_unit)-1] = 0;
     
     return (*env)->NewObject(env,cls, methodID,
-                                        ic_ev->counter,
-                                        ic_ev->calculated_value,
-                                        ic_ev->total_cost,
-                                        ic_ev->price_per_unit,
-                                        (*env)->NewStringUTF(env, currency));
+                             ic_ev->impulses_per_unit,
+                             ic_ev->counter,
+                             ic_ev->calculated_value,
+                             ic_ev->total_cost,
+                             ic_ev->price_per_unit,
+                             (*env)->NewStringUTF(env, currency),
+                             (*env)->NewStringUTF(env, ic_ev->custom_unit));
 }
 
 jobject supla_android_client_channelextendedvalue_to_jobject(void *_suplaclient, void *user_data, TSuplaChannelExtendedValue *channel_extendedvalue) {
