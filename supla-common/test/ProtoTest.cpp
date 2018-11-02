@@ -93,7 +93,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(62, sizeof(TElectricityMeter_Measurement));
   ASSERT_EQ(429, sizeof(TElectricityMeter_ExtendedValue));
   ASSERT_EQ(5, sizeof(TElectricityMeter_Value));
-  ASSERT_EQ(32, sizeof(TSC_ImpulseCounter_ExtendedValue));
+  ASSERT_EQ(40, sizeof(TSC_ImpulseCounter_ExtendedValue));
   ASSERT_EQ(8, sizeof(TSC_ImpulseCounter_Value));
   ASSERT_EQ(320, sizeof(TCS_SuperUserAuthorizationRequest));
   ASSERT_EQ(144, sizeof(TCS_DeviceCalCfgRequest));

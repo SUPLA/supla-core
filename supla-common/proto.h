@@ -969,6 +969,7 @@ typedef struct {
   char currency[3];
   char custom_unit[9];  // UTF8 including the terminating null byte ('\0')
 
+  _supla_int_t impulses_per_unit;
   unsigned _supla_int64_t counter;
   _supla_int64_t calculated_value;   // * 0.001
 } TSC_ImpulseCounter_ExtendedValue;  // v. >= 10
