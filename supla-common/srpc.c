@@ -1740,7 +1740,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelextendedvalue_pack_update(
 
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE,
                          (char *)extendedvalue_pack,
-                         extendedvalue_pack->pack_size);
+                         sizeof(TSC_SuplaChannelExtendedValuePack) -
+                             SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE +
+                             extendedvalue_pack->pack_size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc) {
