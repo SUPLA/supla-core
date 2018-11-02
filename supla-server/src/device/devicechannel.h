@@ -116,6 +116,7 @@ class supla_device_channel {
   std::list<int> slave_channel(void);
   supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
+  bool converValueToExtended(void);
 };
 
 class supla_device_channels {
@@ -149,7 +150,8 @@ class supla_device_channels {
                               char *brightness);
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
-  void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+  void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+                         bool *converted2extended);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);

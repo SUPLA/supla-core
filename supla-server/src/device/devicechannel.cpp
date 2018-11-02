@@ -527,6 +527,37 @@ supla_device_channel::getElectricityMeasurement(void) {
   return NULL;
 }
 
+bool supla_device_channel::converValueToExtended(void) {
+	bool result = false;
+
+	switch(getType()) {
+	case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+		switch(getFunc()) {
+		case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+		case SUPLA_CHANNELFNC_GAS_METER:
+		case SUPLA_CHANNELFNC_WATER_METER:
+		    char value[SUPLA_CHANNELVALUE_SIZE];
+		    TSuplaChannelExtendedValue ev;
+		    TSC_ImpulseCounter_ExtendedValue ic_ev;
+		    memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+
+		    getValue(value);
+
+		    TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value*)value;
+		    ic_ev.counter = ic_val->counter;
+
+		    srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
+
+		    setExtendedValue(&ev);
+		    result = true;
+			break;
+		}
+		break;
+	}
+
+  return result;
+}
+
 // ---------------------------------------------
 // ---------------------------------------------
 // ---------------------------------------------
@@ -724,14 +755,26 @@ bool supla_device_channels::get_channel_char_value(int ChannelID, char *Value) {
 }
 
 void supla_device_channels::set_channel_value(
-    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]) {
+    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+    bool *converted2extended) {
   if (ChannelID == 0) return;
+
+  if (converted2extended) {
+	  *converted2extended = false;
+  }
 
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
 
-  if (channel) channel->setValue(value);
+  if (channel) {
+	  channel->setValue(value);
+	  if (channel->converValueToExtended()) {
+		  if (converted2extended) {
+			  *converted2extended = true;
+		  }
+	  }
+  }
 
   safe_array_unlock(arr);
 }
@@ -823,11 +866,11 @@ void supla_device_channels::set_channels_value(
   if (schannel_b != NULL) {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_b[a].Number),
-                        schannel_b[a].value);
+                        schannel_b[a].value, NULL);
   } else {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_c[a].Number),
-                        schannel_c[a].value);
+                        schannel_c[a].value, NULL);
   }
 }
 
@@ -990,9 +1033,9 @@ void supla_device_channels::get_electricity_measurement(void *emarr) {
   safe_array_unlock(arr);
 }
 
-bool supla_device_channels::calcfg_request(
-    void *srpc, int SenderID, bool SuperUserAuthorized,
-    TCS_DeviceCalCfgRequest *request) {
+bool supla_device_channels::calcfg_request(void *srpc, int SenderID,
+                                           bool SuperUserAuthorized,
+                                           TCS_DeviceCalCfgRequest *request) {
   bool result = false;
   safe_array_lock(arr);
 

@@ -307,8 +307,13 @@ void supla_device::on_device_channel_value_changed(
   int ChannelId = channels->get_channel_id(value->ChannelNumber);
 
   if (ChannelId != 0) {
-    channels->set_channel_value(ChannelId, value->value);
+    bool converted2extended;
+    channels->set_channel_value(ChannelId, value->value, &converted2extended);
     getUser()->on_channel_value_changed(getID(), ChannelId);
+
+    if (converted2extended) {
+      getUser()->on_channel_value_changed(getID(), ChannelId, true);
+    }
   }
 }
 
