@@ -24,6 +24,9 @@ namespace {
 #define SRPC_QUEUE_SIZE 10
 #define MAX_CALL_ID 10000
 #define BUFFER_MAX_SIZE 131072
+#define DECLARE_WITH_RANDOM(TYPE, VAR) \
+  TYPE VAR;                            \
+  set_random(&VAR, sizeof(TYPE));
 
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
@@ -48,6 +51,8 @@ class SrpcTest : public ::testing::Test {
   unsigned _supla_int_t cr_call_type;
   unsigned char cr_proto_version;
   TsrpcReceivedData cr_rd;
+
+  void set_random(void *ptr, unsigned int size);
 
  public:
   virtual void SetUp();
@@ -167,6 +172,12 @@ void SrpcTest::srpcCallAllowed(int min_version, int *calls) {
 
   srpc_free(srpc);
   srpc = NULL;
+}
+
+void SrpcTest::set_random(void *ptr, unsigned int size) {
+  for (unsigned int a = 0; a < size; a++) {
+    ((char *)ptr)[a] = rand_r(&seed);
+  }
 }
 
 //---------------------------------------------------------
@@ -698,30 +709,11 @@ TEST_F(SrpcTest, call_registerdevice) {
   ASSERT_FALSE(srpc == NULL);
 
   int a;
-  TDS_SuplaRegisterDevice registerdevice;
-  registerdevice.LocationID = rand_r(&seed);
-
-  for (a = 0; a < SUPLA_LOCATION_PWD_MAXSIZE; a++) {
-    registerdevice.LocationPWD[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_GUID_SIZE; a++) {
-    registerdevice.GUID[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_DEVICE_NAME_MAXSIZE; a++) {
-    registerdevice.Name[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SOFTVER_MAXSIZE; a++) {
-    registerdevice.SoftVer[a] = rand_r(&seed);
-  }
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice, registerdevice);
 
   for (a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
     registerdevice.channels[a].Number = a;
     registerdevice.channels[a].Type = a;
-    memset(registerdevice.channels[a].value, rand_r(&seed),
-           SUPLA_CHANNELVALUE_SIZE);
   }
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
@@ -743,14 +735,12 @@ TEST_F(SrpcTest, call_registerdevice_one_channel) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice, registerdevice);
+
   registerdevice.LocationID = 1;
 
   registerdevice.channels[0].Number = 1;
   registerdevice.channels[0].Type = 1;
-  memset(registerdevice.channels[0].value, rand_r(&seed),
-         SUPLA_CHANNELVALUE_SIZE);
 
   registerdevice.channel_count = 1;
 
@@ -773,11 +763,9 @@ TEST_F(SrpcTest, call_registerdevice_without_channels) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice));
-  registerdevice.LocationID = 1;
-  registerdevice.SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = rand_r(&seed);
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice, registerdevice);
 
+  registerdevice.LocationID = 1;
   registerdevice.channel_count = 0;
 
   ASSERT_GT(srpc_ds_async_registerdevice(srpc, &registerdevice), 0);
@@ -799,8 +787,7 @@ TEST_F(SrpcTest, call_registerdevice_wrong_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
 
@@ -815,34 +802,7 @@ TEST_F(SrpcTest, call_registerdevice_b) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  int a;
-  TDS_SuplaRegisterDevice_B registerdevice;
-  registerdevice.LocationID = rand_r(&seed);
-
-  for (a = 0; a < SUPLA_LOCATION_PWD_MAXSIZE; a++) {
-    registerdevice.LocationPWD[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_GUID_SIZE; a++) {
-    registerdevice.GUID[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_DEVICE_NAME_MAXSIZE; a++) {
-    registerdevice.Name[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SOFTVER_MAXSIZE; a++) {
-    registerdevice.SoftVer[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
-    registerdevice.channels[a].Number = rand_r(&seed);
-    registerdevice.channels[a].Type = rand_r(&seed);
-    registerdevice.channels[a].FuncList = rand_r(&seed);
-    registerdevice.channels[a].Default = rand_r(&seed);
-    memset(registerdevice.channels[a].value, rand_r(&seed),
-           SUPLA_CHANNELVALUE_SIZE);
-  }
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_B, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
 
@@ -863,15 +823,11 @@ TEST_F(SrpcTest, call_registerdevice_b_one_channel) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_B registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_B));
-  registerdevice.LocationID = 1;
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_B, registerdevice);
 
+  registerdevice.LocationID = 1;
   registerdevice.channels[0].Number = 1;
   registerdevice.channels[0].Type = 1;
-  memset(registerdevice.channels[0].value, rand_r(&seed),
-         SUPLA_CHANNELVALUE_SIZE);
-
   registerdevice.channel_count = 1;
 
   ASSERT_GT(srpc_ds_async_registerdevice_b(srpc, &registerdevice), 0);
@@ -893,11 +849,9 @@ TEST_F(SrpcTest, call_registerdevice_b_without_channels) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_B registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_B));
-  registerdevice.LocationID = 1;
-  registerdevice.SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = rand_r(&seed);
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_B, registerdevice);
 
+  registerdevice.LocationID = 1;
   registerdevice.channel_count = 0;
 
   ASSERT_GT(srpc_ds_async_registerdevice_b(srpc, &registerdevice), 0);
@@ -919,8 +873,7 @@ TEST_F(SrpcTest, call_registerdevice_b_wrong_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_B registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_B));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_B, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
 
@@ -935,37 +888,8 @@ TEST_F(SrpcTest, call_registerdevice_c) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  int a;
-  TDS_SuplaRegisterDevice_C registerdevice;
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_C, registerdevice);
   registerdevice.LocationID = 1;
-
-  for (a = 0; a < SUPLA_LOCATION_PWD_MAXSIZE; a++) {
-    registerdevice.LocationPWD[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_GUID_SIZE; a++) {
-    registerdevice.GUID[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_DEVICE_NAME_MAXSIZE; a++) {
-    registerdevice.Name[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SOFTVER_MAXSIZE; a++) {
-    registerdevice.SoftVer[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SERVER_NAME_MAXSIZE; a++) {
-    registerdevice.ServerName[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
-    registerdevice.channels[a].Number = rand_r(&seed);
-    registerdevice.channels[a].Type = rand_r(&seed);
-    registerdevice.channels[a].FuncList = rand_r(&seed);
-    registerdevice.channels[a].Default = rand_r(&seed);
-    memset(registerdevice.channels[a].value, a, SUPLA_CHANNELVALUE_SIZE);
-  }
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
 
@@ -986,16 +910,11 @@ TEST_F(SrpcTest, call_registerdevice_c_one_channel) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_C registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_C));
-  registerdevice.LocationID = 1;
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_C, registerdevice);
 
+  registerdevice.LocationID = 1;
   registerdevice.channels[0].Number = 1;
   registerdevice.channels[0].Type = 1;
-  memset(registerdevice.channels[0].value, rand_r(&seed),
-         SUPLA_CHANNELVALUE_SIZE);
-
-  registerdevice.ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = rand_r(&seed);
   registerdevice.channel_count = 1;
 
   ASSERT_GT(srpc_ds_async_registerdevice_c(srpc, &registerdevice), 0);
@@ -1017,11 +936,9 @@ TEST_F(SrpcTest, call_registerdevice_c_without_channels) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_C registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_C));
-  registerdevice.LocationID = 1;
-  registerdevice.ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = rand_r(&seed);
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_C, registerdevice);
 
+  registerdevice.LocationID = 1;
   registerdevice.channel_count = 0;
 
   ASSERT_GT(srpc_ds_async_registerdevice_c(srpc, &registerdevice), 0);
@@ -1043,8 +960,7 @@ TEST_F(SrpcTest, call_registerdevice_c_wrong_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_C registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_C));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_C, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
 
@@ -1059,40 +975,7 @@ TEST_F(SrpcTest, call_registerdevice_d) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  int a;
-  TDS_SuplaRegisterDevice_D registerdevice;
-
-  for (a = 0; a < SUPLA_EMAIL_MAXSIZE; a++) {
-    registerdevice.Email[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_AUTHKEY_SIZE; a++) {
-    registerdevice.AuthKey[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_GUID_SIZE; a++) {
-    registerdevice.GUID[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_DEVICE_NAME_MAXSIZE; a++) {
-    registerdevice.Name[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SOFTVER_MAXSIZE; a++) {
-    registerdevice.SoftVer[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SERVER_NAME_MAXSIZE; a++) {
-    registerdevice.ServerName[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
-    registerdevice.channels[a].Number = rand_r(&seed);
-    registerdevice.channels[a].Type = rand_r(&seed);
-    registerdevice.channels[a].FuncList = rand_r(&seed);
-    registerdevice.channels[a].Default = rand_r(&seed);
-    memset(registerdevice.channels[a].value, a, SUPLA_CHANNELVALUE_SIZE);
-  }
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_D, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
 
@@ -1113,15 +996,10 @@ TEST_F(SrpcTest, call_registerdevice_d_one_channel) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_D registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_D));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_D, registerdevice);
 
   registerdevice.channels[0].Number = 1;
   registerdevice.channels[0].Type = 1;
-  memset(registerdevice.channels[0].value, rand_r(&seed),
-         SUPLA_CHANNELVALUE_SIZE);
-
-  registerdevice.ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = rand_r(&seed);
   registerdevice.channel_count = 1;
 
   ASSERT_GT(srpc_ds_async_registerdevice_d(srpc, &registerdevice), 0);
@@ -1143,11 +1021,7 @@ TEST_F(SrpcTest, call_registerdevice_d_without_channels) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_D registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_D));
-
-  registerdevice.ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = rand_r(&seed);
-
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_D, registerdevice);
   registerdevice.channel_count = 0;
 
   ASSERT_GT(srpc_ds_async_registerdevice_d(srpc, &registerdevice), 0);
@@ -1169,8 +1043,7 @@ TEST_F(SrpcTest, call_registerdevice_d_wrong_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_D registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_D));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_D, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
 
@@ -1185,44 +1058,7 @@ TEST_F(SrpcTest, call_registerdevice_e) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  int a;
-  TDS_SuplaRegisterDevice_E registerdevice;
-
-  for (a = 0; a < SUPLA_EMAIL_MAXSIZE; a++) {
-    registerdevice.Email[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_AUTHKEY_SIZE; a++) {
-    registerdevice.AuthKey[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_GUID_SIZE; a++) {
-    registerdevice.GUID[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_DEVICE_NAME_MAXSIZE; a++) {
-    registerdevice.Name[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SOFTVER_MAXSIZE; a++) {
-    registerdevice.SoftVer[a] = rand_r(&seed);
-  }
-
-  for (a = 0; a < SUPLA_SERVER_NAME_MAXSIZE; a++) {
-    registerdevice.ServerName[a] = rand_r(&seed);
-  }
-
-  registerdevice.Flags = rand_r(&seed);
-  registerdevice.ManufacturerID = rand_r(&seed);
-
-  for (a = 0; a < SUPLA_CHANNELMAXCOUNT; a++) {
-    registerdevice.channels[a].Number = rand_r(&seed);
-    registerdevice.channels[a].Type = rand_r(&seed);
-    registerdevice.channels[a].FuncList = rand_r(&seed);
-    registerdevice.channels[a].Default = rand_r(&seed);
-    registerdevice.channels[a].Flags = rand_r(&seed);
-    memset(registerdevice.channels[a].value, a, SUPLA_CHANNELVALUE_SIZE);
-  }
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_E, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT;
 
@@ -1243,15 +1079,10 @@ TEST_F(SrpcTest, call_registerdevice_e_one_channel) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_E registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_E));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_E, registerdevice);
 
   registerdevice.channels[0].Number = 1;
   registerdevice.channels[0].Type = 1;
-  memset(registerdevice.channels[0].value, rand_r(&seed),
-         SUPLA_CHANNELVALUE_SIZE);
-
-  registerdevice.ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = rand_r(&seed);
   registerdevice.channel_count = 1;
 
   ASSERT_GT(srpc_ds_async_registerdevice_e(srpc, &registerdevice), 0);
@@ -1273,10 +1104,7 @@ TEST_F(SrpcTest, call_registerdevice_e_without_channels) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_E registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_E));
-
-  registerdevice.ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = rand_r(&seed);
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_E, registerdevice);
 
   registerdevice.channel_count = 0;
 
@@ -1299,8 +1127,7 @@ TEST_F(SrpcTest, call_registerdevice_e_wrong_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_SuplaRegisterDevice_E registerdevice;
-  memset(&registerdevice, rand_r(&seed), sizeof(TDS_SuplaRegisterDevice_E));
+  DECLARE_WITH_RANDOM(TDS_SuplaRegisterDevice_E, registerdevice);
 
   registerdevice.channel_count = SUPLA_CHANNELMAXCOUNT + 1;
 
@@ -1315,8 +1142,7 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_SuplaRegisterDeviceResult result;
-  memset(&result, rand_r(&seed), sizeof(TSD_SuplaRegisterDeviceResult));
+  DECLARE_WITH_RANDOM(TSD_SuplaRegisterDeviceResult, result);
 
   result.result_code = 1;
   result.activity_timeout = 60;
@@ -1348,7 +1174,7 @@ TEST_F(SrpcTest, call_channel_value_changed) {
   ASSERT_FALSE(srpc == NULL);
 
   char value[SUPLA_CHANNELVALUE_SIZE];
-  memset(value, rand_r(&seed), SUPLA_CHANNELVALUE_SIZE);
+  set_random(value, SUPLA_CHANNELVALUE_SIZE);
 
   ASSERT_GT(srpc_ds_async_channel_value_changed(srpc, 1, value), 0);
   SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED, 32);
@@ -1373,8 +1199,7 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSuplaChannelExtendedValue ev;
-  memset(&ev, rand_r(&seed), sizeof(TSuplaChannelExtendedValue));
+  DECLARE_WITH_RANDOM(TSuplaChannelExtendedValue, ev);
 
   ASSERT_EQ(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
 
@@ -1387,8 +1212,8 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSuplaChannelExtendedValue ev;
-  memset(&ev, rand_r(&seed), sizeof(TSuplaChannelExtendedValue));
+  DECLARE_WITH_RANDOM(TSuplaChannelExtendedValue, ev);
+
   ev.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE + 1;
 
   ASSERT_EQ(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
@@ -1402,10 +1227,9 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_small_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSuplaChannelExtendedValue ev;
-  memset(&ev, rand_r(&seed), sizeof(TSuplaChannelExtendedValue));
+  DECLARE_WITH_RANDOM(TSuplaChannelExtendedValue, ev);
+
   ev.size = 1;
-  ev.value[0] = rand_r(&seed);
 
   ASSERT_GT(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
   SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, 30);
@@ -1426,10 +1250,9 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSuplaChannelExtendedValue ev;
-  memset(&ev, rand_r(&seed), sizeof(TSuplaChannelExtendedValue));
+  DECLARE_WITH_RANDOM(TSuplaChannelExtendedValue, ev);
+
   ev.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE;
-  memset(ev.value, rand_r(&seed), SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
   ASSERT_GT(srpc_ds_async_channel_extendedvalue_changed(srpc, 1, &ev), 0);
   SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED, 1053);
@@ -1453,8 +1276,7 @@ TEST_F(SrpcTest, call_sd_set_channel_value) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_SuplaChannelNewValue value;
-  memset(&value, rand_r(&seed), sizeof(TSD_SuplaChannelNewValue));
+  DECLARE_WITH_RANDOM(TSD_SuplaChannelNewValue, value);
 
   ASSERT_GT(srpc_sd_async_set_channel_value(srpc, &value), 0);
   SendAndReceive(SUPLA_SD_CALL_CHANNEL_SET_VALUE, 40);
@@ -1473,8 +1295,7 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_SuplaChannelNewValue value;
-  memset(&value, rand_r(&seed), sizeof(TSD_SuplaChannelNewValue));
+  DECLARE_WITH_RANDOM(TSD_SuplaChannelNewValue, value);
 
   ASSERT_GT(srpc_ds_async_set_channel_result(srpc, 3, 2, 1), 0);
   SendAndReceive(SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT, 29);
@@ -1498,8 +1319,7 @@ TEST_F(SrpcTest, call_get_firmware_update_url) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_FirmwareUpdateParams params;
-  memset(&params, rand_r(&seed), sizeof(TDS_FirmwareUpdateParams));
+  DECLARE_WITH_RANDOM(TDS_FirmwareUpdateParams, params);
 
   ASSERT_GT(srpc_sd_async_get_firmware_update_url(srpc, &params), 0);
   SendAndReceive(SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL, 40);
@@ -1518,8 +1338,8 @@ TEST_F(SrpcTest, call_get_firmware_update_url_result_exists) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_FirmwareUpdate_UrlResult result;
-  memset(&result, rand_r(&seed), sizeof(TSD_FirmwareUpdate_UrlResult));
+  DECLARE_WITH_RANDOM(TSD_FirmwareUpdate_UrlResult, result);
+
   result.exists = 1;
 
   ASSERT_GT(srpc_sd_async_get_firmware_update_url_result(srpc, &result), 0);
@@ -1539,8 +1359,8 @@ TEST_F(SrpcTest, call_get_firmware_update_url_result_not_exists) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_FirmwareUpdate_UrlResult result;
-  memset(&result, rand_r(&seed), sizeof(TSD_FirmwareUpdate_UrlResult));
+  DECLARE_WITH_RANDOM(TSD_FirmwareUpdate_UrlResult, result);
+
   result.exists = 0;
 
   ASSERT_GT(srpc_sd_async_get_firmware_update_url_result(srpc, &result), 0);
@@ -1563,8 +1383,8 @@ TEST_F(SrpcTest, call_sd_device_calcfg_request_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_DeviceCalCfgRequest request;
-  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalCfgRequest));
+  DECLARE_WITH_RANDOM(TSD_DeviceCalCfgRequest, request);
+
   request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sd_async_device_calcfg_request(srpc, &request), 0);
@@ -1578,8 +1398,8 @@ TEST_F(SrpcTest, call_sd_device_calcfg_request_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_DeviceCalCfgRequest request;
-  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalCfgRequest));
+  DECLARE_WITH_RANDOM(TSD_DeviceCalCfgRequest, request);
+
   request.DataSize = 0;
 
   ASSERT_GT(srpc_sd_async_device_calcfg_request(srpc, &request), 0);
@@ -1601,8 +1421,8 @@ TEST_F(SrpcTest, call_sd_device_calcfg_request_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSD_DeviceCalCfgRequest request;
-  memset(&request, rand_r(&seed), sizeof(TSD_DeviceCalCfgRequest));
+  DECLARE_WITH_RANDOM(TSD_DeviceCalCfgRequest, request);
+
   request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
 
   ASSERT_GT(srpc_sd_async_device_calcfg_request(srpc, &request), 0);
@@ -1623,8 +1443,8 @@ TEST_F(SrpcTest, call_ds_device_calcfg_result_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_DeviceCalCfgResult result;
-  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalCfgResult));
+  DECLARE_WITH_RANDOM(TDS_DeviceCalCfgResult, result);
+
   result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_ds_async_device_calcfg_result(srpc, &result), 0);
@@ -1638,8 +1458,8 @@ TEST_F(SrpcTest, call_ds_device_calcfg_result_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_DeviceCalCfgResult result;
-  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalCfgResult));
+  DECLARE_WITH_RANDOM(TDS_DeviceCalCfgResult, result);
+
   result.DataSize = 0;
 
   ASSERT_GT(srpc_ds_async_device_calcfg_result(srpc, &result), 0);
@@ -1661,8 +1481,8 @@ TEST_F(SrpcTest, call_ds_device_calcfg_result_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TDS_DeviceCalCfgResult result;
-  memset(&result, rand_r(&seed), sizeof(TDS_DeviceCalCfgResult));
+  DECLARE_WITH_RANDOM(TDS_DeviceCalCfgResult, result);
+
   result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
 
   ASSERT_GT(srpc_ds_async_device_calcfg_result(srpc, &result), 0);
@@ -1687,8 +1507,7 @@ TEST_F(SrpcTest, call_registerclient) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_SuplaRegisterClient registerclient;
-  memset(&registerclient, rand_r(&seed), sizeof(TCS_SuplaRegisterClient));
+  DECLARE_WITH_RANDOM(TCS_SuplaRegisterClient, registerclient);
 
   ASSERT_GT(srpc_cs_async_registerclient(srpc, &registerclient), 0);
   SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT, 298);
@@ -1707,8 +1526,7 @@ TEST_F(SrpcTest, call_registerclient_b) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_SuplaRegisterClient_B registerclient_b;
-  memset(&registerclient_b, rand_r(&seed), sizeof(TCS_SuplaRegisterClient_B));
+  DECLARE_WITH_RANDOM(TCS_SuplaRegisterClient_B, registerclient_b);
 
   ASSERT_GT(srpc_cs_async_registerclient_b(srpc, &registerclient_b), 0);
   SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_B, 363);
@@ -1727,8 +1545,7 @@ TEST_F(SrpcTest, call_registerclient_c) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_SuplaRegisterClient_C registerclient_c;
-  memset(&registerclient_c, rand_r(&seed), sizeof(TCS_SuplaRegisterClient_C));
+  DECLARE_WITH_RANDOM(TCS_SuplaRegisterClient_C, registerclient_c);
 
   ASSERT_GT(srpc_cs_async_registerclient_c(srpc, &registerclient_c), 0);
   SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_C, 598);
@@ -1747,8 +1564,7 @@ TEST_F(SrpcTest, call_registerclient_result) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaRegisterClientResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_SuplaRegisterClientResult));
+  DECLARE_WITH_RANDOM(TSC_SuplaRegisterClientResult, result);
 
   ASSERT_GT(srpc_sc_async_registerclient_result(srpc, &result), 0);
   SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT, 42);
@@ -1767,8 +1583,7 @@ TEST_F(SrpcTest, call_registerclient_result_b) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaRegisterClientResult_B result;
-  memset(&result, rand_r(&seed), sizeof(TSC_SuplaRegisterClientResult_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaRegisterClientResult_B, result);
 
   ASSERT_GT(srpc_sc_async_registerclient_result_b(srpc, &result), 0);
   SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B, 50);
@@ -1791,8 +1606,8 @@ TEST_F(SrpcTest, call_location_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocation location;
-  memset(&location, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocation, location);
+
   location.CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sc_async_location_update(srpc, &location), 0);
@@ -1806,8 +1621,8 @@ TEST_F(SrpcTest, call_location_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocation location;
-  memset(&location, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocation, location);
+
   location.CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE;
 
   ASSERT_GT(srpc_sc_async_location_update(srpc, &location), 0);
@@ -1827,8 +1642,8 @@ TEST_F(SrpcTest, call_location_update_without_caption) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocation location;
-  memset(&location, rand_r(&seed), sizeof(TSC_SuplaLocation));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocation, location);
+
   location.CaptionSize = 0;
 
   ASSERT_GT(srpc_sc_async_location_update(srpc, &location), 0);
@@ -1849,8 +1664,8 @@ TEST_F(SrpcTest, call_locationpack_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocationPack location_pack;
-  memset(&location_pack, rand_r(&seed), sizeof(TSC_SuplaLocationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocationPack, location_pack);
+
   location_pack.count = SUPLA_LOCATIONPACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_locationpack_update(srpc, &location_pack), 0);
@@ -1864,8 +1679,8 @@ TEST_F(SrpcTest, call_locationpack_update_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocationPack location_pack;
-  memset(&location_pack, rand_r(&seed), sizeof(TSC_SuplaLocationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocationPack, location_pack);
+
   location_pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_locationpack_update(srpc, &location_pack), 0);
@@ -1879,8 +1694,8 @@ TEST_F(SrpcTest, call_locationpack_update_with_caption_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocationPack location_pack;
-  memset(&location_pack, rand_r(&seed), sizeof(TSC_SuplaLocationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocationPack, location_pack);
+
   location_pack.count = SUPLA_LOCATIONPACK_MAXCOUNT;
 
   location_pack.items[0].CaptionSize = SUPLA_LOCATION_CAPTION_MAXSIZE + 1;
@@ -1915,8 +1730,8 @@ TEST_F(SrpcTest, call_locationpack_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaLocationPack location_pack;
-  memset(&location_pack, rand_r(&seed), sizeof(TSC_SuplaLocationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaLocationPack, location_pack);
+
   location_pack.count = SUPLA_LOCATIONPACK_MAXCOUNT;
 
   for (int a = 0; a < SUPLA_LOCATIONPACK_MAXCOUNT; a++) {
@@ -1944,8 +1759,8 @@ TEST_F(SrpcTest, call_channel_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel, channel);
+
   channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sc_async_channel_update(srpc, &channel), 0);
@@ -1959,8 +1774,8 @@ TEST_F(SrpcTest, call_channel_update_with_minimum_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel, channel);
+
   channel.CaptionSize = 0;
 
   ASSERT_GT(srpc_sc_async_channel_update(srpc, &channel), 0);
@@ -1982,8 +1797,8 @@ TEST_F(SrpcTest, call_channel_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel, channel);
+
   channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
 
   ASSERT_GT(srpc_sc_async_channel_update(srpc, &channel), 0);
@@ -2006,8 +1821,8 @@ TEST_F(SrpcTest, call_channel_update_b_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel_B channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel_B, channel);
+
   channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sc_async_channel_update_b(srpc, &channel), 0);
@@ -2021,8 +1836,8 @@ TEST_F(SrpcTest, call_channel_update_b_with_minimum_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel_B channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel_B, channel);
+
   channel.CaptionSize = 0;
 
   ASSERT_GT(srpc_sc_async_channel_update_b(srpc, &channel), 0);
@@ -2044,8 +1859,8 @@ TEST_F(SrpcTest, call_channel_update_b_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel_B channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel_B, channel);
+
   channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
 
   ASSERT_GT(srpc_sc_async_channel_update_b(srpc, &channel), 0);
@@ -2068,8 +1883,8 @@ TEST_F(SrpcTest, call_channel_update_c_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel_C channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel_C, channel);
+
   channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sc_async_channel_update_c(srpc, &channel), 0);
@@ -2083,8 +1898,8 @@ TEST_F(SrpcTest, call_channel_update_c_with_minimum_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel_C channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel_C, channel);
+
   channel.CaptionSize = 0;
 
   ASSERT_GT(srpc_sc_async_channel_update_c(srpc, &channel), 0);
@@ -2106,8 +1921,8 @@ TEST_F(SrpcTest, call_channel_update_c_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannel_C channel;
-  memset(&channel, rand_r(&seed), sizeof(TSC_SuplaChannel_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannel_C, channel);
+
   channel.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
 
   ASSERT_GT(srpc_sc_async_channel_update_c(srpc, &channel), 0);
@@ -2132,8 +1947,8 @@ TEST_F(SrpcTest, call_channelpack_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update(srpc, &channel_pack), 0);
@@ -2147,8 +1962,8 @@ TEST_F(SrpcTest, call_channelpack_update_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack, channel_pack);
+
   channel_pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update(srpc, &channel_pack), 0);
@@ -2162,8 +1977,8 @@ TEST_F(SrpcTest, call_channelpack_update_with_caption_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
 
   channel_pack.items[0].CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
@@ -2196,8 +2011,8 @@ TEST_F(SrpcTest, call_channelpack_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
 
   for (int a = 0; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
@@ -2223,8 +2038,8 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_C channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_C, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
@@ -2238,8 +2053,8 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_C channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_C, channel_pack);
+
   channel_pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
@@ -2253,8 +2068,8 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_caption_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_C channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_C, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
 
   channel_pack.items[0].CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
@@ -2289,8 +2104,8 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_C channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_C));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_C, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
 
   for (int a = 0; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
@@ -2309,7 +2124,6 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_full_size) {
   srpc = NULL;
 }
 
-
 //---------------------------------------------------------
 
 TEST_F(SrpcTest, call_channelpack_update_b_with_over_size) {
@@ -2317,8 +2131,8 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_B channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_B, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update_b(srpc, &channel_pack), 0);
@@ -2332,8 +2146,8 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_B channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_B, channel_pack);
+
   channel_pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelpack_update_b(srpc, &channel_pack), 0);
@@ -2347,8 +2161,8 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_caption_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_B channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_B, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
 
   channel_pack.items[0].CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE + 1;
@@ -2383,8 +2197,8 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelPack_B channel_pack;
-  memset(&channel_pack, rand_r(&seed), sizeof(TSC_SuplaChannelPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelPack_B, channel_pack);
+
   channel_pack.count = SUPLA_CHANNELPACK_MAXCOUNT;
 
   for (int a = 0; a < SUPLA_CHANNELPACK_MAXCOUNT; a++) {
@@ -2412,8 +2226,7 @@ TEST_F(SrpcTest, call_channel_value_update) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelValue value;
-  memset(&value, rand_r(&seed), sizeof(TSC_SuplaChannelValue));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelValue, value);
 
   ASSERT_GT(srpc_sc_async_channel_value_update(srpc, &value), 0);
   SendAndReceive(SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE, 45);
@@ -2436,8 +2249,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack, pack);
+
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
@@ -2451,8 +2264,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack, pack);
+
   pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_pack_update(srpc, &pack), 0);
@@ -2466,8 +2279,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_caption_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack, pack);
+
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
 
   pack.items[0].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE + 1;
@@ -2502,8 +2315,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack, pack);
+
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
 
   for (int a = 0; a < SUPLA_CHANNELGROUP_PACK_MAXCOUNT; a++) {
@@ -2531,8 +2344,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack_B pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack_B, pack);
+
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_pack_update_b(srpc, &pack), 0);
@@ -2546,8 +2359,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack_B pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack_B, pack);
+
   pack.count = 0;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_pack_update_b(srpc, &pack), 0);
@@ -2561,8 +2374,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_caption_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack_B pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack_B, pack);
+
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
 
   pack.items[0].CaptionSize = SUPLA_CHANNELGROUP_CAPTION_MAXSIZE + 1;
@@ -2597,8 +2410,8 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupPack_B pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupPack_B));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupPack_B, pack);
+
   pack.count = SUPLA_CHANNELGROUP_PACK_MAXCOUNT;
 
   for (int a = 0; a < SUPLA_CHANNELGROUP_PACK_MAXCOUNT; a++) {
@@ -2626,8 +2439,8 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupRelationPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupRelationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupRelationPack, pack);
+
   pack.count = SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
@@ -2641,8 +2454,8 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupRelationPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupRelationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupRelationPack, pack);
+
   pack.count = SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
@@ -2656,8 +2469,8 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupRelationPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupRelationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupRelationPack, pack);
+
   pack.count = SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT;
 
   ASSERT_GT(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
@@ -2677,8 +2490,8 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelGroupRelationPack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelGroupRelationPack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelGroupRelationPack, pack);
+
   pack.count = 1;
 
   ASSERT_GT(srpc_sc_async_channelgroup_relation_pack_update(srpc, &pack), 0);
@@ -2704,8 +2517,8 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
+
   pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
@@ -2719,8 +2532,8 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
+
   pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;
 
   ASSERT_EQ(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
@@ -2734,8 +2547,8 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
+
   pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT;
 
   ASSERT_GT(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
@@ -2755,8 +2568,8 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_minimum_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
+
   pack.count = 1;
 
   ASSERT_GT(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
@@ -2782,8 +2595,8 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_over_count) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelExtendedValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelExtendedValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelExtendedValuePack, pack);
+
   pack.count = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT + 1;
   pack.pack_size = 1;
 
@@ -2798,8 +2611,8 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_zero_count) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelExtendedValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelExtendedValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelExtendedValuePack, pack);
+
   pack.count = 0;
   pack.pack_size = 1;
 
@@ -2814,8 +2627,8 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelExtendedValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelExtendedValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelExtendedValuePack, pack);
+
   pack.count = 1;
   pack.pack_size = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE + 1;
 
@@ -2830,8 +2643,8 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelExtendedValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelExtendedValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelExtendedValuePack, pack);
+
   pack.count = 1;
   pack.pack_size = 0;
 
@@ -2846,14 +2659,14 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaChannelExtendedValuePack pack;
-  memset(&pack, rand_r(&seed), sizeof(TSC_SuplaChannelExtendedValuePack));
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelExtendedValuePack, pack);
+
   pack.count = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT;
   pack.pack_size = SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE;
 
   ASSERT_GT(srpc_sc_async_channelextendedvalue_pack_update(srpc, &pack), 0);
 
-  SendAndReceive(SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE, 10213);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE, 10225);
 
   ASSERT_FALSE(cr_rd.data.sc_channelextendedvalue_pack == NULL);
 
@@ -2892,8 +2705,8 @@ TEST_F(SrpcTest, call_event_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaEvent event;
-  memset(&event, rand_r(&seed), sizeof(TSC_SuplaEvent));
+  DECLARE_WITH_RANDOM(TSC_SuplaEvent, event);
+
   event.SenderNameSize = 0;
 
   ASSERT_GT(srpc_sc_async_event(srpc, &event), 0);
@@ -2913,8 +2726,8 @@ TEST_F(SrpcTest, call_event_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaEvent event;
-  memset(&event, rand_r(&seed), sizeof(TSC_SuplaEvent));
+  DECLARE_WITH_RANDOM(TSC_SuplaEvent, event);
+
   event.SenderNameSize = SUPLA_SENDER_NAME_MAXSIZE;
 
   ASSERT_GT(srpc_sc_async_event(srpc, &event), 0);
@@ -2933,8 +2746,8 @@ TEST_F(SrpcTest, call_event_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuplaEvent event;
-  memset(&event, rand_r(&seed), sizeof(TSC_SuplaEvent));
+  DECLARE_WITH_RANDOM(TSC_SuplaEvent, event);
+
   event.SenderNameSize = SUPLA_SENDER_NAME_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sc_async_event(srpc, &event), 0);
@@ -2952,8 +2765,7 @@ TEST_F(SrpcTest, call_cs_set_channel_value) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_SuplaChannelNewValue value;
-  memset(&value, rand_r(&seed), sizeof(TCS_SuplaChannelNewValue));
+  DECLARE_WITH_RANDOM(TCS_SuplaChannelNewValue, value);
 
   ASSERT_GT(srpc_cs_async_set_channel_value(srpc, &value), 0);
   SendAndReceive(SUPLA_CS_CALL_CHANNEL_SET_VALUE, 32);
@@ -2972,8 +2784,7 @@ TEST_F(SrpcTest, call_cs_set_channel_value_b) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_SuplaChannelNewValue_B value;
-  memset(&value, rand_r(&seed), sizeof(TCS_SuplaChannelNewValue_B));
+  DECLARE_WITH_RANDOM(TCS_SuplaChannelNewValue_B, value);
 
   ASSERT_GT(srpc_cs_async_set_channel_value_b(srpc, &value), 0);
   SendAndReceive(SUPLA_CS_CALL_CHANNEL_SET_VALUE_B, 35);
@@ -3012,8 +2823,8 @@ TEST_F(SrpcTest, call_oauth_token_request_result_with_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_OAuthTokenRequestResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_OAuthTokenRequestResult));
+  DECLARE_WITH_RANDOM(TSC_OAuthTokenRequestResult, result);
+
   result.Token.TokenSize = 0;
 
   ASSERT_EQ(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
@@ -3027,8 +2838,8 @@ TEST_F(SrpcTest, call_oauth_token_request_result_with_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_OAuthTokenRequestResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_OAuthTokenRequestResult));
+  DECLARE_WITH_RANDOM(TSC_OAuthTokenRequestResult, result);
+
   result.Token.TokenSize = SUPLA_OAUTH_TOKEN_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
@@ -3042,8 +2853,8 @@ TEST_F(SrpcTest, call_oauth_token_request_result_with_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_OAuthTokenRequestResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_OAuthTokenRequestResult));
+  DECLARE_WITH_RANDOM(TSC_OAuthTokenRequestResult, result);
+
   result.Token.TokenSize = SUPLA_OAUTH_TOKEN_MAXSIZE;
 
   ASSERT_GT(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
@@ -3068,8 +2879,7 @@ TEST_F(SrpcTest, call_superuser_authorization_request) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_SuperUserAuthorizationRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_SuperUserAuthorizationRequest));
+  DECLARE_WITH_RANDOM(TCS_SuperUserAuthorizationRequest, request);
 
   ASSERT_GT(srpc_cs_async_superuser_authorization_request(srpc, &request), 0);
   SendAndReceive(SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST, 343);
@@ -3088,8 +2898,7 @@ TEST_F(SrpcTest, call_superuser_authorization_result) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_SuperUserAuthorizationResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_SuperUserAuthorizationResult));
+  DECLARE_WITH_RANDOM(TSC_SuperUserAuthorizationResult, result);
 
   ASSERT_GT(srpc_sc_async_superuser_authorization_result(srpc, &result), 0);
   SendAndReceive(SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT, 27);
@@ -3112,8 +2921,8 @@ TEST_F(SrpcTest, call_cs_device_calcfg_request_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_DeviceCalCfgRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalCfgRequest));
+  DECLARE_WITH_RANDOM(TCS_DeviceCalCfgRequest, request);
+
   request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_cs_async_device_calcfg_request(srpc, &request), 0);
@@ -3127,8 +2936,8 @@ TEST_F(SrpcTest, call_cs_device_calcfg_request_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_DeviceCalCfgRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalCfgRequest));
+  DECLARE_WITH_RANDOM(TCS_DeviceCalCfgRequest, request);
+
   request.DataSize = 0;
 
   ASSERT_GT(srpc_cs_async_device_calcfg_request(srpc, &request), 0);
@@ -3150,8 +2959,8 @@ TEST_F(SrpcTest, call_cs_device_calcfg_request_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TCS_DeviceCalCfgRequest request;
-  memset(&request, rand_r(&seed), sizeof(TCS_DeviceCalCfgRequest));
+  DECLARE_WITH_RANDOM(TCS_DeviceCalCfgRequest, request);
+
   request.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
 
   ASSERT_GT(srpc_cs_async_device_calcfg_request(srpc, &request), 0);
@@ -3172,8 +2981,8 @@ TEST_F(SrpcTest, call_sc_device_calcfg_result_over_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_DeviceCalCfgResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalCfgResult));
+  DECLARE_WITH_RANDOM(TSC_DeviceCalCfgResult, result);
+
   result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE + 1;
 
   ASSERT_EQ(srpc_sc_async_device_calcfg_result(srpc, &result), 0);
@@ -3187,8 +2996,8 @@ TEST_F(SrpcTest, call_sc_device_calcfg_result_zero_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_DeviceCalCfgResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalCfgResult));
+  DECLARE_WITH_RANDOM(TSC_DeviceCalCfgResult, result);
+
   result.DataSize = 0;
 
   ASSERT_GT(srpc_sc_async_device_calcfg_result(srpc, &result), 0);
@@ -3210,8 +3019,8 @@ TEST_F(SrpcTest, call_sc_device_calcfg_result_full_size) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  TSC_DeviceCalCfgResult result;
-  memset(&result, rand_r(&seed), sizeof(TSC_DeviceCalCfgResult));
+  DECLARE_WITH_RANDOM(TSC_DeviceCalCfgResult, result);
+
   result.DataSize = SUPLA_CALCFG_DATA_MAXSIZE;
 
   ASSERT_GT(srpc_sc_async_device_calcfg_result(srpc, &result), 0);
@@ -3233,9 +3042,9 @@ TEST_F(SrpcTest, call_sc_device_calcfg_result_full_size) {
 
 TEST_F(SrpcTest, evtool_electricity_meter_value_to_extended) {
   TSuplaChannelExtendedValue ev;
-  TElectricityMeter_ExtendedValue em_ev_src;
+  DECLARE_WITH_RANDOM(TElectricityMeter_ExtendedValue, em_ev_src);
   TElectricityMeter_ExtendedValue em_ev_dst;
-  memset(&em_ev_src, rand_r(&seed), sizeof(TElectricityMeter_ExtendedValue));
+
   memset(&em_ev_dst, 0, sizeof(TElectricityMeter_ExtendedValue));
   em_ev_src.m_count = EM_MEASUREMENT_COUNT;
 
@@ -3279,9 +3088,9 @@ TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
             sizeof(TSC_ImpulseCounter_ExtendedValue));
 
   TSuplaChannelExtendedValue ev;
-  TSC_ImpulseCounter_ExtendedValue ic_ev_src;
+  DECLARE_WITH_RANDOM(TSC_ImpulseCounter_ExtendedValue, ic_ev_src);
   TSC_ImpulseCounter_ExtendedValue ic_ev_dst;
-  memset(&ic_ev_src, rand_r(&seed), sizeof(TSC_ImpulseCounter_ExtendedValue));
+
   memset(&ic_ev_dst, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
 
   ASSERT_EQ(1, srpc_evtool_v1_icextended2extended(&ic_ev_src, &ev));
