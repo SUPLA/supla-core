@@ -337,7 +337,7 @@ jobject supla_android_client_channelvalue_to_jobject(void *_suplaclient, void *u
     return NULL;
 }
 
-void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel_B *channel) {
+void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data, TSC_SuplaChannel_C *channel) {
    
     //int a; 
     jfieldID fid;
@@ -361,11 +361,20 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
         fid = supla_client_GetFieldID(env, cch, "Id", "I");
         (*env)->SetIntField(env, ch, fid, channel->Id);
         
+        fid = supla_client_GetFieldID(env, cch, "DeviceID", "I");
+        (*env)->SetIntField(env, ch, fid, channel->DeviceID);
+        
         fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
         (*env)->SetIntField(env, ch, fid, channel->LocationID);
         
         fid = supla_client_GetFieldID(env, cch, "Func", "I");
         (*env)->SetIntField(env, ch, fid, channel->Func);
+        
+        fid = supla_client_GetFieldID(env, cch, "ManufacturerID", "S");
+        (*env)->SetShortField(env, ch, fid, channel->ManufacturerID);
+        
+        fid = supla_client_GetFieldID(env, cch, "ProductID", "S");
+        (*env)->SetShortField(env, ch, fid, channel->ProductID);
         
         fid = supla_client_GetFieldID(env, cch, "OnLine", "Z");
         (*env)->SetBooleanField(env, ch, fid, channel->online == 1 ? JNI_TRUE : JNI_FALSE);
@@ -379,6 +388,9 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
         
         fid = supla_client_GetFieldID(env, cch, "AltIcon", "I");
         (*env)->SetIntField(env, ch, fid, channel->AltIcon);
+        
+        fid = supla_client_GetFieldID(env, cch, "UserIcon", "I");
+        (*env)->SetIntField(env, ch, fid, channel->UserIcon);
         
         fid = supla_client_GetFieldID(env, cch, "Flags", "I");
         (*env)->SetIntField(env, ch, fid, channel->Flags);
@@ -428,20 +440,13 @@ void supla_android_client_cb_channel_value_update(void *_suplaclient, void *user
 void supla_android_client_channel_em_addsummary(TAndroidSuplaClient *asc, JNIEnv* env, jobject parent, jclass parent_cls, TElectricityMeter_ExtendedValue *em_ev, jint phase) {
     
     jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue$Summary");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJIILjava/lang/String;)V");
-    
-    char currency[4];
-    memcpy(currency, em_ev->currency, 3);
-    currency[3] = 0;
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;JJJJ)V");
     
     jobject sum_obj = (*env)->NewObject(env,cls, methodID, parent,
                                         em_ev->total_forward_active_energy[phase],
                                         em_ev->total_reverse_active_energy[phase],
                                         em_ev->total_forward_reactive_energy[phase],
-                                        em_ev->total_reverse_reactive_energy[phase],
-                                        em_ev->total_cost,
-                                        em_ev->price_per_unit,
-                                        (*env)->NewStringUTF(env, currency));
+                                        em_ev->total_reverse_reactive_energy[phase]);
     jclass sum_class = (*env)->GetObjectClass(env, sum_obj);
     
     jmethodID add_summary_mid = (*env)->GetMethodID(env, parent_cls, "addSummary", "(ILorg/supla/android/lib/SuplaChannelElectricityMeterValue$Summary;)V");
@@ -473,9 +478,18 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(TAndroidSup
     int a = 0;
     int b = 0;
     
+    char currency[4];
+    memcpy(currency, em_ev->currency, 3);
+    currency[3] = 0;
+    
     jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelElectricityMeterValue");
-    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(II)V");
-    jobject val = (*env)->NewObject(env,cls, methodID, em_ev->measured_values, em_ev->period);
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IIIILjava/lang/String;)V");
+    jobject val = (*env)->NewObject(env,cls, methodID,
+                                    em_ev->measured_values,
+                                    em_ev->period,
+                                    em_ev->total_cost,
+                                    em_ev->price_per_unit,
+                                    (*env)->NewStringUTF(env, currency));
     jclass cval = (*env)->GetObjectClass(env, val);
 
     for(a=0;a<3;a++) {
@@ -582,7 +596,7 @@ void supla_android_client_cb_channel_extendedvalue_update(void *_suplaclient, vo
     
 }
 
-void supla_android_client_cb_channelgroup_update(void *_suplaclient, void *user_data, TSC_SuplaChannelGroup *channel_group) {
+void supla_android_client_cb_channelgroup_update(void *_suplaclient, void *user_data, TSC_SuplaChannelGroup_B *channel_group) {
     jfieldID fid;
     TAndroidSuplaClient *asc = (TAndroidSuplaClient*)user_data;
     JNIEnv* env = supla_client_get_env(asc);
@@ -609,6 +623,9 @@ void supla_android_client_cb_channelgroup_update(void *_suplaclient, void *user_
         
         fid = supla_client_GetFieldID(env, cchg, "AltIcon", "I");
         (*env)->SetIntField(env, chg, fid, channel_group->AltIcon);
+        
+        fid = supla_client_GetFieldID(env, cchg, "UserIcon", "I");
+        (*env)->SetIntField(env, chg, fid, channel_group->UserIcon);
         
         fid = supla_client_GetFieldID(env, cchg, "Flags", "I");
         (*env)->SetIntField(env, chg, fid, channel_group->Flags);
