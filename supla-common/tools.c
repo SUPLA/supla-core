@@ -202,7 +202,7 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
         for (a = 0; a < size; a++)
           KEY[a] = (unsigned char)(rand() + tv.tv_usec);  // NOLINT
 #else
-        unsigned int seed =  tv.tv_sec+tv.tv_usec;
+        unsigned int seed = tv.tv_sec + tv.tv_usec;
 
         for (a = 0; a < size; a++)
           KEY[a] = (unsigned char)(rand_r(&seed) + tv.tv_usec);
@@ -367,7 +367,7 @@ void st_random_alpha_string(char *buffer, int buffer_size) {
     buffer[a] = charset[(rand() + tv.tv_usec) % max];  // NOLINT
   }
 #else
-  unsigned int seed = tv.tv_sec+tv.tv_usec;
+  unsigned int seed = tv.tv_sec + tv.tv_usec;
   for (a = 0; a < buffer_size - 1; a++) {
     buffer[a] = charset[rand_r(&seed) % max];
   }
@@ -391,7 +391,7 @@ char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
   struct timeval tv;
   gettimeofday(&tv, NULL);
 
-  unsigned int seed = tv.tv_sec+tv.tv_usec;
+  unsigned int seed = tv.tv_sec + tv.tv_usec;
 
   for (a = 0; a < BCRYPT_RABD_SIZE; a++) random[a] = rand_r(&seed) + tv.tv_usec;
 
@@ -491,6 +491,33 @@ char *st_openssl_base64_encode(char *src, int src_len) {
   BUF_MEM_free(bufferPtr);
 
   return result;
+}
+
+char *st_openssl_base64_decode(char *src, int src_len, int *dst_len) {
+  BIO *bio, *b64;
+
+  char *buffer = (char *)malloc(src_len + 1);
+  memset(buffer, 0, src_len + 1);
+
+  b64 = BIO_new(BIO_f_base64());
+  bio = BIO_new_mem_buf(src, src_len);
+  bio = BIO_push(b64, bio);
+  BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+
+  int r = BIO_read(bio, buffer, src_len);
+  BIO_free_all(bio);
+
+  if (r < 0) {
+    r = 0;
+  }
+
+  buffer = realloc(buffer, r + 1);
+
+  if (dst_len) {
+    *dst_len = r;
+  }
+
+  return buffer;
 }
 
 #endif /*__OPENSSL_TOOLS*/

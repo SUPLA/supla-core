@@ -242,6 +242,7 @@
 								<option id="gnu.cpp.compiler.option.preprocessor.def.1785983890" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__DEBUG=1"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
+									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1821071127" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2" valueType="string"/>

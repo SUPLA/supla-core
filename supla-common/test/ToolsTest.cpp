@@ -163,4 +163,18 @@ TEST_F(ToolsTest, st_bcrypt) {
   ASSERT_NE(1, st_bcrypt_check(AuthKeyHashHEX, hash, 60));
   free(AuthKeyHashHEX);
 }
+
+TEST_F(ToolsTest, st_base64) {
+  char src[] = "Lorem ipsum dolor sit amet";
+  char *encoded = st_openssl_base64_encode(src, strlen(src));
+  ASSERT_TRUE(NULL != encoded);
+
+  char *decoded = st_openssl_base64_decode(encoded, strlen(encoded), NULL);
+  ASSERT_TRUE(NULL != decoded);
+  ASSERT_EQ(0, strcmp(src, decoded));
+
+  free(encoded);
+  free(decoded);
+}
+
 }  // namespace
