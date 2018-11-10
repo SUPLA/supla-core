@@ -528,32 +528,32 @@ supla_device_channel::getElectricityMeasurement(void) {
 }
 
 bool supla_device_channel::converValueToExtended(void) {
-	bool result = false;
+  bool result = false;
 
-	switch(getType()) {
-	case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
-		switch(getFunc()) {
-		case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-		case SUPLA_CHANNELFNC_GAS_METER:
-		case SUPLA_CHANNELFNC_WATER_METER:
-		    char value[SUPLA_CHANNELVALUE_SIZE];
-		    TSuplaChannelExtendedValue ev;
-		    TSC_ImpulseCounter_ExtendedValue ic_ev;
-		    memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+  switch (getType()) {
+    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+      switch (getFunc()) {
+        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+        case SUPLA_CHANNELFNC_GAS_METER:
+        case SUPLA_CHANNELFNC_WATER_METER:
+          char value[SUPLA_CHANNELVALUE_SIZE];
+          TSuplaChannelExtendedValue ev;
+          TSC_ImpulseCounter_ExtendedValue ic_ev;
+          memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
 
-		    getValue(value);
+          getValue(value);
 
-		    TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value*)value;
-		    ic_ev.counter = ic_val->counter;
+          TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
+          ic_ev.counter = ic_val->counter;
 
-		    srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
+          srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
 
-		    setExtendedValue(&ev);
-		    result = true;
-			break;
-		}
-		break;
-	}
+          setExtendedValue(&ev);
+          result = true;
+          break;
+      }
+      break;
+  }
 
   return result;
 }
@@ -760,7 +760,7 @@ void supla_device_channels::set_channel_value(
   if (ChannelID == 0) return;
 
   if (converted2extended) {
-	  *converted2extended = false;
+    *converted2extended = false;
   }
 
   safe_array_lock(arr);
@@ -768,12 +768,12 @@ void supla_device_channels::set_channel_value(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-	  channel->setValue(value);
-	  if (channel->converValueToExtended()) {
-		  if (converted2extended) {
-			  *converted2extended = true;
-		  }
-	  }
+    channel->setValue(value);
+    if (channel->converValueToExtended()) {
+      if (converted2extended) {
+        *converted2extended = true;
+      }
+    }
   }
 
   safe_array_unlock(arr);
