@@ -207,7 +207,7 @@ void supla_client_channel::get_cost_and_currency(char currency[3],
 
   if (Param2 > 0) {
     *price_per_unit = Param2;
-    //*total_cost = (double)(Param2 * 0.0001 * count) * 100;
+    // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
     *total_cost = (double)(Param2 * 0.01 * count);
   }
 }
