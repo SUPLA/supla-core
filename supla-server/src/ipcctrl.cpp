@@ -58,8 +58,9 @@ svr_ipcctrl::svr_ipcctrl(int sfd) {
 }
 
 bool svr_ipcctrl::match_command(const char *cmd, int len) {
-  if (len > (int)strnlen(cmd, 255) &&
-      memcmp(buffer, cmd, strnlen(cmd, 255)) == 0 && buffer[len - 1] == '\n') {
+  if (len > (int)strnlen(cmd, IPC_BUFFER_SIZE) &&
+      memcmp(buffer, cmd, strnlen(cmd, IPC_BUFFER_SIZE)) == 0 &&
+      buffer[len - 1] == '\n') {
     buffer[len - 1] = 0;
     return true;
   }
@@ -69,17 +70,17 @@ bool svr_ipcctrl::match_command(const char *cmd, int len) {
 
 void svr_ipcctrl::send_result(const char *result) {
   snprintf(buffer, sizeof(buffer), "%s\n", result);
-  send(sfd, buffer, strnlen(buffer, 255), 0);
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
 void svr_ipcctrl::send_result(const char *result, int i) {
   snprintf(buffer, sizeof(buffer), "%s%i\n", result, i);
-  send(sfd, buffer, strnlen(buffer, 255), 0);
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
 void svr_ipcctrl::send_result(const char *result, double i) {
   snprintf(buffer, sizeof(buffer), "%s%f\n", result, i);
-  send(sfd, buffer, strnlen(buffer, 255), 0);
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
 void svr_ipcctrl::get_double(const char *cmd, char Type) {
@@ -88,7 +89,7 @@ void svr_ipcctrl::get_double(const char *cmd, char Type) {
   int ChannelID = 0;
   double Value;
 
-  sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &DeviceID,
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
@@ -124,7 +125,7 @@ void svr_ipcctrl::get_char(const char *cmd) {
   int ChannelID = 0;
   char Value;
 
-  sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &DeviceID,
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
@@ -149,7 +150,7 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
   char color_brightness;
   char brightness;
 
-  sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &DeviceID,
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
@@ -159,7 +160,7 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
     if (r) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i\n", color,
                color_brightness, brightness);
-      send(sfd, buffer, strnlen(buffer, 255), 0);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
       return;
     }
@@ -173,24 +174,51 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
   int CGID = 0;
   int DeviceID = 0;
   int Value = 0;
+  char *AlexaCorelationToken = NULL;
+  char ACT_VAR[] = "ALEXA-CORRELATION-TOKEN=";
 
   if (group) {
-    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i", &UserID, &CGID, &Value);
-  } else {
-    sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i", &UserID, &DeviceID, &CGID,
+    sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &CGID,
            &Value);
+  } else {
+    if (strstr(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], ACT_VAR) != NULL) {
+      char *str_buff = (char *)malloc(IPC_BUFFER_SIZE);
+      memset(str_buff, 0, IPC_BUFFER_SIZE);
+
+      unsigned int cmd_len = strnlen(cmd, IPC_BUFFER_SIZE);
+      unsigned int act_var_len = sizeof(ACT_VAR) - 1;
+
+      sscanf(&buffer[cmd_len], "%i,%i,%i,%i,%s", &UserID, &DeviceID, &CGID,
+             &Value, str_buff);
+
+      if (strnlen(str_buff, IPC_BUFFER_SIZE) > act_var_len) {
+        AlexaCorelationToken = st_openssl_base64_decode(
+            &str_buff[act_var_len],
+            strnlen(str_buff, IPC_BUFFER_SIZE) - act_var_len, NULL);
+      }
+
+      free(str_buff);
+    } else {
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i", &UserID,
+             &DeviceID, &CGID, &Value);
+    }
   }
 
   if (UserID && CGID) {
-    if (Value < 0 || Value > 255) send_result("VALUE OUT OF RANGE");
+    if (Value < 0 || Value > IPC_BUFFER_SIZE) send_result("VALUE OUT OF RANGE");
 
     bool result = false;
 
     if (group) {
       result = supla_user::set_channelgroup_char_value(UserID, CGID, Value);
     } else if (!group && DeviceID) {
-      result = supla_user::set_device_channel_char_value(UserID, 0, DeviceID,
-                                                         CGID, Value);
+      result = supla_user::set_device_channel_char_value(
+          UserID, 0, DeviceID, CGID, Value, AlexaCorelationToken);
+
+      if (AlexaCorelationToken) {
+        free(AlexaCorelationToken);
+        AlexaCorelationToken = NULL;
+      }
     }
 
     if (result) {
@@ -215,12 +243,12 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
   if (random) {
     if (group) {
-      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i", &UserID, &CGID,
-             &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i", &UserID,
+             &CGID, &ColorBrightness, &Brightness);
 
     } else {
-      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i", &UserID, &DeviceID,
-             &CGID, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
+             &DeviceID, &CGID, &ColorBrightness, &Brightness);
     }
 
     unsigned int seed = time(NULL);
@@ -228,12 +256,12 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
   } else {
     if (group) {
-      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i", &UserID, &CGID,
-             &Color, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
+             &CGID, &Color, &ColorBrightness, &Brightness);
 
     } else {
-      sscanf(&buffer[strnlen(cmd, 255)], "%i,%i,%i,%i,%i,%i", &UserID,
-             &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
+             &UserID, &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness);
     }
   }
 
@@ -276,17 +304,17 @@ void svr_ipcctrl::execute(void *sthread) {
 
   while (sthread_isterminated(sthread) == 0) {
     eh_wait(eh, 1000000);
-    memset(buffer, 0, 255);
+    memset(buffer, 0, IPC_BUFFER_SIZE);
 
     if ((len = recv(sfd, buffer, sizeof(buffer), 0)) != 0) {
       if (len > 0) {
-        buffer[255] = 0;
+        buffer[IPC_BUFFER_SIZE - 1] = 0;
 
         if (match_command(cmd_is_client_connected, len)) {
           int UserID = 0;
           int ClientID = 0;
-          sscanf(&buffer[strnlen(cmd_is_client_connected, 255)], "%i,%i",
-                 &UserID, &ClientID);
+          sscanf(&buffer[strnlen(cmd_is_client_connected, IPC_BUFFER_SIZE)],
+                 "%i,%i", &UserID, &ClientID);
 
           if (UserID && ClientID &&
               supla_user::is_client_online(UserID, ClientID)) {
@@ -298,8 +326,8 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_is_iodev_connected, len)) {
           int UserID = 0;
           int DeviceID = 0;
-          sscanf(&buffer[strnlen(cmd_is_iodev_connected, 255)], "%i,%i",
-                 &UserID, &DeviceID);
+          sscanf(&buffer[strnlen(cmd_is_iodev_connected, IPC_BUFFER_SIZE)],
+                 "%i,%i", &UserID, &DeviceID);
 
           if (UserID && DeviceID &&
               supla_user::is_device_online(UserID, DeviceID)) {
@@ -309,7 +337,8 @@ void svr_ipcctrl::execute(void *sthread) {
           }
         } else if (match_command(cmd_user_reconnect, len)) {
           int UserID = 0;
-          sscanf(&buffer[strnlen(cmd_user_reconnect, 255)], "%i", &UserID);
+          sscanf(&buffer[strnlen(cmd_user_reconnect, IPC_BUFFER_SIZE)], "%i",
+                 &UserID);
 
           if (UserID && supla_user::reconnect(UserID)) {
             send_result("OK:", UserID);
@@ -321,8 +350,8 @@ void svr_ipcctrl::execute(void *sthread) {
           int UserID = 0;
           int ClientID = 0;
 
-          sscanf(&buffer[strnlen(cmd_client_reconnect, 255)], "%i,%i", &UserID,
-                 &ClientID);
+          sscanf(&buffer[strnlen(cmd_client_reconnect, IPC_BUFFER_SIZE)],
+                 "%i,%i", &UserID, &ClientID);
 
           if (UserID && ClientID) {
             supla_user::client_reconnect(UserID, ClientID);

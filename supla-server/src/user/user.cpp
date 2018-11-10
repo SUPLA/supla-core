@@ -504,7 +504,8 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
 // static
 bool supla_user::set_device_channel_char_value(int UserID, int SenderID,
                                                int DeviceID, int ChannelID,
-                                               const char value) {
+                                               const char value,
+                                               char *AlexaCorelationToken) {
   bool result = false;
 
   safe_array_lock(supla_user::user_arr);

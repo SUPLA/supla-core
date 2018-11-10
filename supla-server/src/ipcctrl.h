@@ -26,6 +26,8 @@
 
 #include "eh.h"
 
+#define IPC_BUFFER_SIZE 1024
+
 class svr_ipcctrl {
  private:
   int sfd;
@@ -46,7 +48,7 @@ class svr_ipcctrl {
   void send_result(const char *result, int i);
   void send_result(const char *result, double i);
 
-  char buffer[256];
+  char buffer[IPC_BUFFER_SIZE];
 
  public:
   explicit svr_ipcctrl(int sfd);
