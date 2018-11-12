@@ -26,7 +26,7 @@
 
 #include "eh.h"
 
-#define IPC_BUFFER_SIZE 1024
+#define IPC_BUFFER_SIZE 4096
 
 class svr_ipcctrl {
  private:
