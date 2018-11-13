@@ -37,8 +37,11 @@ class svr_ipcctrl {
   int auth_expires_at;
   int user_id;
   int oauth_user_id;
+  char *AlexaCorelationToken = NULL;
 
   bool match_command(const char *cmd, int len);
+  void free_correlation_token();
+  void cut_correlation_token(const char *cmd);
   void get_double(const char *cmd, char Type);
   void get_char(const char *cmd);
   void get_rgbw(const char *cmd);
