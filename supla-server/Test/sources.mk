@@ -27,8 +27,8 @@ src \
 src/client \
 src/crypt_blowfish \
 src/device \
+src/http \
 src/test \
 src/test/gtest \
-src/trivial_http \
 src/user \
 

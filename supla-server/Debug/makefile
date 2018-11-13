@@ -9,7 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/user/subdir.mk
--include src/trivial_http/subdir.mk
+-include src/http/subdir.mk
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/client/subdir.mk

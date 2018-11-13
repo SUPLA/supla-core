@@ -16,11 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef HTTPS_H_
-#define HTTPS_H_
 #ifndef NOSSL
+#include "trivial_https.h"
 
-char *https_get(char *host, int port, char *resource);
+char *https_get(char *host, int port, char *resource) {
+
+}
 
 #endif /* NOSSL */
-#endif /* HTTPS_H_ */
