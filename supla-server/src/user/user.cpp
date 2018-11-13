@@ -526,7 +526,8 @@ bool supla_user::set_device_channel_char_value(int UserID, int SenderID,
 bool supla_user::set_device_channel_rgbw_value(int UserID, int SenderID,
                                                int DeviceID, int ChannelID,
                                                int color, char color_brightness,
-                                               char brightness) {
+                                               char brightness,
+                                               char *AlexaCorelationToken) {
   bool result = false;
 
   safe_array_lock(supla_user::user_arr);

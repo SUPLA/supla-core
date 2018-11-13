@@ -86,7 +86,8 @@ class supla_user {
   static bool set_device_channel_rgbw_value(int UserID, int SenderID,
                                             int DeviceID, int ChannelID,
                                             int color, char color_brightness,
-                                            char brightness);
+                                            char brightness,
+                                            char *AlexaCorelationToken);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,

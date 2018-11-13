@@ -50,6 +50,8 @@ const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
 const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
+char ACT_VAR[] = "ALEXA-CORRELATION-TOKEN=";
+
 svr_ipcctrl::svr_ipcctrl(int sfd) {
   this->sfd = sfd;
 
@@ -175,7 +177,6 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
   int DeviceID = 0;
   int Value = 0;
   char *AlexaCorelationToken = NULL;
-  char ACT_VAR[] = "ALEXA-CORRELATION-TOKEN=";
 
   if (group) {
     sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &CGID,
@@ -214,11 +215,11 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_char_value(
           UserID, 0, DeviceID, CGID, Value, AlexaCorelationToken);
+    }
 
-      if (AlexaCorelationToken) {
-        free(AlexaCorelationToken);
-        AlexaCorelationToken = NULL;
-      }
+    if (AlexaCorelationToken) {
+      free(AlexaCorelationToken);
+      AlexaCorelationToken = NULL;
     }
 
     if (result) {
@@ -240,6 +241,7 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   int Color = 0;
   int ColorBrightness = 0;
   int Brightness = 0;
+  char *AlexaCorelationToken = NULL;
 
   if (random) {
     if (group) {
@@ -260,8 +262,28 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
              &CGID, &Color, &ColorBrightness, &Brightness);
 
     } else {
-      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
-             &UserID, &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness);
+      if (strstr(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], ACT_VAR) != NULL) {
+        char *str_buff = (char *)malloc(IPC_BUFFER_SIZE);
+        memset(str_buff, 0, IPC_BUFFER_SIZE);
+
+        unsigned int cmd_len = strnlen(cmd, IPC_BUFFER_SIZE);
+        unsigned int act_var_len = sizeof(ACT_VAR) - 1;
+
+        sscanf(&buffer[cmd_len], "%i,%i,%i,%i,%i,%i,%s", &UserID, &DeviceID, &CGID,
+               &Color, &ColorBrightness, &Brightness, str_buff);
+
+        if (strnlen(str_buff, IPC_BUFFER_SIZE) > act_var_len) {
+          AlexaCorelationToken = st_openssl_base64_decode(
+              &str_buff[act_var_len],
+              strnlen(str_buff, IPC_BUFFER_SIZE) - act_var_len, NULL);
+        }
+
+        free(str_buff);
+      } else {
+        sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
+               &UserID, &DeviceID, &CGID, &Color, &ColorBrightness,
+               &Brightness);
+      }
     }
   }
 
@@ -277,7 +299,13 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
           UserID, CGID, Color, ColorBrightness, Brightness);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
-          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness);
+          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness,
+          AlexaCorelationToken);
+    }
+
+    if (AlexaCorelationToken) {
+      free(AlexaCorelationToken);
+      AlexaCorelationToken = NULL;
     }
 
     if (result) {
