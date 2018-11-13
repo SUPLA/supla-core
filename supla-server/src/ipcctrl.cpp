@@ -269,8 +269,8 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
         unsigned int cmd_len = strnlen(cmd, IPC_BUFFER_SIZE);
         unsigned int act_var_len = sizeof(ACT_VAR) - 1;
 
-        sscanf(&buffer[cmd_len], "%i,%i,%i,%i,%i,%i,%s", &UserID, &DeviceID, &CGID,
-               &Color, &ColorBrightness, &Brightness, str_buff);
+        sscanf(&buffer[cmd_len], "%i,%i,%i,%i,%i,%i,%s", &UserID, &DeviceID,
+               &CGID, &Color, &ColorBrightness, &Brightness, str_buff);
 
         if (strnlen(str_buff, IPC_BUFFER_SIZE) > act_var_len) {
           AlexaCorelationToken = st_openssl_base64_decode(
