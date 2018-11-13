@@ -1,0 +1,62 @@
+/*
+ Copyright (C) AC SOFTWARE SP. Z O.O.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#ifndef TRIVIAL_HTTP_H_
+#define TRIVIAL_HTTP_H_
+
+#define HOST_MAXSIZE 1024
+#define RESOURCE_MAXSIZE 1024
+
+class supla_trivial_http {
+ protected:
+  char *host;
+  int port;
+  char *resource;
+  char *body;
+  char *contentType;
+
+  int contentLength;
+  int resultCode;
+
+  virtual bool send_recv(const char *out, char **in);
+
+ private:
+  bool get_addrinfo(void **res);
+  bool request(const char *method, const char *header, const char *data);
+  char *header_item_match(const char *item, unsigned int size,
+                                const char *name, unsigned int name_size);
+  void parse_header_item(const char *item, unsigned int size);
+  bool parse(char **in);
+  void releaseResponse(void);
+
+ public:
+  supla_trivial_http(const char *host, const char *resource);
+  supla_trivial_http(void);
+  virtual ~supla_trivial_http(void);
+  void setHost(const char *host);
+  void setPort(int port);
+  void setResource(const char *resource);
+  int getResultCode(void);
+  int getContentLength(void);
+  const char *getContentType(void);
+  const char *getBody(void);
+
+  bool http_get(void);
+};
+
+#endif /* TRIVIAL_HTTP_H_ */
