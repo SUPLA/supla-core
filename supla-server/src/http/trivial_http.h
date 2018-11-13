@@ -38,8 +38,8 @@ class supla_trivial_http {
  private:
   bool get_addrinfo(void **res);
   bool request(const char *method, const char *header, const char *data);
-  char *header_item_match(const char *item, unsigned int size,
-                                const char *name, unsigned int name_size);
+  char *header_item_match(const char *item, unsigned int size, const char *name,
+                          unsigned int name_size);
   void parse_header_item(const char *item, unsigned int size);
   bool parse(char **in);
   void releaseResponse(void);
