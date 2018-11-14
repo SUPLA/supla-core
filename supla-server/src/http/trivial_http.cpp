@@ -228,31 +228,31 @@ void supla_trivial_http::parse_header_item(const char *item,
 
 bool supla_trivial_http::parse(char **in) {
   unsigned int len = strnlen((*in), INDATA_MAXSIZE);
-  char body_separator[4] = {'\r', '\n', '\r', '\n'};
   char next[2] = {'\r', '\n'};
   int pos = 0;
 
   this->resultCode = 0;
 
-  for (unsigned int a = 0; a < len - sizeof(body_separator); a++) {
-    if (memcmp(&(*in)[a], body_separator, sizeof(body_separator)) == 0) {
-      int n = 0;
-      for (unsigned int b = a + sizeof(body_separator); b < len; b++) {
-        (*in)[n] = (*in)[b];
-        n++;
+  for (unsigned int a = 0; a < len - sizeof(next); a++) {
+    if (memcmp(&(*in)[a], next, sizeof(next)) == 0) {
+      if (a - pos == 0) {
+        int n = 0;
+        for (unsigned int b = a + sizeof(next) * 2; b < len; b++) {
+          (*in)[n] = (*in)[b];
+          n++;
+        }
+
+        (*in)[n - 1] = 0;
+        (*in) = (char *)realloc((char *)(*in), n + 1);
+
+        body = *in;
+        *in = NULL;
+        break;
+      } else {
+        (*in)[a] = 0;
+        parse_header_item(&(*in)[pos], a - pos);
+        pos = a + sizeof(next);
       }
-
-      (*in)[n - 1] = 0;
-      (*in) = (char *)realloc((char *)(*in), n + 1);
-
-      body = *in;
-      *in = NULL;
-      break;
-
-    } else if (memcmp(&(*in)[a], next, sizeof(next)) == 0) {
-      (*in)[a] = 0;
-      parse_header_item(&(*in)[pos], a - pos);
-      pos = a + sizeof(next);
     }
   }
 
