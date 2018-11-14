@@ -22,6 +22,8 @@
 #define HOST_MAXSIZE 1024
 #define RESOURCE_MAXSIZE 1024
 
+#include <stdio.h>
+
 class supla_trivial_http {
  protected:
   char *host;
@@ -33,6 +35,11 @@ class supla_trivial_http {
   int contentLength;
   int resultCode;
 
+  virtual ssize_t _write(void *ptr, const void *__buf, size_t __n);
+  virtual ssize_t _read(void *ptr, void *__buf, size_t __n);
+  virtual bool _should_retry(void *ptr);
+
+  void write_read(void *ptr, const char *out, char **in);
   virtual bool send_recv(const char *out, char **in);
 
  private:

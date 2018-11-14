@@ -16,11 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "trivial_http.h"
+
 #ifndef TRIVIAL_HTTPS_H_
 #define TRIVIAL_HTTPS_H_
 #ifndef NOSSL
 
-char *https_get(char *host, int port, char *resource);
+class supla_trivial_https : public supla_trivial_http {
+ private:
+  void *ssl_vars;
+  void vars_init(void);
+  void vars_free(void);
+  void log_ssl_error(void);
+  static char *caFile;
+
+ protected:
+  virtual bool send_recv(const char *out, char **in);
+  virtual ssize_t _write(void *ptr, const void *__buf, size_t __n);
+  virtual ssize_t _read(void *ptr, void *__buf, size_t __n);
+  virtual bool _should_retry(void *ptr);
+
+ public:
+  static void init(void);
+  supla_trivial_https(const char *host, const char *resource);
+  supla_trivial_https(void);
+  ~supla_trivial_https(void);
+};
 
 #endif /* NOSSL */
 #endif /* TRIVIAL_HTTPS_H_ */

@@ -145,11 +145,43 @@ bool supla_trivial_http::get_addrinfo(void **res) {
   return getaddrinfo(server, port, &hints, (struct addrinfo **)res) == 0;
 }
 
+ssize_t supla_trivial_http::_write(void *ptr, const void *__buf, size_t __n) {
+  return write(*(int *)ptr, __buf, __n);
+}
+
+ssize_t supla_trivial_http::_read(void *ptr, void *__buf, size_t __n) {
+  return read(*(int *)ptr, __buf, __n);
+}
+
+bool supla_trivial_http::_should_retry(void *ptr) { return false; }
+
+void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
+  if (_write(ptr, out, strnlen(out, OUTDATA_MAXSIZE)) >= 0) {
+    char in_buff[IN_BUFFER_SIZE];
+    int size = 0;
+    int read_len = 0;
+
+    while ((read_len = _read(ptr, in_buff, sizeof(IN_BUFFER_SIZE))) > 0 ||
+           _should_retry(ptr)) {
+      if (read_len > 0 && size + read_len < INDATA_MAXSIZE) {
+        *in = (char *)realloc((void *)*in, size + read_len + 1);
+        memcpy(&((*in)[size]), in_buff, read_len);
+        size += read_len;
+      }
+    }
+
+    if (*in) {
+      // size+read_len+1
+      (*in)[size] = 0;
+    }
+  }
+}
+
 bool supla_trivial_http::send_recv(const char *out, char **in) {
   struct addrinfo *ai = NULL;
   bool result = false;
 
-  if (!out || !in || !get_addrinfo((void **)&ai)) {
+  if (!get_addrinfo((void **)&ai)) {
     return false;
   }
 
@@ -157,24 +189,7 @@ bool supla_trivial_http::send_recv(const char *out, char **in) {
 
   int sfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
   if (connect(sfd, ai->ai_addr, (unsigned int)ai->ai_addrlen) == 0) {
-    if (write(sfd, out, strnlen(out, OUTDATA_MAXSIZE)) >= 0) {
-      char in_buff[IN_BUFFER_SIZE];
-      int size = 0;
-      int read_len = 0;
-
-      while ((read_len = read(sfd, in_buff, sizeof(IN_BUFFER_SIZE))) > 0) {
-        if (size + read_len < INDATA_MAXSIZE) {
-          *in = (char *)realloc((void *)*in, size + read_len + 1);
-          memcpy(&((*in)[size]), in_buff, read_len);
-          size += read_len;
-        }
-      }
-
-      if (*in) {
-        // size+read_len+1
-        (*in)[size] = 0;
-      }
-    }
+    write_read(&sfd, out, in);
   }
 
   if (sfd != -1) {
