@@ -22,9 +22,15 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
+#ifndef NOSSL
+#include <openssl/err.h>
+#include <openssl/ssl.h>
+#endif /*NOSSL*/
+
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
+#include "http/trivial_https.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "proto.h"
@@ -79,7 +85,7 @@ int main(int argc, char *argv[]) {
 
   {
     database *db = new database();
-    if (!db->check_db_version("20181026171557")) {
+    if (!db->check_db_version("20181107180148")) {
       delete db;
       database::mainthread_end();
       goto exit_fail;
@@ -89,6 +95,12 @@ int main(int argc, char *argv[]) {
   }
 
 #ifndef NOSSL
+  supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
+
+  SSL_library_init();
+  SSL_load_error_strings();
+  supla_trivial_https::init();
+
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
     if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
                                             scfg_string(CFG_SSL_KEY),
@@ -97,7 +109,7 @@ int main(int argc, char *argv[]) {
       goto exit_fail;
     }
   }
-#endif
+#endif /*NOSSL*/
 
   if (scfg_bool(CFG_TCP_ENABLED) == 1) {
     if (0 == (ssd_tcp =
@@ -133,7 +145,6 @@ int main(int argc, char *argv[]) {
   datalogger_loop_t = sthread_simple_run(datalogger_loop, NULL, 0);
 
   // MAIN LOOP
-
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
   }
