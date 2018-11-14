@@ -8,12 +8,14 @@ C_SRCS += \
 ../src/http/cJSON_Utils.c 
 
 CPP_SRCS += \
+../src/http/oauthclient.cpp \
 ../src/http/trivialhttp.cpp \
 ../src/http/trivialhttps.cpp 
 
 OBJS += \
 ./src/http/cJSON.o \
 ./src/http/cJSON_Utils.o \
+./src/http/oauthclient.o \
 ./src/http/trivialhttp.o \
 ./src/http/trivialhttps.o 
 
@@ -22,6 +24,7 @@ C_DEPS += \
 ./src/http/cJSON_Utils.d 
 
 CPP_DEPS += \
+./src/http/oauthclient.d \
 ./src/http/trivialhttp.d \
 ./src/http/trivialhttps.d 
 
