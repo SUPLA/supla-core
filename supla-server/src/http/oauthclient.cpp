@@ -17,11 +17,113 @@
  */
 
 #include <http/oauthclient.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+#include "cJSON.h"
+#include "log.h"
+
+#define TOKEN_MAXSIZE 2048
 
 oauth_client::oauth_client() {
-  // TODO Auto-generated constructor stub
+  this->token = NULL;
+  this->refresh_token = NULL;
+  this->expires_at = 0;
+  this->token_is_expired = false;
 }
 
 oauth_client::~oauth_client() {
-  // TODO Auto-generated destructor stub
+  setToken(NULL, 0);
+  setRefreshToken(NULL);
+}
+
+void oauth_client::setToken(char *token, int expires_at) {
+  this->expires_at = expires_at;
+  this->token_is_expired = false;
+
+  if (this->token) {
+    free(this->token);
+    this->token = NULL;
+  }
+
+  if (token && strnlen(token, TOKEN_MAXSIZE) > 0) {
+    this->token = strndup(token, TOKEN_MAXSIZE);
+  }
+}
+
+void oauth_client::setRefreshToken(char *refresh_token) {
+  if (this->refresh_token) {
+    free(this->refresh_token);
+    this->refresh_token = NULL;
+  }
+
+  if (refresh_token && strnlen(refresh_token, TOKEN_MAXSIZE) > 0) {
+    this->refresh_token = strndup(refresh_token, TOKEN_MAXSIZE);
+  }
+}
+
+bool oauth_client::isTokenExpired(void) {
+  if (token_is_expired) {
+    return true;
+  }
+
+  if (this->expires_at > 0) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+  }
+
+  return token_is_expired;
+}
+
+bool oauth_client::isExpiredByResult(void) {
+  bool result = false;
+
+  if (getResultCode() == 401) {
+    cJSON *root = cJSON_Parse(getBody());
+    if (root) {
+      cJSON *err_desc = cJSON_GetObjectItem(root, "error_description");
+      if (err_desc) {
+        char str[] = "The access token provided has expired.";
+        char *v = cJSON_GetStringValue(err_desc);
+
+        if (v && strncmp(str, v, sizeof(str) - 1) == 0) {
+          result = true;
+        }
+      }
+
+      cJSON_Delete(root);
+    }
+  }
+
+  return result;
+}
+
+bool oauth_client::request(const char *method, const char *header,
+                           const char *data) {
+  char *_header = (char *)header;
+
+  if (isTokenExpired()) {
+    return false;
+  }
+
+  if (this->token) {
+    int header_len = header ? strnlen(header, HEADER_MAXSIZE) : 0;
+    int new_header_len = 30 + header_len + strnlen(token, TOKEN_MAXSIZE);
+    _header = (char *)malloc(new_header_len);
+
+    snprintf(_header, new_header_len, "%s%sAuthorization: Bearer %s",
+             header ? header : "", header ? "\r\n" : "", token);
+  }
+
+  bool result = supla_trivial_https::request(method, _header, data);
+
+  if (_header != header) {
+    free(_header);
+  }
+
+  if (result && getBody() && isExpiredByResult()) {
+    token_is_expired = true;
+  }
+
+  return result;
 }

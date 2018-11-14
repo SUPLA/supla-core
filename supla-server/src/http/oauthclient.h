@@ -22,9 +22,30 @@
 #include <http/trivialhttps.h>
 
 class oauth_client : public supla_trivial_https {
+ private:
+  char *token;
+  int expires_at;
+  bool token_is_expired;
+
+  char *refresh_token;
+  char *oauth_host;
+  char *token_endpoint;
+
+ protected:
+
+  virtual bool isExpiredByResult(void) ;
+  virtual bool request(const char *method, const char *header,
+                       const char *data);
+
  public:
   oauth_client();
   virtual ~oauth_client();
+
+  void setToken(char *token, int expires_at);
+  void setRefreshToken(char *refresh_token);
+
+  bool isTokenExpired(void);
+  bool doRefreshToken();
 };
 
 #endif /* HTTP_OAUTHCLIENT_H_ */
