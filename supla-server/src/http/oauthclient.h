@@ -41,8 +41,10 @@ class oauth_client : public supla_trivial_https {
   oauth_client();
   virtual ~oauth_client();
 
-  void setToken(char *token, int expires_at);
-  void setRefreshToken(char *refresh_token);
+  void setToken(const char *token, int expires_at);
+  void setRefreshToken(const char *refresh_token);
+  void setOAuthHost(const char *oauth_host);
+  void setOAuthTokenEndpoint(const char *token_endpoint);
 
   bool isTokenExpired(void);
   bool doRefreshToken();

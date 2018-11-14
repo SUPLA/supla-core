@@ -60,43 +60,34 @@ supla_trivial_http::~supla_trivial_http(void) {
   releaseResponse();
 }
 
-void supla_trivial_http::releaseResponse(void) {
-  if (body) {
-    free(body);
-    body = NULL;
+void supla_trivial_http::set_string_variable(char **var, int max_len,
+                                             const char *src) {
+  if (*var) {
+    free(*var);
+    *var = NULL;
   }
 
-  if (contentType) {
-    free(contentType);
-    contentType = NULL;
+  if (src && strnlen(src, max_len) > 0) {
+    *var = strndup(src, max_len);
   }
+}
+
+void supla_trivial_http::releaseResponse(void) {
+  set_string_variable(&body, 0, NULL);
+  set_string_variable(&contentType, 0, NULL);
 
   this->resultCode = 0;
   this->contentLength = 0;
 }
 
 void supla_trivial_http::setHost(const char *host) {
-  if (this->host) {
-    free(this->host);
-    this->host = NULL;
-  }
-
-  if (host) {
-    this->host = strndup(host, 1024);
-  }
+  set_string_variable(&this->host, 1024, host);
 }
 
 void supla_trivial_http::setPort(int port) { this->port = port; }
 
 void supla_trivial_http::setResource(const char *resource) {
-  if (this->resource) {
-    free(this->resource);
-    this->resource = NULL;
-  }
-
-  if (resource) {
-    this->resource = strndup(resource, 1024);
-  }
+  set_string_variable(&this->resource, 1024, resource);
 }
 
 int supla_trivial_http::getResultCode(void) { return resultCode; }

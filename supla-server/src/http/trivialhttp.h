@@ -36,6 +36,8 @@ class supla_trivial_http {
   int contentLength;
   int resultCode;
 
+  void set_string_variable(char **var, int max_len, const char *src) ;
+
   virtual ssize_t _write(void *ptr, const void *__buf, size_t __n);
   virtual ssize_t _read(void *ptr, void *__buf, size_t __n);
   virtual bool _should_retry(void *ptr);

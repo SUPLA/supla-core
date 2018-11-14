@@ -17,17 +17,19 @@
  */
 
 #include <http/oauthclient.h>
+#include <json/cJSON.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include "cJSON.h"
 #include "log.h"
 
 #define TOKEN_MAXSIZE 2048
 
 oauth_client::oauth_client() {
   this->token = NULL;
+  this->oauth_host = NULL;
   this->refresh_token = NULL;
+  this->token_endpoint = NULL;
   this->expires_at = 0;
   this->token_is_expired = false;
 }
@@ -37,29 +39,22 @@ oauth_client::~oauth_client() {
   setRefreshToken(NULL);
 }
 
-void oauth_client::setToken(char *token, int expires_at) {
+void oauth_client::setToken(const char *token, int expires_at) {
   this->expires_at = expires_at;
   this->token_is_expired = false;
-
-  if (this->token) {
-    free(this->token);
-    this->token = NULL;
-  }
-
-  if (token && strnlen(token, TOKEN_MAXSIZE) > 0) {
-    this->token = strndup(token, TOKEN_MAXSIZE);
-  }
+  set_string_variable(&this->token, TOKEN_MAXSIZE, token);
 }
 
-void oauth_client::setRefreshToken(char *refresh_token) {
-  if (this->refresh_token) {
-    free(this->refresh_token);
-    this->refresh_token = NULL;
-  }
+void oauth_client::setRefreshToken(const char *refresh_token) {
+  set_string_variable(&this->refresh_token, TOKEN_MAXSIZE, refresh_token);
+}
 
-  if (refresh_token && strnlen(refresh_token, TOKEN_MAXSIZE) > 0) {
-    this->refresh_token = strndup(refresh_token, TOKEN_MAXSIZE);
-  }
+void oauth_client::setOAuthHost(const char *oauth_host) {
+  set_string_variable(&this->oauth_host, HOST_MAXSIZE, oauth_host);
+}
+
+void oauth_client::setOAuthTokenEndpoint(const char *token_endpoint) {
+  set_string_variable(&this->token_endpoint, RESOURCE_MAXSIZE, token_endpoint);
 }
 
 bool oauth_client::isTokenExpired(void) {
