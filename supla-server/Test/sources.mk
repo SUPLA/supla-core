@@ -28,6 +28,7 @@ src/client \
 src/crypt_blowfish \
 src/device \
 src/http \
+src/json \
 src/test \
 src/test/gtest \
 src/user \
