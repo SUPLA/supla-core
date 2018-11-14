@@ -18,15 +18,14 @@
 
 #ifndef NOSSL
 #include "trivial_https.h"
-#include "log.h"
-#include "tools.h"
-
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include "log.h"
+#include "tools.h"
 
 typedef struct {
   SSL_CTX *ctx;
@@ -102,8 +101,6 @@ void supla_trivial_https::vars_free(void) {
   ssl_vars = NULL;
 }
 
-#include <openssl/conf.h>
-
 ssize_t supla_trivial_https::_write(void *ptr, const void *__buf, size_t __n) {
   return BIO_write(((_ssl_vars_t *)ptr)->web, __buf, __n);
 }
@@ -129,7 +126,7 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
     supla_log(LOG_DEBUG, "SSLv23 method not exists!");
     vars_free();
     return false;
-  };
+  }
 
   vars->ctx = SSL_CTX_new(method);
   if (vars->ctx == NULL) {

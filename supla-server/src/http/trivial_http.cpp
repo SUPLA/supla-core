@@ -23,8 +23,6 @@
 #define IN_BUFFER_SIZE 1024
 
 #include "trivial_http.h"
-#include "log.h"
-
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -35,6 +33,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "log.h"
 
 supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
   this->resultCode = 0;
@@ -199,7 +198,7 @@ bool supla_trivial_http::send_recv(const char *out, char **in) {
   if (ai) {
     freeaddrinfo(ai);
     ai = NULL;
-  };
+  }
 
   return result;
 }
@@ -208,8 +207,9 @@ char *supla_trivial_http::header_item_match(const char *item, unsigned int size,
                                             const char *name,
                                             unsigned int name_size) {
   if (size >= name_size && memcmp(item, name, name_size) == 0) {
-    return &((char *)item)[name_size];
-  };
+    char *i = (char *)item;
+    return &i[name_size];
+  }
 
   return NULL;
 }
