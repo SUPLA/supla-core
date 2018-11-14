@@ -183,7 +183,7 @@ void svr_ipcctrl::cut_correlation_token(const char *cmd) {
 
   char *ct = strstr(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], ACT_VAR);
 
-  if (ct != NULL) {
+  if (ct != NULL && strnlen(ct, IPC_BUFFER_SIZE) > sizeof(ACT_VAR) - 1) {
     char *value = &ct[sizeof(ACT_VAR) - 1];
 
     int len = strnlen(value, IPC_BUFFER_SIZE);
