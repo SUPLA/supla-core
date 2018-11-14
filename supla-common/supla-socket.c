@@ -158,7 +158,7 @@ SSL_CTX *ssocket_initserverctx(void) {
   SSL_CTX *ctx;
 
   OpenSSL_add_all_algorithms();
-  SSL_load_error_strings();
+
   method = (SSL_METHOD *)SSLv23_server_method();
   ctx = SSL_CTX_new(method);
 
@@ -260,7 +260,6 @@ SSL_CTX *ssocket_client_initctx(void) {
   SSL_CTX *ctx;
 
   OpenSSL_add_all_algorithms();
-  SSL_load_error_strings();
   method = (SSL_METHOD *)TLSv1_2_client_method();
   ctx = SSL_CTX_new(method);
 
@@ -313,6 +312,8 @@ char ssocket_openlistener(void *_ssd) {
   return 0;
 }
 
+// If you want to use SSL support, call SSL_library_init() and
+// SSL_load_error_strings() before you use this function with SSL support
 void *ssocket_server_init(const char cert[], const char key[], int port,
                           unsigned char secure) {
 #ifndef NOSSL
@@ -332,12 +333,6 @@ void *ssocket_server_init(const char cert[], const char key[], int port,
 #ifdef NOSSL
     assert(secure == 0);
 #else
-
-#ifndef NOSSL
-    supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
-#endif
-
-    SSL_library_init();
 
     ssl_locks = malloc(CRYPTO_num_locks() * sizeof(void *));
 
@@ -700,6 +695,8 @@ void *ssocket_client_init(const char host[], int port, unsigned char secure) {
 #ifndef NOSSL
   if (secure == 1) {
     SSL_library_init();
+    SSL_load_error_strings();
+
     ssd->ctx = ssocket_client_initctx();
 
     if (ssd->ctx == NULL) {
