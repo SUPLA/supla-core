@@ -193,7 +193,7 @@ void svr_ipcctrl::cut_correlation_token(const char *cmd) {
     }
 
     ct[0] = 0;
-  };
+  }
 }
 
 void svr_ipcctrl::set_char(const char *cmd, bool group) {
