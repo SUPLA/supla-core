@@ -16,14 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#define HEADER_MAXSIZE 8192
 #define OUTDATA_MAXSIZE 102400
 #define INDATA_MAXSIZE 102400
 #define METHOD_MAXSIZE 20
 #define IN_BUFFER_SIZE 1024
 
-#include <http/trivialhttp.h>
 #include <arpa/inet.h>
+#include <http/trivialhttp.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -252,12 +251,12 @@ bool supla_trivial_http::parse(char **in) {
     if (memcmp(&(*in)[a], next, sizeof(next)) == 0) {
       if (a - pos == 0) {
         int n = 0;
-        for (unsigned int b = a + sizeof(next) * 2; b < len; b++) {
+        for (unsigned int b = a + sizeof(next); b < len; b++) {
           (*in)[n] = (*in)[b];
           n++;
         }
 
-        (*in)[n - 1] = 0;
+        (*in)[n] = 0;
         (*in) = (char *)realloc((char *)(*in), n + 1);
 
         body = *in;
@@ -305,7 +304,7 @@ bool supla_trivial_http::request(const char *method, const char *header,
            "User-Agent: supla-server\r\n"
            "Connection: close%s%s\r\n\r\n"
            "%s%s",
-           method, resource, host, header ? header : "", header ? "\r\n" : "",
+           method, resource, host, header ? "\r\n" : "", header ? header : "",
            data ? data : "", data ? "\n" : "");
 
   char *in = NULL;
