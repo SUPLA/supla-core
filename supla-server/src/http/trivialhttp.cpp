@@ -22,7 +22,7 @@
 #define METHOD_MAXSIZE 20
 #define IN_BUFFER_SIZE 1024
 
-#include "trivial_http.h"
+#include <http/trivialhttp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>

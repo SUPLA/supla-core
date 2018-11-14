@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "trivial_http.h"
+#include <http/trivialhttp.h>
 
 #ifndef TRIVIAL_HTTPS_H_
 #define TRIVIAL_HTTPS_H_

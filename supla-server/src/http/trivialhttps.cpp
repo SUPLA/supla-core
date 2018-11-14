@@ -17,7 +17,7 @@
  */
 
 #ifndef NOSSL
-#include "trivial_https.h"
+#include <http/trivialhttps.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <stdio.h>
