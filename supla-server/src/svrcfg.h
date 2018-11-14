@@ -52,6 +52,8 @@ extern "C" {
 #define CFG_OAUTH_URL 14
 #define CFG_OAUTH_TOKEN_LIFETIME 15
 
+#define CFG_ALEXA_EVENT_GATEWAY_HOST 16
+
 extern char *svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;
 

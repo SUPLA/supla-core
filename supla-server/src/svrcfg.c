@@ -66,6 +66,11 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_oauth, "url", url);
   scfg_add_int_param(s_oauth, "access_token_lifetime", 300);
 
+  char *s_alexa = "ALEXA";
+
+  // https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
+  scfg_add_str_param(s_alexa, "event_gateway_host", "api.eu.amazonalexa.com");
+
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();
 
@@ -79,6 +84,8 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                                                         n * 2);
     }
   }
+
+
 
   return result;
 }
