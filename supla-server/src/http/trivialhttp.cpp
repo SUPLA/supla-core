@@ -273,7 +273,8 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   releaseResponse();
 
-  if (!method || (m_len = strnlen(method, METHOD_MAXSIZE)) < 3 ||
+  if (!method || !host || !resource ||
+      (m_len = strnlen(method, METHOD_MAXSIZE)) < 3 ||
       (h_len = strnlen(host, HOST_MAXSIZE)) < 1 ||
       (r_len = strnlen(resource, RESOURCE_MAXSIZE) < 1)) {
     return false;
