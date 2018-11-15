@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <my_global.h>
 #include <mysql.h>
+#include "alexa/alexatoken.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
 #ifdef min
@@ -1776,6 +1777,75 @@ bool database::superuser_authorization(int UserID,
       }
     }
 
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+bool database::alexa_load_token(supla_alexa_token *alexa_token) {
+  bool result = false;
+  char sql[] =
+      "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
+      "UTC_TIMESTAMP(), expires_at) `expires_in` FROM "
+      "`supla_alexa_egc` WHERE user_id = ? AND LENGTH(access_token) > 0";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  int UserID = alexa_token->getUserID();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[3];
+    memset(rbind, 0, sizeof(rbind));
+
+    char buffer_token[TOKEN_MAXSIZE + 1];
+    buffer_token[0] = 0;
+    unsigned long token_size = 0;
+    my_bool token_is_null = true;
+
+    char buffer_refresh_token[TOKEN_MAXSIZE + 1];
+    buffer_refresh_token[0] = 0;
+    unsigned long refresh_token_size = 0;
+    my_bool refresh_token_is_null = true;
+
+    int expires_in = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = buffer_token;
+    rbind[0].buffer_length = TOKEN_MAXSIZE;
+    rbind[0].length = &token_size;
+    rbind[0].is_null = &token_is_null;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = buffer_refresh_token;
+    rbind[1].buffer_length = TOKEN_MAXSIZE;
+    rbind[1].length = &refresh_token_size;
+    rbind[1].is_null = &refresh_token_is_null;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&expires_in;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        buffer_token[token_is_null ? 0 : token_size] = 0;
+        buffer_refresh_token[refresh_token_is_null ? 0 : refresh_token_size] =
+            0;
+
+        alexa_token->set(buffer_token, buffer_refresh_token, expires_in);
+        result = true;
+      }
+    }
     mysql_stmt_close(stmt);
   }
 

@@ -25,6 +25,8 @@
 #include "proto.h"
 #include "user.h"
 
+class supla_alexa_token;
+
 class database : public dbcommon {
  private:
   virtual char *cfg_get_host(void);
@@ -143,6 +145,8 @@ class database : public dbcommon {
 
   bool superuser_authorization(int UserID, char email[SUPLA_EMAIL_MAXSIZE],
                                char password[SUPLA_PASSWORD_MAXSIZE]);
+
+  bool alexa_load_token(supla_alexa_token *alexa_token);
 };
 
 #endif /* DATABASE_H_ */
