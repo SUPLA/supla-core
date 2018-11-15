@@ -243,8 +243,9 @@ void supla_trivial_http::parse_header_item(const char *item, unsigned int size,
     contentType = strdup(match);
 
   } else if (chunked &&
-             NULL != (match = header_item_match(item, size, _transferEncoding,
-                                                sizeof(_contentType) - 1))) {
+             NULL !=
+                 (match = header_item_match(item, size, _transferEncoding,
+                                            sizeof(_transferEncoding) - 1))) {
     *chunked = true;
   } else if (NULL != (match = header_item_match(item, size, _contentLength,
                                                 sizeof(_contentLength) - 1))) {
@@ -350,16 +351,18 @@ bool supla_trivial_http::request(const char *method, const char *header,
   }
 
   char *auth = NULL;
+  int auth_len = 0;
 
   if (this->token) {
-    int auth_len = 30 + strnlen(token, TOKEN_MAXSIZE);
+    auth_len = 30 + strnlen(token, TOKEN_MAXSIZE);
     auth = (char *)malloc(auth_len);
 
     snprintf(auth, auth_len, "Authorization: Bearer %s\r\n", token);
   }
 
   size_t size = 100 + m_len + h_len + r_len +
-                (header ? strnlen(header, HEADER_MAXSIZE) : 0);
+                (header ? strnlen(header, HEADER_MAXSIZE) : 0) +
+                (auth ? strnlen(auth, auth_len) : 0);
 
   if (size > OUTDATA_MAXSIZE) {
     return false;
@@ -381,6 +384,8 @@ bool supla_trivial_http::request(const char *method, const char *header,
     free(auth);
     auth = NULL;
   };
+
+  supla_log(LOG_DEBUG, "%s", out_buffer);
 
   char *in = NULL;
   send_recv(out_buffer, &in);
