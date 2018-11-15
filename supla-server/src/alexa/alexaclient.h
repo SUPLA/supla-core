@@ -19,13 +19,20 @@
 #ifndef ALEXA_ALEXACLIENT_H_
 #define ALEXA_ALEXACLIENT_H_
 
+class supla_alexa_token;
+
 class supla_alexa_client {
- protected:
  private:
- int post(char *data);
+  supla_alexa_token *alexa_token;
+  void refresh_roken();
+
+ protected:
+  int parseErrorCode(const char *code);
+  int aeg_post_request(char *data);
+  int aeg_post(char *data);
 
  public:
-  supla_alexa_client();
+  supla_alexa_client(supla_alexa_token *alexa_token);
   virtual ~supla_alexa_client();
 
   void test(void);

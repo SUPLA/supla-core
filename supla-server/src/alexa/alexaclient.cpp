@@ -17,50 +17,156 @@
  */
 
 #include <alexa/alexaclient.h>
+#include <alexa/alexatoken.h>
 #include <http/trivialhttps.h>
+#include <map>
+#include <string>
+#include "json/cJSON.h"
 #include "log.h"
 #include "svrcfg.h"
 
-supla_alexa_client::supla_alexa_client() {}
+#define POST_RESULT_SUCCESS 1
+#define POST_RESULT_UNKNOWN_ERROR 0
+
+#define POST_RESULT_INVALID_REQUEST_EXCEPTION -1
+#define POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION -2
+#define POST_RESULT_SKILL_DISABLED_EXCEPTION -3
+#define POST_RESULT_INSUFFICIENT_PERMISSION_EXCEPTION -4
+#define POST_RESULT_SKILL_NOT_FOUND_EXCEPTION 1005
+#define POST_RESULT_REQUEST_ENTITY_TOO_LARGE_EXCEPTION -5
+#define POST_RESULT_THROTTLING_EXCEPTION -6
+#define POST_RESULT_INTERNAL_SERVICE_EXCEPTION -7
+#define POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION -8
+
+#define POST_RESULT_NOSSL -100
+#define POST_RESULT_TOKEN_DOES_NOT_EXISTS -200
+
+// https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
+std::map<std::string, int> codeMap = {
+    {"INVALID_REQUEST_EXCEPTION", POST_RESULT_INVALID_REQUEST_EXCEPTION},
+    {"INVALID_ACCESS_TOKEN_EXCEPTION",
+     POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION},
+    {"SKILL_DISABLED_EXCEPTION", POST_RESULT_SKILL_DISABLED_EXCEPTION},
+    {"INSUFFICIENT_PERMISSION_EXCEPTION",
+     POST_RESULT_INSUFFICIENT_PERMISSION_EXCEPTION},
+    {"SKILL_NOT_FOUND_EXCEPTION", POST_RESULT_SKILL_NOT_FOUND_EXCEPTION},
+    {"REQUEST_ENTITY_TOO_LARGE_EXCEPTION",
+     POST_RESULT_REQUEST_ENTITY_TOO_LARGE_EXCEPTION},
+    {"THROTTLING_EXCEPTION", POST_RESULT_THROTTLING_EXCEPTION},
+    {"INTERNAL_SERVICE_EXCEPTION", POST_RESULT_INTERNAL_SERVICE_EXCEPTION},
+    {"SERVICE_UNAVAILABLE_EXCEPTION",
+     POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION}};
+
+supla_alexa_client::supla_alexa_client(supla_alexa_token *alexa_token) {
+  this->alexa_token = alexa_token;
+}
+
+int supla_alexa_client::parseErrorCode(const char *code) {
+  std::map<std::string, int>::iterator it;
+  it = codeMap.find(code);
+
+  if (it != codeMap.end()) {
+    return it->second;
+  }
+
+  return POST_RESULT_UNKNOWN_ERROR;
+}
 
 supla_alexa_client::~supla_alexa_client() {}
 
-#define POST_RESULT_SUCCESS 1
+void supla_alexa_client::refresh_roken() {
+  if (!alexa_token->isRefreshTokenExists()) {
+    return;
+  }
 
-#define POST_RESULT_UNKNOWN_ERROR 0
-#define POST_RESULT_INVALID_REQUEST_EXCEPTION  -1
-#define POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION  -2
-#define POST_RESULT_SKILL_DISABLED_EXCEPTION  -3
-#define POST_RESULT_INSUFFICIENT_PERMISSION_EXCEPTION  -4
-#define POST_RESULT_SKILL_NOT_FOUND_EXCEPTION  1005
-#define POST_RESULT_REQUEST_ENTITY_TOO_LARGE_EXCEPTION  -5
-#define POST_RESULT_THROTTLING_EXCEPTION  -6
-#define POST_RESULT_INTERNAL_SERVICE_EXCEPTION  -7
-#define POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION  -8
-#define POST_RESULT_NOSSL -100
+  struct timeval last_set_time = alexa_token->getSetTime();
+  alexa_token->refresh_lock();
 
-int supla_alexa_client::post(char *data) {
+  struct timeval current_set_time = alexa_token->getSetTime();
+  if (last_set_time.tv_sec != current_set_time.tv_sec ||
+      last_set_time.tv_usec != current_set_time.tv_usec) {
+    char *token = NULL;
+    char *refresh_roken = NULL;
+    int expires_at = 0;
 
-	int result = POST_RESULT_UNKNOWN_ERROR;
+#ifndef NOSSL
+    supla_trivial_https *https = new supla_trivial_https();
+
+    char host[] = "api.amazon.com";
+    char resource[] = "/auth/o2/token";
+
+    https->setHost(host);
+    https->setResource(resource);
+    https->setToken(alexa_token->getToken(), false);
+
+    delete https;
+#endif /*NOSSL*/
+  }
+
+  alexa_token->refresh_unlock();
+}
+
+int supla_alexa_client::aeg_post_request(char *data) {
+  int result = POST_RESULT_UNKNOWN_ERROR;
 
 #ifdef NOSSL
-	return POST_RESULT_NOSSL;
+  return POST_RESULT_NOSSL;
 #else
   supla_trivial_https *https = new supla_trivial_https();
 
   https->setHost(scfg_string(CFG_ALEXA_EVENT_GATEWAY_HOST));
-  https->setResource("/v3/events");
+
+  char resource[] = "/v3/events";
+  https->setResource(resource);
+  https->setToken(alexa_token->getToken(), false);
 
   https->http_post();
 
-  if (https->getResultCode() != 200) {
-
+  supla_log(LOG_DEBUG, "%s", https->getBody());
+  if (https->getResultCode() != 200 && https->getBody()) {
+    cJSON *root = cJSON_Parse(https->getBody());
+    if (root) {
+      cJSON *payload = cJSON_GetObjectItem(root, "payload");
+      if (payload) {
+        cJSON *code = cJSON_GetObjectItem(payload, "code");
+        if (code) {
+          result = parseErrorCode(cJSON_GetStringValue(code));
+        }
+      }
+      cJSON_Delete(root);
+    }
   }
 
   delete https;
 #endif /*NOSSL*/
+
+  return result;
 }
 
-void supla_alexa_client::test(void) {
-	post(NULL);
+int supla_alexa_client::aeg_post(char *data) {
+  if (!alexa_token->isTokenExists()) {
+    return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
+  }
+
+  bool refresh_attempt = false;
+
+  if (alexa_token->expiresIn() <= 30) {
+    refresh_attempt = true;
+    refresh_roken();
+  }
+
+  int result = aeg_post_request(data);
+  if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION) {
+    if (!refresh_attempt) {
+      refresh_roken();
+      result = aeg_post_request(data);
+    }
+  } else if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
+             result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION) {
+    alexa_token->remove();
+  }
+
+  return result;
 }
+
+void supla_alexa_client::test(void) { aeg_post(NULL); }
