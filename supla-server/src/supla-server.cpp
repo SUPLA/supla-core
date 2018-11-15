@@ -30,7 +30,7 @@
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
-#include "http/trivial_https.h"
+#include <http/trivialhttps.h>
 #include "ipcsocket.h"
 #include "log.h"
 #include "proto.h"
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
   st_mainloop_free();
   st_delpidfile(pidfile_path);
 
-  supla_user::free();
+  supla_user::user_free();
   database::mainthread_end();
 
   svrcfg_free();
