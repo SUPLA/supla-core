@@ -71,7 +71,7 @@ int supla_alexa_token::getUserID() { return user->getUserID(); }
 
 void supla_alexa_token::refresh_lock(void) { lck_lock(lck2); }
 
-void supla_alexa_token::refres_unlock(void) { lck_unlock(lck2); }
+void supla_alexa_token::refresh_unlock(void) { lck_unlock(lck2); }
 
 void supla_alexa_token::set(const char *token, const char *refresh_token,
                             int expires_in) {

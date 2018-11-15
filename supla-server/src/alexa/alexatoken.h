@@ -52,7 +52,7 @@ private:
   struct timeval getSetTime(void);
 
   void refresh_lock(void);
-  void refres_unlock(void);
+  void refresh_unlock(void);
 
 };
 
