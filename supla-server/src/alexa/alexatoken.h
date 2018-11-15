@@ -49,6 +49,7 @@ private:
   int expiresIn(void);
   char *getToken(void);
   char *getRefreshToken(void);
+  struct timeval getSetTime(void);
 
   void refresh_lock(void);
   void refres_unlock(void);

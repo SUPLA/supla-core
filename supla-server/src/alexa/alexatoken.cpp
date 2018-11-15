@@ -174,3 +174,15 @@ char *supla_alexa_token::getRefreshToken(void) {
 
   return result;
 }
+
+struct timeval supla_alexa_token::getSetTime(void) {
+  struct timeval result;
+  result.tv_sec = 0;
+  result.tv_usec = 0;
+
+  lck_lock(lck1);
+  result = set_at;
+  lck_unlock(lck1);
+
+  return result;
+}
