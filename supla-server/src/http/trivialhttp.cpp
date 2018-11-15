@@ -62,37 +62,39 @@ supla_trivial_http::~supla_trivial_http(void) {
   setHost(NULL);
   setResource(NULL);
   releaseResponse();
-  setToken(NULL);
+  setToken(NULL, false);
 }
 
-void supla_trivial_http::set_string_variable(char **var, int max_len,
-                                             const char *src) {
+void supla_trivial_http::set_string_variable(char **var, int max_len, char *src,
+                                             bool copy) {
   if (*var) {
     free(*var);
     *var = NULL;
   }
 
   if (src && strnlen(src, max_len) > 0) {
-    *var = strndup(src, max_len);
+    *var = copy ? strndup(src, max_len) : src;
+  } else if (src && !copy) {
+    free(src);
   }
 }
 
 void supla_trivial_http::releaseResponse(void) {
-  set_string_variable(&body, 0, NULL);
-  set_string_variable(&contentType, 0, NULL);
+  set_string_variable(&body, 0, NULL, false);
+  set_string_variable(&contentType, 0, NULL, false);
 
   this->resultCode = 0;
   this->contentLength = 0;
 }
 
-void supla_trivial_http::setHost(const char *host) {
-  set_string_variable(&this->host, 1024, host);
+void supla_trivial_http::setHost(char *host, bool copy) {
+  set_string_variable(&this->host, 1024, host, copy);
 }
 
 void supla_trivial_http::setPort(int port) { this->port = port; }
 
-void supla_trivial_http::setResource(const char *resource) {
-  set_string_variable(&this->resource, 1024, resource);
+void supla_trivial_http::setResource(char *resource, bool copy) {
+  set_string_variable(&this->resource, 1024, resource, copy);
 }
 
 int supla_trivial_http::getResultCode(void) { return resultCode; }
@@ -370,8 +372,6 @@ bool supla_trivial_http::request(const char *method, const char *header,
     auth = NULL;
   }
 
-  supla_log(LOG_DEBUG, "%s", out_buffer);
-
   char *in = NULL;
   send_recv(out_buffer, &in);
 
@@ -390,8 +390,8 @@ bool supla_trivial_http::request(const char *method, const char *header,
   return result;
 }
 
-void supla_trivial_http::setToken(char *token) {
-  set_string_variable(&this->token, TOKEN_MAXSIZE, token);
+void supla_trivial_http::setToken(char *token, bool copy) {
+  set_string_variable(&this->token, TOKEN_MAXSIZE, token, copy);
 }
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }

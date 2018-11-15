@@ -38,7 +38,7 @@ class supla_trivial_http {
 
   char *token;
 
-  void set_string_variable(char **var, int max_len, const char *src);
+  void set_string_variable(char **var, int max_len, char *src, bool copy);
 
   virtual ssize_t _write(void *ptr, const void *__buf, size_t __n);
   virtual ssize_t _read(void *ptr, void *__buf, size_t __n);
@@ -62,14 +62,14 @@ class supla_trivial_http {
   supla_trivial_http(const char *host, const char *resource);
   supla_trivial_http(void);
   virtual ~supla_trivial_http(void);
-  void setHost(const char *host);
+  void setHost(char *host, bool copy = true);
   void setPort(int port);
-  void setResource(const char *resource);
+  void setResource(char *resource, bool copy = true);
   int getResultCode(void);
   int getContentLength(void);
   const char *getContentType(void);
   const char *getBody(void);
-  void setToken(char *token);
+  void setToken(char *token, bool copy = true);
 
   bool http_get(void);
   bool http_post(void);
