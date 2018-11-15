@@ -1851,3 +1851,20 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
 
   return result;
 }
+
+void database::alexa_remove_token(supla_alexa_token *alexa_token) {
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  int UserID = alexa_token->getUserID();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  const char sql[] = "CALL `supla_delete_alexa_egc`(?)";
+
+  MYSQL_STMT *stmt;
+  stmt_execute((void **)&stmt, sql, pbind, 1, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}

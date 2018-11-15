@@ -147,6 +147,7 @@ class database : public dbcommon {
                                char password[SUPLA_PASSWORD_MAXSIZE]);
 
   bool alexa_load_token(supla_alexa_token *alexa_token);
+  void alexa_remove_token(supla_alexa_token *alexa_token);
 };
 
 #endif /* DATABASE_H_ */

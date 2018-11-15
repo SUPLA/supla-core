@@ -113,6 +113,17 @@ void supla_alexa_token::load() {
   delete db;
 }
 
+void supla_alexa_token::remove() {
+  set(NULL, NULL, 0);
+  database *db = new database();
+
+  if (db->connect()) {
+    db->alexa_remove_token(this);
+  }
+
+  delete db;
+}
+
 bool supla_alexa_token::isTokenExists(void) {
   bool result = false;
 

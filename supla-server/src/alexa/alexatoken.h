@@ -42,6 +42,7 @@ private:
   virtual ~supla_alexa_token();
   int getUserID();
   void load();
+  void remove();
   void set(const char *token, const char *refresh_token, int expires_in);
 
   bool isTokenExists(void);
