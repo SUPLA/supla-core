@@ -151,7 +151,7 @@ int supla_alexa_token::expiresIn(void) {
 
   struct timeval now;
   gettimeofday(&now, NULL);
-  result = now.tv_sec - expires_at.tv_sec;
+  result =  expires_at.tv_sec - now.tv_sec;
 
   lck_unlock(lck1);
 
