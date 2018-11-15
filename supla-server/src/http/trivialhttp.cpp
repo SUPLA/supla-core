@@ -20,6 +20,7 @@
 #define INDATA_MAXSIZE 102400
 #define METHOD_MAXSIZE 20
 #define IN_BUFFER_SIZE 1024
+#define TOKEN_MAXSIZE 2048
 
 #include <arpa/inet.h>
 #include <http/trivialhttp.h>
@@ -30,6 +31,7 @@
 #include <strings.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "log.h"
@@ -42,6 +44,12 @@ supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
   this->host = host ? strndup(host, HOST_MAXSIZE) : NULL;
   this->resource = resource ? strndup(resource, RESOURCE_MAXSIZE) : NULL;
   this->body = NULL;
+  this->token = NULL;
+  this->oauth_host = NULL;
+  this->refresh_token = NULL;
+  this->token_endpoint = NULL;
+  this->expires_at = 0;
+  this->token_is_expired = false;
 }
 
 supla_trivial_http::supla_trivial_http(void) {
@@ -52,12 +60,20 @@ supla_trivial_http::supla_trivial_http(void) {
   this->host = NULL;
   this->resource = NULL;
   this->body = NULL;
+  this->token = NULL;
+  this->oauth_host = NULL;
+  this->refresh_token = NULL;
+  this->token_endpoint = NULL;
+  this->expires_at = 0;
+  this->token_is_expired = false;
 }
 
 supla_trivial_http::~supla_trivial_http(void) {
   setHost(NULL);
   setResource(NULL);
   releaseResponse();
+  setToken(NULL, 0);
+  setRefreshToken(NULL);
 }
 
 void supla_trivial_http::set_string_variable(char **var, int max_len,
@@ -322,11 +338,24 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   releaseResponse();
 
+  if (isTokenExpired()) {
+    return false;
+  }
+
   if (!method || !host || !resource ||
       (m_len = strnlen(method, METHOD_MAXSIZE)) < 3 ||
       (h_len = strnlen(host, HOST_MAXSIZE)) < 1 ||
       (r_len = strnlen(resource, RESOURCE_MAXSIZE) < 1)) {
     return false;
+  }
+
+  char *auth = NULL;
+
+  if (this->token) {
+    int auth_len = 30 + strnlen(token, TOKEN_MAXSIZE);
+    auth = (char *)malloc(auth_len);
+
+    snprintf(auth, auth_len, "Authorization: Bearer %s\r\n", token);
   }
 
   size_t size = 100 + m_len + h_len + r_len +
@@ -343,10 +372,15 @@ bool supla_trivial_http::request(const char *method, const char *header,
            "%s %s HTTP/1.1\r\n"
            "Host: %s\r\n"
            "User-Agent: supla-server\r\n"
-           "Connection: close%s%s\r\n\r\n"
+           "%sConnection: close%s%s\r\n\r\n"
            "%s%s",
-           method, resource, host, header ? "\r\n" : "", header ? header : "",
-           data ? data : "", data ? "\n" : "");
+           method, resource, host, auth ? auth : "", header ? "\r\n" : "",
+           header ? header : "", data ? data : "", data ? "\n" : "");
+
+  if (auth) {
+    free(auth);
+    auth = NULL;
+  };
 
   char *in = NULL;
   send_recv(out_buffer, &in);
@@ -364,6 +398,41 @@ bool supla_trivial_http::request(const char *method, const char *header,
   }
 
   return result;
+}
+
+void supla_trivial_http::setToken(const char *token, int expires_at) {
+  this->expires_at = expires_at;
+  this->token_is_expired = false;
+  set_string_variable(&this->token, TOKEN_MAXSIZE, token);
+}
+
+void supla_trivial_http::setRefreshToken(const char *refresh_token) {
+  set_string_variable(&this->refresh_token, TOKEN_MAXSIZE, refresh_token);
+}
+
+void supla_trivial_http::setOAuthHost(const char *oauth_host) {
+  set_string_variable(&this->oauth_host, HOST_MAXSIZE, oauth_host);
+}
+
+void supla_trivial_http::setOAuthTokenEndpoint(const char *token_endpoint) {
+  set_string_variable(&this->token_endpoint, RESOURCE_MAXSIZE, token_endpoint);
+}
+
+bool supla_trivial_http::isTokenExpired(void) {
+  if (!token) {
+    return false;
+  }
+
+  if (token_is_expired) {
+    return true;
+  }
+
+  if (this->expires_at > 0) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+  }
+
+  return token_is_expired;
 }
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
