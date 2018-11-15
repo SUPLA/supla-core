@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <list>
 
+#include "alexa/alexatoken.h"
 #include "client.h"
 #include "device.h"
 #include "log.h"
@@ -69,6 +70,7 @@ supla_user::supla_user(int UserID) {
   this->device_arr = safe_array_init();
   this->client_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
+  this->alexa_token = new supla_alexa_token(this);
   this->connections_allowed = true;
 
   safe_array_add(supla_user::user_arr, this);
@@ -78,13 +80,14 @@ supla_user::~supla_user() {
   safe_array_remove(supla_user::user_arr, this);
 
   delete cgroups;
+  delete alexa_token;
   safe_array_free(device_arr);
   safe_array_free(client_arr);
 }
 
 void supla_user::init(void) { supla_user::user_arr = safe_array_init(); }
 
-void supla_user::free(void) {
+void supla_user::user_free(void) {
   safe_array_clean(supla_user::user_arr, supla_user_clean);
   safe_array_free(supla_user::user_arr);
 }
@@ -582,6 +585,20 @@ bool supla_user::set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
   return result;
 }
 
+// static
+void supla_user::on_alexa_egc_changed(int UserID) {
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+	  user->get_alexa_token()->load();
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+}
+
 bool supla_user::set_device_channel_value(
     int SenderID, int DeviceID, int ChannelID,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -847,3 +864,5 @@ bool supla_user::client_reconnect(int UserID, int ClientID) {
 
   return false;
 }
+
+supla_alexa_token *supla_user::get_alexa_token(void) { return alexa_token; }

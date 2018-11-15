@@ -24,6 +24,7 @@
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
+class supla_alexa_token;
 
 class supla_user {
  protected:
@@ -32,6 +33,7 @@ class supla_user {
   void *device_arr;
   void *client_arr;
   supla_user_channelgroups *cgroups;
+  supla_alexa_token *alexa_token;
   int UserID;
   bool connections_allowed;
 
@@ -58,7 +60,7 @@ class supla_user {
 
  public:
   static void init(void);
-  static void free(void);
+  static void user_free(void);
   static supla_user *add_device(supla_device *device, int UserID);
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
@@ -93,6 +95,7 @@ class supla_user {
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
                                           char color_brightness,
                                           char brightness);
+  static void on_alexa_egc_changed(int UserID);
 
   void remove_device(supla_device *device);
   void remove_client(supla_client *client);
@@ -139,6 +142,8 @@ class supla_user {
   bool device_calcfg_request(int SenderID, int DeviceId,
                              TCS_DeviceCalCfgRequest *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
+
+  supla_alexa_token *get_alexa_token(void);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

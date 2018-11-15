@@ -47,6 +47,8 @@ class svr_ipcctrl {
   void get_rgbw(const char *cmd);
   void set_char(const char *cmd, bool group);
   void set_rgbw(const char *cmd, bool group, bool random);
+  void alexa_egc_changed(const char *cmd);
+
   void send_result(const char *result);
   void send_result(const char *result, int i);
   void send_result(const char *result, double i);

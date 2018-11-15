@@ -50,6 +50,8 @@ const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
 const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
+const char cmd_user_alexa_egc_changed[] = "USER-ALEXA-EGC-CHANGED:";
+
 char ACT_VAR[] = ",ALEXA-CORRELATION-TOKEN=";
 
 svr_ipcctrl::svr_ipcctrl(int sfd) {
@@ -302,6 +304,20 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   send_result("UNKNOWN:", CGID);
 }
 
+void svr_ipcctrl::alexa_egc_changed(const char *cmd) {
+  int UserID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_alexa_egc_changed, IPC_BUFFER_SIZE)], "%i",
+         &UserID);
+
+  if (UserID) {
+    supla_user::on_alexa_egc_changed(UserID);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
 void svr_ipcctrl::execute(void *sthread) {
   if (sfd == -1) return;
 
@@ -319,6 +335,7 @@ void svr_ipcctrl::execute(void *sthread) {
     if ((len = recv(sfd, buffer, sizeof(buffer), 0)) != 0) {
       if (len > 0) {
         buffer[IPC_BUFFER_SIZE - 1] = 0;
+        supla_log(LOG_DEBUG, "%s", buffer);
 
         if (match_command(cmd_is_client_connected, len)) {
           int UserID = 0;
@@ -402,6 +419,9 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_set_cg_rand_rgbw_value, len)) {
           set_rgbw(cmd_set_cg_rand_rgbw_value, true, true);
+
+        } else if (match_command(cmd_user_alexa_egc_changed, len)) {
+          alexa_egc_changed(cmd_user_alexa_egc_changed);
 
         } else {
           send_result("COMMAND_UNKNOWN");
