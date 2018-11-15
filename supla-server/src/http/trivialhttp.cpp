@@ -295,7 +295,7 @@ bool supla_trivial_http::parse(char **in) {
                 chunk_left = strtol(&(*in)[chunk_pos], NULL, 16);
                 if (chunk_left <= 0) {
                   break;
-                };
+                }
                 copy = true;
               }
 
@@ -383,7 +383,7 @@ bool supla_trivial_http::request(const char *method, const char *header,
   if (auth) {
     free(auth);
     auth = NULL;
-  };
+  }
 
   supla_log(LOG_DEBUG, "%s", out_buffer);
 

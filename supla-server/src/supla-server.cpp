@@ -20,17 +20,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-#include <unistd.h>
 
 #ifndef NOSSL
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #endif /*NOSSL*/
 
+#include <http/trivialhttps.h>
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
-#include <http/trivialhttps.h>
 #include "ipcsocket.h"
 #include "log.h"
 #include "proto.h"
