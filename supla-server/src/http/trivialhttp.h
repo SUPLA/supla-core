@@ -36,7 +36,7 @@ class supla_trivial_http {
   int contentLength;
   int resultCode;
 
-  void set_string_variable(char **var, int max_len, const char *src) ;
+  void set_string_variable(char **var, int max_len, const char *src);
 
   virtual ssize_t _write(void *ptr, const void *__buf, size_t __n);
   virtual ssize_t _read(void *ptr, void *__buf, size_t __n);
@@ -44,14 +44,15 @@ class supla_trivial_http {
 
   void write_read(void *ptr, const char *out, char **in);
   virtual bool send_recv(const char *out, char **in);
-  virtual bool request(const char *method, const char *header, const char *data);
+  virtual bool request(const char *method, const char *header,
+                       const char *data);
 
  private:
   bool get_addrinfo(void **res);
 
   char *header_item_match(const char *item, unsigned int size, const char *name,
                           unsigned int name_size);
-  void parse_header_item(const char *item, unsigned int size);
+  void parse_header_item(const char *item, unsigned int size, bool *chunked);
   bool parse(char **in);
   void releaseResponse(void);
 
@@ -68,6 +69,7 @@ class supla_trivial_http {
   const char *getBody(void);
 
   bool http_get(void);
+  bool http_post(void);
 };
 
 #endif /* TRIVIAL_HTTP_H_ */

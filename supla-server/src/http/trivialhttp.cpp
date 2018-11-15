@@ -204,11 +204,12 @@ char *supla_trivial_http::header_item_match(const char *item, unsigned int size,
   return NULL;
 }
 
-void supla_trivial_http::parse_header_item(const char *item,
-                                           unsigned int size) {
+void supla_trivial_http::parse_header_item(const char *item, unsigned int size,
+                                           bool *chunked) {
   char _http[] = "HTTP/1.1 ";
   char _contentType[] = "Content-Type: ";
   char _contentLength[] = "Content-Length: ";
+  char _transferEncoding[] = "Transfer-Encoding: chunked";
 
   char *match = NULL;
   if (NULL !=
@@ -225,6 +226,10 @@ void supla_trivial_http::parse_header_item(const char *item,
     }
     contentType = strdup(match);
 
+  } else if (chunked &&
+             NULL != (match = header_item_match(item, size, _transferEncoding,
+                                                sizeof(_contentType) - 1))) {
+    *chunked = true;
   } else if (NULL != (match = header_item_match(item, size, _contentLength,
                                                 sizeof(_contentLength) - 1))) {
     contentLength = atoi(match);
@@ -237,14 +242,58 @@ bool supla_trivial_http::parse(char **in) {
   int pos = 0;
 
   this->resultCode = 0;
+  bool chunked = false;
 
   for (unsigned int a = 0; a < len - sizeof(next); a++) {
     if (memcmp(&(*in)[a], next, sizeof(next)) == 0) {
       if (a - pos == 0) {
         int n = 0;
+        int chunk_pos = 0;
+        unsigned long chunk_left = 0;
+        bool copy = !chunked;
+
         for (unsigned int b = a + sizeof(next); b < len; b++) {
-          (*in)[n] = (*in)[b];
-          n++;
+          if (chunked) {
+            if (chunk_pos == 0) {
+              chunk_pos = b;
+            }
+
+            if (chunk_left > 0) {
+              chunk_left--;
+              if (chunk_left == 0) {
+                copy = false;
+                chunk_pos = b + 2;
+
+                if (b >= len - 1 || (*in)[b] != '\r' || (*in)[b + 1] != '\n') {
+                  break;
+                }
+              }
+            }
+
+            if (!copy && b < len - 1 && (*in)[b] == '\r' &&
+                (*in)[b + 1] == '\n') {
+              (*in)[b] = 0;
+
+              if (b - chunk_pos > 0 && b - chunk_pos <= 8) {
+                chunk_left = strtol(&(*in)[chunk_pos], NULL, 16);
+                if (chunk_left <= 0) {
+                  break;
+                };
+                copy = true;
+              }
+
+              b += 2;
+
+              if (b >= len - 1) {
+                break;
+              }
+            }
+          }
+
+          if (copy) {
+            (*in)[n] = (*in)[b];
+            n++;
+          }
         }
 
         (*in)[n] = 0;
@@ -255,7 +304,7 @@ bool supla_trivial_http::parse(char **in) {
         break;
       } else {
         (*in)[a] = 0;
-        parse_header_item(&(*in)[pos], a - pos);
+        parse_header_item(&(*in)[pos], a - pos, &chunked);
         pos = a + sizeof(next);
       }
     }
@@ -318,3 +367,5 @@ bool supla_trivial_http::request(const char *method, const char *header,
 }
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
+
+bool supla_trivial_http::http_post(void) { return request("POST", NULL, NULL); }
