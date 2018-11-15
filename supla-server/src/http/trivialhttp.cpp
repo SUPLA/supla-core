@@ -45,11 +45,6 @@ supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
   this->resource = resource ? strndup(resource, RESOURCE_MAXSIZE) : NULL;
   this->body = NULL;
   this->token = NULL;
-  this->oauth_host = NULL;
-  this->refresh_token = NULL;
-  this->token_endpoint = NULL;
-  this->expires_at = 0;
-  this->token_is_expired = false;
 }
 
 supla_trivial_http::supla_trivial_http(void) {
@@ -61,19 +56,13 @@ supla_trivial_http::supla_trivial_http(void) {
   this->resource = NULL;
   this->body = NULL;
   this->token = NULL;
-  this->oauth_host = NULL;
-  this->refresh_token = NULL;
-  this->token_endpoint = NULL;
-  this->expires_at = 0;
-  this->token_is_expired = false;
 }
 
 supla_trivial_http::~supla_trivial_http(void) {
   setHost(NULL);
   setResource(NULL);
   releaseResponse();
-  setToken(NULL, 0);
-  setRefreshToken(NULL);
+  setToken(NULL);
 }
 
 void supla_trivial_http::set_string_variable(char **var, int max_len,
@@ -339,10 +328,6 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   releaseResponse();
 
-  if (isTokenExpired()) {
-    return false;
-  }
-
   if (!method || !host || !resource ||
       (m_len = strnlen(method, METHOD_MAXSIZE)) < 3 ||
       (h_len = strnlen(host, HOST_MAXSIZE)) < 1 ||
@@ -405,39 +390,8 @@ bool supla_trivial_http::request(const char *method, const char *header,
   return result;
 }
 
-void supla_trivial_http::setToken(const char *token, int expires_at) {
-  this->expires_at = expires_at;
-  this->token_is_expired = false;
+void supla_trivial_http::setToken(char *token) {
   set_string_variable(&this->token, TOKEN_MAXSIZE, token);
-}
-
-void supla_trivial_http::setRefreshToken(const char *refresh_token) {
-  set_string_variable(&this->refresh_token, TOKEN_MAXSIZE, refresh_token);
-}
-
-void supla_trivial_http::setOAuthHost(const char *oauth_host) {
-  set_string_variable(&this->oauth_host, HOST_MAXSIZE, oauth_host);
-}
-
-void supla_trivial_http::setOAuthTokenEndpoint(const char *token_endpoint) {
-  set_string_variable(&this->token_endpoint, RESOURCE_MAXSIZE, token_endpoint);
-}
-
-bool supla_trivial_http::isTokenExpired(void) {
-  if (!token) {
-    return false;
-  }
-
-  if (token_is_expired) {
-    return true;
-  }
-
-  if (this->expires_at > 0) {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-  }
-
-  return token_is_expired;
 }
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }

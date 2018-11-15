@@ -37,12 +37,6 @@ class supla_trivial_http {
   int resultCode;
 
   char *token;
-  int expires_at;
-  bool token_is_expired;
-
-  char *refresh_token;
-  char *oauth_host;
-  char *token_endpoint;
 
   void set_string_variable(char **var, int max_len, const char *src);
 
@@ -75,13 +69,7 @@ class supla_trivial_http {
   int getContentLength(void);
   const char *getContentType(void);
   const char *getBody(void);
-  void setToken(const char *token, int expires_at);
-  void setRefreshToken(const char *refresh_token);
-  void setOAuthHost(const char *oauth_host);
-  void setOAuthTokenEndpoint(const char *token_endpoint);
-
-  bool isTokenExpired(void);
-  bool doRefreshToken();
+  void setToken(char *token);
 
   bool http_get(void);
   bool http_post(void);
