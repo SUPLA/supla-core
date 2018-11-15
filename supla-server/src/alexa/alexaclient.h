@@ -16,8 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <http/alexaclient.h>
+#ifndef ALEXA_ALEXACLIENT_H_
+#define ALEXA_ALEXACLIENT_H_
 
-alexa_client::alexa_client() {}
+class supla_alexa_client {
+ protected:
+ private:
+ int post(char *data);
 
-alexa_client::~alexa_client() {}
+ public:
+  supla_alexa_client();
+  virtual ~supla_alexa_client();
+
+  void test(void);
+};
+
+#endif /* ALEXA_ALEXACLIENT_H_ */

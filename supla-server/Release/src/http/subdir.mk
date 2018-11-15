@@ -4,17 +4,14 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/http/alexaclient.cpp \
 ../src/http/trivialhttp.cpp \
 ../src/http/trivialhttps.cpp 
 
 OBJS += \
-./src/http/alexaclient.o \
 ./src/http/trivialhttp.o \
 ./src/http/trivialhttps.o 
 
 CPP_DEPS += \
-./src/http/alexaclient.d \
 ./src/http/trivialhttp.d \
 ./src/http/trivialhttps.d 
 

@@ -16,15 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef HTTP_ALEXACLIENT_H_
-#define HTTP_ALEXACLIENT_H_
+#include <alexa/alexatoken.h>
 
-#include <http/oauthclient.h>
+supla_alexa_token::supla_alexa_token() {
+  // TODO Auto-generated constructor stub
+}
 
-class alexa_client : public oauth_client {
- public:
-  alexa_client();
-  virtual ~alexa_client();
-};
-
-#endif /* HTTP_ALEXACLIENT_H_ */
+supla_alexa_token::~supla_alexa_token() {
+  // TODO Auto-generated destructor stub
+}

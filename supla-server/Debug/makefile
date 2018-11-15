@@ -14,6 +14,7 @@ RM := rm -rf
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/client/subdir.mk
+-include src/alexa/subdir.mk
 -include src/subdir.mk
 -include subdir.mk
 -include objects.mk
