@@ -335,7 +335,6 @@ void svr_ipcctrl::execute(void *sthread) {
     if ((len = recv(sfd, buffer, sizeof(buffer), 0)) != 0) {
       if (len > 0) {
         buffer[IPC_BUFFER_SIZE - 1] = 0;
-        supla_log(LOG_DEBUG, "%s", buffer);
 
         if (match_command(cmd_is_client_connected, len)) {
           int UserID = 0;
