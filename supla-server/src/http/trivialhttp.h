@@ -57,6 +57,8 @@ class supla_trivial_http {
   void parse_header_item(const char *item, unsigned int size, bool *chunked);
   bool parse(char **in);
   void releaseResponse(void);
+  bool out_buffer_append(char **out_buffer, int *size, int *pos,
+                         const char *str);
 
  public:
   supla_trivial_http(const char *host, const char *resource);

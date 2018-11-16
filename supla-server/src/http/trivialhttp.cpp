@@ -321,59 +321,88 @@ bool supla_trivial_http::parse(char **in) {
   return resultCode > 0;
 }
 
+bool supla_trivial_http::out_buffer_append(char **out_buffer, int *size,
+                                           int *pos, const char *str) {
+  int str_len = str ? strnlen(str, OUTDATA_MAXSIZE) : 0;
+  if (str_len == 0 || (*pos) + str_len >= OUTDATA_MAXSIZE) {
+    free(*out_buffer);
+    *out_buffer = NULL;
+    return false;
+  }
+
+  if ((*pos) + str_len + 1 > *size) {
+    *size = (*pos) + str_len + 1;
+    *out_buffer = (char *)realloc(*out_buffer, *size);
+    if (*out_buffer == NULL) {
+      return false;
+    }
+  }
+
+  memcpy(&(*out_buffer)[*pos], str, str_len);
+  (*pos) += str_len;
+  (*out_buffer)[*pos] = 0;
+
+  return true;
+}
+
+#define OUT_APPEND(str) \
+  if (!out_buffer_append(&out_buffer, &size, &pos, str)) return false
+
 bool supla_trivial_http::request(const char *method, const char *header,
                                  const char *data) {
-  int m_len = 0;
-  int h_len = 0;
-  int r_len = 0;
   bool result = false;
 
   releaseResponse();
 
-  if (!method || !host || !resource ||
-      (m_len = strnlen(method, METHOD_MAXSIZE)) < 3 ||
-      (h_len = strnlen(host, HOST_MAXSIZE)) < 1 ||
-      (r_len = strnlen(resource, RESOURCE_MAXSIZE) < 1)) {
+  if (!method || !host || !resource || strnlen(method, METHOD_MAXSIZE) < 3 ||
+      strnlen(host, HOST_MAXSIZE) < 1 ||
+      strnlen(resource, RESOURCE_MAXSIZE) < 1) {
     return false;
   }
 
-  char *auth = NULL;
-  int auth_len = 0;
-
-  if (this->token) {
-    auth_len = 30 + strnlen(token, TOKEN_MAXSIZE);
-    auth = (char *)malloc(auth_len);
-
-    snprintf(auth, auth_len, "Authorization: Bearer %s\r\n", token);
-  }
-
-  int data_len = (data ? strnlen(data, OUTDATA_MAXSIZE) : 0);
-
-  size_t size = 100 + m_len + h_len + r_len +
-                (header ? strnlen(header, HEADER_MAXSIZE) : 0) +
-                (auth ? strnlen(auth, auth_len) : 0) + data_len;
-
-  if (size > OUTDATA_MAXSIZE) {
-    return false;
-  }
-
+  int pos = 0;
+  int size = 100;
   char *out_buffer = (char *)malloc(size);
   memset(out_buffer, 0, size);
 
-  snprintf(out_buffer, size - 1,
-           "%s %s HTTP/1.1\r\n"
-           "Host: %s\r\n"
-           "User-Agent: supla-server\r\n"
-           "Content-Length: %i\r\n"
-           "%sConnection: close%s%s\r\n\r\n"
-           "%s",
-           method, resource, host, data_len, auth ? auth : "",
-           header ? "\r\n" : "", header ? header : "", data ? data : "");
+  OUT_APPEND(method);
+  OUT_APPEND(" ");
+  OUT_APPEND(resource);
+  OUT_APPEND(" HTTP/1.1\r\n");
+  OUT_APPEND("Host: ");
+  OUT_APPEND(host);
+  OUT_APPEND("\r\nUser-Agent: supla-server\r\n");
 
-  if (auth) {
-    free(auth);
-    auth = NULL;
+  int data_len = (data ? strnlen(data, OUTDATA_MAXSIZE) : 0);
+  if (data_len > 0) {
+    char number[15];
+    number[0] = 0;
+
+    snprintf(number, sizeof(number) - 1, "%i", data_len);
+
+    OUT_APPEND("Content-Length: ");
+    OUT_APPEND(number);
+    OUT_APPEND("\r\n");
   }
+
+  if (this->token) {
+    OUT_APPEND("Authorization: Bearer ");
+    OUT_APPEND(this->token);
+    OUT_APPEND("\r\n");
+  }
+
+  OUT_APPEND("Connection: close\r\n");
+  if (header) {
+    OUT_APPEND(header);
+    OUT_APPEND("\r\n");
+  }
+  OUT_APPEND("\r\n");
+
+  if (data && data_len > 0) {
+    OUT_APPEND(data);
+  }
+
+  supla_log(LOG_DEBUG, "OUT %i [%s]", size, out_buffer);
 
   char *in = NULL;
   send_recv(out_buffer, &in);
@@ -402,4 +431,3 @@ bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
 bool supla_trivial_http::http_post(char *header, char *data) {
   return request("POST", header, data);
 }
-
