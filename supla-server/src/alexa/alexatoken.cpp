@@ -124,6 +124,18 @@ void supla_alexa_token::remove() {
   delete db;
 }
 
+void supla_alexa_token::update(const char *token, const char *refresh_token,
+                               int expires_in) {
+  set(token, refresh_token, expires_in);
+  database *db = new database();
+
+  if (db->connect()) {
+    db->alexa_update_token(this, token, refresh_token, expires_in);
+  }
+
+  delete db;
+}
+
 bool supla_alexa_token::isTokenExists(void) {
   bool result = false;
 
@@ -151,7 +163,7 @@ int supla_alexa_token::expiresIn(void) {
 
   struct timeval now;
   gettimeofday(&now, NULL);
-  result =  expires_at.tv_sec - now.tv_sec;
+  result = expires_at.tv_sec - now.tv_sec;
 
   lck_unlock(lck1);
 
