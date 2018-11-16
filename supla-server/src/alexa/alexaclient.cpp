@@ -42,29 +42,12 @@
 #define POST_RESULT_NOSSL -100
 #define POST_RESULT_TOKEN_DOES_NOT_EXISTS -200
 
-// https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
-/*
-std::map<std::string, int> codeMap = {
-    {"INVALID_REQUEST_EXCEPTION", POST_RESULT_INVALID_REQUEST_EXCEPTION},
-    {"INVALID_ACCESS_TOKEN_EXCEPTION",
-     POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION},
-    {"SKILL_DISABLED_EXCEPTION", POST_RESULT_SKILL_DISABLED_EXCEPTION},
-    {"INSUFFICIENT_PERMISSION_EXCEPTION",
-     POST_RESULT_INSUFFICIENT_PERMISSION_EXCEPTION},
-    {"SKILL_NOT_FOUND_EXCEPTION", POST_RESULT_SKILL_NOT_FOUND_EXCEPTION},
-    {"REQUEST_ENTITY_TOO_LARGE_EXCEPTION",
-     POST_RESULT_REQUEST_ENTITY_TOO_LARGE_EXCEPTION},
-    {"THROTTLING_EXCEPTION", POST_RESULT_THROTTLING_EXCEPTION},
-    {"INTERNAL_SERVICE_EXCEPTION", POST_RESULT_INTERNAL_SERVICE_EXCEPTION},
-    {"SERVICE_UNAVAILABLE_EXCEPTION",
-     POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION}};
-*/
-
 typedef struct {
   char *str;
   int code;
 } _alexa_code_t;
 
+// https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
 static const _alexa_code_t alexa_codes[]{
     {(char *)"INVALID_REQUEST_EXCEPTION",
      POST_RESULT_INVALID_REQUEST_EXCEPTION},
@@ -90,14 +73,6 @@ supla_alexa_client::supla_alexa_client(supla_alexa_token *alexa_token) {
 }
 
 int supla_alexa_client::parseErrorCode(const char *code) {
-  /*
-std::map<std::string, int>::iterator it;
-it = codeMap.find(code);
-
-if (it != codeMap.end()) {
-return it->second;
-}
-*/
   int n = 0;
   while (alexa_codes[n].str) {
     if (strncmp(alexa_codes[n].str, code, 50) == 0) {
