@@ -19,6 +19,7 @@
 #include <alexa/alexaclient.h>
 #include <alexa/alexatoken.h>
 #include <http/trivialhttps.h>
+#include <string.h>
 #include <map>
 #include <string>
 #include "json/cJSON.h"
@@ -42,6 +43,7 @@
 #define POST_RESULT_TOKEN_DOES_NOT_EXISTS -200
 
 // https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
+/*
 std::map<std::string, int> codeMap = {
     {"INVALID_REQUEST_EXCEPTION", POST_RESULT_INVALID_REQUEST_EXCEPTION},
     {"INVALID_ACCESS_TOKEN_EXCEPTION",
@@ -56,18 +58,53 @@ std::map<std::string, int> codeMap = {
     {"INTERNAL_SERVICE_EXCEPTION", POST_RESULT_INTERNAL_SERVICE_EXCEPTION},
     {"SERVICE_UNAVAILABLE_EXCEPTION",
      POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION}};
+*/
+
+typedef struct {
+  char *str;
+  int code;
+} _alexa_code_t;
+
+static const _alexa_code_t alexa_codes[]{
+    {(char *)"INVALID_REQUEST_EXCEPTION",
+     POST_RESULT_INVALID_REQUEST_EXCEPTION},
+    {(char *)"INVALID_ACCESS_TOKEN_EXCEPTION",
+     POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION},
+    {(char *)"SKILL_DISABLED_EXCEPTION", POST_RESULT_SKILL_DISABLED_EXCEPTION},
+    {(char *)"INSUFFICIENT_PERMISSION_EXCEPTION",
+     POST_RESULT_INSUFFICIENT_PERMISSION_EXCEPTION},
+    {(char *)"SKILL_NOT_FOUND_EXCEPTION",
+     POST_RESULT_SKILL_NOT_FOUND_EXCEPTION},
+    {(char *)"REQUEST_ENTITY_TOO_LARGE_EXCEPTION",
+     POST_RESULT_REQUEST_ENTITY_TOO_LARGE_EXCEPTION},
+    {(char *)"THROTTLING_EXCEPTION", POST_RESULT_THROTTLING_EXCEPTION},
+    {(char *)"INTERNAL_SERVICE_EXCEPTION",
+     POST_RESULT_INTERNAL_SERVICE_EXCEPTION},
+    {(char *)"SERVICE_UNAVAILABLE_EXCEPTION",
+     POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION},
+    {NULL, 0},
+};
 
 supla_alexa_client::supla_alexa_client(supla_alexa_token *alexa_token) {
   this->alexa_token = alexa_token;
 }
 
 int supla_alexa_client::parseErrorCode(const char *code) {
-  std::map<std::string, int>::iterator it;
-  it = codeMap.find(code);
+  /*
+std::map<std::string, int>::iterator it;
+it = codeMap.find(code);
 
-  if (it != codeMap.end()) {
-    return it->second;
-  }
+if (it != codeMap.end()) {
+return it->second;
+}
+*/
+  int n = 0;
+  while (alexa_codes[n].str) {
+    if (strncmp(alexa_codes[n].str, code, 50) == 0) {
+      return alexa_codes[n].code;
+    }
+    n++;
+  };
 
   return POST_RESULT_UNKNOWN_ERROR;
 }
