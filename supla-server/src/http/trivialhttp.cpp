@@ -347,9 +347,11 @@ bool supla_trivial_http::request(const char *method, const char *header,
     snprintf(auth, auth_len, "Authorization: Bearer %s\r\n", token);
   }
 
+  int data_len = (data ? strnlen(data, OUTDATA_MAXSIZE) : 0);
+
   size_t size = 100 + m_len + h_len + r_len +
                 (header ? strnlen(header, HEADER_MAXSIZE) : 0) +
-                (auth ? strnlen(auth, auth_len) : 0);
+                (auth ? strnlen(auth, auth_len) : 0) + data_len;
 
   if (size > OUTDATA_MAXSIZE) {
     return false;
@@ -362,10 +364,11 @@ bool supla_trivial_http::request(const char *method, const char *header,
            "%s %s HTTP/1.1\r\n"
            "Host: %s\r\n"
            "User-Agent: supla-server\r\n"
+           "Content-Length: %i\r\n"
            "%sConnection: close%s%s\r\n\r\n"
-           "%s%s",
-           method, resource, host, auth ? auth : "", header ? "\r\n" : "",
-           header ? header : "", data ? data : "", data ? "\n" : "");
+           "%s",
+           method, resource, host, data_len, auth ? auth : "",
+           header ? "\r\n" : "", header ? header : "", data ? data : "");
 
   if (auth) {
     free(auth);
@@ -396,4 +399,7 @@ void supla_trivial_http::setToken(char *token, bool copy) {
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
 
-bool supla_trivial_http::http_post(void) { return request("POST", NULL, NULL); }
+bool supla_trivial_http::http_post(char *header, char *data) {
+  return request("POST", header, data);
+}
+

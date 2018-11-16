@@ -72,7 +72,7 @@ class supla_trivial_http {
   void setToken(char *token, bool copy = true);
 
   bool http_get(void);
-  bool http_post(void);
+  bool http_post(char *header, char *data);
 };
 
 #endif /* TRIVIAL_HTTP_H_ */
