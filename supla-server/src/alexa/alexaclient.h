@@ -24,18 +24,19 @@ class supla_alexa_token;
 class supla_alexa_client {
  private:
   supla_alexa_token *alexa_token;
-  void refresh_roken();
+  void refresh_roken(void);
 
  protected:
-  int parseErrorCode(const char *code);
-  int aeg_post_request(char *data);
+  const char *getErrorString(const int code);
+  int getErrorCode(const char *code);
+  int aeg_post_request(char *data, int *httpResultCode);
   int aeg_post(char *data);
 
  public:
   supla_alexa_client(supla_alexa_token *alexa_token);
   virtual ~supla_alexa_client();
 
-  void test(void);
+  bool sendChangeReport(int channelId, bool hi, bool online, bool sensor);
 };
 
 #endif /* ALEXA_ALEXACLIENT_H_ */
