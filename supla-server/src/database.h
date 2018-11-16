@@ -148,6 +148,8 @@ class database : public dbcommon {
 
   bool alexa_load_token(supla_alexa_token *alexa_token);
   void alexa_remove_token(supla_alexa_token *alexa_token);
+  void alexa_update_token(supla_alexa_token *alexa_token, const char *token,
+                          const char *refresh_token, int expires_in);
 };
 
 #endif /* DATABASE_H_ */
