@@ -1787,7 +1787,7 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
-      "UTC_TIMESTAMP(), expires_at) `expires_in` FROM "
+      "UTC_TIMESTAMP(), expires_at) `expires_in`, `region` FROM "
       "`supla_alexa_egc` WHERE user_id = ? AND LENGTH(access_token) > 0";
 
   MYSQL_STMT *stmt = NULL;
@@ -1801,7 +1801,7 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
   pbind[0].buffer = (char *)&UserID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[3];
+    MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 
     char buffer_token[TOKEN_MAXSIZE + 1];
@@ -1813,6 +1813,11 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
     buffer_refresh_token[0] = 0;
     unsigned long refresh_token_size = 0;
     my_bool refresh_token_is_null = true;
+
+    char buffer_region[REGION_MAXSIZE + 1];
+    buffer_region[0] = 0;
+    unsigned long region_size = 0;
+    my_bool region_is_null = true;
 
     int expires_in = 0;
 
@@ -1831,6 +1836,12 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
     rbind[2].buffer = (char *)&expires_in;
 
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = buffer_region;
+    rbind[3].buffer_length = REGION_MAXSIZE;
+    rbind[3].length = &region_size;
+    rbind[3].is_null = &region_is_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1841,8 +1852,10 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
         buffer_token[token_is_null ? 0 : token_size] = 0;
         buffer_refresh_token[refresh_token_is_null ? 0 : refresh_token_size] =
             0;
+        buffer_region[region_is_null ? 0 : region_size] = 0;
 
-        alexa_token->set(buffer_token, buffer_refresh_token, expires_in);
+        alexa_token->set(buffer_token, buffer_refresh_token, expires_in,
+                         region_is_null ? NULL : buffer_region);
         result = true;
       }
     }
