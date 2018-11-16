@@ -20,23 +20,26 @@
 #define ALEXA_ALEXATOKEN_H_
 
 #define TOKEN_MAXSIZE 1024
+#define REGION_MAXSIZE 5
 
 #include <sys/time.h>
 
 class supla_user;
 
 class supla_alexa_token {
-private:
-	supla_user *user;
+ private:
+  supla_user *user;
 
-	char *token;
-	char *refresh_token;
-	struct timeval expires_at;
-	struct timeval set_at;
+  char *token;
+  char *refresh_token;
+  char *region;
+  struct timeval expires_at;
+  struct timeval set_at;
 
-	void *lck1;
-	void *lck2;
-	void release_strings(void);
+  void *lck1;
+  void *lck2;
+  void release_strings(void);
+
  public:
   supla_alexa_token(supla_user *user);
   virtual ~supla_alexa_token();
@@ -44,18 +47,19 @@ private:
   void load();
   void remove();
   void update(const char *token, const char *refresh_token, int expires_in);
-  void set(const char *token, const char *refresh_token, int expires_in);
+  void set(const char *token, const char *refresh_token, int expires_in,
+           const char *region);
 
   bool isTokenExists(void);
   bool isRefreshTokenExists(void);
   int expiresIn(void);
   char *getToken(void);
   char *getRefreshToken(void);
+  char *getRegion(void);
   struct timeval getSetTime(void);
 
   void refresh_lock(void);
   void refresh_unlock(void);
-
 };
 
 #endif /* ALEXA_ALEXATOKEN_H_ */

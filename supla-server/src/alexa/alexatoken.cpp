@@ -36,7 +36,7 @@ supla_alexa_token::supla_alexa_token(supla_user *user) {
   this->set_at.tv_sec = 0;
   this->set_at.tv_usec = 0;
 
-  set(NULL, NULL, 0);
+  set(NULL, NULL, 0, NULL);
 
   load();
 }
@@ -50,6 +50,11 @@ void supla_alexa_token::release_strings(void) {
   if (this->refresh_token) {
     free(this->refresh_token);
     this->refresh_token = NULL;
+  }
+
+  if (this->region) {
+    free(this->region);
+    this->region = NULL;
   }
 }
 
@@ -74,7 +79,7 @@ void supla_alexa_token::refresh_lock(void) { lck_lock(lck2); }
 void supla_alexa_token::refresh_unlock(void) { lck_unlock(lck2); }
 
 void supla_alexa_token::set(const char *token, const char *refresh_token,
-                            int expires_in) {
+                            int expires_in, const char *region) {
   lck_lock(lck1);
 
   release_strings();
@@ -82,13 +87,18 @@ void supla_alexa_token::set(const char *token, const char *refresh_token,
   int token_len = token ? strnlen(token, TOKEN_MAXSIZE) > 0 : 0;
   int refresh_token_len =
       refresh_token ? strnlen(refresh_token, TOKEN_MAXSIZE) > 0 : 0;
+  int region_len = region ? strnlen(region, REGION_MAXSIZE) > 0 : 0;
 
-  if (token_len > 0 && token_len <= TOKEN_MAXSIZE) {
+  if (token_len > 0) {
     this->token = strndup(token, TOKEN_MAXSIZE);
   }
 
-  if (refresh_token_len > 0 && refresh_token_len <= TOKEN_MAXSIZE) {
+  if (refresh_token_len > 0) {
     this->refresh_token = strndup(refresh_token, TOKEN_MAXSIZE);
+  }
+
+  if (region_len > 0) {
+    this->region = strndup(region, REGION_MAXSIZE);
   }
 
   gettimeofday(&set_at, NULL);
@@ -107,14 +117,14 @@ void supla_alexa_token::load() {
   database *db = new database();
 
   if (!db->connect() || !db->alexa_load_token(this)) {
-    set(NULL, NULL, 0);
+    set(NULL, NULL, 0, NULL);
   }
 
   delete db;
 }
 
 void supla_alexa_token::remove() {
-  set(NULL, NULL, 0);
+  set(NULL, NULL, 0, NULL);
   database *db = new database();
 
   if (db->connect()) {
@@ -126,7 +136,13 @@ void supla_alexa_token::remove() {
 
 void supla_alexa_token::update(const char *token, const char *refresh_token,
                                int expires_in) {
-  set(token, refresh_token, expires_in);
+  char *region = getRegion();
+
+  set(token, refresh_token, expires_in, region);
+
+  if (region) {
+    free(region);
+  }
   database *db = new database();
 
   if (db->connect()) {
@@ -205,6 +221,20 @@ struct timeval supla_alexa_token::getSetTime(void) {
 
   lck_lock(lck1);
   result = set_at;
+  lck_unlock(lck1);
+
+  return result;
+}
+
+char *supla_alexa_token::getRegion(void) {
+  char *result = NULL;
+
+  lck_lock(lck1);
+
+  if (region != NULL) {
+    result = strndup(region, TOKEN_MAXSIZE);
+  }
+
   lck_unlock(lck1);
 
   return result;
