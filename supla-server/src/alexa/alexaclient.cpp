@@ -19,6 +19,7 @@
 #include <alexa/alexaclient.h>
 #include <alexa/alexatoken.h>
 #include <http/trivialhttps.h>
+#include <stdlib.h>
 #include <string.h>
 #include <map>
 #include <string>
