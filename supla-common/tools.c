@@ -274,6 +274,16 @@ time_t st_get_utc_time(void) {
   return mktime(now_tm);
 }
 
+char *st_get_zulu_time(char buffer[64]) {
+  memset(buffer, 0, 64);
+
+  time_t now = time(0);
+  struct tm *tm = gmtime(&now);  // NOLINT
+  strftime(buffer, 64, "%Y-%m-%dT%H:%M:%SZ", tm);
+
+  return buffer;
+}
+
 char *st_get_datetime_str(char buffer[64]) {
   memset(buffer, 0, 64);
 
