@@ -402,7 +402,7 @@ bool supla_trivial_http::request(const char *method, const char *header,
     OUT_APPEND(data);
   }
 
-  //supla_log(LOG_DEBUG, "OUT %i [%s]", size, out_buffer);
+  // supla_log(LOG_DEBUG, "OUT %i [%s]", size, out_buffer);
 
   char *in = NULL;
   send_recv(out_buffer, &in);
