@@ -25,7 +25,7 @@
 #include <string>
 #include "json/cJSON.h"
 #include "log.h"
-#include "svrcfg.h"
+#include "tools.h"
 
 #define POST_RESULT_SUCCESS 1
 #define POST_RESULT_UNKNOWN_ERROR 0
@@ -42,6 +42,42 @@
 #define POST_RESULT_THROTTLING_EXCEPTION -6
 #define POST_RESULT_INTERNAL_SERVICE_EXCEPTION -7
 #define POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION -8
+
+/*
+ * Indicates that the event was caused by a customer interaction with an
+ * application. For example, a customer switches on a light or locks a door
+ * using the Alexa app or an app provided by a device vendor.
+ */
+#define CAUSE_APP_INTERACTION 0
+
+/*
+ * Indicates that the event was caused by a physical interaction with an
+ * endpoint. For example, manually switching on a light or manually locking a
+ * door lock.
+ */
+#define CAUSE_PHYSICAL_INTERACTION 1
+
+/*
+ * Indicates that the event was caused by the periodic poll of an endpoint,
+ * which found a change in value. For example, you might poll a temperature
+ * sensor every hour and send the updated temperature to Alexa.
+ */
+#define CAUSE_PERIODIC_POLL 2
+
+/*
+ * Indicates that the event was caused by the application of a device rule. For
+ * example, a customer configures a rule to switch on a light if a motion sensor
+ * detects motion. In this case, Alexa receives an event from the motion sensor,
+ * and another event from the light to indicate that its state change was caused
+ * by the rule.
+ */
+#define CAUSE_RULE_TRIGGER 3
+
+/*
+ * Indicates that the event was caused by a voice interaction. For example, a
+ * user speaking to their Echo device.
+ */
+#define CAUSE_VOICE_INTERACTION 4
 
 typedef struct {
   char *str;
@@ -71,6 +107,16 @@ static const _alexa_code_t alexa_codes[]{
      POST_RESULT_INTERNAL_SERVICE_EXCEPTION},
     {(char *)"SERVICE_UNAVAILABLE_EXCEPTION",
      POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION},
+    {NULL, 0},
+};
+
+// https://developer.amazon.com/docs/smarthome/state-reporting-for-a-smart-home-skill.html#cause-object
+static const _alexa_code_t alexa_causes[]{
+    {(char *)"APP_INTERACTION", CAUSE_APP_INTERACTION},
+    {(char *)"PHYSICAL_INTERACTION", CAUSE_PHYSICAL_INTERACTION},
+    {(char *)"PERIODIC_POLL", CAUSE_PERIODIC_POLL},
+    {(char *)"RULE_TRIGGER", CAUSE_RULE_TRIGGER},
+    {(char *)"VOICE_INTERACTION", CAUSE_VOICE_INTERACTION},
     {NULL, 0},
 };
 
@@ -192,11 +238,12 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     }
   }
 
+  char header[] = "Content-Type: application/json";
   char resource[] = "/v3/events";
   https->setResource(resource);
   https->setToken(alexa_token->getToken(), false);
 
-  if (!https->http_post(NULL, data)) {
+  if (!https->http_post(header, data)) {
     return POST_RESULT_REQUEST_ERROR;
   } else {
     if (httpResultCode) {
@@ -261,6 +308,193 @@ int supla_alexa_client::aeg_post(char *data) {
   return result;
 }
 
+void *supla_alexa_client::getPowerControllerProperties(bool hi) {
+  char now[64];
+  st_get_zulu_time(now);
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace", "Alexa.PowerController");
+    cJSON_AddStringToObject(property, "name", "powerState");
+    cJSON_AddStringToObject(property, "value", hi ? "ON" : "OFF");
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
+void *supla_alexa_client::getContactSensorProperties(bool hi) {
+  char now[64];
+  st_get_zulu_time(now);
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace", "Alexa.ContactSensor");
+    cJSON_AddStringToObject(property, "name", "detectionState");
+    cJSON_AddStringToObject(property, "value",
+                            hi ? "DETECTED" : "NOT_DETECTED");
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
+void *supla_alexa_client::getEndpointHealthProperties(bool ok) {
+  char now[64];
+  st_get_zulu_time(now);
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace", "Alexa.EndpointHealth");
+    cJSON_AddStringToObject(property, "name", "connectivity");
+    cJSON *value = cJSON_CreateObject();
+    if (value) {
+      cJSON_AddStringToObject(value, "value", ok ? "OK" : "UNREACHABLE");
+      cJSON_AddItemToObject(property, "value", value);
+    }
+
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
+void *supla_alexa_client::getChangeReportHeader(void) {
+  cJSON *header = cJSON_CreateObject();
+  if (header) {
+    char msgId[37];
+    msgId[0] = 0;
+    st_uuid_v4(msgId);
+
+    cJSON_AddStringToObject(header, "messageId", msgId);
+    cJSON_AddStringToObject(header, "namespace", "Alexa");
+    cJSON_AddStringToObject(header, "name", "ChangeReport");
+    cJSON_AddStringToObject(header, "payloadVersion", "3");
+  }
+
+  return header;
+}
+
+void *supla_alexa_client::getEndpoint(int channelId) {
+  cJSON *endpoint = cJSON_CreateObject();
+  if (endpoint) {
+    char *token = alexa_token->getToken();
+    if (token) {
+      cJSON *scope = cJSON_CreateObject();
+      if (scope) {
+        cJSON_AddStringToObject(scope, "type", "BearerToken");
+        cJSON_AddStringToObject(scope, "token", token);
+        cJSON_AddItemToObject(endpoint, "scope", scope);
+      }
+
+      free(token);
+    }
+
+    char *escope = alexa_token->getEndpointScope();
+
+    int endpointId_len =
+        (escope ? strnlen(escope, ENDPOINTSCOPE_MAXSIZE) : 0) + 20;
+    char *endpointId = (char *)malloc(endpointId_len + 1);
+
+    if (endpointId) {
+      snprintf(endpointId, endpointId_len, "%s-%i", escope ? escope : "",
+               channelId);
+      cJSON_AddStringToObject(endpoint, "endpointId", endpointId);
+      free(endpointId);
+    }
+
+    if (escope) {
+      free(escope);
+    }
+  }
+
+  return endpoint;
+}
+
+void *supla_alexa_client::getChangeReport(int channelId, int cause_type,
+                                          void *context_properties,
+                                          void *change_properties) {
+  cJSON *root = cJSON_CreateObject();
+  if (root) {
+    cJSON *context = cJSON_CreateObject();
+    if (context) {
+      if (context_properties) {
+        cJSON_AddItemToObject(context, "properties",
+                              static_cast<cJSON *>(context_properties));
+      }
+
+      cJSON_AddItemToObject(root, "context", context);
+    }
+
+    cJSON *event = cJSON_CreateObject();
+    if (event) {
+      cJSON_AddItemToObject(root, "event", event);
+      cJSON *header = static_cast<cJSON *>(getChangeReportHeader());
+      if (header) {
+        cJSON_AddItemToObject(event, "header", header);
+      }
+
+      cJSON *endpoint = static_cast<cJSON *>(getEndpoint(channelId));
+      if (endpoint) {
+        cJSON_AddItemToObject(event, "endpoint", endpoint);
+      }
+
+      cJSON *payload = cJSON_CreateObject();
+      if (payload) {
+        cJSON *change = cJSON_CreateObject();
+        if (change) {
+          cJSON *cause = cJSON_CreateObject();
+          if (cause) {
+            char *cause_str = NULL;
+            int n = 0;
+            while (alexa_causes[n].str) {
+              if (alexa_causes[n].code == cause_type) {
+                cause_str = alexa_causes[n].str;
+                break;
+              }
+            }
+            if (cause_str) {
+              cJSON_AddStringToObject(cause, "type", cause_str);
+              cJSON_AddItemToObject(change, "cause", cause);
+            }
+          }
+
+          if (change_properties) {
+            cJSON_AddItemToObject(change, "properties",
+                                  static_cast<cJSON *>(change_properties));
+          }
+
+          cJSON_AddItemToObject(payload, "change", change);
+        }
+
+        cJSON_AddItemToObject(event, "payload", payload);
+      }
+    }
+  }
+
+  return root;
+}
+
+void *supla_alexa_client::addProps(void *props_array, void *props) {
+  if (!props) {
+    return props_array;
+  }
+
+  if (!props_array) {
+    props_array = cJSON_CreateArray();
+  }
+
+  if (props_array) {
+    cJSON_AddItemToArray(static_cast<cJSON *>(props_array),
+                         static_cast<cJSON *>(props));
+  }
+  return props_array;
+}
+
+// https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
 bool supla_alexa_client::sendChangeReport(int channelId, bool hi, bool online,
                                           bool sensor) {
   char *data = NULL;
@@ -269,48 +503,29 @@ bool supla_alexa_client::sendChangeReport(int channelId, bool hi, bool online,
     hi = false;
   }
 
-  cJSON *root = cJSON_CreateObject();
+  void *context_props = NULL;
+
+  if (online) {
+    context_props =
+        addProps(context_props, sensor ? getContactSensorProperties(hi)
+                                       : getPowerControllerProperties(hi));
+
+    context_props = addProps(context_props, getEndpointHealthProperties(true));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props =
+        addProps(change_props, sensor ? getContactSensorProperties(hi)
+                                      : getPowerControllerProperties(hi));
+  } else {
+    change_props = addProps(change_props, getEndpointHealthProperties(online));
+  }
+
+  cJSON *root = static_cast<cJSON *>(
+      getChangeReport(channelId, 0, context_props, change_props));
+
   if (root) {
-    cJSON *context = cJSON_CreateObject();
-    if (context) {
-      cJSON *properties = cJSON_CreateObject();
-      if (properties) {
-        cJSON_AddStringToObject(
-            properties, "namespace",
-            sensor ? "Alexa.ContactSensor" : "Alexa.PowerController");
-
-        cJSON_AddStringToObject(properties, "name",
-                                sensor ? "detectionState" : "powerState");
-
-        cJSON_AddStringToObject(
-            properties, "value",
-            sensor ? (hi ? "DETECTED" : "NOT_DETECTED") : (hi ? "ON" : "OFF"));
-
-        cJSON_AddStringToObject(properties, "timeOfSample", "");
-
-        cJSON_AddNumberToObject(properties, "uncertaintyInMilliseconds", 0);
-
-        cJSON_AddItemToObject(context, "properties", properties);
-      }
-
-      cJSON_AddItemToObject(root, "context", context);
-    }
-
-    cJSON *event = cJSON_CreateObject();
-    if (event) {
-      cJSON *header = cJSON_CreateObject();
-      if (header) {
-        cJSON_AddItemToObject(event, "header", header);
-      }
-
-      cJSON *endpoint = cJSON_CreateObject();
-      if (endpoint) {
-        cJSON_AddItemToObject(event, "endpoint", endpoint);
-      }
-
-      cJSON_AddItemToObject(root, "event", event);
-    }
-
     data = cJSON_Print(root);
     cJSON_Delete(root);
   }

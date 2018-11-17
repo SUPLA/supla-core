@@ -32,6 +32,15 @@ class supla_alexa_client {
   int aeg_post_request(char *data, int *httpResultCode);
   int aeg_post(char *data);
 
+  void *getPowerControllerProperties(bool hi);
+  void *getContactSensorProperties(bool hi);
+  void *getEndpointHealthProperties(bool ok);
+  void *getChangeReportHeader(void);
+  void *getEndpoint(int channelId);
+  void *addProps(void *props_array, void *props);
+  void *getChangeReport(int channelId, int cause_type, void *context_properties,
+                        void *change_properties);
+
  public:
   supla_alexa_client(supla_alexa_token *alexa_token);
   virtual ~supla_alexa_client();
