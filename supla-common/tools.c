@@ -413,7 +413,7 @@ void st_uuid_v4(char buffer[37]) {
   hex[0] = 0;
 
   for (a = 0; a < 16; a++) {
-    snprintf(hex, 3, "%02x", r[a]);
+    snprintf(hex, sizeof(hex), "%02x", r[a]);
     supla_log(LOG_DEBUG, "%s", hex);
     memcpy(&buffer[n], hex, 2);
     n += 2;
