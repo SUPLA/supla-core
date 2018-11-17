@@ -1787,7 +1787,8 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
-      "UTC_TIMESTAMP(), expires_at) `expires_in`, `region` FROM "
+      "UTC_TIMESTAMP(), expires_at) `expires_in`, `region`, `endpoint_scope` "
+      "FROM "
       "`supla_alexa_egc` WHERE user_id = ? AND LENGTH(access_token) > 0";
 
   MYSQL_STMT *stmt = NULL;
@@ -1801,7 +1802,7 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
   pbind[0].buffer = (char *)&UserID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[4];
+    MYSQL_BIND rbind[5];
     memset(rbind, 0, sizeof(rbind));
 
     char buffer_token[TOKEN_MAXSIZE + 1];
@@ -1818,6 +1819,10 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
     buffer_region[0] = 0;
     unsigned long region_size = 0;
     my_bool region_is_null = true;
+
+    char buffer_endpoint_scope[ENDPOINTSCOPE_MAXSIZE + 1];
+    buffer_endpoint_scope[0] = 0;
+    unsigned long endpoint_scope_size = 0;
 
     int expires_in = 0;
 
@@ -1842,6 +1847,11 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
     rbind[3].length = &region_size;
     rbind[3].is_null = &region_is_null;
 
+    rbind[4].buffer_type = MYSQL_TYPE_STRING;
+    rbind[4].buffer = buffer_endpoint_scope;
+    rbind[4].buffer_length = ENDPOINTSCOPE_MAXSIZE;
+    rbind[4].length = &endpoint_scope_size;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1853,9 +1863,11 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
         buffer_refresh_token[refresh_token_is_null ? 0 : refresh_token_size] =
             0;
         buffer_region[region_is_null ? 0 : region_size] = 0;
+        buffer_endpoint_scope[endpoint_scope_size] = 0;
 
         alexa_token->set(buffer_token, buffer_refresh_token, expires_in,
-                         region_is_null ? NULL : buffer_region);
+                         region_is_null ? NULL : buffer_region,
+                         buffer_endpoint_scope);
         result = true;
       }
     }

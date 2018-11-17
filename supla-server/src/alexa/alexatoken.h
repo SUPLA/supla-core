@@ -21,6 +21,7 @@
 
 #define TOKEN_MAXSIZE 1024
 #define REGION_MAXSIZE 5
+#define ENDPOINTSCOPE_MAXSIZE 16
 
 #include <sys/time.h>
 
@@ -33,6 +34,7 @@ class supla_alexa_token {
   char *token;
   char *refresh_token;
   char *region;
+  char *endpoint_scope;
   struct timeval expires_at;
   struct timeval set_at;
 
@@ -48,7 +50,7 @@ class supla_alexa_token {
   void remove();
   void update(const char *token, const char *refresh_token, int expires_in);
   void set(const char *token, const char *refresh_token, int expires_in,
-           const char *region);
+           const char *region, const char *endpoint_scope);
 
   bool isTokenExists(void);
   bool isRefreshTokenExists(void);
@@ -56,6 +58,7 @@ class supla_alexa_token {
   char *getToken(void);
   char *getRefreshToken(void);
   char *getRegion(void);
+  char *getEndpointScope(void);
   struct timeval getSetTime(void);
 
   void refresh_lock(void);
