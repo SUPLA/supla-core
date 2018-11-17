@@ -386,6 +386,46 @@ void st_random_alpha_string(char *buffer, int buffer_size) {
   buffer[buffer_size - 1] = 0;
 }
 
+void st_uuid_v4(char buffer[37]) {
+  unsigned char r[16];
+  r[0] = 0;
+  int a = 0;
+  int n = 0;
+
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+
+#ifdef __ANDROID__
+  srand(tv.tv_usec);
+  gettimeofday(&tv, NULL);
+
+  for (a = 0; a < 16; a++) {
+    r[a] = (rand() + tv.tv_usec) % 255;  // NOLINT
+  }
+#else
+  unsigned int seed = tv.tv_sec + tv.tv_usec;
+  for (a = 0; a < 16; a++) {
+    r[a] = rand_r(&seed) % 255;
+  }
+#endif
+
+  char hex[3];
+  hex[0] = 0;
+
+  for (a = 0; a < 16; a++) {
+    snprintf(hex, 3, "%02x", r[a]);
+    supla_log(LOG_DEBUG, "%s", hex);
+    memcpy(&buffer[n], hex, 2);
+    n += 2;
+    if (n == 8 || n == 13 || n == 18 || n == 23) {
+      buffer[n] = '-';
+      n++;
+    }
+  }
+
+  buffer[n] = 0;
+}
+
 #ifdef __BCRYPT
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
   if (salt == NULL || salt_buffer_size == 0) return 0;

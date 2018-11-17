@@ -60,6 +60,7 @@ char *st_get_datetime_str(char buffer[64]);
 int st_hue2rgb(double hue);
 
 void st_random_alpha_string(char *buffer, int buffer_size);
+void st_uuid_v4(char buffer[37]);
 
 #ifdef __BCRYPT
 
