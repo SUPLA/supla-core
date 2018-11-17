@@ -414,7 +414,6 @@ void st_uuid_v4(char buffer[37]) {
 
   for (a = 0; a < 16; a++) {
     snprintf(hex, sizeof(hex), "%02x", r[a]);
-    supla_log(LOG_DEBUG, "%s", hex);
     memcpy(&buffer[n], hex, 2);
     n += 2;
     if (n == 8 || n == 13 || n == 18 || n == 23) {
