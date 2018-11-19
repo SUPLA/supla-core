@@ -73,13 +73,22 @@ class supla_alexa_client {
   void *getColorControllerProperties(int color, short brightness);
   void *getContactSensorProperties(bool hi);
   void *getEndpointHealthProperties(bool ok);
+  void *getHeader(const char name[], const char correlationToken[]);
   void *getChangeReportHeader(void);
+  void *getErrorHeader(const char correlationToken[]);
+  void *getResponseHeader(const char correlationToken[]);
   void *getEndpoint(int channelId);
   void *addProps(void *props_array, void *props);
   void *getChangeReport(int causeType, int channelId, void *context_properties,
                         void *change_properties);
   bool sendChangeReport(int causeType, int channelId, bool online,
                         void *context_props, void *change_props);
+
+  void *getEndpointUnrechableErrorResponse(const char correlationToken[],
+                                           int channelId);
+  void *getResponse(const char correlationToken[], int channelId, void *props);
+  bool sendResponse(const char correlationToken[], int channelId, bool online,
+                    void *props);
 
  public:
   supla_alexa_client(supla_amazon_alexa *alexa);
@@ -89,10 +98,18 @@ class supla_alexa_client {
                              bool online);
   bool sendContactChangeReport(int causeType, int channelId, bool hi,
                                bool online);
-  bool sendBrightnessChangeReport(int causeType, int channelId, int brightness,
-                                  bool online);
+  bool sendBrightnessChangeReport(int causeType, int channelId,
+                                  short brightness, bool online);
   bool sendColorChangeReport(int causeType, int channelId, int color,
                              short colorBrightness, bool online);
+  bool powerControllerSendResponse(const char correlationToken[], int channelId,
+                                   bool hi, bool online);
+  bool brightnessControllerSendResponse(const char correlationToken[],
+                                        int channelId, short brightness,
+                                        bool online);
+  bool colorControllerSendResponse(const char correlationToken[], int channelId,
+                                   int color, short colorBrightness,
+                                   bool online);
 };
 
 #endif /* AMAZON_ALEXACLIENT_H_ */
