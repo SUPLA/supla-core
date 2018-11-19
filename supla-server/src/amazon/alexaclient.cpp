@@ -43,42 +43,6 @@
 #define POST_RESULT_INTERNAL_SERVICE_EXCEPTION -7
 #define POST_RESULT_SERVICE_UNAVAILABLE_EXCEPTION -8
 
-/*
- * Indicates that the event was caused by a customer interaction with an
- * application. For example, a customer switches on a light or locks a door
- * using the Alexa app or an app provided by a device vendor.
- */
-#define CAUSE_APP_INTERACTION 0
-
-/*
- * Indicates that the event was caused by a physical interaction with an
- * endpoint. For example, manually switching on a light or manually locking a
- * door lock.
- */
-#define CAUSE_PHYSICAL_INTERACTION 1
-
-/*
- * Indicates that the event was caused by the periodic poll of an endpoint,
- * which found a change in value. For example, you might poll a temperature
- * sensor every hour and send the updated temperature to Alexa.
- */
-#define CAUSE_PERIODIC_POLL 2
-
-/*
- * Indicates that the event was caused by the application of a device rule. For
- * example, a customer configures a rule to switch on a light if a motion sensor
- * detects motion. In this case, Alexa receives an event from the motion sensor,
- * and another event from the light to indicate that its state change was caused
- * by the rule.
- */
-#define CAUSE_RULE_TRIGGER 3
-
-/*
- * Indicates that the event was caused by a voice interaction. For example, a
- * user speaking to their Echo device.
- */
-#define CAUSE_VOICE_INTERACTION 4
-
 typedef struct {
   char *str;
   int code;
@@ -324,6 +288,60 @@ void *supla_alexa_client::getPowerControllerProperties(bool hi) {
   return property;
 }
 
+void *supla_alexa_client::getBrightnessControllerProperties(short brightness) {
+  char now[64];
+  st_get_zulu_time(now);
+
+  if (brightness > 100) {
+    brightness = 100;
+  } else if (brightness < 0) {
+    brightness = 0;
+  }
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace",
+                            "Alexa.BrightnessController");
+    cJSON_AddStringToObject(property, "name", "brightness");
+    cJSON_AddNumberToObject(property, "value", brightness);
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
+void *supla_alexa_client::getColorControllerProperties(int color,
+                                                       short brightness) {
+  char now[64];
+  st_get_zulu_time(now);
+
+  if (brightness > 100) {
+    brightness = 100;
+  } else if (brightness < 0) {
+    brightness = 0;
+  }
+
+  _color_hsv_t hsv = st_rgb2hsv(color);
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace", "Alexa.ColorController");
+    cJSON_AddStringToObject(property, "name", "color");
+    cJSON *value = cJSON_CreateObject();
+    if (value) {
+      cJSON_AddNumberToObject(value, "hue", hsv.h);
+      cJSON_AddNumberToObject(value, "saturation", hsv.s);
+      cJSON_AddNumberToObject(value, "brightness", brightness / 100.00);
+      cJSON_AddItemToObject(property, "value", value);
+    }
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
 void *supla_alexa_client::getContactSensorProperties(bool hi) {
   char now[64];
   st_get_zulu_time(now);
@@ -333,7 +351,7 @@ void *supla_alexa_client::getContactSensorProperties(bool hi) {
     cJSON_AddStringToObject(property, "namespace", "Alexa.ContactSensor");
     cJSON_AddStringToObject(property, "name", "detectionState");
     cJSON_AddStringToObject(property, "value",
-                            hi ? "DETECTED" : "NOT_DETECTED");
+                            hi ? "NOT_DETECTED" : "DETECTED");
     cJSON_AddStringToObject(property, "timeOfSample", now);
     cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
   }
@@ -414,7 +432,7 @@ void *supla_alexa_client::getEndpoint(int channelId) {
   return endpoint;
 }
 
-void *supla_alexa_client::getChangeReport(int channelId, int cause_type,
+void *supla_alexa_client::getChangeReport(int channelId, int causeType,
                                           void *context_properties,
                                           void *change_properties) {
   cJSON *root = cJSON_CreateObject();
@@ -451,10 +469,11 @@ void *supla_alexa_client::getChangeReport(int channelId, int cause_type,
             char *cause_str = NULL;
             int n = 0;
             while (alexa_causes[n].str) {
-              if (alexa_causes[n].code == cause_type) {
+              if (alexa_causes[n].code == causeType) {
                 cause_str = alexa_causes[n].str;
                 break;
               }
+              n++;
             }
             if (cause_str) {
               cJSON_AddStringToObject(cause, "type", cause_str);
@@ -495,42 +514,26 @@ void *supla_alexa_client::addProps(void *props_array, void *props) {
 }
 
 // https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
-bool supla_alexa_client::sendChangeReport(int channelId, bool hi, bool online,
-                                          bool sensor) {
+bool supla_alexa_client::sendChangeReport(int causeType, int channelId,
+                                          bool online, void *context_props,
+                                          void *change_props) {
   char *data = NULL;
 
-  if (!online) {
-    hi = false;
-  }
-
-  void *context_props = NULL;
-
   if (online) {
-    context_props =
-        addProps(context_props, sensor ? getContactSensorProperties(hi)
-                                       : getPowerControllerProperties(hi));
-
     context_props = addProps(context_props, getEndpointHealthProperties(true));
   }
 
-  void *change_props = NULL;
-  if (online) {
-    change_props =
-        addProps(change_props, sensor ? getContactSensorProperties(hi)
-                                      : getPowerControllerProperties(hi));
-  } else {
-    change_props = addProps(change_props, getEndpointHealthProperties(online));
-  }
+  change_props = addProps(change_props, getEndpointHealthProperties(online));
 
   cJSON *root = static_cast<cJSON *>(
-      getChangeReport(channelId, 0, context_props, change_props));
+      getChangeReport(channelId, causeType, context_props, change_props));
 
   if (root) {
     data = cJSON_Print(root);
     cJSON_Delete(root);
   }
 
-  int result = 0;  // aeg_post(data);
+  int result = aeg_post(data);
 
   if (data) {
     supla_log(LOG_DEBUG, "%s", data);
@@ -539,4 +542,99 @@ bool supla_alexa_client::sendChangeReport(int channelId, bool hi, bool online,
   }
 
   return result == POST_RESULT_SUCCESS;
+}
+
+bool supla_alexa_client::sendPowerChangeReport(int causeType, int channelId,
+                                               bool hi, bool online) {
+  if (!online) {
+    hi = false;
+  }
+
+  void *context_props = NULL;
+  if (online) {
+    context_props = addProps(context_props, getPowerControllerProperties(hi));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props = addProps(change_props, getPowerControllerProperties(hi));
+  }
+
+  return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
+                                                 context_props, change_props);
+}
+
+bool supla_alexa_client::sendContactChangeReport(int causeType, int channelId,
+                                                 bool hi, bool online) {
+  if (!online) {
+    hi = false;
+  }
+
+  void *context_props = NULL;
+  if (online) {
+    context_props = addProps(context_props, getContactSensorProperties(hi));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props = addProps(change_props, getContactSensorProperties(hi));
+  }
+
+  return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
+                                                 context_props, change_props);
+}
+
+bool supla_alexa_client::sendBrightnessChangeReport(int causeType,
+                                                    int channelId,
+                                                    int brightness,
+                                                    bool online) {
+  if (!online) {
+    brightness = 0;
+  }
+
+  void *context_props = NULL;
+  if (online) {
+    context_props =
+        addProps(context_props, getBrightnessControllerProperties(brightness));
+    context_props =
+        addProps(context_props, getPowerControllerProperties(brightness > 0));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props =
+        addProps(change_props, getBrightnessControllerProperties(brightness));
+    change_props =
+        addProps(change_props, getPowerControllerProperties(brightness > 0));
+  }
+
+  return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
+                                                 context_props, change_props);
+}
+
+bool supla_alexa_client::sendColorChangeReport(int causeType, int channelId,
+                                               int color, short colorBrightness,
+                                               bool online) {
+  if (!online) {
+    colorBrightness = 0;
+  }
+
+  void *context_props = NULL;
+  if (online) {
+    context_props = addProps(
+        context_props, getColorControllerProperties(color, colorBrightness));
+    context_props = addProps(context_props,
+                             getPowerControllerProperties(colorBrightness > 0));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props = addProps(
+        change_props, getColorControllerProperties(color, colorBrightness));
+    change_props = addProps(change_props,
+                            getPowerControllerProperties(colorBrightness > 0));
+  }
+
+  return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
+                                                 context_props, change_props);
 }
