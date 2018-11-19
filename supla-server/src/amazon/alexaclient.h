@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ALEXA_ALEXACLIENT_H_
-#define ALEXA_ALEXACLIENT_H_
+#ifndef AMAZON_ALEXACLIENT_H_
+#define AMAZON_ALEXACLIENT_H_
 
-class supla_alexa_token;
+class supla_amazon_alexa;
 
 class supla_alexa_client {
  private:
-  supla_alexa_token *alexa_token;
+  supla_amazon_alexa *alexa;
   void refresh_roken(void);
 
  protected:
@@ -42,10 +42,10 @@ class supla_alexa_client {
                         void *change_properties);
 
  public:
-  supla_alexa_client(supla_alexa_token *alexa_token);
+  supla_alexa_client(supla_amazon_alexa *alexa);
   virtual ~supla_alexa_client();
 
   bool sendChangeReport(int channelId, bool hi, bool online, bool sensor);
 };
 
-#endif /* ALEXA_ALEXACLIENT_H_ */
+#endif /* AMAZON_ALEXACLIENT_H_ */

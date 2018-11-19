@@ -16,22 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ALEXA_ALEXATOKEN_H_
-#define ALEXA_ALEXATOKEN_H_
+#ifndef AMAZON_ALEXA_H_
+#define AMAZON_ALEXA_H_
 
 #define TOKEN_MAXSIZE 1024
 #define REGION_MAXSIZE 5
-#define ENDPOINTSCOPE_MAXSIZE 16
+#define ENDPOINTSCOPE_MAXSIZE 32
 
 #include <sys/time.h>
 
 class supla_user;
 
-class supla_alexa_token {
+class supla_amazon_alexa {
  private:
   supla_user *user;
 
-  char *token;
+  char *access_token;
   char *refresh_token;
   char *region;
   char *endpoint_scope;
@@ -43,19 +43,20 @@ class supla_alexa_token {
   void release_strings(void);
 
  public:
-  supla_alexa_token(supla_user *user);
-  virtual ~supla_alexa_token();
+  supla_amazon_alexa(supla_user *user);
+  virtual ~supla_amazon_alexa();
   int getUserID();
   void load();
   void remove();
-  void update(const char *token, const char *refresh_token, int expires_in);
-  void set(const char *token, const char *refresh_token, int expires_in,
+  void update(const char *access_token, const char *refresh_token,
+              int expires_in);
+  void set(const char *access_token, const char *refresh_token, int expires_in,
            const char *region, const char *endpoint_scope);
 
-  bool isTokenExists(void);
+  bool isAccessTokenExists(void);
   bool isRefreshTokenExists(void);
   int expiresIn(void);
-  char *getToken(void);
+  char *getAccessToken(void);
   char *getRefreshToken(void);
   char *getRegion(void);
   char *getEndpointScope(void);
@@ -65,4 +66,4 @@ class supla_alexa_token {
   void refresh_unlock(void);
 };
 
-#endif /* ALEXA_ALEXATOKEN_H_ */
+#endif /* AMAZON_ALEXA_H_ */

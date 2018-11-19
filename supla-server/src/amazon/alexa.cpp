@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <alexa/alexatoken.h>
+#include <amazon/alexa.h>
 #include <stdlib.h>
 #include <string.h>
 #include "database.h"
@@ -24,12 +24,12 @@
 #include "log.h"
 #include "user.h"
 
-supla_alexa_token::supla_alexa_token(supla_user *user) {
+supla_amazon_alexa::supla_amazon_alexa(supla_user *user) {
   lck1 = lck_init();
   lck2 = lck_init();
 
   this->user = user;
-  this->token = NULL;
+  this->access_token = NULL;
   this->refresh_token = NULL;
   this->expires_at.tv_sec = 0;
   this->expires_at.tv_usec = 0;
@@ -41,10 +41,10 @@ supla_alexa_token::supla_alexa_token(supla_user *user) {
   load();
 }
 
-void supla_alexa_token::release_strings(void) {
-  if (this->token) {
-    free(this->token);
-    this->token = NULL;
+void supla_amazon_alexa::release_strings(void) {
+  if (this->access_token) {
+    free(this->access_token);
+    this->access_token = NULL;
   }
 
   if (this->refresh_token) {
@@ -63,7 +63,7 @@ void supla_alexa_token::release_strings(void) {
   }
 }
 
-supla_alexa_token::~supla_alexa_token() {
+supla_amazon_alexa::~supla_amazon_alexa() {
   if (lck1) {
     lck_free(lck1);
     lck1 = NULL;
@@ -77,20 +77,20 @@ supla_alexa_token::~supla_alexa_token() {
   release_strings();
 }
 
-int supla_alexa_token::getUserID() { return user->getUserID(); }
+int supla_amazon_alexa::getUserID() { return user->getUserID(); }
 
-void supla_alexa_token::refresh_lock(void) { lck_lock(lck2); }
+void supla_amazon_alexa::refresh_lock(void) { lck_lock(lck2); }
 
-void supla_alexa_token::refresh_unlock(void) { lck_unlock(lck2); }
+void supla_amazon_alexa::refresh_unlock(void) { lck_unlock(lck2); }
 
-void supla_alexa_token::set(const char *token, const char *refresh_token,
-                            int expires_in, const char *region,
-                            const char *endpoint_scope) {
+void supla_amazon_alexa::set(const char *access_token,
+                             const char *refresh_token, int expires_in,
+                             const char *region, const char *endpoint_scope) {
   lck_lock(lck1);
 
   release_strings();
 
-  int token_len = token ? strnlen(token, TOKEN_MAXSIZE) : 0;
+  int token_len = access_token ? strnlen(access_token, TOKEN_MAXSIZE) : 0;
   int refresh_token_len =
       refresh_token ? strnlen(refresh_token, TOKEN_MAXSIZE) : 0;
   int region_len = region ? strnlen(region, REGION_MAXSIZE) : 0;
@@ -98,7 +98,7 @@ void supla_alexa_token::set(const char *token, const char *refresh_token,
       endpoint_scope ? strnlen(endpoint_scope, ENDPOINTSCOPE_MAXSIZE) : 0;
 
   if (token_len > 0) {
-    this->token = strndup(token, token_len);
+    this->access_token = strndup(access_token, token_len);
   }
 
   if (refresh_token_len > 0) {
@@ -125,29 +125,31 @@ void supla_alexa_token::set(const char *token, const char *refresh_token,
   lck_unlock(lck1);
 }
 
-void supla_alexa_token::load() {
+void supla_amazon_alexa::load() {
   database *db = new database();
 
-  if (!db->connect() || !db->alexa_load_token(this)) {
+  if (!db->connect() || !db->amazon_alexa_load_token(this)) {
     set(NULL, NULL, 0, NULL, NULL);
   }
+
+  supla_log(LOG_DEBUG, "LOAD");
 
   delete db;
 }
 
-void supla_alexa_token::remove() {
+void supla_amazon_alexa::remove() {
   set(NULL, NULL, 0, NULL, NULL);
   database *db = new database();
 
   if (db->connect()) {
-    db->alexa_remove_token(this);
+    db->amazon_alexa_remove_token(this);
   }
 
   delete db;
 }
 
-void supla_alexa_token::update(const char *token, const char *refresh_token,
-                               int expires_in) {
+void supla_amazon_alexa::update(const char *token, const char *refresh_token,
+                                int expires_in) {
   char *region = getRegion();
   char *endpoint_scope = getRegion();
 
@@ -163,23 +165,23 @@ void supla_alexa_token::update(const char *token, const char *refresh_token,
   database *db = new database();
 
   if (db->connect()) {
-    db->alexa_update_token(this, token, refresh_token, expires_in);
+    db->amazon_alexa_update_token(this, token, refresh_token, expires_in);
   }
 
   delete db;
 }
 
-bool supla_alexa_token::isTokenExists(void) {
+bool supla_amazon_alexa::isAccessTokenExists(void) {
   bool result = false;
 
   lck_lock(lck1);
-  result = token != NULL;
+  result = access_token != NULL;
   lck_unlock(lck1);
 
   return result;
 }
 
-bool supla_alexa_token::isRefreshTokenExists(void) {
+bool supla_amazon_alexa::isRefreshTokenExists(void) {
   bool result = false;
 
   lck_lock(lck1);
@@ -189,7 +191,7 @@ bool supla_alexa_token::isRefreshTokenExists(void) {
   return result;
 }
 
-int supla_alexa_token::expiresIn(void) {
+int supla_amazon_alexa::expiresIn(void) {
   int result = 0;
 
   lck_lock(lck1);
@@ -203,13 +205,13 @@ int supla_alexa_token::expiresIn(void) {
   return result;
 }
 
-char *supla_alexa_token::getToken(void) {
+char *supla_amazon_alexa::getAccessToken(void) {
   char *result = NULL;
 
   lck_lock(lck1);
 
-  if (token != NULL) {
-    result = strndup(token, TOKEN_MAXSIZE);
+  if (access_token != NULL) {
+    result = strndup(access_token, TOKEN_MAXSIZE);
   }
 
   lck_unlock(lck1);
@@ -217,7 +219,7 @@ char *supla_alexa_token::getToken(void) {
   return result;
 }
 
-char *supla_alexa_token::getRefreshToken(void) {
+char *supla_amazon_alexa::getRefreshToken(void) {
   char *result = NULL;
 
   lck_lock(lck1);
@@ -231,7 +233,7 @@ char *supla_alexa_token::getRefreshToken(void) {
   return result;
 }
 
-struct timeval supla_alexa_token::getSetTime(void) {
+struct timeval supla_amazon_alexa::getSetTime(void) {
   struct timeval result;
   result.tv_sec = 0;
   result.tv_usec = 0;
@@ -243,7 +245,7 @@ struct timeval supla_alexa_token::getSetTime(void) {
   return result;
 }
 
-char *supla_alexa_token::getRegion(void) {
+char *supla_amazon_alexa::getRegion(void) {
   char *result = NULL;
 
   lck_lock(lck1);
@@ -257,7 +259,7 @@ char *supla_alexa_token::getRegion(void) {
   return result;
 }
 
-char *supla_alexa_token::getEndpointScope(void) {
+char *supla_amazon_alexa::getEndpointScope(void) {
   char *result = NULL;
 
   lck_lock(lck1);

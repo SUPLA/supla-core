@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexa.h>
 #include <ctype.h>
 #include <my_global.h>
 #include <mysql.h>
-#include "alexa/alexatoken.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
 #ifdef min
@@ -1783,20 +1783,20 @@ bool database::superuser_authorization(int UserID,
   return result;
 }
 
-bool database::alexa_load_token(supla_alexa_token *alexa_token) {
+bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
       "UTC_TIMESTAMP(), expires_at) `expires_in`, `region`, `endpoint_scope` "
       "FROM "
-      "`supla_alexa_egc` WHERE user_id = ? AND LENGTH(access_token) > 0";
+      "`supla_amazon_alexa` WHERE user_id = ? AND LENGTH(access_token) > 0";
 
   MYSQL_STMT *stmt = NULL;
 
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
 
-  int UserID = alexa_token->getUserID();
+  int UserID = alexa->getUserID();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
@@ -1865,9 +1865,9 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
         buffer_region[region_is_null ? 0 : region_size] = 0;
         buffer_endpoint_scope[endpoint_scope_size] = 0;
 
-        alexa_token->set(buffer_token, buffer_refresh_token, expires_in,
-                         region_is_null ? NULL : buffer_region,
-                         buffer_endpoint_scope);
+        alexa->set(buffer_token, buffer_refresh_token, expires_in,
+                   region_is_null ? NULL : buffer_region,
+                   buffer_endpoint_scope);
         result = true;
       }
     }
@@ -1877,16 +1877,16 @@ bool database::alexa_load_token(supla_alexa_token *alexa_token) {
   return result;
 }
 
-void database::alexa_remove_token(supla_alexa_token *alexa_token) {
+void database::amazon_alexa_remove_token(supla_amazon_alexa *alexa) {
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
 
-  int UserID = alexa_token->getUserID();
+  int UserID = alexa->getUserID();
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
 
-  const char sql[] = "CALL `supla_delete_alexa_egc`(?)";
+  const char sql[] = "ALL `supla_update_amazon_alexa`('','',0,?)";
 
   MYSQL_STMT *stmt;
   stmt_execute((void **)&stmt, sql, pbind, 1, true);
@@ -1894,13 +1894,14 @@ void database::alexa_remove_token(supla_alexa_token *alexa_token) {
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-void database::alexa_update_token(supla_alexa_token *alexa_token,
-                                  const char *token, const char *refresh_token,
-                                  int expires_in) {
+void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
+                                         const char *token,
+                                         const char *refresh_token,
+                                         int expires_in) {
   MYSQL_BIND pbind[4];
   memset(pbind, 0, sizeof(pbind));
 
-  int UserID = alexa_token->getUserID();
+  int UserID = alexa->getUserID();
 
   pbind[0].buffer_type = MYSQL_TYPE_STRING;
   pbind[0].buffer = (char *)token;
@@ -1916,7 +1917,7 @@ void database::alexa_update_token(supla_alexa_token *alexa_token,
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&UserID;
 
-  const char sql[] = "CALL `supla_update_alexa_egc`(?,?,?,?)";
+  const char sql[] = "CALL `supla_update_amazon_alexa`(?,?,?,?)";
 
   MYSQL_STMT *stmt;
   stmt_execute((void **)&stmt, sql, pbind, 4, true);

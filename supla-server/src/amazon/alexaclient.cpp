@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <alexa/alexaclient.h>
-#include <alexa/alexatoken.h>
+#include <amazon/alexa.h>
+#include <amazon/alexaclient.h>
 #include <http/trivialhttps.h>
 #include <stdlib.h>
 #include <string.h>
@@ -120,8 +120,8 @@ static const _alexa_code_t alexa_causes[]{
     {NULL, 0},
 };
 
-supla_alexa_client::supla_alexa_client(supla_alexa_token *alexa_token) {
-  this->alexa_token = alexa_token;
+supla_alexa_client::supla_alexa_client(supla_amazon_alexa *alexa) {
+  this->alexa = alexa;
 }
 
 int supla_alexa_client::getErrorCode(const char *code) {
@@ -151,14 +151,14 @@ const char *supla_alexa_client::getErrorString(const int code) {
 supla_alexa_client::~supla_alexa_client() {}
 
 void supla_alexa_client::refresh_roken(void) {
-  if (!alexa_token->isRefreshTokenExists()) {
+  if (!alexa->isRefreshTokenExists()) {
     return;
   }
 
-  struct timeval last_set_time = alexa_token->getSetTime();
-  alexa_token->refresh_lock();
+  struct timeval last_set_time = alexa->getSetTime();
+  alexa->refresh_lock();
 
-  struct timeval current_set_time = alexa_token->getSetTime();
+  struct timeval current_set_time = alexa->getSetTime();
   if (last_set_time.tv_sec == current_set_time.tv_sec &&
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
@@ -170,7 +170,7 @@ void supla_alexa_client::refresh_roken(void) {
     https->setHost(host);
     https->setResource(resource);
     {
-      char *refresh_token = alexa_token->getRefreshToken();
+      char *refresh_token = alexa->getRefreshToken();
       if (refresh_token) {
         int rtoken_len = strnlen(refresh_token, TOKEN_MAXSIZE);
         if (rtoken_len != 0) {
@@ -197,8 +197,8 @@ void supla_alexa_client::refresh_roken(void) {
         if (access_token && cJSON_IsString(access_token) && refresh_token &&
             cJSON_IsString(refresh_token)) {
           int ex_in = cJSON_IsNumber(expires_in) ? expires_in->valueint : 0;
-          alexa_token->update(cJSON_GetStringValue(access_token),
-                              cJSON_GetStringValue(refresh_token), ex_in);
+          alexa->update(cJSON_GetStringValue(access_token),
+                        cJSON_GetStringValue(refresh_token), ex_in);
         }
 
         cJSON_Delete(root);
@@ -209,7 +209,7 @@ void supla_alexa_client::refresh_roken(void) {
 #endif /*NOSSL*/
   }
 
-  alexa_token->refresh_unlock();
+  alexa->refresh_unlock();
 }
 
 int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
@@ -227,7 +227,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
   {
     char host[30];
     host[0] = 0;
-    char *region = alexa_token->getRegion();
+    char *region = alexa->getRegion();
 
     snprintf(host, 30, "api.%s%samazonalexa.com", region ? region : "",
              region ? "." : "");
@@ -241,7 +241,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
   char header[] = "Content-Type: application/json";
   char resource[] = "/v3/events";
   https->setResource(resource);
-  https->setToken(alexa_token->getToken(), false);
+  https->setToken(alexa->getAccessToken(), false);
 
   if (!https->http_post(header, data)) {
     return POST_RESULT_REQUEST_ERROR;
@@ -276,13 +276,13 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 }
 
 int supla_alexa_client::aeg_post(char *data) {
-  if (!alexa_token->isTokenExists()) {
+  if (!alexa->isAccessTokenExists()) {
     return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
   }
 
   bool refresh_attempt = false;
 
-  if (alexa_token->expiresIn() <= 30) {
+  if (alexa->expiresIn() <= 30) {
     refresh_attempt = true;
     refresh_roken();
   }
@@ -296,7 +296,7 @@ int supla_alexa_client::aeg_post(char *data) {
     }
   } else if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
              result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION) {
-    alexa_token->remove();
+    alexa->remove();
     return result;
   }
 
@@ -381,7 +381,7 @@ void *supla_alexa_client::getChangeReportHeader(void) {
 void *supla_alexa_client::getEndpoint(int channelId) {
   cJSON *endpoint = cJSON_CreateObject();
   if (endpoint) {
-    char *token = alexa_token->getToken();
+    char *token = alexa->getAccessToken();
     if (token) {
       cJSON *scope = cJSON_CreateObject();
       if (scope) {
@@ -393,7 +393,7 @@ void *supla_alexa_client::getEndpoint(int channelId) {
       free(token);
     }
 
-    char *escope = alexa_token->getEndpointScope();
+    char *escope = alexa->getEndpointScope();
 
     int endpointId_len =
         (escope ? strnlen(escope, ENDPOINTSCOPE_MAXSIZE) : 0) + 20;

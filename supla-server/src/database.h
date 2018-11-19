@@ -25,7 +25,7 @@
 #include "proto.h"
 #include "user.h"
 
-class supla_alexa_token;
+class supla_amazon_alexa;
 
 class database : public dbcommon {
  private:
@@ -146,9 +146,9 @@ class database : public dbcommon {
   bool superuser_authorization(int UserID, char email[SUPLA_EMAIL_MAXSIZE],
                                char password[SUPLA_PASSWORD_MAXSIZE]);
 
-  bool alexa_load_token(supla_alexa_token *alexa_token);
-  void alexa_remove_token(supla_alexa_token *alexa_token);
-  void alexa_update_token(supla_alexa_token *alexa_token, const char *token,
+  bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
+  void amazon_alexa_remove_token(supla_amazon_alexa *alexa);
+  void amazon_alexa_update_token(supla_amazon_alexa *alexa, const char *token,
                           const char *refresh_token, int expires_in);
 };
 

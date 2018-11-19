@@ -16,11 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexa.h>
+#include <amazon/alexaclient.h>
 #include <string.h>
 #include <unistd.h>
 #include <list>
 
-#include "alexa/alexatoken.h"
 #include "client.h"
 #include "device.h"
 #include "log.h"
@@ -70,8 +71,12 @@ supla_user::supla_user(int UserID) {
   this->device_arr = safe_array_init();
   this->client_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
-  this->alexa_token = new supla_alexa_token(this);
+  this->amazon_alexa = new supla_amazon_alexa(this);
   this->connections_allowed = true;
+
+  supla_alexa_client *c = new supla_alexa_client(amazon_alexa);
+  c->sendChangeReport(2964, true, false, true);
+  delete c;
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -80,7 +85,7 @@ supla_user::~supla_user() {
   safe_array_remove(supla_user::user_arr, this);
 
   delete cgroups;
-  delete alexa_token;
+  delete amazon_alexa;
   safe_array_free(device_arr);
   safe_array_free(client_arr);
 }
@@ -586,14 +591,14 @@ bool supla_user::set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
 }
 
 // static
-void supla_user::on_alexa_egc_changed(int UserID) {
+void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
   safe_array_lock(supla_user::user_arr);
 
   supla_user *user =
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-	  user->get_alexa_token()->load();
+	  user->amazonAlexa()->load();
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -865,4 +870,4 @@ bool supla_user::client_reconnect(int UserID, int ClientID) {
   return false;
 }
 
-supla_alexa_token *supla_user::get_alexa_token(void) { return alexa_token; }
+supla_amazon_alexa *supla_user::amazonAlexa(void) { return amazon_alexa; }
