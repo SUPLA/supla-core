@@ -31,6 +31,8 @@ supla_amazon_alexa::supla_amazon_alexa(supla_user *user) {
   this->user = user;
   this->access_token = NULL;
   this->refresh_token = NULL;
+  this->region = NULL;
+  this->endpoint_scope = NULL;
   this->expires_at.tv_sec = 0;
   this->expires_at.tv_usec = 0;
   this->set_at.tv_sec = 0;
