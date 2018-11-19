@@ -48,6 +48,7 @@ class supla_amazon_alexa {
   int getUserID();
   void load();
   void remove();
+  void on_credentials_changed();
   void update(const char *access_token, const char *refresh_token,
               int expires_in);
   void set(const char *access_token, const char *refresh_token, int expires_in,

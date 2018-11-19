@@ -134,8 +134,6 @@ void supla_amazon_alexa::load() {
     set(NULL, NULL, 0, NULL, NULL);
   }
 
-  supla_log(LOG_DEBUG, "LOAD");
-
   delete db;
 }
 
@@ -149,6 +147,8 @@ void supla_amazon_alexa::remove() {
 
   delete db;
 }
+
+void supla_amazon_alexa::on_credentials_changed() { load(); }
 
 void supla_amazon_alexa::update(const char *token, const char *refresh_token,
                                 int expires_in) {

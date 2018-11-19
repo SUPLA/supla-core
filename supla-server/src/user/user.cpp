@@ -74,10 +74,6 @@ supla_user::supla_user(int UserID) {
   this->amazon_alexa = new supla_amazon_alexa(this);
   this->connections_allowed = true;
 
-  supla_alexa_client *c = new supla_alexa_client(amazon_alexa);
-  c->sendChangeReport(2964, true, false, true);
-  delete c;
-
   safe_array_add(supla_user::user_arr, this);
 }
 
@@ -598,7 +594,7 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-	  user->amazonAlexa()->load();
+	  user->amazonAlexa()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
