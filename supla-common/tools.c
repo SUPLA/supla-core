@@ -294,69 +294,129 @@ char *st_get_datetime_str(char buffer[64]) {
   return buffer;
 }
 
-int st_hue2rgb(double hue) {
-  double r = 0, g = 0, b = 0;
+_color_hsv_t st_rgb2hsv(int rgb) {
+  _color_hsv_t out;
+  double min, max, delta;
 
-  if (hue >= 360) hue = 0;
+  unsigned char r = (unsigned char)((rgb & 0x00FF0000) >> 16);
+  unsigned char g = (unsigned char)((rgb & 0x0000FF00) >> 8);
+  unsigned char b = (unsigned char)(rgb & 0x000000FF);
 
-  hue /= 60.00;
+  min = r < g ? r : g;
+  min = min < b ? min : b;
 
-  long i = (long)hue;
-  double f, q, t;
-  f = hue - i;
+  max = r > g ? r : g;
+  max = max > b ? max : b;
 
-  q = 1.0 - f;
-  t = 1.0 - (1.0 - f);
+  out.v = max;
+  delta = max - min;
+  if (delta < 0.00001) {
+    out.s = 0;
+    out.h = 0;
+    return out;
+  }
+  if (max > 0.0) {
+    out.s = (delta / max);
+  } else {
+    out.s = 0.0;
+    out.h = -1;
+    return out;
+  }
+  if (r >= max)
+    out.h = (g - b) / delta;
+  else if (g >= max)
+    out.h = 2.0 + (b - r) / delta;
+  else
+    out.h = 4.0 + (r - g) / delta;
+
+  out.h *= 60.0;
+
+  if (out.h < 0.0) out.h += 360.0;
+
+  return out;
+}
+
+int st_hsv2rgb(_color_hsv_t in) {
+  double hh, p, q, t, ff;
+  long i;
+
+  unsigned char r, g, b;
+  int rgb = 0;
+
+  if (in.s <= 0.0) {
+    r = in.v;
+    g = in.v;
+    b = in.v;
+
+    rgb = r & 0xFF;
+    rgb <<= 8;
+    rgb |= g & 0xFF;
+    rgb <<= 8;
+    rgb |= b & 0xFF;
+
+    return rgb;
+  }
+  hh = in.h;
+  if (hh >= 360.0) hh = 0.0;
+  hh /= 60.0;
+  i = (long)hh;
+  ff = hh - i;
+  p = in.v * (1.0 - in.s);
+  q = in.v * (1.0 - (in.s * ff));
+  t = in.v * (1.0 - (in.s * (1.0 - ff)));
 
   switch (i) {
     case 0:
-      r = 1.00;
+      r = in.v;
       g = t;
-      b = 0.00;
+      b = p;
       break;
-
     case 1:
       r = q;
-      g = 1.00;
-      b = 0.00;
+      g = in.v;
+      b = p;
       break;
-
     case 2:
-      r = 0.00;
-      g = 1.00;
+      r = p;
+      g = in.v;
       b = t;
       break;
-
     case 3:
-      r = 0.00;
+      r = p;
       g = q;
-      b = 1.00;
+      b = in.v;
       break;
-
     case 4:
       r = t;
-      g = 0.00;
-      b = 1.00;
+      g = p;
+      b = in.v;
       break;
-
+    case 5:
     default:
-      r = 1.00;
-      g = 0.00;
+      r = in.v;
+      g = p;
       b = q;
       break;
   }
 
-  int rgb = 0;
-
-  rgb |= (unsigned char)(r * 255.00);
+  rgb = r & 0xFF;
   rgb <<= 8;
-
-  rgb |= (unsigned char)(g * 255.00);
+  rgb |= g & 0xFF;
   rgb <<= 8;
-
-  rgb |= (unsigned char)(b * 255.00);
+  rgb |= b & 0xFF;
 
   return rgb;
+}
+
+int st_hue2rgb(double hue) {
+  if (hue >= 360) hue = 0;
+
+  _color_hsv_t hsv;
+  hsv.h = hue;
+  hsv.s = 100;
+  hsv.v = 100;
+
+  return st_hsv2rgb(hsv);
 }
 
 void st_random_alpha_string(char *buffer, int buffer_size) {

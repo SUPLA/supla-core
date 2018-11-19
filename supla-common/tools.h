@@ -26,6 +26,12 @@
 extern "C" {
 #endif
 
+typedef struct {
+  double h;
+  double s;
+  double v;
+} _color_hsv_t;
+
 #define BCRYPT_HASH_MAXSIZE 65
 
 extern unsigned char st_app_terminate;
@@ -57,6 +63,8 @@ time_t st_get_utc_time(void);
 char *st_get_zulu_time(char buffer[64]);
 char *st_get_datetime_str(char buffer[64]);
 
+_color_hsv_t st_rgb2hsv(int rgb);
+int st_hsv2rgb(_color_hsv_t in);
 int st_hue2rgb(double hue);
 
 void st_random_alpha_string(char *buffer, int buffer_size);
