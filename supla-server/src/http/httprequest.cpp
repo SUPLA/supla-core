@@ -17,6 +17,7 @@
  */
 
 #include "http/httprequest.h"
+#include <stdlib.h>
 #include "log.h"
 #include "string.h"
 
