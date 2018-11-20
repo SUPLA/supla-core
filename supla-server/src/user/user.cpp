@@ -16,11 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <amazon/alexa.h>
-#include <amazon/alexaclient.h>
 #include <string.h>
 #include <unistd.h>
 #include <list>
+#include "amazon/alexa.h"
 
 #include "client.h"
 #include "device.h"
@@ -61,11 +60,6 @@ char supla_user::find_client_byguid(void *ptr, void *GUID) {
   return ((supla_client *)ptr)->cmpGUID((char *)GUID) ? 1 : 0;
 }
 
-char supla_user_clean(void *ptr) {
-  delete (supla_user *)ptr;
-  return 1;
-}
-
 supla_user::supla_user(int UserID) {
   this->UserID = UserID;
   this->device_arr = safe_array_init();
@@ -89,7 +83,11 @@ supla_user::~supla_user() {
 void supla_user::init(void) { supla_user::user_arr = safe_array_init(); }
 
 void supla_user::user_free(void) {
-  safe_array_clean(supla_user::user_arr, supla_user_clean);
+  supla_user *ptr = NULL;
+  while ((ptr = static_cast<supla_user *>(
+              safe_array_get(supla_user::user_arr, 0))) != NULL) {
+    delete ptr;
+  }
   safe_array_free(supla_user::user_arr);
 }
 
@@ -594,7 +592,7 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-	  user->amazonAlexa()->on_credentials_changed();
+    user->amazonAlexa()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
