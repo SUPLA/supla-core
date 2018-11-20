@@ -4,14 +4,20 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/http/httprequest.cpp \
+../src/http/httprequestqueue.cpp \
 ../src/http/trivialhttp.cpp \
 ../src/http/trivialhttps.cpp 
 
 OBJS += \
+./src/http/httprequest.o \
+./src/http/httprequestqueue.o \
 ./src/http/trivialhttp.o \
 ./src/http/trivialhttps.o 
 
 CPP_DEPS += \
+./src/http/httprequest.d \
+./src/http/httprequestqueue.d \
 ./src/http/trivialhttp.d \
 ./src/http/trivialhttps.d 
 

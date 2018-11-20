@@ -26,6 +26,7 @@
 #include <openssl/ssl.h>
 #endif /*NOSSL*/
 
+#include <http/httprequestqueue.h>
 #include <http/trivialhttps.h>
 #include "accept_loop.h"
 #include "database.h"
@@ -44,10 +45,11 @@ int main(int argc, char *argv[]) {
   void *ssd_ssl = NULL;
   void *ssd_tcp = NULL;
   void *ipc = NULL;
-  void *tcp_accept_loop_t = NULL;
-  void *ssl_accept_loop_t = NULL;
-  void *ipc_accept_loop_t = NULL;
-  void *datalogger_loop_t = NULL;
+  void *tcp_accept_loop_thread = NULL;
+  void *ssl_accept_loop_thread = NULL;
+  void *ipc_accept_loop_thread = NULL;
+  void *datalogger_loop_thread = NULL;
+  void *http_request_queue_loop_thread = NULL;
 
   // INIT BLOCK
   if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
@@ -99,6 +101,7 @@ int main(int argc, char *argv[]) {
   SSL_library_init();
   SSL_load_error_strings();
   supla_trivial_https::init();
+  supla_http_request_queue::init();
 
   if (scfg_bool(CFG_SSL_ENABLED) == 1) {
     if (0 == (ssd_ssl = ssocket_server_init(scfg_string(CFG_SSL_CERT),
@@ -133,15 +136,19 @@ int main(int argc, char *argv[]) {
   // INI ACCEPT LOOP
 
   if (ssd_ssl != NULL)
-    ssl_accept_loop_t = sthread_simple_run(accept_loop, ssd_ssl, 0);
+    ssl_accept_loop_thread = sthread_simple_run(accept_loop, ssd_ssl, 0);
 
   if (ssd_tcp != NULL)
-    tcp_accept_loop_t = sthread_simple_run(accept_loop, ssd_tcp, 0);
+    tcp_accept_loop_thread = sthread_simple_run(accept_loop, ssd_tcp, 0);
 
-  if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
+  if (ipc) ipc_accept_loop_thread = sthread_simple_run(ipc_accept_loop, ipc, 0);
 
   // DATA LOGGER
-  datalogger_loop_t = sthread_simple_run(datalogger_loop, NULL, 0);
+  datalogger_loop_thread = sthread_simple_run(datalogger_loop, NULL, 0);
+
+  // HTTP EVENT QUEUE
+  http_request_queue_loop_thread =
+      sthread_simple_run(http_request_queue_loop, NULL, 0);
 
   // MAIN LOOP
   while (st_app_terminate == 0) {
@@ -154,30 +161,32 @@ int main(int argc, char *argv[]) {
 
   if (ipc != NULL) {
     ipcsocket_close(ipc);
-    sthread_twf(ipc_accept_loop_t);  // ! after ipcsocket_close and before
-                                     // ipcsocket_free !
+    sthread_twf(ipc_accept_loop_thread);  // ! after ipcsocket_close and before
+                                          // ipcsocket_free !
     ipcsocket_free(ipc);
   }
 
   if (ssd_ssl != NULL) {
     ssocket_close(ssd_ssl);
-    sthread_twf(
-        ssl_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
+    sthread_twf(ssl_accept_loop_thread);  // ! after ssocket_close and before
+                                          // ssocket_free !
     ssocket_free(ssd_ssl);
   }
 
   if (ssd_tcp != NULL) {
     ssocket_close(ssd_tcp);
-    sthread_twf(
-        tcp_accept_loop_t);  // ! after ssocket_close and before ssocket_free !
+    sthread_twf(tcp_accept_loop_thread);  // ! after ssocket_close and before
+                                          // ssocket_free !
     ssocket_free(ssd_tcp);
   }
 
-  sthread_twf(datalogger_loop_t);
+  sthread_twf(datalogger_loop_thread);
+  sthread_twf(http_request_queue_loop_thread);
 
   st_mainloop_free();
   st_delpidfile(pidfile_path);
 
+  supla_http_request_queue::queueFree();  // ! before user_free()
   supla_user::user_free();
   database::mainthread_end();
 
