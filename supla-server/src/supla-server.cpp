@@ -20,17 +20,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-
-#ifndef NOSSL
-#include <openssl/err.h>
-#include <openssl/ssl.h>
-#endif /*NOSSL*/
-
 #include <http/httprequestqueue.h>
 #include <http/trivialhttps.h>
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
+#include "sslcrypto.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "proto.h"
@@ -96,10 +91,7 @@ int main(int argc, char *argv[]) {
   }
 
 #ifndef NOSSL
-  supla_log(LOG_INFO, "SSL version: %s", OPENSSL_VERSION_TEXT);
-
-  SSL_library_init();
-  SSL_load_error_strings();
+  sslcrypto_init();
   supla_trivial_https::init();
   supla_http_request_queue::init();
 
@@ -189,6 +181,7 @@ int main(int argc, char *argv[]) {
   supla_http_request_queue::queueFree();  // ! before user_free()
   supla_user::user_free();
   database::mainthread_end();
+  sslcrypto_free();
 
   svrcfg_free();
 

@@ -13,6 +13,7 @@ C_SRCS += \
 ../src/proto.c \
 ../src/safearray.c \
 ../src/srpc.c \
+../src/sslcrypto.c \
 ../src/sthread.c \
 ../src/supla-socket.c \
 ../src/svrcfg.c \
@@ -49,6 +50,7 @@ OBJS += \
 ./src/safearray.o \
 ./src/serverconnection.o \
 ./src/srpc.o \
+./src/sslcrypto.o \
 ./src/sthread.o \
 ./src/supla-server.o \
 ./src/supla-socket.o \
@@ -65,6 +67,7 @@ C_DEPS += \
 ./src/proto.d \
 ./src/safearray.d \
 ./src/srpc.d \
+./src/sslcrypto.d \
 ./src/sthread.d \
 ./src/supla-socket.d \
 ./src/svrcfg.d \

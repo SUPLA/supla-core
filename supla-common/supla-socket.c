@@ -41,7 +41,6 @@
 #include <netdb.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-#include <pthread.h>
 #include <resolv.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,61 +84,8 @@ typedef struct {
   TSuplaSocket supla_socket;
 } TSuplaSocketData;
 
-struct CRYPTO_dynlock_value {
-  void *lck;
-};
-
 #ifndef NOSSL
 #ifndef _SERVER_EXCLUDED
-static void **ssl_locks = NULL;
-
-static void ssocket_ssl_locking_function(int mode, int n, const char *file,
-                                         int line) {
-  if (mode & CRYPTO_LOCK) {
-    lck_lock(ssl_locks[n]);
-  } else {
-    lck_unlock(ssl_locks[n]);
-  }
-}
-
-static unsigned long ssocket_ssl_id_function(void) {
-  return ((unsigned long)pthread_self());
-}
-
-static struct CRYPTO_dynlock_value *ssocket_ssl_dyn_create_function(
-    const char *file, int line) {
-  struct CRYPTO_dynlock_value *value;
-
-  value = (struct CRYPTO_dynlock_value *)malloc(
-      sizeof(struct CRYPTO_dynlock_value));
-
-  if (!value) {
-    goto err;
-  }
-
-  value->lck = lck_init();
-
-  return value;
-
-err:
-  return (NULL);
-}
-
-static void ssocket_ssl_dyn_lock_function(int mode,
-                                          struct CRYPTO_dynlock_value *l,
-                                          const char *file, int line) {
-  if (mode & CRYPTO_LOCK) {
-    lck_lock(l->lck);
-  } else {
-    lck_unlock(l->lck);
-  }
-}
-
-static void ssocket_ssl_dyn_destroy_function(struct CRYPTO_dynlock_value *l,
-                                             const char *file, int line) {
-  lck_free(l->lck);
-  free(l);
-}
 
 void ssocket_ssl_error_log(void) {
   char *errstr;
@@ -316,10 +262,6 @@ char ssocket_openlistener(void *_ssd) {
 // SSL_load_error_strings() before you use this function with SSL support
 void *ssocket_server_init(const char cert[], const char key[], int port,
                           unsigned char secure) {
-#ifndef NOSSL
-  int i;
-#endif /*NOSSL*/
-
   TSuplaSocketData *ssd = malloc(sizeof(TSuplaSocketData));
 
   if (ssd == NULL) return NULL;
@@ -333,29 +275,13 @@ void *ssocket_server_init(const char cert[], const char key[], int port,
 #ifdef NOSSL
     assert(secure == 0);
 #else
+    ssd->secure = 1;
+    ssd->ctx = ssocket_initserverctx();
 
-    ssl_locks = malloc(CRYPTO_num_locks() * sizeof(void *));
-
-    if (ssl_locks != 0) {
-      for (i = 0; i < CRYPTO_num_locks(); i++) {
-        ssl_locks[i] = lck_init();
-      }
-
-      // http://openssl.6102.n7.nabble.com/When-to-use-CRYPTO-set-locking-callback-and-CRYPTO-set-id-callback-td7379.html
-      CRYPTO_set_locking_callback(ssocket_ssl_locking_function);
-      CRYPTO_set_id_callback(ssocket_ssl_id_function);
-      CRYPTO_set_dynlock_create_callback(ssocket_ssl_dyn_create_function);
-      CRYPTO_set_dynlock_lock_callback(ssocket_ssl_dyn_lock_function);
-      CRYPTO_set_dynlock_destroy_callback(ssocket_ssl_dyn_destroy_function);
-
-      ssd->secure = 1;
-      ssd->ctx = ssocket_initserverctx();
-
-      if (ssd->ctx == NULL ||
-          ssocket_loadcertificates(ssd->ctx, cert, key) == 0) {
-        ssocket_free(ssd);
-        ssd = NULL;
-      }
+    if (ssd->ctx == NULL ||
+        ssocket_loadcertificates(ssd->ctx, cert, key) == 0) {
+      ssocket_free(ssd);
+      ssd = NULL;
     }
 
 #endif /*ifdef NOSSL*/
@@ -373,24 +299,7 @@ void ssocket_free(void *_ssd) {
     ssocket_close(ssd);
 
 #ifndef NOSSL
-
-    int i;
-
 #ifndef _SERVER_EXCLUDED
-    if (ssl_locks != 0) {
-      CRYPTO_set_dynlock_create_callback(NULL);
-      CRYPTO_set_dynlock_lock_callback(NULL);
-      CRYPTO_set_dynlock_destroy_callback(NULL);
-
-      CRYPTO_set_locking_callback(NULL);
-      CRYPTO_set_id_callback(NULL);
-
-      for (i = 0; i < CRYPTO_num_locks(); i++) {
-        lck_free(ssl_locks[i]);
-      }
-      free(ssl_locks);
-      ssl_locks = NULL;
-    }
 
     EVP_cleanup();
     ERR_clear_error();
