@@ -5,17 +5,23 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/amazon/alexa.cpp \
+../src/amazon/alexachangereportrequest.cpp \
 ../src/amazon/alexaclient.cpp \
+../src/amazon/alexarequest.cpp \
 ../src/amazon/alexaresponserequest.cpp 
 
 OBJS += \
 ./src/amazon/alexa.o \
+./src/amazon/alexachangereportrequest.o \
 ./src/amazon/alexaclient.o \
+./src/amazon/alexarequest.o \
 ./src/amazon/alexaresponserequest.o 
 
 CPP_DEPS += \
 ./src/amazon/alexa.d \
+./src/amazon/alexachangereportrequest.d \
 ./src/amazon/alexaclient.d \
+./src/amazon/alexarequest.d \
 ./src/amazon/alexaresponserequest.d 
 
 

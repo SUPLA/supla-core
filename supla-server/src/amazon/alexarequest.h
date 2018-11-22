@@ -16,22 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXARESPONSEREQUEST_H_
-#define AMAZON_ALEXARESPONSEREQUEST_H_
+#ifndef AMAZON_ALEXAREQUEST_H_
+#define AMAZON_ALEXAREQUEST_H_
 
-#include <amazon/alexarequest.h>
+#include "amazon/alexaclient.h"
+#include "http/httprequest.h"
 
-class supla_alexa_response_request : public supla_alexa_request {
+class supla_alexa_request : public supla_http_request {
+ private:
+  void *lck;
+  supla_alexa_client *client;
+  int subChannelFromCorrelationToken;
+
  public:
-  supla_alexa_response_request(supla_user *user, int ClassID, int DeviceId,
-                               int ChannelId,
-                               event_source_type EventSourceType);
-  virtual ~supla_alexa_response_request();
-  virtual bool verifyExisting(supla_http_request *existing);
+  supla_alexa_request(supla_user *user, int ClassID, int DeviceId,
+                      int ChannelId, event_source_type EventSourceType);
+  virtual ~supla_alexa_request();
+  supla_alexa_client *getClient(void);
+  int getSubChannelFromCorrelationToken(void);
   virtual bool queueUp(void);
+  virtual void terminate(void *sthread);
   virtual bool isEventSourceTypeAccepted(short eventSourceType,
                                          bool verification);
-  virtual void execute(void *sthread);
+  int getCauseType(void);
+  virtual void setCorrelationToken(const char correlationToken[]);
 };
 
-#endif /* AMAZON_ALEXARESPONSEREQUEST_H_ */
+#endif /* AMAZON_ALEXAREQUEST_H_ */

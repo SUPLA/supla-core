@@ -16,22 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXARESPONSEREQUEST_H_
-#define AMAZON_ALEXARESPONSEREQUEST_H_
+#ifndef AMAZON_ALEXACHANGEREPORTREQUEST_H_
+#define AMAZON_ALEXACHANGEREPORTREQUEST_H_
 
 #include <amazon/alexarequest.h>
 
-class supla_alexa_response_request : public supla_alexa_request {
+class supla_alexa_changereport_request : public supla_alexa_request {
+private:
+	bool duplicateExists;
  public:
-  supla_alexa_response_request(supla_user *user, int ClassID, int DeviceId,
-                               int ChannelId,
-                               event_source_type EventSourceType);
-  virtual ~supla_alexa_response_request();
+  supla_alexa_changereport_request(supla_user *user, int ClassID, int DeviceId,
+          int ChannelId,
+          event_source_type EventSourceType);
+  virtual ~supla_alexa_changereport_request();
   virtual bool verifyExisting(supla_http_request *existing);
-  virtual bool queueUp(void);
   virtual bool isEventSourceTypeAccepted(short eventSourceType,
                                          bool verification);
   virtual void execute(void *sthread);
+  virtual bool queueUp(void);
 };
 
-#endif /* AMAZON_ALEXARESPONSEREQUEST_H_ */
+#endif /* AMAZON_ALEXACHANGEREPORTREQUEST_H_ */

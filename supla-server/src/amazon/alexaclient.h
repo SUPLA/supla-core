@@ -56,11 +56,16 @@
 #define CAUSE_VOICE_INTERACTION 4
 
 class supla_amazon_alexa;
+class supla_trivial_https;
 
 class supla_alexa_client {
  private:
+  void *lck;
+  supla_trivial_https *https;
   supla_amazon_alexa *alexa;
   void refresh_roken(void);
+  void httpsInit();
+  void httpsFree();
 
  protected:
   const char *getErrorString(const int code);
@@ -77,39 +82,44 @@ class supla_alexa_client {
   void *getChangeReportHeader(void);
   void *getErrorHeader(const char correlationToken[]);
   void *getResponseHeader(const char correlationToken[]);
-  void *getEndpoint(int channelId);
+  void *getEndpoint(int channelId, short subChannel);
   void *addProps(void *props_array, void *props);
   void *getChangeReport(int causeType, int channelId, void *context_properties,
-                        void *change_properties);
+                        void *change_properties, short subChannel);
   bool sendChangeReport(int causeType, int channelId, bool online,
-                        void *context_props, void *change_props);
+                        void *context_props, void *change_props,
+                        short subChannel = 0);
 
   void *getEndpointUnrechableErrorResponse(const char correlationToken[],
-                                           int channelId);
-  void *getResponse(const char correlationToken[], int channelId, void *props);
+                                           int channelId, short subChannel);
+  void *getResponse(const char correlationToken[], int channelId, void *props,
+                    short subChannel);
   bool sendResponse(const char correlationToken[], int channelId, bool online,
-                    void *props);
+                    void *props, short subChannel);
 
  public:
   supla_alexa_client(supla_amazon_alexa *alexa);
   virtual ~supla_alexa_client();
+  void terminate(void);
 
   bool sendPowerChangeReport(int causeType, int channelId, bool hi,
                              bool online);
   bool sendContactChangeReport(int causeType, int channelId, bool hi,
                                bool online);
   bool sendBrightnessChangeReport(int causeType, int channelId,
-                                  short brightness, bool online);
+                                  short brightness, bool online,
+                                  short subChannel);
   bool sendColorChangeReport(int causeType, int channelId, int color,
-                             short colorBrightness, bool online);
+                             short colorBrightness, bool online,
+                             short subChannel);
   bool powerControllerSendResponse(const char correlationToken[], int channelId,
                                    bool hi, bool online);
   bool brightnessControllerSendResponse(const char correlationToken[],
                                         int channelId, short brightness,
-                                        bool online);
+                                        bool online, short subChannel);
   bool colorControllerSendResponse(const char correlationToken[], int channelId,
                                    int color, short colorBrightness,
-                                   bool online);
+                                   bool online, short subChannel);
 };
 
 #endif /* AMAZON_ALEXACLIENT_H_ */

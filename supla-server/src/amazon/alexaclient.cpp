@@ -24,6 +24,7 @@
 #include <map>
 #include <string>
 #include "json/cJSON.h"
+#include "lck.h"
 #include "log.h"
 #include "tools.h"
 
@@ -85,7 +86,33 @@ static const _alexa_code_t alexa_causes[]{
 };
 
 supla_alexa_client::supla_alexa_client(supla_amazon_alexa *alexa) {
+  this->lck = lck_init();
+  this->https = NULL;
   this->alexa = alexa;
+}
+
+void supla_alexa_client::httpsInit(void) {
+  httpsFree();
+  lck_lock(lck);
+  https = new supla_trivial_https();
+  lck_unlock(lck);
+}
+
+void supla_alexa_client::httpsFree(void) {
+  lck_lock(lck);
+  if (https) {
+    delete https;
+    https = NULL;
+  }
+  lck_unlock(lck);
+}
+
+void supla_alexa_client::terminate(void) {
+  lck_lock(lck);
+  if (https) {
+    https->terminate();
+  }
+  lck_unlock(lck);
 }
 
 int supla_alexa_client::getErrorCode(const char *code) {
@@ -112,7 +139,7 @@ const char *supla_alexa_client::getErrorString(const int code) {
   return "UNKNOWN";
 }
 
-supla_alexa_client::~supla_alexa_client() {}
+supla_alexa_client::~supla_alexa_client() { lck_free(lck); }
 
 void supla_alexa_client::refresh_roken(void) {
   if (!alexa->isRefreshTokenExists()) {
@@ -126,7 +153,7 @@ void supla_alexa_client::refresh_roken(void) {
   if (last_set_time.tv_sec == current_set_time.tv_sec &&
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
-    supla_trivial_https *https = new supla_trivial_https();
+    httpsInit();
 
     char host[] = "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com";
     char resource[] = "/default/amazonRefreshTokenBridge";
@@ -169,7 +196,8 @@ void supla_alexa_client::refresh_roken(void) {
       }
     }
 
-    delete https;
+    httpsFree();
+
 #endif /*NOSSL*/
   }
 
@@ -186,7 +214,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 #ifdef NOSSL
   return POST_RESULT_NOSSL;
 #else
-  supla_trivial_https *https = new supla_trivial_https();
+  httpsInit();
 
   {
     char host[30];
@@ -232,7 +260,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     }
   }
 
-  delete https;
+  httpsFree();
 
 #endif /*NOSSL*/
 
@@ -412,7 +440,7 @@ void *supla_alexa_client::getResponseHeader(const char correlationToken[]) {
   return getHeader("Response", correlationToken);
 }
 
-void *supla_alexa_client::getEndpoint(int channelId) {
+void *supla_alexa_client::getEndpoint(int channelId, short subChannel) {
   cJSON *endpoint = cJSON_CreateObject();
   if (endpoint) {
     char *token = alexa->getAccessToken();
@@ -430,12 +458,18 @@ void *supla_alexa_client::getEndpoint(int channelId) {
     char *escope = alexa->getEndpointScope();
 
     int endpointId_len =
-        (escope ? strnlen(escope, ENDPOINTSCOPE_MAXSIZE) : 0) + 20;
+        (escope ? strnlen(escope, ENDPOINTSCOPE_MAXSIZE) : 0) + 30;
     char *endpointId = (char *)malloc(endpointId_len + 1);
 
     if (endpointId) {
-      snprintf(endpointId, endpointId_len, "%s-%i", escope ? escope : "",
-               channelId);
+      if (subChannel) {
+        snprintf(endpointId, endpointId_len, "%s-%i-%i", escope ? escope : "",
+                 channelId, subChannel);
+      } else {
+        snprintf(endpointId, endpointId_len, "%s-%i", escope ? escope : "",
+                 channelId);
+      }
+
       cJSON_AddStringToObject(endpoint, "endpointId", endpointId);
       free(endpointId);
     }
@@ -450,7 +484,8 @@ void *supla_alexa_client::getEndpoint(int channelId) {
 
 void *supla_alexa_client::getChangeReport(int channelId, int causeType,
                                           void *context_properties,
-                                          void *change_properties) {
+                                          void *change_properties,
+                                          short subChannel) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
     cJSON *context = cJSON_CreateObject();
@@ -471,7 +506,8 @@ void *supla_alexa_client::getChangeReport(int channelId, int causeType,
         cJSON_AddItemToObject(event, "header", header);
       }
 
-      cJSON *endpoint = static_cast<cJSON *>(getEndpoint(channelId));
+      cJSON *endpoint =
+          static_cast<cJSON *>(getEndpoint(channelId, subChannel));
       if (endpoint) {
         cJSON_AddItemToObject(event, "endpoint", endpoint);
       }
@@ -532,7 +568,8 @@ void *supla_alexa_client::addProps(void *props_array, void *props) {
 // https://developer.amazon.com/docs/device-apis/alexa-interface.html#changereport
 bool supla_alexa_client::sendChangeReport(int causeType, int channelId,
                                           bool online, void *context_props,
-                                          void *change_props) {
+                                          void *change_props,
+                                          short subChannel) {
   char *data = NULL;
 
   if (online) {
@@ -541,8 +578,8 @@ bool supla_alexa_client::sendChangeReport(int causeType, int channelId,
 
   change_props = addProps(change_props, getEndpointHealthProperties(online));
 
-  cJSON *root = static_cast<cJSON *>(
-      getChangeReport(channelId, causeType, context_props, change_props));
+  cJSON *root = static_cast<cJSON *>(getChangeReport(
+      channelId, causeType, context_props, change_props, subChannel));
 
   if (root) {
     // data = cJSON_Print(root);
@@ -596,7 +633,8 @@ bool supla_alexa_client::sendContactChangeReport(int causeType, int channelId,
 bool supla_alexa_client::sendBrightnessChangeReport(int causeType,
                                                     int channelId,
                                                     short brightness,
-                                                    bool online) {
+                                                    bool online,
+                                                    short subChannel) {
   void *context_props = NULL;
   if (online) {
     context_props =
@@ -614,12 +652,13 @@ bool supla_alexa_client::sendBrightnessChangeReport(int causeType,
   }
 
   return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
-                                                 context_props, change_props);
+                                                 context_props, change_props,
+                                                 subChannel);
 }
 
 bool supla_alexa_client::sendColorChangeReport(int causeType, int channelId,
                                                int color, short colorBrightness,
-                                               bool online) {
+                                               bool online, short subChannel) {
   if (!online) {
     colorBrightness = 0;
   }
@@ -641,11 +680,12 @@ bool supla_alexa_client::sendColorChangeReport(int causeType, int channelId,
   }
 
   return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
-                                                 context_props, change_props);
+                                                 context_props, change_props,
+                                                 subChannel);
 }
 
 void *supla_alexa_client::getEndpointUnrechableErrorResponse(
-    const char correlationToken[], int channelId) {
+    const char correlationToken[], int channelId, short subChannel) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
     cJSON *event = cJSON_CreateObject();
@@ -655,7 +695,8 @@ void *supla_alexa_client::getEndpointUnrechableErrorResponse(
         cJSON_AddItemToObject(event, "header", header);
       }
 
-      cJSON *endpoint = static_cast<cJSON *>(getEndpoint(channelId));
+      cJSON *endpoint =
+          static_cast<cJSON *>(getEndpoint(channelId, subChannel));
       if (endpoint) {
         cJSON_AddItemToObject(event, "endpoint", endpoint);
       }
@@ -680,7 +721,8 @@ void *supla_alexa_client::getEndpointUnrechableErrorResponse(
 }
 
 void *supla_alexa_client::getResponse(const char correlationToken[],
-                                      int channelId, void *props) {
+                                      int channelId, void *props,
+                                      short subChannel) {
   cJSON *root = cJSON_CreateObject();
   if (root) {
     cJSON *context = cJSON_CreateObject();
@@ -699,7 +741,8 @@ void *supla_alexa_client::getResponse(const char correlationToken[],
         cJSON_AddItemToObject(event, "header", header);
       }
 
-      cJSON *endpoint = static_cast<cJSON *>(getEndpoint(channelId));
+      cJSON *endpoint =
+          static_cast<cJSON *>(getEndpoint(channelId, subChannel));
       if (endpoint) {
         cJSON_AddItemToObject(event, "endpoint", endpoint);
       }
@@ -710,16 +753,17 @@ void *supla_alexa_client::getResponse(const char correlationToken[],
 }
 
 bool supla_alexa_client::sendResponse(const char correlationToken[],
-                                      int channelId, bool online, void *props) {
+                                      int channelId, bool online, void *props,
+                                      short subChannel) {
   char *data = NULL;
   cJSON *root = NULL;
 
   if (online) {
-    root =
-        static_cast<cJSON *>(getResponse(correlationToken, channelId, props));
-  } else {
     root = static_cast<cJSON *>(
-        getEndpointUnrechableErrorResponse(correlationToken, channelId));
+        getResponse(correlationToken, channelId, props, subChannel));
+  } else {
+    root = static_cast<cJSON *>(getEndpointUnrechableErrorResponse(
+        correlationToken, channelId, subChannel));
   }
 
   if (root) {
@@ -731,7 +775,7 @@ bool supla_alexa_client::sendResponse(const char correlationToken[],
   int result = aeg_post(data);
 
   if (data) {
-    //supla_log(LOG_DEBUG, "%s", data);
+    // supla_log(LOG_DEBUG, "%s", data);
     free(data);
     data = NULL;
   }
@@ -747,24 +791,24 @@ bool supla_alexa_client::powerControllerSendResponse(
   }
 
   return POST_RESULT_SUCCESS ==
-         sendResponse(correlationToken, channelId, online, props);
+         sendResponse(correlationToken, channelId, online, props, 0);
 }
 
 bool supla_alexa_client::brightnessControllerSendResponse(
-    const char correlationToken[], int channelId, short brightness,
-    bool online) {
+    const char correlationToken[], int channelId, short brightness, bool online,
+    short subChannel) {
   void *props = NULL;
   if (online) {
     props = addProps(props, getBrightnessControllerProperties(brightness));
   }
 
   return POST_RESULT_SUCCESS ==
-         sendResponse(correlationToken, channelId, online, props);
+         sendResponse(correlationToken, channelId, online, props, subChannel);
 }
 
 bool supla_alexa_client::colorControllerSendResponse(
     const char correlationToken[], int channelId, int color,
-    short colorBrightness, bool online) {
+    short colorBrightness, bool online, short subChannel) {
   void *props = NULL;
   if (online) {
     props =
@@ -772,5 +816,5 @@ bool supla_alexa_client::colorControllerSendResponse(
   }
 
   return POST_RESULT_SUCCESS ==
-         sendResponse(correlationToken, channelId, online, props);
+         sendResponse(correlationToken, channelId, online, props, subChannel);
 }

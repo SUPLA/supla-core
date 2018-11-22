@@ -17,35 +17,101 @@
  */
 
 #include "amazon/alexaresponserequest.h"
+#include <unistd.h>
 #include "http/httprequestqueue.h"
 #include "log.h"
+#include "sthread.h"
+#include "user/user.h"
 
-supla_alexa_response_request::supla_alexa_response_request(supla_user *user,
-                                                           int ClassID)
-    : supla_http_request(user, ClassID) {}
+supla_alexa_response_request::supla_alexa_response_request(
+    supla_user *user, int ClassID, int DeviceId, int ChannelId,
+    event_source_type EventSourceType)
+    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+  setDelay(1000000);
+}
 
 supla_alexa_response_request::~supla_alexa_response_request() {}
 
 bool supla_alexa_response_request::verifyExisting(
     supla_http_request *existing) {
+  if (getEventSourceType() == event_source_type::DEVICE) {
+    existing->setDelay(0);
+    supla_http_request_queue::getInstance()->raiseEvent();
+    return true;
+  }
   return false;
 }
 
-bool supla_alexa_response_request::queueUp(void) { return true; }
+bool supla_alexa_response_request::queueUp(void) {
+  return getEventSourceType() == event_source_type::AMAZON_ALEXA &&
+         supla_alexa_request::queueUp();
+}
 
 bool supla_alexa_response_request::isEventSourceTypeAccepted(
     short eventSourceType, bool verification) {
+  if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
+                                                      verification)) {
+    return false;
+  }
+
+  channel_complex_value summary =
+      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+
+  switch (summary.function) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return true;
+  }
+
   if (verification) {
     switch (eventSourceType) {
-      case HTTP_EVENT_SOURCE_DEVICE:
-      case HTTP_EVENT_SOURCE_AMAZON_ALEXA:
+      case event_source_type::DEVICE:
+      case event_source_type::AMAZON_ALEXA:
         return true;
     }
-  } else if (eventSourceType == HTTP_EVENT_SOURCE_AMAZON_ALEXA) {
+  } else if (eventSourceType == event_source_type::AMAZON_ALEXA) {
     return true;
   }
 
   return false;
+}
+
+void supla_alexa_response_request::execute(void *sthread) {
+  channel_complex_value value =
+      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+
+  switch (value.function) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      getClient()->powerControllerSendResponse(
+          getCorrelationTokenPtr(), getChannelId(), value.hi, value.online);
+      break;
+    case SUPLA_CHANNELFNC_DIMMER:
+      getClient()->brightnessControllerSendResponse(
+          getCorrelationTokenPtr(), getChannelId(), value.brightness,
+          value.online, 0);
+      break;
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+      getClient()->colorControllerSendResponse(
+          getCorrelationTokenPtr(), getChannelId(), value.color,
+          value.color_brightness, value.online, 0);
+      break;
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      if (getSubChannelFromCorrelationToken() == 1) {
+        getClient()->colorControllerSendResponse(
+            getCorrelationTokenPtr(), getChannelId(), value.color,
+            value.color_brightness, value.online, 1);
+      } else if (getSubChannelFromCorrelationToken() == 2) {
+        getClient()->brightnessControllerSendResponse(
+            getCorrelationTokenPtr(), getChannelId(), value.brightness,
+            value.online, 2);
+      }
+
+      break;
+  }
 }
 
 REGISTER_HTTP_REQUEST_CLASS(supla_alexa_response_request);
