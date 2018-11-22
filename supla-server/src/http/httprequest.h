@@ -25,12 +25,15 @@
 #include <cstddef>
 #include <list>
 #include <string>
+#include "http/trivialhttps.h"
 
 class supla_user;
 class supla_http_request_queue;
 
 class supla_http_request {
  private:
+  supla_trivial_http *http;
+  supla_trivial_https *https;
   supla_user *user;
   int ClassID;
   short EventSourceType;
@@ -38,22 +41,28 @@ class supla_http_request {
   int ChannelId;
   char *correlationToken;
   struct timeval startTime;
-  int timeoutMs;
+  int timeoutUs;
+
+ protected:
+  supla_trivial_http *getHttp();
+  supla_trivial_https *getHttps();
 
  public:
-  supla_http_request(supla_user *user, int ClassID);
+  supla_http_request(supla_user *user, int ClassID, int DeviceId, int ChannelId,
+                     short EventSourceType);
   int getClassID(void);
   supla_user *getUser(void);
   void setEventSourceType(short EventSourceType);
   short getEventSourceType(void);
   void setDeviceId(int DeviceId);
   int getDeviceId(void);
-  void setChannelId(int ChannelId);
+  virtual void setChannelId(int ChannelId);
   int getChannelId(void);
   void setCorrelationToken(const char correlationToken[]);
   const char *getCorrelationTokenPtr(void);
-  void setDelay(int delayMs);
-  void setTimeout(int timeoutMs);
+  void setDelay(int delayUs);
+  void setTimeout(int timeoutUs);
+  int getTimeout(void);
   int timeLeft(struct timeval *now);
   bool isWaiting(struct timeval *now);
   bool timeout(struct timeval *now);
@@ -62,6 +71,8 @@ class supla_http_request {
   virtual bool queueUp(void) = 0;
   virtual bool isEventSourceTypeAccepted(short eventSourceType,
                                          bool verification) = 0;
+  virtual void execute(void *sthread) = 0;
+  virtual void terminate(void *sthread);
   virtual ~supla_http_request();
 };
 
@@ -69,28 +80,33 @@ class AbstractHttpRequestFactory {
  private:
   int ClassID;
   static std::list<AbstractHttpRequestFactory *> factories;
-  virtual supla_http_request *create(supla_user *user, int ClassID) = 0;
+  virtual supla_http_request *create(supla_user *user, int ClassID,
+                                     int DeviceId, int ChannelId,
+                                     short EventSourceType) = 0;
 
  public:
   AbstractHttpRequestFactory(void);
   virtual ~AbstractHttpRequestFactory(void);
   int getClassID(void);
   static std::list<supla_http_request *> createByChannelEventSourceType(
-      supla_user *user, short EventSourceType);
+      supla_user *user, int DeviceId, int ChannelId, short EventSourceType);
 };
 
-#define REGISTER_HTTP_REQUEST_CLASS(requestclass)                     \
-  class requestclass##Factory : public AbstractHttpRequestFactory {   \
-   public:                                                            \
-    requestclass##Factory();                                          \
-    supla_http_request *create(supla_user *user, int ClassID);        \
-  };                                                                  \
-  requestclass##Factory::requestclass##Factory()                      \
-      : AbstractHttpRequestFactory() {}                               \
-  supla_http_request *requestclass##Factory::create(supla_user *user, \
-                                                    int ClassID) {    \
-    return new requestclass(user, ClassID);                           \
-  }                                                                   \
+#define REGISTER_HTTP_REQUEST_CLASS(requestclass)                           \
+  class requestclass##Factory : public AbstractHttpRequestFactory {         \
+   public:                                                                  \
+    requestclass##Factory();                                                \
+    supla_http_request *create(supla_user *user, int ClassID, int DeviceId, \
+                               int ChannelId, short EventSourceType);       \
+  };                                                                        \
+  requestclass##Factory::requestclass##Factory()                            \
+      : AbstractHttpRequestFactory() {}                                     \
+  supla_http_request *requestclass##Factory::create(                        \
+      supla_user *user, int ClassID, int DeviceId, int ChannelId,           \
+      short EventSourceType) {                                              \
+    return new requestclass(user, ClassID, DeviceId, ChannelId,             \
+                            EventSourceType);                               \
+  }                                                                         \
   static requestclass##Factory global_##requestclass##Factory;
 
 #endif /* HTTP_HTTPREQUEST_H_ */

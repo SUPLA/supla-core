@@ -19,18 +19,25 @@
 #include "http/httprequest.h"
 #include <stdlib.h>
 #include "log.h"
+#include "sthread.h"
 #include "string.h"
+#include "svrcfg.h"
 
-supla_http_request::supla_http_request(supla_user *user, int ClassID) {
+supla_http_request::supla_http_request(supla_user *user, int ClassID,
+                                       int DeviceId, int ChannelId,
+                                       short EventSourceType) {
   this->user = user;
-  this->EventSourceType = 0;
+  this->EventSourceType = EventSourceType;
   this->ClassID = ClassID;
-  this->DeviceId = 0;
-  this->ChannelId = 0;
-  this->timeoutMs = 0;
+  this->DeviceId = DeviceId;
+  this->ChannelId = ChannelId;
+  this->timeoutUs = 0;
   this->startTime.tv_sec = 0;
   this->startTime.tv_usec = 0;
   this->correlationToken = NULL;
+
+  setTimeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
+  setDelay(0);
 }
 
 supla_http_request::~supla_http_request() {
@@ -38,6 +45,27 @@ supla_http_request::~supla_http_request() {
     free(correlationToken);
     correlationToken = NULL;
   }
+  if (http) {
+    delete http;
+  }
+
+  if (https) {
+    delete https;
+  }
+}
+
+supla_trivial_http *supla_http_request::getHttp() {
+  if (!http) {
+    http = new supla_trivial_http();
+  }
+  return http;
+}
+
+supla_trivial_https *supla_http_request::getHttps() {
+  if (!https) {
+    https = new supla_trivial_https();
+  }
+  return https;
 }
 
 int supla_http_request::getClassID(void) { return ClassID; }
@@ -79,26 +107,23 @@ const char *supla_http_request::getCorrelationTokenPtr(void) {
   return correlationToken;
 }
 
-void supla_http_request::setDelay(int delayMs) {
-  if (delayMs > 0) {
+void supla_http_request::setDelay(int delayUs) {
+  gettimeofday(&startTime, NULL);
+
+  if (delayUs > 0) {
     gettimeofday(&startTime, NULL);
-    startTime.tv_sec += delayMs / 1000;
-    startTime.tv_usec += (delayMs % 1000) * 1000;
-  } else {
-    startTime.tv_sec = 0;
-    startTime.tv_usec = 0;
+    startTime.tv_sec += delayUs / 1000000;
+    startTime.tv_usec += delayUs % 1000000;
   }
 }
 
-void supla_http_request::setTimeout(int timeoutMs) {
-  this->timeoutMs = timeoutMs;
+void supla_http_request::setTimeout(int timeoutUs) {
+  this->timeoutUs = timeoutUs;
 }
+
+int supla_http_request::getTimeout(void) { return this->timeoutUs; }
 
 int supla_http_request::timeLeft(struct timeval *now) {
-  if (startTime.tv_sec == 0 && startTime.tv_usec == 0) {
-    return 0;
-  }
-
   struct timeval _now;
   if (!now) {
     gettimeofday(&_now, NULL);
@@ -106,9 +131,9 @@ int supla_http_request::timeLeft(struct timeval *now) {
   }
 
   if (now->tv_sec <= startTime.tv_sec) {
-    int ms = (startTime.tv_sec - now->tv_sec) * 1000;
-    ms += startTime.tv_usec / 1000 - now->tv_usec / 1000;
-    return ms;
+    int us = (startTime.tv_sec - now->tv_sec) * 1000000;
+    us += startTime.tv_usec - now->tv_usec;
+    return us;
   }
 
   return 0;
@@ -119,7 +144,7 @@ bool supla_http_request::isWaiting(struct timeval *now) {
 }
 
 bool supla_http_request::timeout(struct timeval *now) {
-  if (timeoutMs == 0 || (startTime.tv_sec == 0 && startTime.tv_usec == 0)) {
+  if (timeoutUs == 0) {
     return false;
   }
 
@@ -131,18 +156,32 @@ bool supla_http_request::timeout(struct timeval *now) {
 
   struct timeval tout = startTime;
 
-  tout.tv_sec += timeoutMs / 1000;
-  tout.tv_usec += (timeoutMs % 1000) * 1000;
+  tout.tv_sec += timeoutUs / 1000000;
+  tout.tv_usec += timeoutUs % 1000000 * 1000;
 
-  if (now->tv_sec > tout.tv_sec) {
+  if (now->tv_sec < tout.tv_sec) {
     return false;
   }
 
-  if (now->tv_sec == tout.tv_sec && now->tv_usec >= tout.tv_usec) {
+  if (now->tv_sec == tout.tv_sec && now->tv_usec < tout.tv_usec) {
     return false;
   }
 
   return true;
+}
+
+void supla_http_request::terminate(void *sthread) {
+  if (sthread) {
+    sthread_terminate(sthread);
+  };
+
+  if (https) {
+    https->terminate();
+  }
+
+  if (http) {
+    http->terminate();
+  }
 }
 
 //-----------------------------------------------------------------
@@ -165,12 +204,13 @@ int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
 // static
 std::list<supla_http_request *>
 AbstractHttpRequestFactory::createByChannelEventSourceType(
-    supla_user *user, short EventSourceType) {
+    supla_user *user, int DeviceId, int ChannelId, short EventSourceType) {
   std::list<supla_http_request *> result;
   for (std::list<AbstractHttpRequestFactory *>::iterator it =
            AbstractHttpRequestFactory::factories.begin();
        it != AbstractHttpRequestFactory::factories.end(); it++) {
-    supla_http_request *request = (*it)->create(user, (*it)->getClassID());
+    supla_http_request *request = (*it)->create(
+        user, (*it)->getClassID(), DeviceId, ChannelId, EventSourceType);
     if (request) {
       if (request->isEventSourceTypeAccepted(EventSourceType, true)) {
         result.push_back(request);

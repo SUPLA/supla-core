@@ -17,6 +17,7 @@
  */
 
 #include "http/httprequest.h"
+#include <unistd.h>
 #include <cstddef>  // NOLINT
 #include <list>     // NOLINT
 #include "http/httprequestqueue.h"
@@ -24,6 +25,14 @@
 #include "log.h"
 #include "safearray.h"
 #include "sthread.h"
+#include "svrcfg.h"
+#include "user/user.h"
+
+typedef struct {
+  supla_http_request *request;
+  void *sthread;
+  void *arr_thread;
+} _request_thread_ptr_t;
 
 supla_http_request_queue *supla_http_request_queue::instance = NULL;
 
@@ -52,6 +61,23 @@ char supla_http_request_queue_arr_userspace_clean(void *_user_space) {
   return 0;
 }
 
+void supla_http_request_thread_execute(void *ptr, void *sthread) {
+  static_cast<_request_thread_ptr_t *>(ptr)->request->execute(sthread);
+}
+
+void supla_http_request_thread_finish(void *_ptr, void *sthread) {
+  _request_thread_ptr_t *ptr = static_cast<_request_thread_ptr_t *>(_ptr);
+  void *arr_thread = ptr->arr_thread;
+
+  safe_array_lock(arr_thread);
+  delete ptr->request;
+  delete ptr;
+  safe_array_remove(arr_thread, ptr);
+  safe_array_unlock(arr_thread);
+
+  supla_http_request_queue::getInstance()->raiseEvent();
+}
+
 // static
 void supla_http_request_queue::init(void) {
   supla_http_request_queue::instance = new supla_http_request_queue();
@@ -72,10 +98,27 @@ supla_http_request_queue *supla_http_request_queue::getInstance(void) {
 
 supla_http_request_queue::supla_http_request_queue() {
   this->main_eh = eh_init();
-  arr_user_space = safe_array_init();
+  this->arr_user_space = safe_array_init();
+  this->arr_thread = safe_array_init();
+  this->thread_count_limit = scfg_int(CFG_HTTP_THREAD_COUNT_LIMIT);
+  this->last_user_offset = -1;
+}
+
+void supla_http_request_queue::terminateAllThreads(void) {
+  safe_array_lock(arr_thread);
+  for (int a = 0; a < safe_array_count(arr_thread); a++) {
+    _request_thread_ptr_t *ptr =
+        static_cast<_request_thread_ptr_t *>(safe_array_get(arr_thread, a));
+    if (ptr && ptr->request) {
+      ptr->request->terminate(ptr->sthread);
+    }
+  }
+  safe_array_unlock(arr_thread);
 }
 
 supla_http_request_queue::~supla_http_request_queue() {
+  safe_array_free(arr_thread);
+
   safe_array_clean(arr_user_space,
                    supla_http_request_queue_arr_userspace_clean);
   safe_array_free(arr_user_space);
@@ -83,9 +126,178 @@ supla_http_request_queue::~supla_http_request_queue() {
   eh_free(main_eh);
 }
 
+void supla_http_request_queue::runThread(supla_http_request *request) {
+  if (!request) {
+    return;
+  }
+
+  safe_array_lock(arr_thread);
+  _request_thread_ptr_t *ptr = new _request_thread_ptr_t();
+  safe_array_add(arr_thread, ptr);
+
+  Tsthread_params stp;
+
+  stp.execute = supla_http_request_thread_execute;
+  stp.finish = supla_http_request_thread_finish;
+  stp.user_data = ptr;
+  stp.free_on_finish = true;
+  stp.initialize = NULL;
+
+  ptr->arr_thread = arr_thread;
+  ptr->request = request;
+
+  ptr->sthread = sthread_run(&stp);
+
+  safe_array_unlock(arr_thread);
+}
+
+int supla_http_request_queue::queueSize(void) {
+  int size = 0;
+
+  safe_array_lock(arr_user_space);
+  for (int a = 0; a < safe_array_count(arr_user_space); a++) {
+    _heq_user_space_t *user_space =
+        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
+    size += safe_array_count(user_space->arr_queue);
+  }
+  safe_array_unlock(arr_user_space);
+
+  return size;
+}
+
+supla_http_request *supla_http_request_queue::queuePop(void) {
+  supla_http_request *result = NULL;
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  safe_array_lock(arr_user_space);
+  last_user_offset++;
+
+  if (last_user_offset >= safe_array_count(arr_user_space)) {
+    last_user_offset = 0;
+  }
+  for (int a = last_user_offset; a < safe_array_count(arr_user_space); a++) {
+    _heq_user_space_t *user_space =
+        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
+
+    safe_array_unlock(arr_user_space);
+    safe_array_lock(user_space->arr_queue);
+    for (int b = 0; b < safe_array_count(user_space->arr_queue); b++) {
+      supla_http_request *request = static_cast<supla_http_request *>(
+          safe_array_get(user_space->arr_queue, b));
+
+      if (request && !request->isWaiting(&now)) {
+        if (request->timeout(NULL)) {
+          supla_log(LOG_WARNING,
+                    "HTTP request execution timeout! IODevice: %i Channel: %i "
+                    "EventSourceType: %i (%i)",
+                    request->getDeviceId(), request->getChannelId(),
+                    request->getEventSourceType(), request->getTimeout());
+
+          delete request;
+        } else {
+          result = request;
+        }
+
+        safe_array_delete(user_space->arr_queue, b);
+        break;
+      }
+    }
+    safe_array_unlock(user_space->arr_queue);
+    safe_array_lock(arr_user_space);
+
+    if (result) {
+      break;
+    }
+  }
+  safe_array_unlock(arr_user_space);
+
+  return result;
+}
+
+int supla_http_request_queue::getNextTimeOfDelayedExecution(int time) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  safe_array_lock(arr_user_space);
+
+  for (int a = 0; a < safe_array_count(arr_user_space) && time > 1000; a++) {
+    _heq_user_space_t *user_space =
+        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
+
+    safe_array_unlock(arr_user_space);
+    safe_array_lock(user_space->arr_queue);
+
+    for (int b = 0; b < safe_array_count(user_space->arr_queue) && time > 1000;
+         b++) {
+      supla_http_request *request = static_cast<supla_http_request *>(
+          safe_array_get(user_space->arr_queue, b));
+
+      if (request) {
+        int timeLeft = request->timeLeft(&now);
+        if (timeLeft < time) {
+          time = timeLeft;
+        }
+      }
+    }
+    safe_array_unlock(user_space->arr_queue);
+    safe_array_lock(arr_user_space);
+  }
+  safe_array_unlock(arr_user_space);
+
+  return time;
+}
+
+int supla_http_request_queue::threadCount(void) {
+  return safe_array_count(arr_thread);
+}
+
+int supla_http_request_queue::threadCountLimit(void) {
+  return thread_count_limit;
+}
+
+void supla_http_request_queue::raiseEvent(void) { eh_raise_event(main_eh); }
+
 void supla_http_request_queue::iterate(void *q_sthread) {
+  bool warn_msg = false;
   while (sthread_isterminated(q_sthread) == 0) {
-    eh_wait(main_eh, 30000000);
+    int wait_time = 10000000;
+    if (queueSize() > 0) {
+      supla_http_request *request = NULL;
+
+      if (threadCount() < threadCountLimit()) {
+        request = queuePop();
+        if (request) {
+          runThread(request);
+          wait_time = 0;
+        } else {
+          wait_time = getNextTimeOfDelayedExecution(wait_time);
+          supla_log(LOG_DEBUG, "getNextTimeOfDelayedExecution %i", wait_time);
+        }
+      } else if (!warn_msg) {
+        supla_log(LOG_WARNING,
+                  "Http request - thread count limit exceeded (%i)",
+                  threadCountLimit());
+        warn_msg = true;
+      }
+    }
+
+    wait_time += 1000;
+    supla_log(LOG_DEBUG, "wait_time = %i,%i,%i", wait_time, threadCount(),
+              queueSize());
+    eh_wait(main_eh, wait_time);
+  }
+
+  terminateAllThreads();
+
+  int n_wait = 1;
+  while (threadCount()) {
+    if (n_wait == 20) {
+      supla_log(LOG_INFO, "Waiting for http threads...");
+    }
+    usleep(100000);
+    n_wait++;
   }
 }
 
@@ -146,15 +358,11 @@ void supla_http_request_queue::onChannelChangeEvent(
 
   std::list<supla_http_request *> requests =
       AbstractHttpRequestFactory::createByChannelEventSourceType(
-          user, eventSourceType);
+          user, deviceId, channelId, eventSourceType);
 
   for (std::list<supla_http_request *>::iterator it = requests.begin();
        it != requests.end(); it++) {
     supla_http_request *request = *it;
-
-    request->setEventSourceType(eventSourceType);
-    request->setDeviceId(deviceId);
-    request->setChannelId(channelId);
 
     safe_array_lock(user_space->arr_queue);
 
@@ -187,7 +395,7 @@ void supla_http_request_queue::onChannelChangeEvent(
   }
 
   if (requests.size()) {
-    eh_raise_event(main_eh);
+    raiseEvent();
   }
 }
 

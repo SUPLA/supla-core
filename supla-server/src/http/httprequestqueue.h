@@ -40,9 +40,19 @@ class supla_http_request_queue {
   static supla_http_request_queue *instance;
   TEventHandler *main_eh;
   void *arr_user_space;
+  void *arr_thread;
+  int thread_count_limit;
+  int last_user_offset;
 
+  void terminateAllThreads(void);
+  void runThread(supla_http_request *request);
   _heq_user_space_t *getUserSpace(supla_user *user);
   void addRequest(_heq_user_space_t *user_space, supla_http_request *request);
+  supla_http_request *queuePop(void);
+  int getNextTimeOfDelayedExecution(int time);
+  int queueSize(void);
+  int threadCount(void);
+  int threadCountLimit(void);
 
  public:
   static void init();
@@ -51,6 +61,7 @@ class supla_http_request_queue {
   supla_http_request_queue();
   virtual ~supla_http_request_queue();
 
+  void raiseEvent(void);
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
   void onChannelChangeEvent(supla_user *user, int deviceId, int channelId,
