@@ -230,8 +230,8 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_char_value(
           UserID, 0, DeviceID, CGID, Value,
-          AlexaCorelationToken ? _http_event_source_type::AMAZON_ALEXA
-                               : _http_event_source_type::IPC,
+          AlexaCorelationToken ? event_source_type::AMAZON_ALEXA
+                               : event_source_type::IPC,
           AlexaCorelationToken);
     }
 
@@ -296,8 +296,8 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
           UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness,
-          AlexaCorelationToken ? _http_event_source_type::AMAZON_ALEXA
-                               : _http_event_source_type::IPC,
+          AlexaCorelationToken ? event_source_type::AMAZON_ALEXA
+                               : event_source_type::IPC,
           AlexaCorelationToken);
     }
 

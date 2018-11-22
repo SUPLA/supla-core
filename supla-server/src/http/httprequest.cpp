@@ -26,7 +26,7 @@
 
 supla_http_request::supla_http_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    _http_event_source_type EventSourceType) {
+    event_source_type EventSourceType) {
   this->lck = lck_init();
   this->http = NULL;
   this->https = NULL;
@@ -92,11 +92,11 @@ int supla_http_request::getClassID(void) { return ClassID; }
 supla_user *supla_http_request::getUser(void) { return user; }
 
 void supla_http_request::setEventSourceType(
-    _http_event_source_type EventSourceType) {
+    event_source_type EventSourceType) {
   this->EventSourceType = EventSourceType;
 }
 
-_http_event_source_type supla_http_request::getEventSourceType(void) {
+event_source_type supla_http_request::getEventSourceType(void) {
   return EventSourceType;
 }
 
@@ -229,7 +229,7 @@ int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
 std::list<supla_http_request *>
 AbstractHttpRequestFactory::createByChannelEventSourceType(
     supla_user *user, int DeviceId, int ChannelId,
-    _http_event_source_type EventSourceType) {
+    event_source_type EventSourceType) {
   std::list<supla_http_request *> result;
   for (std::list<AbstractHttpRequestFactory *>::iterator it =
            AbstractHttpRequestFactory::factories.begin();
