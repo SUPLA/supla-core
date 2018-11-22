@@ -18,14 +18,18 @@
 
 #include "http/httprequest.h"
 #include <stdlib.h>
+#include "lck.h"
 #include "log.h"
 #include "sthread.h"
 #include "string.h"
 #include "svrcfg.h"
 
-supla_http_request::supla_http_request(supla_user *user, int ClassID,
-                                       int DeviceId, int ChannelId,
-                                       short EventSourceType) {
+supla_http_request::supla_http_request(
+    supla_user *user, int ClassID, int DeviceId, int ChannelId,
+    _http_event_source_type EventSourceType) {
+  this->lck = lck_init();
+  this->http = NULL;
+  this->https = NULL;
   this->user = user;
   this->EventSourceType = EventSourceType;
   this->ClassID = ClassID;
@@ -45,6 +49,8 @@ supla_http_request::~supla_http_request() {
     free(correlationToken);
     correlationToken = NULL;
   }
+
+  lck_lock(this->lck);
   if (http) {
     delete http;
   }
@@ -52,31 +58,47 @@ supla_http_request::~supla_http_request() {
   if (https) {
     delete https;
   }
+  lck_unlock(this->lck);
+
+  lck_free(this->lck);
 }
 
 supla_trivial_http *supla_http_request::getHttp() {
+  supla_trivial_http *result = NULL;
+  lck_lock(this->lck);
   if (!http) {
     http = new supla_trivial_http();
   }
-  return http;
+  result = http;
+  lck_unlock(this->lck);
+
+  return result;
 }
 
 supla_trivial_https *supla_http_request::getHttps() {
+  supla_trivial_https *result = NULL;
+  lck_lock(this->lck);
   if (!https) {
     https = new supla_trivial_https();
   }
-  return https;
+  result = https;
+  lck_unlock(this->lck);
+
+  return result;
 }
 
 int supla_http_request::getClassID(void) { return ClassID; }
 
 supla_user *supla_http_request::getUser(void) { return user; }
 
-void supla_http_request::setEventSourceType(short EventSourceType) {
+void supla_http_request::setEventSourceType(
+    _http_event_source_type EventSourceType) {
   this->EventSourceType = EventSourceType;
 }
 
-short supla_http_request::getEventSourceType(void) { return EventSourceType; }
+_http_event_source_type supla_http_request::getEventSourceType(void) {
+  return EventSourceType;
+}
 
 void supla_http_request::setDeviceId(int DeviceId) {
   this->DeviceId = DeviceId;
@@ -175,6 +197,7 @@ void supla_http_request::terminate(void *sthread) {
     sthread_terminate(sthread);
   }
 
+  lck_lock(this->lck);
   if (https) {
     https->terminate();
   }
@@ -182,6 +205,7 @@ void supla_http_request::terminate(void *sthread) {
   if (http) {
     http->terminate();
   }
+  lck_unlock(this->lck);
 }
 
 //-----------------------------------------------------------------
@@ -204,7 +228,8 @@ int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
 // static
 std::list<supla_http_request *>
 AbstractHttpRequestFactory::createByChannelEventSourceType(
-    supla_user *user, int DeviceId, int ChannelId, short EventSourceType) {
+    supla_user *user, int DeviceId, int ChannelId,
+    _http_event_source_type EventSourceType) {
   std::list<supla_http_request *> result;
   for (std::list<AbstractHttpRequestFactory *>::iterator it =
            AbstractHttpRequestFactory::factories.begin();

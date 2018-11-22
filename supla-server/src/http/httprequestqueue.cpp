@@ -346,8 +346,8 @@ void supla_http_request_queue::addRequest(supla_http_request *request) {
 }
 
 void supla_http_request_queue::onChannelChangeEvent(
-    supla_user *user, int deviceId, int channelId, short eventSourceType,
-    const char *correlationToken[]) {
+    supla_user *user, int deviceId, int channelId,
+    _http_event_source_type eventSourceType, const char correlationToken[]) {
   _heq_user_space_t *user_space = getUserSpace(user);
   if (user_space == NULL) {
     return;
@@ -386,6 +386,7 @@ void supla_http_request_queue::onChannelChangeEvent(
       }
 
       if (request) {
+        request->setCorrelationToken(correlationToken);
         addRequest(user_space, request);
       }
     }

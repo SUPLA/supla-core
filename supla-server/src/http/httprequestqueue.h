@@ -20,15 +20,18 @@
 #define HTTP_HTTPREQUESTQUEUE_H_
 
 #include "eh.h"
+#include "string.h"
 
 class supla_http_request;
 class supla_user;
 
-#define HTTP_EVENT_SOURCE_DEVICE 1
-#define HTTP_EVENT_SOURCE_CLIENT 2
-#define HTTP_EVENT_SOURCE_IPC 3
-#define HTTP_EVENT_SOURCE_AMAZON_ALEXA 4
-#define HTTP_EVENT_SOURCE_GOOGLE_HOME 5
+enum _http_event_source_type {
+  DEVICE,
+  CLIENT,
+  IPC,
+  AMAZON_ALEXA,
+  GOOGLE_HOME,
+};
 
 typedef struct {
   supla_user *user;
@@ -65,8 +68,8 @@ class supla_http_request_queue {
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
   void onChannelChangeEvent(supla_user *user, int deviceId, int channelId,
-                            short eventSourceType,
-                            const char *correlationToken[] = NULL);
+                            _http_event_source_type eventSourceType,
+                            const char correlationToken[] = NULL);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);
