@@ -133,7 +133,6 @@ void supla_http_request::setDelay(int delayUs) {
   gettimeofday(&startTime, NULL);
 
   if (delayUs > 0) {
-    gettimeofday(&startTime, NULL);
     startTime.tv_sec += delayUs / 1000000;
     startTime.tv_usec += delayUs % 1000000;
   }
