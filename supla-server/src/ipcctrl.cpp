@@ -176,9 +176,9 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
 }
 
 void svr_ipcctrl::free_correlation_token() {
-  if (AlexaCorelationToken) {
-    free(AlexaCorelationToken);
-    AlexaCorelationToken = NULL;
+  if (AlexaCorrelationToken) {
+    free(AlexaCorrelationToken);
+    AlexaCorrelationToken = NULL;
   }
 }
 
@@ -193,10 +193,10 @@ void svr_ipcctrl::cut_correlation_token(const char *cmd) {
     int len = strnlen(value, IPC_BUFFER_SIZE);
 
     if (len > 0) {
-      AlexaCorelationToken = st_openssl_base64_decode(value, len, NULL);
-      if (strnlen(AlexaCorelationToken, IPC_BUFFER_SIZE) <= 0) {
-        delete AlexaCorelationToken;
-        AlexaCorelationToken = NULL;
+      AlexaCorrelationToken = st_openssl_base64_decode(value, len, NULL);
+      if (strnlen(AlexaCorrelationToken, IPC_BUFFER_SIZE) <= 0) {
+        delete AlexaCorrelationToken;
+        AlexaCorrelationToken = NULL;
       }
     }
 
@@ -230,9 +230,9 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_char_value(
           UserID, 0, DeviceID, CGID, Value,
-          AlexaCorelationToken ? event_source_type::AMAZON_ALEXA
+          AlexaCorrelationToken ? event_source_type::AMAZON_ALEXA
                                : event_source_type::IPC,
-          AlexaCorelationToken);
+          AlexaCorrelationToken);
     }
 
     free_correlation_token();
@@ -296,9 +296,9 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
           UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness,
-          AlexaCorelationToken ? event_source_type::AMAZON_ALEXA
+          AlexaCorrelationToken ? event_source_type::AMAZON_ALEXA
                                : event_source_type::IPC,
-          AlexaCorelationToken);
+          AlexaCorrelationToken);
     }
 
     free_correlation_token();
