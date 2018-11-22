@@ -273,7 +273,6 @@ void supla_http_request_queue::iterate(void *q_sthread) {
           wait_time = 0;
         } else {
           wait_time = getNextTimeOfDelayedExecution(wait_time);
-          supla_log(LOG_DEBUG, "getNextTimeOfDelayedExecution %i", wait_time);
         }
       } else if (!warn_msg) {
         supla_log(LOG_WARNING,
@@ -284,8 +283,6 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     }
 
     wait_time += 1000;
-    supla_log(LOG_DEBUG, "wait_time = %i,%i,%i", wait_time, threadCount(),
-              queueSize());
     eh_wait(main_eh, wait_time);
   }
 
