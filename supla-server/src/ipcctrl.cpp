@@ -24,6 +24,7 @@
 #include <unistd.h>
 
 #include "database.h"
+#include "http/httprequestqueue.h"
 #include "ipcctrl.h"
 #include "ipcsocket.h"
 #include "log.h"
@@ -193,6 +194,10 @@ void svr_ipcctrl::cut_correlation_token(const char *cmd) {
 
     if (len > 0) {
       AlexaCorelationToken = st_openssl_base64_decode(value, len, NULL);
+      if (strnlen(AlexaCorelationToken, IPC_BUFFER_SIZE) <= 0) {
+        delete AlexaCorelationToken;
+        AlexaCorelationToken = NULL;
+      }
     }
 
     ct[0] = 0;
@@ -224,7 +229,10 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
       result = supla_user::set_channelgroup_char_value(UserID, CGID, Value);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_char_value(
-          UserID, 0, DeviceID, CGID, Value, AlexaCorelationToken);
+          UserID, 0, DeviceID, CGID, Value,
+          AlexaCorelationToken ? _http_event_source_type::AMAZON_ALEXA
+                               : _http_event_source_type::IPC,
+          AlexaCorelationToken);
     }
 
     free_correlation_token();
@@ -288,6 +296,8 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
           UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness,
+          AlexaCorelationToken ? _http_event_source_type::AMAZON_ALEXA
+                               : _http_event_source_type::IPC,
           AlexaCorelationToken);
     }
 
