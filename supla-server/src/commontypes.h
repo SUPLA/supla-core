@@ -20,12 +20,12 @@
 #define COMMONTYPES_H_
 
 enum event_source_type {
-  UNKNOWN,
-  DEVICE,
-  CLIENT,
-  IPC,
-  AMAZON_ALEXA,
-  GOOGLE_HOME,
+  EST_UNKNOWN,
+  EST_DEVICE,
+  EST_CLIENT,
+  EST_IPC,
+  EST_AMAZON_ALEXA,
+  EST_GOOGLE_HOME,
 };
 
 typedef struct {

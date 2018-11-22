@@ -232,8 +232,7 @@ bool supla_client_channelgroups::set_device_channel_new_value(
   for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
     if (getClient()->getUser()->set_device_channel_value(
-            event_source_type::CLIENT, 0, it->DeviceId, it->ChannelId,
-            new_value->value)) {
+            EST_CLIENT, 0, it->DeviceId, it->ChannelId, new_value->value)) {
       result = true;
     }
   }

@@ -690,7 +690,7 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           int DeviceId, int ChannelId,
                                           bool Extended) {
   if (!Extended && DeviceId && ChannelId &&
-      eventSourceType != event_source_type::UNKNOWN) {
+      eventSourceType != EST_UNKNOWN) {
     supla_http_request_queue::getInstance()->onChannelChangeEvent(
         this, DeviceId, ChannelId, eventSourceType);
   }

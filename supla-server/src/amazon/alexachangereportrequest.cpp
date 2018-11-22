@@ -69,10 +69,10 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
   }
 
   switch (eventSourceType) {
-    case event_source_type::DEVICE:
-    case event_source_type::CLIENT:
-    case event_source_type::AMAZON_ALEXA:
-    case event_source_type::IPC:
+    case EST_DEVICE:
+    case EST_CLIENT:
+    case EST_AMAZON_ALEXA:
+    case EST_IPC:
       return true;
   }
   return false;

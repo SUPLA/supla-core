@@ -34,7 +34,7 @@ supla_alexa_response_request::~supla_alexa_response_request() {}
 
 bool supla_alexa_response_request::verifyExisting(
     supla_http_request *existing) {
-  if (getEventSourceType() == event_source_type::DEVICE) {
+  if (getEventSourceType() == EST_DEVICE) {
     existing->setDelay(0);
     supla_http_request_queue::getInstance()->raiseEvent();
     return true;
@@ -43,7 +43,7 @@ bool supla_alexa_response_request::verifyExisting(
 }
 
 bool supla_alexa_response_request::queueUp(void) {
-  return getEventSourceType() == event_source_type::AMAZON_ALEXA &&
+  return getEventSourceType() == EST_AMAZON_ALEXA &&
          supla_alexa_request::queueUp();
 }
 
@@ -68,11 +68,11 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
 
   if (verification) {
     switch (eventSourceType) {
-      case event_source_type::DEVICE:
-      case event_source_type::AMAZON_ALEXA:
+      case EST_DEVICE:
+      case EST_AMAZON_ALEXA:
         return true;
     }
-  } else if (eventSourceType == event_source_type::AMAZON_ALEXA) {
+  } else if (eventSourceType == EST_AMAZON_ALEXA) {
     return true;
   }
 

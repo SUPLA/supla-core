@@ -36,7 +36,7 @@ supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
 supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
     getUser()->remove_device(this);
-    getUser()->on_channel_value_changed(event_source_type::DEVICE, getID());
+    getUser()->on_channel_value_changed(EST_DEVICE, getID());
   }
 
   delete channels;
@@ -310,11 +310,11 @@ void supla_device::on_device_channel_value_changed(
   if (ChannelId != 0) {
     bool converted2extended;
     channels->set_channel_value(ChannelId, value->value, &converted2extended);
-    getUser()->on_channel_value_changed(event_source_type::DEVICE, getID(),
+    getUser()->on_channel_value_changed(EST_DEVICE, getID(),
                                         ChannelId);
 
     if (converted2extended) {
-      getUser()->on_channel_value_changed(event_source_type::DEVICE, getID(),
+      getUser()->on_channel_value_changed(EST_DEVICE, getID(),
                                           ChannelId, true);
     }
   }
@@ -326,7 +326,7 @@ void supla_device::on_device_channel_extendedvalue_changed(
 
   if (ChannelId != 0) {
     channels->set_channel_extendedvalue(ChannelId, &ev->value);
-    getUser()->on_channel_value_changed(event_source_type::DEVICE, getID(),
+    getUser()->on_channel_value_changed(EST_DEVICE, getID(),
                                         ChannelId, true);
   }
 }

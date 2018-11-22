@@ -79,12 +79,12 @@ bool supla_alexa_request::isEventSourceTypeAccepted(short eventSourceType,
 
 int supla_alexa_request::getCauseType(void) {
   switch (getEventSourceType()) {
-    case event_source_type::AMAZON_ALEXA:
+    case EST_AMAZON_ALEXA:
       return CAUSE_VOICE_INTERACTION;
 
-    case event_source_type::CLIENT:
-    case event_source_type::IPC:
-    case event_source_type::GOOGLE_HOME:
+    case EST_CLIENT:
+    case EST_IPC:
+    case EST_GOOGLE_HOME:
       return CAUSE_APP_INTERACTION;
 
     default:
