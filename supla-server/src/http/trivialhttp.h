@@ -27,6 +27,7 @@
 
 class supla_trivial_http {
  protected:
+  int sfd;
   char *host;
   int port;
   char *resource;
@@ -75,6 +76,7 @@ class supla_trivial_http {
 
   bool http_get(void);
   bool http_post(char *header, char *data);
+  virtual void terminate(void);
 };
 
 #endif /* TRIVIAL_HTTP_H_ */

@@ -72,7 +72,10 @@ supla_trivial_https::supla_trivial_https(void) : supla_trivial_http() {
   this->port = 443;
 }
 
-supla_trivial_https::~supla_trivial_https(void) { vars_free(); }
+supla_trivial_https::~supla_trivial_https(void) {
+  vars_free();
+  ERR_remove_thread_state(NULL);
+}
 
 void supla_trivial_https::vars_init(void) {
   vars_free();
@@ -87,14 +90,17 @@ void supla_trivial_https::vars_free(void) {
 
   if (vars->out) {
     BIO_free(vars->out);
+    vars->out = NULL;
   }
 
   if (vars->web) {
     BIO_free_all(vars->web);
+    vars->web = NULL;
   }
 
   if (vars->ctx) {
     SSL_CTX_free(vars->ctx);
+    vars->ctx = NULL;
   }
 
   free(ssl_vars);
@@ -206,7 +212,11 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
     return false;
   }
 
+  sfd = SSL_get_fd(vars->ssl);
   write_read(vars, out, in);
+
+  vars_free();
+  sfd = -1;
 
   return false;
 }

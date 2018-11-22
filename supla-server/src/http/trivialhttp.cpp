@@ -37,6 +37,7 @@
 #include "log.h"
 
 supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
+  this->sfd = -1;
   this->resultCode = 0;
   this->contentLength = 0;
   this->contentType = NULL;
@@ -48,6 +49,7 @@ supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
 }
 
 supla_trivial_http::supla_trivial_http(void) {
+  this->sfd = -1;
   this->resultCode = 0;
   this->contentLength = 0;
   this->contentType = NULL;
@@ -183,13 +185,15 @@ bool supla_trivial_http::send_recv(const char *out, char **in) {
 
   *in = NULL;
 
-  int sfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
-  if (connect(sfd, ai->ai_addr, (unsigned int)ai->ai_addrlen) == 0) {
+  sfd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+  if (sfd >= 0 &&
+      connect(sfd, ai->ai_addr, (unsigned int)ai->ai_addrlen) == 0) {
     write_read(&sfd, out, in);
   }
 
   if (sfd != -1) {
     close(sfd);
+    sfd = -1;
   }
 
   if (ai) {
@@ -430,4 +434,11 @@ bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
 
 bool supla_trivial_http::http_post(char *header, char *data) {
   return request("POST", header, data);
+}
+
+void supla_trivial_http::terminate(void) {
+  if (sfd >= 0) {
+    close(sfd);
+    sfd = -1;
+  }
 }
