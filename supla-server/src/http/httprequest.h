@@ -40,11 +40,11 @@ class supla_http_request {
   event_source_type EventSourceType;
   int DeviceId;
   int ChannelId;
-  char *correlationToken;
   struct timeval startTime;
   int timeoutUs;
 
  protected:
+  char *correlationToken;
   supla_trivial_http *getHttp();
   supla_trivial_https *getHttps();
 
@@ -59,7 +59,7 @@ class supla_http_request {
   int getDeviceId(void);
   virtual void setChannelId(int ChannelId);
   int getChannelId(void);
-  void setCorrelationToken(const char correlationToken[]);
+  virtual void setCorrelationToken(const char correlationToken[]);
   const char *getCorrelationTokenPtr(void);
   void setDelay(int delayUs);
   void setTimeout(int timeoutUs);
