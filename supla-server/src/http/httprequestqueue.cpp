@@ -17,9 +17,9 @@
  */
 
 #include "http/httprequest.h"
-#include <unistd.h>
-#include <cstddef>  // NOLINT
-#include <list>     // NOLINT
+#include <unistd.h>  // NOLINT
+#include <cstddef>   // NOLINT
+#include <list>      // NOLINT
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"

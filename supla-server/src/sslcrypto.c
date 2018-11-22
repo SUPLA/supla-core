@@ -16,8 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef NOSSL
-
+#include "sslcrypto.h"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <pthread.h>
@@ -25,6 +24,8 @@
 #include <string.h>
 #include "lck.h"
 #include "log.h"
+
+#ifndef NOSSL
 
 struct CRYPTO_dynlock_value {
   void *lck;
@@ -122,6 +123,6 @@ void sslcrypto_free(void) {
 }
 
 #else
-void sslcrypto_init(void){};
-void sslcrypto_free(void){};
+void sslcrypto_init(void) {}
+void sslcrypto_free(void) {}
 #endif /*NOSSL*/

@@ -173,7 +173,7 @@ bool supla_http_request::timeout(struct timeval *now) {
 void supla_http_request::terminate(void *sthread) {
   if (sthread) {
     sthread_terminate(sthread);
-  };
+  }
 
   if (https) {
     https->terminate();
