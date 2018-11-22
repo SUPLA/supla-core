@@ -17,6 +17,7 @@
  */
 
 #include "amazon/alexarequest.h"
+#include <stdlib.h>
 #include "amazon/alexa.h"
 #include "amazon/alexaclient.h"
 #include "lck.h"
