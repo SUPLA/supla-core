@@ -28,4 +28,17 @@ enum event_source_type {
   GOOGLE_HOME,
 };
 
+typedef struct {
+  bool online;
+  int function;
+  bool hi;
+  char brightness;
+  char color_brightness;
+  int color;
+  double temperature;
+  double humidity;
+  double distance;
+  double depth;
+} channel_complex_value;
+
 #endif /* COMMONTYPES_H_ */

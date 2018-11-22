@@ -1063,3 +1063,64 @@ bool supla_device_channels::calcfg_request(void *srpc, int SenderID,
 
   return result;
 }
+
+bool supla_device_channels::get_channel_complex_value(
+    channel_complex_value *value, int ChannelID) {
+  bool result = false;
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) {
+    value->online = true;
+    value->function = channel->getFunc();
+
+    switch (value->function) {
+      case SUPLA_CHANNELFNC_THERMOMETER:
+      case SUPLA_CHANNELFNC_HUMIDITY:
+      case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+        supla_channel_temphum *tempHum = channel->getTempHum();
+        if (tempHum) {
+          value->temperature = tempHum->getTemperature();
+          value->humidity = tempHum->getHumidity();
+          delete tempHum;
+        }
+      } break;
+
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+      case SUPLA_CHANNELFNC_MAILSENSOR:
+      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        char cv[SUPLA_CHANNELVALUE_SIZE];
+        channel->getChar(cv);
+        value->hi = cv[0] > 0;
+      } break;
+
+      case SUPLA_CHANNELFNC_DIMMER:
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+        channel->getRGBW(&value->color, &value->color_brightness,
+                         &value->brightness);
+        break;
+
+      case SUPLA_CHANNELFNC_DEPTHSENSOR:
+        channel->getDouble(&value->depth);
+        break;
+      case SUPLA_CHANNELFNC_DISTANCESENSOR:
+        channel->getDouble(&value->distance);
+        break;
+    }
+    result = true;
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}

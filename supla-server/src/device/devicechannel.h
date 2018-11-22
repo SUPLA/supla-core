@@ -20,7 +20,8 @@
 #define DEVICECHANNEL_H_
 
 #include <list>
-#include "../proto.h"
+#include "commontypes.h"
+#include "proto.h"
 
 class channel_address {
  private:
@@ -175,6 +176,8 @@ class supla_device_channels {
 
   bool calcfg_request(void *srpc, int SenderID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest *request);
+
+  bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };
 
 #endif /* DEVICECHANNEL_H_ */

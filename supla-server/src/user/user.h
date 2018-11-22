@@ -19,6 +19,7 @@
 #ifndef USER_H_
 #define USER_H_
 
+#include "commontypes.h"
 #include "proto.h"
 
 class supla_device;
@@ -84,12 +85,14 @@ class supla_user {
   static bool set_device_channel_char_value(int UserID, int SenderID,
                                             int DeviceID, int ChannelID,
                                             const char value,
-                                            char *AlexaCorelationToken);
+                                            event_source_type eventSourceType,
+                                            char *AlexaCorrelationToken);
   static bool set_device_channel_rgbw_value(int UserID, int SenderID,
                                             int DeviceID, int ChannelID,
                                             int color, char color_brightness,
                                             char brightness,
-                                            char *AlexaCorelationToken);
+                                            event_source_type eventSourceType,
+                                            char *AlexaCorrelationToken);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
@@ -119,7 +122,8 @@ class supla_user {
   bool get_channel_extendedvalue(int DeviceID, int ChannelID,
                                  TSuplaChannelExtendedValue *value);
 
-  bool set_device_channel_value(int SenderID, int DeviceID, int ChannelID,
+  bool set_device_channel_value(event_source_type eventSourceType, int SenderID,
+                                int DeviceID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(int SenderID, int DeviceID, int ChannelID,
                                      const char value);
@@ -132,8 +136,8 @@ class supla_user {
                                    char color_brightness, char brightness);
 
   void update_client_device_channels(int LocationID, int DeviceID);
-  void on_channel_value_changed(int DeviceId, int ChannelId = 0,
-                                bool Extended = false);
+  void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,
+                                int ChannelId = 0, bool Extended = false);
 
   void call_event(TSC_SuplaEvent *event);
   void get_temp_and_humidity(void *tarr);
@@ -142,6 +146,8 @@ class supla_user {
   bool device_calcfg_request(int SenderID, int DeviceId,
                              TCS_DeviceCalCfgRequest *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
+
+  channel_complex_value get_channel_complex_value(int DeviceId, int ChannelID);
 
   supla_amazon_alexa *amazonAlexa(void);
 

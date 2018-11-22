@@ -20,7 +20,8 @@
 #define DEVICE_H_
 
 #include <list>
-#include "../cdcommon.h"
+#include "cdcommon.h"
+#include "commontypes.h"
 #include "devicechannel.h"
 
 class supla_user;
@@ -65,8 +66,9 @@ class supla_device : public cdcommon {
                               char *brightness);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
   bool calcfg_request(int SenderID, bool SuperUserAuthorized,
-                           TCS_DeviceCalCfgRequest *request);
+                      TCS_DeviceCalCfgRequest *request);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };
 
 #endif /* DEVICE_H_ */
