@@ -241,7 +241,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     if (httpResultCode) {
       *httpResultCode = https->getResultCode();
     }
-    if (https->getResultCode() != 200) {
+    if (https->getResultCode() != 200 && https->getResultCode() != 202) {
       if (https->getBody()) {
         cJSON *root = cJSON_Parse(https->getBody());
         if (root) {
@@ -745,6 +745,10 @@ void *supla_alexa_client::getResponse(const char correlationToken[],
           static_cast<cJSON *>(getEndpoint(channelId, subChannel));
       if (endpoint) {
         cJSON_AddItemToObject(event, "endpoint", endpoint);
+      }
+      cJSON *payload = cJSON_CreateObject();
+      if (payload) {
+          cJSON_AddItemToObject(event, "payload", payload);
       }
       cJSON_AddItemToObject(root, "event", event);
     }
