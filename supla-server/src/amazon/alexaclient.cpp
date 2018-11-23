@@ -748,7 +748,7 @@ void *supla_alexa_client::getResponse(const char correlationToken[],
       }
       cJSON *payload = cJSON_CreateObject();
       if (payload) {
-          cJSON_AddItemToObject(event, "payload", payload);
+        cJSON_AddItemToObject(event, "payload", payload);
       }
       cJSON_AddItemToObject(root, "event", event);
     }
@@ -804,6 +804,7 @@ bool supla_alexa_client::brightnessControllerSendResponse(
   void *props = NULL;
   if (online) {
     props = addProps(props, getBrightnessControllerProperties(brightness));
+    props = addProps(props, getPowerControllerProperties(brightness > 0));
   }
 
   return POST_RESULT_SUCCESS ==
@@ -817,6 +818,7 @@ bool supla_alexa_client::colorControllerSendResponse(
   if (online) {
     props =
         addProps(props, getColorControllerProperties(color, colorBrightness));
+    props = addProps(props, getPowerControllerProperties(colorBrightness > 0));
   }
 
   return POST_RESULT_SUCCESS ==
