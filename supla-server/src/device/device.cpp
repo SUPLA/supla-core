@@ -274,8 +274,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               setUser(supla_user::add_device(this, UserID));
               getUser()->update_client_device_channels(LocationID, getID());
 
-              channels->on_device_registered(getUser(), DeviceID, dev_channels_b,
-                                             dev_channels_c, channel_count);
+              channels->on_device_registered(getUser(), DeviceID,
+                                             dev_channels_b, dev_channels_c,
+                                             channel_count);
             }
           }
         }
