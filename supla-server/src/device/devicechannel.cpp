@@ -919,18 +919,37 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc,
 
   supla_device_channel *channel = find_channel(ChannelID);
 
-  if (channel && channel->isCharValueWritable()) {
-    TSD_SuplaChannelNewValue s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
+  if (channel) {
+    if (channel->isCharValueWritable()) {
+      TSD_SuplaChannelNewValue s;
+      memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
 
-    s.ChannelNumber = channel->getNumber();
-    s.DurationMS = channel->getValueDuration();
-    s.SenderID = SenderID;
+      s.ChannelNumber = channel->getNumber();
+      s.DurationMS = channel->getValueDuration();
+      s.SenderID = SenderID;
 
-    channel->assignCharValue(s.value, value);
+      channel->assignCharValue(s.value, value);
 
-    srpc_sd_async_set_channel_value(srpc, &s);
-    result = true;
+      srpc_sd_async_set_channel_value(srpc, &s);
+      result = true;
+    } else if (channel->isRgbwValueWritable()) {
+      int color = 0;
+      char color_brightness = 0;
+      char brightness = 0;
+
+      if (channel->getRGBW(&color, &color_brightness, &brightness)) {
+        if (value > 0) {
+          color_brightness = 100;
+          brightness = 100;
+        } else {
+          color_brightness = 0;
+          brightness = 0;
+        }
+
+        result = set_device_channel_rgbw_value(srpc, SenderID, ChannelID, color,
+                                               color_brightness, brightness);
+      }
+    }
   }
 
   safe_array_unlock(arr);
