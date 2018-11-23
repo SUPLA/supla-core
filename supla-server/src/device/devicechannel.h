@@ -23,6 +23,8 @@
 #include "commontypes.h"
 #include "proto.h"
 
+class supla_user;
+
 class channel_address {
  private:
   int DeviceId;
@@ -156,6 +158,10 @@ class supla_device_channels {
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);
+
+  void on_device_registered(supla_user *user, int DeviceId,
+                            TDS_SuplaDeviceChannel_B *schannel_b,
+                            TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);

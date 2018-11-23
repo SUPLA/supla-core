@@ -273,6 +273,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               result = 1;
               setUser(supla_user::add_device(this, UserID));
               getUser()->update_client_device_channels(LocationID, getID());
+
+              channels->on_device_registered(getUser(), DeviceID, dev_channels_b,
+                                             dev_channels_c, channel_count);
             }
           }
         }
@@ -310,12 +313,10 @@ void supla_device::on_device_channel_value_changed(
   if (ChannelId != 0) {
     bool converted2extended;
     channels->set_channel_value(ChannelId, value->value, &converted2extended);
-    getUser()->on_channel_value_changed(EST_DEVICE, getID(),
-                                        ChannelId);
+    getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
 
     if (converted2extended) {
-      getUser()->on_channel_value_changed(EST_DEVICE, getID(),
-                                          ChannelId, true);
+      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, true);
     }
   }
 }
@@ -326,8 +327,7 @@ void supla_device::on_device_channel_extendedvalue_changed(
 
   if (ChannelId != 0) {
     channels->set_channel_extendedvalue(ChannelId, &ev->value);
-    getUser()->on_channel_value_changed(EST_DEVICE, getID(),
-                                        ChannelId, true);
+    getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, true);
   }
 }
 

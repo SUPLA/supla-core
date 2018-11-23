@@ -20,11 +20,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../database.h"
-#include "../log.h"
-#include "../safearray.h"
-#include "../srpc.h"
+#include "database.h"
 #include "devicechannel.h"
+#include "log.h"
+#include "safearray.h"
+#include "srpc.h"
+#include "user/user.h"
 
 channel_address::channel_address(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;
@@ -871,6 +872,24 @@ void supla_device_channels::set_channels_value(
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_c[a].Number),
                         schannel_c[a].value, NULL);
+  }
+}
+
+void supla_device_channels::on_device_registered(
+    supla_user *user, int DeviceId, TDS_SuplaDeviceChannel_B *schannel_b,
+    TDS_SuplaDeviceChannel_C *schannel_c, int count) {
+  int ChannelId = 0;
+
+  for (int a = 0; a < count; a++) {
+    if (schannel_b != NULL) {
+      ChannelId = get_channel_id(schannel_b[a].Number);
+    } else {
+      ChannelId = get_channel_id(schannel_c[a].Number);
+    }
+
+    if (ChannelId > 0) {
+      user->on_channel_become_online(DeviceId, ChannelId);
+    }
   }
 }
 

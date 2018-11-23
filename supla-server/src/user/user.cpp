@@ -689,8 +689,7 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
 void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           int DeviceId, int ChannelId,
                                           bool Extended) {
-  if (!Extended && DeviceId && ChannelId &&
-      eventSourceType != EST_UNKNOWN) {
+  if (!Extended && DeviceId && ChannelId && eventSourceType != EST_UNKNOWN) {
     supla_http_request_queue::getInstance()->onChannelChangeEvent(
         this, DeviceId, ChannelId, eventSourceType);
   }
@@ -746,6 +745,11 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
       }
   }
   safe_array_unlock(client_arr);
+}
+
+void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
+  supla_http_request_queue::getInstance()->onChannelChangeEvent(
+      this, DeviceId, ChannelId, EST_DEVICE);
 }
 
 void supla_user::call_event(TSC_SuplaEvent *event) {
