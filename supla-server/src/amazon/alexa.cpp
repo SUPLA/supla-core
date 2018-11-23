@@ -153,7 +153,7 @@ void supla_amazon_alexa::on_credentials_changed() { load(); }
 void supla_amazon_alexa::update(const char *token, const char *refresh_token,
                                 int expires_in) {
   char *region = getRegion();
-  char *endpoint_scope = getRegion();
+  char *endpoint_scope = getEndpointScope();
 
   set(token, refresh_token, expires_in, region, endpoint_scope);
 
