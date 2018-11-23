@@ -1446,7 +1446,7 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature,
   pbind[2].buffer = (char *)buff2;
   pbind[2].buffer_length = strnlen(buff2, 20);
 
-  const char sql[] = "INSERT INTO `supla_add_temphumidity_log_item`(?,?,?)";
+  const char sql[] = "CALL `supla_add_temphumidity_log_item`(?,?,?)";
 
   MYSQL_STMT *stmt;
   stmt_execute((void **)&stmt, sql, pbind, 3, true);
