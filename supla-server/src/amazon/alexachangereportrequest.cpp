@@ -19,6 +19,7 @@
 #include <amazon/alexachangereportrequest.h>
 #include "log.h"
 #include "sthread.h"
+#include "svrcfg.h"
 #include "user/user.h"
 
 supla_alexa_changereport_request::supla_alexa_changereport_request(
@@ -26,7 +27,8 @@ supla_alexa_changereport_request::supla_alexa_changereport_request(
     event_source_type EventSourceType)
     : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
   duplicateExists = false;
-  setDelay(1500000);
+  setDelay(1500000);  // 1.5 sec.
+  setTimeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
 }
 
 supla_alexa_changereport_request::~supla_alexa_changereport_request() {}

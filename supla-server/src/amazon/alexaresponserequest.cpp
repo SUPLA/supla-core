@@ -21,6 +21,7 @@
 #include "http/httprequestqueue.h"
 #include "log.h"
 #include "sthread.h"
+#include "svrcfg.h"
 #include "user/user.h"
 
 supla_alexa_response_request::supla_alexa_response_request(
@@ -28,6 +29,7 @@ supla_alexa_response_request::supla_alexa_response_request(
     event_source_type EventSourceType)
     : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
   setDelay(1000000);
+  setTimeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
 }
 
 supla_alexa_response_request::~supla_alexa_response_request() {}

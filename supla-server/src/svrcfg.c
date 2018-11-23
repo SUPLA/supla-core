@@ -70,6 +70,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_http, "thread_count_limit", 50);
   scfg_add_int_param(s_http, "request_timeout", 5000);
 
+  char *s_alexa = "ALEXA";
+  scfg_add_int_param(s_alexa, "response_timeout", 4000);
+  scfg_add_int_param(s_alexa, "changereport_timeout", 30000);
+
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();
 
@@ -83,8 +87,6 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
                                                         n * 2);
     }
   }
-
-
 
   return result;
 }

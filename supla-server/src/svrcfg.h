@@ -54,6 +54,8 @@ extern "C" {
 
 #define CFG_HTTP_THREAD_COUNT_LIMIT 16
 #define CFG_HTTP_REQUEST_TIMEOUT 17
+#define CFG_ALEXA_RESPONSE_TIMEOUT 18
+#define CFG_ALEXA_CHANGEREPORT_TIMEOUT 19
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;
