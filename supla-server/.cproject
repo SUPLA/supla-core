@@ -57,7 +57,7 @@
 									<listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.424424703" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.files.1351686790" name="Include files (-include)" superClass="gnu.cpp.compiler.option.include.files" useByScannerDiscovery="false"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.647780356" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -150,7 +150,7 @@
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -std=c++11" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.282121379" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.149911714" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -245,7 +245,7 @@
 									<listOptionValue builtIn="false" value="__OPENSSL_TOOLS=1"/>
 									<listOptionValue builtIn="false" value="__BCRYPT=1"/>
 								</option>
-								<option id="gnu.cpp.compiler.option.other.other.1821071127" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.1821071127" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.387871270" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.672233823" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
