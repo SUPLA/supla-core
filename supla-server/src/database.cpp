@@ -1886,7 +1886,7 @@ void database::amazon_alexa_remove_token(supla_amazon_alexa *alexa) {
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
 
-  const char sql[] = "ALL `supla_update_amazon_alexa`('','',0,?)";
+  const char sql[] = "CALL `supla_update_amazon_alexa`('','',0,?)";
 
   MYSQL_STMT *stmt;
   stmt_execute((void **)&stmt, sql, pbind, 1, true);
