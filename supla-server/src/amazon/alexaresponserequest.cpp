@@ -66,6 +66,8 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       return true;
+    default:
+      return false;
   }
 
   if (verification) {

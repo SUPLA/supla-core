@@ -68,6 +68,8 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       return true;
+    default:
+      return false;
   }
 
   switch (eventSourceType) {
