@@ -20,6 +20,7 @@
 #include <unistd.h>  // NOLINT
 #include <cstddef>   // NOLINT
 #include <list>      // NOLINT
+#include "database.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -62,6 +63,7 @@ char supla_http_request_queue_arr_userspace_clean(void *_user_space) {
 }
 
 void supla_http_request_thread_execute(void *ptr, void *sthread) {
+  database::thread_init();
   static_cast<_request_thread_ptr_t *>(ptr)->request->execute(sthread);
 }
 
@@ -76,6 +78,7 @@ void supla_http_request_thread_finish(void *_ptr, void *sthread) {
   safe_array_unlock(arr_thread);
 
   supla_http_request_queue::getInstance()->raiseEvent();
+  database::thread_end();
 }
 
 // static
