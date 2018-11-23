@@ -51,7 +51,7 @@ typedef struct {
 
 // https://developer.amazon.com/docs/smarthome/send-events-to-the-alexa-event-gateway.html
 static const _alexa_code_t alexa_codes[]{
-    {(char *)"SUCCESS", POST_RESULT_UNKNOWN_ERROR},
+    {(char *)"SUCCESS", POST_RESULT_SUCCESS},
     {(char *)"UNKNOWN_ERROR", POST_RESULT_UNKNOWN_ERROR},
     {(char *)"NOSSL", POST_RESULT_NOSSL},
     {(char *)"TOKEN_DOES_NOT_EXISTS", POST_RESULT_TOKEN_DOES_NOT_EXISTS},
