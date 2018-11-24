@@ -610,7 +610,7 @@ bool supla_alexa_client::sendChangeReport(int causeType, int channelId,
     cJSON_Delete(root);
   }
 
-  int result = 0;  // aeg_post(data);
+  int result = aeg_post(data);
 
   if (data) {
     // supla_log(LOG_DEBUG, "%s", data);
@@ -820,7 +820,7 @@ bool supla_alexa_client::sendResponse(const char correlationToken[],
     cJSON_Delete(root);
   }
 
-  int result = 0;  // aeg_post(data);
+  int result = aeg_post(data);
 
   if (data) {
     // supla_log(LOG_DEBUG, "%s", data);
