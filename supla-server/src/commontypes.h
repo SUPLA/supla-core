@@ -39,6 +39,7 @@ typedef struct {
   double humidity;
   double distance;
   double depth;
+  char shut;
 } channel_complex_value;
 
 #endif /* COMMONTYPES_H_ */

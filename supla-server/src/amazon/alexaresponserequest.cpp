@@ -65,6 +65,7 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       return true;
     default:
       return false;
@@ -113,7 +114,10 @@ void supla_alexa_response_request::execute(void *sthread) {
             getCorrelationTokenPtr(), getChannelId(), value.brightness,
             value.online, 2);
       }
-
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      getClient()->percentageControllerSendResponse(
+          getCorrelationTokenPtr(), getChannelId(), value.shut, value.online);
       break;
   }
 }

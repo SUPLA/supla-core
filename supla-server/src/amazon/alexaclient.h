@@ -77,6 +77,7 @@ class supla_alexa_client {
   void *getBrightnessControllerProperties(short brightness);
   void *getColorControllerProperties(int color, short brightness);
   void *getContactSensorProperties(bool hi);
+  void *getPercentageControllerProperties(short percentage);
   void *getEndpointHealthProperties(bool ok);
   void *getHeader(const char name[], const char correlationToken[]);
   void *getChangeReportHeader(void);
@@ -112,6 +113,8 @@ class supla_alexa_client {
   bool sendColorChangeReport(int causeType, int channelId, int color,
                              short colorBrightness, bool online,
                              short subChannel);
+  bool sendPercentageChangeReport(int causeType, int channelId,
+                                  short percentage, bool online);
   bool powerControllerSendResponse(const char correlationToken[], int channelId,
                                    bool hi, bool online);
   bool brightnessControllerSendResponse(const char correlationToken[],
@@ -120,6 +123,9 @@ class supla_alexa_client {
   bool colorControllerSendResponse(const char correlationToken[], int channelId,
                                    int color, short colorBrightness,
                                    bool online, short subChannel);
+  bool percentageControllerSendResponse(const char correlationToken[],
+                                        int channelId, short percentage,
+                                        bool online);
 };
 
 #endif /* AMAZON_ALEXACLIENT_H_ */

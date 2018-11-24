@@ -1154,6 +1154,11 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_DISTANCESENSOR:
         channel->getDouble(&value->distance);
         break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          char cv[SUPLA_CHANNELVALUE_SIZE];
+          channel->getChar(cv);
+          value->shut = cv[0];
+        break;
     }
     result = true;
   }

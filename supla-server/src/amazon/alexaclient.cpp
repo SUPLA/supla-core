@@ -339,6 +339,29 @@ void *supla_alexa_client::getBrightnessControllerProperties(short brightness) {
   return property;
 }
 
+void *supla_alexa_client::getPercentageControllerProperties(short percentage) {
+  char now[64];
+  st_get_zulu_time(now);
+
+  if (percentage > 100) {
+    percentage = 100;
+  } else if (percentage < 0) {
+    percentage = 0;
+  }
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace",
+                            "Alexa.PercentageController");
+    cJSON_AddStringToObject(property, "name", "percentage");
+    cJSON_AddNumberToObject(property, "value", percentage);
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
 void *supla_alexa_client::getColorControllerProperties(int color,
                                                        short brightness) {
   char now[64];
@@ -587,7 +610,7 @@ bool supla_alexa_client::sendChangeReport(int causeType, int channelId,
     cJSON_Delete(root);
   }
 
-  int result = aeg_post(data);
+  int result = 0;  // aeg_post(data);
 
   if (data) {
     // supla_log(LOG_DEBUG, "%s", data);
@@ -684,6 +707,27 @@ bool supla_alexa_client::sendColorChangeReport(int causeType, int channelId,
                                                  subChannel);
 }
 
+bool supla_alexa_client::sendPercentageChangeReport(int causeType,
+                                                    int channelId,
+                                                    short percentage,
+                                                    bool online) {
+  void *context_props = NULL;
+  if (online) {
+    context_props =
+        addProps(context_props, getPercentageControllerProperties(percentage));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props =
+        addProps(change_props, getPercentageControllerProperties(percentage));
+  }
+
+  return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
+                                                 context_props, change_props,
+                                                 0);
+}
+
 void *supla_alexa_client::getEndpointUnrechableErrorResponse(
     const char correlationToken[], int channelId, short subChannel) {
   cJSON *root = cJSON_CreateObject();
@@ -776,7 +820,7 @@ bool supla_alexa_client::sendResponse(const char correlationToken[],
     cJSON_Delete(root);
   }
 
-  int result = aeg_post(data);
+  int result = 0;  // aeg_post(data);
 
   if (data) {
     // supla_log(LOG_DEBUG, "%s", data);
@@ -823,4 +867,16 @@ bool supla_alexa_client::colorControllerSendResponse(
 
   return POST_RESULT_SUCCESS ==
          sendResponse(correlationToken, channelId, online, props, subChannel);
+}
+
+bool supla_alexa_client::percentageControllerSendResponse(
+    const char correlationToken[], int channelId, short percentage,
+    bool online) {
+  void *props = NULL;
+  if (online) {
+    props = addProps(props, getPercentageControllerProperties(percentage));
+  }
+
+  return POST_RESULT_SUCCESS ==
+         sendResponse(correlationToken, channelId, online, props, 0);
 }

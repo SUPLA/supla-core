@@ -67,6 +67,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       return true;
     default:
       return false;
@@ -116,6 +117,10 @@ void supla_alexa_changereport_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       getClient()->sendContactChangeReport(getCauseType(), getChannelId(),
                                            value.hi, value.online);
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      getClient()->sendPercentageChangeReport(getCauseType(), getChannelId(),
+                                              value.shut, value.online);
       break;
   }
 }
