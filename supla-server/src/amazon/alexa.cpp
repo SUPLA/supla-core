@@ -32,13 +32,12 @@ supla_amazon_alexa::supla_amazon_alexa(supla_user *user) {
   this->access_token = NULL;
   this->refresh_token = NULL;
   this->region = NULL;
-  this->endpoint_scope = NULL;
   this->expires_at.tv_sec = 0;
   this->expires_at.tv_usec = 0;
   this->set_at.tv_sec = 0;
   this->set_at.tv_usec = 0;
 
-  set(NULL, NULL, 0, NULL, NULL);
+  set(NULL, NULL, 0, NULL);
 
   load();
 }
@@ -58,11 +57,6 @@ void supla_amazon_alexa::release_strings(void) {
     free(this->region);
     this->region = NULL;
   }
-
-  if (this->endpoint_scope) {
-    free(this->endpoint_scope);
-    this->endpoint_scope = NULL;
-  }
 }
 
 supla_amazon_alexa::~supla_amazon_alexa() {
@@ -81,13 +75,15 @@ supla_amazon_alexa::~supla_amazon_alexa() {
 
 int supla_amazon_alexa::getUserID() { return user->getUserID(); }
 
+supla_user *supla_amazon_alexa::getUser() { return user; }
+
 void supla_amazon_alexa::refresh_lock(void) { lck_lock(lck2); }
 
 void supla_amazon_alexa::refresh_unlock(void) { lck_unlock(lck2); }
 
 void supla_amazon_alexa::set(const char *access_token,
                              const char *refresh_token, int expires_in,
-                             const char *region, const char *endpoint_scope) {
+                             const char *region) {
   lck_lock(lck1);
 
   release_strings();
@@ -96,8 +92,6 @@ void supla_amazon_alexa::set(const char *access_token,
   int refresh_token_len =
       refresh_token ? strnlen(refresh_token, TOKEN_MAXSIZE) : 0;
   int region_len = region ? strnlen(region, REGION_MAXSIZE) : 0;
-  int endpoint_scope_len =
-      endpoint_scope ? strnlen(endpoint_scope, ENDPOINTSCOPE_MAXSIZE) : 0;
 
   if (token_len > 0) {
     this->access_token = strndup(access_token, token_len);
@@ -109,10 +103,6 @@ void supla_amazon_alexa::set(const char *access_token,
 
   if (region_len > 0) {
     this->region = strndup(region, region_len);
-  }
-
-  if (endpoint_scope_len > 0) {
-    this->endpoint_scope = strndup(endpoint_scope, endpoint_scope_len);
   }
 
   gettimeofday(&set_at, NULL);
@@ -131,14 +121,14 @@ void supla_amazon_alexa::load() {
   database *db = new database();
 
   if (!db->connect() || !db->amazon_alexa_load_token(this)) {
-    set(NULL, NULL, 0, NULL, NULL);
+    set(NULL, NULL, 0, NULL);
   }
 
   delete db;
 }
 
 void supla_amazon_alexa::remove() {
-  set(NULL, NULL, 0, NULL, NULL);
+  set(NULL, NULL, 0, NULL);
   database *db = new database();
 
   if (db->connect()) {
@@ -153,17 +143,13 @@ void supla_amazon_alexa::on_credentials_changed() { load(); }
 void supla_amazon_alexa::update(const char *token, const char *refresh_token,
                                 int expires_in) {
   char *region = getRegion();
-  char *endpoint_scope = getEndpointScope();
 
-  set(token, refresh_token, expires_in, region, endpoint_scope);
+  set(token, refresh_token, expires_in, region);
 
   if (region) {
     free(region);
   }
 
-  if (endpoint_scope) {
-    free(endpoint_scope);
-  }
   database *db = new database();
 
   if (db->connect()) {
@@ -254,20 +240,6 @@ char *supla_amazon_alexa::getRegion(void) {
 
   if (region != NULL) {
     result = strndup(region, TOKEN_MAXSIZE);
-  }
-
-  lck_unlock(lck1);
-
-  return result;
-}
-
-char *supla_amazon_alexa::getEndpointScope(void) {
-  char *result = NULL;
-
-  lck_lock(lck1);
-
-  if (endpoint_scope != NULL) {
-    result = strndup(endpoint_scope, ENDPOINTSCOPE_MAXSIZE);
   }
 
   lck_unlock(lck1);

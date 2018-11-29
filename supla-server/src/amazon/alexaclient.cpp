@@ -27,6 +27,7 @@
 #include "lck.h"
 #include "log.h"
 #include "tools.h"
+#include "user/user.h"
 
 #define POST_RESULT_SUCCESS 1
 #define POST_RESULT_UNKNOWN_ERROR 0
@@ -478,18 +479,18 @@ void *supla_alexa_client::getEndpoint(int channelId, short subChannel) {
       free(token);
     }
 
-    char *escope = alexa->getEndpointScope();
+    char *uuid = alexa->getUser()->getShortUniqueID();
 
     int endpointId_len =
-        (escope ? strnlen(escope, ENDPOINTSCOPE_MAXSIZE) : 0) + 30;
+        (uuid ? strnlen(uuid, SHORT_UNIQUEID_MAXSIZE) : 0) + 30;
     char *endpointId = (char *)malloc(endpointId_len + 1);
 
     if (endpointId) {
       if (subChannel) {
-        snprintf(endpointId, endpointId_len, "%s-%i-%i", escope ? escope : "",
+        snprintf(endpointId, endpointId_len, "%s-%i-%i", uuid ? uuid : "",
                  channelId, subChannel);
       } else {
-        snprintf(endpointId, endpointId_len, "%s-%i", escope ? escope : "",
+        snprintf(endpointId, endpointId_len, "%s-%i", uuid ? uuid : "",
                  channelId);
       }
 
@@ -497,8 +498,8 @@ void *supla_alexa_client::getEndpoint(int channelId, short subChannel) {
       free(endpointId);
     }
 
-    if (escope) {
-      free(escope);
+    if (uuid) {
+      free(uuid);
     }
   }
 

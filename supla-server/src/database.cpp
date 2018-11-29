@@ -99,6 +99,63 @@ bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
       AccessID, AccessIDpwd, SUPLA_ACCESSID_PWDHEX_MAXSIZE, UserID, is_enabled);
 }
 
+bool database::get_user_uniqueid(int UserID,
+                                 char shortID[SHORT_UNIQUEID_MAXSIZE],
+                                 char longID[LONG_UNIQUEID_MAXSIZE]) {
+  bool result = false;
+  char sql[] =
+      "SELECT `short_unique_id`, `long_unique_id` FROM `supla_user` WHERE id = "
+      "?";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[2];
+    memset(rbind, 0, sizeof(rbind));
+
+    unsigned long short_size = 0;
+    my_bool short_is_null = true;
+
+    unsigned long long_size = 0;
+    my_bool long_is_null = true;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = shortID;
+    rbind[0].buffer_length = SHORT_UNIQUEID_MAXSIZE - 1;
+    rbind[0].length = &short_size;
+    rbind[0].is_null = &short_is_null;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = longID;
+    rbind[1].buffer_length = LONG_UNIQUEID_MAXSIZE - 1;
+    rbind[1].length = &long_size;
+    rbind[1].is_null = &long_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        shortID[short_is_null ? 0 : short_size] = 0;
+        longID[long_is_null ? 0 : long_size] = 0;
+        result = true;
+        supla_log(LOG_DEBUG, "LOADED");
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
 int database::get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]) {
   if (_mysql == NULL || strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0) return 0;
 
@@ -1787,7 +1844,7 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
-      "UTC_TIMESTAMP(), expires_at) `expires_in`, `region`, `endpoint_scope` "
+      "UTC_TIMESTAMP(), expires_at) `expires_in`, `region` "
       "FROM "
       "`supla_amazon_alexa` WHERE user_id = ? AND LENGTH(access_token) > 0";
 
@@ -1802,7 +1859,7 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
   pbind[0].buffer = (char *)&UserID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[5];
+    MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 
     char buffer_token[TOKEN_MAXSIZE + 1];
@@ -1819,10 +1876,6 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
     buffer_region[0] = 0;
     unsigned long region_size = 0;
     my_bool region_is_null = true;
-
-    char buffer_endpoint_scope[ENDPOINTSCOPE_MAXSIZE + 1];
-    buffer_endpoint_scope[0] = 0;
-    unsigned long endpoint_scope_size = 0;
 
     int expires_in = 0;
 
@@ -1847,11 +1900,6 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
     rbind[3].length = &region_size;
     rbind[3].is_null = &region_is_null;
 
-    rbind[4].buffer_type = MYSQL_TYPE_STRING;
-    rbind[4].buffer = buffer_endpoint_scope;
-    rbind[4].buffer_length = ENDPOINTSCOPE_MAXSIZE;
-    rbind[4].length = &endpoint_scope_size;
-
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1863,11 +1911,9 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
         buffer_refresh_token[refresh_token_is_null ? 0 : refresh_token_size] =
             0;
         buffer_region[region_is_null ? 0 : region_size] = 0;
-        buffer_endpoint_scope[endpoint_scope_size] = 0;
 
         alexa->set(buffer_token, buffer_refresh_token, expires_in,
-                   region_is_null ? NULL : buffer_region,
-                   buffer_endpoint_scope);
+                   region_is_null ? NULL : buffer_region);
         result = true;
       }
     }

@@ -16,14 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <list>
 #include "amazon/alexa.h"
 
 #include "client.h"
+#include "database.h"
 #include "device.h"
 #include "http/httprequestqueue.h"
+#include "lck.h"
 #include "log.h"
 #include "safearray.h"
 #include "user.h"
@@ -68,6 +71,9 @@ supla_user::supla_user(int UserID) {
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
   this->connections_allowed = true;
+  this->short_unique_id = NULL;
+  this->long_unique_id = NULL;
+  this->lck = lck_init();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -75,6 +81,17 @@ supla_user::supla_user(int UserID) {
 supla_user::~supla_user() {
   safe_array_remove(supla_user::user_arr, this);
 
+  if (short_unique_id) {
+    free(short_unique_id);
+    short_unique_id = NULL;
+  }
+
+  if (long_unique_id) {
+    free(long_unique_id);
+    long_unique_id = NULL;
+  }
+
+  lck_free(lck);
   delete cgroups;
   delete amazon_alexa;
   safe_array_free(device_arr);
@@ -93,6 +110,75 @@ void supla_user::user_free(void) {
 }
 
 int supla_user::getUserID(void) { return UserID; }
+
+void supla_user::loadUniqueIDs(void) {
+  char shortID[SHORT_UNIQUEID_MAXSIZE];
+  char longID[LONG_UNIQUEID_MAXSIZE];
+
+  shortID[0] = 0;
+  longID[0] = 0;
+
+  bool loaded = false;
+  database *db = new database();
+
+  if (db->connect()) {
+    loaded = db->get_user_uniqueid(getUserID(), shortID, longID);
+  }
+
+  delete db;
+
+  if (loaded) {
+    shortID[SHORT_UNIQUEID_MAXSIZE - 1] = 0;
+    longID[LONG_UNIQUEID_MAXSIZE - 1] = 0;
+
+    lck_lock(lck);
+
+    if (!short_unique_id) {
+      free(short_unique_id);
+    }
+    if (!long_unique_id) {
+      free(long_unique_id);
+    }
+
+    short_unique_id = strndup(shortID, SHORT_UNIQUEID_MAXSIZE);
+    long_unique_id = strndup(longID, LONG_UNIQUEID_MAXSIZE);
+    lck_unlock(lck);
+  }
+}
+
+char *supla_user::getShortUniqueID(void) {
+  char *result = NULL;
+
+  lck_lock(lck);
+
+  if (!short_unique_id) {
+    loadUniqueIDs();
+  }
+
+  if (short_unique_id) {
+    result = strdup(short_unique_id);
+  }
+  lck_unlock(lck);
+
+  return result;
+}
+
+char *supla_user::getLongUniqueID(void) {
+  char *result = NULL;
+
+  lck_lock(lck);
+
+  if (!long_unique_id) {
+    loadUniqueIDs();
+  }
+
+  if (long_unique_id) {
+    result = strdup(long_unique_id);
+  }
+  lck_unlock(lck);
+
+  return result;
+}
 
 // static
 int supla_user::user_count(void) {

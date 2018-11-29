@@ -19,6 +19,9 @@
 #ifndef USER_H_
 #define USER_H_
 
+#define SHORT_UNIQUEID_MAXSIZE 37
+#define LONG_UNIQUEID_MAXSIZE 201
+
 #include "commontypes.h"
 #include "proto.h"
 
@@ -28,6 +31,11 @@ class supla_user_channelgroups;
 class supla_amazon_alexa;
 
 class supla_user {
+ private:
+  char *short_unique_id;
+  char *long_unique_id;
+  void *lck;
+
  protected:
   static void *user_arr;
 
@@ -58,6 +66,7 @@ class supla_user {
 
   void reconnect();
   bool client_reconnect(int ClientID);
+  void loadUniqueIDs(void);
 
  public:
   static void init(void);
@@ -104,6 +113,8 @@ class supla_user {
   void remove_client(supla_client *client);
 
   int getUserID(void);
+  char *getShortUniqueID(void);
+  char *getLongUniqueID(void);
   bool getClientName(int ClientID, char *buffer, int size);
   bool isSuperUserAuthorized(int ClientID);
 

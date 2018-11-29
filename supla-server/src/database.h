@@ -53,6 +53,9 @@ class database : public dbcommon {
   bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
                      bool *is_enabled);
 
+  bool get_user_uniqueid(int UserID, char shortID[SHORT_UNIQUEID_MAXSIZE],
+                         char longID[LONG_UNIQUEID_MAXSIZE]);
+
   int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
 
   bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
@@ -149,7 +152,7 @@ class database : public dbcommon {
   bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
   void amazon_alexa_remove_token(supla_amazon_alexa *alexa);
   void amazon_alexa_update_token(supla_amazon_alexa *alexa, const char *token,
-                          const char *refresh_token, int expires_in);
+                                 const char *refresh_token, int expires_in);
 };
 
 #endif /* DATABASE_H_ */

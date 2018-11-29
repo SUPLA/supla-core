@@ -21,7 +21,6 @@
 
 #define TOKEN_MAXSIZE 1024
 #define REGION_MAXSIZE 5
-#define ENDPOINTSCOPE_MAXSIZE 32
 
 #include <sys/time.h>
 
@@ -34,7 +33,6 @@ class supla_amazon_alexa {
   char *access_token;
   char *refresh_token;
   char *region;
-  char *endpoint_scope;
   struct timeval expires_at;
   struct timeval set_at;
 
@@ -46,13 +44,14 @@ class supla_amazon_alexa {
   supla_amazon_alexa(supla_user *user);
   virtual ~supla_amazon_alexa();
   int getUserID();
+  supla_user *getUser();
   void load();
   void remove();
   void on_credentials_changed();
   void update(const char *access_token, const char *refresh_token,
               int expires_in);
   void set(const char *access_token, const char *refresh_token, int expires_in,
-           const char *region, const char *endpoint_scope);
+           const char *region);
 
   bool isAccessTokenExists(void);
   bool isRefreshTokenExists(void);
@@ -60,7 +59,6 @@ class supla_amazon_alexa {
   char *getAccessToken(void);
   char *getRefreshToken(void);
   char *getRegion(void);
-  char *getEndpointScope(void);
   struct timeval getSetTime(void);
 
   void refresh_lock(void);
