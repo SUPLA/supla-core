@@ -691,6 +691,8 @@ bool supla_alexa_client::sendColorChangeReport(int causeType, int channelId,
   if (online) {
     context_props = addProps(
         context_props, getColorControllerProperties(color, colorBrightness));
+    context_props = addProps(
+        context_props, getBrightnessControllerProperties(colorBrightness));
     context_props = addProps(context_props,
                              getPowerControllerProperties(colorBrightness > 0));
   }
@@ -699,6 +701,8 @@ bool supla_alexa_client::sendColorChangeReport(int causeType, int channelId,
   if (online) {
     change_props = addProps(
         change_props, getColorControllerProperties(color, colorBrightness));
+    change_props = addProps(change_props,
+                            getBrightnessControllerProperties(colorBrightness));
     change_props = addProps(change_props,
                             getPowerControllerProperties(colorBrightness > 0));
   }
@@ -863,6 +867,7 @@ bool supla_alexa_client::colorControllerSendResponse(
   if (online) {
     props =
         addProps(props, getColorControllerProperties(color, colorBrightness));
+    props = addProps(props, getBrightnessControllerProperties(colorBrightness));
     props = addProps(props, getPowerControllerProperties(colorBrightness > 0));
   }
 
