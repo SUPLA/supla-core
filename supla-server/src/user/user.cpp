@@ -695,6 +695,22 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
   safe_array_unlock(supla_user::user_arr);
 }
 
+// static
+void supla_user::on_google_home_link_changed(int UserID) {
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+}
+
+// static
+void supla_user::on_device_deleted(int UserID) {}
+
 bool supla_user::set_device_channel_value(
     event_source_type eventSourceType, int SenderID, int DeviceID,
     int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
