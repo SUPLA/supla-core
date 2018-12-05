@@ -335,7 +335,8 @@ void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
 void svr_ipcctrl::google_home_credentials_changed(const char *cmd) {
   int UserID = 0;
 
-  sscanf(&buffer[strnlen(cmd_user_google_home_credentials_changed, IPC_BUFFER_SIZE)],
+  sscanf(&buffer[strnlen(cmd_user_google_home_credentials_changed,
+                         IPC_BUFFER_SIZE)],
          "%i", &UserID);
   if (UserID) {
     supla_user::on_google_home_credentials_changed(UserID);
@@ -462,8 +463,10 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_user_alexa_credentials_changed, len)) {
           alexa_credentials_changed(cmd_user_alexa_credentials_changed);
 
-        } else if (match_command(cmd_user_google_home_credentials_changed, len)) {
-          google_home_credentials_changed(cmd_user_google_home_credentials_changed);
+        } else if (match_command(cmd_user_google_home_credentials_changed,
+                                 len)) {
+          google_home_credentials_changed(
+              cmd_user_google_home_credentials_changed);
 
         } else if (match_command(cmd_user_on_device_deleted, len)) {
           on_device_deleted(cmd_user_on_device_deleted);
