@@ -54,8 +54,8 @@ const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
 
-const char cmd_user_google_home_link_changed[] =
-    "USER-GOOGLE-HOME-LINK-CHANGED:";
+const char cmd_user_google_home_credentials_changed[] =
+    "USER-GOOGLE-HOME-CREDENTIALS-CHANGED:";
 
 const char cmd_user_on_device_deleted[] = "USER-ON-DEVICE-DELETED:";
 
@@ -332,13 +332,13 @@ void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::google_home_link_changed(const char *cmd) {
+void svr_ipcctrl::google_home_credentials_changed(const char *cmd) {
   int UserID = 0;
 
-  sscanf(&buffer[strnlen(cmd_user_google_home_link_changed, IPC_BUFFER_SIZE)],
+  sscanf(&buffer[strnlen(cmd_user_google_home_credentials_changed, IPC_BUFFER_SIZE)],
          "%i", &UserID);
   if (UserID) {
-    supla_user::on_google_home_link_changed(UserID);
+    supla_user::on_google_home_credentials_changed(UserID);
     send_result("OK:", UserID);
   } else {
     send_result("USER_UNKNOWN");
@@ -462,8 +462,8 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_user_alexa_credentials_changed, len)) {
           alexa_credentials_changed(cmd_user_alexa_credentials_changed);
 
-        } else if (match_command(cmd_user_google_home_link_changed, len)) {
-          google_home_link_changed(cmd_user_google_home_link_changed);
+        } else if (match_command(cmd_user_google_home_credentials_changed, len)) {
+          google_home_credentials_changed(cmd_user_google_home_credentials_changed);
 
         } else if (match_command(cmd_user_on_device_deleted, len)) {
           on_device_deleted(cmd_user_on_device_deleted);

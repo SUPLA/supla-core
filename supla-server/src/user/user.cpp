@@ -696,9 +696,9 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
 }
 
 // static
-void supla_user::on_google_home_link_changed(int UserID) {
+void supla_user::on_google_home_credentials_changed(int UserID) {
   safe_array_lock(supla_user::user_arr);
-
+supla_log(LOG_DEBUG, "on_google_home_credentials_changed");
   supla_user *user =
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 

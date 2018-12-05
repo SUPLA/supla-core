@@ -108,7 +108,7 @@ class supla_user {
                                           char color_brightness,
                                           char brightness);
   static void on_amazon_alexa_credentials_changed(int UserID);
-  static void on_google_home_link_changed(int UserID);
+  static void on_google_home_credentials_changed(int UserID);
   static void on_device_deleted(int UserID);
 
   void remove_device(supla_device *device);

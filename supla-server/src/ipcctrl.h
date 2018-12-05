@@ -48,7 +48,7 @@ class svr_ipcctrl {
   void set_char(const char *cmd, bool group);
   void set_rgbw(const char *cmd, bool group, bool random);
   void alexa_credentials_changed(const char *cmd);
-  void google_home_link_changed(const char *cmd);
+  void google_home_credentials_changed(const char *cmd);
   void on_device_deleted(const char *cmd);
 
   void send_result(const char *result);
