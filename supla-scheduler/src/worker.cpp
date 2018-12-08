@@ -74,6 +74,8 @@ int s_worker::get_channel_func(void) { return s_exec.channel_func; }
 
 int s_worker::get_id(void) { return s_exec.id; }
 
+bool s_worker::channel_group(void) { return s_exec.channel_group_id > 0; }
+
 int s_worker::get_retry_count(void) { return s_exec.retry_count; }
 
 const char *s_worker::get_action_param(void) { return s_exec.action_param; }
@@ -110,7 +112,8 @@ char s_worker::ipcc_get_opening_sensor_value() {
 
 bool s_worker::ipcc_set_char_value(char value) {
   return ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id,
-                              s_exec.channel_id, value);
+                              s_exec.channel_id, s_exec.channel_group_id,
+                              value);
 }
 
 bool s_worker::ipcc_get_char_value(char *value) {
@@ -128,8 +131,8 @@ bool s_worker::ipcc_get_rgbw_value(int *color, char *color_brightness,
 bool s_worker::ipcc_set_rgbw_value(int color, char color_brightness,
                                    char brightness) {
   return ipcc->set_rgbw_value(s_exec.user_id, s_exec.iodevice_id,
-                              s_exec.channel_id, color, color_brightness,
-                              brightness);
+                              s_exec.channel_id, s_exec.channel_group_id, color,
+                              color_brightness, brightness);
 }
 
 char s_worker::ipcc_is_connected(void) {

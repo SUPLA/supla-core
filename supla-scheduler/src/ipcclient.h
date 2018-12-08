@@ -50,9 +50,11 @@ class ipc_client {
   bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color,
                       char *color_brightness, char *brightness);
 
-  bool set_char_value(int user_id, int device_id, int channel_id, char value);
-  bool set_rgbw_value(int user_id, int device_id, int channel_id, int color,
-                      char color_brightness, char brightness);
+  bool set_char_value(int user_id, int device_id, int channel_id,
+                      int channel_group_id, char value);
+  bool set_rgbw_value(int user_id, int device_id, int channel_id,
+                      int channel_group_id, int color, char color_brightness,
+                      char brightness);
 };
 
 #endif /* IPCCLIENT_H_ */

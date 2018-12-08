@@ -39,6 +39,7 @@ class s_worker {
   int get_channel_func(void);
   int get_id(void);
   int get_retry_count(void);
+  bool channel_group(void);
   const char *get_action_param(void);
   bool retry_when_fail(void);
 

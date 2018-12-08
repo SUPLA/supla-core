@@ -29,7 +29,7 @@
 
 class s_worker_action {
  private:
-  bool check_function_allowed(void);
+  bool is_function_allowed(void);
 
  protected:
   s_worker *worker;

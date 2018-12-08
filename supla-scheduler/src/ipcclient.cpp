@@ -45,14 +45,15 @@ const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE";
 const char cmd_set_char_value[] = "SET-CHAR-VALUE";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
 
+const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE";
+const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE";
+
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
 const char ipc_result_connected[] = "CONNECTED:";
 const char ipc_result_disconnected[] = "DISCONNECTED:";
 
-ipc_client::ipc_client() {
-  this->sfd = -1;
-}
+ipc_client::ipc_client() { this->sfd = -1; }
 
 ipc_client::~ipc_client() { ipc_disconnect(); }
 
@@ -77,7 +78,7 @@ int ipc_client::read(void) {
   ssize_t len = recv(sfd, buffer, IPC_BUFFER_SIZE, 0);
 
   if (len > 0) {
-    if (len >= IPC_BUFFER_SIZE) len = IPC_BUFFER_SIZE-1;
+    if (len >= IPC_BUFFER_SIZE) len = IPC_BUFFER_SIZE - 1;
 
     buffer[len] = 0;
     // supla_log(LOG_DEBUG, "%s", buffer);
@@ -221,20 +222,32 @@ bool ipc_client::check_set_result(void) {
 }
 
 bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
-                                char value) {
-  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_char_value,
-           user_id, device_id, channel_id, value);
+                                int channel_group_id, char value) {
+  if (channel_group_id) {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_cg_char_value,
+             user_id, device_id, channel_id, value);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd_set_char_value,
+             user_id, channel_group_id, value);
+  }
+
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
   return check_set_result();
 }
 
 bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id,
-                                int color, char color_brightness,
-                                char brightness) {
-  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n",
-           cmd_set_rgbw_value, user_id, device_id, channel_id, color,
-           color_brightness, brightness);
+                                int channel_group_id, int color,
+                                char color_brightness, char brightness) {
+  if (channel_group_id) {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i\n", cmd_set_rgbw_value,
+             user_id, channel_group_id, color, color_brightness, brightness);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n",
+             cmd_set_rgbw_value, user_id, device_id, channel_id, color,
+             color_brightness, brightness);
+  }
+
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
   return check_set_result();

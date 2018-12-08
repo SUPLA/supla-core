@@ -29,8 +29,10 @@ s_worker_action_openclose::s_worker_action_openclose(s_worker *worker,
 
 void s_worker_action_openclose::get_function_list(
     int list[FUNCTION_LIST_SIZE]) {
-  list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
-  list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
+  if (!worker->channel_group()) {
+    list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
+    list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
+  }
 }
 
 bool s_worker_action_openclose::no_sensor(void) { return noSensor; }

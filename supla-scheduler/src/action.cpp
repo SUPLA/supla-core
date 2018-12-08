@@ -26,7 +26,7 @@ s_worker_action::s_worker_action(s_worker *worker) { this->worker = worker; }
 
 s_worker_action::~s_worker_action() {}
 
-bool s_worker_action::check_function_allowed(void) {
+bool s_worker_action::is_function_allowed(void) {
   int flist[FUNCTION_LIST_SIZE];
   memset((void *)flist, 0, FUNCTION_LIST_SIZE * sizeof(int));
 
@@ -49,11 +49,11 @@ bool s_worker_action::retry_when_fail(void) {
 }
 
 void s_worker_action::execute(void) {
-  if (worker == NULL || worker->get_db() == NULL || !check_function_allowed())
+  if (worker == NULL || worker->get_db() == NULL || !is_function_allowed())
     return;
 
-  if (check_before_start() && worker->get_retry_count() == 0 &&
-      check_result()) {
+  if (!worker->channel_group() && check_before_start() &&
+      worker->get_retry_count() == 0 && check_result()) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
     return;
@@ -61,7 +61,12 @@ void s_worker_action::execute(void) {
 
   if (worker->get_retry_count() % 2 == 0) {  // SET
     do_action();
-    worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
+    if (worker->channel_group()) {
+      worker->get_db()->set_result(worker->get_id(),
+                                   ACTION_EXECUTED_WITHOUT_CONFIRMATION);
+    } else {
+      worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
+    }
     return;
   }
 

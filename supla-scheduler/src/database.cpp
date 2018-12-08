@@ -66,9 +66,9 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 
   if (stmt_execute((void **)&stmt,
                    "SELECT e.`id`, e.`schedule_id`, s.`user_id`, "
-                   "c.`iodevice_id`, s.`channel_id`, c.`func`, c.`param1`, "
-                   "c.`param2`, c.`param3`, s.`action`, s.`action_param`, "
-                   "UNIX_TIMESTAMP(e.`planned_timestamp`), "
+                   "c.`iodevice_id`, s.`channel_id`, s.`channel_group_id`, "
+                   "c.`func`, c.`param1`, c.`param2`, c.`param3`, s.`action`, "
+                   "s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), "
                    "UNIX_TIMESTAMP(e.`retry_timestamp`), e.`retry_count`, "
                    "s.`retry` FROM `supla_scheduled_executions` AS e, "
                    "`supla_schedule` AS s, `supla_dev_channel` AS c WHERE "
@@ -81,11 +81,11 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
                    pbind, 1, true)) {
     my_bool is_null[4];
 
-    MYSQL_BIND rbind[15];
+    MYSQL_BIND rbind[16];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, schedule_id, user_id, device_id, channel_id, channel_func,
-        channel_param1, channel_param2, channel_param3;
+    int id, schedule_id, user_id, device_id, channel_id, channel_group_id,
+        channel_func, channel_param1, channel_param2, channel_param3;
     int action, planned_timestamp, retry_timestamp, retry_count,
         retry_when_fail;
 
@@ -108,40 +108,43 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
     rbind[4].buffer = (char *)&channel_id;
 
     rbind[5].buffer_type = MYSQL_TYPE_LONG;
-    rbind[5].buffer = (char *)&channel_func;
+    rbind[5].buffer = (char *)&channel_group_id;
 
     rbind[6].buffer_type = MYSQL_TYPE_LONG;
-    rbind[6].buffer = (char *)&channel_param1;
+    rbind[6].buffer = (char *)&channel_func;
 
     rbind[7].buffer_type = MYSQL_TYPE_LONG;
-    rbind[7].buffer = (char *)&channel_param2;
+    rbind[7].buffer = (char *)&channel_param1;
 
     rbind[8].buffer_type = MYSQL_TYPE_LONG;
-    rbind[8].buffer = (char *)&channel_param3;
+    rbind[8].buffer = (char *)&channel_param2;
 
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&action;
+    rbind[9].buffer = (char *)&channel_param3;
 
-    rbind[10].buffer_type = MYSQL_TYPE_STRING;
-    rbind[10].buffer = action_param;
-    rbind[10].is_null = &is_null[0];
-    rbind[10].buffer_length = 256;
-    rbind[10].length = &length;
+    rbind[10].buffer_type = MYSQL_TYPE_LONG;
+    rbind[10].buffer = (char *)&action;
 
-    rbind[11].buffer_type = MYSQL_TYPE_LONG;
-    rbind[11].buffer = &planned_timestamp;
+    rbind[11].buffer_type = MYSQL_TYPE_STRING;
+    rbind[11].buffer = action_param;
+    rbind[11].is_null = &is_null[0];
+    rbind[11].buffer_length = 256;
+    rbind[11].length = &length;
 
     rbind[12].buffer_type = MYSQL_TYPE_LONG;
-    rbind[12].buffer = &retry_timestamp;
-    rbind[12].is_null = &is_null[1];
+    rbind[12].buffer = &planned_timestamp;
 
     rbind[13].buffer_type = MYSQL_TYPE_LONG;
-    rbind[13].buffer = &retry_count;
-    rbind[13].is_null = &is_null[2];
+    rbind[13].buffer = &retry_timestamp;
+    rbind[13].is_null = &is_null[1];
 
     rbind[14].buffer_type = MYSQL_TYPE_LONG;
-    rbind[14].buffer = &retry_when_fail;
-    rbind[14].is_null = &is_null[3];
+    rbind[14].buffer = &retry_count;
+    rbind[14].is_null = &is_null[2];
+
+    rbind[15].buffer_type = MYSQL_TYPE_LONG;
+    rbind[15].buffer = &retry_when_fail;
+    rbind[15].is_null = &is_null[3];
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -161,6 +164,7 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
             s_exec->user_id = user_id;
             s_exec->iodevice_id = device_id;
             s_exec->channel_id = channel_id;
+            s_exec->channel_group_id = channel_group_id;
             s_exec->channel_func = channel_func;
             s_exec->channel_param1 = channel_param1;
             s_exec->channel_param2 = channel_param2;
