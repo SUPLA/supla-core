@@ -35,6 +35,7 @@ typedef struct {
   int user_id;
   int iodevice_id;
   int channel_id;
+  int channel_group_id;
   int channel_func;
   int channel_param1;
   int channel_param2;
@@ -68,5 +69,6 @@ typedef struct {
 #define ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE 6
 #define ACTION_EXECUTION_RESULT_FAILURE 7
 #define ACTION_EXECUTION_RESULT_CANCELLED 8
+#define ACTION_EXECUTED_WITHOUT_CONFIRMATION 9
 
 #endif /*SUPLA_SCHEDULER_H_*/
