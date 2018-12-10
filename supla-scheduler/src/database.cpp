@@ -64,21 +64,25 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&limit;
 
-  if (stmt_execute((void **)&stmt,
-                   "SELECT e.`id`, e.`schedule_id`, s.`user_id`, "
-                   "c.`iodevice_id`, s.`channel_id`, s.`channel_group_id`, "
-                   "c.`func`, c.`param1`, c.`param2`, c.`param3`, s.`action`, "
-                   "s.`action_param`, UNIX_TIMESTAMP(e.`planned_timestamp`), "
-                   "UNIX_TIMESTAMP(e.`retry_timestamp`), e.`retry_count`, "
-                   "s.`retry` FROM `supla_scheduled_executions` AS e, "
-                   "`supla_schedule` AS s, `supla_dev_channel` AS c WHERE "
-                   "e.`schedule_id` = s.`id` AND s.`channel_id` = c.`id` AND "
-                   "e.`result_timestamp` IS NULL AND e.`fetched_timestamp` IS "
-                   "NULL AND ( (e.`retry_timestamp` IS NULL AND "
-                   "e.`planned_timestamp` <= UTC_TIMESTAMP()) OR "
-                   "(e.`retry_timestamp` IS NOT NULL AND e.`retry_timestamp` "
-                   "<= UTC_TIMESTAMP())) LIMIT ?",
-                   pbind, 1, true)) {
+  if (stmt_execute(
+          (void **)&stmt,
+          "SELECT e.`id`, e.`schedule_id`, s.`user_id`, "
+          "IFNULL(c.`iodevice_id`, 0) `iodevice_id`, IFNULL(s.`channel_id`, 0) "
+          "`channel_id`, IFNULL(s.`channel_group_id`, 0) `channel_group_id`, "
+          "IFNULL(c.`func`, IFNULL(g.`func`, 0)) `func`, IFNULL(c.`param1`, 0) "
+          "`param1`, IFNULL(c.`param2`, 0) `param2`, IFNULL(c.`param3`, 0) "
+          "`param3`, s.`action`, s.`action_param`, "
+          "UNIX_TIMESTAMP(e.`planned_timestamp`), "
+          "UNIX_TIMESTAMP(e.`retry_timestamp`), e.`retry_count`, s.`retry` "
+          "FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s LEFT "
+          "JOIN `supla_dev_channel` AS c ON s.`channel_id` = c.`id` LEFT JOIN "
+          "`supla_dev_channel_group` AS g ON s.`channel_group_id` = g.`id` "
+          "WHERE e.`schedule_id` = s.`id` AND e.`result_timestamp` IS NULL AND "
+          "e.`fetched_timestamp` IS NULL AND ( (e.`retry_timestamp` IS NULL "
+          "AND e.`planned_timestamp` <= UTC_TIMESTAMP()) OR "
+          "(e.`retry_timestamp` IS NOT NULL AND e.`retry_timestamp` <= "
+          "UTC_TIMESTAMP())) LIMIT ?",
+          pbind, 1, true)) {
     my_bool is_null[4];
 
     MYSQL_BIND rbind[16];
