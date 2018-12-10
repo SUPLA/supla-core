@@ -36,7 +36,7 @@ class s_worker_action {
 
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]) = 0;
   virtual int try_limit(void) = 0;
-  virtual void do_action(void) = 0;
+  virtual bool do_action(void) = 0;
   virtual bool check_result(void) = 0;
 
   virtual bool check_before_start(void);
