@@ -58,14 +58,14 @@ ipc_client::ipc_client() { this->sfd = -1; }
 ipc_client::~ipc_client() { ipc_disconnect(); }
 
 int ipc_client::read(void) {
+  if (sfd == -1) return 0;
+
   fd_set set;
   struct timeval timeout;
   FD_ZERO(&set);
   FD_SET(sfd, &set);
   timeout.tv_sec = 5;
   timeout.tv_usec = 0;
-
-  if (sfd == -1) return 0;
 
   memset(buffer, 0, IPC_BUFFER_SIZE);
 
@@ -81,7 +81,7 @@ int ipc_client::read(void) {
     if (len >= IPC_BUFFER_SIZE) len = IPC_BUFFER_SIZE - 1;
 
     buffer[len] = 0;
-    // supla_log(LOG_DEBUG, "%s", buffer);
+    // supla_log(LOG_DEBUG, "READ %s", buffer);
     return len;
   }
 
@@ -223,14 +223,17 @@ bool ipc_client::check_set_result(void) {
 
 bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
                                 int channel_group_id, char value) {
+  if (!ipc_connect()) return false;
+
   if (channel_group_id) {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_cg_char_value,
-             user_id, device_id, channel_id, value);
-  } else {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd_set_char_value,
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i\n", cmd_set_cg_char_value,
              user_id, channel_group_id, value);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_set_char_value,
+             user_id, device_id, channel_id, value);
   }
 
+  supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
   return check_set_result();
@@ -239,9 +242,12 @@ bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
 bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id,
                                 int channel_group_id, int color,
                                 char color_brightness, char brightness) {
+  if (!ipc_connect()) return false;
+
   if (channel_group_id) {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i\n", cmd_set_rgbw_value,
-             user_id, channel_group_id, color, color_brightness, brightness);
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i\n",
+             cmd_set_cg_rgbw_value, user_id, channel_group_id, color,
+             color_brightness, brightness);
   } else {
     snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n",
              cmd_set_rgbw_value, user_id, device_id, channel_id, color,
