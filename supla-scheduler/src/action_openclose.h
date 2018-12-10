@@ -33,7 +33,7 @@ class s_worker_action_openclose : public s_worker_action {
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
   bool check_result();
-  void do_action();
+  bool do_action();
   bool garage_group(void);
   bool check_before_start(void);
   bool no_sensor(void);

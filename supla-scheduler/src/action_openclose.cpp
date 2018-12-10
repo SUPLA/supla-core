@@ -96,10 +96,11 @@ bool s_worker_action_openclose::check_result() {
   return true;
 }
 
-void s_worker_action_openclose::do_action() {
+bool s_worker_action_openclose::do_action() {
   if (!garage_group() || worker->ipcc_get_opening_sensor_value() != -1) {
-    worker->ipcc_set_char_value(1);
+    return worker->ipcc_set_char_value(1);
   }
+  return false;
 }
 
 REGISTER_ACTION(s_worker_action_open, ACTION_OPEN);

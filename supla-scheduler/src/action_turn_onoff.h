@@ -31,7 +31,7 @@ class s_worker_action_turn_onoff : public s_worker_action {
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
   bool check_result();
-  void do_action();
+  bool do_action();
 
  public:
   s_worker_action_turn_onoff(s_worker *worker, bool setOn);

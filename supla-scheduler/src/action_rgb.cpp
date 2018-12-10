@@ -148,14 +148,15 @@ bool s_worker_action_rgb::check_result() {
   return false;
 }
 
-void s_worker_action_rgb::do_action() {
+bool s_worker_action_rgb::do_action() {
   int color = 0;
   char color_brightness = 0;
   char brightness = 0;
 
   if (parse_rgbw_params(&color, &color_brightness, &brightness, NULL) > 0) {
-    worker->ipcc_set_rgbw_value(color, color_brightness, brightness);
+    return worker->ipcc_set_rgbw_value(color, color_brightness, brightness);
   }
+  return false;
 }
 
 REGISTER_ACTION(s_worker_action_rgb, ACTION_SET_RGBW_PARAMETERS);

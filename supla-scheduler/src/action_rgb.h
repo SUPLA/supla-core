@@ -32,7 +32,7 @@ class s_worker_action_rgb : public s_worker_action {
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
   bool check_result();
-  void do_action();
+  bool do_action();
 
  public:
   explicit s_worker_action_rgb(s_worker *worker);

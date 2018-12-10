@@ -82,7 +82,7 @@ bool s_worker_action_shutreveal::check_result() {
   return abs(expected_value - value) <= 2;  // tolerance 2%
 }
 
-void s_worker_action_shutreveal::do_action() {
+bool s_worker_action_shutreveal::do_action() {
   char value = 0;
   char percent = 0;
 
@@ -94,7 +94,7 @@ void s_worker_action_shutreveal::do_action() {
     value = 110 - percent;  // 10 == 0%, 110 == 100%
   }
 
-  worker->ipcc_set_char_value(value);
+  return worker->ipcc_set_char_value(value);
 }
 
 REGISTER_ACTION(s_worker_action_shut, ACTION_SHUT);

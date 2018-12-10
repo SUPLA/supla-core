@@ -49,8 +49,8 @@ bool s_worker_action_turn_onoff::check_result() {
   return (value == 1) == setOn;
 }
 
-void s_worker_action_turn_onoff::do_action() {
-  worker->ipcc_set_char_value(setOn ? 1 : 0);
+bool s_worker_action_turn_onoff::do_action() {
+  return worker->ipcc_set_char_value(setOn ? 1 : 0);
 }
 
 REGISTER_ACTION(s_worker_action_turn_on, ACTION_TURN_ON);
