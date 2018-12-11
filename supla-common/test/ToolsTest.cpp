@@ -177,4 +177,37 @@ TEST_F(ToolsTest, st_base64) {
   free(decoded);
 }
 
+TEST_F(ToolsTest, st_hsv2rgb) {
+  _color_hsv_t hsv;
+  hsv.h = 154;
+  hsv.s = 0.43;
+  hsv.v = 0.60;
+
+  ASSERT_EQ(0x57997C, st_hsv2rgb(hsv));
+
+  hsv.s = 0;
+  hsv.v = 0;
+
+  ASSERT_EQ(0x000000, st_hsv2rgb(hsv));
+
+  hsv.h = 300;
+  hsv.s = 0.5;
+  hsv.v = 0.5;
+
+  ASSERT_EQ(0x7F3F7F, st_hsv2rgb(hsv));
+}
+
+TEST_F(ToolsTest, st_rgb2hsv) {
+  _color_hsv_t hsv = st_rgb2hsv(0x57F97C);
+
+  ASSERT_EQ(133, (int)hsv.h);
+  ASSERT_EQ(65, (int)(hsv.s*100));
+  ASSERT_EQ(97, (int)(hsv.v*100));
+
+  hsv = st_rgb2hsv(0x5F3F7F);
+  ASSERT_EQ(270, (int)hsv.h);
+  ASSERT_EQ(50, (int)(hsv.s*100));
+  ASSERT_EQ(49, (int)(hsv.v*100));
+}
+
 }  // namespace

@@ -308,8 +308,9 @@ _color_hsv_t st_rgb2hsv(int rgb) {
   max = r > g ? r : g;
   max = max > b ? max : b;
 
-  out.v = max;
+  out.v = max / 255;
   delta = max - min;
+
   if (delta < 0.00001) {
     out.s = 0;
     out.h = 0;
@@ -337,73 +338,67 @@ _color_hsv_t st_rgb2hsv(int rgb) {
 }
 
 int st_hsv2rgb(_color_hsv_t in) {
-  double hh, p, q, t, ff;
-  long i;
-
-  unsigned char r, g, b;
+  double r = 0, g = 0, b = 0;
   int rgb = 0;
 
   if (in.s <= 0.0) {
-    r = in.v;
-    g = in.v;
-    b = in.v;
+    r = g = b = in.v;
+  } else {
+    double hh = in.h;
 
-    rgb = r & 0xFF;
-    rgb <<= 8;
-    rgb |= g & 0xFF;
-    rgb <<= 8;
-    rgb |= b & 0xFF;
+    if (hh >= 360.0) {
+      hh = 0.0;
+    } else {
+      hh /= 60.0;
+    }
 
-    return rgb;
-  }
-  hh = in.h;
-  if (hh >= 360.0) hh = 0.0;
-  hh /= 60.0;
-  i = (long)hh;
-  ff = hh - i;
-  p = in.v * (1.0 - in.s);
-  q = in.v * (1.0 - (in.s * ff));
-  t = in.v * (1.0 - (in.s * (1.0 - ff)));
+    _supla_int_t i = (int)hh;
+    double f = hh - i;
+    double p = in.v * (1.0 - in.s);
+    double q = in.v * (1.0 - in.s * f);
+    double t = in.v * (1.0 - in.s * (1 - f));
 
-  switch (i) {
-    case 0:
-      r = in.v;
-      g = t;
-      b = p;
-      break;
-    case 1:
-      r = q;
-      g = in.v;
-      b = p;
-      break;
-    case 2:
-      r = p;
-      g = in.v;
-      b = t;
-      break;
-    case 3:
-      r = p;
-      g = q;
-      b = in.v;
-      break;
-    case 4:
-      r = t;
-      g = p;
-      b = in.v;
-      break;
-    case 5:
-    default:
-      r = in.v;
-      g = p;
-      b = q;
-      break;
+    switch (i) {
+      case 0:
+        r = in.v;
+        g = t;
+        b = p;
+        break;
+      case 1:
+        r = q;
+        g = in.v;
+        b = p;
+        break;
+      case 2:
+        r = p;
+        g = in.v;
+        b = t;
+        break;
+      case 3:
+        r = p;
+        g = q;
+        b = in.v;
+        break;
+      case 4:
+        r = t;
+        g = p;
+        b = in.v;
+        break;
+      case 5:
+        r = in.v;
+        g = p;
+        b = q;
+        break;
+      default:
+        break;
+    }
   }
 
-  rgb = r & 0xFF;
+  rgb = (int)(r * 255.00) & 0xFF;
   rgb <<= 8;
-  rgb |= g & 0xFF;
+  rgb |= (int)(g * 255.00) & 0xFF;
   rgb <<= 8;
-  rgb |= b & 0xFF;
+  rgb |= (int)(b * 255.00) & 0xFF;
 
   return rgb;
 }
@@ -413,8 +408,8 @@ int st_hue2rgb(double hue) {
 
   _color_hsv_t hsv;
   hsv.h = hue;
-  hsv.s = 1.0;
-  hsv.v = 1.0;
+  hsv.s = 100;
+  hsv.v = 100;
 
   return st_hsv2rgb(hsv);
 }
