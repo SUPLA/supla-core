@@ -233,7 +233,7 @@ bool ipc_client::set_char_value(int user_id, int device_id, int channel_id,
              user_id, device_id, channel_id, value);
   }
 
-  supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
+  // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 
   return check_set_result();
@@ -255,6 +255,6 @@ bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id,
   }
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
-
+  // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
   return check_set_result();
 }

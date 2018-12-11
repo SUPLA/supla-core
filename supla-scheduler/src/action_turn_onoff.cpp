@@ -34,6 +34,9 @@ void s_worker_action_turn_onoff::get_function_list(
     int list[FUNCTION_LIST_SIZE]) {
   list[0] = SUPLA_CHANNELFNC_LIGHTSWITCH;
   list[1] = SUPLA_CHANNELFNC_POWERSWITCH;
+  list[2] = SUPLA_CHANNELFNC_DIMMER;
+  list[3] = SUPLA_CHANNELFNC_RGBLIGHTING;
+  list[4] = SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
 }
 
 int s_worker_action_turn_onoff::try_limit(void) { return 2; }

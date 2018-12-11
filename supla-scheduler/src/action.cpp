@@ -68,25 +68,33 @@ void s_worker_action::execute(void) {
       if (action_result) {
         worker->get_db()->set_result(worker->get_id(),
                                      ACTION_EXECUTED_WITHOUT_CONFIRMATION);
-        return;
+      } else {
+        if (worker->ipcc_is_connected() == IPC_RESULT_SERVER_UNREACHABLE) {
+          worker->get_db()->set_result(
+              worker->get_id(), ACTION_EXECUTION_RESULT_SERVER_UNREACHABLE);
+        } else {
+          worker->get_db()->set_result(worker->get_id(),
+                                       ACTION_EXECUTION_RESULT_FAILURE);
+        }
       }
 
     } else {
       worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
-      return;
     }
+
+    return;
   }
 
   // CHECK
-  if (!channel_group && check_result()) {
+  if (check_result()) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
-  } else if (!channel_group && retry_when_fail() &&
+  } else if (retry_when_fail() &&
              worker->get_retry_count() + 1 < (try_limit() * 2)) {
     worker->get_db()->set_retry(
         worker->get_id(), waiting_time_to_retry() - waiting_time_to_check());
 
-  } else if (!channel_group && no_sensor()) {
+  } else if (no_sensor()) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_NO_SENSOR);
 
