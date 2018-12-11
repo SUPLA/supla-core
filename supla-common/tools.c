@@ -408,8 +408,8 @@ int st_hue2rgb(double hue) {
 
   _color_hsv_t hsv;
   hsv.h = hue;
-  hsv.s = 100;
-  hsv.v = 100;
+  hsv.s = 1.0;
+  hsv.v = 1.0;
 
   return st_hsv2rgb(hsv);
 }
