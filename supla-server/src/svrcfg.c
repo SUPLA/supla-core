@@ -53,7 +53,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_mysql, "password", NULL);
 
   char *s_ipc = "IPC";
-  scfg_add_str_param(s_ipc, "socket_path", "/tmp/supla-server-ctrl.sock");
+  scfg_add_str_param(s_ipc, "socket_path", "/var/run/supla/supla-server-ctrl.sock");
 
   char *s_oauth = "OAUTH";
   char hostname[CFG_OAUTH_URL_MAXSIZE - 10];
