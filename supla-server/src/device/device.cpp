@@ -404,10 +404,10 @@ bool supla_device::set_device_channel_char_value(int SenderID, int ChannelID,
 bool supla_device::set_device_channel_rgbw_value(int SenderID, int ChannelID,
                                                  int color,
                                                  char color_brightness,
-                                                 char brightness) {
-  return channels->set_device_channel_rgbw_value(getSvrConn()->srpc(), SenderID,
-                                                 ChannelID, color,
-                                                 color_brightness, brightness);
+                                                 char brightness, char on_off) {
+  return channels->set_device_channel_rgbw_value(
+      getSvrConn()->srpc(), SenderID, ChannelID, color, color_brightness,
+      brightness, on_off);
 }
 
 bool supla_device::channel_exists(int ChannelID) {
@@ -448,9 +448,9 @@ bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
 
 bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
                                           char *color_brightness,
-                                          char *brightness) {
+                                          char *brightness, char *on_off) {
   return channels->get_channel_rgbw_value(ChannelID, color, color_brightness,
-                                          brightness);
+                                          brightness, on_off);
 }
 
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {

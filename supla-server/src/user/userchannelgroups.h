@@ -38,7 +38,7 @@ class supla_user_channelgroups : public supla_objcontainer {
   supla_user_channelgroups(supla_user *user);
   bool set_char_value(int GroupID, const char value);
   bool set_rgbw_value(int GroupID, int color, char color_brightness,
-                      char brightness);
+                      char brightness, char on_off);
 };
 
 #endif /* USERCHANNELGROUPS_H_ */

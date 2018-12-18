@@ -35,6 +35,7 @@ typedef struct {
   char brightness;
   char color_brightness;
   int color;
+  char on_off;
   double temperature;
   double humidity;
   double distance;

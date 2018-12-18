@@ -75,7 +75,7 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
 
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
                                               char color_brightness,
-                                              char brightness) {
+                                              char brightness, char on_off) {
   bool result = false;
 
   std::list<t_dc_pair> pairs = find_channels(GroupID);
@@ -83,8 +83,8 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
   for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
     if (user->set_device_channel_rgbw_value(0, it->DeviceId, it->ChannelId,
-                                            color, color_brightness,
-                                            brightness)) {
+                                            color, color_brightness, brightness,
+                                            on_off)) {
       result = true;
     }
   }

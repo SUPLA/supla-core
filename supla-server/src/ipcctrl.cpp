@@ -160,13 +160,15 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
   int color;
   char color_brightness;
   char brightness;
+  char on_off;
 
   sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    bool r = supla_user::get_channel_rgbw_value(
-        UserID, DeviceID, ChannelID, &color, &color_brightness, &brightness);
+    bool r = supla_user::get_channel_rgbw_value(UserID, DeviceID, ChannelID,
+                                                &color, &color_brightness,
+                                                &brightness, &on_off);
 
     if (r) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i\n", color,
@@ -296,10 +298,10 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
     if (group) {
       result = supla_user::set_channelgroup_rgbw_value(
-          UserID, CGID, Color, ColorBrightness, Brightness);
+          UserID, CGID, Color, ColorBrightness, Brightness, 0);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
-          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness,
+          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness, 0,
           AlexaCorrelationToken ? EST_AMAZON_ALEXA : EST_IPC,
           AlexaCorrelationToken);
     }

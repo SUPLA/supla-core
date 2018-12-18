@@ -88,7 +88,7 @@ class supla_user {
                                      char *Value);
   static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
                                      int *color, char *color_brightness,
-                                     char *brightness);
+                                     char *brightness, char *on_off);
   static int user_count(void);
   static supla_user *get_user(int idx);
   static bool set_device_channel_char_value(int UserID, int SenderID,
@@ -99,14 +99,14 @@ class supla_user {
   static bool set_device_channel_rgbw_value(int UserID, int SenderID,
                                             int DeviceID, int ChannelID,
                                             int color, char color_brightness,
-                                            char brightness,
+                                            char brightness, char on_off,
                                             event_source_type eventSourceType,
                                             char *AlexaCorrelationToken);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
                                           char color_brightness,
-                                          char brightness);
+                                          char brightness, char on_off);
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
   static void on_device_deleted(int UserID);
@@ -126,7 +126,8 @@ class supla_user {
   bool get_channel_humidity_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_char_value(int DeviceID, int ChannelID, char *Value);
   bool get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
-                              char *color_brightness, char *brightness);
+                              char *color_brightness, char *brightness,
+                              char *on_off);
 
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
@@ -142,11 +143,12 @@ class supla_user {
                                      const char value);
   bool set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID,
                                      int color, char color_brightness,
-                                     char brightness);
+                                     char brightness, char on_off);
 
   bool set_channelgroup_char_value(int GroupID, const char value);
   bool set_channelgroup_rgbw_value(int GroupID, int color,
-                                   char color_brightness, char brightness);
+                                   char color_brightness, char brightness,
+                                   char on_off);
 
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,

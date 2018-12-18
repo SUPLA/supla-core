@@ -109,11 +109,12 @@ class supla_device_channel {
   void getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
-                       char color_brightness, char brightness);
+                       char color_brightness, char brightness, char on_off);
   void assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
   void getDouble(double *Value);
   void getChar(char *Value);
-  bool getRGBW(int *color, char *color_brightness, char *brightness);
+  bool getRGBW(int *color, char *color_brightness, char *brightness,
+               char *on_off);
 
   std::list<int> master_channel(void);
   std::list<int> slave_channel(void);
@@ -150,7 +151,7 @@ class supla_device_channels {
   bool get_channel_humidity_value(int ChannelID, double *Value);
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
-                              char *brightness);
+                              char *brightness, char *on_off);
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
@@ -169,7 +170,7 @@ class supla_device_channels {
                                      const char value);
   bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID,
                                      int color, char color_brightness,
-                                     char brightness);
+                                     char brightness, char on_off);
 
   std::list<int> master_channel(int ChannelID);
   std::list<int> slave_channel(int ChannelID);

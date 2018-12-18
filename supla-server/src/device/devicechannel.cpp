@@ -224,7 +224,7 @@ void supla_device_channel::getChar(char *Value) {
 }
 
 bool supla_device_channel::getRGBW(int *color, char *color_brightness,
-                                   char *brightness) {
+                                   char *brightness, char *on_off) {
   if (color != NULL) *color = 0;
 
   if (color_brightness != NULL) *color_brightness = 0;
@@ -320,7 +320,7 @@ void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
 
 void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
                                            int color, char color_brightness,
-                                           char brightness) {
+                                           char brightness, char on_off) {
   if (Func == SUPLA_CHANNELFNC_DIMMER ||
       Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
@@ -336,6 +336,7 @@ void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
     value[2] = (char)((color & 0x000000FF));
     value[3] = (char)((color & 0x0000FF00) >> 8);
     value[4] = (char)((color & 0x00FF0000) >> 16);
+    value[5] = on_off;
   }
 }
 
@@ -955,8 +956,9 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc,
       int color = 0;
       char color_brightness = 0;
       char brightness = 0;
+      char on_off = 0;
 
-      if (channel->getRGBW(&color, &color_brightness, &brightness)) {
+      if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
         if (value > 0) {
           color_brightness = 100;
           brightness = 100;
@@ -965,8 +967,11 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc,
           brightness = 0;
         }
 
-        result = set_device_channel_rgbw_value(srpc, SenderID, ChannelID, color,
-                                               color_brightness, brightness);
+        on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
+
+        result =
+            set_device_channel_rgbw_value(srpc, SenderID, ChannelID, color,
+                                          color_brightness, brightness, on_off);
       }
     }
   }
@@ -978,7 +983,7 @@ bool supla_device_channels::set_device_channel_char_value(void *srpc,
 
 bool supla_device_channels::set_device_channel_rgbw_value(
     void *srpc, int SenderID, int ChannelID, int color, char color_brightness,
-    char brightness) {
+    char brightness, char on_off) {
   bool result = false;
   safe_array_lock(arr);
 
@@ -992,7 +997,8 @@ bool supla_device_channels::set_device_channel_rgbw_value(
     s.DurationMS = channel->getValueDuration();
     s.SenderID = SenderID;
 
-    channel->assignRgbwValue(s.value, color, color_brightness, brightness);
+    channel->assignRgbwValue(s.value, color, color_brightness, brightness,
+                             on_off);
 
     srpc_sd_async_set_channel_value(srpc, &s);
     result = true;
@@ -1023,7 +1029,8 @@ void supla_device_channels::get_temp_and_humidity(void *tarr) {
 
 bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
                                                    char *color_brightness,
-                                                   char *brightness) {
+                                                   char *brightness,
+                                                   char *on_off) {
   bool result = false;
 
   safe_array_lock(arr);
@@ -1034,8 +1041,10 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
     int _color;
     char _color_brightness;
     char _brightness;
+    char _on_off;
 
-    result = channel->getRGBW(&_color, &_color_brightness, &_brightness);
+    result =
+        channel->getRGBW(&_color, &_color_brightness, &_brightness, &_on_off);
 
     if (result == true) {
       if (color != NULL) *color = _color;
@@ -1043,6 +1052,8 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
       if (color_brightness) *color_brightness = _color_brightness;
 
       if (brightness != NULL) *brightness = _brightness;
+
+      if (on_off != NULL) *on_off = _on_off;
     }
   }
 
@@ -1145,7 +1156,7 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_RGBLIGHTING:
       case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         channel->getRGBW(&value->color, &value->color_brightness,
-                         &value->brightness);
+                         &value->brightness, &value->on_off);
         break;
 
       case SUPLA_CHANNELFNC_DEPTHSENSOR:
@@ -1155,9 +1166,9 @@ bool supla_device_channels::get_channel_complex_value(
         channel->getDouble(&value->distance);
         break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-          char cv[SUPLA_CHANNELVALUE_SIZE];
-          channel->getChar(cv);
-          value->shut = cv[0];
+        char cv[SUPLA_CHANNELVALUE_SIZE];
+        channel->getChar(cv);
+        value->shut = cv[0];
         break;
     }
     result = true;
