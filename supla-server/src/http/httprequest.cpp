@@ -24,9 +24,9 @@
 #include "string.h"
 #include "svrcfg.h"
 
-supla_http_request::supla_http_request(
-    supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_source_type EventSourceType) {
+supla_http_request::supla_http_request(supla_user *user, int ClassID,
+                                       int DeviceId, int ChannelId,
+                                       event_source_type EventSourceType) {
   this->lck = lck_init();
   this->http = NULL;
   this->https = NULL;
@@ -39,6 +39,7 @@ supla_http_request::supla_http_request(
   this->startTime.tv_sec = 0;
   this->startTime.tv_usec = 0;
   this->correlationToken = NULL;
+  this->googleRequestId = NULL;
 
   setTimeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
   setDelay(0);
@@ -48,6 +49,11 @@ supla_http_request::~supla_http_request() {
   if (correlationToken) {
     free(correlationToken);
     correlationToken = NULL;
+  }
+
+  if (googleRequestId) {
+    free(googleRequestId);
+    googleRequestId = NULL;
   }
 
   lck_lock(this->lck);
@@ -91,8 +97,7 @@ int supla_http_request::getClassID(void) { return ClassID; }
 
 supla_user *supla_http_request::getUser(void) { return user; }
 
-void supla_http_request::setEventSourceType(
-    event_source_type EventSourceType) {
+void supla_http_request::setEventSourceType(event_source_type EventSourceType) {
   this->EventSourceType = EventSourceType;
 }
 
@@ -127,6 +132,22 @@ void supla_http_request::setCorrelationToken(const char correlationToken[]) {
 
 const char *supla_http_request::getCorrelationTokenPtr(void) {
   return correlationToken;
+}
+
+void supla_http_request::setGoogleRequestId(const char googleRequestId[]) {
+  if (this->googleRequestId) {
+    free(this->googleRequestId);
+    this->googleRequestId = NULL;
+  }
+
+  if (googleRequestId &&
+      strnlen(googleRequestId, GOOGLEREQUESTID_MAXSIZE) > 0) {
+    this->googleRequestId = strndup(googleRequestId, GOOGLEREQUESTID_MAXSIZE);
+  }
+}
+
+const char *supla_http_request::getGoogleRequestIdPtr(void) {
+  return googleRequestId;
 }
 
 void supla_http_request::setDelay(int delayUs) {

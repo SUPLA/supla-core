@@ -350,7 +350,8 @@ void supla_http_request_queue::addRequest(supla_http_request *request) {
 
 void supla_http_request_queue::onChannelChangeEvent(
     supla_user *user, int deviceId, int channelId,
-    event_source_type eventSourceType, const char correlationToken[]) {
+    event_source_type eventSourceType, const char correlationToken[],
+    const char googleRequestId[]) {
   _heq_user_space_t *user_space = getUserSpace(user);
   if (user_space == NULL) {
     return;
@@ -390,6 +391,7 @@ void supla_http_request_queue::onChannelChangeEvent(
 
       if (request) {
         request->setCorrelationToken(correlationToken);
+        request->setGoogleRequestId(googleRequestId);
         addRequest(user_space, request);
       }
     }

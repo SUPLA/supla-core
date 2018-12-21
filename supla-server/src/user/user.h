@@ -95,13 +95,14 @@ class supla_user {
                                             int DeviceID, int ChannelID,
                                             const char value,
                                             event_source_type eventSourceType,
-                                            char *AlexaCorrelationToken);
+                                            char *AlexaCorrelationToken,
+                                            char *GoogleRequestId);
   static bool set_device_channel_rgbw_value(int UserID, int SenderID,
                                             int DeviceID, int ChannelID,
                                             int color, char color_brightness,
                                             char brightness, char on_off,
                                             event_source_type eventSourceType,
-                                            char *AlexaCorrelationToken);
+                                            char *AlexaCorrelationToken, char *GoogleRequestId);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,

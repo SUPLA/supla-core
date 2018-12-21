@@ -62,7 +62,8 @@ class supla_http_request_queue {
   void addRequest(supla_http_request *request);
   void onChannelChangeEvent(supla_user *user, int deviceId, int channelId,
                             event_source_type eventSourceType,
-                            const char correlationToken[] = NULL);
+                            const char correlationToken[] = NULL,
+                            const char googleRequestId[] = NULL);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);

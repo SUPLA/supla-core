@@ -594,7 +594,8 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
 // static
 bool supla_user::set_device_channel_char_value(
     int UserID, int SenderID, int DeviceID, int ChannelID, const char value,
-    event_source_type eventSourceType, char *AlexaCorrelationToken) {
+    event_source_type eventSourceType, char *AlexaCorrelationToken,
+    char *GoogleRequestId) {
   bool result = false;
 
   safe_array_lock(supla_user::user_arr);
@@ -605,7 +606,8 @@ bool supla_user::set_device_channel_char_value(
   if (user) {
     if (eventSourceType > 0) {
       supla_http_request_queue::getInstance()->onChannelChangeEvent(
-          user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken);
+          user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
+          GoogleRequestId);
     }
 
     result = user->set_device_channel_char_value(SenderID, DeviceID, ChannelID,
@@ -621,7 +623,8 @@ bool supla_user::set_device_channel_char_value(
 bool supla_user::set_device_channel_rgbw_value(
     int UserID, int SenderID, int DeviceID, int ChannelID, int color,
     char color_brightness, char brightness, char on_off,
-    event_source_type eventSourceType, char *AlexaCorrelationToken) {
+    event_source_type eventSourceType, char *AlexaCorrelationToken,
+    char *GoogleRequestId) {
   bool result = false;
 
   safe_array_lock(supla_user::user_arr);
@@ -632,7 +635,8 @@ bool supla_user::set_device_channel_rgbw_value(
   if (user) {
     if (eventSourceType > 0) {
       supla_http_request_queue::getInstance()->onChannelChangeEvent(
-          user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken);
+          user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
+          GoogleRequestId);
     }
 
     result = user->set_device_channel_rgbw_value(SenderID, DeviceID, ChannelID,

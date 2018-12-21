@@ -20,6 +20,7 @@
 #define HTTP_HTTPREQUEST_H_
 
 #define CORRELATIONTOKEN_MAXSIZE 2048
+#define GOOGLEREQUESTID_MAXSIZE 512
 
 #include <sys/time.h>
 #include <cstddef>
@@ -45,6 +46,7 @@ class supla_http_request {
 
  protected:
   char *correlationToken;
+  char *googleRequestId;
   supla_trivial_http *getHttp();
   supla_trivial_https *getHttps();
 
@@ -61,6 +63,8 @@ class supla_http_request {
   int getChannelId(void);
   virtual void setCorrelationToken(const char correlationToken[]);
   const char *getCorrelationTokenPtr(void);
+  virtual void setGoogleRequestId(const char googleRequestId[]);
+  const char *getGoogleRequestIdPtr(void);
   void setDelay(int delayUs);
   void setTimeout(int timeoutUs);
   int getTimeout(void);

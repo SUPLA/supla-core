@@ -38,10 +38,14 @@ class svr_ipcctrl {
   int user_id;
   int oauth_user_id;
   char *AlexaCorrelationToken = NULL;
+  char *GoogleRequestId = NULL;
 
   bool match_command(const char *cmd, int len);
+  char *cut(const char *cmd, const char *var);
   void free_correlation_token();
   void cut_correlation_token(const char *cmd);
+  void free_google_requestid();
+  void cut_google_requestid(const char *cmd);
   void get_double(const char *cmd, char Type);
   void get_char(const char *cmd);
   void get_rgbw(const char *cmd);
