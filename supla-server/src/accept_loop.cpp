@@ -66,18 +66,17 @@ void accept_loop(void *ssd, void *al_sthread) {
 
     unsigned int ipv4;
 
-    if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0) {
-      if (supla_socket != NULL) {
-        Tsthread_params stp;
+    if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0 &&
+        supla_socket != NULL) {
+      Tsthread_params stp;
 
-        stp.execute = accept_loop_srvconn_execute;
-        stp.finish = accept_loop_srvconn_finish;
-        stp.user_data = new serverconnection(ssd, supla_socket, ipv4);
-        stp.free_on_finish = 0;
-        stp.initialize = NULL;
+      stp.execute = accept_loop_srvconn_execute;
+      stp.finish = accept_loop_srvconn_finish;
+      stp.user_data = new serverconnection(ssd, supla_socket, ipv4);
+      stp.free_on_finish = 0;
+      stp.initialize = NULL;
 
-        safe_array_add(svrconn_thread_arr, sthread_run(&stp));
-      }
+      safe_array_add(svrconn_thread_arr, sthread_run(&stp));
     }
   }
 
