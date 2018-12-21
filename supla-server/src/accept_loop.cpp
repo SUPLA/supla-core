@@ -66,9 +66,7 @@ void accept_loop(void *ssd, void *al_sthread) {
 
     unsigned int ipv4;
 
-    if (ssocket_accept(ssd, &ipv4, &supla_socket) == 0) {
-      break;
-    } else {
+    if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0) {
       if (supla_socket != NULL) {
         Tsthread_params stp;
 
