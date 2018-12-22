@@ -65,7 +65,7 @@ void client_loop_channel_update(void *_suplaclient, void *sthread,
 }
 
 void client_loop_channelgroup_update(void *_suplaclient, void *sthread,
-                                     TSC_SuplaChannelGroup *channel_group) {
+                                     TSC_SuplaChannelGroup_B *channel_group) {
   supla_log(LOG_DEBUG, "ChannelGroup #%i %s LocationID=%i, Function=%i EOL=%i",
             channel_group->Id, channel_group->Caption,
             channel_group->LocationID, channel_group->Func, channel_group->EOL);
