@@ -182,7 +182,7 @@ void supla_client_channelgroups::send_data_to_remote_and_free(
       srpc_sc_async_channelgroup_pack_update_b(
           srpc, static_cast<TSC_SuplaChannelGroupPack_B *>(data));
     } else {
-      set_pack_eol<TSC_SuplaChannelGroupPack_B>(data);
+      set_pack_eol<TSC_SuplaChannelGroupPack>(data);
 
       srpc_sc_async_channelgroup_pack_update(
           srpc, static_cast<TSC_SuplaChannelGroupPack *>(data));
