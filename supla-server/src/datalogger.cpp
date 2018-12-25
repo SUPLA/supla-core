@@ -28,6 +28,7 @@ supla_datalogger::supla_datalogger() {
   this->temperature_tv.tv_sec = 0;
   this->temperature_tv.tv_usec = 0;
   this->electricitymeter_tv = this->temperature_tv;
+  this->impulsecounter_tv = this->temperature_tv;
   this->db = NULL;
 }
 
@@ -78,6 +79,28 @@ void supla_datalogger::log_electricity_measurement(void) {
   supla_channel_electricity_measurement::free(emarr);
 }
 
+void supla_datalogger::log_ic_measurement(void) {
+  supla_user *user;
+  int a;
+  int n = 0;
+  void *icarr = safe_array_init();
+
+  while ((user = supla_user::get_user(n)) != NULL) {
+    n++;
+    user->get_ic_measurement(icarr);
+  }
+
+  for (a = 0; a < safe_array_count(icarr); a++) {
+    supla_channel_ic_measurement *ic =
+        (supla_channel_ic_measurement *)safe_array_get(icarr, a);
+    if (ic) {
+      db->add_impulses(ic);
+    }
+  }
+
+  supla_channel_ic_measurement::free(icarr);
+}
+
 bool supla_datalogger::dbinit(void) {
   if (db == NULL) {
     db = new database();
@@ -104,6 +127,12 @@ void supla_datalogger::log(void) {
     electricitymeter_tv = now;
 
     if (dbinit()) log_electricity_measurement();
+  }
+
+  if (now.tv_sec - impulsecounter_tv.tv_sec >= IMPULSECOUNTERLOG_INTERVAL) {
+    impulsecounter_tv = now;
+
+    if (dbinit()) log_ic_measurement();
   }
 
   if (db != NULL) {

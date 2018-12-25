@@ -126,6 +126,11 @@ char supla_channel_emarr_clean(void *ptr) {
   return 1;
 }
 
+char supla_channel_icarr_clean(void *ptr) {
+  delete (supla_channel_ic_measurement *)ptr;
+  return 1;
+}
+
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     int ChannelId, TElectricityMeter_ExtendedValue *em_ev) {
   this->ChannelId = ChannelId;
@@ -151,6 +156,32 @@ void supla_channel_electricity_measurement::getMeasurement(
 void supla_channel_electricity_measurement::free(void *emarr) {
   safe_array_clean(emarr, supla_channel_emarr_clean);
   safe_array_free(emarr);
+}
+
+//-----------------------------------------------------
+
+supla_channel_ic_measurement::supla_channel_ic_measurement(
+    int ChannelId, unsigned _supla_int64_t counter,
+    unsigned _supla_int64_t calculatedValue) {
+  this->ChannelId = ChannelId;
+  this->counter = counter;
+  this->calculatedValue = calculatedValue;
+}
+
+int supla_channel_ic_measurement::getChannelId(void) { return ChannelId; }
+
+unsigned _supla_int64_t supla_channel_ic_measurement::getCounter(void) {
+  return counter;
+}
+
+unsigned _supla_int64_t supla_channel_ic_measurement::getCalculatedValue(void) {
+  return calculatedValue;
+}
+
+// static
+void supla_channel_ic_measurement::free(void *icarr) {
+  safe_array_clean(icarr, supla_channel_icarr_clean);
+  safe_array_free(icarr);
 }
 
 //-----------------------------------------------------
@@ -523,6 +554,25 @@ supla_device_channel::getElectricityMeasurement(void) {
 
     if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev) == 1) {
       return new supla_channel_electricity_measurement(getId(), &em_ev);
+    }
+  }
+
+  return NULL;
+}
+
+supla_channel_ic_measurement *
+supla_device_channel::getImpulseCounterMeasurement(void) {
+  if (getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_WATER_METER:
+      case SUPLA_CHANNELFNC_GAS_METER: {
+        char value[SUPLA_CHANNELVALUE_SIZE];
+        getValue(value);
+
+        TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
+        return new supla_channel_ic_measurement(getId(), ic_val->counter, 0);
+      }
     }
   }
 
@@ -1075,6 +1125,26 @@ void supla_device_channels::get_electricity_measurement(void *emarr) {
           channel->getElectricityMeasurement();
       if (em) {
         safe_array_add(emarr, em);
+      }
+    }
+  }
+
+  safe_array_unlock(arr);
+}
+
+void supla_device_channels::get_ic_measurement(void *icarr) {
+  int a;
+  safe_array_lock(arr);
+
+  for (a = 0; a < safe_array_count(arr); a++) {
+    supla_device_channel *channel =
+        (supla_device_channel *)safe_array_get(arr, a);
+
+    if (channel != NULL) {
+      supla_channel_ic_measurement *ic =
+          channel->getImpulseCounterMeasurement();
+      if (ic) {
+        safe_array_add(icarr, ic);
       }
     }
   }

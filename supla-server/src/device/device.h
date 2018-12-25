@@ -62,6 +62,7 @@ class supla_device : public cdcommon {
   bool get_channel_humidity_value(int ChannelID, double *Value);
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
+  void get_ic_measurement(void *icarr);
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);

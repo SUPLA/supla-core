@@ -1549,6 +1549,29 @@ void database::add_electricity_measurement(
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
+void database::add_impulses(supla_channel_ic_measurement *ic) {
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  int ChannelId = ic->getChannelId();
+  unsigned _supla_int64_t counter = ic->getCounter();
+  unsigned _supla_int64_t calculatedValue = ic->getCalculatedValue();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ChannelId;
+  pbind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+  pbind[1].buffer = (char *)&counter;
+  pbind[2].buffer_type = MYSQL_TYPE_LONGLONG;
+  pbind[2].buffer = (char *)&calculatedValue;
+
+  const char sql[] = "CALL `supla_add_ic_log_item`(?,?,?)";
+
+  MYSQL_STMT *stmt;
+  stmt_execute((void **)&stmt, sql, pbind, 13, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_device_firmware_update_url(
     int DeviceID, TDS_FirmwareUpdateParams *params,
     TSD_FirmwareUpdate_UrlResult *url) {

@@ -75,6 +75,23 @@ class supla_channel_electricity_measurement {
   static void free(void *emarr);
 };
 
+class supla_channel_ic_measurement {
+ private:
+  int ChannelId;
+  unsigned _supla_int64_t counter;
+  unsigned _supla_int64_t calculatedValue;
+
+ public:
+  supla_channel_ic_measurement(int ChannelId, unsigned _supla_int64_t counter,
+                               unsigned _supla_int64_t calculatedValue);
+
+  int getChannelId(void);
+  unsigned _supla_int64_t getCounter();
+  unsigned _supla_int64_t getCalculatedValue();
+
+  static void free(void *icarr);
+};
+
 class supla_device_channel {
  private:
   int Id;
@@ -120,6 +137,7 @@ class supla_device_channel {
   std::list<int> slave_channel(void);
   supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
+  supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
   bool converValueToExtended(void);
 };
 
@@ -180,6 +198,7 @@ class supla_device_channels {
 
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
+  void get_ic_measurement(void *icarr);
 
   bool calcfg_request(void *srpc, int SenderID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest *request);

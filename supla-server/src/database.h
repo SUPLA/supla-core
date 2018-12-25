@@ -138,6 +138,7 @@ class database : public dbcommon {
                                     double humidity);
 
   void add_electricity_measurement(supla_channel_electricity_measurement *em);
+  void add_impulses(supla_channel_ic_measurement *ic);
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);

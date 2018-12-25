@@ -442,6 +442,10 @@ void supla_device::get_electricity_measurement(void *emarr) {
   channels->get_electricity_measurement(emarr);
 }
 
+void supla_device::get_ic_measurement(void *icarr) {
+  channels->get_ic_measurement(icarr);
+}
+
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
   return channels->get_channel_char_value(ChannelID, Value);
 }

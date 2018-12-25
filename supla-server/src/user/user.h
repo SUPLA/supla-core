@@ -159,6 +159,7 @@ class supla_user {
   void call_event(TSC_SuplaEvent *event);
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
+  void get_ic_measurement(void *icarr);
 
   bool device_calcfg_request(int SenderID, int DeviceId,
                              TCS_DeviceCalCfgRequest *request);
