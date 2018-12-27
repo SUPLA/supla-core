@@ -189,7 +189,7 @@ double supla_channel_ic_measurement::get_calculated_d(
 // static
 _supla_int64_t supla_channel_ic_measurement::get_calculated_i(
     _supla_int_t impulses_per_unit, unsigned _supla_int64_t counter) {
-  return counter * 1000 / impulses_per_unit;
+  return impulses_per_unit > 0 ? counter * 1000 / impulses_per_unit : 0;
 }
 
 // static
