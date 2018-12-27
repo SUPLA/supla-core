@@ -1904,7 +1904,7 @@ TEST_F(SrpcTest, call_channel_update_c_with_minimum_size) {
 
   ASSERT_GT(srpc_sc_async_channel_update_c(srpc, &channel), 0);
 
-  SendAndReceive(SUPLA_SC_CALL_CHANNEL_UPDATE_C, 78);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_UPDATE_C, 82);
 
   ASSERT_FALSE(cr_rd.data.sc_channel_c == NULL);
 
@@ -1927,7 +1927,7 @@ TEST_F(SrpcTest, call_channel_update_c_with_full_size) {
 
   ASSERT_GT(srpc_sc_async_channel_update_c(srpc, &channel), 0);
 
-  SendAndReceive(SUPLA_SC_CALL_CHANNEL_UPDATE_C, 479);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_UPDATE_C, 483);
 
   ASSERT_FALSE(cr_rd.data.sc_channel_c == NULL);
 
@@ -2079,7 +2079,7 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_caption_over_size) {
   }
 
   ASSERT_GT(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
-  SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 8695);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 8771);
 
   ASSERT_FALSE(cr_rd.data.sc_channel_pack_c == NULL);
   ASSERT_EQ(cr_rd.data.sc_channel_pack_c->count,
@@ -2113,7 +2113,7 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_full_size) {
   }
 
   ASSERT_GT(srpc_sc_async_channelpack_update_c(srpc, &channel_pack), 0);
-  SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 9151);
+  SendAndReceive(SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 9231);
 
   ASSERT_FALSE(cr_rd.data.sc_channel_pack_c == NULL);
 

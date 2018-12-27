@@ -67,8 +67,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(8708, sizeof(TSC_SuplaChannelPack));
   ASSERT_EQ(444, sizeof(TSC_SuplaChannel_B));
   ASSERT_EQ(8888, sizeof(TSC_SuplaChannelPack_B));
-  ASSERT_EQ(456, sizeof(TSC_SuplaChannel_C));
-  ASSERT_EQ(9128, sizeof(TSC_SuplaChannelPack_C));
+  ASSERT_EQ(460, sizeof(TSC_SuplaChannel_C));
+  ASSERT_EQ(9208, sizeof(TSC_SuplaChannelPack_C));
   ASSERT_EQ(426, sizeof(TSC_SuplaChannelGroup));
   ASSERT_EQ(8528, sizeof(TSC_SuplaChannelGroupPack));
   ASSERT_EQ(430, sizeof(TSC_SuplaChannelGroup_B));

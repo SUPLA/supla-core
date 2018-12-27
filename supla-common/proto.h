@@ -676,6 +676,7 @@ typedef struct {
   _supla_int_t Id;
   _supla_int_t DeviceID;
   _supla_int_t LocationID;
+  _supla_int_t Type;
   _supla_int_t Func;
   _supla_int_t AltIcon;
   _supla_int_t UserIcon;
