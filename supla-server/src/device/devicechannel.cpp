@@ -276,6 +276,8 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
 
   if (brightness != NULL) *brightness = 0;
 
+  if (on_off != NULL) *on_off = 0;
+
   bool result = false;
 
   if (Type == SUPLA_CHANNELTYPE_DIMMER ||
@@ -1106,10 +1108,10 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel != NULL) {
-    int _color;
-    char _color_brightness;
-    char _brightness;
-    char _on_off;
+    int _color = 0;
+    char _color_brightness = 0;
+    char _brightness = 0;
+    char _on_off = 0;
 
     result =
         channel->getRGBW(&_color, &_color_brightness, &_brightness, &_on_off);
