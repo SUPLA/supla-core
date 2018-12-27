@@ -383,6 +383,7 @@ void supla_client_channel_b2c(TSC_SuplaChannel_B *b, TSC_SuplaChannel_C *c) {
   c->LocationID = b->LocationID;
   c->Func = b->Func;
   c->AltIcon = b->AltIcon;
+  c->Type = 0;
   c->Flags = b->Flags;
   c->UserIcon = 0;
   c->ManufacturerID = 0;
