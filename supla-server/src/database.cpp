@@ -1124,13 +1124,15 @@ void database::get_client_channels(int ClientID, int *DeviceID,
                                    supla_client_channels *channels) {
   MYSQL_STMT *stmt;
   const char sql1[] =
-      "SELECT `id`, `func`, `param1`, `param2`, `param3`, `text_param1`, "
+      "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
+      "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
       "`protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? "
       "ORDER BY `iodevice_id`, `channel_number`";
   const char sql2[] =
-      "SELECT `id`, `func`, `param1`, `param2`, `param3`, `text_param1`, "
+      "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
+      "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
       "`protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? "
@@ -1147,11 +1149,11 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[16];
+    MYSQL_BIND rbind[17];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, func, param1, param2, param3, iodevice_id, location_id, alt_icon,
-        user_icon, protocol_version;
+    int id, type, func, param1, param2, param3, iodevice_id, location_id,
+        alt_icon, user_icon, protocol_version;
     short manufacturer_id = 0;
     short product_id = 0;
     char text_param1[256];
@@ -1174,61 +1176,64 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[0].buffer = (char *)&id;
 
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&func;
+    rbind[1].buffer = (char *)&type;
 
     rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&param1;
+    rbind[2].buffer = (char *)&func;
 
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&param2;
+    rbind[3].buffer = (char *)&param1;
 
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&param3;
+    rbind[4].buffer = (char *)&param2;
 
-    rbind[5].buffer_type = MYSQL_TYPE_STRING;
-    rbind[5].buffer = text_param1;
-    rbind[5].is_null = &text_param1_is_null;
-    rbind[5].buffer_length = sizeof(text_param1) - 1;
-    rbind[5].length = &text_param1_size;
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&param3;
 
     rbind[6].buffer_type = MYSQL_TYPE_STRING;
-    rbind[6].buffer = text_param2;
-    rbind[6].is_null = &text_param2_is_null;
-    rbind[6].buffer_length = sizeof(text_param2) - 1;
-    rbind[6].length = &text_param2_size;
+    rbind[6].buffer = text_param1;
+    rbind[6].is_null = &text_param1_is_null;
+    rbind[6].buffer_length = sizeof(text_param1) - 1;
+    rbind[6].length = &text_param1_size;
 
     rbind[7].buffer_type = MYSQL_TYPE_STRING;
-    rbind[7].buffer = text_param3;
-    rbind[7].is_null = &text_param3_is_null;
-    rbind[7].buffer_length = sizeof(text_param3) - 1;
-    rbind[7].length = &text_param3_size;
+    rbind[7].buffer = text_param2;
+    rbind[7].is_null = &text_param2_is_null;
+    rbind[7].buffer_length = sizeof(text_param2) - 1;
+    rbind[7].length = &text_param2_size;
 
-    rbind[8].buffer_type = MYSQL_TYPE_LONG;
-    rbind[8].buffer = (char *)&iodevice_id;
+    rbind[8].buffer_type = MYSQL_TYPE_STRING;
+    rbind[8].buffer = text_param3;
+    rbind[8].is_null = &text_param3_is_null;
+    rbind[8].buffer_length = sizeof(text_param3) - 1;
+    rbind[8].length = &text_param3_size;
 
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&location_id;
+    rbind[9].buffer = (char *)&iodevice_id;
 
-    rbind[10].buffer_type = MYSQL_TYPE_STRING;
-    rbind[10].buffer = caption;
-    rbind[10].is_null = &caption_is_null;
-    rbind[10].buffer_length = SUPLA_CHANNEL_CAPTION_MAXSIZE - 1;
-    rbind[10].length = &caption_size;
+    rbind[10].buffer_type = MYSQL_TYPE_LONG;
+    rbind[10].buffer = (char *)&location_id;
 
-    rbind[11].buffer_type = MYSQL_TYPE_LONG;
-    rbind[11].buffer = (char *)&alt_icon;
+    rbind[11].buffer_type = MYSQL_TYPE_STRING;
+    rbind[11].buffer = caption;
+    rbind[11].is_null = &caption_is_null;
+    rbind[11].buffer_length = SUPLA_CHANNEL_CAPTION_MAXSIZE - 1;
+    rbind[11].length = &caption_size;
 
     rbind[12].buffer_type = MYSQL_TYPE_LONG;
-    rbind[12].buffer = (char *)&user_icon;
+    rbind[12].buffer = (char *)&alt_icon;
 
-    rbind[13].buffer_type = MYSQL_TYPE_SHORT;
-    rbind[13].buffer = (char *)&manufacturer_id;
+    rbind[13].buffer_type = MYSQL_TYPE_LONG;
+    rbind[13].buffer = (char *)&user_icon;
 
     rbind[14].buffer_type = MYSQL_TYPE_SHORT;
-    rbind[14].buffer = (char *)&product_id;
+    rbind[14].buffer = (char *)&manufacturer_id;
 
-    rbind[15].buffer_type = MYSQL_TYPE_LONG;
-    rbind[15].buffer = (char *)&protocol_version;
+    rbind[15].buffer_type = MYSQL_TYPE_SHORT;
+    rbind[15].buffer = (char *)&product_id;
+
+    rbind[16].buffer_type = MYSQL_TYPE_LONG;
+    rbind[16].buffer = (char *)&protocol_version;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1247,8 +1252,8 @@ void database::get_client_channels(int ClientID, int *DeviceID,
           text_param2[text_param2_size] = 0;
 
           supla_client_channel *channel = new supla_client_channel(
-              channels, id, iodevice_id, location_id, func, param1, param2,
-              param3, text_param1_is_null ? NULL : text_param1,
+              channels, id, iodevice_id, location_id, type, func, param1,
+              param2, param3, text_param1_is_null ? NULL : text_param1,
               text_param2_is_null ? NULL : text_param2,
               text_param3_is_null ? NULL : text_param3,
               caption_is_null ? NULL : caption, alt_icon, user_icon,

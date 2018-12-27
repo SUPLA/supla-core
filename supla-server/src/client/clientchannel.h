@@ -29,6 +29,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
  private:
   int DeviceId;
   int LocationId;
+  int Type;
   int Func;
   int Param1;
   int Param2;
@@ -48,11 +49,11 @@ class supla_client_channel : public supla_client_objcontainer_item {
 
  public:
   supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
-                       int LocationID, int Func, int Param1, int Param2,
-                       int Param3, char *TextParam1, char *TextParam2,
-                       char *TextParam3, const char *Caption, int AltIcon,
-                       int UserIcon, short ManufacturerID, short ProductID,
-                       unsigned char ProtocolVersion);
+                       int LocationID, int Type, int Func, int Param1,
+                       int Param2, int Param3, char *TextParam1,
+                       char *TextParam2, char *TextParam3, const char *Caption,
+                       int AltIcon, int UserIcon, short ManufacturerID,
+                       short ProductID, unsigned char ProtocolVersion);
   virtual ~supla_client_channel(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);

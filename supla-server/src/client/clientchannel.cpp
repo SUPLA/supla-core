@@ -31,13 +31,14 @@
 
 supla_client_channel::supla_client_channel(
     supla_client_channels *Container, int Id, int DeviceId, int LocationID,
-    int Func, int Param1, int Param2, int Param3, char *TextParam1,
+    int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
     char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
     int UserIcon, short ManufacturerID, short ProductID,
     unsigned char ProtocolVersion)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
+  this->Type = Type;
   this->Func = Func;
   this->Param1 = Param1;
   this->Param2 = Param2;
@@ -164,6 +165,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
 
   channel->Id = getId();
   channel->DeviceID = getDeviceId();
+  channel->Type = this->Type;
   channel->Func = Func;
   channel->LocationID = this->LocationId;
   channel->AltIcon = this->AltIcon;
