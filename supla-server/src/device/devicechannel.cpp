@@ -179,6 +179,20 @@ unsigned _supla_int64_t supla_channel_ic_measurement::getCalculatedValue(void) {
 }
 
 // static
+double supla_channel_ic_measurement::get_calculated_d(
+    _supla_int_t impulses_per_unit, unsigned _supla_int64_t counter) {
+  return supla_channel_ic_measurement::get_calculated_i(impulses_per_unit,
+                                                        counter) /
+         1000.00;
+}
+
+// static
+_supla_int64_t supla_channel_ic_measurement::get_calculated_i(
+    _supla_int_t impulses_per_unit, unsigned _supla_int64_t counter) {
+  return counter * 1000 / impulses_per_unit;
+}
+
+// static
 void supla_channel_ic_measurement::free(void *icarr) {
   safe_array_clean(icarr, supla_channel_icarr_clean);
   safe_array_free(icarr);
@@ -571,7 +585,11 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
         getValue(value);
 
         TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
-        return new supla_channel_ic_measurement(getId(), ic_val->counter, 0);
+
+        return new supla_channel_ic_measurement(
+            getId(), ic_val->counter,
+            supla_channel_ic_measurement::get_calculated_i(Param3,
+                                                           ic_val->counter));
       }
     }
   }

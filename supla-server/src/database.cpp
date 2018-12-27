@@ -1572,7 +1572,7 @@ void database::add_impulses(supla_channel_ic_measurement *ic) {
   const char sql[] = "CALL `supla_add_ic_log_item`(?,?,?)";
 
   MYSQL_STMT *stmt;
-  stmt_execute((void **)&stmt, sql, pbind, 13, true);
+  stmt_execute((void **)&stmt, sql, pbind, 3, true);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }

@@ -89,6 +89,11 @@ class supla_channel_ic_measurement {
   unsigned _supla_int64_t getCounter();
   unsigned _supla_int64_t getCalculatedValue();
 
+  static double get_calculated_d(_supla_int_t impulses_per_unit,
+                                 unsigned _supla_int64_t counter);
+  static _supla_int64_t get_calculated_i(_supla_int_t impulses_per_unit,
+                                         unsigned _supla_int64_t counter);
+
   static void free(void *icarr);
 };
 

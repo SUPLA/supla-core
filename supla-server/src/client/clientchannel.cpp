@@ -192,6 +192,27 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
   if (client && client->getUser()) {
     client->getUser()->get_channel_value(
         DeviceId, getId(), &channel_value->value, &channel_value->online);
+
+    if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+      switch (Func) {
+        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+        case SUPLA_CHANNELFNC_GAS_METER:
+        case SUPLA_CHANNELFNC_WATER_METER: {
+          TDS_ImpulseCounter_Value ds;
+          memcpy(&ds, channel_value->value.value,
+                 sizeof(TDS_ImpulseCounter_Value));
+          memset(channel_value->value.value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+          TSC_ImpulseCounter_Value sc;
+          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
+              Param3, ds.counter);
+
+          memcpy(channel_value->value.value, &sc,
+                 sizeof(TSC_ImpulseCounter_Value));
+          break;
+        }
+      }
+    }
   }
 }
 
@@ -252,16 +273,18 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
             strncpy(ic_ev.custom_unit, TextParam2, 9);
           }
 
-          double calculated = 0;
-
           if (Param3 > 0) {
             ic_ev.impulses_per_unit = Param3;
-            calculated = ic_ev.counter / ic_ev.impulses_per_unit;
-            ic_ev.calculated_value = calculated * 1000;
           }
 
+          ic_ev.calculated_value =
+              supla_channel_ic_measurement::get_calculated_i(
+                  ic_ev.impulses_per_unit, ic_ev.counter);
+
           get_cost_and_currency(ic_ev.currency, &ic_ev.total_cost,
-                                &ic_ev.price_per_unit, calculated);
+                                &ic_ev.price_per_unit,
+                                supla_channel_ic_measurement::get_calculated_d(
+                                    ic_ev.impulses_per_unit, ic_ev.counter));
 
           srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
         }

@@ -53,14 +53,14 @@ void client_loop_channel_update(void *_suplaclient, void *sthread,
     supla_log(LOG_DEBUG, "-> Channel #%i: %f st. EOL=%i", channel->Id, temp,
               channel->EOL);
   } else {
-    supla_log(
-        LOG_DEBUG,
-        "Channel #%i: %s LocationID=%i, Type=%i, Function=%i, online=%i, value[0]: %i "
-        "sub_value[0;1]: %i;%i, altIcon=%i, ProtoVersion=%i, EOL=%i",
-        channel->Id, channel->Caption, channel->LocationID, channel->Type, channel->Func,
-        channel->online, channel->value.value[0], channel->value.sub_value[0],
-        channel->value.sub_value[1], channel->AltIcon, channel->ProtocolVersion,
-        channel->EOL);
+    supla_log(LOG_DEBUG,
+              "Channel #%i: %s LocationID=%i, Type=%i, Function=%i, online=%i, "
+              "value[0]: %i "
+              "sub_value[0;1]: %i;%i, altIcon=%i, ProtoVersion=%i, EOL=%i",
+              channel->Id, channel->Caption, channel->LocationID, channel->Type,
+              channel->Func, channel->online, channel->value.value[0],
+              channel->value.sub_value[0], channel->value.sub_value[1],
+              channel->AltIcon, channel->ProtocolVersion, channel->EOL);
   }
 }
 
@@ -100,9 +100,9 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread,
     memcpy(&temp, channel_value->value.value, sizeof(double));
     supla_log(LOG_DEBUG, "Channel #%i: %f st.", channel_value->Id, temp);
   } else if (channel_value->Id == 3) {
-	  TSC_ImpulseCounter_Value v;
-	  memcpy(&v, channel_value->value.value, sizeof(TSC_ImpulseCounter_Value));
-	  supla_log(LOG_DEBUG, "Calculated value: %i", v.calculated_value);
+    TSC_ImpulseCounter_Value v;
+    memcpy(&v, channel_value->value.value, sizeof(TSC_ImpulseCounter_Value));
+    supla_log(LOG_DEBUG, "Calculated value: %i", v.calculated_value);
   } else {
     supla_log(
         LOG_DEBUG,
@@ -120,13 +120,26 @@ void client_loop_channel_extendedalue_update(
   TElectricityMeter_ExtendedValue em_ev;
   TSC_ImpulseCounter_ExtendedValue ic_ev;
   int a;
-  if (srpc_evtool_v1_extended2emextended(&channel_extendedvalue->value,
-                                         &em_ev) == 1) {
+  if (srpc_evtool_v1_extended2icextended(&channel_extendedvalue->value,
+                                         &ic_ev)) {
+    supla_log(LOG_DEBUG, "*************************");
+    supla_log(LOG_DEBUG, "currency=%c%c%c", ic_ev.currency[0],
+              ic_ev.currency[1], ic_ev.currency[2]);
+    supla_log(LOG_DEBUG, "price_per_unit=%i", ic_ev.price_per_unit);
+    supla_log(LOG_DEBUG, "total_cost=%i", ic_ev.total_cost);
+    supla_log(LOG_DEBUG, "custom_unit=%s", ic_ev.custom_unit);
+    supla_log(LOG_DEBUG, "impulses_per_unit=%i", ic_ev.impulses_per_unit);
+    supla_log(LOG_DEBUG, "couter=%i", ic_ev.counter);
+    supla_log(LOG_DEBUG, "calculated_value=%i", ic_ev.calculated_value);
+
+  } else if (srpc_evtool_v1_extended2emextended(&channel_extendedvalue->value,
+                                                &em_ev) == 1) {
     supla_log(LOG_DEBUG, "*************************");
     supla_log(LOG_DEBUG, "m_count=%i", em_ev.m_count);
     supla_log(LOG_DEBUG, "measured_values=%i", em_ev.measured_values);
     supla_log(LOG_DEBUG, "period=%i sec.", em_ev.period);
-    supla_log(LOG_DEBUG, "currency=%c%c%c", em_ev.currency[0], em_ev.currency[1], em_ev.currency[2]);
+    supla_log(LOG_DEBUG, "currency=%c%c%c", em_ev.currency[0],
+              em_ev.currency[1], em_ev.currency[2]);
     supla_log(LOG_DEBUG, "price_per_unit=%i", em_ev.price_per_unit);
     supla_log(LOG_DEBUG, "total_cost=%i", em_ev.total_cost);
 

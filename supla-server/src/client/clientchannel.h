@@ -46,6 +46,8 @@ class supla_client_channel : public supla_client_objcontainer_item {
 
   void get_cost_and_currency(char currency[3], _supla_int_t *total_cost,
                              _supla_int_t *price_per_unit, double count);
+  _supla_int64_t get_calculated_value(
+      _supla_int_t impulses_per_unit, unsigned _supla_int64_t counter);
 
  public:
   supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
