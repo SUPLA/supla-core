@@ -12,7 +12,9 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 
-LOCAL_C_INCLUDES := ../src/ ../../../openssl/include
+LOCAL_C_INCLUDES := $(OPENSSL_ANDROID)/include \
+         ../src
+
 LOCAL_MODULE    := libsuplaclient
 LOCAL_STATIC_LIBRARIES := cpufeatures 
 LOCAL_LDLIBS := -llog -landroid

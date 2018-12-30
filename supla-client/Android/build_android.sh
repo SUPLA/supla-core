@@ -14,13 +14,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-NDK_ROOT="/Users/AC/Devel/projekty/Android/ndk-r14b"
-SUPLA_ANDROID=~/AndroidStudioProjects/supla-android
-
-export OPENSSL_ANDROID=/Users/AC/Public/openssl
+[ -z "$NDK_ROOT" ] && NDK_ROOT=$(echo ~/Library/Android/ndk-r14b)
+[ -z "$SUPLA_ANDROID" ] && SUPLA_ANDROID=$(echo ~/StudioProjects/supla-android)
+[ -z "$OPENSSL_ANDROID" ] && export OPENSSL_ANDROID=$(echo ~/CProjects/openssl)
 
 $NDK_ROOT/ndk-build clean
-$NDK_ROOT/ndk-build -C ./ NDK_DEBUG=1
+$NDK_ROOT/ndk-build V=1 -C ./ NDK_DEBUG=1
 
 cp  libs/armeabi/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi/
 cp  libs/armeabi-v7a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi-v7a/
