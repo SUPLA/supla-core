@@ -623,9 +623,10 @@ typedef struct {
 
        if (root) {
 #ifdef ONLY_LOG_REQUESTS
-         data = cJSON_PrintUnformatted(root);
-#else
          data = cJSON_Print(root);
+
+#else
+         data = cJSON_PrintUnformatted(root);
 #endif /*ONLY_LOG_REQUESTS*/
 
          cJSON_Delete(root);
