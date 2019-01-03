@@ -38,7 +38,7 @@ class supla_voice_assistant_common {
   virtual int get_token_maxsize(void) = 0;
 
  public:
-  supla_voice_assistant_common(supla_user *user);
+  explicit supla_voice_assistant_common(supla_user *user);
   virtual ~supla_voice_assistant_common();
 
   int getUserID();
