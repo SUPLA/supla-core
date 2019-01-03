@@ -24,30 +24,19 @@
 #include "log.h"
 #include "user.h"
 
-supla_amazon_alexa::supla_amazon_alexa(supla_user *user) {
-  lck1 = lck_init();
-  lck2 = lck_init();
-
-  this->user = user;
-  this->access_token = NULL;
+supla_amazon_alexa::supla_amazon_alexa(supla_user *user)
+    : supla_voice_assistant_common(user) {
   this->refresh_token = NULL;
   this->region = NULL;
   this->expires_at.tv_sec = 0;
   this->expires_at.tv_usec = 0;
-  this->set_at.tv_sec = 0;
-  this->set_at.tv_usec = 0;
 
   set(NULL, NULL, 0, NULL);
-
-  load();
 }
 
-void supla_amazon_alexa::release_strings(void) {
-  if (this->access_token) {
-    free(this->access_token);
-    this->access_token = NULL;
-  }
+supla_amazon_alexa::~supla_amazon_alexa() { strings_free(); };
 
+void supla_amazon_alexa::strings_free(void) {
   if (this->refresh_token) {
     free(this->refresh_token);
     this->refresh_token = NULL;
@@ -59,43 +48,19 @@ void supla_amazon_alexa::release_strings(void) {
   }
 }
 
-supla_amazon_alexa::~supla_amazon_alexa() {
-  if (lck1) {
-    lck_free(lck1);
-    lck1 = NULL;
-  }
-
-  if (lck2) {
-    lck_free(lck2);
-    lck2 = NULL;
-  }
-
-  release_strings();
-}
-
-int supla_amazon_alexa::getUserID() { return user->getUserID(); }
-
-supla_user *supla_amazon_alexa::getUser() { return user; }
-
-void supla_amazon_alexa::refresh_lock(void) { lck_lock(lck2); }
-
-void supla_amazon_alexa::refresh_unlock(void) { lck_unlock(lck2); }
+int supla_amazon_alexa::get_token_maxsize(void) { return ALEXA_TOKEN_MAXSIZE; }
 
 void supla_amazon_alexa::set(const char *access_token,
                              const char *refresh_token, int expires_in,
                              const char *region) {
-  lck_lock(lck1);
+  data_lock();
+  strings_free();
 
-  release_strings();
+  supla_voice_assistant_common::set(access_token);
 
-  int token_len = access_token ? strnlen(access_token, TOKEN_MAXSIZE) : 0;
   int refresh_token_len =
-      refresh_token ? strnlen(refresh_token, TOKEN_MAXSIZE) : 0;
-  int region_len = region ? strnlen(region, REGION_MAXSIZE) : 0;
-
-  if (token_len > 0) {
-    this->access_token = strndup(access_token, token_len);
-  }
+      refresh_token ? strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE) : 0;
+  int region_len = region ? strnlen(region, ALEXA_REGION_MAXSIZE) : 0;
 
   if (refresh_token_len > 0) {
     this->refresh_token = strndup(refresh_token, refresh_token_len);
@@ -105,16 +70,17 @@ void supla_amazon_alexa::set(const char *access_token,
     this->region = strndup(region, region_len);
   }
 
-  gettimeofday(&set_at, NULL);
-
   if (expires_in == 0) {
     expires_in = 3600 * 24 * 365 * 10;
   }
 
+  struct timeval set_at = getSetTime();
+
   this->expires_at.tv_sec = set_at.tv_sec + expires_in;
   this->expires_at.tv_usec = set_at.tv_usec;
 
-  lck_unlock(lck1);
+  data_unlock();
+  supla_log(LOG_DEBUG, "supla_amazon_alexa::set %s", access_token);
 }
 
 void supla_amazon_alexa::load() {
@@ -140,11 +106,11 @@ void supla_amazon_alexa::remove() {
 
 void supla_amazon_alexa::on_credentials_changed() { load(); }
 
-void supla_amazon_alexa::update(const char *token, const char *refresh_token,
+void supla_amazon_alexa::update(const char *access_token, const char *refresh_token,
                                 int expires_in) {
   char *region = getRegion();
 
-  set(token, refresh_token, expires_in, region);
+  set(access_token, refresh_token, expires_in, region);
 
   if (region) {
     free(region);
@@ -153,28 +119,18 @@ void supla_amazon_alexa::update(const char *token, const char *refresh_token,
   database *db = new database();
 
   if (db->connect()) {
-    db->amazon_alexa_update_token(this, token, refresh_token, expires_in);
+    db->amazon_alexa_update_token(this, access_token, refresh_token, expires_in);
   }
 
   delete db;
 }
 
-bool supla_amazon_alexa::isAccessTokenExists(void) {
-  bool result = false;
-
-  lck_lock(lck1);
-  result = access_token != NULL;
-  lck_unlock(lck1);
-
-  return result;
-}
-
 bool supla_amazon_alexa::isRefreshTokenExists(void) {
   bool result = false;
 
-  lck_lock(lck1);
+  data_lock();
   result = refresh_token != NULL;
-  lck_unlock(lck1);
+  data_unlock();
 
   return result;
 }
@@ -182,27 +138,13 @@ bool supla_amazon_alexa::isRefreshTokenExists(void) {
 int supla_amazon_alexa::expiresIn(void) {
   int result = 0;
 
-  lck_lock(lck1);
+  data_lock();
 
   struct timeval now;
   gettimeofday(&now, NULL);
   result = expires_at.tv_sec - now.tv_sec;
 
-  lck_unlock(lck1);
-
-  return result;
-}
-
-char *supla_amazon_alexa::getAccessToken(void) {
-  char *result = NULL;
-
-  lck_lock(lck1);
-
-  if (access_token != NULL) {
-    result = strndup(access_token, TOKEN_MAXSIZE);
-  }
-
-  lck_unlock(lck1);
+  data_unlock();
 
   return result;
 }
@@ -210,25 +152,13 @@ char *supla_amazon_alexa::getAccessToken(void) {
 char *supla_amazon_alexa::getRefreshToken(void) {
   char *result = NULL;
 
-  lck_lock(lck1);
+  data_lock();
 
   if (refresh_token != NULL) {
-    result = strndup(refresh_token, TOKEN_MAXSIZE);
+    result = strndup(refresh_token, ALEXA_TOKEN_MAXSIZE);
   }
 
-  lck_unlock(lck1);
-
-  return result;
-}
-
-struct timeval supla_amazon_alexa::getSetTime(void) {
-  struct timeval result;
-  result.tv_sec = 0;
-  result.tv_usec = 0;
-
-  lck_lock(lck1);
-  result = set_at;
-  lck_unlock(lck1);
+  data_unlock();
 
   return result;
 }
@@ -236,13 +166,13 @@ struct timeval supla_amazon_alexa::getSetTime(void) {
 char *supla_amazon_alexa::getRegion(void) {
   char *result = NULL;
 
-  lck_lock(lck1);
+  data_lock();
 
   if (region != NULL) {
-    result = strndup(region, TOKEN_MAXSIZE);
+    result = strndup(region, ALEXA_TOKEN_MAXSIZE);
   }
 
-  lck_unlock(lck1);
+  data_unlock();
 
   return result;
 }

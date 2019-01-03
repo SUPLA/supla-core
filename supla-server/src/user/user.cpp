@@ -70,6 +70,7 @@ supla_user::supla_user(int UserID) {
   this->client_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
+  this->amazon_alexa->load();
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;

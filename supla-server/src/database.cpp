@@ -1890,17 +1890,17 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
     MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 
-    char buffer_token[TOKEN_MAXSIZE + 1];
+    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
     buffer_token[0] = 0;
     unsigned long token_size = 0;
     my_bool token_is_null = true;
 
-    char buffer_refresh_token[TOKEN_MAXSIZE + 1];
+    char buffer_refresh_token[ALEXA_TOKEN_MAXSIZE + 1];
     buffer_refresh_token[0] = 0;
     unsigned long refresh_token_size = 0;
     my_bool refresh_token_is_null = true;
 
-    char buffer_region[REGION_MAXSIZE + 1];
+    char buffer_region[ALEXA_REGION_MAXSIZE + 1];
     buffer_region[0] = 0;
     unsigned long region_size = 0;
     my_bool region_is_null = true;
@@ -1909,13 +1909,13 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = buffer_token;
-    rbind[0].buffer_length = TOKEN_MAXSIZE;
+    rbind[0].buffer_length = ALEXA_TOKEN_MAXSIZE;
     rbind[0].length = &token_size;
     rbind[0].is_null = &token_is_null;
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
     rbind[1].buffer = buffer_refresh_token;
-    rbind[1].buffer_length = TOKEN_MAXSIZE;
+    rbind[1].buffer_length = ALEXA_TOKEN_MAXSIZE;
     rbind[1].length = &refresh_token_size;
     rbind[1].is_null = &refresh_token_is_null;
 
@@ -1924,7 +1924,7 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
 
     rbind[3].buffer_type = MYSQL_TYPE_STRING;
     rbind[3].buffer = buffer_region;
-    rbind[3].buffer_length = REGION_MAXSIZE;
+    rbind[3].buffer_length = ALEXA_REGION_MAXSIZE;
     rbind[3].length = &region_size;
     rbind[3].is_null = &region_is_null;
 
@@ -1979,11 +1979,11 @@ void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
 
   pbind[0].buffer_type = MYSQL_TYPE_STRING;
   pbind[0].buffer = (char *)token;
-  pbind[0].buffer_length = strnlen((char *)token, TOKEN_MAXSIZE);
+  pbind[0].buffer_length = strnlen((char *)token, ALEXA_TOKEN_MAXSIZE);
 
   pbind[1].buffer_type = MYSQL_TYPE_STRING;
   pbind[1].buffer = (char *)refresh_token;
-  pbind[1].buffer_length = strnlen((char *)refresh_token, TOKEN_MAXSIZE);
+  pbind[1].buffer_length = strnlen((char *)refresh_token, ALEXA_TOKEN_MAXSIZE);
 
   pbind[2].buffer_type = MYSQL_TYPE_LONG;
   pbind[2].buffer = (char *)&expires_in;

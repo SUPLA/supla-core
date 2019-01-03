@@ -19,50 +19,40 @@
 #ifndef AMAZON_ALEXA_H_
 #define AMAZON_ALEXA_H_
 
-#define TOKEN_MAXSIZE 1024
-#define REGION_MAXSIZE 5
+#define ALEXA_TOKEN_MAXSIZE 1024
+#define ALEXA_REGION_MAXSIZE 5
 
-#include <sys/time.h>
+#include "voiceassistantcommon.h"
 
 class supla_user;
 
-class supla_amazon_alexa {
+class supla_amazon_alexa : public supla_voice_assistant_common {
  private:
-  supla_user *user;
-
-  char *access_token;
   char *refresh_token;
   char *region;
   struct timeval expires_at;
-  struct timeval set_at;
 
-  void *lck1;
-  void *lck2;
-  void release_strings(void);
+  void strings_free(void);
+
+  protected:
+  virtual int get_token_maxsize(void);
 
  public:
   supla_amazon_alexa(supla_user *user);
   virtual ~supla_amazon_alexa();
-  int getUserID();
-  supla_user *getUser();
-  void load();
-  void remove();
-  void on_credentials_changed();
+
+  virtual void load();
+  virtual void remove();
+  virtual void on_credentials_changed();
   void update(const char *access_token, const char *refresh_token,
               int expires_in);
   void set(const char *access_token, const char *refresh_token, int expires_in,
            const char *region);
 
-  bool isAccessTokenExists(void);
   bool isRefreshTokenExists(void);
   int expiresIn(void);
-  char *getAccessToken(void);
   char *getRefreshToken(void);
   char *getRegion(void);
-  struct timeval getSetTime(void);
-
-  void refresh_lock(void);
-  void refresh_unlock(void);
 };
 
 #endif /* AMAZON_ALEXA_H_ */
