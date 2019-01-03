@@ -28,6 +28,7 @@ src/amazon \
 src/client \
 src/crypt_blowfish \
 src/device \
+src/google \
 src/http \
 src/json \
 src/test \

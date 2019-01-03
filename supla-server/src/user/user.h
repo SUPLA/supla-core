@@ -29,6 +29,7 @@ class supla_device;
 class supla_client;
 class supla_user_channelgroups;
 class supla_amazon_alexa;
+class supla_google_home;
 
 class supla_user {
  private:
@@ -43,6 +44,7 @@ class supla_user {
   void *client_arr;
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa *amazon_alexa;
+  supla_google_home *google_home;
   int UserID;
   bool connections_allowed;
 
@@ -168,6 +170,7 @@ class supla_user {
   channel_complex_value get_channel_complex_value(int DeviceId, int ChannelID);
 
   supla_amazon_alexa *amazonAlexa(void);
+  supla_google_home *googleHome(void);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

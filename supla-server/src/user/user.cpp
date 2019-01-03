@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <list>
 #include "amazon/alexa.h"
+#include "google/googlehome.h"
 
 #include "client.h"
 #include "database.h"
@@ -71,6 +72,8 @@ supla_user::supla_user(int UserID) {
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
   this->amazon_alexa->load();
+  this->google_home = new supla_google_home(this);
+  this->google_home->load();
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;
@@ -95,6 +98,7 @@ supla_user::~supla_user() {
   lck_free(lck);
   delete cgroups;
   delete amazon_alexa;
+  delete google_home;
   safe_array_free(device_arr);
   safe_array_free(client_arr);
 }
@@ -708,6 +712,7 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
+    user->googleHome()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -905,8 +910,7 @@ void supla_user::get_ic_measurement(void *icarr) {
   safe_array_lock(device_arr);
 
   for (a = 0; a < safe_array_count(device_arr); a++) {
-    ((supla_device *)safe_array_get(device_arr, a))
-        ->get_ic_measurement(icarr);
+    ((supla_device *)safe_array_get(device_arr, a))->get_ic_measurement(icarr);
   }
 
   safe_array_unlock(device_arr);
@@ -1029,3 +1033,5 @@ channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
 }
 
 supla_amazon_alexa *supla_user::amazonAlexa(void) { return amazon_alexa; }
+
+supla_google_home *supla_user::googleHome(void) { return google_home; }
