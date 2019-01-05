@@ -36,7 +36,7 @@ class supla_voice_assistant_client {
   char *getEndpointId(int channelId, short subChannel);
 
  public:
-  supla_voice_assistant_client(supla_voice_assistant *voice_assistant);
+  explicit supla_voice_assistant_client(supla_voice_assistant *voice_assistant);
   virtual ~supla_voice_assistant_client();
   void terminate(void);
 };
