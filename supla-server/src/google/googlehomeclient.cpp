@@ -20,9 +20,16 @@
 #include <stdlib.h>
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
+#include "log.h"
 #include "string.h"
 #include "tools.h"
 #include "user/user.h"
+
+// #define ONLY_LOG_REQUESTS
+
+#if defined(ONLY_LOG_REQUESTS) && !defined(__DEBUG)
+#error "Do not use this macro except for the debug profile"
+#endif /*ONLY_LOG_REQUESTS*/
 
 supla_google_home_client::supla_google_home_client(
     supla_google_home *google_home)
@@ -34,26 +41,47 @@ supla_google_home_client::~supla_google_home_client(void) {
   cJSON_Delete((cJSON *)jsonStates);
 }
 
-void supla_google_home_client::clear(void) {
+void supla_google_home_client::clearStateReport(void) {
   cJSON_Delete((cJSON *)jsonStates);
   jsonStates = cJSON_CreateObject();
 }
 
-bool supla_google_home_client::post(char *data, const char host[],
-                                    const char resource[]) {
+bool supla_google_home_client::post(void *json_data) {
   int result = false;
 
 #ifdef NOSSL
   return false;
 #else
-  {
-    getHttps()->setHost((char *)host, true);
-    getHttps()->setResource((char *)resource, true);
-  }
+  char host[] = "2rxqysinpg.execute-api.eu-west-1.amazonaws.com";
+  char resource[] = "/default/googleHomeGraphBridge";
 
-  getHttps()->setToken(getVoiceAssistant()->getAccessToken(), false);
-  result =
-      getHttps()->http_post(NULL, data) && getHttps()->getResultCode() == 200;
+  getHttps()->setHost(host);
+  getHttps()->setResource(resource);
+
+#ifdef ONLY_LOG_REQUESTS
+  char *data = cJSON_Print((cJSON *)json_data);
+  result = true;
+#else
+  char *data = cJSON_PrintUnformatted((cJSON *)json_data);
+#endif /*ONLY_LOG_REQUESTS*/
+
+  cJSON_Delete((cJSON *)json_data);
+
+  if (data) {
+#ifdef ONLY_LOG_REQUESTS
+    supla_log(LOG_DEBUG, "%s", data);
+#else
+    getHttps()->setToken(getVoiceAssistant()->getAccessToken(), false);
+    result =
+        getHttps()->http_post(NULL, data) && getHttps()->getResultCode() == 200;
+
+    if (!result) {
+      supla_log(LOG_ERR, "GoogleHomeGraph client error code=%i message=%s",
+                getHttps()->getResultCode(), getHttps()->getBody());
+    }
+#endif /*ONLY_LOG_REQUESTS*/
+    free(data);
+  }
 
   httpsFree();
 
@@ -67,13 +95,11 @@ bool supla_google_home_client::channelExists(const char *endpointId) {
          cJSON_GetObjectItem((cJSON *)jsonStates, endpointId) != NULL;
 }
 
-void supla_google_home_client::requestSync(void) {}
-
 void *supla_google_home_client::getStateSkeleton(int channelId,
                                                  short subChannel,
                                                  bool online) {
   cJSON *state = NULL;
-  char *endpointId = getEndpointId(channelId, 0);
+  char *endpointId = getEndpointId(channelId, subChannel);
   if (endpointId) {
     if (!channelExists(endpointId)) {
       state = cJSON_CreateObject();
@@ -105,7 +131,7 @@ bool supla_google_home_client::addBrightnessState(int channelId,
   cJSON *state = (cJSON *)getStateSkeleton(channelId, subChannel, online);
   if (state) {
     cJSON_AddBoolToObject(state, "on", online && brightness > 0);
-    cJSON_AddNumberToObject(state, "brightness", brightness);
+    cJSON_AddNumberToObject(state, "brightness", online ? brightness : 0);
     return true;
   }
 
@@ -123,7 +149,8 @@ bool supla_google_home_client::addColorState(int channelId, int color,
       cJSON_AddItemToObject(state, "color", jsonColor);
 
       cJSON_AddBoolToObject(state, "on", online && colorBrightness > 0);
-      cJSON_AddNumberToObject(state, "brightness", colorBrightness);
+      cJSON_AddNumberToObject(state, "brightness",
+                              online ? colorBrightness : 0);
     }
 
     return true;
@@ -168,18 +195,24 @@ bool supla_google_home_client::sendReportState(const char requestId[]) {
       if (devices) {
         cJSON_AddItemToObject(devices, "states", (cJSON *)jsonStates);
         cJSON_AddItemToObject(payload, "devices", devices);
+        cJSON_AddItemToObject(report, "payload", payload);
 
-        char *data = cJSON_Print(report);
-        if (data) {
-          char resource[] = "";
-          char host[] = "";
-          result = post(data, host, resource);
-          free(data);
-        }
+        jsonStates = cJSON_CreateObject();
+        result = post(report);
       }
-
-      cJSON_AddItemToObject(report, "payload", payload);
     }
+  }
+
+  return result;
+}
+
+bool supla_google_home_client::requestSync(void) {
+  bool result = false;
+  cJSON *header = (cJSON *)getHeader(NULL);
+
+  if (header) {
+    cJSON_AddStringToObject(header, "intent", "action.devices.SYNC");
+    result = post(header);
   }
 
   return result;
