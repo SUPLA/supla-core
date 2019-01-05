@@ -22,7 +22,6 @@
 #include <list>
 #include "amazon/alexa.h"
 #include "google/googlehome.h"
-
 #include "client.h"
 #include "database.h"
 #include "device.h"
