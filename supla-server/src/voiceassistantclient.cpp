@@ -22,7 +22,7 @@
 #include "http/trivialhttps.h"
 #include "lck.h"
 #include "user/user.h"
-#include "voiceassistant.h"s
+#include "voiceassistant.h"
 
 supla_voice_assistant_client::supla_voice_assistant_client(
     supla_voice_assistant *voice_assistant) {
@@ -80,7 +80,7 @@ char *supla_voice_assistant_client::getEndpointId(int channelId,
   char *result = NULL;
   char *uuid = getVoiceAssistant()->getUser()->getShortUniqueID();
   if (!uuid) {
-    return false;
+    return NULL;
   }
 
   int endpointId_len = (uuid ? strnlen(uuid, SHORT_UNIQUEID_MAXSIZE) : 0) + 30;
@@ -98,5 +98,6 @@ char *supla_voice_assistant_client::getEndpointId(int channelId,
     result = endpointId;
   }
 
+  free(uuid);
   return result;
 }
