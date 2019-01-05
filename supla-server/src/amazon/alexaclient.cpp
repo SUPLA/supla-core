@@ -800,7 +800,7 @@ bool supla_alexa_client::sendResponse(const char correlationToken[],
     cJSON_Delete(root);
   }
 #ifdef ONLY_LOG_REQUESTS
-  int result = POST_RESULT_SUCCESS;  // aeg_post(data);
+  int result = POST_RESULT_SUCCESS;
 #else
   int result = aeg_post(data);
 #endif /*ONLY_LOG_REQUESTS*/
