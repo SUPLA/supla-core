@@ -16,21 +16,44 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#ifndef VOICEASSISTANT_H_
+#define VOICEASSISTANT_H_
 
-#define GH_TOKEN_MAXSIZE 255
+#include <sys/time.h>
 
-#include <voiceassistant.h>
+class supla_user;
 
-class supla_google_home : public supla_voice_assistant {
+class supla_voice_assistant {
+ private:
+  supla_user *user;
+
+  char *access_token;
+  struct timeval set_at;
+
+  void *lck1;
+  void *lck2;
+  void token_free(void);
+
  protected:
-  virtual int get_token_maxsize(void);
+  virtual int get_token_maxsize(void) = 0;
 
  public:
-  supla_google_home(supla_user *user);
-  void load();
-  void on_credentials_changed();
+  explicit supla_voice_assistant(supla_user *user);
+  virtual ~supla_voice_assistant();
+
+  int getUserID();
+  supla_user *getUser();
+
+  void set(const char *access_token);
+
+  bool isAccessTokenExists(void);
+  char *getAccessToken(void);
+  struct timeval getSetTime(void);
+
+  void data_lock(void);
+  void data_unlock(void);
+  void refresh_lock(void);
+  void refresh_unlock(void);
 };
 
-#endif /* GOOGLEHOME_H_ */
+#endif /* VOICEASSISTANT_H_ */

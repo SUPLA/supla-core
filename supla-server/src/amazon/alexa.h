@@ -22,11 +22,11 @@
 #define ALEXA_TOKEN_MAXSIZE 1024
 #define ALEXA_REGION_MAXSIZE 5
 
-#include "voiceassistantcommon.h"
+#include "voiceassistant.h"
 
 class supla_user;
 
-class supla_amazon_alexa : public supla_voice_assistant_common {
+class supla_amazon_alexa : public supla_voice_assistant {
  private:
   char *refresh_token;
   char *region;

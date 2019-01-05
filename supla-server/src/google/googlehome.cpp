@@ -20,14 +20,14 @@
 #include "database.h"
 
 supla_google_home::supla_google_home(supla_user *user)
-    : supla_voice_assistant_common(user) {}
+    : supla_voice_assistant(user) {}
 
 int supla_google_home::get_token_maxsize(void) { return GH_TOKEN_MAXSIZE; }
 
 void supla_google_home::load() {
   database *db = new database();
 
-  if (!db->connect()) {
+  if (!db->connect() || !db->google_home_load_token(this)) {
     set(NULL);
   }
 

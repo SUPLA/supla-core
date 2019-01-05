@@ -25,7 +25,7 @@
 #include "user.h"
 
 supla_amazon_alexa::supla_amazon_alexa(supla_user *user)
-    : supla_voice_assistant_common(user) {
+    : supla_voice_assistant(user) {
   this->refresh_token = NULL;
   this->region = NULL;
   this->expires_at.tv_sec = 0;
@@ -56,7 +56,7 @@ void supla_amazon_alexa::set(const char *access_token,
   data_lock();
   strings_free();
 
-  supla_voice_assistant_common::set(access_token);
+  supla_voice_assistant::set(access_token);
 
   int refresh_token_len =
       refresh_token ? strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE) : 0;
@@ -80,7 +80,6 @@ void supla_amazon_alexa::set(const char *access_token,
   this->expires_at.tv_usec = set_at.tv_usec;
 
   data_unlock();
-  supla_log(LOG_DEBUG, "supla_amazon_alexa::set %s", access_token);
 }
 
 void supla_amazon_alexa::load() {
@@ -106,8 +105,8 @@ void supla_amazon_alexa::remove() {
 
 void supla_amazon_alexa::on_credentials_changed() { load(); }
 
-void supla_amazon_alexa::update(const char *access_token, const char *refresh_token,
-                                int expires_in) {
+void supla_amazon_alexa::update(const char *access_token,
+                                const char *refresh_token, int expires_in) {
   char *region = getRegion();
 
   set(access_token, refresh_token, expires_in, region);
@@ -119,7 +118,8 @@ void supla_amazon_alexa::update(const char *access_token, const char *refresh_to
   database *db = new database();
 
   if (db->connect()) {
-    db->amazon_alexa_update_token(this, access_token, refresh_token, expires_in);
+    db->amazon_alexa_update_token(this, access_token, refresh_token,
+                                  expires_in);
   }
 
   delete db;

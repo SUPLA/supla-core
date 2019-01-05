@@ -29,7 +29,8 @@ CPP_SRCS += \
 ../src/objcontainer.cpp \
 ../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
-../src/voiceassistantcommon.cpp 
+../src/voiceassistant.cpp \
+../src/voiceassistantclient.cpp 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -55,7 +56,8 @@ OBJS += \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
 ./src/tools.o \
-./src/voiceassistantcommon.o 
+./src/voiceassistant.o \
+./src/voiceassistantclient.o 
 
 C_DEPS += \
 ./src/cfg.d \
@@ -83,7 +85,8 @@ CPP_DEPS += \
 ./src/objcontainer.d \
 ./src/objcontaineritem.d \
 ./src/serverconnection.d \
-./src/voiceassistantcommon.d 
+./src/voiceassistant.d \
+./src/voiceassistantclient.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

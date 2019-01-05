@@ -16,15 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "voiceassistantcommon.h"
 #include <stdlib.h>
 #include <string.h>
+#include <voiceassistant.h>
 #include "database.h"
 #include "lck.h"
 #include "log.h"
 #include "user.h"
 
-supla_voice_assistant_common::supla_voice_assistant_common(supla_user *user) {
+supla_voice_assistant::supla_voice_assistant(supla_user *user) {
   lck1 = lck_init();
   lck2 = lck_init();
 
@@ -36,14 +36,14 @@ supla_voice_assistant_common::supla_voice_assistant_common(supla_user *user) {
   set(NULL);
 }
 
-void supla_voice_assistant_common::token_free(void) {
+void supla_voice_assistant::token_free(void) {
   if (this->access_token) {
     free(this->access_token);
     this->access_token = NULL;
   }
 }
 
-supla_voice_assistant_common::~supla_voice_assistant_common() {
+supla_voice_assistant::~supla_voice_assistant() {
   if (lck1) {
     lck_free(lck1);
     lck1 = NULL;
@@ -57,19 +57,19 @@ supla_voice_assistant_common::~supla_voice_assistant_common() {
   token_free();
 }
 
-int supla_voice_assistant_common::getUserID() { return user->getUserID(); }
+int supla_voice_assistant::getUserID() { return user->getUserID(); }
 
-supla_user *supla_voice_assistant_common::getUser() { return user; }
+supla_user *supla_voice_assistant::getUser() { return user; }
 
-void supla_voice_assistant_common::data_lock(void) { lck_lock(lck1); }
+void supla_voice_assistant::data_lock(void) { lck_lock(lck1); }
 
-void supla_voice_assistant_common::data_unlock(void) { lck_unlock(lck1); }
+void supla_voice_assistant::data_unlock(void) { lck_unlock(lck1); }
 
-void supla_voice_assistant_common::refresh_lock(void) { lck_lock(lck2); }
+void supla_voice_assistant::refresh_lock(void) { lck_lock(lck2); }
 
-void supla_voice_assistant_common::refresh_unlock(void) { lck_unlock(lck2); }
+void supla_voice_assistant::refresh_unlock(void) { lck_unlock(lck2); }
 
-bool supla_voice_assistant_common::isAccessTokenExists(void) {
+bool supla_voice_assistant::isAccessTokenExists(void) {
   bool result = false;
 
   data_lock();
@@ -79,7 +79,7 @@ bool supla_voice_assistant_common::isAccessTokenExists(void) {
   return result;
 }
 
-char *supla_voice_assistant_common::getAccessToken(void) {
+char *supla_voice_assistant::getAccessToken(void) {
   char *result = NULL;
 
   data_lock();
@@ -93,7 +93,7 @@ char *supla_voice_assistant_common::getAccessToken(void) {
   return result;
 }
 
-struct timeval supla_voice_assistant_common::getSetTime(void) {
+struct timeval supla_voice_assistant::getSetTime(void) {
   struct timeval result;
   result.tv_sec = 0;
   result.tv_usec = 0;
@@ -105,7 +105,7 @@ struct timeval supla_voice_assistant_common::getSetTime(void) {
   return result;
 }
 
-void supla_voice_assistant_common::set(const char *access_token) {
+void supla_voice_assistant::set(const char *access_token) {
   data_lock();
   token_free();
 

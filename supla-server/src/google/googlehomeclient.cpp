@@ -16,21 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#include "google/googlehomeclient.h"
 
-#define GH_TOKEN_MAXSIZE 255
-
-#include <voiceassistant.h>
-
-class supla_google_home : public supla_voice_assistant {
- protected:
-  virtual int get_token_maxsize(void);
-
- public:
-  supla_google_home(supla_user *user);
-  void load();
-  void on_credentials_changed();
-};
-
-#endif /* GOOGLEHOME_H_ */
+supla_google_home_client::supla_google_home_client(
+    supla_google_home *google_home)
+    : supla_voice_assistant_client(google_home) {}

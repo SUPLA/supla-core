@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <amazon/alexa.h>
 #include <ctype.h>
 #include <my_global.h>
 #include <mysql.h>
+#include "amazon/alexa.h"
+#include "google/googlehome.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
 #ifdef min
@@ -1997,4 +1998,54 @@ void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
   stmt_execute((void **)&stmt, sql, pbind, 4, true);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
+bool database::google_home_load_token(supla_google_home *google_home) {
+  bool result = false;
+  char sql[] =
+      "SELECT `access_token` FROM `supla_google_home` WHERE user_id = ? AND "
+      "LENGTH(access_token) > 0";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  int UserID = google_home->getUserID();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[1];
+    memset(rbind, 0, sizeof(rbind));
+
+    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
+    buffer_token[0] = 0;
+    unsigned long token_size = 0;
+    my_bool token_is_null = true;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = buffer_token;
+    rbind[0].buffer_length = ALEXA_TOKEN_MAXSIZE;
+    rbind[0].length = &token_size;
+    rbind[0].is_null = &token_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        buffer_token[token_is_null ? 0 : token_size] = 0;
+
+        google_home->set(buffer_token);
+        result = true;
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
 }

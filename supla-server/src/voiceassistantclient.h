@@ -16,44 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOICEASSISTANTCOMMON_H_
-#define VOICEASSISTANTCOMMON_H_
+#ifndef VOICEASSISTANTCLIENT_H_
+#define VOICEASSISTANTCLIENT_H_
 
-#include <sys/time.h>
+class supla_voice_assistant;
+class supla_trivial_https;
 
-class supla_user;
-
-class supla_voice_assistant_common {
+class supla_voice_assistant_client {
  private:
-  supla_user *user;
-
-  char *access_token;
-  struct timeval set_at;
-
-  void *lck1;
-  void *lck2;
-  void token_free(void);
+  void httpsInit();
+  void *lck;
+  supla_trivial_https *https;
+  supla_voice_assistant *voice_assistant;
 
  protected:
-  virtual int get_token_maxsize(void) = 0;
+  void httpsFree();
+  supla_trivial_https *getHttps(void);
+  supla_voice_assistant *getVoiceAssistant(void);
 
  public:
-  explicit supla_voice_assistant_common(supla_user *user);
-  virtual ~supla_voice_assistant_common();
-
-  int getUserID();
-  supla_user *getUser();
-
-  void set(const char *access_token);
-
-  bool isAccessTokenExists(void);
-  char *getAccessToken(void);
-  struct timeval getSetTime(void);
-
-  void data_lock(void);
-  void data_unlock(void);
-  void refresh_lock(void);
-  void refresh_unlock(void);
+  supla_voice_assistant_client(supla_voice_assistant *voice_assistant);
+  virtual ~supla_voice_assistant_client();
+  void terminate(void);
 };
 
-#endif /* VOICEASSISTANTCOMMON_H_ */
+#endif /* VOICEASSISTANTCLIENT_H_ */
