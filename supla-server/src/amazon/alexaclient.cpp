@@ -458,27 +458,10 @@ void *supla_alexa_client::getEndpoint(int channelId, short subChannel) {
       free(token);
     }
 
-    char *uuid = getAlexa()->getUser()->getShortUniqueID();
-
-    int endpointId_len =
-        (uuid ? strnlen(uuid, SHORT_UNIQUEID_MAXSIZE) : 0) + 30;
-    char *endpointId = (char *)malloc(endpointId_len + 1);
-
+    char *endpointId = getEndpointId(channelId, subChannel);
     if (endpointId) {
-      if (subChannel) {
-        snprintf(endpointId, endpointId_len, "%s-%i-%i", uuid ? uuid : "",
-                 channelId, subChannel);
-      } else {
-        snprintf(endpointId, endpointId_len, "%s-%i", uuid ? uuid : "",
-                 channelId);
-      }
-
       cJSON_AddStringToObject(endpoint, "endpointId", endpointId);
       free(endpointId);
-    }
-
-    if (uuid) {
-      free(uuid);
     }
   }
 

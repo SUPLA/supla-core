@@ -17,9 +17,12 @@
  */
 
 #include "voiceassistantclient.h"
+#include <stdlib.h>
+#include <string.h>
 #include "http/trivialhttps.h"
 #include "lck.h"
-#include "voiceassistant.h"
+#include "user/user.h"
+#include "voiceassistant.h"s
 
 supla_voice_assistant_client::supla_voice_assistant_client(
     supla_voice_assistant *voice_assistant) {
@@ -70,4 +73,30 @@ supla_voice_assistant *supla_voice_assistant_client::getVoiceAssistant(void) {
 supla_voice_assistant_client::~supla_voice_assistant_client() {
   httpsFree();
   lck_free(lck);
+}
+
+char *supla_voice_assistant_client::getEndpointId(int channelId,
+                                                  short subChannel) {
+  char *result = NULL;
+  char *uuid = getVoiceAssistant()->getUser()->getShortUniqueID();
+  if (!uuid) {
+    return false;
+  }
+
+  int endpointId_len = (uuid ? strnlen(uuid, SHORT_UNIQUEID_MAXSIZE) : 0) + 30;
+  char *endpointId = (char *)malloc(endpointId_len + 1);
+
+  if (endpointId) {
+    if (subChannel) {
+      snprintf(endpointId, endpointId_len, "%s-%i-%i", uuid ? uuid : "",
+               channelId, subChannel);
+    } else {
+      snprintf(endpointId, endpointId_len, "%s-%i", uuid ? uuid : "",
+               channelId);
+    }
+
+    result = endpointId;
+  }
+
+  return result;
 }

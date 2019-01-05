@@ -33,6 +33,7 @@ class supla_voice_assistant_client {
   void httpsFree();
   supla_trivial_https *getHttps(void);
   supla_voice_assistant *getVoiceAssistant(void);
+  char *getEndpointId(int channelId, short subChannel);
 
  public:
   supla_voice_assistant_client(supla_voice_assistant *voice_assistant);
