@@ -148,7 +148,6 @@ bool database::get_user_uniqueid(int UserID,
         shortID[short_is_null ? 0 : short_size] = 0;
         longID[long_is_null ? 0 : long_size] = 0;
         result = true;
-        supla_log(LOG_DEBUG, "LOADED");
       }
     }
     mysql_stmt_close(stmt);
