@@ -74,7 +74,7 @@ class supla_http_request {
 
   virtual bool verifyExisting(supla_http_request *existing) = 0;
   virtual bool queueUp(void) = 0;
-  virtual bool isEventSourceTypeAccepted(short eventSourceType,
+  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification) = 0;
   virtual void execute(void *sthread) = 0;
   virtual void terminate(void *sthread);

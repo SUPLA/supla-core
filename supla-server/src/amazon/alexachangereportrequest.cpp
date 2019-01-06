@@ -46,7 +46,7 @@ bool supla_alexa_changereport_request::verifyExisting(
 };
 
 bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
-    short eventSourceType, bool verification) {
+    event_source_type eventSourceType, bool verification) {
   if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
                                                       verification)) {
     return false;
@@ -79,6 +79,9 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     case EST_AMAZON_ALEXA:
     case EST_IPC:
       return true;
+    case EST_UNKNOWN:
+    case EST_GOOGLE_HOME:
+      return false;
   }
   return false;
 }

@@ -71,8 +71,8 @@ supla_alexa_client *supla_alexa_request::getClient(void) {
   return result;
 }
 
-bool supla_alexa_request::isEventSourceTypeAccepted(short eventSourceType,
-                                                    bool verification) {
+bool supla_alexa_request::isEventSourceTypeAccepted(
+    event_source_type eventSourceType, bool verification) {
   supla_amazon_alexa *alexa = getUser()->amazonAlexa();
   return alexa && alexa->isAccessTokenExists() &&
          getUser()->is_device_online(getDeviceId());

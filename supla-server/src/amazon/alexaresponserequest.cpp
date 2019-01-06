@@ -50,7 +50,7 @@ bool supla_alexa_response_request::queueUp(void) {
 }
 
 bool supla_alexa_response_request::isEventSourceTypeAccepted(
-    short eventSourceType, bool verification) {
+    event_source_type eventSourceType, bool verification) {
   if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
                                                       verification)) {
     return false;
@@ -76,6 +76,11 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
       case EST_DEVICE:
       case EST_AMAZON_ALEXA:
         return true;
+      case EST_CLIENT:
+      case EST_IPC:
+      case EST_UNKNOWN:
+      case EST_GOOGLE_HOME:
+        return false;
     }
   } else if (eventSourceType == EST_AMAZON_ALEXA) {
     return true;
