@@ -5,15 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/google/googlehome.cpp \
-../src/google/googlehomeclient.cpp 
+../src/google/googlehomeclient.cpp \
+../src/google/googlehomerequest.cpp 
 
 OBJS += \
 ./src/google/googlehome.o \
-./src/google/googlehomeclient.o 
+./src/google/googlehomeclient.o \
+./src/google/googlehomerequest.o 
 
 CPP_DEPS += \
 ./src/google/googlehome.d \
-./src/google/googlehomeclient.d 
+./src/google/googlehomeclient.d \
+./src/google/googlehomerequest.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
