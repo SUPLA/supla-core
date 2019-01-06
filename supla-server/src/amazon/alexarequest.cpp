@@ -25,8 +25,10 @@
 
 supla_alexa_request::supla_alexa_request(supla_user *user, int ClassID,
                                          int DeviceId, int ChannelId,
+                                         event_type EventType,
                                          event_source_type EventSourceType)
-    : supla_http_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+    : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
+                         EventSourceType) {
   client = NULL;
   lck = lck_init();
   subChannelFromCorrelationToken = 0;
@@ -76,6 +78,11 @@ bool supla_alexa_request::isEventSourceTypeAccepted(
   supla_amazon_alexa *alexa = getUser()->amazonAlexa();
   return alexa && alexa->isAccessTokenExists() &&
          getUser()->is_device_online(getDeviceId());
+}
+
+bool supla_alexa_request::isEventTypeAccepted(event_type eventType,
+                                              bool verification) {
+  return eventType == ET_CHANNEL_VALUE_CHANGED;
 }
 
 int supla_alexa_request::getCauseType(void) {

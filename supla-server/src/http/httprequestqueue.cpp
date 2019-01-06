@@ -348,7 +348,7 @@ void supla_http_request_queue::addRequest(supla_http_request *request) {
   }
 }
 
-void supla_http_request_queue::onChannelChangeEvent(
+void supla_http_request_queue::onChannelValueChangeEvent(
     supla_user *user, int deviceId, int channelId,
     event_source_type eventSourceType, const char correlationToken[],
     const char googleRequestId[]) {
@@ -359,7 +359,7 @@ void supla_http_request_queue::onChannelChangeEvent(
 
   std::list<supla_http_request *> requests =
       AbstractHttpRequestFactory::createByChannelEventSourceType(
-          user, deviceId, channelId, eventSourceType);
+          user, deviceId, channelId, ET_CHANNEL_VALUE_CHANGED, eventSourceType);
 
   for (std::list<supla_http_request *>::iterator it = requests.begin();
        it != requests.end(); it++) {

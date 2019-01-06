@@ -28,6 +28,13 @@ enum event_source_type {
   EST_GOOGLE_HOME,
 };
 
+enum event_type {
+  ET_CHANNEL_VALUE_CHANGED,
+  ET_DEVICE_DELETED,
+  ET_DEVICE_ADDED,
+};
+
+
 typedef struct {
   bool online;
   int function;

@@ -26,11 +26,13 @@
 
 supla_http_request::supla_http_request(supla_user *user, int ClassID,
                                        int DeviceId, int ChannelId,
+                                       event_type EventType,
                                        event_source_type EventSourceType) {
   this->lck = lck_init();
   this->http = NULL;
   this->https = NULL;
   this->user = user;
+  this->EventType = EventType;
   this->EventSourceType = EventSourceType;
   this->ClassID = ClassID;
   this->DeviceId = DeviceId;
@@ -96,6 +98,12 @@ supla_trivial_https *supla_http_request::getHttps() {
 int supla_http_request::getClassID(void) { return ClassID; }
 
 supla_user *supla_http_request::getUser(void) { return user; }
+
+void supla_http_request::setEventType(event_type EventType) {
+  this->EventType = EventType;
+}
+
+event_type supla_http_request::getEventType(void) { return EventType; }
 
 void supla_http_request::setEventSourceType(event_source_type EventSourceType) {
   this->EventSourceType = EventSourceType;
@@ -248,16 +256,18 @@ int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
 // static
 std::list<supla_http_request *>
 AbstractHttpRequestFactory::createByChannelEventSourceType(
-    supla_user *user, int DeviceId, int ChannelId,
+    supla_user *user, int DeviceId, int ChannelId, event_type EventType,
     event_source_type EventSourceType) {
   std::list<supla_http_request *> result;
   for (std::list<AbstractHttpRequestFactory *>::iterator it =
            AbstractHttpRequestFactory::factories.begin();
        it != AbstractHttpRequestFactory::factories.end(); it++) {
-    supla_http_request *request = (*it)->create(
-        user, (*it)->getClassID(), DeviceId, ChannelId, EventSourceType);
+    supla_http_request *request =
+        (*it)->create(user, (*it)->getClassID(), DeviceId, ChannelId, EventType,
+                      EventSourceType);
     if (request) {
-      if (request->isEventSourceTypeAccepted(EventSourceType, true)) {
+      if (request->isEventTypeAccepted(EventType, true) &&
+          request->isEventSourceTypeAccepted(EventSourceType, true)) {
         result.push_back(request);
       } else {
         delete request;

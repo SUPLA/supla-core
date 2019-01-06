@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "user.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <list>
 #include "amazon/alexa.h"
-#include "google/googlehome.h"
 #include "client.h"
 #include "database.h"
 #include "device.h"
+#include "google/googlehome.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
-#include "user.h"
 #include "userchannelgroups.h"
 
 void *supla_user::user_arr = NULL;
@@ -609,7 +609,7 @@ bool supla_user::set_device_channel_char_value(
 
   if (user) {
     if (eventSourceType > 0) {
-      supla_http_request_queue::getInstance()->onChannelChangeEvent(
+      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
           user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
           GoogleRequestId);
     }
@@ -638,7 +638,7 @@ bool supla_user::set_device_channel_rgbw_value(
 
   if (user) {
     if (eventSourceType > 0) {
-      supla_http_request_queue::getInstance()->onChannelChangeEvent(
+      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
           user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
           GoogleRequestId);
     }
@@ -729,7 +729,7 @@ bool supla_user::set_device_channel_value(
 
   supla_device *device = find_device(DeviceID);
   if (device) {
-    supla_http_request_queue::getInstance()->onChannelChangeEvent(
+    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceID, ChannelID, eventSourceType);
 
     device->set_device_channel_value(SenderID, ChannelID, value);
@@ -802,7 +802,7 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           int DeviceId, int ChannelId,
                                           bool Extended) {
   if (!Extended && DeviceId && ChannelId && eventSourceType != EST_UNKNOWN) {
-    supla_http_request_queue::getInstance()->onChannelChangeEvent(
+    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceId, ChannelId, eventSourceType);
   }
 
@@ -860,7 +860,7 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
 }
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
-  supla_http_request_queue::getInstance()->onChannelChangeEvent(
+  supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
       this, DeviceId, ChannelId, EST_DEVICE);
 }
 

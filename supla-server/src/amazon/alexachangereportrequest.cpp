@@ -24,8 +24,9 @@
 
 supla_alexa_changereport_request::supla_alexa_changereport_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_source_type EventSourceType)
-    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+    event_type EventType, event_source_type EventSourceType)
+    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventType,
+                          EventSourceType) {
   duplicateExists = false;
   setDelay(1500000);  // 1.5 sec.
   setTimeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);

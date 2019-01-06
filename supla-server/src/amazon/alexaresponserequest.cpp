@@ -26,8 +26,9 @@
 
 supla_alexa_response_request::supla_alexa_response_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_source_type EventSourceType)
-    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+    event_type EventType, event_source_type EventSourceType)
+    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventType,
+                          EventSourceType) {
   setDelay(1000000);
   setTimeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
 }

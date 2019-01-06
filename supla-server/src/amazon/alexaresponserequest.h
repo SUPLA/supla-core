@@ -24,7 +24,7 @@
 class supla_alexa_response_request : public supla_alexa_request {
  public:
   supla_alexa_response_request(supla_user *user, int ClassID, int DeviceId,
-                               int ChannelId,
+                               int ChannelId, event_type EventType,
                                event_source_type EventSourceType);
   virtual ~supla_alexa_response_request();
   virtual bool verifyExisting(supla_http_request *existing);
