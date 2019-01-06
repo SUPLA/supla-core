@@ -381,7 +381,7 @@ void svr_ipcctrl::on_device_deleted(const char *cmd) {
   sscanf(&buffer[strnlen(cmd_user_on_device_deleted, IPC_BUFFER_SIZE)], "%i",
          &UserID);
   if (UserID) {
-    supla_user::on_device_deleted(UserID);
+    supla_user::on_device_deleted(UserID, EST_IPC);
     send_result("OK:", UserID);
   } else {
     send_result("USER_UNKNOWN");

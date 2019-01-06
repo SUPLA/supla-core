@@ -277,6 +277,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               channels->on_device_registered(getUser(), DeviceID,
                                              dev_channels_b, dev_channels_c,
                                              channel_count);
+
+              if (new_device) {
+                getUser()->on_device_added(DeviceID, EST_DEVICE);
+              }
             }
           }
         }

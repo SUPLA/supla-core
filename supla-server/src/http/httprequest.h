@@ -62,8 +62,10 @@ class supla_http_request {
   event_type getEventType(void);
   void setDeviceId(int DeviceId);
   int getDeviceId(void);
+  virtual bool isDeviceIdEqual(int DeviceId);
   virtual void setChannelId(int ChannelId);
   int getChannelId(void);
+  virtual bool isChannelIdEqual(int ChannelId);
   virtual void setCorrelationToken(const char correlationToken[]);
   const char *getCorrelationTokenPtr(void);
   virtual void setGoogleRequestId(const char googleRequestId[]);

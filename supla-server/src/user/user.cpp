@@ -718,7 +718,25 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
 }
 
 // static
-void supla_user::on_device_deleted(int UserID) {}
+void supla_user::on_device_deleted(int UserID,
+                                   event_source_type eventSourceType) {
+  safe_array_lock(supla_user::user_arr);
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+    supla_http_request_queue::getInstance()->onDeviceDeletedEvent(
+        user, 0, eventSourceType);
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+}
+
+void supla_user::on_device_added(int DeviceID,
+                                 event_source_type eventSourceType) {
+  supla_http_request_queue::getInstance()->onDeviceDeletedEvent(
+      this, DeviceID, eventSourceType);
+}
 
 bool supla_user::set_device_channel_value(
     event_source_type eventSourceType, int SenderID, int DeviceID,

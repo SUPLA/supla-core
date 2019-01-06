@@ -119,11 +119,19 @@ void supla_http_request::setDeviceId(int DeviceId) {
 
 int supla_http_request::getDeviceId(void) { return DeviceId; }
 
+bool supla_http_request::isDeviceIdEqual(int DeviceId) {
+  return this->DeviceId == DeviceId;
+}
+
 void supla_http_request::setChannelId(int ChannelId) {
   this->ChannelId = ChannelId;
 }
 
 int supla_http_request::getChannelId(void) { return ChannelId; }
+
+bool supla_http_request::isChannelIdEqual(int ChannelId) {
+  return this->ChannelId == ChannelId;
+}
 
 void supla_http_request::setCorrelationToken(const char correlationToken[]) {
   if (this->correlationToken) {

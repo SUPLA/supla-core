@@ -49,6 +49,11 @@ class supla_http_request_queue {
   int queueSize(void);
   int threadCount(void);
   int threadCountLimit(void);
+  void createByChannelEventSourceType(supla_user *user, int deviceId,
+                                      int channelId, event_type eventType,
+                                      event_source_type eventSourceType,
+                                      const char correlationToken[],
+                                      const char googleRequestId[]);
 
  public:
   static void init();
@@ -64,6 +69,16 @@ class supla_http_request_queue {
                                  event_source_type eventSourceType,
                                  const char correlationToken[] = NULL,
                                  const char googleRequestId[] = NULL);
+
+  void onDeviceAddedEvent(supla_user *user, int deviceId,
+                          event_source_type eventSourceType,
+                          const char correlationToken[] = NULL,
+                          const char googleRequestId[] = NULL);
+
+  void onDeviceDeletedEvent(supla_user *user, int deviceId,
+                            event_source_type eventSourceType,
+                            const char correlationToken[] = NULL,
+                            const char googleRequestId[] = NULL);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);
