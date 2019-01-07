@@ -734,7 +734,7 @@ void supla_user::on_device_deleted(int UserID,
 
 void supla_user::on_device_added(int DeviceID,
                                  event_source_type eventSourceType) {
-  supla_http_request_queue::getInstance()->onDeviceDeletedEvent(
+  supla_http_request_queue::getInstance()->onDeviceAddedEvent(
       this, DeviceID, eventSourceType);
 }
 
