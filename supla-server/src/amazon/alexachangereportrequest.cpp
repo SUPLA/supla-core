@@ -53,37 +53,37 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     return false;
   }
 
-  channel_complex_value value =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
-
-  switch (value.function) {
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-    case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      return true;
-    default:
-      return false;
-  }
-
   switch (eventSourceType) {
     case EST_DEVICE:
     case EST_CLIENT:
     case EST_AMAZON_ALEXA:
-    case EST_IPC:
-      return true;
+    case EST_IPC: {
+      channel_complex_value value =
+          getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+
+      switch (value.function) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_DIMMER:
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          return true;
+        default:
+          return false;
+      }
+    } break;
     case EST_UNKNOWN:
     case EST_GOOGLE_HOME:
       return false;
-  }
+  };
+
   return false;
 }
 

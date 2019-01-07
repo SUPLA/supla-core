@@ -67,24 +67,17 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      return true;
+      if (verification) {
+        if (eventSourceType == EST_DEVICE ||
+            eventSourceType == EST_AMAZON_ALEXA) {
+          return true;
+        }
+      } else if (eventSourceType == EST_AMAZON_ALEXA) {
+        return true;
+      }
+      break;
     default:
       return false;
-  }
-
-  if (verification) {
-    switch (eventSourceType) {
-      case EST_DEVICE:
-      case EST_AMAZON_ALEXA:
-        return true;
-      case EST_CLIENT:
-      case EST_IPC:
-      case EST_UNKNOWN:
-      case EST_GOOGLE_HOME:
-        return false;
-    }
-  } else if (eventSourceType == EST_AMAZON_ALEXA) {
-    return true;
   }
 
   return false;
