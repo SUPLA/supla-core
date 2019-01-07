@@ -57,6 +57,9 @@ extern "C" {
 #define CFG_ALEXA_RESPONSE_TIMEOUT 18
 #define CFG_ALEXA_CHANGEREPORT_TIMEOUT 19
 
+#define CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT 20
+#define CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT 21
+
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;
 

@@ -27,6 +27,7 @@ supla_google_home_request::supla_google_home_request(
                          EventSourceType) {
   client = NULL;
   lck = lck_init();
+  duplicateExists = false;
 }
 
 supla_google_home_request::~supla_google_home_request() {
@@ -74,13 +75,10 @@ bool supla_google_home_request::isEventSourceTypeAccepted(
   return google_home && google_home->isAccessTokenExists();
 }
 
-bool supla_google_home_request::isEventTypeAccepted(event_type eventType,
-                                                    bool verification) {
-  switch (eventType) {
-    case ET_CHANNEL_VALUE_CHANGED:
-    case ET_DEVICE_ADDED:
-    case ET_DEVICE_DELETED:
-      return true;
-  }
-  return false;
+bool supla_google_home_request::isDeviceIdEqual(int DeviceId) {
+  return true;
+}
+
+bool supla_google_home_request::isChannelIdEqual(int ChannelId) {
+  return true;
 }

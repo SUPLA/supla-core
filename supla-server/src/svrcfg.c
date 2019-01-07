@@ -75,6 +75,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_alexa, "response_timeout", 4000);
   scfg_add_int_param(s_alexa, "changereport_timeout", 30000);
 
+  char *s_google_home = "GOOGLE-HOME";
+  scfg_add_int_param(s_google_home, "syncrequest_timeout", 30000);
+  scfg_add_int_param(s_google_home, "statereport_timeout", 30000);
+
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
   scfg_names_free();
 

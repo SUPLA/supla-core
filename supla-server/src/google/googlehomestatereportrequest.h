@@ -16,33 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOMEREQUEST_H_
-#define GOOGLEHOMEREQUEST_H_
+#ifndef GOOGLEHOMESTATEREPORTREQUEST_H_
+#define GOOGLEHOMESTATEREPORTREQUEST_H_
 
-#include "google/googlehomeclient.h"
-#include "http/httprequest.h"
+#include "google/googlehomerequest.h"
 
-class supla_google_home_request : public supla_http_request {
+class supla_google_home_statereport_request : public supla_google_home_request {
  private:
-  void *lck;
-  supla_google_home_client *client;
-
+  void *channel_arr;
  protected:
-  bool duplicateExists;
+  void addChannelId(int ChannelId);
 
  public:
-  supla_google_home_request(supla_user *user, int ClassID, int DeviceId,
-                            int ChannelId, event_type EventType,
-                            event_source_type EventSourceType);
-  virtual ~supla_google_home_request();
+  supla_google_home_statereport_request(supla_user *user, int ClassID,
+                                        int DeviceId, int ChannelId,
+                                        event_type EventType,
+                                        event_source_type EventSourceType);
+  virtual ~supla_google_home_statereport_request(void);
 
-  supla_google_home_client *getClient(void);
+  bool isChannelFunctionAllowed(void);
+  virtual bool verifyExisting(supla_http_request *existing);
   virtual bool queueUp(void);
-  virtual void terminate(void *sthread);
   virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification);
-  virtual bool isDeviceIdEqual(int DeviceId);
-  virtual bool isChannelIdEqual(int ChannelId);
+  virtual bool isEventTypeAccepted(event_type eventType, bool verification);
+  virtual void execute(void *sthread);
 };
 
-#endif /* GOOGLEHOMEREQUEST_H_ */
+#endif /* GOOGLEHOMESTATEREPORTREQUEST_H_ */
