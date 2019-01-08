@@ -73,6 +73,7 @@ class supla_http_request {
   void setDelay(int delayUs);
   void setTimeout(int timeoutUs);
   int getTimeout(void);
+  int getStartTime(void);
   int timeLeft(struct timeval *now);
   bool isWaiting(struct timeval *now);
   bool timeout(struct timeval *now);

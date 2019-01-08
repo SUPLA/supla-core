@@ -181,6 +181,8 @@ void supla_http_request::setTimeout(int timeoutUs) {
 
 int supla_http_request::getTimeout(void) { return this->timeoutUs; }
 
+int supla_http_request::getStartTime(void) { return startTime.tv_sec; }
+
 int supla_http_request::timeLeft(struct timeval *now) {
   struct timeval _now;
   if (!now) {
