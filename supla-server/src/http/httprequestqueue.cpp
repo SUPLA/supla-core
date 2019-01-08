@@ -194,9 +194,10 @@ supla_http_request *supla_http_request_queue::queuePop(void) {
         if (request->timeout(NULL)) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! IODevice: %i Channel: %i "
-                    "EventSourceType: %i (%i)",
+                    "EventSourceType: %i (%i/%i/%i)",
                     request->getDeviceId(), request->getChannelId(),
-                    request->getEventSourceType(), request->getTimeout());
+                    request->getEventSourceType(), request->getTimeout(),
+                    request->getStartTime(), now.tv_sec);
 
           delete request;
         } else {
@@ -286,6 +287,15 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     }
 
     wait_time += 1000;
+    if (wait_time < 1000) {
+      wait_time = 1000;
+    } else if (wait_time > 10000000) {
+      wait_time = 10000000;
+    };
+
+    if (wait_time > 1000000 && queueSize() > 0) {
+    	wait_time = 1000000;
+    };
     eh_wait(main_eh, wait_time);
   }
 
