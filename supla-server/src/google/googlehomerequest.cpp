@@ -17,7 +17,9 @@
  */
 
 #include "google/googlehomerequest.h"
+#include <assert.h>
 #include "lck.h"
+#include "sthread.h"
 #include "user/user.h"
 
 supla_google_home_request::supla_google_home_request(
@@ -41,6 +43,14 @@ supla_google_home_request::~supla_google_home_request() {
   lck_free(lck);
 }
 
+bool supla_google_home_request::isCanceled(void *sthread) {
+  if (sthread_isterminated(sthread)) {
+    return true;
+  }
+
+  return !getUser()->googleHome()->isAccessTokenExists();
+}
+
 void supla_google_home_request::terminate(void *sthread) {
   lck_lock(lck);
   if (client) {
@@ -54,9 +64,7 @@ bool supla_google_home_request::queueUp(void) { return true; }
 
 supla_google_home_client *supla_google_home_request::getClient(void) {
   supla_google_home *google_home = getUser()->googleHome();
-  if (!google_home || !google_home->isAccessTokenExists()) {
-    return NULL;
-  }
+  assert(google_home != NULL);
 
   supla_google_home_client *result = NULL;
   lck_lock(lck);
@@ -75,10 +83,6 @@ bool supla_google_home_request::isEventSourceTypeAccepted(
   return google_home && google_home->isAccessTokenExists();
 }
 
-bool supla_google_home_request::isDeviceIdEqual(int DeviceId) {
-  return true;
-}
+bool supla_google_home_request::isDeviceIdEqual(int DeviceId) { return true; }
 
-bool supla_google_home_request::isChannelIdEqual(int ChannelId) {
-  return true;
-}
+bool supla_google_home_request::isChannelIdEqual(int ChannelId) { return true; }

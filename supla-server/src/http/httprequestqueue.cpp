@@ -168,7 +168,7 @@ int supla_http_request_queue::queueSize(void) {
   return size;
 }
 
-supla_http_request *supla_http_request_queue::queuePop(void) {
+supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
   supla_http_request *result = NULL;
 
   struct timeval now;
@@ -191,7 +191,9 @@ supla_http_request *supla_http_request_queue::queuePop(void) {
           safe_array_get(user_space->arr_queue, b));
 
       if (request && !request->isWaiting(&now)) {
-        if (request->timeout(NULL)) {
+        /*if (request->isCanceled(q_sthread)) {
+          delete request;
+        } else */if (request->timeout(NULL)) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! IODevice: %i Channel: %i "
                     "EventSourceType: %i (%i/%i/%i)",
@@ -271,7 +273,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
       supla_http_request *request = NULL;
 
       if (threadCount() < threadCountLimit()) {
-        request = queuePop();
+        request = queuePop(q_sthread);
         if (request) {
           runThread(request);
           wait_time = 0;
@@ -287,6 +289,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     }
 
     wait_time += 1000;
+    /*
     if (wait_time < 1000) {
       wait_time = 1000;
     } else if (wait_time > 10000000) {
@@ -296,6 +299,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     if (wait_time > 1000000 && queueSize() > 0) {
       wait_time = 1000000;
     }
+    */
 
     eh_wait(main_eh, wait_time);
   }

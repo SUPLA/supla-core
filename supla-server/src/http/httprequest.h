@@ -78,6 +78,7 @@ class supla_http_request {
   bool isWaiting(struct timeval *now);
   bool timeout(struct timeval *now);
 
+  virtual bool isCanceled(void *sthread) = 0;
   virtual bool verifyExisting(supla_http_request *existing) = 0;
   virtual bool queueUp(void) = 0;
   virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,

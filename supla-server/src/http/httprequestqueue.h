@@ -44,7 +44,7 @@ class supla_http_request_queue {
   void runThread(supla_http_request *request);
   _heq_user_space_t *getUserSpace(supla_user *user);
   void addRequest(_heq_user_space_t *user_space, supla_http_request *request);
-  supla_http_request *queuePop(void);
+  supla_http_request *queuePop(void *q_sthread);
   int getNextTimeOfDelayedExecution(int time);
   int queueSize(void);
   int threadCount(void);

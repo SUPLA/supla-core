@@ -17,10 +17,13 @@
  */
 
 #include "amazon/alexarequest.h"
+#include <assert.h>
 #include <stdlib.h>
 #include "amazon/alexa.h"
 #include "amazon/alexaclient.h"
 #include "lck.h"
+#include "log.h"
+#include "sthread.h"
 #include "user/user.h"
 
 supla_alexa_request::supla_alexa_request(supla_user *user, int ClassID,
@@ -45,6 +48,14 @@ supla_alexa_request::~supla_alexa_request() {
   lck_free(lck);
 }
 
+bool supla_alexa_request::isCanceled(void *sthread) {
+  if (sthread_isterminated(sthread)) {
+    return true;
+  }
+
+  return !getUser()->amazonAlexa()->isAccessTokenExists();
+}
+
 void supla_alexa_request::terminate(void *sthread) {
   lck_lock(lck);
   if (client) {
@@ -58,9 +69,7 @@ bool supla_alexa_request::queueUp(void) { return true; }
 
 supla_alexa_client *supla_alexa_request::getClient(void) {
   supla_amazon_alexa *alexa = getUser()->amazonAlexa();
-  if (!alexa || !alexa->isAccessTokenExists()) {
-    return NULL;
-  }
+  assert(alexa != NULL);
 
   supla_alexa_client *result = NULL;
   lck_lock(lck);
