@@ -191,9 +191,9 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
           safe_array_get(user_space->arr_queue, b));
 
       if (request && !request->isWaiting(&now)) {
-        /*if (request->isCanceled(q_sthread)) {
+        if (request->isCancelled(q_sthread)) {
           delete request;
-        } else */if (request->timeout(NULL)) {
+        } else if (request->timeout(NULL)) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! IODevice: %i Channel: %i "
                     "EventSourceType: %i (%i/%i/%i)",

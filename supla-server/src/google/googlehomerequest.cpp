@@ -43,7 +43,7 @@ supla_google_home_request::~supla_google_home_request() {
   lck_free(lck);
 }
 
-bool supla_google_home_request::isCanceled(void *sthread) {
+bool supla_google_home_request::isCancelled(void *sthread) {
   if (sthread_isterminated(sthread)) {
     return true;
   }

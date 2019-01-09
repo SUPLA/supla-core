@@ -48,7 +48,7 @@ supla_alexa_request::~supla_alexa_request() {
   lck_free(lck);
 }
 
-bool supla_alexa_request::isCanceled(void *sthread) {
+bool supla_alexa_request::isCancelled(void *sthread) {
   if (sthread_isterminated(sthread)) {
     return true;
   }

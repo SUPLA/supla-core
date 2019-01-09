@@ -38,7 +38,7 @@ class supla_google_home_request : public supla_http_request {
 
   supla_google_home_client *getClient(void);
   virtual bool queueUp(void);
-  virtual bool isCanceled(void *sthread);
+  virtual bool isCancelled(void *sthread);
   virtual void terminate(void *sthread);
   virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification);

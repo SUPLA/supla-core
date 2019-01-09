@@ -37,7 +37,7 @@ class supla_alexa_request : public supla_http_request {
   int getSubChannelFromCorrelationToken(void);
   virtual bool queueUp(void);
   virtual void terminate(void *sthread);
-  virtual bool isCanceled(void *sthread);
+  virtual bool isCancelled(void *sthread);
   virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
