@@ -289,7 +289,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     }
 
     wait_time += 1000;
-    /*
+
     if (wait_time < 1000) {
       wait_time = 1000;
     } else if (wait_time > 10000000) {
@@ -299,7 +299,6 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     if (wait_time > 1000000 && queueSize() > 0) {
       wait_time = 1000000;
     }
-    */
 
     eh_wait(main_eh, wait_time);
   }
