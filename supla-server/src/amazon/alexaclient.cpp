@@ -382,7 +382,7 @@ void *supla_alexa_client::getContactSensorProperties(bool hi) {
     cJSON_AddStringToObject(property, "namespace", "Alexa.ContactSensor");
     cJSON_AddStringToObject(property, "name", "detectionState");
     cJSON_AddStringToObject(property, "value",
-                            hi ? "NOT_DETECTED" : "DETECTED");
+                            hi ? "DETECTED" : "NOT_DETECTED");
     cJSON_AddStringToObject(property, "timeOfSample", now);
     cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
   }
