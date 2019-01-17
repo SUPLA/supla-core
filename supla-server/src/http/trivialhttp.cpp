@@ -361,6 +361,7 @@ bool supla_trivial_http::request(const char *method, const char *header,
   if (!method || !host || !resource || strnlen(method, METHOD_MAXSIZE) < 3 ||
       strnlen(host, HOST_MAXSIZE) < 1 ||
       strnlen(resource, RESOURCE_MAXSIZE) < 1) {
+    supla_log(LOG_ERR, "Http request - invalid parameters!");
     return false;
   }
 
@@ -416,11 +417,16 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   if (in) {
     result = parse(&in);
+    supla_log(LOG_ERR, "Http request - parse error. Method: %s, in:\n%s",
+              method, in);
 
     if (in) {
       free(in);
       in = NULL;
     }
+  } else {
+    supla_log(LOG_ERR, "Http request - No data was received. Method: %s",
+              method);
   }
 
   return result;
