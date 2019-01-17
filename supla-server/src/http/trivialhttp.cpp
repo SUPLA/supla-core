@@ -417,16 +417,18 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   if (in) {
     result = parse(&in);
-    supla_log(LOG_ERR, "Http request - parse error. Method: %s, in:\n%s",
-              method, in);
+    supla_log(LOG_ERR,
+              "Http request - parse error. Method: %s, resource: %s, in:\n%s",
+              method, resource, in);
 
     if (in) {
       free(in);
       in = NULL;
     }
   } else {
-    supla_log(LOG_ERR, "Http request - No data was received. Method: %s",
-              method);
+    supla_log(LOG_ERR,
+              "Http request - No data was received. Method: %s, resource: %s",
+              method, resource);
   }
 
   return result;
