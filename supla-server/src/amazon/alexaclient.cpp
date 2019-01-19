@@ -273,8 +273,11 @@ int supla_alexa_client::aeg_post(char *data) {
   }
 
   if (result != POST_RESULT_SUCCESS) {
-    supla_log(LOG_ERR, "Alexa event gateway client error (%i/%i): %s",
-              httpResultCode, result, getErrorString(result));
+    supla_log(LOG_ERR,
+              "Alexa event gateway client error (UserID: %i, httpCode: %i, "
+              "Result: %i): %s",
+              getAlexa()->getUserID(), httpResultCode, result,
+              getErrorString(result));
   }
 
   return result;
