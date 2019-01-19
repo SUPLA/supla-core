@@ -417,9 +417,12 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   if (in) {
     result = parse(&in);
-    supla_log(LOG_ERR,
-              "Http request - parse error. Method: %s, resource: %s, in:\n%s",
-              method, resource, in);
+    if (!result) {
+      supla_log(
+          LOG_ERR,
+          "Http request - parse error. Method: %s, resource: %s, data:\n%s",
+          method, resource, in ? in : body);
+    }
 
     if (in) {
       free(in);
