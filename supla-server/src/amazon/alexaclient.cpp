@@ -263,11 +263,16 @@ int supla_alexa_client::aeg_post(char *data) {
   int result = aeg_post_request(data, &httpResultCode);
   if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION) {
     if (!refresh_attempt) {
+      refresh_attempt = true;
       refresh_roken();
       result = aeg_post_request(data, &httpResultCode);
     }
-  } else if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
-             result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION) {
+  };
+
+  if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
+      result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION ||
+      (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION &&
+       refresh_attempt)) {
     getAlexa()->remove();
     return result;
   }
