@@ -511,10 +511,10 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
   pbind[6].buffer = (char *)&proto_version;
 
   pbind[7].buffer_type = MYSQL_TYPE_SHORT;
-  pbind[7].buffer = (char *)&ManufacturerID;
+  pbind[7].buffer = (char *)&ProductID;
 
   pbind[8].buffer_type = MYSQL_TYPE_SHORT;
-  pbind[8].buffer = (char *)&ProductID;
+  pbind[8].buffer = (char *)&ManufacturerID;
 
   if (AuthKey == NULL) {
     pbind[10].buffer_type = MYSQL_TYPE_NULL;
