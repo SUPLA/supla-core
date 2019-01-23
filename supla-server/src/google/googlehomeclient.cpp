@@ -147,7 +147,7 @@ bool supla_google_home_client::addColorState(int channelId, int color,
   if (state) {
     cJSON *jsonColor = cJSON_CreateObject();
     if (jsonColor) {
-      cJSON_AddNumberToObject(jsonColor, "spectrumRgb", color);
+      cJSON_AddNumberToObject(jsonColor, "spectrumRGB", color);
       cJSON_AddItemToObject(state, "color", jsonColor);
 
       cJSON_AddBoolToObject(state, "on", online && colorBrightness > 0);
