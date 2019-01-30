@@ -1268,3 +1268,18 @@ bool supla_device_channels::get_channel_complex_value(
 
   return result;
 }
+
+std::list<int> supla_device_channels::get_channel_ids(void) {
+  std::list<int> result;
+  safe_array_lock(arr);
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    supla_device_channel *channel =
+        static_cast<supla_device_channel *>(safe_array_get(arr, a));
+    if (channel) {
+      result.push_back(channel->getId());
+    }
+  }
+  safe_array_unlock(arr);
+
+  return result;
+}

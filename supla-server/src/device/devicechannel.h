@@ -197,6 +197,7 @@ class supla_device_channels {
 
   std::list<int> master_channel(int ChannelID);
   std::list<int> slave_channel(int ChannelID);
+  std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
   void load(int DeviceID);
