@@ -60,4 +60,4 @@ bool supla_google_home_response_request::isEventSourceTypeAccepted(
   return false;
 }
 
-REGISTER_HTTP_REQUEST_CLASS(supla_google_home_response_request);
+// REGISTER_HTTP_REQUEST_CLASS(supla_google_home_response_request);
