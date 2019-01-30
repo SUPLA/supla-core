@@ -66,7 +66,7 @@ class supla_user {
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
                                 char Type);
 
-  void reconnect();
+  void reconnect(event_source_type eventSourceType);
   bool client_reconnect(int ClientID);
   void loadUniqueIDs(void);
 
@@ -76,7 +76,7 @@ class supla_user {
   static supla_user *add_device(supla_device *device, int UserID);
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
-  static bool reconnect(int UserID);
+  static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool is_client_online(int UserID, int ClientID);
   static bool is_device_online(int UserID, int DeviceID);

@@ -441,6 +441,12 @@ void supla_http_request_queue::onDeviceDeletedEvent(
                                  googleRequestId);
 }
 
+void supla_http_request_queue::onUserReconnectEvent(
+    supla_user *user, event_source_type eventSourceType) {
+  createByChannelEventSourceType(user, 0, 0, ET_USER_RECONNECT, eventSourceType,
+                                 NULL, NULL);
+}
+
 void http_request_queue_loop(void *ssd, void *q_sthread) {
   supla_http_request_queue::getInstance()->iterate(q_sthread);
 }

@@ -734,8 +734,8 @@ void supla_user::on_device_deleted(int UserID,
 
 void supla_user::on_device_added(int DeviceID,
                                  event_source_type eventSourceType) {
-  supla_http_request_queue::getInstance()->onDeviceAddedEvent(
-      this, DeviceID, eventSourceType);
+  supla_http_request_queue::getInstance()->onDeviceAddedEvent(this, DeviceID,
+                                                              eventSourceType);
 }
 
 bool supla_user::set_device_channel_value(
@@ -964,7 +964,7 @@ void supla_user::on_device_calcfg_result(int ChannelID,
   safe_array_unlock(client_arr);
 }
 
-void supla_user::reconnect() {
+void supla_user::reconnect(event_source_type eventSourceType) {
   int a;
 
   cgroups->load();  // load == reload
@@ -990,6 +990,9 @@ void supla_user::reconnect() {
       }
   }
   safe_array_unlock(client_arr);
+
+  supla_http_request_queue::getInstance()->onUserReconnectEvent(
+      this, eventSourceType);
 }
 
 bool supla_user::client_reconnect(int ClientID) {
@@ -1010,11 +1013,11 @@ bool supla_user::client_reconnect(int ClientID) {
 }
 
 // static
-bool supla_user::reconnect(int UserID) {
+bool supla_user::reconnect(int UserID, event_source_type eventSourceType) {
   supla_user *user = find(UserID, true);
 
   if (user) {
-    user->reconnect();
+    user->reconnect(eventSourceType);
     // cppcheck-suppress memleak
     return true;
   }

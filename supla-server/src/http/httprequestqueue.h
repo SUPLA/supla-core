@@ -79,6 +79,9 @@ class supla_http_request_queue {
                             event_source_type eventSourceType,
                             const char correlationToken[] = NULL,
                             const char googleRequestId[] = NULL);
+
+  void onUserReconnectEvent(supla_user *user,
+                            event_source_type eventSourceType);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);

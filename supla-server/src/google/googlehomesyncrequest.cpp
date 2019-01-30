@@ -25,7 +25,7 @@ supla_google_home_sync_request::supla_google_home_sync_request(
     event_type EventType, event_source_type EventSourceType)
     : supla_google_home_request(user, ClassID, DeviceId, ChannelId, EventType,
                                 EventSourceType) {
-  setDelay(5000000);  // 5 sec.
+  setDelay(15000000);  // 15 sec.
   setTimeout(scfg_int(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT) * 1000);
 }
 
@@ -55,6 +55,7 @@ bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
   switch (eventType) {
     case ET_DEVICE_ADDED:
     case ET_DEVICE_DELETED:
+    case ET_USER_RECONNECT:
       return true;
     case ET_CHANNEL_VALUE_CHANGED:
       return false;
