@@ -1060,7 +1060,8 @@ void supla_user::compex_value_cache_clean(int DeviceId) {
   safe_array_unlock(complex_value_functions_arr);
 }
 
-int supla_user::compex_value_cache_get_function(int ChannelID) {
+int supla_user::compex_value_cache_get_function(int ChannelID,
+                                                channel_function_t **_fnc) {
   int result = 0;
   safe_array_lock(complex_value_functions_arr);
 
@@ -1068,6 +1069,9 @@ int supla_user::compex_value_cache_get_function(int ChannelID) {
     channel_function_t *fnc = static_cast<channel_function_t *>(
         safe_array_get(complex_value_functions_arr, a));
     if (fnc && fnc->channelId == ChannelID) {
+      if (_fnc) {
+        *_fnc = fnc;
+      }
       result = fnc->function;
       break;
     }
@@ -1081,8 +1085,15 @@ void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
                                                     int Function) {
   if (!Function || !DeviceId || !ChannelID) return;
   safe_array_lock(complex_value_functions_arr);
-  if (!compex_value_cache_get_function(ChannelID)) {
-    channel_function_t *fnc = new channel_function_t;
+
+  channel_function_t *fnc = NULL;
+  if (compex_value_cache_get_function(ChannelID, &fnc)) {
+    if (fnc) {
+      fnc->deviceId = DeviceId;
+      fnc->function = Function;
+    }
+  } else {
+    fnc = new channel_function_t;
     fnc->deviceId = DeviceId;
     fnc->channelId = ChannelID;
     fnc->function = Function;

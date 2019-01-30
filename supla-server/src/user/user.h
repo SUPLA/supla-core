@@ -22,6 +22,7 @@
 #define SHORT_UNIQUEID_MAXSIZE 37
 #define LONG_UNIQUEID_MAXSIZE 201
 
+#include <cstddef>
 #include "commontypes.h"
 #include "proto.h"
 
@@ -51,8 +52,10 @@ class supla_user {
   bool connections_allowed;
 
   void compex_value_cache_clean(int DeviceId);
-  int compex_value_cache_get_function(int ChannelID);
-  void compex_value_cache_update_function(int DeviceId, int ChannelID, int Function);
+  int compex_value_cache_get_function(int ChannelID,
+                                      channel_function_t **_fnc = NULL);
+  void compex_value_cache_update_function(int DeviceId, int ChannelID,
+                                          int Function);
 
   supla_device *find_device(int DeviceID);
   supla_device *find_device_by_channelid(int ChannelID);
