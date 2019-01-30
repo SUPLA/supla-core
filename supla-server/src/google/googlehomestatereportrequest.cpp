@@ -65,6 +65,9 @@ bool supla_google_home_statereport_request::verifyExisting(
   static_cast<supla_google_home_statereport_request *>(existing)->addChannelId(
       getChannelId());
   existing->setDelay(1000000);
+  if (getGoogleRequestIdPtr() != NULL) {
+	  existing->setGoogleRequestId(getGoogleRequestIdPtr());
+  }
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 };
@@ -98,10 +101,10 @@ bool supla_google_home_statereport_request::isEventSourceTypeAccepted(
     case EST_DEVICE:
     case EST_CLIENT:
     case EST_IPC:
+    case EST_GOOGLE_HOME:
+    case EST_AMAZON_ALEXA:
       return isChannelFunctionAllowed();
     case EST_UNKNOWN:
-    case EST_AMAZON_ALEXA:
-    case EST_GOOGLE_HOME:
       return false;
   }
 
