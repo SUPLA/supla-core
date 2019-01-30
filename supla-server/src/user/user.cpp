@@ -68,6 +68,7 @@ supla_user::supla_user(int UserID) {
   this->UserID = UserID;
   this->device_arr = safe_array_init();
   this->client_arr = safe_array_init();
+  this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
   this->amazon_alexa->load();
@@ -98,6 +99,9 @@ supla_user::~supla_user() {
   delete cgroups;
   delete amazon_alexa;
   delete google_home;
+
+  compex_value_cache_clean(0);
+  safe_array_free(complex_value_functions_arr);
   safe_array_free(device_arr);
   safe_array_free(client_arr);
 }
@@ -237,6 +241,10 @@ supla_user *supla_user::find(int UserID, bool create) {
 
 supla_user *supla_user::add_device(supla_device *device, int UserID) {
   supla_user *user = find(UserID, true);
+
+  if (device && device->getID()) {
+    user->compex_value_cache_clean(device->getID());
+  }
 
   safe_array_lock(user->device_arr);
 
@@ -1036,6 +1044,54 @@ bool supla_user::client_reconnect(int UserID, int ClientID) {
   return false;
 }
 
+void supla_user::compex_value_cache_clean(int DeviceId) {
+  safe_array_lock(complex_value_functions_arr);
+
+  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
+    channel_function_t *fnc = static_cast<channel_function_t *>(
+        safe_array_get(complex_value_functions_arr, a));
+    if (fnc && (DeviceId == 0 || fnc->deviceId == DeviceId)) {
+      delete fnc;
+      safe_array_delete(complex_value_functions_arr, a);
+      a--;
+    }
+  }
+
+  safe_array_unlock(complex_value_functions_arr);
+}
+
+int supla_user::compex_value_cache_get_function(int ChannelID) {
+  int result = 0;
+  safe_array_lock(complex_value_functions_arr);
+
+  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
+    channel_function_t *fnc = static_cast<channel_function_t *>(
+        safe_array_get(complex_value_functions_arr, a));
+    if (fnc && fnc->channelId == ChannelID) {
+      result = fnc->function;
+      break;
+    }
+  }
+
+  safe_array_unlock(complex_value_functions_arr);
+  return result;
+}
+
+void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
+                                                    int Function) {
+  if (!Function || !DeviceId || !ChannelID) return;
+  safe_array_lock(complex_value_functions_arr);
+  if (!compex_value_cache_get_function(ChannelID)) {
+    channel_function_t *fnc = new channel_function_t;
+    fnc->deviceId = DeviceId;
+    fnc->channelId = ChannelID;
+    fnc->function = Function;
+
+    safe_array_add(complex_value_functions_arr, fnc);
+  }
+  safe_array_unlock(complex_value_functions_arr);
+}
+
 channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
                                                             int ChannelID) {
   channel_complex_value value;
@@ -1043,9 +1099,15 @@ channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
 
   safe_array_lock(device_arr);
 
-  supla_device *device = find_device(DeviceId);
-  if (device != NULL) {
+  supla_device *device = find_device_by_channelid(ChannelID);
+  if (device == NULL) {
+    value.function = compex_value_cache_get_function(ChannelID);
+  } else {
     device->get_channel_complex_value(&value, ChannelID);
+    if (value.function) {
+      compex_value_cache_update_function(device->getID(), ChannelID,
+                                         value.function);
+    }
   }
 
   safe_array_unlock(device_arr);

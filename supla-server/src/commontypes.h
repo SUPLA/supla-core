@@ -35,7 +35,6 @@ enum event_type {
   ET_USER_RECONNECT,
 };
 
-
 typedef struct {
   bool online;
   int function;
@@ -50,5 +49,11 @@ typedef struct {
   double depth;
   char shut;
 } channel_complex_value;
+
+typedef struct {
+  int deviceId;
+  int channelId;
+  int function;
+} channel_function_t;
 
 #endif /* COMMONTYPES_H_ */

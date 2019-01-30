@@ -42,11 +42,17 @@ class supla_user {
 
   void *device_arr;
   void *client_arr;
+  void *complex_value_functions_arr;
+
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa *amazon_alexa;
   supla_google_home *google_home;
   int UserID;
   bool connections_allowed;
+
+  void compex_value_cache_clean(int DeviceId);
+  int compex_value_cache_get_function(int ChannelID);
+  void compex_value_cache_update_function(int DeviceId, int ChannelID, int Function);
 
   supla_device *find_device(int DeviceID);
   supla_device *find_device_by_channelid(int ChannelID);
@@ -104,7 +110,8 @@ class supla_user {
                                             int color, char color_brightness,
                                             char brightness, char on_off,
                                             event_source_type eventSourceType,
-                                            char *AlexaCorrelationToken, char *GoogleRequestId);
+                                            char *AlexaCorrelationToken,
+                                            char *GoogleRequestId);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
