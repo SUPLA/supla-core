@@ -17,6 +17,7 @@
  */
 
 #include "google/googlehomestatereportrequest.h"
+#include "log.h"
 #include "safearray.h"
 #include "svrcfg.h"
 #include "user/user.h"
@@ -64,10 +65,13 @@ bool supla_google_home_statereport_request::verifyExisting(
   duplicateExists = true;
   static_cast<supla_google_home_statereport_request *>(existing)->addChannelId(
       getChannelId());
-  existing->setDelay(1000000);
+
   if (getGoogleRequestIdPtr() != NULL) {
-	  existing->setGoogleRequestId(getGoogleRequestIdPtr());
+    existing->setGoogleRequestId(getGoogleRequestIdPtr());
   }
+
+  existing->setDelay(existing->getGoogleRequestIdPtr() ? 3000000 : 1000000);
+
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 };
@@ -128,17 +132,14 @@ void supla_google_home_statereport_request::execute(void *sthread) {
         getClient()->addOnOffState(ChannelId, value.hi, value.online);
         break;
       case SUPLA_CHANNELFNC_DIMMER:
-        getClient()->clearStateReport();
         getClient()->addBrightnessState(ChannelId, value.brightness,
                                         value.online, 0);
         break;
       case SUPLA_CHANNELFNC_RGBLIGHTING:
-        getClient()->clearStateReport();
         getClient()->addColorState(ChannelId, value.color,
                                    value.color_brightness, value.online, 0);
         break;
       case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-        getClient()->clearStateReport();
         getClient()->addColorState(ChannelId, value.color,
                                    value.color_brightness, value.online, 1);
         getClient()->addBrightnessState(ChannelId, value.brightness,
