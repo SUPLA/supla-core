@@ -1,5 +1,7 @@
 #!/bin/sh
 
+[ -e /etc/supla-server/supla-test.cfg ] || touch /etc/supla-server/supla-test.cfg
+
 cd supla-server/Test && \
 make clean && make all && \
 ./supla-server && \

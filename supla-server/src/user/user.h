@@ -127,6 +127,7 @@ class supla_user {
 
   void remove_device(supla_device *device);
   void remove_client(supla_client *client);
+  void setUniqueId(const char shortID[], const char longID[]);
 
   int getUserID(void);
   char *getShortUniqueID(void);

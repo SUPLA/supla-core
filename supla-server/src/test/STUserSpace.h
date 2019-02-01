@@ -16,16 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "gtest/gtest.h"
-#include "svrcfg.h"
+#ifndef H_STUSERSPACE_H_
+#define H_STUSERSPACE_H_
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+#include "gtest/gtest.h"  // NOLINT
+#include "user/user.h"
 
-  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+class STUserSpace : public ::testing::Test {
+ protected:
+  supla_user *user;
 
-  int result = RUN_ALL_TESTS();
+ public:
+  STUserSpace();
 
-  svrcfg_free();
-  return result;
-}
+  virtual ~STUserSpace();
+  supla_user *getUser(void);
+};
+
+#endif /*H_STUSERSPACE_TEST_H_*/

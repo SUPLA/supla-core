@@ -71,13 +71,13 @@ supla_user::supla_user(int UserID) {
   this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
-  this->amazon_alexa->load();
   this->google_home = new supla_google_home(this);
-  this->google_home->load();
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;
   this->lck = lck_init();
+  this->amazon_alexa->load();
+  this->google_home->load();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -119,6 +119,21 @@ void supla_user::user_free(void) {
 
 int supla_user::getUserID(void) { return UserID; }
 
+void supla_user::setUniqueId(const char shortID[], const char longID[]) {
+  lck_lock(lck);
+
+  if (!short_unique_id) {
+    free(short_unique_id);
+  }
+  if (!long_unique_id) {
+    free(long_unique_id);
+  }
+
+  short_unique_id = strndup(shortID, SHORT_UNIQUEID_MAXSIZE);
+  long_unique_id = strndup(longID, LONG_UNIQUEID_MAXSIZE);
+  lck_unlock(lck);
+}
+
 void supla_user::loadUniqueIDs(void) {
   char shortID[SHORT_UNIQUEID_MAXSIZE];
   char longID[LONG_UNIQUEID_MAXSIZE];
@@ -138,19 +153,7 @@ void supla_user::loadUniqueIDs(void) {
   if (loaded) {
     shortID[SHORT_UNIQUEID_MAXSIZE - 1] = 0;
     longID[LONG_UNIQUEID_MAXSIZE - 1] = 0;
-
-    lck_lock(lck);
-
-    if (!short_unique_id) {
-      free(short_unique_id);
-    }
-    if (!long_unique_id) {
-      free(long_unique_id);
-    }
-
-    short_unique_id = strndup(shortID, SHORT_UNIQUEID_MAXSIZE);
-    long_unique_id = strndup(longID, LONG_UNIQUEID_MAXSIZE);
-    lck_unlock(lck);
+    setUniqueId(shortID, longID);
   }
 }
 

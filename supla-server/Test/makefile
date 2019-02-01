@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include src/user/subdir.mk
 -include src/test/gtest/subdir.mk
+-include src/test/alexa/subdir.mk
 -include src/test/subdir.mk
 -include src/json/subdir.mk
 -include src/http/subdir.mk

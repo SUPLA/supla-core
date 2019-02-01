@@ -16,16 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "gtest/gtest.h"
-#include "svrcfg.h"
+#ifndef H_STTrivialHttp_H_
+#define H_STTrivialHttp_H_
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+#include "gtest/gtest.h"  // NOLINT
+#include "test/STUserSpace.h"
 
-  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+class STTrivialHttp : public STUserSpace {
+ public:
+  STTrivialHttp();
+  virtual ~STTrivialHttp();
+  bool outputEqualTo(const char *str);
+};
 
-  int result = RUN_ALL_TESTS();
-
-  svrcfg_free();
-  return result;
-}
+#endif /*H_STTrivialHttp_TEST_H_*/

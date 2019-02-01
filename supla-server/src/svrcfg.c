@@ -79,7 +79,12 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_google_home, "syncrequest_timeout", 30000);
   scfg_add_int_param(s_google_home, "statereport_timeout", 30000);
 
+#ifdef __TEST
+  result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");
+#else
   result = scfg_load(argc, argv, "/etc/supla-server/supla.cfg");
+#endif /*__TEST*/
+
   scfg_names_free();
 
   if (result != 0) {

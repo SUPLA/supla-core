@@ -36,6 +36,27 @@
 #error "Do not use this macro except for the debug profile"
 #endif /*ONLY_LOG_REQUESTS*/
 
+#ifdef __TEST
+#define ZULU_TIME \
+  char now[64];   \
+  snprintf(now, 64, "2019-02-01T12:09:33Z");
+
+#define MSGID     \
+  char msgId[37]; \
+  snprintf(msgId, 37, "29012dd1-33c7-6519-6e18-c4ee71d00487");
+
+#else
+#define ZULU_TIME \
+  char now[64];   \
+  st_get_zulu_time(now)
+
+#define MSGID     \
+  char msgId[37]; \
+  msgId[0] = 0;   \
+  st_uuid_v4(msgId)
+
+#endif /*__TEST*/
+
 #define POST_RESULT_SUCCESS 1
 #define POST_RESULT_UNKNOWN_ERROR 0
 #define POST_RESULT_NOSSL -100
@@ -289,8 +310,7 @@ int supla_alexa_client::aeg_post(char *data) {
 }
 
 void *supla_alexa_client::getPowerControllerProperties(bool hi) {
-  char now[64];
-  st_get_zulu_time(now);
+  ZULU_TIME;
 
   cJSON *property = cJSON_CreateObject();
   if (property) {
@@ -305,8 +325,7 @@ void *supla_alexa_client::getPowerControllerProperties(bool hi) {
 }
 
 void *supla_alexa_client::getBrightnessControllerProperties(short brightness) {
-  char now[64];
-  st_get_zulu_time(now);
+  ZULU_TIME;
 
   if (brightness > 100) {
     brightness = 100;
@@ -328,8 +347,7 @@ void *supla_alexa_client::getBrightnessControllerProperties(short brightness) {
 }
 
 void *supla_alexa_client::getPercentageControllerProperties(short percentage) {
-  char now[64];
-  st_get_zulu_time(now);
+  ZULU_TIME;
 
   if (percentage > 100) {
     percentage = 100;
@@ -352,8 +370,7 @@ void *supla_alexa_client::getPercentageControllerProperties(short percentage) {
 
 void *supla_alexa_client::getColorControllerProperties(int color,
                                                        short brightness) {
-  char now[64];
-  st_get_zulu_time(now);
+  ZULU_TIME;
 
   if (brightness > 100) {
     brightness = 100;
@@ -382,8 +399,7 @@ void *supla_alexa_client::getColorControllerProperties(int color,
 }
 
 void *supla_alexa_client::getContactSensorProperties(bool hi) {
-  char now[64];
-  st_get_zulu_time(now);
+  ZULU_TIME;
 
   cJSON *property = cJSON_CreateObject();
   if (property) {
@@ -399,8 +415,7 @@ void *supla_alexa_client::getContactSensorProperties(bool hi) {
 }
 
 void *supla_alexa_client::getEndpointHealthProperties(bool ok) {
-  char now[64];
-  st_get_zulu_time(now);
+  ZULU_TIME;
 
   cJSON *property = cJSON_CreateObject();
   if (property) {
@@ -423,9 +438,7 @@ void *supla_alexa_client::getHeader(const char name[],
                                     const char correlationToken[]) {
   cJSON *header = cJSON_CreateObject();
   if (header) {
-    char msgId[37];
-    msgId[0] = 0;
-    st_uuid_v4(msgId);
+    MSGID;
 
     cJSON_AddStringToObject(header, "messageId", msgId);
     cJSON_AddStringToObject(header, "namespace", "Alexa");
