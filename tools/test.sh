@@ -1,5 +1,6 @@
 #!/bin/sh
 
+[ -d /etc/supla-server ] || mkdir /etc/supla-server
 [ -e /etc/supla-server/supla-test.cfg ] || touch /etc/supla-server/supla-test.cfg
 
 cd supla-server/Test && \
