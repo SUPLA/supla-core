@@ -213,4 +213,335 @@ TEST_F(AlexaClientTest, sendBrightnessChangeReport) {
   ASSERT_TRUE(outputEqualTo(expectedRequest3));
 }
 
+TEST_F(AlexaClientTest, sendColorChangeReport) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 470\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{},\"event\":{\"header\":{\"messageId\":"
+      "\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\","
+      "\"name\":\"ChangeReport\",\"payloadVersion\":\"3\"},\"endpoint\":{"
+      "\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},"
+      "\"endpointId\":\"qwerty-3\"},\"payload\":{\"change\":{\"cause\":{"
+      "\"type\":\"RULE_TRIGGER\"},\"properties\":[{\"namespace\":\"Alexa."
+      "EndpointHealth\",\"name\":\"connectivity\",\"value\":{\"value\":"
+      "\"UNREACHABLE\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]}}}}";
+  ASSERT_TRUE(client->sendColorChangeReport(CAUSE_RULE_TRIGGER, 3, 0xFFAABB, 10,
+                                            false, 0));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 1581\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "ColorController\",\"name\":\"color\",\"value\":{\"hue\":348,"
+      "\"saturation\":0.33333333333333331,\"brightness\":0.1},\"timeOfSample\":"
+      "\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":50},{"
+      "\"namespace\":\"Alexa.BrightnessController\",\"name\":\"brightness\","
+      "\"value\":10,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PowerController\",\"name\":\"powerState\",\"value\":\"ON\","
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.EndpointHealth\",\"name\":\"connectivity\","
+      "\"value\":{\"value\":\"OK\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]},\"event\":{\"header\":{"
+      "\"messageId\":\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":"
+      "\"Alexa\",\"name\":\"ChangeReport\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-3\"},\"payload\":{\"change\":{"
+      "\"cause\":{\"type\":\"VOICE_INTERACTION\"},\"properties\":[{"
+      "\"namespace\":\"Alexa.ColorController\",\"name\":\"color\",\"value\":{"
+      "\"hue\":348,\"saturation\":0.33333333333333331,\"brightness\":0.1},"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.BrightnessController\",\"name\":"
+      "\"brightness\",\"value\":10,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PowerController\",\"name\":\"powerState\",\"value\":\"ON\","
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.EndpointHealth\",\"name\":\"connectivity\","
+      "\"value\":{\"value\":\"OK\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]}}}}";
+  ASSERT_TRUE(client->sendColorChangeReport(CAUSE_VOICE_INTERACTION, 3,
+                                            0xFFAABB, 10, true, 0));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 1545\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "ColorController\",\"name\":\"color\",\"value\":{\"hue\":120,"
+      "\"saturation\":1,\"brightness\":1},\"timeOfSample\":\"2019-02-01T12:09:"
+      "33Z\",\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "BrightnessController\",\"name\":\"brightness\",\"value\":100,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.PowerController\",\"name\":\"powerState\","
+      "\"value\":\"ON\",\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "EndpointHealth\",\"name\":\"connectivity\",\"value\":{\"value\":\"OK\"},"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50}]},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-6e18-"
+      "c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"ChangeReport\","
+      "\"payloadVersion\":\"3\"},\"endpoint\":{\"scope\":{\"type\":"
+      "\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},\"endpointId\":\"qwerty-4-"
+      "1\"},\"payload\":{\"change\":{\"cause\":{\"type\":\"VOICE_INTERACTION\"}"
+      ",\"properties\":[{\"namespace\":\"Alexa.ColorController\",\"name\":"
+      "\"color\",\"value\":{\"hue\":120,\"saturation\":1,\"brightness\":1},"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.BrightnessController\",\"name\":"
+      "\"brightness\",\"value\":100,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PowerController\",\"name\":\"powerState\",\"value\":\"ON\","
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.EndpointHealth\",\"name\":\"connectivity\","
+      "\"value\":{\"value\":\"OK\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]}}}}";
+  ASSERT_TRUE(client->sendColorChangeReport(CAUSE_VOICE_INTERACTION, 4,
+                                            0x00FF00, 100, true, 1));
+  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+}
+
+TEST_F(AlexaClientTest, sendPercentageChangeReport) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 470\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{},\"event\":{\"header\":{\"messageId\":"
+      "\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\","
+      "\"name\":\"ChangeReport\",\"payloadVersion\":\"3\"},\"endpoint\":{"
+      "\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},"
+      "\"endpointId\":\"qwerty-1\"},\"payload\":{\"change\":{\"cause\":{"
+      "\"type\":\"RULE_TRIGGER\"},\"properties\":[{\"namespace\":\"Alexa."
+      "EndpointHealth\",\"name\":\"connectivity\",\"value\":{\"value\":"
+      "\"UNREACHABLE\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]}}}}";
+  ASSERT_TRUE(
+      client->sendPercentageChangeReport(CAUSE_RULE_TRIGGER, 1, 50, false));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 917\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "PercentageController\",\"name\":\"percentage\",\"value\":60,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.EndpointHealth\",\"name\":\"connectivity\","
+      "\"value\":{\"value\":\"OK\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]},\"event\":{\"header\":{"
+      "\"messageId\":\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":"
+      "\"Alexa\",\"name\":\"ChangeReport\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{\"change\":{"
+      "\"cause\":{\"type\":\"VOICE_INTERACTION\"},\"properties\":[{"
+      "\"namespace\":\"Alexa.PercentageController\",\"name\":\"percentage\","
+      "\"value\":60,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "EndpointHealth\",\"name\":\"connectivity\",\"value\":{\"value\":\"OK\"},"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50}]}}}}";
+  ASSERT_TRUE(
+      client->sendPercentageChangeReport(CAUSE_VOICE_INTERACTION, 1, 60, true));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+}
+
+TEST_F(AlexaClientTest, powerControllerSendResponse) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 384\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-"
+      "6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"ErrorResponse\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-15\"},\"payload\":{\"message\":"
+      "\"Unable to reach channel ID15 because it appears to be "
+      "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
+  ASSERT_TRUE(
+      client->powerControllerSendResponse("correlationToken", 15, true, false));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 442\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "PowerController\",\"name\":\"powerState\",\"value\":\"ON\","
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50}]},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-6e18-"
+      "c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"Response\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-15\"},\"payload\":{}}}";
+  ASSERT_TRUE(
+      client->powerControllerSendResponse("correlationToken", 15, true, true));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+}
+
+TEST_F(AlexaClientTest, brightnessControllerSendResponse) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 382\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-"
+      "6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"ErrorResponse\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-3\"},\"payload\":{\"message\":\"Unable "
+      "to reach channel ID3 because it appears to be "
+      "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
+  ASSERT_TRUE(client->brightnessControllerSendResponse("correlationToken", 3,
+                                                       10, false, 0));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 584\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "BrightnessController\",\"name\":\"brightness\",\"value\":10,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.PowerController\",\"name\":\"powerState\","
+      "\"value\":\"ON\",\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]},\"event\":{\"header\":{"
+      "\"messageId\":\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":"
+      "\"Alexa\",\"name\":\"Response\",\"correlationToken\":"
+      "\"correlationToken\",\"payloadVersion\":\"3\"},\"endpoint\":{\"scope\":{"
+      "\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},\"endpointId\":"
+      "\"qwerty-3\"},\"payload\":{}}}";
+  ASSERT_TRUE(client->brightnessControllerSendResponse("correlationToken", 3,
+                                                       10, true, 0));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 587\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "BrightnessController\",\"name\":\"brightness\",\"value\":100,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.PowerController\",\"name\":\"powerState\","
+      "\"value\":\"ON\",\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]},\"event\":{\"header\":{"
+      "\"messageId\":\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":"
+      "\"Alexa\",\"name\":\"Response\",\"correlationToken\":"
+      "\"correlationToken\",\"payloadVersion\":\"3\"},\"endpoint\":{\"scope\":{"
+      "\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},\"endpointId\":"
+      "\"qwerty-4-1\"},\"payload\":{}}}";
+  ASSERT_TRUE(client->brightnessControllerSendResponse("correlationToken", 4,
+                                                       100, true, 1));
+  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+}
+
+TEST_F(AlexaClientTest, colorControllerSendResponse) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 382\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-"
+      "6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"ErrorResponse\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-3\"},\"payload\":{\"message\":\"Unable "
+      "to reach channel ID3 because it appears to be "
+      "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
+  ASSERT_TRUE(client->colorControllerSendResponse("correlationToken", 3,
+                                                  0xFFAABB, 10, false, 0));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 776\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "ColorController\",\"name\":\"color\",\"value\":{\"hue\":348,"
+      "\"saturation\":0.33333333333333331,\"brightness\":0.1},\"timeOfSample\":"
+      "\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":50},{"
+      "\"namespace\":\"Alexa.BrightnessController\",\"name\":\"brightness\","
+      "\"value\":10,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PowerController\",\"name\":\"powerState\",\"value\":\"ON\","
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50}]},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-6e18-"
+      "c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"Response\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-3\"},\"payload\":{}}}";
+  ASSERT_TRUE(client->colorControllerSendResponse("correlationToken", 3,
+                                                  0xFFAABB, 10, true, 0));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 759\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "ColorController\",\"name\":\"color\",\"value\":{\"hue\":120,"
+      "\"saturation\":1,\"brightness\":1},\"timeOfSample\":\"2019-02-01T12:09:"
+      "33Z\",\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "BrightnessController\",\"name\":\"brightness\",\"value\":100,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.PowerController\",\"name\":\"powerState\","
+      "\"value\":\"ON\",\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]},\"event\":{\"header\":{"
+      "\"messageId\":\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":"
+      "\"Alexa\",\"name\":\"Response\",\"correlationToken\":"
+      "\"correlationToken\",\"payloadVersion\":\"3\"},\"endpoint\":{\"scope\":{"
+      "\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},\"endpointId\":"
+      "\"qwerty-4-1\"},\"payload\":{}}}";
+  ASSERT_TRUE(client->colorControllerSendResponse("correlationToken", 4,
+                                                  0x00FF00, 100, true, 1));
+  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+}
+
+TEST_F(AlexaClientTest, percentageControllerSendResponse) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 382\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-"
+      "6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"ErrorResponse\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{\"message\":\"Unable "
+      "to reach channel ID1 because it appears to be "
+      "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
+  ASSERT_TRUE(client->percentageControllerSendResponse("correlationToken", 1,
+                                                       50, false));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 444\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "PercentageController\",\"name\":\"percentage\",\"value\":60,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50}]},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-6e18-"
+      "c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"Response\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{}}}";
+  ASSERT_TRUE(client->percentageControllerSendResponse("correlationToken", 1,
+                                                       60, true));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+}
+
 }  // namespace
