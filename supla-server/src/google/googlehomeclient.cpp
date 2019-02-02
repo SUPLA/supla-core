@@ -25,6 +25,19 @@
 #include "tools.h"
 #include "user/user.h"
 
+#ifdef __TEST
+#define REQUESTID \
+  char reqId[37]; \
+  snprintf(reqId, 37, "e2de5bc6-65a8-48e5-b919-8a48e86ad64a")
+
+#else
+#define REQUESTID \
+  char reqId[37]; \
+  reqId[0] = 0;   \
+  st_uuid_v4(reqId)
+
+#endif /*__TEST*/
+
 // #define ONLY_LOG_REQUESTS
 
 #if defined(ONLY_LOG_REQUESTS) && !defined(__DEBUG)
@@ -168,9 +181,7 @@ void *supla_google_home_client::getHeader(const char requestId[]) {
     if (requestId && strnlen(requestId, 1024) > 0) {
       cJSON_AddStringToObject(header, name, requestId);
     } else {
-      char reqId[37];
-      reqId[0] = 0;
-      st_uuid_v4(reqId);
+      REQUESTID;
       cJSON_AddStringToObject(header, name, reqId);
     }
 
