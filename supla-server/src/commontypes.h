@@ -37,6 +37,7 @@ enum event_type {
 
 typedef struct {
   bool online;
+  bool hidden_channel;
   int function;
   bool hi;
   char brightness;

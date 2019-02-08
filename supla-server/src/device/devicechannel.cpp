@@ -1212,6 +1212,7 @@ bool supla_device_channels::get_channel_complex_value(
 
   if (channel) {
     value->online = true;
+    value->hidden_channel = channel->getHidden();
     value->function = channel->getFunc();
 
     switch (value->function) {
