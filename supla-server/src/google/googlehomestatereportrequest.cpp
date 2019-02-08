@@ -119,6 +119,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
   safe_array_lock(channel_arr);
 
   getClient()->clearStateReport();
+  int content_exists = false;
 
   for (int a = 0; a < safe_array_count(channel_arr); a++) {
     int ChannelId = (long long)safe_array_get(channel_arr, a);
@@ -130,30 +131,37 @@ void supla_google_home_statereport_request::execute(void *sthread) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
         getClient()->addOnOffState(ChannelId, value.hi, value.online);
+        content_exists = true;
         break;
       case SUPLA_CHANNELFNC_DIMMER:
         getClient()->addBrightnessState(ChannelId, value.brightness,
                                         value.online, 0);
+        content_exists = true;
         break;
       case SUPLA_CHANNELFNC_RGBLIGHTING:
         getClient()->addColorState(ChannelId, value.color,
                                    value.color_brightness, value.online, 0);
+        content_exists = true;
         break;
       case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         getClient()->addColorState(ChannelId, value.color,
                                    value.color_brightness, value.online, 1);
         getClient()->addBrightnessState(ChannelId, value.brightness,
                                         value.online, 2);
+        content_exists = true;
         break;
     }
   }
 
   safe_array_unlock(channel_arr);
-  int resultCode = 0;
-  getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
 
-  if ( resultCode == 404 ) {
-	  getUser()->googleHome()->on_reportstate_404_error();
+  if (content_exists) {
+    int resultCode = 0;
+    getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
+
+    if (resultCode == 404) {
+      getUser()->googleHome()->on_reportstate_404_error();
+    }
   }
 }
 
