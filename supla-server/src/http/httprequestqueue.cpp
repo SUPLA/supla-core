@@ -452,6 +452,12 @@ void supla_http_request_queue::onUserReconnectEvent(
                                  NULL, NULL);
 }
 
+void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
+    supla_user *user, event_source_type eventSourceType) {
+  createByChannelEventSourceType(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED,
+                                 eventSourceType, NULL, NULL);
+}
+
 void http_request_queue_loop(void *ssd, void *q_sthread) {
   supla_http_request_queue::getInstance()->iterate(q_sthread);
 }

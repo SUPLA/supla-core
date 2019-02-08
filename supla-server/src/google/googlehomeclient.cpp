@@ -59,8 +59,8 @@ void supla_google_home_client::clearStateReport(void) {
   jsonStates = cJSON_CreateObject();
 }
 
-bool supla_google_home_client::post(void *json_data) {
-  int result = false;
+bool supla_google_home_client::post(void *json_data, int *resultCode) {
+  bool result = false;
 
 #ifdef NOSSL
   return false;
@@ -87,6 +87,10 @@ bool supla_google_home_client::post(void *json_data) {
     getHttps()->setToken(getVoiceAssistant()->getAccessToken(), false);
     result =
         getHttps()->http_post(NULL, data) && getHttps()->getResultCode() == 200;
+
+    if (resultCode) {
+      *resultCode = getHttps()->getResultCode();
+    }
 
     if (!result) {
       supla_log(LOG_ERR,
@@ -197,7 +201,8 @@ void *supla_google_home_client::getHeader(const char requestId[]) {
   return NULL;
 }
 
-bool supla_google_home_client::sendReportState(const char requestId[]) {
+bool supla_google_home_client::sendReportState(const char requestId[],
+                                               int *resultCode) {
   bool result = false;
   cJSON *report = (cJSON *)getHeader(requestId);
 
@@ -211,7 +216,7 @@ bool supla_google_home_client::sendReportState(const char requestId[]) {
         cJSON_AddItemToObject(report, "payload", payload);
 
         jsonStates = cJSON_CreateObject();
-        result = post(report);
+        result = post(report, resultCode);
       }
     }
   }
@@ -219,13 +224,13 @@ bool supla_google_home_client::sendReportState(const char requestId[]) {
   return result;
 }
 
-bool supla_google_home_client::requestSync(void) {
+bool supla_google_home_client::requestSync(int *resultCode) {
   bool result = false;
   cJSON *header = (cJSON *)getHeader(NULL);
 
   if (header) {
     cJSON_AddStringToObject(header, "intent", "action.devices.SYNC");
-    result = post(header);
+    result = post(header, resultCode);
   }
 
   return result;

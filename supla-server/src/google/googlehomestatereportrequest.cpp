@@ -149,7 +149,12 @@ void supla_google_home_statereport_request::execute(void *sthread) {
   }
 
   safe_array_unlock(channel_arr);
-  getClient()->sendReportState(getGoogleRequestIdPtr());
+  int resultCode = 0;
+  getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
+
+  if ( resultCode == 404 ) {
+	  getUser()->googleHome()->on_reportstate_404_error();
+  }
 }
 
 bool supla_google_home_statereport_request::isEventTypeAccepted(

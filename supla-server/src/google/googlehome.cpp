@@ -18,9 +18,14 @@
 
 #include "google/googlehome.h"
 #include "database.h"
+#include "http/httprequestqueue.h"
+#include "log.h"
+#include "user/user.h"
 
 supla_google_home::supla_google_home(supla_user *user)
-    : supla_voice_assistant(user) {}
+    : supla_voice_assistant(user) {
+  sync_404_counter = 0;
+}
 
 int supla_google_home::get_token_maxsize(void) { return GH_TOKEN_MAXSIZE; }
 
@@ -35,3 +40,29 @@ void supla_google_home::load() {
 }
 
 void supla_google_home::on_credentials_changed() { load(); }
+
+void supla_google_home::on_sync_404_error() {
+  bool _set_null = false;
+
+  data_lock();
+
+  sync_404_counter++;
+  if (sync_404_counter >= 4) {
+    sync_404_counter = 0;
+    _set_null = true;
+  }
+
+  data_unlock();
+
+  if (_set_null) {
+    supla_log(LOG_INFO,
+              "Communication with the HomeGraph bridge paused for the user: %i",
+              getUser()->getUserID());
+    set(NULL);
+  }
+}
+
+void supla_google_home::on_reportstate_404_error() {
+  supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
+      getUser(), EST_GOOGLE_HOME);
+}

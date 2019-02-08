@@ -33,6 +33,7 @@ enum event_type {
   ET_DEVICE_DELETED,
   ET_DEVICE_ADDED,
   ET_USER_RECONNECT,
+  ET_GOOGLE_HOME_SYNC_NEEDED,
 };
 
 typedef struct {

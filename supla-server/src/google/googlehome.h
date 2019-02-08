@@ -26,11 +26,14 @@
 class supla_google_home : public supla_voice_assistant {
  protected:
   virtual int get_token_maxsize(void);
+  int sync_404_counter;
 
  public:
   supla_google_home(supla_user *user);
   void load();
   void on_credentials_changed();
+  void on_sync_404_error();
+  void on_reportstate_404_error();
 };
 
 #endif /* GOOGLEHOME_H_ */

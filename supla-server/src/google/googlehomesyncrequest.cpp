@@ -19,6 +19,7 @@
 #include "google/googlehomesyncrequest.h"
 #include "log.h"
 #include "svrcfg.h"
+#include "user/user.h"
 
 supla_google_home_sync_request::supla_google_home_sync_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
@@ -47,7 +48,12 @@ bool supla_google_home_sync_request::isEventSourceTypeAccepted(
 }
 
 void supla_google_home_sync_request::execute(void *sthread) {
-  getClient()->requestSync();
+  int resultCode = 0;
+  getClient()->requestSync(&resultCode);
+
+  if (resultCode == 404) {
+    getUser()->googleHome()->on_sync_404_error();
+  }
 }
 
 bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
@@ -56,6 +62,7 @@ bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
     case ET_DEVICE_ADDED:
     case ET_DEVICE_DELETED:
     case ET_USER_RECONNECT:
+    case ET_GOOGLE_HOME_SYNC_NEEDED:
       return true;
     case ET_CHANNEL_VALUE_CHANGED:
       return false;

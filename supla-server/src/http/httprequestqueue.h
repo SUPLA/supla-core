@@ -82,6 +82,9 @@ class supla_http_request_queue {
 
   void onUserReconnectEvent(supla_user *user,
                             event_source_type eventSourceType);
+
+  void onGoogleHomeSyncNeededEvent(supla_user *user,
+                                   event_source_type eventSourceType);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);
