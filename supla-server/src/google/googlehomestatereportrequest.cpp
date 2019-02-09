@@ -127,29 +127,31 @@ void supla_google_home_statereport_request::execute(void *sthread) {
     channel_complex_value value =
         getUser()->get_channel_complex_value(getDeviceId(), ChannelId);
 
-    switch (value.function) {
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        getClient()->addOnOffState(ChannelId, value.hi, value.online);
-        content_exists = true;
-        break;
-      case SUPLA_CHANNELFNC_DIMMER:
-        getClient()->addBrightnessState(ChannelId, value.brightness,
-                                        value.online, 0);
-        content_exists = true;
-        break;
-      case SUPLA_CHANNELFNC_RGBLIGHTING:
-        getClient()->addColorState(ChannelId, value.color,
-                                   value.color_brightness, value.online, 0);
-        content_exists = true;
-        break;
-      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-        getClient()->addColorState(ChannelId, value.color,
-                                   value.color_brightness, value.online, 1);
-        getClient()->addBrightnessState(ChannelId, value.brightness,
-                                        value.online, 2);
-        content_exists = true;
-        break;
+    if (!value.hidden_channel) {
+      switch (value.function) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+          getClient()->addOnOffState(ChannelId, value.hi, value.online);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_DIMMER:
+          getClient()->addBrightnessState(ChannelId, value.brightness,
+                                          value.online, 0);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+          getClient()->addColorState(ChannelId, value.color,
+                                     value.color_brightness, value.online, 0);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+          getClient()->addColorState(ChannelId, value.color,
+                                     value.color_brightness, value.online, 1);
+          getClient()->addBrightnessState(ChannelId, value.brightness,
+                                          value.online, 2);
+          content_exists = true;
+          break;
+      }
     }
   }
 
