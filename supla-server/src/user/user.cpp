@@ -1063,9 +1063,11 @@ void supla_user::compex_value_cache_clean(int DeviceId) {
   safe_array_unlock(complex_value_functions_arr);
 }
 
-int supla_user::compex_value_cache_get_function(int ChannelID,
-                                                channel_function_t **_fnc) {
-  int result = 0;
+channel_function_t supla_user::compex_value_cache_get_function(
+    int ChannelID, channel_function_t **_fnc) {
+  channel_function_t result;
+  memset(&result, 0, sizeof(channel_function_t));
+
   safe_array_lock(complex_value_functions_arr);
 
   for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
@@ -1075,7 +1077,7 @@ int supla_user::compex_value_cache_get_function(int ChannelID,
       if (_fnc) {
         *_fnc = fnc;
       }
-      result = fnc->function;
+      result = *fnc;
       break;
     }
   }
@@ -1085,21 +1087,24 @@ int supla_user::compex_value_cache_get_function(int ChannelID,
 }
 
 void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
-                                                    int Function) {
+                                                    int Function,
+                                                    bool channel_is_hidden) {
   if (!Function || !DeviceId || !ChannelID) return;
   safe_array_lock(complex_value_functions_arr);
 
   channel_function_t *fnc = NULL;
-  if (compex_value_cache_get_function(ChannelID, &fnc)) {
+  if (compex_value_cache_get_function(ChannelID, &fnc).function) {
     if (fnc) {
       fnc->deviceId = DeviceId;
       fnc->function = Function;
+      fnc->channel_is_hidden = channel_is_hidden;
     }
   } else {
     fnc = new channel_function_t;
     fnc->deviceId = DeviceId;
     fnc->channelId = ChannelID;
     fnc->function = Function;
+    fnc->channel_is_hidden = channel_is_hidden;
 
     safe_array_add(complex_value_functions_arr, fnc);
   }
@@ -1115,12 +1120,14 @@ channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
 
   supla_device *device = find_device_by_channelid(ChannelID);
   if (device == NULL) {
-    value.function = compex_value_cache_get_function(ChannelID);
+    channel_function_t f = compex_value_cache_get_function(ChannelID);
+    value.function = f.function;
+    value.hidden_channel = f.channel_is_hidden;
   } else {
     device->get_channel_complex_value(&value, ChannelID);
     if (value.function) {
       compex_value_cache_update_function(device->getID(), ChannelID,
-                                         value.function);
+                                         value.function, value.hidden_channel);
     }
   }
 

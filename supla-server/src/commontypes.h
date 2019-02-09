@@ -55,6 +55,7 @@ typedef struct {
 typedef struct {
   int deviceId;
   int channelId;
+  bool channel_is_hidden;
   int function;
 } channel_function_t;
 
