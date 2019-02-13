@@ -26,8 +26,9 @@
 
 supla_alexa_response_request::supla_alexa_response_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_source_type EventSourceType)
-    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+    event_type EventType, event_source_type EventSourceType)
+    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventType,
+                          EventSourceType) {
   setDelay(1000000);
   setTimeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
 }
@@ -50,7 +51,7 @@ bool supla_alexa_response_request::queueUp(void) {
 }
 
 bool supla_alexa_response_request::isEventSourceTypeAccepted(
-    short eventSourceType, bool verification) {
+    event_source_type eventSourceType, bool verification) {
   if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
                                                       verification)) {
     return false;
@@ -66,19 +67,17 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      return true;
+      if (verification) {
+        if (eventSourceType == EST_DEVICE ||
+            eventSourceType == EST_AMAZON_ALEXA) {
+          return !summary.hidden_channel;
+        }
+      } else if (eventSourceType == EST_AMAZON_ALEXA) {
+        return !summary.hidden_channel;
+      }
+      break;
     default:
       return false;
-  }
-
-  if (verification) {
-    switch (eventSourceType) {
-      case EST_DEVICE:
-      case EST_AMAZON_ALEXA:
-        return true;
-    }
-  } else if (eventSourceType == EST_AMAZON_ALEXA) {
-    return true;
   }
 
   return false;

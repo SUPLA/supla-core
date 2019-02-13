@@ -17,9 +17,15 @@
  */
 
 #include "gtest/gtest.h"
+#include "svrcfg.h"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
 
-  return RUN_ALL_TESTS();
+  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+
+  int result = RUN_ALL_TESTS();
+
+  svrcfg_free();
+  return result;
 }

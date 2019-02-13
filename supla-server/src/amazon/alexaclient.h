@@ -55,19 +55,15 @@
  */
 #define CAUSE_VOICE_INTERACTION 4
 
-class supla_amazon_alexa;
-class supla_trivial_https;
+#include "voiceassistantclient.h"
+#include "amazon/alexa.h"
 
-class supla_alexa_client {
+class supla_alexa_client : public supla_voice_assistant_client {
  private:
-  void *lck;
-  supla_trivial_https *https;
-  supla_amazon_alexa *alexa;
   void refresh_roken(void);
-  void httpsInit();
-  void httpsFree();
 
  protected:
+  supla_amazon_alexa *getAlexa(void);
   const char *getErrorString(const int code);
   int getErrorCode(const char *code);
   int aeg_post_request(char *data, int *httpResultCode);
@@ -100,8 +96,6 @@ class supla_alexa_client {
 
  public:
   supla_alexa_client(supla_amazon_alexa *alexa);
-  virtual ~supla_alexa_client();
-  void terminate(void);
 
   bool sendPowerChangeReport(int causeType, int channelId, bool hi,
                              bool online);

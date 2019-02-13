@@ -24,8 +24,9 @@
 
 supla_alexa_changereport_request::supla_alexa_changereport_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_source_type EventSourceType)
-    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+    event_type EventType, event_source_type EventSourceType)
+    : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventType,
+                          EventSourceType) {
   duplicateExists = false;
   setDelay(1500000);  // 1.5 sec.
   setTimeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
@@ -46,40 +47,43 @@ bool supla_alexa_changereport_request::verifyExisting(
 };
 
 bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
-    short eventSourceType, bool verification) {
+    event_source_type eventSourceType, bool verification) {
   if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
                                                       verification)) {
     return false;
-  }
-
-  channel_complex_value value =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
-
-  switch (value.function) {
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-    case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_RGBLIGHTING:
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      return true;
-    default:
-      return false;
   }
 
   switch (eventSourceType) {
     case EST_DEVICE:
     case EST_CLIENT:
     case EST_AMAZON_ALEXA:
-    case EST_IPC:
-      return true;
-  }
+    case EST_IPC: {
+      channel_complex_value value =
+          getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+
+      switch (value.function) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_DIMMER:
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          return !value.hidden_channel;
+        default:
+          return false;
+      }
+    } break;
+    case EST_UNKNOWN:
+    case EST_GOOGLE_HOME:
+      return false;
+  };
+
   return false;
 }
 

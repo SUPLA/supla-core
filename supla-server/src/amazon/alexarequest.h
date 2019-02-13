@@ -30,14 +30,17 @@ class supla_alexa_request : public supla_http_request {
 
  public:
   supla_alexa_request(supla_user *user, int ClassID, int DeviceId,
-                      int ChannelId, event_source_type EventSourceType);
+                      int ChannelId, event_type EventType,
+                      event_source_type EventSourceType);
   virtual ~supla_alexa_request();
   supla_alexa_client *getClient(void);
   int getSubChannelFromCorrelationToken(void);
   virtual bool queueUp(void);
   virtual void terminate(void *sthread);
-  virtual bool isEventSourceTypeAccepted(short eventSourceType,
+  virtual bool isCancelled(void *sthread);
+  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification);
+  virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   int getCauseType(void);
   virtual void setCorrelationToken(const char correlationToken[]);
 };

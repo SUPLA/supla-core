@@ -27,6 +27,7 @@
 #include "safearray.h"
 #include "sthread.h"
 #include "svrcfg.h"
+#include "tools.h"
 #include "user/user.h"
 
 typedef struct {
@@ -168,7 +169,7 @@ int supla_http_request_queue::queueSize(void) {
   return size;
 }
 
-supla_http_request *supla_http_request_queue::queuePop(void) {
+supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
   supla_http_request *result = NULL;
 
   struct timeval now;
@@ -191,12 +192,15 @@ supla_http_request *supla_http_request_queue::queuePop(void) {
           safe_array_get(user_space->arr_queue, b));
 
       if (request && !request->isWaiting(&now)) {
-        if (request->timeout(NULL)) {
+        if (request->isCancelled(q_sthread)) {
+          delete request;
+        } else if (request->timeout(NULL)) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! IODevice: %i Channel: %i "
-                    "EventSourceType: %i (%i)",
+                    "EventSourceType: %i (%i/%i/%i)",
                     request->getDeviceId(), request->getChannelId(),
-                    request->getEventSourceType(), request->getTimeout());
+                    request->getEventSourceType(), request->getTimeout(),
+                    request->getStartTime(), now.tv_sec);
 
           delete request;
         } else {
@@ -270,7 +274,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
       supla_http_request *request = NULL;
 
       if (threadCount() < threadCountLimit()) {
-        request = queuePop();
+        request = queuePop(q_sthread);
         if (request) {
           runThread(request);
           wait_time = 0;
@@ -286,6 +290,17 @@ void supla_http_request_queue::iterate(void *q_sthread) {
     }
 
     wait_time += 1000;
+
+    if (wait_time < 1000) {
+      wait_time = 1000;
+    } else if (wait_time > 10000000) {
+      wait_time = 10000000;
+    }
+
+    if (wait_time > 1000000 && queueSize() > 0) {
+      wait_time = 1000000;
+    }
+
     eh_wait(main_eh, wait_time);
   }
 
@@ -348,10 +363,14 @@ void supla_http_request_queue::addRequest(supla_http_request *request) {
   }
 }
 
-void supla_http_request_queue::onChannelChangeEvent(
-    supla_user *user, int deviceId, int channelId,
+void supla_http_request_queue::createByChannelEventSourceType(
+    supla_user *user, int deviceId, int channelId, event_type eventType,
     event_source_type eventSourceType, const char correlationToken[],
     const char googleRequestId[]) {
+  if (st_app_terminate != 0) {
+    return;
+  }
+
   _heq_user_space_t *user_space = getUserSpace(user);
   if (user_space == NULL) {
     return;
@@ -359,7 +378,7 @@ void supla_http_request_queue::onChannelChangeEvent(
 
   std::list<supla_http_request *> requests =
       AbstractHttpRequestFactory::createByChannelEventSourceType(
-          user, deviceId, channelId, eventSourceType);
+          user, deviceId, channelId, eventType, eventSourceType);
 
   for (std::list<supla_http_request *>::iterator it = requests.begin();
        it != requests.end(); it++) {
@@ -373,8 +392,8 @@ void supla_http_request_queue::onChannelChangeEvent(
       supla_http_request *existing = static_cast<supla_http_request *>(
           safe_array_get(user_space->arr_queue, a));
       if (existing && existing->getClassID() == ClassID &&
-          existing->getDeviceId() == deviceId &&
-          existing->getChannelId() == channelId &&
+          existing->isDeviceIdEqual(deviceId) &&
+          existing->isChannelIdEqual(channelId) &&
           !request->verifyExisting(existing)) {
         break;
       }
@@ -400,6 +419,43 @@ void supla_http_request_queue::onChannelChangeEvent(
   if (requests.size()) {
     raiseEvent();
   }
+}
+
+void supla_http_request_queue::onChannelValueChangeEvent(
+    supla_user *user, int deviceId, int channelId,
+    event_source_type eventSourceType, const char correlationToken[],
+    const char googleRequestId[]) {
+  createByChannelEventSourceType(user, deviceId, channelId,
+                                 ET_CHANNEL_VALUE_CHANGED, eventSourceType,
+                                 correlationToken, googleRequestId);
+}
+
+void supla_http_request_queue::onDeviceAddedEvent(
+    supla_user *user, int deviceId, event_source_type eventSourceType,
+    const char correlationToken[], const char googleRequestId[]) {
+  createByChannelEventSourceType(user, deviceId, 0, ET_DEVICE_ADDED,
+                                 eventSourceType, correlationToken,
+                                 googleRequestId);
+}
+
+void supla_http_request_queue::onDeviceDeletedEvent(
+    supla_user *user, int deviceId, event_source_type eventSourceType,
+    const char correlationToken[], const char googleRequestId[]) {
+  createByChannelEventSourceType(user, deviceId, 0, ET_DEVICE_DELETED,
+                                 eventSourceType, correlationToken,
+                                 googleRequestId);
+}
+
+void supla_http_request_queue::onUserReconnectEvent(
+    supla_user *user, event_source_type eventSourceType) {
+  createByChannelEventSourceType(user, 0, 0, ET_USER_RECONNECT, eventSourceType,
+                                 NULL, NULL);
+}
+
+void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
+    supla_user *user, event_source_type eventSourceType) {
+  createByChannelEventSourceType(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED,
+                                 eventSourceType, NULL, NULL);
 }
 
 void http_request_queue_loop(void *ssd, void *q_sthread) {

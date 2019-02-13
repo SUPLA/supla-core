@@ -26,11 +26,13 @@
 
 supla_http_request::supla_http_request(supla_user *user, int ClassID,
                                        int DeviceId, int ChannelId,
+                                       event_type EventType,
                                        event_source_type EventSourceType) {
   this->lck = lck_init();
   this->http = NULL;
   this->https = NULL;
   this->user = user;
+  this->EventType = EventType;
   this->EventSourceType = EventSourceType;
   this->ClassID = ClassID;
   this->DeviceId = DeviceId;
@@ -97,6 +99,12 @@ int supla_http_request::getClassID(void) { return ClassID; }
 
 supla_user *supla_http_request::getUser(void) { return user; }
 
+void supla_http_request::setEventType(event_type EventType) {
+  this->EventType = EventType;
+}
+
+event_type supla_http_request::getEventType(void) { return EventType; }
+
 void supla_http_request::setEventSourceType(event_source_type EventSourceType) {
   this->EventSourceType = EventSourceType;
 }
@@ -111,13 +119,22 @@ void supla_http_request::setDeviceId(int DeviceId) {
 
 int supla_http_request::getDeviceId(void) { return DeviceId; }
 
+bool supla_http_request::isDeviceIdEqual(int DeviceId) {
+  return this->DeviceId == DeviceId;
+}
+
 void supla_http_request::setChannelId(int ChannelId) {
   this->ChannelId = ChannelId;
 }
 
 int supla_http_request::getChannelId(void) { return ChannelId; }
 
+bool supla_http_request::isChannelIdEqual(int ChannelId) {
+  return this->ChannelId == ChannelId;
+}
+
 void supla_http_request::setCorrelationToken(const char correlationToken[]) {
+  lck_lock(this->lck);
   if (this->correlationToken) {
     free(this->correlationToken);
     this->correlationToken = NULL;
@@ -128,13 +145,19 @@ void supla_http_request::setCorrelationToken(const char correlationToken[]) {
     this->correlationToken =
         strndup(correlationToken, CORRELATIONTOKEN_MAXSIZE);
   }
+  lck_unlock(this->lck);
 }
 
 const char *supla_http_request::getCorrelationTokenPtr(void) {
-  return correlationToken;
+  char *result = NULL;
+  lck_lock(this->lck);
+  result = correlationToken;
+  lck_unlock(this->lck);
+  return result;
 }
 
 void supla_http_request::setGoogleRequestId(const char googleRequestId[]) {
+  lck_lock(this->lck);
   if (this->googleRequestId) {
     free(this->googleRequestId);
     this->googleRequestId = NULL;
@@ -144,10 +167,15 @@ void supla_http_request::setGoogleRequestId(const char googleRequestId[]) {
       strnlen(googleRequestId, GOOGLEREQUESTID_MAXSIZE) > 0) {
     this->googleRequestId = strndup(googleRequestId, GOOGLEREQUESTID_MAXSIZE);
   }
+  lck_unlock(this->lck);
 }
 
 const char *supla_http_request::getGoogleRequestIdPtr(void) {
-  return googleRequestId;
+  char *result = NULL;
+  lck_lock(this->lck);
+  result = googleRequestId;
+  lck_unlock(this->lck);
+  return result;
 }
 
 void supla_http_request::setDelay(int delayUs) {
@@ -164,6 +192,8 @@ void supla_http_request::setTimeout(int timeoutUs) {
 }
 
 int supla_http_request::getTimeout(void) { return this->timeoutUs; }
+
+int supla_http_request::getStartTime(void) { return startTime.tv_sec; }
 
 int supla_http_request::timeLeft(struct timeval *now) {
   struct timeval _now;
@@ -248,16 +278,18 @@ int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
 // static
 std::list<supla_http_request *>
 AbstractHttpRequestFactory::createByChannelEventSourceType(
-    supla_user *user, int DeviceId, int ChannelId,
+    supla_user *user, int DeviceId, int ChannelId, event_type EventType,
     event_source_type EventSourceType) {
   std::list<supla_http_request *> result;
   for (std::list<AbstractHttpRequestFactory *>::iterator it =
            AbstractHttpRequestFactory::factories.begin();
        it != AbstractHttpRequestFactory::factories.end(); it++) {
-    supla_http_request *request = (*it)->create(
-        user, (*it)->getClassID(), DeviceId, ChannelId, EventSourceType);
+    supla_http_request *request =
+        (*it)->create(user, (*it)->getClassID(), DeviceId, ChannelId, EventType,
+                      EventSourceType);
     if (request) {
-      if (request->isEventSourceTypeAccepted(EventSourceType, true)) {
+      if (request->isEventTypeAccepted(EventType, true) &&
+          request->isEventSourceTypeAccepted(EventSourceType, true)) {
         result.push_back(request);
       } else {
         delete request;

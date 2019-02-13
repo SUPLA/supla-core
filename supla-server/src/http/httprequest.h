@@ -38,6 +38,7 @@ class supla_http_request {
   supla_trivial_https *https;
   supla_user *user;
   int ClassID;
+  event_type EventType;
   event_source_type EventSourceType;
   int DeviceId;
   int ChannelId;
@@ -52,15 +53,19 @@ class supla_http_request {
 
  public:
   supla_http_request(supla_user *user, int ClassID, int DeviceId, int ChannelId,
-                     event_source_type EventSourceType);
+                     event_type EventType, event_source_type EventSourceType);
   int getClassID(void);
   supla_user *getUser(void);
   void setEventSourceType(event_source_type EventSourceType);
   event_source_type getEventSourceType(void);
+  void setEventType(event_type EventType);
+  event_type getEventType(void);
   void setDeviceId(int DeviceId);
   int getDeviceId(void);
+  virtual bool isDeviceIdEqual(int DeviceId);
   virtual void setChannelId(int ChannelId);
   int getChannelId(void);
+  virtual bool isChannelIdEqual(int ChannelId);
   virtual void setCorrelationToken(const char correlationToken[]);
   const char *getCorrelationTokenPtr(void);
   virtual void setGoogleRequestId(const char googleRequestId[]);
@@ -68,14 +73,17 @@ class supla_http_request {
   void setDelay(int delayUs);
   void setTimeout(int timeoutUs);
   int getTimeout(void);
+  int getStartTime(void);
   int timeLeft(struct timeval *now);
   bool isWaiting(struct timeval *now);
   bool timeout(struct timeval *now);
 
+  virtual bool isCancelled(void *sthread) = 0;
   virtual bool verifyExisting(supla_http_request *existing) = 0;
   virtual bool queueUp(void) = 0;
-  virtual bool isEventSourceTypeAccepted(short eventSourceType,
+  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification) = 0;
+  virtual bool isEventTypeAccepted(event_type eventType, bool verification) = 0;
   virtual void execute(void *sthread) = 0;
   virtual void terminate(void *sthread);
   virtual ~supla_http_request();
@@ -87,6 +95,7 @@ class AbstractHttpRequestFactory {
   static std::list<AbstractHttpRequestFactory *> factories;
   virtual supla_http_request *create(supla_user *user, int ClassID,
                                      int DeviceId, int ChannelId,
+                                     event_type EventType,
                                      event_source_type EventSourceType) = 0;
 
  public:
@@ -94,7 +103,7 @@ class AbstractHttpRequestFactory {
   virtual ~AbstractHttpRequestFactory(void);
   int getClassID(void);
   static std::list<supla_http_request *> createByChannelEventSourceType(
-      supla_user *user, int DeviceId, int ChannelId,
+      supla_user *user, int DeviceId, int ChannelId, event_type EventType,
       event_source_type EventSourceType);
 };
 
@@ -103,15 +112,15 @@ class AbstractHttpRequestFactory {
    public:                                                                  \
     requestclass##Factory();                                                \
     supla_http_request *create(supla_user *user, int ClassID, int DeviceId, \
-                               int ChannelId,                               \
+                               int ChannelId, event_type EventType,         \
                                event_source_type EventSourceType);          \
   };                                                                        \
   requestclass##Factory::requestclass##Factory()                            \
       : AbstractHttpRequestFactory() {}                                     \
   supla_http_request *requestclass##Factory::create(                        \
       supla_user *user, int ClassID, int DeviceId, int ChannelId,           \
-      event_source_type EventSourceType) {                                  \
-    return new requestclass(user, ClassID, DeviceId, ChannelId,             \
+      event_type EventType, event_source_type EventSourceType) {            \
+    return new requestclass(user, ClassID, DeviceId, ChannelId, EventType,  \
                             EventSourceType);                               \
   }                                                                         \
   static requestclass##Factory global_##requestclass##Factory;

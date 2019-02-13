@@ -17,16 +17,21 @@
  */
 
 #include "amazon/alexarequest.h"
+#include <assert.h>
 #include <stdlib.h>
 #include "amazon/alexa.h"
 #include "amazon/alexaclient.h"
 #include "lck.h"
+#include "log.h"
+#include "sthread.h"
 #include "user/user.h"
 
 supla_alexa_request::supla_alexa_request(supla_user *user, int ClassID,
                                          int DeviceId, int ChannelId,
+                                         event_type EventType,
                                          event_source_type EventSourceType)
-    : supla_http_request(user, ClassID, DeviceId, ChannelId, EventSourceType) {
+    : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
+                         EventSourceType) {
   client = NULL;
   lck = lck_init();
   subChannelFromCorrelationToken = 0;
@@ -43,6 +48,14 @@ supla_alexa_request::~supla_alexa_request() {
   lck_free(lck);
 }
 
+bool supla_alexa_request::isCancelled(void *sthread) {
+  if (sthread_isterminated(sthread)) {
+    return true;
+  }
+
+  return !getUser()->amazonAlexa()->isAccessTokenExists();
+}
+
 void supla_alexa_request::terminate(void *sthread) {
   lck_lock(lck);
   if (client) {
@@ -56,9 +69,7 @@ bool supla_alexa_request::queueUp(void) { return true; }
 
 supla_alexa_client *supla_alexa_request::getClient(void) {
   supla_amazon_alexa *alexa = getUser()->amazonAlexa();
-  if (!alexa || !alexa->isAccessTokenExists()) {
-    return NULL;
-  }
+  assert(alexa != NULL);
 
   supla_alexa_client *result = NULL;
   lck_lock(lck);
@@ -71,11 +82,16 @@ supla_alexa_client *supla_alexa_request::getClient(void) {
   return result;
 }
 
-bool supla_alexa_request::isEventSourceTypeAccepted(short eventSourceType,
-                                                    bool verification) {
+bool supla_alexa_request::isEventSourceTypeAccepted(
+    event_source_type eventSourceType, bool verification) {
   supla_amazon_alexa *alexa = getUser()->amazonAlexa();
   return alexa && alexa->isAccessTokenExists() &&
          getUser()->is_device_online(getDeviceId());
+}
+
+bool supla_alexa_request::isEventTypeAccepted(event_type eventType,
+                                              bool verification) {
+  return eventType == ET_CHANNEL_VALUE_CHANGED;
 }
 
 int supla_alexa_request::getCauseType(void) {

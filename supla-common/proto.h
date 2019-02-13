@@ -732,7 +732,7 @@ typedef struct {
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNELGROUP_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaChannelGroup_B;                           // ver. >= 9
+} TSC_SuplaChannelGroup_B;                           // ver. >= 10
 
 typedef struct {
   // server -> client

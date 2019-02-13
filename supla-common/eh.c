@@ -127,8 +127,11 @@ void eh_raise_event(TEventHandler *eh) {
 #ifdef __linux__
 
   uint64_t u = 1;
-
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
   if (eh->fd1 != -1) write(eh->fd1, &u, sizeof(uint64_t));
+#pragma GCC diagnostic pop
+
 #elif !defined(_WIN32)
 
   char u = 1;
@@ -210,7 +213,10 @@ int eh_wait(TEventHandler *eh, int usec) {
     if (result > 0
 #ifdef __linux__
         && eh->fd1 != -1) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
       read(eh->fd1, &u, sizeof(uint64_t));
+#pragma GCC diagnostic pop
 #else
         && eh->fd1[0] != -1) {
       read(eh->fd1[0], &u, sizeof(char));

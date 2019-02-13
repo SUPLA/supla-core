@@ -44,11 +44,16 @@ class supla_http_request_queue {
   void runThread(supla_http_request *request);
   _heq_user_space_t *getUserSpace(supla_user *user);
   void addRequest(_heq_user_space_t *user_space, supla_http_request *request);
-  supla_http_request *queuePop(void);
+  supla_http_request *queuePop(void *q_sthread);
   int getNextTimeOfDelayedExecution(int time);
   int queueSize(void);
   int threadCount(void);
   int threadCountLimit(void);
+  void createByChannelEventSourceType(supla_user *user, int deviceId,
+                                      int channelId, event_type eventType,
+                                      event_source_type eventSourceType,
+                                      const char correlationToken[],
+                                      const char googleRequestId[]);
 
  public:
   static void init();
@@ -60,10 +65,26 @@ class supla_http_request_queue {
   void raiseEvent(void);
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
-  void onChannelChangeEvent(supla_user *user, int deviceId, int channelId,
+  void onChannelValueChangeEvent(supla_user *user, int deviceId, int channelId,
+                                 event_source_type eventSourceType,
+                                 const char correlationToken[] = NULL,
+                                 const char googleRequestId[] = NULL);
+
+  void onDeviceAddedEvent(supla_user *user, int deviceId,
+                          event_source_type eventSourceType,
+                          const char correlationToken[] = NULL,
+                          const char googleRequestId[] = NULL);
+
+  void onDeviceDeletedEvent(supla_user *user, int deviceId,
                             event_source_type eventSourceType,
                             const char correlationToken[] = NULL,
                             const char googleRequestId[] = NULL);
+
+  void onUserReconnectEvent(supla_user *user,
+                            event_source_type eventSourceType);
+
+  void onGoogleHomeSyncNeededEvent(supla_user *user,
+                                   event_source_type eventSourceType);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);

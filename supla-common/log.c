@@ -27,11 +27,11 @@
 #elif defined(ARDUINO_ARCH_ESP8266) || defined(__AVR__)
 #include <Arduino.h>
 #else
-#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 #endif /*defined(_WIN32)*/
 
 #include <string.h>
@@ -279,7 +279,10 @@ void supla_write_state_file(const char *file, int __pri, const char *__fmt,
   if (file != 0 && strnlen(file, 1024) > 0) {
     fd = open(file, O_CREAT | O_TRUNC | O_RDWR, S_IRUSR | S_IWUSR);
     if (fd != -1) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
       write(fd, buffer, strnlen(buffer, size));
+#pragma GCC diagnostic pop
       close(fd);
     }
   }

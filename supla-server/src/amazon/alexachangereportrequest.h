@@ -22,15 +22,16 @@
 #include <amazon/alexarequest.h>
 
 class supla_alexa_changereport_request : public supla_alexa_request {
-private:
-	bool duplicateExists;
+ private:
+  bool duplicateExists;
+
  public:
   supla_alexa_changereport_request(supla_user *user, int ClassID, int DeviceId,
-          int ChannelId,
-          event_source_type EventSourceType);
+                                   int ChannelId, event_type EventType,
+                                   event_source_type EventSourceType);
   virtual ~supla_alexa_changereport_request();
   virtual bool verifyExisting(supla_http_request *existing);
-  virtual bool isEventSourceTypeAccepted(short eventSourceType,
+  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
                                          bool verification);
   virtual void execute(void *sthread);
   virtual bool queueUp(void);

@@ -36,6 +36,11 @@
 #include <unistd.h>
 #include "log.h"
 
+#ifdef __TEST
+// static
+_extern_send_recv supla_trivial_http::extern_send_recv;
+#endif /* __TEST */
+
 supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
   this->sfd = -1;
   this->resultCode = 0;
@@ -176,8 +181,15 @@ void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
 }
 
 bool supla_trivial_http::send_recv(const char *out, char **in) {
-  struct addrinfo *ai = NULL;
   bool result = false;
+
+#ifdef __TEST
+  if (extern_send_recv && extern_send_recv(out, in, &result)) {
+    return result;
+  }
+#endif /* __TEST */
+
+  struct addrinfo *ai = NULL;
 
   if (!get_addrinfo((void **)&ai)) {
     return false;
@@ -361,6 +373,7 @@ bool supla_trivial_http::request(const char *method, const char *header,
   if (!method || !host || !resource || strnlen(method, METHOD_MAXSIZE) < 3 ||
       strnlen(host, HOST_MAXSIZE) < 1 ||
       strnlen(resource, RESOURCE_MAXSIZE) < 1) {
+    supla_log(LOG_ERR, "Http request - invalid parameters!");
     return false;
   }
 
@@ -416,11 +429,21 @@ bool supla_trivial_http::request(const char *method, const char *header,
 
   if (in) {
     result = parse(&in);
+    if (!result) {
+      supla_log(
+          LOG_ERR,
+          "Http request - parse error. Method: %s, resource: %s, data:\n%s",
+          method, resource, in ? in : body);
+    }
 
     if (in) {
       free(in);
       in = NULL;
     }
+  } else {
+    supla_log(LOG_ERR,
+              "Http request - No data was received. Method: %s, resource: %s",
+              method, resource);
   }
 
   return result;
