@@ -68,7 +68,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 10
+#define SUPLA_PROTO_VERSION 11
 #define SUPLA_PROTO_VERSION_MIN 1
 #define SUPLA_TAG_SIZE 5
 #if defined(__AVR__)
@@ -396,6 +396,9 @@ typedef struct {
 
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
+#define EV_TYPE_THERMOSTAT_DETAILS_V1 30
+
+#define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
 typedef struct {
   char type;  // EV_TYPE_
@@ -1037,6 +1040,58 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
+
+typedef struct {
+  unsigned char sec;        // 0-59
+  unsigned char min;        // 0-59
+  unsigned char hour;       // 0-24
+  unsigned char dayOfWeek;  // 0-6
+} TThermostat_Time;         // v. >= 11
+
+#define THERMOSTAT_FIELD_IsOn 0x01
+#define THERMOSTAT_FIELD_Temperatures 0x02
+#define THERMOSTAT_FIELD_Flags 0x04
+#define THERMOSTAT_FIELD_Time 0x08
+#define THERMOSTAT_FIELD_Shedule 0x10
+
+typedef struct {
+  unsigned char Fields;
+  unsigned char IsOn;
+  _supla_int16_t MeasuredTemperature[5];  // * 0.01
+  _supla_int16_t PresetTemperature[5];    // * 0.01
+  unsigned char Flags[4];
+  TThermostat_Time Time;
+  unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
+} TThermostat_ExtendedValue;     // v. >= 11
+
+typedef struct {
+  unsigned char IsOn;
+  unsigned char Flags;
+  _supla_int16_t MeasuredTemperature;  // * 0.01
+  _supla_int16_t PresetTemperature;    // * 0.01
+} TThermostat_Value;                   // v. >= 11
+
+#define THERMOSTAT_CFGFIELD_On 0x0001
+#define THERMOSTAT_CFGFIELD_Temperature1 0x0002
+#define THERMOSTAT_CFGFIELD_Temperature2 0x0004
+#define THERMOSTAT_CFGFIELD_Temperature3 0x0008
+#define THERMOSTAT_CFGFIELD_Temperature4 0x0010
+#define THERMOSTAT_CFGFIELD_Temperature5 0x0020
+#define THERMOSTAT_CFGFIELD_Flags1 0x0040
+#define THERMOSTAT_CFGFIELD_Flags2 0x0080
+#define THERMOSTAT_CFGFIELD_Flags3 0x0100
+#define THERMOSTAT_CFGFIELD_Flags4 0x0200
+#define THERMOSTAT_CFGFIELD_Time 0x0400
+#define THERMOSTAT_CFGFIELD_Shedule 0x0800
+
+typedef struct {
+  unsigned _supla_int16_t Fields;
+  unsigned char On;
+  _supla_int16_t Temperature[5];  // * 0.01
+  unsigned char Flags[4];
+  TThermostat_Time Time;
+  unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
+} TThermostat_Configuration;     // v. >= 11
 
 #pragma pack(pop)
 
