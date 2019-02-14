@@ -1918,3 +1918,74 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/
+
+#ifndef SRPC_EXCLUDE_CALCFG_TOOLS
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cfgtool_v1_cfgrequest2thermostatcfg(
+    TSD_DeviceCalCfgRequest *cfgreq, TThermostat_Configuration *tcfg) {
+  if (tcfg == NULL) {
+    return 0;
+  }
+
+  memset(tcfg, 0, sizeof(TThermostat_Configuration));
+
+  if (cfgreq == NULL || cfgreq->DataSize == 0 ||
+      cfgreq->DataSize > sizeof(TThermostat_Configuration) ||
+      cfgreq->DataType != CALCFG_TYPE_THERMOSTAT_DETAILS_V1) {
+    return 0;
+  }
+
+  memcpy(tcfg, cfgreq->Data, cfgreq->DataSize);
+
+  return 1;
+}
+
+#ifndef SRPC_EXCLUDE_CLIENT
+_supla_int_t SRPC_ICACHE_FLASH srpc_cfgtool_v1_thermostatcfg2cfgrequest(
+    TThermostat_Configuration *tcfg, TCS_DeviceCalCfgRequest *cfgreq) {
+  if (tcfg == NULL || cfgreq == NULL) {
+    return 0;
+  }
+
+  cfgreq->DataSize = 0;
+  cfgreq->DataType = 0;
+
+  unsigned _supla_int_t DataSize = sizeof(TThermostat_Configuration);
+  if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Shedule)) {
+    DataSize -= sizeof(tcfg->Shedule);
+
+    if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Time)) {
+      DataSize -= sizeof(tcfg->Time);
+
+      if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags1) &&
+          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags2) &&
+          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags3) &&
+          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags4)) {
+        DataSize -= sizeof(tcfg->Flags);
+
+        if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature1) &&
+            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature2) &&
+            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature3) &&
+            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature4)) {
+          DataSize -= sizeof(tcfg->Temperature);
+
+          if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_On)) {
+            DataSize -= sizeof(tcfg->On);
+          }
+        }
+      }
+    }
+  }
+
+  if (DataSize > 0 && DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
+    cfgreq->DataType = CALCFG_TYPE_THERMOSTAT_DETAILS_V1;
+    memcpy(cfgreq->Data, tcfg, DataSize);
+    cfgreq->DataSize = DataSize;
+    return 1;
+  }
+
+  return 0;
+}
+#endif /*SRPC_EXCLUDE_CLIENT*/
+
+#endif /*SRPC_EXCLUDE_CALCFG_TOOLS*/

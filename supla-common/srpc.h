@@ -287,6 +287,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
 
 #endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/
 
+#ifndef SRPC_EXCLUDE_CALCFG_TOOLS
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cfgtool_v1_cfgrequest2thermostatcfg(
+    TSD_DeviceCalCfgRequest *cfgreq, TThermostat_Configuration *tcfg);
+
+#ifndef SRPC_EXCLUDE_CLIENT
+_supla_int_t SRPC_ICACHE_FLASH srpc_cfgtool_v1_thermostatcfg2cfgrequest(
+    TThermostat_Configuration *tcfg, TCS_DeviceCalCfgRequest *cfgreq);
+#endif /*SRPC_EXCLUDE_CLIENT*/
+
+#endif /*SRPC_EXCLUDE_CALCFG_TOOLS*/
+
 #ifdef __cplusplus
 }
 #endif
