@@ -70,10 +70,10 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
       if (verification) {
         if (eventSourceType == EST_DEVICE ||
             eventSourceType == EST_AMAZON_ALEXA) {
-          return true;
+          return !summary.hidden_channel;
         }
       } else if (eventSourceType == EST_AMAZON_ALEXA) {
-        return true;
+        return !summary.hidden_channel;
       }
       break;
     default:

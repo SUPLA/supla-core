@@ -7,7 +7,6 @@ CPP_SRCS += \
 ../src/google/googlehome.cpp \
 ../src/google/googlehomeclient.cpp \
 ../src/google/googlehomerequest.cpp \
-../src/google/googlehomeresponserequest.cpp \
 ../src/google/googlehomestatereportrequest.cpp \
 ../src/google/googlehomesyncrequest.cpp 
 
@@ -15,7 +14,6 @@ OBJS += \
 ./src/google/googlehome.o \
 ./src/google/googlehomeclient.o \
 ./src/google/googlehomerequest.o \
-./src/google/googlehomeresponserequest.o \
 ./src/google/googlehomestatereportrequest.o \
 ./src/google/googlehomesyncrequest.o 
 
@@ -23,7 +21,6 @@ CPP_DEPS += \
 ./src/google/googlehome.d \
 ./src/google/googlehomeclient.d \
 ./src/google/googlehomerequest.d \
-./src/google/googlehomeresponserequest.d \
 ./src/google/googlehomestatereportrequest.d \
 ./src/google/googlehomesyncrequest.d 
 
@@ -32,7 +29,7 @@ CPP_DEPS += \
 src/google/%.o: ../src/google/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -D__OPENSSL_TOOLS=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I/usr/include/mysql -I../src -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -D__TEST=1 -D__OPENSSL_TOOLS=1 -D__BCRYPT=1 -I/usr/include/mysql -I../src -I../src/user -I../src/device -I../src/client -I$(SSLDIR)/include -I../src/test -O2 -g3 -Wall -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

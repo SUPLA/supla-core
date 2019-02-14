@@ -436,7 +436,7 @@ void svr_ipcctrl::execute(void *sthread) {
           sscanf(&buffer[strnlen(cmd_user_reconnect, IPC_BUFFER_SIZE)], "%i",
                  &UserID);
 
-          if (UserID && supla_user::reconnect(UserID)) {
+          if (UserID && supla_user::reconnect(UserID, EST_IPC)) {
             send_result("OK:", UserID);
           } else {
             send_result("USER_UNKNOWN:", UserID);

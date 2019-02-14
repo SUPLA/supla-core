@@ -17,6 +17,7 @@
  */
 
 #include "google/googlehomestatereportrequest.h"
+#include "log.h"
 #include "safearray.h"
 #include "svrcfg.h"
 #include "user/user.h"
@@ -64,7 +65,13 @@ bool supla_google_home_statereport_request::verifyExisting(
   duplicateExists = true;
   static_cast<supla_google_home_statereport_request *>(existing)->addChannelId(
       getChannelId());
-  existing->setDelay(1000000);
+
+  if (getGoogleRequestIdPtr() != NULL) {
+    existing->setGoogleRequestId(getGoogleRequestIdPtr());
+  }
+
+  existing->setDelay(existing->getGoogleRequestIdPtr() ? 3000000 : 1000000);
+
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 };
@@ -79,7 +86,7 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      return true;
+      return !value.hidden_channel;
     default:
       return false;
   }
@@ -98,10 +105,10 @@ bool supla_google_home_statereport_request::isEventSourceTypeAccepted(
     case EST_DEVICE:
     case EST_CLIENT:
     case EST_IPC:
+    case EST_GOOGLE_HOME:
+    case EST_AMAZON_ALEXA:
       return isChannelFunctionAllowed();
     case EST_UNKNOWN:
-    case EST_AMAZON_ALEXA:
-    case EST_GOOGLE_HOME:
       return false;
   }
 
@@ -112,6 +119,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
   safe_array_lock(channel_arr);
 
   getClient()->clearStateReport();
+  int content_exists = false;
 
   for (int a = 0; a < safe_array_count(channel_arr); a++) {
     int ChannelId = (long long)safe_array_get(channel_arr, a);
@@ -119,33 +127,44 @@ void supla_google_home_statereport_request::execute(void *sthread) {
     channel_complex_value value =
         getUser()->get_channel_complex_value(getDeviceId(), ChannelId);
 
-    switch (value.function) {
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        getClient()->addOnOffState(ChannelId, value.hi, value.online);
-        break;
-      case SUPLA_CHANNELFNC_DIMMER:
-        getClient()->clearStateReport();
-        getClient()->addBrightnessState(ChannelId, value.brightness,
-                                        value.online, 0);
-        break;
-      case SUPLA_CHANNELFNC_RGBLIGHTING:
-        getClient()->clearStateReport();
-        getClient()->addColorState(ChannelId, value.color,
-                                   value.color_brightness, value.online, 0);
-        break;
-      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-        getClient()->clearStateReport();
-        getClient()->addColorState(ChannelId, value.color,
-                                   value.color_brightness, value.online, 1);
-        getClient()->addBrightnessState(ChannelId, value.brightness,
-                                        value.online, 2);
-        break;
+    if (!value.hidden_channel) {
+      switch (value.function) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+          getClient()->addOnOffState(ChannelId, value.hi, value.online);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_DIMMER:
+          getClient()->addBrightnessState(ChannelId, value.brightness,
+                                          value.online, 0);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+          getClient()->addColorState(ChannelId, value.color,
+                                     value.color_brightness, value.online, 0);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+          getClient()->addColorState(ChannelId, value.color,
+                                     value.color_brightness, value.online, 1);
+          getClient()->addBrightnessState(ChannelId, value.brightness,
+                                          value.online, 2);
+          content_exists = true;
+          break;
+      }
     }
   }
 
   safe_array_unlock(channel_arr);
-  getClient()->sendReportState(getGoogleRequestIdPtr());
+
+  if (content_exists) {
+    int resultCode = 0;
+    getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
+
+    if (resultCode == 404) {
+      getUser()->googleHome()->on_reportstate_404_error();
+    }
+  }
 }
 
 bool supla_google_home_statereport_request::isEventTypeAccepted(

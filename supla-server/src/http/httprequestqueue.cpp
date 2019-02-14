@@ -27,6 +27,7 @@
 #include "safearray.h"
 #include "sthread.h"
 #include "svrcfg.h"
+#include "tools.h"
 #include "user/user.h"
 
 typedef struct {
@@ -366,6 +367,10 @@ void supla_http_request_queue::createByChannelEventSourceType(
     supla_user *user, int deviceId, int channelId, event_type eventType,
     event_source_type eventSourceType, const char correlationToken[],
     const char googleRequestId[]) {
+  if (st_app_terminate != 0) {
+    return;
+  }
+
   _heq_user_space_t *user_space = getUserSpace(user);
   if (user_space == NULL) {
     return;
@@ -439,6 +444,18 @@ void supla_http_request_queue::onDeviceDeletedEvent(
   createByChannelEventSourceType(user, deviceId, 0, ET_DEVICE_DELETED,
                                  eventSourceType, correlationToken,
                                  googleRequestId);
+}
+
+void supla_http_request_queue::onUserReconnectEvent(
+    supla_user *user, event_source_type eventSourceType) {
+  createByChannelEventSourceType(user, 0, 0, ET_USER_RECONNECT, eventSourceType,
+                                 NULL, NULL);
+}
+
+void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
+    supla_user *user, event_source_type eventSourceType) {
+  createByChannelEventSourceType(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED,
+                                 eventSourceType, NULL, NULL);
 }
 
 void http_request_queue_loop(void *ssd, void *q_sthread) {

@@ -32,11 +32,13 @@ enum event_type {
   ET_CHANNEL_VALUE_CHANGED,
   ET_DEVICE_DELETED,
   ET_DEVICE_ADDED,
+  ET_USER_RECONNECT,
+  ET_GOOGLE_HOME_SYNC_NEEDED,
 };
-
 
 typedef struct {
   bool online;
+  bool hidden_channel;
   int function;
   bool hi;
   char brightness;
@@ -53,5 +55,12 @@ typedef struct {
   double depth;
   char shut;
 } channel_complex_value;
+
+typedef struct {
+  int deviceId;
+  int channelId;
+  bool channel_is_hidden;
+  int function;
+} channel_function_t;
 
 #endif /* COMMONTYPES_H_ */

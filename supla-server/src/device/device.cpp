@@ -36,7 +36,12 @@ supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
 supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
     getUser()->remove_device(this);
-    getUser()->on_channel_value_changed(EST_DEVICE, getID());
+
+    std::list<int> ids = channels->get_channel_ids();
+    for (std::list<int>::iterator it = ids.begin();
+         it != ids.end(); it++) {
+      getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
+    }
   }
 
   delete channels;

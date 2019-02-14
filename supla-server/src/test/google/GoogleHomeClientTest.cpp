@@ -1,0 +1,193 @@
+/*
+ Copyright (C) AC SOFTWARE SP. Z O.O.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#include "GoogleHomeClientTest.h"
+#include "google/googlehomeclient.h"
+#include "gtest/gtest.h"  // NOLINT
+
+namespace {
+
+class GoogleHomeClientTest : public STTrivialHttp {
+ protected:
+  supla_google_home_client *client;
+
+ public:
+  void SetUp() override {
+    getUser()->googleHome()->set("ACCESS-TOKEN");
+    client = new supla_google_home_client(getUser()->googleHome());
+  }
+
+  void TearDown() override {
+    delete client;
+    client = NULL;
+  }
+};
+
+TEST_F(GoogleHomeClientTest, requestSync) {
+  const char expectedRequest[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 107\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
+      "\"agentUserId\":\"zxcvbnm\",\"intent\":\"action.devices.SYNC\"}";
+
+  ASSERT_TRUE(client->requestSync());
+  ASSERT_TRUE(outputEqualTo(expectedRequest));
+}
+
+TEST_F(GoogleHomeClientTest, onOffRepoerState) {
+  const char expectedRequest1[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 151\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
+      "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
+      "\"qwerty-10\":{\"online\":false,\"on\":false}}}}}";
+
+  ASSERT_TRUE(client->addOnOffState(10, true, false));
+  ASSERT_TRUE(client->sendReportState(NULL));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 118\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
+      "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
+      "\"on\":true}}}}}";
+
+  ASSERT_TRUE(client->addOnOffState(10, true, true));
+  ASSERT_TRUE(client->sendReportState("REQID"));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+}
+
+TEST_F(GoogleHomeClientTest, brightnessState) {
+  const char expectedRequest1[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 166\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
+      "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
+      "\"qwerty-10\":{\"online\":false,\"on\":false,\"brightness\":0}}}}}";
+
+  ASSERT_TRUE(client->addBrightnessState(10, 55, false, 0));
+  ASSERT_TRUE(client->sendReportState(NULL));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 134\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
+      "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
+      "\"on\":true,\"brightness\":55}}}}}";
+
+  ASSERT_TRUE(client->addBrightnessState(10, 55, true, 0));
+  ASSERT_TRUE(client->sendReportState("REQID"));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 136\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
+      "\"payload\":{\"devices\":{\"states\":{\"qwerty-10-1\":{\"online\":true,"
+      "\"on\":true,\"brightness\":80}}}}}";
+
+  ASSERT_TRUE(client->addBrightnessState(10, 80, true, 1));
+  ASSERT_TRUE(client->sendReportState("REQID"));
+  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+}
+
+TEST_F(GoogleHomeClientTest, colorState) {
+  const char expectedRequest1[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 199\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
+      "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
+      "\"qwerty-10\":{\"online\":false,\"color\":{\"spectrumRGB\":16711867},"
+      "\"on\":false,\"brightness\":0}}}}}";
+
+  ASSERT_TRUE(client->addColorState(10, 0xFF00BB, 55, false, 0));
+  ASSERT_TRUE(client->sendReportState(NULL));
+  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 166\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
+      "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
+      "\"color\":{\"spectrumRGB\":4486946},\"on\":true,\"brightness\":55}}}}}";
+
+  ASSERT_TRUE(client->addColorState(10, 0x447722, 55, true, 0));
+  ASSERT_TRUE(client->sendReportState("REQID"));
+  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 169\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
+      "\"payload\":{\"devices\":{\"states\":{\"qwerty-10-1\":{\"online\":true,"
+      "\"color\":{\"spectrumRGB\":16776960},\"on\":true,\"brightness\":80}}}}}";
+
+  ASSERT_TRUE(client->addColorState(10, 0xFFFF00, 80, true, 1));
+  ASSERT_TRUE(client->sendReportState("REQID"));
+  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+}
+
+TEST_F(GoogleHomeClientTest, sendFullReportState) {
+  const char expectedRequest[] =
+      "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
+      "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 399\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: "
+      "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
+      "\"payload\":{\"devices\":{\"states\":{\"qwerty-1\":{\"online\":true,"
+      "\"on\":true},\"qwerty-2\":{\"online\":true,\"color\":{\"spectrumRGB\":"
+      "16776960},\"on\":true,\"brightness\":80},\"qwerty-3-1\":{\"online\":"
+      "true,\"color\":{\"spectrumRGB\":12320512},\"on\":true,\"brightness\":80}"
+      ",\"qwerty-4\":{\"online\":true,\"on\":true,\"brightness\":55},\"qwerty-"
+      "5-2\":{\"online\":true,\"on\":true,\"brightness\":30}}}}}";
+
+  ASSERT_TRUE(client->addOnOffState(1, true, true));
+  ASSERT_FALSE(client->addOnOffState(1, true, true));
+  ASSERT_TRUE(client->addColorState(2, 0xFFFF00, 80, true, 0));
+  ASSERT_FALSE(client->addColorState(2, 0xFFFF00, 80, true, 0));
+  ASSERT_TRUE(client->addColorState(3, 0xBBFF00, 80, true, 1));
+  ASSERT_FALSE(client->addColorState(3, 0xBBFF00, 80, true, 1));
+  ASSERT_TRUE(client->addBrightnessState(4, 55, true, 0));
+  ASSERT_FALSE(client->addBrightnessState(4, 55, true, 0));
+  ASSERT_TRUE(client->addBrightnessState(5, 30, true, 2));
+  ASSERT_FALSE(client->addBrightnessState(5, 30, true, 2));
+  ASSERT_TRUE(client->sendReportState("REQID"));
+  ASSERT_TRUE(outputEqualTo(expectedRequest));
+}
+
+}  // namespace

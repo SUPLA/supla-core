@@ -21,6 +21,7 @@
 
 #include "google/googlehome.h"
 #include "voiceassistantclient.h"
+#include <cstddef>
 
 class supla_google_home_client : public supla_voice_assistant_client {
  private:
@@ -28,7 +29,7 @@ class supla_google_home_client : public supla_voice_assistant_client {
   bool channelExists(const char *endpointId);
   void *getStateSkeleton(int channelId, short subChannel, bool online);
   void *getHeader(const char requestId[]);
-  bool post(void *json_data);
+  bool post(void *json_data, int *resultCode);
 
  public:
   supla_google_home_client(supla_google_home *google_home);
@@ -39,8 +40,8 @@ class supla_google_home_client : public supla_voice_assistant_client {
                           short subChannel);
   bool addColorState(int channelId, int color, short colorBrightness,
                      bool online, short subChannel);
-  bool sendReportState(const char requestId[]);
-  bool requestSync(void);
+  bool sendReportState(const char requestId[], int *resultCode = NULL);
+  bool requestSync(int *resultCode = NULL);
 };
 
 #endif /* GOOGLEHOMECLIENT_H_ */

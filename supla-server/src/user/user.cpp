@@ -68,15 +68,16 @@ supla_user::supla_user(int UserID) {
   this->UserID = UserID;
   this->device_arr = safe_array_init();
   this->client_arr = safe_array_init();
+  this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
-  this->amazon_alexa->load();
   this->google_home = new supla_google_home(this);
-  this->google_home->load();
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;
   this->lck = lck_init();
+  this->amazon_alexa->load();
+  this->google_home->load();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -98,6 +99,9 @@ supla_user::~supla_user() {
   delete cgroups;
   delete amazon_alexa;
   delete google_home;
+
+  compex_value_cache_clean(0);
+  safe_array_free(complex_value_functions_arr);
   safe_array_free(device_arr);
   safe_array_free(client_arr);
 }
@@ -114,6 +118,21 @@ void supla_user::user_free(void) {
 }
 
 int supla_user::getUserID(void) { return UserID; }
+
+void supla_user::setUniqueId(const char shortID[], const char longID[]) {
+  lck_lock(lck);
+
+  if (!short_unique_id) {
+    free(short_unique_id);
+  }
+  if (!long_unique_id) {
+    free(long_unique_id);
+  }
+
+  short_unique_id = strndup(shortID, SHORT_UNIQUEID_MAXSIZE);
+  long_unique_id = strndup(longID, LONG_UNIQUEID_MAXSIZE);
+  lck_unlock(lck);
+}
 
 void supla_user::loadUniqueIDs(void) {
   char shortID[SHORT_UNIQUEID_MAXSIZE];
@@ -134,19 +153,7 @@ void supla_user::loadUniqueIDs(void) {
   if (loaded) {
     shortID[SHORT_UNIQUEID_MAXSIZE - 1] = 0;
     longID[LONG_UNIQUEID_MAXSIZE - 1] = 0;
-
-    lck_lock(lck);
-
-    if (!short_unique_id) {
-      free(short_unique_id);
-    }
-    if (!long_unique_id) {
-      free(long_unique_id);
-    }
-
-    short_unique_id = strndup(shortID, SHORT_UNIQUEID_MAXSIZE);
-    long_unique_id = strndup(longID, LONG_UNIQUEID_MAXSIZE);
-    lck_unlock(lck);
+    setUniqueId(shortID, longID);
   }
 }
 
@@ -237,6 +244,10 @@ supla_user *supla_user::find(int UserID, bool create) {
 
 supla_user *supla_user::add_device(supla_device *device, int UserID) {
   supla_user *user = find(UserID, true);
+
+  if (device && device->getID()) {
+    user->compex_value_cache_clean(device->getID());
+  }
 
   safe_array_lock(user->device_arr);
 
@@ -734,8 +745,8 @@ void supla_user::on_device_deleted(int UserID,
 
 void supla_user::on_device_added(int DeviceID,
                                  event_source_type eventSourceType) {
-  supla_http_request_queue::getInstance()->onDeviceAddedEvent(
-      this, DeviceID, eventSourceType);
+  supla_http_request_queue::getInstance()->onDeviceAddedEvent(this, DeviceID,
+                                                              eventSourceType);
 }
 
 bool supla_user::set_device_channel_value(
@@ -964,7 +975,7 @@ void supla_user::on_device_calcfg_result(int ChannelID,
   safe_array_unlock(client_arr);
 }
 
-void supla_user::reconnect() {
+void supla_user::reconnect(event_source_type eventSourceType) {
   int a;
 
   cgroups->load();  // load == reload
@@ -990,6 +1001,9 @@ void supla_user::reconnect() {
       }
   }
   safe_array_unlock(client_arr);
+
+  supla_http_request_queue::getInstance()->onUserReconnectEvent(
+      this, eventSourceType);
 }
 
 bool supla_user::client_reconnect(int ClientID) {
@@ -1010,11 +1024,11 @@ bool supla_user::client_reconnect(int ClientID) {
 }
 
 // static
-bool supla_user::reconnect(int UserID) {
+bool supla_user::reconnect(int UserID, event_source_type eventSourceType) {
   supla_user *user = find(UserID, true);
 
   if (user) {
-    user->reconnect();
+    user->reconnect(eventSourceType);
     // cppcheck-suppress memleak
     return true;
   }
@@ -1033,6 +1047,70 @@ bool supla_user::client_reconnect(int UserID, int ClientID) {
   return false;
 }
 
+void supla_user::compex_value_cache_clean(int DeviceId) {
+  safe_array_lock(complex_value_functions_arr);
+
+  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
+    channel_function_t *fnc = static_cast<channel_function_t *>(
+        safe_array_get(complex_value_functions_arr, a));
+    if (fnc && (DeviceId == 0 || fnc->deviceId == DeviceId)) {
+      delete fnc;
+      safe_array_delete(complex_value_functions_arr, a);
+      a--;
+    }
+  }
+
+  safe_array_unlock(complex_value_functions_arr);
+}
+
+channel_function_t supla_user::compex_value_cache_get_function(
+    int ChannelID, channel_function_t **_fnc) {
+  channel_function_t result;
+  memset(&result, 0, sizeof(channel_function_t));
+
+  safe_array_lock(complex_value_functions_arr);
+
+  for (int a = 0; a < safe_array_count(complex_value_functions_arr); a++) {
+    channel_function_t *fnc = static_cast<channel_function_t *>(
+        safe_array_get(complex_value_functions_arr, a));
+    if (fnc && fnc->channelId == ChannelID) {
+      if (_fnc) {
+        *_fnc = fnc;
+      }
+      result = *fnc;
+      break;
+    }
+  }
+
+  safe_array_unlock(complex_value_functions_arr);
+  return result;
+}
+
+void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
+                                                    int Function,
+                                                    bool channel_is_hidden) {
+  if (!Function || !DeviceId || !ChannelID) return;
+  safe_array_lock(complex_value_functions_arr);
+
+  channel_function_t *fnc = NULL;
+  if (compex_value_cache_get_function(ChannelID, &fnc).function) {
+    if (fnc) {
+      fnc->deviceId = DeviceId;
+      fnc->function = Function;
+      fnc->channel_is_hidden = channel_is_hidden;
+    }
+  } else {
+    fnc = new channel_function_t;
+    fnc->deviceId = DeviceId;
+    fnc->channelId = ChannelID;
+    fnc->function = Function;
+    fnc->channel_is_hidden = channel_is_hidden;
+
+    safe_array_add(complex_value_functions_arr, fnc);
+  }
+  safe_array_unlock(complex_value_functions_arr);
+}
+
 channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
                                                             int ChannelID) {
   channel_complex_value value;
@@ -1040,9 +1118,17 @@ channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
 
   safe_array_lock(device_arr);
 
-  supla_device *device = find_device(DeviceId);
-  if (device != NULL) {
+  supla_device *device = find_device_by_channelid(ChannelID);
+  if (device == NULL) {
+    channel_function_t f = compex_value_cache_get_function(ChannelID);
+    value.function = f.function;
+    value.hidden_channel = f.channel_is_hidden;
+  } else {
     device->get_channel_complex_value(&value, ChannelID);
+    if (value.function) {
+      compex_value_cache_update_function(device->getID(), ChannelID,
+                                         value.function, value.hidden_channel);
+    }
   }
 
   safe_array_unlock(device_arr);

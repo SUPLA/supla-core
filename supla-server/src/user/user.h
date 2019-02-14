@@ -22,6 +22,7 @@
 #define SHORT_UNIQUEID_MAXSIZE 37
 #define LONG_UNIQUEID_MAXSIZE 201
 
+#include <cstddef>
 #include "commontypes.h"
 #include "proto.h"
 
@@ -42,11 +43,19 @@ class supla_user {
 
   void *device_arr;
   void *client_arr;
+  void *complex_value_functions_arr;
+
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa *amazon_alexa;
   supla_google_home *google_home;
   int UserID;
   bool connections_allowed;
+
+  void compex_value_cache_clean(int DeviceId);
+  channel_function_t compex_value_cache_get_function(
+      int ChannelID, channel_function_t **_fnc = NULL);
+  void compex_value_cache_update_function(int DeviceId, int ChannelID,
+                                          int Function, bool channel_is_hidden);
 
   supla_device *find_device(int DeviceID);
   supla_device *find_device_by_channelid(int ChannelID);
@@ -66,7 +75,7 @@ class supla_user {
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
                                 char Type);
 
-  void reconnect();
+  void reconnect(event_source_type eventSourceType);
   bool client_reconnect(int ClientID);
   void loadUniqueIDs(void);
 
@@ -76,7 +85,7 @@ class supla_user {
   static supla_user *add_device(supla_device *device, int UserID);
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
-  static bool reconnect(int UserID);
+  static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool is_client_online(int UserID, int ClientID);
   static bool is_device_online(int UserID, int DeviceID);
@@ -104,7 +113,8 @@ class supla_user {
                                             int color, char color_brightness,
                                             char brightness, char on_off,
                                             event_source_type eventSourceType,
-                                            char *AlexaCorrelationToken, char *GoogleRequestId);
+                                            char *AlexaCorrelationToken,
+                                            char *GoogleRequestId);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
@@ -117,6 +127,7 @@ class supla_user {
 
   void remove_device(supla_device *device);
   void remove_client(supla_client *client);
+  void setUniqueId(const char shortID[], const char longID[]);
 
   int getUserID(void);
   char *getShortUniqueID(void);

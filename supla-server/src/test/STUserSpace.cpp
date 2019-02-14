@@ -16,16 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "gtest/gtest.h"
-#include "svrcfg.h"
+#include "test/STUserSpace.h"
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+STUserSpace::STUserSpace() {
+  user = NULL;
+  supla_user::init();
+}
 
-  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+STUserSpace::~STUserSpace() { supla_user::user_free(); }
 
-  int result = RUN_ALL_TESTS();
+supla_user *STUserSpace::getUser(void) {
+  if (!user) {
+    user = new supla_user(1001);
+    user->setUniqueId("qwerty", "zxcvbnm");
+  }
 
-  svrcfg_free();
-  return result;
+  return user;
 }

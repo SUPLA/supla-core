@@ -32,6 +32,8 @@ src/google \
 src/http \
 src/json \
 src/test \
+src/test/alexa \
+src/test/google \
 src/test/gtest \
 src/user \
 

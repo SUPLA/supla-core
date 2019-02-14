@@ -74,7 +74,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
         case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-          return true;
+          return !value.hidden_channel;
         default:
           return false;
       }

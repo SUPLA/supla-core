@@ -134,6 +134,7 @@ bool supla_http_request::isChannelIdEqual(int ChannelId) {
 }
 
 void supla_http_request::setCorrelationToken(const char correlationToken[]) {
+  lck_lock(this->lck);
   if (this->correlationToken) {
     free(this->correlationToken);
     this->correlationToken = NULL;
@@ -144,13 +145,19 @@ void supla_http_request::setCorrelationToken(const char correlationToken[]) {
     this->correlationToken =
         strndup(correlationToken, CORRELATIONTOKEN_MAXSIZE);
   }
+  lck_unlock(this->lck);
 }
 
 const char *supla_http_request::getCorrelationTokenPtr(void) {
-  return correlationToken;
+  char *result = NULL;
+  lck_lock(this->lck);
+  result = correlationToken;
+  lck_unlock(this->lck);
+  return result;
 }
 
 void supla_http_request::setGoogleRequestId(const char googleRequestId[]) {
+  lck_lock(this->lck);
   if (this->googleRequestId) {
     free(this->googleRequestId);
     this->googleRequestId = NULL;
@@ -160,10 +167,15 @@ void supla_http_request::setGoogleRequestId(const char googleRequestId[]) {
       strnlen(googleRequestId, GOOGLEREQUESTID_MAXSIZE) > 0) {
     this->googleRequestId = strndup(googleRequestId, GOOGLEREQUESTID_MAXSIZE);
   }
+  lck_unlock(this->lck);
 }
 
 const char *supla_http_request::getGoogleRequestIdPtr(void) {
-  return googleRequestId;
+  char *result = NULL;
+  lck_lock(this->lck);
+  result = googleRequestId;
+  lck_unlock(this->lck);
+  return result;
 }
 
 void supla_http_request::setDelay(int delayUs) {

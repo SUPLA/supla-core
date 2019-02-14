@@ -16,16 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "gtest/gtest.h"
-#include "svrcfg.h"
+#ifndef H_GOOGLEHOMECLIENT_TEST_H_
+#define H_GOOGLEHOMECLIENT_TEST_H_
 
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+#include "STTrivialHttp.h"
 
-  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+class GoogleHomeClientTest : STTrivialHttp {
+ public:
+  virtual ~GoogleHomeClientTest();
+  GoogleHomeClientTest();
+};
 
-  int result = RUN_ALL_TESTS();
-
-  svrcfg_free();
-  return result;
-}
+#endif /*H_GOOGLEHOMECLIENT_TEST_H_*/
