@@ -3117,4 +3117,12 @@ TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
   ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
 }
 
+//---------------------------------------------------------
+// CALIBRATION/CONFIGURATION TOOLS
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, cfgtool_v1_cfgrequest2thermostatcfg) {
+
+}
+
 }  // namespace
