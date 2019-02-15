@@ -73,7 +73,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.c.compiler.option.misc.other.592483975" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
+                                <option id="gnu.c.compiler.option.misc.other.592483975" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
                                 								
                                 <option id="gnu.c.compiler.option.dialect.std.1559922112" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.default" valueType="enumerated"/>
                                 								
@@ -117,7 +117,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11" valueType="string"/>
+                                <option id="gnu.cpp.compiler.option.other.other.277754952" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11" valueType="string"/>
                                 								
                                 <option id="gnu.cpp.compiler.option.dialect.std.424424703" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
                                 								
@@ -231,7 +231,7 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.44564803" name="Release" parent="cdt.managedbuild.config.gnu.cross.exe.release">
+                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.44564803" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=true,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///var/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.release">
                     					
                     <folderInfo id="cdt.managedbuild.config.gnu.cross.exe.release.44564803." name="/" resourcePath="">
                         						
@@ -261,7 +261,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.c.compiler.option.misc.other.2147088608" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
+                                <option id="gnu.c.compiler.option.misc.other.2147088608" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all" valueType="string"/>
                                 								
                                 <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.439526132" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
                                     									
@@ -305,7 +305,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -std=c++11" valueType="string"/>
+                                <option id="gnu.cpp.compiler.option.other.other.1957512620" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11" valueType="string"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.282121379" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
                                 							
@@ -415,7 +415,7 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1420843306" name="Test" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=true,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///var/run/docker.sock,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
+                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1420843306" name="Test" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.enablement=true,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=/Users/przemek/CProjects:HOST_FILE_SYSTEM:/Users/przemek/CProjects:false:true,org.eclipse.cdt.docker.launcher.containerbuild.property.image=devel/supla-core:latest,org.eclipse.cdt.docker.launcher.containerbuild.property.connection=unix:///var/run/docker.sock" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
                     					
                     <folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.1772324400.1420843306." name="/" resourcePath="">
                         						
@@ -457,7 +457,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.c.compiler.option.misc.other.2082316085" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
+                                <option id="gnu.c.compiler.option.misc.other.2082316085" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all  -D_FORTIFY_SOURCE=2" valueType="string"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1707562959" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
                                 							
@@ -499,7 +499,7 @@
                                     								
                                 </option>
                                 								
-                                <option id="gnu.cpp.compiler.option.other.other.1821071127" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11" valueType="string"/>
+                                <option id="gnu.cpp.compiler.option.other.other.1821071127" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -std=c++11" valueType="string"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.387871270" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
                                 							
