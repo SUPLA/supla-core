@@ -3122,7 +3122,80 @@ TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
 //---------------------------------------------------------
 
 TEST_F(SrpcTest, cfgtool_v1_cfgrequest2thermostatcfg) {
+  DECLARE_WITH_RANDOM(TSD_DeviceCalCfgRequest, cfgreq);
+  cfgreq.DataType = CALCFG_TYPE_THERMOSTAT_DETAILS_V1;
 
+  TThermostat_Configuration tcfg;
+  memset(&tcfg, 0, sizeof(TThermostat_Configuration));
+
+  ASSERT_EQ(0, srpc_cfgtool_v1_cfgrequest2thermostatcfg(NULL, NULL));
+  ASSERT_EQ(0, srpc_cfgtool_v1_cfgrequest2thermostatcfg(&cfgreq, NULL));
+  ASSERT_EQ(0, srpc_cfgtool_v1_cfgrequest2thermostatcfg(NULL, &tcfg));
+
+  cfgreq.DataSize = 0;
+  ASSERT_EQ(0, srpc_cfgtool_v1_cfgrequest2thermostatcfg(&cfgreq, &tcfg));
+
+  cfgreq.DataSize = sizeof(TThermostat_Configuration) + 1;
+  ASSERT_EQ(0, srpc_cfgtool_v1_cfgrequest2thermostatcfg(&cfgreq, &tcfg));
+
+  cfgreq.DataType = 0;
+  cfgreq.DataSize = sizeof(TThermostat_Configuration);
+  ASSERT_EQ(0, srpc_cfgtool_v1_cfgrequest2thermostatcfg(&cfgreq, &tcfg));
+
+  cfgreq.DataType = CALCFG_TYPE_THERMOSTAT_DETAILS_V1;
+  cfgreq.DataSize = sizeof(TThermostat_Configuration) - 1;
+  ASSERT_EQ(1, srpc_cfgtool_v1_cfgrequest2thermostatcfg(&cfgreq, &tcfg));
+
+  cfgreq.DataSize = sizeof(TThermostat_Configuration);
+  ASSERT_EQ(1, srpc_cfgtool_v1_cfgrequest2thermostatcfg(&cfgreq, &tcfg));
+
+  ASSERT_EQ(0, memcmp(cfgreq.Data, &tcfg, sizeof(TThermostat_Configuration)));
+}
+
+TEST_F(SrpcTest, cfgtool_v1_thermostatcfg2cfgrequest) {
+
+	DECLARE_WITH_RANDOM(TThermostat_Configuration, tcfg);
+	TCS_DeviceCalCfgRequest cfgreq;
+	memset(&cfgreq, 0, sizeof(TCS_DeviceCalCfgRequest));
+
+	ASSERT_EQ(0, srpc_cfgtool_v1_thermostatcfg2cfgrequest(NULL, NULL));
+	ASSERT_EQ(0, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, NULL));
+	ASSERT_EQ(0, srpc_cfgtool_v1_thermostatcfg2cfgrequest(NULL, &cfgreq));
+
+	tcfg.Fields = 0;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+
+	ASSERT_EQ(CALCFG_TYPE_THERMOSTAT_DETAILS_V1, cfgreq.DataType);
+	ASSERT_EQ(2, cfgreq.DataSize);
+
+	tcfg.Fields = THERMOSTAT_CFGFIELD_Temperature1;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+
+	ASSERT_EQ(CALCFG_TYPE_THERMOSTAT_DETAILS_V1, cfgreq.DataType);
+	ASSERT_EQ(12, cfgreq.DataSize);
+
+
+	tcfg.Fields = THERMOSTAT_CFGFIELD_Temperature4;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+	ASSERT_EQ(12, cfgreq.DataSize);
+
+	tcfg.Fields = THERMOSTAT_CFGFIELD_Flags4;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+	ASSERT_EQ(20, cfgreq.DataSize);
+
+	tcfg.Fields = THERMOSTAT_CFGFIELD_Values4;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+	ASSERT_EQ(28, cfgreq.DataSize);
+
+	tcfg.Fields = THERMOSTAT_CFGFIELD_Time;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+	ASSERT_EQ(32, cfgreq.DataSize);
+
+	tcfg.Fields = THERMOSTAT_CFGFIELD_Schedule;
+	ASSERT_EQ(1, srpc_cfgtool_v1_thermostatcfg2cfgrequest(&tcfg, &cfgreq));
+	ASSERT_EQ(116, cfgreq.DataSize);
+
+	ASSERT_EQ(0, memcmp(cfgreq.Data, &tcfg, sizeof(TThermostat_Configuration)));
 }
 
 }  // namespace

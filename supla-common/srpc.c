@@ -1957,26 +1957,29 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cfgtool_v1_thermostatcfg2cfgrequest(
   cfgreq->DataType = 0;
 
   unsigned _supla_int_t DataSize = sizeof(TThermostat_Configuration);
-  if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Shedule)) {
+  if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Schedule)) {
     DataSize -= sizeof(tcfg->Shedule);
 
     if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Time)) {
       DataSize -= sizeof(tcfg->Time);
 
-      if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags1) &&
-          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags2) &&
-          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags3) &&
-          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags4)) {
-        DataSize -= sizeof(tcfg->Flags);
+      if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Values1) &&
+          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Values2) &&
+          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Values3) &&
+          0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Values4)) {
+        DataSize -= sizeof(tcfg->Values);
 
-        if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature1) &&
-            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature2) &&
-            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature3) &&
-            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature4)) {
-          DataSize -= sizeof(tcfg->Temperature);
+        if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags1) &&
+            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags2) &&
+            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags3) &&
+            0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Flags4)) {
+          DataSize -= sizeof(tcfg->Flags);
 
-          if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_On)) {
-            DataSize -= sizeof(tcfg->On);
+          if (0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature1) &&
+              0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature2) &&
+              0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature3) &&
+              0 == (tcfg->Fields & THERMOSTAT_CFGFIELD_Temperature4)) {
+            DataSize -= sizeof(tcfg->Temperature);
           }
         }
       }

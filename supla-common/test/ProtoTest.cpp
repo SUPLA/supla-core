@@ -110,9 +110,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
   ASSERT_EQ(4, sizeof(TThermostat_Time));
-  ASSERT_EQ(114, sizeof(TThermostat_ExtendedValue));
+  ASSERT_EQ(125, sizeof(TThermostat_ExtendedValue));
   ASSERT_EQ(6, sizeof(TThermostat_Value));
-  ASSERT_EQ(105, sizeof(TThermostat_Configuration));
+  ASSERT_EQ(116, sizeof(TThermostat_Configuration));
 
   ASSERT_LE(sizeof(TThermostat_ExtendedValue), SUPLA_CHANNELEXTENDEDVALUE_SIZE);
   ASSERT_LE(sizeof(TThermostat_Value), SUPLA_CHANNELVALUE_SIZE);

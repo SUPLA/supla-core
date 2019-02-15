@@ -1059,18 +1059,41 @@ typedef struct {
   unsigned char dayOfWeek;  // 0-6
 } TThermostat_Time;         // v. >= 11
 
-#define THERMOSTAT_FIELD_IsOn 0x01
-#define THERMOSTAT_FIELD_Temperatures 0x02
+// Thermostat capability flags - ver. >= 11
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_ONOFF 0x0001
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_AUTO 0x0002
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_COOL 0x0004
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_HEAT 0x0008
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_ECO 0x0010
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_DRY 0x0020
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_FANONLY 0x0040
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_PURIFIER 0x0080
+#define SUPLA_THERMOSTAT_CAP_FLAG_SCHEDULE 0x0100
+
+// Thermostat value flags - ver. >= 11
+#define SUPLA_THERMOSTAT_VALUE_FLAG_ON 0x0001
+#define SUPLA_THERMOSTAT_VALUE_FLAG_AUTO_MODE 0x0002
+#define SUPLA_THERMOSTAT_VALUE_FLAG_COOL_MODE 0x0004
+#define SUPLA_THERMOSTAT_VALUE_FLAG_HEAT_MODE 0x0008
+#define SUPLA_THERMOSTAT_VALUE_FLAG_ECO_MODE 0x0010
+#define SUPLA_THERMOSTAT_VALUE_FLAG_DRY_MODE 0x0020
+#define SUPLA_THERMOSTAT_VALUE_FLAG_FANONLY_MODE 0x0040
+#define SUPLA_THERMOSTAT_VALUE_FLAG_PURIFIER_MODE 0x0080
+
+// Thermostat fields - ver. >= 11
+#define THERMOSTAT_FIELD_MeasuredTemperatures 0x01
+#define THERMOSTAT_FIELD_PresetTemperatures 0x02
 #define THERMOSTAT_FIELD_Flags 0x04
-#define THERMOSTAT_FIELD_Time 0x08
-#define THERMOSTAT_FIELD_Shedule 0x10
+#define THERMOSTAT_FIELD_Values 0x08
+#define THERMOSTAT_FIELD_Time 0x10
+#define THERMOSTAT_FIELD_Shedule 0x20
 
 typedef struct {
   unsigned char Fields;
-  unsigned char IsOn;
   _supla_int16_t MeasuredTemperature[5];  // * 0.01
   _supla_int16_t PresetTemperature[5];    // * 0.01
-  unsigned char Flags[4];
+  _supla_int16_t Flags[4];
+  _supla_int16_t Values[4];
   TThermostat_Time Time;
   unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
 } TThermostat_ExtendedValue;     // v. >= 11
@@ -1082,24 +1105,28 @@ typedef struct {
   _supla_int16_t PresetTemperature;    // * 0.01
 } TThermostat_Value;                   // v. >= 11
 
-#define THERMOSTAT_CFGFIELD_On 0x0001
-#define THERMOSTAT_CFGFIELD_Temperature1 0x0002
-#define THERMOSTAT_CFGFIELD_Temperature2 0x0004
-#define THERMOSTAT_CFGFIELD_Temperature3 0x0008
-#define THERMOSTAT_CFGFIELD_Temperature4 0x0010
-#define THERMOSTAT_CFGFIELD_Temperature5 0x0020
-#define THERMOSTAT_CFGFIELD_Flags1 0x0040
-#define THERMOSTAT_CFGFIELD_Flags2 0x0080
-#define THERMOSTAT_CFGFIELD_Flags3 0x0100
-#define THERMOSTAT_CFGFIELD_Flags4 0x0200
-#define THERMOSTAT_CFGFIELD_Time 0x0400
-#define THERMOSTAT_CFGFIELD_Shedule 0x0800
+// Thermostat configuration fields - ver. >= 11
+#define THERMOSTAT_CFGFIELD_Temperature1 0x0001
+#define THERMOSTAT_CFGFIELD_Temperature2 0x0002
+#define THERMOSTAT_CFGFIELD_Temperature3 0x0004
+#define THERMOSTAT_CFGFIELD_Temperature4 0x0008
+#define THERMOSTAT_CFGFIELD_Temperature5 0x0010
+#define THERMOSTAT_CFGFIELD_Flags1 0x0020
+#define THERMOSTAT_CFGFIELD_Flags2 0x0040
+#define THERMOSTAT_CFGFIELD_Flags3 0x0080
+#define THERMOSTAT_CFGFIELD_Flags4 0x0100
+#define THERMOSTAT_CFGFIELD_Values1 0x0200
+#define THERMOSTAT_CFGFIELD_Values2 0x0400
+#define THERMOSTAT_CFGFIELD_Values3 0x0800
+#define THERMOSTAT_CFGFIELD_Values4 0x1000
+#define THERMOSTAT_CFGFIELD_Time 0x2000
+#define THERMOSTAT_CFGFIELD_Schedule 0x4000
 
 typedef struct {
   unsigned _supla_int16_t Fields;
-  unsigned char On;
   _supla_int16_t Temperature[5];  // * 0.01
-  unsigned char Flags[4];
+  _supla_int16_t Flags[4];
+  _supla_int16_t Values[4];
   TThermostat_Time Time;
   unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
 } TThermostat_Configuration;     // v. >= 11
