@@ -3117,4 +3117,61 @@ TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
   ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
 }
 
+TEST_F(SrpcTest, evtool_v1_extended2thermostatextended) {
+  TThermostat_ExtendedValue th_ev;
+  DECLARE_WITH_RANDOM(TSuplaChannelExtendedValue, ev);
+  ev.type = EV_TYPE_THERMOSTAT_DETAILS_V1;
+
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(NULL, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(&ev, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(NULL, &th_ev));
+
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(&ev, &th_ev));
+  ev.size = sizeof(TThermostat_ExtendedValue) + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(&ev, &th_ev));
+
+  ev.size = sizeof(TThermostat_ExtendedValue);
+  ASSERT_EQ(1, srpc_evtool_v1_extended2thermostatextended(&ev, &th_ev));
+  ASSERT_EQ(0, memcmp(&th_ev, ev.value, sizeof(TThermostat_ExtendedValue)));
+}
+
+TEST_F(SrpcTest, evtool_v1_thermostatextended2extended) {
+  TSuplaChannelExtendedValue ev;
+  DECLARE_WITH_RANDOM(TThermostat_ExtendedValue, th_ev);
+  th_ev.Fields = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(NULL, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(&th_ev, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(NULL, &ev));
+
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(1, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_MeasuredTemperatures;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(11, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_PresetTemperatures;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(21, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Flags;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(29, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Values;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(37, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Time;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(41, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Schedule;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(125, ev.size);
+
+  ASSERT_EQ(0, memcmp(ev.value, &th_ev, sizeof(TThermostat_ExtendedValue)));
+}
+
 }  // namespace

@@ -278,6 +278,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
     TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue *em_ev);
 
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
+    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
+    TThermostat_ExtendedValue *th_ev, TSuplaChannelExtendedValue *ev);
+
 #ifndef SRPC_EXCLUDE_CLIENT
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
     TSC_ImpulseCounter_ExtendedValue *ic_ev, TSuplaChannelExtendedValue *ev);

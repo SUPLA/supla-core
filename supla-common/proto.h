@@ -1106,7 +1106,7 @@ typedef struct {
 #define THERMOSTAT_FIELD_Flags 0x04
 #define THERMOSTAT_FIELD_Values 0x08
 #define THERMOSTAT_FIELD_Time 0x10
-#define THERMOSTAT_FIELD_Shedule 0x20
+#define THERMOSTAT_FIELD_Schedule 0x20
 
 typedef struct {
   unsigned char Fields;

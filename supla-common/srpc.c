@@ -1893,6 +1893,60 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
   return 1;
 }
 
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
+    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev) {
+  if (ev == NULL || th_ev == NULL ||
+      ev->type != EV_TYPE_THERMOSTAT_DETAILS_V1 || ev->size == 0 ||
+      ev->size > sizeof(TThermostat_ExtendedValue)) {
+    return 0;
+  }
+
+  memset(th_ev, 0, sizeof(TThermostat_ExtendedValue));
+  memcpy(th_ev, ev->value, ev->size);
+
+  return 1;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
+    TThermostat_ExtendedValue *th_ev, TSuplaChannelExtendedValue *ev) {
+  if (th_ev == NULL || ev == NULL) {
+    return 0;
+  }
+
+  memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev->type = EV_TYPE_THERMOSTAT_DETAILS_V1;
+  ev->size = 0;
+
+  unsigned _supla_int_t size = sizeof(TThermostat_ExtendedValue);
+
+  if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Schedule)) {
+    size -= sizeof(th_ev->Shedule);
+    if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Time)) {
+      size -= sizeof(th_ev->Time);
+      if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Values)) {
+        size -= sizeof(th_ev->Values);
+        if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Flags)) {
+          size -= sizeof(th_ev->Flags);
+          if (0 == (th_ev->Fields & THERMOSTAT_FIELD_PresetTemperatures)) {
+            size -= sizeof(th_ev->PresetTemperature);
+            if (0 == (th_ev->Fields & THERMOSTAT_FIELD_MeasuredTemperatures)) {
+              size -= sizeof(th_ev->MeasuredTemperature);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (size > 0) {
+    ev->size = size;
+    memcpy(ev->value, th_ev, size);
+    return 1;
+  }
+
+  return 0;
+}
+
 #ifndef SRPC_EXCLUDE_CLIENT
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
     TSC_ImpulseCounter_ExtendedValue *ic_ev, TSuplaChannelExtendedValue *ev) {
@@ -1924,4 +1978,3 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/
-
