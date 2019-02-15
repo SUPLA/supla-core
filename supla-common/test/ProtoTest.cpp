@@ -33,7 +33,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(2, sizeof(_supla_int16_t));
   ASSERT_EQ(4, sizeof(_supla_int_t));
   ASSERT_EQ(8, sizeof(_supla_int64_t));
-  ASSERT_EQ(16, sizeof(struct timeval));
+  ASSERT_EQ(16, sizeof(struct _supla_timeval));
   ASSERT_EQ(10258, sizeof(TSuplaDataPacket));
   ASSERT_EQ(23, sizeof(TSDC_SuplaGetVersionResult));
   ASSERT_EQ(2, sizeof(TSDC_SuplaVersionError));

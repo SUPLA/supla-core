@@ -48,8 +48,19 @@ struct _supla_timeval {
 #define _supla_int16_t short
 #define _supla_int_t int
 #define _supla_int64_t long long
+#elif defined(__arm__)
 
-#else /*defined(ESP8266)*/
+struct _supla_timeval {
+  long long tv_sec;
+  long long tv_usec;
+};
+
+#include <sys/time.h>
+#define _supla_int16_t short
+#define _supla_int_t int
+#define _supla_int64_t long long
+
+#else /*__arm__*/
 #include <sys/time.h>
 #define _supla_int16_t short
 #define _supla_int_t int
