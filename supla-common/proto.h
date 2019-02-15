@@ -1004,7 +1004,7 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
-// CALCFG == CALIBRATION / CONSIG
+// CALCFG == CALIBRATION / CONFIG
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
@@ -1059,6 +1059,23 @@ typedef struct {
   unsigned char dayOfWeek;  // 0-6
 } TThermostat_Time;         // v. >= 11
 
+typedef struct {
+  TThermostat_Time Time;
+  unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
+} TThermostat_Schedule;
+
+// Thermostat configuration commands - ver. >= 11
+#define SUPLA_THERMOSTAT_CMD_TURNON 1
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO 2
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_COOL 3
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_HEAT 4
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_ECO 5
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_DRY 6
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_FANONY 7
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_PURIFIER 8
+#define SUPLA_THERMOSTAT_CMD_SET_SCHEDULE 9
+#define SUPLA_THERMOSTAT_CMD_SET_TIME 10
+
 // Thermostat capability flags - ver. >= 11
 #define SUPLA_THERMOSTAT_CAP_FLAG_MODE_ONOFF 0x0001
 #define SUPLA_THERMOSTAT_CAP_FLAG_MODE_AUTO 0x0002
@@ -1105,31 +1122,6 @@ typedef struct {
   _supla_int16_t PresetTemperature;    // * 0.01
 } TThermostat_Value;                   // v. >= 11
 
-// Thermostat configuration fields - ver. >= 11
-#define THERMOSTAT_CFGFIELD_Temperature1 0x0001
-#define THERMOSTAT_CFGFIELD_Temperature2 0x0002
-#define THERMOSTAT_CFGFIELD_Temperature3 0x0004
-#define THERMOSTAT_CFGFIELD_Temperature4 0x0008
-#define THERMOSTAT_CFGFIELD_Temperature5 0x0010
-#define THERMOSTAT_CFGFIELD_Flags1 0x0020
-#define THERMOSTAT_CFGFIELD_Flags2 0x0040
-#define THERMOSTAT_CFGFIELD_Flags3 0x0080
-#define THERMOSTAT_CFGFIELD_Flags4 0x0100
-#define THERMOSTAT_CFGFIELD_Values1 0x0200
-#define THERMOSTAT_CFGFIELD_Values2 0x0400
-#define THERMOSTAT_CFGFIELD_Values3 0x0800
-#define THERMOSTAT_CFGFIELD_Values4 0x1000
-#define THERMOSTAT_CFGFIELD_Time 0x2000
-#define THERMOSTAT_CFGFIELD_Schedule 0x4000
-
-typedef struct {
-  unsigned _supla_int16_t Fields;
-  _supla_int16_t Temperature[5];  // * 0.01
-  _supla_int16_t Flags[4];
-  _supla_int16_t Values[4];
-  TThermostat_Time Time;
-  unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
-} TThermostat_Configuration;     // v. >= 11
 
 #pragma pack(pop)
 
