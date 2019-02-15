@@ -267,6 +267,8 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
 #define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
 
+#define SUPLA_CHANNELTYPE_THERMOSTAT 6000  // ver. >= 11
+
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
 #define SUPLA_CHANNELFNC_NONE 0
@@ -305,6 +307,7 @@ extern "C" {
 #define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
 #define SUPLA_CHANNELFNC_GAS_METER 320             // ver. >= 10
 #define SUPLA_CHANNELFNC_WATER_METER 330           // ver. >= 10
+#define SUPLA_CHANNELFNC_THERMOSTAT 400            // ver. >= 11
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE 0x0002
@@ -1121,7 +1124,6 @@ typedef struct {
   _supla_int16_t MeasuredTemperature;  // * 0.01
   _supla_int16_t PresetTemperature;    // * 0.01
 } TThermostat_Value;                   // v. >= 11
-
 
 #pragma pack(pop)
 
