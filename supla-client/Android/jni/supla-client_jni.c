@@ -366,6 +366,9 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
         
         fid = supla_client_GetFieldID(env, cch, "LocationID", "I");
         (*env)->SetIntField(env, ch, fid, channel->LocationID);
+      
+        fid = supla_client_GetFieldID(env, cch, "Type", "I");
+        (*env)->SetIntField(env, ch, fid, channel->Type);
         
         fid = supla_client_GetFieldID(env, cch, "Func", "I");
         (*env)->SetIntField(env, ch, fid, channel->Func);

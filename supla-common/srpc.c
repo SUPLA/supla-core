@@ -1257,7 +1257,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
   ps.now.tv_usec[0] = 0;
   ps.now.tv_usec[1] = 0;
 #else
-  gettimeofday(&ps.now, NULL);
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  ps.now.tv_sec = now.tv_sec;
+  ps.now.tv_usec = now.tv_usec;
 #endif
 
   return srpc_async_call(_srpc, SUPLA_DCS_CALL_PING_SERVER, (char *)&ps,
@@ -1271,7 +1274,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_ping_server_result(void *_srpc) {
   ps.now.tv_sec = 0;
   ps.now.tv_usec = 0;
 #else
-  gettimeofday(&ps.now, NULL);
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  ps.now.tv_sec = now.tv_sec;
+  ps.now.tv_usec = now.tv_usec;
 #endif
 
   return srpc_async_call(_srpc, SUPLA_SDC_CALL_PING_SERVER_RESULT, (char *)&ps,
