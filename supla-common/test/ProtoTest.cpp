@@ -117,7 +117,6 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TThermostat_ExtendedValue), SUPLA_CHANNELEXTENDEDVALUE_SIZE);
   ASSERT_LE(sizeof(TThermostat_Value), SUPLA_CHANNELVALUE_SIZE);
   ASSERT_LE(sizeof(TThermostat_Schedule), SUPLA_CALCFG_DATA_MAXSIZE);
-
 }
 
 TEST_F(ProtoTest, init) {
