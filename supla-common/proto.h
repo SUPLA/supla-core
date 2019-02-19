@@ -1111,10 +1111,10 @@ typedef struct {
 
 typedef struct {
   unsigned char Fields;
-  _supla_int16_t MeasuredTemperature[5];  // * 0.01
-  _supla_int16_t PresetTemperature[5];    // * 0.01
-  _supla_int16_t Flags[4];
-  _supla_int16_t Values[4];
+  _supla_int16_t MeasuredTemperature[10];  // * 0.01
+  _supla_int16_t PresetTemperature[10];    // * 0.01
+  _supla_int16_t Flags[8];
+  _supla_int16_t Values[8];
   TThermostat_Time Time;
   unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
 } TThermostat_ExtendedValue;     // v. >= 11
