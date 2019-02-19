@@ -114,10 +114,12 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(6, sizeof(TThermostat_Value));
   ASSERT_EQ(169, sizeof(TThermostat_Schedule));
   ASSERT_EQ(104, sizeof(TThermostat_ScheduleCfg));
+  ASSERT_EQ(22, sizeof(TThermostatTemperatureCfg));
 
   ASSERT_LE(sizeof(TThermostat_ExtendedValue), SUPLA_CHANNELEXTENDEDVALUE_SIZE);
   ASSERT_LE(sizeof(TThermostat_Value), SUPLA_CHANNELVALUE_SIZE);
   ASSERT_LE(sizeof(TThermostat_ScheduleCfg), SUPLA_CALCFG_DATA_MAXSIZE);
+  ASSERT_LE(sizeof(TThermostatTemperatureCfg), SUPLA_CALCFG_DATA_MAXSIZE);
 }
 
 TEST_F(ProtoTest, init) {
