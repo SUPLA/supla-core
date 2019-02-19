@@ -1092,6 +1092,23 @@ typedef struct {
   TThermostatValueGroup Group[4];
 } TThermostat_ScheduleCfg;  // v. >= 11
 
+#define TEMPERATURE_INDEX1 0x0001
+#define TEMPERATURE_INDEX2 0x0002
+#define TEMPERATURE_INDEX3 0x0004
+#define TEMPERATURE_INDEX4 0x0008
+#define TEMPERATURE_INDEX5 0x0010
+#define TEMPERATURE_INDEX6 0x0020
+#define TEMPERATURE_INDEX7 0x0040
+#define TEMPERATURE_INDEX8 0x0080
+#define TEMPERATURE_INDEX9 0x0100
+#define TEMPERATURE_INDEX10 0x0200
+
+typedef struct {
+  _supla_int16_t Index;  // BIT0 Temperature[0], BIT1 Temperature[1] etc...
+  _supla_int16_t Temperature[10];
+
+} TThermostatTemperatureCfg;
+
 // Thermostat configuration commands - ver. >= 11
 #define SUPLA_THERMOSTAT_CMD_TURNON 1
 #define SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO 2
