@@ -782,9 +782,10 @@ typedef struct {
 
   _supla_int_t count;
   _supla_int_t total_left;
-  TSC_SuplaChannelGroupRelation items
-      [SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupRelationPack;                // ver. >= 9
+  TSC_SuplaChannelGroupRelation
+      items[SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in
+                                                         // struct!
+} TSC_SuplaChannelGroupRelationPack;                     // ver. >= 9
 
 typedef struct {
   // client -> server
@@ -992,7 +993,9 @@ typedef struct {
   _supla_int64_t calculated_value;   // * 0.001
 } TSC_ImpulseCounter_ExtendedValue;  // v. >= 10
 
-typedef struct { unsigned _supla_int64_t counter; } TDS_ImpulseCounter_Value;
+typedef struct {
+  unsigned _supla_int64_t counter;
+} TDS_ImpulseCounter_Value;
 
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
@@ -1062,23 +1065,47 @@ typedef struct {
   unsigned char dayOfWeek;  // 0-6
 } TThermostat_Time;         // v. >= 11
 
+#define THERMOSTAT_SCHEDULE_DAY_MONDAY 0x01
+#define THERMOSTAT_SCHEDULE_DAY_TUESDAY 0x02
+#define THERMOSTAT_SCHEDULE_DAY_WEDNESDAY 0x04
+#define THERMOSTAT_SCHEDULE_DAY_THURSDAY 0x08
+#define THERMOSTAT_SCHEDULE_DAY_FRIDAY 0x10
+#define THERMOSTAT_SCHEDULE_DAY_SATURDAY 0x20
+#define THERMOSTAT_SCHEDULE_DAY_SUNDAY 0x40
+#define THERMOSTAT_SCHEDULE_DAY_ALL 0xFF
+
+#define THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_TEMPERATURE 0
+#define THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_PROGRAM 1
+
 typedef struct {
-  TThermostat_Time Time;
-  unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
-} TThermostat_Schedule;
+  unsigned char ValueType;  // THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_
+  char HourValue[7][24];    // 7 days x 24h
+} TThermostat_Schedule;     // v. >= 11
+
+typedef struct {
+  unsigned char ValueType;  // THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_
+  unsigned char Days;       // THERMOSTAT_SCHEDULE_DAY_
+  char HourValue[24];
+} TThermostatValueGroup;  // v. >= 11
+
+typedef struct {
+  TThermostatValueGroup Group[4];
+} TThermostat_ScheduleCfg;  // v. >= 11
 
 // Thermostat configuration commands - ver. >= 11
 #define SUPLA_THERMOSTAT_CMD_TURNON 1
 #define SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO 2
 #define SUPLA_THERMOSTAT_CMD_SET_MODE_COOL 3
 #define SUPLA_THERMOSTAT_CMD_SET_MODE_HEAT 4
-#define SUPLA_THERMOSTAT_CMD_SET_MODE_ECO 5
-#define SUPLA_THERMOSTAT_CMD_SET_MODE_DRY 6
-#define SUPLA_THERMOSTAT_CMD_SET_MODE_FANONY 7
-#define SUPLA_THERMOSTAT_CMD_SET_MODE_PURIFIER 8
-#define SUPLA_THERMOSTAT_CMD_SET_SCHEDULE 9
-#define SUPLA_THERMOSTAT_CMD_SET_TIME 10
-#define SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE 11
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL 5
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_ECO 6
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_TURBO 7
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_DRY 8
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_FANONY 9
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_PURIFIER 10
+#define SUPLA_THERMOSTAT_CMD_SET_SCHEDULE 11
+#define SUPLA_THERMOSTAT_CMD_SET_TIME 12
+#define SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE 13
 
 // Thermostat capability flags - ver. >= 11
 #define SUPLA_THERMOSTAT_CAP_FLAG_MODE_ONOFF 0x0001
@@ -1116,7 +1143,7 @@ typedef struct {
   _supla_int16_t Flags[8];
   _supla_int16_t Values[8];
   TThermostat_Time Time;
-  unsigned char Shedule[7][12];  // 7 days x 24h (4bit/hour)
+  TThermostat_Schedule Shedule;  // 7 days x 24h (4bit/hour)
 } TThermostat_ExtendedValue;     // v. >= 11
 
 typedef struct {
