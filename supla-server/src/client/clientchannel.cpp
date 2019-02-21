@@ -103,6 +103,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_GAS_METER:
     case SUPLA_CHANNELFNC_WATER_METER:
+    case SUPLA_CHANNELFNC_THERMOSTAT:
       return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
