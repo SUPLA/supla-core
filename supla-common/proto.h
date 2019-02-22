@@ -1106,7 +1106,6 @@ typedef struct {
 typedef struct {
   _supla_int16_t Index;  // BIT0 Temperature[0], BIT1 Temperature[1] etc...
   _supla_int16_t Temperature[10];
-
 } TThermostatTemperatureCfg;
 
 // Thermostat configuration commands - ver. >= 11
