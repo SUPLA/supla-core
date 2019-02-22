@@ -529,6 +529,89 @@ jobject supla_android_client_impulsecountervalue_to_jobject(
                            (*env)->NewStringUTF(env, ic_ev->custom_unit));
 }
 
+jobject supla_android_client_thermostatvalue_to_jobject(
+    TAndroidSuplaClient *asc, JNIEnv *env, TThermostat_ExtendedValue *th_ev) {
+  jclass cls = (*env)->FindClass(
+      env, "org/supla/android/lib/SuplaChannelThermostatValue");
+  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "()V");
+
+  jobject m_obj = (*env)->NewObject(env, cls, methodID);
+  int a;
+
+  if (th_ev->Fields & THERMOSTAT_FIELD_MeasuredTemperatures) {
+    jmethodID set_measured_temperature_m_mid =
+        (*env)->GetMethodID(env, cls, "setMeasuredTemperature", "(ID)Z");
+
+    for (a = 0; a < sizeof(th_ev->MeasuredTemperature) / sizeof(_supla_int16_t);
+         a++) {
+      (*env)->CallBooleanMethod(env, m_obj, set_measured_temperature_m_mid, a,
+                                th_ev->MeasuredTemperature[a] / 100.0);
+    }
+  }
+
+  if (th_ev->Fields & THERMOSTAT_FIELD_PresetTemperatures) {
+    jmethodID set_preset_temperature_m_mid =
+        (*env)->GetMethodID(env, cls, "setPresetTemperature", "(ID)Z");
+
+    for (a = 0; a < sizeof(th_ev->PresetTemperature) / sizeof(_supla_int16_t);
+         a++) {
+      (*env)->CallBooleanMethod(env, m_obj, set_preset_temperature_m_mid, a,
+                                th_ev->PresetTemperature[a] / 100.0);
+    }
+  }
+
+  if (th_ev->Fields & THERMOSTAT_FIELD_Flags) {
+    jmethodID set_flags_m_mid =
+        (*env)->GetMethodID(env, cls, "setFlags", "(II)Z");
+
+    for (a = 0; a < sizeof(th_ev->Flags) / sizeof(_supla_int16_t); a++) {
+      (*env)->CallBooleanMethod(env, m_obj, set_flags_m_mid, a,
+                                th_ev->Flags[a]);
+    }
+  }
+
+  if (th_ev->Fields & THERMOSTAT_FIELD_Values) {
+    jmethodID set_values_m_mid =
+        (*env)->GetMethodID(env, cls, "setValues", "(II)Z");
+
+    for (a = 0; a < sizeof(th_ev->Values) / sizeof(_supla_int16_t); a++) {
+      (*env)->CallBooleanMethod(env, m_obj, set_values_m_mid, a,
+                                th_ev->Values[a]);
+    }
+  }
+
+  if (th_ev->Fields & THERMOSTAT_FIELD_Time) {
+    jmethodID set_time_m_mid =
+        (*env)->GetMethodID(env, cls, "setTime", "(BBBB)V");
+
+    for (a = 0; a < sizeof(th_ev->Values) / sizeof(_supla_int16_t); a++) {
+      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, a, th_ev->Time.sec,
+                             th_ev->Time.min, th_ev->Time.hour,
+                             th_ev->Time.dayOfWeek);
+    }
+  }
+
+  if (th_ev->Fields & THERMOSTAT_FIELD_Schedule) {
+    jmethodID set_schedule_vtype_m_mid =
+        (*env)->GetMethodID(env, cls, "setScheduleValueType", "(B)V");
+
+    (*env)->CallVoidMethod(env, m_obj, set_schedule_vtype_m_mid,
+                           th_ev->Shedule.ValueType);
+
+    jmethodID set_schedule_value_m_mid =
+        (*env)->GetMethodID(env, cls, "setScheduleValue", "(BBB)V");
+
+    for (a = 0; a < 7; a++) {
+      for (int b = 0; b < 24; b++) {
+        (*env)->CallVoidMethod(env, m_obj, set_schedule_value_m_mid, a, b,
+                               th_ev->Shedule.HourValue[a][b]);
+      }
+    }
+  }
+
+  return m_obj;
+}
+
 jobject supla_android_client_channelextendedvalue_to_jobject(
     void *_suplaclient, void *user_data,
     TSuplaChannelExtendedValue *channel_extendedvalue) {
@@ -571,6 +654,20 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
         jobject chv = supla_android_client_impulsecountervalue_to_jobject(
             asc, env, &ic_ev);
         (*env)->SetObjectField(env, val, fid, chv);
+      }
+    } else if (channel_extendedvalue->type == EV_TYPE_THERMOSTAT_DETAILS_V1) {
+      TThermostat_ExtendedValue th_ev;
+      if (srpc_evtool_v1_extended2thermostatextended(channel_extendedvalue,
+                                                     &th_ev) == 1) {
+        fid = supla_client_GetFieldID(
+            env, cval, "ThermostatValue",
+            "Lorg/supla/android/lib/SuplaChannelThermostatValue;");
+
+        jobject chv =
+            supla_android_client_thermostatvalue_to_jobject(asc, env, &th_ev);
+        /*
+        (*env)->SetObjectField(env, val, fid, chv);
+        */
       }
     } else if (channel_extendedvalue->size > 0) {
       jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
