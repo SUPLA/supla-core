@@ -1305,3 +1305,35 @@ Java_org_supla_android_lib_SuplaClient_scOAuthTokenRequest(JNIEnv *env,
 
   return JNI_FALSE;
 };
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scDeviceCalCfgRequest(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channelId, jint command,
+    jint dataType, jbyteArray data) {
+  void *supla_client = supla_client_ptr(_asc);
+
+  if (supla_client) {
+    TCS_DeviceCalCfgRequest request;
+    memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest));
+
+    jsize len = (*env)->IsSameObject(env, data, NULL)
+                    ? 0
+                    : (*env)->GetArrayLength(env, data);
+
+    if (len > 0 && len <= SUPLA_CALCFG_DATA_MAXSIZE) {
+      jbyte *d = (*env)->GetByteArrayElements(env, data, 0);
+      for (int a = 0; a < len; a++) {
+        request.Data[a] = d[a];
+      }
+      request.DataSize = len;
+      (*env)->ReleaseByteArrayElements(env, data, d, 0);
+    }
+
+    request.ChannelID = channelId;
+    request.Command = command;
+    request.DataType = dataType;
+    return supla_client_device_calcfg_request(supla_client, &request);
+  }
+
+  return JNI_FALSE;
+};
