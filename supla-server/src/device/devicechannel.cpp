@@ -637,19 +637,22 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
 
 supla_channel_thermostat_measurement *
 supla_device_channel::getThermostatMeasurement(void) {
-  if (getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-    switch (getFunc()) {
-      case SUPLA_CHANNELFNC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_THERMOSTAT_HP_HOMEPLUS: {
-        char value[SUPLA_CHANNELVALUE_SIZE];
-        getValue(value);
-        TThermostat_Value *th_val = (TThermostat_Value *)value;
+  switch (getType()) {
+    case SUPLA_CHANNELTYPE_THERMOSTAT:
+    case SUPLA_CHANNELTYPE_THERMOSTAT_HP_HOMEPLUS:
+      switch (getFunc()) {
+        case SUPLA_CHANNELFNC_THERMOSTAT:
+        case SUPLA_CHANNELFNC_THERMOSTAT_HP_HOMEPLUS: {
+          char value[SUPLA_CHANNELVALUE_SIZE];
+          getValue(value);
+          TThermostat_Value *th_val = (TThermostat_Value *)value;
 
-        return new supla_channel_thermostat_measurement(
-            getId(), th_val->IsOn > 0, th_val->MeasuredTemperature,
-            th_val->PresetTemperature);
+          return new supla_channel_thermostat_measurement(
+              getId(), th_val->IsOn > 0, th_val->MeasuredTemperature,
+              th_val->PresetTemperature);
+        }
       }
-    }
+      break;
   }
 
   return NULL;
