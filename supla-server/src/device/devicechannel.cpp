@@ -131,6 +131,11 @@ char supla_channel_icarr_clean(void *ptr) {
   return 1;
 }
 
+char supla_channel_tharr_clean(void *ptr) {
+  delete (supla_channel_thermostat_measurement *)ptr;
+  return 1;
+}
+
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     int ChannelId, TElectricityMeter_ExtendedValue *em_ev) {
   this->ChannelId = ChannelId;
@@ -196,6 +201,37 @@ _supla_int64_t supla_channel_ic_measurement::get_calculated_i(
 void supla_channel_ic_measurement::free(void *icarr) {
   safe_array_clean(icarr, supla_channel_icarr_clean);
   safe_array_free(icarr);
+}
+
+//-----------------------------------------------------
+
+supla_channel_thermostat_measurement::supla_channel_thermostat_measurement(
+    int ChannelId, bool on, double MeasuredTemperature,
+    double PresetTemperature) {
+  this->MeasuredTemperature = MeasuredTemperature;
+  this->PresetTemperature = PresetTemperature;
+  this->on = on;
+  this->ChannelId = ChannelId;
+}
+
+int supla_channel_thermostat_measurement::getChannelId(void) {
+  return this->ChannelId;
+}
+
+double supla_channel_thermostat_measurement::getMeasuredTemperature(void) {
+  return MeasuredTemperature;
+}
+
+double supla_channel_thermostat_measurement::getPresetTemperature(void) {
+  return PresetTemperature;
+}
+
+bool supla_channel_thermostat_measurement::getOn(void) { return this->on; }
+
+// static
+void supla_channel_thermostat_measurement::free(void *tharr) {
+  safe_array_clean(tharr, supla_channel_tharr_clean);
+  safe_array_free(tharr);
 }
 
 //-----------------------------------------------------
@@ -592,6 +628,26 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
             getId(), ic_val->counter,
             supla_channel_ic_measurement::get_calculated_i(Param3,
                                                            ic_val->counter));
+      }
+    }
+  }
+
+  return NULL;
+}
+
+supla_channel_thermostat_measurement *
+supla_device_channel::getThermostatMeasurement(void) {
+  if (getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_THERMOSTAT:
+      case SUPLA_CHANNELFNC_THERMOSTAT_HP_HOMEPLUS: {
+        char value[SUPLA_CHANNELVALUE_SIZE];
+        getValue(value);
+        TThermostat_Value *th_val = (TThermostat_Value *)value;
+
+        return new supla_channel_thermostat_measurement(
+            getId(), th_val->IsOn > 0, th_val->MeasuredTemperature,
+            th_val->PresetTemperature);
       }
     }
   }
@@ -1165,6 +1221,26 @@ void supla_device_channels::get_ic_measurement(void *icarr) {
           channel->getImpulseCounterMeasurement();
       if (ic) {
         safe_array_add(icarr, ic);
+      }
+    }
+  }
+
+  safe_array_unlock(arr);
+}
+
+void supla_device_channels::get_thermostat_measurement(void *tharr) {
+  int a;
+  safe_array_lock(arr);
+
+  for (a = 0; a < safe_array_count(arr); a++) {
+    supla_device_channel *channel =
+        (supla_device_channel *)safe_array_get(arr, a);
+
+    if (channel != NULL) {
+      supla_channel_thermostat_measurement *th =
+          channel->getThermostatMeasurement();
+      if (th) {
+        safe_array_add(tharr, th);
       }
     }
   }

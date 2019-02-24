@@ -455,6 +455,10 @@ void supla_device::get_ic_measurement(void *icarr) {
   channels->get_ic_measurement(icarr);
 }
 
+void supla_device::get_thermostat_measurement(void *tharr) {
+  channels->get_thermostat_measurement(tharr);
+}
+
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
   return channels->get_channel_char_value(ChannelID, Value);
 }

@@ -1577,6 +1577,40 @@ void database::add_impulses(supla_channel_ic_measurement *ic) {
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
+void database::add_thermostat_measurements(
+    supla_channel_thermostat_measurement *th) {
+  char buff1[20];
+  memset(buff1, 0, sizeof(buff1));
+
+  char buff2[20];
+  memset(buff2, 0, sizeof(buff2));
+
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  int ChannelId = th->getChannelId();
+  snprintf(buff1, sizeof(buff1), "%05.2f", th->getMeasuredTemperature());
+  snprintf(buff2, sizeof(buff2), "%05.2f", th->getPresetTemperature());
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ChannelId;
+
+  pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[1].buffer = (char *)buff1;
+  pbind[1].buffer_length = strnlen(buff1, 20);
+
+  pbind[2].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[2].buffer = (char *)buff2;
+  pbind[2].buffer_length = strnlen(buff2, 20);
+
+  const char sql[] = "CALL `supla_add_thermostat_log_item`(?,?,?)";
+
+  MYSQL_STMT *stmt;
+  stmt_execute((void **)&stmt, sql, pbind, 3, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_device_firmware_update_url(
     int DeviceID, TDS_FirmwareUpdateParams *params,
     TSD_FirmwareUpdate_UrlResult *url) {

@@ -139,6 +139,7 @@ class database : public dbcommon {
 
   void add_electricity_measurement(supla_channel_electricity_measurement *em);
   void add_impulses(supla_channel_ic_measurement *ic);
+  void add_thermostat_measurements(supla_channel_thermostat_measurement *th);
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);

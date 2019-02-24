@@ -97,6 +97,26 @@ class supla_channel_ic_measurement {
   static void free(void *icarr);
 };
 
+class supla_channel_thermostat_measurement {
+ private:
+  int ChannelId;
+  bool on;
+  double MeasuredTemperature;
+  double PresetTemperature;
+
+ public:
+  supla_channel_thermostat_measurement(int ChannelId, bool on,
+                                       double MeasuredTemperature,
+                                       double PresetTemperature);
+
+  int getChannelId(void);
+  double getMeasuredTemperature(void);
+  double getPresetTemperature(void);
+  bool getOn(void);
+
+  static void free(void *icarr);
+};
+
 class supla_device_channel {
  private:
   int Id;
@@ -143,6 +163,7 @@ class supla_device_channel {
   supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
+  supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   bool converValueToExtended(void);
 };
 
@@ -205,6 +226,7 @@ class supla_device_channels {
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurement(void *emarr);
   void get_ic_measurement(void *icarr);
+  void get_thermostat_measurement(void *tharr);
 
   bool calcfg_request(void *srpc, int SenderID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest *request);
