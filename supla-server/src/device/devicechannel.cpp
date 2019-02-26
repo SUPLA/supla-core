@@ -648,8 +648,8 @@ supla_device_channel::getThermostatMeasurement(void) {
           TThermostat_Value *th_val = (TThermostat_Value *)value;
 
           return new supla_channel_thermostat_measurement(
-              getId(), th_val->IsOn > 0, th_val->MeasuredTemperature,
-              th_val->PresetTemperature);
+              getId(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
+              th_val->PresetTemperature * 0.01);
         }
       }
       break;
