@@ -1133,6 +1133,9 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_CHANNEL_UPDATE_C:
     case SUPLA_SC_CALL_CHANNELPACK_UPDATE_C:
       return 10;
+    case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
+    case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
+      return 11;
   }
 
   return 255;
@@ -1309,6 +1312,21 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
     void *_srpc, TSDC_RegistrationEnabled *reg_enabled) {
   return srpc_async_call(_srpc, SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT,
                          (char *)reg_enabled, sizeof(TSDC_RegistrationEnabled));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc) {
+  return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME, NULL, 0);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
+    void *_srpc, TSDC_UserLocalTime *localtime) {
+  _supla_int_t size = sizeof(TSDC_UserLocalTime) - SUPLA_TIMEZONE_MAXSIZE +
+                      localtime->timezoneSize;
+
+  if (size > sizeof(TSDC_UserLocalTime)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
+                         (char *)localtime, size);
 }
 
 #ifndef SRPC_EXCLUDE_DEVICE

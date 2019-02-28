@@ -170,6 +170,9 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_dcs_async_get_registration_enabled(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
     void *_srpc, TSDC_RegistrationEnabled *reg_enabled);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
+    void *_srpc, TSDC_UserLocalTime *localtime);
 
 #ifndef SRPC_EXCLUDE_DEVICE
 // device <-> server

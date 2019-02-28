@@ -121,6 +121,7 @@ extern "C" {
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
   (SUPLA_MAX_DATA_SIZE - 50)           // ver. >= 10
 #define SUPLA_CALCFG_DATA_MAXSIZE 128  // ver. >= 10
+#define SUPLA_TIMEZONE_MAXSIZE 51      // ver. >= 11
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -179,6 +180,8 @@ extern "C" {
 #define SUPLA_SC_CALL_DEVICE_CALCFG_RESULT 450               // ver. >= 10
 #define SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST 460              // ver. >= 10
 #define SUPLA_DS_CALL_DEVICE_CALCFG_RESULT 470               // ver. >= 10
+#define SUPLA_DCS_CALL_GET_USER_LOCALTIME 480                // ver. >= 11
+#define SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT 490         // ver. >= 11
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -263,12 +266,13 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_DIMMER 4000            // ver. >= 4
 #define SUPLA_CHANNELTYPE_RGBLEDCONTROLLER 4010  // ver. >= 4
 #define SUPLA_CHANNELTYPE_DIMMERANDRGBLED 4020   // ver. >= 4
+#define SUPLA_CHANNELTYPE_VL_DIMMER 4100         // ver. >= 11
 
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
 #define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
 
-#define SUPLA_CHANNELTYPE_THERMOSTAT 6000  // ver. >= 11
-#define SUPLA_CHANNELTYPE_THERMOSTAT_HP_HOMEPLUS 6010  // ver. >= 11
+#define SUPLA_CHANNELTYPE_THERMOSTAT 6000                   // ver. >= 11
+#define SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS 6010  // ver. >= 11
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -295,21 +299,22 @@ extern "C" {
 #define SUPLA_CHANNELFNC_DIMMER 180
 #define SUPLA_CHANNELFNC_RGBLIGHTING 190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING 200
-#define SUPLA_CHANNELFNC_DEPTHSENSOR 210           // ver. >= 5
-#define SUPLA_CHANNELFNC_DISTANCESENSOR 220        // ver. >= 5
-#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230  // ver. >= 8
-#define SUPLA_CHANNELFNC_MAILSENSOR 240            // ver. >= 8
-#define SUPLA_CHANNELFNC_WINDSENSOR 250            // ver. >= 8
-#define SUPLA_CHANNELFNC_PRESSURESENSOR 260        // ver. >= 8
-#define SUPLA_CHANNELFNC_RAINSENSOR 270            // ver. >= 8
-#define SUPLA_CHANNELFNC_WEIGHTSENSOR 280          // ver. >= 8
-#define SUPLA_CHANNELFNC_WEATHER_STATION 290       // ver. >= 8
-#define SUPLA_CHANNELFNC_STAIRCASETIMER 300        // ver. >= 8
-#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
-#define SUPLA_CHANNELFNC_GAS_METER 320             // ver. >= 10
-#define SUPLA_CHANNELFNC_WATER_METER 330           // ver. >= 10
-#define SUPLA_CHANNELFNC_THERMOSTAT 400            // ver. >= 11
-#define SUPLA_CHANNELFNC_THERMOSTAT_HP_HOMEPLUS 410  // ver. >= 11
+#define SUPLA_CHANNELFNC_DEPTHSENSOR 210                  // ver. >= 5
+#define SUPLA_CHANNELFNC_DISTANCESENSOR 220               // ver. >= 5
+#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230         // ver. >= 8
+#define SUPLA_CHANNELFNC_MAILSENSOR 240                   // ver. >= 8
+#define SUPLA_CHANNELFNC_WINDSENSOR 250                   // ver. >= 8
+#define SUPLA_CHANNELFNC_PRESSURESENSOR 260               // ver. >= 8
+#define SUPLA_CHANNELFNC_RAINSENSOR 270                   // ver. >= 8
+#define SUPLA_CHANNELFNC_WEIGHTSENSOR 280                 // ver. >= 8
+#define SUPLA_CHANNELFNC_WEATHER_STATION 290              // ver. >= 8
+#define SUPLA_CHANNELFNC_STAIRCASETIMER 300               // ver. >= 8
+#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310            // ver. >= 10
+#define SUPLA_CHANNELFNC_GAS_METER 320                    // ver. >= 10
+#define SUPLA_CHANNELFNC_WATER_METER 330                  // ver. >= 10
+#define SUPLA_CHANNELFNC_THERMOSTAT 400                   // ver. >= 11
+#define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410  // ver. >= 11
+#define SUPLA_CHANNELFNC_VL_DIMMER 500                    // ver. >= 11
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE 0x0002
@@ -346,7 +351,7 @@ extern "C" {
 #define SUPLA_MFR_NICE 5
 #define SUPLA_MFR_ITEAD 6
 #define SUPLA_MFR_VL 7
-#define SUPLA_MFR_HPOL 8
+#define SUPLA_MFR_HEATPOL 8
 
 #pragma pack(push, 1)
 
@@ -1107,7 +1112,7 @@ typedef struct {
 
 typedef struct {
   _supla_int16_t Index;  // BIT0 Temperature[0], BIT1 Temperature[1] etc...
-  _supla_int16_t Temperature[10];
+  unsigned _supla_int16_t Temperature[10];
 } TThermostatTemperatureCfg;
 
 // Thermostat configuration commands - ver. >= 11
@@ -1170,6 +1175,19 @@ typedef struct {
   _supla_int16_t MeasuredTemperature;  // * 0.01
   _supla_int16_t PresetTemperature;    // * 0.01
 } TThermostat_Value;                   // v. >= 11
+
+typedef struct {
+  unsigned _supla_int16_t year;
+  unsigned char month;
+  unsigned char day;
+  unsigned char dayOfWeek;
+  unsigned char hour;
+  unsigned char min;
+  unsigned char sec;
+  unsigned _supla_int_t
+      timezoneSize;  // including the terminating null byte ('\0')
+  char timezone[SUPLA_TIMEZONE_MAXSIZE];  // Last variable in struct!
+} TSDC_UserLocalTime;
 
 #pragma pack(pop)
 
