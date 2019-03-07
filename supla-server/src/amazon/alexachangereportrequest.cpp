@@ -65,7 +65,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_DIMMER:
-        case SUPLA_CHANNELFNC_VLDIMMER:
+        case SUPLA_CHANNELFNC_VL_DIMMER:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -99,7 +99,7 @@ void supla_alexa_changereport_request::execute(void *sthread) {
                                          value.hi, value.online);
       break;
     case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_VLDIMMER:
+    case SUPLA_CHANNELFNC_VL_DIMMER:
       getClient()->sendBrightnessChangeReport(
           getCauseType(), getChannelId(), value.brightness, value.online, 0);
       break;

@@ -316,7 +316,7 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
 
   bool result = false;
 
-  if (Type == SUPLA_CHANNELTYPE_DIMMER || Type == SUPLA_CHANNELTYPE_VLDIMMER ||
+  if (Type == SUPLA_CHANNELTYPE_DIMMER || Type == SUPLA_CHANNELTYPE_VL_DIMMER ||
       Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
     if (brightness != NULL) {
       *brightness = this->value[0];
@@ -404,7 +404,7 @@ void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
 void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
                                            int color, char color_brightness,
                                            char brightness, char on_off) {
-  if (Func == SUPLA_CHANNELFNC_DIMMER || Func == SUPLA_CHANNELFNC_VLDIMMER ||
+  if (Func == SUPLA_CHANNELFNC_DIMMER || Func == SUPLA_CHANNELFNC_VL_DIMMER ||
       Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
 
@@ -439,7 +439,7 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_VLDIMMER:
+    case SUPLA_CHANNELFNC_VL_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -472,7 +472,7 @@ bool supla_device_channel::isCharValueWritable(void) {
 bool supla_device_channel::isRgbwValueWritable(void) {
   switch (Func) {
     case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_VLDIMMER:
+    case SUPLA_CHANNELFNC_VL_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       return 1;
@@ -1325,7 +1325,7 @@ bool supla_device_channels::get_channel_complex_value(
       } break;
 
       case SUPLA_CHANNELFNC_DIMMER:
-      case SUPLA_CHANNELFNC_VLDIMMER:
+      case SUPLA_CHANNELFNC_VL_DIMMER:
       case SUPLA_CHANNELFNC_RGBLIGHTING:
       case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         channel->getRGBW(&value->color, &value->color_brightness,
