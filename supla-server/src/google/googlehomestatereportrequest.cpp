@@ -84,6 +84,7 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_VLDIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       return !value.hidden_channel;
@@ -135,6 +136,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
           content_exists = true;
           break;
         case SUPLA_CHANNELFNC_DIMMER:
+        case SUPLA_CHANNELFNC_VLDIMMER:
           getClient()->addBrightnessState(ChannelId, value.brightness,
                                           value.online, 0);
           content_exists = true;
