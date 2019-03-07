@@ -44,7 +44,7 @@ bool supla_alexa_changereport_request::verifyExisting(
   existing->setDelay(1000000);
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
-};
+}
 
 bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
@@ -65,7 +65,6 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
         case SUPLA_CHANNELFNC_DIMMER:
-        case SUPLA_CHANNELFNC_VL_DIMMER:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
         case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -83,7 +82,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     case EST_UNKNOWN:
     case EST_GOOGLE_HOME:
       return false;
-  };
+  }
 
   return false;
 }
@@ -99,7 +98,6 @@ void supla_alexa_changereport_request::execute(void *sthread) {
                                          value.hi, value.online);
       break;
     case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_VL_DIMMER:
       getClient()->sendBrightnessChangeReport(
           getCauseType(), getChannelId(), value.brightness, value.online, 0);
       break;

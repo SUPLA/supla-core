@@ -2083,4 +2083,3 @@ bool database::google_home_load_token(supla_google_home *google_home) {
   return result;
 }
 
-//SELECT YEAR(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) year, MONTH(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) month, DAY(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) day, HOUR(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) hour, MINUTE(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) minute, SECOND(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) second, DAYOFWEEK(CONVERT_TZ(UTC_TIMESTAMP(), '+00:00', timezone)) second FROM `supla_user` WHERE id = 1

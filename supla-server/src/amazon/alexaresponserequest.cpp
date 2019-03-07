@@ -64,7 +64,6 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_VL_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
@@ -95,7 +94,6 @@ void supla_alexa_response_request::execute(void *sthread) {
           getCorrelationTokenPtr(), getChannelId(), value.hi, value.online);
       break;
     case SUPLA_CHANNELFNC_DIMMER:
-    case SUPLA_CHANNELFNC_VL_DIMMER:
       getClient()->brightnessControllerSendResponse(
           getCorrelationTokenPtr(), getChannelId(), value.brightness,
           value.online, 0);
