@@ -668,7 +668,6 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
             supla_android_client_thermostatvalue_to_jobject(asc, env, &th_ev);
 
         (*env)->SetObjectField(env, val, fid, chv);
-
       }
     } else if (channel_extendedvalue->size > 0) {
       jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
@@ -1271,7 +1270,7 @@ JNIEXPORT jboolean JNICALL Java_org_supla_android_lib_SuplaClient_scOpen(
 
 JNIEXPORT jboolean JNICALL Java_org_supla_android_lib_SuplaClient_scSetRGBW(
     JNIEnv *env, jobject thiz, jlong _asc, jint id, jint group, jint color,
-    int color_brightness, int brightness) {
+    int color_brightness, int brightness, jint turn_onoff) {
   void *supla_client = supla_client_ptr(_asc);
 
   if (supla_client) {
@@ -1280,7 +1279,7 @@ JNIEXPORT jboolean JNICALL Java_org_supla_android_lib_SuplaClient_scSetRGBW(
     if (brightness > 255 || brightness < 0) brightness = 0;
 
     return supla_client_set_rgbw(supla_client, id, group > 0 ? 1 : 0, color,
-                                 color_brightness, brightness) == 1
+                                 color_brightness, brightness, turn_onoff) == 1
                ? JNI_TRUE
                : JNI_FALSE;
   }

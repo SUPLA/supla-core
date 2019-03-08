@@ -976,22 +976,25 @@ char supla_client_open(void *_suplaclient, int ID, char group, char open) {
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
   value[0] = open;
 
-  return supla_client_send_raw_value(
-      _suplaclient, ID, value, group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
+  return supla_client_send_raw_value(_suplaclient, ID, value,
+                                     group > 0
+                                         ? SUPLA_NEW_VALUE_TARGET_GROUP
                                          : SUPLA_NEW_VALUE_TARGET_CHANNEL);
 }
 
 void _supla_client_set_rgbw_value(char *value, int color, char color_brightness,
-                                  char brightness) {
+                                  char brightness, char turn_onoff) {
   value[0] = brightness;
   value[1] = color_brightness;
   value[2] = (char)((color & 0x000000FF));        // BLUE
   value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
   value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
+  value[5] = turn_onoff > 0 ? 1 : 0;
 }
 
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
-                           char color_brightness, char brightness) {
+                           char color_brightness, char brightness,
+                           char turn_onoff) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
@@ -1001,7 +1004,7 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaNewValue value;
       memset(&value, 0, sizeof(TCS_SuplaNewValue));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness);
+                                   brightness, turn_onoff);
       value.Id = ID;
       value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
                                : SUPLA_NEW_VALUE_TARGET_CHANNEL;
@@ -1013,7 +1016,7 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaChannelNewValue_B value;
       memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness);
+                                   brightness, turn_onoff);
       value.ChannelId = ID;
 
       result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
@@ -1028,8 +1031,9 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
 }
 
 char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
-                             char brightness) {
-  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness);
+                             char brightness, char turn_onoff) {
+  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness,
+                               turn_onoff);
 }
 
 char supla_client_get_registration_enabled(void *_suplaclient) {
