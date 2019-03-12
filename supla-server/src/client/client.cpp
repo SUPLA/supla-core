@@ -381,7 +381,7 @@ void supla_client::superuser_authorization_request(
       if (db->superuser_authorization(getUser()->getUserID(), request->Email,
                                       request->Password)) {
         lck_lock(lck);
-        superuser_authorized = false;
+        superuser_authorized = true;
         lck_unlock(lck);
 
         result.Result = SUPLA_RESULTCODE_AUTHORIZED;
