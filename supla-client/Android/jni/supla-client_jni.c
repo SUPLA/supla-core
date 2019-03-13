@@ -49,6 +49,7 @@ typedef struct {
   jmethodID j_mid_channelgroup_update;
   jmethodID j_mid_channelgroup_relation_update;
   jmethodID j_mid_on_oauth_token_request_result;
+  jmethodID j_mid_on_superuser_authorization_result;
   jmethodID j_mid_cb_on_device_calcfg_result;
 } TAndroidSuplaClient;
 
@@ -807,6 +808,19 @@ void supla_android_client_cb_on_oauth_token_request_result(
   }
 }
 
+void supla_android_client_cb_on_superuser_authorization_result(
+    void *_suplaclient, void *user_data, char authorized, _supla_int_t code) {
+  jfieldID fid;
+  TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data;
+  JNIEnv *env = supla_client_get_env(asc);
+
+  if (env && asc && asc->j_mid_on_superuser_authorization_result) {
+    (*env)->CallVoidMethod(env, asc->j_obj,
+                           asc->j_mid_on_superuser_authorization_result,
+                           authorized > 0 ? JNI_TRUE : JNI_FALSE, code);
+  }
+}
+
 void supla_android_client_cb_on_device_calcfg_result(
     void *_suplaclient, void *user_data, TSC_DeviceCalCfgResult *result) {
   TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data;
@@ -1128,6 +1142,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
     _asc->j_mid_on_oauth_token_request_result =
         supla_client_GetMethodID(env, oclass, "onOAuthTokenRequestResult",
                                  "(Lorg/supla/android/lib/SuplaOAuthToken;)V");
+    _asc->j_mid_on_superuser_authorization_result = supla_client_GetMethodID(
+        env, oclass, "onSuperUserAuthorizationResult", "(ZI)V");
     _asc->j_mid_cb_on_device_calcfg_result = supla_client_GetMethodID(
         env, oclass, "onDeviceCalCfgResult", "(III[B)V");
 
@@ -1156,6 +1172,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_channelgroup_relation_update;
     sclient_cfg.cb_on_oauth_token_request_result =
         supla_android_client_cb_on_oauth_token_request_result;
+    sclient_cfg.cb_on_superuser_authorization_result =
+        supla_android_client_cb_on_superuser_authorization_result;
     sclient_cfg.cb_on_device_calcfg_result =
         supla_android_client_cb_on_device_calcfg_result;
 
@@ -1363,3 +1381,34 @@ Java_org_supla_android_lib_SuplaClient_scDeviceCalCfgRequest(
 
   return JNI_FALSE;
 };
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
+    JNIEnv *env, jobject thiz, jlong _asc, jstring email, jstring password) {
+  jboolean result = JNI_FALSE;
+
+  void *supla_client = supla_client_ptr(_asc);
+
+  if (supla_client) {
+    char *eml = (char *)(*env)->GetStringUTFChars(env, email, 0);
+    char *pwd = (char *)(*env)->GetStringUTFChars(env, password, 0);
+
+    result = supla_client_superuser_authorization_request(supla_client, eml,
+                                                          pwd) == 1
+                 ? JNI_TRUE
+                 : JNI_FALSE;
+
+    if (eml) {
+      (*env)->ReleaseStringUTFChars(env, email, eml);
+    }
+
+    if (pwd) {
+      (*env)->ReleaseStringUTFChars(env, email, pwd);
+    }
+  }
+
+  return result;
+
+  char supla_client_superuser_authorization_request(
+      void *_suplaclient, char *email, char *password);
+}
