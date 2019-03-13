@@ -978,7 +978,7 @@ void supla_user::on_device_calcfg_result(int ChannelID,
   if (result == NULL) return;
   safe_array_lock(client_arr);
 
-  supla_client *client = find_client(result->SenderID);
+  supla_client *client = find_client(result->ReceiverID);
 
   if (client) {
     client->on_device_calcfg_result(ChannelID, result);
