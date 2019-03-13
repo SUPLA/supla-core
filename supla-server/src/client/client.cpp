@@ -387,7 +387,7 @@ void supla_client::superuser_authorization_request(
         result.Result = SUPLA_RESULTCODE_AUTHORIZED;
       }
     } else {
-      result.Result = SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE;
+      result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
     }
 
     delete db;
