@@ -824,6 +824,7 @@ void supla_android_client_cb_on_superuser_authorization_result(
 void supla_android_client_cb_on_device_calcfg_result(
     void *_suplaclient, void *user_data, TSC_DeviceCalCfgResult *result) {
   TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data;
+
   JNIEnv *env = supla_client_get_env(asc);
 
   if (env && asc && asc->j_mid_cb_on_device_calcfg_result) {

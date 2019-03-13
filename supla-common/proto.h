@@ -1043,7 +1043,7 @@ typedef struct {
 } TSD_DeviceCalCfgRequest;               // v. >= 10
 
 typedef struct {
-  _supla_int_t SenderID;
+  _supla_int_t SenderID;  // !!Should be called ReceiverID
   _supla_int_t ChannelNumber;
   _supla_int_t Command;
   _supla_int_t Result;
