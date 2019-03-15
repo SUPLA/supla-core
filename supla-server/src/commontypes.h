@@ -47,6 +47,10 @@ typedef struct {
   char on_off;
   double temperature;
   double humidity;
+  double wind;
+  double pressure;
+  double rain;
+  double weight;
   double distance;
   double depth;
   char shut;

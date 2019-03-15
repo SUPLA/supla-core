@@ -1227,6 +1227,18 @@ bool supla_device_channels::get_channel_complex_value(
         }
       } break;
 
+      case SUPLA_CHANNELFNC_WINDSENSOR:
+        channel->getDouble(&value->wind);
+        break;
+      case SUPLA_CHANNELFNC_PRESSURESENSOR:
+        channel->getDouble(&value->pressure);
+        break;
+      case SUPLA_CHANNELFNC_RAINSENSOR:
+        channel->getDouble(&value->rain);
+        break;
+      case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+        channel->getDouble(&value->weight);
+        break;
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
