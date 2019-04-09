@@ -49,9 +49,8 @@ class supla_client_channel : public supla_client_objcontainer_item {
   _supla_int64_t get_calculated_value(_supla_int_t impulses_per_unit,
                                       unsigned _supla_int64_t counter);
 
-  void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
-                                             char *online,
-                                             supla_client *client);
+  void proto_get_value(TSuplaChannelValue *value, char *online,
+                       supla_client *client);
 
  public:
   supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
