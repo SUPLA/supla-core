@@ -122,6 +122,31 @@ bool supla_client_channel::remote_update_is_possible(void) {
   return false;
 }
 
+void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+                                           char *online, supla_client *client) {
+  if (client && client->getUser()) {
+    client->getUser()->get_channel_value(DeviceId, getId(), value, online);
+    if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+      switch (Func) {
+        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+        case SUPLA_CHANNELFNC_GAS_METER:
+        case SUPLA_CHANNELFNC_WATER_METER: {
+          TDS_ImpulseCounter_Value ds;
+          memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
+          memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+          TSC_ImpulseCounter_Value sc;
+          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
+              Param3, ds.counter);
+
+          memcpy(value->value, &sc, sizeof(TSC_ImpulseCounter_Value));
+          break;
+        }
+      }
+    }
+  }
+}
+
 void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
                                      supla_client *client) {
   memset(channel, 0, sizeof(TSC_SuplaChannel));
@@ -130,11 +155,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
   channel->Func = Func;
   channel->LocationID = this->LocationId;
 
-  if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), &channel->value,
-                                         &channel->online);
-  }
-
+  proto_get_value(&channel->value, &channel->online, client);
   proto_get_caption(channel->Caption, &channel->CaptionSize,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
@@ -150,11 +171,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->ProtocolVersion = this->ProtocolVersion;
   channel->Flags = this->Flags;
 
-  if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), &channel->value,
-                                         &channel->online);
-  }
-
+  proto_get_value(&channel->value, &channel->online, client);
   proto_get_caption(channel->Caption, &channel->CaptionSize,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
@@ -175,11 +192,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->ProtocolVersion = this->ProtocolVersion;
   channel->Flags = this->Flags;
 
-  if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), &channel->value,
-                                         &channel->online);
-  }
-
+  proto_get_value(&channel->value, &channel->online, client);
   proto_get_caption(channel->Caption, &channel->CaptionSize,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
@@ -188,32 +201,7 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
   channel_value->Id = getId();
-
-  if (client && client->getUser()) {
-    client->getUser()->get_channel_value(
-        DeviceId, getId(), &channel_value->value, &channel_value->online);
-
-    if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-      switch (Func) {
-        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-        case SUPLA_CHANNELFNC_GAS_METER:
-        case SUPLA_CHANNELFNC_WATER_METER: {
-          TDS_ImpulseCounter_Value ds;
-          memcpy(&ds, channel_value->value.value,
-                 sizeof(TDS_ImpulseCounter_Value));
-          memset(channel_value->value.value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-          TSC_ImpulseCounter_Value sc;
-          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
-              Param3, ds.counter);
-
-          memcpy(channel_value->value.value, &sc,
-                 sizeof(TSC_ImpulseCounter_Value));
-          break;
-        }
-      }
-    }
-  }
+  proto_get_value(&channel_value->value, &channel_value->online, client);
 }
 
 void supla_client_channel::get_cost_and_currency(char currency[3],
