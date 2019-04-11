@@ -323,7 +323,7 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 
   if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
     TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
-    ic_val->counter += Param1 / Param3;
+    ic_val->counter += Param1 * Param3;
 
   } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
