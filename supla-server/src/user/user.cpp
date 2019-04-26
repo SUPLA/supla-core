@@ -598,7 +598,7 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
   safe_array_lock(device_arr);
   supla_device *device = find_device(DeviceID);
   if (device) {
-    result = device->get_channel_extendedvalue(ChannelID, value) > 0;
+    result = device->get_channel_extendedvalue(ChannelID, value);
   }
 
   safe_array_unlock(device_arr);
