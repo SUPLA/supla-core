@@ -242,7 +242,7 @@ bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
   if (extendedValue == NULL) {
     memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
     return false;
-  };
+  }
 
   memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
   return true;
