@@ -234,16 +234,18 @@ void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
 }
 
-void supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
+bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
   if (ev == NULL) {
-    return;
+    return false;
   }
 
   if (extendedValue == NULL) {
     memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
-  } else {
-    memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
-  }
+    return false;
+  };
+
+  memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
+  return true;
 }
 
 void supla_device_channel::getDouble(double *Value) {
@@ -734,8 +736,7 @@ bool supla_device_channels::get_channel_extendedvalue(
     supla_device_channel *channel = find_channel(ChannelID);
 
     if (channel) {
-      channel->getExtendedValue(value);
-      result = true;
+      result = channel->getExtendedValue(value);
     }
 
     safe_array_unlock(arr);

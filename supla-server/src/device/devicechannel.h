@@ -128,7 +128,7 @@ class supla_device_channel {
   unsigned int getValueDuration(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  void getExtendedValue(TSuplaChannelExtendedValue *ev);
+  bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                        char color_brightness, char brightness, char on_off);
