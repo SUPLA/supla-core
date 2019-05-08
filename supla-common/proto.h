@@ -955,10 +955,10 @@ typedef struct {
 
 // [IODevice->Server->Client]
 typedef struct {
-  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kW
-  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kW
-  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvar
-  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvar
+  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvarh
 
   // The price per unit, total cost and currency is overwritten by the server
   // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
