@@ -24,7 +24,7 @@
 
 supla_google_home::supla_google_home(supla_user *user)
     : supla_voice_assistant(user) {
-  sync_404_counter = 0;
+  sync_40x_counter = 0;
 }
 
 int supla_google_home::get_token_maxsize(void) { return GH_TOKEN_MAXSIZE; }
@@ -41,14 +41,14 @@ void supla_google_home::load() {
 
 void supla_google_home::on_credentials_changed() { load(); }
 
-void supla_google_home::on_sync_404_error() {
+void supla_google_home::on_sync_40x_error() {
   bool _set_null = false;
 
   data_lock();
 
-  sync_404_counter++;
-  if (sync_404_counter >= 4) {
-    sync_404_counter = 0;
+  sync_40x_counter++;
+  if (sync_40x_counter >= 2) {
+    sync_40x_counter = 0;
     _set_null = true;
   }
 

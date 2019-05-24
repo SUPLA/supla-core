@@ -40,7 +40,7 @@ bool supla_google_home_sync_request::verifyExisting(
   existing->setDelay(5000000);
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
-};
+}
 
 bool supla_google_home_sync_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
@@ -51,8 +51,8 @@ void supla_google_home_sync_request::execute(void *sthread) {
   int resultCode = 0;
   getClient()->requestSync(&resultCode);
 
-  if (resultCode == 404) {
-    getUser()->googleHome()->on_sync_404_error();
+  if (resultCode == 403 || resultCode == 404) {
+    getUser()->googleHome()->on_sync_40x_error();
   }
 }
 

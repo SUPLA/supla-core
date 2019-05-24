@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "amazon/alexa.h"
+#include "amazon/alexaclient.h"
 #include <stdlib.h>
 #include <string.h>
 #include <map>
 #include <string>
-#include "amazon/alexaclient.h"
+#include "amazon/alexa.h"
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
 #include "lck.h"
@@ -39,11 +39,11 @@
 #ifdef __TEST
 #define ZULU_TIME \
   char now[64];   \
-  snprintf(now, 64, "2019-02-01T12:09:33Z");
+  snprintf(now, sizeof(now), "2019-02-01T12:09:33Z");
 
 #define MSGID     \
   char msgId[37]; \
-  snprintf(msgId, 37, "29012dd1-33c7-6519-6e18-c4ee71d00487");
+  snprintf(msgId, sizeof(msgId), "29012dd1-33c7-6519-6e18-c4ee71d00487");
 
 #else
 #define ZULU_TIME \
@@ -124,7 +124,7 @@ int supla_alexa_client::getErrorCode(const char *code) {
       return alexa_codes[n].code;
     }
     n++;
-  };
+  }
 
   return POST_RESULT_UNKNOWN_ERROR;
 }
@@ -140,7 +140,7 @@ const char *supla_alexa_client::getErrorString(const int code) {
       return alexa_codes[n].str;
     }
     n++;
-  };
+  }
 
   return "UNKNOWN";
 }
@@ -221,8 +221,8 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     host[0] = 0;
     char *region = getAlexa()->getRegion();
 
-    snprintf(host, 30, "api.%s%samazonalexa.com", region ? region : "",
-             region ? "." : "");
+    snprintf(host, sizeof(host), "api.%s%samazonalexa.com",
+             region ? region : "", region ? "." : "");
     getHttps()->setHost(host);
 
     if (region) {
@@ -288,7 +288,7 @@ int supla_alexa_client::aeg_post(char *data) {
       refresh_roken();
       result = aeg_post_request(data, &httpResultCode);
     }
-  };
+  }
 
   if (result == POST_RESULT_SKILL_DISABLED_EXCEPTION ||
       result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION ||

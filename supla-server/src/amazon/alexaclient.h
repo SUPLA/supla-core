@@ -55,8 +55,8 @@
  */
 #define CAUSE_VOICE_INTERACTION 4
 
-#include "voiceassistantclient.h"
 #include "amazon/alexa.h"
+#include "voiceassistantclient.h"
 
 class supla_alexa_client : public supla_voice_assistant_client {
  private:
@@ -95,7 +95,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
                     void *props, short subChannel);
 
  public:
-  supla_alexa_client(supla_amazon_alexa *alexa);
+  explicit supla_alexa_client(supla_amazon_alexa *alexa);
 
   bool sendPowerChangeReport(int causeType, int channelId, bool hi,
                              bool online);

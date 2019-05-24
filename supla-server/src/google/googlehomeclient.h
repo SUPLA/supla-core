@@ -19,9 +19,9 @@
 #ifndef GOOGLEHOMECLIENT_H_
 #define GOOGLEHOMECLIENT_H_
 
+#include <cstddef>
 #include "google/googlehome.h"
 #include "voiceassistantclient.h"
-#include <cstddef>
 
 class supla_google_home_client : public supla_voice_assistant_client {
  private:
@@ -32,7 +32,7 @@ class supla_google_home_client : public supla_voice_assistant_client {
   bool post(void *json_data, int *resultCode);
 
  public:
-  supla_google_home_client(supla_google_home *google_home);
+  explicit supla_google_home_client(supla_google_home *google_home);
   virtual ~supla_google_home_client(void);
   void clearStateReport(void);
   bool addOnOffState(int channelId, bool on, bool online);
