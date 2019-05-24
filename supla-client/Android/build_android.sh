@@ -19,8 +19,14 @@
 [ -z "$OPENSSL_ANDROID" ] && export OPENSSL_ANDROID=$(echo ~/CProjects/openssl)
 
 $NDK_ROOT/ndk-build clean
-$NDK_ROOT/ndk-build V=1 -C ./ NDK_DEBUG=1
+$NDK_ROOT/ndk-build V=1 -C ./ NDK_DEBUG=1 APP_PLATFORM=android-12 APP_ABI="armeabi armeabi-v7a x86"
 
 cp  libs/armeabi/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi/
 cp  libs/armeabi-v7a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/armeabi-v7a/
 cp  libs/x86/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/x86/
+
+$NDK_ROOT/ndk-build clean
+$NDK_ROOT/ndk-build V=1 -C ./ NDK_DEBUG=1 APP_PLATFORM=android-21 APP_ABI="x86_64 arm64-v8a"
+
+cp  libs/x86_64/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/x86_64/
+cp  libs/arm64-v8a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/arm64-v8a/
