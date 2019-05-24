@@ -28,7 +28,7 @@
 #ifdef __TEST
 #define REQUESTID \
   char reqId[37]; \
-  snprintf(reqId, 37, "e2de5bc6-65a8-48e5-b919-8a48e86ad64a")
+  snprintf(reqId, sizeof(reqId), "e2de5bc6-65a8-48e5-b919-8a48e86ad64a")
 
 #else
 #define REQUESTID \

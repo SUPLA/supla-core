@@ -34,7 +34,7 @@ supla_amazon_alexa::supla_amazon_alexa(supla_user *user)
   set(NULL, NULL, 0, NULL);
 }
 
-supla_amazon_alexa::~supla_amazon_alexa() { strings_free(); };
+supla_amazon_alexa::~supla_amazon_alexa() { strings_free(); }
 
 void supla_amazon_alexa::strings_free(void) {
   if (this->refresh_token) {
