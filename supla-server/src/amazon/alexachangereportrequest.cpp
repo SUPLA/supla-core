@@ -44,7 +44,7 @@ bool supla_alexa_changereport_request::verifyExisting(
   existing->setDelay(1000000);
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
-};
+}
 
 bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
@@ -82,7 +82,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     case EST_UNKNOWN:
     case EST_GOOGLE_HOME:
       return false;
-  };
+  }
 
   return false;
 }

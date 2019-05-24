@@ -74,7 +74,7 @@ bool supla_google_home_statereport_request::verifyExisting(
 
   supla_http_request_queue::getInstance()->raiseEvent();
   return true;
-};
+}
 
 bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   channel_complex_value value =

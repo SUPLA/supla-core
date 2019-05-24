@@ -35,7 +35,7 @@ class supla_user_channelgroups : public supla_objcontainer {
   int available_data_types_for_remote(e_objc_scope scope);
 
  public:
-  supla_user_channelgroups(supla_user *user);
+  explicit supla_user_channelgroups(supla_user *user);
   bool set_char_value(int GroupID, const char value);
   bool set_rgbw_value(int GroupID, int color, char color_brightness,
                       char brightness, char on_off);
