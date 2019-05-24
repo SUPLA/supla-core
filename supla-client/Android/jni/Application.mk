@@ -1,3 +1,3 @@
-APP_PLATFORM := android-12
-APP_ABI  := armeabi armeabi-v7a x86
+APP_PLATFORM := ${APP_PLATFORM}
+APP_ABI  := ${APP_ABI}
 
