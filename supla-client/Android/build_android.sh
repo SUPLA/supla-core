@@ -16,7 +16,7 @@
 
 [ -z "$NDK_ROOT" ] && NDK_ROOT=$(echo ~/Library/Android/ndk-r14b)
 [ -z "$SUPLA_ANDROID" ] && SUPLA_ANDROID=$(echo ~/StudioProjects/supla-android)
-[ -z "$OPENSSL_ANDROID" ] && export OPENSSL_ANDROID=$(echo ~/CProjects/openssl)
+[ -z "$OPENSSL_ANDROID" ] && export OPENSSL_ANDROID=$(echo ~/CProjects/openssl/OpenSSL-for-Android)
 
 $NDK_ROOT/ndk-build clean
 $NDK_ROOT/ndk-build V=1 -C ./ NDK_DEBUG=1 APP_PLATFORM=android-12 APP_ABI="armeabi armeabi-v7a x86"
