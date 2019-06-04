@@ -355,6 +355,8 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
                       Type == SUPLA_CHANNELTYPE_SENSORNO)) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
+
+  supla_log(LOG_INFO, "Channel value changed: id %d number %d value %d", this->Id, this->Number, (int) this->value[0]);
 }
 
 void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
