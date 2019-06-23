@@ -16,7 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #ifndef USERCHANNELGROUP_H_
 #define USERCHANNELGROUP_H_
 
@@ -30,8 +29,8 @@ class supla_user_channelgroup : public supla_objcontainer_item {
   int DeviceId;
 
  public:
-  supla_user_channelgroup(supla_user_channelgroups *Container, int GroupId,
-                            int ChannelId, int DeviceId);
+  explicit supla_user_channelgroup(supla_user_channelgroups *Container,
+                                   int GroupId, int ChannelId, int DeviceId);
 
   bool remote_update_is_possible(void);
   int getGroupId();
@@ -39,7 +38,5 @@ class supla_user_channelgroup : public supla_objcontainer_item {
   int getDeviceId();
   int getExtraId();
 };
-
-
 
 #endif /* USERCHANNELGROUP_H_ */

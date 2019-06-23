@@ -34,11 +34,11 @@ class supla_amazon_alexa : public supla_voice_assistant {
 
   void strings_free(void);
 
-  protected:
+ protected:
   virtual int get_token_maxsize(void);
 
  public:
-  supla_amazon_alexa(supla_user *user);
+  explicit supla_amazon_alexa(supla_user *user);
   virtual ~supla_amazon_alexa();
 
   virtual void load();

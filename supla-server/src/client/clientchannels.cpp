@@ -105,9 +105,9 @@ bool supla_client_channels::get_ev_datapack_for_remote(
       static_cast<TSC_SuplaChannelExtendedValuePack *>(*data);
 
   if (pack != NULL) {
-    if (pack->count > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT ||
+    if (pack->count >= SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT ||
         pack->pack_size < 0 ||
-        pack->pack_size > SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
+        pack->pack_size >= SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE) {
       pack->total_left++;
       return false;
     }

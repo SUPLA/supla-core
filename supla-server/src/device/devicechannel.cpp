@@ -234,16 +234,18 @@ void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
 }
 
-void supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
+bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
   if (ev == NULL) {
-    return;
+    return false;
   }
 
   if (extendedValue == NULL) {
     memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
-  } else {
-    memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
+    return false;
   }
+
+  memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
+  return true;
 }
 
 void supla_device_channel::getDouble(double *Value) {
@@ -321,7 +323,11 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
+  if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
+    TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
+    ic_val->counter += Param1 * Param3;
+
+  } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
 
   } else {
@@ -730,8 +736,7 @@ bool supla_device_channels::get_channel_extendedvalue(
     supla_device_channel *channel = find_channel(ChannelID);
 
     if (channel) {
-      channel->getExtendedValue(value);
-      result = true;
+      result = channel->getExtendedValue(value);
     }
 
     safe_array_unlock(arr);
