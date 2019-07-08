@@ -598,7 +598,7 @@ jobject supla_android_client_thermostatvalue_to_jobject(
         (*env)->GetMethodID(env, cls, "setScheduleValueType", "(B)V");
 
     (*env)->CallVoidMethod(env, m_obj, set_schedule_vtype_m_mid,
-                           th_ev->Shedule.ValueType);
+                           th_ev->Schedule.ValueType);
 
     jmethodID set_schedule_value_m_mid =
         (*env)->GetMethodID(env, cls, "setScheduleValue", "(BBB)V");
@@ -606,7 +606,7 @@ jobject supla_android_client_thermostatvalue_to_jobject(
     for (a = 0; a < 7; a++) {
       for (int b = 0; b < 24; b++) {
         (*env)->CallVoidMethod(env, m_obj, set_schedule_value_m_mid, a, b,
-                               th_ev->Shedule.HourValue[a][b]);
+                               th_ev->Schedule.HourValue[a][b]);
       }
     }
   }

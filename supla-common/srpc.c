@@ -1976,7 +1976,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
   unsigned _supla_int_t size = sizeof(TThermostat_ExtendedValue);
 
   if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Schedule)) {
-    size -= sizeof(th_ev->Shedule);
+    size -= sizeof(th_ev->Schedule);
     if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Time)) {
       size -= sizeof(th_ev->Time);
       if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Values)) {
