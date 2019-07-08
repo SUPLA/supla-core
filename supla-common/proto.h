@@ -1088,7 +1088,7 @@ typedef struct {
   unsigned char sec;        // 0-59
   unsigned char min;        // 0-59
   unsigned char hour;       // 0-24
-  unsigned char dayOfWeek;  // 0-6
+  unsigned char dayOfWeek;  // 1 = Sunday, 2 = Monday, …, 7 = Saturday
 } TThermostat_Time;         // v. >= 11
 
 #define THERMOSTAT_SCHEDULE_DAY_MONDAY 0x01
@@ -1199,7 +1199,7 @@ typedef struct {
   unsigned _supla_int16_t year;
   unsigned char month;
   unsigned char day;
-  unsigned char dayOfWeek;
+  unsigned char dayOfWeek;  // 1 = Sunday, 2 = Monday, …, 7 = Saturday
   unsigned char hour;
   unsigned char min;
   unsigned char sec;
