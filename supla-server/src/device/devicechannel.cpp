@@ -1256,13 +1256,14 @@ void supla_device_channels::get_thermostat_measurement(void *tharr) {
   safe_array_unlock(arr);
 }
 
-bool supla_device_channels::calcfg_request(void *srpc, int SenderID,
+bool supla_device_channels::calcfg_request(void *srpc,
+                                           int SenderID, int ChannelID,
                                            bool SuperUserAuthorized,
-                                           TCS_DeviceCalCfgRequest *request) {
+                                           TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
   safe_array_lock(arr);
 
-  supla_device_channel *channel = find_channel(request->ChannelID);
+  supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
     TSD_DeviceCalCfgRequest drequest;

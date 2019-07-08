@@ -119,9 +119,11 @@ union TsrpcDataPacketData {
   TCS_SuperUserAuthorizationRequest *cs_superuser_authorization_request;
   TSC_SuperUserAuthorizationResult *sc_superuser_authorization_result;
   TCS_DeviceCalCfgRequest *cs_device_calcfg_request;
+  TCS_DeviceCalCfgRequest_B *cs_device_calcfg_request_b;
   TSC_DeviceCalCfgResult *sc_device_calcfg_result;
   TSD_DeviceCalCfgRequest *sd_device_calcfg_request;
   TDS_DeviceCalCfgResult *ds_device_calcfg_result;
+  TSDC_UserLocalTimeResult *sdc_user_localtime_result;
 };
 
 typedef struct {
@@ -172,7 +174,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
     void *_srpc, TSDC_RegistrationEnabled *reg_enabled);
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
-    void *_srpc, TSDC_UserLocalTime *localtime);
+    void *_srpc, TSDC_UserLocalTimeResult *localtime);
 
 #ifndef SRPC_EXCLUDE_DEVICE
 // device <-> server
@@ -204,6 +206,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
     void *_srpc, TSD_DeviceCalCfgRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request_b(
+    void *_srpc, TSD_DeviceCalCfgRequest_B *request_b);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_device_calcfg_result(void *_srpc, TDS_DeviceCalCfgResult *result);
 
@@ -270,6 +274,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
     void *_srpc, TSC_SuperUserAuthorizationResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(
     void *_srpc, TCS_DeviceCalCfgRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request_b(
+    void *_srpc, TCS_DeviceCalCfgRequest_B *request);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_device_calcfg_result(void *_srpc, TSC_DeviceCalCfgResult *result);
 

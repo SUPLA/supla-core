@@ -950,14 +950,16 @@ void supla_user::get_thermostat_measurement(void *tharr) {
   safe_array_lock(device_arr);
 
   for (a = 0; a < safe_array_count(device_arr); a++) {
-    ((supla_device *)safe_array_get(device_arr, a))->get_thermostat_measurement(tharr);
+    ((supla_device *)safe_array_get(device_arr, a))
+        ->get_thermostat_measurement(tharr);
   }
 
   safe_array_unlock(device_arr);
 }
 
 bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
-                                       TCS_DeviceCalCfgRequest *request) {
+                                       int ChannelId,
+                                       TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
 
   safe_array_lock(device_arr);
@@ -965,8 +967,8 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
   supla_device *device = find_device(DeviceId);
   if (device)
     result = device->calcfg_request(
-        SenderID, SenderID > 0 ? isSuperUserAuthorized(SenderID) : false,
-        request);
+        SenderID, ChannelId,
+        SenderID > 0 ? isSuperUserAuthorized(SenderID) : false, request);
 
   safe_array_unlock(device_arr);
 

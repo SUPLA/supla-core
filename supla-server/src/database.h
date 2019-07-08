@@ -157,6 +157,8 @@ class database : public dbcommon {
                                  const char *refresh_token, int expires_in);
 
   bool google_home_load_token(supla_google_home *google_home);
+
+  bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
 };
 
 #endif /* DATABASE_H_ */

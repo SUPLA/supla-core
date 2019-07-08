@@ -155,7 +155,7 @@ char supla_client_oauth_token_request(void *_suplaclient);
 char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   char *email, char *password);
 char supla_client_device_calcfg_request(void *_suplaclient,
-                                        TCS_DeviceCalCfgRequest *request);
+                                        TCS_DeviceCalCfgRequest_B *request);
 
 #ifdef __cplusplus
 }

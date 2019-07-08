@@ -176,8 +176,8 @@ class supla_user {
   void get_ic_measurement(void *icarr);
   void get_thermostat_measurement(void *tharr);
 
-  bool device_calcfg_request(int SenderID, int DeviceId,
-                             TCS_DeviceCalCfgRequest *request);
+  bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
+                             TCS_DeviceCalCfgRequest_B *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
 
   channel_complex_value get_channel_complex_value(int DeviceId, int ChannelID);

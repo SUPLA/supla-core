@@ -462,6 +462,22 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                (registered == REG_DEVICE || registered == REG_CLIENT)) {
       srpc_sdc_async_ping_server_result(_srpc);
 
+    } else if (call_type == SUPLA_DCS_CALL_GET_USER_LOCALTIME &&
+               (registered == REG_DEVICE || registered == REG_CLIENT)) {
+      TSDC_UserLocalTimeResult result;
+      memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));
+
+      database *db = new database();
+
+      if (!db->connect() ||
+          !db->get_user_localtime(cdptr->getUserID(), &result)) {
+        memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));
+      }
+
+      delete db;
+
+      srpc_sdc_async_get_user_localtime_result(_srpc, &result);
+
     } else if (call_type == SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED &&
                (registered == REG_DEVICE || registered == REG_CLIENT)) {
       TSDC_RegistrationEnabled reg_en;
@@ -588,7 +604,35 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST:
           if (rd.data.cs_device_calcfg_request != NULL) {
-            client->device_calcfg_request(rd.data.cs_device_calcfg_request);
+            TCS_DeviceCalCfgRequest_B *cs_device_calcfg_request_b =
+                (TCS_DeviceCalCfgRequest_B *)malloc(
+                    sizeof(TCS_DeviceCalCfgRequest_B));
+
+            memset(cs_device_calcfg_request_b, 0,
+                   sizeof(TCS_DeviceCalCfgRequest_B));
+
+            cs_device_calcfg_request_b->Id =
+                rd.data.cs_device_calcfg_request->ChannelID;
+            cs_device_calcfg_request_b->Target = SUPLA_TARGET_CHANNEL;
+            cs_device_calcfg_request_b->Command =
+                rd.data.cs_device_calcfg_request->Command;
+            cs_device_calcfg_request_b->DataType =
+                rd.data.cs_device_calcfg_request->DataType;
+            cs_device_calcfg_request_b->DataSize =
+                rd.data.cs_device_calcfg_request->DataSize;
+            memcpy(cs_device_calcfg_request_b->Data,
+                   rd.data.cs_device_calcfg_request->Data,
+                   SUPLA_CALCFG_DATA_MAXSIZE);
+
+            free(rd.data.cs_device_calcfg_request);
+            rd.data.cs_device_calcfg_request = NULL;
+            rd.data.cs_device_calcfg_request_b = cs_device_calcfg_request_b;
+          }
+          /* no break between SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST and
+           * SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B!!! */
+        case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
+          if (rd.data.cs_device_calcfg_request_b != NULL) {
+            client->device_calcfg_request(rd.data.cs_device_calcfg_request_b);
           }
           break;
 

@@ -324,9 +324,9 @@ void supla_client::set_device_channel_new_value(
 }
 
 void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
-  if (new_value->Target == SUPLA_NEW_VALUE_TARGET_CHANNEL) {
+  if (new_value->Target == SUPLA_TARGET_CHANNEL) {
     channels->set_device_channel_new_value(new_value);
-  } else if (new_value->Target == SUPLA_NEW_VALUE_TARGET_GROUP) {
+  } else if (new_value->Target == SUPLA_TARGET_GROUP) {
     cgroups->set_device_channel_new_value(new_value);
   }
 }
@@ -396,8 +396,12 @@ void supla_client::superuser_authorization_request(
   srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
 }
 
-void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest *request) {
-  channels->device_calcfg_request(request);
+void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
+  if (request->Target == SUPLA_TARGET_CHANNEL) {
+    channels->device_calcfg_request(request);
+  } else if (request->Target == SUPLA_TARGET_GROUP) {
+    cgroups->device_calcfg_request(request);
+  }
 }
 
 void supla_client::on_device_calcfg_result(int ChannelID,

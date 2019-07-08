@@ -38,8 +38,7 @@ supla_device::~supla_device() {
     getUser()->remove_device(this);
 
     std::list<int> ids = channels->get_channel_ids();
-    for (std::list<int>::iterator it = ids.begin();
-         it != ids.end(); it++) {
+    for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
     }
   }
@@ -109,9 +108,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false ==
-                     db->device_authkey_auth(GUID, register_device_e->Email,
-                                             AuthKey, &UserID)) {
+                 false == db->device_authkey_auth(GUID,
+                                                  register_device_e->Email,
+                                                  AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -484,9 +483,10 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
 }
 
-bool supla_device::calcfg_request(int SenderID, bool SuperUserAuthorized,
-                                  TCS_DeviceCalCfgRequest *request) {
-  return channels->calcfg_request(getSvrConn()->srpc(), SenderID,
+bool supla_device::calcfg_request(int SenderID, int ChannelID,
+                                  bool SuperUserAuthorized,
+                                  TCS_DeviceCalCfgRequest_B *request) {
+  return channels->calcfg_request(getSvrConn()->srpc(), ChannelID, SenderID,
                                   SuperUserAuthorized, request);
 }
 

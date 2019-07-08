@@ -68,8 +68,8 @@ class supla_device : public cdcommon {
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
-  bool calcfg_request(int SenderID, bool SuperUserAuthorized,
-                      TCS_DeviceCalCfgRequest *request);
+  bool calcfg_request(int SenderID, int ChannelID, bool SuperUserAuthorized,
+                      TCS_DeviceCalCfgRequest_B *request);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };

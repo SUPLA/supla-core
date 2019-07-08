@@ -651,6 +651,20 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               sizeof(TSDC_RegistrationEnabled));
 
         break;
+      case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
+        call_with_no_data = 1;
+        break;
+      case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
+        if (srpc->sdp.data_size <= sizeof(TSDC_UserLocalTimeResult) &&
+            srpc->sdp.data_size >=
+                (sizeof(TSDC_UserLocalTimeResult) - SUPLA_TIMEZONE_MAXSIZE)) {
+          rd->data.sdc_user_localtime_result =
+              (TSDC_UserLocalTimeResult *)malloc(
+                  sizeof(TSDC_UserLocalTimeResult));
+        }
+
+        break;
+
 #ifndef SRPC_EXCLUDE_DEVICE
       case SUPLA_DS_CALL_REGISTER_DEVICE:
 
@@ -1020,6 +1034,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               sizeof(TCS_DeviceCalCfgRequest));
         }
         break;
+      case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
+          if (srpc->sdp.data_size <= sizeof(TCS_DeviceCalCfgRequest_B) &&
+              srpc->sdp.data_size >=
+                  (sizeof(TCS_DeviceCalCfgRequest_B) - SUPLA_CALCFG_DATA_MAXSIZE)) {
+            rd->data.cs_device_calcfg_request_b = (TCS_DeviceCalCfgRequest_B *)malloc(
+                sizeof(TCS_DeviceCalCfgRequest_B));
+          }
+          break;
       case SUPLA_SC_CALL_DEVICE_CALCFG_RESULT:
         if (srpc->sdp.data_size <= sizeof(TSC_DeviceCalCfgResult) &&
             srpc->sdp.data_size >=
@@ -1135,6 +1157,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
       return 10;
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
+    case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
       return 11;
   }
 
@@ -1319,11 +1342,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc) {
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
-    void *_srpc, TSDC_UserLocalTime *localtime) {
-  _supla_int_t size = sizeof(TSDC_UserLocalTime) - SUPLA_TIMEZONE_MAXSIZE +
-                      localtime->timezoneSize;
+    void *_srpc, TSDC_UserLocalTimeResult *localtime) {
+  if (localtime == NULL || localtime->timezoneSize > SUPLA_TIMEZONE_MAXSIZE) {
+    return 0;
+  }
 
-  if (size > sizeof(TSDC_UserLocalTime)) return 0;
+  unsigned int size = sizeof(TSDC_UserLocalTimeResult) -
+                      SUPLA_TIMEZONE_MAXSIZE + localtime->timezoneSize;
 
   return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
                          (char *)localtime, size);
@@ -1841,6 +1866,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(
   return srpc_async_call(_srpc, SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST,
                          (char *)request,
                          sizeof(TCS_DeviceCalCfgRequest) -
+                             SUPLA_CALCFG_DATA_MAXSIZE + request->DataSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request_b(
+    void *_srpc, TCS_DeviceCalCfgRequest_B *request) {
+  if (request == NULL || request->DataSize > SUPLA_CALCFG_DATA_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B,
+                         (char *)request,
+                         sizeof(TCS_DeviceCalCfgRequest_B) -
                              SUPLA_CALCFG_DATA_MAXSIZE + request->DataSize);
 }
 

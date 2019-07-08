@@ -228,8 +228,9 @@ class supla_device_channels {
   void get_ic_measurement(void *icarr);
   void get_thermostat_measurement(void *tharr);
 
-  bool calcfg_request(void *srpc, int SenderID, bool SuperUserAuthorized,
-                      TCS_DeviceCalCfgRequest *request);
+  bool calcfg_request(void *srpc, int SenderID, int ChannelID,
+                      bool SuperUserAuthorized,
+                      TCS_DeviceCalCfgRequest_B *request);
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };
