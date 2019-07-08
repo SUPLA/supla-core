@@ -1185,8 +1185,8 @@ typedef struct {
   _supla_int16_t Flags[8];
   _supla_int16_t Values[8];
   TThermostat_Time Time;
-  TThermostat_Schedule Shedule;  // 7 days x 24h (4bit/hour)
-} TThermostat_ExtendedValue;     // v. >= 11
+  TThermostat_Schedule Schedule;  // 7 days x 24h (4bit/hour)
+} TThermostat_ExtendedValue;      // v. >= 11
 
 typedef struct {
   unsigned char IsOn;
