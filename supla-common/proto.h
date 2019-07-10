@@ -1106,6 +1106,7 @@ typedef struct {
 typedef struct {
   unsigned char ValueType;  // THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_
   char HourValue[7][24];    // 7 days x 24h
+                            // 0 = Sunday, 1 = Monday, …, 6 = Saturday
 } TThermostat_Schedule;     // v. >= 11
 
 typedef struct {
