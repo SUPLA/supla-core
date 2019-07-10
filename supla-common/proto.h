@@ -1111,9 +1111,9 @@ typedef struct {
 
 typedef struct {
   unsigned char ValueType;  // THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_
-  unsigned char Days;       // THERMOSTAT_SCHEDULE_DAY_
+  unsigned char WeekDays;   // THERMOSTAT_SCHEDULE_DAY_
   char HourValue[24];
-} TThermostatValueGroup;  // v. >= 11
+} TThermostatValueGroup;    // v. >= 11
 
 typedef struct {
   TThermostatValueGroup Group[4];
