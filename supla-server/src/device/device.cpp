@@ -486,7 +486,7 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 bool supla_device::calcfg_request(int SenderID, int ChannelID,
                                   bool SuperUserAuthorized,
                                   TCS_DeviceCalCfgRequest_B *request) {
-  return channels->calcfg_request(getSvrConn()->srpc(), ChannelID, SenderID,
+  return channels->calcfg_request(getSvrConn()->srpc(), SenderID, ChannelID,
                                   SuperUserAuthorized, request);
 }
 
