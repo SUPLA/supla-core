@@ -1378,11 +1378,78 @@ Java_org_supla_android_lib_SuplaClient_scDeviceCalCfgRequest(
     request.Target = group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL;
     request.Command = command;
     request.DataType = dataType;
-    return supla_client_device_calcfg_request(supla_client, &request);
+    return supla_client_device_calcfg_request(supla_client, &request) == 1 ? JNI_TRUE
+      : JNI_FALSE;
   }
 
   return JNI_FALSE;
 };
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scThermostatScheduleCfgRequest(
+                JNIEnv *env, jobject thiz, jlong _asc, jint id, jint group, jobject cfg) {
+    
+    void *supla_client = supla_client_ptr(_asc);
+    jboolean result = JNI_FALSE;
+    
+    if (supla_client) {
+        
+        jclass cls = (*env)->FindClass(
+                            env, "org/supla/android/lib/SuplaThermostatScheduleCfg");
+        
+        jmethodID get_group_m_mid = supla_client_GetMethodID(env, cls, "getGroupCount", "()I");
+        jmethodID get_group_value_type_m_mid = supla_client_GetMethodID(env, cls, "getGroupHourValueType", "(I)I");
+        jmethodID get_group_week_days_m_mid = supla_client_GetMethodID(env, cls, "getGroupWeekDays", "(I)I");
+        jmethodID get_group_hour_value_m_mid = supla_client_GetMethodID(env, cls, "getGroupHourValue", "(IS)B");
+        
+        jint groupCount = (*env)->CallIntMethod(env, cfg, get_group_m_mid);
+        
+        if (groupCount > 0) {
+            TCS_DeviceCalCfgRequest_B request;
+            memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+            
+            request.Id = id;
+            request.Target = group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL;
+            request.Command = SUPLA_THERMOSTAT_CMD_SET_SCHEDULE;
+            request.DataSize = sizeof(TThermostat_ScheduleCfg);
+            
+            TThermostat_ScheduleCfg *scfg = (TThermostat_ScheduleCfg *)request.Data;
+           
+            unsigned char failed = 0;
+            unsigned char success = 0;
+            
+            int n=0;
+            for(int a=0;a<groupCount;a++) {
+                
+                jint groupValueType = (*env)->CallIntMethod(env, cfg, get_group_value_type_m_mid, a);
+                jint groupWeekDays = (*env)->CallIntMethod(env, cfg, get_group_week_days_m_mid, a);
+                
+                for(short h=0;h<24;h++) {
+                  scfg->Group[n].HourValue[h] = (*env)->CallByteMethod(env, cfg, get_group_hour_value_m_mid, a, h);
+                }
+                
+                scfg->Group[n].ValueType = (unsigned char)groupValueType;
+                scfg->Group[n].WeekDays = (unsigned char)groupWeekDays;
+                
+                n++;
+                if (n > 3 || a == groupCount - 1) {
+                    if (supla_client_device_calcfg_request(supla_client, &request)) {
+                        success = 1;
+                    } else {
+                        failed = 1;
+                    }
+                    n = 0;
+                    memset(scfg, 0, sizeof(TThermostat_ScheduleCfg));
+                }
+            }
+ 
+            return success && !failed ? JNI_TRUE : JNI_FALSE;
+        }
+    }
+    
+    return result;
+    
+}
 
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
@@ -1414,3 +1481,5 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
   char supla_client_superuser_authorization_request(
       void *_suplaclient, char *email, char *password);
 }
+
+
