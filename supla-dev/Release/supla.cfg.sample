@@ -1,0 +1,47 @@
+[GLOBAL]
+device_name=RASBPBERRY PI B+ EXTENSION 01
+device_guid_file=./var/dev_guid
+state_file=./var/last_state.txt
+
+[SERVER]
+host=127.0.0.1
+tcp_port=2015
+ssl_port=2016
+ssl_enabled=Y
+
+[LOCATION]
+ID=
+PASSWORD=
+
+# DHT 22 sensor connected to GPIO22 pin
+# [CHANNEL_0]
+# type=DHT22
+# w1=22
+#
+
+# Available types: SENSORNO,RELAYHFD4,RELAYG5LA1A,2XRELAYG5LA1A,THERMOMETERDS18B20,DHT11,DHT22,AM2302
+# Help: https://forum.supla.org
+
+[CHANNEL_0]
+type=RELAYHFD4
+gpio1=27
+
+[CHANNEL_1]
+type=RELAYHFD4
+gpio1=22
+
+[CHANNEL_2]
+type=RELAYHFD4
+gpio1=17
+
+[CHANNEL_3]
+type=SENSORNO
+gpio1=24
+
+[CHANNEL_4]
+type=SENSORNO
+gpio1=23
+
+[CHANNEL_5]
+type=SENSORNO
+gpio1=18
