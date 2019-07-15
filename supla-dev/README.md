@@ -17,8 +17,13 @@ Edit `supla.cfg` to match your needs.
 ## Run
 
 ```
-./supla-core/supla-dev/Release/supla-dev -c ./supla-core/supla-dev/Release/supla.cfg
+cd supla-core/supla-dev/Release
+./supla-dev -c ./supla.cfg
 ```
+
+## Configure autostart
+
+TODO
 
 ## Upgrade
 
