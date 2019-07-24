@@ -23,11 +23,24 @@
 extern "C" {
 #endif
 
-void *lck_init(void);
+#ifdef __DEBUG
+// #define __LCK_DEBUG
+#endif
+
+#ifdef __LCK_DEBUG
+#define lck_lock(ptr) __lck_lock(ptr, __FILE__, __LINE__)
+void _lck_lock(void *lck);
+void __lck_lock(void *lck, const char *file, int line);
+void lck_debug_init(void);
+void lck_debug_dump(void);
+#else
 void lck_lock(void *lck);
+#endif /*__LCK_DEBUG*/
+
 char lck_lock_with_timeout(void *lck, int timeout_sec);
 void lck_unlock(void *lck);
 int lck_unlock_r(void *lck, int result);
+void *lck_init(void);
 void lck_free(void *lck);
 
 #ifdef __cplusplus
