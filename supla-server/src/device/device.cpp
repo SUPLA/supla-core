@@ -29,7 +29,7 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
+supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
   this->channels = new supla_device_channels();
 }
 

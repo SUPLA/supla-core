@@ -20,12 +20,12 @@
 #define DEVICE_H_
 
 #include <list>
-#include "cdcommon.h"
+#include "cdbase.h"
 #include "commontypes.h"
 #include "devicechannel.h"
 
 class supla_user;
-class supla_device : public cdcommon {
+class supla_device : public cdbase {
  protected:
   supla_device_channels *channels;
 

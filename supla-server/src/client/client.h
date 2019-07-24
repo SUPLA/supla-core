@@ -19,13 +19,13 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include "cdcommon.h"
+#include "cdbase.h"
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
 
 class supla_user;
-class supla_client : public cdcommon {
+class supla_client : public cdbase {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
   bool superuser_authorized;

@@ -29,7 +29,7 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
+supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
