@@ -72,7 +72,7 @@ void lck_debug_dump(void) {
 
   for (a = 0; a < n; a++) {
     if ((l = (TLckData *)ptrs[a]) != 0 && l->count != 0) {
-      printf("%p:%p %s:%i count=%i", (void*)l,
+      printf("%p:%p %s:%i count=%i\n", (void*)l,
              (void*)l->thread, l->fileName, l->lineNumber, l->count);
       break;
     }
