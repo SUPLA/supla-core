@@ -87,6 +87,7 @@ void *lck_init(void) {
   return NULL;
 #else
   TLckData *lck = malloc(sizeof(TLckData));
+  memset(lck, 0, sizeof(TLckData));
 
   if (lck != NULL) {
 #ifdef _WIN32
