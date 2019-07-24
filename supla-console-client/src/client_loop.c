@@ -47,21 +47,7 @@ void client_loop_location_update(void *_suplaclient, void *sthread,
 
 void client_loop_channel_update(void *_suplaclient, void *sthread,
                                 TSC_SuplaChannel_C *channel) {
-  double temp;
-  if (channel->Func == 40) {
-    memcpy(&temp, channel->value.value, sizeof(double));
-    supla_log(LOG_DEBUG, "-> Channel #%i: %f st. EOL=%i", channel->Id, temp,
-              channel->EOL);
-  } else {
-    supla_log(LOG_DEBUG,
-              "Channel #%i: %s LocationID=%i, Type=%i, Function=%i, online=%i, "
-              "value[0]: %i "
-              "sub_value[0;1]: %i;%i, altIcon=%i, ProtoVersion=%i, EOL=%i",
-              channel->Id, channel->Caption, channel->LocationID, channel->Type,
-              channel->Func, channel->online, channel->value.value[0],
-              channel->value.sub_value[0], channel->value.sub_value[1],
-              channel->AltIcon, channel->ProtocolVersion, channel->EOL);
-  }
+
 }
 
 void client_loop_channelgroup_update(void *_suplaclient, void *sthread,
@@ -74,122 +60,31 @@ void client_loop_channelgroup_update(void *_suplaclient, void *sthread,
 void client_loop_channelgroup_relation_update(
     void *_suplaclient, void *sthread,
     TSC_SuplaChannelGroupRelation *channelgroup_realtion) {
-  supla_log(LOG_DEBUG,
-            "ChannelGroupRelation GroupId: %i ChannelId: %i, EOL: %i",
-            channelgroup_realtion->ChannelGroupID,
-            channelgroup_realtion->ChannelID, channelgroup_realtion->EOL);
 }
 
 void client_loop_on_event(void *_suplaclient, void *user_data,
                           TSC_SuplaEvent *event) {
-  supla_log(LOG_DEBUG, "Event: %i, SenderID: %i, SenderName: %s", event->Event,
-            event->SenderID, event->SenderName);
 }
 
 void client_loop_channel_value_update(void *_suplaclient, void *sthread,
                                       TSC_SuplaChannelValue *channel_value) {
-  double temp;
-  if (channel_value->Id == 2944) {
-    TElectricityMeter_Value v;
-    memcpy(&v, channel_value->value.value, sizeof(TElectricityMeter_Value));
-    supla_log(LOG_DEBUG, "Channel #%i: Value: %f kWh Flags: %i",
-              channel_value->Id, v.total_forward_active_energy / 100.00,
-              v.flags);
-  } else if (channel_value->Id == 82 || channel_value->Id == 83 ||
-             channel_value->Id == 97 || channel_value->Id == 127) {
-    memcpy(&temp, channel_value->value.value, sizeof(double));
-    supla_log(LOG_DEBUG, "Channel #%i: %f st.", channel_value->Id, temp);
-  } else if (channel_value->Id == 3) {
-    TSC_ImpulseCounter_Value v;
-    memcpy(&v, channel_value->value.value, sizeof(TSC_ImpulseCounter_Value));
-    supla_log(LOG_DEBUG, "Calculated value: %i", v.calculated_value);
-  } else {
-    supla_log(
-        LOG_DEBUG,
-        "Channel #%i: Value: online %i, value[0]: %i, sub_value[0;1]: %i;%i, "
-        "EOL: %i",
-        channel_value->Id, channel_value->online, channel_value->value.value[0],
-        channel_value->value.sub_value[0], channel_value->value.sub_value[1],
-        channel_value->EOL);
-  }
 }
 
 void client_loop_channel_extendedalue_update(
     void *_suplaclient, void *sthread,
     TSC_SuplaChannelExtendedValue *channel_extendedvalue) {
-  TElectricityMeter_ExtendedValue em_ev;
-  TSC_ImpulseCounter_ExtendedValue ic_ev;
-  int a;
-  if (srpc_evtool_v1_extended2icextended(&channel_extendedvalue->value,
-                                         &ic_ev)) {
-    supla_log(LOG_DEBUG, "*************************");
-    supla_log(LOG_DEBUG, "currency=%c%c%c", ic_ev.currency[0],
-              ic_ev.currency[1], ic_ev.currency[2]);
-    supla_log(LOG_DEBUG, "price_per_unit=%i", ic_ev.price_per_unit);
-    supla_log(LOG_DEBUG, "total_cost=%i", ic_ev.total_cost);
-    supla_log(LOG_DEBUG, "custom_unit=%s", ic_ev.custom_unit);
-    supla_log(LOG_DEBUG, "impulses_per_unit=%i", ic_ev.impulses_per_unit);
-    supla_log(LOG_DEBUG, "couter=%i", ic_ev.counter);
-    supla_log(LOG_DEBUG, "calculated_value=%i", ic_ev.calculated_value);
 
-  } else if (srpc_evtool_v1_extended2emextended(&channel_extendedvalue->value,
-                                                &em_ev) == 1) {
-    supla_log(LOG_DEBUG, "*************************");
-    supla_log(LOG_DEBUG, "m_count=%i", em_ev.m_count);
-    supla_log(LOG_DEBUG, "measured_values=%i", em_ev.measured_values);
-    supla_log(LOG_DEBUG, "period=%i sec.", em_ev.period);
-    supla_log(LOG_DEBUG, "currency=%c%c%c", em_ev.currency[0],
-              em_ev.currency[1], em_ev.currency[2]);
-    supla_log(LOG_DEBUG, "price_per_unit=%i", em_ev.price_per_unit);
-    supla_log(LOG_DEBUG, "total_cost=%i", em_ev.total_cost);
-
-    if (em_ev.m_count > 0) {
-      supla_log(LOG_DEBUG, "FREQ: %i Hz", em_ev.m[0].freq / 100.00);
-    }
-
-    for (a = 0; a < 3; a++) {
-      if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
-        supla_log(LOG_DEBUG, "PHASE: %i", a);
-        supla_log(LOG_DEBUG, "   total_forward_active_energy=%f kW",
-                  em_ev.total_forward_active_energy[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   total_reverse_active_energy=%f kW",
-                  em_ev.total_reverse_active_energy[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   total_forward_reactive_energy=%f kvar",
-                  em_ev.total_forward_reactive_energy[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   total_reverse_reactive_energy=%f kvar",
-                  em_ev.total_reverse_reactive_energy[a] / 100000.00);
-
-        supla_log(LOG_DEBUG, "   voltage=%f V", em_ev.m[0].voltage[a] / 100.00);
-        supla_log(LOG_DEBUG, "   current=%f A",
-                  em_ev.m[0].current[a] / 1000.00);
-        supla_log(LOG_DEBUG, "   power_active=%f W",
-                  em_ev.m[0].power_active[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   power_reactive=%f var",
-                  em_ev.m[0].power_reactive[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   power_apparent=%f VA",
-                  em_ev.m[0].power_apparent[a] / 100000.00);
-        supla_log(LOG_DEBUG, "   power_factor=%f",
-                  em_ev.m[0].power_factor[a] / 1000.00);
-        supla_log(LOG_DEBUG, "   phase_angle=%f",
-                  em_ev.m[0].phase_angle[a] / 100000.00);
-      }
-    }
-  }
 }
 
 void client_on_registration_enabled(void *_suplaclient, void *user_data,
                                     TSDC_RegistrationEnabled *reg_enabled) {
-  supla_log(LOG_DEBUG, "Client registration enabled to: %u",
-            reg_enabled->client_timestamp);
-  supla_log(LOG_DEBUG, "I/O Device registration enabled to: %u",
-            reg_enabled->iodevice_timestamp);
+
 }
 
 void client_on_superuser_authorization_result(void *_suplaclient,
                                               void *user_data, char authorized,
                                               _supla_int_t code) {
-  supla_log(LOG_DEBUG, "Super User %s",
-            authorized == 1 ? "authorized" : "unauthorized");
+
 }
 
 void client_on_device_calcfg_result(void *_suplaclient, void *user_data,

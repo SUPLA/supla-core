@@ -59,13 +59,11 @@ int main(int argc, char *argv[]) {
   unlink("ssocket_write.raw");
 #endif
 
-  if (lifetime > 0) {
-    supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
+  if (lifetime == 0) {
+    lifetime = 5;
   }
 
-  if (input_off == 1) {
-    supla_log(LOG_INFO, "Input: off");
-  }
+  supla_log(LOG_INFO, "Lifetime: %i sec.", lifetime);
 
   st_mainloop_init();
   st_hook_signals();
@@ -76,53 +74,48 @@ int main(int argc, char *argv[]) {
 
   // MAIN LOOP
 
+  char calcfg_sent = 0;
+  int calcfg_delay = 1;
+
+  char actions[] = {
+      SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO,
+      SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL, SUPLA_THERMOSTAT_CMD_SET_MODE_ECO,
+      SUPLA_THERMOSTAT_CMD_SET_MODE_TURBO};
+
   while (st_app_terminate == 0) {
-    if (input_off == 0 && sclient != NULL && kbhit() > 0) {
-      switch (getch()) {
-        case '0':
-          supla_client_open(sclient, 14, 1, 0);
-          break;
-        case '1':
-          supla_client_open(sclient, 14, 1, 1);
-          break;
-        case '2':
-          supla_client_open(sclient, 14, 1, 2);
-          break;
+    struct timeval now;
+    gettimeofday(&now, NULL);
 
-        case '4':
-          supla_client_open(sclient, 28, 0, 1);
-          break;
-        case '5':
-          supla_client_open(sclient, 29, 0, 1);
-          break;
-        case '6':
-          supla_client_open(sclient, 30, 0, 1);
-          break;
-        case '7':
-          supla_client_get_registration_enabled(sclient);
-          break;
-        case 's':
-          supla_client_superuser_authorization_request(sclient, NULL, "abcd");
-          break;
-        case 'c':
+    if (sclient && supla_client_registered(sclient) == 1) {
+        if (now.tv_sec - runtime.tv_sec >= calcfg_delay && calcfg_sent == 0) {
+          unsigned int seed = now.tv_sec + now.tv_usec;
+
+          int cmd = actions[rand_r(&seed) % sizeof(actions)];
+          char on = rand_r(&seed) % 2;
+          supla_log(LOG_INFO, "CALCFG %i/%i", cmd, on);
+
           TCS_DeviceCalCfgRequest_B request;
-          memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest));
+          memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+
+          request.Id = 3;
+          request.Target = SUPLA_TARGET_CHANNEL;
+          request.Command = cmd;
+          request.DataSize = 1;
+          request.Data[0] = on;
+
           supla_client_device_calcfg_request(sclient, &request);
-          break;
-      }
+
+          calcfg_sent = 1;
+        }
+
+        if (lifetime > 0) {
+          if (now.tv_sec - runtime.tv_sec >= lifetime) {
+            supla_log(LOG_INFO, "Timeout");
+            break;
+          }
+        }
     }
-
-    if (lifetime > 0) {
-      struct timeval now;
-      gettimeofday(&now, NULL);
-
-      if (now.tv_sec - runtime.tv_sec >= lifetime) {
-        supla_log(LOG_INFO, "Timeout");
-        break;
-      }
-    }
-
-    st_mainloop_wait(1000);
+    st_mainloop_wait(100);
   }
 
   // RELEASE BLOCK
