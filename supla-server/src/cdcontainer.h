@@ -34,7 +34,7 @@ class cdcontainer {
  public:
   cdcontainer();
   virtual ~cdcontainer();
-  void release(cdbase *cd);
+  void releasePtr(cdbase *cd);
   void addToList(cdbase *cd);
   void moveAllToTrash();
   void moveToTrash(cdbase *cd);

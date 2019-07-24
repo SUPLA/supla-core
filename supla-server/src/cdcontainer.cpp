@@ -44,7 +44,7 @@ cdbase *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
   return result;
 }
 
-void cdcontainer::release(cdbase *cd) {
+void cdcontainer::releasePtr(cdbase *cd) {
   if (cd != NULL) {
     cd->releasePtr();
   }
@@ -52,17 +52,29 @@ void cdcontainer::release(cdbase *cd) {
 
 void cdcontainer::addToList(cdbase *cd) {
   if (cd) {
+    safe_array_lock(trash_arr);
+    safe_array_lock(arr);
+
     safe_array_remove(trash_arr, cd);
     safe_array_add(arr, cd);
+
+    safe_array_unlock(arr);
+    safe_array_unlock(trash_arr);
   }
 }
 
 void cdcontainer::moveToTrash(cdbase *cd) {
   if (cd) {
+    safe_array_lock(trash_arr);
+    safe_array_lock(arr);
+
     cd->prepareToDelete();
 
     safe_array_add(trash_arr, cd);
     safe_array_remove(arr, cd);
+
+    safe_array_unlock(arr);
+    safe_array_unlock(trash_arr);
   }
 
   emptyTrash();
