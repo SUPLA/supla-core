@@ -152,7 +152,9 @@ int cdbase::getActivityDelay(void) {
 unsigned char cdbase::getProtocolVersion(void) {
   unsigned char result = 0;
   lck_lock(lck);
-  result = getSvrConn()->getProtocolVersion();
+  if (svrconn) {
+    result = svrconn->getProtocolVersion();
+  }
   lck_unlock(lck);
   return result;
 }
@@ -178,4 +180,10 @@ bool cdbase::ptrIsUsed(void) {
   result = ptr_counter > 0;
   lck_unlock(lck);
   return result;
+}
+
+void cdbase::prepareToDelete(void) {
+  lck_lock(lck);
+  svrconn = NULL;
+  lck_unlock(lck);
 }
