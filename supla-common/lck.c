@@ -124,10 +124,12 @@ void __lck_lock(void *lck, const char *file, int line) {
   _lck_lock(lck);
 
   ((TLckData *)lck)->thread = pthread_self();
-  ((TLckData *)lck)->lineNumber = line;
   ((TLckData *)lck)->count++;
-  snprintf(((TLckData *)lck)->fileName, sizeof(((TLckData *)lck)->fileName),
-           "%s", file);
+  if (((TLckData *)lck)->count == 1) {
+	  snprintf(((TLckData *)lck)->fileName, sizeof(((TLckData *)lck)->fileName),
+	           "%s", file);
+	  ((TLckData *)lck)->lineNumber = line;
+  }
 }
 
 void _lck_lock(void *lck) {
