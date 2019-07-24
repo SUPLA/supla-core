@@ -16,20 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <http/httprequestqueue.h>
+#include <http/trivialhttps.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-#include <http/httprequestqueue.h>
-#include <http/trivialhttps.h>
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
-#include "sslcrypto.h"
 #include "ipcsocket.h"
+#include "lck.h"
 #include "log.h"
 #include "proto.h"
 #include "srpc.h"
+#include "sslcrypto.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
@@ -46,8 +47,12 @@ int main(int argc, char *argv[]) {
   void *datalogger_loop_thread = NULL;
   void *http_request_queue_loop_thread = NULL;
 
-  // INIT BLOCK
-  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+#ifdef __LCK_DEBUG
+  lck_debug_init();
+#endif /*__LCK_DEBUG*/
+
+      // INIT BLOCK
+      if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
 #if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
   unlink("ssocket_read.raw");
@@ -148,6 +153,10 @@ int main(int argc, char *argv[]) {
   }
 
   supla_log(LOG_INFO, "Shutting down...");
+
+#ifdef __LCK_DEBUG
+  lck_debug_dump();
+#endif /*__LCK_DEBUG*/
 
   // RELEASE BLOCK
 
