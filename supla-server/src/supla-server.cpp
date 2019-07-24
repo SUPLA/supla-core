@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
 
 #ifdef __LCK_DEBUG
   lck_debug_init();
+  supla_log(LOG_DEBUG, "!!! LCK DEBUG ENABED !!!");
 #endif /*__LCK_DEBUG*/
 
       // INIT BLOCK
