@@ -39,9 +39,6 @@ supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
 }
 
 supla_client::~supla_client() {
-  if (getUser())  // 1st line !!!
-    getUser()->remove_client(this);
-
   delete cgroups;
   delete channels;
   delete locations;
@@ -122,16 +119,14 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
       bool accessid_enabled = false;
 
       if (register_client_b != NULL &&
-          false ==
-              db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
-                                &UserID, &accessid_enabled)) {
+          false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
+                                     &UserID, &accessid_enabled)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_client_c != NULL &&
-                 false ==
-                     db->client_authkey_auth(GUID, register_client_c->Email,
-                                             register_client_c->AuthKey,
-                                             &UserID)) {
+                 false == db->client_authkey_auth(
+                              GUID, register_client_c->Email,
+                              register_client_c->AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -210,10 +205,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
           } else {
             if (do_update) {
-              if (false ==
-                  db->update_client(ClientID, AccessID, AuthKey, Name,
-                                    getSvrConn()->getClientIpv4(), SoftVer,
-                                    proto_version)) {
+              if (false == db->update_client(ClientID, AccessID, AuthKey, Name,
+                                             getSvrConn()->getClientIpv4(),
+                                             SoftVer, proto_version)) {
                 // something goes wrong
                 ClientID = 0;
                 db->rollback();

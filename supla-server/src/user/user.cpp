@@ -23,6 +23,7 @@
 #include <list>
 #include "amazon/alexa.h"
 #include "client.h"
+#include "clientcontainer.h"
 #include "database.h"
 #include "device.h"
 #include "google/googlehome.h"
@@ -54,20 +55,10 @@ char supla_user::find_device_byguid(void *ptr, void *GUID) {
   return ((supla_device *)ptr)->cmpGUID((char *)GUID) ? 1 : 0;
 }
 
-// static
-char supla_user::find_client_byid(void *ptr, void *ID) {
-  return ((supla_client *)ptr)->getID() == *(int *)ID ? 1 : 0;
-}
-
-// static
-char supla_user::find_client_byguid(void *ptr, void *GUID) {
-  return ((supla_client *)ptr)->cmpGUID((char *)GUID) ? 1 : 0;
-}
-
 supla_user::supla_user(int UserID) {
   this->UserID = UserID;
   this->device_arr = safe_array_init();
-  this->client_arr = safe_array_init();
+  this->client_container = new supla_client_container();
   this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);
@@ -103,7 +94,9 @@ supla_user::~supla_user() {
   compex_value_cache_clean(0);
   safe_array_free(complex_value_functions_arr);
   safe_array_free(device_arr);
-  safe_array_free(client_arr);
+
+  client_container->deleteAll(10);
+  delete client_container;
 }
 
 void supla_user::init(void) { supla_user::user_arr = safe_array_init(); }
@@ -201,31 +194,35 @@ supla_user *supla_user::get_user(int idx) {
   return (supla_user *)safe_array_get(supla_user::user_arr, idx);
 }
 
+void supla_user::moveClientToTrash(supla_client *client) {
+  client_container->moveToTrash(client);
+}
+
 bool supla_user::getClientName(int ClientID, char *buffer, int size) {
   if (size < 1) return false;
 
   buffer[0] = 0;
 
-  safe_array_lock(client_arr);
+  supla_client *client = client_container->findByID(ClientID);
 
-  supla_client *client = find_client(ClientID);
-
-  if (client) client->getName(buffer, size);
-
-  safe_array_unlock(client_arr);
+  if (client) {
+    client->getName(buffer, size);
+    client->releasePtr();
+  }
 
   return client != NULL;
 }
 
 bool supla_user::isSuperUserAuthorized(int ClientID) {
   bool result = false;
-  safe_array_lock(client_arr);
 
-  supla_client *client = find_client(ClientID);
+  supla_client *client = client_container->findByID(ClientID);
 
-  if (client) result = client->is_superuser_authorized();
+  if (client) {
+    result = client->is_superuser_authorized();
+    client->releasePtr();
+  }
 
-  safe_array_unlock(client_arr);
   return result;
 }
 
@@ -274,34 +271,26 @@ supla_user *supla_user::add_device(supla_device *device, int UserID) {
 supla_user *supla_user::add_client(supla_client *client, int UserID) {
   supla_user *user = find(UserID, true);
 
-  safe_array_lock(user->client_arr);
-
-  if (safe_array_find(user->client_arr, client) == -1) {
+  if (!user->client_container->exists(client)) {
     char GUID[SUPLA_GUID_SIZE];
     memset(GUID, 0, SUPLA_GUID_SIZE);
     client->getGUID(GUID);
 
-    supla_client *_client = (supla_client *)safe_array_findcnd(
-        user->client_arr, find_client_byguid, GUID);
+    supla_client *_client = user->client_container->findByGUID(GUID);
     if (_client != NULL) {
       _client->terminate();
+      _client->releasePtr();
       usleep(1000000);
     }
 
-    safe_array_add(user->client_arr, client);
+    user->client_container->addToList(client);
   }
-
-  safe_array_unlock(user->client_arr);
 
   return user;
 }
 
 void supla_user::remove_device(supla_device *device) {
   safe_array_remove(device_arr, device);
-}
-
-void supla_user::remove_client(supla_client *client) {
-  safe_array_remove(client_arr, client);
 }
 
 supla_device *supla_user::find_device(int DeviceID) {
@@ -315,13 +304,14 @@ supla_device *supla_user::find_device_by_channelid(int ChannelID) {
       device_arr, find_device_by_channelid, &ChannelID);
 }
 
-supla_client *supla_user::find_client(int ClientID) {
-  return (supla_client *)safe_array_findcnd(client_arr, find_client_byid,
-                                            &ClientID);
-}
-
 bool supla_user::is_client_online(int ClientID) {
-  return find_client(ClientID) != NULL;
+  supla_client *client = client_container->findByID(ClientID);
+  if (client) {
+    client->releasePtr();
+    return true;
+  }
+
+  return false;
 }
 
 bool supla_user::is_device_online(int DeviceID) {
@@ -815,16 +805,15 @@ bool supla_user::set_channelgroup_rgbw_value(int GroupID, int color,
 }
 
 void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
-  safe_array_lock(client_arr);
   {
     supla_client *client;
 
-    for (int a = 0; a < safe_array_count(client_arr); a++)
-      if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
+    for (int a = 0; a < client_container->count(); a++)
+      if (NULL != (client = client_container->get(a))) {
         client->update_device_channels(LocationID, DeviceID);
+        client->releasePtr();
       }
   }
-  safe_array_unlock(client_arr);
 }
 
 void supla_user::on_channel_value_changed(event_source_type eventSourceType,
@@ -838,16 +827,15 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
   std::list<channel_address> ca_list;
 
   if (Extended) {
-    safe_array_lock(client_arr);
     {
       supla_client *client;
 
-      for (int a = 0; a < safe_array_count(client_arr); a++)
-        if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
+      for (int a = 0; a < client_container->count(); a++)
+        if (NULL != (client = client_container->get(a))) {
           client->on_channel_value_changed(DeviceId, ChannelId, true);
+          client->releasePtr();
         }
     }
-    safe_array_unlock(client_arr);
     return;
   }
 
@@ -872,20 +860,16 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
     ca_list.push_back(channel_address(DeviceId, ChannelId));
   }
 
-  safe_array_lock(client_arr);
-  {
-    supla_client *client;
+  supla_client *client;
 
-    for (int a = 0; a < safe_array_count(client_arr); a++)
-      if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
-        for (std::list<channel_address>::iterator it = ca_list.begin();
-             it != ca_list.end(); it++) {
-          client->on_channel_value_changed(it->getDeviceId(),
-                                           it->getChannelId());
-        }
+  for (int a = 0; a < client_container->count(); a++)
+    if (NULL != (client = client_container->get(a))) {
+      for (std::list<channel_address>::iterator it = ca_list.begin();
+           it != ca_list.end(); it++) {
+        client->on_channel_value_changed(it->getDeviceId(), it->getChannelId());
       }
-  }
-  safe_array_unlock(client_arr);
+      client->releasePtr();
+    }
 }
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
@@ -894,16 +878,13 @@ void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
 }
 
 void supla_user::call_event(TSC_SuplaEvent *event) {
-  safe_array_lock(client_arr);
-  {
-    supla_client *client;
+  supla_client *client;
 
-    for (int a = 0; a < safe_array_count(client_arr); a++)
-      if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
-        client->call_event(event);
-      }
-  }
-  safe_array_unlock(client_arr);
+  for (int a = 0; a < client_container->count(); a++)
+    if (NULL != (client = client_container->get(a))) {
+      client->call_event(event);
+      client->releasePtr();
+    }
 }
 
 void supla_user::get_temp_and_humidity(void *tarr) {
@@ -978,15 +959,13 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
 void supla_user::on_device_calcfg_result(int ChannelID,
                                          TDS_DeviceCalCfgResult *result) {
   if (result == NULL) return;
-  safe_array_lock(client_arr);
 
-  supla_client *client = find_client(result->ReceiverID);
+  supla_client *client = client_container->findByID(result->ReceiverID);
 
   if (client) {
     client->on_device_calcfg_result(ChannelID, result);
+    client->releasePtr();
   }
-
-  safe_array_unlock(client_arr);
 }
 
 void supla_user::reconnect(event_source_type eventSourceType) {
@@ -1005,16 +984,13 @@ void supla_user::reconnect(event_source_type eventSourceType) {
   }
   safe_array_unlock(device_arr);
 
-  safe_array_lock(client_arr);
-  {
-    supla_client *client;
+  supla_client *client;
 
-    for (a = 0; a < safe_array_count(client_arr); a++)
-      if (NULL != (client = (supla_client *)safe_array_get(client_arr, a))) {
-        client->terminate();
-      }
-  }
-  safe_array_unlock(client_arr);
+  for (a = 0; a < client_container->count(); a++)
+    if (NULL != (client = client_container->get(a))) {
+      client->terminate();
+      client->releasePtr();
+    }
 
   supla_http_request_queue::getInstance()->onUserReconnectEvent(
       this, eventSourceType);
@@ -1023,16 +999,13 @@ void supla_user::reconnect(event_source_type eventSourceType) {
 bool supla_user::client_reconnect(int ClientID) {
   bool result = false;
 
-  safe_array_lock(client_arr);
-
-  supla_client *client = find_client(ClientID);
+  supla_client *client = client_container->findByID(ClientID);
 
   if (client) {
     client->terminate();
+    client->releasePtr();
     result = true;
   }
-
-  safe_array_unlock(client_arr);
 
   return result;
 }

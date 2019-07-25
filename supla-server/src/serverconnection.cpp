@@ -95,10 +95,15 @@ serverconnection::serverconnection(void *ssd, void *supla_socket,
 
 serverconnection::~serverconnection() {
   if (cdptr != NULL) {
-    if (registered == REG_DEVICE)
-      delete device;
-    else
-      delete client;
+    if (registered == REG_DEVICE) delete device;
+
+    if (client) {
+      if (client->getUser()) {
+        client->getUser()->moveClientToTrash(client);
+      } else {
+        delete client;
+      }
+    }
   }
 
   srpc_free(_srpc);

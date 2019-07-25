@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/user/clientcontainer.cpp \
 ../src/user/user.cpp \
 ../src/user/userchannelgroup.cpp \
 ../src/user/userchannelgroups.cpp 
 
 OBJS += \
+./src/user/clientcontainer.o \
 ./src/user/user.o \
 ./src/user/userchannelgroup.o \
 ./src/user/userchannelgroups.o 
 
 CPP_DEPS += \
+./src/user/clientcontainer.d \
 ./src/user/user.d \
 ./src/user/userchannelgroup.d \
 ./src/user/userchannelgroups.d 
