@@ -72,8 +72,8 @@ void lck_debug_dump(void) {
 
   for (a = 0; a < n; a++) {
     if ((l = (TLckData *)ptrs[a]) != 0 && l->count != 0) {
-      printf("%p:%p %s:%i count=%i\n", (void*)l,
-             (void*)l->thread, l->fileName, l->lineNumber, l->count);
+      printf("%p:%p %s:%i count=%i\n", (void *)l, (void *)l->thread,
+             l->fileName, l->lineNumber, l->count);
     }
   }
 
@@ -126,9 +126,9 @@ void __lck_lock(void *lck, const char *file, int line) {
   ((TLckData *)lck)->thread = pthread_self();
   ((TLckData *)lck)->count++;
   if (((TLckData *)lck)->count == 1) {
-	  snprintf(((TLckData *)lck)->fileName, sizeof(((TLckData *)lck)->fileName),
-	           "%s", file);
-	  ((TLckData *)lck)->lineNumber = line;
+    snprintf(((TLckData *)lck)->fileName, sizeof(((TLckData *)lck)->fileName),
+             "%s", file);
+    ((TLckData *)lck)->lineNumber = line;
   }
 }
 
