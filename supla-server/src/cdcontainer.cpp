@@ -83,8 +83,6 @@ void cdcontainer::moveToTrash(cdbase *cd) {
     safe_array_lock(trash_arr);
     safe_array_lock(arr);
 
-    cd->prepareToDelete();
-
     safe_array_add(trash_arr, cd);
     safe_array_remove(arr, cd);
 

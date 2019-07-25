@@ -98,6 +98,8 @@ serverconnection::~serverconnection() {
     if (registered == REG_DEVICE) delete device;
 
     if (client) {
+      client->setSvrConnToNull();
+
       if (client->getUser()) {
         client->getUser()->moveClientToTrash(client);
       } else {
