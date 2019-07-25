@@ -25,6 +25,7 @@
 #include "clientlocation.h"
 
 class supla_user;
+class serverconnection;
 class supla_client : public cdbase {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];

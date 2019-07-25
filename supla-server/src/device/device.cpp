@@ -35,8 +35,6 @@ supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
 
 supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
-    getUser()->remove_device(this);
-
     std::list<int> ids = channels->get_channel_ids();
     for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
@@ -426,8 +424,8 @@ std::list<int> supla_device::master_channel(int ChannelID) {
   return channels->master_channel(ChannelID);
 }
 
-std::list<int> supla_device::slave_channel(int ChannelID) {
-  return channels->slave_channel(ChannelID);
+std::list<int> supla_device::related_channel(int ChannelID) {
+  return channels->related_channel(ChannelID);
 }
 
 bool supla_device::get_channel_double_value(int ChannelID, double *Value) {

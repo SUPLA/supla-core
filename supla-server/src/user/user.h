@@ -26,13 +26,13 @@
 #include "commontypes.h"
 #include "proto.h"
 
-
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
 class supla_amazon_alexa;
 class supla_google_home;
 class supla_user_client_container;
+class supla_user_device_container;
 
 class supla_user {
  private:
@@ -43,8 +43,9 @@ class supla_user {
  protected:
   static void *user_arr;
 
-  void *device_arr;
   supla_user_client_container *client_container;
+  supla_user_device_container *device_container;
+
   void *complex_value_functions_arr;
 
   supla_user_channelgroups *cgroups;
@@ -59,15 +60,8 @@ class supla_user {
   void compex_value_cache_update_function(int DeviceId, int ChannelID,
                                           int Function, bool channel_is_hidden);
 
-  supla_device *find_device(int DeviceID);
-  supla_device *find_device_by_channelid(int ChannelID);
-  supla_device *device_by_channel_id(supla_device *suspect, int ChannelID);
-  supla_device *channel_master_device(supla_device *suspect, int ChannelID);
 
   static char find_user_byid(void *ptr, void *UserID);
-  static char find_device_byid(void *ptr, void *ID);
-  static char find_device_by_channelid(void *ptr, void *ID);
-  static char find_device_byguid(void *ptr, void *GUID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
 
@@ -124,9 +118,9 @@ class supla_user {
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   void on_device_added(int DeviceID, event_source_type eventSourceType);
 
-  void remove_device(supla_device *device);
   void setUniqueId(const char shortID[], const char longID[]);
 
+  void moveDeviceToTrash(supla_device *device);
   void moveClientToTrash(supla_client *client);
 
   int getUserID(void);

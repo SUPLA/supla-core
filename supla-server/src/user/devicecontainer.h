@@ -16,28 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef USER_CLIENTCONTAINER_H_
-#define USER_CLIENTCONTAINER_H_
+#ifndef USER_DEVICECONTAINER_H_
+#define USER_DEVICECONTAINER_H_
 
 #include "cdcontainer.h"
 
-class supla_user_client_container : public cdcontainer {
+class supla_user_device_container : public cdcontainer {
  private:
-  static char find_client_byid(void *ptr, void *ID);
-  static char find_client_byguid(void *ptr, void *GUID);
+  static char find_device_byid(void *ptr, void *ID);
+  static char find_device_by_channelid(void *ptr, void *ID);
+  static char find_device_byguid(void *ptr, void *GUID);
 
-  supla_client *baseToClient(cdbase *base);
+  supla_device *baseToDevice(cdbase *base);
 
  protected:
   virtual void cd_delete(cdbase *base);
 
  public:
-  supla_user_client_container();
-  virtual ~supla_user_client_container();
+  supla_user_device_container();
+  virtual ~supla_user_device_container();
 
-  supla_client *findByID(int ClientID);
-  supla_client *findByGUID(const char *GUID);
-  supla_client *get(int idx);
+  supla_device *findByID(int DeviceID);
+  supla_device *findByChannelID(int CahnnelID);
+  supla_device *findByGUID(const char *GUID);
+  supla_device *get(int idx);
 };
 
-#endif /* USER_CLIENTCONTAINER_H_ */
+#endif /* USER_DEVICECONTAINER_H_ */

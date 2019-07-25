@@ -97,9 +97,13 @@ serverconnection::~serverconnection() {
   if (cdptr != NULL) {
     cdptr->setSvrConnToNull();
 
-    if (registered == REG_DEVICE) delete device;
-
-    if (client) {
+    if (registered == REG_DEVICE) {
+      if (device->getUser()) {
+        device->getUser()->moveDeviceToTrash(device);
+      } else {
+        delete device;
+      }
+    } else {
       if (client->getUser()) {
         client->getUser()->moveClientToTrash(client);
       } else {

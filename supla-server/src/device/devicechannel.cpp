@@ -514,7 +514,7 @@ unsigned int supla_device_channel::getValueDuration(void) {
   return 0;
 }
 
-std::list<int> supla_device_channel::slave_channel(void) {
+std::list<int> supla_device_channel::related_channel(void) {
   std::list<int> result;
 
   switch (Func) {
@@ -960,7 +960,7 @@ int supla_device_channels::get_channel_func(int ChannelID) {
   return Func;
 }
 
-std::list<int> supla_device_channels::ms_channel(int ChannelID, bool Master) {
+std::list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
   std::list<int> result;
   if (ChannelID == 0) return result;
 
@@ -969,7 +969,7 @@ std::list<int> supla_device_channels::ms_channel(int ChannelID, bool Master) {
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel)
-    result = Master ? channel->master_channel() : channel->slave_channel();
+    result = Master ? channel->master_channel() : channel->related_channel();
 
   safe_array_unlock(arr);
 
@@ -977,11 +977,11 @@ std::list<int> supla_device_channels::ms_channel(int ChannelID, bool Master) {
 }
 
 std::list<int> supla_device_channels::master_channel(int ChannelID) {
-  return ms_channel(ChannelID, true);
+  return mr_channel(ChannelID, true);
 }
 
-std::list<int> supla_device_channels::slave_channel(int ChannelID) {
-  return ms_channel(ChannelID, false);
+std::list<int> supla_device_channels::related_channel(int ChannelID) {
+  return mr_channel(ChannelID, false);
 }
 
 bool supla_device_channels::channel_exists(int ChannelID) {

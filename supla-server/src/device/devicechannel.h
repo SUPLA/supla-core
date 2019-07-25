@@ -159,7 +159,7 @@ class supla_device_channel {
                char *on_off);
 
   std::list<int> master_channel(void);
-  std::list<int> slave_channel(void);
+  std::list<int> related_channel(void);
   supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
@@ -179,7 +179,7 @@ class supla_device_channels {
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
 
-  std::list<int> ms_channel(int ChannelID, bool Master);
+  std::list<int> mr_channel(int ChannelID, bool Master);
 
  public:
   supla_device_channels();
@@ -217,7 +217,7 @@ class supla_device_channels {
                                      char brightness, char on_off);
 
   std::list<int> master_channel(int ChannelID);
-  std::list<int> slave_channel(int ChannelID);
+  std::list<int> related_channel(int ChannelID);
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);

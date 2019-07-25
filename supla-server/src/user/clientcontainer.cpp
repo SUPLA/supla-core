@@ -49,7 +49,10 @@ supla_client *supla_user_client_container::baseToClient(cdbase *base) {
 }
 
 supla_client *supla_user_client_container::findByID(int ClientID) {
-  return baseToClient(find(find_client_byguid, &ClientID));
+  if (ClientID == 0) {
+    return NULL;
+  }
+  return baseToClient(find(find_client_byid, &ClientID));
 }
 
 supla_client *supla_user_client_container::findByGUID(const char *GUID) {
