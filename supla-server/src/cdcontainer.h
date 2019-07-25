@@ -34,12 +34,14 @@ class cdcontainer {
  public:
   cdcontainer();
   virtual ~cdcontainer();
+  bool exists(cdbase *cd);
   void releasePtr(cdbase *cd);
   void addToList(cdbase *cd);
   void moveAllToTrash();
   void moveToTrash(cdbase *cd);
   bool emptyTrash(void);
   bool emptyTrash(unsigned char timeout_sec);
+  bool deleteAll(unsigned char timeout_sec);
   int trashCount(void);
   int count(void);
 };

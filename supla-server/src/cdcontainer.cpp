@@ -24,12 +24,11 @@ cdcontainer::cdcontainer() {
 }
 
 cdcontainer::~cdcontainer() {
-  moveAllToTrash();
-  emptyTrash(10);
-
   safe_array_free(arr);
   safe_array_free(trash_arr);
 }
+
+bool cdcontainer::exists(cdbase *cd) { return safe_array_find(arr, cd) > -1; }
 
 cdbase *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
   cdbase *result = NULL;
@@ -56,7 +55,10 @@ void cdcontainer::addToList(cdbase *cd) {
     safe_array_lock(arr);
 
     safe_array_remove(trash_arr, cd);
-    safe_array_add(arr, cd);
+
+    if (safe_array_find(arr, cd) == -1) {
+      safe_array_add(arr, cd);
+    }
 
     safe_array_unlock(arr);
     safe_array_unlock(trash_arr);
@@ -106,6 +108,7 @@ bool cdcontainer::emptyTrash(unsigned char timeout_sec) {
     if (now.tv_sec - start.tv_sec >= timeout_sec) {
       break;
     }
+    gettimeofday(&now, NULL);
   }
 
   return safe_array_count(trash_arr) == 0;
@@ -114,9 +117,14 @@ bool cdcontainer::emptyTrash(unsigned char timeout_sec) {
 void cdcontainer::moveAllToTrash() {
   safe_array_lock(arr);
   while (safe_array_count(arr)) {
-    moveToTrash(static_cast<cdbase *>(safe_array_get(trash_arr, 0)));
+    moveToTrash(static_cast<cdbase *>(safe_array_get(arr, 0)));
   }
   safe_array_unlock(arr);
+}
+
+bool cdcontainer::deleteAll(unsigned char timeout_sec) {
+  moveAllToTrash();
+  return emptyTrash(timeout_sec);
 }
 
 int cdcontainer::trashCount(void) { return safe_array_count(trash_arr); }
