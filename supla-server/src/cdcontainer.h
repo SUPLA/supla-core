@@ -43,6 +43,7 @@ class cdcontainer {
   bool emptyTrash(unsigned char timeout_sec);
   bool deleteAll(unsigned char timeout_sec);
   int trashCount(void);
+  cdbase *get(int idx);
   int count(void);
 };
 

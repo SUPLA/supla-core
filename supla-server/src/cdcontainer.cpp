@@ -43,6 +43,19 @@ cdbase *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
   return result;
 }
 
+cdbase *cdcontainer::get(int idx) {
+  cdbase *result = NULL;
+
+  safe_array_lock(arr);
+  result = static_cast<cdbase *>(safe_array_get(arr, idx));
+  if (result != NULL) {
+    result = result->retainPtr();
+  }
+  safe_array_unlock(arr);
+
+  return result;
+}
+
 void cdcontainer::releasePtr(cdbase *cd) {
   if (cd != NULL) {
     cd->releasePtr();

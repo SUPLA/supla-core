@@ -99,7 +99,7 @@ TEST_F(CDContainerTest, findItem) {
 
   container->addToList(cd);
   ASSERT_FALSE(cd->ptrIsUsed());
-  ASSERT_EQ(NULL, container->findByPtr((void*)1));
+  ASSERT_EQ(NULL, container->findByPtr((void *)1));
   ASSERT_EQ(cd, container->findByPtr(cd));
   ASSERT_TRUE(cd->ptrIsUsed());
   container->releasePtr(cd);
@@ -112,5 +112,27 @@ TEST_F(CDContainerTest, findItem) {
   delete container;
 }
 
+TEST_F(CDContainerTest, getItem) {
+  STCDContainer *container = new STCDContainer();
+  ASSERT_FALSE(container == NULL);
+
+  cdbase *cd = new cdbase(NULL);
+  ASSERT_FALSE(cd == NULL);
+  ASSERT_EQ(NULL, container->get(0));
+
+  container->addToList(cd);
+  ASSERT_FALSE(cd->ptrIsUsed());
+  ASSERT_EQ(NULL, container->get(1));
+  ASSERT_EQ(cd, container->get(0));
+  ASSERT_TRUE(cd->ptrIsUsed());
+  container->releasePtr(cd);
+  ASSERT_FALSE(cd->ptrIsUsed());
+  container->moveToTrash(cd);
+  ASSERT_EQ(NULL, container->get(0));
+  ASSERT_FALSE(cd->ptrIsUsed());
+
+  container->deleteAll(0);
+  delete container;
+}
 
 }  // namespace
