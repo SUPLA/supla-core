@@ -5,8 +5,10 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/AllTests.cpp \
+../src/test/CDContainerTest.cpp \
 ../src/test/DeviceChannelTest.cpp \
 ../src/test/ProtoTest.cpp \
+../src/test/STCDContainer.cpp \
 ../src/test/STTrivialHttp.cpp \
 ../src/test/STUserSpace.cpp \
 ../src/test/SafeArrayTest.cpp \
@@ -15,8 +17,10 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/test/AllTests.o \
+./src/test/CDContainerTest.o \
 ./src/test/DeviceChannelTest.o \
 ./src/test/ProtoTest.o \
+./src/test/STCDContainer.o \
 ./src/test/STTrivialHttp.o \
 ./src/test/STUserSpace.o \
 ./src/test/SafeArrayTest.o \
@@ -25,8 +29,10 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/test/AllTests.d \
+./src/test/CDContainerTest.d \
 ./src/test/DeviceChannelTest.d \
 ./src/test/ProtoTest.d \
+./src/test/STCDContainer.d \
 ./src/test/STTrivialHttp.d \
 ./src/test/STUserSpace.d \
 ./src/test/SafeArrayTest.d \
