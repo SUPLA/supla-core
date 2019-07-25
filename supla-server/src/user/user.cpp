@@ -58,7 +58,7 @@ char supla_user::find_device_byguid(void *ptr, void *GUID) {
 supla_user::supla_user(int UserID) {
   this->UserID = UserID;
   this->device_arr = safe_array_init();
-  this->client_container = new supla_client_container();
+  this->client_container = new supla_user_client_container();
   this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa = new supla_amazon_alexa(this);

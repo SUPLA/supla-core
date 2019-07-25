@@ -20,27 +20,27 @@
 #include "client/client.h"
 
 // static
-char supla_client_container::find_client_byid(void *ptr, void *ID) {
+char supla_user_client_container::find_client_byid(void *ptr, void *ID) {
   return ((supla_client *)ptr)->getID() == *(int *)ID ? 1 : 0;
 }
 
 // static
-char supla_client_container::find_client_byguid(void *ptr, void *GUID) {
+char supla_user_client_container::find_client_byguid(void *ptr, void *GUID) {
   return ((supla_client *)ptr)->cmpGUID((char *)GUID) ? 1 : 0;
 }
 
-supla_client_container::supla_client_container() : cdcontainer() {}
+supla_user_client_container::supla_user_client_container() : cdcontainer() {}
 
-supla_client_container::~supla_client_container() {}
+supla_user_client_container::~supla_user_client_container() {}
 
-void supla_client_container::cd_delete(cdbase *base) {
+void supla_user_client_container::cd_delete(cdbase *base) {
   supla_client *client = static_cast<supla_client *>(base);
   if (client) {
     delete client;
   }
 }
 
-supla_client *supla_client_container::baseToClient(cdbase *base) {
+supla_client *supla_user_client_container::baseToClient(cdbase *base) {
   supla_client *client = NULL;
   if (base && (client = static_cast<supla_client *>(base)) == NULL) {
     base->releasePtr();
@@ -48,14 +48,14 @@ supla_client *supla_client_container::baseToClient(cdbase *base) {
   return client;
 }
 
-supla_client *supla_client_container::findByID(int ClientID) {
+supla_client *supla_user_client_container::findByID(int ClientID) {
   return baseToClient(find(find_client_byguid, &ClientID));
 }
 
-supla_client *supla_client_container::findByGUID(const char *GUID) {
+supla_client *supla_user_client_container::findByGUID(const char *GUID) {
   return baseToClient(find(find_client_byguid, (void *)GUID));
 }
 
-supla_client *supla_client_container::get(int idx) {
+supla_client *supla_user_client_container::get(int idx) {
   return static_cast<supla_client *>(cdcontainer::get(idx));
 }

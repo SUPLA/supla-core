@@ -32,7 +32,7 @@ class supla_client;
 class supla_user_channelgroups;
 class supla_amazon_alexa;
 class supla_google_home;
-class supla_client_container;
+class supla_user_client_container;
 
 class supla_user {
  private:
@@ -44,7 +44,7 @@ class supla_user {
   static void *user_arr;
 
   void *device_arr;
-  supla_client_container *client_container;
+  supla_user_client_container *client_container;
   void *complex_value_functions_arr;
 
   supla_user_channelgroups *cgroups;

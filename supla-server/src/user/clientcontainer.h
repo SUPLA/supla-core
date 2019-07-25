@@ -21,7 +21,7 @@
 
 #include <cdcontainer.h>
 
-class supla_client_container : public cdcontainer {
+class supla_user_client_container : public cdcontainer {
  private:
   static char find_client_byid(void *ptr, void *ID);
   static char find_client_byguid(void *ptr, void *GUID);
@@ -32,8 +32,8 @@ class supla_client_container : public cdcontainer {
   virtual void cd_delete(cdbase *base);
 
  public:
-  supla_client_container();
-  virtual ~supla_client_container();
+  supla_user_client_container();
+  virtual ~supla_user_client_container();
 
   supla_client *findByID(int ClientID);
   supla_client *findByGUID(const char *GUID);
