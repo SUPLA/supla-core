@@ -182,7 +182,7 @@ bool cdbase::ptrIsUsed(void) {
   return result;
 }
 
-void setSvrConnToNull(void) {
+void cdbase::setSvrConnToNull(void) {
   lck_lock(lck);
   svrconn = NULL;
   lck_unlock(lck);
