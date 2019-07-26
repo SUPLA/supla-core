@@ -94,24 +94,6 @@ serverconnection::serverconnection(void *ssd, void *supla_socket,
 }
 
 serverconnection::~serverconnection() {
-  if (cdptr != NULL) {
-    cdptr->setSvrConnToNull();
-
-    if (registered == REG_DEVICE) {
-      if (device->getUser()) {
-        device->getUser()->moveDeviceToTrash(device);
-      } else {
-        delete device;
-      }
-    } else {
-      if (client->getUser()) {
-        client->getUser()->moveClientToTrash(client);
-      } else {
-        delete client;
-      }
-    }
-  }
-
   srpc_free(_srpc);
   eh_free(eh);
   ssocket_supla_socket_free(supla_socket);
@@ -696,6 +678,41 @@ void serverconnection::execute(void *sthread) {
         supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
                   cdptr->getActivityDelay(), registered);
         break;
+      }
+    }
+  }
+
+  if (cdptr != NULL) {
+    if (cdptr->getUser()) {
+      if (registered == REG_DEVICE) {
+        device->getUser()->moveDeviceToTrash(device);
+      } else {
+        client->getUser()->moveClientToTrash(client);
+      }
+    }
+
+    {
+      unsigned long deadlock_counter = 0;
+
+      while (cdptr->ptrIsUsed()) {
+        usleep(100);
+        deadlock_counter++;
+        if (deadlock_counter > 100000) {
+          supla_log(LOG_ERR, "CONNECTION DEADLOCK %i", sthread);
+          break;
+        }
+      }
+
+      while (cdptr->ptrIsUsed()) {
+        usleep(1000000);
+      }
+    }
+
+    if (!cdptr->getUser()) {
+      if (registered == REG_DEVICE) {
+        delete device;
+      } else {
+        delete client;
       }
     }
   }
