@@ -305,9 +305,10 @@ void supla_device_channel::getChar(char *Value) {
   if (Value == NULL) return;
   switch (Func) {
     case SUPLA_CHANNELFNC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      *Value = ((TThermostat_Value *)this->value)->IsOn;
-      break;
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
+      TThermostat_Value *tv = (TThermostat_Value *)this->value;
+      *Value = tv->IsOn;
+    } break;
     default:
       *Value = this->value[0];
       break;
