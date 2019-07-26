@@ -182,8 +182,14 @@ bool cdbase::ptrIsUsed(void) {
   return result;
 }
 
-void cdbase::setSvrConnToNull(void) {
+bool cdbase::setSvrConnToNull(void) {
+  bool result = false;
   lck_lock(lck);
-  svrconn = NULL;
+  if (svrconn != NULL && ptr_counter == 0) {
+    svrconn = NULL;
+  }
+  result = svrconn == NULL;
   lck_unlock(lck);
+
+  return result;
 }
