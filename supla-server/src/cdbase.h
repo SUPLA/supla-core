@@ -63,7 +63,6 @@ class cdbase {
   cdbase *retainPtr(void);
   void releasePtr(void);
   bool ptrIsUsed(void);
-  bool setSvrConnToNull(void);
   // Thread safe end
 };
 

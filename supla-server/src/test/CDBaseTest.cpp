@@ -24,16 +24,4 @@ namespace {
 
 class CDBaseTest : public ::testing::Test {};
 
-TEST_F(CDBaseTest, setSvrConnToNull) {
-  cdbase *cd = new cdbase((serverconnection *)1);
-  ASSERT_FALSE(cd == NULL);
-
-  ASSERT_TRUE(cd->retainPtr() == cd);
-  ASSERT_FALSE(cd->setSvrConnToNull());
-  cd->releasePtr();
-  ASSERT_TRUE(cd->setSvrConnToNull());
-
-  delete cd;
-}
-
 }  // namespace
