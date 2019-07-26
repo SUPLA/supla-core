@@ -303,7 +303,15 @@ void supla_device_channel::getDouble(double *Value) {
 
 void supla_device_channel::getChar(char *Value) {
   if (Value == NULL) return;
-  *Value = this->value[0];
+  switch (Func) {
+    case SUPLA_CHANNELFNC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      *Value = ((TThermostat_Value *)this->value)->IsOn;
+      break;
+    default:
+      *Value = this->value[0];
+      break;
+  }
 }
 
 bool supla_device_channel::getRGBW(int *color, char *color_brightness,
@@ -1256,8 +1264,8 @@ void supla_device_channels::get_thermostat_measurement(void *tharr) {
   safe_array_unlock(arr);
 }
 
-bool supla_device_channels::calcfg_request(void *srpc,
-                                           int SenderID, int ChannelID,
+bool supla_device_channels::calcfg_request(void *srpc, int SenderID,
+                                           int ChannelID,
                                            bool SuperUserAuthorized,
                                            TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
