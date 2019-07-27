@@ -81,10 +81,18 @@ supla_user::~supla_user() {
   compex_value_cache_clean(0);
   safe_array_free(complex_value_functions_arr);
 
-  device_container->deleteAll(10);
+  if (!device_container->deleteAll(10)) {
+    supla_log(LOG_ERR,
+              "Can't release user device container items! (TIMEOUT) UserID:%i",
+              UserID);
+  }
   delete device_container;
 
-  client_container->deleteAll(10);
+  if (!client_container->deleteAll(10)) {
+    supla_log(LOG_ERR,
+              "Can't release user client container items! (TIMEOUT) UserID:%i",
+              UserID);
+  }
   delete client_container;
 }
 
