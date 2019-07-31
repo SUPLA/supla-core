@@ -87,7 +87,6 @@ void *lck_init(void) {
   return NULL;
 #else
   TLckData *lck = malloc(sizeof(TLckData));
-  memset(lck, 0, sizeof(TLckData));
 
   if (lck != NULL) {
 #ifdef _WIN32
@@ -104,6 +103,7 @@ void *lck_init(void) {
   }
 
 #ifdef __LCK_DEBUG
+  memset(lck, 0, sizeof(TLckData));
   int a;
   int n = sizeof(ptrs) / sizeof(void *);
   for (a = 0; a < n; a++) {
