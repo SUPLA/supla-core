@@ -79,7 +79,7 @@ extern "C" {
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 10
+#define SUPLA_PROTO_VERSION 11
 #define SUPLA_PROTO_VERSION_MIN 1
 #define SUPLA_TAG_SIZE 5
 #if defined(__AVR__)
@@ -121,6 +121,7 @@ extern "C" {
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
   (SUPLA_MAX_DATA_SIZE - 50)           // ver. >= 10
 #define SUPLA_CALCFG_DATA_MAXSIZE 128  // ver. >= 10
+#define SUPLA_TIMEZONE_MAXSIZE 51      // ver. >= 11
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
@@ -176,9 +177,12 @@ extern "C" {
 #define SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST 420    // ver. >= 10
 #define SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT 430     // ver. >= 10
 #define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST 440              // ver. >= 10
+#define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B 445            // ver. >= 11
 #define SUPLA_SC_CALL_DEVICE_CALCFG_RESULT 450               // ver. >= 10
 #define SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST 460              // ver. >= 10
 #define SUPLA_DS_CALL_DEVICE_CALCFG_RESULT 470               // ver. >= 10
+#define SUPLA_DCS_CALL_GET_USER_LOCALTIME 480                // ver. >= 11
+#define SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT 490         // ver. >= 11
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -267,6 +271,9 @@ extern "C" {
 #define SUPLA_CHANNELTYPE_ELECTRICITY_METER 5000  // ver. >= 10
 #define SUPLA_CHANNELTYPE_IMPULSE_COUNTER 5010    // ver. >= 10
 
+#define SUPLA_CHANNELTYPE_THERMOSTAT 6000                   // ver. >= 11
+#define SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS 6010  // ver. >= 11
+
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
 #define SUPLA_CHANNELFNC_NONE 0
@@ -292,19 +299,21 @@ extern "C" {
 #define SUPLA_CHANNELFNC_DIMMER 180
 #define SUPLA_CHANNELFNC_RGBLIGHTING 190
 #define SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING 200
-#define SUPLA_CHANNELFNC_DEPTHSENSOR 210           // ver. >= 5
-#define SUPLA_CHANNELFNC_DISTANCESENSOR 220        // ver. >= 5
-#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230  // ver. >= 8
-#define SUPLA_CHANNELFNC_MAILSENSOR 240            // ver. >= 8
-#define SUPLA_CHANNELFNC_WINDSENSOR 250            // ver. >= 8
-#define SUPLA_CHANNELFNC_PRESSURESENSOR 260        // ver. >= 8
-#define SUPLA_CHANNELFNC_RAINSENSOR 270            // ver. >= 8
-#define SUPLA_CHANNELFNC_WEIGHTSENSOR 280          // ver. >= 8
-#define SUPLA_CHANNELFNC_WEATHER_STATION 290       // ver. >= 8
-#define SUPLA_CHANNELFNC_STAIRCASETIMER 300        // ver. >= 8
-#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310     // ver. >= 10
-#define SUPLA_CHANNELFNC_GAS_METER 320             // ver. >= 10
-#define SUPLA_CHANNELFNC_WATER_METER 330           // ver. >= 10
+#define SUPLA_CHANNELFNC_DEPTHSENSOR 210                  // ver. >= 5
+#define SUPLA_CHANNELFNC_DISTANCESENSOR 220               // ver. >= 5
+#define SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW 230         // ver. >= 8
+#define SUPLA_CHANNELFNC_MAILSENSOR 240                   // ver. >= 8
+#define SUPLA_CHANNELFNC_WINDSENSOR 250                   // ver. >= 8
+#define SUPLA_CHANNELFNC_PRESSURESENSOR 260               // ver. >= 8
+#define SUPLA_CHANNELFNC_RAINSENSOR 270                   // ver. >= 8
+#define SUPLA_CHANNELFNC_WEIGHTSENSOR 280                 // ver. >= 8
+#define SUPLA_CHANNELFNC_WEATHER_STATION 290              // ver. >= 8
+#define SUPLA_CHANNELFNC_STAIRCASETIMER 300               // ver. >= 8
+#define SUPLA_CHANNELFNC_ELECTRICITY_METER 310            // ver. >= 10
+#define SUPLA_CHANNELFNC_GAS_METER 320                    // ver. >= 10
+#define SUPLA_CHANNELFNC_WATER_METER 330                  // ver. >= 10
+#define SUPLA_CHANNELFNC_THERMOSTAT 400                   // ver. >= 11
+#define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410  // ver. >= 11
 
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
 #define SUPLA_BIT_RELAYFUNC_CONTROLLINGTHEGATE 0x0002
@@ -330,8 +339,8 @@ extern "C" {
 #define SUPLA_PLATFORM_UNKNOWN 0
 #define SUPLA_PLATFORM_ESP8266 1
 
-#define SUPLA_NEW_VALUE_TARGET_CHANNEL 0
-#define SUPLA_NEW_VALUE_TARGET_GROUP 1
+#define SUPLA_TARGET_CHANNEL 0
+#define SUPLA_TARGET_GROUP 1
 
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
@@ -341,7 +350,7 @@ extern "C" {
 #define SUPLA_MFR_NICE 5
 #define SUPLA_MFR_ITEAD 6
 #define SUPLA_MFR_VL 7
-#define SUPLA_MFR_HPOL 8
+#define SUPLA_MFR_HEATPOL 8
 
 #pragma pack(push, 1)
 
@@ -407,6 +416,9 @@ typedef struct {
 
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
+#define EV_TYPE_THERMOSTAT_DETAILS_V1 30
+
+#define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
 typedef struct {
   char type;  // EV_TYPE_
@@ -776,9 +788,10 @@ typedef struct {
 
   _supla_int_t count;
   _supla_int_t total_left;
-  TSC_SuplaChannelGroupRelation items
-      [SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaChannelGroupRelationPack;                // ver. >= 9
+  TSC_SuplaChannelGroupRelation
+      items[SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in
+                                                         // struct!
+} TSC_SuplaChannelGroupRelationPack;                     // ver. >= 9
 
 typedef struct {
   // client -> server
@@ -943,10 +956,10 @@ typedef struct {
 
 // [IODevice->Server->Client]
 typedef struct {
-  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kW
-  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kW
-  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvar
-  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvar
+  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvarh
 
   // The price per unit, total cost and currency is overwritten by the server
   // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
@@ -986,7 +999,9 @@ typedef struct {
   _supla_int64_t calculated_value;   // * 0.001
 } TSC_ImpulseCounter_ExtendedValue;  // v. >= 10
 
-typedef struct { unsigned _supla_int64_t counter; } TDS_ImpulseCounter_Value;
+typedef struct {
+  unsigned _supla_int64_t counter;
+} TDS_ImpulseCounter_Value;
 
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
@@ -1001,7 +1016,7 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
-// CALCFG == CALIBRATION / CONSIG
+// CALCFG == CALIBRATION / CONFIG
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Command;
@@ -1009,6 +1024,16 @@ typedef struct {
   unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
 } TCS_DeviceCalCfgRequest;               // v. >= 10
+
+// CALCFG == CALIBRATION / CONFIG
+typedef struct {
+  _supla_int_t Id;
+  char Target;  // SUPLA_NEW_VALUE_TARGET_
+  _supla_int_t Command;
+  _supla_int_t DataType;
+  unsigned _supla_int_t DataSize;
+  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
+} TCS_DeviceCalCfgRequest_B;             // v. >= 11
 
 typedef struct {
   _supla_int_t ChannelID;
@@ -1032,6 +1057,16 @@ typedef struct {
   _supla_int_t SenderID;
   _supla_int_t ChannelNumber;
   _supla_int_t Command;
+  char SuperUserAuthorized;
+  _supla_int_t DataType;
+  unsigned _supla_int_t DataSize;
+  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
+} TSD_DeviceCalCfgRequest_B;             // v. >= 11
+
+typedef struct {
+  _supla_int_t ReceiverID;
+  _supla_int_t ChannelNumber;
+  _supla_int_t Command;
   _supla_int_t Result;
   unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
@@ -1048,6 +1083,131 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
+
+typedef struct {
+  unsigned char sec;        // 0-59
+  unsigned char min;        // 0-59
+  unsigned char hour;       // 0-24
+  unsigned char dayOfWeek;  // 1 = Sunday, 2 = Monday, …, 7 = Saturday
+} TThermostat_Time;         // v. >= 11
+
+#define THERMOSTAT_SCHEDULE_DAY_SUNDAY 0x01
+#define THERMOSTAT_SCHEDULE_DAY_MONDAY 0x02
+#define THERMOSTAT_SCHEDULE_DAY_TUESDAY 0x04
+#define THERMOSTAT_SCHEDULE_DAY_WEDNESDAY 0x08
+#define THERMOSTAT_SCHEDULE_DAY_THURSDAY 0x10
+#define THERMOSTAT_SCHEDULE_DAY_FRIDAY 0x20
+#define THERMOSTAT_SCHEDULE_DAY_SATURDAY 0x40
+#define THERMOSTAT_SCHEDULE_DAY_ALL 0xFF
+
+#define THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_TEMPERATURE 0
+#define THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_PROGRAM 1
+
+typedef struct {
+  unsigned char ValueType;  // THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_
+  char HourValue[7][24];    // 7 days x 24h
+                            // 0 = Sunday, 1 = Monday, …, 6 = Saturday
+} TThermostat_Schedule;     // v. >= 11
+
+typedef struct {
+  unsigned char ValueType;  // THERMOSTAT_SCHEDULE_HOURVALUE_TYPE_
+  unsigned char WeekDays;   // THERMOSTAT_SCHEDULE_DAY_
+  char HourValue[24];
+} TThermostatValueGroup;    // v. >= 11
+
+typedef struct {
+  TThermostatValueGroup Group[4];
+} TThermostat_ScheduleCfg;  // v. >= 11
+
+#define TEMPERATURE_INDEX1 0x0001
+#define TEMPERATURE_INDEX2 0x0002
+#define TEMPERATURE_INDEX3 0x0004
+#define TEMPERATURE_INDEX4 0x0008
+#define TEMPERATURE_INDEX5 0x0010
+#define TEMPERATURE_INDEX6 0x0020
+#define TEMPERATURE_INDEX7 0x0040
+#define TEMPERATURE_INDEX8 0x0080
+#define TEMPERATURE_INDEX9 0x0100
+#define TEMPERATURE_INDEX10 0x0200
+
+typedef struct {
+  _supla_int16_t Index;  // BIT0 Temperature[0], BIT1 Temperature[1] etc...
+  unsigned _supla_int16_t Temperature[10];
+} TThermostatTemperatureCfg;
+
+// Thermostat configuration commands - ver. >= 11
+#define SUPLA_THERMOSTAT_CMD_TURNON 1
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_AUTO 2
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_COOL 3
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_HEAT 4
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_NORMAL 5
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_ECO 6
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_TURBO 7
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_DRY 8
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_FANONY 9
+#define SUPLA_THERMOSTAT_CMD_SET_MODE_PURIFIER 10
+#define SUPLA_THERMOSTAT_CMD_SET_SCHEDULE 11
+#define SUPLA_THERMOSTAT_CMD_SET_TIME 12
+#define SUPLA_THERMOSTAT_CMD_SET_TEMPERATURE 13
+
+// Thermostat capability flags - ver. >= 11
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_ONOFF 0x0001
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_AUTO 0x0002
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_COOL 0x0004
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_HEAT 0x0008
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_ECO 0x0010
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_DRY 0x0020
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_FANONLY 0x0040
+#define SUPLA_THERMOSTAT_CAP_FLAG_MODE_PURIFIER 0x0080
+#define SUPLA_THERMOSTAT_CAP_FLAG_SCHEDULE 0x0100
+
+// Thermostat value flags - ver. >= 11
+#define SUPLA_THERMOSTAT_VALUE_FLAG_ON 0x0001
+#define SUPLA_THERMOSTAT_VALUE_FLAG_AUTO_MODE 0x0002
+#define SUPLA_THERMOSTAT_VALUE_FLAG_COOL_MODE 0x0004
+#define SUPLA_THERMOSTAT_VALUE_FLAG_HEAT_MODE 0x0008
+#define SUPLA_THERMOSTAT_VALUE_FLAG_ECO_MODE 0x0010
+#define SUPLA_THERMOSTAT_VALUE_FLAG_DRY_MODE 0x0020
+#define SUPLA_THERMOSTAT_VALUE_FLAG_FANONLY_MODE 0x0040
+#define SUPLA_THERMOSTAT_VALUE_FLAG_PURIFIER_MODE 0x0080
+
+// Thermostat fields - ver. >= 11
+#define THERMOSTAT_FIELD_MeasuredTemperatures 0x01
+#define THERMOSTAT_FIELD_PresetTemperatures 0x02
+#define THERMOSTAT_FIELD_Flags 0x04
+#define THERMOSTAT_FIELD_Values 0x08
+#define THERMOSTAT_FIELD_Time 0x10
+#define THERMOSTAT_FIELD_Schedule 0x20
+
+typedef struct {
+  unsigned char Fields;
+  _supla_int16_t MeasuredTemperature[10];  // * 0.01
+  _supla_int16_t PresetTemperature[10];    // * 0.01
+  _supla_int16_t Flags[8];
+  _supla_int16_t Values[8];
+  TThermostat_Time Time;
+  TThermostat_Schedule Schedule;  // 7 days x 24h (4bit/hour)
+} TThermostat_ExtendedValue;      // v. >= 11
+
+typedef struct {
+  unsigned char IsOn;
+  unsigned char Flags;
+  _supla_int16_t MeasuredTemperature;  // * 0.01
+  _supla_int16_t PresetTemperature;    // * 0.01
+} TThermostat_Value;                   // v. >= 11
+
+typedef struct {
+  unsigned _supla_int16_t year;
+  unsigned char month;
+  unsigned char day;
+  unsigned char dayOfWeek;  // 1 = Sunday, 2 = Monday, …, 7 = Saturday
+  unsigned char hour;
+  unsigned char min;
+  unsigned char sec;
+  unsigned _supla_int_t
+      timezoneSize;  // including the terminating null byte ('\0')
+  char timezone[SUPLA_TIMEZONE_MAXSIZE];  // Last variable in struct!
+} TSDC_UserLocalTimeResult;
 
 #pragma pack(pop)
 

@@ -651,6 +651,20 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               sizeof(TSDC_RegistrationEnabled));
 
         break;
+      case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
+        call_with_no_data = 1;
+        break;
+      case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
+        if (srpc->sdp.data_size <= sizeof(TSDC_UserLocalTimeResult) &&
+            srpc->sdp.data_size >=
+                (sizeof(TSDC_UserLocalTimeResult) - SUPLA_TIMEZONE_MAXSIZE)) {
+          rd->data.sdc_user_localtime_result =
+              (TSDC_UserLocalTimeResult *)malloc(
+                  sizeof(TSDC_UserLocalTimeResult));
+        }
+
+        break;
+
 #ifndef SRPC_EXCLUDE_DEVICE
       case SUPLA_DS_CALL_REGISTER_DEVICE:
 
@@ -1020,6 +1034,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               sizeof(TCS_DeviceCalCfgRequest));
         }
         break;
+      case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
+        if (srpc->sdp.data_size <= sizeof(TCS_DeviceCalCfgRequest_B) &&
+            srpc->sdp.data_size >= (sizeof(TCS_DeviceCalCfgRequest_B) -
+                                    SUPLA_CALCFG_DATA_MAXSIZE)) {
+          rd->data.cs_device_calcfg_request_b =
+              (TCS_DeviceCalCfgRequest_B *)malloc(
+                  sizeof(TCS_DeviceCalCfgRequest_B));
+        }
+        break;
       case SUPLA_SC_CALL_DEVICE_CALCFG_RESULT:
         if (srpc->sdp.data_size <= sizeof(TSC_DeviceCalCfgResult) &&
             srpc->sdp.data_size >=
@@ -1133,6 +1156,10 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_CHANNEL_UPDATE_C:
     case SUPLA_SC_CALL_CHANNELPACK_UPDATE_C:
       return 10;
+    case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
+    case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
+    case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
+      return 11;
   }
 
   return 255;
@@ -1309,6 +1336,23 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
     void *_srpc, TSDC_RegistrationEnabled *reg_enabled) {
   return srpc_async_call(_srpc, SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT,
                          (char *)reg_enabled, sizeof(TSDC_RegistrationEnabled));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc) {
+  return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME, NULL, 0);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
+    void *_srpc, TSDC_UserLocalTimeResult *localtime) {
+  if (localtime == NULL || localtime->timezoneSize > SUPLA_TIMEZONE_MAXSIZE) {
+    return 0;
+  }
+
+  unsigned int size = sizeof(TSDC_UserLocalTimeResult) -
+                      SUPLA_TIMEZONE_MAXSIZE + localtime->timezoneSize;
+
+  return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
+                         (char *)localtime, size);
 }
 
 #ifndef SRPC_EXCLUDE_DEVICE
@@ -1826,6 +1870,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(
                              SUPLA_CALCFG_DATA_MAXSIZE + request->DataSize);
 }
 
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request_b(
+    void *_srpc, TCS_DeviceCalCfgRequest_B *request) {
+  if (request == NULL || request->DataSize > SUPLA_CALCFG_DATA_MAXSIZE) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B,
+                         (char *)request,
+                         sizeof(TCS_DeviceCalCfgRequest_B) -
+                             SUPLA_CALCFG_DATA_MAXSIZE + request->DataSize);
+}
+
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calcfg_result(
     void *_srpc, TSC_DeviceCalCfgResult *result) {
   if (result == NULL || result->DataSize > SUPLA_CALCFG_DATA_MAXSIZE) {
@@ -1891,6 +1947,60 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
   }
 
   return 1;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
+    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev) {
+  if (ev == NULL || th_ev == NULL ||
+      ev->type != EV_TYPE_THERMOSTAT_DETAILS_V1 || ev->size == 0 ||
+      ev->size > sizeof(TThermostat_ExtendedValue)) {
+    return 0;
+  }
+
+  memset(th_ev, 0, sizeof(TThermostat_ExtendedValue));
+  memcpy(th_ev, ev->value, ev->size);
+
+  return 1;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
+    TThermostat_ExtendedValue *th_ev, TSuplaChannelExtendedValue *ev) {
+  if (th_ev == NULL || ev == NULL) {
+    return 0;
+  }
+
+  memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev->type = EV_TYPE_THERMOSTAT_DETAILS_V1;
+  ev->size = 0;
+
+  unsigned _supla_int_t size = sizeof(TThermostat_ExtendedValue);
+
+  if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Schedule)) {
+    size -= sizeof(th_ev->Schedule);
+    if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Time)) {
+      size -= sizeof(th_ev->Time);
+      if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Values)) {
+        size -= sizeof(th_ev->Values);
+        if (0 == (th_ev->Fields & THERMOSTAT_FIELD_Flags)) {
+          size -= sizeof(th_ev->Flags);
+          if (0 == (th_ev->Fields & THERMOSTAT_FIELD_PresetTemperatures)) {
+            size -= sizeof(th_ev->PresetTemperature);
+            if (0 == (th_ev->Fields & THERMOSTAT_FIELD_MeasuredTemperatures)) {
+              size -= sizeof(th_ev->MeasuredTemperature);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (size > 0) {
+    ev->size = size;
+    memcpy(ev->value, th_ev, size);
+    return 1;
+  }
+
+  return 0;
 }
 
 #ifndef SRPC_EXCLUDE_CLIENT

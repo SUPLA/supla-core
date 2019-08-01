@@ -18,6 +18,11 @@
 
 #include "lck.h"
 
+#ifdef __LCK_DEBUG
+#include <stdio.h>
+#include <string.h>
+#endif /*__LCK_DEBUG*/
+
 #if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)
 #define __SINGLE_THREAD
 #else
@@ -42,9 +47,40 @@ typedef struct {
   CRITICAL_SECTION critSec;
 #else
   pthread_mutex_t mutex;
+#ifdef __LCK_DEBUG
+
+  pthread_t thread;
+  int count;
+  int lineNumber;
+  char fileName[100];
+
+#endif /*__LCK_DEBUG*/
 #endif /*_WIN32*/
 } TLckData;
 #endif
+
+#ifdef __LCK_DEBUG
+void *ptrs[500];
+
+void lck_debug_init(void) { memset(ptrs, 0, sizeof(ptrs)); }
+
+void lck_debug_dump(void) {
+  printf("LCK DEBUG DUMP\n");
+  int a;
+  int n = sizeof(ptrs) / sizeof(void *);
+  TLckData *l = 0;
+
+  for (a = 0; a < n; a++) {
+    if ((l = (TLckData *)ptrs[a]) != 0 && l->count != 0) {
+      printf("%p:%p %s:%i count=%i\n", (void *)l, (void *)l->thread,
+             l->fileName, l->lineNumber, l->count);
+    }
+  }
+
+  printf("<<-----\n");
+}
+
+#endif /*__LCK_DEBUG*/
 
 void *lck_init(void) {
 #ifdef __SINGLE_THREAD
@@ -66,17 +102,46 @@ void *lck_init(void) {
 #endif /*_WIN32*/
   }
 
+#ifdef __LCK_DEBUG
+  memset(lck, 0, sizeof(TLckData));
+  int a;
+  int n = sizeof(ptrs) / sizeof(void *);
+  for (a = 0; a < n; a++) {
+    if (ptrs[a] == 0) {
+      ptrs[a] = lck;
+      break;
+    }
+  }
+#endif /*__LCK_DEBUG*/
+
   return lck;
 #endif /*__SINGLE_THREAD*/
 }
 
+#ifdef __LCK_DEBUG
+
+void __lck_lock(void *lck, const char *file, int line) {
+  _lck_lock(lck);
+
+  ((TLckData *)lck)->thread = pthread_self();
+  ((TLckData *)lck)->count++;
+  if (((TLckData *)lck)->count == 1) {
+    snprintf(((TLckData *)lck)->fileName, sizeof(((TLckData *)lck)->fileName),
+             "%s", file);
+    ((TLckData *)lck)->lineNumber = line;
+  }
+}
+
+void _lck_lock(void *lck) {
+#else
 void lck_lock(void *lck) {
+#endif /*__LCK_DEBUG*/
 #ifndef __SINGLE_THREAD
   if (lck != NULL) {
 #ifdef _WIN32
-    EnterCriticalSection(&((TLckData *)lck)->critSec); // NOLINT
+    EnterCriticalSection(&((TLckData *)lck)->critSec);  // NOLINT
 #else
-    pthread_mutex_lock(&((TLckData *)lck)->mutex); // NOLINT
+    pthread_mutex_lock(&((TLckData *)lck)->mutex);     // NOLINT
 #endif /*_WIN32*/
   }
 
@@ -84,12 +149,15 @@ void lck_lock(void *lck) {
 }
 
 void lck_unlock(void *lck) {
+#ifdef __LCK_DEBUG
+  ((TLckData *)lck)->count--;
+#endif /*__LCK_DEBUG*/
 #ifndef __SINGLE_THREAD
   if (lck != NULL) {
 #ifdef _WIN32
-    LeaveCriticalSection(&((TLckData *)lck)->critSec); // NOLINT
+    LeaveCriticalSection(&((TLckData *)lck)->critSec);  // NOLINT
 #else
-    pthread_mutex_unlock(&((TLckData *)lck)->mutex); // NOLINT
+    pthread_mutex_unlock(&((TLckData *)lck)->mutex);   // NOLINT
 #endif /*_WIN32*/
   }
 
@@ -104,12 +172,23 @@ int lck_unlock_r(void *lck, int result) {
 }
 
 void lck_free(void *lck) {
+#ifdef __LCK_DEBUG
+  int a;
+  int n = sizeof(ptrs) / sizeof(void *);
+  for (a = 0; a < n; a++) {
+    if (ptrs[a] == lck) {
+      ptrs[a] = 0;
+      break;
+    }
+  }
+#endif /*__LCK_DEBUG*/
+
 #ifndef __SINGLE_THREAD
   if (lck != NULL) {
 #ifdef _WIN32
-    DeleteCriticalSection(&((TLckData *)lck)->critSec); // NOLINT
+    DeleteCriticalSection(&((TLckData *)lck)->critSec);  // NOLINT
 #else
-    pthread_mutex_destroy(&((TLckData *)lck)->mutex); // NOLINT
+    pthread_mutex_destroy(&((TLckData *)lck)->mutex);  // NOLINT
 #endif /*_WIN32*/
     free(lck);
   }

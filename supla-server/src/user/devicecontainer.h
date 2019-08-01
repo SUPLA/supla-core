@@ -16,36 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DATALOGGER_H_
-#define DATALOGGER_H_
+#ifndef USER_DEVICECONTAINER_H_
+#define USER_DEVICECONTAINER_H_
 
-#include "database.h"
+#include "cdcontainer.h"
 
-#define TEMPLOG_INTERVAL 600
-#define ELECTRICITYMETERLOG_INTERVAL 600
-#define IMPULSECOUNTERLOG_INTERVAL 600
-#define THERMOSTATLOG_INTERVAL 600
-
-class supla_datalogger {
+class supla_user_device_container : public cdcontainer {
  private:
-  database *db;
-  struct timeval now;
-  struct timeval temperature_tv;
-  struct timeval electricitymeter_tv;
-  struct timeval impulsecounter_tv;
-  struct timeval thermostat_tv;
+  static char find_device_byid(void *ptr, void *ID);
+  static char find_device_by_channelid(void *ptr, void *ID);
+  static char find_device_byguid(void *ptr, void *GUID);
 
-  void log_temperature();
-  void log_electricity_measurement(void);
-  void log_ic_measurement(void);
-  void log_thermostat_measurement(void);
-  bool dbinit(void);
+  supla_device *baseToDevice(cdbase *base);
+
+ protected:
+  virtual void cd_delete(cdbase *base);
 
  public:
-  supla_datalogger();
-  void log(void);
+  supla_user_device_container();
+  virtual ~supla_user_device_container();
+
+  supla_device *findByID(int DeviceID);
+  supla_device *findByChannelID(int CahnnelID);
+  supla_device *findByGUID(const char *GUID);
+  supla_device *get(int idx);
 };
 
-void datalogger_loop(void *ssd, void *dl_sthread);
-
-#endif /* DATALOGGER_H_ */
+#endif /* USER_DEVICECONTAINER_H_ */

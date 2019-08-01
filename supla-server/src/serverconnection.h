@@ -25,7 +25,7 @@
 
 class supla_client;
 class supla_device;
-class cdcommon;
+class cdbase;
 
 class serverconnection {
  protected:
@@ -42,7 +42,7 @@ class serverconnection {
   union {
     supla_client *client;
     supla_device *device;
-    cdcommon *cdptr;
+    cdbase *cdptr;
   };
 
   char registered;

@@ -29,17 +29,14 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
+supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
   this->channels = new supla_device_channels();
 }
 
 supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
-    getUser()->remove_device(this);
-
     std::list<int> ids = channels->get_channel_ids();
-    for (std::list<int>::iterator it = ids.begin();
-         it != ids.end(); it++) {
+    for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
     }
   }
@@ -109,9 +106,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false ==
-                     db->device_authkey_auth(GUID, register_device_e->Email,
-                                             AuthKey, &UserID)) {
+                 false == db->device_authkey_auth(GUID,
+                                                  register_device_e->Email,
+                                                  AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -427,8 +424,8 @@ std::list<int> supla_device::master_channel(int ChannelID) {
   return channels->master_channel(ChannelID);
 }
 
-std::list<int> supla_device::slave_channel(int ChannelID) {
-  return channels->slave_channel(ChannelID);
+std::list<int> supla_device::related_channel(int ChannelID) {
+  return channels->related_channel(ChannelID);
 }
 
 bool supla_device::get_channel_double_value(int ChannelID, double *Value) {
@@ -453,6 +450,10 @@ void supla_device::get_electricity_measurement(void *emarr) {
 
 void supla_device::get_ic_measurement(void *icarr) {
   channels->get_ic_measurement(icarr);
+}
+
+void supla_device::get_thermostat_measurement(void *tharr) {
+  channels->get_thermostat_measurement(tharr);
 }
 
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
@@ -480,9 +481,10 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
 }
 
-bool supla_device::calcfg_request(int SenderID, bool SuperUserAuthorized,
-                                  TCS_DeviceCalCfgRequest *request) {
-  return channels->calcfg_request(getSvrConn()->srpc(), SenderID,
+bool supla_device::calcfg_request(int SenderID, int ChannelID,
+                                  bool SuperUserAuthorized,
+                                  TCS_DeviceCalCfgRequest_B *request) {
+  return channels->calcfg_request(getSvrConn()->srpc(), SenderID, ChannelID,
                                   SuperUserAuthorized, request);
 }
 

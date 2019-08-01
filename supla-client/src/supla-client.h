@@ -145,16 +145,17 @@ char supla_client_send_raw_value(void *_suplaclient, int ID,
                                  char Target);
 char supla_client_open(void *_suplaclient, int ID, char group, char open);
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
-                           char color_brightness, char brightness);
+                           char color_brightness, char brightness,
+                           char turn_onoff);
 char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
-                             char brightness);
+                             char brightness, char turn_onoff);
 char supla_client_get_registration_enabled(void *_suplaclient);
 unsigned char supla_client_get_proto_version(void *_suplaclient);
 char supla_client_oauth_token_request(void *_suplaclient);
 char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   char *email, char *password);
 char supla_client_device_calcfg_request(void *_suplaclient,
-                                        TCS_DeviceCalCfgRequest *request);
+                                        TCS_DeviceCalCfgRequest_B *request);
 
 #ifdef __cplusplus
 }

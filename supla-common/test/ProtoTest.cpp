@@ -97,6 +97,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(8, sizeof(TSC_ImpulseCounter_Value));
   ASSERT_EQ(320, sizeof(TCS_SuperUserAuthorizationRequest));
   ASSERT_EQ(144, sizeof(TCS_DeviceCalCfgRequest));
+  ASSERT_EQ(145, sizeof(TCS_DeviceCalCfgRequest_B));
   ASSERT_EQ(144, sizeof(TSC_DeviceCalCfgResult));
   ASSERT_EQ(149, sizeof(TSD_DeviceCalCfgRequest));
   ASSERT_EQ(148, sizeof(TDS_DeviceCalCfgResult));
@@ -108,6 +109,20 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TElectricityMeter_Value), SUPLA_CHANNELVALUE_SIZE);
   ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue),
             SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+
+  ASSERT_EQ(4, sizeof(TThermostat_Time));
+  ASSERT_EQ(246, sizeof(TThermostat_ExtendedValue));
+  ASSERT_EQ(6, sizeof(TThermostat_Value));
+  ASSERT_EQ(169, sizeof(TThermostat_Schedule));
+  ASSERT_EQ(104, sizeof(TThermostat_ScheduleCfg));
+  ASSERT_EQ(22, sizeof(TThermostatTemperatureCfg));
+
+  ASSERT_LE(sizeof(TThermostat_ExtendedValue), SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  ASSERT_LE(sizeof(TThermostat_Value), SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_LE(sizeof(TThermostat_ScheduleCfg), SUPLA_CALCFG_DATA_MAXSIZE);
+  ASSERT_LE(sizeof(TThermostatTemperatureCfg), SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ(63, sizeof(TSDC_UserLocalTimeResult));
 }
 
 TEST_F(ProtoTest, init) {

@@ -19,13 +19,14 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include "cdcommon.h"
+#include "cdbase.h"
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
 
 class supla_user;
-class supla_client : public cdcommon {
+class serverconnection;
+class supla_client : public cdbase {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
   bool superuser_authorized;
@@ -66,7 +67,7 @@ class supla_client : public cdcommon {
   void superuser_authorization_request(
       TCS_SuperUserAuthorizationRequest *request);
 
-  void device_calcfg_request(TCS_DeviceCalCfgRequest *request);
+  void device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
 
   virtual ~supla_client();

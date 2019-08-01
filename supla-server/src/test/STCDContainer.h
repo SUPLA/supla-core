@@ -16,36 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DATALOGGER_H_
-#define DATALOGGER_H_
+#ifndef H_STCDContainer_H_
+#define H_STCDContainer_H_
 
-#include "database.h"
+#include "cdcontainer.h"
+#include "gtest/gtest.h"  // NOLINT
 
-#define TEMPLOG_INTERVAL 600
-#define ELECTRICITYMETERLOG_INTERVAL 600
-#define IMPULSECOUNTERLOG_INTERVAL 600
-#define THERMOSTATLOG_INTERVAL 600
-
-class supla_datalogger {
+class STCDContainer : public cdcontainer {
  private:
-  database *db;
-  struct timeval now;
-  struct timeval temperature_tv;
-  struct timeval electricitymeter_tv;
-  struct timeval impulsecounter_tv;
-  struct timeval thermostat_tv;
+  static char find_by_ptr(void *ptr1, void *ptr2);
 
-  void log_temperature();
-  void log_electricity_measurement(void);
-  void log_ic_measurement(void);
-  void log_thermostat_measurement(void);
-  bool dbinit(void);
+ protected:
+  int del_count;
+  virtual void cd_delete(cdbase *cd);
 
  public:
-  supla_datalogger();
-  void log(void);
+  STCDContainer();
+  virtual ~STCDContainer();
+  int delCount(void);
+
+  cdbase *findByPtr(void *ptr);
 };
 
-void datalogger_loop(void *ssd, void *dl_sthread);
-
-#endif /* DATALOGGER_H_ */
+#endif /*H_STCDContainer_H_*/

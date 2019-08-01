@@ -21,7 +21,8 @@ C_SRCS += \
 
 CPP_SRCS += \
 ../src/accept_loop.cpp \
-../src/cdcommon.cpp \
+../src/cdbase.cpp \
+../src/cdcontainer.cpp \
 ../src/database.cpp \
 ../src/datalogger.cpp \
 ../src/db.cpp \
@@ -35,7 +36,8 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/accept_loop.o \
-./src/cdcommon.o \
+./src/cdbase.o \
+./src/cdcontainer.o \
 ./src/cfg.o \
 ./src/database.o \
 ./src/datalogger.o \
@@ -79,7 +81,8 @@ C_DEPS += \
 
 CPP_DEPS += \
 ./src/accept_loop.d \
-./src/cdcommon.d \
+./src/cdbase.d \
+./src/cdcontainer.d \
 ./src/database.d \
 ./src/datalogger.d \
 ./src/db.d \

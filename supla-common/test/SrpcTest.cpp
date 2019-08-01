@@ -283,6 +283,14 @@ TEST_F(SrpcTest, call_allowed_v10) {
   srpcCallAllowed(10, calls);
 }
 
+TEST_F(SrpcTest, call_allowed_v11) {
+  int calls[] = {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
+                 SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
+                 SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B, 0};
+
+  srpcCallAllowed(11, calls);
+}
+
 TEST_F(SrpcTest, call_not_allowed) {
   ASSERT_TRUE(all_calls != NULL);
   ASSERT_GT(all_calls_size, 0);
@@ -3115,6 +3123,125 @@ TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
 
   ev.size = sizeof(TSC_ImpulseCounter_ExtendedValue) - 1;
   ASSERT_EQ(0, srpc_evtool_v1_extended2icextended(&ev, &ic_ev_dst));
+}
+
+TEST_F(SrpcTest, evtool_v1_extended2thermostatextended) {
+  TThermostat_ExtendedValue th_ev;
+  DECLARE_WITH_RANDOM(TSuplaChannelExtendedValue, ev);
+  ev.type = EV_TYPE_THERMOSTAT_DETAILS_V1;
+
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(NULL, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(&ev, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(NULL, &th_ev));
+
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(&ev, &th_ev));
+  ev.size = sizeof(TThermostat_ExtendedValue) + 1;
+  ASSERT_EQ(0, srpc_evtool_v1_extended2thermostatextended(&ev, &th_ev));
+
+  ev.size = sizeof(TThermostat_ExtendedValue);
+  ASSERT_EQ(1, srpc_evtool_v1_extended2thermostatextended(&ev, &th_ev));
+  ASSERT_EQ(0, memcmp(&th_ev, ev.value, sizeof(TThermostat_ExtendedValue)));
+}
+
+TEST_F(SrpcTest, evtool_v1_thermostatextended2extended) {
+  TSuplaChannelExtendedValue ev;
+  DECLARE_WITH_RANDOM(TThermostat_ExtendedValue, th_ev);
+  th_ev.Fields = 0;
+  ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(NULL, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(&th_ev, NULL));
+  ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(NULL, &ev));
+
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(1, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_MeasuredTemperatures;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(21, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_PresetTemperatures;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(41, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Flags;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(57, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Values;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(73, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Time;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(77, ev.size);
+
+  th_ev.Fields = THERMOSTAT_FIELD_Schedule;
+  ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
+  ASSERT_EQ(246, ev.size);
+
+  ASSERT_EQ(0, memcmp(ev.value, &th_ev, sizeof(TThermostat_ExtendedValue)));
+}
+
+//---------------------------------------------------------
+// GET USER LOCALTIME
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_get_user_localtime) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_dcs_async_get_user_localtime(srpc), 0);
+
+  SendAndReceive(SUPLA_DCS_CALL_GET_USER_LOCALTIME, 23);
+
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_get_user_localtime_result) {
+  DECLARE_WITH_RANDOM(TSDC_UserLocalTimeResult, result);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(srpc_sdc_async_get_user_localtime_result(srpc, NULL), 0);
+
+  result.timezoneSize = -1;
+  ASSERT_EQ(srpc_sdc_async_get_user_localtime_result(srpc, &result), 0);
+
+  result.timezoneSize = SUPLA_TIMEZONE_MAXSIZE + 1;
+  ASSERT_EQ(srpc_sdc_async_get_user_localtime_result(srpc, &result), 0);
+
+  result.timezoneSize = 0;
+  ASSERT_GT(srpc_sdc_async_get_user_localtime_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT, 35);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_get_user_localtime_result_with_timezone_maxsize) {
+  DECLARE_WITH_RANDOM(TSDC_UserLocalTimeResult, result);
+
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  result.timezoneSize = SUPLA_TIMEZONE_MAXSIZE;
+  ASSERT_GT(srpc_sdc_async_get_user_localtime_result(srpc, &result), 0);
+  SendAndReceive(SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT, 86);
+
+  ASSERT_FALSE(cr_rd.data.sdc_user_localtime_result == NULL);
+
+  ASSERT_EQ(memcmp(cr_rd.data.sdc_user_localtime_result, &result,
+                    sizeof(TSDC_UserLocalTimeResult)), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
 }
 
 }  // namespace

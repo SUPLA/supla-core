@@ -29,7 +29,7 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
+supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
@@ -39,9 +39,6 @@ supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
 }
 
 supla_client::~supla_client() {
-  if (getUser())  // 1st line !!!
-    getUser()->remove_client(this);
-
   delete cgroups;
   delete channels;
   delete locations;
@@ -122,16 +119,14 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
       bool accessid_enabled = false;
 
       if (register_client_b != NULL &&
-          false ==
-              db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
-                                &UserID, &accessid_enabled)) {
+          false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
+                                     &UserID, &accessid_enabled)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_client_c != NULL &&
-                 false ==
-                     db->client_authkey_auth(GUID, register_client_c->Email,
-                                             register_client_c->AuthKey,
-                                             &UserID)) {
+                 false == db->client_authkey_auth(
+                              GUID, register_client_c->Email,
+                              register_client_c->AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -210,10 +205,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
           } else {
             if (do_update) {
-              if (false ==
-                  db->update_client(ClientID, AccessID, AuthKey, Name,
-                                    getSvrConn()->getClientIpv4(), SoftVer,
-                                    proto_version)) {
+              if (false == db->update_client(ClientID, AccessID, AuthKey, Name,
+                                             getSvrConn()->getClientIpv4(),
+                                             SoftVer, proto_version)) {
                 // something goes wrong
                 ClientID = 0;
                 db->rollback();
@@ -324,9 +318,9 @@ void supla_client::set_device_channel_new_value(
 }
 
 void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
-  if (new_value->Target == SUPLA_NEW_VALUE_TARGET_CHANNEL) {
+  if (new_value->Target == SUPLA_TARGET_CHANNEL) {
     channels->set_device_channel_new_value(new_value);
-  } else if (new_value->Target == SUPLA_NEW_VALUE_TARGET_GROUP) {
+  } else if (new_value->Target == SUPLA_TARGET_GROUP) {
     cgroups->set_device_channel_new_value(new_value);
   }
 }
@@ -396,8 +390,12 @@ void supla_client::superuser_authorization_request(
   srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
 }
 
-void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest *request) {
-  channels->device_calcfg_request(request);
+void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
+  if (request->Target == SUPLA_TARGET_CHANNEL) {
+    channels->device_calcfg_request(request);
+  } else if (request->Target == SUPLA_TARGET_GROUP) {
+    cgroups->device_calcfg_request(request);
+  }
 }
 
 void supla_client::on_device_calcfg_result(int ChannelID,

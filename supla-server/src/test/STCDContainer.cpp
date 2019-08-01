@@ -16,36 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DATALOGGER_H_
-#define DATALOGGER_H_
+#include "test/STCDContainer.h"
+#include "log.h"
 
-#include "database.h"
+// static
+char STCDContainer::find_by_ptr(void *ptr1, void *ptr2) {
+  return ptr1 == ptr2 ? 1 : 0;
+}
 
-#define TEMPLOG_INTERVAL 600
-#define ELECTRICITYMETERLOG_INTERVAL 600
-#define IMPULSECOUNTERLOG_INTERVAL 600
-#define THERMOSTATLOG_INTERVAL 600
+STCDContainer::STCDContainer() : cdcontainer() { del_count = 0; }
 
-class supla_datalogger {
- private:
-  database *db;
-  struct timeval now;
-  struct timeval temperature_tv;
-  struct timeval electricitymeter_tv;
-  struct timeval impulsecounter_tv;
-  struct timeval thermostat_tv;
+void STCDContainer::cd_delete(cdbase *cd) {
+  delete cd;
+  del_count++;
+}
 
-  void log_temperature();
-  void log_electricity_measurement(void);
-  void log_ic_measurement(void);
-  void log_thermostat_measurement(void);
-  bool dbinit(void);
+STCDContainer::~STCDContainer() {}
 
- public:
-  supla_datalogger();
-  void log(void);
-};
+int STCDContainer::delCount(void) { return del_count; }
 
-void datalogger_loop(void *ssd, void *dl_sthread);
-
-#endif /* DATALOGGER_H_ */
+cdbase *STCDContainer::findByPtr(void *ptr) { return find(find_by_ptr, ptr); }
