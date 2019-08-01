@@ -258,6 +258,10 @@ void supla_device_channel::getDouble(double *Value) {
       break;
     case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
     case SUPLA_CHANNELTYPE_DISTANCESENSOR:
+    case SUPLA_CHANNELTYPE_WINDSENSOR:
+    case SUPLA_CHANNELTYPE_PRESSURESENSOR:
+    case SUPLA_CHANNELTYPE_RAINSENSOR:
+    case SUPLA_CHANNELTYPE_WEIGHTSENSOR:
       memcpy(Value, this->value, sizeof(double));
       break;
     default:
@@ -544,7 +548,8 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
               getType() == SUPLA_CHANNELTYPE_DHT22 ||
               getType() == SUPLA_CHANNELTYPE_DHT21 ||
               getType() == SUPLA_CHANNELTYPE_AM2301 ||
-              getType() == SUPLA_CHANNELTYPE_AM2302) &&
+              getType() == SUPLA_CHANNELTYPE_AM2302 ||
+              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
              (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
