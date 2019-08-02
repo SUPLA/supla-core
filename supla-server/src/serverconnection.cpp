@@ -249,6 +249,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         if (cdptr == NULL && rd.data.ds_register_device_c != NULL) {
           device = new supla_device(this);
+          device->retainPtr();
 
           if (device != NULL) {
             rd.data.ds_register_device_c
@@ -324,6 +325,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         if (cdptr == NULL && rd.data.ds_register_device_e != NULL) {
           device = new supla_device(this);
+          device->retainPtr();
 
           if (device != NULL) {
             rd.data.ds_register_device_e->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
@@ -378,6 +380,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         if (cdptr == NULL) {
           client = new supla_client(this);
+          client->retainPtr();
 
           if (client != NULL) {
             rd.data.cs_register_client_b
@@ -404,6 +407,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         if (cdptr == NULL) {
           client = new supla_client(this);
+          client->retainPtr();
 
           if (client != NULL) {
             rd.data.cs_register_client_c->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
@@ -694,19 +698,20 @@ void serverconnection::execute(void *sthread) {
     {
       unsigned long deadlock_counter = 0;
 
-      while (cdptr->ptrIsUsed()) {
+      while (cdptr->ptrCounter() > 1) {
         usleep(100);
         deadlock_counter++;
         if (deadlock_counter > 100000) {
-          supla_log(LOG_ERR, "CONNECTION DEADLOCK %i", sthread);
+          supla_log(
+              LOG_WARNING,
+              "Too long waiting time to release the object pointer! %i/%i",
+              sthread, cdptr);
           break;
         }
       }
-
-      while (cdptr->ptrIsUsed()) {
-        usleep(1000000);
-      }
     }
+
+    cdptr->releasePtr();
 
     if (!cdptr->getUser()) {
       if (registered == REG_DEVICE) {
