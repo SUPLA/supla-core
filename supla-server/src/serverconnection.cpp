@@ -687,11 +687,13 @@ void serverconnection::execute(void *sthread) {
   }
 
   if (cdptr != NULL) {
-    if (cdptr->getUser()) {
+    supla_user *user = cdptr->getUser();
+
+    if (user) {
       if (registered == REG_DEVICE) {
-        device->getUser()->moveDeviceToTrash(device);
+        user->moveDeviceToTrash(device);
       } else {
-        client->getUser()->moveClientToTrash(client);
+        user->moveClientToTrash(client);
       }
     }
 
@@ -713,7 +715,9 @@ void serverconnection::execute(void *sthread) {
 
     cdptr->releasePtr();
 
-    if (!cdptr->getUser()) {
+    if (user) {
+      user->emptyTrash();
+    } else {
       if (registered == REG_DEVICE) {
         delete device;
       } else {

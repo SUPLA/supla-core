@@ -199,6 +199,11 @@ void supla_user::moveClientToTrash(supla_client *client) {
   client_container->moveToTrash(client);
 }
 
+void supla_user::emptyTrash(void) {
+  device_container->emptyTrash();
+  client_container->emptyTrash();
+}
+
 bool supla_user::getClientName(int ClientID, char *buffer, int size) {
   if (size < 1) return false;
 
@@ -259,7 +264,6 @@ supla_user *supla_user::add_device(supla_device *device, int UserID) {
       usleep(1000000);
     }
 
-    user->device_container->emptyTrash();
     user->device_container->addToList(device);
   }
 
@@ -281,7 +285,6 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
       usleep(1000000);
     }
 
-    user->client_container->emptyTrash();
     user->client_container->addToList(client);
   }
 
