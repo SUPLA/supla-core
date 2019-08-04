@@ -936,20 +936,24 @@ void supla_user::reconnect(event_source_type eventSourceType) {
   cgroups->load();  // load == reload
 
   supla_device *device;
+  std::list<cdbase *> cdb;
 
   for (a = 0; a < device_container->count(); a++)
     if (NULL != (device = device_container->get(a))) {
-      device->terminate();
-      device->releasePtr();
+      cdb.push_back(device);
     }
 
   supla_client *client;
 
   for (a = 0; a < client_container->count(); a++)
     if (NULL != (client = client_container->get(a))) {
-      client->terminate();
-      client->releasePtr();
+      cdb.push_back(client);
     }
+
+  for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end(); it++) {
+    (*it)->terminate();
+    (*it)->releasePtr();
+  }
 
   supla_http_request_queue::getInstance()->onUserReconnectEvent(
       this, eventSourceType);
