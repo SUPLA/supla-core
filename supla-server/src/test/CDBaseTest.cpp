@@ -24,4 +24,28 @@ namespace {
 
 class CDBaseTest : public ::testing::Test {};
 
+TEST_F(CDBaseTest, retainReleaseTest) {
+  cdbase *cd = new cdbase(NULL);
+  ASSERT_FALSE(cd == NULL);
+  ASSERT_EQ(false, cd->ptrIsUsed());
+  ASSERT_EQ(0, cd->ptrCounter());
+
+  cd->retainPtr();
+  ASSERT_EQ(true, cd->ptrIsUsed());
+  ASSERT_EQ(1, cd->ptrCounter());
+
+  cd->retainPtr();
+  ASSERT_EQ(true, cd->ptrIsUsed());
+  ASSERT_EQ(2, cd->ptrCounter());
+
+  cd->releasePtr();
+  ASSERT_EQ(true, cd->ptrIsUsed());
+  ASSERT_EQ(1, cd->ptrCounter());
+
+  cd->releasePtr();
+  ASSERT_EQ(false, cd->ptrIsUsed());
+  ASSERT_EQ(0, cd->ptrCounter());
+
+  delete cd;
+}
 }  // namespace

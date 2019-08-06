@@ -122,6 +122,7 @@ class supla_user {
 
   void moveDeviceToTrash(supla_device *device);
   void moveClientToTrash(supla_client *client);
+  void emptyTrash(void);
 
   int getUserID(void);
   char *getShortUniqueID(void);

@@ -181,3 +181,11 @@ bool cdbase::ptrIsUsed(void) {
   lck_unlock(lck);
   return result;
 }
+
+unsigned long cdbase::ptrCounter(void) {
+  unsigned long result = 0;
+  lck_lock(lck);
+  result = ptr_counter;
+  lck_unlock(lck);
+  return result;
+}

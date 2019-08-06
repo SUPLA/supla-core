@@ -63,6 +63,7 @@ class cdbase {
   cdbase *retainPtr(void);
   void releasePtr(void);
   bool ptrIsUsed(void);
+  unsigned long ptrCounter(void);
   // Thread safe end
 };
 
