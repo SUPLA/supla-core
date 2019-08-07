@@ -751,7 +751,7 @@ void supla_user::print_metrics(int min_interval_sec) {
     struct timeval now;
     gettimeofday(&now, NULL);
     if (supla_user::metric_tv.tv_sec == 0) {
-      supla_user::metric_tv.tv_sec = now;
+      supla_user::metric_tv = now;
     }
     if (now.tv_sec - supla_user::metric_tv.tv_sec < min_interval_sec) {
       return;
