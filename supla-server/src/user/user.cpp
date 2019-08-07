@@ -747,7 +747,7 @@ unsigned int supla_user::total_cd_count(bool client) {
 
 // static
 void supla_user::print_metrics(int min_interval_sec) {
-  if (min_interval_sec > 0 && supla_user::metric_tv.tv_sec > 0) {
+  if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);
     if (now.tv_sec - supla_user::metric_tv.tv_sec < min_interval_sec) {
