@@ -40,6 +40,12 @@ class supla_user {
   char *long_unique_id;
   void *lck;
 
+  static struct timeval metric_tv;
+  static unsigned int client_add_metric;
+  static unsigned int client_max_metric;
+  static unsigned int device_add_metric;
+  static unsigned int device_max_metric;
+
  protected:
   static void *user_arr;
 
@@ -116,6 +122,9 @@ class supla_user {
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
+  static unsigned int total_cd_count(bool client);
+  static void print_metrics(int min_interval_sec);
+
   void on_device_added(int DeviceID, event_source_type eventSourceType);
 
   void setUniqueId(const char shortID[], const char longID[]);

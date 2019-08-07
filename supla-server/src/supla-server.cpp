@@ -151,6 +151,7 @@ int main(int argc, char *argv[]) {
   // MAIN LOOP
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
+    supla_user::print_metrics(3600);
   }
 
   supla_log(LOG_INFO, "Shutting down...");

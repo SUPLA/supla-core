@@ -35,6 +35,11 @@
 #include "userchannelgroups.h"
 
 void *supla_user::user_arr = NULL;
+unsigned int supla_user::client_add_metric = 0;
+unsigned int supla_user::client_max_metric = 0;
+unsigned int supla_user::device_add_metric = 0;
+unsigned int supla_user::device_max_metric = 0;
+struct timeval supla_user::metric_tv = (struct timeval){0};
 
 // static
 char supla_user::find_user_byid(void *ptr, void *UserID) {
@@ -265,6 +270,15 @@ supla_user *supla_user::add_device(supla_device *device, int UserID) {
     }
 
     user->device_container->addToList(device);
+
+    safe_array_lock(supla_user::user_arr);
+    device_add_metric++;
+
+    unsigned int dc = total_cd_count(false);
+    if (dc > supla_user::device_max_metric) {
+      supla_user::device_max_metric = dc;
+    }
+    safe_array_unlock(supla_user::user_arr);
   }
 
   return user;
@@ -286,6 +300,14 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
     }
 
     user->client_container->addToList(client);
+    safe_array_lock(supla_user::user_arr);
+    client_add_metric++;
+
+    unsigned int cc = total_cd_count(true);
+    if (cc > supla_user::client_max_metric) {
+      supla_user::client_max_metric = cc;
+    }
+    safe_array_unlock(supla_user::user_arr);
   }
 
   return user;
@@ -703,6 +725,67 @@ void supla_user::on_device_deleted(int UserID,
   }
 
   safe_array_unlock(supla_user::user_arr);
+}
+
+// static
+unsigned int supla_user::total_cd_count(bool client) {
+  unsigned int result = 0;
+  supla_user *user = NULL;
+
+  safe_array_lock(supla_user::user_arr);
+
+  for (int a = 0; a < safe_array_count(user_arr); a++) {
+    if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+      result += client ? user->client_container->count()
+                       : user->device_container->count();
+    }
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+  return result;
+}
+
+// static
+void supla_user::print_metrics(int min_interval_sec) {
+  if (min_interval_sec > 0 && supla_user::metric_tv.tv_sec > 0) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    if (now.tv_sec - supla_user::metric_tv.tv_sec < min_interval_sec) {
+      return;
+    }
+    supla_user::metric_tv = now;
+  }
+
+  supla_user *user = NULL;
+
+  unsigned int user_count = 0;
+  unsigned int client_count = 0;
+  unsigned int client_trash = 0;
+  unsigned int device_count = 0;
+  unsigned int device_trash = 0;
+
+  safe_array_lock(supla_user::user_arr);
+
+  user_count = safe_array_count(user_arr);
+
+  for (unsigned int a = 0; a < user_count; a++) {
+    if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+      client_count += user->client_container->count();
+      client_trash += user->client_container->trashCount();
+      device_count += user->device_container->count();
+      device_trash += user->device_container->trashCount();
+    }
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+
+  supla_log(LOG_INFO,
+            "METRICS: USER[COUNT:%u] CLIENT[ADD:%u MAX:%u COUNT:%u TRASH:%u] "
+            "DEVICE[ADD:%u MAX:%u COUNT:%u TRASH:%u]",
+            user_count, supla_user::client_add_metric,
+            supla_user::client_max_metric, client_count, client_trash,
+            supla_user::device_add_metric, supla_user::device_max_metric,
+            device_count, device_trash);
 }
 
 void supla_user::on_device_added(int DeviceID,
