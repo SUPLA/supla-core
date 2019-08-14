@@ -263,13 +263,12 @@ supla_user *supla_user::add_device(supla_device *device, int UserID) {
     device->getGUID(GUID);
 
     supla_device *_device = user->device_container->findByGUID(GUID);
+    user->device_container->addToList(device);
+
     if (_device != NULL) {
       _device->terminate();
       _device->releasePtr();
-      usleep(1000000);
     }
-
-    user->device_container->addToList(device);
 
     safe_array_lock(supla_user::user_arr);
     device_add_metric++;
@@ -293,13 +292,13 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
     client->getGUID(GUID);
 
     supla_client *_client = user->client_container->findByGUID(GUID);
+    user->client_container->addToList(client);
+
     if (_client != NULL) {
       _client->terminate();
       _client->releasePtr();
-      usleep(1000000);
     }
 
-    user->client_container->addToList(client);
     safe_array_lock(supla_user::user_arr);
     client_add_metric++;
 
