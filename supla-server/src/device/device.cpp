@@ -38,8 +38,7 @@ supla_device::~supla_device() {
     getUser()->remove_device(this);
 
     std::list<int> ids = channels->get_channel_ids();
-    for (std::list<int>::iterator it = ids.begin();
-         it != ids.end(); it++) {
+    for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
     }
   }
@@ -109,9 +108,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false ==
-                     db->device_authkey_auth(GUID, register_device_e->Email,
-                                             AuthKey, &UserID)) {
+                 false == db->device_authkey_auth(GUID,
+                                                  register_device_e->Email,
+                                                  AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -464,6 +463,17 @@ bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
                                           char *brightness, char *on_off) {
   return channels->get_channel_rgbw_value(ChannelID, color, color_brightness,
                                           brightness, on_off);
+}
+
+bool supla_device::get_channel_impulsecounter_extended_value(
+    int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val) {
+  return channels->get_channel_impulsecounter_extended_value(ChannelID, ex_val);
+}
+
+bool supla_device::get_channel_electricitymeter_extended_value(
+    int ChannelID, TElectricityMeter_ExtendedValue *ex_val) {
+  return channels->get_channel_electricitymeter_extended_value(ChannelID,
+                                                               ex_val);
 }
 
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {

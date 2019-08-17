@@ -436,6 +436,40 @@ bool supla_user::get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
   return result;
 }
 
+bool supla_user::get_channel_impulsecounter_extended_value(
+    int DeviceID, int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val) {
+  bool result = false;
+
+  safe_array_lock(device_arr);
+
+  supla_device *device = find_device(DeviceID);
+  if (device != NULL) {
+    result = device->get_channel_impulsecounter_extended_value(ChannelID,
+                                                               ex_val) == 1;
+  }
+
+  safe_array_unlock(device_arr);
+
+  return result;
+}
+
+bool supla_user::get_channel_electricitymeter_extended_value(
+    int DeviceID, int ChannelID, TElectricityMeter_ExtendedValue *ex_val) {
+  bool result = false;
+
+  safe_array_lock(device_arr);
+
+  supla_device *device = find_device(DeviceID);
+  if (device != NULL) {
+    result = device->get_channel_electricitymeter_extended_value(ChannelID,
+                                                                 ex_val) == 1;
+  }
+
+  safe_array_unlock(device_arr);
+
+  return result;
+}
+
 // static
 bool supla_user::get_channel_double_value(int UserID, int DeviceID,
                                           int ChannelID, double *Value,
@@ -521,6 +555,48 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
     result = user->get_channel_rgbw_value(DeviceID, ChannelID, color,
                                           color_brightness, brightness,
                                           on_off) == true;
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+
+  return result;
+}
+
+// static
+bool supla_user::get_channel_impulsecounter_extended_value(
+    int UserID, int DeviceID, int ChannelID,
+    TSC_ImpulseCounter_ExtendedValue *ex_val) {
+  bool result = false;
+
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+    result = user->get_channel_impulsecounter_extended_value(
+                 DeviceID, ChannelID, ex_val) == true;
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+
+  return result;
+}
+
+// static
+bool supla_user::get_channel_electricitymeter_extended_value(
+    int UserID, int DeviceID, int ChannelID,
+    TElectricityMeter_ExtendedValue *ex_val) {
+  bool result = false;
+
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+    result = user->get_channel_electricitymeter_extended_value(
+                 DeviceID, ChannelID, ex_val) == true;
   }
 
   safe_array_unlock(supla_user::user_arr);

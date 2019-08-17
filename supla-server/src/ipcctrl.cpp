@@ -42,6 +42,8 @@ const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
 const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
 const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
+const char cmd_get_em_value[] = "GET-EM-VALUE:";
+const char cmd_get_ic_value[] = "GET-IC-VALUE:";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
@@ -174,6 +176,108 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
     if (r) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i\n", color,
                color_brightness, brightness);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    TSC_ImpulseCounter_ExtendedValue ex_val;
+    memset(&ex_val, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+    bool r = supla_user::get_channel_impulsecounter_extended_value(
+        UserID, DeviceID, ChannelID, &ex_val);
+
+    if (r) {
+      char currency[4];
+      memcpy(currency, ex_val.currency, 3);
+      currency[3] = 0;
+
+      char *unit_b64 =
+          st_openssl_base64_encode(currency, strnlen(ex_val.custom_unit, 9));
+
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%llu,%lld,%s,%s\n",
+               ex_val.total_cost, ex_val.price_per_unit,
+               ex_val.impulses_per_unit, ex_val.counter,
+               ex_val.calculated_value, currency, unit_b64 ? unit_b64 : "");
+
+      if (unit_b64) {
+        free(unit_b64);
+        unit_b64 = NULL;
+      }
+
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    TElectricityMeter_ExtendedValue ex_val;
+    memset(&ex_val, 0, sizeof(TElectricityMeter_ExtendedValue));
+    bool r = supla_user::get_channel_electricitymeter_extended_value(
+        UserID, DeviceID, ChannelID, &ex_val);
+
+    if (r) {
+      char currency[4];
+      memcpy(currency, ex_val.currency, 3);
+      currency[3] = 0;
+
+      if (ex_val.m_count == 0) {
+        memset(ex_val.m, 0, sizeof(TElectricityMeter_Measurement));
+      }
+
+      snprintf(buffer, sizeof(buffer),
+               "VALUE:%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
+               "%i,%i,%i,%i,%i,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%"
+               "lld,%lld,%lld,%i,%i,%s\n",
+               ex_val.measured_values, ex_val.m[0].freq, ex_val.m[0].voltage[0],
+               ex_val.m[0].voltage[1], ex_val.m[0].voltage[2],
+               ex_val.m[0].current[0], ex_val.m[0].current[1],
+               ex_val.m[0].current[2], ex_val.m[0].power_active[0],
+               ex_val.m[0].power_active[1], ex_val.m[0].power_active[2],
+               ex_val.m[0].power_reactive[0], ex_val.m[0].power_reactive[1],
+               ex_val.m[0].power_reactive[2], ex_val.m[0].power_apparent[0],
+               ex_val.m[0].power_apparent[1], ex_val.m[0].power_apparent[2],
+               ex_val.m[0].power_factor[0], ex_val.m[0].power_factor[1],
+               ex_val.m[0].power_factor[2], ex_val.m[0].phase_angle[0],
+               ex_val.m[0].phase_angle[1], ex_val.m[0].phase_angle[2],
+               ex_val.total_forward_active_energy[0],
+               ex_val.total_forward_active_energy[1],
+               ex_val.total_forward_active_energy[2],
+               ex_val.total_reverse_active_energy[0],
+               ex_val.total_reverse_active_energy[1],
+               ex_val.total_reverse_active_energy[2],
+               ex_val.total_forward_reactive_energy[0],
+               ex_val.total_forward_reactive_energy[1],
+               ex_val.total_forward_reactive_energy[2],
+               ex_val.total_reverse_reactive_energy[0],
+               ex_val.total_reverse_reactive_energy[1],
+               ex_val.total_reverse_reactive_energy[2], ex_val.total_cost,
+               ex_val.price_per_unit, currency);
+
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
       return;
@@ -470,6 +574,12 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_get_char_value, len)) {
           get_char(cmd_get_char_value);
+
+        } else if (match_command(cmd_get_em_value, len)) {
+          get_electricitymeter_value(cmd_get_em_value);
+
+        } else if (match_command(cmd_get_ic_value, len)) {
+          get_impulsecounter_value(cmd_get_ic_value);
 
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);

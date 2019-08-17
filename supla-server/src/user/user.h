@@ -100,6 +100,13 @@ class supla_user {
   static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
                                      int *color, char *color_brightness,
                                      char *brightness, char *on_off);
+  static bool get_channel_impulsecounter_extended_value(
+      int UserID, int DeviceID, int ChannelID,
+      TSC_ImpulseCounter_ExtendedValue *ex_val);
+  static bool get_channel_electricitymeter_extended_value(
+      int UserID, int DeviceID, int ChannelID,
+      TElectricityMeter_ExtendedValue *ex_val);
+
   static int user_count(void);
   static supla_user *get_user(int idx);
   static bool set_device_channel_char_value(int UserID, int SenderID,
@@ -143,6 +150,10 @@ class supla_user {
   bool get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
                               char *color_brightness, char *brightness,
                               char *on_off);
+  bool get_channel_impulsecounter_extended_value(
+      int DeviceID, int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val);
+  bool get_channel_electricitymeter_extended_value(
+      int DeviceID, int ChannelID, TElectricityMeter_ExtendedValue *ex_val);
 
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);

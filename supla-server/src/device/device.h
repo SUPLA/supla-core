@@ -66,6 +66,10 @@ class supla_device : public cdcommon {
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);
+  bool get_channel_impulsecounter_extended_value(
+      int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val);
+  bool get_channel_electricitymeter_extended_value(
+      int ChannelID, TElectricityMeter_ExtendedValue *ex_val);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
   bool calcfg_request(int SenderID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest *request);

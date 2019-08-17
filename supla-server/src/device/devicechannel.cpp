@@ -582,6 +582,31 @@ supla_device_channel::getElectricityMeasurement(void) {
   return NULL;
 }
 
+bool supla_device_channel::getElectricityMeterExtendedValue(
+    TElectricityMeter_ExtendedValue *ex_val) {
+  if (getType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
+      getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
+      extendedValue != NULL) {
+    return srpc_evtool_v1_extended2emextended(extendedValue, ex_val) == 1;
+  }
+
+  return false;
+}
+
+bool supla_device_channel::getImpulseCounterExtendedValue(
+    TSC_ImpulseCounter_ExtendedValue *ex_val) {
+  if (extendedValue != NULL && getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_WATER_METER:
+      case SUPLA_CHANNELFNC_GAS_METER: {
+        return srpc_evtool_v1_extended2icextended(extendedValue, ex_val) == 1;
+      }
+    }
+  }
+  return false;
+}
+
 supla_channel_ic_measurement *
 supla_device_channel::getImpulseCounterMeasurement(void) {
   if (getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
@@ -1130,6 +1155,40 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
 
       if (on_off != NULL) *on_off = _on_off;
     }
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
+bool supla_device_channels::get_channel_impulsecounter_extended_value(
+    int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val) {
+  bool result = false;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel != NULL) {
+    result = channel->getImpulseCounterExtendedValue(ex_val);
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
+bool supla_device_channels::get_channel_electricitymeter_extended_value(
+    int ChannelID, TElectricityMeter_ExtendedValue *ex_val) {
+  bool result = false;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel != NULL) {
+    result = channel->getElectricityMeterExtendedValue(ex_val);
   }
 
   safe_array_unlock(arr);

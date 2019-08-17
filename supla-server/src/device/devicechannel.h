@@ -137,6 +137,9 @@ class supla_device_channel {
   void getChar(char *Value);
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
+  bool getElectricityMeterExtendedValue(
+      TElectricityMeter_ExtendedValue *ex_val);
+  bool getImpulseCounterExtendedValue(TSC_ImpulseCounter_ExtendedValue *ex_val);
 
   std::list<int> master_channel(void);
   std::list<int> slave_channel(void);
@@ -175,6 +178,11 @@ class supla_device_channels {
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);
+  bool get_channel_impulsecounter_extended_value(
+      int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val);
+  bool get_channel_electricitymeter_extended_value(
+      int ChannelID, TElectricityMeter_ExtendedValue *ex_val);
+
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
