@@ -251,8 +251,8 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
 
       snprintf(buffer, sizeof(buffer),
                "VALUE:%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
-               "%i,%i,%i,%i,%i,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%lld,%"
-               "lld,%lld,%lld,%i,%i,%s\n",
+               "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
+               "llu,%llu,%llu,%i,%i,%s\n",
                ex_val.measured_values, ex_val.m[0].freq, ex_val.m[0].voltage[0],
                ex_val.m[0].voltage[1], ex_val.m[0].voltage[2],
                ex_val.m[0].current[0], ex_val.m[0].current[1],
