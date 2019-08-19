@@ -67,10 +67,12 @@ class supla_channel_electricity_measurement {
 
  public:
   supla_channel_electricity_measurement(int ChannelId,
-                                        TElectricityMeter_ExtendedValue *em_ev);
+                                        TElectricityMeter_ExtendedValue *em_ev,
+                                        int Param2, char *TextParam1);
 
   int getChannelId(void);
   void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
+  void getCurrency(char currency[4]);
 
   static void free(void *emarr);
 };
@@ -78,22 +80,36 @@ class supla_channel_electricity_measurement {
 class supla_channel_ic_measurement {
  private:
   int ChannelId;
+
+  _supla_int_t totalCost;
+  _supla_int_t pricePerUnit;
+  char currency[4];
+  char customUnit[9];
+  _supla_int_t impulsesPerUnit;
   unsigned _supla_int64_t counter;
-  unsigned _supla_int64_t calculatedValue;
+  _supla_int64_t calculatedValue;
 
  public:
-  supla_channel_ic_measurement(int ChannelId, unsigned _supla_int64_t counter,
-                               unsigned _supla_int64_t calculatedValue);
+  supla_channel_ic_measurement(int ChannelId, TDS_ImpulseCounter_Value *ic_val,
+                               char *TextParam1, char *TextParam2, int Param2,
+                               int Param3);
 
   int getChannelId(void);
-  unsigned _supla_int64_t getCounter();
-  unsigned _supla_int64_t getCalculatedValue();
+  _supla_int_t getTotalCost(void);
+  _supla_int_t getPricePerUnit(void);
+  const char *getCurrncy(void);
+  const char *getCustomUnit(void);
+  _supla_int_t getImpulsesPerUnit(void);
+  unsigned _supla_int64_t getCounter(void);
+  unsigned _supla_int64_t getCalculatedValue(void);
 
   static double get_calculated_d(_supla_int_t impulses_per_unit,
                                  unsigned _supla_int64_t counter);
   static _supla_int64_t get_calculated_i(_supla_int_t impulses_per_unit,
                                          unsigned _supla_int64_t counter);
-
+  static void get_cost_and_currency(char *TextParam1, int Param2,
+                                    char currency[3], _supla_int_t *total_cost,
+                                    _supla_int_t *price_per_unit, double count);
   static void free(void *icarr);
 };
 
@@ -106,6 +122,9 @@ class supla_device_channel {
   int Param1;
   int Param2;
   int Param3;
+  char *TextParam1;
+  char *TextParam2;
+  char *TextParam3;
   bool Hidden;
 
   char value[8];
@@ -113,7 +132,8 @@ class supla_device_channel {
 
  public:
   supla_device_channel(int Id, int Number, int Type, int Func, int Param1,
-                       int Param2, int Param3, bool Hidden);
+                       int Param2, int Param3, char *TextParam1,
+                       char *TextParam2, char *TextParam3, bool Hidden);
   virtual ~supla_device_channel();
 
   int getId(void);
@@ -137,9 +157,6 @@ class supla_device_channel {
   void getChar(char *Value);
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
-  bool getElectricityMeterExtendedValue(
-      TElectricityMeter_ExtendedValue *ex_val);
-  bool getImpulseCounterExtendedValue(TSC_ImpulseCounter_ExtendedValue *ex_val);
 
   std::list<int> master_channel(void);
   std::list<int> slave_channel(void);
@@ -167,7 +184,8 @@ class supla_device_channels {
   supla_device_channels();
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
-                   int Param2, int Param3, bool Hidden);
+                   int Param2, int Param3, char *TextParam1, char *TextParam2,
+                   char *TextParam3, bool Hidden);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
@@ -178,10 +196,6 @@ class supla_device_channels {
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);
-  bool get_channel_impulsecounter_extended_value(
-      int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val);
-  bool get_channel_electricitymeter_extended_value(
-      int ChannelID, TElectricityMeter_ExtendedValue *ex_val);
 
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
@@ -211,8 +225,11 @@ class supla_device_channels {
   void load(int DeviceID);
 
   void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurement(void *emarr);
-  void get_ic_measurement(void *icarr);
+  void get_electricity_measurements(void *emarr);
+  supla_channel_electricity_measurement *get_electricity_measurement(
+      int ChannelID);
+  void get_ic_measurements(void *icarr);
+  supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
 
   bool calcfg_request(void *srpc, int SenderID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest *request);

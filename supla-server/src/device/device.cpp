@@ -446,12 +446,21 @@ void supla_device::get_temp_and_humidity(void *tarr) {
   channels->get_temp_and_humidity(tarr);
 }
 
-void supla_device::get_electricity_measurement(void *emarr) {
-  channels->get_electricity_measurement(emarr);
+void supla_device::get_electricity_measurements(void *emarr) {
+  channels->get_electricity_measurements(emarr);
 }
 
-void supla_device::get_ic_measurement(void *icarr) {
-  channels->get_ic_measurement(icarr);
+supla_channel_electricity_measurement *
+supla_device::get_electricity_measurement(int ChannelID) {
+  return channels->get_electricity_measurement(ChannelID);
+}
+
+void supla_device::get_ic_measurements(void *icarr) {
+  channels->get_ic_measurements(icarr);
+}
+
+supla_channel_ic_measurement *supla_device::get_ic_measurement(int ChannelID) {
+  return channels->get_ic_measurement(ChannelID);
 }
 
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
@@ -463,17 +472,6 @@ bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
                                           char *brightness, char *on_off) {
   return channels->get_channel_rgbw_value(ChannelID, color, color_brightness,
                                           brightness, on_off);
-}
-
-bool supla_device::get_channel_impulsecounter_extended_value(
-    int ChannelID, TSC_ImpulseCounter_ExtendedValue *ex_val) {
-  return channels->get_channel_impulsecounter_extended_value(ChannelID, ex_val);
-}
-
-bool supla_device::get_channel_electricitymeter_extended_value(
-    int ChannelID, TElectricityMeter_ExtendedValue *ex_val) {
-  return channels->get_channel_electricitymeter_extended_value(ChannelID,
-                                                               ex_val);
 }
 
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {

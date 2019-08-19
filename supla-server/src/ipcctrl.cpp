@@ -194,23 +194,18 @@ void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    TSC_ImpulseCounter_ExtendedValue ex_val;
-    memset(&ex_val, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
-    bool r = supla_user::get_channel_impulsecounter_extended_value(
-        UserID, DeviceID, ChannelID, &ex_val);
+    supla_channel_ic_measurement *icm =
+        supla_user::get_ic_measurement(UserID, DeviceID, ChannelID);
 
-    if (r) {
-      char currency[4];
-      memcpy(currency, ex_val.currency, 3);
-      currency[3] = 0;
-
-      char *unit_b64 =
-          st_openssl_base64_encode(currency, strnlen(ex_val.custom_unit, 9));
+    if (icm != NULL) {
+      char *unit_b64 = st_openssl_base64_encode(
+          (char *)icm->getCustomUnit(), strnlen(icm->getCustomUnit(), 9));
 
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%llu,%lld,%s,%s\n",
-               ex_val.total_cost, ex_val.price_per_unit,
-               ex_val.impulses_per_unit, ex_val.counter,
-               ex_val.calculated_value, currency, unit_b64 ? unit_b64 : "");
+               icm->getTotalCost(), icm->getPricePerUnit(),
+               icm->getImpulsesPerUnit(), icm->getCounter(),
+               icm->getCalculatedValue(), icm->getCurrncy(),
+               unit_b64 ? unit_b64 : "");
 
       if (unit_b64) {
         free(unit_b64);
@@ -219,6 +214,7 @@ void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
 
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
+      delete icm;
       return;
     }
   }
@@ -235,51 +231,47 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    TElectricityMeter_ExtendedValue ex_val;
-    memset(&ex_val, 0, sizeof(TElectricityMeter_ExtendedValue));
-    bool r = supla_user::get_channel_electricitymeter_extended_value(
-        UserID, DeviceID, ChannelID, &ex_val);
+    supla_channel_electricity_measurement *em =
+        supla_user::get_electricity_measurement(UserID, DeviceID, ChannelID);
 
-    if (r) {
+    if (em != NULL) {
+      TElectricityMeter_ExtendedValue em_ev;
       char currency[4];
-      memcpy(currency, ex_val.currency, 3);
-      currency[3] = 0;
-
-      if (ex_val.m_count == 0) {
-        memset(ex_val.m, 0, sizeof(TElectricityMeter_Measurement));
-      }
+      em->getMeasurement(&em_ev);
+      em->getCurrency(currency);
 
       snprintf(buffer, sizeof(buffer),
                "VALUE:%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
                "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
                "llu,%llu,%llu,%i,%i,%s\n",
-               ex_val.measured_values, ex_val.m[0].freq, ex_val.m[0].voltage[0],
-               ex_val.m[0].voltage[1], ex_val.m[0].voltage[2],
-               ex_val.m[0].current[0], ex_val.m[0].current[1],
-               ex_val.m[0].current[2], ex_val.m[0].power_active[0],
-               ex_val.m[0].power_active[1], ex_val.m[0].power_active[2],
-               ex_val.m[0].power_reactive[0], ex_val.m[0].power_reactive[1],
-               ex_val.m[0].power_reactive[2], ex_val.m[0].power_apparent[0],
-               ex_val.m[0].power_apparent[1], ex_val.m[0].power_apparent[2],
-               ex_val.m[0].power_factor[0], ex_val.m[0].power_factor[1],
-               ex_val.m[0].power_factor[2], ex_val.m[0].phase_angle[0],
-               ex_val.m[0].phase_angle[1], ex_val.m[0].phase_angle[2],
-               ex_val.total_forward_active_energy[0],
-               ex_val.total_forward_active_energy[1],
-               ex_val.total_forward_active_energy[2],
-               ex_val.total_reverse_active_energy[0],
-               ex_val.total_reverse_active_energy[1],
-               ex_val.total_reverse_active_energy[2],
-               ex_val.total_forward_reactive_energy[0],
-               ex_val.total_forward_reactive_energy[1],
-               ex_val.total_forward_reactive_energy[2],
-               ex_val.total_reverse_reactive_energy[0],
-               ex_val.total_reverse_reactive_energy[1],
-               ex_val.total_reverse_reactive_energy[2], ex_val.total_cost,
-               ex_val.price_per_unit, currency);
+               em_ev.measured_values, em_ev.m[0].freq, em_ev.m[0].voltage[0],
+               em_ev.m[0].voltage[1], em_ev.m[0].voltage[2],
+               em_ev.m[0].current[0], em_ev.m[0].current[1],
+               em_ev.m[0].current[2], em_ev.m[0].power_active[0],
+               em_ev.m[0].power_active[1], em_ev.m[0].power_active[2],
+               em_ev.m[0].power_reactive[0], em_ev.m[0].power_reactive[1],
+               em_ev.m[0].power_reactive[2], em_ev.m[0].power_apparent[0],
+               em_ev.m[0].power_apparent[1], em_ev.m[0].power_apparent[2],
+               em_ev.m[0].power_factor[0], em_ev.m[0].power_factor[1],
+               em_ev.m[0].power_factor[2], em_ev.m[0].phase_angle[0],
+               em_ev.m[0].phase_angle[1], em_ev.m[0].phase_angle[2],
+               em_ev.total_forward_active_energy[0],
+               em_ev.total_forward_active_energy[1],
+               em_ev.total_forward_active_energy[2],
+               em_ev.total_reverse_active_energy[0],
+               em_ev.total_reverse_active_energy[1],
+               em_ev.total_reverse_active_energy[2],
+               em_ev.total_forward_reactive_energy[0],
+               em_ev.total_forward_reactive_energy[1],
+               em_ev.total_forward_reactive_energy[2],
+               em_ev.total_reverse_reactive_energy[0],
+               em_ev.total_reverse_reactive_energy[1],
+               em_ev.total_reverse_reactive_energy[2], em_ev.total_cost,
+               em_ev.price_per_unit, currency);
 
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
+      delete em;
       return;
     }
   }

@@ -204,25 +204,6 @@ void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }
 
-void supla_client_channel::get_cost_and_currency(char currency[3],
-                                                 _supla_int_t *total_cost,
-                                                 _supla_int_t *price_per_unit,
-                                                 double count) {
-  currency[0] = 0;
-  *total_cost = 0;
-  *price_per_unit = 0;
-
-  if (TextParam1 && strlen(TextParam1) == 3) {
-    memcpy(currency, TextParam1, 3);
-  }
-
-  if (Param2 > 0) {
-    *price_per_unit = Param2;
-    // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
-    *total_cost = (double)(Param2 * 0.01 * count);
-  }
-}
-
 bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                      supla_client *client) {
   if (cev == NULL) {
@@ -243,8 +224,9 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
           sum += em_ev.total_forward_active_energy[1] * 0.00001;
           sum += em_ev.total_forward_active_energy[2] * 0.00001;
 
-          get_cost_and_currency(em_ev.currency, &em_ev.total_cost,
-                                &em_ev.price_per_unit, sum);
+          supla_channel_ic_measurement::get_cost_and_currency(
+              TextParam1, Param2, em_ev.currency, &em_ev.total_cost,
+              &em_ev.price_per_unit, sum);
 
           srpc_evtool_v1_emextended2extended(&em_ev, &cev->value);
         }
@@ -269,10 +251,11 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
               supla_channel_ic_measurement::get_calculated_i(
                   ic_ev.impulses_per_unit, ic_ev.counter);
 
-          get_cost_and_currency(ic_ev.currency, &ic_ev.total_cost,
-                                &ic_ev.price_per_unit,
-                                supla_channel_ic_measurement::get_calculated_d(
-                                    ic_ev.impulses_per_unit, ic_ev.counter));
+          supla_channel_ic_measurement::get_cost_and_currency(
+              TextParam1, Param2, ic_ev.currency, &ic_ev.total_cost,
+              &ic_ev.price_per_unit,
+              supla_channel_ic_measurement::get_calculated_d(
+                  ic_ev.impulses_per_unit, ic_ev.counter));
 
           srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
         }

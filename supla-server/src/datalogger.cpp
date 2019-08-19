@@ -65,7 +65,7 @@ void supla_datalogger::log_electricity_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_electricity_measurement(emarr);
+    user->get_electricity_measurements(emarr);
   }
 
   for (a = 0; a < safe_array_count(emarr); a++) {
@@ -87,7 +87,7 @@ void supla_datalogger::log_ic_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_ic_measurement(icarr);
+    user->get_ic_measurements(icarr);
   }
 
   for (a = 0; a < safe_array_count(icarr); a++) {
