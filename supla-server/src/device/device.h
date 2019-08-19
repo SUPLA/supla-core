@@ -66,6 +66,7 @@ class supla_device : public cdbase {
       int ChannelID);
   void get_ic_measurements(void *icarr);
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
+  void get_thermostat_measurements(void *tharr);
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);

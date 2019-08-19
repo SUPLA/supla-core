@@ -256,6 +256,7 @@ class supla_device_channels {
       int ChannelID);
   void get_ic_measurements(void *icarr);
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
+  void get_thermostat_measurements(void *tharr);
 
   bool calcfg_request(void *srpc, int SenderID, int ChannelID,
                       bool SuperUserAuthorized,

@@ -1421,7 +1421,7 @@ void supla_device_channels::get_ic_measurements(void *icarr) {
   safe_array_unlock(arr);
 }
 
-void supla_device_channels::get_thermostat_measurement(void *tharr) {
+void supla_device_channels::get_thermostat_measurements(void *tharr) {
   int a;
   safe_array_lock(arr);
 

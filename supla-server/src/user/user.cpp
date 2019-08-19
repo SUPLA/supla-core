@@ -560,19 +560,6 @@ supla_channel_ic_measurement *supla_user::supla_user::get_ic_measurement(
   return result;
 }
 
-supla_device *supla_user::device_by_channel_id(supla_device *suspect,
-                                               int ChannelID) {
-  if (ChannelID == 0) return NULL;
-  if (suspect != NULL && suspect->channel_exists(ChannelID)) return suspect;
-
-  for (int a = 0; a < safe_array_count(device_arr); a++)
-    if (NULL != (suspect = (supla_device *)safe_array_get(device_arr, a)) &&
-        suspect->channel_exists(ChannelID))
-      return suspect;
-
-  return NULL;
-}
-
 bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                                    TSuplaChannelValue *value, char *online) {
   bool result = false;
@@ -1004,57 +991,64 @@ void supla_user::get_temp_and_humidity(void *tarr) {
 
 void supla_user::get_electricity_measurements(void *emarr) {
   int a;
+  supla_device *device;
 
-  safe_array_lock(device_arr);
-
-  for (a = 0; a < safe_array_count(device_arr); a++) {
-    ((supla_device *)safe_array_get(device_arr, a))
-        ->get_electricity_measurements(emarr);
+  for (a = 0; a < device_container->count(); a++) {
+    if (NULL != (device = device_container->get(a))) {
+      device->get_electricity_measurements(emarr);
+      device->releasePtr();
+    }
   }
-
-  safe_array_unlock(device_arr);
 }
 
 supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
     int DeviceID, int ChannelID) {
   supla_channel_electricity_measurement *result = NULL;
 
-  safe_array_lock(device_arr);
-
-  supla_device *device = find_device_by_channelid(ChannelID);
+  supla_device *device = device_container->findByID(DeviceID);
   if (device != NULL) {
     result = device->get_electricity_measurement(ChannelID);
+    device->releasePtr();
   }
 
-  safe_array_unlock(device_arr);
   return result;
 }
 
 void supla_user::get_ic_measurements(void *icarr) {
   int a;
+  supla_device *device;
 
-  safe_array_lock(device_arr);
-
-  for (a = 0; a < safe_array_count(device_arr); a++) {
-    ((supla_device *)safe_array_get(device_arr, a))->get_ic_measurements(icarr);
+  for (a = 0; a < device_container->count(); a++) {
+    if (NULL != (device = device_container->get(a))) {
+      device->get_ic_measurements(icarr);
+      device->releasePtr();
+    }
   }
-
-  safe_array_unlock(device_arr);
 }
 
 supla_channel_ic_measurement *supla_user::get_ic_measurement(int DeviceID,
                                                              int ChannelID) {
   supla_channel_ic_measurement *result = NULL;
 
-  safe_array_lock(device_arr);
-
-  supla_device *device = find_device_by_channelid(ChannelID);
+  supla_device *device = device_container->findByID(DeviceID);
   if (device != NULL) {
     result = device->get_ic_measurement(ChannelID);
+    device->releasePtr();
   }
 
-  safe_array_unlock(device_arr);
   return result;
+}
+
+void supla_user::get_thermostat_measurements(void *tharr) {
+  int a;
+  supla_device *device;
+
+  for (a = 0; a < device_container->count(); a++) {
+    if (NULL != (device = device_container->get(a))) {
+      device->get_thermostat_measurements(tharr);
+      device->releasePtr();
+    }
+  }
 }
 
 bool supla_user::device_calcfg_request(int SenderID, int DeviceId,

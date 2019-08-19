@@ -110,7 +110,7 @@ void supla_datalogger::log_thermostat_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_thermostat_measurement(tharr);
+    user->get_thermostat_measurements(tharr);
   }
 
   for (a = 0; a < safe_array_count(tharr); a++) {

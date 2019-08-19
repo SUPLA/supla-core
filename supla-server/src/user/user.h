@@ -68,7 +68,6 @@ class supla_user {
   void compex_value_cache_update_function(int DeviceId, int ChannelID,
                                           int Function, bool channel_is_hidden);
 
-
   static char find_user_byid(void *ptr, void *UserID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
@@ -187,6 +186,7 @@ class supla_user {
       int DeviceID, int ChannelID);
   void get_ic_measurements(void *icarr);
   supla_channel_ic_measurement *get_ic_measurement(int DeviceID, int ChannelID);
+  void get_thermostat_measurements(void *tharr);
 
   bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
                              TCS_DeviceCalCfgRequest_B *request);
