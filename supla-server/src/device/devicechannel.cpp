@@ -271,8 +271,8 @@ void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
         break;
       case SUPLA_CHANNELFNC_GAS_METER:
       case SUPLA_CHANNELFNC_WATER_METER:
-        // UTF(³) == 0xc382c2b3
-        snprintf(unit, 9, "m%c%c%c%c", 0xc3, 0x82, 0xc2, 0xb3);  // NOLINT
+        // UTF(³) == 0xc2b3
+        snprintf(unit, 9, "m%c%c", 0xc2, 0xb3);  // NOLINT
         break;
     }
   }
