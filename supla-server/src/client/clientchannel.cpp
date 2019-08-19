@@ -222,8 +222,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                                                  TextParam1);
 
       case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-        return supla_channel_ic_measurement::update_cev(cev, Param2, Param3,
-                                                        TextParam1, TextParam2);
+        return supla_channel_ic_measurement::update_cev(
+            cev, Func, Param2, Param3, TextParam1, TextParam2);
     }
   }
 

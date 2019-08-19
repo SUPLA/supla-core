@@ -92,7 +92,8 @@ class supla_channel_ic_measurement {
   _supla_int64_t calculatedValue;
 
  public:
-  supla_channel_ic_measurement(int ChannelId, TDS_ImpulseCounter_Value *ic_val,
+  supla_channel_ic_measurement(int ChannelId, int Func,
+                               TDS_ImpulseCounter_Value *ic_val,
                                char *TextParam1, char *TextParam2, int Param2,
                                int Param3);
 
@@ -105,8 +106,10 @@ class supla_channel_ic_measurement {
   unsigned _supla_int64_t getCounter(void);
   unsigned _supla_int64_t getCalculatedValue(void);
 
-  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
-                         int Param3, char *TextParam1, char *TextParam2);
+  static void set_default_unit(int Func, char unit[9]);
+  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Func,
+                         int Param2, int Param3, char *TextParam1,
+                         char *TextParam2);
 
   static double get_calculated_d(_supla_int_t impulses_per_unit,
                                  unsigned _supla_int64_t counter);
