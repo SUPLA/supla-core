@@ -218,52 +218,13 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                                    &cev->value)) {
     switch (cev->value.type) {
       case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
-        TElectricityMeter_ExtendedValue em_ev;
-        if (srpc_evtool_v1_extended2emextended(&cev->value, &em_ev)) {
-          double sum = em_ev.total_forward_active_energy[0] * 0.00001;
-          sum += em_ev.total_forward_active_energy[1] * 0.00001;
-          sum += em_ev.total_forward_active_energy[2] * 0.00001;
-
-          supla_channel_ic_measurement::get_cost_and_currency(
-              TextParam1, Param2, em_ev.currency, &em_ev.total_cost,
-              &em_ev.price_per_unit, sum);
-
-          srpc_evtool_v1_emextended2extended(&em_ev, &cev->value);
-        }
-        break;
+        return supla_channel_electricity_measurement::update_cev(cev, Param2,
+                                                                 TextParam1);
 
       case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-        TSC_ImpulseCounter_ExtendedValue ic_ev;
-        if (srpc_evtool_v1_extended2icextended(&cev->value, &ic_ev)) {
-          ic_ev.calculated_value = 0;
-          ic_ev.custom_unit[0] = 0;
-          ic_ev.impulses_per_unit = 0;
-
-          if (TextParam2 && strnlen(TextParam2, 9) < 9) {
-            strncpy(ic_ev.custom_unit, TextParam2, 9);
-          }
-
-          if (Param3 > 0) {
-            ic_ev.impulses_per_unit = Param3;
-          }
-
-          ic_ev.calculated_value =
-              supla_channel_ic_measurement::get_calculated_i(
-                  ic_ev.impulses_per_unit, ic_ev.counter);
-
-          supla_channel_ic_measurement::get_cost_and_currency(
-              TextParam1, Param2, ic_ev.currency, &ic_ev.total_cost,
-              &ic_ev.price_per_unit,
-              supla_channel_ic_measurement::get_calculated_d(
-                  ic_ev.impulses_per_unit, ic_ev.counter));
-
-          srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
-        }
-
-        break;
+        return supla_channel_ic_measurement::update_cev(cev, Param2, Param3,
+                                                        TextParam1, TextParam2);
     }
-
-    return true;
   }
 
   return false;

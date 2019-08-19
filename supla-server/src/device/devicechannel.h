@@ -74,6 +74,8 @@ class supla_channel_electricity_measurement {
   void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
   void getCurrency(char currency[4]);
 
+  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
+                         char *TextParam1);
   static void free(void *emarr);
 };
 
@@ -102,6 +104,9 @@ class supla_channel_ic_measurement {
   _supla_int_t getImpulsesPerUnit(void);
   unsigned _supla_int64_t getCounter(void);
   unsigned _supla_int64_t getCalculatedValue(void);
+
+  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
+                         int Param3, char *TextParam1, char *TextParam2);
 
   static double get_calculated_d(_supla_int_t impulses_per_unit,
                                  unsigned _supla_int64_t counter);

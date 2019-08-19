@@ -171,6 +171,28 @@ void supla_channel_electricity_measurement::getCurrency(char currency[4]) {
 }
 
 // static
+bool supla_channel_electricity_measurement::update_cev(
+    TSC_SuplaChannelExtendedValue *cev, int Param2, char *TextParam1) {
+  if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+    TElectricityMeter_ExtendedValue em_ev;
+    if (srpc_evtool_v1_extended2emextended(&cev->value, &em_ev)) {
+      double sum = em_ev.total_forward_active_energy[0] * 0.00001;
+      sum += em_ev.total_forward_active_energy[1] * 0.00001;
+      sum += em_ev.total_forward_active_energy[2] * 0.00001;
+
+      supla_channel_ic_measurement::get_cost_and_currency(
+          TextParam1, Param2, em_ev.currency, &em_ev.total_cost,
+          &em_ev.price_per_unit, sum);
+
+      srpc_evtool_v1_emextended2extended(&em_ev, &cev->value);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// static
 void supla_channel_electricity_measurement::free(void *emarr) {
   safe_array_clean(emarr, supla_channel_emarr_clean);
   safe_array_free(emarr);
@@ -236,6 +258,39 @@ unsigned _supla_int64_t supla_channel_ic_measurement::getCounter(void) {
 
 unsigned _supla_int64_t supla_channel_ic_measurement::getCalculatedValue(void) {
   return calculatedValue;
+}
+
+// static
+bool supla_channel_ic_measurement::update_cev(
+    TSC_SuplaChannelExtendedValue *cev, int Param2, int Param3,
+    char *TextParam1, char *TextParam2) {
+  TSC_ImpulseCounter_ExtendedValue ic_ev;
+  if (srpc_evtool_v1_extended2icextended(&cev->value, &ic_ev)) {
+    ic_ev.calculated_value = 0;
+    ic_ev.custom_unit[0] = 0;
+    ic_ev.impulses_per_unit = 0;
+
+    if (TextParam2 && strnlen(TextParam2, 9) < 9) {
+      strncpy(ic_ev.custom_unit, TextParam2, 9);
+    }
+
+    if (Param3 > 0) {
+      ic_ev.impulses_per_unit = Param3;
+    }
+
+    ic_ev.calculated_value = supla_channel_ic_measurement::get_calculated_i(
+        ic_ev.impulses_per_unit, ic_ev.counter);
+
+    supla_channel_ic_measurement::get_cost_and_currency(
+        TextParam1, Param2, ic_ev.currency, &ic_ev.total_cost,
+        &ic_ev.price_per_unit,
+        supla_channel_ic_measurement::get_calculated_d(ic_ev.impulses_per_unit,
+                                                       ic_ev.counter));
+
+    srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
+    return true;
+  }
+  return false;
 }
 
 // static
