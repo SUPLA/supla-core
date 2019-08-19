@@ -132,13 +132,26 @@ char supla_channel_icarr_clean(void *ptr) {
 }
 
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
-    int ChannelId, TElectricityMeter_ExtendedValue *em_ev) {
+    int ChannelId, TElectricityMeter_ExtendedValue *em_ev, int Param2,
+    char *TextParam1) {
   this->ChannelId = ChannelId;
   if (em_ev == NULL) {
     memset(&this->em_ev, 0, sizeof(TElectricityMeter_ExtendedValue));
   } else {
     memcpy(&this->em_ev, em_ev, sizeof(TElectricityMeter_ExtendedValue));
+
+    if (this->em_ev.m_count == 0) {
+      memset(this->em_ev.m, 0, sizeof(TElectricityMeter_Measurement));
+    }
   }
+
+  double sum = this->em_ev.total_forward_active_energy[0] * 0.00001;
+  sum += this->em_ev.total_forward_active_energy[1] * 0.00001;
+  sum += this->em_ev.total_forward_active_energy[2] * 0.00001;
+
+  supla_channel_ic_measurement::get_cost_and_currency(
+      TextParam1, Param2, this->em_ev.currency, &this->em_ev.total_cost,
+      &this->em_ev.price_per_unit, sum);
 }
 
 int supla_channel_electricity_measurement::getChannelId(void) {
@@ -152,6 +165,33 @@ void supla_channel_electricity_measurement::getMeasurement(
   }
 }
 
+void supla_channel_electricity_measurement::getCurrency(char currency[4]) {
+  memcpy(currency, this->em_ev.currency, 3);
+  currency[3] = 0;
+}
+
+// static
+bool supla_channel_electricity_measurement::update_cev(
+    TSC_SuplaChannelExtendedValue *cev, int Param2, char *TextParam1) {
+  if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+    TElectricityMeter_ExtendedValue em_ev;
+    if (srpc_evtool_v1_extended2emextended(&cev->value, &em_ev)) {
+      double sum = em_ev.total_forward_active_energy[0] * 0.00001;
+      sum += em_ev.total_forward_active_energy[1] * 0.00001;
+      sum += em_ev.total_forward_active_energy[2] * 0.00001;
+
+      supla_channel_ic_measurement::get_cost_and_currency(
+          TextParam1, Param2, em_ev.currency, &em_ev.total_cost,
+          &em_ev.price_per_unit, sum);
+
+      srpc_evtool_v1_emextended2extended(&em_ev, &cev->value);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // static
 void supla_channel_electricity_measurement::free(void *emarr) {
   safe_array_clean(emarr, supla_channel_emarr_clean);
@@ -161,14 +201,56 @@ void supla_channel_electricity_measurement::free(void *emarr) {
 //-----------------------------------------------------
 
 supla_channel_ic_measurement::supla_channel_ic_measurement(
-    int ChannelId, unsigned _supla_int64_t counter,
-    unsigned _supla_int64_t calculatedValue) {
+    int ChannelId, TDS_ImpulseCounter_Value *ic_val, char *TextParam1,
+    char *TextParam2, int Param2, int Param3) {
   this->ChannelId = ChannelId;
-  this->counter = counter;
-  this->calculatedValue = calculatedValue;
+  this->totalCost = 0;
+  this->pricePerUnit = 0;
+  this->currency[0] = 0;
+  this->impulsesPerUnit = 0;
+  this->customUnit[0] = 0;
+
+  if (TextParam2 && strnlen(TextParam2, 9) < 9) {
+    strncpy(this->customUnit, TextParam2, 9);
+    this->customUnit[8] = 0;
+  }
+
+  if (Param3 > 0) {
+    this->impulsesPerUnit = Param3;
+  }
+
+  this->counter = ic_val->counter;
+
+  this->calculatedValue = supla_channel_ic_measurement::get_calculated_i(
+      this->impulsesPerUnit, this->counter);
+
+  supla_channel_ic_measurement::get_cost_and_currency(
+      TextParam1, Param2, this->currency, &this->totalCost, &this->pricePerUnit,
+      supla_channel_ic_measurement::get_calculated_d(this->impulsesPerUnit,
+                                                     this->counter));
+
+  this->currency[3] = 0;
 }
 
 int supla_channel_ic_measurement::getChannelId(void) { return ChannelId; }
+
+_supla_int_t supla_channel_ic_measurement::getTotalCost(void) {
+  return totalCost;
+}
+
+_supla_int_t supla_channel_ic_measurement::getPricePerUnit(void) {
+  return pricePerUnit;
+}
+
+const char *supla_channel_ic_measurement::getCurrncy(void) { return currency; }
+
+const char *supla_channel_ic_measurement::getCustomUnit(void) {
+  return customUnit;
+}
+
+_supla_int_t supla_channel_ic_measurement::getImpulsesPerUnit(void) {
+  return impulsesPerUnit;
+}
 
 unsigned _supla_int64_t supla_channel_ic_measurement::getCounter(void) {
   return counter;
@@ -176,6 +258,39 @@ unsigned _supla_int64_t supla_channel_ic_measurement::getCounter(void) {
 
 unsigned _supla_int64_t supla_channel_ic_measurement::getCalculatedValue(void) {
   return calculatedValue;
+}
+
+// static
+bool supla_channel_ic_measurement::update_cev(
+    TSC_SuplaChannelExtendedValue *cev, int Param2, int Param3,
+    char *TextParam1, char *TextParam2) {
+  TSC_ImpulseCounter_ExtendedValue ic_ev;
+  if (srpc_evtool_v1_extended2icextended(&cev->value, &ic_ev)) {
+    ic_ev.calculated_value = 0;
+    ic_ev.custom_unit[0] = 0;
+    ic_ev.impulses_per_unit = 0;
+
+    if (TextParam2 && strnlen(TextParam2, 9) < 9) {
+      strncpy(ic_ev.custom_unit, TextParam2, 9);
+    }
+
+    if (Param3 > 0) {
+      ic_ev.impulses_per_unit = Param3;
+    }
+
+    ic_ev.calculated_value = supla_channel_ic_measurement::get_calculated_i(
+        ic_ev.impulses_per_unit, ic_ev.counter);
+
+    supla_channel_ic_measurement::get_cost_and_currency(
+        TextParam1, Param2, ic_ev.currency, &ic_ev.total_cost,
+        &ic_ev.price_per_unit,
+        supla_channel_ic_measurement::get_calculated_d(ic_ev.impulses_per_unit,
+                                                       ic_ev.counter));
+
+    srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
+    return true;
+  }
+  return false;
 }
 
 // static
@@ -193,6 +308,25 @@ _supla_int64_t supla_channel_ic_measurement::get_calculated_i(
 }
 
 // static
+void supla_channel_ic_measurement::get_cost_and_currency(
+    char *TextParam1, int Param2, char currency[3], _supla_int_t *total_cost,
+    _supla_int_t *price_per_unit, double count) {
+  currency[0] = 0;
+  *total_cost = 0;
+  *price_per_unit = 0;
+
+  if (TextParam1 && strlen(TextParam1) == 3) {
+    memcpy(currency, TextParam1, 3);
+  }
+
+  if (Param2 > 0) {
+    *price_per_unit = Param2;
+    // *total_cost = (double)(Param2 * 0.0001 * count) * 100;
+    *total_cost = (double)(Param2 * 0.01 * count);
+  }
+}
+
+// static
 void supla_channel_ic_measurement::free(void *icarr) {
   safe_array_clean(icarr, supla_channel_icarr_clean);
   safe_array_free(icarr);
@@ -202,7 +336,9 @@ void supla_channel_ic_measurement::free(void *icarr) {
 
 supla_device_channel::supla_device_channel(int Id, int Number, int Type,
                                            int Func, int Param1, int Param2,
-                                           int Param3, bool Hidden) {
+                                           int Param3, char *TextParam1,
+                                           char *TextParam2, char *TextParam3,
+                                           bool Hidden) {
   this->Id = Id;
   this->Number = Number;
   this->Type = Type;
@@ -210,13 +346,33 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->Param1 = Param1;
   this->Param2 = Param2;
   this->Param3 = Param3;
+  this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
+  this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
+  this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
   this->Hidden = Hidden;
   this->extendedValue = NULL;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
 
-supla_device_channel::~supla_device_channel() { setExtendedValue(NULL); }
+supla_device_channel::~supla_device_channel() {
+  setExtendedValue(NULL);
+
+  if (this->TextParam1) {
+    free(this->TextParam1);
+    this->TextParam1 = NULL;
+  }
+
+  if (this->TextParam2) {
+    free(this->TextParam2);
+    this->TextParam2 = NULL;
+  }
+
+  if (this->TextParam3) {
+    free(this->TextParam3);
+    this->TextParam3 = NULL;
+  }
+}
 
 int supla_device_channel::getId(void) { return Id; }
 
@@ -575,7 +731,8 @@ supla_device_channel::getElectricityMeasurement(void) {
     TElectricityMeter_ExtendedValue em_ev;
 
     if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev) == 1) {
-      return new supla_channel_electricity_measurement(getId(), &em_ev);
+      return new supla_channel_electricity_measurement(getId(), &em_ev, Param2,
+                                                       TextParam1);
     }
   }
 
@@ -594,10 +751,8 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
 
         TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
 
-        return new supla_channel_ic_measurement(
-            getId(), ic_val->counter,
-            supla_channel_ic_measurement::get_calculated_i(Param3,
-                                                           ic_val->counter));
+        return new supla_channel_ic_measurement(getId(), ic_val, TextParam1,
+                                                TextParam2, Param2, Param3);
       }
     }
   }
@@ -677,12 +832,14 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 
 void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
                                         int Param1, int Param2, int Param3,
-                                        bool Hidden) {
+                                        char *TextParam1, char *TextParam2,
+                                        char *TextParam3, bool Hidden) {
   safe_array_lock(arr);
 
   if (find_channel(Id) == 0) {
-    supla_device_channel *c = new supla_device_channel(
-        Id, Number, Type, Func, Param1, Param2, Param3, Hidden);
+    supla_device_channel *c =
+        new supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
+                                 TextParam1, TextParam2, TextParam3, Hidden);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -1137,7 +1294,7 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
   return result;
 }
 
-void supla_device_channels::get_electricity_measurement(void *emarr) {
+void supla_device_channels::get_electricity_measurements(void *emarr) {
   int a;
   safe_array_lock(arr);
 
@@ -1157,7 +1314,24 @@ void supla_device_channels::get_electricity_measurement(void *emarr) {
   safe_array_unlock(arr);
 }
 
-void supla_device_channels::get_ic_measurement(void *icarr) {
+supla_channel_electricity_measurement *
+supla_device_channels::get_electricity_measurement(int ChannelID) {
+  supla_channel_electricity_measurement *result = NULL;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel != NULL) {
+    result = channel->getElectricityMeasurement();
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
+void supla_device_channels::get_ic_measurements(void *icarr) {
   int a;
   safe_array_lock(arr);
 
@@ -1175,6 +1349,23 @@ void supla_device_channels::get_ic_measurement(void *icarr) {
   }
 
   safe_array_unlock(arr);
+}
+
+supla_channel_ic_measurement *supla_device_channels::get_ic_measurement(
+    int ChannelID) {
+  supla_channel_ic_measurement *result = NULL;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel != NULL) {
+    result = channel->getImpulseCounterMeasurement();
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
 }
 
 bool supla_device_channels::calcfg_request(void *srpc, int SenderID,

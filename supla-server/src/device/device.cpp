@@ -38,8 +38,7 @@ supla_device::~supla_device() {
     getUser()->remove_device(this);
 
     std::list<int> ids = channels->get_channel_ids();
-    for (std::list<int>::iterator it = ids.begin();
-         it != ids.end(); it++) {
+    for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
     }
   }
@@ -109,9 +108,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false ==
-                     db->device_authkey_auth(GUID, register_device_e->Email,
-                                             AuthKey, &UserID)) {
+                 false == db->device_authkey_auth(GUID,
+                                                  register_device_e->Email,
+                                                  AuthKey, &UserID)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -447,12 +446,21 @@ void supla_device::get_temp_and_humidity(void *tarr) {
   channels->get_temp_and_humidity(tarr);
 }
 
-void supla_device::get_electricity_measurement(void *emarr) {
-  channels->get_electricity_measurement(emarr);
+void supla_device::get_electricity_measurements(void *emarr) {
+  channels->get_electricity_measurements(emarr);
 }
 
-void supla_device::get_ic_measurement(void *icarr) {
-  channels->get_ic_measurement(icarr);
+supla_channel_electricity_measurement *
+supla_device::get_electricity_measurement(int ChannelID) {
+  return channels->get_electricity_measurement(ChannelID);
+}
+
+void supla_device::get_ic_measurements(void *icarr) {
+  channels->get_ic_measurements(icarr);
+}
+
+supla_channel_ic_measurement *supla_device::get_ic_measurement(int ChannelID) {
+  return channels->get_ic_measurement(ChannelID);
 }
 
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {

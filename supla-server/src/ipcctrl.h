@@ -49,6 +49,8 @@ class svr_ipcctrl {
   void get_double(const char *cmd, char Type);
   void get_char(const char *cmd);
   void get_rgbw(const char *cmd);
+  void get_impulsecounter_value(const char *cmd);
+  void get_electricitymeter_value(const char *cmd);
   void set_char(const char *cmd, bool group);
   void set_rgbw(const char *cmd, bool group, bool random);
   void alexa_credentials_changed(const char *cmd);
