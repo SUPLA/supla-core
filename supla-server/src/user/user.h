@@ -33,6 +33,8 @@ class supla_amazon_alexa;
 class supla_google_home;
 class supla_user_client_container;
 class supla_user_device_container;
+class supla_channel_electricity_measurement;
+class supla_channel_ic_measurement;
 
 class supla_user {
  private:
@@ -70,7 +72,6 @@ class supla_user {
   static char find_user_byid(void *ptr, void *UserID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
-
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
                                 char Type);
 
@@ -99,6 +100,11 @@ class supla_user {
   static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
                                      int *color, char *color_brightness,
                                      char *brightness, char *on_off);
+  static supla_channel_electricity_measurement *get_electricity_measurement(
+      int UserID, int DeviceID, int ChannelID);
+  static supla_channel_ic_measurement *get_ic_measurement(int UserID,
+                                                          int DeviceID,
+                                                          int ChannelID);
   static int user_count(void);
   static supla_user *get_user(int idx);
   static bool set_device_channel_char_value(int UserID, int SenderID,
@@ -176,9 +182,11 @@ class supla_user {
 
   void call_event(TSC_SuplaEvent *event);
   void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurement(void *emarr);
-  void get_ic_measurement(void *icarr);
-  void get_thermostat_measurement(void *tharr);
+  void get_electricity_measurements(void *emarr);
+  supla_channel_electricity_measurement *get_electricity_measurement(
+      int DeviceID, int ChannelID);
+  void get_ic_measurements(void *icarr);
+  supla_channel_ic_measurement *get_ic_measurement(int DeviceID, int ChannelID);
 
   bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
                              TCS_DeviceCalCfgRequest_B *request);
