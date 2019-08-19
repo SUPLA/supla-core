@@ -201,7 +201,7 @@ void supla_channel_electricity_measurement::free(void *emarr) {
 //-----------------------------------------------------
 
 supla_channel_ic_measurement::supla_channel_ic_measurement(
-    int ChannelId, TDS_ImpulseCounter_Value *ic_val, char *TextParam1,
+    int ChannelId, int Func, TDS_ImpulseCounter_Value *ic_val, char *TextParam1,
     char *TextParam2, int Param2, int Param3) {
   this->ChannelId = ChannelId;
   this->totalCost = 0;
@@ -214,6 +214,8 @@ supla_channel_ic_measurement::supla_channel_ic_measurement(
     strncpy(this->customUnit, TextParam2, 9);
     this->customUnit[8] = 0;
   }
+
+  supla_channel_ic_measurement::set_default_unit(Func, this->customUnit);
 
   if (Param3 > 0) {
     this->impulsesPerUnit = Param3;
@@ -261,8 +263,24 @@ unsigned _supla_int64_t supla_channel_ic_measurement::getCalculatedValue(void) {
 }
 
 // static
+void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
+  if (strnlen(unit, 9) == 0) {
+    switch (Func) {
+      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+        snprintf(unit, 9, "kWh");  // NOLINT
+        break;
+      case SUPLA_CHANNELFNC_GAS_METER:
+      case SUPLA_CHANNELFNC_WATER_METER:
+        // UTF(³) == 0xc2b3
+        snprintf(unit, 9, "m%c%c", 0xc2, 0xb3);  // NOLINT
+        break;
+    }
+  }
+}
+
+// static
 bool supla_channel_ic_measurement::update_cev(
-    TSC_SuplaChannelExtendedValue *cev, int Param2, int Param3,
+    TSC_SuplaChannelExtendedValue *cev, int Func, int Param2, int Param3,
     char *TextParam1, char *TextParam2) {
   TSC_ImpulseCounter_ExtendedValue ic_ev;
   if (srpc_evtool_v1_extended2icextended(&cev->value, &ic_ev)) {
@@ -273,6 +291,8 @@ bool supla_channel_ic_measurement::update_cev(
     if (TextParam2 && strnlen(TextParam2, 9) < 9) {
       strncpy(ic_ev.custom_unit, TextParam2, 9);
     }
+
+    supla_channel_ic_measurement::set_default_unit(Func, ic_ev.custom_unit);
 
     if (Param3 > 0) {
       ic_ev.impulses_per_unit = Param3;
@@ -751,8 +771,8 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
 
         TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
 
-        return new supla_channel_ic_measurement(getId(), ic_val, TextParam1,
-                                                TextParam2, Param2, Param3);
+        return new supla_channel_ic_measurement(
+            getId(), Func, ic_val, TextParam1, TextParam2, Param2, Param3);
       }
     }
   }
