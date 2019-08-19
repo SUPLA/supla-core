@@ -193,13 +193,19 @@ supla_channel_ic_measurement::supla_channel_ic_measurement(
     this->customUnit[8] = 0;
   }
 
+  if (Param3 > 0) {
+    this->impulsesPerUnit = Param3;
+  }
+
   this->counter = ic_val->counter;
-  this->calculatedValue =
-      supla_channel_ic_measurement::get_calculated_i(Param3, ic_val->counter);
+
+  this->calculatedValue = supla_channel_ic_measurement::get_calculated_i(
+      this->impulsesPerUnit, this->counter);
 
   supla_channel_ic_measurement::get_cost_and_currency(
       TextParam1, Param2, this->currency, &this->totalCost, &this->pricePerUnit,
-      this->calculatedValue);
+      supla_channel_ic_measurement::get_calculated_d(this->impulsesPerUnit,
+                                                     this->counter));
 
   this->currency[3] = 0;
 }
