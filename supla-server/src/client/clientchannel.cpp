@@ -225,6 +225,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
         return supla_channel_ic_measurement::update_cev(
             cev, Func, Param2, Param3, TextParam1, TextParam2);
     }
+
+    return true;
   }
 
   return false;
