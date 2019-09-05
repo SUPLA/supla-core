@@ -42,6 +42,8 @@ const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
 const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
 const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
+const char cmd_get_em_value[] = "GET-EM-VALUE:";
+const char cmd_get_ic_value[] = "GET-IC-VALUE:";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
@@ -176,6 +178,100 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
                color_brightness, brightness);
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_channel_ic_measurement *icm =
+        supla_user::get_ic_measurement(UserID, DeviceID, ChannelID);
+
+    if (icm != NULL) {
+      char *unit_b64 = st_openssl_base64_encode(
+          (char *)icm->getCustomUnit(), strnlen(icm->getCustomUnit(), 9));
+
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%llu,%lld,%s,%s\n",
+               icm->getTotalCost(), icm->getPricePerUnit(),
+               icm->getImpulsesPerUnit(), icm->getCounter(),
+               icm->getCalculatedValue(), icm->getCurrncy(),
+               unit_b64 ? unit_b64 : "");
+
+      if (unit_b64) {
+        free(unit_b64);
+        unit_b64 = NULL;
+      }
+
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+
+      delete icm;
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_channel_electricity_measurement *em =
+        supla_user::get_electricity_measurement(UserID, DeviceID, ChannelID);
+
+    if (em != NULL) {
+      TElectricityMeter_ExtendedValue em_ev;
+      char currency[4];
+      em->getMeasurement(&em_ev);
+      em->getCurrency(currency);
+
+      snprintf(buffer, sizeof(buffer),
+               "VALUE:%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
+               "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
+               "llu,%llu,%llu,%i,%i,%s\n",
+               em_ev.measured_values, em_ev.m[0].freq, em_ev.m[0].voltage[0],
+               em_ev.m[0].voltage[1], em_ev.m[0].voltage[2],
+               em_ev.m[0].current[0], em_ev.m[0].current[1],
+               em_ev.m[0].current[2], em_ev.m[0].power_active[0],
+               em_ev.m[0].power_active[1], em_ev.m[0].power_active[2],
+               em_ev.m[0].power_reactive[0], em_ev.m[0].power_reactive[1],
+               em_ev.m[0].power_reactive[2], em_ev.m[0].power_apparent[0],
+               em_ev.m[0].power_apparent[1], em_ev.m[0].power_apparent[2],
+               em_ev.m[0].power_factor[0], em_ev.m[0].power_factor[1],
+               em_ev.m[0].power_factor[2], em_ev.m[0].phase_angle[0],
+               em_ev.m[0].phase_angle[1], em_ev.m[0].phase_angle[2],
+               em_ev.total_forward_active_energy[0],
+               em_ev.total_forward_active_energy[1],
+               em_ev.total_forward_active_energy[2],
+               em_ev.total_reverse_active_energy[0],
+               em_ev.total_reverse_active_energy[1],
+               em_ev.total_reverse_active_energy[2],
+               em_ev.total_forward_reactive_energy[0],
+               em_ev.total_forward_reactive_energy[1],
+               em_ev.total_forward_reactive_energy[2],
+               em_ev.total_reverse_reactive_energy[0],
+               em_ev.total_reverse_reactive_energy[1],
+               em_ev.total_reverse_reactive_energy[2], em_ev.total_cost,
+               em_ev.price_per_unit, currency);
+
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+
+      delete em;
       return;
     }
   }
@@ -470,6 +566,12 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_get_char_value, len)) {
           get_char(cmd_get_char_value);
+
+        } else if (match_command(cmd_get_em_value, len)) {
+          get_electricitymeter_value(cmd_get_em_value);
+
+        } else if (match_command(cmd_get_ic_value, len)) {
+          get_impulsecounter_value(cmd_get_ic_value);
 
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);

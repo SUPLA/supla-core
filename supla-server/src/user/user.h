@@ -31,8 +31,8 @@ class supla_client;
 class supla_user_channelgroups;
 class supla_amazon_alexa;
 class supla_google_home;
-class supla_user_client_container;
-class supla_user_device_container;
+class supla_channel_electricity_measurement;
+class supla_channel_ic_measurement;
 
 class supla_user {
  private:
@@ -43,9 +43,8 @@ class supla_user {
  protected:
   static void *user_arr;
 
-  supla_user_client_container *client_container;
-  supla_user_device_container *device_container;
-
+  void *device_arr;
+  void *client_arr;
   void *complex_value_functions_arr;
 
   supla_user_channelgroups *cgroups;
@@ -60,11 +59,20 @@ class supla_user {
   void compex_value_cache_update_function(int DeviceId, int ChannelID,
                                           int Function, bool channel_is_hidden);
 
+  supla_device *find_device(int DeviceID);
+  supla_device *find_device_by_channelid(int ChannelID);
+  supla_client *find_client(int ClientID);
+  supla_device *device_by_channel_id(supla_device *suspect, int ChannelID);
+  supla_device *channel_master_device(supla_device *suspect, int ChannelID);
 
   static char find_user_byid(void *ptr, void *UserID);
+  static char find_device_byid(void *ptr, void *ID);
+  static char find_device_by_channelid(void *ptr, void *ID);
+  static char find_device_byguid(void *ptr, void *GUID);
+  static char find_client_byid(void *ptr, void *ID);
+  static char find_client_byguid(void *ptr, void *GUID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
-
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
                                 char Type);
 
@@ -93,6 +101,11 @@ class supla_user {
   static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
                                      int *color, char *color_brightness,
                                      char *brightness, char *on_off);
+  static supla_channel_electricity_measurement *get_electricity_measurement(
+      int UserID, int DeviceID, int ChannelID);
+  static supla_channel_ic_measurement *get_ic_measurement(int UserID,
+                                                          int DeviceID,
+                                                          int ChannelID);
   static int user_count(void);
   static supla_user *get_user(int idx);
   static bool set_device_channel_char_value(int UserID, int SenderID,
@@ -118,11 +131,9 @@ class supla_user {
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   void on_device_added(int DeviceID, event_source_type eventSourceType);
 
+  void remove_device(supla_device *device);
+  void remove_client(supla_client *client);
   void setUniqueId(const char shortID[], const char longID[]);
-
-  void moveDeviceToTrash(supla_device *device);
-  void moveClientToTrash(supla_client *client);
-  void emptyTrash(void);
 
   int getUserID(void);
   char *getShortUniqueID(void);
@@ -167,12 +178,14 @@ class supla_user {
 
   void call_event(TSC_SuplaEvent *event);
   void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurement(void *emarr);
-  void get_ic_measurement(void *icarr);
-  void get_thermostat_measurement(void *tharr);
+  void get_electricity_measurements(void *emarr);
+  supla_channel_electricity_measurement *get_electricity_measurement(
+      int DeviceID, int ChannelID);
+  void get_ic_measurements(void *icarr);
+  supla_channel_ic_measurement *get_ic_measurement(int DeviceID, int ChannelID);
 
-  bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
-                             TCS_DeviceCalCfgRequest_B *request);
+  bool device_calcfg_request(int SenderID, int DeviceId,
+                             TCS_DeviceCalCfgRequest *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
 
   channel_complex_value get_channel_complex_value(int DeviceId, int ChannelID);
