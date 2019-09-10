@@ -240,14 +240,20 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
       em->getMeasurement(&em_ev);
       em->getCurrency(currency);
 
+      double divider = 1.0;
+      if (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A &&
+          !(em_ev.measured_values & EM_VAR_CURRENT)) {
+        divider = 10.0;
+      }
+
       snprintf(buffer, sizeof(buffer),
                "VALUE:%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
                "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
                "llu,%llu,%llu,%i,%i,%s\n",
                em_ev.measured_values, em_ev.m[0].freq, em_ev.m[0].voltage[0],
                em_ev.m[0].voltage[1], em_ev.m[0].voltage[2],
-               em_ev.m[0].current[0], em_ev.m[0].current[1],
-               em_ev.m[0].current[2], em_ev.m[0].power_active[0],
+               em_ev.m[0].current[0] * divider, em_ev.m[0].current[1] * divider,
+               em_ev.m[0].current[2] * divider, em_ev.m[0].power_active[0],
                em_ev.m[0].power_active[1], em_ev.m[0].power_active[2],
                em_ev.m[0].power_reactive[0], em_ev.m[0].power_reactive[1],
                em_ev.m[0].power_reactive[2], em_ev.m[0].power_apparent[0],
