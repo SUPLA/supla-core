@@ -241,7 +241,7 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
       em->getCurrency(currency);
 
       double divider = 1.0;
-      if (em_ev.measured_values & EM_VAR_CURRENT_OVER_65A &&
+      if ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
           !(em_ev.measured_values & EM_VAR_CURRENT)) {
         divider = 10.0;
       }
