@@ -349,7 +349,7 @@ extern "C" {
 #define SUPLA_MFR_ZAMEL 4
 #define SUPLA_MFR_NICE 5
 #define SUPLA_MFR_ITEAD 6
-#define SUPLA_MFR_VARILIGHT 7
+#define SUPLA_MFR_DOYLETRATT 7
 #define SUPLA_MFR_HEATPOL 8
 
 #pragma pack(push, 1)
