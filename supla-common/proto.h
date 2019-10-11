@@ -351,6 +351,7 @@ extern "C" {
 #define SUPLA_MFR_ITEAD 6
 #define SUPLA_MFR_DOYLETRATT 7
 #define SUPLA_MFR_HEATPOL 8
+#define SUPLA_MFR_FAKRO 9
 
 #pragma pack(push, 1)
 
