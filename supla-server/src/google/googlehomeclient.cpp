@@ -184,7 +184,7 @@ bool supla_google_home_client::addRollerShutterState(int channelId,
   cJSON *state = (cJSON *)getStateSkeleton(channelId, 0, online);
   if (state) {
     short openPercent = 100 - (online ? shutPercentage : 0);
-    cJSON_AddBoolToObject(state, "on", openPercent > 0);
+    cJSON_AddBoolToObject(state, "on", online);
     cJSON_AddNumberToObject(state, "openPercent", openPercent);
     return true;
   }
