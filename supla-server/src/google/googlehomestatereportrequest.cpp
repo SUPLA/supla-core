@@ -86,6 +86,7 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
     case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       return !value.hidden_channel;
     default:
       return false;
@@ -149,6 +150,11 @@ void supla_google_home_statereport_request::execute(void *sthread) {
                                      value.color_brightness, value.online, 1);
           getClient()->addBrightnessState(ChannelId, value.brightness,
                                           value.online, 2);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          getClient()->addRollerShutterState(ChannelId, value.shut,
+                                             value.online);
           content_exists = true;
           break;
       }
