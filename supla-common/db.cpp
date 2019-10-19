@@ -19,9 +19,11 @@
 #include <my_global.h>
 #include <mysql.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "db.h"
 #include "log.h"
+#include "tools.h"
 
 dbcommon::dbcommon() { _mysql = NULL; }
 
@@ -42,34 +44,64 @@ void dbcommon::thread_init(void) { mysql_thread_init(); }
 
 void dbcommon::thread_end(void) { mysql_thread_end(); }
 
-bool dbcommon::connect(void) {
-  if (_mysql == NULL) {
-    _mysql = mysql_init(NULL);
-  }
+bool dbcommon::connect(int connection_timeout_sec) {
+  bool cmsg = false;
+  struct timeval start_time;
+  struct timeval tv;
+  gettimeofday(&start_time, NULL);
 
-  if (_mysql == NULL) {
-    supla_log(LOG_ERR, "MySQL initialization error");
-  } else {
-    if (mysql_real_connect(mysql, cfg_get_host(), cfg_get_user(),
-                           cfg_get_password(), cfg_get_database(),
-                           cfg_get_port(), NULL, 0) == NULL) {
-      disconnect();
-      supla_log(LOG_ERR, "MySQL - Failed to connect to database.");
+  bool connected = false;
 
-    } else {
-      if (mysql_set_character_set(mysql, "utf8")) {
-        supla_log(LOG_ERR,
-                  "Can't set utf8 character set. Current character set is %s",
-                  mysql_character_set_name(mysql));
-      }
-
-      mysql_options(mysql, MYSQL_SET_CHARSET_NAME, "utf8");
-      return true;
+  do {
+    if (_mysql == NULL) {
+      _mysql = mysql_init(NULL);
     }
+
+    if (_mysql == NULL) {
+      supla_log(LOG_ERR, "MySQL initialization error");
+      break;
+    } else {
+      if (mysql_real_connect(mysql, cfg_get_host(), cfg_get_user(),
+                             cfg_get_password(), cfg_get_database(),
+                             cfg_get_port(), NULL, 0) == NULL) {
+        disconnect();
+      } else {
+        if (mysql_set_character_set(mysql, "utf8")) {
+          supla_log(LOG_ERR,
+                    "Can't set utf8 character set. Current character set is %s",
+                    mysql_character_set_name(mysql));
+        }
+
+        mysql_options(mysql, MYSQL_SET_CHARSET_NAME, "utf8");
+        connected = true;
+      }
+    }
+
+    if (!connected) {
+      gettimeofday(&tv, NULL);
+      if (connection_timeout_sec > 0) {
+        if (!cmsg) {
+          supla_log(LOG_INFO, "Connecting to database ....");
+          cmsg = true;
+        }
+        usleep(1000000);
+      }
+    }
+  } while (!connected && connection_timeout_sec > 0 && !st_app_terminate &&
+           tv.tv_sec - start_time.tv_sec < connection_timeout_sec);
+
+  if (!connected) {
+    supla_log(
+        LOG_ERR,
+        "MySQL - Failed to connect to database! Connection timeout %i sec.",
+        connection_timeout_sec);
+    return false;
   }
 
-  return false;
+  return connected;
 }
+
+bool dbcommon::connect(void) { return connect(0); }
 
 void dbcommon::disconnect(void) {
   if (_mysql != NULL) {
@@ -316,13 +348,13 @@ bool dbcommon::get_db_version(char *buffer, int buffer_size) {
   return result;
 }
 
-bool dbcommon::check_db_version(const char *expected_version) {
+bool dbcommon::check_db_version(const char *expected_version,
+                                int connection_timeout_sec) {
   if (expected_version == NULL || expected_version[0] == 0) {
     return true;
   }
 
-  if (!connect()) {
-    supla_log(LOG_ERR, "Can't connect to database!");
+  if (!connect(connection_timeout_sec)) {
     return false;
   }
 
