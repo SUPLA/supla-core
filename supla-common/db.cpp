@@ -19,6 +19,7 @@
 #include <my_global.h>
 #include <mysql.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "db.h"
 #include "log.h"
