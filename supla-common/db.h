@@ -44,6 +44,7 @@ class dbcommon {
 
  public:
   dbcommon();
+  bool connect(int connection_timeout_sec);
   bool connect(void);
   void disconnect(void);
   virtual ~dbcommon();
@@ -60,7 +61,8 @@ class dbcommon {
 
   int get_last_insert_id(void);
   bool get_db_version(char *buffer, int buffer_size);
-  bool check_db_version(const char *expected_version);
+  bool check_db_version(const char *expected_version,
+                        int connection_timeout_sec);
 };
 
 #endif /* DBCOMMON_H_ */
