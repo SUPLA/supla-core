@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <http/httprequestqueue.h>
+#include <http/trivialhttps.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-#include <http/httprequestqueue.h>
-#include <http/trivialhttps.h>
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
-#include "sslcrypto.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "proto.h"
 #include "srpc.h"
+#include "sslcrypto.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   {
     database *db = new database();
-    if (!db->check_db_version("20190813232026")) {
+    if (!db->check_db_version("20190813232026", 60)) {
       delete db;
       database::mainthread_end();
       goto exit_fail;

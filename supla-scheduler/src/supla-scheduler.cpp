@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
   {
     database *db = new database();
-    if (!db->check_db_version("20190813232026")) {
+    if (!db->check_db_version("20190813232026", 60)) {
       delete db;
       database::mainthread_end();
       goto exit_fail;
@@ -64,7 +64,6 @@ int main(int argc, char *argv[]) {
   if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
     goto exit_fail;
   }
-
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
