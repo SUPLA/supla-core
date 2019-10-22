@@ -505,6 +505,10 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_FALSE(data_read == NULL);
   data_read_result = data_write_size;
 
+  if (ExpectedCallType == -1) {
+	  ((TSuplaDataPacket *)data_write)->call_type = -1;
+  }
+
   memcpy(data_read, data_write, data_write_size);
 
   data_write_size = 0;
@@ -517,9 +521,52 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_TRUE(ExpectedCallType == cr_call_type);
   ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
 
-  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+  if (ExpectedCallType == -1) {
+	  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+  } else {
+	  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+  }
+
   ASSERT_EQ(ExpectedCallType, cr_rd.call_type);
   ASSERT_EQ(cr_rr_id, cr_rd.rr_id);
+}
+
+//---------------------------------------------------------
+// NO DATA
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, getdata_when_no_data) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_EQ(SUPLA_RESULT_FALSE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+
+  // No Data
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// DATA_ERROR
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_with_dataerror) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_dcs_async_getversion(srpc), 0);
+
+  SendAndReceive(-1, 23);
+
+  // No Data
+  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
+
+  srpc_free(srpc);
+  srpc = NULL;
 }
 
 //---------------------------------------------------------
@@ -3238,7 +3285,8 @@ TEST_F(SrpcTest, call_get_user_localtime_result_with_timezone_maxsize) {
   ASSERT_FALSE(cr_rd.data.sdc_user_localtime_result == NULL);
 
   ASSERT_EQ(memcmp(cr_rd.data.sdc_user_localtime_result, &result,
-                    sizeof(TSDC_UserLocalTimeResult)), 0);
+                   sizeof(TSDC_UserLocalTimeResult)),
+            0);
 
   srpc_free(srpc);
   srpc = NULL;
