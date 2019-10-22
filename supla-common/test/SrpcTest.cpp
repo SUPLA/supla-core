@@ -506,7 +506,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   data_read_result = data_write_size;
 
   if (ExpectedCallType == -1) {
-	  ((TSuplaDataPacket *)data_write)->call_type = -1;
+    ((TSuplaDataPacket *)data_write)->call_type = -1;
   }
 
   memcpy(data_read, data_write, data_write_size);
@@ -522,9 +522,9 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
 
   if (ExpectedCallType == -1) {
-	  ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+    ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, cr_rr_id));
   } else {
-	  ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
+    ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
   }
 
   ASSERT_EQ(ExpectedCallType, cr_rd.call_type);
