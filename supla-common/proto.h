@@ -29,10 +29,14 @@
 
 #elif defined(__AVR__)
 
+#define SPROTO_WITHOUT_OUT_BUFFER
+
 struct _supla_timeval {
   long tv_sec[2];
   long tv_usec[2];
 };
+
+#define timeval _supla_timeval
 
 #define _supla_int16_t int
 #define _supla_int_t long
@@ -72,6 +76,9 @@ struct _supla_timeval {
 extern "C" {
 #endif
 
+#define SUPLA_TAG_SIZE 5
+extern char sproto_tag[SUPLA_TAG_SIZE];
+
 // DCS - device/client -> server
 // SDC - server -> device/client
 // DS  - device -> server
@@ -81,7 +88,6 @@ extern "C" {
 
 #define SUPLA_PROTO_VERSION 11
 #define SUPLA_PROTO_VERSION_MIN 1
-#define SUPLA_TAG_SIZE 5
 #if defined(__AVR__)
 #define SUPLA_MAX_DATA_SIZE 1024
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 25
@@ -1217,14 +1223,17 @@ typedef struct {
 void *sproto_init(void);
 void sproto_free(void *spd_ptr);
 
-char sproto_in_buffer_append(void *spd_ptr, char *data,
-                             unsigned _supla_int_t data_size);
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp);
-
-char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
 unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
                                           unsigned _supla_int_t buffer_size);
 char sproto_out_dataexists(void *spd_ptr);
+#endif
+
+char sproto_in_buffer_append(void *spd_ptr, char *data,
+                             unsigned _supla_int_t data_size);
+
+char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
 char sproto_in_dataexists(void *spd_ptr);
 
 unsigned char sproto_get_version(void *spd_ptr);

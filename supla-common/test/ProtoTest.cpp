@@ -21,7 +21,6 @@
 #include "proto.h"
 
 #define BUFFER_MAX_SIZE 131072
-static char sproto_tag[SUPLA_TAG_SIZE] = {'S', 'U', 'P', 'L', 'A'};
 
 namespace {
 

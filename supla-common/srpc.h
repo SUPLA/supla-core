@@ -38,6 +38,8 @@
 
 #ifdef __AVR__
 #define SRPC_EXCLUDE_CLIENT
+#define SRPC_WITHOUT_OUT_QUEUE
+#define SRPC_WITHOUT_IN_QUEUE
 #endif /*__AVR__*/
 
 #ifdef __cplusplus
@@ -144,6 +146,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                     unsigned _supla_int_t rr_id);
+
 void SRPC_ICACHE_FLASH srpc_rd_free(TsrpcReceivedData *rd);
 
 unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc);
