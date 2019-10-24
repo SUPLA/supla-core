@@ -1082,3 +1082,5 @@ char supla_client_device_calcfg_request(void *_suplaclient,
 
   return 0;
 }
+
+

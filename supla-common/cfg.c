@@ -81,7 +81,11 @@ int scfg_ini_handler(void *user, const char *section, const char *name,
           scfg->param[a]->ival = atoi(value);
           break;
         case SCFG_VTYPE_DOUBLE:
+#ifdef __ANDROID__
+          scfg->param[a]->dval = strtod(value, NULL);
+#else
           scfg->param[a]->dval = atof(value);
+#endif
           break;
         case SCFG_VTYPE_BOOLEAN:
           if (strcmp(value, "1") == 0 || strcmp(value, "Y") == 0 ||
