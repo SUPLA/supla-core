@@ -122,7 +122,7 @@ void *client_loop_init(void *sthread, client_config *config) {
 
   supla_client_cfginit(&scc);
 
-  scc.protocol_version = 0;
+  scc.protocol_version = 10;
 
   snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Supla MQTT Proxy");
   snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");

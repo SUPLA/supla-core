@@ -31,6 +31,8 @@
 int main(int argc, char *argv[]) {
   void *client_loop_t = NULL;
 
+  supla_log(LOG_INFO, "initializing main loop");
+
   if (clientcfg_init(argc, argv) == 0) {
     clientcfg_free();
     return EXIT_FAILURE;
