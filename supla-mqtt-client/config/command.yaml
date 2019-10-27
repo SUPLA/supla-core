@@ -23,7 +23,7 @@
 
 # template for power switch 
 # payload: { "ident": { "id": 2 }, "on": 1 }
-- topic: 'supla/channels/command/switch/#'
+- topic: 'supla/channels/command/#'
   id: '/id'
   on_off: '/on'
   on_value: 1
@@ -31,7 +31,7 @@
 
 # template for light switch
 # payload: { "idx": 4, "on": true }
-- topic: 'supla/channels/command/switch/#'
+- topic: 'supla/channels/command/#'
   id: '/idx'
   on_off: '/on'
   on_value: true
