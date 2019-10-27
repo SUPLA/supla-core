@@ -27,4 +27,4 @@ src \
 src/mqtt \
 src/supla-client-lib \
 src/yaml \
-
+src/json \
