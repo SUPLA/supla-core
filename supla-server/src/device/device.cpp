@@ -304,7 +304,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   TSD_SuplaRegisterDeviceResult srdr;
   srdr.result_code = resultcode;
   srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
-  srdr.version_min = SUPLA_PROTO_VERSION;
+  srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
   srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);
 

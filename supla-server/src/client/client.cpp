@@ -248,7 +248,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
-    srcr.version_min = SUPLA_PROTO_VERSION;
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
@@ -260,7 +260,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
-    srcr.version_min = SUPLA_PROTO_VERSION;
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
