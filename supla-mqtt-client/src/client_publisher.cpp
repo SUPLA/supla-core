@@ -82,12 +82,12 @@ void publish_mqtt_message_for_channel(client_config* config,
         char brightness;
         channel->getRGBW(&color, &color_brightness, &brightness, &on_off);
 
-        replace_string_in_place(payload, "$color", std::to_string(color));
-        replace_string_in_place(payload, "$color_brightness",
+        replace_string_in_place(payload, "$color$", std::to_string(color));
+        replace_string_in_place(payload, "$color_brightness$",
                                 std::to_string(color_brightness));
-        replace_string_in_place(payload, "$brightness",
+        replace_string_in_place(payload, "$brightness$",
                                 std::to_string(brightness));
-        replace_string_in_place(payload, "$on", std::to_string(on_off));
+        replace_string_in_place(payload, "$value$", std::to_string(on_off));
         publish = true;
 
       } break;

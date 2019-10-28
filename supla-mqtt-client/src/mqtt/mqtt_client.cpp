@@ -142,7 +142,7 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
   /* Perform error handling here. */
   if (client->error != MQTT_ERROR_INITIAL_RECONNECT) {
     cout << "mqtt client error " << mqtt_error_str(client->error) << endl;
-    sleep(5);
+   // sleep(5);
   }
 
   /* Open a new socket. */
