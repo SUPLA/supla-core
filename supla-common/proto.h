@@ -44,6 +44,10 @@ struct _supla_timeval {
 
 #elif defined(ESP8266)
 
+#ifdef ARDUINO_ARCH_ESP8266
+#define SPROTO_WITHOUT_OUT_BUFFER
+#endif /*ARDUINO_ARCH_ESP8266*/
+
 struct _supla_timeval {
   long long tv_sec;
   long long tv_usec;

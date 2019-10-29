@@ -28,6 +28,12 @@
 #endif /*__ANDROID__*/
 
 #ifdef ESP8266
+
+#ifdef ARDUINO_ARCH_ESP8266
+#define SRPC_WITHOUT_OUT_QUEUE
+#define SRPC_WITHOUT_IN_QUEUE
+#endif /*ARDUINO_ARCH_ESP8266*/
+
 #define SRPC_EXCLUDE_CLIENT
 #include <mem.h>
 #include <os_type.h>
