@@ -19,7 +19,7 @@
 #include "client_loop.h"
 
 client_config *config;
-supla_device_channels *channels;
+client_device_channels *channels;
 void *sclient;
 
 void mqtt_callback(void **state, struct mqtt_response_publish *publish) {
@@ -170,7 +170,7 @@ void client_loop(void *user_data, void *sthread) {
     return;
   }
 
-  channels = new supla_device_channels();
+  channels = new client_device_channels();
 
   if (user_data) *(void **)user_data = sclient;
 

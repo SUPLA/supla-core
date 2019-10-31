@@ -16,11 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #include "client_publisher.h"
 
 void publish_mqtt_message_for_channel(client_config* config,
-                                      supla_device_channel* channel) {
+                                      client_device_channel* channel) {
   if (channel == NULL) return;
 
   for (auto state : channel->getStates()) {

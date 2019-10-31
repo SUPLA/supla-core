@@ -16,13 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #ifndef CLIENT_PUBLISHER_H_
 #define CLIENT_PUBLISHER_H_
 
 #include "client_config.h"
+#include "client_device.h"
 #include "client_state.h"
-#include "devicechannel.h"
 #include "mqtt/mqtt_client.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/proto.h"
@@ -30,6 +29,6 @@
 #include "yaml/yaml.h"
 
 void publish_mqtt_message_for_channel(client_config* config,
-                                      supla_device_channel* channel);
+                                      client_device_channel* channel);
 
 #endif /* CLIENT_PUBLISHER_H_ */

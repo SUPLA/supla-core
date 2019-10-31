@@ -126,7 +126,9 @@ void mqtt_client_publish(const char* topic, const char* payload, char retain,
   else if (qos == 2)
     publish_flags |= MQTT_PUBLISH_QOS_2;
 
-  mqtt_publish(mq_client, topic, (void*)payload, strlen(payload),
+   supla_log(LOG_DEBUG, "publishing %s", topic);
+
+   mqtt_publish(mq_client, topic, (void*)payload, strlen(payload),
                publish_flags);
 }
 
@@ -142,9 +144,11 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
   /* Perform error handling here. */
   if (client->error != MQTT_ERROR_INITIAL_RECONNECT) {
     cout << "mqtt client error " << mqtt_error_str(client->error) << endl;
-   // sleep(5);
+    // sleep(5);
   }
 
+  supla_log(LOG_DEBUG, "connecting to %s on port %d", reconnect_state->hostname.c_str(), reconnect_state->port);
+  supla_log(LOG_DEBUG, "using credentials %s %s", reconnect_state->username.c_str(), reconnect_state->password.c_str());
   /* Open a new socket. */
   int sockfd =
       open_nb_socket(reconnect_state->hostname.c_str(), reconnect_state->port);
@@ -178,11 +182,12 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
                              ? reconnect_state->password.c_str()
                              : NULL;
   /* Send connection request to the broker. */
-  mqtt_connect(client, "supla mqtt client", NULL, NULL, 0, username, password,
+  mqtt_connect(client, "supla_mqtt_client", NULL, NULL, 0, username, password,
                0, 400);
 
   /* Subscribe to the topic. */
   for (auto topic : reconnect_state->topics) {
+    supla_log(LOG_DEBUG, "subscribing %s", topic.c_str());
     mqtt_subscribe(client, topic.c_str(), 0);
   }
 }

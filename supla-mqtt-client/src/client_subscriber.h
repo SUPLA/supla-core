@@ -21,7 +21,7 @@
 
 #include <string>
 #include "client_config.h"
-#include "devicechannel.h"
+#include "client_device.h"
 #include "json/jsoncons/json.hpp"
 #include "json/jsoncons_ext/jsonpointer/jsonpointer.hpp"
 #include "supla-client-lib/log.h"
@@ -30,7 +30,7 @@
 using namespace jsoncons;
 
 void handle_subscribed_message(void* supla_client,
-                               supla_device_channels* channels,
+                               client_device_channels* channels,
                                client_config* config, std::string topic,
                                std::string message);
 

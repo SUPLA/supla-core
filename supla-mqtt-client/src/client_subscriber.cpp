@@ -19,7 +19,7 @@
 #include "client_subscriber.h"
 
 void handle_subscribed_message(void* supla_client,
-                               supla_device_channels* channels,
+                               client_device_channels* channels,
                                client_config* config, std::string topic,
                                std::string message) {
   if (supla_client == NULL) return;

@@ -16,7 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #include "client_config.h"
 
 client_config::client_config() {
@@ -80,6 +79,7 @@ void client_config::load(const char* config_file) {
     }
 
     if (st_file_exists(this->mqtt_commands.c_str())) {
+      supla_log(LOG_DEBUG, "reading commands YAML flie");
       Yaml::Node commandsRoot;
       Yaml::Parse(commandsRoot, this->mqtt_commands.c_str());
 

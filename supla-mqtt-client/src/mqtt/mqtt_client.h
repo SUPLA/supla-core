@@ -30,6 +30,7 @@
 #include <iostream>
 #include <vector>
 #include "../supla-client-lib/sthread.h"
+#include "../supla-client-lib/log.h"
 #include "mqtt.h"
 
 using namespace std;

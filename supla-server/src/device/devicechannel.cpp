@@ -20,12 +20,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef __NO_DATABASE
 #include "database.h"
+#endif
+
 #include "devicechannel.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
+
+#ifndef __NO_USER
 #include "user/user.h"
+#endif
 
 channel_address::channel_address(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;
@@ -315,7 +321,7 @@ bool supla_channel_ic_measurement::update_cev(
     srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
     return true;
   }
-  return false;
+ return false;
 }
 
 // static
@@ -940,6 +946,7 @@ void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
   safe_array_unlock(arr);
 }
 
+#ifndef __NO_DATABASE
 void supla_device_channels::load(int DeviceID) {
   database *db = new database();
 
@@ -954,6 +961,7 @@ void supla_device_channels::load(int DeviceID) {
 
   delete db;
 }
+#endif
 
 bool supla_device_channels::get_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -1197,7 +1205,7 @@ void supla_device_channels::set_channels_value(
                         schannel_c[a].value, NULL);
   }
 }
-
+#ifndef __NO_USER
 void supla_device_channels::on_device_registered(
     supla_user *user, int DeviceId, TDS_SuplaDeviceChannel_B *schannel_b,
     TDS_SuplaDeviceChannel_C *schannel_c, int count) {
@@ -1215,6 +1223,7 @@ void supla_device_channels::on_device_registered(
     }
   }
 }
+#endif
 
 int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
   int result = 0;

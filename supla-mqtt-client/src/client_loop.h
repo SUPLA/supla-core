@@ -27,10 +27,10 @@
 #include "client_loop.h"
 
 #include "client_config.h"
+#include "client_device.h"
 #include "client_publisher.h"
 #include "client_subscriber.h"
 #include "clientcfg.h"
-#include "devicechannel.h"
 #include "mqtt/mqtt_client.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/srpc.h"

@@ -28,6 +28,9 @@
 #include "supla-client-lib/supla-client.h"
 #include "supla-client-lib/tools.h"
 
+#define NO_DATABASE
+#define NO_USER
+
 int main(int argc, char *argv[]) {
   void *client_loop_t = NULL;
 

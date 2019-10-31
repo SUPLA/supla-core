@@ -15,7 +15,8 @@ C_SRCS += \
 ../src/supla-client-lib/sthread.c \
 ../src/supla-client-lib/supla-client.c \
 ../src/supla-client-lib/supla-socket.c \
-../src/supla-client-lib/tools.c 
+../src/supla-client-lib/tools.c \
+../src/supla-client-lib/devicechannel.c
 
 OBJS += \
 ./src/supla-client-lib/cfg.o \
@@ -29,7 +30,8 @@ OBJS += \
 ./src/supla-client-lib/sthread.o \
 ./src/supla-client-lib/supla-client.o \
 ./src/supla-client-lib/supla-socket.o \
-./src/supla-client-lib/tools.o 
+./src/supla-client-lib/tools.o \
+./src/supla-client-lib/devicechannel.o
 
 C_DEPS += \
 ./src/supla-client-lib/cfg.d \
@@ -43,7 +45,8 @@ C_DEPS += \
 ./src/supla-client-lib/sthread.d \
 ./src/supla-client-lib/supla-client.d \
 ./src/supla-client-lib/supla-socket.d \
-./src/supla-client-lib/tools.d 
+./src/supla-client-lib/tools.d \
+./src/supla-client-lib/devicechannel.d
 
 
 # Each subdirectory must supply rules for building sources it contributes

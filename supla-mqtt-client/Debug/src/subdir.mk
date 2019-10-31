@@ -14,7 +14,7 @@ CPP_SRCS += \
 ../src/client_state.cpp \
 ../src/client_subscriber.cpp \
 ../src/common.cpp \
-../src/devicechannel.cpp \
+../src/client_device.cpp \
 ../src/supla_mqtt_client.cpp 
 
 OBJS += \
@@ -26,7 +26,7 @@ OBJS += \
 ./src/client_subscriber.o \
 ./src/clientcfg.o \
 ./src/common.o \
-./src/devicechannel.o \
+./src/client_device.o \
 ./src/supla_mqtt_client.o 
 
 C_DEPS += \
@@ -40,7 +40,7 @@ CPP_DEPS += \
 ./src/client_state.d \
 ./src/client_subscriber.d \
 ./src/common.d \
-./src/devicechannel.d \
+./src/client_device.d \
 ./src/supla_mqtt_client.d 
 
 
@@ -48,14 +48,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -I$(SSLDIR)/include -I../src/json -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -D__NO_DATABASE -D__NO_USER -I$(SSLDIR)/include -I../src/json -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -I$(SSLDIR)/include -I../src/json -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -D__NO_DATABASE -D__NO_USER -I$(SSLDIR)/include -I../src/json -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
