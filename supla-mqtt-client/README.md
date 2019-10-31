@@ -4,10 +4,8 @@ Ten projekt służy połączeniu SUPLA z MQTT. Jego podstawowa funkcjonalność 
 
 # Building
 ```
-git clone https://github.com/SUPLA/supla-core.git
-cd supla-core
-git clone https://github.com/lukbek/supla-mqtt-client.git
-cd supla-mqtt-client/Release
+git clone https://github.com/lukbek/supla-core.git
+cd supla-core/supla-mqtt-client/Release
 sudo make clean
 sudo make all
 ```
@@ -36,16 +34,15 @@ Następnie modyfikujemy w razie potrzeby plik state.yaml. Schemat budowy tego pl
 ```
  - channel_type: 40 # typ kanału SUPLA
     state_topic: 'supla/channels/status/thermometer/$id' #temat pod którym będzie publikowany stan kanału
-    payload_template: '{"caption": "$caption", "temperature": $temperature}' #szablon zawartości komunikatu MQTT
+    payload_template: '{"caption": "$caption$", "temperature": $temperature$}' #szablon zawartości komunikatu MQTT
 ```
 
 W zależności od typu kanału dostępne są różne makra, które mogą być użyte w szablonach. Najważniejsze z nich to:
 ```
-$id - pod to makro zostanie podstawiony id kanału SUPLA
-$caption - pod to makro zostanie podstawiona nazwa kanału SUPLA
-$temperature - pod to makro zostanie podstawiona wartość temperatury (dla kanału w którym występuje temperatura)
-$humidity - pod to makro zostanie podstawiona wartość wilgotności (dla kanału w którym występuje wilgotność)
-```
+$id$ - pod to makro zostanie podstawiony id kanału SUPLA
+$caption$ - pod to makro zostanie podstawiona nazwa kanału SUPLA
+$temperature$ - pod to makro zostanie podstawiona wartość temperatury (dla kanału w którym występuje temperatura)
+$humidity$ - pod to makro zostanie podstawiona wartość wilgotności (dla kanału w którym występuje wilgotność)
 Reszta makr została przedstawiona w pliku state.yaml
 
 # Running
