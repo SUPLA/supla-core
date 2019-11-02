@@ -42,8 +42,8 @@
 # payload: { "id" : 2, "values": { "on": 1, "brightness": 49 } }
 - topic: 'supla/channels/command/#'
   id: '/id'
-  brightness: '/values/brightness'
-  on_off: '/values/on'
+  brightness: '/brightness'
+  on_off: '/on'
   on_value: 1
   off_value: 0
 
@@ -51,8 +51,11 @@
 # payload: { "id" : 2, "on" : true, color: "0x0000FF", "color_brightness": 50 }
 - topic: 'supla/channels/command/#'
   id: '/id'
-  color: '/color'
+  color_r: '/red'
+  color_g: '/green'
+  color_b: '/blue'
   color_brightness: '/color_brightness'
+  brightness: '/brightness'
   on_off: '/on'
   on_value: true
   off_value: false
@@ -64,7 +67,7 @@
   color_r: '/colors/r'
   color_b: '/colors/b'
   color_g: '/colors/g'
-  color_brightness: '/color_brightness'
+  color_brightness: '/c_brightness'
   on_off: 'on'
   on_value: true
   off_value: false

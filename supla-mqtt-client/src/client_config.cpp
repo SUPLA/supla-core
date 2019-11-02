@@ -164,22 +164,23 @@ void client_config::getCommandsForTopic(std::string topic,
       command_tokens.push_back(token);
     }
 
+    bool added = false;
+
     if (topic_tokens.size() < command_tokens.size()) continue;
     unsigned int i = 0;
 
     for (i = 0; i < command_tokens.size(); i++) {
       if (command_tokens[i].compare("#") == 0) {
         output.push_back(command);
-        return;
+        added = true;
       }
 
       if (command_tokens[i].compare("+") == 0) continue;
       if (command_tokens[i].compare(topic_tokens[i]) != 0) break;
     }
 
-    if ((i == command_tokens.size() - 1)) {
+    if (!added && (i == command_tokens.size() - 1)) {
       output.push_back(command);
-      return;
     }
   }
 }

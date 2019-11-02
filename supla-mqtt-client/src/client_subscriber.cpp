@@ -18,6 +18,16 @@
 
 #include "client_subscriber.h"
 
+using namespace jsoncons;
+
+bool value_exists(json payload, std::string path) {
+  try {
+    return jsonpointer::contains(payload, path);
+  } catch (json_exception& je) {
+    return false;
+  }
+}
+
 void handle_subscribed_message(void* supla_client,
                                client_device_channels* channels,
                                client_config* config, std::string topic,
@@ -43,6 +53,8 @@ void handle_subscribed_message(void* supla_client,
     return;
   }
 
+  supla_log(LOG_DEBUG, "size of commands: %d", commands.size());
+
   for (auto command : commands) {
     try {
       std::string idPath = command->getId();
@@ -64,6 +76,83 @@ void handle_subscribed_message(void* supla_client,
             supla_client_open(supla_client, id, 0, 1);
           else
             supla_client_open(supla_client, id, 0, 0);
+
+          return;
+        } break;
+        case SUPLA_CHANNELFNC_DIMMER:
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+          std::string brightness = command->getBrightness();
+          std::string color_brightness = command->getColorBrghtness();
+          std::string color_r = command->getColorR();
+          std::string color_g = command->getColorG();
+          std::string color_b = command->getColorB();
+          std::string color = command->getColor();
+
+          char brightness_value = 0;
+          char color_brightness_value = 0;
+          int color_int;
+          char on_off;
+          bool isRgbChannelCommand = false;
+
+          channel->getRGBW(&color_int, &color_brightness_value,
+                           &brightness_value, &on_off);
+
+          unsigned char color_b_value =
+              (unsigned char)((color_int & 0x000000FF));
+          unsigned char color_g_value =
+              (unsigned char)((color_int & 0x0000FF00) >> 8);
+          unsigned char color_r_value =
+              (unsigned char)((color_int & 0x00FF0000) >> 16);
+
+          if (brightness.length() > 0 && (value_exists(payload, brightness))) {
+            brightness_value = jsonpointer::get(payload, brightness).as<char>();
+            isRgbChannelCommand = true;
+          }
+
+          if (color_brightness.length() > 0 &&
+              (value_exists(payload, color_brightness))) {
+            color_brightness_value =
+                jsonpointer::get(payload, color_brightness).as<char>();
+            isRgbChannelCommand = true;
+          }
+
+          if (color_r.length() > 0 && (value_exists(payload, color_r))) {
+            color_r_value = jsonpointer::get(payload, color_r).as<uint8_t>();
+            isRgbChannelCommand = true;
+          }
+
+          if (color_g.length() > 0 && (value_exists(payload, color_g))) {
+            color_g_value = jsonpointer::get(payload, color_g).as<uint8_t>();
+            isRgbChannelCommand = true;
+          }
+
+          if (color_b.length() > 0 && (value_exists(payload, color_b))) {
+            color_b_value = jsonpointer::get(payload, color_b).as<uint8_t>();
+            isRgbChannelCommand = true;
+          }
+
+          if (!isRgbChannelCommand) continue;
+
+          /* set value */
+
+          color_int = 0;
+
+          color_int = color_r_value & 0xFF;
+          (color_int) <<= 8;
+
+          color_int |= color_g_value & 0xFF;
+          (color_int) <<= 8;
+
+          (color_int) |= color_b_value & 0xFF;
+
+          supla_client_set_rgbw(supla_client, id, 0, color_int,
+                                color_brightness_value, brightness_value, 1);
+
+          /* --------- */
+
+          return;
+
         } break;
       }
     } catch (json_exception& je) {

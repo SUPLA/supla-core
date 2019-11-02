@@ -16,7 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #include "client_device.h"
 
 client_device_channel::client_device_channel(
@@ -67,7 +66,6 @@ void client_device_channels::add_channel(int Id, int Number, int Type, int Func,
 }
 
 client_device_channel *client_device_channels::find_channel(int ChannelId) {
-
-  return (client_device_channel *)safe_array_findcnd(arr, arr_findcmp, &ChannelId); 
-
+  return (client_device_channel *)safe_array_findcnd(arr, arr_findcmp,
+                                                     &ChannelId);
 }

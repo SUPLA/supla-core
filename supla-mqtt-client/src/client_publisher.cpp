@@ -39,9 +39,9 @@ void publish_mqtt_message_for_channel(client_config* config,
           double hum = tempHum->getHumidity();
           delete tempHum;
 
-          replace_string_in_place(payload, "$temperature",
+          replace_string_in_place(payload, "$temperature$",
                                   std::to_string(temp));
-          replace_string_in_place(payload, "$humidity", std::to_string(hum));
+          replace_string_in_place(payload, "$humidity$", std::to_string(hum));
           publish = true;
         }
       } break;
@@ -52,7 +52,7 @@ void publish_mqtt_message_for_channel(client_config* config,
       case SUPLA_CHANNELFNC_DEPTHSENSOR:
       case SUPLA_CHANNELFNC_DISTANCESENSOR: {
         channel->getDouble(&value);
-        replace_string_in_place(payload, "$value", std::to_string(value));
+        replace_string_in_place(payload, "$value$", std::to_string(value));
         publish = true;
       } break;
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -69,7 +69,7 @@ void publish_mqtt_message_for_channel(client_config* config,
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         bool hi = cv[0] > 0;
-        replace_string_in_place(payload, "$value", std::to_string(hi));
+        replace_string_in_place(payload, "$value$", std::to_string(hi));
         publish = true;
       } break;
       case SUPLA_CHANNELFNC_DIMMER:
@@ -81,7 +81,18 @@ void publish_mqtt_message_for_channel(client_config* config,
         char brightness;
         channel->getRGBW(&color, &color_brightness, &brightness, &on_off);
 
-        replace_string_in_place(payload, "$color$", std::to_string(color));
+        unsigned char blue = (unsigned char)((color & 0x000000FF));
+        unsigned char green = (unsigned char)((color & 0x0000FF00) >> 8);
+        unsigned char red = (unsigned char)((color & 0x00FF0000) >> 16);
+
+        char hex_color[11];
+        sprintf(hex_color, "0x%02X%02X%02X", red, green, blue);
+
+        replace_string_in_place(payload, "$red$", std::to_string(red));
+        replace_string_in_place(payload, "$green$", std::to_string(green));
+        replace_string_in_place(payload, "$blue$", std::to_string(blue));
+
+        replace_string_in_place(payload, "$color$", hex_color);
         replace_string_in_place(payload, "$color_brightness$",
                                 std::to_string(color_brightness));
         replace_string_in_place(payload, "$brightness$",
@@ -113,35 +124,35 @@ void publish_mqtt_message_for_channel(client_config* config,
           std::string currency(ic_ev.currency, 3);
           std::string custom_unit(ic_ev.custom_unit, 9);
 
-          replace_string_in_place(payload, "$currency", currency);
+          replace_string_in_place(payload, "$currency$", currency);
           replace_string_in_place(
-              payload, "$pricePerUnit",
+              payload, "$pricePerUnit$",
               std::to_string(ic_ev.price_per_unit * 0.0001));
-          replace_string_in_place(payload, "$totalCost",
+          replace_string_in_place(payload, "$totalCost$",
                                   std::to_string(ic_ev.total_cost * 0.01));
-          replace_string_in_place(payload, "$impulsesPerUnit",
+          replace_string_in_place(payload, "$impulsesPerUnit$",
                                   std::to_string(ic_ev.impulses_per_unit));
-          replace_string_in_place(payload, "$counter",
+          replace_string_in_place(payload, "$counter$",
                                   std::to_string(ic_ev.counter));
-          replace_string_in_place(payload, "$calculatedValue",
+          replace_string_in_place(payload, "$calculatedValue$",
                                   std::to_string(ic_ev.calculated_value));
-          replace_string_in_place(payload, "$unit", custom_unit);
+          replace_string_in_place(payload, "$unit$", custom_unit);
 
           publish = true;
 
         } else if (srpc_evtool_v1_extended2emextended(value, &em_ev) == 1) {
           std::string currency(em_ev.currency, 3);
 
-          replace_string_in_place(payload, "$currency", currency);
+          replace_string_in_place(payload, "$currency$", currency);
           replace_string_in_place(
-              payload, "$pricePerUnit",
+              payload, "$pricePerUnit$",
               std::to_string(em_ev.price_per_unit * 0.0001));
-          replace_string_in_place(payload, "$totalCost",
+          replace_string_in_place(payload, "$totalCost$",
                                   std::to_string(em_ev.total_cost * 0.01));
 
           for (int a = 0; a < 3; a++) {
             if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
-              std::string stra = std::to_string(a);
+              std::string stra = std::to_string(a) + "$";
               replace_string_in_place(payload, "$number_" + stra,
                                       std::to_string(a + 1));
               replace_string_in_place(payload, "$frequency_" + stra,
