@@ -56,7 +56,7 @@ unsigned char clientcfg_init(int argc, char *argv[]) {
 
     buffer = malloc(a);
 
-    if (snprintf(buffer, a, "%s/.supla-client", pw->pw_dir) < 1) {
+    if (snprintf(buffer, a, "%s/.supla-mqtt-client", pw->pw_dir) < 1) {
       free(buffer);
       return 0;
     }
@@ -68,7 +68,7 @@ unsigned char clientcfg_init(int argc, char *argv[]) {
       }
     }
 
-    if (snprintf(buffer, a, "%s/.supla-client/id", pw->pw_dir) < 1) {
+    if (snprintf(buffer, a, "%s/.supla-mqtt-client/id", pw->pw_dir) < 1) {
       free(buffer);
       return 0;
     }

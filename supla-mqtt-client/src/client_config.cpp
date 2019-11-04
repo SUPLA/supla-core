@@ -52,7 +52,7 @@ client_config::~client_config() {
 void client_config::load(const char* config_file) {
   try {
     if (!st_file_exists(config_file)) {
-      std::cout << "Brak pliku konfiguracyjnego [parametr -config]" << endl;
+      std::cout << "configuration file missing [parameter -config]" << endl;
       exit(2);
     }
 
