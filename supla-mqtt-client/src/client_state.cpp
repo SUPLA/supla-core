@@ -28,15 +28,15 @@ client_state::client_state() {
 uint16_t client_state::getFunction() { return this->function; }
 std::string client_state::getPayload(int id, std::string caption) {
   std::string result = this->payload;
-  replace_string_in_place(result, "$id$", std::to_string(id));
-  replace_string_in_place(result, "$caption$", caption);
+  replace_string_in_place(&result, "$id$", std::to_string(id));
+  replace_string_in_place(&result, "$caption$", caption);
   return result;
 }
 std::string client_state::getTopic(int id, int type) {
   std::string result = this->topic;
 
-  replace_string_in_place(result, "$id$", std::to_string(id));
-  replace_string_in_place(result, "$type$", std::to_string(type));
+  replace_string_in_place(&result, "$id$", std::to_string(id));
+  replace_string_in_place(&result, "$type$", std::to_string(type));
 
   return result;
 }

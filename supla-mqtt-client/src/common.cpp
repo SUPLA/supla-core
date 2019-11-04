@@ -24,11 +24,11 @@ bool exists_in_vect(std::vector<std::string>* vect, const std::string& value) {
   }
   return false;
 }
-void replace_string_in_place(std::string subject, const std::string& search,
+void replace_string_in_place(std::string *subject, const std::string& search,
                              const std::string& replace) {
   size_t pos = 0;
-  while ((pos = subject.find(search, pos)) != std::string::npos) {
-    subject.replace(pos, search.length(), replace);
+  while ((pos = subject->find(search, pos)) != std::string::npos) {
+    subject->replace(pos, search.length(), replace);
     pos += replace.length();
   }
 }
