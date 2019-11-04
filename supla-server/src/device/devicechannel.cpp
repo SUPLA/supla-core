@@ -321,7 +321,7 @@ bool supla_channel_ic_measurement::update_cev(
     srpc_evtool_v1_icextended2extended(&ic_ev, &cev->value);
     return true;
   }
- return false;
+  return false;
 }
 
 // static

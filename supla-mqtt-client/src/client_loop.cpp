@@ -17,6 +17,8 @@
  */
 
 #include "client_loop.h"
+#include <string>
+#include <vector>
 
 client_config *config;
 client_device_channels *channels;
@@ -49,7 +51,7 @@ void client_loop_location_update(void *_suplaclient, void *sthread,
 void client_loop_channel_update(void *_suplaclient, void *sthread,
                                 TSC_SuplaChannel_C *channel) {
   vector<client_state *> states;
-  config->getStatesForFunction(channel->Func, states);
+  config->getStatesForFunction(channel->Func, &states);
 
   channels->add_channel(channel->Id, 0, channel->Type, channel->Func, 0, 0, 0,
                         NULL, NULL, NULL, false, channel->Caption, states);
@@ -126,8 +128,10 @@ void *client_loop_init(void *sthread, client_config *config) {
 
   snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Supla MQTT Proxy");
   snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
-  strcpy(scc.Email, config->getSuplaEmail().c_str());
-  strcpy(scc.AccessIDpwd, config->getSuplaPassword().c_str());
+
+  snprintf(scc.Email, SUPLA_EMAIL_MAXSIZE, config->getSuplaEmail().c_str());
+  snprintf(scc.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE,
+           config->getSuplaPassword().c_str());
 
   scc.AccessID = config->getSuplaLocationId();
 
@@ -175,7 +179,7 @@ void client_loop(void *user_data, void *sthread) {
   if (user_data) *(void **)user_data = sclient;
 
   vector<std::string> topics;
-  config->getTopicsToSubscribe(topics);
+  config->getTopicsToSubscribe(&topics);
 
   mqtt_client_init(config->getMqttHost(), config->getMqttPort(),
                    config->getMqttUsername(), config->getMqttPassword(), topics,

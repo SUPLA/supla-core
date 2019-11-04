@@ -199,14 +199,15 @@ class supla_device_channels {
  private:
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
-
   std::list<int> mr_channel(int ChannelID, bool Master);
+
  protected:
   void *arr;
   static char arr_findcmp(void *ptr, void *id);
   static char arr_findncmp(void *ptr, void *n);
   static char arr_delcnd(void *ptr);
   void arr_clean(void);
+
  public:
   supla_device_channels();
   virtual ~supla_device_channels();

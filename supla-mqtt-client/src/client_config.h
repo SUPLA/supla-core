@@ -21,15 +21,13 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <vector>
-
 #include "client_command.h"
 #include "client_state.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/tools.h"
 #include "yaml/yaml.h"
-
-using namespace std;
 
 class client_config {
  private:
@@ -46,13 +44,13 @@ class client_config {
   std::string supla_password;
   std::string supla_email;
 
-  std::vector<client_command*> commands;
-  std::vector<client_state*> states;
+  std::vector<client_command *> commands;
+  std::vector<client_state *> states;
 
  public:
   client_config();
   virtual ~client_config();
-  void load(const char* config_file);
+  void load(const char *config_file);
 
   std::string getMqttHost();
   std::string getMqttUsername();
@@ -67,10 +65,10 @@ class client_config {
   const uint32_t getSuplaLocationId();
   std::string getSuplaEmail();
   void getCommandsForTopic(std::string topic,
-                           std::vector<client_command*>& output);
+                           std::vector<client_command *> *output);
   void getStatesForFunction(uint16_t function,
-                            std::vector<client_state*>& output);
-  void getTopicsToSubscribe(vector<std::string>& vect);
+                            std::vector<client_state *> *output);
+  void getTopicsToSubscribe(std::vector<std::string> *vect);
 };
 
 #endif /* CLIENT_CONFIG_H_ */

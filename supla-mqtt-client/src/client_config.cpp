@@ -17,6 +17,7 @@
  */
 
 #include "client_config.h"
+#include <string>
 
 client_config::client_config() {
   this->mqtt_host = "localhost";
@@ -52,7 +53,8 @@ client_config::~client_config() {
 void client_config::load(const char* config_file) {
   try {
     if (!st_file_exists(config_file)) {
-      std::cout << "configuration file missing [parameter -config]" << endl;
+      std::cout << "configuration file missing [parameter -config]"
+                << std::endl;
       exit(2);
     }
 
@@ -130,16 +132,15 @@ void client_config::load(const char* config_file) {
     } else {
       supla_log(LOG_INFO, "states file not exists");
     }
-
   } catch (std::exception& exception) {
-    cout << exception.what() << endl;
+    std::cout << exception.what() << std::endl;
   }
 }
 
-void client_config::getTopicsToSubscribe(vector<std::string>& vect) {
+void client_config::getTopicsToSubscribe(std::vector<std::string>* vect) {
   for (auto command : this->commands) {
     std::string topic = command->getTopic();
-    if (!exists_in_vect(vect, topic)) vect.push_back(topic);
+    if (!exists_in_vect(vect, topic)) vect->push_back(topic);
   }
 }
 
@@ -148,7 +149,7 @@ std::string client_config::getMqttCommands() { return this->mqtt_commands; }
 std::string client_config::getMqttStates() { return this->mqtt_states; }
 
 void client_config::getCommandsForTopic(std::string topic,
-                                        std::vector<client_command*>& output) {
+                                        std::vector<client_command*>* output) {
   std::vector<std::string> topic_tokens;
   std::string token;
   std::istringstream tokenStream(topic);
@@ -171,7 +172,7 @@ void client_config::getCommandsForTopic(std::string topic,
 
     for (i = 0; i < command_tokens.size(); i++) {
       if (command_tokens[i].compare("#") == 0) {
-        output.push_back(command);
+        output->push_back(command);
         added = true;
       }
 
@@ -180,16 +181,16 @@ void client_config::getCommandsForTopic(std::string topic,
     }
 
     if (!added && (i == command_tokens.size() - 1)) {
-      output.push_back(command);
+      output->push_back(command);
     }
   }
 }
 
 void client_config::getStatesForFunction(uint16_t function,
-                                         std::vector<client_state*>& output) {
+                                         std::vector<client_state*>* output) {
   for (auto state : this->states) {
     if (state->getFunction() == function && state->getEnabled())
-      output.push_back(state);
+      output->push_back(state);
   }
 }
 

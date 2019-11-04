@@ -17,6 +17,7 @@
  */
 
 #include "client_publisher.h"
+#include <string>
 
 void publish_mqtt_message_for_channel(client_config* config,
                                       client_device_channel* channel) {
@@ -86,7 +87,8 @@ void publish_mqtt_message_for_channel(client_config* config,
         unsigned char red = (unsigned char)((color & 0x00FF0000) >> 16);
 
         char hex_color[11];
-        sprintf(hex_color, "0x%02X%02X%02X", red, green, blue);
+        snprintf(hex_color, sizeof(hex_color), "0x%02X%02X%02X", red, green,
+                 blue);
 
         replace_string_in_place(payload, "$red$", std::to_string(red));
         replace_string_in_place(payload, "$green$", std::to_string(green));
@@ -99,7 +101,6 @@ void publish_mqtt_message_for_channel(client_config* config,
                                 std::to_string(brightness));
         replace_string_in_place(payload, "$value$", std::to_string(on_off));
         publish = true;
-
       } break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
         char cv[SUPLA_CHANNELVALUE_SIZE];

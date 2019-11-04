@@ -27,8 +27,6 @@
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/supla-client.h"
 
-using namespace jsoncons;
-
 void handle_subscribed_message(void* supla_client,
                                client_device_channels* channels,
                                client_config* config, std::string topic,

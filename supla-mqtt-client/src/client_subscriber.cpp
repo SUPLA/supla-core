@@ -17,13 +17,12 @@
  */
 
 #include "client_subscriber.h"
+#include <vector>
 
-using namespace jsoncons;
-
-bool value_exists(json payload, std::string path) {
+bool value_exists(jsoncons::json payload, std::string path) {
   try {
-    return jsonpointer::contains(payload, path);
-  } catch (json_exception& je) {
+    return jsoncons::jsonpointer::contains(payload, path);
+  } catch (jsoncons::json_exception& je) {
     return false;
   }
 }
@@ -36,16 +35,15 @@ void handle_subscribed_message(void* supla_client,
   if (channels == NULL) return;
   if (config == NULL) return;
 
-  vector<client_command*> commands;
-  config->getCommandsForTopic(topic, commands);
+  std::vector<client_command*> commands;
+  config->getCommandsForTopic(topic, &commands);
 
   if (commands.size() == 0) return;
 
-  json payload;
+  jsoncons::json payload;
   try {
-    payload = json::parse(message);
-
-  } catch (ser_error& exception) {
+    payload = jsoncons::json::parse(message);
+  } catch (jsoncons::ser_error& exception) {
     supla_log(LOG_ERR,
               "error while parsing incoming message [topic: %s], [message:%s], "
               "[exception: %s]",
@@ -58,7 +56,7 @@ void handle_subscribed_message(void* supla_client,
   for (auto command : commands) {
     try {
       std::string idPath = command->getId();
-      int id = jsonpointer::get(payload, idPath).as<int>();
+      int id = jsoncons::jsonpointer::get(payload, idPath).as<int>();
 
       auto channel = channels->find_channel(id);
       if (channel == NULL) continue;
@@ -69,7 +67,7 @@ void handle_subscribed_message(void* supla_client,
         case SUPLA_CHANNELFNC_STAIRCASETIMER: {
           std::string on_off = command->getOnOff();
           std::string value =
-              jsonpointer::get(payload, on_off).as<std::string>();
+              jsoncons::jsonpointer::get(payload, on_off).as<std::string>();
           std::string on_value = command->getOnValue();
 
           if (value.compare(on_value) == 0)
@@ -106,29 +104,34 @@ void handle_subscribed_message(void* supla_client,
               (unsigned char)((color_int & 0x00FF0000) >> 16);
 
           if (brightness.length() > 0 && (value_exists(payload, brightness))) {
-            brightness_value = jsonpointer::get(payload, brightness).as<char>();
+            brightness_value =
+                jsoncons::jsonpointer::get(payload, brightness).as<char>();
             isRgbChannelCommand = true;
           }
 
           if (color_brightness.length() > 0 &&
               (value_exists(payload, color_brightness))) {
             color_brightness_value =
-                jsonpointer::get(payload, color_brightness).as<char>();
+                jsoncons::jsonpointer::get(payload, color_brightness)
+                    .as<char>();
             isRgbChannelCommand = true;
           }
 
           if (color_r.length() > 0 && (value_exists(payload, color_r))) {
-            color_r_value = jsonpointer::get(payload, color_r).as<uint8_t>();
+            color_r_value =
+                jsoncons::jsonpointer::get(payload, color_r).as<uint8_t>();
             isRgbChannelCommand = true;
           }
 
           if (color_g.length() > 0 && (value_exists(payload, color_g))) {
-            color_g_value = jsonpointer::get(payload, color_g).as<uint8_t>();
+            color_g_value =
+                jsoncons::jsonpointer::get(payload, color_g).as<uint8_t>();
             isRgbChannelCommand = true;
           }
 
           if (color_b.length() > 0 && (value_exists(payload, color_b))) {
-            color_b_value = jsonpointer::get(payload, color_b).as<uint8_t>();
+            color_b_value =
+                jsoncons::jsonpointer::get(payload, color_b).as<uint8_t>();
             isRgbChannelCommand = true;
           }
 
@@ -152,14 +155,13 @@ void handle_subscribed_message(void* supla_client,
           /* --------- */
 
           return;
-
         } break;
       }
-    } catch (json_exception& je) {
+    } catch (jsoncons::json_exception& je) {
       supla_log(LOG_ERR,
                 "error while trying get value from payload [error: %s]",
                 je.what());
-    } catch (exception& exception) {
+    } catch (std::exception& exception) {
       supla_log(LOG_ERR, "general error %s", exception.what());
     }
   }

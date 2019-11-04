@@ -21,7 +21,7 @@
 client_device_channel::client_device_channel(
     int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
     char *TextParam1, char *TextParam2, char *TextParam3, bool Hidden,
-    char *Caption, std::vector<client_state *> &States)
+    char *Caption, const std::vector<client_state *> &States)
     : supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
                            TextParam1, TextParam2, TextParam3, Hidden) {
   this->Caption =
@@ -44,12 +44,10 @@ const std::vector<client_state *> client_device_channel::getStates(void) const {
   return this->states;
 }
 
-void client_device_channels::add_channel(int Id, int Number, int Type, int Func,
-                                         int Param1, int Param2, int Param3,
-                                         char *TextParam1, char *TextParam2,
-                                         char *TextParam3, bool Hidden,
-                                         char *Caption,
-                                         std::vector<client_state *> &States) {
+void client_device_channels::add_channel(
+    int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
+    char *TextParam1, char *TextParam2, char *TextParam3, bool Hidden,
+    char *Caption, const std::vector<client_state *> &States) {
   safe_array_lock(arr);
   if (find_channel(Id) == 0) {
     client_device_channel *c = new client_device_channel(
