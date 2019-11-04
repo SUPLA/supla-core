@@ -43,11 +43,10 @@ $id$ - SUPLA id will be substituted for this macro
 $caption$ - the SUPLA channel name will be substituted for this macro
 $temperature$ - the temperature value will be substituted for this macro (for the channel in which the temperature occurs)
 $humidity$ - the humidity value will be substituted for this macro (for the channel in which humidity occurs)
-
+```
 The rest of the macros are described in the state.yaml file
 
 # Running
-
 ```
 ./supla-mqtt-client -config config-template.yaml
 ```
