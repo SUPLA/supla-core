@@ -1,0 +1,12 @@
+mqtt:
+  host: 'test.mosquitto.org'
+  port: 1883 
+  commands_file_path: 'command.yaml'
+  states_file_path: 'state.yaml'
+  username: ''
+  password: ''
+supla:
+  port: 2016
+  host: 'localhost'
+  location: 2
+  password: 'password'
