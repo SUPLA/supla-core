@@ -3,7 +3,7 @@
 This project combines SUPLA with MQTT. Its basic functionality is publishing the status of SUPLA channels to the MQTT server and responding to MQTT server messages to control SUPLA channels. The output and input message patterns are configurable in the state.yaml and command.yaml files
 
 # Building
-To build the project You need SSL library first. It can be installed by runnig command:
+To build the project You need SSL library first. It can be installed by running command:
 ```
 sudo apt-get install libssl-dev
 ```
@@ -16,7 +16,7 @@ sudo make clean
 sudo make all
 ```
 
-If above command returns with directory supla-mqtt-client not found you must change branch to mqtt-experimental
+If above command returns with directory supla-mqtt-client not found erro you must change branch to mqtt-experimental
 
 ```
 git checkout -b mqtt-experimental remotes/origin/mqtt-experimental
