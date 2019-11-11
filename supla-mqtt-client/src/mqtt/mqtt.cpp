@@ -119,6 +119,7 @@ enum MQTTErrors mqtt_init(
   client->response_timeout = 30;
   client->number_of_timeouts = 0;
   client->number_of_keep_alives = 0;
+  client->protocol_version = 5;
   client->typical_response_time = -1.0;
   client->publish_response_callback = publish_response_callback;
   client->pid_lfsr = 0;
@@ -155,7 +156,7 @@ void mqtt_init_reconnect(
   client->typical_response_time = -1.0;
   client->publish_response_callback = publish_response_callback;
   client->send_offset = 0;
-
+  client->protocol_version = 5;
   client->inspector_callback = NULL;
   client->reconnect_callback = reconnect;
   client->reconnect_state = reconnect_state;
@@ -229,7 +230,8 @@ enum MQTTErrors mqtt_connect(struct mqtt_client *client, const char *client_id,
                        mqtt_pack_connection_request(
                            client->mq.curr, client->mq.curr_sz, client_id,
                            will_topic, will_message, will_message_size,
-                           user_name, password, connect_flags, keep_alive),
+                           user_name, password, connect_flags, keep_alive,
+						   &client->protocol_version),
                        1);
   /* save the control type of the message */
   msg->control_type = MQTT_CONTROL_CONNECT;
@@ -582,7 +584,8 @@ ssize_t __mqtt_recv(struct mqtt_client *client) {
     /* attempt to parse */
     consumed = mqtt_unpack_response(
         &response, client->recv_buffer.mem_start,
-        client->recv_buffer.curr - client->recv_buffer.mem_start);
+        client->recv_buffer.curr - client->recv_buffer.mem_start,
+		&client->protocol_version);
 
     if (consumed < 0) {
       client->error = (MQTTErrors)consumed;
@@ -1045,7 +1048,8 @@ ssize_t mqtt_pack_fixed_header(uint8_t *buf, size_t bufsz,
 ssize_t mqtt_pack_connection_request(
     uint8_t *buf, size_t bufsz, const char *client_id, const char *will_topic,
     const void *will_message, size_t will_message_size, const char *user_name,
-    const char *password, uint8_t connect_flags, uint16_t keep_alive) {
+    const char *password, uint8_t connect_flags, uint16_t keep_alive,
+	uint8_t *protocol_version) {
   struct mqtt_fixed_header fixed_header;
   size_t remaining_length;
   const uint8_t *const start = buf;
@@ -1132,7 +1136,12 @@ ssize_t mqtt_pack_connection_request(
   *buf++ = (uint8_t)'Q';
   *buf++ = (uint8_t)'T';
   *buf++ = (uint8_t)'T';
-  *buf++ = MQTT_PROTOCOL_LEVEL;
+
+  if (*protocol_version == 5)
+    *buf++ = 0x05;
+  else
+	*buf++ = 0x03;
+
   *buf++ = connect_flags;
   buf += __mqtt_pack_uint16(buf, keep_alive);
   *buf++ = (uint8_t)0x00;
@@ -1158,7 +1167,7 @@ ssize_t mqtt_pack_connection_request(
 
 /* CONNACK */
 ssize_t mqtt_unpack_connack_response(struct mqtt_response *mqtt_response,
-                                     const uint8_t *buf) {
+                                     const uint8_t *buf, uint8_t *protocol_version) {
   const uint8_t *const start = buf;
   struct mqtt_response_connack *response;
 
@@ -1181,6 +1190,11 @@ ssize_t mqtt_unpack_connack_response(struct mqtt_response *mqtt_response,
     return MQTT_ERROR_CONNACK_FORBIDDEN_CODE;
   } else {
     response->return_code = (enum MQTTConnackReturnCode) * buf++;
+
+    /* switch protocol version */
+    if (response->return_code == MQTT_CONNACK_REFUSED_PROTOCOL_VERSION)
+    	*protocol_version = 3;
+
   }
 
   /* parse options */
@@ -1666,7 +1680,7 @@ struct mqtt_queued_message *mqtt_mq_find(
 
 /* RESPONSE UNPACKING */
 ssize_t mqtt_unpack_response(struct mqtt_response *response, const uint8_t *buf,
-                             size_t bufsz) {
+                             size_t bufsz, uint8_t *protocol_version) {
   const uint8_t *const start = buf;
   ssize_t rv = mqtt_unpack_fixed_header(response, buf, bufsz);
   if (rv <= 0)
@@ -1675,7 +1689,7 @@ ssize_t mqtt_unpack_response(struct mqtt_response *response, const uint8_t *buf,
     buf += rv;
   switch (response->fixed_header.control_type) {
     case MQTT_CONTROL_CONNACK:
-      rv = mqtt_unpack_connack_response(response, buf);
+      rv = mqtt_unpack_connack_response(response, buf, protocol_version);
       break;
     case MQTT_CONTROL_PUBLISH:
       rv = mqtt_unpack_publish_response(response, buf);

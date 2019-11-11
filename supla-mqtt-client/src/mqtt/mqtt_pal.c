@@ -92,19 +92,21 @@ ssize_t mqtt_pal_recvall(mqtt_pal_socket_handle fd, void* buf, size_t bufsz,
                          int flags) {
   void const* start = buf;
   ssize_t rv;
+  ssize_t received = 0;
+
   do {
     /* then -1 on an non blocking socket means error EWOUDLBOCK */
     /* but this is returned also if there is no data to recv so */
     /* we need to check multiple errno */
-
     rv = recv(fd, buf, bufsz, flags);
     if (rv > 0) {
       /* successfully read bytes from the socket */
       buf += rv;
       bufsz -= rv;
+      received += rv;
     } else if (rv == 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-      /* an error occurred - connection was closed by server */
-      return MQTT_ERROR_SOCKET_ERROR;
+      if (received == 0)
+        return MQTT_ERROR_SOCKET_ERROR;
     } else if (rv < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
       /* an error occurred that wasn't "nothing to read". */
       return MQTT_ERROR_SOCKET_ERROR;

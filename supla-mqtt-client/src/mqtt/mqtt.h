@@ -166,7 +166,10 @@ struct mqtt_fixed_header {
  * MQTT v3.1.1: CONNECT Variable Header.
  * </a>
  */
-#define MQTT_PROTOCOL_LEVEL 0x05
+/*#define MQTT_PROTOCOL_LEVEL 0x05
+*/
+//#define MQTT_PROTOCOL_LEVEL 0x03
+
 
 /**
  * @brief A macro used to declare the enum MQTTErrors and associated
@@ -571,7 +574,7 @@ ssize_t mqtt_unpack_fixed_header(struct mqtt_response *response,
  * protocol violation.
  */
 ssize_t mqtt_unpack_connack_response(struct mqtt_response *mqtt_response,
-                                     const uint8_t *buf);
+                                     const uint8_t *buf, uint8_t *protocol_version);
 
 /**
  * @brief Deserialize a publish response from \p buf.
@@ -670,7 +673,7 @@ ssize_t mqtt_unpack_unsuback_response(struct mqtt_response *mqtt_response,
  * protocol violation was encountered.
  */
 ssize_t mqtt_unpack_response(struct mqtt_response *response, const uint8_t *buf,
-                             size_t bufsz);
+                             size_t bufsz, uint8_t *protocol_version);
 
 /* REQUESTS */
 
@@ -754,7 +757,8 @@ enum MQTTConnectFlags {
 ssize_t mqtt_pack_connection_request(
     uint8_t *buf, size_t bufsz, const char *client_id, const char *will_topic,
     const void *will_message, size_t will_message_size, const char *user_name,
-    const char *password, uint8_t connect_flags, uint16_t keep_alive);
+    const char *password, uint8_t connect_flags, uint16_t keep_alive,
+	uint8_t *protocol_version);
 
 /**
  * @brief An enumeration of the PUBLISH flags.
@@ -1155,6 +1159,8 @@ struct mqtt_client {
    * @see keep_alive
    */
   int number_of_keep_alives;
+
+  uint8_t protocol_version;
 
   /**
    * @brief The current sent offset.
