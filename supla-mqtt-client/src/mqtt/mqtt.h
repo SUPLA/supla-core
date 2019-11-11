@@ -881,6 +881,7 @@ ssize_t mqtt_pack_pubxxx_request(uint8_t *buf, size_t bufsz,
  * the SUBSCRIBE packet, a negative value if there was a protocol violation.
  */
 ssize_t mqtt_pack_subscribe_request(uint8_t *buf, size_t bufsz,
+									uint8_t protocol_version,
                                     unsigned int packet_id,
                                     ...); /* null terminated */
 

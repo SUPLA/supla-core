@@ -254,8 +254,9 @@ enum MQTTErrors mqtt_publish(struct mqtt_client *client, const char *topic_name,
   MQTT_CLIENT_TRY_PACK(
       rv, msg, client,
       mqtt_pack_publish_request(client->mq.curr, client->mq.curr_sz, topic_name,
-                                packet_id, application_message,
-                                application_message_size, publish_flags),
+    		  	  	  	  	  	packet_id, application_message,
+                                application_message_size, publish_flags,
+								client->protocol_version),
       1);
   /* save the control type and packet id of the message */
   msg->control_type = MQTT_CONTROL_PUBLISH;
@@ -344,7 +345,9 @@ enum MQTTErrors mqtt_subscribe(struct mqtt_client *client,
   /* try to pack the message */
   MQTT_CLIENT_TRY_PACK(rv, msg, client,
                        mqtt_pack_subscribe_request(
-                           client->mq.curr, client->mq.curr_sz, packet_id,
+                           client->mq.curr, client->mq.curr_sz,
+						   client->protocol_version,
+						   packet_id,
                            topic_name, max_qos_level, (const char *)NULL),
                        1);
   /* save the control type and packet id of the message */
@@ -1332,6 +1335,7 @@ ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response,
     response->packet_id = __mqtt_unpack_uint16(buf);
     buf += 2;
   }
+  uint8_t optcount = 0;
 
   if (protocol_version == 5) {
   /* get publish options */
@@ -1479,6 +1483,7 @@ ssize_t mqtt_unpack_suback_response(struct mqtt_response *mqtt_response,
 
 /* SUBSCRIBE */
 ssize_t mqtt_pack_subscribe_request(uint8_t *buf, size_t bufsz,
+		                            uint8_t protocol_version,
                                     unsigned int packet_id, ...) {
   va_list args;
   const uint8_t *const start = buf;
@@ -1510,9 +1515,11 @@ ssize_t mqtt_pack_subscribe_request(uint8_t *buf, size_t bufsz,
   /* build the fixed header */
   fixed_header.control_type = MQTT_CONTROL_SUBSCRIBE;
   fixed_header.control_flags = 2u;
+
   if (protocol_version == 5) {
     fixed_header.remaining_length = 3u; /* size of variable header */
-  } else
+  }
+  else
   { 
     fixed_header.remaining_length = 2u;
   }
@@ -1732,25 +1739,25 @@ ssize_t mqtt_unpack_response(struct mqtt_response *response, const uint8_t *buf,
       rv = mqtt_unpack_connack_response(response, buf, protocol_version);
       break;
     case MQTT_CONTROL_PUBLISH:
-      rv = mqtt_unpack_publish_response(response, buf);
+      rv = mqtt_unpack_publish_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_PUBACK:
-      rv = mqtt_unpack_pubxxx_response(response, buf);
+      rv = mqtt_unpack_pubxxx_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_PUBREC:
-      rv = mqtt_unpack_pubxxx_response(response, buf);
+      rv = mqtt_unpack_pubxxx_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_PUBREL:
-      rv = mqtt_unpack_pubxxx_response(response, buf);
+      rv = mqtt_unpack_pubxxx_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_PUBCOMP:
-      rv = mqtt_unpack_pubxxx_response(response, buf);
+      rv = mqtt_unpack_pubxxx_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_SUBACK:
-      rv = mqtt_unpack_suback_response(response, buf);
+      rv = mqtt_unpack_suback_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_UNSUBACK:
-      rv = mqtt_unpack_unsuback_response(response, buf);
+      rv = mqtt_unpack_unsuback_response(response, buf, *protocol_version);
       break;
     case MQTT_CONTROL_PINGRESP:
       return rv;

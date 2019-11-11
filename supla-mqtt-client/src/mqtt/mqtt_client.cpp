@@ -115,8 +115,6 @@ int mqtt_client_init(std::string addr, int port, std::string username,
 void mqtt_client_publish(const char* topic, const char* payload, char retain,
                          char qos) {
 
-  return;
-
   if (mq_client == NULL || mq_client->error != MQTT_OK) return;
 
   uint8_t publish_flags = 0;
@@ -195,7 +193,7 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
   /* Subscribe to the topic. */
   for (auto topic : reconnect_state->topics) {
     supla_log(LOG_DEBUG, "subscribing %s", topic.c_str());
-   // mqtt_subscribe(client, topic.c_str(), 0);
+    mqtt_subscribe(client, topic.c_str(), 0);
   }
 }
 
