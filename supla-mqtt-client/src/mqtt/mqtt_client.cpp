@@ -83,7 +83,8 @@ void close_client(int sockfd, pthread_t* client_daemon) {
 }
 
 int mqtt_client_init(std::string addr, int port, std::string username,
-                     std::string password, vector<std::string>& topics,
+                     std::string password, std::string client_name,
+					 vector<std::string>& topics,
                      void (*publish_response_callback)(
                          void** state, struct mqtt_response_publish* publish)) {
   reconnect_state = new reconnect_state_t();
@@ -95,6 +96,7 @@ int mqtt_client_init(std::string addr, int port, std::string username,
   reconnect_state->port = port;
   reconnect_state->username = username;
   reconnect_state->password = password;
+  reconnect_state->client_name = client_name;
 
   for (auto topic : topics) reconnect_state->topics.push_back(topic);
 
@@ -181,8 +183,10 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
   const char* password = reconnect_state->password.length() > 0
                              ? reconnect_state->password.c_str()
                              : NULL;
+  const char* client_name = reconnect_state->client_name.c_str();
+
   /* Send connection request to the broker. */
-  mqtt_connect(client, "supla_mqtt_client", NULL, NULL, 0, username, password,
+  mqtt_connect(client, client_name, NULL, NULL, 0, username, password,
                0, 400);
 
   /* Subscribe to the topic. */

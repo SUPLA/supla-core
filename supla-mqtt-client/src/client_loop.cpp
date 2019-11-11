@@ -182,7 +182,8 @@ void client_loop(void *user_data, void *sthread) {
   config->getTopicsToSubscribe(&topics);
 
   mqtt_client_init(config->getMqttHost(), config->getMqttPort(),
-                   config->getMqttUsername(), config->getMqttPassword(), topics,
+                   config->getMqttUsername(), config->getMqttPassword(),
+				   config->getMqttClientName(), topics,
                    mqtt_callback);
 
   while (sthread_isterminated(sthread) == 0) {

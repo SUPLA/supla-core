@@ -37,6 +37,7 @@ class client_config {
   std::string mqtt_password;
   std::string mqtt_commands;
   std::string mqtt_states;
+  std::string mqtt_client_name;
 
   std::string supla_host;
   uint16_t supla_port;
@@ -57,6 +58,7 @@ class client_config {
   std::string getMqttPassword();
   std::string getMqttCommands();
   std::string getMqttStates();
+  std::string getMqttClientName();
 
   int getMqttPort();
   std::string getSuplaHost();
