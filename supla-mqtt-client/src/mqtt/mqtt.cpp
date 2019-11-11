@@ -1049,7 +1049,7 @@ ssize_t mqtt_pack_connection_request(
     uint8_t *buf, size_t bufsz, const char *client_id, const char *will_topic,
     const void *will_message, size_t will_message_size, const char *user_name,
     const char *password, uint8_t connect_flags, uint16_t keep_alive,
-	uint8_t *protocol_version) {
+    uint8_t *protocol_version) {
   struct mqtt_fixed_header fixed_header;
   size_t remaining_length;
   const uint8_t *const start = buf;
@@ -1061,7 +1061,10 @@ ssize_t mqtt_pack_connection_request(
 
   /* calculate remaining length and build connect_flags at the same time */
   connect_flags = connect_flags & ~MQTT_CONNECT_RESERVED;
-  remaining_length = 11; /* size of variable header */
+  if (*protocol_version = 5)
+    remaining_length = 11; /* size of variable header */
+  else
+    remaining_length = 10;
 
   if (client_id == NULL) {
     /* client_id is a mandatory parameter */
@@ -1140,11 +1143,12 @@ ssize_t mqtt_pack_connection_request(
   if (*protocol_version == 5)
     *buf++ = 0x05;
   else
-	*buf++ = 0x03;
+    *buf++ = 0x04;
 
   *buf++ = connect_flags;
   buf += __mqtt_pack_uint16(buf, keep_alive);
-  *buf++ = (uint8_t)0x00;
+  if (*protocol_version == 5)
+    *buf++ = (uint8_t)0x00;
 
   /* pack the payload */
   buf += __mqtt_pack_str(buf, client_id);
@@ -1198,8 +1202,11 @@ ssize_t mqtt_unpack_connack_response(struct mqtt_response *mqtt_response,
   }
 
   /* parse options */
-  uint8_t optcount = *buf++;
-  buf += optcount;
+  if (*protocol_version == 5)
+  {
+    uint8_t optcount = *buf++;
+    buf += optcount;
+  }
 
   return buf - start;
 }
@@ -1227,7 +1234,8 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
                                   const char *topic_name, uint16_t packet_id,
                                   void *application_message,
                                   size_t application_message_size,
-                                  uint8_t publish_flags) {
+                                  uint8_t publish_flags,
+                                  uint8_t protocol_version) {
   const uint8_t *const start = buf;
   ssize_t rv;
   struct mqtt_fixed_header fixed_header;
@@ -1284,7 +1292,8 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
     buf += __mqtt_pack_uint16(buf, packet_id);
   }
 
-  *buf++ = (uint8_t)0x00;
+  if (protocol_version == 5)
+    *buf++ = (uint8_t)0x00;
 
   /* pack payload */
   memcpy(buf, application_message, application_message_size);
@@ -1294,7 +1303,7 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
 }
 
 ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response,
-                                     const uint8_t *buf) {
+                                     const uint8_t *buf, uint8_t protocol_version) {
   const uint8_t *const start = buf;
   struct mqtt_fixed_header *fixed_header;
   struct mqtt_response_publish *response;
@@ -1324,21 +1333,38 @@ ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response,
     buf += 2;
   }
 
+  if (protocol_version == 5) {
   /* get publish options */
-  uint8_t optcount = *buf++;
-  buf += optcount;
+    uint8_t optcount = *buf++;
+    buf += optcount;
   /* --- to do */
+  }
 
   /* get payload */
   response->application_message = buf;
   if (response->qos_level == 0) {
-    response->application_message_size = fixed_header->remaining_length -
-                                         response->topic_name_size - 3 -
-                                         optcount;
+    if (protocol_version == 5) {
+      response->application_message_size = fixed_header->remaining_length -
+                                           response->topic_name_size - 3 -
+                                           optcount; 
+    } else 
+    {
+      response->application_message_size = fixed_header->remaining_length -
+                                           response->topic_name_size - 2;
+    
+    }  
   } else {
-    response->application_message_size = fixed_header->remaining_length -
+    if (protocol_version == 5)
+    {
+       response->application_message_size = fixed_header->remaining_length -
                                          response->topic_name_size - 5 -
                                          optcount;
+    } else 
+    {
+       response->application_message_size = fixed_header->remaining_length -
+                                         response->topic_name_size - 4;
+   
+    }
   }
   buf += response->application_message_size;
 
@@ -1382,7 +1408,7 @@ ssize_t mqtt_pack_pubxxx_request(uint8_t *buf, size_t bufsz,
 }
 
 ssize_t mqtt_unpack_pubxxx_response(struct mqtt_response *mqtt_response,
-                                    const uint8_t *buf) {
+                                    const uint8_t *buf, uint8_t protocol_version) {
   const uint8_t *const start = buf;
   uint16_t packet_id;
 
@@ -1395,14 +1421,16 @@ ssize_t mqtt_unpack_pubxxx_response(struct mqtt_response *mqtt_response,
   packet_id = __mqtt_unpack_uint16(buf);
   buf += 2;
 
-  if (mqtt_response->fixed_header.remaining_length > 2) {
-    /* parse reason code*/
-    uint8_t rcode = *buf++;
-    if (rcode != 0) return MQTT_ERROR_MALFORMED_RESPONSE;
+  if (protocol_version == 5) {
+    if (mqtt_response->fixed_header.remaining_length > 2) {
+      /* parse reason code*/
+      uint8_t rcode = *buf++;
+      if (rcode != 0) return MQTT_ERROR_MALFORMED_RESPONSE;
 
-    /* parse options */
-    uint8_t optcount = *buf++;
-    buf += optcount;
+      /* parse options */
+      uint8_t optcount = *buf++;
+      buf += optcount;
+    }
   }
 
   if (mqtt_response->fixed_header.control_type == MQTT_CONTROL_PUBACK) {
@@ -1420,7 +1448,7 @@ ssize_t mqtt_unpack_pubxxx_response(struct mqtt_response *mqtt_response,
 
 /* SUBACK */
 ssize_t mqtt_unpack_suback_response(struct mqtt_response *mqtt_response,
-                                    const uint8_t *buf) {
+                                    const uint8_t *buf, uint8_t protocol_version) {
   const uint8_t *const start = buf;
   uint32_t remaining_length = mqtt_response->fixed_header.remaining_length;
 
@@ -1434,10 +1462,12 @@ ssize_t mqtt_unpack_suback_response(struct mqtt_response *mqtt_response,
   mqtt_response->decoded.suback.packet_id = __mqtt_unpack_uint16(buf);
   buf += 2;
   remaining_length -= 2;
-
-  uint8_t optcount = *buf++;
-  buf += optcount;
-  remaining_length -= optcount + 1;
+  
+  if (protocol_version == 5) {  
+    uint8_t optcount = *buf++;
+    buf += optcount;
+    remaining_length -= optcount + 1;
+  }
 
   /* unpack return codes */
   mqtt_response->decoded.suback.num_return_codes = (size_t)remaining_length;
@@ -1480,7 +1510,13 @@ ssize_t mqtt_pack_subscribe_request(uint8_t *buf, size_t bufsz,
   /* build the fixed header */
   fixed_header.control_type = MQTT_CONTROL_SUBSCRIBE;
   fixed_header.control_flags = 2u;
-  fixed_header.remaining_length = 3u; /* size of variable header */
+  if (protocol_version == 5) {
+    fixed_header.remaining_length = 3u; /* size of variable header */
+  } else
+  { 
+    fixed_header.remaining_length = 2u;
+  }
+
   for (i = 0; i < num_subs; ++i) {
     /* payload is topic name + max qos (1 byte) */
     fixed_header.remaining_length += __mqtt_packed_cstrlen(topic[i]) + 1;
@@ -1501,7 +1537,10 @@ ssize_t mqtt_pack_subscribe_request(uint8_t *buf, size_t bufsz,
 
   /* pack variable header */
   buf += __mqtt_pack_uint16(buf, packet_id);
-  *buf++ = (uint8_t)0x00;
+  
+  if (protocol_version == 5) {
+    *buf++ = (uint8_t)0x00; 
+  };
 
   /* pack payload */
   for (i = 0; i < num_subs; ++i) {
@@ -1514,7 +1553,7 @@ ssize_t mqtt_pack_subscribe_request(uint8_t *buf, size_t bufsz,
 
 /* UNSUBACK */
 ssize_t mqtt_unpack_unsuback_response(struct mqtt_response *mqtt_response,
-                                      const uint8_t *buf) {
+                                      const uint8_t *buf, uint8_t protocol_version) {
   const uint8_t *const start = buf;
 
   if (mqtt_response->fixed_header.remaining_length != 2) {
@@ -1524,11 +1563,12 @@ ssize_t mqtt_unpack_unsuback_response(struct mqtt_response *mqtt_response,
   /* parse packet_id */
   mqtt_response->decoded.unsuback.packet_id = __mqtt_unpack_uint16(buf);
   buf += 2;
-
-  /* parse options */
-  uint8_t optcount = *buf++;
-  buf += optcount;
-
+  
+  if (protocol_version == 5) {
+    /* parse options */
+    uint8_t optcount = *buf++;
+    buf += optcount;
+  }
   return buf - start;
 }
 

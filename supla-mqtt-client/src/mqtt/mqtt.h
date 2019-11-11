@@ -594,7 +594,7 @@ ssize_t mqtt_unpack_connack_response(struct mqtt_response *mqtt_response,
  * protocol violation.
  */
 ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response,
-                                     const uint8_t *buf);
+                                     const uint8_t *buf, uint8_t protocol_version);
 
 /**
  * @brief Deserialize a PUBACK/PUBREC/PUBREL/PUBCOMP packet from \p buf.
@@ -616,7 +616,7 @@ ssize_t mqtt_unpack_publish_response(struct mqtt_response *mqtt_response,
  * protocol violation.
  */
 ssize_t mqtt_unpack_pubxxx_response(struct mqtt_response *mqtt_response,
-                                    const uint8_t *buf);
+                                    const uint8_t *buf, uint8_t protocol_version);
 
 /**
  * @brief Deserialize a SUBACK packet from \p buf.
@@ -636,7 +636,7 @@ ssize_t mqtt_unpack_pubxxx_response(struct mqtt_response *mqtt_response,
  * protocol violation.
  */
 ssize_t mqtt_unpack_suback_response(struct mqtt_response *mqtt_response,
-                                    const uint8_t *buf);
+                                    const uint8_t *buf, uint8_t protocol_version);
 
 /**
  * @brief Deserialize an UNSUBACK packet from \p buf.
@@ -656,7 +656,7 @@ ssize_t mqtt_unpack_suback_response(struct mqtt_response *mqtt_response,
  * protocol violation.
  */
 ssize_t mqtt_unpack_unsuback_response(struct mqtt_response *mqtt_response,
-                                      const uint8_t *buf);
+                                      const uint8_t *buf, uint8_t protocol_version);
 
 /**
  * @brief Deserialize a packet from the broker.
@@ -807,7 +807,7 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
                                   const char *topic_name, uint16_t packet_id,
                                   void *application_message,
                                   size_t application_message_size,
-                                  uint8_t publish_flags);
+                                  uint8_t publish_flags, uint8_t protocol_version);
 
 /**
  * @brief Serialize a PUBACK, PUBREC, PUBREL, or PUBCOMP packet and put it in \p
