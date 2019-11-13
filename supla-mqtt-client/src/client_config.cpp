@@ -33,7 +33,7 @@ client_config::client_config() {
   this->supla_locationid = 1;
   this->supla_password = "";
   this->supla_email = "";
-  this->supla_protocol_version = 11;
+  this->supla_protocol_version = 10;
 }
 
 client_config::~client_config() {
@@ -83,7 +83,7 @@ void client_config::load(const char* config_file) {
       this->supla_port = root["supla"]["port"].As<uint16_t>(2016);
       this->supla_email = root["supla"]["email"].As<std::string>("");
       this->supla_protocol_version =
-          root["supla"]["protocol_version"].As<uint16_t>(11);
+          root["supla"]["protocol_version"].As<uint16_t>(10);
     }
 
     if (st_file_exists(this->mqtt_commands.c_str())) {
