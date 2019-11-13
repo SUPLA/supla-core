@@ -40,7 +40,8 @@ channels:
     payload_template: '{"hi": $value$}'
     
   - channel_type: 110 #CONTROLLINGTHEROLLERSHUTTER
-    payload_template: '{"hi": $value$, "is_calibrating": $is_calibrating$, "shut": $shut$}'
+    state_topic: 'supla/channels/status/rollershutter/$id$'
+    payload_template: '{"id": $id$, "shut": $shut$}'
   
   - channel_type: 120 #OPENINGSENSOR_ROLLERSHUTTER
     payload_template: '{"hi": $value$}'

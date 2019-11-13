@@ -37,6 +37,11 @@
   on_value: true
   off_value: false
 
+# template for rollershutter
+# payload: { "id" : 2, "shut": 50 }
+- topic: 'supla/channels/command/#'
+  id: '/id'
+  shut: '/shut'
 
 # template for dimmer 
 # payload: { "id" : 2, "values": { "on": 1, "brightness": 49 } }

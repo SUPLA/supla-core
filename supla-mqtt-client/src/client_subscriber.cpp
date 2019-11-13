@@ -77,6 +77,14 @@ void handle_subscribed_message(void* supla_client,
 
           return;
         } break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
+          std::string shut = command->getShut();
+
+          unsigned char value = jsoncons::jsonpointer::get(payload, shut).as<unsigned char>();
+          value += 10;
+          supla_client_open(supla_client, id, 0, value);
+
+        } break;
         case SUPLA_CHANNELFNC_DIMMER:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
