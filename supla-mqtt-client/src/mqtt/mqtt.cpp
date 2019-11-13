@@ -1063,7 +1063,7 @@ ssize_t mqtt_pack_connection_request(
 
   /* calculate remaining length and build connect_flags at the same time */
   connect_flags = connect_flags & ~MQTT_CONNECT_RESERVED;
-  if (*protocol_version = 5)
+  if (*protocol_version == 5)
     remaining_length = 11; /* size of variable header */
   else
     remaining_length = 10;
