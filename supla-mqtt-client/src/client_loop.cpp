@@ -183,8 +183,7 @@ void client_loop(void *user_data, void *sthread) {
 
   mqtt_client_init(config->getMqttHost(), config->getMqttPort(),
                    config->getMqttUsername(), config->getMqttPassword(),
-				   config->getMqttClientName(), topics,
-                   mqtt_callback);
+                   config->getMqttClientName(), topics, mqtt_callback);
 
   while (sthread_isterminated(sthread) == 0) {
     supla_log(LOG_INFO, "Connecting...");

@@ -197,7 +197,9 @@ void client_config::getStatesForFunction(uint16_t function,
   }
 }
 
-std::string client_config::getMqttClientName() { return this->mqtt_client_name; }
+std::string client_config::getMqttClientName() {
+  return this->mqtt_client_name;
+}
 std::string client_config::getMqttHost() { return this->mqtt_host; }
 std::string client_config::getMqttUsername() { return this->mqtt_username; }
 std::string client_config::getMqttPassword() { return this->mqtt_password; }

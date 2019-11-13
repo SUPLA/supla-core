@@ -105,8 +105,7 @@ ssize_t mqtt_pal_recvall(mqtt_pal_socket_handle fd, void* buf, size_t bufsz,
       bufsz -= rv;
       received += rv;
     } else if (rv == 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-      if (received == 0)
-        return MQTT_ERROR_SOCKET_ERROR;
+      if (received == 0) return MQTT_ERROR_SOCKET_ERROR;
     } else if (rv < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
       /* an error occurred that wasn't "nothing to read". */
       return MQTT_ERROR_SOCKET_ERROR;
