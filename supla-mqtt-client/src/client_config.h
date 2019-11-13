@@ -44,6 +44,7 @@ class client_config {
   uint32_t supla_locationid;
   std::string supla_password;
   std::string supla_email;
+  uint16_t supla_protocol_version;
 
   std::vector<client_command *> commands;
   std::vector<client_state *> states;
@@ -66,6 +67,8 @@ class client_config {
   const uint16_t getSuplaPort();
   const uint32_t getSuplaLocationId();
   std::string getSuplaEmail();
+  const uint16_t getSuplaProtocolVersion();
+
   void getCommandsForTopic(std::string topic,
                            std::vector<client_command *> *output);
   void getStatesForFunction(uint16_t function,
