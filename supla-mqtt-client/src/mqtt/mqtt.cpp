@@ -1256,11 +1256,10 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
   if (inspected_qos > 0) {
     remaining_length += 2;
   }
-  if (protocol_version == 5)
-  {
-	 remaining_length += application_message_size + 1;
+  if (protocol_version == 5) {
+    remaining_length += application_message_size + 1;
   } else {
-	 remaining_length += application_message_size;
+    remaining_length += application_message_size;
   }
 
   fixed_header.remaining_length = remaining_length;

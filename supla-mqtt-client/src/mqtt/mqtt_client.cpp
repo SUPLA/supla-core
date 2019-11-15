@@ -84,8 +84,7 @@ void close_client(int sockfd, pthread_t* client_daemon) {
 
 int mqtt_client_init(std::string addr, int port, std::string username,
                      std::string password, std::string client_name,
-					 uint8_t protocol_version,
-                     vector<std::string>& topics,
+                     uint8_t protocol_version, vector<std::string>& topics,
                      void (*publish_response_callback)(
                          void** state, struct mqtt_response_publish* publish)) {
   reconnect_state = new reconnect_state_t();
@@ -116,8 +115,6 @@ int mqtt_client_init(std::string addr, int port, std::string username,
 
 void mqtt_client_publish(const char* topic, const char* payload, char retain,
                          char qos) {
-
-
   if (mq_client == NULL || mq_client->error != MQTT_OK) return;
 
   uint8_t publish_flags = 0;
@@ -155,14 +152,13 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
 
   supla_log(LOG_DEBUG, "connecting to %s on port %d using protocol version %d",
             reconnect_state->hostname.c_str(), reconnect_state->port,
-			client->protocol_version);
+            client->protocol_version);
 
   if (reconnect_state->username.length() > 0) {
     supla_log(LOG_DEBUG, "using credentials %s %s",
               reconnect_state->username.c_str(),
               reconnect_state->password.c_str());
   }
-
 
   /* Open a new socket. */
   int sockfd =
