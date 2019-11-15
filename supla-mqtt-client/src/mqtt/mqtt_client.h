@@ -50,7 +50,7 @@ struct reconnect_state_t {
 
 int mqtt_client_init(std::string addr, int port, std::string username,
                      std::string password, std::string client_name,
-                     vector<std::string>& topics,
+					 uint8_t protocol_version, vector<std::string>& topics,
                      void (*publish_response_callback)(
                          void** state, struct mqtt_response_publish* publish));
 

@@ -27,6 +27,7 @@ client_config::client_config() {
   this->mqtt_commands = "";
   this->mqtt_states = "";
   this->mqtt_client_name = "supla_mqtt_client";
+  this->mqtt_protocol_version = 5;
 
   this->supla_host = "localhost";
   this->supla_port = 2016;
@@ -74,6 +75,8 @@ void client_config::load(const char* config_file) {
           root["mqtt"]["states_file_path"].As<std::string>("state.yaml");
       this->mqtt_client_name =
           root["mqtt"]["client_name"].As<std::string>("supla_mqtt_client");
+      this->mqtt_protocol_version =
+          root["mqtt"]["protocol_version"].As<uint16_t>(5);
     }
 
     if (!root["supla"].IsNone()) {
@@ -207,6 +210,9 @@ std::string client_config::getMqttHost() { return this->mqtt_host; }
 std::string client_config::getMqttUsername() { return this->mqtt_username; }
 std::string client_config::getMqttPassword() { return this->mqtt_password; }
 int client_config::getMqttPort() { return this->mqtt_port; }
+const uint16_t client_config::getMqttProtocolVersion() {
+  return this->mqtt_protocol_version;
+}
 std::string client_config::getSuplaHost() { return this->supla_host; }
 std::string client_config::getSuplaPassword() { return this->supla_password; }
 const uint16_t client_config::getSuplaPort() { return this->supla_port; }

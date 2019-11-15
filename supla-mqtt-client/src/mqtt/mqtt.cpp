@@ -119,7 +119,6 @@ enum MQTTErrors mqtt_init(
   client->response_timeout = 30;
   client->number_of_timeouts = 0;
   client->number_of_keep_alives = 0;
-  client->protocol_version = 5;
   client->typical_response_time = -1.0;
   client->publish_response_callback = publish_response_callback;
   client->pid_lfsr = 0;
@@ -156,7 +155,6 @@ void mqtt_init_reconnect(
   client->typical_response_time = -1.0;
   client->publish_response_callback = publish_response_callback;
   client->send_offset = 0;
-  client->protocol_version = 5;
   client->inspector_callback = NULL;
   client->reconnect_callback = reconnect;
   client->reconnect_state = reconnect_state;
@@ -1258,7 +1256,13 @@ ssize_t mqtt_pack_publish_request(uint8_t *buf, size_t bufsz,
   if (inspected_qos > 0) {
     remaining_length += 2;
   }
-  remaining_length += application_message_size + 1;
+  if (protocol_version == 5)
+  {
+	 remaining_length += application_message_size + 1;
+  } else {
+	 remaining_length += application_message_size;
+  }
+
   fixed_header.remaining_length = remaining_length;
 
   /* force dup to 0 if qos is 0 [Spec MQTT-3.3.1-2] */
