@@ -56,6 +56,10 @@ void publish_mqtt_message_for_channel(client_config* config,
         replace_string_in_place(&payload, "$value$", std::to_string(value));
         publish = true;
       } break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:

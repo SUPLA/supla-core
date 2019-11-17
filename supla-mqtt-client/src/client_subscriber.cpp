@@ -85,6 +85,14 @@ void handle_subscribed_message(void* supla_client,
           value += 10;
           supla_client_open(supla_client, id, 0, value);
         } break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
+	  supla_log(LOG_DEBUG, "%s", message.c_str());
+          std::string hi = command->getShut();
+          supla_log(LOG_DEBUG, "hi: %s", hi.c_str());
+	  unsigned char value =
+              jsoncons::jsonpointer::get(payload, hi).as<unsigned char>();
+	  supla_client_open(supla_client, id, 0, value);
+	} break;
         case SUPLA_CHANNELFNC_DIMMER:
         case SUPLA_CHANNELFNC_RGBLIGHTING:
         case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
