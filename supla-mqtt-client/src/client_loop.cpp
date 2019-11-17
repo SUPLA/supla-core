@@ -124,7 +124,8 @@ void *client_loop_init(void *sthread, client_config *config) {
 
   supla_client_cfginit(&scc);
 
-  scc.protocol_version = 10;
+  scc.protocol_version = config->getSuplaProtocolVersion();
+  supla_log(LOG_DEBUG, "SUPLA PROTOCOL VERSION %d", scc.protocol_version);
 
   snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Supla MQTT Proxy");
   snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
@@ -182,8 +183,9 @@ void client_loop(void *user_data, void *sthread) {
   config->getTopicsToSubscribe(&topics);
 
   mqtt_client_init(config->getMqttHost(), config->getMqttPort(),
-                   config->getMqttUsername(), config->getMqttPassword(), topics,
-                   mqtt_callback);
+                   config->getMqttUsername(), config->getMqttPassword(),
+                   config->getMqttClientName(),
+                   config->getMqttProtocolVersion(), topics, mqtt_callback);
 
   while (sthread_isterminated(sthread) == 0) {
     supla_log(LOG_INFO, "Connecting...");

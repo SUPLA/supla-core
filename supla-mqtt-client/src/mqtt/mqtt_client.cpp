@@ -83,7 +83,8 @@ void close_client(int sockfd, pthread_t* client_daemon) {
 }
 
 int mqtt_client_init(std::string addr, int port, std::string username,
-                     std::string password, vector<std::string>& topics,
+                     std::string password, std::string client_name,
+                     uint8_t protocol_version, vector<std::string>& topics,
                      void (*publish_response_callback)(
                          void** state, struct mqtt_response_publish* publish)) {
   reconnect_state = new reconnect_state_t();
@@ -95,11 +96,13 @@ int mqtt_client_init(std::string addr, int port, std::string username,
   reconnect_state->port = port;
   reconnect_state->username = username;
   reconnect_state->password = password;
+  reconnect_state->client_name = client_name;
 
   for (auto topic : topics) reconnect_state->topics.push_back(topic);
 
   /* setup a client */
   mq_client = new mqtt_client();
+  mq_client->protocol_version = protocol_version;
 
   mqtt_init_reconnect(mq_client, reconnect_client, reconnect_state,
                       publish_response_callback);
@@ -126,9 +129,9 @@ void mqtt_client_publish(const char* topic, const char* payload, char retain,
   else if (qos == 2)
     publish_flags |= MQTT_PUBLISH_QOS_2;
 
-   supla_log(LOG_DEBUG, "publishing %s", topic);
+  supla_log(LOG_DEBUG, "publishing %s", topic);
 
-   mqtt_publish(mq_client, topic, (void*)payload, strlen(payload),
+  mqtt_publish(mq_client, topic, (void*)payload, strlen(payload),
                publish_flags);
 }
 
@@ -147,8 +150,16 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
     // sleep(5);
   }
 
-  supla_log(LOG_DEBUG, "connecting to %s on port %d", reconnect_state->hostname.c_str(), reconnect_state->port);
-  supla_log(LOG_DEBUG, "using credentials %s %s", reconnect_state->username.c_str(), reconnect_state->password.c_str());
+  supla_log(LOG_DEBUG, "connecting to %s on port %d using protocol version %d",
+            reconnect_state->hostname.c_str(), reconnect_state->port,
+            client->protocol_version);
+
+  if (reconnect_state->username.length() > 0) {
+    supla_log(LOG_DEBUG, "using credentials %s %s",
+              reconnect_state->username.c_str(),
+              reconnect_state->password.c_str());
+  }
+
   /* Open a new socket. */
   int sockfd =
       open_nb_socket(reconnect_state->hostname.c_str(), reconnect_state->port);
@@ -181,9 +192,10 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
   const char* password = reconnect_state->password.length() > 0
                              ? reconnect_state->password.c_str()
                              : NULL;
+  const char* client_name = reconnect_state->client_name.c_str();
+
   /* Send connection request to the broker. */
-  mqtt_connect(client, "supla_mqtt_client", NULL, NULL, 0, username, password,
-               0, 400);
+  mqtt_connect(client, client_name, NULL, NULL, 0, username, password, 0, 400);
 
   /* Subscribe to the topic. */
   for (auto topic : reconnect_state->topics) {

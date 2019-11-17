@@ -37,12 +37,15 @@ class client_config {
   std::string mqtt_password;
   std::string mqtt_commands;
   std::string mqtt_states;
+  std::string mqtt_client_name;
+  uint16_t mqtt_protocol_version;
 
   std::string supla_host;
   uint16_t supla_port;
   uint32_t supla_locationid;
   std::string supla_password;
   std::string supla_email;
+  uint16_t supla_protocol_version;
 
   std::vector<client_command *> commands;
   std::vector<client_state *> states;
@@ -57,6 +60,8 @@ class client_config {
   std::string getMqttPassword();
   std::string getMqttCommands();
   std::string getMqttStates();
+  std::string getMqttClientName();
+  const uint16_t getMqttProtocolVersion();
 
   int getMqttPort();
   std::string getSuplaHost();
@@ -64,6 +69,8 @@ class client_config {
   const uint16_t getSuplaPort();
   const uint32_t getSuplaLocationId();
   std::string getSuplaEmail();
+  const uint16_t getSuplaProtocolVersion();
+
   void getCommandsForTopic(std::string topic,
                            std::vector<client_command *> *output);
   void getStatesForFunction(uint16_t function,

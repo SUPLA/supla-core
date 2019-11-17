@@ -106,7 +106,7 @@ void publish_mqtt_message_for_channel(client_config* config,
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         char shut = cv[0];
-        replace_string_in_place(&payload, "$shut", std::to_string(shut));
+        replace_string_in_place(&payload, "$shut$", std::to_string(shut));
         publish = true;
       } break;
       case SUPLA_CHANNELFNC_ELECTRICITY_METER: {

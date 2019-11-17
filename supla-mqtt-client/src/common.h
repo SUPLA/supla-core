@@ -24,7 +24,7 @@
 
 bool exists_in_vect(std::vector<std::string>* vect, const std::string& value);
 
-void replace_string_in_place(std::string *subject, const std::string& search,
+void replace_string_in_place(std::string* subject, const std::string& search,
                              const std::string& replace);
 
 #endif /* COMMON_H_ */

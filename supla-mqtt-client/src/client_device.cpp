@@ -50,6 +50,66 @@ void client_device_channels::add_channel(
     char *Caption, const std::vector<client_state *> &States) {
   safe_array_lock(arr);
   if (find_channel(Id) == 0) {
+    if (Type == 0) {
+      /* enable support for proto version < 10 */
+      switch (Func) {
+        case SUPLA_CHANNELFNC_THERMOMETER:
+          Type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+          break;
+        case SUPLA_CHANNELFNC_DISTANCESENSOR:
+          Type = SUPLA_CHANNELTYPE_DISTANCESENSOR;
+          break;
+        case SUPLA_CHANNELFNC_DIMMER:
+          Type = SUPLA_CHANNELTYPE_DIMMER;
+          break;
+        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+          Type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
+          break;
+        case SUPLA_CHANNELFNC_THERMOSTAT:
+          Type = SUPLA_CHANNELTYPE_THERMOSTAT;
+          break;
+        case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+          Type = SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS;
+          break;
+        case SUPLA_CHANNELFNC_RGBLIGHTING:
+          Type = SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
+          break;
+        case SUPLA_CHANNELFNC_GAS_METER:
+        case SUPLA_CHANNELFNC_WATER_METER:
+          Type = SUPLA_CHANNELTYPE_IMPULSE_COUNTER;
+          break;
+        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+          Type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+          break;
+        case SUPLA_CHANNELFNC_HUMIDITY:
+        case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+          Type = SUPLA_CHANNELTYPE_DHT11;
+          break;
+        case SUPLA_CHANNELFNC_WEATHER_STATION:
+          Type = SUPLA_CHANNELTYPE_WEATHER_STATION;
+          break;
+        case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+          Type = SUPLA_CHANNELTYPE_WEIGHTSENSOR;
+          break;
+        case SUPLA_CHANNELFNC_RAINSENSOR:
+          Type = SUPLA_CHANNELTYPE_RAINSENSOR;
+          break;
+        case SUPLA_CHANNELFNC_PRESSURESENSOR:
+          Type = SUPLA_CHANNELTYPE_PRESSURESENSOR;
+          break;
+        case SUPLA_CHANNELFNC_WINDSENSOR:
+          Type = SUPLA_CHANNELTYPE_WINDSENSOR;
+          break;
+        case SUPLA_CHANNELFNC_MAILSENSOR:
+          Type = SUPLA_CHANNELTYPE_SENSORNC;
+          break;
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+          Type = SUPLA_CHANNELTYPE_RELAY;
+          break;
+      }
+    }
+
     client_device_channel *c = new client_device_channel(
         Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
         TextParam3, Hidden, Caption, States);

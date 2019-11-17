@@ -29,8 +29,8 @@
 #include <unistd.h>
 #include <iostream>
 #include <vector>
-#include "../supla-client-lib/sthread.h"
 #include "../supla-client-lib/log.h"
+#include "../supla-client-lib/sthread.h"
 #include "mqtt.h"
 
 using namespace std;
@@ -40,6 +40,7 @@ struct reconnect_state_t {
   int port;
   std::string username;
   std::string password;
+  std::string client_name;
   uint8_t* sendbuf;
   size_t sendbufsz;
   uint8_t* recvbuf;
@@ -48,7 +49,8 @@ struct reconnect_state_t {
 };
 
 int mqtt_client_init(std::string addr, int port, std::string username,
-                     std::string password, vector<std::string>& topics,
+                     std::string password, std::string client_name,
+                     uint8_t protocol_version, vector<std::string>& topics,
                      void (*publish_response_callback)(
                          void** state, struct mqtt_response_publish* publish));
 

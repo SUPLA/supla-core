@@ -26,12 +26,15 @@ client_config::client_config() {
   this->mqtt_password = "";
   this->mqtt_commands = "";
   this->mqtt_states = "";
+  this->mqtt_client_name = "supla_mqtt_client";
+  this->mqtt_protocol_version = 5;
 
   this->supla_host = "localhost";
   this->supla_port = 2016;
   this->supla_locationid = 1;
   this->supla_password = "";
   this->supla_email = "";
+  this->supla_protocol_version = 10;
 }
 
 client_config::~client_config() {
@@ -70,6 +73,10 @@ void client_config::load(const char* config_file) {
           root["mqtt"]["commands_file_path"].As<std::string>("command.yaml");
       this->mqtt_states =
           root["mqtt"]["states_file_path"].As<std::string>("state.yaml");
+      this->mqtt_client_name =
+          root["mqtt"]["client_name"].As<std::string>("supla_mqtt_client");
+      this->mqtt_protocol_version =
+          root["mqtt"]["protocol_version"].As<uint16_t>(5);
     }
 
     if (!root["supla"].IsNone()) {
@@ -78,6 +85,8 @@ void client_config::load(const char* config_file) {
       this->supla_locationid = root["supla"]["location"].As<uint32_t>(2016);
       this->supla_port = root["supla"]["port"].As<uint16_t>(2016);
       this->supla_email = root["supla"]["email"].As<std::string>("");
+      this->supla_protocol_version =
+          root["supla"]["protocol_version"].As<uint16_t>(10);
     }
 
     if (st_file_exists(this->mqtt_commands.c_str())) {
@@ -194,14 +203,24 @@ void client_config::getStatesForFunction(uint16_t function,
   }
 }
 
+std::string client_config::getMqttClientName() {
+  return this->mqtt_client_name;
+}
 std::string client_config::getMqttHost() { return this->mqtt_host; }
 std::string client_config::getMqttUsername() { return this->mqtt_username; }
 std::string client_config::getMqttPassword() { return this->mqtt_password; }
 int client_config::getMqttPort() { return this->mqtt_port; }
+const uint16_t client_config::getMqttProtocolVersion() {
+  return this->mqtt_protocol_version;
+}
 std::string client_config::getSuplaHost() { return this->supla_host; }
 std::string client_config::getSuplaPassword() { return this->supla_password; }
 const uint16_t client_config::getSuplaPort() { return this->supla_port; }
 const uint32_t client_config::getSuplaLocationId() {
   return this->supla_locationid;
 }
+const uint16_t client_config::getSuplaProtocolVersion() {
+  return this->supla_protocol_version;
+}
+
 std::string client_config::getSuplaEmail() { return this->supla_email; }
