@@ -21,13 +21,14 @@
 client_device_channel::client_device_channel(
     int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
     char *TextParam1, char *TextParam2, char *TextParam3, bool Hidden,
-    char *Caption, const std::vector<client_state *> &States)
+	bool Online, char *Caption, const std::vector<client_state *> &States)
     : supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
                            TextParam1, TextParam2, TextParam3, Hidden) {
+  this->Online = Online;
   this->Caption =
       Caption ? strndup(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
   for (auto state : States) this->states.push_back(state);
-  memset(this->sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
+  memset(this->Sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
 
 client_device_channel::~client_device_channel() {
@@ -47,20 +48,30 @@ const std::vector<client_state *> client_device_channel::getStates(void) const {
 
 void client_device_channel::setSubValue(
     char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(this->sub_value, sub_value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(this->Sub_value, sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 void client_device_channel::getSubValue(
     char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(sub_value, this->sub_value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(sub_value, this->Sub_value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+void client_device_channel::setOnline(bool value) {
+	this->Online = value;
+}
+
+bool client_device_channel::getOnline() {
+	return this->Online;
 }
 
 void client_device_channels::add_channel(
     int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
     char *TextParam1, char *TextParam2, char *TextParam3, bool Hidden,
-    char *Caption, const std::vector<client_state *> &States) {
+	bool Online, char *Caption, const std::vector<client_state *> &States) {
   safe_array_lock(arr);
-  if (find_channel(Id) == 0) {
+
+  client_device_channel* channel = find_channel(Id);
+  if (channel == 0) {
     if (Type == 0) {
       /* enable support for proto version < 10 */
       switch (Func) {
@@ -123,12 +134,14 @@ void client_device_channels::add_channel(
 
     client_device_channel *c = new client_device_channel(
         Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
-        TextParam3, Hidden, Caption, States);
+        TextParam3, Hidden, Online, Caption, States);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
       c = NULL;
     }
+  } else {
+	 channel->setOnline(Online);
   }
 
   safe_array_unlock(arr);

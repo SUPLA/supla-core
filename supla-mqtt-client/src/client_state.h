@@ -34,7 +34,7 @@ class client_state {
   client_state();
 
   uint16_t getFunction();
-  std::string getPayload(int id, std::string caption);
+  std::string getPayload(int id, std::string caption, bool online);
   std::string getTopic(int id, int type);
   bool getEnabled();
 

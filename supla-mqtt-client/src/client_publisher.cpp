@@ -23,9 +23,10 @@ void publish_mqtt_message_for_channel(client_config* config,
                                       client_device_channel* channel) {
   if (channel == NULL) return;
 
+  bool online = channel->getOnline();
   for (auto state : channel->getStates()) {
     std::string caption(channel->getCaption());
-    std::string payload = state->getPayload(channel->getId(), caption);
+    std::string payload = state->getPayload(channel->getId(), caption, online);
     std::string topic = state->getTopic(channel->getId(), channel->getType());
 
     double value;
@@ -43,6 +44,7 @@ void publish_mqtt_message_for_channel(client_config* config,
           replace_string_in_place(&payload, "$temperature$",
                                   std::to_string(temp));
           replace_string_in_place(&payload, "$humidity$", std::to_string(hum));
+
           publish = true;
         }
       } break;

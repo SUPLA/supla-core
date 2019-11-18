@@ -54,7 +54,8 @@ void client_loop_channel_update(void *_suplaclient, void *sthread,
   config->getStatesForFunction(channel->Func, &states);
 
   channels->add_channel(channel->Id, 0, channel->Type, channel->Func, 0, 0, 0,
-                        NULL, NULL, NULL, false, channel->Caption, states);
+                        NULL, NULL, NULL, false, channel->online == 1,
+						channel->Caption, states);
 
   bool converted = false;
   channels->set_channel_value(channel->Id, channel->value.value, &converted);
