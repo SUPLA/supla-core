@@ -88,10 +88,10 @@ int mqtt_client_init(std::string addr, int port, std::string username,
                      void (*publish_response_callback)(
                          void** state, struct mqtt_response_publish* publish)) {
   reconnect_state = new reconnect_state_t();
-  reconnect_state->sendbuf = (uint8_t*)malloc(4096 * sizeof(uint8_t));
-  reconnect_state->sendbufsz = 4096 * sizeof(uint8_t);
-  reconnect_state->recvbuf = (uint8_t*)malloc(1024 * sizeof(uint8_t));
-  reconnect_state->recvbufsz = 1024 * sizeof(uint8_t);
+  reconnect_state->sendbuf = (uint8_t*)malloc(8192 * sizeof(uint8_t));
+  reconnect_state->sendbufsz = 8192 * sizeof(uint8_t);
+  reconnect_state->recvbuf = (uint8_t*)malloc(2048 * sizeof(uint8_t));
+  reconnect_state->recvbufsz = 2048 * sizeof(uint8_t);
   reconnect_state->hostname = addr;
   reconnect_state->port = port;
   reconnect_state->username = username;
@@ -175,10 +175,10 @@ void reconnect_client(struct mqtt_client* client, void** reconnect_state_vptr) {
     free(reconnect_state->sendbuf);
     free(reconnect_state->recvbuf);
 
-    reconnect_state->sendbuf = (uint8_t*)malloc(4096 * sizeof(uint8_t));
-    reconnect_state->sendbufsz = 4096 * sizeof(uint8_t);
-    reconnect_state->recvbuf = (uint8_t*)malloc(1024 * sizeof(uint8_t));
-    reconnect_state->recvbufsz = 1024 * sizeof(uint8_t);
+    reconnect_state->sendbuf = (uint8_t*)malloc(8192 * sizeof(uint8_t));
+    reconnect_state->sendbufsz = 8192 * sizeof(uint8_t);
+    reconnect_state->recvbuf = (uint8_t*)malloc(2048 * sizeof(uint8_t));
+    reconnect_state->recvbufsz = 2048 * sizeof(uint8_t);
   }
 
   /* Reinitialize the client. */

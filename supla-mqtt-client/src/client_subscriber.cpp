@@ -31,6 +31,9 @@ void handle_subscribed_message(void* supla_client,
                                client_device_channels* channels,
                                client_config* config, std::string topic,
                                std::string message) {
+
+  supla_log(LOG_DEBUG, "handling message %s", message);
+
   if (supla_client == NULL) return;
   if (channels == NULL) return;
   if (config == NULL) return;
@@ -61,6 +64,9 @@ void handle_subscribed_message(void* supla_client,
       auto channel = channels->find_channel(id);
       if (channel == NULL) continue;
 
+      supla_log(LOG_DEBUG, "found command for topic id: %d  func: %d",id, channel->getFunc());
+
+
       switch (channel->getFunc()) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -69,6 +75,8 @@ void handle_subscribed_message(void* supla_client,
           std::string value =
               jsoncons::jsonpointer::get(payload, on_off).as<std::string>();
           std::string on_value = command->getOnValue();
+
+          supla_log(LOG_DEBUG, "handling %d %s %s", channel->getFunc(), value, on_value);
 
           if (value.compare(on_value) == 0)
             supla_client_open(supla_client, id, 0, 1);
