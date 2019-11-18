@@ -88,11 +88,11 @@ void client_loop_channel_value_update(void *_suplaclient, void *sthread,
   bool converted = false;
   channels->set_channel_value(channel_value->Id, channel_value->value.value,
                               &converted);
-  
+
   /* sub_value for sensors */
-  channels->set_channel_sub_value(channel_value->Id, 
-	     						  channel_value->value.sub_value);
-    
+  channels->set_channel_sub_value(channel_value->Id,
+                                  channel_value->value.sub_value);
+
   publish_mqtt_message_for_channel(config,
                                    channels->find_channel(channel_value->Id));
 }

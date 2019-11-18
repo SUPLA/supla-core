@@ -45,11 +45,13 @@ const std::vector<client_state *> client_device_channel::getStates(void) const {
   return this->states;
 }
 
-void client_device_channel::setSubValue(char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
+void client_device_channel::setSubValue(
+    char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->sub_value, sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
-void client_device_channel::getSubValue(char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
+void client_device_channel::getSubValue(
+    char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(sub_value, this->sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
@@ -134,18 +136,17 @@ void client_device_channels::add_channel(
 
 void client_device_channels::set_channel_sub_value(
     int ChannelID, char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
-    if (ChannelID == 0) return;
-    
-    safe_array_lock(arr);
+  if (ChannelID == 0) return;
 
-    client_device_channel *channel = find_channel(ChannelID);
+  safe_array_lock(arr);
 
-    if (channel) {
-      channel->setSubValue(sub_value);
-	}
-    safe_array_unlock(arr);
+  client_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) {
+    channel->setSubValue(sub_value);
+  }
+  safe_array_unlock(arr);
 }
-
 
 client_device_channel *client_device_channels::find_channel(int ChannelId) {
   return (client_device_channel *)safe_array_findcnd(arr, arr_findcmp,

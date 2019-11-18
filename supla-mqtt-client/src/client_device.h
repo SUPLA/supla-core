@@ -30,6 +30,7 @@ class client_device_channel : public supla_device_channel {
   std::vector<client_state *> states;
   char *Caption;
   char sub_value[8];
+
  public:
   client_device_channel(int Id, int Number, int Type, int Func, int Param1,
                         int Param2, int Param3, char *TextParam1,
@@ -50,9 +51,9 @@ class client_device_channels : public supla_device_channels {
                    int Param2, int Param3, char *TextParam1, char *TextParam2,
                    char *TextParam3, bool Hidden, char *Caption,
                    const std::vector<client_state *> &States);
-				   
-  void set_channel_sub_value(
-    int ChannelID, char sub_value[SUPLA_CHANNELVALUE_SIZE]);
+
+  void set_channel_sub_value(int ChannelID,
+                             char sub_value[SUPLA_CHANNELVALUE_SIZE]);
 
   client_device_channel *find_channel(int ChannelId);
 };
