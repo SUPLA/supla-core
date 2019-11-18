@@ -52,11 +52,12 @@ void client_loop_channel_update(void *_suplaclient, void *sthread,
                                 TSC_SuplaChannel_C *channel) {
   vector<client_state *> states;
   config->getStatesForFunction(channel->Func, &states);
+  supla_log(LOG_DEBUG, "Channel Update %d %d", channel->Id,  channel->online);
 
   channels->add_channel(channel->Id, 0, channel->Type, channel->Func, 0, 0, 0,
                         NULL, NULL, NULL, false, channel->online == 1,
 						channel->Caption, states);
-
+  
   bool converted = false;
   channels->set_channel_value(channel->Id, channel->value.value, &converted);
   publish_mqtt_message_for_channel(config, channels->find_channel(channel->Id));
@@ -87,15 +88,21 @@ void client_loop_on_event(void *_suplaclient, void *user_data,
 void client_loop_channel_value_update(void *_suplaclient, void *sthread,
                                       TSC_SuplaChannelValue *channel_value) {
   bool converted = false;
-  channels->set_channel_value(channel_value->Id, channel_value->value.value,
+  /*channels->set_channel_value(channel_value->Id, channel_value->value.value,
                               &converted);
-
+  
+  */
   /* sub_value for sensors */
-  channels->set_channel_sub_value(channel_value->Id,
-                                  channel_value->value.sub_value);
-
-  publish_mqtt_message_for_channel(config,
-                                   channels->find_channel(channel_value->Id));
+  
+  //channels->set_channel_sub_value(channel_value->Id,
+    //                              channel_value->value.sub_value);
+  
+  client_device_channel* channel = channels->find_channel(channel_value->Id);
+  channel->setValue(channel_value->value.value);
+  channel->setSubValue(channel_value->value.sub_value);
+  channel->setOnline(channel_value->online);
+  
+  publish_mqtt_message_for_channel(config, channel);
 }
 
 void client_loop_channel_extendedalue_update(
