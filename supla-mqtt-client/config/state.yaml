@@ -2,13 +2,16 @@ default_state_topic: 'supla/channels/status/$type$/$id$'
 
 channels:   
   - channel_type: 10 #CONTROLLINGTHEGATEWAYLOCK
-    payload_template: '{ "hi" : $value$ }'
+    state_topic: 'supla/channels/status/gatewaylock/$id$'
+    payload_template: '{ "hi" : $value$, "sensor_1": $sensor_1$}'
 
   - channel_type: 20 #CONTROLLINGTHEGATE  
-    payload_template: '{"hi": $value$, "partial_hi": $partial_hi$}'
+    state_topic: 'supla/channels/status/gate/$id$'
+    payload_template: '{"hi": $value$, "sensor_1": $sensor_1$}'
 
   - channel_type: 30 #CONTROLLINGTHEGARAGEDOOR
-    payload_template: '{"hi": $value$}'
+    state_topic: 'supla/channels/status/garagedoor/$id$'
+    payload_template: '{"hi": $value$, "sensor_1": $sensor_1$}'
   
   - channel_type: 40 #THERMOMETER
     state_topic: 'supla/channels/status/thermometer/$id$'
@@ -34,14 +37,15 @@ channels:
     payload_template: '{"hi": $value$}'
   
   - channel_type: 90 #CONTROLLINGTHEDOORLOCK
-    payload_template: '{"hi": $value$}'
+    state_topic: 'supla/channels/status/doorlock/$id$'
+    payload_template: '{"hi": $value$, "sensor_1": $sensor_1$ }'
     
   - channel_type: 100 #OPENINGSENSOR_DOOR
     payload_template: '{"hi": $value$}'
     
   - channel_type: 110 #CONTROLLINGTHEROLLERSHUTTER
     state_topic: 'supla/channels/status/rollershutter/$id$'
-    payload_template: '{"id": $id$, "shut": $shut$}'
+    payload_template: '{"id": $id$, "shut": $shut$, "sensor_1": $sensor_1$}'
   
   - channel_type: 120 #OPENINGSENSOR_ROLLERSHUTTER
     payload_template: '{"hi": $value$}'
@@ -55,12 +59,15 @@ channels:
     payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$}'
   
   - channel_type: 180 #DIMMER
+    state_topic: 'supla/channels/status/dimmer/$id$' 
     payload_template: '{"brightness": $brightness$}'
     
   - channel_type: 190 #RGBLIGHTING
+    state_topic: 'supla/channels/status/rgblightning/$id$'
     payload_template: '{"on": $value$, "color": "$color$", "color_brightness": $color_brightness$}'
  
   - channel_type: 200 #DIMMERANDRGBLIGHTING
+    state_topic: 'supla/channels/status/dimmerandrgblightning/$id$'
     payload_template: '{"on": $value$, "red": $red$, "green": $green$, "blue": $blue$, "color": "$color$", "brightness": $brightness$ "color_brightness": $color_brightness$}'
 
   - channel_type: 210 #DEPTHSENSOR
