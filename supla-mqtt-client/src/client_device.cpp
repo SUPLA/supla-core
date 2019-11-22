@@ -21,7 +21,7 @@
 client_device_channel::client_device_channel(
     int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
     char *TextParam1, char *TextParam2, char *TextParam3, bool Hidden,
-	bool Online, char *Caption, const std::vector<client_state *> &States)
+    bool Online, char *Caption, const std::vector<client_state *> &States)
     : supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
                            TextParam1, TextParam2, TextParam3, Hidden) {
   this->Online = Online;
@@ -57,17 +57,17 @@ void client_device_channel::getSubValue(
 }
 
 void client_device_channel::setOnline(bool value) {
-	this->Online = value;
+    this->Online = value;
 }
 
 bool client_device_channel::getOnline() {
-	return this->Online;
+    return this->Online;
 }
 
 void client_device_channels::add_channel(
     int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
     char *TextParam1, char *TextParam2, char *TextParam3, bool Hidden,
-	bool Online, char *Caption, const std::vector<client_state *> &States) {
+    bool Online, char *Caption, const std::vector<client_state *> &States) {
   safe_array_lock(arr);
 
   client_device_channel* channel = find_channel(Id);
@@ -141,7 +141,7 @@ void client_device_channels::add_channel(
       c = NULL;
     }
   } else {
-	 channel->setOnline(Online);
+      channel->setOnline(Online);
   }
 
   safe_array_unlock(arr);
