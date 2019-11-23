@@ -26,5 +26,7 @@ SUBDIRS := \
 src \
 src/mqtt \
 src/supla-client-lib \
+src/test \
+src/test/gtest \
 src/yaml \
 

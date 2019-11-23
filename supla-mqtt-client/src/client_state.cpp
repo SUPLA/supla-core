@@ -26,10 +26,11 @@ client_state::client_state() {
 }
 
 uint16_t client_state::getFunction() { return this->function; }
-std::string client_state::getPayload(int id, std::string caption) {
+std::string client_state::getPayload(int id, std::string caption, bool online) {
   std::string result = this->payload;
   replace_string_in_place(&result, "$id$", std::to_string(id));
   replace_string_in_place(&result, "$caption$", caption);
+  replace_string_in_place(&result, "$online$", std::to_string(online));
   return result;
 }
 std::string client_state::getTopic(int id, int type) {

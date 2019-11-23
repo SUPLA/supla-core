@@ -23,9 +23,10 @@ void publish_mqtt_message_for_channel(client_config* config,
                                       client_device_channel* channel) {
   if (channel == NULL) return;
 
+  bool online = channel->getOnline();
   for (auto state : channel->getStates()) {
     std::string caption(channel->getCaption());
-    std::string payload = state->getPayload(channel->getId(), caption);
+    std::string payload = state->getPayload(channel->getId(), caption, online);
     std::string topic = state->getTopic(channel->getId(), channel->getType());
 
     double value;
@@ -43,6 +44,7 @@ void publish_mqtt_message_for_channel(client_config* config,
           replace_string_in_place(&payload, "$temperature$",
                                   std::to_string(temp));
           replace_string_in_place(&payload, "$humidity$", std::to_string(hum));
+
           publish = true;
         }
       } break;
@@ -54,6 +56,23 @@ void publish_mqtt_message_for_channel(client_config* config,
       case SUPLA_CHANNELFNC_DISTANCESENSOR: {
         channel->getDouble(&value);
         replace_string_in_place(&payload, "$value$", std::to_string(value));
+        publish = true;
+      } break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK: {
+        char value[SUPLA_CHANNELVALUE_SIZE];
+        char sub_value[SUPLA_CHANNELVALUE_SIZE];
+        channel->getSubValue(sub_value);
+        channel->getChar(value);
+        bool hi = value[0] > 0;
+
+        replace_string_in_place(&payload, "$value$", std::to_string(hi));
+        replace_string_in_place(&payload, "$sensor_1$",
+                                std::to_string(sub_value[0]));
+        replace_string_in_place(&payload, "$sensor_2$",
+                                std::to_string(sub_value[1]));
         publish = true;
       } break;
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -70,7 +89,24 @@ void publish_mqtt_message_for_channel(client_config* config,
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         bool hi = cv[0] > 0;
+
         replace_string_in_place(&payload, "$value$", std::to_string(hi));
+
+        publish = true;
+      } break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
+        char cv[SUPLA_CHANNELVALUE_SIZE];
+        channel->getChar(cv);
+        char sub_value[SUPLA_CHANNELVALUE_SIZE];
+        channel->getSubValue(sub_value);
+        char shut = cv[0];
+        replace_string_in_place(&payload, "$shut$", std::to_string(shut));
+
+        replace_string_in_place(&payload, "$sensor_1$",
+                                std::to_string(sub_value[0]));
+        replace_string_in_place(&payload, "$sensor_2$",
+                                std::to_string(sub_value[1]));
+
         publish = true;
       } break;
       case SUPLA_CHANNELFNC_DIMMER:
@@ -100,13 +136,6 @@ void publish_mqtt_message_for_channel(client_config* config,
         replace_string_in_place(&payload, "$brightness$",
                                 std::to_string(brightness));
         replace_string_in_place(&payload, "$value$", std::to_string(on_off));
-        publish = true;
-      } break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
-        char cv[SUPLA_CHANNELVALUE_SIZE];
-        channel->getChar(cv);
-        char shut = cv[0];
-        replace_string_in_place(&payload, "$shut$", std::to_string(shut));
         publish = true;
       } break;
       case SUPLA_CHANNELFNC_ELECTRICITY_METER: {

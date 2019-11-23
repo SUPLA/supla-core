@@ -2,91 +2,98 @@ default_state_topic: 'supla/channels/status/$type$/$id$'
 
 channels:   
   - channel_type: 10 #CONTROLLINGTHEGATEWAYLOCK
-    payload_template: '{ "hi" : $value$ }'
+    state_topic: 'supla/channels/status/gatewaylock/$id$'
+    payload_template: '{"id": $id$, "hi" : $value$, "sensor_1": $sensor_1$, "online": $online$}'
 
   - channel_type: 20 #CONTROLLINGTHEGATE  
-    payload_template: '{"hi": $value$, "partial_hi": $partial_hi$}'
+    state_topic: 'supla/channels/status/gate/$id$'
+    payload_template: '{"id": $id$, "hi": $value$, "sensor_1": $sensor_1$, "online": $online$}'
 
   - channel_type: 30 #CONTROLLINGTHEGARAGEDOOR
-    payload_template: '{"hi": $value$}'
+    state_topic: 'supla/channels/status/garagedoor/$id$'
+    payload_template: '{"id": $id$, "hi": $value$, "sensor_1": $sensor_1$, "online": $online$}'
   
   - channel_type: 40 #THERMOMETER
     state_topic: 'supla/channels/status/thermometer/$id$'
-    payload_template: '{"id": $id$, "caption": "$caption$", "temperature": $temperature$}'
+    payload_template: '{"id": $id$, "caption": "$caption$", "temperature": $temperature$, "online": $online$}'
   
   - channel_type: 42 #HUMIDITY
-    payload_template: '{"humidity": $humidity$}'
+    payload_template: '{"id": $id$, "humidity": $humidity$, "online": $online$}'
   
   - channel_type: 45 #HUMIDITYANDTEMPERATURE
     state_topic: 'supla/channels/status/temperature_humidity/$id$'
-    payload_template: '{"id" : $id$, "caption": "$caption$", "temperature": $temperature$, "humidity": $humidity$}'
+    payload_template: '{"id" : $id$, "caption": "$caption$", "temperature": $temperature$, "humidity": $humidity$, "online": $online$}'
   
   - channel_type: 50 #OPENINGSENSOR_GATEWAY
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
   
   - channel_type: 60 #OPENINGSENSOR_GATE
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
 
   - channel_type: 70 #OPENINGSENSOR_GARAGEDOOR
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
   
   - channel_type: 80 #NOLIQUIDSENSOR
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
   
   - channel_type: 90 #CONTROLLINGTHEDOORLOCK
-    payload_template: '{"hi": $value$}'
+    state_topic: 'supla/channels/status/doorlock/$id$'
+    payload_template: '{"id": $id$, "hi": $value$, "sensor_1": $sensor_1$, "online": $online$}'
     
   - channel_type: 100 #OPENINGSENSOR_DOOR
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
     
   - channel_type: 110 #CONTROLLINGTHEROLLERSHUTTER
     state_topic: 'supla/channels/status/rollershutter/$id$'
-    payload_template: '{"id": $id$, "shut": $shut$}'
+    payload_template: '{"id": $id$, "shut": $shut$, "sensor_1": $sensor_1$, "online": $online$}'
   
   - channel_type: 120 #OPENINGSENSOR_ROLLERSHUTTER
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
     
   - channel_type: 130 #POWERSWITCH
     state_topic: 'supla/channels/status/switch/$id$'
-    payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$}'
+    payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$, "online": $online$}'
   
   - channel_type: 140 #LIGHTSWITCH
     state_topic: 'supla/channels/status/relay/$id$'
-    payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$}'
+    payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$, "online": $online$}'
   
   - channel_type: 180 #DIMMER
-    payload_template: '{"brightness": $brightness$}'
+    state_topic: 'supla/channels/status/dimmer/$id$' 
+    payload_template: '{"id": $id$, "brightness": $brightness$, "online": $online$}'
     
   - channel_type: 190 #RGBLIGHTING
-    payload_template: '{"on": $value$, "color": "$color$", "color_brightness": $color_brightness$}'
+    state_topic: 'supla/channels/status/rgblightning/$id$'
+    payload_template: '{"id": $id$, "on": $value$, "color": "$color$", "color_brightness": $color_brightness$, "online": $online$}'
  
   - channel_type: 200 #DIMMERANDRGBLIGHTING
-    payload_template: '{"on": $value$, "red": $red$, "green": $green$, "blue": $blue$, "color": "$color$", "brightness": $brightness$ "color_brightness": $color_brightness$}'
+    state_topic: 'supla/channels/status/dimmerandrgblightning/$id$'
+    payload_template: '{"id": $id$, "on": $value$, "red": $red$, "green": $green$, "blue": $blue$, "color": "$color$", "brightness": $brightness$ "color_brightness": $color_brightness$, "online": $online$}'
 
   - channel_type: 210 #DEPTHSENSOR
-    payload_template: '{"depth": $value$}'
+    payload_template: '{"id": $id$, "depth": $value$, "online": $online$}'
 
   - channel_type: 220 #DISTANCESENSOR
-    payload_template: '{"distance": $value$}'
+    payload_template: '{"id": $id$, "distance": $value$, "online": $online$}'
 
   - channel_type: 230 #OPENINGSENSOR_WINDOW
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
     
   - channel_type: 240 #MAILSENSOR
-    payload_template: '{"hi": $value$}'
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
   
   - channel_type: 300 #STAIRCASETIMER
-    payload_template: '{"on": $value$}'
+    payload_template: '{"id": $id$, "on": $value$, "online": $online$}'
   
   - channel_type: 310 #ELECTRICITYMETER
     enabled: false
     state_topic: 'supla/electricity'
-    payload_template: '{"currency":"$currency$", "totalcost": $totalCost$, "pricePerUnit": $pricePerUnit$}' 
+    payload_template: '{"id": $id$, "currency":"$currency$", "totalcost": $totalCost$, "pricePerUnit": $pricePerUnit$, "online": $online$}' 
     
   - channel_type: 310 #ELECTRICITYMETER
     enabled : true
     state_topic: 'supla/channels/status/electricity/$id$'
-    payload_template: '{"id": $id$, "currency":"$currency$", 
+    payload_template: '{"id": $id$, "currency":"$currency$", "online": $online$,
         "pricePerUnit": $pricePerUnit$, 
         "totalCost": $totalCost$, 
          "phases": [

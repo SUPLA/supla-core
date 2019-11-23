@@ -15,33 +15,27 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "../client_config.h"
+#include "../mqtt/mqtt_client.h"
+#include "gtest/gtest.h"
 
-#ifndef CLIENT_STATE_H_
-#define CLIENT_STATE_H_
+#define MIN_RETRY_TIME 5
+#define MIN_CHECK_TIME 1
 
-#include <string>
-#include "common.h"
-#include "supla-client-lib/proto.h"
+namespace {
 
-class client_state {
- private:
-  uint16_t function;
-  std::string payload;
-  std::string topic;
-  bool enabled;
-
- public:
-  client_state();
-
-  uint16_t getFunction();
-  std::string getPayload(int id, std::string caption, bool online);
-  std::string getTopic(int id, int type);
-  bool getEnabled();
-
-  void setFunction(std::uint16_t value);
-  void setPayload(std::string value);
-  void setTopic(std::string value);
-  void setEnabled(bool value);
+class MqttTest : public ::testing::Test {
+ protected:
 };
 
-#endif /* CLIENT_STATE_H_ */
+TEST_F(MqttTest, config_parse_test) {
+  client_config* config = new client_config();
+  ASSERT_TRUE(config->load("../config/config_template.yaml") == true);
+  ASSERT_TRUE(config->getMqttProtocolVersion() >= 3 &&
+              config->getMqttProtocolVersion() <= 5);
+  ASSERT_TRUE(config->getSuplaProtocolVersion() <= 11);
+
+  delete config;
+}
+
+}  // namespace
