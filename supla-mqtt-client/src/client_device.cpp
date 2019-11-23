@@ -56,13 +56,9 @@ void client_device_channel::getSubValue(
   memcpy(sub_value, this->Sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
-void client_device_channel::setOnline(bool value) {
-    this->Online = value;
-}
+void client_device_channel::setOnline(bool value) { this->Online = value; }
 
-bool client_device_channel::getOnline() {
-    return this->Online;
-}
+bool client_device_channel::getOnline() { return this->Online; }
 
 void client_device_channels::add_channel(
     int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
@@ -70,7 +66,7 @@ void client_device_channels::add_channel(
     bool Online, char *Caption, const std::vector<client_state *> &States) {
   safe_array_lock(arr);
 
-  client_device_channel* channel = find_channel(Id);
+  client_device_channel *channel = find_channel(Id);
   if (channel == 0) {
     if (Type == 0) {
       /* enable support for proto version < 10 */
@@ -141,7 +137,7 @@ void client_device_channels::add_channel(
       c = NULL;
     }
   } else {
-      channel->setOnline(Online);
+    channel->setOnline(Online);
   }
 
   safe_array_unlock(arr);

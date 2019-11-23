@@ -56,7 +56,8 @@ client_config::~client_config() {
 bool client_config::load(const char* config_file) {
   try {
     if (!st_file_exists(config_file)) {
-      std::cout << "configuration file missing [parameter -config]" << std::endl;
+      std::cout << "configuration file missing [parameter -config]"
+                << std::endl;
       exit(2);
     }
 
@@ -139,12 +140,10 @@ bool client_config::load(const char* config_file) {
         this->states.push_back(cs);
       }
     } else {
-       supla_log(LOG_INFO, "states file not exists");
-       return false;
+      supla_log(LOG_INFO, "states file not exists");
+      return false;
     }
-
     return true;
-
   } catch (std::exception& exception) {
     std::cout << exception.what() << std::endl;
     return false;

@@ -15,9 +15,9 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#include "gtest/gtest.h"
 #include "../client_config.h"
 #include "../mqtt/mqtt_client.h"
+#include "gtest/gtest.h"
 
 #define MIN_RETRY_TIME 5
 #define MIN_CHECK_TIME 1
@@ -29,13 +29,13 @@ class MqttTest : public ::testing::Test {
 };
 
 TEST_F(MqttTest, config_parse_test) {
+  client_config* config = new client_config();
+  ASSERT_TRUE(config->load("../config/config_template.yaml") == true);
+  ASSERT_TRUE(config->getMqttProtocolVersion() >= 3 &&
+              config->getMqttProtocolVersion() <= 5);
+  ASSERT_TRUE(config->getSuplaProtocolVersion() <= 11);
 
-   client_config* config = new client_config();
-   ASSERT_TRUE(config->load("./config/config_template.yaml") == true);
-   ASSERT_TRUE(config->getMqttProtocolVersion() >= 3 && config->getMqttProtocolVersion() <= 5);
-   ASSERT_TRUE(config->getSuplaProtocolVersion() <= 11);
-
-   delete config;
+  delete config;
 }
 
 }  // namespace
