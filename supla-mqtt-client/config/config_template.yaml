@@ -1,8 +1,8 @@
 mqtt:
   host: 'mqttserverhost'
   port: 1883 
-  commands_file_path: 'command.yaml'
-  states_file_path: 'state.yaml' 
+  commands_file_path: './config/command.yaml'
+  states_file_path: './config/state.yaml' 
   client_name: 'supla_mqtt_client'
   protocol_version: 5
 supla:

@@ -53,7 +53,7 @@ class client_config {
  public:
   client_config();
   virtual ~client_config();
-  void load(const char *config_file);
+  bool load(const char *config_file);
 
   std::string getMqttHost();
   std::string getMqttUsername();

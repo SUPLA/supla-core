@@ -53,11 +53,10 @@ client_config::~client_config() {
   std::vector<client_state*>().swap(states);
 }
 
-void client_config::load(const char* config_file) {
+bool client_config::load(const char* config_file) {
   try {
     if (!st_file_exists(config_file)) {
-      std::cout << "configuration file missing [parameter -config]"
-                << std::endl;
+      std::cout << "configuration file missing [parameter -config]" << std::endl;
       exit(2);
     }
 
@@ -117,6 +116,7 @@ void client_config::load(const char* config_file) {
 
     } else {
       supla_log(LOG_INFO, "command file not exists.");
+      return false;
     }
 
     if (st_file_exists(this->mqtt_states.c_str())) {
@@ -139,10 +139,15 @@ void client_config::load(const char* config_file) {
         this->states.push_back(cs);
       }
     } else {
-      supla_log(LOG_INFO, "states file not exists");
+       supla_log(LOG_INFO, "states file not exists");
+       return false;
     }
+
+    return true;
+
   } catch (std::exception& exception) {
     std::cout << exception.what() << std::endl;
+    return false;
   }
 }
 
