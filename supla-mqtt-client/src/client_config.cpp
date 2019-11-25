@@ -78,8 +78,8 @@ bool client_config::load(const char* config_file) {
           root["mqtt"]["client_name"].As<std::string>("supla_mqtt_client");
       this->mqtt_protocol_version =
           root["mqtt"]["protocol_version"].As<uint16_t>(5);
-	  this->mqtt_publish_events = 
-	      root["mqtt"]["publish_supla_events"].As<bool>(true);
+      this->mqtt_publish_events =
+          root["mqtt"]["publish_supla_events"].As<bool>(true);
     }
 
     if (!root["supla"].IsNone()) {
