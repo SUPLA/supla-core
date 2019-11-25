@@ -19,8 +19,52 @@
 #include "client_publisher.h"
 #include <string>
 
-void publish_mqtt_message_for_channel(client_config* config,
-                                      client_device_channel* channel) {
+void publish_mqtt_message_for_event(client_config *config, 
+									TSC_SuplaEvent *event) {
+	
+	if (event == null) return;
+	if (config->getMqttPublishEvents() != true) return;
+	
+	std::string eventType = "UNKNOWN";
+	
+	switch (event->event) {
+	   case SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK: {
+		   eventType = "CONTROLLINGTHEGATEWAYLOCK";
+	   } break;
+	   case SUPLA_EVENT_CONTROLLINGTHEGATE: {
+	       eventType = "CONTROLLINGTHEGATE";
+	   } break;
+	   case SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR: {
+	       eventType = "CONTROLLINGTHEGARAGEDOOR"; 
+	   } break;
+	   case SUPLA_EVENT_CONTROLLINGTHEDOORLOCK: {
+	       eventType = "CONTROLLINGTHEDOORLOCK";
+	   } break;
+	   case SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER: {
+	       eventType = "CONTROLLINGTHEROLLERSHUTTER";
+	   } break;
+	   case SUPLA_EVENT_POWERONOFF: {
+	       eventType = "POWERONOFF";
+	   } break;
+	   case SUPLA_EVENT_LIGHTONOFF: {
+	       eventType = "LIGHTONOFF";
+	   } break;
+	   case SUPLA_EVENT_STAIRCASETIMERONOFF: {
+	       eventType = "STAIRCASETIMERONOFF";
+	   } break;
+	};
+		
+	std::string topic = "supla/channels/event";
+	std::string senderName(event->SenderName, event->SenderNameSize);
+	
+	std::string sname = "\"SenderName\": \"" + senderName + "\"";
+	std::string evntp = "\"EventType\": \"" + eventType + "\"";
+	std::string payload = "{ " + sname + ", " + evntp + " }";
+	
+	mqtt_client_publish(topic.c_str(), payload.c_str(), 0, 0);
+}
+
+void publish_mqtt_message_for_channel(client_device_channel* channel) {
   if (channel == NULL) return;
 
   bool online = channel->getOnline();

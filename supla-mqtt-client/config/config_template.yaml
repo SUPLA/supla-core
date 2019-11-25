@@ -5,6 +5,7 @@ mqtt:
   states_file_path: '../config/state.yaml' 
   client_name: 'supla_mqtt_client'
   protocol_version: 5
+  publish_supla_events: true
 supla:
   port: 2016
   host: 'localhost'

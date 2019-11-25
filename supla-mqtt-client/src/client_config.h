@@ -38,6 +38,7 @@ class client_config {
   std::string mqtt_commands;
   std::string mqtt_states;
   std::string mqtt_client_name;
+  bool mqtt_publish_events;
   uint16_t mqtt_protocol_version;
 
   std::string supla_host;
@@ -61,6 +62,7 @@ class client_config {
   std::string getMqttCommands();
   std::string getMqttStates();
   std::string getMqttClientName();
+  bool getMqttPublishEvents();
   const uint16_t getMqttProtocolVersion();
 
   int getMqttPort();
