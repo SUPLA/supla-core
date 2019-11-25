@@ -83,7 +83,7 @@ void client_loop_on_event(void *_suplaclient, void *user_data,
   supla_log(LOG_DEBUG, "Event: %i, SenderID: %i, SenderName: %s", event->Event,
             event->SenderID, event->SenderName);
 
-  publish_mqtt_message_for_event(event);
+  publish_mqtt_message_for_event(config, event);
 }
 
 void client_loop_channel_value_update(void *_suplaclient, void *sthread,

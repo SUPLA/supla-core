@@ -19,15 +19,14 @@
 #include "client_publisher.h"
 #include <string>
 
-void publish_mqtt_message_for_event(client_config *config, 
-									TSC_SuplaEvent *event) {
-	
-	if (event == null) return;
+void publish_mqtt_message_for_event(client_config *config,TSC_SuplaEvent *event) {
+
+	if (event == NULL) return;
 	if (config->getMqttPublishEvents() != true) return;
-	
+
 	std::string eventType = "UNKNOWN";
-	
-	switch (event->event) {
+
+	switch (event->Event) {
 	   case SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK: {
 		   eventType = "CONTROLLINGTHEGATEWAYLOCK";
 	   } break;
@@ -53,15 +52,14 @@ void publish_mqtt_message_for_event(client_config *config,
 	       eventType = "STAIRCASETIMERONOFF";
 	   } break;
 	};
-		
+
 	std::string topic = "supla/channels/event";
-	std::string senderName(event->SenderName, event->SenderNameSize);
-	
-	std::string sname = "\"SenderName\": \"" + senderName + "\"";
-	std::string evntp = "\"EventType\": \"" + eventType + "\"";
-	std::string payload = "{ " + sname + ", " + evntp + " }";
-	
-	mqtt_client_publish(topic.c_str(), payload.c_str(), 0, 0);
+	std::string payload = "{\"SenderName\": \"$SenderName$\", \"EventType\": \"$EventType$\" }";
+
+        replace_string_in_place(&payload, "$SenderName$", event->SenderName);
+	replace_string_in_place(&payload, "$EventType$", eventType);
+
+        mqtt_client_publish(topic.c_str(), payload.c_str(), 0, 0);
 }
 
 void publish_mqtt_message_for_channel(client_device_channel* channel) {
