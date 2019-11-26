@@ -31,6 +31,7 @@ class client_device_channel : public supla_device_channel {
   char *Caption;
   char Sub_value[8];
   bool Online;
+
  public:
   client_device_channel(int Id, int Number, int Type, int Func, int Param1,
                         int Param2, int Param3, char *TextParam1,

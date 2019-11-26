@@ -28,7 +28,9 @@
 #include "supla-client-lib/srpc.h"
 #include "yaml/yaml.h"
 
-void publish_mqtt_message_for_channel(client_config* config,
-                                      client_device_channel* channel);
+void publish_mqtt_message_for_event(client_config *config,
+                                    TSC_SuplaEvent *event);
+
+void publish_mqtt_message_for_channel(client_device_channel *channel);
 
 #endif /* CLIENT_PUBLISHER_H_ */

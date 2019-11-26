@@ -28,6 +28,7 @@ client_config::client_config() {
   this->mqtt_states = "";
   this->mqtt_client_name = "supla_mqtt_client";
   this->mqtt_protocol_version = 5;
+  this->mqtt_publish_events = true;
 
   this->supla_host = "localhost";
   this->supla_port = 2016;
@@ -77,6 +78,8 @@ bool client_config::load(const char* config_file) {
           root["mqtt"]["client_name"].As<std::string>("supla_mqtt_client");
       this->mqtt_protocol_version =
           root["mqtt"]["protocol_version"].As<uint16_t>(5);
+      this->mqtt_publish_events =
+          root["mqtt"]["publish_supla_events"].As<bool>(true);
     }
 
     if (!root["supla"].IsNone()) {
@@ -156,6 +159,8 @@ void client_config::getTopicsToSubscribe(std::vector<std::string>* vect) {
     if (!exists_in_vect(vect, topic)) vect->push_back(topic);
   }
 }
+
+bool client_config::getMqttPublishEvents() { return this->mqtt_publish_events; }
 
 std::string client_config::getMqttCommands() { return this->mqtt_commands; }
 

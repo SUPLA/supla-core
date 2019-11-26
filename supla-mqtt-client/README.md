@@ -3,11 +3,17 @@
 This project combines SUPLA with MQTT. Its basic functionality is publishing the status of SUPLA channels to the MQTT server and responding to MQTT server messages to control SUPLA channels. The output and input message patterns are configurable in the state.yaml and command.yaml files
 
 # Building
-To build the project You need SSL library first. It can be installed by running command:
+To build the project You need install below mentioned libraries first. It can be installed by running command:
 ```
-sudo apt-get install libssl-dev
+sudo apt-get install -y --no-install-recommends \
+        git \
+        make \
+        gcc \
+        g++ \
+        libssl-dev \
+        ca-certificates \
+        ssl-cert
 ```
-
 
 ```
 git clone https://github.com/SUPLA/supla-core.git
@@ -40,11 +46,15 @@ mqtt:
   states_file_path: '/home/pi/supla-mqtt-client/config/state.yaml' # absolute path to the state.yaml configuration file
   username: '' # MQTT username if the server is secured in this way. if You don't use it delete this line
   password: '' # MQTT password if the server is secured in this way. uf You don't use it delete this line
+  client_name: 'supla_mqtt_client' #MQTT broker client name should be unique
+  protocol_version: 5 #MQTT protocol version. supported 3 for 3.1.1 version and 5
+  publish_supla_events: true #if enabled client will publish supla client events 
 supla:
   port: 2016 # SUPLA server port
   host: 'localhost' # SUPLA server hostname
   location: 2 # access id from SUPLA Cloud
   password: 'password' # password for the given access identifier
+  protocol_version: 10 # supla protocol version should be grater than 5
 ```
 
 
@@ -62,6 +72,11 @@ $id$ - SUPLA id will be substituted for this macro
 $caption$ - the SUPLA channel name will be substituted for this macro
 $temperature$ - the temperature value will be substituted for this macro (for the channel in which the temperature occurs)
 $humidity$ - the humidity value will be substituted for this macro (for the channel in which humidity occurs)
+$value$ - value for most 0, 1 channel states like gates, door, relay, light
+$online$ - online flag. 0 means that channel is offline
+$sensor_1$ - first sensor value for channels that has sensors like gate
+$sensor_2$ - second sensor value for channels that has sensosrs like gate 
+$shut$ - percentage of rollershutter position
 ```
 The rest of the macros are described in the state.yaml file
 
