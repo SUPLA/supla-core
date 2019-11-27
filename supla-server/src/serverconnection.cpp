@@ -24,6 +24,7 @@
 #include "database.h"
 #include "device/device.h"
 #include "log.h"
+#include "safearray.h"
 #include "serverconnection.h"
 #include "srpc.h"
 #include "sthread.h"
@@ -66,8 +67,25 @@ void supla_connection_on_version_error(void *_srpc,
   for (a = 0; a < 20; a++) srpc_iterate(_srpc);
 }
 
+// static
+void serverconnection::initialize(void) {
+  serverconnection::reg_pending_arr = safe_array_init();
+}
+
+// static
+void serverconnection::serverconnection_free(void) {
+  safe_array_free(serverconnection::reg_pending_arr);
+}
+
+// static
+int serverconnection::registration_pending_count() {
+  return safe_array_count(serverconnection::reg_pending_arr);
+}
+
 serverconnection::serverconnection(void *ssd, void *supla_socket,
                                    unsigned int client_ipv4) {
+  safe_array_add(serverconnection::reg_pending_arr, this);
+
   gettimeofday(&this->init_time, NULL);
   this->client_ipv4 = client_ipv4;
   this->sthread = NULL;
@@ -98,6 +116,7 @@ serverconnection::~serverconnection() {
   eh_free(eh);
   ssocket_supla_socket_free(supla_socket);
 
+  safe_array_remove(serverconnection::reg_pending_arr, this);
   supla_log(LOG_DEBUG, "Connection Finished");
 }
 
@@ -118,6 +137,11 @@ void serverconnection::catch_incorrect_call(unsigned int call_type) {
     supla_log(LOG_DEBUG, "The number of incorrect calls has been exceeded.");
     sthread_terminate(sthread);
   }
+}
+
+void serverconnection::set_registered(char registered) {
+  this->registered = registered;
+  safe_array_remove(serverconnection::reg_pending_arr, this);
 }
 
 void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
@@ -263,7 +287,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (device->register_device(rd.data.ds_register_device_c, NULL,
                                         proto_version) == 1) {
-              registered = REG_DEVICE;
+              set_registered(REG_DEVICE);
             }
           }
         }
@@ -338,7 +362,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (device->register_device(NULL, rd.data.ds_register_device_e,
                                         proto_version) == 1) {
-              registered = REG_DEVICE;
+              set_registered(REG_DEVICE);
             }
           }
         }
@@ -394,7 +418,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (client->register_client(rd.data.cs_register_client_b, NULL,
                                         proto_version) == 1) {
-              registered = REG_CLIENT;
+              set_registered(REG_CLIENT);
             }
           }
         }
@@ -420,7 +444,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (client->register_client(NULL, rd.data.cs_register_client_c,
                                         proto_version) == 1) {
-              registered = REG_CLIENT;
+              set_registered(REG_CLIENT);
             }
           }
         }
