@@ -80,7 +80,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_google_home, "statereport_timeout", 30000);
 
   char *s_limit = "LIMIT";
-  scfg_add_int_param(s_limit, "concurrent_registrations", 10);
+  scfg_add_int_param(s_limit, "concurrent_registrations", 20);
 
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");
