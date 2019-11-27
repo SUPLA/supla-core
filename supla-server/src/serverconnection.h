@@ -29,7 +29,7 @@ class cdbase;
 
 class serverconnection {
  private:
-  void *reg_pending_arr;
+  static void *reg_pending_arr;
   void set_registered(char registered);
 
  protected:

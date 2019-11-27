@@ -43,6 +43,8 @@
 
 #define INCORRECT_CALL_MAXCOUNT 5
 
+void *serverconnection::reg_pending_arr = NULL;
+
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
 }
