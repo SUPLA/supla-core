@@ -28,6 +28,10 @@ class supla_device;
 class cdbase;
 
 class serverconnection {
+ private:
+  static void *reg_pending_arr;
+  void set_registered(char registered);
+
  protected:
   unsigned int client_ipv4;
   void *ssd;
@@ -52,6 +56,9 @@ class serverconnection {
 
  public:
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
+  static void initialize(void);
+  static void serverconnection_free(void);
+  static int registration_pending_count();
   void execute(void *sthread);
   void terminate(void);
   virtual ~serverconnection();
