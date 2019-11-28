@@ -679,7 +679,7 @@ void serverconnection::execute(void *sthread) {
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
   if (concurrent_registrations_limit > 0 &&
-      serverconnection::registration_pending_count() >=
+      serverconnection::registration_pending_count() >
           concurrent_registrations_limit) {
     usleep(1000000);
     sthread_terminate(sthread);
