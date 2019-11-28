@@ -137,7 +137,7 @@ void serverconnection::catch_incorrect_call(unsigned int call_type) {
 
   if (incorrect_call_counter >= INCORRECT_CALL_MAXCOUNT) {
     supla_log(LOG_DEBUG, "The number of incorrect calls has been exceeded.");
-    sthread_terminate(sthread);
+    terminate_and_wait(sthread, 1);
   }
 }
 
@@ -664,12 +664,17 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       }
 
     } else {
-      sthread_terminate(sthread);
+      terminate_and_wait(sthread, 5);
     }
   }
 
 end:
   srpc_rd_free(&rd);
+}
+
+void serverconnection::terminate_and_wait(void *sthread, short sec) {
+  usleep(1000000 * sec);
+  sthread_terminate(sthread);
 }
 
 void serverconnection::execute(void *sthread) {
@@ -681,14 +686,13 @@ void serverconnection::execute(void *sthread) {
   if (concurrent_registrations_limit > 0 &&
       serverconnection::registration_pending_count() >
           concurrent_registrations_limit) {
-    usleep(1000000);
     supla_log(LOG_DEBUG, "Connection Dropped");
-    sthread_terminate(sthread);
+    terminate_and_wait(sthread, 1);
     return;
   }
 
   if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
-    sthread_terminate(sthread);
+    terminate_and_wait(sthread, 5);
     return;
   }
 
@@ -709,14 +713,14 @@ void serverconnection::execute(void *sthread) {
       gettimeofday(&now, NULL);
 
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
-        sthread_terminate(sthread);
+        terminate_and_wait(sthread, 5);
         supla_log(LOG_DEBUG, "Reg timeout", sthread);
         break;
       }
 
     } else {
       if (cdptr->getActivityDelay() >= GetActivityTimeout()) {
-        sthread_terminate(sthread);
+        terminate_and_wait(sthread, 1);
         supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
                   cdptr->getActivityDelay(), registered);
         break;
