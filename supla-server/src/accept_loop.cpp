@@ -59,8 +59,6 @@ char accept_loop_srvconn_thread_twt(void *svrconn_sthread) {
 }
 
 void accept_loop(void *ssd, void *al_sthread) {
-  serverconnection::initialize();
-
   void *supla_socket = NULL;
   void *svrconn_thread_arr = safe_array_init();
 
@@ -115,8 +113,6 @@ void accept_loop(void *ssd, void *al_sthread) {
 
   safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_twt);
   safe_array_free(svrconn_thread_arr);
-
-  serverconnection::serverconnection_free();
 }
 
 // SERVER CONNECTION BLOCK BEGIN ---------------------------------------

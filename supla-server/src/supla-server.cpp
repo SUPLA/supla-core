@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
   }
 
   supla_user::init();
+  serverconnection::init();
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
@@ -190,6 +191,7 @@ int main(int argc, char *argv[]) {
   st_delpidfile(pidfile_path);
 
   supla_http_request_queue::queueFree();  // ! before user_free()
+  serverconnection::serverconnection_free();
   supla_user::user_free();
   database::mainthread_end();
   sslcrypto_free();

@@ -56,7 +56,7 @@ class serverconnection {
 
  public:
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
-  static void initialize(void);
+  static void init(void);
   static void serverconnection_free(void);
   static int registration_pending_count();
   void execute(void *sthread);

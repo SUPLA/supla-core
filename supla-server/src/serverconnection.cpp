@@ -70,7 +70,7 @@ void supla_connection_on_version_error(void *_srpc,
 }
 
 // static
-void serverconnection::initialize(void) {
+void serverconnection::init(void) {
   serverconnection::reg_pending_arr = safe_array_init();
 }
 
