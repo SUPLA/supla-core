@@ -76,6 +76,22 @@ int safe_array_count(void *_arr) {
   return result;
 }
 
+void safe_array_move_to_begin(void *_arr, int idx) {
+  TSafeArray *arr = (TSafeArray *)_arr;
+
+  assert(_arr != 0);
+
+  if (idx < 1 || idx >= arr->count) return;
+
+  void *item = arr->arr[idx];
+  int a;
+  for (a = idx - 1; a >= 0; a--) {
+    arr->arr[a + 1] = arr->arr[a];
+  }
+
+  arr->arr[0] = item;
+}
+
 int safe_array_add(void *_arr, void *ptr) {
   int result = 0;
   TSafeArray *arr = (TSafeArray *)_arr;

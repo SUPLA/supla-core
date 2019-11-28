@@ -47,6 +47,7 @@ void safe_array_free(void *arr);
 void safe_array_clean(void *arr, _func_sa_cnd del_cnd);
 void *safe_array_findcnd(void *arr, _func_sa_cnd_param find_cnd,
                          void *user_param);
+void safe_array_move_to_begin(void *_arr, int idx);
 
 #ifdef __cplusplus
 }
