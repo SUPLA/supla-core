@@ -20,8 +20,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/types.h>
 #include <sys/syscall.h>
+#include <sys/types.h>
 #include "database.h"
 #include "device.h"
 #include "http/httprequestqueue.h"
@@ -296,7 +296,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     supla_log(LOG_INFO,
-              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i ThreadID: %i",
+              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
+              "ThreadID: %i",
               getID(), getSvrConn()->getClientSD(),
               getSvrConn()->getProtocolVersion(), syscall(__NR_gettid));
   } else {
