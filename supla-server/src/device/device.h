@@ -31,6 +31,10 @@ class supla_device : public cdbase {
 
   void load_config(void);
   static char channels_clean_cnd(void *channel);
+  bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                       const char Email[SUPLA_EMAIL_MAXSIZE],
+                       const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+                       database *db);
 
  public:
   explicit supla_device(serverconnection *svrconn);

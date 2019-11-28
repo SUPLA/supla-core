@@ -77,6 +77,13 @@ bool supla_client::is_superuser_authorized(void) {
   return result;
 }
 
+bool supla_client::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                                   const char Email[SUPLA_EMAIL_MAXSIZE],
+                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                                   int *UserID, database *db) {
+  return db->client_authkey_auth(GUID, Email, AuthKey, UserID);
+}
+
 char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
                                    TCS_SuplaRegisterClient_C *register_client_c,
                                    unsigned char proto_version) {
@@ -124,9 +131,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_client_c != NULL &&
-                 false == db->client_authkey_auth(
-                              GUID, register_client_c->Email,
-                              register_client_c->AuthKey, &UserID)) {
+                 false == authkey_auth(GUID, register_client_c->Email,
+                                       register_client_c->AuthKey, &UserID,
+                                       db)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {

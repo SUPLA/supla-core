@@ -43,6 +43,10 @@ class supla_client : public cdbase {
   void remote_update_lists(void);
   void setName(const char *name);
   void setAccessID(int AccessID);
+  bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                       const char Email[SUPLA_EMAIL_MAXSIZE],
+                       const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+                       database *db);
 
  public:
   explicit supla_client(serverconnection *svrconn);

@@ -17,7 +17,7 @@
  */
 
 #include "CDBaseTest.h"
-#include "cdbase.h"       // NOLINT
+#include "CDBaseMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {
@@ -25,7 +25,7 @@ namespace {
 class CDBaseTest : public ::testing::Test {};
 
 TEST_F(CDBaseTest, retainReleaseTest) {
-  cdbase *cd = new cdbase(NULL);
+  CDBaseMock *cd = new CDBaseMock(NULL);
   ASSERT_FALSE(cd == NULL);
   ASSERT_EQ(false, cd->ptrIsUsed());
   ASSERT_EQ(0, cd->ptrCounter());
@@ -47,5 +47,15 @@ TEST_F(CDBaseTest, retainReleaseTest) {
   ASSERT_EQ(0, cd->ptrCounter());
 
   delete cd;
+}
+
+TEST_F(CDBaseTest, authkey_cache) {
+  cdbase::init();
+
+  CDBaseMock *cd = new CDBaseMock(NULL);
+
+  delete cd;
+
+  cdbase::cdbase_free();
 }
 }  // namespace

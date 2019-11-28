@@ -46,6 +46,13 @@ supla_device::~supla_device() {
   delete channels;
 }
 
+bool supla_device::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                                   const char Email[SUPLA_EMAIL_MAXSIZE],
+                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                                   int *UserID, database *db) {
+  return db->device_authkey_auth(GUID, Email, AuthKey, UserID);
+}
+
 char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                                    TDS_SuplaRegisterDevice_E *register_device_e,
                                    unsigned char proto_version) {
@@ -108,9 +115,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false == db->device_authkey_auth(GUID,
-                                                  register_device_e->Email,
-                                                  AuthKey, &UserID)) {
+                 false == authkey_auth(GUID, register_device_e->Email, AuthKey,
+                                       &UserID, db)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
