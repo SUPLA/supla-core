@@ -79,7 +79,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_google_home, "syncrequest_timeout", 30000);
   scfg_add_int_param(s_google_home, "statereport_timeout", 30000);
 
-  char *s_limit = "LIMIT";
+  char *s_limit = "LIMITS";
   scfg_add_int_param(s_limit, "concurrent_registrations", 20);
 
 #ifdef __TEST
