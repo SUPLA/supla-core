@@ -31,6 +31,7 @@
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
+#include "tools.h"
 
 // SERVER CONNECTION BLOCK BEGIN ---------------------------------------
 
@@ -68,13 +69,13 @@ void accept_loop(void *ssd, void *al_sthread) {
   bool reg_limit_exceeded = false;
   struct timeval reg_limit_exceeded_time = {0, 0};
 
-  while (sthread_isterminated(al_sthread) == 0) {
+  while (sthread_isterminated(al_sthread) == 0 && st_app_terminate == 0) {
     safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_cnd);
 
     unsigned int ipv4;
 
     if (concurrent_registrations_limit > 0 &&
-        serverconnection::registration_pending_count() >
+        serverconnection::registration_pending_count() >=
             concurrent_registrations_limit) {
       if (!reg_limit_exceeded) {
         supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
@@ -144,7 +145,7 @@ void ipc_accept_loop(void *ipc, void *ipc_al_sthread) {
   int client_sd;
   void *ipcctrl_thread_arr = safe_array_init();
 
-  while (sthread_isterminated(ipc_al_sthread) == 0) {
+  while (sthread_isterminated(ipc_al_sthread) == 0 && st_app_terminate == 0) {
     safe_array_clean(ipcctrl_thread_arr, accept_loop_ipcctrl_thread_cnd);
 
     if (-1 == (client_sd = ipcsocket_accept(ipc))) {
