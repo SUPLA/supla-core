@@ -675,6 +675,17 @@ end:
 void serverconnection::execute(void *sthread) {
   this->sthread = sthread;
 
+  int concurrent_registrations_limit =
+      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
+
+  if (concurrent_registrations_limit > 0 &&
+      serverconnection::registration_pending_count() >=
+          concurrent_registrations_limit) {
+    usleep(1000000);
+    sthread_terminate(sthread);
+    return;
+  }
+
   if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
     sthread_terminate(sthread);
     return;

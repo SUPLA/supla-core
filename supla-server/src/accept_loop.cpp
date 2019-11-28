@@ -73,9 +73,9 @@ void accept_loop(void *ssd, void *al_sthread) {
 
     unsigned int ipv4;
 
-    while (concurrent_registrations_limit > 0 &&
-           serverconnection::registration_pending_count() >=
-               concurrent_registrations_limit) {
+    if (concurrent_registrations_limit > 0 &&
+        serverconnection::registration_pending_count() >
+            concurrent_registrations_limit) {
       if (!reg_limit_exceeded) {
         supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
                   concurrent_registrations_limit);
@@ -83,7 +83,15 @@ void accept_loop(void *ssd, void *al_sthread) {
       }
 
       gettimeofday(&reg_limit_exceeded_time, NULL);
-      usleep(100000);
+    } else if (reg_limit_exceeded) {
+      struct timeval now;
+      gettimeofday(&now, NULL);
+      if (now.tv_sec - reg_limit_exceeded_time.tv_sec >= 10) {
+        reg_limit_exceeded = false;
+        supla_log(LOG_INFO,
+                  "The number of concurrent registrations returned below the "
+                  "limit");
+      }
     }
 
     if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0 &&
@@ -97,17 +105,6 @@ void accept_loop(void *ssd, void *al_sthread) {
       stp.initialize = NULL;
 
       safe_array_add(svrconn_thread_arr, sthread_run(&stp));
-
-      if (reg_limit_exceeded) {
-        struct timeval now;
-        gettimeofday(&now, NULL);
-        if (now.tv_sec - reg_limit_exceeded_time.tv_sec >= 10) {
-          reg_limit_exceeded = false;
-          supla_log(LOG_INFO,
-                    "The number of concurrent registrations returned below the "
-                    "limit");
-        }
-      }
     }
   }
 
