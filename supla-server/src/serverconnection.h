@@ -53,7 +53,7 @@ class serverconnection {
 
   int incorrect_call_counter;
   void catch_incorrect_call(unsigned int call_type);
-  void terminate_and_wait(void *sthread, short sec);
+  void wait_and_terminate(void *sthread, short sec);
 
  public:
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
