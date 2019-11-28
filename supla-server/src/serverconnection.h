@@ -23,6 +23,8 @@
 #include <sys/time.h>
 #include "eh.h"
 
+#define LOCAL_IPV4_ARRAY_SIZE 5
+
 class supla_client;
 class supla_device;
 class cdbase;
@@ -30,6 +32,7 @@ class cdbase;
 class serverconnection {
  private:
   static void *reg_pending_arr;
+  static void read_local_ipv4_addresses(void);
   void set_registered(char registered);
 
  protected:
@@ -56,6 +59,7 @@ class serverconnection {
   void wait_and_terminate(void *sthread, short sec);
 
  public:
+  static unsigned int local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
   static void init(void);
   static void serverconnection_free(void);

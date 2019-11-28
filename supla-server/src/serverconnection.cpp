@@ -20,6 +20,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <linux/if_link.h>
 #include "client/client.h"
 #include "database.h"
 #include "device/device.h"
@@ -44,6 +47,7 @@
 #define INCORRECT_CALL_MAXCOUNT 5
 
 void *serverconnection::reg_pending_arr = NULL;
+unsigned int serverconnection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
 
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
@@ -70,12 +74,41 @@ void supla_connection_on_version_error(void *_srpc,
 }
 
 // static
+void serverconnection::read_local_ipv4_addresses(void) {
+  memset(&serverconnection::local_ipv4, 0, sizeof(local_ipv4));
+
+  struct ifaddrs *ifaddr, *ifa;
+  struct sockaddr_in *addr;
+  int n = 0;
+
+  if (getifaddrs(&ifaddr) == -1) {
+    return;
+  }
+
+  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+    if (ifa && ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
+      addr = (struct sockaddr_in *)ifa->ifa_addr;
+      serverconnection::local_ipv4[n] = htonl(addr->sin_addr.s_addr);
+
+      if (serverconnection::local_ipv4[n] != 0) {
+        n++;
+      }
+    }
+  }
+
+  freeifaddrs(ifaddr);
+}
+
+// static
 void serverconnection::init(void) {
+  serverconnection::read_local_ipv4_addresses();
   serverconnection::reg_pending_arr = safe_array_init();
+  cdbase::init();
 }
 
 // static
 void serverconnection::serverconnection_free(void) {
+  cdbase::cdbase_free();
   safe_array_free(serverconnection::reg_pending_arr);
 }
 
@@ -691,6 +724,17 @@ void serverconnection::execute(void *sthread) {
     }
 
     safe_array_unlock(serverconnection::reg_pending_arr);
+  }
+
+  if (concurrent_registrations_limit > 0) {
+    for (int a = 0; a < LOCAL_IPV4_ARRAY_SIZE; a++) {
+      if (serverconnection::local_ipv4[a] == 0) {
+        break;
+      } else if (serverconnection::local_ipv4[a] == getClientIpv4()) {
+        concurrent_registrations_limit = 0;
+        break;
+      }
+    }
   }
 
   if (concurrent_registrations_limit > 0) {
