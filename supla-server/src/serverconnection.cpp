@@ -86,7 +86,6 @@ int serverconnection::registration_pending_count() {
 
 serverconnection::serverconnection(void *ssd, void *supla_socket,
                                    unsigned int client_ipv4) {
-  safe_array_add(serverconnection::reg_pending_arr, this);
 
   gettimeofday(&this->init_time, NULL);
   this->client_ipv4 = client_ipv4;
@@ -698,6 +697,8 @@ void serverconnection::execute(void *sthread) {
 
   supla_log(LOG_DEBUG, "Connection Started %i, secure=%i", sthread,
             ssocket_is_secure(ssd));
+
+  safe_array_add(serverconnection::reg_pending_arr, this);
 
   while (sthread_isterminated(sthread) == 0) {
     eh_wait(eh, 90000000);
