@@ -74,7 +74,7 @@ void accept_loop(void *ssd, void *al_sthread) {
     unsigned int ipv4;
 
     while (concurrent_registrations_limit > 0 &&
-           serverconnection::registration_pending_count() >
+           serverconnection::registration_pending_count() >=
                concurrent_registrations_limit) {
       if (!reg_limit_exceeded) {
         supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
