@@ -682,6 +682,7 @@ void serverconnection::execute(void *sthread) {
       serverconnection::registration_pending_count() >
           concurrent_registrations_limit) {
     usleep(1000000);
+    supla_log(LOG_DEBUG, "Connection Dropped");
     sthread_terminate(sthread);
     return;
   }
