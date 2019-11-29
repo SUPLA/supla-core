@@ -6,6 +6,7 @@
 cd supla-server/Test && \
 make clean && make all && \
 ./supla-server && \
+(../../tools/valgrind-noundef.sh ./supla-server 2>&1 | grep "All heap blocks were freed -- no leaks are possible" ) && \
 cd ../Release && \
 make clean && make all && \
 cd ../../supla-scheduler/Test && \
