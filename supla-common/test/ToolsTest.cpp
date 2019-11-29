@@ -169,6 +169,8 @@ TEST_F(ToolsTest, st_base64) {
   char *encoded = st_openssl_base64_encode(src, strlen(src));
   ASSERT_TRUE(NULL != encoded);
 
+  ASSERT_EQ(0, strcmp(encoded, "TG9yZW0gaXBzdW0gZG9sb3Igc2l0IGFtZXQ="));
+
   char *decoded = st_openssl_base64_decode(encoded, strlen(encoded), NULL);
   ASSERT_TRUE(NULL != decoded);
   ASSERT_EQ(0, strcmp(src, decoded));
@@ -201,13 +203,13 @@ TEST_F(ToolsTest, st_rgb2hsv) {
   _color_hsv_t hsv = st_rgb2hsv(0x57F97C);
 
   ASSERT_EQ(133, (int)hsv.h);
-  ASSERT_EQ(65, (int)(hsv.s*100));
-  ASSERT_EQ(97, (int)(hsv.v*100));
+  ASSERT_EQ(65, (int)(hsv.s * 100));
+  ASSERT_EQ(97, (int)(hsv.v * 100));
 
   hsv = st_rgb2hsv(0x5F3F7F);
   ASSERT_EQ(270, (int)hsv.h);
-  ASSERT_EQ(50, (int)(hsv.s*100));
-  ASSERT_EQ(49, (int)(hsv.v*100));
+  ASSERT_EQ(50, (int)(hsv.s * 100));
+  ASSERT_EQ(49, (int)(hsv.v * 100));
 }
 
 }  // namespace
