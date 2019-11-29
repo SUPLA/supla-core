@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <string.h>
-
-#include <stdlib.h>
 #include "cdbase.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "lck.h"
 #include "safearray.h"
 #include "svrcfg.h"
@@ -226,6 +226,11 @@ unsigned long cdbase::ptrCounter(void) {
   return result;
 }
 
+// static
+int cdbase::getAuthKeyCacheSize(void) {
+  return safe_array_count(cdbase::authkey_auth_cache_arr);
+}
+
 bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                           const char Email[SUPLA_EMAIL_MAXSIZE],
                           const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
@@ -250,42 +255,55 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
         return result;
       }
     }
+
     safe_array_unlock(cdbase::authkey_auth_cache_arr);
 
-    authkey_cache_item_t *i =
-        (authkey_cache_item_t *)malloc(sizeof(authkey_cache_item_t));
-    memset(i, 0, sizeof(authkey_cache_item_t));
-
-    memcpy(i->GUID, GUID, SUPLA_GUID_SIZE);
-    memcpy(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
-    i->Email = strndup(Email, SUPLA_EMAIL_MAXSIZE);
-
-    i->result = db_authkey_auth(GUID, Email, AuthKey, UserID, db);
-    i->UserID = *UserID;
+    authkey_cache_item_t *i = NULL;
+    bool result = db_authkey_auth(GUID, Email, AuthKey, UserID, db);
 
     safe_array_lock(cdbase::authkey_auth_cache_arr);
 
-    int count = 0;
-    do {
-      count = safe_array_count(cdbase::authkey_auth_cache_arr);
-      if (count > cdbase::authkey_auth_cache_size - 1) {
-        authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
-            safe_array_get(cdbase::authkey_auth_cache_arr, count - 1));
-        if (i) {
-          if (i->Email) {
-            free(i->Email);
-          }
-          free(i);
-        }
-      } else {
-        break;
+    if (safe_array_count(cdbase::authkey_auth_cache_arr) >=
+        cdbase::authkey_auth_cache_size) {
+      struct timeval tv;
+      gettimeofday(&tv, NULL);
+      int count = safe_array_count(cdbase::authkey_auth_cache_arr);
+      int idx = count / 2;
+      if (idx > 0) {
+        idx = count - 1 - (tv.tv_usec % idx);
       }
-    } while (1);
 
-    safe_array_add(cdbase::authkey_auth_cache_arr, i);
+      i = static_cast<authkey_cache_item_t *>(
+          safe_array_get(cdbase::authkey_auth_cache_arr, idx));
+
+    } else {
+      i = (authkey_cache_item_t *)malloc(sizeof(authkey_cache_item_t));
+      memset(i, 0, sizeof(authkey_cache_item_t));
+      safe_array_add(cdbase::authkey_auth_cache_arr, i);
+    }
+
+    if (i) {
+      memcpy(i->GUID, GUID, SUPLA_GUID_SIZE);
+      memcpy(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+
+      if (i->Email == NULL) {
+        i->Email = strndup(Email, SUPLA_EMAIL_MAXSIZE);
+      } else {
+        int len1 = strnlen(Email, SUPLA_EMAIL_MAXSIZE);
+        int len2 = strnlen(i->Email, SUPLA_EMAIL_MAXSIZE);
+        if (len1 > len2) {
+          i->Email = (char *)realloc(i->Email, len1 + 1);
+        }
+        snprintf(i->Email, len1 + 1, "%s", Email);
+      }
+
+      i->result = result;
+      i->UserID = *UserID;
+    }
+
     safe_array_unlock(cdbase::authkey_auth_cache_arr);
+    return result;
 
-    return i->result;
   } else {
     return db_authkey_auth(GUID, Email, AuthKey, UserID, db);
   }

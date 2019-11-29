@@ -60,6 +60,7 @@ class cdbase {
  public:
   static void init(void);
   static void cdbase_free(void);
+  static int getAuthKeyCacheSize(void);
   explicit cdbase(serverconnection *svrconn);
   virtual ~cdbase();
 
