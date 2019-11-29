@@ -108,7 +108,6 @@ TEST_F(CDContainerTest, findItem) {
   ASSERT_FALSE(cd->ptrIsUsed());
   container->moveToTrash(cd);
   ASSERT_EQ(NULL, container->findByPtr(cd));
-  ASSERT_FALSE(cd->ptrIsUsed());
 
   container->deleteAll(0);
   delete container;
@@ -131,7 +130,6 @@ TEST_F(CDContainerTest, getItem) {
   ASSERT_FALSE(cd->ptrIsUsed());
   container->moveToTrash(cd);
   ASSERT_EQ(NULL, container->get(0));
-  ASSERT_FALSE(cd->ptrIsUsed());
 
   container->deleteAll(0);
   delete container;
