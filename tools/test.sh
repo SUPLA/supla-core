@@ -9,10 +9,12 @@ cd supla-server/Test
 make clean && make all 
 ./supla-server 
 
-(../../tools/valgrind-noundef.sh ./supla-server 2>&1 \
-   | grep "All heap blocks were freed -- no leaks are possible" ) \
-|| (echo "Memory leak error!" && exit 1)
+../../tools/valgrind-noundef.sh ./supla-server > /dev/null 2> vg-test.log
 
+(cat ./vg-test.log | grep "All heap blocks were freed -- no leaks are possible" ) \
+|| (cat ./vg-test.log && echo "Memory leak error!" && rm ./vg-test.log && exit 1)
+
+rm ./vg-test.log
 cd ../Release 
 make clean && make all 
 cd ../../supla-scheduler/Test 
