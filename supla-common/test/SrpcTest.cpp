@@ -611,6 +611,7 @@ TEST_F(SrpcTest, call_getversion_reasult) {
   ASSERT_EQ(0, memcmp(SoftVer, cr_rd.data.sdc_getversion_result->SoftVer,
                       SUPLA_SOFTVER_MAXSIZE));
 
+  free(cr_rd.data.sdc_getversion_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -636,6 +637,7 @@ TEST_F(SrpcTest, call_ping_server) {
   ASSERT_GE(now.tv_sec, cr_rd.data.dcs_ping->now.tv_sec);
   ASSERT_TRUE(cr_rd.data.dcs_ping->now.tv_sec >= now.tv_sec);
 
+  free(cr_rd.data.dcs_ping);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -657,6 +659,7 @@ TEST_F(SrpcTest, call_ping_server_result) {
   ASSERT_GE(now.tv_sec, cr_rd.data.sdc_ping_result->now.tv_sec);
   ASSERT_TRUE(cr_rd.data.sdc_ping_result->now.tv_sec >= now.tv_sec);
 
+  free(cr_rd.data.sdc_ping_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -683,6 +686,7 @@ TEST_F(SrpcTest, call_set_activity_timeout) {
   ASSERT_FALSE(cr_rd.data.dcs_set_activity_timeout == NULL);
   ASSERT_EQ(123, cr_rd.data.dcs_set_activity_timeout->activity_timeout);
 
+  free(cr_rd.data.dcs_set_activity_timeout);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -709,6 +713,7 @@ TEST_F(SrpcTest, call_set_activity_timeout_result) {
   ASSERT_EQ(10, cr_rd.data.sdc_set_activity_timeout_result->activity_timeout);
   ASSERT_EQ(20, cr_rd.data.sdc_set_activity_timeout_result->max);
 
+  free(cr_rd.data.sdc_set_activity_timeout_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -750,6 +755,7 @@ TEST_F(SrpcTest, call_get_registration_enabled_result) {
   ASSERT_EQ(cr_rd.data.sdc_reg_enabled->iodevice_timestamp,
             result.iodevice_timestamp);
 
+  free(cr_rd.data.sdc_reg_enabled);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -781,6 +787,7 @@ TEST_F(SrpcTest, call_registerdevice) {
                    sizeof(TDS_SuplaRegisterDevice)),
             0);
 
+  free(cr_rd.data.ds_register_device);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -809,6 +816,7 @@ TEST_F(SrpcTest, call_registerdevice_one_channel) {
                                                 (SUPLA_CHANNELMAXCOUNT - 1))),
       0);
 
+  free(cr_rd.data.ds_register_device);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -833,6 +841,7 @@ TEST_F(SrpcTest, call_registerdevice_without_channels) {
                  (sizeof(TDS_SuplaDeviceChannel) * (SUPLA_CHANNELMAXCOUNT))),
       0);
 
+  free(cr_rd.data.ds_register_device);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -869,6 +878,7 @@ TEST_F(SrpcTest, call_registerdevice_b) {
                    sizeof(TDS_SuplaRegisterDevice)),
             0);
 
+  free(cr_rd.data.ds_register_device_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -895,6 +905,7 @@ TEST_F(SrpcTest, call_registerdevice_b_one_channel) {
                         (SUPLA_CHANNELMAXCOUNT - 1))),
             0);
 
+  free(cr_rd.data.ds_register_device_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -919,6 +930,7 @@ TEST_F(SrpcTest, call_registerdevice_b_without_channels) {
                  (sizeof(TDS_SuplaDeviceChannel_B) * (SUPLA_CHANNELMAXCOUNT))),
       0);
 
+  free(cr_rd.data.ds_register_device_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -956,6 +968,7 @@ TEST_F(SrpcTest, call_registerdevice_c) {
                    sizeof(TDS_SuplaRegisterDevice_C)),
             0);
 
+  free(cr_rd.data.ds_register_device_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -982,6 +995,7 @@ TEST_F(SrpcTest, call_registerdevice_c_one_channel) {
                         (SUPLA_CHANNELMAXCOUNT - 1))),
             0);
 
+  free(cr_rd.data.ds_register_device_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1006,6 +1020,7 @@ TEST_F(SrpcTest, call_registerdevice_c_without_channels) {
                  (sizeof(TDS_SuplaDeviceChannel_B) * (SUPLA_CHANNELMAXCOUNT))),
       0);
 
+  free(cr_rd.data.ds_register_device_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1042,6 +1057,7 @@ TEST_F(SrpcTest, call_registerdevice_d) {
                    sizeof(TDS_SuplaRegisterDevice_D)),
             0);
 
+  free(cr_rd.data.ds_register_device_d);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1067,6 +1083,7 @@ TEST_F(SrpcTest, call_registerdevice_d_one_channel) {
                         (SUPLA_CHANNELMAXCOUNT - 1))),
             0);
 
+  free(cr_rd.data.ds_register_device_d);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1089,6 +1106,7 @@ TEST_F(SrpcTest, call_registerdevice_d_without_channels) {
                  (sizeof(TDS_SuplaDeviceChannel_B) * (SUPLA_CHANNELMAXCOUNT))),
       0);
 
+  free(cr_rd.data.ds_register_device_d);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1125,6 +1143,7 @@ TEST_F(SrpcTest, call_registerdevice_e) {
                    sizeof(TDS_SuplaRegisterDevice_E)),
             0);
 
+  free(cr_rd.data.ds_register_device_e);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1150,6 +1169,7 @@ TEST_F(SrpcTest, call_registerdevice_e_one_channel) {
                         (SUPLA_CHANNELMAXCOUNT - 1))),
             0);
 
+  free(cr_rd.data.ds_register_device_e);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1173,6 +1193,7 @@ TEST_F(SrpcTest, call_registerdevice_e_without_channels) {
                  (sizeof(TDS_SuplaDeviceChannel_C) * (SUPLA_CHANNELMAXCOUNT))),
       0);
 
+  free(cr_rd.data.ds_register_device_e);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1215,6 +1236,7 @@ TEST_F(SrpcTest, call_registerdevice_result) {
   ASSERT_EQ(SUPLA_PROTO_VERSION_MIN,
             cr_rd.data.sd_register_device_result->version_min);
 
+  free(cr_rd.data.sd_register_device_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1241,6 +1263,7 @@ TEST_F(SrpcTest, call_channel_value_changed) {
                    SUPLA_CHANNELVALUE_SIZE),
             0);
 
+  free(cr_rd.data.ds_device_channel_value);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1296,6 +1319,7 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_small_size) {
                       sizeof(TSuplaChannelExtendedValue) -
                           SUPLA_CHANNELEXTENDEDVALUE_SIZE + 1));
 
+  free(cr_rd.data.ds_device_channel_extendedvalue);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1318,6 +1342,7 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
   ASSERT_EQ(0, memcmp(&cr_rd.data.ds_device_channel_extendedvalue->value, &ev,
                       sizeof(TSuplaChannelExtendedValue)));
 
+  free(cr_rd.data.ds_device_channel_extendedvalue);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1341,6 +1366,7 @@ TEST_F(SrpcTest, call_sd_set_channel_value) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sd_channel_new_value, &value,
                       sizeof(TSD_SuplaChannelNewValue)));
 
+  free(cr_rd.data.sd_channel_new_value);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1361,6 +1387,7 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   ASSERT_EQ(2, cr_rd.data.ds_channel_new_value_result->SenderID);
   ASSERT_EQ(1, cr_rd.data.ds_channel_new_value_result->Success);
 
+  free(cr_rd.data.ds_channel_new_value_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1384,6 +1411,7 @@ TEST_F(SrpcTest, call_get_firmware_update_url) {
   ASSERT_EQ(0, memcmp(cr_rd.data.ds_firmware_update_params, &params,
                       sizeof(TDS_FirmwareUpdateParams)));
 
+  free(cr_rd.data.ds_firmware_update_params);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1405,6 +1433,7 @@ TEST_F(SrpcTest, call_get_firmware_update_url_result_exists) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_firmware_update_url_result, &result,
                       sizeof(TSD_FirmwareUpdate_UrlResult)));
 
+  free(cr_rd.data.sc_firmware_update_url_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1425,6 +1454,7 @@ TEST_F(SrpcTest, call_get_firmware_update_url_result_not_exists) {
 
   ASSERT_EQ(0, cr_rd.data.sc_firmware_update_url_result->exists);
 
+  free(cr_rd.data.sc_firmware_update_url_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1467,6 +1497,7 @@ TEST_F(SrpcTest, call_sd_device_calcfg_request_zero_size) {
       0, memcmp(cr_rd.data.sd_device_calcfg_request, &request,
                 sizeof(TSD_DeviceCalCfgRequest) - SUPLA_CALCFG_DATA_MAXSIZE));
 
+  free(cr_rd.data.sd_device_calcfg_request);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1489,6 +1520,7 @@ TEST_F(SrpcTest, call_sd_device_calcfg_request_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calcfg_request, &request,
                       sizeof(TSD_DeviceCalCfgRequest)));
 
+  free(cr_rd.data.sd_device_calcfg_request);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1527,6 +1559,7 @@ TEST_F(SrpcTest, call_ds_device_calcfg_result_zero_size) {
             memcmp(cr_rd.data.ds_device_calcfg_result, &result,
                    sizeof(TDS_DeviceCalCfgResult) - SUPLA_CALCFG_DATA_MAXSIZE));
 
+  free(cr_rd.data.ds_device_calcfg_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1549,6 +1582,7 @@ TEST_F(SrpcTest, call_ds_device_calcfg_result_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.ds_device_calcfg_result, &result,
                       sizeof(TDS_DeviceCalCfgResult)));
 
+  free(cr_rd.data.ds_device_calcfg_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1572,6 +1606,7 @@ TEST_F(SrpcTest, call_registerclient) {
   ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client, &registerclient,
                       sizeof(TCS_SuplaRegisterClient)));
 
+  free(cr_rd.data.cs_register_client);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1591,6 +1626,7 @@ TEST_F(SrpcTest, call_registerclient_b) {
   ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_b, &registerclient_b,
                       sizeof(TCS_SuplaRegisterClient_B)));
 
+  free(cr_rd.data.cs_register_client_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1610,6 +1646,7 @@ TEST_F(SrpcTest, call_registerclient_c) {
   ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_c, &registerclient_c,
                       sizeof(TCS_SuplaRegisterClient_C)));
 
+  free(cr_rd.data.cs_register_client_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1629,6 +1666,7 @@ TEST_F(SrpcTest, call_registerclient_result) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result, &result,
                       sizeof(TSC_SuplaRegisterClientResult)));
 
+  free(cr_rd.data.sc_register_client_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1648,6 +1686,7 @@ TEST_F(SrpcTest, call_registerclient_result_b) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result_b, &result,
                       sizeof(TSC_SuplaRegisterClientResult_B)));
 
+  free(cr_rd.data.sc_register_client_result_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1688,6 +1727,7 @@ TEST_F(SrpcTest, call_location_update_with_full_size) {
   ASSERT_EQ(
       0, memcmp(cr_rd.data.sc_location, &location, sizeof(TSC_SuplaLocation)));
 
+  free(cr_rd.data.sc_location);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1710,6 +1750,7 @@ TEST_F(SrpcTest, call_location_update_without_caption) {
             memcmp(cr_rd.data.sc_location, &location,
                    sizeof(TSC_SuplaLocation) - SUPLA_LOCATION_CAPTION_MAXSIZE));
 
+  free(cr_rd.data.sc_location);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1776,6 +1817,7 @@ TEST_F(SrpcTest, call_locationpack_update_with_caption_over_size) {
         0);
   }
 
+  free(cr_rd.data.sc_location_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1801,6 +1843,7 @@ TEST_F(SrpcTest, call_locationpack_update_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_location_pack, &location_pack,
                       sizeof(TSC_SuplaLocationPack)));
 
+  free(cr_rd.data.sc_location_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1843,6 +1886,7 @@ TEST_F(SrpcTest, call_channel_update_with_minimum_size) {
             memcmp(cr_rd.data.sc_channel, &channel,
                    sizeof(TSC_SuplaChannel) - SUPLA_CHANNEL_CAPTION_MAXSIZE));
 
+  free(cr_rd.data.sc_channel);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1865,6 +1909,7 @@ TEST_F(SrpcTest, call_channel_update_with_full_size) {
   ASSERT_EQ(0,
             memcmp(cr_rd.data.sc_channel, &channel, sizeof(TSC_SuplaChannel)));
 
+  free(cr_rd.data.sc_channel);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1905,6 +1950,7 @@ TEST_F(SrpcTest, call_channel_update_b_with_minimum_size) {
             memcmp(cr_rd.data.sc_channel_b, &channel,
                    sizeof(TSC_SuplaChannel_B) - SUPLA_CHANNEL_CAPTION_MAXSIZE));
 
+  free(cr_rd.data.sc_channel_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1927,6 +1973,7 @@ TEST_F(SrpcTest, call_channel_update_b_with_full_size) {
   ASSERT_EQ(
       0, memcmp(cr_rd.data.sc_channel_b, &channel, sizeof(TSC_SuplaChannel_B)));
 
+  free(cr_rd.data.sc_channel_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1967,6 +2014,7 @@ TEST_F(SrpcTest, call_channel_update_c_with_minimum_size) {
             memcmp(cr_rd.data.sc_channel_c, &channel,
                    sizeof(TSC_SuplaChannel_C) - SUPLA_CHANNEL_CAPTION_MAXSIZE));
 
+  free(cr_rd.data.sc_channel_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -1989,6 +2037,7 @@ TEST_F(SrpcTest, call_channel_update_c_with_full_size) {
   ASSERT_EQ(
       0, memcmp(cr_rd.data.sc_channel_c, &channel, sizeof(TSC_SuplaChannel_C)));
 
+  free(cr_rd.data.sc_channel_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2057,6 +2106,7 @@ TEST_F(SrpcTest, call_channelpack_update_with_caption_over_size) {
               0);
   }
 
+  free(cr_rd.data.sc_channel_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2082,6 +2132,7 @@ TEST_F(SrpcTest, call_channelpack_update_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_pack, &channel_pack,
                       sizeof(TSC_SuplaChannelPack)));
 
+  free(cr_rd.data.sc_channel_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2150,6 +2201,7 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_caption_over_size) {
         0);
   }
 
+  free(cr_rd.data.sc_channel_pack_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2175,6 +2227,7 @@ TEST_F(SrpcTest, call_channelpack_update_c_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_pack_c, &channel_pack,
                       sizeof(TSC_SuplaChannelPack_C)));
 
+  free(cr_rd.data.sc_channel_pack_c);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2243,6 +2296,7 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_caption_over_size) {
         0);
   }
 
+  free(cr_rd.data.sc_channel_pack_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2268,6 +2322,7 @@ TEST_F(SrpcTest, call_channelpack_update_b_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_pack_b, &channel_pack,
                       sizeof(TSC_SuplaChannelPack_B)));
 
+  free(cr_rd.data.sc_channel_pack_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2291,6 +2346,7 @@ TEST_F(SrpcTest, call_channel_value_update) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_value, &value,
                       sizeof(TSC_SuplaChannelValue)));
 
+  free(cr_rd.data.sc_channel_value);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2361,6 +2417,7 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_caption_over_size) {
         0);
   }
 
+  free(cr_rd.data.sc_channelgroup_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2386,6 +2443,7 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_pack, &pack,
                       sizeof(TSC_SuplaChannelGroupPack)));
 
+  free(cr_rd.data.sc_channelgroup_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2456,6 +2514,7 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_caption_over_size) {
         0);
   }
 
+  free(cr_rd.data.sc_channelgroup_pack_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2481,6 +2540,7 @@ TEST_F(SrpcTest, call_channelgroup_pack_update_b_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_pack_b, &pack,
                       sizeof(TSC_SuplaChannelGroupPack_B)));
 
+  free(cr_rd.data.sc_channelgroup_pack_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2536,6 +2596,7 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelgroup_relation_pack, &pack,
                       sizeof(TSC_SuplaChannelGroupRelationPack)));
 
+  free(cr_rd.data.sc_channelgroup_relation_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2559,6 +2620,7 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
                           ((SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT - 1) *
                            sizeof(TSC_SuplaChannelGroupRelation))));
 
+  free(cr_rd.data.sc_channelgroup_relation_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2614,6 +2676,7 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelvalue_pack, &pack,
                       sizeof(TSC_SuplaChannelValuePack)));
 
+  free(cr_rd.data.sc_channelvalue_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2637,6 +2700,7 @@ TEST_F(SrpcTest, call_channelvalue_pack_update_with_minimum_size) {
                           ((SUPLA_CHANNELVALUE_PACK_MAXCOUNT - 1) *
                            sizeof(TSC_SuplaChannelValue))));
 
+  free(cr_rd.data.sc_channelvalue_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2728,6 +2792,7 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelextendedvalue_pack, &pack,
                       sizeof(TSC_SuplaChannelExtendedValuePack)));
 
+  free(cr_rd.data.sc_channelextendedvalue_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2772,6 +2837,7 @@ TEST_F(SrpcTest, call_event_with_zero_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_event, &event,
                       sizeof(TSC_SuplaEvent) - SUPLA_SENDER_NAME_MAXSIZE));
 
+  free(cr_rd.data.sc_event);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2792,6 +2858,7 @@ TEST_F(SrpcTest, call_event_with_full_size) {
 
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_event, &event, sizeof(TSC_SuplaEvent)));
 
+  free(cr_rd.data.sc_event);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2830,6 +2897,7 @@ TEST_F(SrpcTest, call_cs_set_channel_value) {
   ASSERT_EQ(0, memcmp(cr_rd.data.cs_channel_new_value, &value,
                       sizeof(TCS_SuplaChannelNewValue)));
 
+  free(cr_rd.data.cs_channel_new_value);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2849,6 +2917,7 @@ TEST_F(SrpcTest, call_cs_set_channel_value_b) {
   ASSERT_EQ(0, memcmp(cr_rd.data.cs_channel_new_value_b, &value,
                       sizeof(TCS_SuplaChannelNewValue_B)));
 
+  free(cr_rd.data.cs_channel_new_value_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2921,6 +2990,7 @@ TEST_F(SrpcTest, call_oauth_token_request_result_with_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_oauth_tokenrequest_result, &result,
                       sizeof(TSC_OAuthTokenRequestResult)));
 
+  free(cr_rd.data.sc_oauth_tokenrequest_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2944,6 +3014,7 @@ TEST_F(SrpcTest, call_superuser_authorization_request) {
   ASSERT_EQ(0, memcmp(cr_rd.data.cs_superuser_authorization_request, &request,
                       sizeof(TCS_SuperUserAuthorizationRequest)));
 
+  free(cr_rd.data.cs_superuser_authorization_request);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2963,6 +3034,7 @@ TEST_F(SrpcTest, call_superuser_authorization_result) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_superuser_authorization_result, &result,
                       sizeof(TSC_SuperUserAuthorizationResult)));
 
+  free(cr_rd.data.sc_superuser_authorization_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -3005,6 +3077,7 @@ TEST_F(SrpcTest, call_cs_device_calcfg_request_zero_size) {
       0, memcmp(cr_rd.data.cs_device_calcfg_request, &request,
                 sizeof(TCS_DeviceCalCfgRequest) - SUPLA_CALCFG_DATA_MAXSIZE));
 
+  free(cr_rd.data.cs_device_calcfg_request);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -3027,6 +3100,7 @@ TEST_F(SrpcTest, call_cs_device_calcfg_request_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sd_device_calcfg_request, &request,
                       sizeof(TCS_DeviceCalCfgRequest)));
 
+  free(cr_rd.data.cs_device_calcfg_request);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -3065,6 +3139,7 @@ TEST_F(SrpcTest, call_sc_device_calcfg_result_zero_size) {
             memcmp(cr_rd.data.sc_device_calcfg_result, &result,
                    sizeof(TSC_DeviceCalCfgResult) - SUPLA_CALCFG_DATA_MAXSIZE));
 
+  free(cr_rd.data.sc_device_calcfg_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -3087,6 +3162,7 @@ TEST_F(SrpcTest, call_sc_device_calcfg_result_full_size) {
   ASSERT_EQ(0, memcmp(cr_rd.data.sc_device_calcfg_result, &result,
                       sizeof(TSC_DeviceCalCfgResult)));
 
+  free(cr_rd.data.sc_device_calcfg_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -3267,6 +3343,9 @@ TEST_F(SrpcTest, call_get_user_localtime_result) {
   ASSERT_GT(srpc_sdc_async_get_user_localtime_result(srpc, &result), 0);
   SendAndReceive(SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT, 35);
 
+  ASSERT_FALSE(cr_rd.data.sdc_user_localtime_result == NULL);
+
+  free(cr_rd.data.sdc_user_localtime_result);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -3288,6 +3367,7 @@ TEST_F(SrpcTest, call_get_user_localtime_result_with_timezone_maxsize) {
                    sizeof(TSDC_UserLocalTimeResult)),
             0);
 
+  free(cr_rd.data.sdc_user_localtime_result);
   srpc_free(srpc);
   srpc = NULL;
 }

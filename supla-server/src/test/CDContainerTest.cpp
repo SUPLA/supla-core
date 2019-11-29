@@ -44,6 +44,7 @@ TEST_F(CDContainerTest, addToList) {
   container->deleteAll(0);
   ASSERT_EQ(1, container->delCount());
 
+  container->deleteAll(0);
   delete container;
 }
 
@@ -64,6 +65,7 @@ TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
   ASSERT_EQ(0, container->trashCount());
   ASSERT_EQ(1, container->delCount());
 
+  container->deleteAll(0);
   delete container;
 }
 
