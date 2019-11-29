@@ -239,6 +239,10 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
   // particular the number of calls to the function st_bcrypt_check, which
   // consumes CPU resources
 
+  if (GUID == NULL || AuthKey == NULL || Email == NULL) {
+    return false;
+  }
+
   if (cdbase::authkey_auth_cache_size > 0) {
     safe_array_lock(cdbase::authkey_auth_cache_arr);
 

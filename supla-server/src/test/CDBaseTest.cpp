@@ -26,6 +26,7 @@ class CDBaseTest : public ::testing::Test {};
 
 TEST_F(CDBaseTest, retainReleaseTest) {
   CDBaseMock *cd = new CDBaseMock(NULL);
+
   ASSERT_FALSE(cd == NULL);
   ASSERT_EQ(false, cd->ptrIsUsed());
   ASSERT_EQ(0, cd->ptrCounter());
@@ -54,8 +55,115 @@ TEST_F(CDBaseTest, authkey_cache) {
 
   CDBaseMock *cd = new CDBaseMock(NULL);
 
+  char GUID[SUPLA_GUID_SIZE];
+  char Email[SUPLA_EMAIL_MAXSIZE];
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  memset(GUID, 0, SUPLA_GUID_SIZE);
+  memset(Email, 0, SUPLA_EMAIL_MAXSIZE);
+  memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
+
+  ASSERT_EQ(0, cd->getDbAuthCount());
+  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+
+  cd->setCacheSizeLimit(0);
+
+  ASSERT_FALSE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+
+  ASSERT_EQ(2, cd->getDbAuthCount());
+  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+
+  GUID[0] = 1;
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+
+  ASSERT_EQ(3, cd->getDbAuthCount());
+  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+
+  cd->setCacheSizeLimit(5);
+
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+
+  ASSERT_EQ(4, cd->getDbAuthCount());
+  ASSERT_EQ(1, cdbase::getAuthKeyCacheSize());
+
+  GUID[0] = 2;
+
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+
+  ASSERT_EQ(5, cd->getDbAuthCount());
+  ASSERT_EQ(2, cdbase::getAuthKeyCacheSize());
+
+  Email[0] = '@';
+
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+
+  ASSERT_EQ(6, cd->getDbAuthCount());
+  ASSERT_EQ(3, cdbase::getAuthKeyCacheSize());
+
+  for (int b = 0; b < 10; b++) {
+    Email[b] = '@';
+    for (int a = 0; a < 200; a++) {
+      AuthKey[0] = 1 + a;
+
+      ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+      ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+      ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+
+      ASSERT_EQ(7 + b * 200 + a, cd->getDbAuthCount());
+      ASSERT_EQ(a > 1 || b > 0 ? 5 : 4 + a, cdbase::getAuthKeyCacheSize());
+    }
+  }
+
   delete cd;
 
   cdbase::cdbase_free();
 }
+
+TEST_F(CDBaseTest, authkey_cache_null_test) {
+  cdbase::init();
+
+  CDBaseMock *cd = new CDBaseMock(NULL);
+
+  char GUID[SUPLA_GUID_SIZE];
+  char Email[SUPLA_EMAIL_MAXSIZE];
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  memset(GUID, 0, SUPLA_GUID_SIZE);
+  memset(Email, 0, SUPLA_EMAIL_MAXSIZE);
+  memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
+
+  cd->setCacheSizeLimit(5);
+
+  ASSERT_FALSE(cd->authkey_auth(NULL, Email, AuthKey));
+
+  ASSERT_EQ(0, cd->getDbAuthCount());
+  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+
+  ASSERT_FALSE(cd->authkey_auth(GUID, NULL, AuthKey));
+
+  ASSERT_EQ(0, cd->getDbAuthCount());
+  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+
+  ASSERT_FALSE(cd->authkey_auth(GUID, Email, NULL));
+
+  ASSERT_EQ(0, cd->getDbAuthCount());
+  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+
+  ASSERT_FALSE(cd->authkey_auth(GUID, Email, AuthKey));
+
+  ASSERT_EQ(1, cd->getDbAuthCount());
+  ASSERT_EQ(1, cdbase::getAuthKeyCacheSize());
+
+  delete cd;
+
+  cdbase::cdbase_free();
+}
+
 }  // namespace

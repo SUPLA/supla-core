@@ -19,11 +19,25 @@
 #include "CDBaseMock.h"   // NOLINT
 #include "gtest/gtest.h"  // NOLINT
 
-CDBaseMock::CDBaseMock(serverconnection *svrconn) : cdbase(svrconn) {}
+CDBaseMock::CDBaseMock(serverconnection *svrconn) : cdbase(svrconn) {
+  dbAuthCount = 0;
+}
 
 bool CDBaseMock::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                                  const char Email[SUPLA_EMAIL_MAXSIZE],
                                  const char AuthKey[SUPLA_AUTHKEY_SIZE],
                                  int *UserID, database *db) {
-  return false;
+  dbAuthCount++;
+  return dbAuthCount > 1;
+}
+
+int CDBaseMock::getDbAuthCount() { return dbAuthCount; }
+
+void CDBaseMock::setCacheSizeLimit(int size) { authkey_auth_cache_size = size; }
+
+bool CDBaseMock::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                              const char Email[SUPLA_EMAIL_MAXSIZE],
+                              const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+  int UserID = 0;
+  return cdbase::authkey_auth(GUID, Email, AuthKey, &UserID, NULL);
 }

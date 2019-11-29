@@ -28,8 +28,16 @@ class CDBaseMock : public cdbase {
                        const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
                        database *db);
 
+  int dbAuthCount;
+
  public:
   explicit CDBaseMock(serverconnection *svrconn);
+  int getDbAuthCount();
+  void setCacheSizeLimit(int size);
+
+  bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                    const char Email[SUPLA_EMAIL_MAXSIZE],
+                    const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 };
 
 #endif /* CDBASEMOCK_H_ */
