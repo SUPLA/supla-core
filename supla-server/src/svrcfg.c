@@ -81,6 +81,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
 
   char *s_limit = "LIMITS";
   scfg_add_int_param(s_limit, "concurrent_registrations", 20);
+  scfg_add_int_param(s_limit, "authkey_auth_cache_size", 2000);
 
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");

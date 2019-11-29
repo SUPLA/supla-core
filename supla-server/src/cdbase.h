@@ -37,6 +37,7 @@ class cdbase {
  protected:
   void *lck;
   static void *authkey_auth_cache_arr;
+  static int authkey_auth_cache_size;
 
   // Thread safe start
   bool setGUID(char GUID[SUPLA_GUID_SIZE]);

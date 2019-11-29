@@ -22,6 +22,7 @@
 #include "cdbase.h"
 #include "lck.h"
 #include "safearray.h"
+#include "svrcfg.h"
 #include "user.h"
 
 typedef struct {
@@ -33,17 +34,24 @@ typedef struct {
 } authkey_cache_item_t;
 
 void *cdbase::authkey_auth_cache_arr = NULL;
+int cdbase::authkey_auth_cache_size = 0;
 
 // static
-void cdbase::init(void) { cdbase::authkey_auth_cache_arr = safe_array_init(); }
+void cdbase::init(void) {
+  cdbase::authkey_auth_cache_size = scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
+  cdbase::authkey_auth_cache_arr = safe_array_init();
+}
 
 // static
 void cdbase::cdbase_free(void) {
   for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
     authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
         safe_array_get(cdbase::authkey_auth_cache_arr, a));
-    if (i && i->Email) {
-      free(i->Email);
+    if (i) {
+      if (i->Email) {
+        free(i->Email);
+      }
+      free(i);
     }
   }
 
@@ -226,34 +234,59 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
   // particular the number of calls to the function st_bcrypt_check, which
   // consumes CPU resources
 
-  safe_array_lock(cdbase::authkey_auth_cache_arr);
+  if (cdbase::authkey_auth_cache_size > 0) {
+    safe_array_lock(cdbase::authkey_auth_cache_arr);
 
-  for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
-    authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
-        safe_array_get(cdbase::authkey_auth_cache_arr, a));
-    if (i && strncmp(i->Email, Email, SUPLA_EMAIL_MAXSIZE) == 0 &&
-        memcmp(i->GUID, GUID, SUPLA_GUID_SIZE) == 0 &&
-        memcmp(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE) == 0) {
-      bool result = i->result;
-      *UserID = i->UserID;
-      safe_array_move_to_begin(cdbase::authkey_auth_cache_arr, a);
-      safe_array_unlock(cdbase::authkey_auth_cache_arr);
-      return result;
+    for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
+      authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
+          safe_array_get(cdbase::authkey_auth_cache_arr, a));
+      if (i && strncmp(i->Email, Email, SUPLA_EMAIL_MAXSIZE) == 0 &&
+          memcmp(i->GUID, GUID, SUPLA_GUID_SIZE) == 0 &&
+          memcmp(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE) == 0) {
+        bool result = i->result;
+        *UserID = i->UserID;
+        safe_array_move_to_begin(cdbase::authkey_auth_cache_arr, a);
+        safe_array_unlock(cdbase::authkey_auth_cache_arr);
+        return result;
+      }
     }
+    safe_array_unlock(cdbase::authkey_auth_cache_arr);
+
+    authkey_cache_item_t *i =
+        (authkey_cache_item_t *)malloc(sizeof(authkey_cache_item_t));
+    memset(i, 0, sizeof(authkey_cache_item_t));
+
+    memcpy(i->GUID, GUID, SUPLA_GUID_SIZE);
+    memcpy(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+    i->Email = strndup(Email, SUPLA_EMAIL_MAXSIZE);
+
+    i->result = db_authkey_auth(GUID, Email, AuthKey, UserID, db);
+    i->UserID = *UserID;
+
+    safe_array_lock(cdbase::authkey_auth_cache_arr);
+
+    int count = 0;
+    do {
+      count = safe_array_count(cdbase::authkey_auth_cache_arr);
+      if (count > cdbase::authkey_auth_cache_size - 1) {
+        authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
+            safe_array_get(cdbase::authkey_auth_cache_arr, count - 1));
+        if (i) {
+          if (i->Email) {
+            free(i->Email);
+          }
+          free(i);
+        }
+      } else {
+        break;
+      }
+    } while (1);
+
+    safe_array_add(cdbase::authkey_auth_cache_arr, i);
+    safe_array_unlock(cdbase::authkey_auth_cache_arr);
+
+    return i->result;
+  } else {
+    return db_authkey_auth(GUID, Email, AuthKey, UserID, db);
   }
-  safe_array_unlock(cdbase::authkey_auth_cache_arr);
-
-  authkey_cache_item_t *i =
-      (authkey_cache_item_t *)malloc(sizeof(authkey_cache_item_t));
-  memset(i, 0, sizeof(authkey_cache_item_t));
-
-  memcpy(i->GUID, GUID, SUPLA_GUID_SIZE);
-  memcpy(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
-  i->Email = strndup(Email, SUPLA_EMAIL_MAXSIZE);
-
-  i->result = db_authkey_auth(GUID, Email, AuthKey, UserID, db);
-  i->UserID = *UserID;
-
-  safe_array_add(cdbase::authkey_auth_cache_arr, i);
-  return i->result;
 }

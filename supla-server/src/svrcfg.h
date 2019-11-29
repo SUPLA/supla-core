@@ -61,6 +61,7 @@ extern "C" {
 #define CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT 21
 
 #define CFG_LIMIT_CONCURRENT_REGISTRATIONS 22
+#define CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE 23
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;
