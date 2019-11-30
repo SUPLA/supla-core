@@ -3345,7 +3345,7 @@ TEST_F(SrpcTest, call_get_user_localtime_result) {
 
   ASSERT_FALSE(cr_rd.data.sdc_user_localtime_result == NULL);
 
-  free(cr_rd.data.sdc_user_localtime_result);
+  // free(cr_rd.data.sdc_user_localtime_result);
   srpc_free(srpc);
   srpc = NULL;
 }
