@@ -21,6 +21,7 @@ if ! grep "All heap blocks were freed -- no leaks are possible" ./vg-test.log; t
         && grep "indirectly lost: 0 bytes in 0 blocks" ./vg-test.log \
         && grep "possibly lost: 0 bytes in 0 blocks" ./vg-test.log \
         && grep "still reachable: 72,704 bytes in 1 blocks" ./vg-test.log ); then 
+     cat ./vg-test.log
      rm ./vg-test.log
      echo "Memory leak error!"
      exit 1
