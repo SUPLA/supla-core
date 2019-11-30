@@ -14,13 +14,13 @@ valgrind --version
 
 if ! grep "All heap blocks were freed -- no leaks are possible" ./vg-test.log; then
   # The problem with 72,704 bytes can be ignored.
+  # https://bugs.kde.org/show_bug.cgi?id=345307#c1
 
   if ! (grep "in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so" ./vg-test.log \
-        && grep "definitely lost: 0 bytes in 0 blocks" ./vg-test.log 
-        && grep "indirectly lost: 0 bytes in 0 blocks" ./vg-test.log 
-        && grep "possibly lost: 0 bytes in 0 blocks" ./vg-test.log 
-        && grep "still reachable: 72,704 bytes in 1 blocks" ./vg-test.log  
-        \); then
+        && grep "definitely lost: 0 bytes in 0 blocks" ./vg-test.log \
+        && grep "indirectly lost: 0 bytes in 0 blocks" ./vg-test.log \
+        && grep "possibly lost: 0 bytes in 0 blocks" ./vg-test.log \
+        && grep "still reachable: 72,704 bytes in 1 blocks" ./vg-test.log ); then 
      rm ./vg-test.log
      echo "Memory leak error!"
      exit 1
