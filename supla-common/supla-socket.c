@@ -679,6 +679,7 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     count = SSL_read(supla_socket->ssl, buf, count);
 
 #ifdef __DEBUG
+    // SSL_get_error consumes quite a few CPU cycles.
     if (count < 0 &&
         SSL_get_error(supla_socket->ssl, count) != SSL_ERROR_WANT_READ) {
       ssocket_ssl_error(supla_socket, count);
