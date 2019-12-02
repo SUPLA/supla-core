@@ -678,9 +678,13 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
 #else
     count = SSL_read(supla_socket->ssl, buf, count);
 
+#ifdef __DEBUG
     if (count < 0 &&
-        SSL_get_error(supla_socket->ssl, count) != SSL_ERROR_WANT_READ)
+        SSL_get_error(supla_socket->ssl, count) != SSL_ERROR_WANT_READ) {
       ssocket_ssl_error(supla_socket, count);
+    }
+#endif /*__DEBUG*/
+
 #endif /*ifdef NOSSL*/
 
   } else {
@@ -733,8 +737,8 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
                  MSG_NOSIGNAL
 #else
                  0
-#endif               /*ifdef __linux__*/
-                 );  // NOLINT
+#endif  /*ifdef __linux__*/
+    );  // NOLINT
   }
 
   return count;
