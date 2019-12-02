@@ -226,10 +226,8 @@ char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
   if (sdp->data_size < SUPLA_MAX_DATA_SIZE) {
     data_size -= SUPLA_MAX_DATA_SIZE - sdp->data_size;
   }
-  lck_unlock(srpc->lck);
   srpc->params.data_write((char *)sdp, data_size, srpc->params.user_params);
   srpc->params.data_write(sproto_tag, SUPLA_TAG_SIZE, srpc->params.user_params);
-  lck_lock(srpc->lck);
   return 1;
 #else
   return srpc_queue_push(&srpc->out_queue, sdp);
