@@ -56,7 +56,6 @@ class serverconnection {
 
   int incorrect_call_counter;
   void catch_incorrect_call(unsigned int call_type);
-  void wait_and_terminate(void *sthread, short sec);
 
  public:
   static unsigned int local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
