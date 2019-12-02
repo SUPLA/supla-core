@@ -734,7 +734,7 @@ void serverconnection::execute(void *sthread) {
 
   if (concurrent_registrations_limit > 0) {
     supla_log(LOG_DEBUG, "Connection Dropped");
-    wait_and_terminate(sthread, 1);
+    sthread_terminate(sthread);
     return;
   }
 
