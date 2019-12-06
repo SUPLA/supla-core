@@ -27,7 +27,7 @@ CPP_DEPS += \
 src/mqtt/%.o: ../src/mqtt/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -D__NO_USER -D__NO_DATABASE -I$(SSLDIR)/include -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -D__NO_USER -D__NO_DATABASE -I$(SSLDIR)/include -O0 -g3 -Wall -fsigned-char -std=c++11 -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
