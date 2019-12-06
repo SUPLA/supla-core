@@ -31,7 +31,7 @@ void handle_subscribed_message(void* supla_client,
                                client_device_channels* channels,
                                client_config* config, std::string topic,
                                std::string message) {
-  supla_log(LOG_DEBUG, "handling message %s", message);
+  supla_log(LOG_DEBUG, "handling message %s", message.c_str());
 
   if (supla_client == NULL) return;
   if (channels == NULL) return;
@@ -79,8 +79,8 @@ void handle_subscribed_message(void* supla_client,
               jsoncons::jsonpointer::get(payload, on_off).as<std::string>();
           std::string on_value = command->getOnValue();
 
-          supla_log(LOG_DEBUG, "handling %d %s %s", channel->getFunc(), value,
-                    on_value);
+          supla_log(LOG_DEBUG, "handling %d %s %s", channel->getFunc(), value.c_str(),
+                    on_value.c_str());
 
           if (value.compare(on_value) == 0) {
             supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id, 1);
