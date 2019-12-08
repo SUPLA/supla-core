@@ -43,7 +43,7 @@ class client_config {
 
   std::string supla_host;
   uint16_t supla_port;
-  uint32_t supla_locationid;
+  uint32_t supla_accessid;
   std::string supla_password;
   std::string supla_email;
   uint16_t supla_protocol_version;
@@ -69,7 +69,7 @@ class client_config {
   std::string getSuplaHost();
   std::string getSuplaPassword();
   const uint16_t getSuplaPort();
-  const uint32_t getSuplaLocationId();
+  const uint32_t getSuplaAccessId();
   std::string getSuplaEmail();
   const uint16_t getSuplaProtocolVersion();
 

@@ -6,6 +6,8 @@
 cd supla-mqtt-client/Test && \
 make clean && make all && \
 ./supla-mqtt-client && \
+cd ../Release && \
+make clean && make all && \
 cd ../../supla-server/Test && \
 make clean && make all && \
 ./supla-server && \

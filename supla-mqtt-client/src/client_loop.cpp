@@ -138,7 +138,7 @@ void *client_loop_init(void *sthread, client_config *config) {
   snprintf(scc.AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE,
            config->getSuplaPassword().c_str());
 
-  scc.AccessID = config->getSuplaLocationId();
+  scc.AccessID = config->getSuplaAccessId();
 
   memcpy(scc.clientGUID, cfg_client_GUID, SUPLA_GUID_SIZE);
   memcpy(scc.AuthKey, cfg_client_AuthKey, SUPLA_AUTHKEY_SIZE);
