@@ -9,6 +9,6 @@ mqtt:
 supla:
   port: 2016
   host: 'localhost'
-  location: 2
+  access_id: 2
   password: 'password'
   protocol_version: 10

@@ -32,7 +32,7 @@ client_config::client_config() {
 
   this->supla_host = "localhost";
   this->supla_port = 2016;
-  this->supla_locationid = 1;
+  this->supla_accessid = 1;
   this->supla_password = "";
   this->supla_email = "";
   this->supla_protocol_version = 10;
@@ -85,7 +85,7 @@ bool client_config::load(const char* config_file) {
     if (!root["supla"].IsNone()) {
       this->supla_host = root["supla"]["host"].As<std::string>("localhost");
       this->supla_password = root["supla"]["password"].As<std::string>("");
-      this->supla_locationid = root["supla"]["location"].As<uint32_t>(2016);
+      this->supla_accessid = root["supla"]["access_id"].As<uint32_t>(2016);
       this->supla_port = root["supla"]["port"].As<uint16_t>(2016);
       this->supla_email = root["supla"]["email"].As<std::string>("");
       this->supla_protocol_version =
@@ -225,8 +225,8 @@ const uint16_t client_config::getMqttProtocolVersion() {
 std::string client_config::getSuplaHost() { return this->supla_host; }
 std::string client_config::getSuplaPassword() { return this->supla_password; }
 const uint16_t client_config::getSuplaPort() { return this->supla_port; }
-const uint32_t client_config::getSuplaLocationId() {
-  return this->supla_locationid;
+const uint32_t client_config::getSuplaAccessId() {
+  return this->supla_accessid;
 }
 const uint16_t client_config::getSuplaProtocolVersion() {
   return this->supla_protocol_version;

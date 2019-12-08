@@ -52,7 +52,7 @@ mqtt:
 supla:
   port: 2016 # SUPLA server port
   host: 'localhost' # SUPLA server hostname
-  location: 2 # access id from SUPLA Cloud
+  access_id: 2 # access id from SUPLA Cloud
   password: 'password' # password for the given access identifier
   protocol_version: 10 # supla protocol version should be grater than 5
 ```
