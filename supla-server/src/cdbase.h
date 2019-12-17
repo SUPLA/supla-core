@@ -41,7 +41,7 @@ class cdbase {
 
   // Thread safe start
   bool setGUID(char GUID[SUPLA_GUID_SIZE]);
-  bool setAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]);
+  bool setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void setID(int ID);
   void setUser(supla_user *user);
   // Thread safe end
