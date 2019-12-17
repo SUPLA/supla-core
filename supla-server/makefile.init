@@ -17,6 +17,11 @@ endif
 ifdef MARIADB
 LIBMYSQL=mariadbclient
 INCMYSQL=/usr/include/mariadb
+
+ifeq (,$(wildcard $(INCMYSQL)))
+    INCMYSQL=/usr/include/mysql
+endif
+
 else
 LIBMYSQL=mysqlclient
 INCMYSQL=/usr/include/mysql
