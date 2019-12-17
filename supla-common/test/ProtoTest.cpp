@@ -122,6 +122,11 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TThermostatTemperatureCfg), SUPLA_CALCFG_DATA_MAXSIZE);
 
   ASSERT_EQ(63, sizeof(TSDC_UserLocalTimeResult));
+
+  ASSERT_EQ(324, sizeof(TCS_SetAccessIdRequest));
+  ASSERT_EQ(25, sizeof(TSC_ChannelState));
+  ASSERT_EQ(4, sizeof(TCS_ChannelStateRequest));
+  ASSERT_EQ(4, sizeof(TSC_SetAccessIdResult));
 }
 
 TEST_F(ProtoTest, init) {

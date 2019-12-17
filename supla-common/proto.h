@@ -372,6 +372,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HEATPOL 8
 #define SUPLA_MFR_FAKRO 9
 
+#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001     // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002        // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004        // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_DETAILED_STATUS 0x0008  // ver. >= 11
+
 #pragma pack(push, 1)
 
 typedef struct {
@@ -1038,6 +1043,8 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
+#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000  // v. >= 11
+
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
   _supla_int_t ChannelID;
@@ -1230,6 +1237,33 @@ typedef struct {
       timezoneSize;  // including the terminating null byte ('\0')
   char timezone[SUPLA_TIMEZONE_MAXSIZE];  // Last variable in struct!
 } TSDC_UserLocalTimeResult;
+
+typedef struct {
+  _supla_int_t AccessID;                  // 0 == First available
+  char Email[SUPLA_EMAIL_MAXSIZE];        // UTF8
+  char Password[SUPLA_PASSWORD_MAXSIZE];  // UTF8
+} TCS_SetAccessIdRequest;                 // v. >= 11
+
+typedef struct {
+  _supla_int_t Result;
+} TSC_SetAccessIdResult;  // v. >= 11
+
+typedef struct {
+  _supla_int_t ChannelID;
+} TCS_ChannelStateRequest;  // v. >= 11
+
+#define SUPLA_CHANNELSTATE_FIELD_IPV4 0x1;
+
+typedef struct {
+  _supla_int_t Fields;
+  unsigned _supla_int_t IPv4;
+  unsigned char Mac[6];
+  unsigned char BateryLevel;
+  unsigned char WiFiSignalStrength;
+  unsigned char BridgeSignalStrenth;
+  unsigned _supla_int_t Uptime;            // sec.
+  unsigned _supla_int_t ConnectionUptime;  // sec.
+} TSC_ChannelState;                        // v. >= 11
 
 #pragma pack(pop)
 
