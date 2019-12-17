@@ -119,7 +119,7 @@ bool cdbase::setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   return true;
 }
 
-void cdbase::getAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]) {
+void cdbase::getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   lck_lock(lck);
   memcpy(AuthKey, this->AuthKey, SUPLA_AUTHKEY_SIZE);
   lck_unlock(lck);
