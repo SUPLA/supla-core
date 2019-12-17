@@ -166,4 +166,56 @@ TEST_F(CDBaseTest, authkey_cache_null_test) {
   cdbase::cdbase_free();
 }
 
+TEST_F(CDBaseTest, guid_setter_getter) {
+  char v[SUPLA_GUID_SIZE];
+  char v0[SUPLA_GUID_SIZE];
+  char v1[SUPLA_GUID_SIZE];
+
+  memset(v, 0, SUPLA_GUID_SIZE);
+  memset(v0, 0, SUPLA_GUID_SIZE);
+  memset(v1, 1, SUPLA_GUID_SIZE);
+
+  cdbase::init();
+  CDBaseMock *cd = new CDBaseMock(NULL);
+
+  cd->getGUID(v);
+  ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
+
+  cd->setGUID(v1);
+  cd->getGUID(v);
+  ASSERT_EQ(0, memcmp(v, v1, SUPLA_GUID_SIZE));
+
+  cd->getAuthKey(v);
+  ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
+
+  delete cd;
+  cdbase::cdbase_free();
+}
+
+TEST_F(CDBaseTest, authkey_setter_getter) {
+  char v[SUPLA_AUTHKEY_SIZE];
+  char v0[SUPLA_AUTHKEY_SIZE];
+  char v1[SUPLA_AUTHKEY_SIZE];
+
+  memset(v, 0, SUPLA_AUTHKEY_SIZE);
+  memset(v0, 0, SUPLA_AUTHKEY_SIZE);
+  memset(v1, 1, SUPLA_AUTHKEY_SIZE);
+
+  cdbase::init();
+  CDBaseMock *cd = new CDBaseMock(NULL);
+
+  cd->getAuthKey(v);
+  ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
+
+  cd->setAuthKey(v1);
+  cd->getAuthKey(v);
+  ASSERT_EQ(0, memcmp(v, v1, SUPLA_AUTHKEY_SIZE));
+
+  cd->getGUID(v);
+  ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
+
+  delete cd;
+  cdbase::cdbase_free();
+}
+
 }  // namespace
