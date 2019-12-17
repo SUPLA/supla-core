@@ -17,8 +17,9 @@
  */
 
 #include <ctype.h>
-#include <my_global.h>
 #include <mysql.h>
+#include <stdio.h>
+#include <time.h>
 #include "amazon/alexa.h"
 #include "google/googlehome.h"
 
