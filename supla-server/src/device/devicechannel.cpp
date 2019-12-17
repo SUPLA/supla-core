@@ -293,8 +293,10 @@ bool supla_channel_ic_measurement::update_cev(
     ic_ev.custom_unit[0] = 0;
     ic_ev.impulses_per_unit = 0;
 
+
     if (TextParam2 && strnlen(TextParam2, 9) < 9) {
-      strncpy(ic_ev.custom_unit, TextParam2, 9);
+      strncpy(ic_ev.custom_unit, TextParam2, 8);
+      ic_ev.custom_unit[8] = 0;
     }
 
     supla_channel_ic_measurement::set_default_unit(Func, ic_ev.custom_unit);
