@@ -16,8 +16,10 @@ endif
 
 ifdef MARIADB
 LIBMYSQL=mariadbclient
+INCMYSQL=/usr/lib/mariadb
 else
 LIBMYSQL=mysqlclient
+INCMYSQL=/usr/lib/mysql
 endif
 
 ifndef SSOCKET_WRITE_TO_FILE
