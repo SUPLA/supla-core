@@ -65,6 +65,7 @@ cdbase::cdbase(serverconnection *svrconn) {
   this->ID = 0;
   this->ptr_counter = 0;
   memset(this->GUID, 0, SUPLA_GUID_SIZE);
+  memset(this->AuthKey, 0, SUPLA_AUTHKEY_SIZE);
 
   updateLastActivity();  // last line / after lck_init
 }
