@@ -878,6 +878,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:  // ver. >= 11
+
+        if (srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient_D))
+          rd->data.cs_register_client_d = (TCS_SuplaRegisterClient_D *)malloc(
+              sizeof(TCS_SuplaRegisterClient_D));
+
+        break;
+
       case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT:
 
         if (srpc->sdp.data_size == sizeof(TSC_SuplaRegisterClientResult))
@@ -1198,6 +1206,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
     case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
+    case SUPLA_CS_CALL_REGISTER_CLIENT_D:
       return 11;
   }
 
@@ -1573,6 +1582,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_c(
   return srpc_async_call(_srpc, SUPLA_CS_CALL_REGISTER_CLIENT_C,
                          (char *)registerclient,
                          sizeof(TCS_SuplaRegisterClient_C));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_d(
+    void *_srpc, TCS_SuplaRegisterClient_D *registerclient) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_REGISTER_CLIENT_D,
+                         (char *)registerclient,
+                         sizeof(TCS_SuplaRegisterClient_D));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(

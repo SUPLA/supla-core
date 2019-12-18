@@ -151,6 +151,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_REGISTER_CLIENT 80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
 #define SUPLA_CS_CALL_REGISTER_CLIENT_C 86  // ver. >= 7
+#define SUPLA_CS_CALL_REGISTER_CLIENT_D 87  // ver. >= 11
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
@@ -856,6 +857,20 @@ typedef struct {
 } TCS_SuplaRegisterClient_C;  // ver. >= 7
 
 typedef struct {
+  // client -> server
+
+  char Email[SUPLA_EMAIL_MAXSIZE];        // UTF8
+  char Password[SUPLA_PASSWORD_MAXSIZE];  // Optional - UTF8
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+
+  char GUID[SUPLA_GUID_SIZE];
+  char Name[SUPLA_CLIENT_NAME_MAXSIZE];  // UTF8
+  char SoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+} TCS_SuplaRegisterClient_D;  // ver. >= 11
+
+typedef struct {
   // server -> client
 
   _supla_int_t result_code;
@@ -1237,16 +1252,6 @@ typedef struct {
       timezoneSize;  // including the terminating null byte ('\0')
   char timezone[SUPLA_TIMEZONE_MAXSIZE];  // Last variable in struct!
 } TSDC_UserLocalTimeResult;
-
-typedef struct {
-  _supla_int_t AccessID;                  // 0 == First available
-  char Email[SUPLA_EMAIL_MAXSIZE];        // UTF8
-  char Password[SUPLA_PASSWORD_MAXSIZE];  // UTF8
-} TCS_SetAccessIdRequest;                 // v. >= 11
-
-typedef struct {
-  _supla_int_t Result;
-} TSC_SetAccessIdResult;  // v. >= 11
 
 typedef struct {
   _supla_int_t ChannelID;

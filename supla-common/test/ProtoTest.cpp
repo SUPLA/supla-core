@@ -77,6 +77,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ(275, sizeof(TCS_SuplaRegisterClient));
   ASSERT_EQ(340, sizeof(TCS_SuplaRegisterClient_B));
   ASSERT_EQ(575, sizeof(TCS_SuplaRegisterClient_C));
+  ASSERT_EQ(639, sizeof(TCS_SuplaRegisterClient_D));
   ASSERT_EQ(19, sizeof(TSC_SuplaRegisterClientResult));
   ASSERT_EQ(27, sizeof(TSC_SuplaRegisterClientResult_B));
   ASSERT_EQ(9, sizeof(TCS_SuplaChannelNewValue));
@@ -123,10 +124,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   ASSERT_EQ(63, sizeof(TSDC_UserLocalTimeResult));
 
-  ASSERT_EQ(324, sizeof(TCS_SetAccessIdRequest));
   ASSERT_EQ(25, sizeof(TSC_ChannelState));
   ASSERT_EQ(4, sizeof(TCS_ChannelStateRequest));
-  ASSERT_EQ(4, sizeof(TSC_SetAccessIdResult));
 }
 
 TEST_F(ProtoTest, init) {

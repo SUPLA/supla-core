@@ -284,7 +284,8 @@ TEST_F(SrpcTest, call_allowed_v10) {
 }
 
 TEST_F(SrpcTest, call_allowed_v11) {
-  int calls[] = {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
+  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D,
+                 SUPLA_DCS_CALL_GET_USER_LOCALTIME,
                  SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
                  SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B, 0};
 
@@ -1647,6 +1648,26 @@ TEST_F(SrpcTest, call_registerclient_c) {
                       sizeof(TCS_SuplaRegisterClient_C)));
 
   free(cr_rd.data.cs_register_client_c);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_registerclient_d) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TCS_SuplaRegisterClient_D, registerclient_d);
+
+  ASSERT_GT(srpc_cs_async_registerclient_d(srpc, &registerclient_d), 0);
+  SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_D, 662);
+
+  ASSERT_FALSE(cr_rd.data.cs_register_client_d == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_d,
+                      &registerclient_d, sizeof(TCS_SuplaRegisterClient_D)));
+
+  free(cr_rd.data.cs_register_client_d);
   srpc_free(srpc);
   srpc = NULL;
 }
