@@ -506,8 +506,8 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_FALSE(data_read == NULL);
   data_read_result = data_write_size;
 
-  if (ExpectedCallType == -1) {
-    ((TSuplaDataPacket *)data_write)->call_type = -1;
+  if (ExpectedCallType == (unsigned int)-1) {
+    ((TSuplaDataPacket *)data_write)->call_type = (unsigned int)-1;
   }
 
   memcpy(data_read, data_write, data_write_size);
@@ -522,7 +522,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_TRUE(ExpectedCallType == cr_call_type);
   ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
 
-  if (ExpectedCallType == -1) {
+  if (ExpectedCallType == (unsigned int)-1) {
     ASSERT_EQ(SUPLA_RESULT_DATA_ERROR, srpc_getdata(srpc, &cr_rd, cr_rr_id));
   } else {
     ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
@@ -1664,8 +1664,8 @@ TEST_F(SrpcTest, call_registerclient_d) {
 
   ASSERT_FALSE(cr_rd.data.cs_register_client_d == NULL);
 
-  ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_d,
-                      &registerclient_d, sizeof(TCS_SuplaRegisterClient_D)));
+  ASSERT_EQ(0, memcmp(cr_rd.data.cs_register_client_d, &registerclient_d,
+                      sizeof(TCS_SuplaRegisterClient_D)));
 
   free(cr_rd.data.cs_register_client_d);
   srpc_free(srpc);
@@ -3297,31 +3297,31 @@ TEST_F(SrpcTest, evtool_v1_thermostatextended2extended) {
   ASSERT_EQ(0, srpc_evtool_v1_thermostatextended2extended(NULL, &ev));
 
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(1, ev.size);
+  ASSERT_EQ((unsigned int)1, ev.size);
 
   th_ev.Fields = THERMOSTAT_FIELD_MeasuredTemperatures;
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(21, ev.size);
+  ASSERT_EQ((unsigned int)21, ev.size);
 
   th_ev.Fields = THERMOSTAT_FIELD_PresetTemperatures;
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(41, ev.size);
+  ASSERT_EQ((unsigned int)41, ev.size);
 
   th_ev.Fields = THERMOSTAT_FIELD_Flags;
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(57, ev.size);
+  ASSERT_EQ((unsigned int)57, ev.size);
 
   th_ev.Fields = THERMOSTAT_FIELD_Values;
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(73, ev.size);
+  ASSERT_EQ((unsigned int)73, ev.size);
 
   th_ev.Fields = THERMOSTAT_FIELD_Time;
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(77, ev.size);
+  ASSERT_EQ((unsigned int)77, ev.size);
 
   th_ev.Fields = THERMOSTAT_FIELD_Schedule;
   ASSERT_EQ(1, srpc_evtool_v1_thermostatextended2extended(&th_ev, &ev));
-  ASSERT_EQ(246, ev.size);
+  ASSERT_EQ((unsigned int)246, ev.size);
 
   ASSERT_EQ(0, memcmp(ev.value, &th_ev, sizeof(TThermostat_ExtendedValue)));
 }

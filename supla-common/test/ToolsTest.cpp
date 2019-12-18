@@ -46,7 +46,10 @@ TEST_F(ToolsTest, pid_file) {
 
   FILE *F = fopen(file, "r");
   if (F) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
     fread(str2, 1, 32, F);
+#pragma GCC diagnostic pop
     fclose(F);
   }
 
