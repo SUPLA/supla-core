@@ -531,7 +531,7 @@ char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds) {
   return 0;
 }
 
-char st_bcrypt_check(char *str, char *hash, int hash_len) {
+char st_bcrypt_check(const char *str, char *hash, int hash_len) {
   if (str == NULL || hash == NULL || hash_len == 0) return 0;
 
   char *cmp_hash = malloc(hash_len + 1);

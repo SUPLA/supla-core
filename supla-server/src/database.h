@@ -148,8 +148,9 @@ class database : public dbcommon {
   int oauth_get_client_id(bool create);
   bool oauth_get_token(TSC_OAuthToken *token, int user_id, int access_id);
 
-  bool superuser_authorization(int UserID, char email[SUPLA_EMAIL_MAXSIZE],
-                               char password[SUPLA_PASSWORD_MAXSIZE]);
+  bool superuser_authorization(int UserID,
+                               const char email[SUPLA_EMAIL_MAXSIZE],
+                               const char password[SUPLA_PASSWORD_MAXSIZE]);
 
   bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
   void amazon_alexa_remove_token(supla_amazon_alexa *alexa);

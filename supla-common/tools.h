@@ -75,7 +75,7 @@ void st_uuid_v4(char buffer[37]);
 char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds);
 char st_bcrypt_hash(char *str, char *salt, char *hash, int hash_buffer_size);
 char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds);
-char st_bcrypt_check(char *str, char *hash, int hash_len);
+char st_bcrypt_check(const char *str, char *hash, int hash_len);
 char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 
 #endif

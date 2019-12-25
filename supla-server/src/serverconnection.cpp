@@ -204,6 +204,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_CS_CALL_REGISTER_CLIENT:
       case SUPLA_CS_CALL_REGISTER_CLIENT_B:
       case SUPLA_CS_CALL_REGISTER_CLIENT_C:
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:
 
         if (srpc_get_proto_version(_srpc) != proto_version) {
           // Adjust version to client/device protocol
@@ -462,26 +463,59 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_C");
 
+        if (rd.data.cs_register_client_c != NULL) {
+          TCS_SuplaRegisterClient_D *register_client_d =
+              (TCS_SuplaRegisterClient_D *)malloc(
+                  sizeof(TCS_SuplaRegisterClient_D));
+          if (register_client_d != NULL) {
+            memset(register_client_d, 0, sizeof(TCS_SuplaRegisterClient_D));
+
+            memcpy(register_client_d->Email,
+                   rd.data.cs_register_client_c->Email, SUPLA_EMAIL_MAXSIZE);
+            memcpy(register_client_d->AuthKey,
+                   rd.data.cs_register_client_c->AuthKey, SUPLA_AUTHKEY_SIZE);
+            memcpy(register_client_d->GUID, rd.data.cs_register_client_c->GUID,
+                   SUPLA_GUID_SIZE);
+            memcpy(register_client_d->Name, rd.data.cs_register_client_c->Name,
+                   SUPLA_CLIENT_NAME_MAXSIZE);
+            memcpy(register_client_d->SoftVer,
+                   rd.data.cs_register_client_c->SoftVer,
+                   SUPLA_SOFTVER_MAXSIZE);
+            memcpy(register_client_d->ServerName,
+                   rd.data.cs_register_client_c->ServerName,
+                   SUPLA_SERVER_NAME_MAXSIZE);
+
+            free(rd.data.cs_register_client_c);
+            rd.data.cs_register_client_d = register_client_d;
+          }
+        }
+        /* no break between SUPLA_CS_CALL_REGISTER_CLIENT_C and
+         * SUPLA_CS_CALL_REGISTER_CLIENT_D!!! */
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:
+
+        supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_D");
+
         if (cdptr == NULL) {
           client = new supla_client(this);
           client->retainPtr();
 
           if (client != NULL) {
-            rd.data.cs_register_client_c->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
-            rd.data.cs_register_client_c->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] =
+            rd.data.cs_register_client_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+            rd.data.cs_register_client_d->Password[SUPLA_PASSWORD_MAXSIZE - 1] =
                 0;
-            rd.data.cs_register_client_c->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
+            rd.data.cs_register_client_d->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] =
                 0;
-            rd.data.cs_register_client_c
+            rd.data.cs_register_client_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
+                0;
+            rd.data.cs_register_client_d
                 ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-            if (client->register_client(NULL, rd.data.cs_register_client_c,
+            if (client->register_client(NULL, rd.data.cs_register_client_d,
                                         proto_version) == 1) {
               set_registered(REG_CLIENT);
             }
           }
         }
-
         break;
 
       default:

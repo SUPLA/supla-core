@@ -1873,9 +1873,9 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id,
   return add_by_proc_call(sql, pbind, 4) > 0;
 }
 
-bool database::superuser_authorization(int UserID,
-                                       char email[SUPLA_EMAIL_MAXSIZE],
-                                       char password[SUPLA_PASSWORD_MAXSIZE]) {
+bool database::superuser_authorization(
+    int UserID, const char email[SUPLA_EMAIL_MAXSIZE],
+    const char password[SUPLA_PASSWORD_MAXSIZE]) {
   MYSQL_STMT *stmt = NULL;
 
   MYSQL_BIND pbind[1];

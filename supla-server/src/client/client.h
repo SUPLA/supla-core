@@ -47,13 +47,16 @@ class supla_client : public cdbase {
                        const char Email[SUPLA_EMAIL_MAXSIZE],
                        const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
                        database *db);
+  void superuser_authorize(const char Email[SUPLA_EMAIL_MAXSIZE],
+                           const char Password[SUPLA_PASSWORD_MAXSIZE],
+                           bool *connection_failed);
 
  public:
   explicit supla_client(serverconnection *svrconn);
 
   bool is_superuser_authorized(void);
   char register_client(TCS_SuplaRegisterClient_B *register_client_b,
-                       TCS_SuplaRegisterClient_C *register_client_c,
+                       TCS_SuplaRegisterClient_D *register_client_d,
                        unsigned char proto_version);
   void update_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(int DeviceId, int ChannelId = 0,
