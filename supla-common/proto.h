@@ -375,10 +375,14 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HEATPOL 8
 #define SUPLA_MFR_FAKRO 9
 
-#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001     // ver. >= 11
-#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002        // ver. >= 11
-#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004        // ver. >= 11
-#define SUPLA_CHANNEL_FLAG_DETAILED_STATUS 0x0008  // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001                    // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002                       // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004                       // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_DETAILED_STATUS 0x0008                 // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 11
+
 
 #pragma pack(push, 1)
 
