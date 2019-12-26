@@ -1012,6 +1012,10 @@ JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_CfgInit(
     (*env)->SetObjectField(env, cfg, fid,
                            (*env)->NewStringUTF(env, sclient_cfg.Email));
 
+    fid = supla_client_GetFieldID(env, jcs, "Password", "Ljava/lang/String;");
+    (*env)->SetObjectField(env, cfg, fid,
+                           (*env)->NewStringUTF(env, sclient_cfg.Password));
+
     fid = supla_client_GetFieldID(env, jcs, "Name", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
                            (*env)->NewStringUTF(env, sclient_cfg.Name));
