@@ -1238,7 +1238,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc,
           srpc->params.user_params);
     }
 
-    return SUPLA_RESULT_CALL_NOT_ALLOWED;
+    return SUPLA_RESULT_FALSE;
   }
 
   if (srpc->params.before_async_call != NULL) {
