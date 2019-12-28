@@ -218,6 +218,10 @@ char SRPC_ICACHE_FLASH srpc_in_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
 char SRPC_ICACHE_FLASH srpc_in_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
   return srpc_queue_push(&srpc->in_queue, sdp);
 }
+
+unsigned char SRPC_ICACHE_FLASH srpc_in_queue_item_count(Tsrpc *srpc) {
+  return srpc->in_queue.item_count;
+}
 #endif /*SRPC_WITHOUT_IN_QUEUE*/
 
 char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
@@ -238,6 +242,10 @@ char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
 char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
                                           unsigned _supla_int_t rr_id) {
   return srpc_queue_pop(&srpc->out_queue, sdp, rr_id);
+}
+
+unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(Tsrpc *srpc) {
+  return srpc->out_queue.item_count;
 }
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
 
@@ -329,13 +337,16 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
     lck_unlock(srpc->lck);
     srpc->params.data_write(data_buffer, data_size, srpc->params.user_params);
     lck_lock(srpc->lck);
+  }
 
 #ifndef __EH_DISABLED
-    if (srpc->params.eh != 0 && sproto_out_dataexists(srpc->proto) == 1) {
-      eh_raise_event(srpc->params.eh);
-    }
-#endif /*__EH_DISABLED*/
+  if (srpc->params.eh != 0 &&
+      (sproto_out_dataexists(srpc->proto) == 1 ||
+       srpc_in_queue_item_count(srpc) > 0 || srpc_out_queue_item_count(srpc))) {
+    eh_raise_event(srpc->params.eh);
   }
+#endif /*__EH_DISABLED*/
+
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
   return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
 }
