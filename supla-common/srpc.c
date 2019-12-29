@@ -270,6 +270,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
   char data_buffer[SRPC_BUFFER_SIZE];
   char result;
   unsigned char version;
+  unsigned char raise_event = 0;
 
   // --------- IN ---------------
   _supla_int_t data_size = srpc->params.data_read(data_buffer, SRPC_BUFFER_SIZE,
@@ -289,6 +290,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 
   if (SUPLA_RESULT_TRUE ==
       (result = sproto_pop_in_sdp(srpc->proto, &srpc->sdp))) {
+    raise_event = 1;
 #ifdef SRPC_WITHOUT_IN_QUEUE
     if (srpc->params.on_remote_call_received) {
       lck_unlock(srpc->lck);
@@ -350,8 +352,8 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 #ifndef __EH_DISABLED
   if (srpc->params.eh != 0 &&
       (sproto_out_dataexists(srpc->proto) == 1 ||
-       sproto_in_dataexists(srpc->proto) == 1 ||
-       srpc_in_queue_item_count(srpc) > 0 || srpc_out_queue_item_count(srpc))) {
+       srpc_in_queue_item_count(srpc) > 0 || srpc_out_queue_item_count(srpc) ||
+       raise_event)) {
     eh_raise_event(srpc->params.eh);
   }
 #endif /*__EH_DISABLED*/
