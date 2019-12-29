@@ -340,6 +340,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
     srpc->params.data_write(data_buffer, data_size, srpc->params.user_params);
     lck_lock(srpc->lck);
   }
+#endif /*SRPC_WITHOUT_OUT_QUEUE*/
 
 #ifndef __EH_DISABLED
   if (srpc->params.eh != 0 &&
@@ -349,7 +350,6 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
   }
 #endif /*__EH_DISABLED*/
 
-#endif /*SRPC_WITHOUT_OUT_QUEUE*/
   return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
 }
 
