@@ -220,14 +220,6 @@ char SRPC_ICACHE_FLASH srpc_in_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
 }
 #endif /*SRPC_WITHOUT_IN_QUEUE*/
 
-unsigned char SRPC_ICACHE_FLASH srpc_in_queue_item_count(Tsrpc *srpc) {
-#ifdef SRPC_WITHOUT_IN_QUEUE
-  return 0;
-#else
-  return srpc->in_queue.item_count;
-#endif /*SRPC_WITHOUT_IN_QUEUE*/
-}
-
 char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
 #ifdef SRPC_WITHOUT_OUT_QUEUE
   unsigned _supla_int_t data_size = sizeof(TSuplaDataPacket);
