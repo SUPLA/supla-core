@@ -293,7 +293,6 @@ bool supla_channel_ic_measurement::update_cev(
     ic_ev.custom_unit[0] = 0;
     ic_ev.impulses_per_unit = 0;
 
-
     if (TextParam2 && strnlen(TextParam2, 9) < 9) {
       strncpy(ic_ev.custom_unit, TextParam2, 8);
       ic_ev.custom_unit[8] = 0;
@@ -470,6 +469,7 @@ void supla_device_channel::getDouble(double *Value) {
     case SUPLA_CHANNELTYPE_SENSORNC:
       *Value = this->value[0] == 1 ? 1 : 0;
       break;
+    case SUPLA_CHANNELTYPE_THERMOMETER:
     case SUPLA_CHANNELTYPE_THERMOMETERDS18B20:
     case SUPLA_CHANNELTYPE_DISTANCESENSOR:
     case SUPLA_CHANNELTYPE_WINDSENSOR:
@@ -761,7 +761,8 @@ std::list<int> supla_device_channel::master_channel(void) {
 supla_channel_temphum *supla_device_channel::getTempHum(void) {
   double temp;
 
-  if (getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 &&
+  if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
+       getType() == case SUPLA_CHANNELTYPE_THERMOMETER) &&
       getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
     getDouble(&temp);
 
