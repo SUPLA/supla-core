@@ -352,8 +352,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 #ifndef __EH_DISABLED
   if (srpc->params.eh != 0 &&
       (sproto_out_dataexists(srpc->proto) == 1 ||
-       srpc_in_queue_item_count(srpc) > 0 || srpc_out_queue_item_count(srpc) ||
-       raise_event)) {
+       srpc_out_queue_item_count(srpc) || raise_event)) {
     eh_raise_event(srpc->params.eh);
   }
 #endif /*__EH_DISABLED*/
