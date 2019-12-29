@@ -762,7 +762,7 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
   double temp;
 
   if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
-       getType() == case SUPLA_CHANNELTYPE_THERMOMETER) &&
+       getType() == SUPLA_CHANNELTYPE_THERMOMETER) &&
       getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
     getDouble(&temp);
 
