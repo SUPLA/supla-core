@@ -218,11 +218,15 @@ char SRPC_ICACHE_FLASH srpc_in_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
 char SRPC_ICACHE_FLASH srpc_in_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
   return srpc_queue_push(&srpc->in_queue, sdp);
 }
+#endif /*SRPC_WITHOUT_IN_QUEUE*/
 
 unsigned char SRPC_ICACHE_FLASH srpc_in_queue_item_count(Tsrpc *srpc) {
+#ifdef SRPC_WITHOUT_IN_QUEUE
+  return 0;
+#else
   return srpc->in_queue.item_count;
-}
 #endif /*SRPC_WITHOUT_IN_QUEUE*/
+}
 
 char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
 #ifdef SRPC_WITHOUT_OUT_QUEUE
@@ -243,11 +247,15 @@ char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
                                           unsigned _supla_int_t rr_id) {
   return srpc_queue_pop(&srpc->out_queue, sdp, rr_id);
 }
+#endif /*SRPC_WITHOUT_OUT_QUEUE*/
 
 unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(Tsrpc *srpc) {
+#ifdef SRPC_WITHOUT_OUT_QUEUE
+  return 0;
+#else
   return srpc->out_queue.item_count;
-}
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
+}
 
 char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc) {
   int result = SUPLA_RESULT_FALSE;
