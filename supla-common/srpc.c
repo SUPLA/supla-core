@@ -290,7 +290,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 
   if (SUPLA_RESULT_TRUE ==
       (result = sproto_pop_in_sdp(srpc->proto, &srpc->sdp))) {
-    raise_event = 1;
+    raise_event = sproto_in_dataexists(srpc->proto) == 1;
 #ifdef SRPC_WITHOUT_IN_QUEUE
     if (srpc->params.on_remote_call_received) {
       lck_unlock(srpc->lck);
