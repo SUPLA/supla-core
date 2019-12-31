@@ -16,7 +16,7 @@ matrix:
     - language: cpp
       sudo: false
       os: linux
-      dist: bionic
+      dist: xenial
       compiler: gcc
       install:
         - sudo apt-get -y install valgrind libmariadbclient-dev
