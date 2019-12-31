@@ -13,10 +13,10 @@ matrix:
       script:
         - ./tools/lint.sh
 
-    - env: OS=debian DIST=buster
     - language: cpp
       sudo: false
       os: linux
+      dist: bionic
       compiler: gcc
       install:
         - sudo apt-get -y install valgrind
