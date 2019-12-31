@@ -127,7 +127,7 @@ TEST_F(ToolsTest, st_read_guid_from_file) {
   char GUID2[SUPLA_GUID_SIZE];
 
   memset(GUID1, 0, SUPLA_GUID_SIZE);
-  memset(GUID1, 0, SUPLA_GUID_SIZE);
+  memset(GUID2, 0, SUPLA_GUID_SIZE);
 
   ASSERT_EQ(1, st_read_guid_from_file(file, GUID1, 1));
   ASSERT_EQ(1, st_file_exists(file));
