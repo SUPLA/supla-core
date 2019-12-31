@@ -141,7 +141,7 @@ TEST_F(ToolsTest, st_read_authkey_from_file) {
   char AUTHKEY2[SUPLA_AUTHKEY_SIZE];
 
   memset(AUTHKEY1, 0, SUPLA_AUTHKEY_SIZE);
-  memset(AUTHKEY1, 0, SUPLA_AUTHKEY_SIZE);
+  memset(AUTHKEY2, 0, SUPLA_AUTHKEY_SIZE);
 
   ASSERT_EQ(1, st_read_authkey_from_file(file, AUTHKEY1, 1));
   ASSERT_EQ(1, st_file_exists(file));
