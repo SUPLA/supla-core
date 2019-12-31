@@ -19,7 +19,7 @@ matrix:
       dist: bionic
       compiler: gcc
       install:
-        - sudo apt-get -y install valgrind
+        - sudo apt-get -y install valgrind libmariadbclient-dev
       script:
         - ./tools/test.sh
 
