@@ -151,6 +151,7 @@ TEST_F(ToolsTest, st_read_authkey_from_file) {
 
 TEST_F(ToolsTest, st_bcrypt) {
   char AuthKey[SUPLA_AUTHKEY_SIZE];
+  memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
   char *AuthKeyHashHEX = st_get_authkey_hash_hex(AuthKey);
   ASSERT_TRUE(AuthKeyHashHEX != NULL);
   ASSERT_EQ((size_t)120, strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2));
