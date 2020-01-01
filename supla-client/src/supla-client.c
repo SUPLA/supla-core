@@ -829,7 +829,7 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 
     memcpy(src.AuthKey, suplaclient->cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
     memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
-    srpc_cs_async_registerclient_c(suplaclient->srpc, &src);
+    srpc_cs_async_registerclient_d(suplaclient->srpc, &src);
 
   } else if (srpc_call_allowed(suplaclient->srpc,
                                SUPLA_CS_CALL_REGISTER_CLIENT_B)) {
