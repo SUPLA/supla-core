@@ -284,12 +284,17 @@ TEST_F(SrpcTest, call_allowed_v10) {
 }
 
 TEST_F(SrpcTest, call_allowed_v11) {
-  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D,
-                 SUPLA_DCS_CALL_GET_USER_LOCALTIME,
+  int calls[] = {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
                  SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
                  SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B, 0};
 
   srpcCallAllowed(11, calls);
+}
+
+TEST_F(SrpcTest, call_allowed_v12) {
+  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D, 0};
+
+  srpcCallAllowed(12, calls);
 }
 
 TEST_F(SrpcTest, call_not_allowed) {
