@@ -382,7 +382,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 11
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 11
 #define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 11
-
+#define SUPLA_CHANNEL_FLAG_CAP_ACTION1 0x0080                     // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CAP_ACTION2 0x0100                     // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CAP_ACTION3 0x0200                     // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CAP_ACTION4 0x0400                     // ver. >= 11
+#define SUPLA_CHANNEL_FLAG_CAP_ACTION5 0x0800                     // ver. >= 11
 #pragma pack(push, 1)
 
 typedef struct {
