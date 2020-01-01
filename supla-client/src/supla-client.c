@@ -802,14 +802,12 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 
   if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&
       srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_C)) {
-    TCS_SuplaRegisterClient_D src;
-    memset(&src, 0, sizeof(TCS_SuplaRegisterClient_D));
+    TCS_SuplaRegisterClient_C src;
+    memset(&src, 0, sizeof(TCS_SuplaRegisterClient_C));
 
 #ifdef _WIN32
     _snprintf_s(src.Email, SUPLA_EMAIL_MAXSIZE, _TRUNCATE, "%s",
                 suplaclient->cfg.Email);
-    _snprintf_s(src.Password, SUPLA_PASSWORD_MAXSIZE, _TRUNCATE, "%s",
-                suplaclient->cfg.Password);
     _snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s",
                 suplaclient->cfg.Name);
     _snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s",
@@ -818,8 +816,6 @@ void supla_client_register(TSuplaClientData *suplaclient) {
                 suplaclient->cfg.host);
 #else
     snprintf(src.Email, SUPLA_EMAIL_MAXSIZE, "%s", suplaclient->cfg.Email);
-    snprintf(src.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
-             suplaclient->cfg.Password);
     snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
     snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s",
              suplaclient->cfg.SoftVer);
