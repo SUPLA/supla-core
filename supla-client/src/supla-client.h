@@ -69,6 +69,8 @@ typedef void (*_suplaclient_cb_on_superuser_authorization_result)(
     void *_suplaclient, void *user_data, char authorized, _supla_int_t code);
 typedef void (*_suplaclient_cb_on_device_calcfg_result)(
     void *_suplaclient, void *user_data, TSC_DeviceCalCfgResult *result);
+typedef void (*_suplaclient_cb_on_device_channel_state)(
+    void *_suplaclient, void *user_data, TDSC_ChannelState *state);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -120,6 +122,7 @@ typedef struct {
       cb_on_superuser_authorization_result;
 
   _suplaclient_cb_on_device_calcfg_result cb_on_device_calcfg_result;
+  _suplaclient_cb_on_device_channel_state cb_on_device_channel_state;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -157,6 +160,7 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   char *email, char *password);
 char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request);
+char supla_client_get_channel_state(void *_suplaclient, int ChannelID);
 
 #ifdef __cplusplus
 }

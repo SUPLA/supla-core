@@ -639,6 +639,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
                                               rd.data.sc_device_calcfg_result);
         }
+      case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+        if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
+          scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
+                                              rd.data.dsc_channel_state);
+        }
     }
 
     srpc_rd_free(&rd);
@@ -1113,4 +1118,13 @@ char supla_client_device_calcfg_request(void *_suplaclient,
   }
 
   return 0;
+}
+
+char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
+  TCSD_ChannelStateRequest request;
+  memset(&request, 0, sizeof(TCSD_ChannelStateRequest));
+
+  request.ChannelID = ChannelID;
+  return srpc_csd_async_get_channel_state(
+      ((TSuplaClientData *)_suplaclient)->srpc, &request);
 }
