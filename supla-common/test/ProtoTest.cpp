@@ -129,8 +129,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   ASSERT_EQ((unsigned int)63, sizeof(TSDC_UserLocalTimeResult));
 
-  ASSERT_EQ((unsigned int)25, sizeof(TSC_ChannelState));
-  ASSERT_EQ((unsigned int)4, sizeof(TCS_ChannelStateRequest));
+  ASSERT_EQ((unsigned int)33, sizeof(TDSC_ChannelState));
+  ASSERT_EQ((unsigned int)8, sizeof(TCSD_ChannelStateRequest));
 }
 
 TEST_F(ProtoTest, init) {

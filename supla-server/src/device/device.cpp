@@ -513,6 +513,18 @@ void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
   }
 }
 
+void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
+  int ChannelID;
+  if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
+    getUser()->on_device_channel_state_result(ChannelID, state);
+  }
+}
+
+bool supla_device::get_channel_state(int SenderID,
+                                     TCSD_ChannelStateRequest *request) {
+  return channels->get_channel_state(getSvrConn()->srpc(), SenderID, request);
+}
+
 bool supla_device::get_channel_complex_value(channel_complex_value *value,
                                              int ChannelID) {
   return channels->get_channel_complex_value(value, ChannelID);

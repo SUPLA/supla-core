@@ -301,3 +301,28 @@ bool supla_client_channels::device_calcfg_request(
 
   return false;
 }
+
+bool supla_client_channels::device_get_channel_state(
+    TCSD_ChannelStateRequest *request) {
+  if (request == NULL) return false;
+
+  if (channel_exists(request->ChannelID)) {
+    safe_array_lock(getArr());
+
+    supla_client_channel *channel;
+    int DeviceID = 0;
+
+    if (NULL != (channel = find_channel(request->ChannelID))) {
+      DeviceID = channel->getDeviceId();
+    }
+
+    safe_array_unlock(getArr());
+
+    if (DeviceID) {
+      return getClient()->getUser()->device_get_channel_state(
+          getClient()->getID(), DeviceID, request);
+    }
+  }
+
+  return false;
+}

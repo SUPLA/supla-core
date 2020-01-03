@@ -622,6 +622,12 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           break;
 
+        case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+          if (rd.data.dsc_channel_state) {
+            device->on_channel_state_result(rd.data.dsc_channel_state);
+          }
+          break;
+
         default:
           catch_incorrect_call(call_type);
       }
@@ -721,6 +727,10 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
         case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
           if (rd.data.cs_device_calcfg_request_b != NULL) {
             client->device_calcfg_request(rd.data.cs_device_calcfg_request_b);
+          }
+        case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+          if (rd.data.csd_channel_state_request != NULL) {
+            client->device_get_channel_state(rd.data.csd_channel_state_request);
           }
           break;
 

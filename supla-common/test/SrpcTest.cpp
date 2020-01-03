@@ -292,7 +292,9 @@ TEST_F(SrpcTest, call_allowed_v11) {
 }
 
 TEST_F(SrpcTest, call_allowed_v12) {
-  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D, 0};
+  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D,
+                 SUPLA_CSD_CALL_GET_CHANNEL_STATE,
+                 SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 0};
 
   srpcCallAllowed(12, calls);
 }
@@ -3394,6 +3396,50 @@ TEST_F(SrpcTest, call_get_user_localtime_result_with_timezone_maxsize) {
             0);
 
   free(cr_rd.data.sdc_user_localtime_result);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// GET CHANNEL STATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_csd_async_get_channel_state) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TCSD_ChannelStateRequest, request);
+
+  ASSERT_GT(srpc_csd_async_get_channel_state(srpc, &request), 0);
+  SendAndReceive(SUPLA_CSD_CALL_GET_CHANNEL_STATE, 31);
+
+  ASSERT_FALSE(cr_rd.data.csd_channel_state_request == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.csd_channel_state_request, &request,
+                      sizeof(TCSD_ChannelStateRequest)));
+
+  free(cr_rd.data.csd_channel_state_request);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_csd_async_channel_state_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TDSC_ChannelState, state);
+
+  ASSERT_GT(srpc_csd_async_channel_state_result(srpc, &state), 0);
+  SendAndReceive(SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 56);
+
+  ASSERT_FALSE(cr_rd.data.dsc_channel_state == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.dsc_channel_state, &state,
+                      sizeof(TCSD_ChannelStateRequest)));
+
+  free(cr_rd.data.dsc_channel_state);
   srpc_free(srpc);
   srpc = NULL;
 }

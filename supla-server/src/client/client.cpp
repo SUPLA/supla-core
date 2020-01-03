@@ -450,3 +450,20 @@ void supla_client::on_device_calcfg_result(int ChannelID,
 
   srpc_sc_async_device_calcfg_result(getSvrConn()->srpc(), &cresult);
 }
+
+void supla_client::device_get_channel_state(TCSD_ChannelStateRequest *request) {
+  channels->device_get_channel_state(request);
+}
+
+void supla_client::on_device_channel_state_result(int ChannelID,
+                                                  TDSC_ChannelState *state) {
+  if (state == NULL) return;
+
+  TDSC_ChannelState cstate;
+  memcpy(&cstate, state, sizeof(TDSC_ChannelState));
+
+  cstate.ChannelID = ChannelID;
+  cstate.ReceiverID = getID();
+
+  srpc_csd_async_channel_state_result(getSvrConn()->srpc(), &cstate);
+}

@@ -77,6 +77,9 @@ class supla_client : public cdbase {
   void device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
 
+  void device_get_channel_state(TCSD_ChannelStateRequest *request);
+  void on_device_channel_state_result(int ChannelID, TDSC_ChannelState *state);
+
   virtual ~supla_client();
 };
 

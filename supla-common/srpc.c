@@ -717,6 +717,18 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+        if (srpc->sdp.data_size == sizeof(TCSD_ChannelStateRequest))
+          rd->data.csd_channel_state_request =
+              (TCSD_ChannelStateRequest *)malloc(
+                  sizeof(TCSD_ChannelStateRequest));
+        break;
+      case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+        if (srpc->sdp.data_size == sizeof(TDSC_ChannelState))
+          rd->data.dsc_channel_state =
+              (TDSC_ChannelState *)malloc(sizeof(TDSC_ChannelState));
+        break;
+
 #ifndef SRPC_EXCLUDE_DEVICE
       case SUPLA_DS_CALL_REGISTER_DEVICE:
 
@@ -1221,6 +1233,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
       return 11;
     case SUPLA_CS_CALL_REGISTER_CLIENT_D:
+    case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+    case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
       return 12;
   }
 
@@ -1414,6 +1428,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
 
   return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
                          (char *)localtime, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_csd_async_get_channel_state(
+    void *_srpc, TCSD_ChannelStateRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CSD_CALL_GET_CHANNEL_STATE,
+                         (char *)request, sizeof(TCSD_ChannelStateRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_csd_async_channel_state_result(void *_srpc, TDSC_ChannelState *state) {
+  return srpc_async_call(_srpc, SUPLA_DSC_CALL_CHANNEL_STATE_RESULT,
+                         (char *)state, sizeof(TDSC_ChannelState));
 }
 
 #ifndef SRPC_EXCLUDE_DEVICE

@@ -194,6 +194,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_DEVICE_CALCFG_RESULT 470               // ver. >= 10
 #define SUPLA_DCS_CALL_GET_USER_LOCALTIME 480                // ver. >= 11
 #define SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT 490         // ver. >= 11
+#define SUPLA_CSD_CALL_GET_CHANNEL_STATE 500                 // ver. >= 12
+#define SUPLA_DSC_CALL_CHANNEL_STATE_RESULT 510              // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -1264,12 +1266,35 @@ typedef struct {
 } TSDC_UserLocalTimeResult;
 
 typedef struct {
-  _supla_int_t ChannelID;
+  _supla_int_t SenderID;  // Filled by server
+  union {
+    _supla_int_t ChannelID;       // Server -> Client
+    unsigned char ChannelNumber;  // Device -> Server
+  };
 } TCS_ChannelStateRequest;  // v. >= 12
 
-#define SUPLA_CHANNELSTATE_FIELD_IPV4 0x1;
+typedef struct {
+  _supla_int_t SenderID;
+  union {
+    _supla_int_t ChannelID;       // Server -> Client
+    unsigned char ChannelNumber;  // Device -> Server
+  };
+} TCSD_ChannelStateRequest;  // v. >= 12 Client -> Server -> Device
+
+#define SUPLA_CHANNELSTATE_FIELD_IPV4 0x0001;
+#define SUPLA_CHANNELSTATE_FIELD_MAC 0x0002;
+#define SUPLA_CHANNELSTATE_FIELD_BATERYLEVEL 0x0004;
+#define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0008;
+#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0010;
+#define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0020;
+#define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0040;
 
 typedef struct {
+  _supla_int_t ReceiverID;
+  union {
+    _supla_int_t ChannelID;       // Server -> Client
+    unsigned char ChannelNumber;  // Device -> Server
+  };
   _supla_int_t Fields;
   unsigned _supla_int_t IPv4;
   unsigned char Mac[6];
@@ -1278,7 +1303,7 @@ typedef struct {
   unsigned char BridgeSignalStrenth;
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
-} TSC_ChannelState;                        // v. >= 12
+} TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
 #pragma pack(pop)
 

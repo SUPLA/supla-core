@@ -1518,6 +1518,33 @@ bool supla_device_channels::calcfg_request(void *srpc, int SenderID,
   return result;
 }
 
+bool supla_device_channels::get_channel_state(
+    void *srpc, int SenderID, TCSD_ChannelStateRequest *request) {
+  if (request == NULL) {
+    return false;
+  }
+
+  bool result = false;
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(request->ChannelID);
+
+  if (channel) {
+    TCSD_ChannelStateRequest drequest;
+    memcpy(&drequest, request, sizeof(TCSD_ChannelStateRequest));
+
+    drequest.SenderID = SenderID;
+    drequest.ChannelNumber = channel->getNumber();
+
+    srpc_csd_async_get_channel_state(srpc, &drequest);
+    result = true;
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
 bool supla_device_channels::get_channel_complex_value(
     channel_complex_value *value, int ChannelID) {
   bool result = false;

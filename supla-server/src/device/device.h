@@ -78,6 +78,8 @@ class supla_device : public cdbase {
   bool calcfg_request(int SenderID, int ChannelID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  void on_channel_state_result(TDSC_ChannelState *state);
+  bool get_channel_state(int SenderID, TCSD_ChannelStateRequest *request);
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };
 

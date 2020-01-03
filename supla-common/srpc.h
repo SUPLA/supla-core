@@ -133,6 +133,8 @@ union TsrpcDataPacketData {
   TSD_DeviceCalCfgRequest *sd_device_calcfg_request;
   TDS_DeviceCalCfgResult *ds_device_calcfg_result;
   TSDC_UserLocalTimeResult *sdc_user_localtime_result;
+  TCSD_ChannelStateRequest *csd_channel_state_request;
+  TDSC_ChannelState *dsc_channel_state;
 };
 
 typedef struct {
@@ -185,6 +187,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
     void *_srpc, TSDC_UserLocalTimeResult *localtime);
+_supla_int_t SRPC_ICACHE_FLASH srpc_csd_async_get_channel_state(
+    void *_srpc, TCSD_ChannelStateRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_csd_async_channel_state_result(void *_srpc, TDSC_ChannelState *state);
 
 #ifndef SRPC_EXCLUDE_DEVICE
 // device <-> server
