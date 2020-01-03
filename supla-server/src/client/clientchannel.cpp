@@ -101,8 +101,9 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_WEATHER_STATION:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_GAS_METER:
-    case SUPLA_CHANNELFNC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return true;
@@ -128,22 +129,21 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
                                            char *online, supla_client *client) {
   if (client && client->getUser()) {
     client->getUser()->get_channel_value(DeviceId, getId(), value, online);
-    if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-      switch (Func) {
-        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-        case SUPLA_CHANNELFNC_GAS_METER:
-        case SUPLA_CHANNELFNC_WATER_METER: {
-          TDS_ImpulseCounter_Value ds;
-          memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
-          memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
 
-          TSC_ImpulseCounter_Value sc;
-          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
-              Param3, ds.counter);
+    switch (Func) {
+      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_IC_GAS_METER:
+      case SUPLA_CHANNELFNC_IC_WATER_METER: {
+        TDS_ImpulseCounter_Value ds;
+        memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
+        memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
 
-          memcpy(value->value, &sc, sizeof(TSC_ImpulseCounter_Value));
-          break;
-        }
+        TSC_ImpulseCounter_Value sc;
+        sc.calculated_value =
+            supla_channel_ic_measurement::get_calculated_i(Param3, ds.counter);
+
+        memcpy(value->value, &sc, sizeof(TSC_ImpulseCounter_Value));
+        break;
       }
     }
   }
