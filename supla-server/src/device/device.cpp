@@ -230,11 +230,17 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                 ChannelType = 0;
               }
 
+              if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+                  Default == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+                // Issue #115
+                Default = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+              }
+
               if (ChannelType == 0) {
                 bool new_channel = false;
                 int ChannelID = db->add_device_channel(
-                    DeviceID, Number, Type, Default ? Default : 0, FuncList,
-                    ChannelFlags, UserID, &new_channel);
+                    DeviceID, Number, Type, Default, FuncList, ChannelFlags,
+                    UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
