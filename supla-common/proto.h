@@ -1301,7 +1301,7 @@ typedef struct {
   unsigned char Mac[6];
   unsigned char BateryLevel;
   unsigned char WiFiSignalStrength;
-  unsigned char BridgeSignalStrenth;
+  unsigned char BridgeSignalStrength;
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
