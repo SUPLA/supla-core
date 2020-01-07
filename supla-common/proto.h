@@ -391,6 +391,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CAP_ACTION4 0x0400                     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CAP_ACTION5 0x0800                     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000          // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00040000          // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00080000          // ver. >= 12
 #pragma pack(push, 1)
 
 typedef struct {
