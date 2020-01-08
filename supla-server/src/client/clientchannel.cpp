@@ -122,7 +122,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
       break;
   }
 
-  return false;
+  return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
 }
 
 void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
