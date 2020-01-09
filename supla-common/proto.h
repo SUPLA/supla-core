@@ -1288,10 +1288,11 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_IPV4 0x0001;
 #define SUPLA_CHANNELSTATE_FIELD_MAC 0x0002;
 #define SUPLA_CHANNELSTATE_FIELD_BATERYLEVEL 0x0004;
-#define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0008;
-#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0010;
-#define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0020;
-#define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0040;
+#define SUPLA_CHANNELSTATE_FIELD_BATERYPOWERED 0x0008;
+#define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0010;
+#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0020;
+#define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0040;
+#define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0080;
 
 typedef struct {
   _supla_int_t ReceiverID;
@@ -1303,6 +1304,7 @@ typedef struct {
   unsigned _supla_int_t IPv4;
   unsigned char Mac[6];
   unsigned char BateryLevel;
+  unsigned char BateryPowered;
   unsigned char WiFiSignalStrength;
   unsigned char BridgeSignalStrength;
   unsigned _supla_int_t Uptime;            // sec.
