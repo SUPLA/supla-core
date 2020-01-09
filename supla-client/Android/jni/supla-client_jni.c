@@ -967,7 +967,7 @@ void *supla_client_ptr(jlong _asc) {
   return NULL;
 }
 
-JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_CfgInit(
+JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_cfgInit(
     JNIEnv *env, jobject thiz, jobject cfg) {
   TSuplaClientCfg sclient_cfg;
   jfieldID fid;
@@ -1119,16 +1119,16 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onRegisterError",
         "(Lorg/supla/android/lib/SuplaRegisterError;)V");
     _asc->j_mid_location_update =
-        supla_client_GetMethodID(env, oclass, "LocationUpdate",
+        supla_client_GetMethodID(env, oclass, "locationUpdate",
                                  "(Lorg/supla/android/lib/SuplaLocation;)V");
     _asc->j_mid_channel_update =
-        supla_client_GetMethodID(env, oclass, "ChannelUpdate",
+        supla_client_GetMethodID(env, oclass, "channelUpdate",
                                  "(Lorg/supla/android/lib/SuplaChannel;)V");
     _asc->j_mid_channel_value_update = supla_client_GetMethodID(
-        env, oclass, "ChannelValueUpdate",
+        env, oclass, "channelValueUpdate",
         "(Lorg/supla/android/lib/SuplaChannelValueUpdate;)V");
     _asc->j_mid_channel_extendedvalue_update = supla_client_GetMethodID(
-        env, oclass, "ChannelExtendedValueUpdate",
+        env, oclass, "channelExtendedValueUpdate",
         "(Lorg/supla/android/lib/SuplaChannelExtendedValueUpdate;)V");
     _asc->j_mid_on_event = supla_client_GetMethodID(
         env, oclass, "onEvent", "(Lorg/supla/android/lib/SuplaEvent;)V");
@@ -1139,10 +1139,10 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onMinVersionRequired",
         "(Lorg/supla/android/lib/SuplaMinVersionRequired;)V");
     _asc->j_mid_channelgroup_update = supla_client_GetMethodID(
-        env, oclass, "ChannelGroupUpdate",
+        env, oclass, "channelGroupUpdate",
         "(Lorg/supla/android/lib/SuplaChannelGroup;)V");
     _asc->j_mid_channelgroup_relation_update = supla_client_GetMethodID(
-        env, oclass, "ChannelGroupRelationUpdate",
+        env, oclass, "channelGroupRelationUpdate",
         "(Lorg/supla/android/lib/SuplaChannelGroupRelation;)V");
     _asc->j_mid_on_oauth_token_request_result =
         supla_client_GetMethodID(env, oclass, "onOAuthTokenRequestResult",
@@ -1488,4 +1488,19 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
 
   char supla_client_superuser_authorization_request(
       void *_suplaclient, char *email, char *password);
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scGetChannelState(JNIEnv *env,
+                                                         jobject thiz,
+                                                         jlong _asc,
+                                                         jint channelId) {
+  void *supla_client = supla_client_ptr(_asc);
+
+  if (supla_client) {
+    return supla_client_get_channel_state(supla_client, channelId) ? JNI_TRUE
+                                                                   : JNI_FALSE;
+  }
+
+  return JNI_FALSE;
 }
