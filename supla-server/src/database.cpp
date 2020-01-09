@@ -1163,14 +1163,14 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version`, `func` FROM `supla_v_client_channel` WHERE "
+      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
       "`client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
   const char sql2[] =
       "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version`, `func` FROM `supla_v_client_channel` WHERE "
+      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
       "`client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
 
   MYSQL_BIND pbind[2];
