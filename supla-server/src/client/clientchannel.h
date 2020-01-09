@@ -58,7 +58,8 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        int Param2, int Param3, char *TextParam1,
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
-                       short ProductID, unsigned char ProtocolVersion, int Flags);
+                       short ProductID, unsigned char ProtocolVersion,
+                       int Flags);
   virtual ~supla_client_channel(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);
