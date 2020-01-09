@@ -3432,7 +3432,7 @@ TEST_F(SrpcTest, call_csd_async_channel_state_result) {
   DECLARE_WITH_RANDOM(TDSC_ChannelState, state);
 
   ASSERT_GT(srpc_csd_async_channel_state_result(srpc, &state), 0);
-  SendAndReceive(SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 56);
+  SendAndReceive(SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 57);
 
   ASSERT_FALSE(cr_rd.data.dsc_channel_state == NULL);
 
