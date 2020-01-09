@@ -34,7 +34,7 @@ supla_client_channel::supla_client_channel(
     int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
     char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
     int UserIcon, short ManufacturerID, short ProductID,
-    unsigned char ProtocolVersion)
+    unsigned char ProtocolVersion, int Flags)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
@@ -51,7 +51,7 @@ supla_client_channel::supla_client_channel(
   this->ManufacturerID = ManufacturerID;
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
-  this->Flags = 0;
+  this->Flags = Flags;
 }
 
 supla_client_channel::~supla_client_channel(void) {

@@ -1163,15 +1163,15 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? "
-      "ORDER BY `iodevice_id`, `channel_number`";
+      "`protocol_version`, `func` FROM `supla_v_client_channel` WHERE "
+      "`client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
   const char sql2[] =
       "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? "
-      "AND `iodevice_id` = ? ORDER BY `channel_number`";
+      "`protocol_version`, `func` FROM `supla_v_client_channel` WHERE "
+      "`client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
 
   MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
@@ -1184,11 +1184,12 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[17];
+    MYSQL_BIND rbind[18];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, type, func, param1, param2, param3, iodevice_id, location_id,
-        alt_icon, user_icon, protocol_version;
+    int id = 0, type = 0, func = 0, param1 = 0, param2 = 0, param3 = 0,
+        iodevice_id = 0, location_id = 0, alt_icon = 0, user_icon = 0,
+        protocol_version = 0, flags = 0;
     short manufacturer_id = 0;
     short product_id = 0;
     char text_param1[256];
@@ -1270,6 +1271,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[16].buffer_type = MYSQL_TYPE_LONG;
     rbind[16].buffer = (char *)&protocol_version;
 
+    rbind[17].buffer_type = MYSQL_TYPE_LONG;
+    rbind[17].buffer = (char *)&flags;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1293,7 +1297,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
               text_param2_is_null ? NULL : text_param2,
               text_param3_is_null ? NULL : text_param3,
               caption_is_null ? NULL : caption, alt_icon, user_icon,
-              manufacturer_id, product_id, protocol_version);
+              manufacturer_id, product_id, protocol_version, flags);
 
           if (!channels->add(channel)) {
             delete channel;
