@@ -1288,15 +1288,15 @@ typedef struct {
   };
 } TCSD_ChannelStateRequest;  // v. >= 12 Client -> Server -> Device
 
-#define SUPLA_CHANNELSTATE_FIELD_IPV4 0x0001;
-#define SUPLA_CHANNELSTATE_FIELD_MAC 0x0002;
-#define SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL 0x0004;
-#define SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED 0x0008;
-#define SUPLA_CHANNELSTATE_FIELD_WIFIRSSI 0x0010;
-#define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0020;
-#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0040;
-#define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080;
-#define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100;
+#define SUPLA_CHANNELSTATE_FIELD_IPV4 0x0001
+#define SUPLA_CHANNELSTATE_FIELD_MAC 0x0002
+#define SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL 0x0004
+#define SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED 0x0008
+#define SUPLA_CHANNELSTATE_FIELD_WIFIRSSI 0x0010
+#define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0020
+#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0040
+#define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080
+#define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
 
 typedef struct {
   _supla_int_t ReceiverID;
@@ -1307,8 +1307,8 @@ typedef struct {
   _supla_int_t Fields;
   unsigned _supla_int_t IPv4;
   unsigned char MAC[6];
-  unsigned char BatteryLevel;              // 0 - 100
-  unsigned char BatteryPowered;            // true(1)/false(0)
+  unsigned char BatteryLevel;    // 0 - 100
+  unsigned char BatteryPowered;  // true(1)/false(0)
   char WiFiRSSI;
   unsigned char WiFiSignalStrength;        // 0 - 100
   unsigned char BridgeSignalStrength;      // 0 - 100
