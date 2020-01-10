@@ -395,6 +395,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000          // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED 0x00080000          // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_RS_AUTOCALIBRATION 0x00100000          // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_RSA_ENCRYPTED_PIN_REQUIRED 0x00200000  // ver. >= 12
 
 #pragma pack(push, 1)
 
