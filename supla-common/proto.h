@@ -1307,11 +1307,11 @@ typedef struct {
   _supla_int_t Fields;
   unsigned _supla_int_t IPv4;
   unsigned char MAC[6];
-  unsigned char BatteryLevel;    // 0 - 100
+  unsigned char BatteryLevel;    // 0 - 100%
   unsigned char BatteryPowered;  // true(1)/false(0)
   char WiFiRSSI;
-  unsigned char WiFiSignalStrength;        // 0 - 100
-  unsigned char BridgeSignalStrength;      // 0 - 100
+  unsigned char WiFiSignalStrength;        // 0 - 100%
+  unsigned char BridgeSignalStrength;      // 0 - 100%
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
