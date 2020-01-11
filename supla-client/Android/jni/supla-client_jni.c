@@ -63,6 +63,7 @@ typedef struct {
   jmethodID j_mid_on_oauth_token_request_result;
   jmethodID j_mid_on_superuser_authorization_result;
   jmethodID j_mid_cb_on_device_calcfg_result;
+  jmethidID j_mid_cb_on_channel_state;
 } TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -852,9 +853,25 @@ void supla_android_client_cb_on_channel_state(void *_suplaclient,
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_device_calcfg_result == NULL) {
+  if (asc->j_mid_cb_on_channel_state == NULL || state == NULL) {
     return;
   }
+
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(III[BBBBBBII)V");
+
+  jbyteArray mac = (*env)->NewByteArray(env, 6);
+  (*env)->SetByteArrayRegion(env, arr, 0, 6, (const jbyte *)state->MAC);
+
+  jobject channel_state_obj = (*env)->NewObject(
+      env, cls, methodID, state->ChannelID, state->Fields, state->IPv4, mac,
+      state->BatteryLevel, state->BatteryPowered, state->WiFiRSSI,
+      state->WiFiSignalStrength, state->BridgeSignalStrength, state->Uptime,
+      state->ConnectionUptime);
+
+  supla_android_client(asc, asc->j_mid_cb_on_channel_state, channel_state_obj);
 }
 
 void supla_android_client_cb_on_event(void *_suplaclient, void *user_data,
@@ -918,9 +935,9 @@ void supla_android_client_cb_on_registration_enabled(
 void supla_android_client_cb_on_min_version_required(
     void *_suplaclient, void *user_data, unsigned int call_type,
     unsigned char min_version) {
-	  jfieldID fid;
-	  ASC_VAR_DECLARATION();
-	  ENV_VAR_DECLARATION();
+  jfieldID fid;
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
 
   if (asc->j_mid_on_min_version_required) {
     jclass cls =
@@ -1164,6 +1181,9 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onSuperUserAuthorizationResult", "(ZI)V");
     _asc->j_mid_cb_on_device_calcfg_result = supla_client_GetMethodID(
         env, oclass, "onDeviceCalCfgResult", "(III[B)V");
+    _asc->j_mid_cb_on_channel_state = supla_client_GetMethodID(
+        env, oclass, "onChannelState",
+        "(Lorg/supla/android/lib/SuplaChannelState;)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
