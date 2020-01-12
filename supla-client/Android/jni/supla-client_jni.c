@@ -63,7 +63,7 @@ typedef struct {
   jmethodID j_mid_on_oauth_token_request_result;
   jmethodID j_mid_on_superuser_authorization_result;
   jmethodID j_mid_cb_on_device_calcfg_result;
-  jmethidID j_mid_cb_on_channel_state;
+  jmethodID j_mid_cb_on_channel_state;
 } TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -850,6 +850,7 @@ void supla_android_client_cb_on_device_calcfg_result(
 void supla_android_client_cb_on_channel_state(void *_suplaclient,
                                               void *user_data,
                                               TDSC_ChannelState *state) {
+    
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -863,7 +864,7 @@ void supla_android_client_cb_on_channel_state(void *_suplaclient,
       supla_client_GetMethodID(env, cls, "<init>", "(III[BBBBBBII)V");
 
   jbyteArray mac = (*env)->NewByteArray(env, 6);
-  (*env)->SetByteArrayRegion(env, arr, 0, 6, (const jbyte *)state->MAC);
+  (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
 
   jobject channel_state_obj = (*env)->NewObject(
       env, cls, methodID, state->ChannelID, state->Fields, state->IPv4, mac,
