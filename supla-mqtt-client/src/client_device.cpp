@@ -226,7 +226,7 @@ void client_device_channel::setCaption(char *caption) {
     this->Caption = NULL;
   }
   this->Caption =
-      Caption ? strndup(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
+		  caption ? strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
 }
 
 char *client_device_channel::getCaption(void) { return Caption; }
