@@ -1316,6 +1316,28 @@ typedef struct {
   unsigned _supla_int_t ConnectionUptime;  // sec.
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
+typedef struct {
+  _supla_int_t ChannelID;
+} TCS_ChannelBasicCfgRequest;
+
+typedef struct {
+  char DeviceName[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
+  char DeviceSoftVer[SUPLA_SOFTVER_MAXSIZE];
+
+  supla_int_t ID;
+  unsigned char Number;
+  _supla_int_t Type;
+  _supla_int_t Func;
+  _supla_int_t FuncList;
+  _supla_int_t Default;
+
+} TSC_ChannelBasicCfg;
+
+typedef struct {
+  _supla_int_t ChannelID;
+  _supla_int_t Func;
+} TCS_ChangeOfChannelFunctionRequest;
+
 #pragma pack(pop)
 
 void *sproto_init(void);
