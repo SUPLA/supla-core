@@ -48,10 +48,13 @@ bool client_device_channel::isSensorNONC(void) {
 
 void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
-
+  // TODO(lukbek): Remove channel type checking in future versions. Check
+  // function instead of type. # 140-issue
   if ((Func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER ||
        Func == SUPLA_CHANNELFNC_IC_GAS_METER ||
-       Func == SUPLA_CHANNELFNC_IC_WATER_METER) &&
+       Func == SUPLA_CHANNELFNC_IC_WATER_METER ||
+       (Func == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
+        Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER)) &&
       Param1 > 0 && Param3 > 0) {
     TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
     ic_val->counter +=
@@ -226,7 +229,7 @@ void client_device_channel::setCaption(char *caption) {
     this->Caption = NULL;
   }
   this->Caption =
-    caption ? strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
+      caption ? strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
 }
 
 char *client_device_channel::getCaption(void) { return Caption; }
