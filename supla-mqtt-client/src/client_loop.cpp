@@ -88,7 +88,6 @@ void client_loop_on_event(void *_suplaclient, void *user_data,
 
 void client_loop_channel_value_update(void *_suplaclient, void *sthread,
                                       TSC_SuplaChannelValue *channel_value) {
-  bool converted = false;
   client_device_channel *channel = channels->find_channel(channel_value->Id);
   channel->setValue(channel_value->value.value);
   channel->setSubValue(channel_value->value.sub_value);

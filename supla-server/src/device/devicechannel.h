@@ -170,6 +170,7 @@ class supla_device_channel {
   int getType(void);
   int getParam1(void);
   bool getHidden(void);
+  bool isSensorNONC(void);
   bool isValueWritable(void);
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
@@ -233,11 +234,11 @@ class supla_device_channels {
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
-  #ifndef __NO_USER
+#ifndef __NO_USER
   void on_device_registered(supla_user *user, int DeviceId,
                             TDS_SuplaDeviceChannel_B *schannel_b,
                             TDS_SuplaDeviceChannel_C *schannel_c, int count);
-  #endif
+#endif
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(void *srpc, int SenderID, int ChannelID,
@@ -251,9 +252,9 @@ class supla_device_channels {
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
-  #ifndef __NO_DATABASE
+#ifndef __NO_DATABASE
   void load(int DeviceID);
-  #endif
+#endif
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurements(void *emarr);
   supla_channel_electricity_measurement *get_electricity_measurement(

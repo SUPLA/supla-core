@@ -43,6 +43,7 @@ class client_device_channel : public supla_device_channel {
   void setOnline(bool value);
   void setSubValue(char sub_value[SUPLA_CHANNELVALUE_SIZE]);
   void getSubValue(char sub_value[SUPLA_CHANNELVALUE_SIZE]);
+  void setCaption(char *caption);
   char *getCaption(void);
   const std::vector<client_state *> getStates(void) const;
 };

@@ -471,6 +471,40 @@ bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
 void supla_device_channel::getDouble(double *Value) {
   if (Value == NULL) return;
 
+  switch (Func) {
+    /* SUPLA_CHANNELTYPE_SENSORNO */
+    /* SUPLA_CHANNELTYPE_SENSORNC */
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      /* SUPLA_CHANNELTYPE_SENSORNC */
+      *Value = this->value[0] == 1 ? 1 : 0;
+      break;
+    /* SUPLA_CHANNELTYPE_THERMOMETER */
+    /* SUPLA_CHANNELTYPE_THERMOMETERDS18B20 */
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    /* SUPLA_CHANNELTYPE_DISTANCESENSOR */
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+    /* SUPLA_CHANNELTYPE_WINDSENSOR */
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+    /* SUPLA_CHANNELTYPE_PRESSURESENSOR */
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+    /* SUPLA_CHANNELTYPE_RAINSENSOR */
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+    /* SUPLA_CHANNELTYPE_WEIGHTSENSOR */
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      memcpy(Value, this->value, sizeof(double));
+      break;
+    default:
+      *Value = 0;
+  }
+  /*
   switch (Type) {
     case SUPLA_CHANNELTYPE_SENSORNO:
     case SUPLA_CHANNELTYPE_SENSORNC:
@@ -487,11 +521,12 @@ void supla_device_channel::getDouble(double *Value) {
       break;
     default:
       *Value = 0;
-  }
+  }*/
 }
 
 void supla_device_channel::getChar(char *Value) {
   if (Value == NULL) return;
+
   switch (Func) {
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
@@ -516,8 +551,11 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
 
   bool result = false;
 
-  if (Type == SUPLA_CHANNELTYPE_DIMMER ||
+  /*if (Type == SUPLA_CHANNELTYPE_DIMMER ||
       Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
+  */
+  if (Func == SUPLA_CHANNELFNC_DIMMER ||
+      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness != NULL) {
       *brightness = this->value[0];
 
@@ -527,8 +565,11 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
     result = true;
   }
 
-  if (Type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER ||
+  /*if (Type == SUPLA_CHANNELTYPE_RGBLEDCONTROLLER ||
       Type == SUPLA_CHANNELTYPE_DIMMERANDRGBLED) {
+  */
+  if (Func == SUPLA_CHANNELFNC_RGBLIGHTING ||
+      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (color_brightness != NULL) {
       *color_brightness = this->value[1];
 
@@ -554,15 +595,37 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
   return result;
 }
 
+bool supla_device_channel::isSensorNONC(void) {
+  switch (Func) {
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      return true;
+    default:
+      return false;
+  }
+}
+
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
+  // if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0)
+  // {
+  if ((Func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER ||
+       Func == SUPLA_CHANNELFNC_IC_GAS_METER ||
+       Func == SUPLA_CHANNELFNC_IC_WATER_METER) &&
+      Param1 > 0 && Param3 > 0) {
     TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
     ic_val->counter +=
         (unsigned _supla_int64_t)Param1 * (unsigned _supla_int64_t)Param3 / 100;
 
-  } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
+  } else if (isSensorNONC()) {
+    //} else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
 
   } else {
@@ -585,9 +648,10 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
       delete TempHum;
     }
   }
-
-  if (Param3 == 1 && (Type == SUPLA_CHANNELTYPE_SENSORNC ||
-                      Type == SUPLA_CHANNELTYPE_SENSORNO)) {
+  /*if (Param3 == 1 && (Type == SUPLA_CHANNELTYPE_SENSORNC ||
+                        Type == SUPLA_CHANNELTYPE_SENSORNO)) {
+  */
+  if (Param3 == 1 && (isSensorNONC())) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
 }
@@ -769,24 +833,26 @@ std::list<int> supla_device_channel::master_channel(void) {
 supla_channel_temphum *supla_device_channel::getTempHum(void) {
   double temp;
 
-  if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
-       getType() == SUPLA_CHANNELTYPE_THERMOMETER) &&
-      getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
+  // if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
+  //     getType() == SUPLA_CHANNELTYPE_THERMOMETER) &&
+  if (getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
     getDouble(&temp);
 
     if (temp > -273 && temp <= 1000) {
       return new supla_channel_temphum(0, getId(), value);
     }
 
-  } else if ((getType() == SUPLA_CHANNELTYPE_DHT11 ||
-              getType() == SUPLA_CHANNELTYPE_DHT22 ||
-              getType() == SUPLA_CHANNELTYPE_DHT21 ||
-              getType() == SUPLA_CHANNELTYPE_AM2301 ||
-              getType() == SUPLA_CHANNELTYPE_AM2302 ||
-              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
-             (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
-              getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
-              getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
+    /*} else if ((getType() == SUPLA_CHANNELTYPE_DHT11 ||
+                getType() == SUPLA_CHANNELTYPE_DHT22 ||
+                getType() == SUPLA_CHANNELTYPE_DHT21 ||
+                getType() == SUPLA_CHANNELTYPE_AM2301 ||
+                getType() == SUPLA_CHANNELTYPE_AM2302 ||
+                getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
+                (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
+                 getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
+      */
+  } else if (getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE ||
+             getFunc() == SUPLA_CHANNELFNC_HUMIDITY) {
     int n;
     char value[SUPLA_CHANNELVALUE_SIZE];
     double humidity;
@@ -842,23 +908,23 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
 
 supla_channel_thermostat_measurement *
 supla_device_channel::getThermostatMeasurement(void) {
-  switch (getType()) {
-    case SUPLA_CHANNELTYPE_THERMOSTAT:
-    case SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS:
-      switch (getFunc()) {
-        case SUPLA_CHANNELFNC_THERMOSTAT:
-        case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-          char value[SUPLA_CHANNELVALUE_SIZE];
-          getValue(value);
-          TThermostat_Value *th_val = (TThermostat_Value *)value;
+  // switch (getType()) {
+  //  case SUPLA_CHANNELTYPE_THERMOSTAT:
+  //  case SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS:
+  switch (getFunc()) {
+    case SUPLA_CHANNELFNC_THERMOSTAT:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
+      char value[SUPLA_CHANNELVALUE_SIZE];
+      getValue(value);
+      TThermostat_Value *th_val = (TThermostat_Value *)value;
 
-          return new supla_channel_thermostat_measurement(
-              getId(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
-              th_val->PresetTemperature * 0.01);
-        }
-      }
-      break;
+      return new supla_channel_thermostat_measurement(
+          getId(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
+          th_val->PresetTemperature * 0.01);
+    } break;
   }
+  //  break;
+  //}
 
   return NULL;
 }
