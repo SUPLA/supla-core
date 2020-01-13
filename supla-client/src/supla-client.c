@@ -639,6 +639,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
                                               rd.data.sc_device_calcfg_result);
         }
+      case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+        if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
+          scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
+                                              rd.data.dsc_channel_state);
+        }
     }
 
     srpc_rd_free(&rd);
@@ -801,7 +806,39 @@ void supla_client_register(TSuplaClientData *suplaclient) {
   supla_log(LOG_DEBUG, "EMAIL: %s", suplaclient->cfg.Email);
 
   if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&
-      srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_C)) {
+      srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_D)) {
+    TCS_SuplaRegisterClient_D src;
+    memset(&src, 0, sizeof(TCS_SuplaRegisterClient_D));
+
+#ifdef _WIN32
+    _snprintf_s(src.Email, SUPLA_EMAIL_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.Email);
+    _snprintf_s(src.Password, SUPLA_PASSWORD_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.Password);
+    _snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.Name);
+    _snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.SoftVer);
+    _snprintf_s(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.host);
+#else
+    snprintf(src.Email, SUPLA_EMAIL_MAXSIZE, "%s", suplaclient->cfg.Email);
+    snprintf(src.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
+             suplaclient->cfg.Password);
+    snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
+    snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s",
+             suplaclient->cfg.SoftVer);
+    snprintf(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s",
+             suplaclient->cfg.host);
+#endif
+
+    memcpy(src.AuthKey, suplaclient->cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
+    memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+    srpc_cs_async_registerclient_d(suplaclient->srpc, &src);
+
+  } else if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&
+             srpc_call_allowed(suplaclient->srpc,
+                               SUPLA_CS_CALL_REGISTER_CLIENT_C)) {
     TCS_SuplaRegisterClient_C src;
     memset(&src, 0, sizeof(TCS_SuplaRegisterClient_C));
 
@@ -1083,4 +1120,11 @@ char supla_client_device_calcfg_request(void *_suplaclient,
   return 0;
 }
 
+char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
+  TCSD_ChannelStateRequest request;
+  memset(&request, 0, sizeof(TCSD_ChannelStateRequest));
 
+  request.ChannelID = ChannelID;
+  return srpc_csd_async_get_channel_state(
+      ((TSuplaClientData *)_suplaclient)->srpc, &request);
+}

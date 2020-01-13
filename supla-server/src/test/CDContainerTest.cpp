@@ -17,8 +17,8 @@
  */
 
 #include "CDContainerTest.h"
+#include "CDBaseMock.h"
 #include "STCDContainer.h"
-#include "cdbase.h"       // NOLINT
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {
@@ -32,7 +32,7 @@ TEST_F(CDContainerTest, addToList) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  cdbase *cd = new cdbase(NULL);
+  CDBaseMock *cd = new CDBaseMock(NULL);
   ASSERT_FALSE(cd == NULL);
 
   ASSERT_EQ(0, container->count());
@@ -44,6 +44,7 @@ TEST_F(CDContainerTest, addToList) {
   container->deleteAll(0);
   ASSERT_EQ(1, container->delCount());
 
+  container->deleteAll(0);
   delete container;
 }
 
@@ -51,7 +52,7 @@ TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  cdbase *cd = new cdbase(NULL);
+  CDBaseMock *cd = new CDBaseMock(NULL);
   ASSERT_FALSE(cd == NULL);
 
   ASSERT_EQ(0, container->trashCount());
@@ -64,6 +65,7 @@ TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
   ASSERT_EQ(0, container->trashCount());
   ASSERT_EQ(1, container->delCount());
 
+  container->deleteAll(0);
   delete container;
 }
 
@@ -71,7 +73,7 @@ TEST_F(CDContainerTest, moveToTrashWithPtrUse) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  cdbase *cd = new cdbase(NULL);
+  CDBaseMock *cd = new CDBaseMock(NULL);
   ASSERT_FALSE(cd == NULL);
 
   container->addToList(cd);
@@ -93,7 +95,7 @@ TEST_F(CDContainerTest, findItem) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  cdbase *cd = new cdbase(NULL);
+  CDBaseMock *cd = new CDBaseMock(NULL);
   ASSERT_FALSE(cd == NULL);
   ASSERT_EQ(NULL, container->findByPtr(cd));
 
@@ -106,7 +108,6 @@ TEST_F(CDContainerTest, findItem) {
   ASSERT_FALSE(cd->ptrIsUsed());
   container->moveToTrash(cd);
   ASSERT_EQ(NULL, container->findByPtr(cd));
-  ASSERT_FALSE(cd->ptrIsUsed());
 
   container->deleteAll(0);
   delete container;
@@ -116,7 +117,7 @@ TEST_F(CDContainerTest, getItem) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  cdbase *cd = new cdbase(NULL);
+  CDBaseMock *cd = new CDBaseMock(NULL);
   ASSERT_FALSE(cd == NULL);
   ASSERT_EQ(NULL, container->get(0));
 
@@ -129,7 +130,6 @@ TEST_F(CDContainerTest, getItem) {
   ASSERT_FALSE(cd->ptrIsUsed());
   container->moveToTrash(cd);
   ASSERT_EQ(NULL, container->get(0));
-  ASSERT_FALSE(cd->ptrIsUsed());
 
   container->deleteAll(0);
   delete container;

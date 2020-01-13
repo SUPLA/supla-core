@@ -226,10 +226,8 @@ char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
   if (sdp->data_size < SUPLA_MAX_DATA_SIZE) {
     data_size -= SUPLA_MAX_DATA_SIZE - sdp->data_size;
   }
-  lck_unlock(srpc->lck);
   srpc->params.data_write((char *)sdp, data_size, srpc->params.user_params);
   srpc->params.data_write(sproto_tag, SUPLA_TAG_SIZE, srpc->params.user_params);
-  lck_lock(srpc->lck);
   return 1;
 #else
   return srpc_queue_push(&srpc->out_queue, sdp);
@@ -242,6 +240,14 @@ char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
   return srpc_queue_pop(&srpc->out_queue, sdp, rr_id);
 }
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
+
+unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(Tsrpc *srpc) {
+#ifdef SRPC_WITHOUT_OUT_QUEUE
+  return 0;
+#else
+  return srpc->out_queue.item_count;
+#endif /*SRPC_WITHOUT_OUT_QUEUE*/
+}
 
 char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc) {
   int result = SUPLA_RESULT_FALSE;
@@ -256,6 +262,9 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
   char data_buffer[SRPC_BUFFER_SIZE];
   char result;
   unsigned char version;
+#ifndef __EH_DISABLED
+  unsigned char raise_event = 0;
+#endif /*__EH_DISABLED*/
 
   // --------- IN ---------------
   _supla_int_t data_size = srpc->params.data_read(data_buffer, SRPC_BUFFER_SIZE,
@@ -275,6 +284,10 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
 
   if (SUPLA_RESULT_TRUE ==
       (result = sproto_pop_in_sdp(srpc->proto, &srpc->sdp))) {
+#ifndef __EH_DISABLED
+    raise_event = sproto_in_dataexists(srpc->proto) == 1 ? 1 : 0;
+#endif /*__EH_DISABLED*/
+
 #ifdef SRPC_WITHOUT_IN_QUEUE
     if (srpc->params.on_remote_call_received) {
       lck_unlock(srpc->lck);
@@ -331,13 +344,16 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
     lck_unlock(srpc->lck);
     srpc->params.data_write(data_buffer, data_size, srpc->params.user_params);
     lck_lock(srpc->lck);
+  }
 
 #ifndef __EH_DISABLED
-    if (srpc->params.eh != 0 && sproto_out_dataexists(srpc->proto) == 1) {
-      eh_raise_event(srpc->params.eh);
-    }
-#endif /*__EH_DISABLED*/
+  if (srpc->params.eh != 0 &&
+      (sproto_out_dataexists(srpc->proto) == 1 ||
+       srpc_out_queue_item_count(srpc) || raise_event)) {
+    eh_raise_event(srpc->params.eh);
   }
+#endif /*__EH_DISABLED*/
+
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
   return lck_unlock_r(srpc->lck, SUPLA_RESULT_TRUE);
 }
@@ -706,6 +722,18 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+        if (srpc->sdp.data_size == sizeof(TCSD_ChannelStateRequest))
+          rd->data.csd_channel_state_request =
+              (TCSD_ChannelStateRequest *)malloc(
+                  sizeof(TCSD_ChannelStateRequest));
+        break;
+      case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+        if (srpc->sdp.data_size == sizeof(TDSC_ChannelState))
+          rd->data.dsc_channel_state =
+              (TDSC_ChannelState *)malloc(sizeof(TDSC_ChannelState));
+        break;
+
 #ifndef SRPC_EXCLUDE_DEVICE
       case SUPLA_DS_CALL_REGISTER_DEVICE:
 
@@ -877,6 +905,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         if (srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient_C))
           rd->data.cs_register_client_c = (TCS_SuplaRegisterClient_C *)malloc(
               sizeof(TCS_SuplaRegisterClient_C));
+
+        break;
+
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:  // ver. >= 12
+
+        if (srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient_D))
+          rd->data.cs_register_client_d = (TCS_SuplaRegisterClient_D *)malloc(
+              sizeof(TCS_SuplaRegisterClient_D));
 
         break;
 
@@ -1201,6 +1237,10 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
     case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
       return 11;
+    case SUPLA_CS_CALL_REGISTER_CLIENT_D:
+    case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+    case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+      return 12;
   }
 
   return 255;
@@ -1231,7 +1271,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_async__call(void *_srpc,
           srpc->params.user_params);
     }
 
-    return SUPLA_RESULT_CALL_NOT_ALLOWED;
+    return SUPLA_RESULT_FALSE;
   }
 
   if (srpc->params.before_async_call != NULL) {
@@ -1393,6 +1433,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
 
   return srpc_async_call(_srpc, SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
                          (char *)localtime, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_csd_async_get_channel_state(
+    void *_srpc, TCSD_ChannelStateRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CSD_CALL_GET_CHANNEL_STATE,
+                         (char *)request, sizeof(TCSD_ChannelStateRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_csd_async_channel_state_result(void *_srpc, TDSC_ChannelState *state) {
+  return srpc_async_call(_srpc, SUPLA_DSC_CALL_CHANNEL_STATE_RESULT,
+                         (char *)state, sizeof(TDSC_ChannelState));
 }
 
 #ifndef SRPC_EXCLUDE_DEVICE
@@ -1575,6 +1627,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_c(
   return srpc_async_call(_srpc, SUPLA_CS_CALL_REGISTER_CLIENT_C,
                          (char *)registerclient,
                          sizeof(TCS_SuplaRegisterClient_C));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_d(
+    void *_srpc, TCS_SuplaRegisterClient_D *registerclient) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_REGISTER_CLIENT_D,
+                         (char *)registerclient,
+                         sizeof(TCS_SuplaRegisterClient_D));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(

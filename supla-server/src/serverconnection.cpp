@@ -20,10 +20,14 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <arpa/inet.h>
+#include <ifaddrs.h>
+#include <linux/if_link.h>
 #include "client/client.h"
 #include "database.h"
 #include "device/device.h"
 #include "log.h"
+#include "safearray.h"
 #include "serverconnection.h"
 #include "srpc.h"
 #include "sthread.h"
@@ -41,6 +45,9 @@
 #define ACTIVITY_TIMEOUT_MAX 240
 
 #define INCORRECT_CALL_MAXCOUNT 5
+
+void *serverconnection::reg_pending_arr = NULL;
+unsigned int serverconnection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
 
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
@@ -64,6 +71,50 @@ void supla_connection_on_version_error(void *_srpc,
   srpc_sdc_async_versionerror(_srpc, remote_version);
 
   for (a = 0; a < 20; a++) srpc_iterate(_srpc);
+}
+
+// static
+void serverconnection::read_local_ipv4_addresses(void) {
+  memset(&serverconnection::local_ipv4, 0, sizeof(local_ipv4));
+
+  struct ifaddrs *ifaddr, *ifa;
+  struct sockaddr_in *addr;
+  int n = 0;
+
+  if (getifaddrs(&ifaddr) == -1) {
+    return;
+  }
+
+  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+    if (ifa && ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
+      addr = (struct sockaddr_in *)ifa->ifa_addr;
+      serverconnection::local_ipv4[n] = htonl(addr->sin_addr.s_addr);
+
+      if (serverconnection::local_ipv4[n] != 0) {
+        n++;
+      }
+    }
+  }
+
+  freeifaddrs(ifaddr);
+}
+
+// static
+void serverconnection::init(void) {
+  serverconnection::read_local_ipv4_addresses();
+  serverconnection::reg_pending_arr = safe_array_init();
+  cdbase::init();
+}
+
+// static
+void serverconnection::serverconnection_free(void) {
+  cdbase::cdbase_free();
+  safe_array_free(serverconnection::reg_pending_arr);
+}
+
+// static
+int serverconnection::registration_pending_count() {
+  return safe_array_count(serverconnection::reg_pending_arr);
 }
 
 serverconnection::serverconnection(void *ssd, void *supla_socket,
@@ -98,6 +149,7 @@ serverconnection::~serverconnection() {
   eh_free(eh);
   ssocket_supla_socket_free(supla_socket);
 
+  safe_array_remove(serverconnection::reg_pending_arr, this);
   supla_log(LOG_DEBUG, "Connection Finished");
 }
 
@@ -118,6 +170,11 @@ void serverconnection::catch_incorrect_call(unsigned int call_type) {
     supla_log(LOG_DEBUG, "The number of incorrect calls has been exceeded.");
     sthread_terminate(sthread);
   }
+}
+
+void serverconnection::set_registered(char registered) {
+  this->registered = registered;
+  safe_array_remove(serverconnection::reg_pending_arr, this);
 }
 
 void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
@@ -147,6 +204,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_CS_CALL_REGISTER_CLIENT:
       case SUPLA_CS_CALL_REGISTER_CLIENT_B:
       case SUPLA_CS_CALL_REGISTER_CLIENT_C:
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:
 
         if (srpc_get_proto_version(_srpc) != proto_version) {
           // Adjust version to client/device protocol
@@ -263,7 +321,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (device->register_device(rd.data.ds_register_device_c, NULL,
                                         proto_version) == 1) {
-              registered = REG_DEVICE;
+              set_registered(REG_DEVICE);
             }
           }
         }
@@ -338,7 +396,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (device->register_device(NULL, rd.data.ds_register_device_e,
                                         proto_version) == 1) {
-              registered = REG_DEVICE;
+              set_registered(REG_DEVICE);
             }
           }
         }
@@ -394,7 +452,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
             if (client->register_client(rd.data.cs_register_client_b, NULL,
                                         proto_version) == 1) {
-              registered = REG_CLIENT;
+              set_registered(REG_CLIENT);
             }
           }
         }
@@ -405,26 +463,59 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_C");
 
+        if (rd.data.cs_register_client_c != NULL) {
+          TCS_SuplaRegisterClient_D *register_client_d =
+              (TCS_SuplaRegisterClient_D *)malloc(
+                  sizeof(TCS_SuplaRegisterClient_D));
+          if (register_client_d != NULL) {
+            memset(register_client_d, 0, sizeof(TCS_SuplaRegisterClient_D));
+
+            memcpy(register_client_d->Email,
+                   rd.data.cs_register_client_c->Email, SUPLA_EMAIL_MAXSIZE);
+            memcpy(register_client_d->AuthKey,
+                   rd.data.cs_register_client_c->AuthKey, SUPLA_AUTHKEY_SIZE);
+            memcpy(register_client_d->GUID, rd.data.cs_register_client_c->GUID,
+                   SUPLA_GUID_SIZE);
+            memcpy(register_client_d->Name, rd.data.cs_register_client_c->Name,
+                   SUPLA_CLIENT_NAME_MAXSIZE);
+            memcpy(register_client_d->SoftVer,
+                   rd.data.cs_register_client_c->SoftVer,
+                   SUPLA_SOFTVER_MAXSIZE);
+            memcpy(register_client_d->ServerName,
+                   rd.data.cs_register_client_c->ServerName,
+                   SUPLA_SERVER_NAME_MAXSIZE);
+
+            free(rd.data.cs_register_client_c);
+            rd.data.cs_register_client_d = register_client_d;
+          }
+        }
+        /* no break between SUPLA_CS_CALL_REGISTER_CLIENT_C and
+         * SUPLA_CS_CALL_REGISTER_CLIENT_D!!! */
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:
+
+        supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_D");
+
         if (cdptr == NULL) {
           client = new supla_client(this);
           client->retainPtr();
 
           if (client != NULL) {
-            rd.data.cs_register_client_c->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
-            rd.data.cs_register_client_c->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] =
+            rd.data.cs_register_client_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+            rd.data.cs_register_client_d->Password[SUPLA_PASSWORD_MAXSIZE - 1] =
                 0;
-            rd.data.cs_register_client_c->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
+            rd.data.cs_register_client_d->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] =
                 0;
-            rd.data.cs_register_client_c
+            rd.data.cs_register_client_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] =
+                0;
+            rd.data.cs_register_client_d
                 ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-            if (client->register_client(NULL, rd.data.cs_register_client_c,
+            if (client->register_client(NULL, rd.data.cs_register_client_d,
                                         proto_version) == 1) {
-              registered = REG_CLIENT;
+              set_registered(REG_CLIENT);
             }
           }
         }
-
         break;
 
       default:
@@ -531,6 +622,12 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           break;
 
+        case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+          if (rd.data.dsc_channel_state) {
+            device->on_channel_state_result(rd.data.dsc_channel_state);
+          }
+          break;
+
         default:
           catch_incorrect_call(call_type);
       }
@@ -631,6 +728,10 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           if (rd.data.cs_device_calcfg_request_b != NULL) {
             client->device_calcfg_request(rd.data.cs_device_calcfg_request_b);
           }
+        case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+          if (rd.data.csd_channel_state_request != NULL) {
+            client->device_get_channel_state(rd.data.csd_channel_state_request);
+          }
           break;
 
         default:
@@ -649,6 +750,38 @@ end:
 void serverconnection::execute(void *sthread) {
   this->sthread = sthread;
 
+  int concurrent_registrations_limit =
+      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
+
+  if (concurrent_registrations_limit > 0) {
+    safe_array_lock(serverconnection::reg_pending_arr);
+
+    if (serverconnection::registration_pending_count() <
+        concurrent_registrations_limit) {
+      safe_array_add(serverconnection::reg_pending_arr, this);
+      concurrent_registrations_limit = 0;
+    }
+
+    safe_array_unlock(serverconnection::reg_pending_arr);
+  }
+
+  if (concurrent_registrations_limit > 0) {
+    for (int a = 0; a < LOCAL_IPV4_ARRAY_SIZE; a++) {
+      if (serverconnection::local_ipv4[a] == 0) {
+        break;
+      } else if (serverconnection::local_ipv4[a] == getClientIpv4()) {
+        concurrent_registrations_limit = 0;
+        break;
+      }
+    }
+  }
+
+  if (concurrent_registrations_limit > 0) {
+    supla_log(LOG_DEBUG, "Connection Dropped");
+    sthread_terminate(sthread);
+    return;
+  }
+
   if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
     sthread_terminate(sthread);
     return;
@@ -658,7 +791,7 @@ void serverconnection::execute(void *sthread) {
             ssocket_is_secure(ssd));
 
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, 30000000);
+    eh_wait(eh, 120000000);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       // supla_log(LOG_DEBUG, "srpc_iterate(_srpc) == SUPLA_RESULT_FALSE");

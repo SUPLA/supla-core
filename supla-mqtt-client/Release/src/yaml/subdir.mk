@@ -17,7 +17,7 @@ CPP_DEPS += \
 src/yaml/%.o: ../src/yaml/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__NO_DATABASE -D__NO_USER -I$(SSLDIR)/include -O3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__NO_DATABASE -D__NO_USER -I$(SSLDIR)/include -O3 -Wall -fsigned-char -std=c++11 -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

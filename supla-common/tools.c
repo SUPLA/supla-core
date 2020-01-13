@@ -531,7 +531,7 @@ char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds) {
   return 0;
 }
 
-char st_bcrypt_check(char *str, char *hash, int hash_len) {
+char st_bcrypt_check(const char *str, char *hash, int hash_len) {
   if (str == NULL || hash == NULL || hash_len == 0) return 0;
 
   char *cmp_hash = malloc(hash_len + 1);
@@ -588,7 +588,6 @@ char *st_openssl_base64_encode(char *src, int src_len) {
   bio = BIO_new(BIO_s_mem());
   bio = BIO_push(b64, bio);
   BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
-  (void)BIO_set_close(bio, BIO_NOCLOSE);
 
   BIO_write(bio, src, src_len);
   (void)BIO_flush(bio);
@@ -600,7 +599,6 @@ char *st_openssl_base64_encode(char *src, int src_len) {
   result[bufferPtr->length] = 0;
 
   BIO_free_all(bio);
-  BUF_MEM_free(bufferPtr);
 
   return result;
 }

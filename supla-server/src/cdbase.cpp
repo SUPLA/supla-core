@@ -16,11 +16,47 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <string.h>
-
 #include "cdbase.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "lck.h"
+#include "safearray.h"
+#include "svrcfg.h"
 #include "user.h"
+
+typedef struct {
+  char GUID[SUPLA_GUID_SIZE];
+  char *Email;
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+  int UserID;
+  bool result;
+} authkey_cache_item_t;
+
+void *cdbase::authkey_auth_cache_arr = NULL;
+int cdbase::authkey_auth_cache_size = 0;
+
+// static
+void cdbase::init(void) {
+  cdbase::authkey_auth_cache_size = scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
+  cdbase::authkey_auth_cache_arr = safe_array_init();
+}
+
+// static
+void cdbase::cdbase_free(void) {
+  for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
+    authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
+        safe_array_get(cdbase::authkey_auth_cache_arr, a));
+    if (i) {
+      if (i->Email) {
+        free(i->Email);
+      }
+      free(i);
+    }
+  }
+
+  safe_array_free(cdbase::authkey_auth_cache_arr);
+}
 
 cdbase::cdbase(serverconnection *svrconn) {
   this->user = NULL;
@@ -29,6 +65,7 @@ cdbase::cdbase(serverconnection *svrconn) {
   this->ID = 0;
   this->ptr_counter = 0;
   memset(this->GUID, 0, SUPLA_GUID_SIZE);
+  memset(this->AuthKey, 0, SUPLA_AUTHKEY_SIZE);
 
   updateLastActivity();  // last line / after lck_init
 }
@@ -83,7 +120,7 @@ bool cdbase::setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   return true;
 }
 
-void cdbase::getAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]) {
+void cdbase::getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   lck_lock(lck);
   memcpy(AuthKey, this->AuthKey, SUPLA_AUTHKEY_SIZE);
   lck_unlock(lck);
@@ -188,4 +225,91 @@ unsigned long cdbase::ptrCounter(void) {
   result = ptr_counter;
   lck_unlock(lck);
   return result;
+}
+
+// static
+int cdbase::getAuthKeyCacheSize(void) {
+  return safe_array_count(cdbase::authkey_auth_cache_arr);
+}
+
+bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                          const char Email[SUPLA_EMAIL_MAXSIZE],
+                          const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+                          database *db) {
+  // The cache is designed to reduce the number of queries to the database, in
+  // particular the number of calls to the function st_bcrypt_check, which
+  // consumes CPU resources
+
+  if (GUID == NULL || AuthKey == NULL || Email == NULL) {
+    return false;
+  }
+
+  if (cdbase::authkey_auth_cache_size > 0) {
+    safe_array_lock(cdbase::authkey_auth_cache_arr);
+
+    for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
+      authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
+          safe_array_get(cdbase::authkey_auth_cache_arr, a));
+      if (i && strncmp(i->Email, Email, SUPLA_EMAIL_MAXSIZE) == 0 &&
+          memcmp(i->GUID, GUID, SUPLA_GUID_SIZE) == 0 &&
+          memcmp(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE) == 0) {
+        bool result = i->result;
+        *UserID = i->UserID;
+        safe_array_move_to_begin(cdbase::authkey_auth_cache_arr, a);
+        safe_array_unlock(cdbase::authkey_auth_cache_arr);
+        return result;
+      }
+    }
+
+    safe_array_unlock(cdbase::authkey_auth_cache_arr);
+
+    authkey_cache_item_t *i = NULL;
+    bool result = db_authkey_auth(GUID, Email, AuthKey, UserID, db);
+
+    safe_array_lock(cdbase::authkey_auth_cache_arr);
+
+    if (safe_array_count(cdbase::authkey_auth_cache_arr) >=
+        cdbase::authkey_auth_cache_size) {
+      struct timeval tv;
+      gettimeofday(&tv, NULL);
+      int count = safe_array_count(cdbase::authkey_auth_cache_arr);
+      int idx = count / 2;
+      if (idx > 0) {
+        idx = count - 1 - (tv.tv_usec % idx);
+      }
+
+      i = static_cast<authkey_cache_item_t *>(
+          safe_array_get(cdbase::authkey_auth_cache_arr, idx));
+
+    } else {
+      i = (authkey_cache_item_t *)malloc(sizeof(authkey_cache_item_t));
+      memset(i, 0, sizeof(authkey_cache_item_t));
+      safe_array_add(cdbase::authkey_auth_cache_arr, i);
+    }
+
+    if (i) {
+      memcpy(i->GUID, GUID, SUPLA_GUID_SIZE);
+      memcpy(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+
+      if (i->Email == NULL) {
+        i->Email = strndup(Email, SUPLA_EMAIL_MAXSIZE);
+      } else {
+        int len1 = strnlen(Email, SUPLA_EMAIL_MAXSIZE);
+        int len2 = strnlen(i->Email, SUPLA_EMAIL_MAXSIZE);
+        if (len1 > len2) {
+          i->Email = (char *)realloc(i->Email, len1 + 1);
+        }
+        snprintf(i->Email, len1 + 1, "%s", Email);
+      }
+
+      i->result = result;
+      i->UserID = *UserID;
+    }
+
+    safe_array_unlock(cdbase::authkey_auth_cache_arr);
+    return result;
+
+  } else {
+    return db_authkey_auth(GUID, Email, AuthKey, UserID, db);
+  }
 }

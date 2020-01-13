@@ -16,10 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "database.h"
 #include "gtest/gtest.h"
 #include "svrcfg.h"
 
+#ifdef __OPENSSL_TOOLS
+#include <openssl/err.h>
+#include <openssl/ssl.h>
+#endif /*__OPENSSL_TOOLS*/
+
 int main(int argc, char **argv) {
+  database::mainthread_init();
   ::testing::InitGoogleTest(&argc, argv);
 
   if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
@@ -27,5 +34,16 @@ int main(int argc, char **argv) {
   int result = RUN_ALL_TESTS();
 
   svrcfg_free();
+
+#ifdef __OPENSSL_TOOLS
+  EVP_cleanup();
+  ERR_clear_error();
+  ERR_remove_thread_state(NULL);
+  ERR_free_strings();
+  CRYPTO_cleanup_all_ex_data();
+#endif /*__OPENSSL_TOOLS*/
+
+  database::mainthread_end();
+
   return result;
 }
