@@ -31,6 +31,11 @@ cd ../../supla-dev/Release
 make clean && make 
 cd ../../supla-console-client/Debug 
 make clean && make 
+cd ../../supla-mqtt-client/Test
+make clean && make all 
+./supla-mqtt-client 
+cd ../Release
+make clean && make all
 
 echo OK 
 exit 0
