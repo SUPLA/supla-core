@@ -177,23 +177,23 @@ class supla_device_channel {
   bool isRgbwValueWritable(void);
   unsigned int getValueDuration(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  virtual void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                        char color_brightness, char brightness, char on_off);
   void assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
-  void getDouble(double *Value);
+  virtual void getDouble(double *Value);
   void getChar(char *Value);
-  bool getRGBW(int *color, char *color_brightness, char *brightness,
-               char *on_off);
+  virtual bool getRGBW(int *color, char *color_brightness, char *brightness,
+                       char *on_off);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
-  supla_channel_temphum *getTempHum(void);
+  virtual supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
-  supla_channel_thermostat_measurement *getThermostatMeasurement(void);
+  virtual supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   bool converValueToExtended(void);
 };
 
@@ -235,11 +235,11 @@ class supla_device_channels {
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
-  #ifndef __NO_USER
+#ifndef __NO_USER
   void on_device_registered(supla_user *user, int DeviceId,
                             TDS_SuplaDeviceChannel_B *schannel_b,
                             TDS_SuplaDeviceChannel_C *schannel_c, int count);
-  #endif
+#endif
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(void *srpc, int SenderID, int ChannelID,
@@ -253,9 +253,9 @@ class supla_device_channels {
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
-  #ifndef __NO_DATABASE
+#ifndef __NO_DATABASE
   void load(int DeviceID);
-  #endif
+#endif
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurements(void *emarr);
   supla_channel_electricity_measurement *get_electricity_measurement(
