@@ -188,7 +188,11 @@ void scfg_print_help(const char *app_name) {
   printf("    -c <config file>\n");
   printf("    -p <pid file>\n");
   printf("    -d                  run in daemon mode\n");
+#ifdef __DEBUG
+  printf("    --debug-off         run in normal mode\n");
+#else
   printf("    -D                  run in debug mode\n");
+#endif /*__DEBUG*/
   printf("    -h                  prints this help\n");
   printf("\n");
 }
@@ -207,8 +211,13 @@ unsigned char scfg_load(int argc, char *argv[], char default_file[]) {
       a++;
     } else if (strcmp("-d", argv[a]) == 0) {
       run_as_daemon = 1;
+#ifdef __DEBUG
+    } else if (strcmp("--debug-off", argv[a]) == 0) {
+      debug_mode = 0;
+#else
     } else if (strcmp("-D", argv[a]) == 0) {
       debug_mode = 1;
+#endif /*__DEBUG*/
     } else if (strcmp("-h", argv[a]) == 0) {
       scfg_print_help(argv[0]);
       return 0;

@@ -30,6 +30,8 @@
 #include "serverconnection.h"
 #include "sthread.h"
 #include "supla-socket.h"
+#include "svrcfg.h"
+#include "tools.h"
 
 // SERVER CONNECTION BLOCK BEGIN ---------------------------------------
 
@@ -61,8 +63,43 @@ void accept_loop(void *ssd, void *al_sthread) {
   void *supla_socket = NULL;
   void *svrconn_thread_arr = safe_array_init();
 
-  while (sthread_isterminated(al_sthread) == 0) {
+  int concurrent_registrations_limit =
+      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
+
+  struct timeval reg_limit_exceeded_alert_time = {0, 0};
+  struct timeval reg_limit_exceeded_time = {0, 0};
+  struct timeval now;
+
+  while (sthread_isterminated(al_sthread) == 0 && st_app_terminate == 0) {
     safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_cnd);
+
+    gettimeofday(&now, NULL);
+
+    if (concurrent_registrations_limit > 0 &&
+        serverconnection::registration_pending_count() >=
+            concurrent_registrations_limit) {
+      if (reg_limit_exceeded_alert_time.tv_sec == 0) {
+        supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
+                  concurrent_registrations_limit);
+        reg_limit_exceeded_alert_time = now;
+      } else if (now.tv_sec - reg_limit_exceeded_alert_time.tv_sec >= 600) {
+        supla_log(
+            LOG_ALERT,
+            "Exceeded number of concurrent registrations takes too long! (%i)",
+            concurrent_registrations_limit);
+        reg_limit_exceeded_alert_time = now;
+      }
+
+      reg_limit_exceeded_time = now;
+
+    } else if (reg_limit_exceeded_time.tv_sec &&
+               now.tv_sec - reg_limit_exceeded_time.tv_sec >= 10) {
+      reg_limit_exceeded_time = {0, 0};
+      reg_limit_exceeded_alert_time = {0, 0};
+      supla_log(LOG_INFO,
+                "The number of concurrent registrations returned below the "
+                "limit");
+    }
 
     unsigned int ipv4;
 
@@ -116,7 +153,7 @@ void ipc_accept_loop(void *ipc, void *ipc_al_sthread) {
   int client_sd;
   void *ipcctrl_thread_arr = safe_array_init();
 
-  while (sthread_isterminated(ipc_al_sthread) == 0) {
+  while (sthread_isterminated(ipc_al_sthread) == 0 && st_app_terminate == 0) {
     safe_array_clean(ipcctrl_thread_arr, accept_loop_ipcctrl_thread_cnd);
 
     if (-1 == (client_sd = ipcsocket_accept(ipc))) {

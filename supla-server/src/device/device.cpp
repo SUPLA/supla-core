@@ -20,6 +20,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/syscall.h>
+#include <sys/types.h>
 #include "database.h"
 #include "device.h"
 #include "http/httprequestqueue.h"
@@ -42,6 +44,13 @@ supla_device::~supla_device() {
   }
 
   delete channels;
+}
+
+bool supla_device::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                                   const char Email[SUPLA_EMAIL_MAXSIZE],
+                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                                   int *UserID, database *db) {
+  return db->device_authkey_auth(GUID, Email, AuthKey, UserID);
 }
 
 char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
@@ -106,9 +115,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false == db->device_authkey_auth(GUID,
-                                                  register_device_e->Email,
-                                                  AuthKey, &UserID)) {
+                 false == authkey_auth(GUID, register_device_e->Email, AuthKey,
+                                       &UserID, db)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -222,11 +230,17 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                 ChannelType = 0;
               }
 
+              if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+                  Default == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+                // Issue #115
+                Default = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+              }
+
               if (ChannelType == 0) {
                 bool new_channel = false;
                 int ChannelID = db->add_device_channel(
-                    DeviceID, Number, Type, Default ? Default : 0, FuncList,
-                    ChannelFlags, UserID, &new_channel);
+                    DeviceID, Number, Type, Default, FuncList, ChannelFlags,
+                    UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
@@ -294,9 +308,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     supla_log(LOG_INFO,
-              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i",
+              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
+              "ThreadID: %i",
               getID(), getSvrConn()->getClientSD(),
-              getSvrConn()->getProtocolVersion());
+              getSvrConn()->getProtocolVersion(), syscall(__NR_gettid));
   } else {
     usleep(2000000);
   }
@@ -304,7 +319,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   TSD_SuplaRegisterDeviceResult srdr;
   srdr.result_code = resultcode;
   srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
-  srdr.version_min = SUPLA_PROTO_VERSION;
+  srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
   srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);
 
@@ -502,6 +517,18 @@ void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
   if ((ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
     getUser()->on_device_calcfg_result(ChannelID, result);
   }
+}
+
+void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
+  int ChannelID;
+  if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
+    getUser()->on_device_channel_state_result(ChannelID, state);
+  }
+}
+
+bool supla_device::get_channel_state(int SenderID,
+                                     TCSD_ChannelStateRequest *request) {
+  return channels->get_channel_state(getSvrConn()->srpc(), SenderID, request);
 }
 
 bool supla_device::get_channel_complex_value(channel_complex_value *value,

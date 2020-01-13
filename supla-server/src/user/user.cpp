@@ -1079,6 +1079,31 @@ void supla_user::on_device_calcfg_result(int ChannelID,
   }
 }
 
+void supla_user::on_device_channel_state_result(int ChannelID,
+                                                TDSC_ChannelState *state) {
+  if (state == NULL) return;
+
+  supla_client *client = client_container->findByID(state->ReceiverID);
+
+  if (client) {
+    client->on_device_channel_state_result(ChannelID, state);
+    client->releasePtr();
+  }
+}
+
+bool supla_user::device_get_channel_state(int SenderID, int DeviceId,
+                                          TCSD_ChannelStateRequest *request) {
+  bool result = false;
+
+  supla_device *device = device_container->findByID(DeviceId);
+  if (device) {
+    result = device->get_channel_state(SenderID, request);
+    device->releasePtr();
+  }
+
+  return result;
+}
+
 void supla_user::reconnect(event_source_type eventSourceType) {
   int a;
 

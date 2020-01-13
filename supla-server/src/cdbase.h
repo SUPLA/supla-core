@@ -23,6 +23,7 @@
 #include "serverconnection.h"
 
 class supla_user;
+class database;
 class cdbase {
  private:
   struct timeval last_activity_time;
@@ -35,17 +36,31 @@ class cdbase {
 
  protected:
   void *lck;
+  static void *authkey_auth_cache_arr;
+  static int authkey_auth_cache_size;
 
   // Thread safe start
   bool setGUID(char GUID[SUPLA_GUID_SIZE]);
-  bool setAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]);
+  bool setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void setID(int ID);
   void setUser(supla_user *user);
   // Thread safe end
 
   serverconnection *getSvrConn(void);
+  virtual bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                               const char Email[SUPLA_EMAIL_MAXSIZE],
+                               const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                               int *UserID, database *db) = 0;
+
+  bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                    const char Email[SUPLA_EMAIL_MAXSIZE],
+                    const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+                    database *db);
 
  public:
+  static void init(void);
+  static void cdbase_free(void);
+  static int getAuthKeyCacheSize(void);
   explicit cdbase(serverconnection *svrconn);
   virtual ~cdbase();
 

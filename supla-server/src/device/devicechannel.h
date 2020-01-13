@@ -266,6 +266,9 @@ class supla_device_channels {
                       bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
 
+  bool get_channel_state(void *srpc, int SenderID,
+                         TCSD_ChannelStateRequest *request);
+
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };
 

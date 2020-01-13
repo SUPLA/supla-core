@@ -31,6 +31,10 @@ class supla_device : public cdbase {
 
   void load_config(void);
   static char channels_clean_cnd(void *channel);
+  bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                       const char Email[SUPLA_EMAIL_MAXSIZE],
+                       const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+                       database *db);
 
  public:
   explicit supla_device(serverconnection *svrconn);
@@ -74,6 +78,8 @@ class supla_device : public cdbase {
   bool calcfg_request(int SenderID, int ChannelID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  void on_channel_state_result(TDSC_ChannelState *state);
+  bool get_channel_state(int SenderID, TCSD_ChannelStateRequest *request);
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
 };
 
