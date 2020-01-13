@@ -181,37 +181,7 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
         replace_string_in_place(&payload, "$value$", std::to_string(on_off));
         publish = true;
       } break;
-      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER: {
-        TSuplaChannelExtendedValue* value = (TSuplaChannelExtendedValue*)malloc(
-            sizeof(TSuplaChannelExtendedValue));
-
-        if (!channel->getExtendedValue(value)) {
-          free(value);
-          break;
-        }
-
-        TSC_ImpulseCounter_ExtendedValue ic_ev;
-        if (srpc_evtool_v1_extended2icextended(value, &ic_ev)) {
-          std::string currency(ic_ev.currency, 3);
-          std::string custom_unit(ic_ev.custom_unit, 9);
-
-          replace_string_in_place(&payload, "$currency$", currency);
-          replace_string_in_place(
-              &payload, "$pricePerUnit$",
-              std::to_string(ic_ev.price_per_unit * 0.0001));
-          replace_string_in_place(&payload, "$totalCost$",
-                                  std::to_string(ic_ev.total_cost * 0.01));
-          replace_string_in_place(&payload, "$impulsesPerUnit$",
-                                  std::to_string(ic_ev.impulses_per_unit));
-          replace_string_in_place(&payload, "$counter$",
-                                  std::to_string(ic_ev.counter));
-          replace_string_in_place(&payload, "$calculatedValue$",
-                                  std::to_string(ic_ev.calculated_value));
-          replace_string_in_place(&payload, "$unit$", custom_unit);
-
-          publish = true;
-        }
-      } break;
+      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
       case SUPLA_CHANNELFNC_ELECTRICITY_METER: {
         TSuplaChannelExtendedValue* value = (TSuplaChannelExtendedValue*)malloc(
             sizeof(TSuplaChannelExtendedValue));
@@ -222,61 +192,85 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
         }
 
         TElectricityMeter_ExtendedValue em_ev;
+        TSC_ImpulseCounter_ExtendedValue ic_ev;
 
-        if (srpc_evtool_v1_extended2emextended(value, &em_ev) == 1) {
-          std::string currency(em_ev.currency, 3);
+        if (channel->getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+          if (srpc_evtool_v1_extended2icextended(value, &ic_ev)) {
+            std::string currency(ic_ev.currency, 3);
+            std::string custom_unit(ic_ev.custom_unit, 9);
 
-          replace_string_in_place(&payload, "$currency$", currency);
-          replace_string_in_place(
-              &payload, "$pricePerUnit$",
-              std::to_string(em_ev.price_per_unit * 0.0001));
-          replace_string_in_place(&payload, "$totalCost$",
-                                  std::to_string(em_ev.total_cost * 0.01));
+            replace_string_in_place(&payload, "$currency$", currency);
+            replace_string_in_place(
+                &payload, "$pricePerUnit$",
+                std::to_string(ic_ev.price_per_unit * 0.0001));
+            replace_string_in_place(&payload, "$totalCost$",
+                                    std::to_string(ic_ev.total_cost * 0.01));
+            replace_string_in_place(&payload, "$impulsesPerUnit$",
+                                    std::to_string(ic_ev.impulses_per_unit));
+            replace_string_in_place(&payload, "$counter$",
+                                    std::to_string(ic_ev.counter));
+            replace_string_in_place(&payload, "$calculatedValue$",
+                                    std::to_string(ic_ev.calculated_value));
+            replace_string_in_place(&payload, "$unit$", custom_unit);
 
-          for (int a = 0; a < 3; a++) {
-            if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
-              std::string stra = std::to_string(a) + "$";
-              replace_string_in_place(&payload, "$number_" + stra,
-                                      std::to_string(a + 1));
-              replace_string_in_place(&payload, "$frequency_" + stra,
-                                      std::to_string(em_ev.m[0].freq * 0.01));
-              replace_string_in_place(
-                  &payload, "$voltage_" + stra,
-                  std::to_string(em_ev.m[0].voltage[a] * 0.01));
-              replace_string_in_place(
-                  &payload, "$current_" + stra,
-                  std::to_string(em_ev.m[0].current[a] * 0.001));
-              replace_string_in_place(
-                  &payload, "$powerActive_" + stra,
-                  std::to_string(em_ev.m[0].power_active[a] * 0.00001));
-              replace_string_in_place(
-                  &payload, "$powerReactive_" + stra,
-                  std::to_string(em_ev.m[0].power_reactive[a] * 0.00001));
-              replace_string_in_place(
-                  &payload, "$powerApparent_" + stra,
-                  std::to_string(em_ev.m[0].power_apparent[a] * 0.00001));
-              replace_string_in_place(
-                  &payload, "$powerFactor_" + stra,
-                  std::to_string(em_ev.m[0].power_factor[a] * 0.001));
-              replace_string_in_place(
-                  &payload, "$phaseAngle_" + stra,
-                  std::to_string(em_ev.m[0].phase_angle[a] * 0.1));
-              replace_string_in_place(
-                  &payload, "$totalForwardActiveEnergy_" + stra,
-                  std::to_string(em_ev.total_forward_active_energy[a] *
-                                 0.00001));
-              replace_string_in_place(
-                  &payload, "$totalReverseActiveEnergy_" + stra,
-                  std::to_string(em_ev.total_reverse_active_energy[a] *
-                                 0.00001));
-              replace_string_in_place(
-                  &payload, "$totalForwardReactiveEnergy_" + stra,
-                  std::to_string(em_ev.total_forward_reactive_energy[a] *
-                                 0.0001));
-              replace_string_in_place(
-                  &payload, "$totalReverseReactiveEnergy_" + stra,
-                  std::to_string(em_ev.total_reverse_reactive_energy[a] *
-                                 0.0001));
+            publish = true;
+          }
+        } else if (channel->getType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+          if (srpc_evtool_v1_extended2emextended(value, &em_ev) == 1) {
+            std::string currency(em_ev.currency, 3);
+
+            replace_string_in_place(&payload, "$currency$", currency);
+            replace_string_in_place(
+                &payload, "$pricePerUnit$",
+                std::to_string(em_ev.price_per_unit * 0.0001));
+            replace_string_in_place(&payload, "$totalCost$",
+                                    std::to_string(em_ev.total_cost * 0.01));
+
+            for (int a = 0; a < 3; a++) {
+              if (em_ev.m_count > 0 && em_ev.m[0].voltage[a] > 0) {
+                std::string stra = std::to_string(a) + "$";
+                replace_string_in_place(&payload, "$number_" + stra,
+                                        std::to_string(a + 1));
+                replace_string_in_place(&payload, "$frequency_" + stra,
+                                        std::to_string(em_ev.m[0].freq * 0.01));
+                replace_string_in_place(
+                    &payload, "$voltage_" + stra,
+                    std::to_string(em_ev.m[0].voltage[a] * 0.01));
+                replace_string_in_place(
+                    &payload, "$current_" + stra,
+                    std::to_string(em_ev.m[0].current[a] * 0.001));
+                replace_string_in_place(
+                    &payload, "$powerActive_" + stra,
+                    std::to_string(em_ev.m[0].power_active[a] * 0.00001));
+                replace_string_in_place(
+                    &payload, "$powerReactive_" + stra,
+                    std::to_string(em_ev.m[0].power_reactive[a] * 0.00001));
+                replace_string_in_place(
+                    &payload, "$powerApparent_" + stra,
+                    std::to_string(em_ev.m[0].power_apparent[a] * 0.00001));
+                replace_string_in_place(
+                    &payload, "$powerFactor_" + stra,
+                    std::to_string(em_ev.m[0].power_factor[a] * 0.001));
+                replace_string_in_place(
+                    &payload, "$phaseAngle_" + stra,
+                    std::to_string(em_ev.m[0].phase_angle[a] * 0.1));
+                replace_string_in_place(
+                    &payload, "$totalForwardActiveEnergy_" + stra,
+                    std::to_string(em_ev.total_forward_active_energy[a] *
+                                   0.00001));
+                replace_string_in_place(
+                    &payload, "$totalReverseActiveEnergy_" + stra,
+                    std::to_string(em_ev.total_reverse_active_energy[a] *
+                                   0.00001));
+                replace_string_in_place(
+                    &payload, "$totalForwardReactiveEnergy_" + stra,
+                    std::to_string(em_ev.total_forward_reactive_energy[a] *
+                                   0.0001));
+                replace_string_in_place(
+                    &payload, "$totalReverseReactiveEnergy_" + stra,
+                    std::to_string(em_ev.total_reverse_reactive_energy[a] *
+                                   0.0001));
+              }
             }
 
             publish = true;
