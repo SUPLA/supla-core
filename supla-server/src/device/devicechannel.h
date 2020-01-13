@@ -175,23 +175,23 @@ class supla_device_channel {
   bool isRgbwValueWritable(void);
   unsigned int getValueDuration(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  virtual void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
                        char color_brightness, char brightness, char on_off);
   void assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE], char cvalue);
-  virtual void getDouble(double *Value);
+  void getDouble(double *Value);
   void getChar(char *Value);
-  virtual bool getRGBW(int *color, char *color_brightness, char *brightness,
+  bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
-  virtual supla_channel_temphum *getTempHum(void);
+  supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
-  virtual supla_channel_thermostat_measurement *getThermostatMeasurement(void);
+  supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   bool converValueToExtended(void);
 };
 
