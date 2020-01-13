@@ -97,7 +97,7 @@ void client_device_channels::add_channel(
         case SUPLA_CHANNELFNC_IC_WATER_METER:
           Type = SUPLA_CHANNELTYPE_IMPULSE_COUNTER;
           break;
-        case SUPLA_CHANNELFNC_ELECTRICITY_METER: 
+        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
           Type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
           break;
         case SUPLA_CHANNELFNC_HUMIDITY:
