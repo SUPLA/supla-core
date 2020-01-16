@@ -1326,7 +1326,7 @@ typedef struct {
   char DeviceName[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
   char DeviceSoftVer[SUPLA_SOFTVER_MAXSIZE];
 
-  supla_int_t ID;
+  _supla_int_t ID;
   unsigned char Number;
   _supla_int_t Type;
   _supla_int_t Func;
