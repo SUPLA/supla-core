@@ -1332,7 +1332,6 @@ typedef struct {
   _supla_int_t Func;
   _supla_int_t FuncList;
   _supla_int_t Default;
-
 } TSC_ChannelBasicCfg;
 
 typedef struct {
