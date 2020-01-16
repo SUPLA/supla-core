@@ -1129,6 +1129,18 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         }
         break;
 
+      case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
+        if (srpc->sdp.data_size == sizeof(TCS_ChannelBasicCfgRequest))
+          rd->data.cs_channel_basic_cfg_request =
+              (TCS_ChannelBasicCfgRequest *)malloc(
+                  sizeof(TCS_ChannelBasicCfgRequest));
+        break;
+      case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_ChannelBasicCfg))
+          rd->data.sc_channel_basic_cfg =
+              (TSC_ChannelBasicCfg *)malloc(sizeof(TSC_ChannelBasicCfg));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1240,6 +1252,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_REGISTER_CLIENT_D:
     case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
     case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+    case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
+    case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
       return 12;
   }
 
@@ -1991,6 +2005,21 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calcfg_result(
                          (char *)result,
                          sizeof(TSC_DeviceCalCfgResult) -
                              SUPLA_CALCFG_DATA_MAXSIZE + result->DataSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_channel_basic_cfg(void *_srpc, _supla_int_t ChannelID) {
+  TCS_ChannelBasicCfgRequest request;
+  memset(&request, 0, sizeof(TCS_ChannelBasicCfgRequest));
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
+                         (char *)request, sizeof(TCS_ChannelBasicCfgRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
+    void *_srpc, TSC_ChannelBasicCfg *basic_cfg) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
+                         (char *)result, sizeof(TSC_ChannelBasicCfg));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

@@ -135,6 +135,8 @@ union TsrpcDataPacketData {
   TSDC_UserLocalTimeResult *sdc_user_localtime_result;
   TCSD_ChannelStateRequest *csd_channel_state_request;
   TDSC_ChannelState *dsc_channel_state;
+  TCS_ChannelBasicCfgRequest *cs_channel_basic_cfg_request;
+  TSC_ChannelBasicCfg *sc_channel_basic_cfg;
 };
 
 typedef struct {
@@ -296,6 +298,10 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request_b(
     void *_srpc, TCS_DeviceCalCfgRequest_B *request);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_device_calcfg_result(void *_srpc, TSC_DeviceCalCfgResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_basic_cfg(
+    void *_srpc, _supla_int_t ChannelID);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
+    void *_srpc, TSC_ChannelBasicCfg *basic_cfg);
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
 

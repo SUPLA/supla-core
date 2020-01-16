@@ -196,6 +196,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT 490         // ver. >= 11
 #define SUPLA_CSD_CALL_GET_CHANNEL_STATE 500                 // ver. >= 12
 #define SUPLA_DSC_CALL_CHANNEL_STATE_RESULT 510              // ver. >= 12
+#define SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG 520              // ver. >= 12
+#define SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT 530           // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
