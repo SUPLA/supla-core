@@ -28,6 +28,23 @@ namespace {
   TYPE VAR;                            \
   set_random(&VAR, sizeof(TYPE));
 
+#define SRPC_CALL_BASIC_TEST(spc_function, structure_name, call_id, \
+                             expected_data_size, rd_data_variable)  \
+  TEST_F(SrpcTest, spc_function) {                                  \
+    data_read_result = -1;                                          \
+    srpc = srpcInit();                                              \
+    ASSERT_FALSE(srpc == NULL);                                     \
+    DECLARE_WITH_RANDOM(structure_name, param);                     \
+    ASSERT_GT(spc_function(srpc, &param), 0);                       \
+    SendAndReceive(call_id, expected_data_size);                    \
+    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);              \
+    ASSERT_EQ(0, memcmp(cr_rd.data.rd_data_variable, &param,        \
+                        sizeof(structure_name)));                   \
+    free(cr_rd.data.rd_data_variable);                              \
+    srpc_free(srpc);                                                \
+    srpc = NULL;                                                    \
+  }
+
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
 
@@ -294,7 +311,12 @@ TEST_F(SrpcTest, call_allowed_v11) {
 TEST_F(SrpcTest, call_allowed_v12) {
   int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D,
                  SUPLA_CSD_CALL_GET_CHANNEL_STATE,
-                 SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 0};
+                 SUPLA_DSC_CALL_CHANNEL_STATE_RESULT,
+                 SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
+                 SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
+                 SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
+                 SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+                 0};
 
   srpcCallAllowed(12, calls);
 }
@@ -3443,5 +3465,59 @@ TEST_F(SrpcTest, call_csd_async_channel_state_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// GET CHANNEL BESIC CONFIGURATION
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_cs_async_get_channel_basic_cfg) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_cs_async_get_channel_basic_cfg(srpc, 55), 0);
+  SendAndReceive(SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG, 27);
+
+  ASSERT_FALSE(cr_rd.data.cs_channel_basic_cfg_request == NULL);
+
+  ASSERT_EQ(55, cr_rd.data.cs_channel_basic_cfg_request->ChannelID);
+
+  free(cr_rd.data.cs_channel_basic_cfg_request);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_sc_async_channel_basic_cfg_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_ChannelBasicCfg, cfg);
+
+  ASSERT_GT(srpc_sc_async_channel_basic_cfg_result(srpc, &cfg), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 266);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_basic_cfg == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_basic_cfg, &cfg,
+                      sizeof(TSC_ChannelBasicCfg)));
+
+  free(cr_rd.data.sc_channel_basic_cfg);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// SET CHANNEL FUNCTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_set_channel_function, TCS_SetChannelFunction,
+                     SUPLA_CS_CALL_SET_CHANNEL_FUNCTION, 31,
+                     cs_set_channel_function);
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
+                     TSC_SetChannelFunctionResult,
+                     SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT, 28,
+                     sc_set_channel_function_result);
 
 }  // namespace

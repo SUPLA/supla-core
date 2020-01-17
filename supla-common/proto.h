@@ -92,10 +92,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_PROTO_VERSION 12
 #define SUPLA_PROTO_VERSION_MIN 1
-#ifdef ARDUINO_ARCH_AVR // Arduino IDE for Arduino HW
-#define SUPLA_MAX_DATA_SIZE 1248 // Registration header + 32 channels x 21 B
-#elif ARDUINO_ARCH_ESP8266 // Arduino IDE for ESP8266
-#define SUPLA_MAX_DATA_SIZE 3264 // Registration header + 128 channels x 21 B
+#ifdef ARDUINO_ARCH_AVR           // Arduino IDE for Arduino HW
+#define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
+#elif ARDUINO_ARCH_ESP8266        // Arduino IDE for ESP8266
+#define SUPLA_MAX_DATA_SIZE 3264  // Registration header + 128 channels x 21 B
 #else
 #define SUPLA_MAX_DATA_SIZE 10240
 #endif
@@ -197,6 +197,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DSC_CALL_CHANNEL_STATE_RESULT 510              // ver. >= 12
 #define SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG 520              // ver. >= 12
 #define SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT 530           // ver. >= 12
+#define SUPLA_CS_CALL_SET_CHANNEL_FUNCTION 540               // ver. >= 12
+#define SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT 550        // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -230,6 +232,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_USER_CONFLICT 21          // ver. >= 7
 #define SUPLA_RESULTCODE_UNAUTHORIZED 22           // ver. >= 10
 #define SUPLA_RESULTCODE_AUTHORIZED 23             // ver. >= 10
+#define SUPLA_RESULTCODE_FUNCTION_NOT_ALLOWED 24   // ver. >= 12
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
@@ -1336,7 +1339,12 @@ typedef struct {
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Func;
-} TCS_ChangeOfChannelFunctionRequest;
+} TCS_SetChannelFunction;
+
+typedef struct {
+  _supla_int_t ChannelID;
+  unsigned char ResultCode;
+} TSC_SetChannelFunctionResult;
 
 #pragma pack(pop)
 

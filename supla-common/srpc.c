@@ -1141,6 +1141,19 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TSC_ChannelBasicCfg *)malloc(sizeof(TSC_ChannelBasicCfg));
         break;
 
+      case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+        if (srpc->sdp.data_size == sizeof(TCS_SetChannelFunction))
+          rd->data.cs_set_channel_function =
+              (TCS_SetChannelFunction *)malloc(sizeof(TCS_SetChannelFunction));
+        break;
+
+      case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SetChannelFunctionResult))
+          rd->data.sc_set_channel_function_result =
+              (TSC_SetChannelFunctionResult *)malloc(
+                  sizeof(TSC_SetChannelFunctionResult));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1254,6 +1267,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
     case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
     case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+    case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+    case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
       return 12;
   }
 
@@ -2011,15 +2026,28 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_get_channel_basic_cfg(void *_srpc, _supla_int_t ChannelID) {
   TCS_ChannelBasicCfgRequest request;
   memset(&request, 0, sizeof(TCS_ChannelBasicCfgRequest));
+  request.ChannelID = ChannelID;
 
   return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
-                         (char *)request, sizeof(TCS_ChannelBasicCfgRequest));
+                         (char *)&request, sizeof(TCS_ChannelBasicCfgRequest));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
     void *_srpc, TSC_ChannelBasicCfg *basic_cfg) {
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
-                         (char *)result, sizeof(TSC_ChannelBasicCfg));
+                         (char *)basic_cfg, sizeof(TSC_ChannelBasicCfg));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
+                         (char *)func, sizeof(TCS_SetChannelFunction));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
+    void *_srpc, TSC_SetChannelFunctionResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+                         (char *)result, sizeof(TSC_SetChannelFunctionResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
