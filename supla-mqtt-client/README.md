@@ -47,7 +47,7 @@ mqtt:
   username: '' # MQTT username if the server is secured in this way. if You don't use it delete this line
   password: '' # MQTT password if the server is secured in this way. uf You don't use it delete this line
   client_name: 'supla_mqtt_client' #MQTT broker client name should be unique
-  protocol_version: 5 #MQTT protocol version. supported 3 for 3.1.1 version and 5
+  protocol_version: 3 #MQTT protocol version. supported 3 for 3.1.1 (default) version and 5
   publish_supla_events: true #if enabled client will publish supla client events 
 supla:
   port: 2016 # SUPLA server port

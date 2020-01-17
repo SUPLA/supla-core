@@ -39,11 +39,19 @@ class client_device_channel : public supla_device_channel {
                         bool Online, char *Caption,
                         const std::vector<client_state *> &States);
   ~client_device_channel();
+  bool isSensorNONC(void);
+  void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void getDouble(double *Value);
+  bool getRGBW(int *color, char *color_brightness, char *brightness,
+               char *on_off);
+  supla_channel_thermostat_measurement *getThermostatMeasurement(void);
+  supla_channel_temphum *getTempHum(void);
   bool getOnline();
   void setOnline(bool value);
   void setSubValue(char sub_value[SUPLA_CHANNELVALUE_SIZE]);
   void getSubValue(char sub_value[SUPLA_CHANNELVALUE_SIZE]);
   char *getCaption(void);
+  void setCaption(char *caption);
   const std::vector<client_state *> getStates(void) const;
 };
 
