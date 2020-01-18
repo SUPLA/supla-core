@@ -728,6 +728,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           if (rd.data.cs_device_calcfg_request_b != NULL) {
             client->device_calcfg_request(rd.data.cs_device_calcfg_request_b);
           }
+          break;
         case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
           if (rd.data.csd_channel_state_request != NULL) {
             client->device_get_channel_state(rd.data.csd_channel_state_request);
