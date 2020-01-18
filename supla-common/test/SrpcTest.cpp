@@ -3426,45 +3426,13 @@ TEST_F(SrpcTest, call_get_user_localtime_result_with_timezone_maxsize) {
 // GET CHANNEL STATE
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_csd_async_get_channel_state) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+SRPC_CALL_BASIC_TEST(srpc_csd_async_get_channel_state, TCSD_ChannelStateRequest,
+                     SUPLA_CSD_CALL_GET_CHANNEL_STATE, 31,
+                     csd_channel_state_request);
 
-  DECLARE_WITH_RANDOM(TCSD_ChannelStateRequest, request);
-
-  ASSERT_GT(srpc_csd_async_get_channel_state(srpc, &request), 0);
-  SendAndReceive(SUPLA_CSD_CALL_GET_CHANNEL_STATE, 31);
-
-  ASSERT_FALSE(cr_rd.data.csd_channel_state_request == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.csd_channel_state_request, &request,
-                      sizeof(TCSD_ChannelStateRequest)));
-
-  free(cr_rd.data.csd_channel_state_request);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_csd_async_channel_state_result) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TDSC_ChannelState, state);
-
-  ASSERT_GT(srpc_csd_async_channel_state_result(srpc, &state), 0);
-  SendAndReceive(SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 58);
-
-  ASSERT_FALSE(cr_rd.data.dsc_channel_state == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.dsc_channel_state, &state,
-                      sizeof(TCSD_ChannelStateRequest)));
-
-  free(cr_rd.data.dsc_channel_state);
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_BASIC_TEST(srpc_csd_async_channel_state_result, TDSC_ChannelState,
+                     SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 58,
+                     dsc_channel_state);
 
 //---------------------------------------------------------
 // GET CHANNEL BESIC CONFIGURATION
@@ -3487,25 +3455,10 @@ TEST_F(SrpcTest, call_cs_async_get_channel_basic_cfg) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_sc_async_channel_basic_cfg_result) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_ChannelBasicCfg, cfg);
-
-  ASSERT_GT(srpc_sc_async_channel_basic_cfg_result(srpc, &cfg), 0);
-  SendAndReceive(SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 266);
-
-  ASSERT_FALSE(cr_rd.data.sc_channel_basic_cfg == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_basic_cfg, &cfg,
-                      sizeof(TSC_ChannelBasicCfg)));
-
-  free(cr_rd.data.sc_channel_basic_cfg);
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_BASIC_TEST(srpc_sc_async_channel_basic_cfg_result,
+                     TSC_ChannelBasicCfg,
+                     SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 266,
+                     sc_channel_basic_cfg);
 
 //---------------------------------------------------------
 // SET CHANNEL FUNCTION
