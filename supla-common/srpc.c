@@ -1136,7 +1136,9 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TCS_ChannelBasicCfgRequest));
         break;
       case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
-        if (srpc->sdp.data_size == sizeof(TSC_ChannelBasicCfg))
+        if (srpc->sdp.data_size >=
+                (sizeof(TSC_ChannelBasicCfg) - SUPLA_CHANNEL_CAPTION_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_ChannelBasicCfg))
           rd->data.sc_channel_basic_cfg =
               (TSC_ChannelBasicCfg *)malloc(sizeof(TSC_ChannelBasicCfg));
         break;
@@ -2034,8 +2036,13 @@ srpc_cs_async_get_channel_basic_cfg(void *_srpc, _supla_int_t ChannelID) {
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
     void *_srpc, TSC_ChannelBasicCfg *basic_cfg) {
+  _supla_int_t size = sizeof(TSC_ChannelBasicCfg) -
+                      SUPLA_CHANNEL_CAPTION_MAXSIZE + basic_cfg->CaptionSize;
+
+  if (size > sizeof(TSC_ChannelBasicCfg)) return 0;
+
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
-                         (char *)basic_cfg, sizeof(TSC_ChannelBasicCfg));
+                         (char *)basic_cfg, size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
