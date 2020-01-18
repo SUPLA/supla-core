@@ -3457,7 +3457,7 @@ TEST_F(SrpcTest, call_cs_async_get_channel_basic_cfg) {
 
 SRPC_CALL_BASIC_TEST(srpc_sc_async_channel_basic_cfg_result,
                      TSC_ChannelBasicCfg,
-                     SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 266,
+                     SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 671,
                      sc_channel_basic_cfg);
 
 //---------------------------------------------------------
