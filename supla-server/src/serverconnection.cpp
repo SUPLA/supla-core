@@ -734,6 +734,16 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             client->device_get_channel_state(rd.data.csd_channel_state_request);
           }
           break;
+        case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
+          if (rd.data.cs_channel_basic_cfg_request != NULL) {
+            client->get_channel_basic_cfg(rd.data.cs_channel_basic_cfg_request);
+          }
+          break;
+        case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+          if (rd.data.cs_set_channel_function != NULL) {
+            client->set_channel_function(rd.data.cs_set_channel_function);
+          }
+          break;
 
         default:
           catch_incorrect_call(call_type);

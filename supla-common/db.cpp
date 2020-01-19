@@ -373,3 +373,16 @@ bool dbcommon::check_db_version(const char *expected_version,
 
   return false;
 }
+
+void dbcommon::set_terminating_byte(char *result_str, int buffer_size,
+                                    int data_size, bool is_null) {
+  if (is_null) {
+    data_size = 0;
+  }
+
+  if (data_size >= buffer_size) {
+    data_size = buffer_size - 1;
+  }
+
+  result_str[data_size] = 0;
+}

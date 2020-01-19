@@ -75,6 +75,16 @@ int supla_client_channel::getDeviceId() { return DeviceId; }
 
 int supla_client_channel::getExtraId() { return DeviceId; }
 
+int supla_client_channel::getType() { return Type; }
+
+int supla_client_channel::getFunc() { return Func; }
+
+short supla_client_channel::getManufacturerID() { return ManufacturerID; }
+
+short supla_client_channel::getProductID() { return ProductID; }
+
+int supla_client_channel::getFlags() { return Flags; }
+
 bool supla_client_channel::remote_update_is_possible(void) {
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
@@ -240,4 +250,19 @@ void supla_client_channel::mark_for_remote_update(int mark) {
   if ((mark & OI_REMOTEUPDATE_DATA1) && (mark & OI_REMOTEUPDATE_DATA2)) {
     unmark_for_remote_update(OI_REMOTEUPDATE_DATA2);
   }
+}
+
+bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {
+  if (basic_cfg == NULL) return false;
+
+  bool result = false;
+  database *db = new database();
+
+  if (db->connect() == true) {
+    db->get_channel_basic_cfg(getId(), basic_cfg);
+    result = true;
+  }
+  delete db;
+
+  return result;
 }

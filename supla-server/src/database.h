@@ -160,6 +160,7 @@ class database : public dbcommon {
   bool google_home_load_token(supla_google_home *google_home);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
+  bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
 };
 
 #endif /* DATABASE_H_ */

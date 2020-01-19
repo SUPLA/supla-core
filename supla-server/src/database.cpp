@@ -2201,3 +2201,109 @@ bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
 
   return result;
 }
+
+bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
+  if (cfg == NULL) {
+    return false;
+  }
+  bool result = false;
+  char sql[] =
+      "SELECT d.name, d.software_version, c.iodevice_id, d.flags, "
+      "d.manufacturer_id, d.product_id, c.channel_number, "
+      "c.type, c.func, c.flist, c.flags, c.caption FROM `supla_dev_channel` c, "
+      "`supla_iodevice` d WHERE d.id = c.iodevice_id AND c.id = ?";
+
+  memset(cfg, 0, sizeof(TSC_ChannelBasicCfg));
+
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ChannelID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[12];
+    memset(rbind, 0, sizeof(rbind));
+
+    unsigned long device_name_size = 0;
+    my_bool device_name_is_null = true;
+
+    unsigned long device_softver_size = 0;
+    my_bool device_softver_is_null = true;
+
+    unsigned long caption_size = 0;
+    my_bool caption_is_null = true;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = cfg->DeviceName;
+    rbind[0].buffer_length = sizeof(cfg->DeviceName);
+    rbind[0].length = &device_name_size;
+    rbind[0].is_null = &device_name_is_null;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = cfg->DeviceSoftVer;
+    rbind[1].buffer_length = sizeof(cfg->DeviceSoftVer);
+    rbind[1].length = &device_softver_size;
+    rbind[1].is_null = &device_softver_is_null;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&cfg->DeviceID;
+
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&cfg->DeviceFlags;
+
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&cfg->ManufacturerID;
+
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&cfg->ProductID;
+
+    rbind[6].buffer_type = MYSQL_TYPE_LONG;
+    rbind[6].buffer = (char *)&cfg->Number;
+
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&cfg->Type;
+
+    rbind[8].buffer_type = MYSQL_TYPE_LONG;
+    rbind[8].buffer = (char *)&cfg->Func;
+
+    rbind[9].buffer_type = MYSQL_TYPE_LONG;
+    rbind[9].buffer = (char *)&cfg->FuncList;
+
+    rbind[10].buffer_type = MYSQL_TYPE_LONG;
+    rbind[10].buffer = (char *)&cfg->ChannelFlags;
+
+    rbind[11].buffer_type = MYSQL_TYPE_STRING;
+    rbind[11].buffer = cfg->Caption;
+    rbind[11].buffer_length = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+    rbind[11].length = &caption_size;
+    rbind[11].is_null = &caption_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        set_terminating_byte(cfg->DeviceName, sizeof(cfg->DeviceName),
+                             device_name_size, device_name_is_null);
+
+        set_terminating_byte(cfg->DeviceSoftVer, sizeof(cfg->DeviceSoftVer),
+                             device_softver_size, device_softver_is_null);
+
+        set_terminating_byte(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+                             caption_size, caption_is_null);
+
+        cfg->CaptionSize =
+            strnlen(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) + 1;
+
+        result = true;
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
