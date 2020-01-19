@@ -354,5 +354,4 @@ void supla_client_channels::get_channel_basic_cfg(
 
 void supla_client_channels::set_channel_function(void *srpc,
                                                  TCS_SetChannelFunction *func) {
-
 }
