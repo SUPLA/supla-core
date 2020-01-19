@@ -3327,8 +3327,8 @@ TEST_F(SrpcTest, call_cs_async_get_channel_basic_cfg) {
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_basic_cfg_result,
                                   TSC_ChannelBasicCfg,
-                                  SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 270,
-                                  671, sc_channel_basic_cfg,
+                                  SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT, 282,
+                                  683, sc_channel_basic_cfg,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
