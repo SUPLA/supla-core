@@ -1157,14 +1157,14 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         break;
 
       case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
-          call_with_no_data = 1;
-    	  break;
+        call_with_no_data = 1;
+        break;
       case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
-          if (srpc->sdp.data_size == sizeof(TSC_ClientsReconnectRequestResult))
-            rd->data.sc_clients_reconnect_result =
-                (TSC_ClientsReconnectRequestResult *)malloc(
-                    sizeof(TSC_ClientsReconnectRequestResult));
-    	  break;
+        if (srpc->sdp.data_size == sizeof(TSC_ClientsReconnectRequestResult))
+          rd->data.sc_clients_reconnect_result =
+              (TSC_ClientsReconnectRequestResult *)malloc(
+                  sizeof(TSC_ClientsReconnectRequestResult));
+        break;
 
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
