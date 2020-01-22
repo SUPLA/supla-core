@@ -199,6 +199,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT 530           // ver. >= 12
 #define SUPLA_CS_CALL_SET_CHANNEL_FUNCTION 540               // ver. >= 12
 #define SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT 550        // ver. >= 12
+#define SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST 560          // ver. >= 12
+#define SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT 570   // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -233,6 +235,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_UNAUTHORIZED 22           // ver. >= 10
 #define SUPLA_RESULTCODE_AUTHORIZED 23             // ver. >= 10
 #define SUPLA_RESULTCODE_FUNCTION_NOT_ALLOWED 24   // ver. >= 12
+#define SUPLA_RESULTCODE_CHANNELNOTFOUND 25        // ver. >= 12
+#define SUPLA_RESULTCODE_UNKNOWN_ERROR 26          // ver. >= 12
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
@@ -1353,6 +1357,10 @@ typedef struct {
   _supla_int_t ChannelID;
   unsigned char ResultCode;
 } TSC_SetChannelFunctionResult;
+
+typedef struct {
+  unsigned char ResultCode;
+} TSC_ClientsReconnectRequestResult;
 
 #pragma pack(pop)
 

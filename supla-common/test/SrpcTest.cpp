@@ -28,6 +28,18 @@ namespace {
   TYPE VAR;                            \
   set_random(&VAR, sizeof(TYPE));
 
+#define SRPC_CALL_WITH_NO_DATA(spc_function, call_id) \
+  TEST_F(SrpcTest, spc_function) {                    \
+    data_read_result = -1;                            \
+    srpc = srpcInit();                                \
+    ASSERT_FALSE(srpc == NULL);                       \
+    ASSERT_GT(spc_function(srpc), 0);                 \
+    SendAndReceive(call_id, 23);                      \
+    ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);         \
+    srpc_free(srpc);                                  \
+    srpc = NULL;                                      \
+  }
+
 #define SRPC_CALL_BASIC_TEST(spc_function, structure_name, call_id, \
                              expected_data_size, rd_data_variable)  \
   TEST_F(SrpcTest, spc_function) {                                  \
@@ -363,6 +375,8 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
                  SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
                  SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+                 SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
+                 SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -650,21 +664,7 @@ TEST_F(SrpcTest, call_with_dataerror) {
 // GET VERSION
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_getversion) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  ASSERT_GT(srpc_dcs_async_getversion(srpc), 0);
-
-  SendAndReceive(SUPLA_DCS_CALL_GETVERSION, 23);
-
-  // No Data
-  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_WITH_NO_DATA(srpc_dcs_async_getversion, SUPLA_DCS_CALL_GETVERSION);
 
 TEST_F(SrpcTest, call_getversion_reasult) {
   data_read_result = -1;
@@ -799,20 +799,8 @@ TEST_F(SrpcTest, call_set_activity_timeout_result) {
 // IS REGISTRATION ENABLED
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_get_registration_enabled) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  ASSERT_GT(srpc_dcs_async_get_registration_enabled(srpc), 0);
-  SendAndReceive(SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED, 23);
-
-  // No Data
-  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_WITH_NO_DATA(srpc_dcs_async_get_registration_enabled,
+                       SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED);
 
 TEST_F(SrpcTest, call_get_registration_enabled_result) {
   data_read_result = -1;
@@ -2722,20 +2710,7 @@ TEST_F(SrpcTest, call_channelextendedvalue_pack_update_with_full_size) {
 // GET NEXT
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_get_next) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  ASSERT_GT(srpc_cs_async_get_next(srpc), 0);
-  SendAndReceive(SUPLA_CS_CALL_GET_NEXT, 23);
-
-  // No Data
-  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_WITH_NO_DATA(srpc_cs_async_get_next, SUPLA_CS_CALL_GET_NEXT);
 
 //---------------------------------------------------------
 // EVENT
@@ -2847,21 +2822,8 @@ TEST_F(SrpcTest, call_cs_set_channel_value_b) {
 // OAUTH TOKEN
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_oauth_token_request) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  ASSERT_GT(srpc_cs_async_oauth_token_request(srpc), 0);
-
-  SendAndReceive(SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST, 23);
-
-  // No Data
-  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_WITH_NO_DATA(srpc_cs_async_oauth_token_request,
+                       SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST);
 
 TEST_F(SrpcTest, call_oauth_token_request_result_with_zero_size) {
   data_read_result = -1;
@@ -3230,20 +3192,8 @@ TEST_F(SrpcTest, evtool_v1_thermostatextended2extended) {
 // GET USER LOCALTIME
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_get_user_localtime) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  ASSERT_GT(srpc_dcs_async_get_user_localtime(srpc), 0);
-
-  SendAndReceive(SUPLA_DCS_CALL_GET_USER_LOCALTIME, 23);
-
-  ASSERT_TRUE(cr_rd.data.dcs_ping == NULL);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_WITH_NO_DATA(srpc_dcs_async_get_user_localtime,
+                       SUPLA_DCS_CALL_GET_USER_LOCALTIME);
 
 TEST_F(SrpcTest, call_get_user_localtime_result) {
   DECLARE_WITH_RANDOM(TSDC_UserLocalTimeResult, result);
@@ -3343,5 +3293,17 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
                      TSC_SetChannelFunctionResult,
                      SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT, 28,
                      sc_set_channel_function_result);
+
+//---------------------------------------------------------
+// CLIENTS RECONNECT REQUEST
+//---------------------------------------------------------
+
+SRPC_CALL_WITH_NO_DATA(srpc_cs_async_clients_reconnect_request,
+                       SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST);
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_clients_reconnect_request_result,
+                     TSC_ClientsReconnectRequestResult,
+                     SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT, 24,
+                     sc_clients_reconnect_result);
 
 }  // namespace
