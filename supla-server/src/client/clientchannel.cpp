@@ -257,10 +257,59 @@ bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {
 
   bool result = false;
   database *db = new database();
+  result = db->connect() && db->get_channel_basic_cfg(getId(), basic_cfg);
+  delete db;
+
+  return result;
+}
+
+bool supla_client_channel::funclist_contains_function(int funcList, int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATE) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_LIGHTSWITCH) > 0;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return (funcList & SUPLA_BIT_FUNC_STAIRCASETIMER) > 0;
+  }
+
+  return false;
+}
+
+bool supla_client_channel::set_function(int new_function, bool *not_allowed) {
+  if (getType() != SUPLA_CHANNELTYPE_BRIDGE) {
+    if (not_allowed) {
+      *not_allowed = true;
+    }
+    return false;
+  }
+
+  bool result = false;
+  database *db = new database();
 
   if (db->connect() == true) {
-    db->get_channel_basic_cfg(getId(), basic_cfg);
-    result = true;
+    TSC_ChannelBasicCfg basic_cfg;
+    memset(&basic_cfg, 0, sizeof(TSC_ChannelBasicCfg));
+
+    if (db->get_channel_basic_cfg(getId(), &basic_cfg)) {
+      if (funclist_contains_function(basic_cfg.FuncList, new_function) &&
+          db->set_channel_function(getDeviceId(), getId(), new_function)) {
+        result = true;
+
+      } else if (not_allowed) {
+        *not_allowed = true;
+      }
+    }
   }
   delete db;
 

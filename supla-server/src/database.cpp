@@ -2307,3 +2307,11 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
 
   return result;
 }
+
+bool database::set_channel_function(int DeviceID, int ChannelID, int Func) {
+  char sql[51];
+  snprintf(sql, sizeof(sql), "CALL `supla_set_channel_function`(%i, %i, %i)",
+           DeviceID, ChannelID, Func);
+
+  return query(sql) != 0;
+}

@@ -354,4 +354,32 @@ void supla_client_channels::get_channel_basic_cfg(
 
 void supla_client_channels::set_channel_function(void *srpc,
                                                  TCS_SetChannelFunction *func) {
+  if (func == NULL) return;
+
+  TSC_SetChannelFunctionResult result;
+  memset(&result, 0, sizeof(TSC_SetChannelFunctionResult));
+  result.ResultCode = SUPLA_RESULTCODE_CHANNELNOTFOUND;
+
+  if (!getClient()->is_superuser_authorized()) {
+    result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+
+  } else if (channel_exists(func->ChannelID)) {
+    safe_array_lock(getArr());
+
+    supla_client_channel *channel;
+
+    if (NULL != (channel = find_channel(func->ChannelID))) {
+      bool not_allowed = false;
+      if (!channel->set_function(func->Func, &not_allowed)) {
+        result.ResultCode = not_allowed ? SUPLA_RESULTCODE_NOT_ALLOWED
+                                        : SUPLA_RESULTCODE_UNKNOWN_ERROR;
+      } else {
+        result.ResultCode = SUPLA_RESULTCODE_TRUE;
+      }
+    }
+
+    safe_array_unlock(getArr());
+  }
+
+  srpc_sc_async_set_channel_function_result(srpc, &result);
 }
