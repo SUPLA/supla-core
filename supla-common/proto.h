@@ -234,7 +234,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_USER_CONFLICT 21          // ver. >= 7
 #define SUPLA_RESULTCODE_UNAUTHORIZED 22           // ver. >= 10
 #define SUPLA_RESULTCODE_AUTHORIZED 23             // ver. >= 10
-#define SUPLA_RESULTCODE_FUNCTION_NOT_ALLOWED 24   // ver. >= 12
+#define SUPLA_RESULTCODE_NOT_ALLOWED 24            // ver. >= 12
 #define SUPLA_RESULTCODE_CHANNELNOTFOUND 25        // ver. >= 12
 #define SUPLA_RESULTCODE_UNKNOWN_ERROR 26          // ver. >= 12
 
