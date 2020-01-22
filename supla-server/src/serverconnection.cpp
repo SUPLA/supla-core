@@ -744,6 +744,16 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             client->set_channel_function(rd.data.cs_set_channel_function);
           }
           break;
+        case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
+          if (client->is_superuser_authorized()) {
+            client->getUser()->reconnect(EST_CLIENT, false, true);
+          } else {
+            TSC_ClientsReconnectRequestResult result;
+            memset(&result, 0, sizeof(TSC_ClientsReconnectRequestResult));
+            result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+            srpc_sc_async_clients_reconnect_request_result(_srpc, &result);
+          }
+          break;
 
         default:
           catch_incorrect_call(call_type);
