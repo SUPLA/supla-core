@@ -1784,6 +1784,16 @@ bool database::get_reg_enabled(int UserID, unsigned int *client,
   return true;
 }
 
+bool database::set_reg_enabled(int UserID, int deviceRegTimeSec,
+                               int clientRegTimeSec) {
+  char sql[51];
+  snprintf(sql, sizeof(sql),
+           "CALL `supla_set_registration_enabled`(%i, %i, %i)", UserID,
+           deviceRegTimeSec, clientRegTimeSec);
+
+  return query(sql) != 0;
+}
+
 int database::oauth_add_client_id(void) {
   char random_id[51];
   char secret[51];

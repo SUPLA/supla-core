@@ -754,6 +754,31 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             srpc_sc_async_clients_reconnect_request_result(_srpc, &result);
           }
           break;
+        case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+          if (rd.data.cs_set_registration_enabled != NULL) {
+            TSC_SetRegistrationEnabledResult result;
+            memset(&result, 0, sizeof(TSC_SetRegistrationEnabledResult));
+
+            if (client->is_superuser_authorized()) {
+              database *db = new database();
+
+              result.ResultCode =
+                  db->connect() && db->set_reg_enabled(
+                                       cdptr->getUserID(),
+                                       rd.data.cs_set_registration_enabled
+                                           ->IODeviceRegistrationTimeSec,
+                                       rd.data.cs_set_registration_enabled
+                                           ->ClientRegistrationTimeSec)
+                      ? SUPLA_RESULTCODE_TRUE
+                      : SUPLA_RESULTCODE_UNKNOWN_ERROR;
+
+              delete db;
+            } else {
+              result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+              srpc_sc_async_set_registration_enabled_result(_srpc, &result);
+            }
+          }
+          break;
 
         default:
           catch_incorrect_call(call_type);

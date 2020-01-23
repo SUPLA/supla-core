@@ -140,6 +140,8 @@ union TsrpcDataPacketData {
   TCS_SetChannelFunction *cs_set_channel_function;
   TSC_SetChannelFunctionResult *sc_set_channel_function_result;
   TSC_ClientsReconnectRequestResult *sc_clients_reconnect_result;
+  TCS_SetRegistrationEnabled *cs_set_registration_enabled;
+  TSC_SetRegistrationEnabledResult *sc_set_registration_enabled_result;
 };
 
 typedef struct {
@@ -313,6 +315,10 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_clients_reconnect_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
     void *_srpc, TSC_ClientsReconnectRequestResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_registration_enabled(
+    void *_srpc, TCS_SetRegistrationEnabled *reg_enabled);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
+    void *_srpc, TSC_SetRegistrationEnabledResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS

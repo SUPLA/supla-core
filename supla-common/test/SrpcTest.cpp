@@ -377,6 +377,8 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
                  SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
+                 SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
+                 SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -3305,5 +3307,19 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_clients_reconnect_request_result,
                      TSC_ClientsReconnectRequestResult,
                      SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT, 24,
                      sc_clients_reconnect_result);
+
+//---------------------------------------------------------
+// SET REGISTRATION ENABLED
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_cs_async_set_registration_enabled,
+                     TCS_SetRegistrationEnabled,
+                     SUPLA_CS_CALL_SET_REGISTRATION_ENABLED, 31,
+                     cs_set_registration_enabled);
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_set_registration_enabled_result,
+                     TSC_SetRegistrationEnabledResult,
+                     SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT, 24,
+                     sc_set_registration_enabled_result);
 
 }  // namespace

@@ -143,6 +143,7 @@ class database : public dbcommon {
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
+  bool set_reg_enabled(int UserID, int deviceRegTimeSec, int clientRegTimeSec);
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);

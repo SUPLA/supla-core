@@ -201,6 +201,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT 550        // ver. >= 12
 #define SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST 560          // ver. >= 12
 #define SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT 570   // ver. >= 12
+#define SUPLA_CS_CALL_SET_REGISTRATION_ENABLED 580           // ver. >= 12
+#define SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT 590    // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -1361,6 +1363,17 @@ typedef struct {
 typedef struct {
   unsigned char ResultCode;
 } TSC_ClientsReconnectRequestResult;
+
+typedef struct {
+  // Disabled: 0
+  // Ignore: <0
+  _supla_int_t IODeviceRegistrationTimeSec;
+  _supla_int_t ClientRegistrationTimeSec;
+} TCS_SetRegistrationEnabled;
+
+typedef struct {
+  unsigned char ResultCode;
+} TSC_SetRegistrationEnabledResult;
 
 #pragma pack(pop)
 

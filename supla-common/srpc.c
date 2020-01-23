@@ -1159,11 +1159,26 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
       case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
         call_with_no_data = 1;
         break;
+
       case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
         if (srpc->sdp.data_size == sizeof(TSC_ClientsReconnectRequestResult))
           rd->data.sc_clients_reconnect_result =
               (TSC_ClientsReconnectRequestResult *)malloc(
                   sizeof(TSC_ClientsReconnectRequestResult));
+        break;
+
+      case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+        if (srpc->sdp.data_size == sizeof(TCS_SetRegistrationEnabled))
+          rd->data.cs_set_registration_enabled =
+              (TCS_SetRegistrationEnabled *)malloc(
+                  sizeof(TCS_SetRegistrationEnabled));
+        break;
+
+      case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SetRegistrationEnabledResult))
+          rd->data.sc_set_registration_enabled_result =
+              (TSC_SetRegistrationEnabledResult *)malloc(
+                  sizeof(TSC_SetRegistrationEnabledResult));
         break;
 
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
@@ -1283,6 +1298,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
     case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
     case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+    case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+    case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
       return 12;
   }
 
@@ -2080,6 +2097,20 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
                          (char *)result,
                          sizeof(TSC_ClientsReconnectRequestResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_registration_enabled(
+    void *_srpc, TCS_SetRegistrationEnabled *reg_enabled) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
+                         (char *)reg_enabled,
+                         sizeof(TCS_SetRegistrationEnabled));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
+    void *_srpc, TSC_SetRegistrationEnabledResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
+                         (char *)result,
+                         sizeof(TSC_SetRegistrationEnabledResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/
