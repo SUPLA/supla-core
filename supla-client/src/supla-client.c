@@ -639,11 +639,41 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
                                               rd.data.sc_device_calcfg_result);
         }
+        break;
       case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
         if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
           scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
                                               rd.data.dsc_channel_state);
         }
+        break;
+      case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+        if (scd->cfg.cb_on_channel_basic_cfg && rd.data.sc_channel_basic_cfg) {
+          scd->cfg.cb_on_channel_basic_cfg(scd, scd->cfg.user_data,
+                                           rd.data.sc_channel_basic_cfg);
+        }
+        break;
+      case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+        if (scd->cfg.cb_on_channel_function_set_result &&
+            rd.data.sc_set_channel_function_result) {
+          scd->cfg.cb_on_channel_function_set_result(
+              scd, scd->cfg.user_data, rd.data.sc_set_channel_function_result);
+        }
+        break;
+      case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+        if (scd->cfg.cb_on_clients_reconnect_request_result &&
+            rd.data.sc_clients_reconnect_result) {
+          scd->cfg.cb_on_clients_reconnect_request_result(
+              scd, scd->cfg.user_data, rd.data.sc_clients_reconnect_result);
+        }
+        break;
+      case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+        if (scd->cfg.cb_on_set_registration_enabled_result &&
+            rd.data.sc_set_registration_enabled_result) {
+          scd->cfg.cb_on_set_registration_enabled_result(
+              scd, scd->cfg.user_data,
+              rd.data.sc_set_registration_enabled_result);
+        }
+        break;
     }
 
     srpc_rd_free(&rd);
