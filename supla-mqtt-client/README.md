@@ -52,8 +52,7 @@ mqtt:
 supla:
   port: 2016 # SUPLA server port
   host: 'localhost' # SUPLA server hostname
-  access_id: 2 # access id from SUPLA Cloud
-  password: 'password' # password for the given access identifier
+  email: 'email@supla.org' @ SUPLA user email
   protocol_version: 10 # supla protocol version should be grater than 5
 ```
 
@@ -81,7 +80,12 @@ $shut$ - percentage of rollershutter position
 The rest of the macros are described in the state.yaml file
 
 # Running
+
+Before you start, you must enable smartphone registration in SUPLA Cloud
+
 ```
 ./supla-mqtt-client -config config_template.yaml
 ```
+
+After launching, you must assign an access identifier to the "SUPLA MQTT Proxy" client application that should appear in SUPLA Cloud
 
