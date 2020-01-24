@@ -470,16 +470,7 @@ void supla_client::on_device_channel_state_result(int ChannelID,
 
 void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
   if (request == NULL) return;
-
-  if (is_superuser_authorized()) {
-    channels->get_channel_basic_cfg(getSvrConn()->srpc(), request);
-  } else {
-    TSC_SetChannelFunctionResult result;
-    memset(&result, 0, sizeof(TSC_SetChannelFunctionResult));
-    result.ChannelID = request->ChannelID;
-    result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
-    srpc_sc_async_set_channel_function_result(getSvrConn()->srpc(), &result);
-  }
+  channels->get_channel_basic_cfg(getSvrConn()->srpc(), request);
 }
 
 void supla_client::set_channel_function(TCS_SetChannelFunction *func) {
