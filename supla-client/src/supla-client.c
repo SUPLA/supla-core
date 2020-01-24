@@ -648,6 +648,15 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         break;
       case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
         if (scd->cfg.cb_on_channel_basic_cfg && rd.data.sc_channel_basic_cfg) {
+          supla_client_set_str(rd.data.sc_channel_basic_cfg->Caption,
+                               &rd.data.sc_channel_basic_cfg->CaptionSize,
+                               SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+          rd.data.sc_channel_basic_cfg
+              ->DeviceName[SUPLA_DEVICE_NAME_MAXSIZE - 1] = 0;
+          rd.data.sc_channel_basic_cfg
+              ->DeviceSoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
+
           scd->cfg.cb_on_channel_basic_cfg(scd, scd->cfg.user_data,
                                            rd.data.sc_channel_basic_cfg);
         }
@@ -1160,4 +1169,9 @@ char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
   request.ChannelID = ChannelID;
   return srpc_csd_async_get_channel_state(
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
+}
+
+char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID) {
+  return srpc_cs_async_get_channel_basic_cfg(
+      ((TSuplaClientData *)_suplaclient)->srpc, ChannelID);
 }
