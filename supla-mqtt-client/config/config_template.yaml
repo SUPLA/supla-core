@@ -9,6 +9,5 @@ mqtt:
 supla:
   port: 2016
   host: 'localhost'
-  access_id: 2
-  password: 'password'
   protocol_version: 10
+  email: 'email@supla.org'
