@@ -2309,6 +2309,7 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
         cfg->CaptionSize =
             strnlen(cfg->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) + 1;
 
+        cfg->ID = ChannelID;
         result = true;
       }
     }
