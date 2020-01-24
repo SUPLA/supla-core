@@ -834,6 +834,9 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 
     memcpy(src.AuthKey, suplaclient->cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
     memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+
+    src.RegistrationFlags = suplaclient->cfg.registration_flags;
+
     srpc_cs_async_registerclient_d(suplaclient->srpc, &src);
 
   } else if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&

@@ -94,6 +94,7 @@ typedef struct {
   int iterate_wait_usec;
 
   unsigned char protocol_version;
+  unsigned int registration_flags;
 
   _suplaclient_cb_on_versionerror cb_on_versionerror;
   _suplaclient_cb_on_error cb_on_connerror;

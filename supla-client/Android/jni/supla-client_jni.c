@@ -1120,6 +1120,9 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
 
     supla_android_client_barr_to_buffer(
         env, cfg, jcs, "AuthKey", sclient_cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
+      
+      fid = supla_client_GetFieldID(env, jcs, "registration_flags", "I");
+      sclient_cfg.registration_flags = (*env)->GetIntField(env, cfg, fid);
 
     fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
     jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
