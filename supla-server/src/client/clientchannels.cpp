@@ -358,6 +358,7 @@ void supla_client_channels::set_channel_function(void *srpc,
 
   TSC_SetChannelFunctionResult result;
   memset(&result, 0, sizeof(TSC_SetChannelFunctionResult));
+  result.ChannelID = func->ChannelID;
   result.ResultCode = SUPLA_RESULTCODE_CHANNELNOTFOUND;
 
   if (!getClient()->is_superuser_authorized()) {
