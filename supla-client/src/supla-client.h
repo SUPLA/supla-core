@@ -182,6 +182,8 @@ char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request);
 char supla_client_get_channel_state(void *_suplaclient, int ChannelID);
 char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID);
+char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
+                                       int Function);
 
 #ifdef __cplusplus
 }

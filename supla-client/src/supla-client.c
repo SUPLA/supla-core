@@ -1175,3 +1175,14 @@ char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID) {
   return srpc_cs_async_get_channel_basic_cfg(
       ((TSuplaClientData *)_suplaclient)->srpc, ChannelID);
 }
+
+char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
+                                       int Function) {
+  TCS_SetChannelFunction func;
+  memset(&func, 0, sizeof(TCS_SetChannelFunction));
+  func.ChannelID = ChannelID;
+  func.Func = Function;
+
+  return srpc_cs_async_set_channel_function(
+      ((TSuplaClientData *)_suplaclient)->srpc, &func);
+}
