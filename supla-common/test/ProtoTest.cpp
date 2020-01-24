@@ -77,7 +77,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)275, sizeof(TCS_SuplaRegisterClient));
   ASSERT_EQ((unsigned int)340, sizeof(TCS_SuplaRegisterClient_B));
   ASSERT_EQ((unsigned int)575, sizeof(TCS_SuplaRegisterClient_C));
-  ASSERT_EQ((unsigned int)639, sizeof(TCS_SuplaRegisterClient_D));
+  ASSERT_EQ((unsigned int)643, sizeof(TCS_SuplaRegisterClient_D));
   ASSERT_EQ((unsigned int)19, sizeof(TSC_SuplaRegisterClientResult));
   ASSERT_EQ((unsigned int)27, sizeof(TSC_SuplaRegisterClientResult_B));
   ASSERT_EQ((unsigned int)9, sizeof(TCS_SuplaChannelNewValue));
