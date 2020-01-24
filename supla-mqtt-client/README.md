@@ -52,7 +52,7 @@ mqtt:
 supla:
   port: 2016 # SUPLA server port
   host: 'localhost' # SUPLA server hostname
-  email: 'email@supla.org' @ SUPLA user email
+  email: 'email@supla.org' # SUPLA user email
   protocol_version: 10 # supla protocol version should be grater than 5
 ```
 
