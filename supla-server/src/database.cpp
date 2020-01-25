@@ -403,14 +403,14 @@ bool database::on_newdevice(int DeviceID) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_on_newdevice`(%i)", DeviceID);
 
-  return query(sql) != 0;
+  return query(sql) == 0;
 }
 
 bool database::on_newclient(int ClientID) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_on_newclient`(%i)", ClientID);
 
-  return query(sql) != 0;
+  return query(sql) == 0;
 }
 
 bool database::on_channeladded(int DeviceID, int ChannelID) {
@@ -418,7 +418,7 @@ bool database::on_channeladded(int DeviceID, int ChannelID) {
   snprintf(sql, sizeof(sql), "CALL `supla_on_channeladded`(%i, %i)", DeviceID,
            ChannelID);
 
-  return query(sql) != 0;
+  return query(sql) == 0;
 }
 
 int database::get_device_limit_left(int UserID) {
@@ -1791,7 +1791,7 @@ bool database::set_reg_enabled(int UserID, int deviceRegTimeSec,
            "CALL `supla_set_registration_enabled`(%i, %i, %i)", UserID,
            deviceRegTimeSec, clientRegTimeSec);
 
-  return query(sql) != 0;
+  return query(sql) == 0;
 }
 
 int database::oauth_add_client_id(void) {
@@ -2324,5 +2324,5 @@ bool database::set_channel_function(int DeviceID, int ChannelID, int Func) {
   snprintf(sql, sizeof(sql), "CALL `supla_set_channel_function`(%i, %i, %i)",
            DeviceID, ChannelID, Func);
 
-  return query(sql) != 0;
+  return query(sql) == 0;
 }
