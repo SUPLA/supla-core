@@ -775,8 +775,8 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
               delete db;
             } else {
               result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
-              srpc_sc_async_set_registration_enabled_result(_srpc, &result);
             }
+            srpc_sc_async_set_registration_enabled_result(_srpc, &result);
           }
           break;
 
