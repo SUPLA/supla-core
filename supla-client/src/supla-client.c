@@ -1186,3 +1186,8 @@ char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
   return srpc_cs_async_set_channel_function(
       ((TSuplaClientData *)_suplaclient)->srpc, &func);
 }
+
+char supla_client_reconnect_all_clients(void *_suplaclient) {
+  return srpc_cs_async_clients_reconnect_request(
+      ((TSuplaClientData *)_suplaclient)->srpc);
+}

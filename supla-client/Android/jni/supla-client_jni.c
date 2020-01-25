@@ -66,6 +66,7 @@ typedef struct {
   jmethodID j_mid_cb_on_channel_state;
   jmethodID j_mid_cb_on_channel_basic_cfg;
   jmethodID j_mid_cb_on_channel_function_set_result;
+  jmethodID j_mid_cb_on_clients_reconnect_result;
 } TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -912,9 +913,24 @@ void supla_android_client_cb_on_channel_function_set_result(
     return;
   }
 
-  (*env)->CallVoidMethod(
-        env, asc->j_obj, asc->j_mid_cb_on_channel_function_set_result,
-        result->ChannelID, result->ResultCode);
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_cb_on_channel_function_set_result,
+                         result->ChannelID, result->ResultCode);
+}
+
+void supla_android_client_cb_on_clients_reconnect_result(
+    void *_suplaclient, void *user_data,
+    TSC_ClientsReconnectRequestResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_cb_on_clients_reconnect_result == NULL || result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_cb_on_clients_reconnect_result,
+                         result->ResultCode);
 }
 
 void supla_android_client_cb_on_event(void *_suplaclient, void *user_data,
@@ -1235,6 +1251,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         "(Lorg/supla/android/lib/SuplaChannelBasicCfg;)V");
     _asc->j_mid_cb_on_channel_function_set_result = supla_client_GetMethodID(
         env, oclass, "onChannelFunctionSetResult", "(II)V");
+    _asc->j_mid_cb_on_clients_reconnect_result = supla_client_GetMethodID(
+        env, oclass, "onClientsReconnectResult", "(I)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -1271,6 +1289,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_channel_basic_cfg;
     sclient_cfg.cb_on_channel_function_set_result =
         supla_android_client_cb_on_channel_function_set_result;
+    sclient_cfg.cb_on_clients_reconnect_request_result =
+        supla_android_client_cb_on_clients_reconnect_result;
 
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
@@ -1620,6 +1640,20 @@ Java_org_supla_android_lib_SuplaClient_scSetChannelFunction(
     return supla_client_set_channel_function(supla_client, channelId, function)
                ? JNI_TRUE
                : JNI_FALSE;
+  }
+
+  return JNI_FALSE;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scReconnectAllClients(JNIEnv *env,
+                                                             jobject thiz,
+                                                             jlong _asc) {
+  void *supla_client = supla_client_ptr(_asc);
+
+  if (supla_client) {
+    return supla_client_reconnect_all_clients(supla_client) ? JNI_TRUE
+                                                            : JNI_FALSE;
   }
 
   return JNI_FALSE;
