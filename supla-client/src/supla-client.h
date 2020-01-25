@@ -185,6 +185,9 @@ char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID);
 char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
                                        int Function);
 char supla_client_reconnect_all_clients(void *_suplaclient);
+char supla_client_set_registration_enabled(void *_suplaclient,
+                                           int ioDeviceRegTimeSec,
+                                           int clientRegTimeSec);
 
 #ifdef __cplusplus
 }

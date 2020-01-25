@@ -1191,3 +1191,15 @@ char supla_client_reconnect_all_clients(void *_suplaclient) {
   return srpc_cs_async_clients_reconnect_request(
       ((TSuplaClientData *)_suplaclient)->srpc);
 }
+
+char supla_client_set_registration_enabled(void *_suplaclient,
+                                           int ioDeviceRegTimeSec,
+                                           int clientRegTimeSec) {
+  TCS_SetRegistrationEnabled re;
+  memset(&re, 0, sizeof(TCS_SetRegistrationEnabled));
+  re.IODeviceRegistrationTimeSec = ioDeviceRegTimeSec;
+  re.ClientRegistrationTimeSec = clientRegTimeSec;
+
+  return srpc_cs_async_set_registration_enabled(
+      ((TSuplaClientData *)_suplaclient)->srpc, &re);
+}
