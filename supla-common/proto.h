@@ -297,7 +297,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_THERMOSTAT 6000                   // ver. >= 11
 #define SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS 6010  // ver. >= 11
 
-#define SUPLA_CHANNELTYPE_VALVE 7000                        // ver. >= 12
+#define SUPLA_CHANNELTYPE_VALVE_OPENCLOSE 7000              // ver. >= 12
+#define SUPLA_CHANNELTYPE_VALVE_PERCENTAGE 7010             // ver. >= 12
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
