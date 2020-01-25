@@ -302,7 +302,8 @@ bool supla_client_channel::set_function(int new_function, bool *not_allowed) {
     memset(&basic_cfg, 0, sizeof(TSC_ChannelBasicCfg));
 
     if (db->get_channel_basic_cfg(getId(), &basic_cfg)) {
-      if (funclist_contains_function(basic_cfg.FuncList, new_function) &&
+      if ((new_function == 0 ||
+           funclist_contains_function(basic_cfg.FuncList, new_function)) &&
           db->set_channel_function(getDeviceId(), getId(), new_function)) {
         result = true;
 
