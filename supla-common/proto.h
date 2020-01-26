@@ -42,9 +42,9 @@ struct _supla_timeval {
 #define _supla_int_t long
 #define _supla_int64_t long long
 
-#elif defined(ESP8266)
+#elif defined(ESP8266) || defined(ESP32)
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #define SPROTO_WITHOUT_OUT_BUFFER
 #endif /*ARDUINO_ARCH_ESP8266*/
 
@@ -92,9 +92,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_PROTO_VERSION 12
 #define SUPLA_PROTO_VERSION_MIN 1
-#ifdef ARDUINO_ARCH_AVR // Arduino IDE for Arduino HW
+#if defined(ARDUINO_ARCH_AVR) // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248 // Registration header + 32 channels x 21 B
-#elif ARDUINO_ARCH_ESP8266 // Arduino IDE for ESP8266
+#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) // Arduino IDE for ESP8266
 #define SUPLA_MAX_DATA_SIZE 3264 // Registration header + 128 channels x 21 B
 #else
 #define SUPLA_MAX_DATA_SIZE 10240

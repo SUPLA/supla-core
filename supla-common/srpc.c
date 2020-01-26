@@ -23,13 +23,17 @@
 #include "log.h"
 #include "proto.h"
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 
 #include <mem.h>
+#if !defined(ESP32)
 #include <osapi.h>
+#endif
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined(ARDUINO_ARCH_ESP8266) 
 #include <ets_sys.h>
+#define __EH_DISABLED
+#elif defined(ARDUINO_ARCH_ESP32)
 #define __EH_DISABLED
 #else
 #include <user_interface.h>
@@ -108,10 +112,12 @@ void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params) {
   srpc->proto = sproto_init();
 
 #ifndef ESP8266
+#ifndef ESP32
 #ifndef __AVR__
   assert(params != 0);
   assert(params->data_read != 0);
   assert(params->data_write != 0);
+#endif
 #endif
 #endif
 
@@ -1369,7 +1375,7 @@ srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version) {
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
   TDCS_SuplaPingServer ps;
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
   unsigned int time = system_get_time();
   ps.now.tv_sec = time / 1000000;
   ps.now.tv_usec = time % 1000000;
@@ -1390,7 +1396,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_ping_server_result(void *_srpc) {
-#if !defined(ESP8266) && !defined(__AVR__)
+#if !defined(ESP8266) && !defined(__AVR__) && !defined(ESP32)
   TSDC_SuplaPingServerResult ps;
 
   struct timeval now;
