@@ -394,6 +394,9 @@ void supla_device::on_channel_set_value_result(
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
         event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
         break;
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+        event.Event = SUPLA_EVENT_VALVEOPENCLOSE;
+        break;
     }
 
     getUser()->call_event(&event);

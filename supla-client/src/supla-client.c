@@ -639,11 +639,50 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
                                               rd.data.sc_device_calcfg_result);
         }
+        break;
       case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
         if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
           scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
                                               rd.data.dsc_channel_state);
         }
+        break;
+      case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+        if (scd->cfg.cb_on_channel_basic_cfg && rd.data.sc_channel_basic_cfg) {
+          supla_client_set_str(rd.data.sc_channel_basic_cfg->Caption,
+                               &rd.data.sc_channel_basic_cfg->CaptionSize,
+                               SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+          rd.data.sc_channel_basic_cfg
+              ->DeviceName[SUPLA_DEVICE_NAME_MAXSIZE - 1] = 0;
+          rd.data.sc_channel_basic_cfg
+              ->DeviceSoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
+
+          scd->cfg.cb_on_channel_basic_cfg(scd, scd->cfg.user_data,
+                                           rd.data.sc_channel_basic_cfg);
+        }
+        break;
+      case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+        if (scd->cfg.cb_on_channel_function_set_result &&
+            rd.data.sc_set_channel_function_result) {
+          scd->cfg.cb_on_channel_function_set_result(
+              scd, scd->cfg.user_data, rd.data.sc_set_channel_function_result);
+        }
+        break;
+      case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+        if (scd->cfg.cb_on_clients_reconnect_request_result &&
+            rd.data.sc_clients_reconnect_result) {
+          scd->cfg.cb_on_clients_reconnect_request_result(
+              scd, scd->cfg.user_data, rd.data.sc_clients_reconnect_result);
+        }
+        break;
+      case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+        if (scd->cfg.cb_on_set_registration_enabled_result &&
+            rd.data.sc_set_registration_enabled_result) {
+          scd->cfg.cb_on_set_registration_enabled_result(
+              scd, scd->cfg.user_data,
+              rd.data.sc_set_registration_enabled_result);
+        }
+        break;
     }
 
     srpc_rd_free(&rd);
@@ -834,6 +873,9 @@ void supla_client_register(TSuplaClientData *suplaclient) {
 
     memcpy(src.AuthKey, suplaclient->cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
     memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+
+    src.RegistrationFlags = suplaclient->cfg.registration_flags;
+
     srpc_cs_async_registerclient_d(suplaclient->srpc, &src);
 
   } else if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&
@@ -1127,4 +1169,37 @@ char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
   request.ChannelID = ChannelID;
   return srpc_csd_async_get_channel_state(
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
+}
+
+char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID) {
+  return srpc_cs_async_get_channel_basic_cfg(
+      ((TSuplaClientData *)_suplaclient)->srpc, ChannelID);
+}
+
+char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
+                                       int Function) {
+  TCS_SetChannelFunction func;
+  memset(&func, 0, sizeof(TCS_SetChannelFunction));
+  func.ChannelID = ChannelID;
+  func.Func = Function;
+
+  return srpc_cs_async_set_channel_function(
+      ((TSuplaClientData *)_suplaclient)->srpc, &func);
+}
+
+char supla_client_reconnect_all_clients(void *_suplaclient) {
+  return srpc_cs_async_clients_reconnect_request(
+      ((TSuplaClientData *)_suplaclient)->srpc);
+}
+
+char supla_client_set_registration_enabled(void *_suplaclient,
+                                           int ioDeviceRegTimeSec,
+                                           int clientRegTimeSec) {
+  TCS_SetRegistrationEnabled re;
+  memset(&re, 0, sizeof(TCS_SetRegistrationEnabled));
+  re.IODeviceRegistrationTimeSec = ioDeviceRegTimeSec;
+  re.ClientRegistrationTimeSec = clientRegTimeSec;
+
+  return srpc_cs_async_set_registration_enabled(
+      ((TSuplaClientData *)_suplaclient)->srpc, &re);
 }

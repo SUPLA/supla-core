@@ -1142,9 +1142,49 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TCS_ChannelBasicCfgRequest));
         break;
       case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
-        if (srpc->sdp.data_size == sizeof(TSC_ChannelBasicCfg))
+        if (srpc->sdp.data_size >=
+                (sizeof(TSC_ChannelBasicCfg) - SUPLA_CHANNEL_CAPTION_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_ChannelBasicCfg))
           rd->data.sc_channel_basic_cfg =
               (TSC_ChannelBasicCfg *)malloc(sizeof(TSC_ChannelBasicCfg));
+        break;
+
+      case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+        if (srpc->sdp.data_size == sizeof(TCS_SetChannelFunction))
+          rd->data.cs_set_channel_function =
+              (TCS_SetChannelFunction *)malloc(sizeof(TCS_SetChannelFunction));
+        break;
+
+      case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SetChannelFunctionResult))
+          rd->data.sc_set_channel_function_result =
+              (TSC_SetChannelFunctionResult *)malloc(
+                  sizeof(TSC_SetChannelFunctionResult));
+        break;
+
+      case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
+        call_with_no_data = 1;
+        break;
+
+      case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_ClientsReconnectRequestResult))
+          rd->data.sc_clients_reconnect_result =
+              (TSC_ClientsReconnectRequestResult *)malloc(
+                  sizeof(TSC_ClientsReconnectRequestResult));
+        break;
+
+      case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+        if (srpc->sdp.data_size == sizeof(TCS_SetRegistrationEnabled))
+          rd->data.cs_set_registration_enabled =
+              (TCS_SetRegistrationEnabled *)malloc(
+                  sizeof(TCS_SetRegistrationEnabled));
+        break;
+
+      case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SetRegistrationEnabledResult))
+          rd->data.sc_set_registration_enabled_result =
+              (TSC_SetRegistrationEnabledResult *)malloc(
+                  sizeof(TSC_SetRegistrationEnabledResult));
         break;
 
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
@@ -1260,6 +1300,12 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
     case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
     case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+    case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+    case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+    case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
+    case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+    case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+    case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
       return 12;
   }
 
@@ -2017,15 +2063,60 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_get_channel_basic_cfg(void *_srpc, _supla_int_t ChannelID) {
   TCS_ChannelBasicCfgRequest request;
   memset(&request, 0, sizeof(TCS_ChannelBasicCfgRequest));
+  request.ChannelID = ChannelID;
 
   return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
-                         (char *)request, sizeof(TCS_ChannelBasicCfgRequest));
+                         (char *)&request, sizeof(TCS_ChannelBasicCfgRequest));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
     void *_srpc, TSC_ChannelBasicCfg *basic_cfg) {
+  _supla_int_t size = sizeof(TSC_ChannelBasicCfg) -
+                      SUPLA_CHANNEL_CAPTION_MAXSIZE + basic_cfg->CaptionSize;
+
+  if (size > sizeof(TSC_ChannelBasicCfg)) return 0;
+
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
-                         (char *)result, sizeof(TSC_ChannelBasicCfg));
+                         (char *)basic_cfg, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
+                         (char *)func, sizeof(TCS_SetChannelFunction));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
+    void *_srpc, TSC_SetChannelFunctionResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+                         (char *)result, sizeof(TSC_SetChannelFunctionResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_clients_reconnect_request(void *_srpc) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST, NULL,
+                         0);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
+    void *_srpc, TSC_ClientsReconnectRequestResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
+                         (char *)result,
+                         sizeof(TSC_ClientsReconnectRequestResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_registration_enabled(
+    void *_srpc, TCS_SetRegistrationEnabled *reg_enabled) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
+                         (char *)reg_enabled,
+                         sizeof(TCS_SetRegistrationEnabled));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
+    void *_srpc, TSC_SetRegistrationEnabledResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
+                         (char *)result,
+                         sizeof(TSC_SetRegistrationEnabledResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

@@ -1104,8 +1104,12 @@ bool supla_user::device_get_channel_state(int SenderID, int DeviceId,
   return result;
 }
 
-void supla_user::reconnect(event_source_type eventSourceType) {
+void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
+                           bool allClients) {
   int a;
+  if (!allDevices && !allClients) {
+    return;
+  }
 
   cgroups->load();  // load == reload
 
@@ -1131,6 +1135,10 @@ void supla_user::reconnect(event_source_type eventSourceType) {
 
   supla_http_request_queue::getInstance()->onUserReconnectEvent(
       this, eventSourceType);
+}
+
+void supla_user::reconnect(event_source_type eventSourceType) {
+  reconnect(eventSourceType, true, true);
 }
 
 bool supla_user::client_reconnect(int ClientID) {

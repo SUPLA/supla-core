@@ -143,6 +143,11 @@ union TsrpcDataPacketData {
   TDSC_ChannelState *dsc_channel_state;
   TCS_ChannelBasicCfgRequest *cs_channel_basic_cfg_request;
   TSC_ChannelBasicCfg *sc_channel_basic_cfg;
+  TCS_SetChannelFunction *cs_set_channel_function;
+  TSC_SetChannelFunctionResult *sc_set_channel_function_result;
+  TSC_ClientsReconnectRequestResult *sc_clients_reconnect_result;
+  TCS_SetRegistrationEnabled *cs_set_registration_enabled;
+  TSC_SetRegistrationEnabledResult *sc_set_registration_enabled_result;
 };
 
 typedef struct {
@@ -304,11 +309,22 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request_b(
     void *_srpc, TCS_DeviceCalCfgRequest_B *request);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_device_calcfg_result(void *_srpc, TSC_DeviceCalCfgResult *result);
-_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_channel_basic_cfg(
-    void *_srpc, _supla_int_t ChannelID);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_channel_basic_cfg(void *_srpc, _supla_int_t ChannelID);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
     void *_srpc, TSC_ChannelBasicCfg *basic_cfg);
-
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
+    void *_srpc, TSC_SetChannelFunctionResult *result);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_clients_reconnect_request(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
+    void *_srpc, TSC_ClientsReconnectRequestResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_registration_enabled(
+    void *_srpc, TCS_SetRegistrationEnabled *reg_enabled);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
+    void *_srpc, TSC_SetRegistrationEnabledResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
