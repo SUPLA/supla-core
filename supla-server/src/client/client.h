@@ -80,6 +80,9 @@ class supla_client : public cdbase {
   void device_get_channel_state(TCSD_ChannelStateRequest *request);
   void on_device_channel_state_result(int ChannelID, TDSC_ChannelState *state);
 
+  void get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request);
+  void set_channel_function(TCS_SetChannelFunction *func);
+
   virtual ~supla_client();
 };
 
