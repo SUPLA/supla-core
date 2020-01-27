@@ -639,6 +639,8 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
       return 1;
 
       break;
@@ -659,6 +661,8 @@ bool supla_device_channel::isCharValueWritable(void) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
       return 1;
 
       break;
@@ -1564,7 +1568,9 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+      case SUPLA_CHANNELFNC_VALVE_PERCENTAGE: {
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         value->hi = cv[0] > 0;
