@@ -35,8 +35,8 @@
 #include <time.h>
 #endif /*_WIN32*/
 
-#endif /*defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
-          defined(ARDUINO_ARCH_ESP32)*/
+#endif  // defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)
+        // || defined(ARDUINO_ARCH_ESP32)
 
 #include <stdlib.h>
 
