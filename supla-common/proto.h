@@ -475,6 +475,7 @@ typedef struct {
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
+#define EV_TYPE_CHANNEL_STATE 40
 
 #define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
@@ -1332,6 +1333,11 @@ typedef struct {
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
 typedef struct {
+  _supla_int_t IconBasedOnTheField;  // SUPLA_CHANNELSTATE_FIELD_*
+  TDSC_ChannelState State;
+} TChannelState_ExtendedValue;  // v. >= 12
+
+typedef struct {
   _supla_int_t ChannelID;
 } TCS_ChannelBasicCfgRequest;
 
@@ -1379,6 +1385,11 @@ typedef struct {
 typedef struct {
   unsigned char ResultCode;
 } TSC_SetRegistrationEnabledResult;
+
+typedef struct {
+  unsigned char closed;
+  unsigned char flags;
+} TValve_Value;
 
 #pragma pack(pop)
 
