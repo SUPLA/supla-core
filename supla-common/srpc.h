@@ -48,7 +48,7 @@
 #define SRPC_ICACHE_FLASH
 #endif
 
-#if defined(__AVR__) 
+#if defined(__AVR__)
 #define SRPC_EXCLUDE_CLIENT
 #define SRPC_WITHOUT_OUT_QUEUE
 #define SRPC_WITHOUT_IN_QUEUE

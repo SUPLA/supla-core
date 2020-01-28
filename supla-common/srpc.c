@@ -30,7 +30,7 @@
 #include <osapi.h>
 #endif
 
-#if defined(ARDUINO_ARCH_ESP8266) 
+#if defined(ARDUINO_ARCH_ESP8266)
 #include <ets_sys.h>
 #define __EH_DISABLED
 #elif defined(ARDUINO_ARCH_ESP32)

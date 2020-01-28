@@ -34,7 +34,8 @@
 
 #include <syslog.h>
 
-#endif /*defined(ESP8266) || defined(__AVR__) || defined(_WIN32) || defined(ESP32)*/
+#endif  // defined(ESP8266) || defined(__AVR__)
+        // || defined(_WIN32) || defined(ESP32)
 
 #ifdef __cplusplus
 extern "C" {

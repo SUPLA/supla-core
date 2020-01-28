@@ -92,10 +92,13 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_PROTO_VERSION 12
 #define SUPLA_PROTO_VERSION_MIN 1
-#if defined(ARDUINO_ARCH_AVR)       // Arduino IDE for Arduino HW
-#define SUPLA_MAX_DATA_SIZE 1248    // Registration header + 32 channels x 21 B
-#elif defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) // Arduino IDE for ESP8266
-#define SUPLA_MAX_DATA_SIZE 3264    // Registration header + 128 channels x 21 B
+#if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
+#define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
+#elif defined(ARDUINO_ARCH_ESP8266) || \
+    defined(ARDUINO_ARCH_ESP32)   // Arduino IDE for ESP8266
+#define SUPLA_MAX_DATA_SIZE 3264  // Registration header + 128 channels x 21 B
+#elif defined(ESP8266)
+#define SUPLA_MAX_DATA_SIZE 1536
 #else
 #define SUPLA_MAX_DATA_SIZE 10240
 #endif
@@ -475,6 +478,7 @@ typedef struct {
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
+#define EV_TYPE_CHANNEL_STATE 40
 
 #define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
@@ -1332,6 +1336,11 @@ typedef struct {
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
 typedef struct {
+  _supla_int_t IconBasedOnTheField;  // SUPLA_CHANNELSTATE_FIELD_*
+  TDSC_ChannelState State;
+} TChannelState_ExtendedValue;  // v. >= 12
+
+typedef struct {
   _supla_int_t ChannelID;
 } TCS_ChannelBasicCfgRequest;
 
@@ -1379,6 +1388,11 @@ typedef struct {
 typedef struct {
   unsigned char ResultCode;
 } TSC_SetRegistrationEnabledResult;
+
+typedef struct {
+  unsigned char closed;
+  unsigned char flags;
+} TValve_Value;
 
 #pragma pack(pop)
 
