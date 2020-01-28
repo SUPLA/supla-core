@@ -22,27 +22,33 @@
 #include <stdio.h>
 #include "eh.h"
 #include "proto.h"
+#if defined(ESP32)
+#include <esp8266-compat.h>
+#endif
 
 #ifdef __ANDROID__
 #define SRPC_EXCLUDE_DEVICE
 #endif /*__ANDROID__*/
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #define SRPC_WITHOUT_OUT_QUEUE
 #define SRPC_WITHOUT_IN_QUEUE
-#endif /*ARDUINO_ARCH_ESP8266*/
+#endif /* defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32) */
 
 #define SRPC_EXCLUDE_CLIENT
-#include <mem.h>
-#include <os_type.h>
 #define SRPC_ICACHE_FLASH ICACHE_FLASH_ATTR
+
+#include <mem.h>
+#if !defined(ESP32)
+#include <os_type.h>
+#endif
 #else
 #define SRPC_ICACHE_FLASH
 #endif
 
-#ifdef __AVR__
+#if defined(__AVR__) 
 #define SRPC_EXCLUDE_CLIENT
 #define SRPC_WITHOUT_OUT_QUEUE
 #define SRPC_WITHOUT_IN_QUEUE
