@@ -97,6 +97,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #elif defined(ARDUINO_ARCH_ESP8266) || \
     defined(ARDUINO_ARCH_ESP32)   // Arduino IDE for ESP8266
 #define SUPLA_MAX_DATA_SIZE 3264  // Registration header + 128 channels x 21 B
+#elif defined(ESP8266)
+#define SUPLA_MAX_DATA_SIZE 1536
 #else
 #define SUPLA_MAX_DATA_SIZE 10240
 #endif
