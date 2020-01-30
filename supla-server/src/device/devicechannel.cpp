@@ -763,43 +763,33 @@ std::list<int> supla_device_channel::master_channel(void) {
 }
 
 supla_channel_temphum *supla_device_channel::getTempHum(void) {
-  double temp;
+  supla_channel_temphum *result = NULL;
 
   if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
        getType() == SUPLA_CHANNELTYPE_THERMOMETER) &&
       getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
-    getDouble(&temp);
-
-    if (temp > -273 && temp <= 1000) {
-      return new supla_channel_temphum(0, getId(), value);
-    }
+    result = new supla_channel_temphum(false, getId(), value);
 
   } else if ((getType() == SUPLA_CHANNELTYPE_DHT11 ||
               getType() == SUPLA_CHANNELTYPE_DHT22 ||
               getType() == SUPLA_CHANNELTYPE_DHT21 ||
               getType() == SUPLA_CHANNELTYPE_AM2301 ||
               getType() == SUPLA_CHANNELTYPE_AM2302 ||
+              getType() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
               getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
              (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
-    int n;
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    double humidity;
-
-    getValue(value);
-    memcpy(&n, value, 4);
-    temp = n / 1000.00;
-
-    memcpy(&n, &value[4], 4);
-    humidity = n / 1000.00;
-
-    if (temp > -273 && temp <= 1000 && humidity >= 0 && humidity <= 100) {
-      return new supla_channel_temphum(1, getId(), value);
-    }
+    result = new supla_channel_temphum(true, getId(), value);
   }
 
-  return NULL;
+  if (result != NULL && result->getTemperature() == -273 &&
+      result->getHumidity() == -1) {
+    delete result;
+    result = NULL;
+  }
+
+  return result;
 }
 
 supla_channel_electricity_measurement *
