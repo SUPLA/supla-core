@@ -59,7 +59,8 @@ supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity,
 }
 
 supla_channel_temphum::supla_channel_temphum(
-    bool TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]) {
+    bool TempAndHumidity, int ChannelId,
+    const char value[SUPLA_CHANNELVALUE_SIZE]) {
   this->ChannelId = ChannelId;
   this->TempAndHumidity = TempAndHumidity;
   this->Temperature = -273;
