@@ -13,13 +13,7 @@ ssl_enabled=Y
 ID=
 PASSWORD=
 
-# DHT 22 sensor connected to GPIO22 pin
-# [CHANNEL_0]
-# type=DHT22
-# w1=22
-#
-
-# Available types: SENSORNO,RELAYHFD4,RELAYG5LA1A,2XRELAYG5LA1A,THERMOMETERDS18B20,DHT11,DHT22,AM2302
+# Available types: https://github.com/SUPLA/supla-core/blob/master/supla-dev/src/devcfg.c#L34
 # Help: https://forum.supla.org
 
 [CHANNEL_0]
@@ -45,3 +39,7 @@ gpio1=23
 [CHANNEL_5]
 type=SENSORNO
 gpio1=18
+
+[CHANNEL_6]
+type=DHT22
+w1=22
