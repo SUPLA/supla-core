@@ -1316,6 +1316,7 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0040
 #define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080
 #define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
+#define SUPLA_CHANNELSTATE_FIELD_BATTERY_HEALTH 0x0200
 
 typedef struct {
   _supla_int_t ReceiverID;
@@ -1333,6 +1334,7 @@ typedef struct {
   unsigned char BridgeSignalStrength;      // 0 - 100%
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
+  unsigned char BatteryHealth;
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
 typedef struct {
@@ -1356,9 +1358,11 @@ typedef struct {
   unsigned char Number;
   _supla_int_t Type;
   _supla_int_t Func;
-  _supla_int_t FuncList;
+  union {
+    _supla_int_t FuncList;
+    _supla_int_t Param;  // v. >= 12
+  };
   unsigned _supla_int_t ChannelFlags;
-
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
@@ -1388,6 +1392,9 @@ typedef struct {
 typedef struct {
   unsigned char ResultCode;
 } TSC_SetRegistrationEnabledResult;
+
+#define SUPLA_VALVE_FLAG_FLOODING 0x1
+#define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
 
 typedef struct {
   unsigned char closed;
