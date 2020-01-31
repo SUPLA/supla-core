@@ -24,9 +24,16 @@ cd supla-core/supla-dev/Release
 ## Configure autostart
 
 In order to reliably run `supla-dev` you should run it
-by some process control system like [supervisor](http://supervisord.org/).
+by some process control system. Here are a few options.
 
-### Configuration on RaspberryPi
+### init.d
+
+If you are familiar with `init.d`, you can prepare a configuration for running
+`supla-dev` without installing any new stuff. Check out sample
+config in the official 
+[raspberry image sources](https://github.com/SUPLA/raspberry/blob/master/ext01/etc/init.d/supla-dev).
+
+### supervisor
 
 1. Install supervisor with `sudo apt-get install supervisor`.
 1. Edit configuration file so you can manage the processes without root access:
@@ -63,6 +70,7 @@ command (without sudo) to manage the process.
 * `supervisorctl status` shows if everything is ok
 * `supervisorctl stop supla-dev` stops it
 * `supervisorctl start supla-dev` starts it
+* `supervisorctl restart supla-dev` restarts it
 * `supervisorctl tail supla-dev` shows error output (in case of problems)
 
 ## Upgrade
