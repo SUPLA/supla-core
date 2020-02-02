@@ -5,7 +5,7 @@ Make a SUPLA-managed device from your RaspberryPI (or any other linux).
 ## Installation
 
 ```
-sudo apt-get install libssl-dev
+sudo apt-get install git libssl-dev build-essential
 git clone https://github.com/SUPLA/supla-core
 cd supla-core/supla-dev/Release
 make all
