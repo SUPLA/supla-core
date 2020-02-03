@@ -58,6 +58,8 @@ static int decode_channel_type(const char *type) {
     return SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
   } else if (strcasecmp(type, "DIMMERANDRGBLED") == 0) {
     return SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
+  } else if (strcasecmp(type, "HUMIDITYSENSOR") == 0) {
+    return SUPLA_CHANNELTYPE_HUMIDITYSENSOR;
   }
 
   return atoi(type);
