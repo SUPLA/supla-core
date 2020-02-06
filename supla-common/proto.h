@@ -478,7 +478,7 @@ typedef struct {
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
-#define EV_TYPE_CHANNEL_STATE 40
+#define EV_TYPE_CHANNEL_STATE_V1 40
 
 #define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
@@ -1319,12 +1319,14 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BATTERY_HEALTH 0x0200
 
 typedef struct {
-  _supla_int_t ReceiverID;
+  _supla_int_t ReceiverID;  // Not used for TChannelState_ExtendedValue
   union {
+    // Not used for TChannelState_ExtendedValue
     _supla_int_t ChannelID;       // Server -> Client
     unsigned char ChannelNumber;  // Device -> Server
   };
   _supla_int_t Fields;
+  _supla_int_t defaultIconField;  // SUPLA_CHANNELSTATE_FIELD_*
   unsigned _supla_int_t IPv4;
   unsigned char MAC[6];
   unsigned char BatteryLevel;    // 0 - 100%
@@ -1337,10 +1339,7 @@ typedef struct {
   unsigned char BatteryHealth;
 } TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
-typedef struct {
-  _supla_int_t IconBasedOnTheField;  // SUPLA_CHANNELSTATE_FIELD_*
-  TDSC_ChannelState State;
-} TChannelState_ExtendedValue;  // v. >= 12
+#define TChannelState_ExtendedValue TDSC_ChannelState
 
 typedef struct {
   _supla_int_t ChannelID;
@@ -1397,7 +1396,11 @@ typedef struct {
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
 
 typedef struct {
-  unsigned char closed;
+  union {
+    unsigned char closed;
+    unsigned char closed_percent;
+  };
+
   unsigned char flags;
 } TValve_Value;
 
