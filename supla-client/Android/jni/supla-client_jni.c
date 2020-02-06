@@ -627,6 +627,24 @@ jobject supla_android_client_thermostatvalue_to_jobject(
   return m_obj;
 }
 
+jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
+                                                     JNIEnv *env,
+                                                     TDSC_ChannelState *state) {
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBII)V");
+
+  jbyteArray mac = (*env)->NewByteArray(env, 6);
+  (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
+
+  return (*env)->NewObject(
+      env, cls, methodID, state->ChannelID, state->Fields,
+      state->defaultIconField, state->IPv4, mac, state->BatteryLevel,
+      state->BatteryPowered, state->WiFiRSSI, state->WiFiSignalStrength,
+      state->BridgeSignalStrength, state->Uptime, state->ConnectionUptime);
+}
+
 jobject supla_android_client_channelextendedvalue_to_jobject(
     void *_suplaclient, void *user_data,
     TSuplaChannelExtendedValue *channel_extendedvalue) {
@@ -681,6 +699,18 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
       (*env)->SetObjectField(env, val, fid, chv);
     }
+  } else if (channel_extendedvalue->type == EV_TYPE_CHANNEL_STATE_V1 &&
+             channel_extendedvalue->size ==
+                 sizeof(TChannelState_ExtendedValue)) {
+    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
+                                  "Lorg/supla/android/lib/SuplaChannelState;");
+
+    // TChannelState_ExtendedValue is equal to TDSC_ChannelState
+    jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
+        asc, env, (TDSC_ChannelState *)channel_extendedvalue->value);
+
+    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+
   } else if (channel_extendedvalue->size > 0) {
     jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
     (*env)->SetByteArrayRegion(env, arr, 0, channel_extendedvalue->size,
@@ -861,19 +891,8 @@ void supla_android_client_cb_on_channel_state(void *_suplaclient,
     return;
   }
 
-  jclass cls =
-      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
-  jmethodID methodID =
-      supla_client_GetMethodID(env, cls, "<init>", "(III[BBBBBBII)V");
-
-  jbyteArray mac = (*env)->NewByteArray(env, 6);
-  (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
-
-  jobject channel_state_obj = (*env)->NewObject(
-      env, cls, methodID, state->ChannelID, state->Fields, state->IPv4, mac,
-      state->BatteryLevel, state->BatteryPowered, state->WiFiRSSI,
-      state->WiFiSignalStrength, state->BridgeSignalStrength, state->Uptime,
-      state->ConnectionUptime);
+  jobject channel_state_obj =
+      supla_android_client_channelstate_to_jobject(asc, env, state);
 
   supla_android_client(asc, asc->j_mid_cb_on_channel_state, channel_state_obj);
 }
