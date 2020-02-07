@@ -600,9 +600,10 @@ jobject supla_android_client_thermostatvalue_to_jobject(
         (*env)->GetMethodID(env, cls, "setTime", "(BBBB)V");
 
     for (a = 0; a < sizeof(th_ev->Values) / sizeof(_supla_int16_t); a++) {
-      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, a, th_ev->Time.sec,
-                             th_ev->Time.min, th_ev->Time.hour,
-                             th_ev->Time.dayOfWeek);
+      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, a,
+                             (jbyte)th_ev->Time.sec, (jbyte)th_ev->Time.min,
+                             (jbyte)th_ev->Time.hour,
+                             (jbyte)th_ev->Time.dayOfWeek);
     }
   }
 
@@ -618,8 +619,9 @@ jobject supla_android_client_thermostatvalue_to_jobject(
 
     for (a = 0; a < 7; a++) {
       for (int b = 0; b < 24; b++) {
-        (*env)->CallVoidMethod(env, m_obj, set_schedule_value_m_mid, a, b,
-                               th_ev->Schedule.HourValue[a][b]);
+        (*env)->CallVoidMethod(env, m_obj, set_schedule_value_m_mid, (jbyte)a,
+                               (jbyte)b,
+                               (jbyte)th_ev->Schedule.HourValue[a][b]);
       }
     }
   }
@@ -638,11 +640,13 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
   jbyteArray mac = (*env)->NewByteArray(env, 6);
   (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
 
-  return (*env)->NewObject(
-      env, cls, methodID, state->ChannelID, state->Fields,
-      state->defaultIconField, state->IPv4, mac, state->BatteryLevel,
-      state->BatteryPowered, state->WiFiRSSI, state->WiFiSignalStrength,
-      state->BridgeSignalStrength, state->Uptime, state->ConnectionUptime);
+  return (*env)->NewObject(env, cls, methodID, (jint)state->ChannelID,
+                           (jint)state->Fields, (jint)state->defaultIconField,
+                           (jint)state->IPv4, mac, (jbyte)state->BatteryLevel,
+                           (jbyte)state->BatteryPowered, (jbyte)state->WiFiRSSI,
+                           (jbyte)state->WiFiSignalStrength,
+                           (jbyte)state->BridgeSignalStrength,
+                           (jint)state->Uptime, (jint)state->ConnectionUptime);
 }
 
 jobject supla_android_client_channelextendedvalue_to_jobject(
