@@ -1625,12 +1625,14 @@ void database::add_thermostat_measurements(
   char buff2[20];
   memset(buff2, 0, sizeof(buff2));
 
-  MYSQL_BIND pbind[3];
+  MYSQL_BIND pbind[4];
   memset(pbind, 0, sizeof(pbind));
 
   int ChannelId = th->getChannelId();
   snprintf(buff1, sizeof(buff1), "%05.2f", th->getMeasuredTemperature());
   snprintf(buff2, sizeof(buff2), "%05.2f", th->getPresetTemperature());
+
+  char on = th->getOn() ? 1 : 0;
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&ChannelId;
@@ -1643,7 +1645,11 @@ void database::add_thermostat_measurements(
   pbind[2].buffer = (char *)buff2;
   pbind[2].buffer_length = strnlen(buff2, 20);
 
-  const char sql[] = "CALL `supla_add_thermostat_log_item`(?,?,?)";
+  pbind[3].buffer_type = MYSQL_TYPE_TINY;
+  pbind[3].buffer = (char *)&on;
+  pbind[3].buffer_length = sizeof(char);
+
+  const char sql[] = "CALL `supla_add_thermostat_log_item`(?,?,?,?)";
 
   MYSQL_STMT *stmt;
   stmt_execute((void **)&stmt, sql, pbind, 3, true);
