@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 
   {
     database *db = new database();
-    if (!db->check_db_version("20200124084227", 60)) {
+    if (!db->check_db_version("20200204170901", 60)) {
       delete db;
       database::mainthread_end();
       goto exit_fail;
