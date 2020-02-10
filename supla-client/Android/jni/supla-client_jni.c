@@ -600,9 +600,8 @@ jobject supla_android_client_thermostatvalue_to_jobject(
         (*env)->GetMethodID(env, cls, "setTime", "(BBBB)V");
 
     for (a = 0; a < sizeof(th_ev->Values) / sizeof(_supla_int16_t); a++) {
-      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, a,
-                             (jbyte)th_ev->Time.sec, (jbyte)th_ev->Time.min,
-                             (jbyte)th_ev->Time.hour,
+      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, (jbyte)th_ev->Time.sec,
+                             (jbyte)th_ev->Time.min, (jbyte)th_ev->Time.hour,
                              (jbyte)th_ev->Time.dayOfWeek);
     }
   }
