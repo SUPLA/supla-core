@@ -1652,7 +1652,7 @@ void database::add_thermostat_measurements(
   const char sql[] = "CALL `supla_add_thermostat_log_item`(?,?,?,?)";
 
   MYSQL_STMT *stmt;
-  stmt_execute((void **)&stmt, sql, pbind, 3, true);
+  stmt_execute((void **)&stmt, sql, pbind, 4, true);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
