@@ -1339,7 +1339,8 @@ typedef struct {
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;
-} TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
+  char EmptySpace[8];  // Empty space for future use
+} TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
 

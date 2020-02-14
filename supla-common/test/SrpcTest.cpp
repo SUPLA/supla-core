@@ -3254,7 +3254,7 @@ SRPC_CALL_BASIC_TEST(srpc_csd_async_get_channel_state, TCSD_ChannelStateRequest,
                      csd_channel_state_request);
 
 SRPC_CALL_BASIC_TEST(srpc_csd_async_channel_state_result, TDSC_ChannelState,
-                     SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 64,
+                     SUPLA_DSC_CALL_CHANNEL_STATE_RESULT, 72,
                      dsc_channel_state);
 
 //---------------------------------------------------------
