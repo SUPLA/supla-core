@@ -50,7 +50,7 @@
 #define BUFFER_MAX_SIZE 131072
 #endif /*BUFFER_MAX_SIZE*/
 
-static char sproto_tag[SUPLA_TAG_SIZE] = {'S', 'U', 'P', 'L', 'A'};
+char sproto_tag[SUPLA_TAG_SIZE] = {'S', 'U', 'P', 'L', 'A'};
 
 typedef struct {
   unsigned char begin_tag;
@@ -60,18 +60,22 @@ typedef struct {
   char *buffer;
 } TSuplaProtoInBuffer;
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 typedef struct {
   unsigned _supla_int_t size;
   unsigned _supla_int_t data_size;
 
   char *buffer;
 } TSuplaProtoOutBuffer;
+#endif
 
 typedef struct {
   unsigned _supla_int_t next_rr_id;
   unsigned char version;
   TSuplaProtoInBuffer in;
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
   TSuplaProtoOutBuffer out;
+#endif
 } TSuplaProtoData;
 
 void *sproto_init(void) {
@@ -89,7 +93,9 @@ void sproto_free(void *spd_ptr) {
   TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
   if (spd != NULL) {
     if (spd->in.buffer != NULL) free(spd->in.buffer);
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
     if (spd->out.buffer != NULL) free(spd->out.buffer);
+#endif
 
     free(spd);
   }
@@ -143,6 +149,7 @@ char sproto_in_buffer_append(void *spd_ptr, char *data,
                               &spd->in.data_size, data, data_size);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp) {
   TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
   unsigned _supla_int_t sdp_size = sizeof(TSuplaDataPacket);
@@ -208,6 +215,7 @@ char sproto_out_dataexists(void *spd_ptr) {
   return ((TSuplaProtoData *)spd_ptr)->out.data_size > 0 ? SUPLA_RESULT_TRUE
                                                          : SUPLA_RESULT_FALSE;
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 char sproto_in_dataexists(void *spd_ptr) {
   return ((TSuplaProtoData *)spd_ptr)->in.data_size > 0 ? SUPLA_RESULT_TRUE
@@ -364,10 +372,11 @@ void sproto_log_summary(void *spd_ptr) {
   supla_log(LOG_DEBUG, "         size: %i", spd->in.size);
   supla_log(LOG_DEBUG, "    data_size: %i", spd->in.data_size);
   supla_log(LOG_DEBUG, "    begin_tag: %i", spd->in.begin_tag);
-
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
   supla_log(LOG_DEBUG, "BUFFER OUT");
   supla_log(LOG_DEBUG, "         size: %i", spd->out.size);
   supla_log(LOG_DEBUG, "    data_size: %i", spd->out.data_size);
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 }
 
 void sproto_buffer_dump(void *spd_ptr, unsigned char in) {
@@ -380,9 +389,11 @@ void sproto_buffer_dump(void *spd_ptr, unsigned char in) {
   if (in != 0) {
     buffer = spd->in.buffer;
     size = spd->in.data_size;
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
   } else {
     buffer = spd->out.buffer;
     size = spd->out.data_size;
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
   }
 
   for (a = 0; a < size; a++)
