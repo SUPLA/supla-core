@@ -24,6 +24,7 @@
 
 extern char DEVICE_GUID[SUPLA_GUID_SIZE];
 extern char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
+extern char SOFTWARE_VERSION[SUPLA_SOFTVER_MAXSIZE];
 
 #ifdef __cplusplus
 extern "C" {

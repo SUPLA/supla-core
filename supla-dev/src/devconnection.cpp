@@ -217,7 +217,8 @@ void devconnection_register(TDeviceConnectionData *dcd) {
              scfg_string(CFG_DEVNAME));
     snprintf(srd.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s",
              scfg_string(CFG_SERVER_HOST));
-    snprintf(srd.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0");
+    snprintf(srd.SoftVer, SUPLA_SOFTVER_MAXSIZE, SOFTWARE_VERSION);
+
     memcpy(srd.GUID, DEVICE_GUID, SUPLA_GUID_SIZE);
 
     channelio_channels_to_srd(&srd.channel_count, srd.channels);
