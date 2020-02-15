@@ -22,9 +22,9 @@
 
 #include "channel-io.h"
 #include "devcfg.h"
-#include "log.h"
+#include "../supla-client-lib/log.h"
 #include "mcp23008.h"
-#include "tools.h"
+#include "../supla-client-lib/tools.h"
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
@@ -61,7 +61,7 @@ static int decode_channel_type(const char *type) {
     return SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
   } else if (strcasecmp(type, "HUMIDITYSENSOR") == 0) {
     return SUPLA_CHANNELTYPE_HUMIDITYSENSOR;
-  }
+  };
 
   return atoi(type);
 }
@@ -111,6 +111,16 @@ void devcfg_channel_cfg(const char *section, const char *name,
     channelio_set_mcp23008_gpio_val(number, atoi(value) % 255);
   } else if (strcasecmp(name, "mcp_gpio_port") == 0) {
     channelio_set_mcp23008_gpio_port(number, atoi(value) % MCP23008_MAX_GPIO);
+  } else if (strcasecmp(name, "topic_in") == 0 && strlen(value) > 0) {
+	channelio_set_mqtt_topic_in(number, value);
+  } else if (strcasecmp(name, "topic_out") == 0 && strlen(value) > 0) {
+	channelio_set_mqtt_topic_out(number, value);
+  } else if (strcasecmp(name, "retain") == 0 && strlen(value) == 1) {
+	channelio_set_mqtt_retain(number, atoi(value));
+  } else if (strcasecmp(name, "template_in") == 0 && strlen(value) > 0) {
+	channelio_set_mqtt_template_in(number, value);
+  } else if (strcasecmp(name, "template_out") == 0 && strlen(value) > 0) {
+	channelio_set_mqtt_template_out(number, value);
   }
 }
 
@@ -143,6 +153,12 @@ unsigned char devcfg_init(int argc, char *argv[]) {
 
   char *s_auth = "AUTH";
   scfg_add_str_param(s_auth, "email", "");
+
+  char *s_mqtt = "MQTT";
+  scfg_add_str_param(s_mqtt, "host", "");
+  scfg_add_int_param(s_mqtt, "port", 1833);
+  scfg_add_str_param(s_mqtt, "username", "");
+  scfg_add_str_param(s_mqtt, "password", "");
 
   result = scfg_load(argc, argv, "/etc/supla-dev/supla.cfg");
 

@@ -19,8 +19,6 @@
 #include "safearray.h"
 #include <assert.h>
 #include <stdlib.h>
-
-#include "lck.h"
 #include "log.h"
 
 typedef struct {
@@ -47,11 +45,18 @@ void safe_array_free(void *_arr) {
   free(_arr);
 }
 
+#ifdef __LCK_DEBUG
+void _safe_array_lock(void *_arr, const char *file, int line) {
+  assert(_arr != 0);
+  __lck_lock(((TSafeArray *)_arr)->lck, file, line);
+}
+#else
 void safe_array_lock(void *_arr) {
   assert(_arr != 0);
 
   lck_lock(((TSafeArray *)_arr)->lck);
 }
+#endif /*__LCK_DEBUG*/
 
 void safe_array_unlock(void *_arr) {
   assert(_arr != 0);
@@ -69,6 +74,22 @@ int safe_array_count(void *_arr) {
   safe_array_unlock(_arr);
 
   return result;
+}
+
+void safe_array_move_to_begin(void *_arr, int idx) {
+  TSafeArray *arr = (TSafeArray *)_arr;
+
+  assert(_arr != 0);
+
+  if (idx < 1 || idx >= arr->count) return;
+
+  void *item = arr->arr[idx];
+  int a;
+  for (a = idx - 1; a >= 0; a--) {
+    arr->arr[a + 1] = arr->arr[a];
+  }
+
+  arr->arr[0] = item;
 }
 
 int safe_array_add(void *_arr, void *ptr) {

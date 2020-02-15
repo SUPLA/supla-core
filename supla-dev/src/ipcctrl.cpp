@@ -24,8 +24,8 @@
 
 #include "channel-io.h"
 #include "ipcctrl.h"
-#include "log.h"
-#include "sthread.h"
+#include "../supla-client-lib/log.h"
+#include "../supla-client-lib/sthread.h"
 
 const char hello[] = "SUPLA DEVICE CTRL\n";
 const char cmd_channel_get_hivalue[] = "CHANNEL-GET-HIVALUE:";

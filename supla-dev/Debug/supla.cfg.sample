@@ -1,0 +1,31 @@
+[GLOBAL]
+device_name=MQTT Virtual Device
+device_guid_file=./var/dev_guid
+state_file=./var/last_state.txt
+
+[SERVER]
+host=192.168.1.116
+tcp_port=2015
+ssl_port=2016
+ssl_enabled=Y
+
+[LOCATION]
+ID=1
+PASSWORD=aqkCOSdsUPa55ZgVpgbr
+
+[MQTT]
+host=192.168.1.224
+port=1883
+username='beku'
+password='beku1'
+
+# Available types: https://github.com/SUPLA/supla-core/blob/master/supla-dev/src/devcfg.c#L34
+# Help: https://forum.supla.org
+
+[CHANNEL_0]
+type=RELAY
+topic_in='/relays/virtual/channels/state/#'
+topic_out='/relays/virtual/chanels/command/$id$'
+template_in=$value$
+template_out=$value$
+

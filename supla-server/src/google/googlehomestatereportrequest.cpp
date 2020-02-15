@@ -83,7 +83,6 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
-    case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:

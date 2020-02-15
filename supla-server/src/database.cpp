@@ -17,8 +17,9 @@
  */
 
 #include <ctype.h>
-#include <my_global.h>
 #include <mysql.h>
+#include <stdio.h>
+#include <time.h>
 #include "amazon/alexa.h"
 #include "google/googlehome.h"
 
@@ -1162,15 +1163,15 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? "
-      "ORDER BY `iodevice_id`, `channel_number`";
+      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
+      "`client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
   const char sql2[] =
       "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version` FROM `supla_v_client_channel` WHERE `client_id` = ? "
-      "AND `iodevice_id` = ? ORDER BY `channel_number`";
+      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
+      "`client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
 
   MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
@@ -1183,11 +1184,12 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[17];
+    MYSQL_BIND rbind[18];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, type, func, param1, param2, param3, iodevice_id, location_id,
-        alt_icon, user_icon, protocol_version;
+    int id = 0, type = 0, func = 0, param1 = 0, param2 = 0, param3 = 0,
+        iodevice_id = 0, location_id = 0, alt_icon = 0, user_icon = 0,
+        protocol_version = 0, flags = 0;
     short manufacturer_id = 0;
     short product_id = 0;
     char text_param1[256];
@@ -1269,6 +1271,9 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[16].buffer_type = MYSQL_TYPE_LONG;
     rbind[16].buffer = (char *)&protocol_version;
 
+    rbind[17].buffer_type = MYSQL_TYPE_LONG;
+    rbind[17].buffer = (char *)&flags;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1292,7 +1297,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
               text_param2_is_null ? NULL : text_param2,
               text_param3_is_null ? NULL : text_param3,
               caption_is_null ? NULL : caption, alt_icon, user_icon,
-              manufacturer_id, product_id, protocol_version);
+              manufacturer_id, product_id, protocol_version, flags);
 
           if (!channels->add(channel)) {
             delete channel;
@@ -1612,6 +1617,40 @@ void database::add_impulses(supla_channel_ic_measurement *ic) {
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
+void database::add_thermostat_measurements(
+    supla_channel_thermostat_measurement *th) {
+  char buff1[20];
+  memset(buff1, 0, sizeof(buff1));
+
+  char buff2[20];
+  memset(buff2, 0, sizeof(buff2));
+
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  int ChannelId = th->getChannelId();
+  snprintf(buff1, sizeof(buff1), "%05.2f", th->getMeasuredTemperature());
+  snprintf(buff2, sizeof(buff2), "%05.2f", th->getPresetTemperature());
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&ChannelId;
+
+  pbind[1].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[1].buffer = (char *)buff1;
+  pbind[1].buffer_length = strnlen(buff1, 20);
+
+  pbind[2].buffer_type = MYSQL_TYPE_DECIMAL;
+  pbind[2].buffer = (char *)buff2;
+  pbind[2].buffer_length = strnlen(buff2, 20);
+
+  const char sql[] = "CALL `supla_add_thermostat_log_item`(?,?,?)";
+
+  MYSQL_STMT *stmt;
+  stmt_execute((void **)&stmt, sql, pbind, 3, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_device_firmware_update_url(
     int DeviceID, TDS_FirmwareUpdateParams *params,
     TSD_FirmwareUpdate_UrlResult *url) {
@@ -1838,9 +1877,9 @@ bool database::oauth_get_token(TSC_OAuthToken *token, int user_id,
   return add_by_proc_call(sql, pbind, 4) > 0;
 }
 
-bool database::superuser_authorization(int UserID,
-                                       char email[SUPLA_EMAIL_MAXSIZE],
-                                       char password[SUPLA_PASSWORD_MAXSIZE]) {
+bool database::superuser_authorization(
+    int UserID, const char email[SUPLA_EMAIL_MAXSIZE],
+    const char password[SUPLA_PASSWORD_MAXSIZE]) {
   MYSQL_STMT *stmt = NULL;
 
   MYSQL_BIND pbind[1];
@@ -2075,6 +2114,85 @@ bool database::google_home_load_token(supla_google_home *google_home) {
         buffer_token[token_is_null ? 0 : token_size] = 0;
 
         google_home->set(buffer_token);
+        result = true;
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
+  bool result = false;
+  char sql[] =
+      "SELECT @date := IFNULL(CONVERT_TZ(UTC_TIMESTAMP, 'UTC', timezone), "
+      "UTC_TIMESTAMP) t, CASE CONVERT_TZ(UTC_TIMESTAMP, 'UTC', timezone) WHEN "
+      "NULL THEN 'UTC' ELSE timezone END tz, YEAR(@date) y, MONTH(@date) m, "
+      "DAY(@date) d, DAYOFWEEK(@date) w, HOUR(@date) h, MINUTE(@date) n, "
+      "SECOND(@date) s FROM `supla_user` WHERE id = ?";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[9];
+    memset(rbind, 0, sizeof(rbind));
+
+    char date[30];
+    unsigned long date_size = 0;
+    my_bool date_is_null = true;
+
+    unsigned long timezone_size = 0;
+    my_bool timezone_is_null = true;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = date;
+    rbind[0].buffer_length = sizeof(date);
+    rbind[0].length = &date_size;
+    rbind[0].is_null = &date_is_null;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = time->timezone;
+    rbind[1].buffer_length = SUPLA_TIMEZONE_MAXSIZE;
+    rbind[1].length = &timezone_size;
+    rbind[1].is_null = &timezone_is_null;
+
+    rbind[2].buffer_type = MYSQL_TYPE_SHORT;
+    rbind[2].buffer = (char *)&time->year;
+
+    rbind[3].buffer_type = MYSQL_TYPE_TINY;
+    rbind[3].buffer = (char *)&time->month;
+
+    rbind[4].buffer_type = MYSQL_TYPE_TINY;
+    rbind[4].buffer = (char *)&time->day;
+
+    rbind[5].buffer_type = MYSQL_TYPE_TINY;
+    rbind[5].buffer = (char *)&time->dayOfWeek;
+
+    rbind[6].buffer_type = MYSQL_TYPE_TINY;
+    rbind[6].buffer = (char *)&time->hour;
+
+    rbind[7].buffer_type = MYSQL_TYPE_TINY;
+    rbind[7].buffer = (char *)&time->min;
+
+    rbind[8].buffer_type = MYSQL_TYPE_TINY;
+    rbind[8].buffer = (char *)&time->sec;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
+          !timezone_is_null) {
+        time->timezone[timezone_size] = 0;
         result = true;
       }
     }

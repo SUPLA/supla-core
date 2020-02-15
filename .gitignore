@@ -61,3 +61,4 @@ valgrind-suppressions.cfg
 
 /supla-dev/Debug/supla-dev
 /supla-dev/Release/supla-dev
+*.a

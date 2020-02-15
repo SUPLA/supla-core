@@ -1,6 +1,7 @@
 #!/bin/sh
 
 cppcheck --version
+cppcheck --inline-suppr --error-exitcode=1 -q -i ./supla-mqtt-client/test ./supla-mqtt-client/src/* && \
 cppcheck --inline-suppr --error-exitcode=1 -q -i ./supla-server/src/test ./supla-server/src/*  && \
 cppcheck --inline-suppr --error-exitcode=1 -q -i ./supla-scheduler/src/test ./supla-scheduler/src/* && \
 exit 0

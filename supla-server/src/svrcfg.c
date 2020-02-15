@@ -79,6 +79,10 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_google_home, "syncrequest_timeout", 30000);
   scfg_add_int_param(s_google_home, "statereport_timeout", 30000);
 
+  char *s_limit = "LIMITS";
+  scfg_add_int_param(s_limit, "concurrent_registrations", 50);
+  scfg_add_int_param(s_limit, "authkey_auth_cache_size", 2000);
+
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");
 #else
@@ -93,8 +97,9 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
       svrcfg_oauth_url_base64 =
           st_openssl_base64_encode(scfg_string(CFG_OAUTH_URL), n);
       svrcfg_oauth_url_base64_len =
-          svrcfg_oauth_url_base64 == NULL ? 0 : strnlen(svrcfg_oauth_url_base64,
-                                                        n * 2);
+          svrcfg_oauth_url_base64 == NULL
+              ? 0
+              : strnlen(svrcfg_oauth_url_base64, n * 2);
     }
   }
 

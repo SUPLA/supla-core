@@ -22,11 +22,11 @@
 #include "channel-io.h"
 #include "devcfg.h"
 #include "devconnection.h"
-#include "log.h"
-#include "srpc.h"
-#include "sthread.h"
-#include "supla-socket.h"
-#include "tools.h"
+#include "../supla-client-lib/log.h"
+#include "../supla-client-lib/srpc.h"
+#include "../supla-client-lib/sthread.h"
+#include "../supla-client-lib/supla-socket.h"
+#include "../supla-client-lib/tools.h"
 
 typedef struct {
   void *ssd;

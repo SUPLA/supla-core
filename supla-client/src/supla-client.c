@@ -639,6 +639,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
                                               rd.data.sc_device_calcfg_result);
         }
+      case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+        if (scd->cfg.cb_on_device_channel_state && rd.data.dsc_channel_state) {
+          scd->cfg.cb_on_device_channel_state(scd, scd->cfg.user_data,
+                                              rd.data.dsc_channel_state);
+        }
     }
 
     srpc_rd_free(&rd);
@@ -801,7 +806,39 @@ void supla_client_register(TSuplaClientData *suplaclient) {
   supla_log(LOG_DEBUG, "EMAIL: %s", suplaclient->cfg.Email);
 
   if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&
-      srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_C)) {
+      srpc_call_allowed(suplaclient->srpc, SUPLA_CS_CALL_REGISTER_CLIENT_D)) {
+    TCS_SuplaRegisterClient_D src;
+    memset(&src, 0, sizeof(TCS_SuplaRegisterClient_D));
+
+#ifdef _WIN32
+    _snprintf_s(src.Email, SUPLA_EMAIL_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.Email);
+    _snprintf_s(src.Password, SUPLA_PASSWORD_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.Password);
+    _snprintf_s(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.Name);
+    _snprintf_s(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.SoftVer);
+    _snprintf_s(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, _TRUNCATE, "%s",
+                suplaclient->cfg.host);
+#else
+    snprintf(src.Email, SUPLA_EMAIL_MAXSIZE, "%s", suplaclient->cfg.Email);
+    snprintf(src.Password, SUPLA_PASSWORD_MAXSIZE, "%s",
+             suplaclient->cfg.Password);
+    snprintf(src.Name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", suplaclient->cfg.Name);
+    snprintf(src.SoftVer, SUPLA_SOFTVER_MAXSIZE, "%s",
+             suplaclient->cfg.SoftVer);
+    snprintf(src.ServerName, SUPLA_SERVER_NAME_MAXSIZE, "%s",
+             suplaclient->cfg.host);
+#endif
+
+    memcpy(src.AuthKey, suplaclient->cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
+    memcpy(src.GUID, suplaclient->cfg.clientGUID, SUPLA_GUID_SIZE);
+    srpc_cs_async_registerclient_d(suplaclient->srpc, &src);
+
+  } else if (strnlen(suplaclient->cfg.Email, SUPLA_EMAIL_MAXSIZE) > 0 &&
+             srpc_call_allowed(suplaclient->srpc,
+                               SUPLA_CS_CALL_REGISTER_CLIENT_C)) {
     TCS_SuplaRegisterClient_C src;
     memset(&src, 0, sizeof(TCS_SuplaRegisterClient_C));
 
@@ -977,21 +1014,23 @@ char supla_client_open(void *_suplaclient, int ID, char group, char open) {
   value[0] = open;
 
   return supla_client_send_raw_value(
-      _suplaclient, ID, value, group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
-                                         : SUPLA_NEW_VALUE_TARGET_CHANNEL);
+      _suplaclient, ID, value,
+      group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL);
 }
 
 void _supla_client_set_rgbw_value(char *value, int color, char color_brightness,
-                                  char brightness) {
+                                  char brightness, char turn_onoff) {
   value[0] = brightness;
   value[1] = color_brightness;
   value[2] = (char)((color & 0x000000FF));        // BLUE
   value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
   value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
+  value[5] = turn_onoff > 0 ? 1 : 0;
 }
 
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
-                           char color_brightness, char brightness) {
+                           char color_brightness, char brightness,
+                           char turn_onoff) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
@@ -1001,10 +1040,9 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaNewValue value;
       memset(&value, 0, sizeof(TCS_SuplaNewValue));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness);
+                                   brightness, turn_onoff);
       value.Id = ID;
-      value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
-                               : SUPLA_NEW_VALUE_TARGET_CHANNEL;
+      value.Target = group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL;
       result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
                        SUPLA_RESULT_FALSE
                    ? 0
@@ -1013,7 +1051,7 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaChannelNewValue_B value;
       memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness);
+                                   brightness, turn_onoff);
       value.ChannelId = ID;
 
       result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
@@ -1028,8 +1066,9 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
 }
 
 char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
-                             char brightness) {
-  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness);
+                             char brightness, char turn_onoff) {
+  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness,
+                               turn_onoff);
 }
 
 char supla_client_get_registration_enabled(void *_suplaclient) {
@@ -1059,8 +1098,33 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
 }
 
 char supla_client_device_calcfg_request(void *_suplaclient,
-                                        TCS_DeviceCalCfgRequest *request) {
+                                        TCS_DeviceCalCfgRequest_B *request) {
   if (request == NULL) return 0;
-  return srpc_cs_async_device_calcfg_request(
-      ((TSuplaClientData *)_suplaclient)->srpc, request);
+  if (srpc_get_proto_version(((TSuplaClientData *)_suplaclient)->srpc) >= 11) {
+    return srpc_cs_async_device_calcfg_request_b(
+        ((TSuplaClientData *)_suplaclient)->srpc, request);
+  } else if (request->Target == SUPLA_TARGET_CHANNEL) {
+    TCS_DeviceCalCfgRequest request_a;
+    memset(&request_a, 0, sizeof(TCS_DeviceCalCfgRequest));
+
+    request_a.ChannelID = request->Id;
+    request_a.Command = request->Command;
+    request_a.DataType = request->DataType;
+    request_a.DataSize = request->DataSize;
+    memcpy(request_a.Data, request->Data, SUPLA_CALCFG_DATA_MAXSIZE);
+
+    return srpc_cs_async_device_calcfg_request(
+        ((TSuplaClientData *)_suplaclient)->srpc, &request_a);
+  }
+
+  return 0;
+}
+
+char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
+  TCSD_ChannelStateRequest request;
+  memset(&request, 0, sizeof(TCSD_ChannelStateRequest));
+
+  request.ChannelID = ChannelID;
+  return srpc_csd_async_get_channel_state(
+      ((TSuplaClientData *)_suplaclient)->srpc, &request);
 }

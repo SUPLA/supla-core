@@ -278,7 +278,32 @@ bool supla_client_channels::set_device_channel_new_value(
 }
 
 bool supla_client_channels::device_calcfg_request(
-    TCS_DeviceCalCfgRequest *request) {
+    TCS_DeviceCalCfgRequest_B *request) {
+  if (request == NULL || request->Target != SUPLA_TARGET_CHANNEL) return false;
+
+  if (channel_exists(request->Id)) {
+    safe_array_lock(getArr());
+
+    supla_client_channel *channel;
+    int DeviceID = 0;
+
+    if (NULL != (channel = find_channel(request->Id))) {
+      DeviceID = channel->getDeviceId();
+    }
+
+    safe_array_unlock(getArr());
+
+    if (DeviceID) {
+      return getClient()->getUser()->device_calcfg_request(
+          getClient()->getID(), DeviceID, request->Id, request);
+    }
+  }
+
+  return false;
+}
+
+bool supla_client_channels::device_get_channel_state(
+    TCSD_ChannelStateRequest *request) {
   if (request == NULL) return false;
 
   if (channel_exists(request->ChannelID)) {
@@ -294,8 +319,8 @@ bool supla_client_channels::device_calcfg_request(
     safe_array_unlock(getArr());
 
     if (DeviceID) {
-      return getClient()->getUser()->device_calcfg_request(getClient()->getID(),
-                                                           DeviceID, request);
+      return getClient()->getUser()->device_get_channel_state(
+          getClient()->getID(), DeviceID, request);
     }
   }
 

@@ -29,8 +29,8 @@
 #endif
 
 #include "gpio.h"
-#include "log.h"
-#include "tools.h"
+#include "../supla-client-lib/log.h"
+#include "../supla-client-lib/tools.h"
 
 #define GPIO_BUFFER_SIZE 50
 

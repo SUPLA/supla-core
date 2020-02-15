@@ -15,6 +15,7 @@ cpplint ./supla-client/src/* && \
 cpplint ./supla-console-client/src/* && \
 cpplint ./supla-console-client/src/supla-client-lib/* && \
 cpplint ./supla-afl/src/* && \
+cpplint ./supla-mqtt-client/src/* && \
 echo OK && \
 exit 0
 

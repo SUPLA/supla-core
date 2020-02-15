@@ -1,0 +1,78 @@
+# The file contains configuration of channel control commands.
+# If the controlled function is not listed below, it will not be controlled.
+# The feature configuration scheme is as follows:
+#
+# topic: string [mandatory] - the topic to be subscribed to
+# id: string [mandatory] - jsonPath to toe value denoting the channel identifier
+#
+# Depending on the type of function, the configuration may/must include:
+# 
+# on_off: string [mandatory for 20,30,90,130,140,180,190,200,300] - jsonPath to the value 
+# indicating whether the device is to be turned on or off
+# on_value: string - format of the on value [default 1]
+# off_value: string - format of the off value [default 0]
+# brightness: string optional for 180, 190, 200 - jsonPath to the value indicating brightness has # to be set from 0 to 100
+# color_brightness: string optional for 190, 200 as above for brightness of color 
+# color: string -> jsonPath to the color value in HEX format (see below)
+# color_r: string -> jsonPath to the red color component
+# color_b: string -> jsonPath to the blue color component
+# color_g: string -> jsonPath to the green color component
+# If device has rgb function the color or color components may be used
+# shut: string -> jsonPath to the percentage of blinds opening level from 0 to 100 where 0 means 
+# open and 100 closed
+
+# template for power switch 
+# payload: { "ident": { "id": 2 }, "on": 1 }
+- topic: 'supla/channels/command/#'
+  id: '/id'
+  on_off: '/on'
+  on_value: 1
+  off_value: 0
+
+# template for light switch
+# payload: { "idx": 4, "on": true }
+- topic: 'supla/channels/command/#'
+  id: '/idx'
+  on_off: '/on'
+  on_value: true
+  off_value: false
+
+# template for rollershutter
+# payload: { "id" : 2, "shut": 50 }
+- topic: 'supla/channels/command/#'
+  id: '/id'
+  shut: '/shut'
+
+# template for dimmer 
+# payload: { "id" : 2, "values": { "on": 1, "brightness": 49 } }
+- topic: 'supla/channels/command/#'
+  id: '/id'
+  brightness: '/brightness'
+  on_off: '/on'
+  on_value: 1
+  off_value: 0
+
+# template for rgblightning
+# payload: { "id" : 2, "on" : true, color: "0x0000FF", "color_brightness": 50 }
+- topic: 'supla/channels/command/#'
+  id: '/id'
+  color_r: '/red'
+  color_g: '/green'
+  color_b: '/blue'
+  color_brightness: '/color_brightness'
+  brightness: '/brightness'
+  on_off: '/on'
+  on_value: true
+  off_value: false
+
+# template for rgblightning 2
+# payload: { "id" : 2, "on" : true, colors: {"r": 0, "g": 255, "b" }, "color_brightness": 50 }
+- topic: 'supla/channels/command/#'
+  id: '/id'
+  color_r: '/colors/r'
+  color_b: '/colors/b'
+  color_g: '/colors/g'
+  color_brightness: '/c_brightness'
+  on_off: 'on'
+  on_value: true
+  off_value: false

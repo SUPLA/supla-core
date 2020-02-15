@@ -1,0 +1,143 @@
+default_state_topic: 'supla/channels/status/$type$/$id$'
+
+channels:   
+  - channel_type: 10 #CONTROLLINGTHEGATEWAYLOCK
+    state_topic: 'supla/channels/status/gatewaylock/$id$'
+    payload_template: '{"id": $id$, "hi" : $value$, "sensor_1": $sensor_1$, "online": $online$}'
+
+  - channel_type: 20 #CONTROLLINGTHEGATE  
+    state_topic: 'supla/channels/status/gate/$id$'
+    payload_template: '{"id": $id$, "hi": $value$, "sensor_1": $sensor_1$, "online": $online$}'
+
+  - channel_type: 30 #CONTROLLINGTHEGARAGEDOOR
+    state_topic: 'supla/channels/status/garagedoor/$id$'
+    payload_template: '{"id": $id$, "hi": $value$, "sensor_1": $sensor_1$, "online": $online$}'
+  
+  - channel_type: 40 #THERMOMETER
+    state_topic: 'supla/channels/status/thermometer/$id$'
+    payload_template: '{"id": $id$, "caption": "$caption$", "temperature": $temperature$, "online": $online$}'
+  
+  - channel_type: 42 #HUMIDITY
+    payload_template: '{"id": $id$, "humidity": $humidity$, "online": $online$}'
+  
+  - channel_type: 45 #HUMIDITYANDTEMPERATURE
+    state_topic: 'supla/channels/status/temperature_humidity/$id$'
+    payload_template: '{"id" : $id$, "caption": "$caption$", "temperature": $temperature$, "humidity": $humidity$, "online": $online$}'
+  
+  - channel_type: 50 #OPENINGSENSOR_GATEWAY
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+  
+  - channel_type: 60 #OPENINGSENSOR_GATE
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+
+  - channel_type: 70 #OPENINGSENSOR_GARAGEDOOR
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+  
+  - channel_type: 80 #NOLIQUIDSENSOR
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+  
+  - channel_type: 90 #CONTROLLINGTHEDOORLOCK
+    state_topic: 'supla/channels/status/doorlock/$id$'
+    payload_template: '{"id": $id$, "hi": $value$, "sensor_1": $sensor_1$, "online": $online$}'
+    
+  - channel_type: 100 #OPENINGSENSOR_DOOR
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+    
+  - channel_type: 110 #CONTROLLINGTHEROLLERSHUTTER
+    state_topic: 'supla/channels/status/rollershutter/$id$'
+    payload_template: '{"id": $id$, "shut": $shut$, "sensor_1": $sensor_1$, "online": $online$}'
+  
+  - channel_type: 120 #OPENINGSENSOR_ROLLERSHUTTER
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+    
+  - channel_type: 130 #POWERSWITCH
+    state_topic: 'supla/channels/status/switch/$id$'
+    payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$, "online": $online$}'
+  
+  - channel_type: 140 #LIGHTSWITCH
+    state_topic: 'supla/channels/status/relay/$id$'
+    payload_template: '{"id": $id$, "caption": "$caption$", "on": $value$, "online": $online$}'
+  
+  - channel_type: 180 #DIMMER
+    state_topic: 'supla/channels/status/dimmer/$id$' 
+    payload_template: '{"id": $id$, "brightness": $brightness$, "online": $online$}'
+    
+  - channel_type: 190 #RGBLIGHTING
+    state_topic: 'supla/channels/status/rgblightning/$id$'
+    payload_template: '{"id": $id$, "on": $value$, "color": "$color$", "color_brightness": $color_brightness$, "online": $online$}'
+ 
+  - channel_type: 200 #DIMMERANDRGBLIGHTING
+    state_topic: 'supla/channels/status/dimmerandrgblightning/$id$'
+    payload_template: '{"id": $id$, "on": $value$, "red": $red$, "green": $green$, "blue": $blue$, "color": "$color$", "brightness": $brightness$ "color_brightness": $color_brightness$, "online": $online$}'
+
+  - channel_type: 210 #DEPTHSENSOR
+    payload_template: '{"id": $id$, "depth": $value$, "online": $online$}'
+
+  - channel_type: 220 #DISTANCESENSOR
+    payload_template: '{"id": $id$, "distance": $value$, "online": $online$}'
+
+  - channel_type: 230 #OPENINGSENSOR_WINDOW
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+    
+  - channel_type: 240 #MAILSENSOR
+    payload_template: '{"id": $id$, "hi": $value$, "online": $online$}'
+  
+  - channel_type: 300 #STAIRCASETIMER
+    payload_template: '{"id": $id$, "on": $value$, "online": $online$}'
+  
+  - channel_type: 310 #ELECTRICITYMETER
+    enabled: false
+    state_topic: 'supla/electricity'
+    payload_template: '{"id": $id$, "currency":"$currency$", "totalcost": $totalCost$, "pricePerUnit": $pricePerUnit$, "online": $online$}' 
+    
+  - channel_type: 310 #ELECTRICITYMETER
+    enabled : true
+    state_topic: 'supla/channels/status/electricity/$id$'
+    payload_template: '{"id": $id$, "currency":"$currency$", "online": $online$,
+        "pricePerUnit": $pricePerUnit$, 
+        "totalCost": $totalCost$, 
+         "phases": [
+           {"number":$number_0$, 
+           "frequency": $frequency_0$, 
+           "voltage": $voltage_0$, 
+           "current": $current_0$, 
+           "powerActive":$powerActive_0$, 
+           "powerReactive": $powerReactive_0$, 
+           "powerApparent": $powerApparent_0$, 
+           "powerFactor": $powerFactor_0$, 
+           "phaseAngle": $phaseAngle_0$, 
+           "totalForwardActiveEnergy": $totalForwardActiveEnergy_0$,
+           "totalReverseActiveEnergy": $totalReverseActiveEnergy_0$, 
+           "totalForwardReactiveEnergy":$totalForwardReactiveEnergy_0$,
+           "totalReverseReactiveEnergy":$totalReverseReactiveEnergy_0$ },
+           {"number":$number_1$, 
+           "frequency": $frequency_1$, 
+           "voltage": $voltage_1$, 
+           "current": $current_1$, 
+           "powerActive":$powerActive_1$, 
+           "powerReactive": $powerReactive_1$, 
+           "powerApparent": $powerApparent_1$, 
+           "powerFactor": $powerFactor_1$, 
+           "phaseAngle": $phaseAngle_1$, 
+           "totalForwardActiveEnergy": $totalForwardActiveEnergy_1$,
+           "totalReverseActiveEnergy": $totalReverseActiveEnergy_1$, 
+           "totalForwardReactiveEnergy":$totalForwardReactiveEnergy_1$,
+           "totalReverseReactiveEnergy":$totalReverseReactiveEnergy_1$ },
+            {"number":$number_2$, 
+           "frequency": $frequency_2$, 
+           "voltage": $voltage_2$, 
+           "current": $current_2$, 
+           "powerActive":$powerActive_2$, 
+           "powerReactive": $powerReactive_2$, 
+           "powerApparent": $powerApparent_2$, 
+           "powerFactor": $powerFactor_2$, 
+           "phaseAngle": $phaseAngle_2$, 
+           "totalForwardActiveEnergy": $totalForwardActiveEnergy_2$,
+           "totalReverseActiveEnergy": $totalReverseActiveEnergy_2$, 
+           "totalForwardReactiveEnergy":$totalForwardReactiveEnergy_2$,
+           "totalReverseReactiveEnergy":$totalReverseReactiveEnergy_2$ }
+         ]}'
+  - channel_type: 320 
+    payload_template: '{"totalCost":$totalCost$, "pricePerUnit":$pricePerUnit$, "impulsesPerUnit":$impulsesPerUnit$, "counter":$counter$, "calculatedValue":$calculatedValue$, "currency":"$currency$", "unit":"$unit$"}'
+  - channel_type: 330 
+    payload_template: '{"totalCost":$totalCost$, "pricePerUnit":$pricePerUnit$, "impulsesPerUnit":$impulsesPerUnit$, "counter":$counter$, "calculatedValue":$calculatedValue$, "currency":"$currency$", "unit":"$unit$"}'

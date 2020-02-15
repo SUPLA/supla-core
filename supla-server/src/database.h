@@ -139,6 +139,7 @@ class database : public dbcommon {
 
   void add_electricity_measurement(supla_channel_electricity_measurement *em);
   void add_impulses(supla_channel_ic_measurement *ic);
+  void add_thermostat_measurements(supla_channel_thermostat_measurement *th);
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
@@ -147,8 +148,9 @@ class database : public dbcommon {
   int oauth_get_client_id(bool create);
   bool oauth_get_token(TSC_OAuthToken *token, int user_id, int access_id);
 
-  bool superuser_authorization(int UserID, char email[SUPLA_EMAIL_MAXSIZE],
-                               char password[SUPLA_PASSWORD_MAXSIZE]);
+  bool superuser_authorization(int UserID,
+                               const char email[SUPLA_EMAIL_MAXSIZE],
+                               const char password[SUPLA_PASSWORD_MAXSIZE]);
 
   bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
   void amazon_alexa_remove_token(supla_amazon_alexa *alexa);
@@ -156,6 +158,8 @@ class database : public dbcommon {
                                  const char *refresh_token, int expires_in);
 
   bool google_home_load_token(supla_google_home *google_home);
+
+  bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
 };
 
 #endif /* DATABASE_H_ */

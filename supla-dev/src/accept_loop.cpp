@@ -21,11 +21,11 @@
 
 #include "accept_loop.h"
 #include "ipcctrl.h"
-#include "ipcsocket.h"
-#include "log.h"
-#include "safearray.h"
-#include "sthread.h"
-#include "supla-socket.h"
+#include "../supla-client-lib/ipcsocket.h"
+#include "../supla-client-lib/log.h"
+#include "../supla-client-lib/safearray.h"
+#include "../supla-client-lib/sthread.h"
+#include "../supla-client-lib/supla-socket.h"
 
 void accept_loop_ipcctrl_finish(void *ipcctrl, void *sthread) {
   delete (svr_ipcctrl *)ipcctrl;

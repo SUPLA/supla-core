@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "client.h"
+#include "clientchannelgroups.h"
 #include <stdlib.h>  // NOLINT
 #include <string.h>  // NOLINT
 #include <list>      // NOLINT
+#include "client.h"
 #include "clientchannelgroup.h"
-#include "clientchannelgroups.h"
 #include "commontypes.h"
 #include "database.h"
 #include "log.h"
@@ -233,6 +233,35 @@ bool supla_client_channelgroups::set_device_channel_new_value(
        it++) {
     if (getClient()->getUser()->set_device_channel_value(
             EST_CLIENT, 0, it->DeviceId, it->ChannelId, new_value->value)) {
+      result = true;
+    }
+  }
+
+  return result;
+}
+
+bool supla_client_channelgroups::device_calcfg_request(
+    TCS_DeviceCalCfgRequest_B *request) {
+  bool result = false;
+
+  if (request == NULL || request->Target != SUPLA_TARGET_GROUP) {
+    return false;
+  }
+
+  std::list<t_dc_pair> pairs;
+  void *arr = getArr(master);
+
+  safe_array_lock(arr);
+  supla_client_channelgroup *cgroup = findGroup(request->Id);
+  if (cgroup) {
+    pairs = cgroup->get_channel_list();
+  }
+  safe_array_unlock(arr);
+
+  for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
+       it++) {
+    if (getClient()->getUser()->device_calcfg_request(
+            getClient()->getID(), it->DeviceId, it->ChannelId, request)) {
       result = true;
     }
   }

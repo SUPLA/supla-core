@@ -19,8 +19,8 @@
 #ifndef supladevcfg_H_
 #define supladevcfg_H_
 
-#include "cfg.h"
-#include "proto.h"
+#include "../supla-client-lib/cfg.h"
+#include "../supla-client-lib/proto.h"
 
 extern char DEVICE_GUID[SUPLA_GUID_SIZE];
 extern char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
@@ -41,6 +41,11 @@ extern "C" {
 #define CFG_LOCATION_ID 9
 #define CFG_LOCATION_PWD 10
 #define CFG_EMAIL 11
+#define CFG_MQTT_SERVER 12
+#define CFG_MQTT_PORT 13
+#define CFG_MQTT_USERNAME 14
+#define CFG_MQTT_PASSWORD 15
+
 
 unsigned char devcfg_init(int argc, char* argv[]);
 char devcfg_getdev_guid();

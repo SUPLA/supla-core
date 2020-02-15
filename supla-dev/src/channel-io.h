@@ -19,10 +19,9 @@
 #ifndef CHANNEL_IO_H_
 #define CHANNEL_IO_H_
 
-#include "proto.h"
-
-typedef void (*_func_channelio_valuechanged)(
-    unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE], void *user_data);
+#include "device.h"
+#include "../supla-client-lib/proto.h"
+#include "mqtt/mqtt.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,13 +43,26 @@ void channelio_set_mcp23008_reset(unsigned char number, unsigned char reset);
 void channelio_set_mcp23008_gpio_dir(unsigned char number, unsigned char value);
 void channelio_set_mcp23008_gpio_val(unsigned char number, unsigned char value);
 void channelio_set_mcp23008_gpio_port(unsigned char number, unsigned char port);
-char channelio_get_value(unsigned char number,
-                         char value[SUPLA_CHANNELVALUE_SIZE]);
+void channelio_set_mqtt_topic_in(unsigned char number, const char *value);
+void channelio_set_mqtt_topic_out(unsigned char number, const char *value);
+
+void channelio_set_mqtt_template_in(unsigned char number, const char *value);
+void channelio_set_mqtt_template_out(unsigned char number, const char *value);
+
+void channelio_set_mqtt_retain(unsigned char number, unsigned char value);
+
+char channelio_get_value(unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE]);
 char channelio_get_hi_value(unsigned char number, char *hi);
-char channelio_set_hi_value(unsigned char number, char hi,
-                            unsigned int time_ms);
+char channelio_set_hi_value(unsigned char number, char hi, unsigned int time_ms);
+
 void channelio_channels_to_srd(unsigned char *channel_count,
                                TDS_SuplaDeviceChannel_B *channels);
+
+void mqtt_subscribe_callback(void **state, struct mqtt_response_publish *publish);
+const char** channelio_channels_get_topics(int *count);
+
+void channelio_channels_set_mqtt_callback(void (*subscribe_response_callback)(
+					    const char* topic, const char* payload, char retain, char qos));
 
 // TMP TEST
 void tmp_channelio_raise_valuechanged(unsigned char number);

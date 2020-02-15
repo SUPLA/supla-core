@@ -19,7 +19,7 @@
 #ifndef IPCCTRL_H_
 #define IPCCTRL_H_
 
-#include "eh.h"
+#include "../supla-client-lib/eh.h"
 
 class svr_ipcctrl {
  private:
