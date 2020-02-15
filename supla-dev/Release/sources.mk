@@ -25,4 +25,5 @@ CPP_DEPS :=
 SUBDIRS := \
 src \
 src/mqtt \
+src/supla-client-lib \
 

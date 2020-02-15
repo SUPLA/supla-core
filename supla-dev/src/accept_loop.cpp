@@ -19,11 +19,11 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "../supla-client-lib/ipcsocket.h"
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/safearray.h"
-#include "../supla-client-lib/sthread.h"
-#include "../supla-client-lib/supla-socket.h"
+#include "supla-client-lib/ipcsocket.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/safearray.h"
+#include "supla-client-lib/sthread.h"
+#include "supla-client-lib/supla-socket.h"
 #include "accept_loop.h"
 #include "ipcctrl.h"
 
