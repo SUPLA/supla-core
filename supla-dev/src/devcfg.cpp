@@ -158,10 +158,10 @@ unsigned char devcfg_init(int argc, char *argv[]) {
 
   // !!! order is important !!!
   char *s_global = "GLOBAL";
-  scfg_add_str_param(s_global, "device_guid_file", "");
+  scfg_add_str_param(s_global, "device_guid_file", "./var/dev_guid");
   scfg_add_str_param(s_global, "alt_cfg", "");
-  scfg_add_str_param(s_global, "state_file", "");
-  scfg_add_str_param(s_global, "device_name", "");
+  scfg_add_str_param(s_global, "state_file", "./var/last_state.txt");
+  scfg_add_str_param(s_global, "device_name", "SUPLA-VIRTUAL-DEVICE");
 
   char *s_server = "SERVER";
   scfg_add_str_param(s_server, "host", "");
