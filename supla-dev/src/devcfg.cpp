@@ -20,11 +20,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../supla-client-lib/log.h"
+#include "../supla-client-lib/tools.h"
 #include "channel-io.h"
 #include "devcfg.h"
-#include "../supla-client-lib/log.h"
 #include "mcp23008.h"
-#include "../supla-client-lib/tools.h"
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
@@ -65,18 +65,18 @@ static int decode_channel_type(const char *type) {
 
   return atoi(type);
 }
-
+/*
 static int decode_channel_driver(const char *type) {
   if (strcasecmp(type, "mcp23008") == 0) {
     return SUPLA_CHANNELDRIVER_MCP23008;
   }
   return 0;
-}
+}*/
 
 void devcfg_channel_cfg(const char *section, const char *name,
                         const char *value) {
   const char *sec_name = "CHANNEL_";
-  int sec_name_len = strlen(sec_name);
+  size_t sec_name_len = strlen(sec_name);
 
   if (strlen(section) <= sec_name_len ||
       strncasecmp(section, sec_name, sec_name_len) != 0)
@@ -91,37 +91,60 @@ void devcfg_channel_cfg(const char *section, const char *name,
 
   if (strcasecmp(name, "type") == 0) {
     channelio_set_type(number, decode_channel_type(value));
-  } else if (strcasecmp(name, "gpio1") == 0) {
-    channelio_set_gpio1(number, atoi(value) % 255);
-  } else if (strcasecmp(name, "gpio2") == 0) {
-    channelio_set_gpio2(number, atoi(value) % 255);
-  } else if (strcasecmp(name, "bistable") == 0) {
-    channelio_set_bistable_flag(number, atoi(value) == 1 ? 1 : 0);
-  } else if (strcasecmp(name, "w1") == 0 && strlen(value) > 0) {
-    channelio_set_w1(number, value);
-  } else if (strcasecmp(name, "driver") == 0) {
-    channelio_set_mcp23008_driver(number, decode_channel_driver(value));
-  } else if (strcasecmp(name, "mcp_addr") == 0) {
-    channelio_set_mcp23008_addr(number, strtol(value, NULL, 16));
-  } else if (strcasecmp(name, "mcp_reset") == 0) {
-    channelio_set_mcp23008_reset(number, atoi(value) % 255);
-  } else if (strcasecmp(name, "mcp_gpio_dir") == 0) {
-    channelio_set_mcp23008_gpio_dir(number, atoi(value) % 255);
-  } else if (strcasecmp(name, "mcp_gpio_val") == 0) {
-    channelio_set_mcp23008_gpio_val(number, atoi(value) % 255);
-  } else if (strcasecmp(name, "mcp_gpio_port") == 0) {
-    channelio_set_mcp23008_gpio_port(number, atoi(value) % MCP23008_MAX_GPIO);
-  } else if (strcasecmp(name, "topic_in") == 0 && strlen(value) > 0) {
-	channelio_set_mqtt_topic_in(number, value);
-  } else if (strcasecmp(name, "topic_out") == 0 && strlen(value) > 0) {
-	channelio_set_mqtt_topic_out(number, value);
+  } else if (strcasecmp(name, "function") == 0) {
+    channelio_set_function(number, atoi(value));
+  } else if (strcasecmp(name, "filename") == 0 && strlen(value) > 0) {
+    channelio_set_filename(number, value);
+  } else if (strcasecmp(name, "state_topic") == 0 && strlen(value) > 0) {
+    channelio_set_mqtt_topic_in(number, value);
+  } else if (strcasecmp(name, "command_topic") == 0 && strlen(value) > 0) {
+    channelio_set_mqtt_topic_out(number, value);
   } else if (strcasecmp(name, "retain") == 0 && strlen(value) == 1) {
-	channelio_set_mqtt_retain(number, atoi(value));
-  } else if (strcasecmp(name, "template_in") == 0 && strlen(value) > 0) {
-	channelio_set_mqtt_template_in(number, value);
-  } else if (strcasecmp(name, "template_out") == 0 && strlen(value) > 0) {
-	channelio_set_mqtt_template_out(number, value);
-  }
+    channelio_set_mqtt_retain(number, atoi(value));
+  } else if (strcasecmp(name, "state_tamplate") == 0 && strlen(value) > 0) {
+    channelio_set_mqtt_template_in(number, value);
+  } else if (strcasecmp(name, "command_template") == 0 && strlen(value) > 0) {
+    channelio_set_mqtt_template_out(number, value);
+  } else if (strcasecmp(name, "payload_on") == 0 && strlen(value) > 0) {
+    channelio_set_payload_on(number, value);
+  } else if (strcasecmp(name, "payload_off") == 0 && strlen(value) > 0) {
+    channelio_set_payload_off(number, value);
+  } else if (strcasecmp(name, "payload_value") == 0 && strlen(value) > 0) {
+    channelio_set_payload_value(number, value);
+  };
+
+  /*
+else if (strcasecmp(name, "gpio1") == 0) {
+channelio_set_gpio1(number, atoi(value) % 255);
+} else if (strcasecmp(name, "gpio2") == 0) {
+channelio_set_gpio2(number, atoi(value) % 255);
+} else if (strcasecmp(name, "bistable") == 0) {
+channelio_set_bistable_flag(number, atoi(value) == 1 ? 1 : 0);
+} else if (strcasecmp(name, "w1") == 0 && strlen(value) > 0) {
+channelio_set_w1(number, value);
+} else if (strcasecmp(name, "driver") == 0) {
+channelio_set_mcp23008_driver(number, decode_channel_driver(value));
+} else if (strcasecmp(name, "mcp_addr") == 0) {
+channelio_set_mcp23008_addr(number, strtol(value, NULL, 16));
+} else if (strcasecmp(name, "mcp_reset") == 0) {
+channelio_set_mcp23008_reset(number, atoi(value) % 255);
+} else if (strcasecmp(name, "mcp_gpio_dir") == 0) {
+channelio_set_mcp23008_gpio_dir(number, atoi(value) % 255);
+} else if (strcasecmp(name, "mcp_gpio_val") == 0) {
+channelio_set_mcp23008_gpio_val(number, atoi(value) % 255);
+} else if (strcasecmp(name, "mcp_gpio_port") == 0) {
+channelio_set_mcp23008_gpio_port(number, atoi(value) % MCP23008_MAX_GPIO);
+} else if (strcasecmp(name, "topic_in") == 0 && strlen(value) > 0) {
+  channelio_set_mqtt_topic_in(number, value);
+} else if (strcasecmp(name, "topic_out") == 0 && strlen(value) > 0) {
+  channelio_set_mqtt_topic_out(number, value);
+} else if (strcasecmp(name, "retain") == 0 && strlen(value) == 1) {
+  channelio_set_mqtt_retain(number, atoi(value));
+} else if (strcasecmp(name, "template_in") == 0 && strlen(value) > 0) {
+  channelio_set_mqtt_template_in(number, value);
+} else if (strcasecmp(name, "template_out") == 0 && strlen(value) > 0) {
+  channelio_set_mqtt_template_out(number, value);
+}*/
 }
 
 unsigned char devcfg_init(int argc, char *argv[]) {
@@ -183,7 +206,7 @@ char devcfg_getdev_authkey() {
   int len = strnlen(guid_file, 1024) + 1;
   char result = 0;
 
-  char *authkey_file = malloc(len);
+  char *authkey_file = (char *)malloc(len);
   snprintf(authkey_file, len, "%s.authkey", guid_file);
 
   result = st_read_authkey_from_file(authkey_file, DEVICE_AUTHKEY, 1);

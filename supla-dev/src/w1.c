@@ -25,8 +25,8 @@
 #include <unistd.h>
 
 #include "../supla-client-lib/log.h"
-#include "pi_2_dht_read.h"
 #include "../supla-client-lib/tools.h"
+#include "pi_2_dht_read.h"
 #include "w1.h"
 
 #define W1_DEFAULT_PIN 4

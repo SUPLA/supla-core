@@ -22,10 +22,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "channel-io.h"
-#include "ipcctrl.h"
 #include "../supla-client-lib/log.h"
 #include "../supla-client-lib/sthread.h"
+#include "channel-io.h"
+#include "ipcctrl.h"
 
 const char hello[] = "SUPLA DEVICE CTRL\n";
 const char cmd_channel_get_hivalue[] = "CHANNEL-GET-HIVALUE:";
@@ -105,7 +105,9 @@ void svr_ipcctrl::execute(void *sthread) {
           sscanf(&buffer[strlen(cmd_channel_set_hivalue)], "%i,%i,%i", &number,
                  &hi, &timems);
 
-          if (channelio_set_hi_value(number, hi == 1 ? 1 : 0, timems) == 1) {
+          char value[SUPLA_CHANNELVALUE_SIZE];
+          value[0] = hi == 1 ? 1 : 0;
+          if (channelio_set_value(number, value, timems) == 1) {
             send_result("OK");
           } else {
             send_result("ERR", number);

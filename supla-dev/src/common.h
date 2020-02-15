@@ -16,10 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACCEPT_LOOP_H_
-#define ACCEPT_LOOP_H_
+#ifndef COMMON_H_
+#define COMMON_H_
 
-void accept_loop(void *ssd, void *sthread);
-void ipc_accept_loop(void *ipc, void *ipc_al_sthread);
+#include <string>
+#include <vector>
 
-#endif /* ACCEPT_LOOP_H_ */
+bool exists_in_vect(std::vector<std::string>* vect, const std::string& value);
+
+void replace_string_in_place(std::string* subject, const std::string& search,
+                             const std::string& replace);
+
+#endif /* COMMON_H_ */

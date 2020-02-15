@@ -116,7 +116,7 @@ void scfg_set_callback(_func_cfg_callback cb) {
   scfg->cb = cb;
 }
 
-void scfg_add_param(char *section_name, const char *param_name,
+void scfg_add_param(const char *section_name, const char *param_name,
                     unsigned char vtype, char *cval, unsigned char bval,
                     double dval, int ival) {
   TSuplaCfgParam *param;

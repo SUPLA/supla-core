@@ -19,12 +19,13 @@
 #ifndef CLIENT_PUBLISHER_H_
 #define CLIENT_PUBLISHER_H_
 
-#include "mqtt/mqtt_client.h"
 #include "../supla-client-lib/log.h"
 #include "../supla-client-lib/proto.h"
 #include "../supla-client-lib/srpc.h"
+#include "client_device.h"
+#include "common.h"
+#include "mqtt/mqtt_client.h"
 
-
-void publish_mqtt_message_for_channel(void);
+void publish_mqtt_message_for_channel(client_device_channel* channel);
 
 #endif /* CLIENT_PUBLISHER_H_ */

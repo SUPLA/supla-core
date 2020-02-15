@@ -17,8 +17,6 @@
 typedef void (*_func_channelio_valuechanged)(
     unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE], void *user_data);
 
-
-
 typedef struct {
 #ifdef __SINGLE_THREAD
   struct timeval close_time;
@@ -64,7 +62,7 @@ typedef struct {
   char template_out[MAX_MQTT_TEMPLATE_LENGTH];
   unsigned char retain;
   char value[SUPLA_CHANNELVALUE_SIZE];
-  void* lck;
+  void *lck;
 } TChannelMQTTConfig;
 
 typedef struct {
@@ -75,8 +73,6 @@ typedef struct {
   unsigned char gpio2;
   unsigned char bistable;
   char *w1;
-
-
 
   TChannelGpioPortValue gpio1_value;
   TChannelGpioPortValue gpio2_value;
@@ -118,6 +114,5 @@ typedef struct {
   void *mcp_sthread;
 #endif
 } TChannelIo;
-
 
 #endif /* SRC_DEVICE_H_ */

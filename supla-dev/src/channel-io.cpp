@@ -22,14 +22,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "channel-io.h"
 #include "../supla-client-lib/eh.h"
-#include "gpio.h"
 #include "../supla-client-lib/lck.h"
 #include "../supla-client-lib/log.h"
-#include "mcp23008.h"
 #include "../supla-client-lib/safearray.h"
 #include "../supla-client-lib/sthread.h"
+#include "channel-io.h"
+#include "gpio.h"
+#include "mcp23008.h"
 #include "w1.h"
 
 // TODO(pzygmunt) whole remodel
@@ -42,12 +42,12 @@
 #endif
 #define MCP23008_MINDELAY_SEC 1
 
-
-void (*mqtt_publish_callback)(
-					    const char* topic, const char* payload, char retain, char qos);
-
+void (*mqtt_publish_callback)(const char *topic, const char *payload,
+                              char retain, char qos);
 
 TChannelIo *cio = NULL;
+
+client_device_channels *channels = NULL;
 
 #ifndef __SINGLE_THREAD
 void channelio_w1_execute(void *user_data, void *sthread);
@@ -67,64 +67,27 @@ char channelio_gpio_in(TDeviceChannel *channel, char port12) {
   return 0;
 }
 
-void channelio_channels_set_mqtt_callback(void (*publish_callback)(
-					    const char* topic, const char* payload, char retain, char qos)) {
+void mqtt_subscribe_callback(void **state,
+                             struct mqtt_response_publish *publish) {
+  std::string topic =
+      std::string((char *)publish->topic_name, publish->topic_name_size);
+  std::string message = std::string((char *)publish->application_message,
+                                    publish->application_message_size);
+  client_device_channel *channel =
+      channels->find_channel_by_topic(topic.c_str());
 
-	mqtt_publish_callback = publish_callback;
+  if (channel)
+    handle_subscribed_message(channel, topic, message,
+    						  cio->on_valuechanged,
+                              cio->on_valuechanged_user_data);
 }
 
-void mqtt_subscribe_callback(void **state, struct mqtt_response_publish *publish)
-{
-	char* topic = strndup(publish->topic_name, publish->topic_name_size);
-	char* payload = strndup(publish->application_message, publish->application_message_size);
-
-	int a;
-	TDeviceChannel *channel;
-
-	for (a = 0; a < cio->channel_count; a++) {
-		 channel = &cio->channels[a];
-
-		 if (channel->mqtt_config.topic_in && strcasecmp(channel->mqtt_config.topic_in, topic) == 0) {
-		   if ( strcmp(payload , "1") == 0)
-			 channel->mqtt_config.value[0] = 1;
-		   else
-			 channel->mqtt_config.value[0] = 0;
-
-	       tmp_channelio_raise_valuechanged(channel->number);
-		 }
-	  }
-}
-
-const char** channelio_channels_get_topics(int *count) {
-  TDeviceChannel *channel;
-  int a;
-
-  const char** result = NULL;
-  for (a = 0; a < cio->channel_count; a++) {
-	 channel = &cio->channels[a];
-
-	 if (channel->mqtt_config.topic_in) {
-		 *count = *count + 1;
-	 }
-  }
-
-  result = malloc(*count * sizeof(char*));
-
-  for (a = 0; a < cio->channel_count; a++) {
-    channel = &cio->channels[a];
-
-	if (channel->mqtt_config.topic_in) {
-
-	  result[a] = strndup(channel->mqtt_config.topic_in, MAX_MQTT_TOPIC_LENGTH);
-	}
-  }
-
-
-  return result;
+const char **channelio_channels_get_topics(int *count) {
+  return channels->getMqttSubscriptionTopics(count);
 }
 
 char channelio_init(void) {
-  cio = malloc(sizeof(TChannelIo));
+  cio = (TChannelIo *)malloc(sizeof(TChannelIo));
   if (cio == NULL) return 0;
 
   memset(cio, 0, sizeof(TChannelIo));
@@ -135,11 +98,18 @@ char channelio_init(void) {
   cio->gpio_thread_arr = safe_array_init();
 #endif
 
+  channels = new client_device_channels();
+
   return 1;
 }
 
 void channelio_free(void) {
   int a;
+
+  if (channels) {
+    delete channels;
+  }
+
   if (cio) {
 #ifndef __SINGLE_THREAD
     // 1st stop threads!!!
@@ -150,7 +120,8 @@ void channelio_free(void) {
 
     while (safe_array_count(cio->gpio_thread_arr) > 0) {
       safe_array_lock(cio->gpio_thread_arr);
-      TGpioThreadItem *gti = safe_array_get(cio->gpio_thread_arr, 0);
+      TGpioThreadItem *gti =
+          (TGpioThreadItem *)safe_array_get(cio->gpio_thread_arr, 0);
 
       if (gti && gti->sthread) sthread_terminate(gti->sthread);
 
@@ -234,8 +205,8 @@ void channelio_gpio_port_init(TDeviceChannel *channel,
 
     lck_lock(cio->wl_lck);
 
-    cio->watch_list = realloc(cio->watch_list,
-                              sizeof(TGpioPort) * (cio->watch_list_count + 1));
+    cio->watch_list = (TGpioPort *)realloc(
+        cio->watch_list, sizeof(TGpioPort) * (cio->watch_list_count + 1));
     TGpioPort *port = &cio->watch_list[cio->watch_list_count];
     memset(port, 0, sizeof(TGpioPort));
 
@@ -261,7 +232,6 @@ char channelio_read_temp_and_humidity(int type, char *w1,
       type != SUPLA_CHANNELTYPE_AM2302 &&
       type != SUPLA_CHANNELTYPE_HUMIDITYSENSOR)
     return 0;
-
 
   if (w1 != NULL || type != SUPLA_CHANNELTYPE_THERMOMETERDS18B20) {
     gettimeofday(&now, NULL);
@@ -343,7 +313,7 @@ void channelio_gpio_thread_finish(void *user_data, void *sthread) {
 
   safe_array_lock(cio->gpio_thread_arr);
   for (a = 0; a < safe_array_count(cio->gpio_thread_arr); a++) {
-    gti = safe_array_get(cio->gpio_thread_arr, a);
+    gti = (TGpioThreadItem *)safe_array_get(cio->gpio_thread_arr, a);
     if (gti && gti->sthread == sthread) {
       free(gti);
       safe_array_delete(cio->gpio_thread_arr, a);
@@ -364,7 +334,7 @@ char channelio_gpio_thread_exists(unsigned char port) {
 
   safe_array_lock(cio->gpio_thread_arr);
   for (a = 0; a < safe_array_count(cio->gpio_thread_arr); a++) {
-    gti = safe_array_get(cio->gpio_thread_arr, a);
+    gti = (TGpioThreadItem *)safe_array_get(cio->gpio_thread_arr, a);
     if (gti && gti->port1 == port) {
       result = 1;
       break;
@@ -385,7 +355,7 @@ char channelio_start_gpio_thread(TDeviceChannel *channel,
 
   if (channelio_gpio_thread_exists(port1)) return 0;
 
-  gti = malloc(sizeof(TGpioThreadItem));
+  gti = (TGpioThreadItem *)malloc(sizeof(TGpioThreadItem));
   memset(gti, 0, sizeof(TGpioThreadItem));
   gti->channel = channel;
   gti->hi = hi;
@@ -411,7 +381,6 @@ char channelio_start_gpio_thread(TDeviceChannel *channel,
 }
 #endif
 
-
 void channelio_channel_init(void) {
   int a;
   TDeviceChannel *channel;
@@ -423,8 +392,8 @@ void channelio_channel_init(void) {
   for (a = 0; a < cio->channel_count; a++) {
     channel = &cio->channels[a];
 
-    if (channel->mqtt_config.template_in){
-    	channel->mqtt_config.lck = lck_init();
+    if (channel->mqtt_config.template_in) {
+      channel->mqtt_config.lck = lck_init();
     }
 
     if (channel->gpio1 > 0)
@@ -464,7 +433,7 @@ void channelio_channel_init(void) {
 #endif
 }
 
-int channelio_channel_count(void) { return cio->channel_count; }
+int channelio_channel_count(void) { return channels->getCount(); }
 
 TDeviceChannel *channelio_find(unsigned char number, char create) {
   int a;
@@ -475,8 +444,8 @@ TDeviceChannel *channelio_find(unsigned char number, char create) {
 
   if (cio->initialized == 0 && create == 1 &&
       cio->channel_count < SUPLA_CHANNELMAXCOUNT) {
-    cio->channels = realloc(cio->channels,
-                            sizeof(TDeviceChannel) * (cio->channel_count + 1));
+    cio->channels = (TDeviceChannel *)realloc(
+        cio->channels, sizeof(TDeviceChannel) * (cio->channel_count + 1));
     result = &cio->channels[cio->channel_count];
     cio->channel_count++;
 
@@ -487,85 +456,103 @@ TDeviceChannel *channelio_find(unsigned char number, char create) {
   return result;
 }
 
-void channelio_set_type(unsigned char number, int type) {
-  TDeviceChannel *channel;
+void channelio_set_payload_on(unsigned char number, const char *value) {
+  if (channels == NULL) return;
 
-  if (cio == NULL || cio->initialized == 1) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-  if (channelio_allowed_type(type) != 1) {
-    supla_log(LOG_WARNING, "Channel %i is the wrong type %i", number, type);
-    return;
-  }
-
-  channel = channelio_find(number, 1);
-
-  if (channel != NULL) channel->type = type;
+  if (channel) channel->setPayloadOn(value);
 }
 
+void channelio_set_payload_off(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setPayloadOff(value);
+}
+
+void channelio_set_payload_value(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setPayloadValue(value);
+}
+
+void channelio_set_filename(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+
+  client_device_channel *channel = channels->find_channel(number);
+
+  if (channel) channel->setFileName(value);
+}
+
+void channelio_set_function(unsigned char number, int function) {
+  if (channels == NULL) return;
+
+  client_device_channel *channel = channels->find_channel(number);
+
+  if (channel) channel->setFunction(function);
+}
+
+void channelio_set_type(unsigned char number, int type) {
+  if (channels == NULL) return;
+
+  client_device_channel *channel = channels->find_channel(number);
+
+  if (channel) channel->setType(type);
+}
 int channelio_get_type(unsigned char number) {
-  TDeviceChannel *channel;
+  if (channels == NULL) return 0;
 
-  if (cio == NULL || cio->initialized == 0) return 0;
+  client_device_channel *channel = channels->find_channel(number);
 
-  channel = channelio_find(number, 0);
+  if (channel) return channel->getType();
 
-  if (channel != NULL) return channel->type;
+  return 0;
+}
+int channelio_get_function(unsigned char number) {
+  if (channels == NULL) return 0;
+
+  client_device_channel *channel = channels->find_channel(number);
+
+  if (channel) return channel->getFunc();
 
   return 0;
 }
 
-
 void channelio_set_mqtt_topic_in(unsigned char number, const char *value) {
-  TDeviceChannel *channel;
+  if (channels == NULL) return;
 
-  if (cio == NULL || cio->initialized == 1) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-  channel = channelio_find(number, 1);
-
-
-  if (channel != NULL) strncpy(channel->mqtt_config.topic_in, value, MAX_MQTT_TOPIC_LENGTH);
+  if (channel) channel->setStateTopic(value);
 }
 void channelio_set_mqtt_topic_out(unsigned char number, const char *value) {
-  TDeviceChannel *channel;
+  if (channels == NULL) return;
 
-  if (cio == NULL || cio->initialized == 1) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-  channel = channelio_find(number, 1);
-
-  if (channel != NULL) strncpy(channel->mqtt_config.topic_out, value, MAX_MQTT_TOPIC_LENGTH);
+  if (channel) channel->setCommandTopic(value);
 }
-
 void channelio_set_mqtt_retain(unsigned char number, unsigned char value) {
-  TDeviceChannel *channel;
+  if (channels == NULL) return;
 
-  if (cio == NULL || cio->initialized == 1) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-  channel = channelio_find(number, 1);
-
-  if (channel != NULL) channel->mqtt_config.retain = value;
+  if (channel) channel->setRetain(value);
 }
-
 void channelio_set_mqtt_template_in(unsigned char number, const char *value) {
-  TDeviceChannel *channel;
+  if (channels == NULL) return;
 
-  if (cio == NULL || cio->initialized == 1) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-  channel = channelio_find(number, 1);
-
-  if (channel != NULL) strncpy(channel->mqtt_config.template_in, value, MAX_MQTT_TEMPLATE_LENGTH);
+  if (channel) channel->setStateTemplate(value);
 }
 void channelio_set_mqtt_template_out(unsigned char number, const char *value) {
-  TDeviceChannel *channel;
+  if (channels == NULL) return;
 
-  if (cio == NULL || cio->initialized == 1) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-  channel = channelio_find(number, 1);
-
-  if (channel != NULL) strncpy(channel->mqtt_config.template_out, value, MAX_MQTT_TEMPLATE_LENGTH);
+  if (channel) channel->setCommandTemplate(value);
 }
-
-
-
 
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1) {
   TDeviceChannel *channel;
@@ -649,14 +636,14 @@ char channelio_get_cvalue(TDeviceChannel *channel,
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
 
   if (channel) {
-	if (channel->mqtt_config.template_in) {
-		if (channel->type == SUPLA_CHANNELTYPE_RELAY) {
-			lck_lock(channel->mqtt_config.lck);
-			value[0] = channel->mqtt_config.value[0];
-			lck_unlock(channel->mqtt_config.lck);
-			return 1;
-		}
-	}
+    if (channel->mqtt_config.template_in) {
+      if (channel->type == SUPLA_CHANNELTYPE_RELAY) {
+        lck_lock(channel->mqtt_config.lck);
+        value[0] = channel->mqtt_config.value[0];
+        lck_unlock(channel->mqtt_config.lck);
+        return 1;
+      }
+    }
 
     if (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
         channel->type == SUPLA_CHANNELTYPE_SENSORNC ||
@@ -757,8 +744,6 @@ char channelio_get_cvalue(TDeviceChannel *channel,
 
       return 1;
     }
-
-
   }
 
   return 0;
@@ -769,17 +754,17 @@ char channelio_get_value(unsigned char number,
   return channelio_get_cvalue(channelio_find(number, 0), value);
 }
 
-void channelio_raise_valuechanged(TDeviceChannel *channel) {
+void channelio_raise_valuechanged(client_device_channel *channel) {
   char value[SUPLA_CHANNELVALUE_SIZE];
 
-  if (channelio_get_cvalue(channel, value)) {
-    lck_lock(cio->cb_lck);
-    if (cio->on_valuechanged)
-      cio->on_valuechanged(channel->number, value,
-                           cio->on_valuechanged_user_data);
+  channel->getValue(value);
 
-    lck_unlock(cio->cb_lck);
-  }
+  lck_lock(cio->cb_lck);
+  if (cio->on_valuechanged)
+    cio->on_valuechanged(channel->getNumber(), value,
+                         cio->on_valuechanged_user_data);
+
+  lck_unlock(cio->cb_lck);
 }
 
 void channelio_gpio_on_portvalue(TGpioPort *port) {
@@ -795,9 +780,8 @@ void channelio_gpio_on_portvalue(TGpioPort *port) {
     gettimeofday(&now, NULL);
 
     if (gpio_value->last_tv.tv_sec > now.tv_sec  // the date has been changed
-        ||
-        (long int)(now.tv_sec - gpio_value->last_tv.tv_sec) >
-            (long int)(GPIO_MINDELAY_USEC / 1000000) ||
+        || (long int)(now.tv_sec - gpio_value->last_tv.tv_sec) >
+               (long int)(GPIO_MINDELAY_USEC / 1000000) ||
         ((long int)(now.tv_sec - gpio_value->last_tv.tv_sec) ==
              (long int)(GPIO_MINDELAY_USEC / 1000000) &&
          (long int)(now.tv_usec - gpio_value->last_tv.tv_usec) >=
@@ -810,8 +794,8 @@ void channelio_gpio_on_portvalue(TGpioPort *port) {
 
   lck_unlock(gpio_value->lck);
 
-  if (_raise == 1)
-    channelio_raise_valuechanged((TDeviceChannel *)port->user_data2);
+  // if (_raise == 1)
+  //   channelio_raise_valuechanged((TDeviceChannel *)port->user_data2);
 }
 #ifdef __SINGLE_THREAD
 char channelio__gpio_set_timed_lo_value(TDeviceChannel *channel,
@@ -905,10 +889,11 @@ void channelio_w1_iterate(void) {
   int a;
 
   for (a = 0; a < cio->channel_count; a++) {
-    if (channelio_read_temp_and_humidity(cio->channels[a].type,
-                                         cio->channels[a].w1,
-                                         &cio->channels[a].w1_value, 0) == 1)
-      channelio_raise_valuechanged(&cio->channels[a]);
+    //   if (channelio_read_temp_and_humidity(cio->channels[a].type,
+    //                                        cio->channels[a].w1,
+    //                                        &cio->channels[a].w1_value, 0) ==
+    //                                        1)
+    // channelio_raise_valuechanged(&cio->channels[a]);
   }
 }
 
@@ -922,7 +907,7 @@ void channelio_mcp23008_iterate(void) {
 
       if (ch->mcp23008.gpio.value != val) {
         ch->mcp23008.gpio.value = val;
-        channelio_raise_valuechanged(ch);
+        // channelio_raise_valuechanged(ch);
       }
     }
   }
@@ -998,7 +983,7 @@ void channelio_gpio_set_hi_execute(void *user_data, void *sthread) {
     }
   }
 
-  if (gti->raise) channelio_raise_valuechanged(gti->channel);
+  // if (gti->raise) channelio_raise_valuechanged(gti->channel);
 
   if (gti->time_ms > 0) {
     usleep(gti->time_ms * 1000);
@@ -1031,45 +1016,40 @@ void channelio_gpio_set_hi_execute(void *user_data, void *sthread) {
         lck_unlock(gpio1_value->lck);
       }
 
-      if (gti->raise) channelio_raise_valuechanged(gti->channel);
+      // if (gti->raise) channelio_raise_valuechanged(gti->channel);
     }
   }
 }
 
 #endif
 
-static void replacestr(char *line, const char *search, const char *replace)
-{
-     char *sp;
+static void replacestr(char *line, const char *search, const char *replace) {
+  char *sp;
 
-     if ((sp = strstr(line, search)) == NULL) {
-         return;
-     }
-     int search_len = strlen(search);
-     int replace_len = strlen(replace);
-     int tail_len = strlen(sp+search_len);
+  if ((sp = strstr(line, search)) == NULL) {
+    return;
+  }
+  int search_len = strlen(search);
+  int replace_len = strlen(replace);
+  int tail_len = strlen(sp + search_len);
 
-     memmove(sp+replace_len,sp+search_len,tail_len+1);
-     memcpy(sp, replace, replace_len);
+  memmove(sp + replace_len, sp + search_len, tail_len + 1);
+  memcpy(sp, replace, replace_len);
 }
 
-void channelio_publish_mqtt(TDeviceChannel* channel) {
+void channelio_publish_mqtt(TDeviceChannel *channel) {
+  if (mqtt_publish_callback) {
+    char *topic = strdup(channel->mqtt_config.topic_out);
+    char *payload = strdup(channel->mqtt_config.template_out);
 
-	if (mqtt_publish_callback)
-	{
-		char* topic = strdup(channel->mqtt_config.topic_out);
-		char* payload = strdup(channel->mqtt_config.template_out);
+    if (channel->mqtt_config.value[0]) {
+      replacestr(payload, "$value$", "1");
+    } else {
+      replacestr(payload, "$value$", "0");
+    }
 
-		if (channel->mqtt_config.value[0]) {
-		  replacestr(payload, "$value$", "1");
-		}
-		else
-		{
-		  replacestr(payload, "$value$", "0");
-		}
-
-		mqtt_publish_callback(topic, payload, 1, 1);
-	}
+    mqtt_publish_callback(topic, payload, 1, 1);
+  }
 }
 
 char channelio__set_hi_value(TDeviceChannel *channel, char hi,
@@ -1080,14 +1060,11 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi,
   unsigned char port2 = 0;
   TChannelGpioPortValue *gpio_value;
 
-
-  if (channel->mqtt_config.template_in){
-
-
-	  channel->mqtt_config.value[0] = hi;
-	  channelio_publish_mqtt(channel);
-	  channelio_raise_valuechanged(channel);
-	  return 1;
+  if (channel->mqtt_config.template_in) {
+    channel->mqtt_config.value[0] = hi;
+    channelio_publish_mqtt(channel);
+    //   channelio_raise_valuechanged(channel);
+    return 1;
   }
 
   if (second_gpio == 0) {
@@ -1150,27 +1127,40 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi,
         lck_unlock(gpio_value->lck);
       }
 
-      if (raise) channelio_raise_valuechanged(channel);
+      //  if (raise) channelio_raise_valuechanged(channel);
 
       result = 1;
     }
 
 #endif
-
-    // supla_log(LOG_DEBUG, "Port %i is set to HI", channel->gpio1);
   }
 
   return result;
 }
 
-char channelio_set_hi_value(unsigned char number, char hi,
-                            unsigned int time_ms) {
+void channelio_raise_mqtt_valuechannged(client_device_channel *channel) {
+  publish_mqtt_message_for_channel(channel);
+}
+
+char channelio_set_value(unsigned char number,
+                         char value[SUPLA_CHANNELVALUE_SIZE],
+                         unsigned int time_ms) {
   char result = 0;
 
+  client_device_channel *channel = channels->find_channel(number);
+
+  if (channel) {
+    channel->setValue(value);
+    channelio_raise_mqtt_valuechannged(channel);
+    channelio_raise_valuechanged(channel);
+    return true;
+  };
+
+  /*
   TDeviceChannel *channel = channelio_find(number, 0);
 
   if (channel) {
-	if (channel->type == SUPLA_CHANNELTYPE_2XRELAYG5LA1A) {
+    if (channel->type == SUPLA_CHANNELTYPE_2XRELAYG5LA1A) {
       if (hi == 0) {
         if (channelio__set_hi_value(channel, 0, time_ms, 0, 0)) result = 1;
 
@@ -1191,11 +1181,10 @@ char channelio_set_hi_value(unsigned char number, char hi,
         if (channelio__set_hi_value(channel, 1, time_ms, 1, 1)) result = 1;
       }
 
-    } else
-    {
+    } else {
       return channelio__set_hi_value(channel, hi == 0 ? 0 : 1, time_ms, 0, 1);
     }
-  }
+  }*/
 
   return result;
 }
@@ -1218,20 +1207,18 @@ char channelio_get_hi_value(unsigned char number, char *hi) {
 }
 
 void channelio_channels_to_srd(unsigned char *channel_count,
-                               TDS_SuplaDeviceChannel_B *channels) {
+                               TDS_SuplaDeviceChannel_B *chnl) {
   int a;
-  *channel_count = cio->channel_count;
 
-  for (a = 0; a < cio->channel_count; a++) {
-    channels[a].Number = cio->channels[a].number;
-    channels[a].Type = cio->channels[a].type;
+  *channel_count = channels->getCount();
 
-    if (cio->channels[a].type == SUPLA_CHANNELTYPE_RELAY){
-      channels[a].FuncList = SUPLA_BIT_RELAYFUNC_POWERSWITCH | SUPLA_BIT_RELAYFUNC_LIGHTSWITCH;
-    }
-
-    if (channelio_get_cvalue(&cio->channels[a], channels[a].value) == 0) {
-      memset(channels[a].value, 0, SUPLA_CHANNELVALUE_SIZE);
+  for (a = 0; a < *channel_count; a++) {
+    client_device_channel *channel = channels->getChannel(a);
+    if (channel && !channel->getHidden()) {
+      chnl[a].Number = channel->getNumber();
+      chnl[a].Type = channel->getTypeEx();
+      chnl[a].Default = channel->getFunc();
+      channel->getValue(chnl[a].value);
     }
   }
 }
@@ -1245,7 +1232,7 @@ void channelio_setcalback_on_channel_value_changed(
 }
 
 void tmp_channelio_raise_valuechanged(unsigned char number) {
-  TDeviceChannel *channel = channelio_find(number, 0);
+  client_device_channel *channel = channels->find_channel(number);
 
   if (channel) {
     channelio_raise_valuechanged(channel);

@@ -909,6 +909,8 @@ char supla_device_channels::arr_findncmp(void *ptr, void *n) {
   return ((supla_device_channel *)ptr)->getNumber() == *((int *)n) ? 1 : 0;
 }
 
+
+
 char supla_device_channels::arr_delcnd(void *ptr) {
   delete (supla_device_channel *)ptr;
   return 1;
@@ -928,6 +930,9 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
     int Number) {
   return (supla_device_channel *)safe_array_findcnd(arr, arr_findncmp, &Number);
 }
+
+
+
 
 void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
                                         int Param1, int Param2, int Param3,

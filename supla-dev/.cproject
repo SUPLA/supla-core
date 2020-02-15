@@ -47,7 +47,7 @@
                                 								
                                 <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.514568846" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
                                     									
-                                    <listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
+                                    <listOptionValue builtIn="false" value="$(SSLDIR)/include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../src/json"/>
                                     								
@@ -60,6 +60,8 @@
                                 <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1673862539" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
                                     									
                                     <listOptionValue builtIn="false" value="__DEBUG=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
                                     								
                                 </option>
                                 								
@@ -85,11 +87,17 @@
                                 								
                                 <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.299593342" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
                                     									
+                                    <listOptionValue builtIn="false" value="__DEBUG=1"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE)"/>
+                                    									
                                     <listOptionValue builtIn="false" value="__NO_DATABASE"/>
                                     									
                                     <listOptionValue builtIn="false" value="__NO_USER"/>
                                     								
                                 </option>
+                                								
+                                <option id="gnu.cpp.compiler.option.dialect.std.1791103276" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1836216933" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
                                 							
@@ -128,6 +136,12 @@
                             <tool id="cdt.managedbuild.tool.gnu.cross.archiver.904936809" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
                             							
                             <tool id="cdt.managedbuild.tool.gnu.cross.assembler.818517035" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+                                								
+                                <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.both.asm.option.include.paths.343737312" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/usr/include}&quot;"/>
+                                    								
+                                </option>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.303649097" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
                                 							
@@ -179,7 +193,7 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.1534625929" name="Release" optionalBuildProperties="" parent="cdt.managedbuild.config.gnu.cross.exe.release">
+                <configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.1534625929" name="Release" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="cdt.managedbuild.config.gnu.cross.exe.release">
                     					
                     <folderInfo id="cdt.managedbuild.config.gnu.cross.exe.release.1534625929." name="/" resourcePath="">
                         						
@@ -200,6 +214,10 @@
                                     <listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
                                     									
                                     <listOptionValue builtIn="false" value="../src/json"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/usr/include}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/usr/local/include"/>
                                     								
                                 </option>
                                 								
@@ -226,6 +244,12 @@
                                     <listOptionValue builtIn="false" value="/usr/src/openssl/include"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/supla-dev/src/json}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/usr/include}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/usr/include/x86_64-linux-gnu"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="/usr/include/c++/7"/>
                                     								
                                 </option>
                                 								
@@ -238,6 +262,8 @@
                                     <listOptionValue builtIn="false" value="__NO_USER"/>
                                     								
                                 </option>
+                                								
+                                <option id="gnu.cpp.compiler.option.dialect.std.604734113" superClass="gnu.cpp.compiler.option.dialect.std" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.114142926" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
                                 							
@@ -276,6 +302,12 @@
                             <tool id="cdt.managedbuild.tool.gnu.cross.archiver.1961174038" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
                             							
                             <tool id="cdt.managedbuild.tool.gnu.cross.assembler.1583388542" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+                                								
+                                <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.both.asm.option.include.paths.1946207542" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/usr/include}&quot;"/>
+                                    								
+                                </option>
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.1502075037" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
                                 							

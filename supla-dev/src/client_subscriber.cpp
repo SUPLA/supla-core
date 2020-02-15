@@ -27,189 +27,276 @@ bool value_exists(jsoncons::json payload, std::string path) {
   }
 }
 
-void handle_subscribed_message(
-		TDeviceChannel* channel,
-		std::string topic,
-        std::string message) {
+void handle_subscribed_message(client_device_channel* channel,
+                               std::string topic, std::string message,
+                               _func_channelio_valuechanged cb,
+                               void* user_data) {
 
+  if (message.length() == 0) return;
 
-  /* supla_log(LOG_DEBUG, "handling message %s", message.c_str());
+  while (!cb)
+	  {
+	  supla_log(LOG_DEBUG, "waiting for registration result...");
+	  	  usleep(10);
+	  }
+  supla_log(LOG_DEBUG, "handling message %s", message.c_str());
 
-  if (supla_client == NULL) return;
-  if (channels == NULL) return;
-  if (config == NULL) return;
+  char value[SUPLA_CHANNELVALUE_SIZE];
 
-  std::vector<client_command*> commands;
-  config->getCommandsForTopic(topic, &commands);
+  channel->getValue(value);
+  int channelNumber = channel->getNumber();
 
-  if (commands.size() == 0) return;
-
+  bool isJsonPayload;
   jsoncons::json payload;
   try {
     payload = jsoncons::json::parse(message);
+    bool isJsonPayload = true;
   } catch (jsoncons::ser_error& exception) {
-    supla_log(LOG_ERR,
-              "error while parsing incoming message [topic: %s], [message:%s], "
-              "[exception: %s]",
-              topic.c_str(), message.c_str(), exception.what());
-    return;
+    bool isJsonPayload = false;
   }
 
   supla_log(LOG_DEBUG, "handling incomming message: %s", message.c_str());
+  try {
+  /* raw payload simple value */
+  if (!isJsonPayload) {
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
 
-  for (auto command : commands) {
-    try {
-      std::string idPath = command->getId();
-      int id = jsoncons::jsonpointer::get(payload, idPath).as<int>();
+    	if (strlen(channel->getPayloadOn()) > 0 &&
+            strcasecmp(channel->getPayloadOn(), message.c_str()) == 0)
+          value[0] = 1;
+        else
+          value[0] = 0;
 
-      auto channel = channels->find_channel(id);
-      if (channel == NULL) continue;
+        channel->setValue(value);
+        cb(channelNumber, value, user_data);
 
-      supla_log(LOG_DEBUG, "found command for topic id: %d  func: %d", id,
-                channel->getFunc());
+        return;
+      } break;
+      case SUPLA_CHANNELFNC_DISTANCESENSOR:
+      case SUPLA_CHANNELFNC_DEPTHSENSOR:
+      case SUPLA_CHANNELFNC_WINDSENSOR:
+      case SUPLA_CHANNELFNC_PRESSURESENSOR:
+      case SUPLA_CHANNELFNC_RAINSENSOR:
+      case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      {
+    	  double dbval = std::stod(message);
+    	  memcpy(value, &dbval, sizeof(double));
+    	  channel->setValue(value);
+    	  cb(channel->getNumber(), value, user_data);
+    	  return;
+      };
+      case SUPLA_CHANNELFNC_THERMOMETER: {
+        std::string::size_type sz;  // alias of size_t
+        double temp = std::stod(message, &sz);
+        supla_channel_temphum* temphum = channel->getTempHum();
 
+        if (temphum) {
+          temphum->setTemperature(temp);
+          temphum->toValue(value);
+        }
 
-      switch (channel->getFunc()) {
-        case SUPLA_CHANNELFNC_POWERSWITCH:
-        case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        case SUPLA_CHANNELFNC_STAIRCASETIMER: {
-          supla_log(LOG_DEBUG,
-                    "incomming message is for channel one of"
-                    "[POWERSWITCH, LIGHTSWITCH, STAIRCASETIMER]");
+        channel->setValue(value);
+        cb(channelNumber, value, user_data);
 
-          std::string on_off = command->getOnOff();
-          std::string value =
-              jsoncons::jsonpointer::get(payload, on_off).as<std::string>();
-          std::string on_value = command->getOnValue();
+        return;
 
-          supla_log(LOG_DEBUG, "handling %d %s %s", channel->getFunc(),
-                    value.c_str(), on_value.c_str());
+      } break;
+      case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+        std::string::size_type sz;  // alias of size_t
+        double temp = std::stod(message, &sz);
+        double hum = std::stod(message.substr(sz));
 
-          if (value.compare(on_value) == 0) {
-            supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id, 1);
-            supla_client_open(supla_client, id, 0, 1);
-          } else {
-            supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id, 0);
-            supla_client_open(supla_client, id, 0, 0);
-          }
-          return;
-        } break;
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
-          std::string shut = command->getShut();
+        supla_channel_temphum* temphum = channel->getTempHum();
 
-          unsigned char value =
-              jsoncons::jsonpointer::get(payload, shut).as<unsigned char>();
+        if (temphum) {
+          temphum->setTemperature(temp);
+          temphum->setHumidity(hum);
+          temphum->toValue(value);
+        }
 
-          value += 10;
+        channel->setValue(value);
+        cb(channelNumber, value, user_data);
 
-          supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id,
-                    value);
-          supla_client_open(supla_client, id, 0, value);
-        } break;
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
-          std::string hi = command->getShut();
+        return;
 
-          unsigned char value =
-              jsoncons::jsonpointer::get(payload, hi).as<unsigned char>();
-
-          supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id,
-                    value);
-          supla_client_open(supla_client, id, 0, value);
-        } break;
-        case SUPLA_CHANNELFNC_DIMMER:
-        case SUPLA_CHANNELFNC_RGBLIGHTING:
-        case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
-          std::string brightness = command->getBrightness();
-          std::string color_brightness = command->getColorBrghtness();
-          std::string color_r = command->getColorR();
-          std::string color_g = command->getColorG();
-          std::string color_b = command->getColorB();
-          std::string color = command->getColor();
-
-          char brightness_value = 0;
-          char color_brightness_value = 0;
-          int color_int;
-          char on_off;
-          bool isRgbChannelCommand = false;
-
-          channel->getRGBW(&color_int, &color_brightness_value,
-                           &brightness_value, &on_off);
-
-          unsigned char color_b_value =
-              (unsigned char)((color_int & 0x000000FF));
-          unsigned char color_g_value =
-              (unsigned char)((color_int & 0x0000FF00) >> 8);
-          unsigned char color_r_value =
-              (unsigned char)((color_int & 0x00FF0000) >> 16);
-
-          if (brightness.length() > 0 && (value_exists(payload, brightness))) {
-            brightness_value =
-                jsoncons::jsonpointer::get(payload, brightness).as<char>();
-            isRgbChannelCommand = true;
-          }
-
-          if (color_brightness.length() > 0 &&
-              (value_exists(payload, color_brightness))) {
-            color_brightness_value =
-                jsoncons::jsonpointer::get(payload, color_brightness)
-                    .as<char>();
-            isRgbChannelCommand = true;
-          }
-
-          if (color_r.length() > 0 && (value_exists(payload, color_r))) {
-            color_r_value =
-                jsoncons::jsonpointer::get(payload, color_r).as<uint8_t>();
-            isRgbChannelCommand = true;
-          }
-
-          if (color_g.length() > 0 && (value_exists(payload, color_g))) {
-            color_g_value =
-                jsoncons::jsonpointer::get(payload, color_g).as<uint8_t>();
-            isRgbChannelCommand = true;
-          }
-
-          if (color_b.length() > 0 && (value_exists(payload, color_b))) {
-            color_b_value =
-                jsoncons::jsonpointer::get(payload, color_b).as<uint8_t>();
-            isRgbChannelCommand = true;
-          }
-
-          if (!isRgbChannelCommand) continue;
-
-
-
-          color_int = 0;
-
-          color_int = color_r_value & 0xFF;
-          (color_int) <<= 8;
-
-          color_int |= color_g_value & 0xFF;
-          (color_int) <<= 8;
-
-          (color_int) |= color_b_value & 0xFF;
-          supla_log(LOG_DEBUG,
-                    "supla_client_set_rgbw(id: %d, color_int: %d, "
-                    "color_brightness_value: %d, brightness_value: %d ",
-                    id, color_int, color_brightness_value, brightness_value);
-
-          supla_client_set_rgbw(supla_client, id, 0, color_int,
-                                color_brightness_value, brightness_value, 1);
-
-
-
-          return;
-        } break;
+      } break;
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
+      case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
+      {
+    	  value[0] = message == "1" ? 1 : 0;
+    	  channel->setValue(value);
+    	  cb(channel->getNumber(), value, user_data);
+    	  return;
       }
-    } catch (jsoncons::json_exception& je) {
-      supla_log(LOG_ERR,
-                "error while trying get value from payload [error: %s]",
-                je.what());
-    } catch (std::exception& exception) {
-      supla_log(LOG_ERR, "general error %s", exception.what());
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
+        value[0] = message.c_str()[0];
+        channel->setValue(value);
+        cb(channel->getNumber(), value, user_data);
+        return;
+      } break;
     }
+  };
 
-  } */
+  /*
+
+    supla_log(LOG_DEBUG, "found command for topic id: %d  func: %d", id,
+              channel->getFunc());
+
+
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        supla_log(LOG_DEBUG,
+                  "incomming message is for channel one of"
+                  "[POWERSWITCH, LIGHTSWITCH, STAIRCASETIMER]");
+
+        std::string on_off = command->getOnOff();
+        std::string value =
+            jsoncons::jsonpointer::get(payload, on_off).as<std::string>();
+        std::string on_value = command->getOnValue();
+
+        supla_log(LOG_DEBUG, "handling %d %s %s", channel->getFunc(),
+                  value.c_str(), on_value.c_str());
+
+        if (value.compare(on_value) == 0) {
+          supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id, 1);
+          supla_client_open(supla_client, id, 0, 1);
+        } else {
+          supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id, 0);
+          supla_client_open(supla_client, id, 0, 0);
+        }
+        return;
+      } break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
+        std::string shut = command->getShut();
+
+        unsigned char value =
+            jsoncons::jsonpointer::get(payload, shut).as<unsigned char>();
+
+        value += 10;
+
+        supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id,
+                  value);
+        supla_client_open(supla_client, id, 0, value);
+      } break;
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
+        std::string hi = command->getShut();
+
+        unsigned char value =
+            jsoncons::jsonpointer::get(payload, hi).as<unsigned char>();
+
+        supla_log(LOG_DEBUG, "supla_client_open(id: %d, state: %d", id,
+                  value);
+        supla_client_open(supla_client, id, 0, value);
+      } break;
+      case SUPLA_CHANNELFNC_DIMMER:
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+        std::string brightness = command->getBrightness();
+        std::string color_brightness = command->getColorBrghtness();
+        std::string color_r = command->getColorR();
+        std::string color_g = command->getColorG();
+        std::string color_b = command->getColorB();
+        std::string color = command->getColor();
+
+        char brightness_value = 0;
+        char color_brightness_value = 0;
+        int color_int;
+        char on_off;
+        bool isRgbChannelCommand = false;
+
+        channel->getRGBW(&color_int, &color_brightness_value,
+                         &brightness_value, &on_off);
+
+        unsigned char color_b_value =
+            (unsigned char)((color_int & 0x000000FF));
+        unsigned char color_g_value =
+            (unsigned char)((color_int & 0x0000FF00) >> 8);
+        unsigned char color_r_value =
+            (unsigned char)((color_int & 0x00FF0000) >> 16);
+
+        if (brightness.length() > 0 && (value_exists(payload, brightness))) {
+          brightness_value =
+              jsoncons::jsonpointer::get(payload, brightness).as<char>();
+          isRgbChannelCommand = true;
+        }
+
+        if (color_brightness.length() > 0 &&
+            (value_exists(payload, color_brightness))) {
+          color_brightness_value =
+              jsoncons::jsonpointer::get(payload, color_brightness)
+                  .as<char>();
+          isRgbChannelCommand = true;
+        }
+
+        if (color_r.length() > 0 && (value_exists(payload, color_r))) {
+          color_r_value =
+              jsoncons::jsonpointer::get(payload, color_r).as<uint8_t>();
+          isRgbChannelCommand = true;
+        }
+
+        if (color_g.length() > 0 && (value_exists(payload, color_g))) {
+          color_g_value =
+              jsoncons::jsonpointer::get(payload, color_g).as<uint8_t>();
+          isRgbChannelCommand = true;
+        }
+
+        if (color_b.length() > 0 && (value_exists(payload, color_b))) {
+          color_b_value =
+              jsoncons::jsonpointer::get(payload, color_b).as<uint8_t>();
+          isRgbChannelCommand = true;
+        }
+
+        if (!isRgbChannelCommand) continue;
+
+
+
+        color_int = 0;
+
+        color_int = color_r_value & 0xFF;
+        (color_int) <<= 8;
+
+        color_int |= color_g_value & 0xFF;
+        (color_int) <<= 8;
+
+        (color_int) |= color_b_value & 0xFF;
+        supla_log(LOG_DEBUG,
+                  "supla_client_set_rgbw(id: %d, color_int: %d, "
+                  "color_brightness_value: %d, brightness_value: %d ",
+                  id, color_int, color_brightness_value, brightness_value);
+
+        supla_client_set_rgbw(supla_client, id, 0, color_int,
+                              color_brightness_value, brightness_value, 1);
+
+
+
+        return;
+      } break;
+    }*/
+  } catch (jsoncons::json_exception& je) {
+    supla_log(LOG_ERR,
+              "error while trying get value from payload [error: %s]",
+              je.what());
+  } catch (std::exception& exception) {
+    supla_log(LOG_ERR, "general error %s", exception.what());
+  }
+
+
 }

@@ -28,9 +28,9 @@
 #include <sys/inotify.h>
 #endif
 
-#include "gpio.h"
 #include "../supla-client-lib/log.h"
 #include "../supla-client-lib/tools.h"
+#include "gpio.h"
 
 #define GPIO_BUFFER_SIZE 50
 
@@ -51,10 +51,10 @@ char gpio_write_file(const char *file, const char *str) {
   fd = open(file, O_WRONLY);
 
   if (fd != -1) {
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wunused-result"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
     write(fd, str, strlen(str));
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
     close(fd);
     return 1;
   }

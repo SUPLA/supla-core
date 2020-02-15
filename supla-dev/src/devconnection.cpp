@@ -19,14 +19,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "channel-io.h"
-#include "devcfg.h"
-#include "devconnection.h"
 #include "../supla-client-lib/log.h"
 #include "../supla-client-lib/srpc.h"
 #include "../supla-client-lib/sthread.h"
 #include "../supla-client-lib/supla-socket.h"
 #include "../supla-client-lib/tools.h"
+#include "channel-io.h"
+#include "devcfg.h"
+#include "devconnection.h"
 
 typedef struct {
   void *ssd;
@@ -119,6 +119,8 @@ void devconnection_on_register_result(
 
       supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_DEBUG,
                              "Registered and ready.");
+
+
       break;
     case SUPLA_RESULTCODE_DEVICE_DISABLED:
       supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE,
@@ -164,27 +166,10 @@ void devconnection_on_register_result(
 
 void devconnection_channel_set_value(TDeviceConnectionData *dcd,
                                      TSD_SuplaChannelNewValue *new_value) {
-  if (new_value->ChannelNumber > 11) {
-    // TEST
-    supla_log(LOG_DEBUG,
-              "Brightness: %i Color Brightness: %i R: %02X G: %02X B: %02X ",
-              new_value->value[0], new_value->value[1],
-              (unsigned char)new_value->value[4],
-              (unsigned char)new_value->value[3],
-              (unsigned char)new_value->value[2]);
-
-    tmp_channelio_raise_valuechanged(new_value->ChannelNumber);
-    srpc_ds_async_set_channel_result(dcd->srpc, new_value->ChannelNumber,
-                                     new_value->SenderID, 1);
-
-    return;
-  }
-
-  char Success =
-      channelio_set_hi_value(new_value->ChannelNumber, new_value->value[0],
-                             new_value->DurationMS) == 1
-          ? 1
-          : 0;
+  char Success = channelio_set_value(new_value->ChannelNumber, new_value->value,
+                                     new_value->DurationMS) == 1
+                     ? 1
+                     : 0;
   srpc_ds_async_set_channel_result(dcd->srpc, new_value->ChannelNumber,
                                    new_value->SenderID, Success);
 }
@@ -193,7 +178,9 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                            unsigned int call_type, void *_dcd,
                                            unsigned char proto_version) {
   TsrpcReceivedData rd;
+
   char result;
+
   TDeviceConnectionData *dcd = (TDeviceConnectionData *)_dcd;
 
   if (SUPLA_RESULT_TRUE == (result = srpc_getdata(_srpc, &rd, 0))) {
@@ -209,9 +196,7 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
         devconnection_channel_set_value(dcd, rd.data.sd_channel_new_value);
         break;
     }
-
     srpc_rd_free(&rd);
-
   } else if (result == SUPLA_RESULT_DATA_ERROR) {
     supla_log(LOG_DEBUG, "DATA ERROR!");
   }

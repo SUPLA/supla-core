@@ -23,14 +23,14 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#include "accept_loop.h"
-#include "channel-io.h"
-#include "devcfg.h"
-#include "devconnection.h"
 #include "../supla-client-lib/ipcsocket.h"
 #include "../supla-client-lib/log.h"
 #include "../supla-client-lib/sthread.h"
 #include "../supla-client-lib/tools.h"
+#include "accept_loop.h"
+#include "channel-io.h"
+#include "devcfg.h"
+#include "devconnection.h"
 #include "mqtt/mqtt_client.h"
 
 void exit_fail() {
@@ -39,11 +39,9 @@ void exit_fail() {
   exit(EXIT_FAILURE);
 }
 
-void mqtt_client_publish_callback(
-  const char* topic, const char* payload, char retain,
-  char qos)
-{
-	mqtt_client_publish(topic, payload, retain, qos);
+void mqtt_client_publish_callback(const char* topic, const char* payload,
+                                  char retain, char qos) {
+  mqtt_client_publish(topic, payload, retain, qos);
 }
 
 int main(int argc, char* argv[]) {
@@ -108,7 +106,7 @@ int main(int argc, char* argv[]) {
 
   void* dconn = devconnection_start();
 
-// ACCEPT LOOP
+  // ACCEPT LOOP
 
 #ifndef __SINGLE_THREAD
   if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
@@ -120,20 +118,17 @@ int main(int argc, char* argv[]) {
   int iterator = 0;
   const char** topic_arr = channelio_channels_get_topics(&count);
 
-  channelio_channels_set_mqtt_callback(mqtt_client_publish_callback);
-
-
   std::vector<std::string> topics;
 
   for (iterator = 0; iterator < count; iterator++) {
-	  topics.push_back(std::string(topic_arr[iterator]));
+    topics.push_back(std::string(topic_arr[iterator]));
   }
 
-  mqtt_client_init(
-		  std::string(scfg_string(CFG_MQTT_SERVER)),
-		  scfg_int(CFG_MQTT_PORT), std::string(scfg_string(CFG_MQTT_USERNAME)),
-		  std::string(scfg_string(CFG_MQTT_PASSWORD)), "supla_virtual_device",
-		  3, topics, mqtt_subscribe_callback);
+  mqtt_client_init(std::string(scfg_string(CFG_MQTT_SERVER)),
+                   scfg_int(CFG_MQTT_PORT),
+                   std::string(scfg_string(CFG_MQTT_USERNAME)),
+                   std::string(scfg_string(CFG_MQTT_PASSWORD)),
+                   "supla_virtual_device", 3, topics, mqtt_subscribe_callback);
 
   // MAIN LOOP
 
@@ -141,7 +136,7 @@ int main(int argc, char* argv[]) {
     st_mainloop_wait(1000000);
   }
 
-// RELEASE BLOCK
+  // RELEASE BLOCK
 
 #ifndef __SINGLE_THREAD
   if (ipc != NULL) {

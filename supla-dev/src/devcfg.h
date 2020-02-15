@@ -46,7 +46,6 @@ extern "C" {
 #define CFG_MQTT_USERNAME 14
 #define CFG_MQTT_PASSWORD 15
 
-
 unsigned char devcfg_init(int argc, char* argv[]);
 char devcfg_getdev_guid();
 char devcfg_getdev_authkey();
