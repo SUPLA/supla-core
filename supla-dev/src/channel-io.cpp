@@ -22,11 +22,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../supla-client-lib/eh.h"
-#include "../supla-client-lib/lck.h"
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/safearray.h"
-#include "../supla-client-lib/sthread.h"
+#include "supla-client-lib/eh.h"
+#include "supla-client-lib/lck.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/safearray.h"
+#include "supla-client-lib/sthread.h"
 #include "channel-io.h"
 #include "gpio.h"
 #include "mcp23008.h"
