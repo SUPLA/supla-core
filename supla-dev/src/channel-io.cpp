@@ -437,10 +437,10 @@ void channelio_channel_init(void) {
   channels->setInitialized(true);
   
   int cnt = channels->getCount();
-  client_device_channel* channel;
+  client_device_channel* ch;
   for (a = 0; a < cnt; a ++) {
-    channel = channels->getChannel(a);
-	channelio_read_from_file(channel, 1);
+    ch = channels->getChannel(a);
+	channelio_read_from_file(ch, 1);
   }
   
   
