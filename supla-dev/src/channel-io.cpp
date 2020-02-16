@@ -65,17 +65,17 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
     gettimeofday(&now, NULL);
 
     int interval_sec = channel->getIntervalSec();
-    const char *filepath = channel->getFileName().c_str();
-
+    
     int min_interval = interval_sec >= 0 ? interval_sec : 10;
 
     if (now.tv_sec - channel->getLastTv().tv_sec >= min_interval) {
       channel->setLastTv(now);
 
-      read_result = file_read_sensor(filepath, &temp, &humidity);
+      read_result = file_read_sensor(channel->getFileName().c_str(), &temp, &humidity);
       supla_channel_temphum *temphum = channel->getTempHum();
 
       if (read_result == 1) {
+		  
         if (temphum->getTemperature() != temp) {
           temphum->setTemperature(temp);
           result = 1;
@@ -91,7 +91,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
         temphum->setHumidity(-1);
 
         if (log_err == 1)
-          supla_log(LOG_ERR, "Can't read file %s", filepath ? filepath : "");
+          supla_log(LOG_ERR, "Can't read file %s", channel->getFileName().c_str());
       }
 
       char value[SUPLA_CHANNELVALUE_SIZE];
