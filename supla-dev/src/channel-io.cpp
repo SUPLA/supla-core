@@ -433,7 +433,17 @@ void channelio_channel_init(void) {
   if (cio->initialized == 1) return;
 
   cio->initialized = 1;
-
+  
+  channels->setInitialized(true);
+  
+  int cnt = channels->getCount();
+  client_device_channel* channel;
+  for (a = 0; a < cnt; a ++) {
+    channel = channels->getChannel(a);
+	channelio_read_from_file(channel, 1);
+  }
+  
+  
   for (a = 0; a < cio->channel_count; a++) {
     channel = &cio->channels[a];
 
@@ -449,9 +459,7 @@ void channelio_channel_init(void) {
       channelio_gpio_port_init(channel, &channel->gpio2_value, channel->gpio2,
                                channelio_gpio_in(channel, 2));
 
-    channelio_read_temp_and_humidity(channel->type, channel->w1,
-                                     &channel->w1_value, 1);
-
+    
     channelio_read_rgbw_values(channel->type, &channel->rgbw_value);
 
     if (channel->driver == SUPLA_CHANNELDRIVER_MCP23008) {
