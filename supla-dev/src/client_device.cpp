@@ -108,7 +108,11 @@ void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 supla_channel_temphum *client_device_channel::getTempHum(void) {
   double temp;
 
-  if (getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
+  if (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
+      getFunc() == SUPLA_CHANNELFNC_WINDSENSOR ||
+      getFunc() == SUPLA_CHANNELFNC_PRESSURESENSOR ||
+	  getFunc() == SUPLA_CHANNELFNC_WEIGHTSENSOR
+	) {
     getDouble(&temp);
 
     if (temp > -273 && temp <= 1000) {
