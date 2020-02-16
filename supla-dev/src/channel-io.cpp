@@ -1289,18 +1289,18 @@ void channelio_setcalback_on_channel_value_changed(
   lck_unlock(cio->cb_lck);
 
   // MQTT SETUP
+
+
   std::string mqtt_host(scfg_string(CFG_MQTT_SERVER));
   if (mqtt_host.length() == 0) return;
-
-  //int count = 0;
-  //int iterator = 0;
-    //channelio_channels_get_topics(&count);
 
 
   vector<std::string> topics;
   channels->getMqttSubscriptionTopics(&topics);
 
   supla_log(LOG_DEBUG, "initializing MQTT broker connection...");
+
+  mqtt_client_free();
 
   mqtt_client_init(std::string(scfg_string(CFG_MQTT_SERVER)),
                    scfg_int(CFG_MQTT_PORT),

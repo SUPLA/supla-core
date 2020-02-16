@@ -63,10 +63,6 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
       bool hi = value[0] > 0;
 
       replace_string_in_place(&payload, "$value$", std::to_string(hi));
-      // replace_string_in_place(&payload, "$sensor_1$",
-      //                        std::to_string(sub_value[0]));
-      // replace_string_in_place(&payload, "$sensor_2$",
-      //                        std::to_string(sub_value[1]));
       publish = true;
     } break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
