@@ -40,6 +40,8 @@ client_device_channel::client_device_channel(int Id, int Number, int Type,
   this->CommandTemplate = "";
   this->Execute = "";
   this->intervalSec = 10;
+  this->ExecuteOff = "";
+  this->ExecuteOn = "";
 
   lck = lck_init();
 }
@@ -230,9 +232,7 @@ void client_device_channel::getDouble(double *Value) {
 
 int client_device_channel::getIntervalSec() { return this->intervalSec; }
 
-client_device_channel::~client_device_channel() {
-  lck_free(lck);
-}
+client_device_channel::~client_device_channel() { lck_free(lck); }
 
 void client_device_channel::setType(int type) { this->Type = type; }
 
@@ -252,9 +252,7 @@ void client_device_channel::setPayloadValue(const char *payloadValue) {
   this->PayloadValue = std::string(payloadValue);
 }
 
-void client_device_channel::setRetain(bool retain) {
-  this->Retain = retain;
-}
+void client_device_channel::setRetain(bool retain) { this->Retain = retain; }
 
 void client_device_channel::setInterval(int interval) {
   this->intervalSec = interval;
@@ -267,32 +265,56 @@ void client_device_channel::setExecute(const char *execute) {
   this->Execute = std::string(execute);
 }
 
+void client_device_channel::setExecuteOn(const char *execute) {
+  this->ExecuteOn = std::string(execute);
+}
+void client_device_channel::setExecuteOff(const char *execute) {
+  this->ExecuteOff = std::string(execute);
+}
+
 void client_device_channel::setCommandTopic(const char *commandTopic) {
-    this->CommandTopic = std::string(commandTopic);
+  this->CommandTopic = std::string(commandTopic);
 }
 
 void client_device_channel::setCommandTemplate(const char *commandTemplate) {
- this->CommandTemplate = std::string(commandTemplate);
+  this->CommandTemplate = std::string(commandTemplate);
 }
 
 void client_device_channel::setStateTemplate(const char *stateTemplate) {
   this->StateTemplate = std::string(stateTemplate);
 }
 
-
 std::string client_device_channel::getExecute(void) { return this->Execute; }
-
-std::string client_device_channel::getPayloadOn(void) { return this->PayloadOn; };
-std::string client_device_channel::getPayloadOff(void) { return this->PayloadOff; };
-std::string client_device_channel::getPayloadValue(void) { return this->PayloadValue; };
+std::string client_device_channel::getExecuteOn(void) {
+  return this->ExecuteOn;
+}
+std::string client_device_channel::getExecuteOff(void) {
+  return this->ExecuteOff;
+}
+std::string client_device_channel::getPayloadOn(void) {
+  return this->PayloadOn;
+};
+std::string client_device_channel::getPayloadOff(void) {
+  return this->PayloadOff;
+};
+std::string client_device_channel::getPayloadValue(void) {
+  return this->PayloadValue;
+};
 std::string client_device_channel::getFileName(void) { return this->FileName; }
-std::string client_device_channel::getStateTopic(void) { return this->StateTopic; }
+std::string client_device_channel::getStateTopic(void) {
+  return this->StateTopic;
+}
 
-std::string client_device_channel::getCommandTopic(void) { return this->CommandTopic; }
-std::string client_device_channel::getCommandTemplate(void) { return this->CommandTemplate; }
+std::string client_device_channel::getCommandTopic(void) {
+  return this->CommandTopic;
+}
+std::string client_device_channel::getCommandTemplate(void) {
+  return this->CommandTemplate;
+}
 
-struct timeval client_device_channel::getLastTv(void) { return this->last_tv; }
-
+struct timeval client_device_channel::getLastTv(void) {
+  return this->last_tv;
+}
 
 int client_device_channel::getTypeEx(void) {
   int type = this->getType();
@@ -403,10 +425,6 @@ int client_device_channel::getTypeEx(void) {
   return type;
 }
 
-
-
-
-
 void client_device_channel::setOnline(bool value) { this->Online = value; }
 
 bool client_device_channel::getOnline() { return this->Online; }
@@ -445,9 +463,7 @@ void client_device_channel::setLastTv(struct timeval value) {
   this->last_tv = value;
 }
 
-void* client_device_channel::getLockObject(void) {
-  return this->lck;
-}
+void *client_device_channel::getLockObject(void) { return this->lck; }
 
 client_device_channel *client_device_channels::add_empty_channel(
     int ChannelId) {
@@ -466,17 +482,16 @@ client_device_channel *client_device_channels::add_empty_channel(
   return c;
 }
 
-void client_device_channels::getMqttSubscriptionTopics(std::vector<std::string>* vect) {
-
-  client_device_channel* channel;
+void client_device_channels::getMqttSubscriptionTopics(
+    std::vector<std::string> *vect) {
+  client_device_channel *channel;
   int i;
 
-  for (i = 0; i < safe_array_count(arr); i++){
-	  channel = (client_device_channel*)safe_array_get(arr, i);
-	  if (channel->getStateTopic().length() > 0)
-	  {
-		  vect->push_back(channel->getStateTopic());
-	  }
+  for (i = 0; i < safe_array_count(arr); i++) {
+    channel = (client_device_channel *)safe_array_get(arr, i);
+    if (channel->getStateTopic().length() > 0) {
+      vect->push_back(channel->getStateTopic());
+    }
   }
 }
 
@@ -516,14 +531,10 @@ client_device_channel *client_device_channels::find_channel_by_topic(
     channel = (client_device_channel *)safe_array_get(arr, i);
     std::string topic_str = channel->getStateTopic();
 
-    if (topic_str.length() > 0 && (strcasecmp( topic_str.c_str(), topic ) == 0))
-    {
-    	safe_array_unlock(arr);
-    	return channel;
+    if (topic_str.length() > 0 && (strcasecmp(topic_str.c_str(), topic) == 0)) {
+      safe_array_unlock(arr);
+      return channel;
     }
-
-
-
   };
 
   safe_array_unlock(arr);

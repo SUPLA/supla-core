@@ -20,8 +20,8 @@
 #define CLIENT_DEVICE_H
 
 #include <stdlib.h>
-#include <string>
 #include <string.h>
+#include <string>
 #include <vector>
 #include "device.h"
 #include "supla-client-lib/devicechannel.h"
@@ -38,13 +38,15 @@ class client_device_channel : public supla_device_channel {
   std::string StateTemplate;
   std::string CommandTemplate;
   std::string Execute;
+  std::string ExecuteOn;
+  std::string ExecuteOff;
   bool Retain;
   int intervalSec;
   bool Online;
   void *lck;
   struct timeval last_tv;
- public:
 
+ public:
   client_device_channel(int Id, int Number, int Type, int Func, int Param1,
                         int Param2, int Param3, char *TextParam1,
                         char *TextParam2, char *TextParam3, bool Hidden,
@@ -77,6 +79,8 @@ class client_device_channel : public supla_device_channel {
   void setCommandTemplate(const char *commandTemplate);
   void setRetain(bool retain);
   void setExecute(const char *execute);
+  void setExecuteOn(const char *execute);
+  void setExecuteOff(const char *execute);
   void setInterval(int interval);
   void setLastTv(struct timeval value);
 
@@ -90,11 +94,13 @@ class client_device_channel : public supla_device_channel {
   std::string getPayloadValue(void);
   std::string getFileName(void);
   std::string getExecute(void);
+  std::string getExecuteOn(void);
+  std::string getExecuteOff(void);
   struct timeval getLastTv(void);
 
   bool getRetain(void);
   int getIntervalSec(void);
-  void* getLockObject(void);
+  void *getLockObject(void);
 };
 
 class client_device_channels : public supla_device_channels {
@@ -118,7 +124,7 @@ class client_device_channels : public supla_device_channels {
   client_device_channel *find_channel_by_topic(const char *topic);
   client_device_channel *getChannel(int idx);
 
-  void getMqttSubscriptionTopics(std::vector<std::string>* vect);
+  void getMqttSubscriptionTopics(std::vector<std::string> *vect);
   void setValueChangedCallback(_func_channelio_valuechanged cb,
                                void *user_data);
   int getCount(void);

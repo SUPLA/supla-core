@@ -48,6 +48,8 @@ void channelio_set_payload_off(unsigned char number, const char *value);
 void channelio_set_payload_value(unsigned char number, const char *value);
 void channelio_set_execute(unsigned char number, const char *value);
 void channelio_set_interval(unsigned char number, int interval);
+void channelio_set_execute_on(unsigned char number, const char *value);
+void channelio_set_execute_off(unsigned char number, const char *value);
 
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1);
 void channelio_set_gpio2(unsigned char number, unsigned char gpio2);

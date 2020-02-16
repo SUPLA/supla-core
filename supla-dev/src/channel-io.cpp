@@ -61,7 +61,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
   char result = 0;
   char read_result = 0;
 
-  if (channel->getFileName().length() >0 ) {
+  if (channel->getFileName().length() > 0) {
     gettimeofday(&now, NULL);
 
     int interval_sec = channel->getIntervalSec();
@@ -130,7 +130,6 @@ void mqtt_subscribe_callback(void **state,
     handle_subscribed_message(channel, topic, message, cio->on_valuechanged,
                               cio->on_valuechanged_user_data);
 }
-
 
 char channelio_init(void) {
   cio = (TChannelIo *)malloc(sizeof(TChannelIo));
@@ -534,6 +533,18 @@ void channelio_set_filename(unsigned char number, const char *value) {
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) channel->setFileName(value);
+}
+
+void channelio_set_execute_on(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setExecuteOn(value);
+}
+
+void channelio_set_execute_off(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setExecuteOff(value);
 }
 
 void channelio_set_execute(unsigned char number, const char *value) {
@@ -1200,17 +1211,42 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi,
 }
 
 void channelio_raise_execute_command(client_device_channel *channel) {
-	std::string command = channel->getExecute();
+  std::string command = channel->getExecute();
+  std::string commandOn = channel->getExecuteOn();
+  std::string commandOff = channel->getExecuteOff();
 
-	if (command.length() == 0) return;
+  if (command.length() == 0 && commandOn.length() == 0 &&
+      commandOff.length() == 0)
+    return;
 
+  if (command.length() > 0) {
+    int commandResult = system(command.c_str());
+    if (commandResult != 0) {
+      supla_log(LOG_WARNING, "%s", command);
+      supla_log(LOG_WARNING, "The command above failed with exist status %d",
+                commandResult);
+    }
+  }
 
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  channel->getValue(value);
 
-  int commandResult = system(command.c_str());
-  if (commandResult != 0) {
-    supla_log(LOG_WARNING, "%s", command);
-    supla_log(LOG_WARNING, "The command above failed with exist status %d",
-              commandResult);
+  if (commandOn.length() > 0 && value[0] == 1) {
+    int commandResult = system(commandOn.c_str());
+    if (commandResult != 0) {
+      supla_log(LOG_WARNING, "%s", commandOn);
+      supla_log(LOG_WARNING, "The command above failed with exist status %d",
+                commandResult);
+    }
+  }
+
+  if (commandOn.length() > 0 && value[0] == 0) {
+    int commandResult = system(commandOff.c_str());
+    if (commandResult != 0) {
+      supla_log(LOG_WARNING, "%s", commandOff);
+      supla_log(LOG_WARNING, "The command above failed with exist status %d",
+                commandResult);
+    }
   }
 }
 
@@ -1227,8 +1263,7 @@ char channelio_set_value(unsigned char number,
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) {
-
-	lck_lock(channel->getLockObject());
+    lck_lock(channel->getLockObject());
     channel->setValue(value);
     lck_unlock(channel->getLockObject());
 
@@ -1290,10 +1325,8 @@ void channelio_setcalback_on_channel_value_changed(
 
   // MQTT SETUP
 
-
   std::string mqtt_host(scfg_string(CFG_MQTT_SERVER));
   if (mqtt_host.length() == 0) return;
-
 
   vector<std::string> topics;
   channels->getMqttSubscriptionTopics(&topics);

@@ -95,7 +95,7 @@ static int decode_function_type(const char *fnc) {
   } else if (strcasecmp(fnc, "GENERAL") == 0) {
     return SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
   } else if (strcasecmp(fnc, "WINDSENSOR") == 0) {
-	return SUPLA_CHANNELFNC_WINDSENSOR;
+    return SUPLA_CHANNELFNC_WINDSENSOR;
   } else
     return SUPLA_CHANNELFNC_NONE;
 }
@@ -165,6 +165,10 @@ void devcfg_channel_cfg(const char *section, const char *name,
     channelio_set_filename(number, value);
   } else if (strcasecmp(name, "command") == 0 && strlen(value) > 0) {
     channelio_set_execute(number, value);
+  } else if (strcasecmp(name, "command_on") == 0 && strlen(value) > 0) {
+    channelio_set_execute_on(number, value);
+  } else if (strcasecmp(name, "command_off") == 0 && strlen(value) > 0) {
+    channelio_set_execute_off(number, value);
   } else if (strcasecmp(name, "state_topic") == 0 && strlen(value) > 0) {
     channelio_set_mqtt_topic_in(number, value);
   } else if (strcasecmp(name, "command_topic") == 0 && strlen(value) > 0) {
@@ -184,39 +188,6 @@ void devcfg_channel_cfg(const char *section, const char *name,
   } else if (strcasecmp(name, "min_interval_sec") == 0 && strlen(value) > 0) {
     channelio_set_interval(number, atoi(value) % 100000);
   }
-
-  /*
-else if (strcasecmp(name, "gpio1") == 0) {
-channelio_set_gpio1(number, atoi(value) % 255);
-} else if (strcasecmp(name, "gpio2") == 0) {
-channelio_set_gpio2(number, atoi(value) % 255);
-} else if (strcasecmp(name, "bistable") == 0) {
-channelio_set_bistable_flag(number, atoi(value) == 1 ? 1 : 0);
-} else if (strcasecmp(name, "w1") == 0 && strlen(value) > 0) {
-channelio_set_w1(number, value);
-} else if (strcasecmp(name, "driver") == 0) {
-channelio_set_mcp23008_driver(number, decode_channel_driver(value));
-} else if (strcasecmp(name, "mcp_addr") == 0) {
-channelio_set_mcp23008_addr(number, strtol(value, NULL, 16));
-} else if (strcasecmp(name, "mcp_reset") == 0) {
-channelio_set_mcp23008_reset(number, atoi(value) % 255);
-} else if (strcasecmp(name, "mcp_gpio_dir") == 0) {
-channelio_set_mcp23008_gpio_dir(number, atoi(value) % 255);
-} else if (strcasecmp(name, "mcp_gpio_val") == 0) {
-channelio_set_mcp23008_gpio_val(number, atoi(value) % 255);
-} else if (strcasecmp(name, "mcp_gpio_port") == 0) {
-channelio_set_mcp23008_gpio_port(number, atoi(value) % MCP23008_MAX_GPIO);
-} else if (strcasecmp(name, "topic_in") == 0 && strlen(value) > 0) {
-  channelio_set_mqtt_topic_in(number, value);
-} else if (strcasecmp(name, "topic_out") == 0 && strlen(value) > 0) {
-  channelio_set_mqtt_topic_out(number, value);
-} else if (strcasecmp(name, "retain") == 0 && strlen(value) == 1) {
-  channelio_set_mqtt_retain(number, atoi(value));
-} else if (strcasecmp(name, "template_in") == 0 && strlen(value) > 0) {
-  channelio_set_mqtt_template_in(number, value);
-} else if (strcasecmp(name, "template_out") == 0 && strlen(value) > 0) {
-  channelio_set_mqtt_template_out(number, value);
-}*/
 }
 
 unsigned char devcfg_init(int argc, char *argv[]) {
