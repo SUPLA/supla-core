@@ -20,7 +20,7 @@
 #define CHANNEL_IO_H_
 
 #include <string.h>
-#include "../supla-client-lib/proto.h"
+#include "supla-client-lib/proto.h"
 #include "client_device.h"
 #include "client_publisher.h"
 #include "client_subscriber.h"
