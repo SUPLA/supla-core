@@ -94,6 +94,8 @@ static int decode_function_type(const char *fnc) {
     return SUPLA_CHANNELFNC_IC_WATER_METER;
   } else if (strcasecmp(fnc, "GENERAL") == 0) {
     return SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+  } else if (strcasecmp(fnc, "WINDSENSOR") == 0) {
+	return SUPLA_CHANNELFNC_WINDSENSOR;
   } else
     return SUPLA_CHANNELFNC_NONE;
 }
