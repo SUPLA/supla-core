@@ -133,9 +133,6 @@ void mqtt_subscribe_callback(void **state,
                               cio->on_valuechanged_user_data);
 }
 
-const char **channelio_channels_get_topics(int *count) {
-  return channels->getMqttSubscriptionTopics(count);
-}
 
 char channelio_init(void) {
   cio = (TChannelIo *)malloc(sizeof(TChannelIo));
@@ -1296,19 +1293,21 @@ void channelio_setcalback_on_channel_value_changed(
 
   int count = 0;
   int iterator = 0;
-  const char **topic_arr = channelio_channels_get_topics(&count);
+    //channelio_channels_get_topics(&count);
 
-  std::vector<std::string> topics;
 
-  for (iterator = 0; iterator < count; iterator++) {
-    topics.push_back(std::string(topic_arr[iterator]));
-  }
+  vector<std::string> topics;
+  channels->getMqttSubscriptionTopics(&topics);
+
+  supla_log(LOG_DEBUG, "initializing MQTT broker connection...");
 
   mqtt_client_init(std::string(scfg_string(CFG_MQTT_SERVER)),
                    scfg_int(CFG_MQTT_PORT),
                    std::string(scfg_string(CFG_MQTT_USERNAME)),
                    std::string(scfg_string(CFG_MQTT_PASSWORD)),
                    "supla_virtual_device", 3, topics, mqtt_subscribe_callback);
+
+  supla_log(LOG_DEBUG, "initialization completed");
 }
 
 void tmp_channelio_raise_valuechanged(unsigned char number) {

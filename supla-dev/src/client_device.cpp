@@ -292,12 +292,14 @@ void client_device_channel::setInterval(int interval) {
 }
 
 void client_device_channel::setStateTopic(const char *stateTopic) {
+
+
   if (this->StateTopic) {
     free(this->StateTopic);
     this->StateTopic = NULL;
   }
 
-  this->StateTopic = strdup(stateTopic);
+  this->StateTopic = strndup(stateTopic, 255);
 }
 void client_device_channel::setExecute(const char *execute) {
   if (this->Execute) {
@@ -544,34 +546,19 @@ client_device_channel *client_device_channels::add_empty_channel(
   return c;
 }
 
-const char **client_device_channels::getMqttSubscriptionTopics(int *count) {
-  *count = 0;
+void client_device_channels::getMqttSubscriptionTopics(std::vector<std::string>* vect) {
 
-  const char **result = NULL;
-
-  safe_array_lock(arr);
-
+  client_device_channel* channel;
   int i;
 
-  client_device_channel *channel;
-  for (i = 0; i < safe_array_count(arr); i++) {
-    channel = (client_device_channel *)safe_array_get(arr, i);
-
-    if (channel && channel->getStateTopic()) *count = *count + 1;
-  };
-
-  result = (const char **)malloc(*count * sizeof(char *));
-
-  for (i = 0; i < safe_array_count(arr); i++) {
-    channel = (client_device_channel *)safe_array_get(arr, i);
-
-    if (channel && channel->getStateTopic())
-      result[i] = strdup(channel->getStateTopic());
-  };
-
-  safe_array_unlock(arr);
-
-  return result;
+  for (i = 0; i < safe_array_count(arr); i++){
+	  channel = (client_device_channel*)safe_array_get(arr, i);
+	  if (channel->getStateTopic() != NULL)
+	  {
+		  std::string topic(channel->getStateTopic());
+	      vect->push_back(topic);
+	  }
+  }
 }
 
 void client_device_channels::setValueChangedCallback(

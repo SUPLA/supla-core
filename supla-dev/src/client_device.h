@@ -20,6 +20,7 @@
 #define CLIENT_DEVICE_H
 
 #include <stdlib.h>
+#include <string>
 #include <string.h>
 #include <vector>
 #include "device.h"
@@ -114,7 +115,7 @@ class client_device_channels : public supla_device_channels {
   client_device_channel *find_channel_by_topic(const char *topic);
   client_device_channel *getChannel(int idx);
 
-  const char **getMqttSubscriptionTopics(int *count);
+  void getMqttSubscriptionTopics(std::vector<std::string>* vect);
   void setValueChangedCallback(_func_channelio_valuechanged cb,
                                void *user_data);
   int getCount(void);
