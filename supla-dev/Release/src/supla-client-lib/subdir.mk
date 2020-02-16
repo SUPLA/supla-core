@@ -67,7 +67,7 @@ src/supla-client-lib/%.o: ../src/supla-client-lib/%.c
 src/supla-client-lib/%.o: ../src/supla-client-lib/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__NO_DATABASE -D__NO_USER -I/usr/src/openssl/include -I"/home/beku/eclipse-workspace/supla-core/supla-dev/src/json" -I/usr/include/x86_64-linux-gnu -I/usr/include/c++/7 -O3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__NO_DATABASE -D__NO_USER -I/usr/src/openssl/include -I"../src/json" -I/usr/include/x86_64-linux-gnu -I/usr/include/c++/7 -O3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
