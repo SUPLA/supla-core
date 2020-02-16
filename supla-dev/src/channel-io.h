@@ -24,10 +24,10 @@
 #include "client_device.h"
 #include "client_publisher.h"
 #include "client_subscriber.h"
-#include "mqtt/mqtt_client.h"
 #include "devcfg.h"
 #include "device.h"
-
+#include "mqtt/mqtt_client.h"
+#include "w1.h"
 
 //#ifdef __cplusplus
 // extern "C" {
@@ -46,6 +46,8 @@ void channelio_set_filename(unsigned char number, const char *value);
 void channelio_set_payload_on(unsigned char number, const char *value);
 void channelio_set_payload_off(unsigned char number, const char *value);
 void channelio_set_payload_value(unsigned char number, const char *value);
+void channelio_set_execute(unsigned char number, const char *value);
+void channelio_set_interval(unsigned char number, int interval);
 
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1);
 void channelio_set_gpio2(unsigned char number, unsigned char gpio2);

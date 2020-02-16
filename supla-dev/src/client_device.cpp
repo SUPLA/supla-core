@@ -43,6 +43,10 @@ client_device_channel::client_device_channel(int Id, int Number, int Type,
   this->PayloadValue = NULL;
   this->StateTopic = NULL;
   this->CommandTemplate = NULL;
+  this->Execute = NULL;
+  this->intervalSec = 10;
+
+  lck = lck_init();
 }
 
 bool client_device_channel::isSensorNONC(void) {
@@ -64,6 +68,7 @@ void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
   // TODO(lukbek): Remove channel type checking in future versions. Check
   // function instead of type. # 140-issue
+
   if ((Func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER ||
        Func == SUPLA_CHANNELFNC_IC_GAS_METER ||
        Func == SUPLA_CHANNELFNC_IC_WATER_METER ||
@@ -228,11 +233,15 @@ void client_device_channel::getDouble(double *Value) {
   }
 }
 
+int client_device_channel::getIntervalSec() { return this->intervalSec; }
+
 client_device_channel::~client_device_channel() {
   if (this->Caption) {
     free(this->Caption);
     this->Caption = NULL;
   }
+
+  lck_free(lck);
 }
 
 void client_device_channel::setType(int type) { this->Type = type; }
@@ -277,6 +286,11 @@ void client_device_channel::setRetain(unsigned char retain) {
   this->Retain = retain;
 }
 
+char *client_device_channel::getExecute(void) { return this->Execute; }
+void client_device_channel::setInterval(int interval) {
+  this->intervalSec = interval;
+}
+
 void client_device_channel::setStateTopic(const char *stateTopic) {
   if (this->StateTopic) {
     free(this->StateTopic);
@@ -285,7 +299,20 @@ void client_device_channel::setStateTopic(const char *stateTopic) {
 
   this->StateTopic = strdup(stateTopic);
 }
+void client_device_channel::setExecute(const char *execute) {
+  if (this->Execute) {
+    free(this->Execute);
+    this->Execute = NULL;
+  }
+  this->Execute = strdup(execute);
+}
+
 char *client_device_channel::getPayloadOn(void) { return this->PayloadOn; };
+char *client_device_channel::getPayloadOff(void) { return this->PayloadOff; };
+char *client_device_channel::getPayloadValue(void) {
+  return this->PayloadValue;
+};
+char *client_device_channel::getFileName(void) { return this->FileName; }
 
 char *client_device_channel::getStateTopic(void) { return this->StateTopic; }
 
@@ -455,6 +482,12 @@ void client_device_channel::setOnline(bool value) { this->Online = value; }
 
 bool client_device_channel::getOnline() { return this->Online; }
 
+client_device_channels::client_device_channels() {
+  this->initialized = false;
+  this->on_valuechanged = NULL;
+  this->on_valuechanged_user_data = NULL;
+}
+
 void client_device_channels::add_channel(int Id, int Number, int Type, int Func,
                                          int Param1, int Param2, int Param3,
                                          char *TextParam1, char *TextParam2,
@@ -555,6 +588,10 @@ client_device_channel *client_device_channels::find_channel(int ChannelId) {
 
   if (result == NULL) result = add_empty_channel(ChannelId);
   return result;
+}
+bool client_device_channels::getInitialized(void) { return this->initialized; }
+void client_device_channels::setInitialized(bool initialized) {
+  this->initialized = initialized;
 }
 
 client_device_channel *client_device_channels::getChannel(int idx) {

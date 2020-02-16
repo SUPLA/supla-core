@@ -120,7 +120,6 @@ int main(int argc, char* argv[]) {
   if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
 #endif
 
-
   // MAIN LOOP
 
   while (st_app_terminate == 0) {

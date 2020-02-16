@@ -33,6 +33,71 @@ char SOFTWARE_VERSION[SUPLA_SOFTVER_MAXSIZE] = "1.0.0";
 /**
  * Use type names to process supla configuration file
  */
+static int decode_function_type(const char *fnc) {
+  if (strcasecmp(fnc, "THERMOMETER") == 0) {
+    return SUPLA_CHANNELFNC_THERMOMETER;
+  } else if (strcasecmp(fnc, "GATEWAYLOCK") == 0) {
+    return SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK;
+  } else if (strcasecmp(fnc, "GATE") == 0) {
+    return SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
+  } else if (strcasecmp(fnc, "GARAGEDOOR") == 0) {
+    return SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
+  } else if (strcasecmp(fnc, "HUMIDITY") == 0) {
+    return SUPLA_CHANNELFNC_HUMIDITY;
+  } else if (strcasecmp(fnc, "HUMIDITYTEMPERATURE") == 0) {
+    return SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
+  } else if (strcasecmp(fnc, "GATEWAYSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY;
+  } else if (strcasecmp(fnc, "GATESENSOR") == 0) {
+    return SUPLA_CHANNELFNC_OPENINGSENSOR_GATE;
+  } else if (strcasecmp(fnc, "GARAGEDOORSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR;
+  } else if (strcasecmp(fnc, "NOLIQUID") == 0) {
+    return SUPLA_CHANNELFNC_NOLIQUIDSENSOR;
+  } else if (strcasecmp(fnc, "DOORLOCK") == 0) {
+    return SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK;
+  } else if (strcasecmp(fnc, "DOORLOCKSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR;
+  } else if (strcasecmp(fnc, "ROLLERSHUTTER") == 0) {
+    return SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
+  } else if (strcasecmp(fnc, "ROLLERSHUTTERSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER;
+  } else if (strcasecmp(fnc, "POWERSWITCH") == 0) {
+    return SUPLA_CHANNELFNC_POWERSWITCH;
+  } else if (strcasecmp(fnc, "LIGHTSWITCH") == 0) {
+    return SUPLA_CHANNELFNC_LIGHTSWITCH;
+  } else if (strcasecmp(fnc, "DIMMER") == 0) {
+    return SUPLA_CHANNELFNC_DIMMER;
+  } else if (strcasecmp(fnc, "RGBLIGHTNING") == 0) {
+    return SUPLA_CHANNELFNC_RGBLIGHTING;
+  } else if (strcasecmp(fnc, "DIMMERANDRGB") == 0) {
+    return SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
+  } else if (strcasecmp(fnc, "DEPTHSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_DEPTHSENSOR;
+  } else if (strcasecmp(fnc, "DISTANCESENSOR") == 0) {
+    return SUPLA_CHANNELFNC_DISTANCESENSOR;
+  } else if (strcasecmp(fnc, "WINDOWSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW;
+  } else if (strcasecmp(fnc, "PRESSURESENSOR") == 0) {
+    return SUPLA_CHANNELFNC_PRESSURESENSOR;
+  } else if (strcasecmp(fnc, "RAINSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_RAINSENSOR;
+  } else if (strcasecmp(fnc, "WEIGHTSENSOR") == 0) {
+    return SUPLA_CHANNELFNC_WEIGHTSENSOR;
+  } else if (strcasecmp(fnc, "STAIRCASETIMER") == 0) {
+    return SUPLA_CHANNELFNC_STAIRCASETIMER;
+  } else if (strcasecmp(fnc, "IC_ELECTRICITY_METER") == 0) {
+    return SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+  } else if (strcasecmp(fnc, "IC_GAS_METER") == 0) {
+    return SUPLA_CHANNELFNC_IC_GAS_METER;
+  } else if (strcasecmp(fnc, "IC_WATER_METER") == 0) {
+    return SUPLA_CHANNELFNC_IC_WATER_METER;
+  } else if (strcasecmp(fnc, "GENERAL") == 0) {
+    return SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT;
+  } else
+    return SUPLA_CHANNELFNC_NONE;
+}
+
 static int decode_channel_type(const char *type) {
   if (strcasecmp(type, "SENSORNO") == 0) {
     return SUPLA_CHANNELTYPE_SENSORNO;
@@ -93,9 +158,11 @@ void devcfg_channel_cfg(const char *section, const char *name,
   if (strcasecmp(name, "type") == 0) {
     channelio_set_type(number, decode_channel_type(value));
   } else if (strcasecmp(name, "function") == 0) {
-    channelio_set_function(number, atoi(value));
-  } else if (strcasecmp(name, "filename") == 0 && strlen(value) > 0) {
+    channelio_set_function(number, decode_function_type(value));
+  } else if (strcasecmp(name, "file") == 0 && strlen(value) > 0) {
     channelio_set_filename(number, value);
+  } else if (strcasecmp(name, "command") == 0 && strlen(value) > 0) {
+    channelio_set_execute(number, value);
   } else if (strcasecmp(name, "state_topic") == 0 && strlen(value) > 0) {
     channelio_set_mqtt_topic_in(number, value);
   } else if (strcasecmp(name, "command_topic") == 0 && strlen(value) > 0) {
@@ -112,7 +179,9 @@ void devcfg_channel_cfg(const char *section, const char *name,
     channelio_set_payload_off(number, value);
   } else if (strcasecmp(name, "payload_value") == 0 && strlen(value) > 0) {
     channelio_set_payload_value(number, value);
-  };
+  } else if (strcasecmp(name, "min_interval_sec") == 0 && strlen(value) > 0) {
+    channelio_set_interval(number, atoi(value) % 100000);
+  }
 
   /*
 else if (strcasecmp(name, "gpio1") == 0) {

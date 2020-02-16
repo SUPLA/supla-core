@@ -36,13 +36,18 @@ class client_device_channel : public supla_device_channel {
   char *CommandTopic;
   char *StateTemplate;
   char *CommandTemplate;
+  char *Execute;
   char Retain;
+  int intervalSec;
 
   char *Caption;
   char Sub_value[8];
   bool Online;
 
  public:
+  void *lck;
+  struct timeval last_tv;
+
   client_device_channel(int Id, int Number, int Type, int Func, int Param1,
                         int Param2, int Param3, char *TextParam1,
                         char *TextParam2, char *TextParam3, bool Hidden,
@@ -73,21 +78,31 @@ class client_device_channel : public supla_device_channel {
   void setStateTemplate(const char *stateTemplate);
   void setCommandTemplate(const char *commandTemplate);
   void setRetain(unsigned char retaint);
+  void setExecute(const char *execute);
+  void setInterval(int interval);
 
   int getTypeEx(void);
   char *getStateTopic(void);
   char *getCommandTopic(void);
   char *getCommandTemplate(void);
   char *getPayloadOn(void);
+  char *getPayloadOff(void);
+  char *getPayloadValue(void);
+  char *getFileName(void);
+  char *getExecute(void);
+  int getIntervalSec(void);
 };
 
 class client_device_channels : public supla_device_channels {
  private:
+  bool initialized;
+
   client_device_channel *add_empty_channel(int ChannelId);
   _func_channelio_valuechanged on_valuechanged;
   void *on_valuechanged_user_data;
 
  public:
+  client_device_channels();
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, char *TextParam1, char *TextParam2,
                    char *TextParam3, bool Hidden, bool Online, char *Caption);
@@ -103,6 +118,8 @@ class client_device_channels : public supla_device_channels {
   void setValueChangedCallback(_func_channelio_valuechanged cb,
                                void *user_data);
   int getCount(void);
+  bool getInitialized(void);
+  void setInitialized(bool initialized);
 };
 
 #endif

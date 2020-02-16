@@ -19,8 +19,8 @@
 #ifndef CLIENT_SUBSCRIBER_H_
 #define CLIENT_SUBSCRIBER_H_
 
-#include <string>
 #include <unistd.h>
+#include <string>
 
 #include "../supla-client-lib/log.h"
 #include "client_device.h"

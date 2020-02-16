@@ -31,6 +31,29 @@
 
 #define W1_DEFAULT_PIN 4
 
+char file_read_sensor(char *filepath, double *line1, double *line2) {
+  FILE *file;
+
+  file = fopen(filepath, "r");
+  if (!file) return -1;
+
+  char line[100];
+  if (fgets(line, sizeof(line), file) != NULL) {
+    if (strlen(line) == 0) {
+      return -1;
+    }
+    *line1 = atof(line);
+  } else {
+    return -1;
+  }
+  if (fgets(line, sizeof(line), file) != NULL) {
+    *line2 = atof(line);
+  }
+
+  fclose(file);
+  return 1;
+}
+
 char w1_ds18b20_get_temp(char *device, double *temp) {
   int fd;
   int count;

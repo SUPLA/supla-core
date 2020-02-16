@@ -55,6 +55,58 @@ void channelio_gpio_monitor_execute(void *user_data, void *sthread);
 void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
+char channelio_read_from_file(client_device_channel *channel, char log_err) {
+  double temp = 0, humidity = 0;
+  struct timeval now;
+  char result = 0;
+  char read_result = 0;
+
+  lck_lock(channel->lck);
+
+  if (channel->getFileName() != NULL) {
+    gettimeofday(&now, NULL);
+
+    int interval_sec = channel->getIntervalSec();
+    char *filepath = channel->getFileName();
+
+    int min_interval = interval_sec >= 0 ? interval_sec : 10;
+
+    if (now.tv_sec - channel->last_tv.tv_sec >= min_interval) {
+      channel->last_tv = now;
+
+      read_result = file_read_sensor(filepath, &temp, &humidity);
+      supla_channel_temphum *temphum = channel->getTempHum();
+
+      if (read_result == 1) {
+        if (temphum->getTemperature() != temp) {
+          temphum->setTemperature(temp);
+          result = 1;
+        }
+
+        if (temphum->getHumidity() != humidity) {
+          temphum->setHumidity(humidity);
+          result = 1;
+        }
+
+      } else {
+        temphum->setTemperature(-275);
+        temphum->setHumidity(-1);
+
+        if (log_err == 1)
+          supla_log(LOG_ERR, "Can't read file %s", filepath ? filepath : "");
+      }
+
+      char value[SUPLA_CHANNELVALUE_SIZE];
+      temphum->toValue(value);
+      channel->setValue(value);
+    }
+
+    lck_unlock(channel->lck);
+  }
+
+  return result;
+}
+
 char channelio_gpio_in(TDeviceChannel *channel, char port12) {
   if (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
       channel->type == SUPLA_CHANNELTYPE_SENSORNC ||
@@ -77,8 +129,7 @@ void mqtt_subscribe_callback(void **state,
       channels->find_channel_by_topic(topic.c_str());
 
   if (channel)
-    handle_subscribed_message(channel, topic, message,
-    						  cio->on_valuechanged,
+    handle_subscribed_message(channel, topic, message, cio->on_valuechanged,
                               cio->on_valuechanged_user_data);
 }
 
@@ -470,6 +521,12 @@ void channelio_set_payload_off(unsigned char number, const char *value) {
   if (channel) channel->setPayloadOff(value);
 }
 
+void channelio_set_interval(unsigned char number, int interval) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setInterval(interval);
+}
+
 void channelio_set_payload_value(unsigned char number, const char *value) {
   if (channels == NULL) return;
   client_device_channel *channel = channels->find_channel(number);
@@ -482,6 +539,12 @@ void channelio_set_filename(unsigned char number, const char *value) {
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) channel->setFileName(value);
+}
+
+void channelio_set_execute(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setExecute(value);
 }
 
 void channelio_set_function(unsigned char number, int function) {
@@ -887,13 +950,17 @@ void channelio_gpio_iterate(void) {
 
 void channelio_w1_iterate(void) {
   int a;
+  if (!channels->getInitialized()) return;
 
-  for (a = 0; a < cio->channel_count; a++) {
-    //   if (channelio_read_temp_and_humidity(cio->channels[a].type,
-    //                                        cio->channels[a].w1,
-    //                                        &cio->channels[a].w1_value, 0) ==
-    //                                        1)
-    // channelio_raise_valuechanged(&cio->channels[a]);
+  client_device_channel *channel;
+  for (a = 0; a < channels->getCount(); a++) {
+    channel = channels->getChannel(a);
+
+    if (!channel->getFileName()) continue;
+
+    if (channelio_read_from_file(channel, 1)) {
+      channelio_raise_valuechanged(channel);
+    };
   }
 }
 
@@ -907,7 +974,6 @@ void channelio_mcp23008_iterate(void) {
 
       if (ch->mcp23008.gpio.value != val) {
         ch->mcp23008.gpio.value = val;
-        // channelio_raise_valuechanged(ch);
       }
     }
   }
@@ -1138,7 +1204,21 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi,
   return result;
 }
 
+void channelio_raise_execute_command(client_device_channel *channel) {
+  if (!channel->getExecute()) return;
+
+  const char *command = strdup(channel->getExecute());
+
+  int commandResult = system(command);
+  if (commandResult != 0) {
+    supla_log(LOG_WARNING, "%s", command);
+    supla_log(LOG_WARNING, "The command above failed with exist status %d",
+              commandResult);
+  }
+}
+
 void channelio_raise_mqtt_valuechannged(client_device_channel *channel) {
+  if (!channel->getCommandTopic()) return;
   publish_mqtt_message_for_channel(channel);
 }
 
@@ -1150,41 +1230,21 @@ char channelio_set_value(unsigned char number,
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) {
+    lck_lock(channel->lck);
     channel->setValue(value);
+    lck_unlock(channel->lck);
+
+    /* execute command if specified */
+    channelio_raise_execute_command(channel);
+
+    /* send value to MQTT if specified */
     channelio_raise_mqtt_valuechannged(channel);
+
+    /* report value to SUPLA server */
     channelio_raise_valuechanged(channel);
+
     return true;
   };
-
-  /*
-  TDeviceChannel *channel = channelio_find(number, 0);
-
-  if (channel) {
-    if (channel->type == SUPLA_CHANNELTYPE_2XRELAYG5LA1A) {
-      if (hi == 0) {
-        if (channelio__set_hi_value(channel, 0, time_ms, 0, 0)) result = 1;
-
-        if (channelio__set_hi_value(channel, 0, time_ms, 1, 1)) result = 1;
-
-      } else if (hi == 1) {
-        if (channelio__set_hi_value(channel, 0, time_ms, 1, 0)) result = 1;
-
-        usleep(100000);  // Wait for relay
-
-        if (channelio__set_hi_value(channel, 1, time_ms, 0, 1)) result = 1;
-
-      } else if (hi == 2) {
-        if (channelio__set_hi_value(channel, 0, time_ms, 0, 0)) result = 1;
-
-        usleep(100000);  // Wait for relay
-
-        if (channelio__set_hi_value(channel, 1, time_ms, 1, 1)) result = 1;
-      }
-
-    } else {
-      return channelio__set_hi_value(channel, hi == 0 ? 0 : 1, time_ms, 0, 1);
-    }
-  }*/
 
   return result;
 }
@@ -1230,12 +1290,11 @@ void channelio_setcalback_on_channel_value_changed(
   cio->on_valuechanged_user_data = user_data;
   lck_unlock(cio->cb_lck);
 
-
   // MQTT SETUP
 
   int count = 0;
   int iterator = 0;
-  const char** topic_arr = channelio_channels_get_topics(&count);
+  const char **topic_arr = channelio_channels_get_topics(&count);
 
   std::vector<std::string> topics;
 
@@ -1248,9 +1307,6 @@ void channelio_setcalback_on_channel_value_changed(
                    std::string(scfg_string(CFG_MQTT_USERNAME)),
                    std::string(scfg_string(CFG_MQTT_PASSWORD)),
                    "supla_virtual_device", 3, topics, mqtt_subscribe_callback);
-
-
-
 }
 
 void tmp_channelio_raise_valuechanged(unsigned char number) {

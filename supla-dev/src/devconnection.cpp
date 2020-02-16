@@ -120,7 +120,6 @@ void devconnection_on_register_result(
       supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_DEBUG,
                              "Registered and ready.");
 
-
       break;
     case SUPLA_RESULTCODE_DEVICE_DISABLED:
       supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_NOTICE,
