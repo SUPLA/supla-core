@@ -19,11 +19,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/srpc.h"
-#include "../supla-client-lib/sthread.h"
-#include "../supla-client-lib/supla-socket.h"
-#include "../supla-client-lib/tools.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/srpc.h"
+#include "supla-client-lib/sthread.h"
+#include "supla-client-lib/supla-socket.h"
+#include "supla-client-lib/tools.h"
 #include "channel-io.h"
 #include "devcfg.h"
 #include "devconnection.h"

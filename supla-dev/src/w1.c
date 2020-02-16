@@ -24,8 +24,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/tools.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/tools.h"
 #include "pi_2_dht_read.h"
 #include "w1.h"
 

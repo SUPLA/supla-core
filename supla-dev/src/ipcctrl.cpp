@@ -22,8 +22,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/sthread.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/sthread.h"
 #include "channel-io.h"
 #include "ipcctrl.h"
 

@@ -19,8 +19,8 @@
 #ifndef supladevcfg_H_
 #define supladevcfg_H_
 
-#include "../supla-client-lib/cfg.h"
-#include "../supla-client-lib/proto.h"
+#include "supla-client-lib/cfg.h"
+#include "supla-client-lib/proto.h"
 
 extern char DEVICE_GUID[SUPLA_GUID_SIZE];
 extern char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];

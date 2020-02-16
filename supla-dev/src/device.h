@@ -8,7 +8,7 @@
 #ifndef SRC_DEVICE_H_
 #define SRC_DEVICE_H_
 
-#include "../supla-client-lib/proto.h"
+#include "supla-client-lib/proto.h"
 #include "gpio.h"
 
 #define MAX_MQTT_TOPIC_LENGTH 255

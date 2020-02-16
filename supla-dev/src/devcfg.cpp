@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/tools.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/tools.h"
 #include "channel-io.h"
 #include "devcfg.h"
 #include "mcp23008.h"

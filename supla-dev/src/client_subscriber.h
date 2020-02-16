@@ -22,7 +22,7 @@
 #include <unistd.h>
 #include <string>
 
-#include "../supla-client-lib/log.h"
+#include "supla-client-lib/log.h"
 #include "client_device.h"
 
 #include "json/jsoncons/json.hpp"

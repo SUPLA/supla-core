@@ -28,8 +28,8 @@
 #include <sys/inotify.h>
 #endif
 
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/tools.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/tools.h"
 #include "gpio.h"
 
 #define GPIO_BUFFER_SIZE 50

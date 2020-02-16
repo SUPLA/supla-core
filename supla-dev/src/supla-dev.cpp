@@ -23,10 +23,10 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#include "../supla-client-lib/ipcsocket.h"
-#include "../supla-client-lib/log.h"
-#include "../supla-client-lib/sthread.h"
-#include "../supla-client-lib/tools.h"
+#include "supla-client-lib/ipcsocket.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/sthread.h"
+#include "supla-client-lib/tools.h"
 #include "accept_loop.h"
 #include "channel-io.h"
 #include "devcfg.h"
