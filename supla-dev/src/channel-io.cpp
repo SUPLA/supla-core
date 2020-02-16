@@ -61,18 +61,16 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
   char result = 0;
   char read_result = 0;
 
-  lck_lock(channel->lck);
-
-  if (channel->getFileName() != NULL) {
+  if (channel->getFileName().length() >0 ) {
     gettimeofday(&now, NULL);
 
     int interval_sec = channel->getIntervalSec();
-    char *filepath = channel->getFileName();
+    const char *filepath = channel->getFileName().c_str();
 
     int min_interval = interval_sec >= 0 ? interval_sec : 10;
 
-    if (now.tv_sec - channel->last_tv.tv_sec >= min_interval) {
-      channel->last_tv = now;
+    if (now.tv_sec - channel->getLastTv().tv_sec >= min_interval) {
+      channel->setLastTv(now);
 
       read_result = file_read_sensor(filepath, &temp, &humidity);
       supla_channel_temphum *temphum = channel->getTempHum();
@@ -101,7 +99,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
       channel->setValue(value);
     }
 
-    lck_unlock(channel->lck);
+    lck_unlock(channel->getLockObject());
   }
 
   return result;
@@ -830,7 +828,7 @@ void channelio_raise_valuechanged(client_device_channel *channel) {
 void channelio_gpio_on_portvalue(TGpioPort *port) {
   TChannelGpioPortValue *gpio_value;
   struct timeval now;
-  char _raise = 0;
+  char _raise;
 
   gpio_value = (TChannelGpioPortValue *)port->user_data1;
 
@@ -953,7 +951,7 @@ void channelio_w1_iterate(void) {
   for (a = 0; a < channels->getCount(); a++) {
     channel = channels->getChannel(a);
 
-    if (!channel->getFileName()) continue;
+    if (channel->getFileName().length() == 0) continue;
 
     if (channelio_read_from_file(channel, 1)) {
       channelio_raise_valuechanged(channel);
@@ -1202,11 +1200,13 @@ char channelio__set_hi_value(TDeviceChannel *channel, char hi,
 }
 
 void channelio_raise_execute_command(client_device_channel *channel) {
-  if (!channel->getExecute()) return;
+	std::string command = channel->getExecute();
 
-  const char *command = strdup(channel->getExecute());
+	if (command.length() == 0) return;
 
-  int commandResult = system(command);
+
+
+  int commandResult = system(command.c_str());
   if (commandResult != 0) {
     supla_log(LOG_WARNING, "%s", command);
     supla_log(LOG_WARNING, "The command above failed with exist status %d",
@@ -1215,7 +1215,7 @@ void channelio_raise_execute_command(client_device_channel *channel) {
 }
 
 void channelio_raise_mqtt_valuechannged(client_device_channel *channel) {
-  if (!channel->getCommandTopic()) return;
+  if (channel->getCommandTopic().length() == 0) return;
   publish_mqtt_message_for_channel(channel);
 }
 
@@ -1227,9 +1227,10 @@ char channelio_set_value(unsigned char number,
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) {
-    lck_lock(channel->lck);
+
+	lck_lock(channel->getLockObject());
     channel->setValue(value);
-    lck_unlock(channel->lck);
+    lck_unlock(channel->getLockObject());
 
     /* execute command if specified */
     channelio_raise_execute_command(channel);
@@ -1291,8 +1292,8 @@ void channelio_setcalback_on_channel_value_changed(
   std::string mqtt_host(scfg_string(CFG_MQTT_SERVER));
   if (mqtt_host.length() == 0) return;
 
-  int count = 0;
-  int iterator = 0;
+  //int count = 0;
+  //int iterator = 0;
     //channelio_channels_get_topics(&count);
 
 

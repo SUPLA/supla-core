@@ -21,8 +21,8 @@
 
 void publish_mqtt_message_for_channel(client_device_channel* channel) {
   bool online = channel->getOnline();
-  std::string topic(channel->getCommandTopic());
-  std::string payload(channel->getCommandTemplate());
+  std::string topic = channel->getCommandTopic();
+  std::string payload = channel->getCommandTemplate();
 
   double value;
   bool publish = false;
@@ -59,7 +59,6 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK: {
       char value[SUPLA_CHANNELVALUE_SIZE];
       char sub_value[SUPLA_CHANNELVALUE_SIZE];
-      channel->getSubValue(sub_value);
       channel->getChar(value);
       bool hi = value[0] > 0;
 
@@ -93,7 +92,6 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
       char cv[SUPLA_CHANNELVALUE_SIZE];
       channel->getChar(cv);
       char sub_value[SUPLA_CHANNELVALUE_SIZE];
-      channel->getSubValue(sub_value);
       char shut = cv[0];
       replace_string_in_place(&payload, "$value$", std::to_string(shut));
 

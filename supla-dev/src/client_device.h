@@ -29,30 +29,26 @@
 
 class client_device_channel : public supla_device_channel {
  private:
-  char *FileName;
-  char *PayloadOn;
-  char *PayloadOff;
-  char *PayloadValue;
-  char *StateTopic;
-  char *CommandTopic;
-  char *StateTemplate;
-  char *CommandTemplate;
-  char *Execute;
-  char Retain;
+  std::string FileName;
+  std::string PayloadOn;
+  std::string PayloadOff;
+  std::string PayloadValue;
+  std::string StateTopic;
+  std::string CommandTopic;
+  std::string StateTemplate;
+  std::string CommandTemplate;
+  std::string Execute;
+  bool Retain;
   int intervalSec;
-
-  char *Caption;
-  char Sub_value[8];
   bool Online;
-
- public:
   void *lck;
   struct timeval last_tv;
+ public:
 
   client_device_channel(int Id, int Number, int Type, int Func, int Param1,
                         int Param2, int Param3, char *TextParam1,
                         char *TextParam2, char *TextParam3, bool Hidden,
-                        bool Online, char *Caption);
+                        bool Online);
   ~client_device_channel();
   bool isSensorNONC(void);
   void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -69,6 +65,7 @@ class client_device_channel : public supla_device_channel {
   void setCaption(char *caption);
 
   void setType(int type);
+
   void setFunction(int function);
   void setFileName(const char *filename);
   void setPayloadOn(const char *payloadOn);
@@ -78,20 +75,26 @@ class client_device_channel : public supla_device_channel {
   void setCommandTopic(const char *commandTopic);
   void setStateTemplate(const char *stateTemplate);
   void setCommandTemplate(const char *commandTemplate);
-  void setRetain(unsigned char retaint);
+  void setRetain(bool retain);
   void setExecute(const char *execute);
   void setInterval(int interval);
+  void setLastTv(struct timeval value);
 
   int getTypeEx(void);
-  char *getStateTopic(void);
-  char *getCommandTopic(void);
-  char *getCommandTemplate(void);
-  char *getPayloadOn(void);
-  char *getPayloadOff(void);
-  char *getPayloadValue(void);
-  char *getFileName(void);
-  char *getExecute(void);
+  std::string getStateTopic(void);
+  std::string getStateTemplate(void);
+  std::string getCommandTopic(void);
+  std::string getCommandTemplate(void);
+  std::string getPayloadOn(void);
+  std::string getPayloadOff(void);
+  std::string getPayloadValue(void);
+  std::string getFileName(void);
+  std::string getExecute(void);
+  struct timeval getLastTv(void);
+
+  bool getRetain(void);
   int getIntervalSec(void);
+  void* getLockObject(void);
 };
 
 class client_device_channels : public supla_device_channels {
@@ -106,7 +109,7 @@ class client_device_channels : public supla_device_channels {
   client_device_channels();
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, char *TextParam1, char *TextParam2,
-                   char *TextParam3, bool Hidden, bool Online, char *Caption);
+                   char *TextParam3, bool Hidden, bool Online);
 
   void set_channel_sub_value(int ChannelID,
                              char sub_value[SUPLA_CHANNELVALUE_SIZE]);

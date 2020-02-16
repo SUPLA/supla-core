@@ -51,7 +51,7 @@ void handle_subscribed_message(client_device_channel* channel,
   try {
     payload = jsoncons::json::parse(message);
 
-    if (channel->getPayloadValue()) {
+    if (channel->getPayloadValue().length() > 0) {
       std::string payloadValue = std::string(channel->getPayloadValue());
       template_value =
           jsoncons::jsonpointer::get(payload, payloadValue).as<std::string>();
@@ -75,8 +75,7 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
-        if (strlen(channel->getPayloadOn()) > 0 &&
-            strcasecmp(channel->getPayloadOn(), template_value.c_str()) == 0)
+        if (channel->getPayloadOn().compare(template_value) == 0)
           value[0] = 1;
         else
           value[0] = 0;
@@ -142,10 +141,9 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
       case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
       {
-        value[0] =
-            strcasecmp(channel->getPayloadOn(), template_value.c_str()) == 0
-                ? 1
-                : 0;
+
+
+        value[0] = channel->getPayloadOn().compare(template_value) == 0 ? 1 : 0;;
         channel->setValue(value);
         cb(channel->getNumber(), value, user_data);
         return;

@@ -31,7 +31,7 @@
 
 #define W1_DEFAULT_PIN 4
 
-char file_read_sensor(char *filepath, double *line1, double *line2) {
+char file_read_sensor(const char *filepath, double *line1, double *line2) {
   FILE *file;
 
   file = fopen(filepath, "r");

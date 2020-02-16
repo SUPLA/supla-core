@@ -22,28 +22,23 @@ client_device_channel::client_device_channel(int Id, int Number, int Type,
                                              int Func, int Param1, int Param2,
                                              int Param3, char *TextParam1,
                                              char *TextParam2, char *TextParam3,
-                                             bool Hidden, bool Online,
-                                             char *Caption)
+                                             bool Hidden, bool Online)
     : supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
                            TextParam1, TextParam2, TextParam3, Hidden) {
   this->Online = Online;
-  this->Caption =
-      Caption ? strndup(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
 
-  memset(this->Sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-  this->FileName = NULL;
-  this->CommandTemplate = NULL;
-  this->StateTemplate = NULL;
+  this->FileName = "";
+  this->CommandTemplate = "";
+  this->StateTemplate = "";
   this->Retain = 0;
-  this->CommandTopic = NULL;
-  this->StateTemplate = NULL;
-  this->PayloadOff = NULL;
-  this->PayloadOn = NULL;
-  this->PayloadValue = NULL;
-  this->StateTopic = NULL;
-  this->CommandTemplate = NULL;
-  this->Execute = NULL;
+  this->CommandTopic = "";
+  this->StateTemplate = "";
+  this->PayloadOff = "";
+  this->PayloadOn = "";
+  this->PayloadValue = "";
+  this->StateTopic = "";
+  this->CommandTemplate = "";
+  this->Execute = "";
   this->intervalSec = 10;
 
   lck = lck_init();
@@ -236,11 +231,6 @@ void client_device_channel::getDouble(double *Value) {
 int client_device_channel::getIntervalSec() { return this->intervalSec; }
 
 client_device_channel::~client_device_channel() {
-  if (this->Caption) {
-    free(this->Caption);
-    this->Caption = NULL;
-  }
-
   lck_free(lck);
 }
 
@@ -249,98 +239,60 @@ void client_device_channel::setType(int type) { this->Type = type; }
 void client_device_channel::setFunction(int function) { this->Func = function; }
 
 void client_device_channel::setFileName(const char *filename) {
-  if (this->FileName) {
-    free(this->FileName);
-    this->FileName = NULL;
-  }
-
-  this->FileName = strdup(filename);
+  this->FileName = std::string(filename);
 }
 
 void client_device_channel::setPayloadOn(const char *payloadOn) {
-  if (this->PayloadOn) {
-    free(this->PayloadOn);
-    this->PayloadOn = NULL;
-  }
-
-  this->PayloadOn = strdup(payloadOn);
+  this->PayloadOn = std::string(payloadOn);
 }
 void client_device_channel::setPayloadOff(const char *payloadOff) {
-  if (this->PayloadOff) {
-    free(this->PayloadOff);
-    this->PayloadOff = NULL;
-  }
-
-  this->PayloadOff = strdup(payloadOff);
+  this->PayloadOff = std::string(payloadOff);
 }
 void client_device_channel::setPayloadValue(const char *payloadValue) {
-  if (this->PayloadValue) {
-    free(this->PayloadValue);
-    this->PayloadValue = NULL;
-  }
-
-  this->PayloadValue = strdup(payloadValue);
+  this->PayloadValue = std::string(payloadValue);
 }
 
-void client_device_channel::setRetain(unsigned char retain) {
+void client_device_channel::setRetain(bool retain) {
   this->Retain = retain;
 }
 
-char *client_device_channel::getExecute(void) { return this->Execute; }
 void client_device_channel::setInterval(int interval) {
   this->intervalSec = interval;
 }
 
 void client_device_channel::setStateTopic(const char *stateTopic) {
-
-
-  if (this->StateTopic) {
-    free(this->StateTopic);
-    this->StateTopic = NULL;
-  }
-
-  this->StateTopic = strndup(stateTopic, 255);
+  this->StateTopic = std::string(stateTopic);
 }
 void client_device_channel::setExecute(const char *execute) {
-  if (this->Execute) {
-    free(this->Execute);
-    this->Execute = NULL;
-  }
-  this->Execute = strdup(execute);
-}
-
-char *client_device_channel::getPayloadOn(void) { return this->PayloadOn; };
-char *client_device_channel::getPayloadOff(void) { return this->PayloadOff; };
-char *client_device_channel::getPayloadValue(void) {
-  return this->PayloadValue;
-};
-char *client_device_channel::getFileName(void) { return this->FileName; }
-
-char *client_device_channel::getStateTopic(void) { return this->StateTopic; }
-
-char *client_device_channel::getCommandTopic(void) {
-  return this->CommandTopic;
-}
-char *client_device_channel::getCommandTemplate(void) {
-  return this->CommandTemplate;
+  this->Execute = std::string(execute);
 }
 
 void client_device_channel::setCommandTopic(const char *commandTopic) {
-  if (this->CommandTopic) {
-    free(this->CommandTopic);
-    this->CommandTopic = NULL;
-  }
-
-  this->CommandTopic = strdup(commandTopic);
+    this->CommandTopic = std::string(commandTopic);
 }
 
 void client_device_channel::setCommandTemplate(const char *commandTemplate) {
-  if (this->CommandTemplate) {
-    free(this->CommandTemplate);
-    this->CommandTemplate = NULL;
-  }
-  this->CommandTemplate = strdup(commandTemplate);
+ this->CommandTemplate = std::string(commandTemplate);
 }
+
+void client_device_channel::setStateTemplate(const char *stateTemplate) {
+  this->StateTemplate = std::string(stateTemplate);
+}
+
+
+std::string client_device_channel::getExecute(void) { return this->Execute; }
+
+std::string client_device_channel::getPayloadOn(void) { return this->PayloadOn; };
+std::string client_device_channel::getPayloadOff(void) { return this->PayloadOff; };
+std::string client_device_channel::getPayloadValue(void) { return this->PayloadValue; };
+std::string client_device_channel::getFileName(void) { return this->FileName; }
+std::string client_device_channel::getStateTopic(void) { return this->StateTopic; }
+
+std::string client_device_channel::getCommandTopic(void) { return this->CommandTopic; }
+std::string client_device_channel::getCommandTemplate(void) { return this->CommandTemplate; }
+
+struct timeval client_device_channel::getLastTv(void) { return this->last_tv; }
+
 
 int client_device_channel::getTypeEx(void) {
   int type = this->getType();
@@ -451,34 +403,9 @@ int client_device_channel::getTypeEx(void) {
   return type;
 }
 
-void client_device_channel::setStateTemplate(const char *stateTemplate) {
-  if (this->StateTemplate) {
-    free(this->StateTemplate);
-    this->StateTemplate = NULL;
-  }
-  this->StateTemplate = strdup(stateTemplate);
-}
 
-void client_device_channel::setCaption(char *caption) {
-  if (this->Caption) {
-    free(this->Caption);
-    this->Caption = NULL;
-  }
-  this->Caption =
-      caption ? strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) : NULL;
-}
 
-char *client_device_channel::getCaption(void) { return Caption; }
 
-void client_device_channel::setSubValue(
-    char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(this->Sub_value, sub_value, SUPLA_CHANNELVALUE_SIZE);
-}
-
-void client_device_channel::getSubValue(
-    char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(sub_value, this->Sub_value, SUPLA_CHANNELVALUE_SIZE);
-}
 
 void client_device_channel::setOnline(bool value) { this->Online = value; }
 
@@ -494,14 +421,14 @@ void client_device_channels::add_channel(int Id, int Number, int Type, int Func,
                                          int Param1, int Param2, int Param3,
                                          char *TextParam1, char *TextParam2,
                                          char *TextParam3, bool Hidden,
-                                         bool Online, char *Caption) {
+                                         bool Online) {
   safe_array_lock(arr);
 
   client_device_channel *channel = find_channel(Id);
   if (channel == 0) {
     client_device_channel *c = new client_device_channel(
         Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
-        TextParam3, Hidden, Online, Caption);
+        TextParam3, Hidden, Online);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -509,24 +436,17 @@ void client_device_channels::add_channel(int Id, int Number, int Type, int Func,
     }
   } else {
     channel->setOnline(Online);
-    channel->setCaption(Caption);
   }
 
   safe_array_unlock(arr);
 }
 
-void client_device_channels::set_channel_sub_value(
-    int ChannelID, char sub_value[SUPLA_CHANNELVALUE_SIZE]) {
-  if (ChannelID == 0) return;
+void client_device_channel::setLastTv(struct timeval value) {
+  this->last_tv = value;
+}
 
-  safe_array_lock(arr);
-
-  client_device_channel *channel = find_channel(ChannelID);
-
-  if (channel) {
-    channel->setSubValue(sub_value);
-  }
-  safe_array_unlock(arr);
+void* client_device_channel::getLockObject(void) {
+  return this->lck;
 }
 
 client_device_channel *client_device_channels::add_empty_channel(
@@ -536,7 +456,7 @@ client_device_channel *client_device_channels::add_empty_channel(
   client_device_channel *c = NULL;
 
   c = new client_device_channel(ChannelId, ChannelId, 0, 0, 0, 0, 0, NULL, NULL,
-                                NULL, false, true, NULL);
+                                NULL, false, true);
   if (c != NULL && safe_array_add(arr, c) == -1) {
     delete c;
     c = NULL;
@@ -553,10 +473,9 @@ void client_device_channels::getMqttSubscriptionTopics(std::vector<std::string>*
 
   for (i = 0; i < safe_array_count(arr); i++){
 	  channel = (client_device_channel*)safe_array_get(arr, i);
-	  if (channel->getStateTopic() != NULL)
+	  if (channel->getStateTopic().length() > 0)
 	  {
-		  std::string topic(channel->getStateTopic());
-	      vect->push_back(topic);
+		  vect->push_back(channel->getStateTopic());
 	  }
   }
 }
@@ -595,12 +514,16 @@ client_device_channel *client_device_channels::find_channel_by_topic(
 
   for (i = 0; i < safe_array_count(arr); i++) {
     channel = (client_device_channel *)safe_array_get(arr, i);
+    std::string topic_str = channel->getStateTopic();
 
-    if (channel && strlen(channel->getStateTopic()) > 0 &&
-        strcasecmp(channel->getStateTopic(), topic) == 0) {
-      safe_array_unlock(arr);
-      return channel;
+    if (topic_str.length() > 0 && (strcasecmp( topic_str.c_str(), topic ) == 0))
+    {
+    	safe_array_unlock(arr);
+    	return channel;
     }
+
+
+
   };
 
   safe_array_unlock(arr);
