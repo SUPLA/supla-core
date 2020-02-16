@@ -44,13 +44,13 @@ static int decode_function_type(const char *fnc) {
     return SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
   } else if (strcasecmp(fnc, "HUMIDITY") == 0) {
     return SUPLA_CHANNELFNC_HUMIDITY;
-  } else if (strcasecmp(fnc, "HUMIDITYTEMPERATURE") == 0) {
+  } else if (strcasecmp(fnc, "TEMPERATURE_AND_HUMIDITY") == 0) {
     return SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
   } else if (strcasecmp(fnc, "GATEWAYSENSOR") == 0) {
     return SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY;
   } else if (strcasecmp(fnc, "GATESENSOR") == 0) {
     return SUPLA_CHANNELFNC_OPENINGSENSOR_GATE;
-  } else if (strcasecmp(fnc, "GARAGEDOORSENSOR") == 0) {
+  } else if (strcasecmp(fnc, "GARAGE_DOOR_SENSOR") == 0) {
     return SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR;
   } else if (strcasecmp(fnc, "NOLIQUID") == 0) {
     return SUPLA_CHANNELFNC_NOLIQUIDSENSOR;

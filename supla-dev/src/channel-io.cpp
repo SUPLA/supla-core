@@ -1291,6 +1291,8 @@ void channelio_setcalback_on_channel_value_changed(
   lck_unlock(cio->cb_lck);
 
   // MQTT SETUP
+  std::string mqtt_host(scfg_string(CFG_MQTT_SERVER));
+  if (mqtt_host.length() == 0) return;
 
   int count = 0;
   int iterator = 0;
