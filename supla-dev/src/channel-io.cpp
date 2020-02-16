@@ -1229,6 +1229,28 @@ void channelio_setcalback_on_channel_value_changed(
   cio->on_valuechanged = on_valuechanged;
   cio->on_valuechanged_user_data = user_data;
   lck_unlock(cio->cb_lck);
+
+
+  // MQTT SETUP
+
+  int count = 0;
+  int iterator = 0;
+  const char** topic_arr = channelio_channels_get_topics(&count);
+
+  std::vector<std::string> topics;
+
+  for (iterator = 0; iterator < count; iterator++) {
+    topics.push_back(std::string(topic_arr[iterator]));
+  }
+
+  mqtt_client_init(std::string(scfg_string(CFG_MQTT_SERVER)),
+                   scfg_int(CFG_MQTT_PORT),
+                   std::string(scfg_string(CFG_MQTT_USERNAME)),
+                   std::string(scfg_string(CFG_MQTT_PASSWORD)),
+                   "supla_virtual_device", 3, topics, mqtt_subscribe_callback);
+
+
+
 }
 
 void tmp_channelio_raise_valuechanged(unsigned char number) {

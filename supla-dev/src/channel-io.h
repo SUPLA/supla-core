@@ -24,9 +24,10 @@
 #include "client_device.h"
 #include "client_publisher.h"
 #include "client_subscriber.h"
+#include "mqtt/mqtt_client.h"
+#include "devcfg.h"
 #include "device.h"
 
-#include "mqtt/mqtt.h"
 
 //#ifdef __cplusplus
 // extern "C" {

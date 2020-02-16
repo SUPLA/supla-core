@@ -120,23 +120,6 @@ int main(int argc, char* argv[]) {
   if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
 #endif
 
-  // MQTT SETUP
-
-  int count = 0;
-  int iterator = 0;
-  const char** topic_arr = channelio_channels_get_topics(&count);
-
-  std::vector<std::string> topics;
-
-  for (iterator = 0; iterator < count; iterator++) {
-    topics.push_back(std::string(topic_arr[iterator]));
-  }
-
-  mqtt_client_init(std::string(scfg_string(CFG_MQTT_SERVER)),
-                   scfg_int(CFG_MQTT_PORT),
-                   std::string(scfg_string(CFG_MQTT_USERNAME)),
-                   std::string(scfg_string(CFG_MQTT_PASSWORD)),
-                   "supla_virtual_device", 3, topics, mqtt_subscribe_callback);
 
   // MAIN LOOP
 

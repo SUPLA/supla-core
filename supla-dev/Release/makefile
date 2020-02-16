@@ -40,10 +40,10 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: supla-dev
+all: supla-virtual-device
 
 # Tool invocations
-supla-dev: $(OBJS) $(USER_OBJS)
+supla-virtual-device: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
 	g++ -L/usr/src/openssl/lib -pthread -lrt -o "supla-virtual-device" $(OBJS) $(USER_OBJS) $(LIBS)
@@ -52,7 +52,7 @@ supla-dev: $(OBJS) $(USER_OBJS)
 
 # Other Targets
 clean:
-	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(OBJS)$(C_UPPER_DEPS)$(CXX_DEPS)$(C_DEPS)$(CPP_DEPS) supla-dev
+	-$(RM) $(CC_DEPS)$(C++_DEPS)$(EXECUTABLES)$(OBJS)$(C_UPPER_DEPS)$(CXX_DEPS)$(C_DEPS)$(CPP_DEPS) supla-virtual-device
 	-@echo ' '
 
 .PHONY: all clean dependents
