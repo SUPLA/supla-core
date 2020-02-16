@@ -34,7 +34,7 @@ char SOFTWARE_VERSION[SUPLA_SOFTVER_MAXSIZE] = "1.0.0";
  * Use type names to process supla configuration file
  */
 static int decode_function_type(const char *fnc) {
-  if (strcasecmp(fnc, "THERMOMETER") == 0) {
+  if (strcasecmp(fnc, "TEMPERATURE") == 0) {
     return SUPLA_CHANNELFNC_THERMOMETER;
   } else if (strcasecmp(fnc, "GATEWAYLOCK") == 0) {
     return SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK;
@@ -230,7 +230,7 @@ unsigned char devcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_global, "device_guid_file", "./var/dev_guid");
   scfg_add_str_param(s_global, "alt_cfg", "");
   scfg_add_str_param(s_global, "state_file", "./var/last_state.txt");
-  scfg_add_str_param(s_global, "device_name", "SUPLA-VIRTUAL-DEVICE");
+  scfg_add_str_param(s_global, "device_name", "SUPLA VIRTUAL DEVICE");
 
   char *s_server = "SERVER";
   scfg_add_str_param(s_server, "host", "");
