@@ -215,10 +215,12 @@ void mqtt_client_free() {
 
   if (mq_client != NULL && mq_client->socketfd != -1)
     close(mq_client->socketfd);
-
-  free(reconnect_state->recvbuf);
-  free(reconnect_state->sendbuf);
-  delete reconnect_state;
+  if (reconnect_state != NULL)
+  {
+    free(reconnect_state->recvbuf);
+	free(reconnect_state->sendbuf);
+	delete reconnect_state;
+  }
 
   if (mq_client != NULL) delete mq_client;
 }
