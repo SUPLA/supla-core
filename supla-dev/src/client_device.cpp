@@ -186,7 +186,7 @@ void client_device_channel::setTempHum(double temp, double humidity) {
   switch (this->function) {
 	 SUPLA_CHANNELFNC_THERMOMETER: {
        setDouble(temp);
-	 }; break;
+	 } break;
 	 SUPLA_CHANNELFNC_HUMIDITY:
 	 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
 	 {
@@ -200,7 +200,7 @@ void client_device_channel::setTempHum(double temp, double humidity) {
 		memcpy(&tmp_value[4], &n, 4);
 
 		setValue(tmp_value);
-	  }; break;
+	  } break;
 	}
 }
 void client_device_channel::setRGBW(int color, char color_brightness, char brightness, 

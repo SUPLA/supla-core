@@ -109,7 +109,7 @@ class client_device_channel {
   void setChar(char value);
 };
 
-class client_device_channels : public supla_device_channels {
+class client_device_channels {
  private:
   bool initialized;
 
