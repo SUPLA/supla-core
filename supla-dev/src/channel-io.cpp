@@ -85,7 +85,9 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
          supla_log(LOG_ERR, "Can't read file %s", channel->getFileName().c_str());
     }
     return read_result;
+  }
 }
+
 
 char channelio_gpio_in(TDeviceChannel *channel, char port12) {
   if (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||

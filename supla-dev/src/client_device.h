@@ -97,14 +97,14 @@ class client_device_channel {
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void getDouble(double *result);
   void getTempHum(double* temp, double* humidity, 
-    bool* isTemperature bool* isHumidity);
+    bool* isTemperature, bool* isHumidity);
   bool getRGBW(int *color, char *color_brightness, char *brightness, char *on_off);
   char getChar(void);
   
   void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void setDouble(double value);
   void setTempHum(double temp, double humidity);
-  void setRGBW(int color, color_brightness, brightness, on_off);
+  void setRGBW(int color, char color_brightness, char brightness, char on_off);
   void setChar(char value);
 };
 
