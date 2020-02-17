@@ -421,6 +421,9 @@ void client_device_channel::setOnline(bool value) { this->online = value; }
 void client_device_channel::setLastSeconds(void) {
   gettimeofday(&this->last, NULL);
 }
+void client_device_channel::setIntervalSec(int interval) {
+  this->intervalSec = interval;
+}
 
 client_device_channels::client_device_channels() {
   this->initialized = false;
