@@ -93,10 +93,13 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
    *isHumidity = false;
    if (temp == NULL || humidity == NULL) return;
     
+   double tmp_temp;
+   double tmp_humidity;    
+	
    switch (this->function) {
 	case SUPLA_CHANNELFNC_THERMOMETER: {
-       getDouble(temp);
- 	   if (*temp > -273 && *temp <= 1000) 
+       getDouble(&tmp_temp);
+ 	   if (tmp_temp > -273 && tmp_temp <= 1000) 
 		 *isTemperature = true;
 	 } break;
 	 case SUPLA_CHANNELFNC_HUMIDITY:
@@ -104,22 +107,25 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
 	 {
 		int n;
 		char value[SUPLA_CHANNELVALUE_SIZE];
-		double humidity;
-
+		
 		getValue(value);
 		memcpy(&n, value, 4);
-		*temp = n / 1000.00;
+		tmp_temp = n / 1000.00;
 
 		memcpy(&n, &value[4], 4);
-		*humidity = n / 1000.00;
+		tmp_humidity = n / 1000.00;
         
-		if (*temp > -273 && *temp <= 1000)
+		if (tmp_temp > -273 && tmp_temp <= 1000)
 		  *isTemperature = true;
 	  
-	    if (*humidity >= 0 && *humidity <= 100)
+	    if (tmp_humidity >= 0 && tmp_humidity <= 100)
 		  *isHumidity = true;
 	  } break;
 	}
+	
+	if (*isTemperature) *temp = tmp_temp;
+	if (*isHumidity) *humidity = tmp_humidity;
+	
  }
 bool client_device_channel::getRGBW(int *color, char *color_brightness,
                                     char *brightness, char *on_off) {
@@ -179,7 +185,7 @@ void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
 }
 void client_device_channel::setDouble(double value) {
   lck_lock(lck);
-  memcpy(this->value, value, sizeof(double));
+  memcpy(this->value, &value, sizeof(double));
   lck_unlock(lck);
 }
 void client_device_channel::setTempHum(double temp, double humidity) {
