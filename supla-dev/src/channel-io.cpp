@@ -181,6 +181,9 @@ void channelio_channel_init(void) {
   }
     
   channels->setInitialized(true);
+  #ifndef __SINGLE_THREAD
+  sthread_simple_run(channelio_w1_execute, NULL, 0);
+  #endif
 }
 
 int channelio_channel_count(void) { return channels->getChannelCount(); }
