@@ -96,8 +96,8 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
    switch (this->function) {
 	case SUPLA_CHANNELFNC_THERMOMETER: {
        getDouble(temp);
- 	   if (temp > -273 && temp <= 1000) 
-		 isTemperature = true;
+ 	   if (*temp > -273 && *temp <= 1000) 
+		 *isTemperature = true;
 	 } break;
 	 case SUPLA_CHANNELFNC_HUMIDITY:
 	 case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
@@ -108,15 +108,15 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
 
 		getValue(value);
 		memcpy(&n, value, 4);
-		temp = n / 1000.00;
+		*temp = n / 1000.00;
 
 		memcpy(&n, &value[4], 4);
-		humidity = n / 1000.00;
+		*humidity = n / 1000.00;
         
-		if (temp > -273 && temp <= 1000)
+		if (*temp > -273 && *temp <= 1000)
 		  *isTemperature = true;
 	  
-	    if (humidity >= 0 && humidity <= 100)
+	    if (*humidity >= 0 && *humidity <= 100)
 		  *isHumidity = true;
 	  } break;
 	}
