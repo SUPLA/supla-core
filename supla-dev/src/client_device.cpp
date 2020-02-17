@@ -435,15 +435,15 @@ client_device_channels::client_device_channels() {
 client_device_channel* client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
   
+  supla_log(LOG_DEBUG, "adding channel with number %d", number);
   
-   client_device_channel* channel = new client_device_channel(number);
-
-   if (channel != NULL && safe_array_add(arr, channel) == -1) {
-     delete channel;
-     channel = NULL;
-   }
+  client_device_channel* channel = new client_device_channel(number);
   
-
+  if (channel != NULL && safe_array_add(arr, channel) == -1) {
+    delete channel;
+    channel = NULL;
+  }
+  
   safe_array_unlock(arr);
   return channel;
 }
@@ -469,6 +469,8 @@ client_device_channel *client_device_channels::getChannel(int idx) {
   return (client_device_channel *)safe_array_get(arr, idx);
 }
 client_device_channel *client_device_channels::find_channel(int number) {
+  
+  supla_log(LOG_DEBUG, "searching channel with number %d", number);
   
   int i;
 
