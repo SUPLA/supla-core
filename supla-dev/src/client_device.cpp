@@ -18,33 +18,29 @@
 
 #include "client_device.h"
 
-client_device_channel::client_device_channel(int Id, int Number, int Type,
-                                             int Func, int Param1, int Param2,
-                                             int Param3, char *TextParam1,
-                                             char *TextParam2, char *TextParam3,
-                                             bool Hidden, bool Online)
-    : supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
-                           TextParam1, TextParam2, TextParam3, Hidden) {
-  this->Online = Online;
-
-  this->FileName = "";
-  this->CommandTemplate = "";
-  this->StateTemplate = "";
-  this->Retain = 0;
-  this->CommandTopic = "";
-  this->StateTemplate = "";
-  this->PayloadOff = "";
-  this->PayloadOn = "";
-  this->PayloadValue = "";
-  this->StateTopic = "";
-  this->CommandTemplate = "";
-  this->Execute = "";
-  this->intervalSec = 10;
-  this->ExecuteOff = "";
-  this->ExecuteOn = "";
-
-  lck = lck_init();
+client_device_channel::client_device_channel(int number) {
+   this->number = number;
+   this->type = 0;
+   this->function = 0;
+   this->intervalSec = 10; /* default 10 seconds*/
+   this->fileName = "";
+   this->payloadOn = "";
+   this->payloadOff = "";
+   this->payloadValue = "";
+   this->stateTopic = "";
+   this->commandTopic = "";
+   this->stateTemplate = "";
+   this->commandTemplate = "";
+   this->execute = "";
+   this->executeOn = "";
+   this->executeOff = "";
+   this->retain = true;
+   this->online = true;
+   this->last = (struct timeval){0};	 
+   
+   this->lck = lck_init();
 }
+client_device_channel::~client_device_channel() { lck_free(lck); }
 
 bool client_device_channel::isSensorNONC(void) {
   switch (Func) {
@@ -60,103 +56,71 @@ bool client_device_channel::isSensorNONC(void) {
       return false;
   }
 }
+void client_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+}
+void client_device_channel::getDouble(double *result) {
+  
+  if (result == NULL) return;
 
-void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
-  // TODO(lukbek): Remove channel type checking in future versions. Check
-  // function instead of type. # 140-issue
-
-  if ((Func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER ||
-       Func == SUPLA_CHANNELFNC_IC_GAS_METER ||
-       Func == SUPLA_CHANNELFNC_IC_WATER_METER ||
-       (Func == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
-        Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER)) &&
-      Param1 > 0 && Param3 > 0) {
-    TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
-    ic_val->counter +=
-        (unsigned _supla_int64_t)Param1 * (unsigned _supla_int64_t)Param3 / 100;
-
-  } else if (isSensorNONC()) {
-    this->value[0] = this->value[0] == 0 ? 1 : 0;
-
-  } else {
-    supla_channel_temphum *TempHum = getTempHum();
-
-    if (TempHum) {
-      if ((Param2 != 0 || Param3 != 0)) {
-        if (Param2 != 0) {
-          TempHum->setTemperature(TempHum->getTemperature() +
-                                  (Param2 / 100.00));
-        }
-
-        if (Param3 != 0) {
-          TempHum->setHumidity(TempHum->getHumidity() + (Param3 / 100.00));
-        }
-
-        TempHum->toValue(this->value);
-      }
-
-      delete TempHum;
-    }
-  }
-
-  if (Param3 == 1 && (isSensorNONC())) {
-    this->value[0] = this->value[0] == 0 ? 1 : 0;
+  switch (this->function) {
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      *result = this->value[0] == 1 ? 1 : 0;
+      break;
+    case SUPLA_CHANNELFNC_THERMOMETER:
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      memcpy(result, this->value, sizeof(double));
+      break;
+    default:
+      *result = 0;
   }
 }
+void client_device_channel::getTempHum(double* temp, double* humidity, 
+   bool* isTemperature bool* isHumidity) {
+    
+   isTemperature = false;
+   isHumidity = false;
+   if (temp == NULL || humidity == NULL) return;
+    
+   switch (this->function) {
+	 SUPLA_CHANNELFNC_THERMOMETER: {
+       getDouble(temp);
+ 	   if (temp > -273 && temp <= 1000) 
+		 isTemperature = true;
+	 }; break;
+	 SUPLA_CHANNELFNC_HUMIDITY:
+	 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+	 {
+		int n;
+		char value[SUPLA_CHANNELVALUE_SIZE];
+		double humidity;
 
-supla_channel_temphum *client_device_channel::getTempHum(void) {
-  double temp;
+		getValue(value);
+		memcpy(&n, value, 4);
+		temp = n / 1000.00;
 
-  if (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
-      getFunc() == SUPLA_CHANNELFNC_WINDSENSOR ||
-      getFunc() == SUPLA_CHANNELFNC_PRESSURESENSOR ||
-	  getFunc() == SUPLA_CHANNELFNC_WEIGHTSENSOR
-	) {
-    getDouble(&temp);
-
-    if (temp > -273 && temp <= 1000) {
-      return new supla_channel_temphum(0, getId(), value);
-    }
-
-  } else if (getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
-             getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE) {
-    int n;
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    double humidity;
-
-    getValue(value);
-    memcpy(&n, value, 4);
-    temp = n / 1000.00;
-
-    memcpy(&n, &value[4], 4);
-    humidity = n / 1000.00;
-
-    if (temp > -273 && temp <= 1000 && humidity >= 0 && humidity <= 100) {
-      return new supla_channel_temphum(1, getId(), value);
-    }
-  }
-
-  return NULL;
-}
-
-supla_channel_thermostat_measurement *
-client_device_channel::getThermostatMeasurement(void) {
-  switch (getFunc()) {
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      getValue(value);
-      TThermostat_Value *th_val = (TThermostat_Value *)value;
-
-      return new supla_channel_thermostat_measurement(
-          getId(), th_val->IsOn > 0, th_val->MeasuredTemperature * 0.01,
-          th_val->PresetTemperature * 0.01);
-    }
-  }
-  return NULL;
-}
-
+		memcpy(&n, &value[4], 4);
+		humidity = n / 1000.00;
+        
+		if (temp > -273 && temp <= 1000)
+		  isTemperature = true;
+	  
+	    if (humidity >= 0 && humidity <= 100)
+		  isHumidity = true;
+	  }; break;
+	}
+ }
 bool client_device_channel::getRGBW(int *color, char *color_brightness,
                                     char *brightness, char *on_off) {
   if (color != NULL) *color = 0;
@@ -169,8 +133,8 @@ bool client_device_channel::getRGBW(int *color, char *color_brightness,
 
   bool result = false;
 
-  if (Func == SUPLA_CHANNELFNC_DIMMER ||
-      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+  if (this->function == SUPLA_CHANNELFNC_DIMMER ||
+      this->function == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness != NULL) {
       *brightness = this->value[0];
 
@@ -180,8 +144,8 @@ bool client_device_channel::getRGBW(int *color, char *color_brightness,
     result = true;
   }
 
-  if (Func == SUPLA_CHANNELFNC_RGBLIGHTING ||
-      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+  if (this->function == SUPLA_CHANNELFNC_RGBLIGHTING ||
+      this->function == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (color_brightness != NULL) {
       *color_brightness = this->value[1];
 
@@ -206,123 +170,69 @@ bool client_device_channel::getRGBW(int *color, char *color_brightness,
 
   return result;
 }
+char client_device_channel::getChar(void) { return this->value[0]; }
+void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
+  
+  lck_lock(lck);
+  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
+  lck_unlock(lck);
+}
+void client_device_channel::setDouble(double value) {
+  lck_lock(lck);
+  memcpy(this->value, value, sizeof(double));
+  lck_unlock(lck);
+}
+void client_device_channel::setTempHum(double temp, double humidity) {
+  switch (this->function) {
+	 SUPLA_CHANNELFNC_THERMOMETER: {
+       setDouble(temp);
+	 }; break;
+	 SUPLA_CHANNELFNC_HUMIDITY:
+	 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+	 {
+		int n;
+        char tmp_value[SUPLA_CHANNELVALUE_SIZE];
+		
+		n = temp * 1000;
+		memcpy(tmp_value, &n, 4);
 
-void client_device_channel::getDouble(double *Value) {
-  if (Value == NULL) return;
+		n = humidity * 1000;
+		memcpy(&tmp_value[4], &n, 4);
 
-  switch (Func) {
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-    case SUPLA_CHANNELFNC_MAILSENSOR:
-      *Value = this->value[0] == 1 ? 1 : 0;
-      break;
-    case SUPLA_CHANNELFNC_THERMOMETER:
-    case SUPLA_CHANNELFNC_DISTANCESENSOR:
-    case SUPLA_CHANNELFNC_DEPTHSENSOR:
-    case SUPLA_CHANNELFNC_WINDSENSOR:
-    case SUPLA_CHANNELFNC_PRESSURESENSOR:
-    case SUPLA_CHANNELFNC_RAINSENSOR:
-    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-      memcpy(Value, this->value, sizeof(double));
-      break;
-    default:
-      *Value = 0;
+		setValue(tmp_value);
+	  }; break;
+	}
+}
+void client_device_channel::setRGBW(int color, color_brightness, brightness, 
+  on_off) {
+	   
+  char tmp_value[SUPLA_CHANNELVALUE_SIZE];
+  
+  if (Func == SUPLA_CHANNELFNC_DIMMER ||
+      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+    if (brightness < 0 || brightness > 100) brightness = 0;
+
+    tmp_value[0] = brightness;
   }
-}
 
-int client_device_channel::getIntervalSec() { return this->intervalSec; }
+  if (Func == SUPLA_CHANNELFNC_RGBLIGHTING ||
+      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+    if (color_brightness < 0 || color_brightness > 100) color_brightness = 0;
 
-client_device_channel::~client_device_channel() { lck_free(lck); }
-
-void client_device_channel::setType(int type) { this->Type = type; }
-
-void client_device_channel::setFunction(int function) { this->Func = function; }
-
-void client_device_channel::setFileName(const char *filename) {
-  this->FileName = std::string(filename);
+    tmp_value[1] = color_brightness;
+    tmp_value[2] = (char)((color & 0x000000FF));
+    tmp_value[3] = (char)((color & 0x0000FF00) >> 8);
+    tmp_value[4] = (char)((color & 0x00FF0000) >> 16);
+    tmp_value[5] = on_off;
+  }
+  
+  setValue(tmp_value);
 }
-
-void client_device_channel::setPayloadOn(const char *payloadOn) {
-  this->PayloadOn = std::string(payloadOn);
+void client_device_channel::setChar(char chr){
+  value[0] = chr;
 }
-void client_device_channel::setPayloadOff(const char *payloadOff) {
-  this->PayloadOff = std::string(payloadOff);
-}
-void client_device_channel::setPayloadValue(const char *payloadValue) {
-  this->PayloadValue = std::string(payloadValue);
-}
-
-void client_device_channel::setRetain(bool retain) { this->Retain = retain; }
-
-void client_device_channel::setInterval(int interval) {
-  this->intervalSec = interval;
-}
-
-void client_device_channel::setStateTopic(const char *stateTopic) {
-  this->StateTopic = std::string(stateTopic);
-}
-void client_device_channel::setExecute(const char *execute) {
-  this->Execute = std::string(execute);
-}
-
-void client_device_channel::setExecuteOn(const char *execute) {
-  this->ExecuteOn = std::string(execute);
-}
-void client_device_channel::setExecuteOff(const char *execute) {
-  this->ExecuteOff = std::string(execute);
-}
-
-void client_device_channel::setCommandTopic(const char *commandTopic) {
-  this->CommandTopic = std::string(commandTopic);
-}
-
-void client_device_channel::setCommandTemplate(const char *commandTemplate) {
-  this->CommandTemplate = std::string(commandTemplate);
-}
-
-void client_device_channel::setStateTemplate(const char *stateTemplate) {
-  this->StateTemplate = std::string(stateTemplate);
-}
-
-std::string client_device_channel::getExecute(void) { return this->Execute; }
-std::string client_device_channel::getExecuteOn(void) {
-  return this->ExecuteOn;
-}
-std::string client_device_channel::getExecuteOff(void) {
-  return this->ExecuteOff;
-}
-std::string client_device_channel::getPayloadOn(void) {
-  return this->PayloadOn;
-};
-std::string client_device_channel::getPayloadOff(void) {
-  return this->PayloadOff;
-};
-std::string client_device_channel::getPayloadValue(void) {
-  return this->PayloadValue;
-};
-std::string client_device_channel::getFileName(void) { return this->FileName; }
-std::string client_device_channel::getStateTopic(void) {
-  return this->StateTopic;
-}
-
-std::string client_device_channel::getCommandTopic(void) {
-  return this->CommandTopic;
-}
-std::string client_device_channel::getCommandTemplate(void) {
-  return this->CommandTemplate;
-}
-
-struct timeval client_device_channel::getLastTv(void) {
-  return this->last_tv;
-}
-
-int client_device_channel::getTypeEx(void) {
-  int type = this->getType();
-  if (type == 0) {
+int client_device_channel::getType(void) {
+  if (this->type == 0) {
     switch (this->getFunc()) {
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
@@ -332,7 +242,7 @@ int client_device_channel::getTypeEx(void) {
       case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
       case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
-        type = SUPLA_CHANNELTYPE_SENSORNO;
+        this->type = SUPLA_CHANNELTYPE_SENSORNO;
         break;
 
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
@@ -343,147 +253,186 @@ int client_device_channel::getTypeEx(void) {
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        type = SUPLA_CHANNELTYPE_RELAYG5LA1A;
+        this->type = SUPLA_CHANNELTYPE_RELAYG5LA1A;
         break;
 
       case SUPLA_CHANNELFNC_THERMOMETER:
-        type = SUPLA_CHANNELTYPE_THERMOMETER;
+        this->type = SUPLA_CHANNELTYPE_THERMOMETER;
         break;
 
       case SUPLA_CHANNELFNC_DIMMER:
-        type = SUPLA_CHANNELTYPE_DIMMER;
+        this->type = SUPLA_CHANNELTYPE_DIMMER;
         break;
 
       case SUPLA_CHANNELFNC_RGBLIGHTING:
-        type = SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
+        this->type = SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
         break;
 
       case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-        type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
+        this->type = SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
         break;
 
       case SUPLA_CHANNELFNC_DEPTHSENSOR:     // ver. >= 5
       case SUPLA_CHANNELFNC_DISTANCESENSOR:  // ver. >= 5
-        type = SUPLA_CHANNELTYPE_DISTANCESENSOR;
+        this->type = SUPLA_CHANNELTYPE_DISTANCESENSOR;
         break;
 
       case SUPLA_CHANNELFNC_HUMIDITY:
-        type = SUPLA_CHANNELTYPE_HUMIDITYSENSOR;
+        this->type = SUPLA_CHANNELTYPE_HUMIDITYSENSOR;
         break;
 
       case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-        type = SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR;
+        this->type = SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR;
         break;
 
       case SUPLA_CHANNELFNC_WINDSENSOR:
-        type = SUPLA_CHANNELTYPE_WINDSENSOR;
+        this->type = SUPLA_CHANNELTYPE_WINDSENSOR;
         break;  // ver. >= 8
       case SUPLA_CHANNELFNC_PRESSURESENSOR:
-        type = SUPLA_CHANNELTYPE_PRESSURESENSOR;
+        this->type = SUPLA_CHANNELTYPE_PRESSURESENSOR;
         break;  // ver. >= 8
       case SUPLA_CHANNELFNC_RAINSENSOR:
-        type = SUPLA_CHANNELTYPE_RAINSENSOR;
+        this->type = SUPLA_CHANNELTYPE_RAINSENSOR;
         break;  // ver. >= 8
       case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-        type = SUPLA_CHANNELTYPE_WEIGHTSENSOR;
+        this->type = SUPLA_CHANNELTYPE_WEIGHTSENSOR;
         break;
       case SUPLA_CHANNELFNC_WEATHER_STATION:
-        type = SUPLA_CHANNELTYPE_WEATHER_STATION;
+        this->type = SUPLA_CHANNELTYPE_WEATHER_STATION;
         break;
 
       case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:  // ver. >= 12
       case SUPLA_CHANNELFNC_IC_GAS_METER:          // ver. >= 10
       case SUPLA_CHANNELFNC_IC_WATER_METER:
-        type = SUPLA_CHANNELTYPE_IMPULSE_COUNTER;
+        this->type = SUPLA_CHANNELTYPE_IMPULSE_COUNTER;
         break;  // ver. >= 10
 
       case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-        type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+        this->type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
         break;
 
       case SUPLA_CHANNELFNC_THERMOSTAT:
-        return SUPLA_CHANNELTYPE_THERMOSTAT;
+        this->type = SUPLA_CHANNELTYPE_THERMOSTAT;
         break;  // ver. >= 11
       case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-        type = SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS;
+        this->type = SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS;
         break;
       case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:  // ver. >= 12
       case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-        type = SUPLA_CHANNELTYPE_VALVE;
+        this->type = SUPLA_CHANNELTYPE_VALVE;
         break;
 
       case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
         break;
-        type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT;
+        this->type = SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT;
         break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
-        type = SUPLA_CHANNELTYPE_ENGINE;
+        this->type = SUPLA_CHANNELTYPE_ENGINE;
         break;
       case SUPLA_CHANNELFNC_ACTIONTRIGGER:
-        type = SUPLA_CHANNELTYPE_ACTIONTRIGGER;
+        this->type = SUPLA_CHANNELTYPE_ACTIONTRIGGER;
     }
-
-    this->Type = type;
   }
 
-  return type;
+  return this->type;
+}
+int client_device_channel::getFunction(void) { return this->function; } 
+int client_device_channel::getNumber(void) { return this->number; }
+int client_device_channel::getIntervalSec() { return this->intervalSec; }
+std::string client_device_channel::getFileName(void) { return this->fileName; }
+std::string client_device_channel::getPayloadOn(void) {
+  return this->payloadOn;
+};
+std::string client_device_channel::getPayloadOff(void) {
+  return this->payloadOff;
+};
+std::string client_device_channel::getPayloadValue(void) {
+  return this->payloadValue;
+};
+std::string client_device_channel::getStateTopic(void) {
+  return this->stateTopic;
+}
+std::string client_device_channel::getCommandTopic(void) {
+  return this->commandTopic;
+}
+std::string client_device_channel::getStateTemplate(void) {
+  return this->stateTemplate;	
+}
+std::string client_device_channel::getCommandTemplate(void) {
+  return this->commandTemplate;
+}
+std::string client_device_channel::getExecute(void) { return this->execute; }
+std::string client_device_channel::getExecuteOn(void) {
+  return this->executeOn;
+}
+std::string client_device_channel::getExecuteOff(void) {
+  return this->executeOff;
+}
+bool client_device_channel::getRetain(void) { return this->retain; }
+bool client_device_channel::getOnline(void) { return this->online; }
+long client_device_channel::getLastSeconds(void) {
+  return this->last.tv_sec;
 }
 
-void client_device_channel::setOnline(bool value) { this->Online = value; }
-
-bool client_device_channel::getOnline() { return this->Online; }
+void client_device_channel::setType(int type) { this->type = type; }
+void client_device_channel::setFunction(int function) { this->function = function; }
+void client_device_channel::setNumber(int number) {this->number = number; }
+void client_device_channel::setFileName(const char *filename) {
+  this->fileName = std::string(filename);
+}
+void client_device_channel::setPayloadOn(const char *payloadOn) {
+  this->payloadOn = std::string(payloadOn);
+}
+void client_device_channel::setPayloadOff(const char *payloadOff) {
+  this->payloadOff = std::string(payloadOff);
+}
+void client_device_channel::setPayloadValue(const char *payloadValue) {
+  this->payloadValue = std::string(payloadValue);
+}
+void client_device_channel::setStateTopic(const char *stateTopic) {
+  this->stateTopic = std::string(stateTopic);
+}
+void client_device_channel::setCommandTopic(const char *commandTopic) {
+  this->commandTopic = std::string(commandTopic);
+}
+void client_device_channel::setStateTemplate(const char *stateTemplate) {
+  this->stateTemplate = std::string(stateTemplate);
+}
+void client_device_channel::setCommandTemplate(const char *commandTemplate) {
+  this->commandTemplate = std::string(commandTemplate);
+}
+void client_device_channel::setExecute(const char *execute) {
+  this->execute = std::string(execute);
+}
+void client_device_channel::setExecuteOn(const char *execute) {
+  this->executeOn = std::string(execute);
+}
+void client_device_channel::setExecuteOff(const char *execute) {
+  this->executeOff = std::string(execute);
+}
+void client_device_channel::setRetain(bool retain) { this->retain = retain; }
+void client_device_channel::setOnline(bool value) { this->online = value; }
+void client_device_channel::setLastSeconds(void) {
+  gettimeofday(&this->last, NULL);
+}
 
 client_device_channels::client_device_channels() {
   this->initialized = false;
-  this->on_valuechanged = NULL;
-  this->on_valuechanged_user_data = NULL;
 }
-
-void client_device_channels::add_channel(int Id, int Number, int Type, int Func,
-                                         int Param1, int Param2, int Param3,
-                                         char *TextParam1, char *TextParam2,
-                                         char *TextParam3, bool Hidden,
-                                         bool Online) {
+void client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
-
-  client_device_channel *channel = find_channel(Id);
+  
+  client_device_channel *channel = find_channel(number);
   if (channel == 0) {
-    client_device_channel *c = new client_device_channel(
-        Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
-        TextParam3, Hidden, Online);
+    client_device_channel *c = new client_device_channel(number);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
       c = NULL;
     }
-  } else {
-    channel->setOnline(Online);
-  }
+  };
 
   safe_array_unlock(arr);
-}
-
-void client_device_channel::setLastTv(struct timeval value) {
-  this->last_tv = value;
-}
-
-void *client_device_channel::getLockObject(void) { return this->lck; }
-
-client_device_channel *client_device_channels::add_empty_channel(
-    int ChannelId) {
-  safe_array_lock(arr);
-
-  client_device_channel *c = NULL;
-
-  c = new client_device_channel(ChannelId, ChannelId, 0, 0, 0, 0, 0, NULL, NULL,
-                                NULL, false, true);
-  if (c != NULL && safe_array_add(arr, c) == -1) {
-    delete c;
-    c = NULL;
-  }
-
-  safe_array_unlock(arr);
-  return c;
 }
 
 void client_device_channels::getMqttSubscriptionTopics(
@@ -498,36 +447,36 @@ void client_device_channels::getMqttSubscriptionTopics(
     }
   }
 }
-
-void client_device_channels::setValueChangedCallback(
-    _func_channelio_valuechanged cb, void *user_data) {
-  this->on_valuechanged = on_valuechanged;
-  this->on_valuechanged_user_data = user_data;
-}
-
 int client_device_channels::getCount(void) { return safe_array_count(arr); }
-
-client_device_channel *client_device_channels::find_channel(int ChannelId) {
-  client_device_channel *result =
-      (client_device_channel *)safe_array_findcnd(arr, arr_findcmp, &ChannelId);
-
-  if (result == NULL) result = add_empty_channel(ChannelId);
-  return result;
-}
 bool client_device_channels::getInitialized(void) { return this->initialized; }
 void client_device_channels::setInitialized(bool initialized) {
   this->initialized = initialized;
 }
-
 client_device_channel *client_device_channels::getChannel(int idx) {
   return (client_device_channel *)safe_array_get(arr, idx);
 }
-
-client_device_channel *client_device_channels::find_channel_by_topic(
-    const char *topic) {
+client_device_channel *client_device_channels::find_channel(int number) {
+  
   int i;
 
-  safe_array_lock(arr);
+  client_device_channel *channel;
+
+  for (i = 0; i < safe_array_count(arr); i++) {
+    channel = (client_device_channel *)safe_array_get(arr, i);
+     
+    if (channel->getNumber() == number ) {
+      break;
+    }
+  };
+  
+  if (channel == NULL) channel = add_channel(number); 
+  
+  return channel;
+  
+}
+client_device_channel *client_device_channels::find_channel_by_topic(std::string topic) {
+  
+  int i;
 
   client_device_channel *channel;
 
@@ -535,12 +484,10 @@ client_device_channel *client_device_channels::find_channel_by_topic(
     channel = (client_device_channel *)safe_array_get(arr, i);
     std::string topic_str = channel->getStateTopic();
 
-    if (topic_str.length() > 0 && (strcasecmp(topic_str.c_str(), topic) == 0)) {
-      safe_array_unlock(arr);
+    if (topic_str.length() > 0 && (topic_str.compare(topic) == 0)) {
       return channel;
     }
   };
 
-  safe_array_unlock(arr);
   return NULL;
 }
