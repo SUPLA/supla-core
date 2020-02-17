@@ -112,6 +112,7 @@ class client_device_channel {
 class client_device_channels {
  private:
   bool initialized;
+  void* arr;
 
  public:
   client_device_channels();

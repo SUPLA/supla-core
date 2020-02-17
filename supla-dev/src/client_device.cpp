@@ -184,11 +184,11 @@ void client_device_channel::setDouble(double value) {
 }
 void client_device_channel::setTempHum(double temp, double humidity) {
   switch (this->function) {
-	 SUPLA_CHANNELFNC_THERMOMETER: {
+	 case SUPLA_CHANNELFNC_THERMOMETER: {
        setDouble(temp);
 	 } break;
-	 SUPLA_CHANNELFNC_HUMIDITY:
-	 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+	 case SUPLA_CHANNELFNC_HUMIDITY:
+	 case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
 	 {
 		int n;
         char tmp_value[SUPLA_CHANNELVALUE_SIZE];
@@ -418,6 +418,7 @@ void client_device_channel::setLastSeconds(void) {
 
 client_device_channels::client_device_channels() {
   this->initialized = false;
+  this->arr = safe_array_init();
 }
 void client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
