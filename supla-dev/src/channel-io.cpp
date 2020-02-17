@@ -159,14 +159,14 @@ void channelio_channel_init(void) {
   int a;
   
   client_device_channel* ch;
-  for (a = 0; a <  channels->getCount(); a ++) {
+  for (a = 0; a <  channels->getChannelCount(); a ++) {
     ch = channels->getChannel(a);
 	channelio_read_from_file(ch, 1);
   }
   channels->setInitialized(true);
 }
 
-int channelio_channel_count(void) { return channels->getCount(); }
+int channelio_channel_count(void) { return channels->getChannelCount(); }
  
 
 void channelio_set_payload_on(unsigned char number, const char *value) {
@@ -182,7 +182,7 @@ void channelio_set_payload_off(unsigned char number, const char *value) {
 void channelio_set_interval(unsigned char number, int interval) {
   if (channels == NULL) return;
   client_device_channel *channel = channels->find_channel(number);
-  if (channel) channel->setInterval(interval);
+  if (channel) channel->setIntervalSec(interval);
 }
 
 void channelio_set_payload_value(unsigned char number, const char *value) {
@@ -246,7 +246,7 @@ int channelio_get_function(unsigned char number) {
 
   client_device_channel *channel = channels->find_channel(number);
 
-  if (channel) return channel->getFunc();
+  if (channel) return channel->getFunction();
 
   return 0;
 }
@@ -301,7 +301,7 @@ void channelio_w1_iterate(void) {
   if (!channels->getInitialized()) return;
 
   client_device_channel *channel;
-  for (a = 0; a < channels->getCount(); a++) {
+  for (a = 0; a < channels->getChannelCount(); a++) {
     channel = channels->getChannel(a);
 
     if (channel->getFileName().length() == 0) continue;
@@ -404,7 +404,7 @@ void channelio_channels_to_srd(unsigned char *channel_count,
                                TDS_SuplaDeviceChannel_B *chnl) {
   int a;
 
-  *channel_count = channels->getCount();
+  *channel_count = channels->getChannelCount();
 
   for (a = 0; a < *channel_count; a++) {
     client_device_channel *channel = channels->getChannel(a);
