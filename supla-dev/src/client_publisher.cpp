@@ -26,22 +26,25 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
 
   double value;
   bool publish = false;
-  switch (channel->getFunc()) {
+  switch (channel->getFunction()) {
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_HUMIDITY:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
-      supla_channel_temphum* tempHum = channel->getTempHum();
-      if (tempHum) {
-        double temp = tempHum->getTemperature();
-        double hum = tempHum->getHumidity();
-        delete tempHum;
-
-        replace_string_in_place(&payload, "$temperature$",
+      double temp;
+	  double hum;
+	  bool isTemp;
+	  bool isHum;
+	  
+	  channel->getTempHum(&temp, &hum, &isTemp, &isHum);
+        
+	  if (isTemp)
+		replace_string_in_place(&payload, "$temperature$",
                                 std::to_string(temp));
-        replace_string_in_place(&payload, "$humidity$", std::to_string(hum));
+      if (isHum)
+		replace_string_in_place(&payload, "$humidity$", std::to_string(hum));
 
-        publish = true;
-      }
+      publish = true;
+     
     } break;
     case SUPLA_CHANNELFNC_WINDSENSOR:
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
@@ -86,7 +89,7 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     } break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
       char cv[SUPLA_CHANNELVALUE_SIZE];
-      channel->getChar(cv);
+      channel->getValue(cv);
       char sub_value[SUPLA_CHANNELVALUE_SIZE];
       char shut = cv[0];
       replace_string_in_place(&payload, "$value$", std::to_string(shut));
@@ -131,14 +134,14 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     } break;
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_ELECTRICITY_METER: {
-      TSuplaChannelExtendedValue* value = (TSuplaChannelExtendedValue*)malloc(
-          sizeof(TSuplaChannelExtendedValue));
+      //TSuplaChannelExtendedValue* value = (TSuplaChannelExtendedValue*)malloc(
+      //    sizeof(TSuplaChannelExtendedValue));
 
-      if (!channel->getExtendedValue(value)) {
-        free(value);
-        break;
-      }
-
+//      if (!channel->getExtendedValue(value)) {
+  //      free(value);
+    //    break;
+      //}
+      /*
       TElectricityMeter_ExtendedValue em_ev;
       TSC_ImpulseCounter_ExtendedValue ic_ev;
 
@@ -223,8 +226,9 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
 
           publish = true;
         }
+		
       }
-      free(value);
+      free(value);*/
     } break;
   }
   if (publish) {
