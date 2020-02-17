@@ -71,7 +71,6 @@ void channelio_set_mqtt_retain(unsigned char number, unsigned char value);
 
 char channelio_get_value(unsigned char number,
                          char value[SUPLA_CHANNELVALUE_SIZE]);
-char channelio_get_hi_value(unsigned char number, char *hi);
 char channelio_set_value(unsigned char number, char hi[SUPLA_CHANNELVALUE_SIZE],
                          unsigned int time_ms);
 

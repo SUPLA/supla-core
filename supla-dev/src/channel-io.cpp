@@ -372,6 +372,15 @@ void channelio_raise_execute_command(client_device_channel *channel) {
   }
 }
 
+char channelio_get_value(unsigned char number,
+                         char value[SUPLA_CHANNELVALUE_SIZE]) {
+							 
+	client_device_channel* channel = channels->find_channel(number);
+	if (channel) 
+	  channel->getValue(value);
+  
+}
+
 void channelio_raise_mqtt_valuechannged(client_device_channel *channel) {
   if (channel->getCommandTopic().length() == 0) return;
   publish_mqtt_message_for_channel(channel);
