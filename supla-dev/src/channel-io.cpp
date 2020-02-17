@@ -82,12 +82,17 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
       
 	  int n;
       char tmp_value[SUPLA_CHANNELVALUE_SIZE];
-		
-	  n = val1 * 1000;
+	  if (val2 != -1)
+	  {
+		n = val1 * 1000;
 	  memcpy(tmp_value, &n, 4);
-	  
+
 	  n = val2 * 1000;
-	  memcpy(&tmp_value[4], &n, 4);	
+	  memcpy(&tmp_value[4], &n, 4);
+  
+	  } else {
+	    memcpy(tmp_value, &val1, sizeof(double));
+	  }
 	  
 	  channel->setValue(tmp_value);
 	  
