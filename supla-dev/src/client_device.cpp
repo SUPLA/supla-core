@@ -19,6 +19,9 @@
 #include "client_device.h"
 
 client_device_channel::client_device_channel(int number) {
+	
+   supla_log(LOG_DEBUG, "adding channel with number %d", number);
+  
    this->number = number;
    this->type = 0;
    this->function = 0;

@@ -26,6 +26,7 @@
 #include "device.h"
 #include "supla-client-lib/devicechannel.h"
 #include "supla-client-lib/safearray.h"
+#include "supla-client-lib/log.h"
 
 class client_device_channel {
  private:
