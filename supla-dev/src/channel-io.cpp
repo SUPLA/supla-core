@@ -84,8 +84,9 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
       if (read_result == 0 && log_err == 1)
          supla_log(LOG_ERR, "Can't read file %s", channel->getFileName().c_str());
     }
-    return read_result;
   }
+  return read_result;
+  
 }
 
 

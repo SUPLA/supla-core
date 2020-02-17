@@ -94,13 +94,13 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
    if (temp == NULL || humidity == NULL) return;
     
    switch (this->function) {
-	 SUPLA_CHANNELFNC_THERMOMETER: {
+	case SUPLA_CHANNELFNC_THERMOMETER: {
        getDouble(temp);
  	   if (temp > -273 && temp <= 1000) 
 		 isTemperature = true;
-	 }; break;
-	 SUPLA_CHANNELFNC_HUMIDITY:
-	 SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+	 } break;
+	 case SUPLA_CHANNELFNC_HUMIDITY:
+	 case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
 	 {
 		int n;
 		char value[SUPLA_CHANNELVALUE_SIZE];
@@ -118,7 +118,7 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
 	  
 	    if (humidity >= 0 && humidity <= 100)
 		  *isHumidity = true;
-	  }; break;
+	  } break;
 	}
  }
 bool client_device_channel::getRGBW(int *color, char *color_brightness,
@@ -423,18 +423,17 @@ client_device_channels::client_device_channels() {
 client_device_channel* client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
   
-  client_device_channel *channel = find_channel(number);
-  if (channel == 0) {
-    client_device_channel *c = new client_device_channel(number);
+  
+   client_device_channel* channel = new client_device_channel(number);
 
-    if (c != NULL && safe_array_add(arr, c) == -1) {
-      delete c;
-      c = NULL;
-    }
-  };
+   if (channel != NULL && safe_array_add(arr, channel) == -1) {
+     delete channel;
+     channel = NULL;
+   }
+  
 
   safe_array_unlock(arr);
-  return c;
+  return channel;
 }
 
 void client_device_channels::getMqttSubscriptionTopics(
@@ -465,8 +464,8 @@ client_device_channel *client_device_channels::find_channel(int number) {
 
   for (i = 0; i < safe_array_count(arr); i++) {
     channel = (client_device_channel *)safe_array_get(arr, i);
-     
-    if (channel->getNumber() == number ) {
+    
+	if (channel->getNumber() == number ) {
       break;
     }
   };
