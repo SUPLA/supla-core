@@ -116,7 +116,7 @@ class client_device_channels {
 
  public:
   client_device_channels();
-  void add_channel(int number);
+  client_device_channel* add_channel(int number);
   
   client_device_channel *find_channel(int number);
   client_device_channel *find_channel_by_topic(std::string topic);

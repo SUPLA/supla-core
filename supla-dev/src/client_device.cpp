@@ -420,7 +420,7 @@ client_device_channels::client_device_channels() {
   this->initialized = false;
   this->arr = safe_array_init();
 }
-void client_device_channels::add_channel(int number) {
+client_device_channel* client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
   
   client_device_channel *channel = find_channel(number);
@@ -434,6 +434,7 @@ void client_device_channels::add_channel(int number) {
   };
 
   safe_array_unlock(arr);
+  return c;
 }
 
 void client_device_channels::getMqttSubscriptionTopics(
@@ -448,7 +449,7 @@ void client_device_channels::getMqttSubscriptionTopics(
     }
   }
 }
-int client_device_channels::getCount(void) { return safe_array_count(arr); }
+int client_device_channels::getChannelCount(void) { return safe_array_count(arr); }
 bool client_device_channels::getInitialized(void) { return this->initialized; }
 void client_device_channels::setInitialized(bool initialized) {
   this->initialized = initialized;
@@ -470,7 +471,8 @@ client_device_channel *client_device_channels::find_channel(int number) {
     }
   };
   
-  if (channel == NULL) channel = add_channel(number); 
+  if (channel == NULL) 
+	channel = add_channel(number); 
   
   return channel;
   
