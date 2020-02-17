@@ -87,7 +87,7 @@ void client_device_channel::getDouble(double *result) {
   }
 }
 void client_device_channel::getTempHum(double* temp, double* humidity, 
-   bool* isTemperature bool* isHumidity) {
+   bool* isTemperature, bool* isHumidity) {
     
    isTemperature = false;
    isHumidity = false;
@@ -203,8 +203,8 @@ void client_device_channel::setTempHum(double temp, double humidity) {
 	  }; break;
 	}
 }
-void client_device_channel::setRGBW(int color, color_brightness, brightness, 
-  on_off) {
+void client_device_channel::setRGBW(int color, char color_brightness, char brightness, 
+  char on_off) {
 	   
   char tmp_value[SUPLA_CHANNELVALUE_SIZE];
   
