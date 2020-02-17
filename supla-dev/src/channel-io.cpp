@@ -159,11 +159,17 @@ void channelio_channel_init(void) {
   
   int a;
   
-  client_device_channel* ch;
-  for (a = 0; a <  channels->getChannelCount(); a ++) {
-    ch = channels->getChannel(a);
-	channelio_read_from_file(ch, 1);
+  client_device_channel *channel;
+  for (a = 0; a < channels->getChannelCount(); a++) {
+    channel = channels->getChannel(a);
+
+    if (channel->getFileName().length() == 0) continue;
+
+    if (channelio_read_from_file(channel, 1)) {
+      channelio_raise_valuechanged(channel);
+    };
   }
+    
   channels->setInitialized(true);
 }
 
@@ -230,7 +236,7 @@ void channelio_set_type(unsigned char number, int type) {
   if (channels == NULL) return;
 
   client_device_channel *channel = channels->find_channel(number);
-
+  
   if (channel) channel->setType(type);
 }
 int channelio_get_type(unsigned char number) {
@@ -315,8 +321,9 @@ void channelio_w1_iterate(void) {
 
 #ifdef __SINGLE_THREAD
 void channelio_iterate(void) {
-  if (!channels->initialized) return;
- 
+	
+  if (!channels->getInitialized()) return;
+
   channelio_w1_iterate();
 }
 #else
