@@ -86,12 +86,9 @@ void svr_ipcctrl::execute(void *sthread) {
           int number = 255;
           sscanf(&buffer[strlen(cmd_channel_get_hivalue)], "%i", &number);
 		  char value[SUPLA_CHANNELVALUE_SIZE];	
-          if (channelio_get_value(number, value) == 1) {
-            send_result("HIVALUE:", value[0] == 1 ? 1 : 0);
-          } else {
-            send_result("ERR", number);
-          }
-
+          channelio_get_value(number, value);
+          send_result("HIVALUE:", value[0] == 1 ? 1 : 0);
+          
         } else if (match_command(cmd_channel_get_type, len)) {
           int number = 255;
           sscanf(&buffer[strlen(cmd_channel_get_type)], "%i", &number);
