@@ -67,7 +67,7 @@ void handle_subscribed_message(client_device_channel* channel,
             template_value.c_str());
   try {
     /* raw payload simple value */
-    switch (channel->getFunc()) {
+    switch (channel->getFuncion()) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
@@ -100,14 +100,10 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_THERMOMETER: {
         std::string::size_type sz;  // alias of size_t
         double temp = std::stod(template_value, &sz);
-        supla_channel_temphum* temphum = channel->getTempHum();
-
-        if (temphum) {
-          temphum->setTemperature(temp);
-          temphum->toValue(value);
-        }
-
-        channel->setValue(value);
+		
+        channel->setDouble(temp);
+        channel->getValue(value);
+	
         cb(channelNumber, value, user_data);
 
         return;
@@ -118,15 +114,9 @@ void handle_subscribed_message(client_device_channel* channel,
         double temp = std::stod(template_value, &sz);
         double hum = std::stod(template_value.substr(sz));
 
-        supla_channel_temphum* temphum = channel->getTempHum();
+		channel->setTempHum(temp, hum);
+        channel->getValue(value);
 
-        if (temphum) {
-          temphum->setTemperature(temp);
-          temphum->setHumidity(hum);
-          temphum->toValue(value);
-        }
-
-        channel->setValue(value);
         cb(channelNumber, value, user_data);
 
         return;
