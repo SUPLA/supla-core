@@ -483,12 +483,12 @@ client_device_channel *client_device_channels::find_channel(int number) {
 	supla_log(LOG_DEBUG, "c_number: %d", c_number);
 	
 	if (channel->getNumber() == number ) {
-      break;
+      return channel;
     }
   };
   
-  if (channel == NULL) 
-	channel = add_channel(number); 
+  
+  channel = add_channel(number); 
   
   return channel;
   
