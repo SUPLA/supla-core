@@ -54,6 +54,16 @@ void channelio_gpio_monitor_execute(void *user_data, void *sthread);
 void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
+void channelio_raise_valuechanged(client_device_channel *channel) {
+  char value[SUPLA_CHANNELVALUE_SIZE];
+
+  channel->getValue(value);
+
+  if (channels->on_valuechanged)
+      channels->on_valuechanged(channel->getNumber(), value,
+      channels->on_valuechanged_user_data);
+}
+
 char channelio_read_from_file(client_device_channel *channel, char log_err) {
   double val1 = -275, val2 = -1;
   struct timeval now;
@@ -292,15 +302,6 @@ void channelio_set_mqtt_template_out(unsigned char number, const char *value) {
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) channel->setCommandTemplate(value);
-}
-void channelio_raise_valuechanged(client_device_channel *channel) {
-  char value[SUPLA_CHANNELVALUE_SIZE];
-
-  channel->getValue(value);
-
-  if (channels->on_valuechanged)
-      channels->on_valuechanged(channel->getNumber(), value,
-      channels->on_valuechanged_user_data);
 }
 
 void channelio_w1_iterate(void) {
