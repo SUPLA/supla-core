@@ -479,6 +479,9 @@ client_device_channel *client_device_channels::find_channel(int number) {
   for (i = 0; i < safe_array_count(arr); i++) {
     channel = (client_device_channel *)safe_array_get(arr, i);
     
+	int c_number = channel->getNumber();
+	supla_log(LOG_DEBUG, "c_number: %d", c_number);
+	
 	if (channel->getNumber() == number ) {
       break;
     }
