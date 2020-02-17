@@ -20,7 +20,6 @@
 #include <string>
 
 void publish_mqtt_message_for_channel(client_device_channel* channel) {
-  bool online = channel->getOnline();
   std::string topic = channel->getCommandTopic();
   std::string payload = channel->getCommandTemplate();
 
@@ -61,8 +60,7 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK: {
       char value[SUPLA_CHANNELVALUE_SIZE];
-      char sub_value[SUPLA_CHANNELVALUE_SIZE];
-      channel->getChar(value);
+      channel->getValue(value);
       bool hi = value[0] > 0;
 
       replace_string_in_place(&payload, "$value$", std::to_string(hi));
@@ -80,7 +78,7 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
       char cv[SUPLA_CHANNELVALUE_SIZE];
-      channel->getChar(cv);
+      channel->getValue(cv);
       bool hi = cv[0] > 0;
 
       replace_string_in_place(&payload, "$value$", std::to_string(hi));
@@ -90,7 +88,6 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
       char cv[SUPLA_CHANNELVALUE_SIZE];
       channel->getValue(cv);
-      char sub_value[SUPLA_CHANNELVALUE_SIZE];
       char shut = cv[0];
       replace_string_in_place(&payload, "$value$", std::to_string(shut));
 
