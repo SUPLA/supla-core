@@ -408,10 +408,10 @@ void channelio_channels_to_srd(unsigned char *channel_count,
 
   for (a = 0; a < *channel_count; a++) {
     client_device_channel *channel = channels->getChannel(a);
-    if (channel && !channel->getHidden()) {
+    if (channel) {
       chnl[a].Number = channel->getNumber();
-      chnl[a].Type = channel->getTypeEx();
-      chnl[a].Default = channel->getFunc();
+      chnl[a].Type = channel->getType();
+      chnl[a].Default = channel->getFunction();
       channel->getValue(chnl[a].value);
     }
   }
