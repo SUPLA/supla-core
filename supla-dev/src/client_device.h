@@ -48,6 +48,7 @@ class client_device_channel {
    bool online;
    void *lck;
    struct timeval last;
+   char value[SUPLA_CHANNELVALUE_SIZE];
    
    bool isSensorNONC(void);
  public:

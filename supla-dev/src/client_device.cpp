@@ -43,7 +43,7 @@ client_device_channel::client_device_channel(int number) {
 client_device_channel::~client_device_channel() { lck_free(lck); }
 
 bool client_device_channel::isSensorNONC(void) {
-  switch (Func) {
+  switch (this->function) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
@@ -89,8 +89,8 @@ void client_device_channel::getDouble(double *result) {
 void client_device_channel::getTempHum(double* temp, double* humidity, 
    bool* isTemperature, bool* isHumidity) {
     
-   isTemperature = false;
-   isHumidity = false;
+   *isTemperature = false;
+   *isHumidity = false;
    if (temp == NULL || humidity == NULL) return;
     
    switch (this->function) {
@@ -114,10 +114,10 @@ void client_device_channel::getTempHum(double* temp, double* humidity,
 		humidity = n / 1000.00;
         
 		if (temp > -273 && temp <= 1000)
-		  isTemperature = true;
+		  *isTemperature = true;
 	  
 	    if (humidity >= 0 && humidity <= 100)
-		  isHumidity = true;
+		  *isHumidity = true;
 	  }; break;
 	}
  }
@@ -208,15 +208,15 @@ void client_device_channel::setRGBW(int color, char color_brightness, char brigh
 	   
   char tmp_value[SUPLA_CHANNELVALUE_SIZE];
   
-  if (Func == SUPLA_CHANNELFNC_DIMMER ||
-      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+  if (this->function == SUPLA_CHANNELFNC_DIMMER ||
+      this->function == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
 
     tmp_value[0] = brightness;
   }
 
-  if (Func == SUPLA_CHANNELFNC_RGBLIGHTING ||
-      Func == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+  if (this->function == SUPLA_CHANNELFNC_RGBLIGHTING ||
+      this->function == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (color_brightness < 0 || color_brightness > 100) color_brightness = 0;
 
     tmp_value[1] = color_brightness;
@@ -233,7 +233,7 @@ void client_device_channel::setChar(char chr){
 }
 int client_device_channel::getType(void) {
   if (this->type == 0) {
-    switch (this->getFunc()) {
+    switch (this->function) {
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
