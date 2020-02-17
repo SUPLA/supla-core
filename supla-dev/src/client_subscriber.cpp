@@ -67,7 +67,7 @@ void handle_subscribed_message(client_device_channel* channel,
             template_value.c_str());
   try {
     /* raw payload simple value */
-    switch (channel->getFuncion()) {
+    switch (channel->getFunction()) {
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
