@@ -16,7 +16,7 @@ http://code.google.com/p/inih/
 
 #include "ini.h"
 
-#define MAX_LINE 200
+#define MAX_LINE 1024
 #define MAX_SECTION 50
 #define MAX_NAME 50
 
