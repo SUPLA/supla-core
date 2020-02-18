@@ -66,9 +66,9 @@ void handle_subscribed_message(client_device_channel* channel,
   std::string payloadOff = channel->getPayloadOff();
   
   if (payloadOn.length() == 0)
-	payloadOn == "1";
+	payloadOn = "1";
   if (payloadOff.length() == 0)
-	payloadOff == "0";
+	payloadOff = "0";
   
   supla_log(LOG_DEBUG, "handling incomming message: %s",
             template_value.c_str());
@@ -81,7 +81,16 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: 
+	  case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
+      case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
+	  {
 	 	value[0] = payloadOn.compare(template_value) == 0 ? 1 : 0;
 		channel->setValue(value);
         
@@ -126,20 +135,6 @@ void handle_subscribed_message(client_device_channel* channel,
         return;
 
       } break;
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-      case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
-      case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
-      {
-        value[0] = payloadOn.compare(template_value) == 0 ? 1 : 0;
-        channel->setValue(value);
-        if (cb) cb(channel->getNumber(), value, user_data);
-        return;
-      }
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
         auto temp = atoi(template_value.c_str());
         if (temp < 0) temp = 0;
