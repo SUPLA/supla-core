@@ -62,7 +62,16 @@ void handle_subscribed_message(client_device_channel* channel,
   } catch (jsoncons::parse_error& per) {
   } catch (jsoncons::parse_exception& pex) {
   }
-
+  if (template_value.length() == 0) return;
+  
+  std::string payloadOn = channel->getPayloadOn();
+  std::string payloadOff = channel->getPayloadOff();
+  
+  if (payloadOn.length() == 0)
+	payloadOn == "1";
+  if (payloadOff.length() == 0)
+	payloadOff == "0";
+  
   supla_log(LOG_DEBUG, "handling incomming message: %s",
             template_value.c_str());
   try {
@@ -75,14 +84,10 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: {
-        if (channel->getPayloadOn().compare(template_value) == 0)
-          value[0] = 1;
-        else
-          value[0] = 0;
-
-        channel->setValue(value);
-        cb(channelNumber, value, user_data);
-
+	 	value[0] = payloadOn.compare(template_value) == 0 ? 1 : 0;
+		channel->setValue(value);
+        
+		if (cb) cb(channelNumber, value, user_data);
         return;
       } break;
       case SUPLA_CHANNELFNC_DISTANCESENSOR:
@@ -91,10 +96,11 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_PRESSURESENSOR:
       case SUPLA_CHANNELFNC_RAINSENSOR:
       case SUPLA_CHANNELFNC_WEIGHTSENSOR: {
-        double dbval = std::stod(template_value);
+		double dbval = std::stod(template_value);
         memcpy(value, &dbval, sizeof(double));
         channel->setValue(value);
-        cb(channel->getNumber(), value, user_data);
+        
+		if (cb) cb(channel->getNumber(), value, user_data);
         return;
       };
       case SUPLA_CHANNELFNC_THERMOMETER: {
@@ -104,7 +110,7 @@ void handle_subscribed_message(client_device_channel* channel,
         channel->setDouble(temp);
         channel->getValue(value);
 	
-        cb(channelNumber, value, user_data);
+        if (cb) cb(channelNumber, value, user_data);
 
         return;
 
@@ -117,7 +123,7 @@ void handle_subscribed_message(client_device_channel* channel,
 		channel->setTempHum(temp, hum);
         channel->getValue(value);
 
-        cb(channelNumber, value, user_data);
+        if (cb) cb(channelNumber, value, user_data);
 
         return;
 
@@ -131,10 +137,9 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
       case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
       {
-        value[0] = channel->getPayloadOn().compare(template_value) == 0 ? 1 : 0;
-        ;
+        value[0] = payloadOn.compare(template_value) == 0 ? 1 : 0;
         channel->setValue(value);
-        cb(channel->getNumber(), value, user_data);
+        if (cb) cb(channel->getNumber(), value, user_data);
         return;
       }
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
@@ -145,7 +150,7 @@ void handle_subscribed_message(client_device_channel* channel,
         value[0] = temp;
 
         channel->setValue(value);
-        cb(channel->getNumber(), value, user_data);
+        if (cb) cb(channel->getNumber(), value, user_data);
         return;
       } break;
     };
