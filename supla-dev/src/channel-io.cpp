@@ -34,11 +34,11 @@
 
 // TODO(pzygmunt) whole remodel
 
-#define GPIO_MINDELAY_USEC 200000
+#define GPIO_MINDELAY_USEC 500000
 #ifdef __SINGLE_THREAD
 #define W1_TEMP_MINDELAY_SEC 120
 #else
-#define W1_TEMP_MINDELAY_SEC 30
+#define W1_TEMP_MINDELAY_USEC 500000
 #endif
 #define MCP23008_MINDELAY_SEC 1
 
@@ -275,6 +275,13 @@ int channelio_get_function(unsigned char number) {
 
   return 0;
 }
+void channelio_set_toggle(unsigned char number, int toggle) {
+  if (channels == NULL) return;
+
+  client_device_channel *channel = channels->find_channel(number);
+
+  if (channel) channel->setToggleSec(toggle);
+}
 
 void channelio_set_mqtt_topic_in(unsigned char number, const char *value) {
   if (channels == NULL) return;
@@ -319,31 +326,39 @@ void channelio_w1_iterate(void) {
   client_device_channel *channel;
   for (a = 0; a < channels->getChannelCount(); a++) {
     channel = channels->getChannel(a);
-
-    if (channel->getFileName().length() == 0) continue;
-
-    if (channelio_read_from_file(channel, 1)) {
-      channelio_raise_valuechanged(channel);
-    };
+    	
+    if (channel->getFileName().length() > 0) {
+		if (channelio_read_from_file(channel, 1)) {
+		  channelio_raise_valuechanged(channel);
+		};
+	};
+	
+	if (channel->getTogleSec() > 0 && !channel->getToggled())
+	{
+		
+	    struct timeval now;
+		gettimeofday(&now, NULL);
+		
+		if (now.tv_sec - channel->getLastSeconds() >= channel->getTogleSec()) {
+	      supla_log(LOG_DEBUG, "toggling value for channel: %s", number);
+		  channel->toggleValue();
+		  channelio_raise_valuechanged(channel); 
+		};
+	};
   }
 }
 
 #ifdef __SINGLE_THREAD
 void channelio_iterate(void) {
-	
   if (!channels->getInitialized()) return;
-
   channelio_w1_iterate();
 }
 #else
 void channelio_w1_execute(void *user_data, void *sthread) {
-  int wait = (W1_TEMP_MINDELAY_SEC * 1000000) - 2000000;
-
-  if (wait <= 0) wait = 1000000;
-
+  
   while (!sthread_isterminated(sthread)) {
     channelio_w1_iterate();
-    usleep(wait);
+    usleep(W1_TEMP_MINDELAY_USEC);
   }
 }
 #endif

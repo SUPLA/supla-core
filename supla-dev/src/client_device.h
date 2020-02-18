@@ -34,6 +34,7 @@ class client_device_channel {
    int function;
    int number;
    int intervalSec;
+   int toggleSec;
    std::string fileName;
    std::string payloadOn;
    std::string payloadOff;
@@ -47,6 +48,8 @@ class client_device_channel {
    std::string executeOff;
    bool retain;
    bool online;
+   bool toggled;
+   
    void *lck;
    struct timeval last;
    char value[SUPLA_CHANNELVALUE_SIZE];
@@ -61,6 +64,7 @@ class client_device_channel {
   int getFunction(void);
   int getNumber(void);
   int getIntervalSec(void);
+  int getTogleSec(void);
   std::string getFileName(void);
   std::string getPayloadOn(void);
   std::string getPayloadOff(void);
@@ -73,13 +77,15 @@ class client_device_channel {
   std::string getExecuteOn(void);
   std::string getExecuteOff(void);
   bool getRetain(void);
-  bool getOnline();
+  bool getOnline(void);
+  bool getToggled(void);
   long getLastSeconds(void);
-  
+    
   void setType(int type);
   void setFunction(int function);
   void setNumber(int number);
   void setIntervalSec(int interval);
+  void setToggleSec(int interval);
   void setFileName(const char *filename);
   void setPayloadOn(const char *payloadOn);
   void setPayloadOff(const char *payloadOff);
@@ -93,6 +99,7 @@ class client_device_channel {
   void setExecuteOff(const char *execute);
   void setRetain(bool retain);
   void setOnline(bool online);
+  void setToggled(bool toggled);
   void setLastSeconds(void);
   
   /* value handler */ 
@@ -108,6 +115,8 @@ class client_device_channel {
   void setTempHum(double temp, double humidity);
   void setRGBW(int color, char color_brightness, char brightness, char on_off);
   void setChar(char value);
+  
+  void toggleValue(void);
 };
 
 class client_device_channels {

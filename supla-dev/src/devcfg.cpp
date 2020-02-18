@@ -189,7 +189,10 @@ void devcfg_channel_cfg(const char *section, const char *name,
     channelio_set_payload_value(number, value);
   } else if (strcasecmp(name, "min_interval_sec") == 0 && strlen(value) > 0) {
     channelio_set_interval(number, atoi(value) % 100000);
-  }
+  } else if (strcasecmp(name, "min_toggle_sec") == 0 && strlen(value) > 0) {
+    channelio_set_toggle(number, atoi(value) % 100000);
+  }	  
+  
 }
 
 unsigned char devcfg_init(int argc, char *argv[]) {

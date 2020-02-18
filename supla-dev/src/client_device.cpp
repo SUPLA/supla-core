@@ -26,6 +26,8 @@ client_device_channel::client_device_channel(int number) {
    this->type = 0;
    this->function = 0;
    this->intervalSec = 10; /* default 10 seconds*/
+   this->toggleSec = 0;
+   
    this->fileName = "";
    this->payloadOn = "";
    this->payloadOff = "";
@@ -39,11 +41,55 @@ client_device_channel::client_device_channel(int number) {
    this->executeOff = "";
    this->retain = true;
    this->online = true;
+   this->toggled = true;
+   
    this->last = (struct timeval){0};	 
    
    this->lck = lck_init();
 }
 client_device_channel::~client_device_channel() { lck_free(lck); }
+
+bool client_device_channel::getToggled(void) {
+  return this->toggled;
+}
+
+void client_device_channel::setToggled(bool toggled) {
+  this->toggled = toggled;
+}
+
+int client_device_channel::getToggleSec(void) {
+  return this->toggleSec;
+}
+
+void client_device_channel::setToggleSec(int interval) {
+  this->toggleSec = interval;
+}
+
+void client_device_channel::toggleValue(void) {
+  switch (this->function) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: 
+	case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
+    case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
+	{   
+		lck_lock(lck);
+		value[0] = value[0] > 0 ? 0 : 1;  
+		toggled = true;
+		lck_unlock(lck);
+	};
+  }
+}
 
 bool client_device_channel::isSensorNONC(void) {
   switch (this->function) {
