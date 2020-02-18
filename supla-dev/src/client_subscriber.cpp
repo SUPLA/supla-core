@@ -59,8 +59,6 @@ void handle_subscribed_message(client_device_channel* channel,
     }
   } catch (jsoncons::ser_error& ser) {
   } catch (jsoncons::jsonpointer::jsonpointer_error& error) {
-  } catch (jsoncons::parse_error& per) {
-  } catch (jsoncons::parse_exception& pex) {
   }
   if (template_value.length() == 0) return;
   
