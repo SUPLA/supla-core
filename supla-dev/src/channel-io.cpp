@@ -333,13 +333,13 @@ void channelio_w1_iterate(void) {
 		};
 	};
 	
-	if (channel->getTogleSec() > 0 && !channel->getToggled())
+	if (channel->getToggleSec() > 0 && !channel->getToggled())
 	{
 		
 	    struct timeval now;
 		gettimeofday(&now, NULL);
 		
-		if (now.tv_sec - channel->getLastSeconds() >= channel->getTogleSec()) {
+		if (now.tv_sec - channel->getLastSeconds() >= channel->getToggleSec()) {
 	      supla_log(LOG_DEBUG, "toggling value for channel: %s", channel->getNumber());
 		  channel->toggleValue();
 		  channelio_raise_valuechanged(channel); 
