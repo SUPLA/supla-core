@@ -340,7 +340,7 @@ void channelio_w1_iterate(void) {
 		gettimeofday(&now, NULL);
 		
 		if (now.tv_sec - channel->getLastSeconds() >= channel->getTogleSec()) {
-	      supla_log(LOG_DEBUG, "toggling value for channel: %s", number);
+	      supla_log(LOG_DEBUG, "toggling value for channel: %s", channel->getNumber());
 		  channel->toggleValue();
 		  channelio_raise_valuechanged(channel); 
 		};
