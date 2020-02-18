@@ -465,7 +465,8 @@ void channelio_setcalback_on_channel_value_changed(
                    scfg_int(CFG_MQTT_PORT),
                    std::string(scfg_string(CFG_MQTT_USERNAME)),
                    std::string(scfg_string(CFG_MQTT_PASSWORD)),
-                   "supla_virtual_device", 3, topics, mqtt_subscribe_callback);
+                   std::string(scfg_string(CFG_MQTT_CLIENT_NAME)), 
+				   3, topics, mqtt_subscribe_callback);
 
   supla_log(LOG_DEBUG, "initialization completed");
 }

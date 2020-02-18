@@ -225,7 +225,8 @@ unsigned char devcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_mqtt, "port", 1833);
   scfg_add_str_param(s_mqtt, "username", "");
   scfg_add_str_param(s_mqtt, "password", "");
-
+  scfg_add_str_param(s_mqtt, "client_name", "supla-vd-client");
+  
   result = scfg_load(argc, argv, "./supla-virtual-device.cfg");
 
   if (result == 1 && st_file_exists(scfg_string(CFG_ALTCFG_FILE)) == 1) {
