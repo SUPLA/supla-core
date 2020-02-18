@@ -64,7 +64,7 @@ class client_device_channel {
   int getFunction(void);
   int getNumber(void);
   int getIntervalSec(void);
-  int getTogleSec(void);
+  int getToggleSec(void);
   std::string getFileName(void);
   std::string getPayloadOn(void);
   std::string getPayloadOff(void);
