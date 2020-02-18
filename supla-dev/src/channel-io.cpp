@@ -380,7 +380,7 @@ void channelio_raise_execute_command(client_device_channel *channel) {
   if (command.length() > 0) {
     int commandResult = system(command.c_str());
     if (commandResult != 0) {
-      supla_log(LOG_WARNING, "%s", command);
+      supla_log(LOG_WARNING, "%s", command.c_str());
       supla_log(LOG_WARNING, "The command above failed with exist status %d",
                 commandResult);
     }
@@ -389,11 +389,10 @@ void channelio_raise_execute_command(client_device_channel *channel) {
   char value[SUPLA_CHANNELVALUE_SIZE];
   channel->getValue(value);
 
-  
   if (commandOn.length() > 0 && value[0] == 1) {
     int commandResult = system(commandOn.c_str());
     if (commandResult != 0) {
-      supla_log(LOG_WARNING, "%s", commandOn);
+      supla_log(LOG_WARNING, "%s", commandOn.c_str());
       supla_log(LOG_WARNING, "The command above failed with exist status %d",
                 commandResult);
     }
@@ -402,7 +401,7 @@ void channelio_raise_execute_command(client_device_channel *channel) {
   if (commandOn.length() > 0 && value[0] == 0) {
     int commandResult = system(commandOff.c_str());
     if (commandResult != 0) {
-      supla_log(LOG_WARNING, "%s", commandOff);
+      supla_log(LOG_WARNING, "%s", commandOff.c_str());
       supla_log(LOG_WARNING, "The command above failed with exist status %d",
                 commandResult);
     }
