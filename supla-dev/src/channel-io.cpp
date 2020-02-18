@@ -127,10 +127,15 @@ void mqtt_subscribe_callback(void **state,
       channels->find_channel_by_topic(topic.c_str());
 
   if (channel)
-    handle_subscribed_message(
-      channel, topic, message, 
-      channels->on_valuechanged,
-      channels->on_valuechanged_user_data);
+  {
+	  handle_subscribed_message(
+        channel, topic, message, 
+        channels->on_valuechanged,
+	    channels->on_valuechanged_user_data);
+		
+	  channelio_raise_execute_command(channel);
+  }
+	  
 }
 
 char channelio_init(void) {
@@ -384,6 +389,7 @@ void channelio_raise_execute_command(client_device_channel *channel) {
   char value[SUPLA_CHANNELVALUE_SIZE];
   channel->getValue(value);
 
+  
   if (commandOn.length() > 0 && value[0] == 1) {
     int commandResult = system(commandOn.c_str());
     if (commandResult != 0) {

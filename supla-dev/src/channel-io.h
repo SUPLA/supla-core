@@ -88,6 +88,7 @@ void channelio_channels_set_mqtt_callback(void (*subscribe_response_callback)(
     const char *topic, const char *payload, char retain, char qos));
 
 void channelio_raise_mqtt_valuechannged(client_device_channel *channel);
+void channelio_raise_execute_command(client_device_channel *channel);
 
 // TMP TEST
 void tmp_channelio_raise_valuechanged(unsigned char number);
