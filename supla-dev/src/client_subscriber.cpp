@@ -102,7 +102,7 @@ void handle_subscribed_message(client_device_channel* channel,
 		{
 			value[0] = 0; 
 			hasChanged = true;
-		}
+		};
 	 	
 		if (hasChanged) {
           channel->setValue(value);
@@ -110,7 +110,8 @@ void handle_subscribed_message(client_device_channel* channel,
 		  cchannel->setToggled(false);
     
 		  if (cb) cb(channelNumber, value, user_data);
-		}
+		};
+		
 		return;
       }
       case SUPLA_CHANNELFNC_DISTANCESENSOR:
