@@ -107,7 +107,7 @@ void handle_subscribed_message(client_device_channel* channel,
 		if (hasChanged) {
           channel->setValue(value);
 		  channel->setLastSeconds();
-		  cchannel->setToggled(false);
+		  channel->setToggled(false);
     
 		  if (cb) cb(channelNumber, value, user_data);
 		};
