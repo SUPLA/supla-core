@@ -91,14 +91,28 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
       case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
 	  {
-	 	value[0] = payloadOn.compare(template_value) == 0 ? 1 : 0;
-		channel->setValue(value);
-	    channel->setLastSeconds();
-		channel->setToggled(false);
+	 	bool hasChanged = false;
+		
+		if (payloadOn.compare(template_value) == 0)
+		{  
+			value[0] = 1;
+			hasChanged = true;
+		}
+	    else if (payloadOff.compare(templa_value) == 0)
+		{
+			value[0] = 0; 
+			hasChanged = true;
+		}
+	 	
+		if (hasChanged) {
+          channel->setValue(value);
+		  channel->setLastSeconds();
+		  cchannel->setToggled(false);
     
-		if (cb) cb(channelNumber, value, user_data);
-        return;
-      } break;
+		  if (cb) cb(channelNumber, value, user_data);
+		}
+		return;
+      }
       case SUPLA_CHANNELFNC_DISTANCESENSOR:
       case SUPLA_CHANNELFNC_DEPTHSENSOR:
       case SUPLA_CHANNELFNC_WINDSENSOR:
