@@ -98,7 +98,7 @@ void handle_subscribed_message(client_device_channel* channel,
 			value[0] = 1;
 			hasChanged = true;
 		}
-	    else if (payloadOff.compare(templa_value) == 0)
+	    else if (payloadOff.compare(template_value) == 0)
 		{
 			value[0] = 0; 
 			hasChanged = true;
