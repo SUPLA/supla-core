@@ -1,0 +1,24 @@
+name: supla-virtual-device
+
+on: 
+  push:
+    branches: 
+    - supla-mqtt-dev
+jobs:
+  lint:
+    name: clang-format && make
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      name: checkout sources
+    - uses: DoozyX/clang-format-lint-action@v0.5
+      name: clang-format
+      with:
+        source: 'supla-dev/src'
+        extensions: 'h,cpp,c'
+        clangFormatVersion: 9
+        exclude: 'supla-dev-client/src/supla-client-lib'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name : make 
+      run: cd supla-dev-client/Release && make all
