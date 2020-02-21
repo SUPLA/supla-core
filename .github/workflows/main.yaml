@@ -21,4 +21,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name : make 
-      run: cd supla-dev-client/Release && make all
+      run: cd supla-dev/Release && make all
