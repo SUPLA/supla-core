@@ -66,3 +66,5 @@ valgrind-suppressions.cfg
 /supla-dev/Release/supla-virtual-device
 
 *.a
+
+.github
