@@ -1318,6 +1318,12 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
+#define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
+
+#define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
+#define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
+#define SUPLA_LASTCONNECTIONRESETCAUSE_WIFI_CONNECTION_LOST 2
+#define SUPLA_LASTCONNECTIONRESETCAUSE_SERVER_CONNECTION_LOST 3
 
 typedef struct {
   _supla_int_t ReceiverID;  // Not used for TChannelState_ExtendedValue
@@ -1339,8 +1345,9 @@ typedef struct {
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;
-  char EmptySpace[8];  // Empty space for future use
-} TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
+  unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
+  char EmptySpace[8];                      // Empty space for future use
+} TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
 
