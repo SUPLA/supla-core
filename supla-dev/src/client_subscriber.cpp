@@ -17,6 +17,7 @@
  */
 
 #include "client_subscriber.h"
+
 #include <vector>
 
 bool value_exists(jsoncons::json payload, std::string path) {
@@ -61,15 +62,13 @@ void handle_subscribed_message(client_device_channel* channel,
   } catch (jsoncons::jsonpointer::jsonpointer_error& error) {
   }
   if (template_value.length() == 0) return;
-  
+
   std::string payloadOn = channel->getPayloadOn();
   std::string payloadOff = channel->getPayloadOff();
-  
-  if (payloadOn.length() == 0)
-	payloadOn = "1";
-  if (payloadOff.length() == 0)
-	payloadOff = "0";
-  
+
+  if (payloadOn.length() == 0) payloadOn = "1";
+  if (payloadOff.length() == 0) payloadOff = "0";
+
   supla_log(LOG_DEBUG, "handling incomming message: %s",
             template_value.c_str());
   try {
@@ -81,8 +80,8 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: 
-	  case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
@@ -90,29 +89,26 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
       case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
-	  {
-	 	bool hasChanged = false;
-		
-		if (payloadOn.compare(template_value) == 0)
-		{  
-			value[0] = 1;
-			hasChanged = true;
-		}
-	    else if (payloadOff.compare(template_value) == 0)
-		{
-			value[0] = 0; 
-			hasChanged = true;
-		};
-	 	
-		if (hasChanged) {
+      {
+        bool hasChanged = false;
+
+        if (payloadOn.compare(template_value) == 0) {
+          value[0] = 1;
+          hasChanged = true;
+        } else if (payloadOff.compare(template_value) == 0) {
+          value[0] = 0;
+          hasChanged = true;
+        };
+
+        if (hasChanged) {
           channel->setValue(value);
-		  channel->setLastSeconds();
-		  channel->setToggled(false);
-    
-		  if (cb) cb(channelNumber, value, user_data);
-		};
-		
-		return;
+          channel->setLastSeconds();
+          channel->setToggled(false);
+
+          if (cb) cb(channelNumber, value, user_data);
+        };
+
+        return;
       }
       case SUPLA_CHANNELFNC_DISTANCESENSOR:
       case SUPLA_CHANNELFNC_DEPTHSENSOR:
@@ -120,21 +116,20 @@ void handle_subscribed_message(client_device_channel* channel,
       case SUPLA_CHANNELFNC_PRESSURESENSOR:
       case SUPLA_CHANNELFNC_RAINSENSOR:
       case SUPLA_CHANNELFNC_WEIGHTSENSOR: {
-		double dbval = std::stod(template_value);
+        double dbval = std::stod(template_value);
         memcpy(value, &dbval, sizeof(double));
         channel->setValue(value);
-		
-		if (cb) cb(channel->getNumber(), value, user_data);
+
+        if (cb) cb(channel->getNumber(), value, user_data);
         return;
       };
       case SUPLA_CHANNELFNC_THERMOMETER: {
         std::string::size_type sz;  // alias of size_t
         double temp = std::stod(template_value, &sz);
-		
+
         channel->setDouble(temp);
         channel->getValue(value);
-		 
-    
+
         if (cb) cb(channelNumber, value, user_data);
 
         return;
@@ -145,10 +140,9 @@ void handle_subscribed_message(client_device_channel* channel,
         double temp = std::stod(template_value, &sz);
         double hum = std::stod(template_value.substr(sz));
 
-		channel->setTempHum(temp, hum);
+        channel->setTempHum(temp, hum);
         channel->getValue(value);
-		 
-    
+
         if (cb) cb(channelNumber, value, user_data);
 
         return;
@@ -162,12 +156,12 @@ void handle_subscribed_message(client_device_channel* channel,
         value[0] = temp;
 
         channel->setValue(value);
-		
+
         if (cb) cb(channel->getNumber(), value, user_data);
         return;
       } break;
     };
-	 
+
   } catch (jsoncons::json_exception& je) {
     supla_log(LOG_ERR, "error while trying get value from payload [error: %s]",
               je.what());

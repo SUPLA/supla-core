@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "accept_loop.h"
+
 #include <stdio.h>
 #include <unistd.h>
 
-#include "accept_loop.h"
 #include "ipcctrl.h"
 #include "supla-client-lib/ipcsocket.h"
 #include "supla-client-lib/log.h"

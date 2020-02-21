@@ -86,9 +86,7 @@ int mqtt_client_init(std::string addr, int port, std::string username,
                      std::string password, std::string client_name,
                      uint8_t protocol_version, vector<std::string>& topics,
                      void (*publish_response_callback)(
-                        void** state, struct mqtt_response_publish* publish)
-					 ) {
-
+                         void** state, struct mqtt_response_publish* publish)) {
   reconnect_state = new reconnect_state_t();
   reconnect_state->sendbuf = (uint8_t*)malloc(8192 * sizeof(uint8_t));
   reconnect_state->sendbufsz = 8192 * sizeof(uint8_t);
@@ -215,11 +213,10 @@ void mqtt_client_free() {
 
   if (mq_client != NULL && mq_client->socketfd != -1)
     close(mq_client->socketfd);
-  if (reconnect_state != NULL)
-  {
+  if (reconnect_state != NULL) {
     free(reconnect_state->recvbuf);
-	free(reconnect_state->sendbuf);
-	delete reconnect_state;
+    free(reconnect_state->sendbuf);
+    delete reconnect_state;
   }
 
   if (mq_client != NULL) delete mq_client;

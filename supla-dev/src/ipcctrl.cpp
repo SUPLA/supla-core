@@ -16,16 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "ipcctrl.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "channel-io.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/sthread.h"
-#include "channel-io.h"
-#include "ipcctrl.h"
 
 const char hello[] = "SUPLA DEVICE CTRL\n";
 const char cmd_channel_get_hivalue[] = "CHANNEL-GET-HIVALUE:";
@@ -85,10 +86,10 @@ void svr_ipcctrl::execute(void *sthread) {
           char hi;
           int number = 255;
           sscanf(&buffer[strlen(cmd_channel_get_hivalue)], "%i", &number);
-		  char value[SUPLA_CHANNELVALUE_SIZE];	
+          char value[SUPLA_CHANNELVALUE_SIZE];
           channelio_get_value(number, value);
           send_result("HIVALUE:", value[0] == 1 ? 1 : 0);
-          
+
         } else if (match_command(cmd_channel_get_type, len)) {
           int number = 255;
           sscanf(&buffer[strlen(cmd_channel_get_type)], "%i", &number);

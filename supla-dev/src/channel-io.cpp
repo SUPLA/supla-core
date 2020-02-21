@@ -16,20 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "channel-io.h"
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
+#include "gpio.h"
+#include "mcp23008.h"
 #include "supla-client-lib/eh.h"
 #include "supla-client-lib/lck.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/safearray.h"
 #include "supla-client-lib/sthread.h"
-#include "channel-io.h"
-#include "gpio.h"
-#include "mcp23008.h"
 #include "w1.h"
 
 // TODO(pzygmunt) whole remodel
@@ -45,7 +46,6 @@
 void (*mqtt_publish_callback)(const char *topic, const char *payload,
                               char retain, char qos);
 
-
 client_device_channels *channels = NULL;
 
 #ifndef __SINGLE_THREAD
@@ -60,8 +60,8 @@ void channelio_raise_valuechanged(client_device_channel *channel) {
   channel->getValue(value);
 
   if (channels->on_valuechanged)
-      channels->on_valuechanged(channel->getNumber(), value,
-      channels->on_valuechanged_user_data);
+    channels->on_valuechanged(channel->getNumber(), value,
+                              channels->on_valuechanged_user_data);
 }
 
 char channelio_read_from_file(client_device_channel *channel, char log_err) {
@@ -78,32 +78,31 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
     if (now.tv_sec - channel->getLastSeconds() >= min_interval) {
       channel->setLastSeconds();
 
-      read_result = file_read_sensor(channel->getFileName().c_str(), &val1, &val2);
-      
-	  int n;
-      char tmp_value[SUPLA_CHANNELVALUE_SIZE];
-	  if (val2 != -1)
-	  {
-		 n = val1 * 1000;
-	     memcpy(tmp_value, &n, 4);
+      read_result =
+          file_read_sensor(channel->getFileName().c_str(), &val1, &val2);
 
-	     n = val2 * 1000;
-	     memcpy(&tmp_value[4], &n, 4);
-  
-	  } else {
-	    memcpy(tmp_value, &val1, sizeof(double));
-	  }
-	  
-	  channel->setValue(tmp_value);
-	  
+      int n;
+      char tmp_value[SUPLA_CHANNELVALUE_SIZE];
+      if (val2 != -1) {
+        n = val1 * 1000;
+        memcpy(tmp_value, &n, 4);
+
+        n = val2 * 1000;
+        memcpy(&tmp_value[4], &n, 4);
+
+      } else {
+        memcpy(tmp_value, &val1, sizeof(double));
+      }
+
+      channel->setValue(tmp_value);
+
       if (read_result == 0 && log_err == 1)
-         supla_log(LOG_ERR, "Can't read file %s", channel->getFileName().c_str());
+        supla_log(LOG_ERR, "Can't read file %s",
+                  channel->getFileName().c_str());
     }
   }
   return read_result;
-  
 }
-
 
 char channelio_gpio_in(TDeviceChannel *channel, char port12) {
   if (channel->type == SUPLA_CHANNELTYPE_SENSORNO ||
@@ -126,26 +125,21 @@ void mqtt_subscribe_callback(void **state,
   client_device_channel *channel =
       channels->find_channel_by_topic(topic.c_str());
 
-  if (channel)
-  {
-	  handle_subscribed_message(
-        channel, topic, message, 
-        channels->on_valuechanged,
-	    channels->on_valuechanged_user_data);
-		
-	  channelio_raise_execute_command(channel);
+  if (channel) {
+    handle_subscribed_message(channel, topic, message,
+                              channels->on_valuechanged,
+                              channels->on_valuechanged_user_data);
+
+    channelio_raise_execute_command(channel);
   }
-	  
 }
 
 char channelio_init(void) {
-  
   channels = new client_device_channels();
   return 1;
 }
 
 void channelio_free(void) {
-  
   if (channels) {
     delete channels;
   }
@@ -172,13 +166,12 @@ char channelio_allowed_type(int type) {
 
   return 0;
 }
-    
+
 void channelio_channel_init(void) {
-  
   if (channels->getInitialized()) return;
-  
+
   int a;
-  
+
   client_device_channel *channel;
   for (a = 0; a < channels->getChannelCount(); a++) {
     channel = channels->getChannel(a);
@@ -189,15 +182,14 @@ void channelio_channel_init(void) {
       channelio_raise_valuechanged(channel);
     };
   }
-    
+
   channels->setInitialized(true);
-  #ifndef __SINGLE_THREAD
+#ifndef __SINGLE_THREAD
   sthread_simple_run(channelio_w1_execute, NULL, 0);
-  #endif
+#endif
 }
 
 int channelio_channel_count(void) { return channels->getChannelCount(); }
- 
 
 void channelio_set_payload_on(unsigned char number, const char *value) {
   if (channels == NULL) return;
@@ -259,7 +251,7 @@ void channelio_set_type(unsigned char number, int type) {
   if (channels == NULL) return;
 
   client_device_channel *channel = channels->find_channel(number);
-  
+
   if (channel) channel->setType(type);
 }
 int channelio_get_type(unsigned char number) {
@@ -331,25 +323,24 @@ void channelio_w1_iterate(void) {
   client_device_channel *channel;
   for (a = 0; a < channels->getChannelCount(); a++) {
     channel = channels->getChannel(a);
-    	
+
     if (channel->getFileName().length() > 0) {
-		if (channelio_read_from_file(channel, 1)) {
-		  channelio_raise_valuechanged(channel);
-		};
-	};
-	
-	if (channel->getToggleSec() > 0 && !channel->getToggled())
-	{
-		
-	    struct timeval now;
-		gettimeofday(&now, NULL);
-		
-		if (now.tv_sec - channel->getLastSeconds() >= channel->getToggleSec()) {
-	      supla_log(LOG_DEBUG, "toggling value for channel: %s", channel->getNumber());
-		  channel->toggleValue();
-		  channelio_raise_valuechanged(channel); 
-		};
-	};
+      if (channelio_read_from_file(channel, 1)) {
+        channelio_raise_valuechanged(channel);
+      };
+    };
+
+    if (channel->getToggleSec() > 0 && !channel->getToggled()) {
+      struct timeval now;
+      gettimeofday(&now, NULL);
+
+      if (now.tv_sec - channel->getLastSeconds() >= channel->getToggleSec()) {
+        supla_log(LOG_DEBUG, "toggling value for channel: %s",
+                  channel->getNumber());
+        channel->toggleValue();
+        channelio_raise_valuechanged(channel);
+      };
+    };
   }
 }
 
@@ -360,14 +351,13 @@ void channelio_iterate(void) {
 }
 #else
 void channelio_w1_execute(void *user_data, void *sthread) {
-  
   while (!sthread_isterminated(sthread)) {
     channelio_w1_iterate();
     usleep(W1_TEMP_MINDELAY_USEC);
   }
 }
 #endif
-  
+
 void channelio_raise_execute_command(client_device_channel *channel) {
   std::string command = channel->getExecute();
   std::string commandOn = channel->getExecuteOn();
@@ -410,11 +400,8 @@ void channelio_raise_execute_command(client_device_channel *channel) {
 
 void channelio_get_value(unsigned char number,
                          char value[SUPLA_CHANNELVALUE_SIZE]) {
-							 
-	client_device_channel* channel = channels->find_channel(number);
-	if (channel) 
-	  channel->getValue(value);
-  
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->getValue(value);
 }
 
 void channelio_raise_mqtt_valuechannged(client_device_channel *channel) {
@@ -425,12 +412,11 @@ void channelio_raise_mqtt_valuechannged(client_device_channel *channel) {
 char channelio_set_value(unsigned char number,
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned int time_ms) {
-  
   client_device_channel *channel = channels->find_channel(number);
 
   if (channel) {
     channel->setValue(value);
-    
+
     /* execute command if specified */
     channelio_raise_execute_command(channel);
 
@@ -465,10 +451,9 @@ void channelio_channels_to_srd(unsigned char *channel_count,
 
 void channelio_setcalback_on_channel_value_changed(
     _func_channelio_valuechanged on_valuechanged, void *user_data) {
-  
   channels->on_valuechanged = on_valuechanged;
   channels->on_valuechanged_user_data = user_data;
-  
+
   // MQTT SETUP
 
   std::string mqtt_host(scfg_string(CFG_MQTT_SERVER));
@@ -480,13 +465,13 @@ void channelio_setcalback_on_channel_value_changed(
   supla_log(LOG_DEBUG, "initializing MQTT broker connection...");
 
   mqtt_client_free();
-  
+
   mqtt_client_init(std::string(scfg_string(CFG_MQTT_SERVER)),
                    scfg_int(CFG_MQTT_PORT),
                    std::string(scfg_string(CFG_MQTT_USERNAME)),
                    std::string(scfg_string(CFG_MQTT_PASSWORD)),
-                   std::string(scfg_string(CFG_MQTT_CLIENT_NAME)), 
-				   3, topics, mqtt_subscribe_callback);
+                   std::string(scfg_string(CFG_MQTT_CLIENT_NAME)), 3, topics,
+                   mqtt_subscribe_callback);
 
   supla_log(LOG_DEBUG, "initialization completed");
 }

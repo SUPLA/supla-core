@@ -20,13 +20,13 @@
 #define CLIENT_SUBSCRIBER_H_
 
 #include <unistd.h>
+
 #include <string>
 
-#include "supla-client-lib/log.h"
 #include "client_device.h"
-
 #include "json/jsoncons/json.hpp"
 #include "json/jsoncons_ext/jsonpointer/jsonpointer.hpp"
+#include "supla-client-lib/log.h"
 
 void handle_subscribed_message(client_device_channel* channel,
                                std::string topic, std::string message,

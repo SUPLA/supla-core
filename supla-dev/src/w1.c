@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "w1.h"
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,10 +26,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "pi_2_dht_read.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/tools.h"
-#include "pi_2_dht_read.h"
-#include "w1.h"
 
 #define W1_DEFAULT_PIN 4
 

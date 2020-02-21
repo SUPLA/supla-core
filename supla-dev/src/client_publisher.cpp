@@ -17,6 +17,7 @@
  */
 
 #include "client_publisher.h"
+
 #include <string>
 
 void publish_mqtt_message_for_channel(client_device_channel* channel) {
@@ -30,20 +31,20 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     case SUPLA_CHANNELFNC_HUMIDITY:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
       double temp;
-	  double hum;
-	  bool isTemp;
-	  bool isHum;
-	  
-	  channel->getTempHum(&temp, &hum, &isTemp, &isHum);
-        
-	  if (isTemp)
-		replace_string_in_place(&payload, "$temperature$",
+      double hum;
+      bool isTemp;
+      bool isHum;
+
+      channel->getTempHum(&temp, &hum, &isTemp, &isHum);
+
+      if (isTemp)
+        replace_string_in_place(&payload, "$temperature$",
                                 std::to_string(temp));
       if (isHum)
-		replace_string_in_place(&payload, "$humidity$", std::to_string(hum));
+        replace_string_in_place(&payload, "$humidity$", std::to_string(hum));
 
       publish = true;
-     
+
     } break;
     case SUPLA_CHANNELFNC_WINDSENSOR:
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
@@ -131,12 +132,13 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
     } break;
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_ELECTRICITY_METER: {
-      //TSuplaChannelExtendedValue* value = (TSuplaChannelExtendedValue*)malloc(
+      // TSuplaChannelExtendedValue* value =
+      // (TSuplaChannelExtendedValue*)malloc(
       //    sizeof(TSuplaChannelExtendedValue));
 
-//      if (!channel->getExtendedValue(value)) {
-  //      free(value);
-    //    break;
+      //      if (!channel->getExtendedValue(value)) {
+      //      free(value);
+      //    break;
       //}
       /*
       TElectricityMeter_ExtendedValue em_ev;
@@ -223,7 +225,7 @@ void publish_mqtt_message_for_channel(client_device_channel* channel) {
 
           publish = true;
         }
-		
+
       }
       free(value);*/
     } break;

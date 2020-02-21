@@ -20,13 +20,14 @@
 #define CHANNEL_IO_H_
 
 #include <string.h>
-#include "supla-client-lib/proto.h"
+
 #include "client_device.h"
 #include "client_publisher.h"
 #include "client_subscriber.h"
 #include "devcfg.h"
 #include "device.h"
 #include "mqtt/mqtt_client.h"
+#include "supla-client-lib/proto.h"
 #include "w1.h"
 
 //#ifdef __cplusplus
@@ -51,7 +52,6 @@ void channelio_set_interval(unsigned char number, int interval);
 void channelio_set_execute_on(unsigned char number, const char *value);
 void channelio_set_execute_off(unsigned char number, const char *value);
 void channelio_set_toggle(unsigned char number, int toggle);
-
 
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1);
 void channelio_set_gpio2(unsigned char number, unsigned char gpio2);

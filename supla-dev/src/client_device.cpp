@@ -19,47 +19,42 @@
 #include "client_device.h"
 
 client_device_channel::client_device_channel(int number) {
-	
-   supla_log(LOG_DEBUG, "adding channel with number %d", number);
-  
-   this->number = number;
-   this->type = 0;
-   this->function = 0;
-   this->intervalSec = 10; /* default 10 seconds*/
-   this->toggleSec = 0;
-   
-   this->fileName = "";
-   this->payloadOn = "";
-   this->payloadOff = "";
-   this->payloadValue = "";
-   this->stateTopic = "";
-   this->commandTopic = "";
-   this->stateTemplate = "";
-   this->commandTemplate = "";
-   this->execute = "";
-   this->executeOn = "";
-   this->executeOff = "";
-   this->retain = true;
-   this->online = true;
-   this->toggled = true;
-   
-   this->last = (struct timeval){0};	 
-   
-   this->lck = lck_init();
+  supla_log(LOG_DEBUG, "adding channel with number %d", number);
+
+  this->number = number;
+  this->type = 0;
+  this->function = 0;
+  this->intervalSec = 10; /* default 10 seconds*/
+  this->toggleSec = 0;
+
+  this->fileName = "";
+  this->payloadOn = "";
+  this->payloadOff = "";
+  this->payloadValue = "";
+  this->stateTopic = "";
+  this->commandTopic = "";
+  this->stateTemplate = "";
+  this->commandTemplate = "";
+  this->execute = "";
+  this->executeOn = "";
+  this->executeOff = "";
+  this->retain = true;
+  this->online = true;
+  this->toggled = true;
+
+  this->last = (struct timeval){0};
+
+  this->lck = lck_init();
 }
 client_device_channel::~client_device_channel() { lck_free(lck); }
 
-bool client_device_channel::getToggled(void) {
-  return this->toggled;
-}
+bool client_device_channel::getToggled(void) { return this->toggled; }
 
 void client_device_channel::setToggled(bool toggled) {
   this->toggled = toggled;
 }
 
-int client_device_channel::getToggleSec(void) {
-  return this->toggleSec;
-}
+int client_device_channel::getToggleSec(void) { return this->toggleSec; }
 
 void client_device_channel::setToggleSec(int interval) {
   this->toggleSec = interval;
@@ -73,8 +68,8 @@ void client_device_channel::toggleValue(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE: 
-	case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
@@ -82,12 +77,12 @@ void client_device_channel::toggleValue(void) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
     case SUPLA_CHANNELFNC_MAILSENSOR:            // ver. >= 8
-	{   
-		lck_lock(lck);
-		value[0] = value[0] > 0 ? 0 : 1;  
-		toggled = true;
-		lck_unlock(lck);
-	};
+    {
+      lck_lock(lck);
+      value[0] = value[0] > 0 ? 0 : 1;
+      toggled = true;
+      lck_unlock(lck);
+    };
   }
 }
 
@@ -109,7 +104,6 @@ void client_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
 }
 void client_device_channel::getDouble(double *result) {
-  
   if (result == NULL) return;
 
   switch (this->function) {
@@ -135,47 +129,41 @@ void client_device_channel::getDouble(double *result) {
       *result = 0;
   }
 }
-void client_device_channel::getTempHum(double* temp, double* humidity, 
-   bool* isTemperature, bool* isHumidity) {
-    
-   *isTemperature = false;
-   *isHumidity = false;
-   if (temp == NULL || humidity == NULL) return;
-    
-   double tmp_temp;
-   double tmp_humidity;    
-	
-   switch (this->function) {
-	case SUPLA_CHANNELFNC_THERMOMETER: {
-       getDouble(&tmp_temp);
- 	   if (tmp_temp > -273 && tmp_temp <= 1000) 
-		 *isTemperature = true;
-	 } break;
-	 case SUPLA_CHANNELFNC_HUMIDITY:
-	 case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-	 {
-		int n;
-		char value[SUPLA_CHANNELVALUE_SIZE];
-		
-		getValue(value);
-		memcpy(&n, value, 4);
-		tmp_temp = n / 1000.00;
+void client_device_channel::getTempHum(double *temp, double *humidity,
+                                       bool *isTemperature, bool *isHumidity) {
+  *isTemperature = false;
+  *isHumidity = false;
+  if (temp == NULL || humidity == NULL) return;
 
-		memcpy(&n, &value[4], 4);
-		tmp_humidity = n / 1000.00;
-        
-		if (tmp_temp > -273 && tmp_temp <= 1000)
-		  *isTemperature = true;
-	  
-	    if (tmp_humidity >= 0 && tmp_humidity <= 100)
-		  *isHumidity = true;
-	  } break;
-	}
-	
-	if (*isTemperature) *temp = tmp_temp;
-	if (*isHumidity) *humidity = tmp_humidity;
-	
- }
+  double tmp_temp;
+  double tmp_humidity;
+
+  switch (this->function) {
+    case SUPLA_CHANNELFNC_THERMOMETER: {
+      getDouble(&tmp_temp);
+      if (tmp_temp > -273 && tmp_temp <= 1000) *isTemperature = true;
+    } break;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+      int n;
+      char value[SUPLA_CHANNELVALUE_SIZE];
+
+      getValue(value);
+      memcpy(&n, value, 4);
+      tmp_temp = n / 1000.00;
+
+      memcpy(&n, &value[4], 4);
+      tmp_humidity = n / 1000.00;
+
+      if (tmp_temp > -273 && tmp_temp <= 1000) *isTemperature = true;
+
+      if (tmp_humidity >= 0 && tmp_humidity <= 100) *isHumidity = true;
+    } break;
+  }
+
+  if (*isTemperature) *temp = tmp_temp;
+  if (*isHumidity) *humidity = tmp_humidity;
+}
 bool client_device_channel::getRGBW(int *color, char *color_brightness,
                                     char *brightness, char *on_off) {
   if (color != NULL) *color = 0;
@@ -227,7 +215,6 @@ bool client_device_channel::getRGBW(int *color, char *color_brightness,
 }
 char client_device_channel::getChar(void) { return this->value[0]; }
 void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
-  
   lck_lock(lck);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
   lck_unlock(lck);
@@ -239,30 +226,28 @@ void client_device_channel::setDouble(double value) {
 }
 void client_device_channel::setTempHum(double temp, double humidity) {
   switch (this->function) {
-	 case SUPLA_CHANNELFNC_THERMOMETER: {
-       setDouble(temp);
-	 } break;
-	 case SUPLA_CHANNELFNC_HUMIDITY:
-	 case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-	 {
-		int n;
-        char tmp_value[SUPLA_CHANNELVALUE_SIZE];
-		
-		n = temp * 1000;
-		memcpy(tmp_value, &n, 4);
+    case SUPLA_CHANNELFNC_THERMOMETER: {
+      setDouble(temp);
+    } break;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+      int n;
+      char tmp_value[SUPLA_CHANNELVALUE_SIZE];
 
-		n = humidity * 1000;
-		memcpy(&tmp_value[4], &n, 4);
+      n = temp * 1000;
+      memcpy(tmp_value, &n, 4);
 
-		setValue(tmp_value);
-	  } break;
-	}
+      n = humidity * 1000;
+      memcpy(&tmp_value[4], &n, 4);
+
+      setValue(tmp_value);
+    } break;
+  }
 }
-void client_device_channel::setRGBW(int color, char color_brightness, char brightness, 
-  char on_off) {
-	   
+void client_device_channel::setRGBW(int color, char color_brightness,
+                                    char brightness, char on_off) {
   char tmp_value[SUPLA_CHANNELVALUE_SIZE];
-  
+
   if (this->function == SUPLA_CHANNELFNC_DIMMER ||
       this->function == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
     if (brightness < 0 || brightness > 100) brightness = 0;
@@ -280,12 +265,10 @@ void client_device_channel::setRGBW(int color, char color_brightness, char brigh
     tmp_value[4] = (char)((color & 0x00FF0000) >> 16);
     tmp_value[5] = on_off;
   }
-  
+
   setValue(tmp_value);
 }
-void client_device_channel::setChar(char chr){
-  value[0] = chr;
-}
+void client_device_channel::setChar(char chr) { value[0] = chr; }
 int client_device_channel::getType(void) {
   if (this->type == 0) {
     switch (this->function) {
@@ -312,7 +295,7 @@ int client_device_channel::getType(void) {
         break;
 
       case SUPLA_CHANNELFNC_THERMOMETER:
-        this->type = SUPLA_CHANNELTYPE_THERMOMETER;
+        this->type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
         break;
 
       case SUPLA_CHANNELFNC_DIMMER:
@@ -391,7 +374,7 @@ int client_device_channel::getType(void) {
 
   return this->type;
 }
-int client_device_channel::getFunction(void) { return this->function; } 
+int client_device_channel::getFunction(void) { return this->function; }
 int client_device_channel::getNumber(void) { return this->number; }
 int client_device_channel::getIntervalSec() { return this->intervalSec; }
 std::string client_device_channel::getFileName(void) { return this->fileName; }
@@ -411,7 +394,7 @@ std::string client_device_channel::getCommandTopic(void) {
   return this->commandTopic;
 }
 std::string client_device_channel::getStateTemplate(void) {
-  return this->stateTemplate;	
+  return this->stateTemplate;
 }
 std::string client_device_channel::getCommandTemplate(void) {
   return this->commandTemplate;
@@ -425,13 +408,13 @@ std::string client_device_channel::getExecuteOff(void) {
 }
 bool client_device_channel::getRetain(void) { return this->retain; }
 bool client_device_channel::getOnline(void) { return this->online; }
-long client_device_channel::getLastSeconds(void) {
-  return this->last.tv_sec;
-}
+long client_device_channel::getLastSeconds(void) { return this->last.tv_sec; }
 
 void client_device_channel::setType(int type) { this->type = type; }
-void client_device_channel::setFunction(int function) { this->function = function; }
-void client_device_channel::setNumber(int number) {this->number = number; }
+void client_device_channel::setFunction(int function) {
+  this->function = function;
+}
+void client_device_channel::setNumber(int number) { this->number = number; }
 void client_device_channel::setFileName(const char *filename) {
   this->fileName = std::string(filename);
 }
@@ -478,18 +461,18 @@ client_device_channels::client_device_channels() {
   this->initialized = false;
   this->arr = safe_array_init();
 }
-client_device_channel* client_device_channels::add_channel(int number) {
+client_device_channel *client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
-  
+
   supla_log(LOG_DEBUG, "adding channel with number %d", number);
-  
-  client_device_channel* channel = new client_device_channel(number);
-  
+
+  client_device_channel *channel = new client_device_channel(number);
+
   if (channel != NULL && safe_array_add(arr, channel) == -1) {
     delete channel;
     channel = NULL;
   }
-  
+
   safe_array_unlock(arr);
   return channel;
 }
@@ -506,7 +489,9 @@ void client_device_channels::getMqttSubscriptionTopics(
     }
   }
 }
-int client_device_channels::getChannelCount(void) { return safe_array_count(arr); }
+int client_device_channels::getChannelCount(void) {
+  return safe_array_count(arr);
+}
 bool client_device_channels::getInitialized(void) { return this->initialized; }
 void client_device_channels::setInitialized(bool initialized) {
   this->initialized = initialized;
@@ -515,32 +500,29 @@ client_device_channel *client_device_channels::getChannel(int idx) {
   return (client_device_channel *)safe_array_get(arr, idx);
 }
 client_device_channel *client_device_channels::find_channel(int number) {
-  
   supla_log(LOG_DEBUG, "searching channel with number %d", number);
-  
+
   int i;
 
   client_device_channel *channel;
 
   for (i = 0; i < safe_array_count(arr); i++) {
     channel = (client_device_channel *)safe_array_get(arr, i);
-    
-	int c_number = channel->getNumber();
-	supla_log(LOG_DEBUG, "c_number: %d", c_number);
-	
-	if (channel->getNumber() == number ) {
+
+    int c_number = channel->getNumber();
+    supla_log(LOG_DEBUG, "c_number: %d", c_number);
+
+    if (channel->getNumber() == number) {
       return channel;
     }
   };
-  
-  
-  channel = add_channel(number); 
-  
+
+  channel = add_channel(number);
+
   return channel;
-  
 }
-client_device_channel *client_device_channels::find_channel_by_topic(std::string topic) {
-  
+client_device_channel *client_device_channels::find_channel_by_topic(
+    std::string topic) {
   int i;
 
   client_device_channel *channel;

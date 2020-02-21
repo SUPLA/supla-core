@@ -20,13 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "common_dht_read.h"
+
 #include <errno.h>
 #include <sched.h>
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
-
-#include "common_dht_read.h"
 
 void busy_wait_milliseconds(uint32_t millis) {
   // Set delay time period.

@@ -23,15 +23,15 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#include "supla-client-lib/ipcsocket.h"
-#include "supla-client-lib/log.h"
-#include "supla-client-lib/sthread.h"
-#include "supla-client-lib/tools.h"
 #include "accept_loop.h"
 #include "channel-io.h"
 #include "devcfg.h"
 #include "devconnection.h"
 #include "mqtt/mqtt_client.h"
+#include "supla-client-lib/ipcsocket.h"
+#include "supla-client-lib/log.h"
+#include "supla-client-lib/sthread.h"
+#include "supla-client-lib/tools.h"
 
 void exit_fail() {
   devcfg_free();

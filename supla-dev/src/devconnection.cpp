@@ -16,17 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "devconnection.h"
+
 #include <string.h>
 #include <unistd.h>
 
+#include "channel-io.h"
+#include "devcfg.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/srpc.h"
 #include "supla-client-lib/sthread.h"
 #include "supla-client-lib/supla-socket.h"
 #include "supla-client-lib/tools.h"
-#include "channel-io.h"
-#include "devcfg.h"
-#include "devconnection.h"
 
 typedef struct {
   void *ssd;

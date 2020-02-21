@@ -21,44 +21,47 @@
 
 #include <stdlib.h>
 #include <string.h>
+
 #include <string>
 #include <vector>
+
 #include "device.h"
 #include "supla-client-lib/devicechannel.h"
-#include "supla-client-lib/safearray.h"
 #include "supla-client-lib/log.h"
+#include "supla-client-lib/safearray.h"
 
 class client_device_channel {
  private:
-   int type;
-   int function;
-   int number;
-   int intervalSec;
-   int toggleSec;
-   std::string fileName;
-   std::string payloadOn;
-   std::string payloadOff;
-   std::string payloadValue;
-   std::string stateTopic;
-   std::string commandTopic;
-   std::string stateTemplate;
-   std::string commandTemplate;
-   std::string execute;
-   std::string executeOn;
-   std::string executeOff;
-   bool retain;
-   bool online;
-   bool toggled;
-   
-   void *lck;
-   struct timeval last;
-   char value[SUPLA_CHANNELVALUE_SIZE];
-   
-   bool isSensorNONC(void);
+  int type;
+  int function;
+  int number;
+  int intervalSec;
+  int toggleSec;
+  std::string fileName;
+  std::string payloadOn;
+  std::string payloadOff;
+  std::string payloadValue;
+  std::string stateTopic;
+  std::string commandTopic;
+  std::string stateTemplate;
+  std::string commandTemplate;
+  std::string execute;
+  std::string executeOn;
+  std::string executeOff;
+  bool retain;
+  bool online;
+  bool toggled;
+
+  void *lck;
+  struct timeval last;
+  char value[SUPLA_CHANNELVALUE_SIZE];
+
+  bool isSensorNONC(void);
+
  public:
   client_device_channel(int number);
   ~client_device_channel();
-  
+
   /* properties */
   int getType(void);
   int getFunction(void);
@@ -80,7 +83,7 @@ class client_device_channel {
   bool getOnline(void);
   bool getToggled(void);
   long getLastSeconds(void);
-    
+
   void setType(int type);
   void setFunction(int function);
   void setNumber(int number);
@@ -101,46 +104,46 @@ class client_device_channel {
   void setOnline(bool online);
   void setToggled(bool toggled);
   void setLastSeconds(void);
-  
-  /* value handler */ 
+
+  /* value handler */
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void getDouble(double *result);
-  void getTempHum(double* temp, double* humidity, 
-    bool* isTemperature, bool* isHumidity);
-  bool getRGBW(int *color, char *color_brightness, char *brightness, char *on_off);
+  void getTempHum(double *temp, double *humidity, bool *isTemperature,
+                  bool *isHumidity);
+  bool getRGBW(int *color, char *color_brightness, char *brightness,
+               char *on_off);
   char getChar(void);
-  
+
   void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void setDouble(double value);
   void setTempHum(double temp, double humidity);
   void setRGBW(int color, char color_brightness, char brightness, char on_off);
   void setChar(char value);
-  
+
   void toggleValue(void);
 };
 
 class client_device_channels {
  private:
   bool initialized;
-  void* arr;
+  void *arr;
 
  public:
   client_device_channels();
-  client_device_channel* add_channel(int number);
-  
+  client_device_channel *add_channel(int number);
+
   client_device_channel *find_channel(int number);
   client_device_channel *find_channel_by_topic(std::string topic);
   client_device_channel *getChannel(int idx);
   int getChannelCount(void);
-  
+
   void getMqttSubscriptionTopics(std::vector<std::string> *vect);
-  
+
   bool getInitialized(void);
   void setInitialized(bool initialized);
-  
+
   _func_channelio_valuechanged on_valuechanged;
   void *on_valuechanged_user_data;
-  
 };
 
 #endif

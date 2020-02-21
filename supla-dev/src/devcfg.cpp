@@ -16,15 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "devcfg.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "channel-io.h"
+#include "mcp23008.h"
 #include "supla-client-lib/log.h"
 #include "supla-client-lib/tools.h"
-#include "channel-io.h"
-#include "devcfg.h"
-#include "mcp23008.h"
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
@@ -97,7 +98,7 @@ static int decode_function_type(const char *fnc) {
   } else if (strcasecmp(fnc, "WINDSENSOR") == 0) {
     return SUPLA_CHANNELFNC_WINDSENSOR;
   } else if (strcasecmp(fnc, "MAILSENSOR") == 0) {
-	return SUPLA_CHANNELFNC_MAILSENSOR;
+    return SUPLA_CHANNELFNC_MAILSENSOR;
   } else
     return SUPLA_CHANNELFNC_NONE;
 }
@@ -191,8 +192,7 @@ void devcfg_channel_cfg(const char *section, const char *name,
     channelio_set_interval(number, atoi(value) % 100000);
   } else if (strcasecmp(name, "min_toggle_sec") == 0 && strlen(value) > 0) {
     channelio_set_toggle(number, atoi(value) % 100000);
-  }	  
-  
+  }
 }
 
 unsigned char devcfg_init(int argc, char *argv[]) {
@@ -231,7 +231,7 @@ unsigned char devcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_mqtt, "username", "");
   scfg_add_str_param(s_mqtt, "password", "");
   scfg_add_str_param(s_mqtt, "client_name", "supla-vd-client");
-  
+
   result = scfg_load(argc, argv, "./supla-virtual-device.cfg");
 
   if (result == 1 && st_file_exists(scfg_string(CFG_ALTCFG_FILE)) == 1) {
