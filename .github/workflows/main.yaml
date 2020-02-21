@@ -17,7 +17,7 @@ jobs:
         source: 'supla-dev/src'
         extensions: 'h,cpp,c'
         clangFormatVersion: 9
-        exclude: 'supla-dev-client/src/supla-client-lib'
+        exclude: 'supla-dev/src/supla-client-lib'
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name : make 
