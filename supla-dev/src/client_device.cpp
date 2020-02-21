@@ -295,7 +295,7 @@ int client_device_channel::getType(void) {
         break;
 
       case SUPLA_CHANNELFNC_THERMOMETER:
-        this->type = SUPLA_CHANNELTYPE_THERMOMETERDS18B20;
+        this->type = SUPLA_CHANNELTYPE_THERMOMETER;
         break;
 
       case SUPLA_CHANNELFNC_DIMMER:
