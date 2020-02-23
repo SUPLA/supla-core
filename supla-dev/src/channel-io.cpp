@@ -81,17 +81,44 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
       read_result =
           file_read_sensor(channel->getFileName().c_str(), &val1, &val2);
 
-      int n;
       char tmp_value[SUPLA_CHANNELVALUE_SIZE];
-      if (val2 != -1) {
-        n = val1 * 1000;
-        memcpy(tmp_value, &n, 4);
 
-        n = val2 * 1000;
-        memcpy(&tmp_value[4], &n, 4);
+      switch (channel->getFunction()) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+        case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+        case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
+        case SUPLA_CHANNELFNC_MAILSENSOR: {
+          tmp_value[0] = val1 == 1 ? 1 : 0;
+        } break;
+        case SUPLA_CHANNELFNC_THERMOMETER:
+        case SUPLA_CHANNELFNC_DISTANCESENSOR:
+        case SUPLA_CHANNELFNC_DEPTHSENSOR:
+        case SUPLA_CHANNELFNC_WINDSENSOR:
+        case SUPLA_CHANNELFNC_PRESSURESENSOR:
+        case SUPLA_CHANNELFNC_RAINSENSOR:
+        case SUPLA_CHANNELFNC_WEIGHTSENSOR: {
+          memcpy(tmp_value, &val1, sizeof(double));
+        } break;
+        case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+          int n;
 
-      } else {
-        memcpy(tmp_value, &val1, sizeof(double));
+          n = val1 * 1000;
+          memcpy(tmp_value, &n, 4);
+
+          n = val2 * 1000;
+          memcpy(&tmp_value[4], &n, 4);
+        } break;
       }
 
       channel->setValue(tmp_value);
