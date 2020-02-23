@@ -73,14 +73,6 @@ int main(int argc, char *argv[]) {
     goto exit_fail;
   }
 
-  {
-    struct rlimit limit;
-
-    limit.rlim_cur = 10240;
-    limit.rlim_max = 10240;
-    setrlimit(RLIMIT_NOFILE, &limit);
-  }
-
   if (database::mainthread_init() == false) {
     goto exit_fail;
   }
