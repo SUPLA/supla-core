@@ -108,10 +108,11 @@ int main(int argc, char* argv[]) {
   ipc = ipcsocket_init("/tmp/supla-dev-ctrl.sock");
 #endif
 
+  supla_log(LOG_DEBUG, "initializing channels...");
   channelio_channel_init();
 
   // CONNECTION START
-
+  supla_log(LOG_DEBUG, "initializing server connection...");
   void* dconn = devconnection_start();
 
   // ACCEPT LOOP
@@ -121,7 +122,7 @@ int main(int argc, char* argv[]) {
 #endif
 
   // MAIN LOOP
-
+  supla_log(LOG_DEBUG, "entering main loop...");
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
   }

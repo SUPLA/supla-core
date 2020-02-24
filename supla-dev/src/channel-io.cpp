@@ -59,6 +59,8 @@ void channelio_raise_valuechanged(client_device_channel *channel) {
 
   channel->getValue(value);
 
+  supla_log(LOG_DEBUG, "sending value of channel_%d to supla server...",
+            channel->getNumber());
   if (channels->on_valuechanged)
     channels->on_valuechanged(channel->getNumber(), value,
                               channels->on_valuechanged_user_data);
@@ -78,54 +80,61 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
     if (now.tv_sec - channel->getLastSeconds() >= min_interval) {
       channel->setLastSeconds();
 
-      read_result =
-          file_read_sensor(channel->getFileName().c_str(), &val1, &val2);
+      supla_log(LOG_DEBUG, "reading channel_%d value from file %s",
+                channel->getNumber(), channel->getFileName().c_str());
+      try {
+        read_result =
+            file_read_sensor(channel->getFileName().c_str(), &val1, &val2);
 
-      char tmp_value[SUPLA_CHANNELVALUE_SIZE];
+        char tmp_value[SUPLA_CHANNELVALUE_SIZE];
 
-      switch (channel->getFunction()) {
-        case SUPLA_CHANNELFNC_POWERSWITCH:
-        case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-        case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
-        case SUPLA_CHANNELFNC_MAILSENSOR: {
-          tmp_value[0] = val1 == 1 ? 1 : 0;
-        } break;
-        case SUPLA_CHANNELFNC_THERMOMETER:
-        case SUPLA_CHANNELFNC_DISTANCESENSOR:
-        case SUPLA_CHANNELFNC_DEPTHSENSOR:
-        case SUPLA_CHANNELFNC_WINDSENSOR:
-        case SUPLA_CHANNELFNC_PRESSURESENSOR:
-        case SUPLA_CHANNELFNC_RAINSENSOR:
-        case SUPLA_CHANNELFNC_WEIGHTSENSOR: {
-          memcpy(tmp_value, &val1, sizeof(double));
-        } break;
-        case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
-          int n;
+        switch (channel->getFunction()) {
+          case SUPLA_CHANNELFNC_POWERSWITCH:
+          case SUPLA_CHANNELFNC_LIGHTSWITCH:
+          case SUPLA_CHANNELFNC_STAIRCASETIMER:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+          case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+          case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:  // ver. >= 8
+          case SUPLA_CHANNELFNC_MAILSENSOR: {
+            tmp_value[0] = val1 == 1 ? 1 : 0;
+          } break;
+          case SUPLA_CHANNELFNC_THERMOMETER:
+          case SUPLA_CHANNELFNC_DISTANCESENSOR:
+          case SUPLA_CHANNELFNC_DEPTHSENSOR:
+          case SUPLA_CHANNELFNC_WINDSENSOR:
+          case SUPLA_CHANNELFNC_PRESSURESENSOR:
+          case SUPLA_CHANNELFNC_RAINSENSOR:
+          case SUPLA_CHANNELFNC_WEIGHTSENSOR: {
+            memcpy(tmp_value, &val1, sizeof(double));
+          } break;
+          case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+            int n;
 
-          n = val1 * 1000;
-          memcpy(tmp_value, &n, 4);
+            n = val1 * 1000;
+            memcpy(tmp_value, &n, 4);
 
-          n = val2 * 1000;
-          memcpy(&tmp_value[4], &n, 4);
-        } break;
+            n = val2 * 1000;
+            memcpy(&tmp_value[4], &n, 4);
+          } break;
+        }
+
+        channel->setValue(tmp_value);
+
+        if (read_result == 0 && log_err == 1)
+          supla_log(LOG_ERR, "Can't read file %s",
+                    channel->getFileName().c_str());
+
+      } catch (std::exception &exception) {
+        supla_log(LOG_ERR, exception.what());
       }
-
-      channel->setValue(tmp_value);
-
-      if (read_result == 0 && log_err == 1)
-        supla_log(LOG_ERR, "Can't read file %s",
-                  channel->getFileName().c_str());
     }
   }
   return read_result;
@@ -204,7 +213,6 @@ void channelio_channel_init(void) {
     channel = channels->getChannel(a);
 
     if (channel->getFileName().length() == 0) continue;
-
     if (channelio_read_from_file(channel, 1)) {
       channelio_raise_valuechanged(channel);
     };
