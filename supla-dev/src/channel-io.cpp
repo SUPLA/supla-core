@@ -55,15 +55,13 @@ void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
 void channelio_raise_valuechanged(client_device_channel *channel) {
-  
   char value[SUPLA_CHANNELVALUE_SIZE];
 
   channel->getValue(value);
 
   supla_log(LOG_DEBUG, "sending value of channel_%d to supla server...",
             channel->getNumber());
-			
-			
+
   if (channels->on_valuechanged)
     channels->on_valuechanged(channel->getNumber(), value,
                               channels->on_valuechanged_user_data);
@@ -489,9 +487,8 @@ void channelio_channels_to_srd(unsigned char *channel_count,
 
 void channelio_setcalback_on_channel_value_changed(
     _func_channelio_valuechanged on_valuechanged, void *user_data) {
-  
   supla_log(LOG_DEBUG, "setting callbacks for value changing...");
-  
+
   channels->on_valuechanged = on_valuechanged;
   channels->on_valuechanged_user_data = user_data;
 
