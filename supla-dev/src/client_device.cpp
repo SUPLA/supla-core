@@ -460,6 +460,8 @@ void client_device_channel::setIntervalSec(int interval) {
 client_device_channels::client_device_channels() {
   this->initialized = false;
   this->arr = safe_array_init();
+  this->on_valuechanged = NULL;
+  this->on_valuechanged_user_data = NULL;
 }
 client_device_channel *client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
