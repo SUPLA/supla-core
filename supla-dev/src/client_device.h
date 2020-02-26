@@ -36,6 +36,7 @@ class client_device_channel {
   int function;
   int number;
   int intervalSec;
+  int fileWriteCheckSeck;
   int toggleSec;
   std::string fileName;
   std::string payloadOn;
@@ -83,6 +84,7 @@ class client_device_channel {
   bool getOnline(void);
   bool getToggled(void);
   long getLastSeconds(void);
+  int getFileWriteCheckSec(void);
 
   void setType(int type);
   void setFunction(int function);
@@ -104,6 +106,7 @@ class client_device_channel {
   void setOnline(bool online);
   void setToggled(bool toggled);
   void setLastSeconds(void);
+  void setFileWriteCheckSec(int value);
 
   /* value handler */
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);

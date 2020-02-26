@@ -22,6 +22,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "gpio.h"
@@ -67,6 +68,23 @@ void channelio_raise_valuechanged(client_device_channel *channel) {
                               channels->on_valuechanged_user_data);
 }
 
+bool isFileOk(std::string filename, int file_write_sec) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  struct stat result;
+  if (file_write_sec > 0) {
+    if (stat(filename.c_str(), &result) == 0) {
+      auto mod_time = result.st_mtim;
+      if (now.tv_sec - mod_time.tv_sec >= file_write_sec) {
+        supla_log(LOG_ERR, "file write check error! ");
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 char channelio_read_from_file(client_device_channel *channel, char log_err) {
   double val1 = -275, val2 = -1;
   struct timeval now;
@@ -77,6 +95,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
 
     int interval_sec = channel->getIntervalSec();
     int min_interval = interval_sec >= 0 ? interval_sec : 10;
+    int file_write_sec = channel->getFileWriteCheckSec();
 
     if (now.tv_sec - channel->getLastSeconds() >= min_interval) {
       channel->setLastSeconds();
@@ -114,9 +133,19 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
           case SUPLA_CHANNELFNC_PRESSURESENSOR:
           case SUPLA_CHANNELFNC_RAINSENSOR:
           case SUPLA_CHANNELFNC_WEIGHTSENSOR: {
+            if (!isFileOk(channel->getFileName(),
+                          channel->getFileWriteCheckSec()))
+              val1 = -275;
+
             memcpy(tmp_value, &val1, sizeof(double));
           } break;
           case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
+            if (!isFileOk(channel->getFileName(),
+                          channel->getFileWriteCheckSec())) {
+              val1 = -275;
+              val2 = -1;
+            }
+
             int n;
 
             n = val1 * 1000;
@@ -226,6 +255,12 @@ void channelio_channel_init(void) {
 }
 
 int channelio_channel_count(void) { return channels->getChannelCount(); }
+
+void channelio_set_file_write_check(unsigned char number, int value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setFileWriteCheckSec(value);
+}
 
 void channelio_set_payload_on(unsigned char number, const char *value) {
   if (channels == NULL) return;

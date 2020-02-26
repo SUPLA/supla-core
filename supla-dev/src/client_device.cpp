@@ -41,6 +41,7 @@ client_device_channel::client_device_channel(int number) {
   this->retain = true;
   this->online = true;
   this->toggled = true;
+  this->fileWriteCheckSeck = 0;
 
   this->last = (struct timeval){0};
 
@@ -377,10 +378,18 @@ int client_device_channel::getType(void) {
 int client_device_channel::getFunction(void) { return this->function; }
 int client_device_channel::getNumber(void) { return this->number; }
 int client_device_channel::getIntervalSec() { return this->intervalSec; }
+int client_device_channel::getFileWriteCheckSec() {
+  return this->fileWriteCheckSeck;
+}
 std::string client_device_channel::getFileName(void) { return this->fileName; }
 std::string client_device_channel::getPayloadOn(void) {
   return this->payloadOn;
 };
+
+void client_device_channel::setFileWriteCheckSec(int value) {
+  this->fileWriteCheckSeck = value;
+}
+
 std::string client_device_channel::getPayloadOff(void) {
   return this->payloadOff;
 };
