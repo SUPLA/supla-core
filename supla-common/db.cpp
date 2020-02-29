@@ -66,13 +66,13 @@ bool dbcommon::connect(int connection_timeout_sec) {
                              cfg_get_port(), NULL, 0) == NULL) {
         disconnect();
       } else {
-        if (mysql_set_character_set(mysql, "utf8")) {
+        if (mysql_set_character_set(mysql, "utf8mb4")) {
           supla_log(LOG_ERR,
                     "Can't set utf8 character set. Current character set is %s",
                     mysql_character_set_name(mysql));
         }
 
-        mysql_options(mysql, MYSQL_SET_CHARSET_NAME, "utf8");
+        mysql_options(mysql, MYSQL_SET_CHARSET_NAME, "utf8mb4");
         connected = true;
       }
     }
