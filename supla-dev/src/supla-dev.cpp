@@ -46,11 +46,6 @@ void mqtt_client_publish_callback(const char* topic, const char* payload,
 
 int main(int argc, char* argv[]) {
 // INIT BLOCK
-#ifndef __SINGLE_THREAD
-  void* ipc_accept_loop_t = NULL;
-  void* ipc = NULL;
-#endif
-
 #ifdef __DEBUG
   char GUIDHEX[SUPLA_GUID_HEXSIZE + 1];
 #endif
@@ -104,40 +99,20 @@ int main(int argc, char* argv[]) {
   st_mainloop_init();
   st_hook_signals();
 
-#ifndef __SINGLE_THREAD
-  ipc = ipcsocket_init("/tmp/supla-dev-ctrl.sock");
-#endif
-
-  supla_log(LOG_DEBUG, "initializing channels...");
+  supla_log(LOG_DEBUG, "Initializing channels...");
   channelio_channel_init();
 
   // CONNECTION START
-  supla_log(LOG_DEBUG, "initializing server connection...");
+  supla_log(LOG_DEBUG, "Initializing server connection...");
   void* dconn = devconnection_start();
 
-  // ACCEPT LOOP
-
-#ifndef __SINGLE_THREAD
-  if (ipc) ipc_accept_loop_t = sthread_simple_run(ipc_accept_loop, ipc, 0);
-#endif
-
   // MAIN LOOP
-  supla_log(LOG_DEBUG, "entering main loop...");
+  supla_log(LOG_DEBUG, "Entering main loop...");
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
   }
 
   // RELEASE BLOCK
-
-#ifndef __SINGLE_THREAD
-  if (ipc != NULL) {
-    ipcsocket_close(ipc);
-    sthread_twf(ipc_accept_loop_t);  // ! after ipcsocket_close and before
-                                     // ipcsocket_free !
-    ipcsocket_free(ipc);
-  }
-#endif
-
   devconnection_stop(dconn);
   st_delpidfile(pidfile_path);
   devcfg_free();
