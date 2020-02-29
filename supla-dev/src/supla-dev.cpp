@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
     exit_fail();
   }
 
-  supla_log(LOG_DEBUG, "Protocol v%d", SUPLA_PROTO_VERSION);
+  supla_log(LOG_DEBUG, "Protocol v%d", scfg_int(CFG_PROTO));
   supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_DEBUG, "Starting...");
 
 #ifdef __DEBUG

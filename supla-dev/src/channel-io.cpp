@@ -34,8 +34,6 @@
 #include "supla-client-lib/sthread.h"
 #include "w1.h"
 
-// TODO(pzygmunt) whole remodel
-
 #define GPIO_MINDELAY_USEC 500000
 #ifdef __SINGLE_THREAD
 #define W1_TEMP_MINDELAY_SEC 120
@@ -50,9 +48,8 @@ void (*mqtt_publish_callback)(const char *topic, const char *payload,
 client_device_channels *channels = NULL;
 
 #ifndef __SINGLE_THREAD
+void *thread_w1;
 void channelio_w1_execute(void *user_data, void *sthread);
-void channelio_gpio_monitor_execute(void *user_data, void *sthread);
-void channelio_mcp23008_execute(void *user_data, void *sthread);
 #endif
 
 void channelio_raise_valuechanged(client_device_channel *channel) {
@@ -209,6 +206,9 @@ void channelio_free(void) {
   if (channels) {
     delete channels;
   }
+
+  mqtt_client_free();
+  sthread_twf(thread_w1);
 }
 
 char channelio_allowed_type(int type) {
@@ -250,7 +250,7 @@ void channelio_channel_init(void) {
 
   channels->setInitialized(true);
 #ifndef __SINGLE_THREAD
-  sthread_simple_run(channelio_w1_execute, NULL, 0);
+  thread_w1 = sthread_simple_run(channelio_w1_execute, NULL, 0);
 #endif
 }
 

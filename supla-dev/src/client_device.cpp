@@ -19,8 +19,6 @@
 #include "client_device.h"
 
 client_device_channel::client_device_channel(int number) {
-  supla_log(LOG_DEBUG, "adding channel with number %d", number);
-
   this->number = number;
   this->type = 0;
   this->function = 0;
@@ -466,6 +464,17 @@ void client_device_channel::setIntervalSec(int interval) {
   this->intervalSec = interval;
 }
 
+client_device_channels::~client_device_channels() {
+  safe_array_lock(arr);
+  for (int i = 0; i < safe_array_count(arr); i++) {
+    client_device_channel *channel =
+        (client_device_channel *)safe_array_get(arr, i);
+    delete channel;
+  }
+  safe_array_unlock(arr);
+  safe_array_free(arr);
+}
+
 client_device_channels::client_device_channels() {
   this->initialized = false;
   this->arr = safe_array_init();
@@ -474,8 +483,6 @@ client_device_channels::client_device_channels() {
 }
 client_device_channel *client_device_channels::add_channel(int number) {
   safe_array_lock(arr);
-
-  supla_log(LOG_DEBUG, "adding channel with number %d", number);
 
   client_device_channel *channel = new client_device_channel(number);
 
@@ -511,8 +518,6 @@ client_device_channel *client_device_channels::getChannel(int idx) {
   return (client_device_channel *)safe_array_get(arr, idx);
 }
 client_device_channel *client_device_channels::find_channel(int number) {
-  supla_log(LOG_DEBUG, "searching channel with number %d", number);
-
   int i;
 
   client_device_channel *channel;
@@ -521,7 +526,6 @@ client_device_channel *client_device_channels::find_channel(int number) {
     channel = (client_device_channel *)safe_array_get(arr, i);
 
     int c_number = channel->getNumber();
-    supla_log(LOG_DEBUG, "c_number: %d", c_number);
 
     if (channel->getNumber() == number) {
       return channel;

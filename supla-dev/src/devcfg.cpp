@@ -29,7 +29,7 @@
 
 char DEVICE_GUID[SUPLA_GUID_SIZE];
 char DEVICE_AUTHKEY[SUPLA_AUTHKEY_SIZE];
-char SOFTWARE_VERSION[SUPLA_SOFTVER_MAXSIZE] = "1.0.2";
+char SOFTWARE_VERSION[SUPLA_SOFTVER_MAXSIZE] = "1.0.3";
 
 /**
  * Use type names to process supla configuration file
