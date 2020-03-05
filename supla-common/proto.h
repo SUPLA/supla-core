@@ -346,6 +346,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_IC_ELECTRICITY_METER 315         // ver. >= 12
 #define SUPLA_CHANNELFNC_IC_GAS_METER 320                 // ver. >= 10
 #define SUPLA_CHANNELFNC_IC_WATER_METER 330               // ver. >= 10
+#define SUPLA_CHANNELFNC_IC_HEAT_METER 340                // ver. >= 10
 #define SUPLA_CHANNELFNC_THERMOSTAT 400                   // ver. >= 11
 #define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410  // ver. >= 11
 #define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500              // ver. >= 12
