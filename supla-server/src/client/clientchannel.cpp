@@ -103,6 +103,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_GAS_METER:
     case SUPLA_CHANNELFNC_WATER_METER:
+    case SUPLA_CHANNELFNC_HEAT_METER:
       return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -130,7 +131,8 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
       switch (Func) {
         case SUPLA_CHANNELFNC_ELECTRICITY_METER:
         case SUPLA_CHANNELFNC_GAS_METER:
-        case SUPLA_CHANNELFNC_WATER_METER: {
+        case SUPLA_CHANNELFNC_WATER_METER:
+        case SUPLA_CHANNELFNC_HEAT_METER: {
           TDS_ImpulseCounter_Value ds;
           memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
           memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);

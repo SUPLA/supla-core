@@ -274,6 +274,9 @@ void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
         // UTF(³) == 0xc2b3
         snprintf(unit, 9, "m%c%c", 0xc2, 0xb3);  // NOLINT
         break;
+      case SUPLA_CHANNELFNC_HEAT_METER:
+        snprintf(unit, 9, "GJ");  // NOLINT
+        break;
     }
   }
 }
@@ -770,7 +773,8 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
     switch (getFunc()) {
       case SUPLA_CHANNELFNC_ELECTRICITY_METER:
       case SUPLA_CHANNELFNC_WATER_METER:
-      case SUPLA_CHANNELFNC_GAS_METER: {
+      case SUPLA_CHANNELFNC_GAS_METER:
+      case SUPLA_CHANNELFNC_HEAT_METER: {
         char value[SUPLA_CHANNELVALUE_SIZE];
         getValue(value);
 
@@ -794,6 +798,7 @@ bool supla_device_channel::converValueToExtended(void) {
         case SUPLA_CHANNELFNC_ELECTRICITY_METER:
         case SUPLA_CHANNELFNC_GAS_METER:
         case SUPLA_CHANNELFNC_WATER_METER:
+        case SUPLA_CHANNELFNC_HEAT_METER:
           char value[SUPLA_CHANNELVALUE_SIZE];
           TSuplaChannelExtendedValue ev;
           TSC_ImpulseCounter_ExtendedValue ic_ev;
