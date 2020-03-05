@@ -819,7 +819,7 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:{
+    case SUPLA_CHANNELFNC_IC_HEAT_METER: {
       char value[SUPLA_CHANNELVALUE_SIZE];
       getValue(value);
 
