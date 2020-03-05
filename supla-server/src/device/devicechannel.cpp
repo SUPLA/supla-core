@@ -281,6 +281,9 @@ void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
         // UTF(³) == 0xc2b3
         snprintf(unit, 9, "m%c%c", 0xc2, 0xb3);  // NOLINT
         break;
+      case SUPLA_CHANNELFNC_HEAT_METER:
+        snprintf(unit, 9, "GJ");  // NOLINT
+        break;
     }
   }
 }

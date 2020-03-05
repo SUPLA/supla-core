@@ -73,6 +73,7 @@ void *sthread_run(Tsthread_params *sthread_params) {
   return sthread;
 }
 
+
 void *sthread_simple_run(_func_sthread_execute execute, void *user_data,
                          char free_on_finish) {
   Tsthread_params p;
