@@ -977,21 +977,23 @@ char supla_client_open(void *_suplaclient, int ID, char group, char open) {
   value[0] = open;
 
   return supla_client_send_raw_value(
-      _suplaclient, ID, value, group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
-                                         : SUPLA_NEW_VALUE_TARGET_CHANNEL);
+      _suplaclient, ID, value,
+      group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL);
 }
 
 void _supla_client_set_rgbw_value(char *value, int color, char color_brightness,
-                                  char brightness) {
+                                  char brightness, char turn_onoff) {
   value[0] = brightness;
   value[1] = color_brightness;
   value[2] = (char)((color & 0x000000FF));        // BLUE
   value[3] = (char)((color & 0x0000FF00) >> 8);   // GREEN
   value[4] = (char)((color & 0x00FF0000) >> 16);  // RED
+  value[5] = turn_onoff > 0 ? 1 : 0;
 }
 
 char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
-                           char color_brightness, char brightness) {
+                           char color_brightness, char brightness,
+                           char turn_onoff) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   char result = 0;
 
@@ -1001,10 +1003,9 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaNewValue value;
       memset(&value, 0, sizeof(TCS_SuplaNewValue));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness);
+                                   brightness, turn_onoff);
       value.Id = ID;
-      value.Target = group > 0 ? SUPLA_NEW_VALUE_TARGET_GROUP
-                               : SUPLA_NEW_VALUE_TARGET_CHANNEL;
+      value.Target = group > 0 ? SUPLA_TARGET_GROUP : SUPLA_TARGET_CHANNEL;
       result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
                        SUPLA_RESULT_FALSE
                    ? 0
@@ -1013,7 +1014,7 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
       TCS_SuplaChannelNewValue_B value;
       memset(&value, 0, sizeof(TCS_SuplaChannelNewValue_B));
       _supla_client_set_rgbw_value(value.value, color, color_brightness,
-                                   brightness);
+                                   brightness, turn_onoff);
       value.ChannelId = ID;
 
       result = srpc_cs_async_set_channel_value_b(suplaclient->srpc, &value) ==
@@ -1028,8 +1029,9 @@ char supla_client_set_rgbw(void *_suplaclient, int ID, char group, int color,
 }
 
 char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
-                             char brightness) {
-  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness);
+                             char brightness, char turn_onoff) {
+  return supla_client_set_rgbw(_suplaclient, ID, group, 0, 0, brightness,
+                               turn_onoff);
 }
 
 char supla_client_get_registration_enabled(void *_suplaclient) {
@@ -1059,8 +1061,24 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
 }
 
 char supla_client_device_calcfg_request(void *_suplaclient,
-                                        TCS_DeviceCalCfgRequest *request) {
+                                        TCS_DeviceCalCfgRequest_B *request) {
   if (request == NULL) return 0;
-  return srpc_cs_async_device_calcfg_request(
-      ((TSuplaClientData *)_suplaclient)->srpc, request);
+  if (srpc_get_proto_version(((TSuplaClientData *)_suplaclient)->srpc) >= 11) {
+    return srpc_cs_async_device_calcfg_request_b(
+        ((TSuplaClientData *)_suplaclient)->srpc, request);
+  } else if (request->Target == SUPLA_TARGET_CHANNEL) {
+    TCS_DeviceCalCfgRequest request_a;
+    memset(&request_a, 0, sizeof(TCS_DeviceCalCfgRequest));
+
+    request_a.ChannelID = request->Id;
+    request_a.Command = request->Command;
+    request_a.DataType = request->DataType;
+    request_a.DataSize = request->DataSize;
+    memcpy(request_a.Data, request->Data, SUPLA_CALCFG_DATA_MAXSIZE);
+
+    return srpc_cs_async_device_calcfg_request(
+        ((TSuplaClientData *)_suplaclient)->srpc, &request_a);
+  }
+
+  return 0;
 }

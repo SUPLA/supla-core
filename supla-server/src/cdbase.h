@@ -23,30 +23,46 @@
 #include "serverconnection.h"
 
 class supla_user;
-class cdcommon {
+class database;
+class cdbase {
  private:
   struct timeval last_activity_time;
   char GUID[SUPLA_GUID_SIZE];
   char AuthKey[SUPLA_AUTHKEY_SIZE];
   serverconnection *svrconn;
   int ID;
+  unsigned long ptr_counter;
   supla_user *user;
 
  protected:
   void *lck;
+  static void *authkey_auth_cache_arr;
+  static int authkey_auth_cache_size;
 
   // Thread safe start
   bool setGUID(char GUID[SUPLA_GUID_SIZE]);
-  bool setAuthKey(char GUID[SUPLA_AUTHKEY_SIZE]);
+  bool setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void setID(int ID);
   void setUser(supla_user *user);
   // Thread safe end
 
   serverconnection *getSvrConn(void);
+  virtual bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                               const char Email[SUPLA_EMAIL_MAXSIZE],
+                               const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                               int *UserID, database *db) = 0;
+
+  bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                    const char Email[SUPLA_EMAIL_MAXSIZE],
+                    const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+                    database *db);
 
  public:
-  explicit cdcommon(serverconnection *svrconn);
-  virtual ~cdcommon();
+  static void init(void);
+  static void cdbase_free(void);
+  static int getAuthKeyCacheSize(void);
+  explicit cdbase(serverconnection *svrconn);
+  virtual ~cdbase();
 
   // Thread safe start
   void terminate(void);
@@ -59,6 +75,10 @@ class cdcommon {
   void updateLastActivity(void);
   int getActivityDelay(void);
   unsigned char getProtocolVersion(void);
+  cdbase *retainPtr(void);
+  void releasePtr(void);
+  bool ptrIsUsed(void);
+  unsigned long ptrCounter(void);
   // Thread safe end
 };
 

@@ -24,6 +24,7 @@
 #define TEMPLOG_INTERVAL 600
 #define ELECTRICITYMETERLOG_INTERVAL 600
 #define IMPULSECOUNTERLOG_INTERVAL 600
+#define THERMOSTATLOG_INTERVAL 600
 
 class supla_datalogger {
  private:
@@ -32,10 +33,12 @@ class supla_datalogger {
   struct timeval temperature_tv;
   struct timeval electricitymeter_tv;
   struct timeval impulsecounter_tv;
+  struct timeval thermostat_tv;
 
   void log_temperature();
   void log_electricity_measurement(void);
   void log_ic_measurement(void);
+  void log_thermostat_measurement(void);
   bool dbinit(void);
 
  public:

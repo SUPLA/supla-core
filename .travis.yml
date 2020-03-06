@@ -17,9 +17,8 @@ matrix:
       sudo: false
       os: linux
       compiler: gcc
-      #      install:
-      #  - sudo apt-get -y install cppcheck
+      install:
+        - sudo apt-get -y install valgrind
       script:
-      #  - ./tools/cppcheck.sh
         - ./tools/test.sh
 

@@ -20,6 +20,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <sys/syscall.h>
+#include <sys/types.h>
 #include "database.h"
 #include "device.h"
 #include "http/httprequestqueue.h"
@@ -29,14 +31,12 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_device::supla_device(serverconnection *svrconn) : cdcommon(svrconn) {
+supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
   this->channels = new supla_device_channels();
 }
 
 supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
-    getUser()->remove_device(this);
-
     std::list<int> ids = channels->get_channel_ids();
     for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
@@ -44,6 +44,13 @@ supla_device::~supla_device() {
   }
 
   delete channels;
+}
+
+bool supla_device::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                                   const char Email[SUPLA_EMAIL_MAXSIZE],
+                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                                   int *UserID, database *db) {
+  return db->device_authkey_auth(GUID, Email, AuthKey, UserID);
 }
 
 char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
@@ -108,9 +115,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_device_e != NULL &&
-                 false == db->device_authkey_auth(GUID,
-                                                  register_device_e->Email,
-                                                  AuthKey, &UserID)) {
+                 false == authkey_auth(GUID, register_device_e->Email, AuthKey,
+                                       &UserID, db)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -296,9 +302,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     supla_log(LOG_INFO,
-              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i",
+              "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
+              "ThreadID: %i",
               getID(), getSvrConn()->getClientSD(),
-              getSvrConn()->getProtocolVersion());
+              getSvrConn()->getProtocolVersion(), syscall(__NR_gettid));
   } else {
     usleep(2000000);
   }
@@ -306,7 +313,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   TSD_SuplaRegisterDeviceResult srdr;
   srdr.result_code = resultcode;
   srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
-  srdr.version_min = SUPLA_PROTO_VERSION;
+  srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
   srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);
 
@@ -381,6 +388,9 @@ void supla_device::on_channel_set_value_result(
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
         event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
         break;
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+        event.Event = SUPLA_EVENT_VALVEOPENCLOSE;
+        break;
     }
 
     getUser()->call_event(&event);
@@ -426,8 +436,8 @@ std::list<int> supla_device::master_channel(int ChannelID) {
   return channels->master_channel(ChannelID);
 }
 
-std::list<int> supla_device::slave_channel(int ChannelID) {
-  return channels->slave_channel(ChannelID);
+std::list<int> supla_device::related_channel(int ChannelID) {
+  return channels->related_channel(ChannelID);
 }
 
 bool supla_device::get_channel_double_value(int ChannelID, double *Value) {
@@ -463,6 +473,10 @@ supla_channel_ic_measurement *supla_device::get_ic_measurement(int ChannelID) {
   return channels->get_ic_measurement(ChannelID);
 }
 
+void supla_device::get_thermostat_measurements(void *tharr) {
+  channels->get_thermostat_measurements(tharr);
+}
+
 bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
   return channels->get_channel_char_value(ChannelID, Value);
 }
@@ -488,9 +502,10 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
 }
 
-bool supla_device::calcfg_request(int SenderID, bool SuperUserAuthorized,
-                                  TCS_DeviceCalCfgRequest *request) {
-  return channels->calcfg_request(getSvrConn()->srpc(), SenderID,
+bool supla_device::calcfg_request(int SenderID, int ChannelID,
+                                  bool SuperUserAuthorized,
+                                  TCS_DeviceCalCfgRequest_B *request) {
+  return channels->calcfg_request(getSvrConn()->srpc(), SenderID, ChannelID,
                                   SuperUserAuthorized, request);
 }
 

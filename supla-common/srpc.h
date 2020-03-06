@@ -28,6 +28,12 @@
 #endif /*__ANDROID__*/
 
 #ifdef ESP8266
+
+#ifdef ARDUINO_ARCH_ESP8266
+#define SRPC_WITHOUT_OUT_QUEUE
+#define SRPC_WITHOUT_IN_QUEUE
+#endif /*ARDUINO_ARCH_ESP8266*/
+
 #define SRPC_EXCLUDE_CLIENT
 #include <mem.h>
 #include <os_type.h>
@@ -38,6 +44,8 @@
 
 #ifdef __AVR__
 #define SRPC_EXCLUDE_CLIENT
+#define SRPC_WITHOUT_OUT_QUEUE
+#define SRPC_WITHOUT_IN_QUEUE
 #endif /*__AVR__*/
 
 #ifdef __cplusplus
@@ -88,6 +96,7 @@ union TsrpcDataPacketData {
   TCS_SuplaRegisterClient *cs_register_client;
   TCS_SuplaRegisterClient_B *cs_register_client_b;
   TCS_SuplaRegisterClient_C *cs_register_client_c;
+  TCS_SuplaRegisterClient_D *cs_register_client_d;
   TSC_SuplaRegisterClientResult *sc_register_client_result;
   TSC_SuplaRegisterClientResult_B *sc_register_client_result_b;
   TDS_SuplaDeviceChannelValue *ds_device_channel_value;
@@ -119,9 +128,11 @@ union TsrpcDataPacketData {
   TCS_SuperUserAuthorizationRequest *cs_superuser_authorization_request;
   TSC_SuperUserAuthorizationResult *sc_superuser_authorization_result;
   TCS_DeviceCalCfgRequest *cs_device_calcfg_request;
+  TCS_DeviceCalCfgRequest_B *cs_device_calcfg_request_b;
   TSC_DeviceCalCfgResult *sc_device_calcfg_result;
   TSD_DeviceCalCfgRequest *sd_device_calcfg_request;
   TDS_DeviceCalCfgResult *ds_device_calcfg_result;
+  TSDC_UserLocalTimeResult *sdc_user_localtime_result;
 };
 
 typedef struct {
@@ -142,6 +153,7 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                     unsigned _supla_int_t rr_id);
+
 void SRPC_ICACHE_FLASH srpc_rd_free(TsrpcReceivedData *rd);
 
 unsigned char SRPC_ICACHE_FLASH srpc_get_proto_version(void *_srpc);
@@ -170,6 +182,9 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_dcs_async_get_registration_enabled(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_registration_enabled_result(
     void *_srpc, TSDC_RegistrationEnabled *reg_enabled);
+_supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_get_user_localtime(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_get_user_localtime_result(
+    void *_srpc, TSDC_UserLocalTimeResult *localtime);
 
 #ifndef SRPC_EXCLUDE_DEVICE
 // device <-> server
@@ -201,6 +216,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
     void *_srpc, TSD_DeviceCalCfgRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request_b(
+    void *_srpc, TSD_DeviceCalCfgRequest_B *request_b);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_device_calcfg_result(void *_srpc, TDS_DeviceCalCfgResult *result);
 
@@ -214,6 +231,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_b(
     void *_srpc, TCS_SuplaRegisterClient_B *registerclient);  // ver. >= 6
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_c(
     void *_srpc, TCS_SuplaRegisterClient_C *registerclient);  // ver. >= 7
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_registerclient_d(
+    void *_srpc, TCS_SuplaRegisterClient_D *registerclient);  // ver. >= 11
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(
     void *_srpc, TSC_SuplaRegisterClientResult *registerclient_result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
@@ -267,6 +286,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
     void *_srpc, TSC_SuperUserAuthorizationResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(
     void *_srpc, TCS_DeviceCalCfgRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request_b(
+    void *_srpc, TCS_DeviceCalCfgRequest_B *request);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_device_calcfg_result(void *_srpc, TSC_DeviceCalCfgResult *result);
 
@@ -277,6 +298,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
     TElectricityMeter_ExtendedValue *em_ev, TSuplaChannelExtendedValue *ev);
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
     TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue *em_ev);
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
+    TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_thermostatextended2extended(
+    TThermostat_ExtendedValue *th_ev, TSuplaChannelExtendedValue *ev);
 
 #ifndef SRPC_EXCLUDE_CLIENT
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(

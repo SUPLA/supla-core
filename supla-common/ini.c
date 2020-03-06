@@ -47,8 +47,13 @@ static char* find_char_or_comment(const char* s, char c) {
 
 /* Version of strncpy that ensures dest (size bytes) is null-terminated. */
 static char* strncpy0(char* dest, const char* src, size_t size) {
-  strncpy(dest, src, size);
-  dest[size - 1] = '\0';
+  if (size > 1) {
+    strncpy(dest, src, size - 1);
+    dest[size - 1] = '\0';
+  } else {
+    dest[0] = '\0';
+  }
+
   return dest;
 }
 
@@ -77,13 +82,13 @@ int ini_parse_file(FILE* file,
       /* Per Python ConfigParser, allow '#' comments at start of line */
     }
 #if INI_ALLOW_MULTILINE
-    else if (*prev_name && *start && start > line) { // NOLINT
+    else if (*prev_name && *start && start > line) {  // NOLINT
       /* Non-black line with leading whitespace, treat as continuation
          of previous name's value (as per Python ConfigParser). */
       if (!handler(user, section, prev_name, start) && !error) error = lineno;
     }
 #endif
-    else if (*start == '[') { // NOLINT
+    else if (*start == '[') {  // NOLINT
       /* A "[section]" line */
       end = find_char_or_comment(start + 1, ']');
       if (*end == ']') {

@@ -55,11 +55,19 @@ void st_signal_handler(int sig) {
 void st_hook_signals(void) {
   main_thread = pthread_self();
 
+#if defined(__ANDROID_API__) && (__ANDROID_API__ < 21)
+  bsd_signal(SIGHUP, st_signal_handler);
+  bsd_signal(SIGINT, st_signal_handler);
+  bsd_signal(SIGTERM, st_signal_handler);
+  bsd_signal(SIGQUIT, st_signal_handler);
+  bsd_signal(SIGPIPE, SIG_IGN);
+#else
   signal(SIGHUP, st_signal_handler);
   signal(SIGINT, st_signal_handler);
   signal(SIGTERM, st_signal_handler);
   signal(SIGQUIT, st_signal_handler);
   signal(SIGPIPE, SIG_IGN);
+#endif /*__ANDROID__*/
 }
 
 unsigned char st_file_exists(const char *fp) {
@@ -196,7 +204,7 @@ char st_read_randkey_from_file(char *file, char *KEY, int size, char create) {
         gettimeofday(&tv, NULL);
 
 #ifdef __ANDROID__
-        srand(tv.tv_usec);
+        srand48(tv.tv_usec);
         gettimeofday(&tv, NULL);
 
         for (a = 0; a < size; a++)
@@ -523,7 +531,7 @@ char st_bcrypt_crypt(char *str, char *hash, int hash_buffer_size, char rounds) {
   return 0;
 }
 
-char st_bcrypt_check(char *str, char *hash, int hash_len) {
+char st_bcrypt_check(const char *str, char *hash, int hash_len) {
   if (str == NULL || hash == NULL || hash_len == 0) return 0;
 
   char *cmp_hash = malloc(hash_len + 1);
