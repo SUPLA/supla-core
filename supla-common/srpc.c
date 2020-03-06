@@ -1187,6 +1187,19 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSC_SetRegistrationEnabledResult));
         break;
 
+      case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
+        if (srpc->sdp.data_size == sizeof(TCS_DeviceReconnectRequest))
+          rd->data.cs_device_reconnect_request =
+              (TCS_DeviceReconnectRequest *)malloc(
+                  sizeof(TCS_DeviceReconnectRequest));
+        break;
+      case SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_DeviceReconnectRequestResult))
+          rd->data.sc_device_reconnect_request_result =
+              (TSC_DeviceReconnectRequestResult *)malloc(
+                  sizeof(TSC_DeviceReconnectRequestResult));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1306,6 +1319,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
     case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
     case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+    case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
+    case SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT:
       return 12;
   }
 
@@ -2117,6 +2132,19 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
                          (char *)result,
                          sizeof(TSC_SetRegistrationEnabledResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_reconnect_request(
+    void *_srpc, TCS_DeviceReconnectRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
+                         (char *)request, sizeof(TCS_DeviceReconnectRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
+    void *_srpc, TSC_DeviceReconnectRequestResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
+                         (char *)result,
+                         sizeof(TSC_DeviceReconnectRequestResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

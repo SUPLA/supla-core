@@ -31,7 +31,7 @@
 #define BUFFER_MIN_SIZE 512
 #define BUFFER_MAX_SIZE 2048
 
-#if  !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32)
+#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32)
 #include <user_interface.h>
 #include "espmissingincludes.h"
 #endif
@@ -354,7 +354,8 @@ void sproto_sdp_free(TSuplaDataPacket *sdp) { free(sdp); }
 char sproto_set_data(TSuplaDataPacket *sdp, char *data,
                      unsigned _supla_int_t data_size,
                      unsigned _supla_int_t call_type) {
-  if (data_size > SUPLA_MAX_DATA_SIZE) return SUPLA_RESULT_FALSE;
+  if (data_size > SUPLA_MAX_DATA_SIZE || (data_size > 0 && data == 0))
+    return SUPLA_RESULT_FALSE;
 
   if (data_size > 0) memcpy(sdp->data, data, data_size);
 
