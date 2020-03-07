@@ -3295,7 +3295,7 @@ SRPC_CALL_BASIC_TEST(srpc_cs_async_set_channel_function, TCS_SetChannelFunction,
 
 SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
                      TSC_SetChannelFunctionResult,
-                     SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT, 28,
+                     SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT, 32,
                      sc_set_channel_function_result);
 
 //---------------------------------------------------------

@@ -132,7 +132,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)50, sizeof(TDSC_ChannelState));
   ASSERT_EQ((unsigned int)8, sizeof(TCSD_ChannelStateRequest));
   ASSERT_EQ((unsigned int)8, sizeof(TCS_SetChannelFunction));
-  ASSERT_EQ((unsigned int)5, sizeof(TSC_SetChannelFunctionResult));
+  ASSERT_EQ((unsigned int)9, sizeof(TSC_SetChannelFunctionResult));
   ASSERT_EQ((unsigned int)660, sizeof(TSC_ChannelBasicCfg));
   ASSERT_EQ((unsigned int)4, sizeof(TCS_ChannelBasicCfgRequest));
   ASSERT_EQ((unsigned int)1, sizeof(TSC_ClientsReconnectRequestResult));

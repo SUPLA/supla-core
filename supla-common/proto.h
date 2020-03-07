@@ -1387,6 +1387,7 @@ typedef struct {
 
 typedef struct {
   _supla_int_t ChannelID;
+  _supla_int_t Func;
   unsigned char ResultCode;
 } TSC_SetChannelFunctionResult;
 
