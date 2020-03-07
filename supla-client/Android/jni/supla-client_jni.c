@@ -939,7 +939,7 @@ void supla_android_client_cb_on_channel_function_set_result(
 
   (*env)->CallVoidMethod(env, asc->j_obj,
                          asc->j_mid_cb_on_channel_function_set_result,
-                         result->ChannelID, result->ResultCode);
+                         result->ChannelID, result->Func, result->ResultCode);
 }
 
 void supla_android_client_cb_on_clients_reconnect_result(
@@ -1290,7 +1290,7 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onChannelBasicCfg",
         "(Lorg/supla/android/lib/SuplaChannelBasicCfg;)V");
     _asc->j_mid_cb_on_channel_function_set_result = supla_client_GetMethodID(
-        env, oclass, "onChannelFunctionSetResult", "(II)V");
+        env, oclass, "onChannelFunctionSetResult", "(III)V");
     _asc->j_mid_cb_on_clients_reconnect_result = supla_client_GetMethodID(
         env, oclass, "onClientsReconnectResult", "(I)V");
     _asc->j_mid_cb_on_set_registration_enabled_result =
