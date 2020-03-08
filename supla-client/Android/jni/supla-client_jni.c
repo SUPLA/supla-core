@@ -1719,3 +1719,22 @@ Java_org_supla_android_lib_SuplaClient_scSetRegistrationEnabled(
 
   return JNI_FALSE;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scReconnectDevice(JNIEnv *env,
+                                                         jobject thiz,
+                                                         jlong _asc,
+                                                         jint deviceId) {
+  void *supla_client = supla_client_ptr(_asc);
+  TCS_DeviceReconnectRequest request;
+  memset(&request, 0, sizeof(TCS_DeviceReconnectRequest));
+  request.DeviceID = deviceId;
+
+  if (supla_client) {
+    return srpc_cs_async_device_reconnect_request(supla_client, &request)
+               ? JNI_TRUE
+               : JNI_FALSE;
+  }
+
+  return JNI_FALSE;
+}
