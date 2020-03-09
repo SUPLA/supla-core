@@ -1155,6 +1155,20 @@ bool supla_user::client_reconnect(int ClientID) {
   return result;
 }
 
+bool supla_user::device_reconnect(int DeviceID) {
+  bool result = false;
+
+  supla_device *device = device_container->findByID(DeviceID);
+
+  if (device) {
+    device->terminate();
+    device->releasePtr();
+    result = true;
+  }
+
+  return result;
+}
+
 // static
 bool supla_user::reconnect(int UserID, event_source_type eventSourceType) {
   supla_user *user = find(UserID, true);
@@ -1174,6 +1188,17 @@ bool supla_user::client_reconnect(int UserID, int ClientID) {
 
   if (user) {
     return user->client_reconnect(ClientID);
+  }
+
+  return false;
+}
+
+// static
+bool supla_user::device_reconnect(int UserID, int DeviceID) {
+  supla_user *user = find(UserID, true);
+
+  if (user) {
+    return user->device_reconnect(DeviceID);
   }
 
   return false;
