@@ -1203,3 +1203,12 @@ char supla_client_set_registration_enabled(void *_suplaclient,
   return srpc_cs_async_set_registration_enabled(
       ((TSuplaClientData *)_suplaclient)->srpc, &re);
 }
+
+char supla_client_reconnect_device(void *_suplaclient, int DeviceID) {
+  TCS_DeviceReconnectRequest request;
+  memset(&request, 0, sizeof(TCS_DeviceReconnectRequest));
+  request.DeviceID = DeviceID;
+
+  return srpc_cs_async_clients_reconnect_request(
+      ((TSuplaClientData *)_suplaclient)->srpc);
+}

@@ -188,6 +188,7 @@ char supla_client_reconnect_all_clients(void *_suplaclient);
 char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,
                                            int clientRegTimeSec);
+char supla_client_reconnect_device(void *_suplaclient, int DeviceID);
 
 #ifdef __cplusplus
 }
