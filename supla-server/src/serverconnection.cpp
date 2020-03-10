@@ -779,16 +779,23 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             srpc_sc_async_set_registration_enabled_result(_srpc, &result);
           }
           break;
-        case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
+        case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST: {
+          TSC_DeviceReconnectRequestResult result;
+          memset(&result, 0, sizeof(TSC_DeviceReconnectRequestResult));
+          result.ResultCode = SUPLA_RESULTCODE_FALSE;
+
           if (client->is_superuser_authorized()) {
-            client->getUser()->reconnect(EST_CLIENT, false, true);
+            if (rd.data.cs_device_reconnect_request &&
+                client->getUser()->device_reconnect(
+                    rd.data.cs_device_reconnect_request->DeviceID)) {
+              result.ResultCode = SUPLA_RESULTCODE_TRUE;
+            }
+
           } else {
-            TSC_DeviceReconnectRequestResult result;
-            memset(&result, 0, sizeof(TSC_DeviceReconnectRequestResult));
             result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
-            srpc_sc_async_device_reconnect_request_result(_srpc, &result);
           }
-          break;
+          srpc_sc_async_device_reconnect_request_result(_srpc, &result);
+        } break;
         default:
           catch_incorrect_call(call_type);
       }
