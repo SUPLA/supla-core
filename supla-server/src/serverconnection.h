@@ -34,6 +34,8 @@ class serverconnection {
   static void *reg_pending_arr;
   static void read_local_ipv4_addresses(void);
   void set_registered(char registered);
+  void on_device_reconnect_request(
+      void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request);
 
  protected:
   unsigned int client_ipv4;
