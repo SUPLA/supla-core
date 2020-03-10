@@ -787,6 +787,7 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           if (client->is_superuser_authorized()) {
             if (rd.data.cs_device_reconnect_request &&
                 client->getUser()->device_reconnect(
+                    client->getUser()->getUserID(),
                     rd.data.cs_device_reconnect_request->DeviceID)) {
               result.ResultCode = SUPLA_RESULTCODE_TRUE;
             }
