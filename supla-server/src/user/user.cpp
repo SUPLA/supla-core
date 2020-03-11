@@ -1113,20 +1113,25 @@ void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
 
   cgroups->load();  // load == reload
 
-  supla_device *device;
   std::list<cdbase *> cdb;
 
-  for (a = 0; a < device_container->count(); a++)
-    if (NULL != (device = device_container->get(a))) {
-      cdb.push_back(device);
-    }
+  if (allDevices) {
+    supla_device *device;
 
-  supla_client *client;
+    for (a = 0; a < device_container->count(); a++)
+      if (NULL != (device = device_container->get(a))) {
+        cdb.push_back(device);
+      }
+  }
 
-  for (a = 0; a < client_container->count(); a++)
-    if (NULL != (client = client_container->get(a))) {
-      cdb.push_back(client);
-    }
+  if (allClients) {
+    supla_client *client;
+
+    for (a = 0; a < client_container->count(); a++)
+      if (NULL != (client = client_container->get(a))) {
+        cdb.push_back(client);
+      }
+  }
 
   for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end(); it++) {
     (*it)->terminate();
