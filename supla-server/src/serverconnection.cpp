@@ -177,6 +177,26 @@ void serverconnection::set_registered(char registered) {
   safe_array_remove(serverconnection::reg_pending_arr, this);
 }
 
+void serverconnection::on_device_reconnect_request(
+    void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request) {
+  TSC_DeviceReconnectRequestResult result;
+  memset(&result, 0, sizeof(TSC_DeviceReconnectRequestResult));
+  result.ResultCode = SUPLA_RESULTCODE_FALSE;
+
+  if (client->is_superuser_authorized()) {
+    if (cs_device_reconnect_request &&
+        client->getUser()->device_reconnect(
+            client->getUser()->getUserID(),
+            cs_device_reconnect_request->DeviceID)) {
+      result.ResultCode = SUPLA_RESULTCODE_TRUE;
+    }
+
+  } else {
+    result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+  }
+  srpc_sc_async_device_reconnect_request_result(_srpc, &result);
+}
+
 void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                                                unsigned int call_type,
                                                unsigned char proto_version) {
@@ -728,12 +748,62 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           if (rd.data.cs_device_calcfg_request_b != NULL) {
             client->device_calcfg_request(rd.data.cs_device_calcfg_request_b);
           }
+          break;
         case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
           if (rd.data.csd_channel_state_request != NULL) {
             client->device_get_channel_state(rd.data.csd_channel_state_request);
           }
           break;
+        case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
+          if (rd.data.cs_channel_basic_cfg_request != NULL) {
+            client->get_channel_basic_cfg(rd.data.cs_channel_basic_cfg_request);
+          }
+          break;
+        case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+          if (rd.data.cs_set_channel_function != NULL) {
+            client->set_channel_function(rd.data.cs_set_channel_function);
+          }
+          break;
+        case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
+          if (client->is_superuser_authorized()) {
+            client->getUser()->reconnect(EST_CLIENT, false, true);
+          } else {
+            TSC_ClientsReconnectRequestResult result;
+            memset(&result, 0, sizeof(TSC_ClientsReconnectRequestResult));
+            result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+            srpc_sc_async_clients_reconnect_request_result(_srpc, &result);
+          }
+          break;
+        case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+          if (rd.data.cs_set_registration_enabled != NULL) {
+            TSC_SetRegistrationEnabledResult result;
+            memset(&result, 0, sizeof(TSC_SetRegistrationEnabledResult));
 
+            if (client->is_superuser_authorized()) {
+              database *db = new database();
+
+              result.ResultCode =
+                  db->connect() && db->set_reg_enabled(
+                                       cdptr->getUserID(),
+                                       rd.data.cs_set_registration_enabled
+                                           ->IODeviceRegistrationTimeSec,
+                                       rd.data.cs_set_registration_enabled
+                                           ->ClientRegistrationTimeSec)
+                      ? SUPLA_RESULTCODE_TRUE
+                      : SUPLA_RESULTCODE_UNKNOWN_ERROR;
+
+              delete db;
+            } else {
+              result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+            }
+            srpc_sc_async_set_registration_enabled_result(_srpc, &result);
+          }
+          break;
+        case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
+          on_device_reconnect_request(_srpc,
+                                      rd.data.cs_device_reconnect_request);
+
+          break;
         default:
           catch_incorrect_call(call_type);
       }

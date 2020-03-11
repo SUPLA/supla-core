@@ -74,8 +74,8 @@ class supla_user {
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
                                 char Type);
 
-  void reconnect(event_source_type eventSourceType);
   bool client_reconnect(int ClientID);
+  bool device_reconnect(int DeviceID);
   void loadUniqueIDs(void);
 
  public:
@@ -86,6 +86,7 @@ class supla_user {
   static supla_user *find(int UserID, bool create);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
+  static bool device_reconnect(int UserID, int DeviceID);
   static bool is_client_online(int UserID, int ClientID);
   static bool is_device_online(int UserID, int DeviceID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
@@ -129,6 +130,10 @@ class supla_user {
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
   static void print_metrics(int min_interval_sec);
+
+  void reconnect(event_source_type eventSourceType);
+  void reconnect(event_source_type eventSourceType, bool allDevices,
+                 bool allClients);
 
   void on_device_added(int DeviceID, event_source_type eventSourceType);
 

@@ -75,6 +75,16 @@ int supla_client_channel::getDeviceId() { return DeviceId; }
 
 int supla_client_channel::getExtraId() { return DeviceId; }
 
+int supla_client_channel::getType() { return Type; }
+
+int supla_client_channel::getFunc() { return Func; }
+
+short supla_client_channel::getManufacturerID() { return ManufacturerID; }
+
+short supla_client_channel::getProductID() { return ProductID; }
+
+int supla_client_channel::getFlags() { return Flags; }
+
 bool supla_client_channel::remote_update_is_possible(void) {
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
@@ -104,8 +114,11 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
       return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -133,7 +146,8 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
     switch (Func) {
       case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
       case SUPLA_CHANNELFNC_IC_GAS_METER:
-      case SUPLA_CHANNELFNC_IC_WATER_METER: {
+      case SUPLA_CHANNELFNC_IC_WATER_METER:
+      case SUPLA_CHANNELFNC_IC_HEAT_METER: {
         TDS_ImpulseCounter_Value ds;
         memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
         memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -240,4 +254,69 @@ void supla_client_channel::mark_for_remote_update(int mark) {
   if ((mark & OI_REMOTEUPDATE_DATA1) && (mark & OI_REMOTEUPDATE_DATA2)) {
     unmark_for_remote_update(OI_REMOTEUPDATE_DATA2);
   }
+}
+
+bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {
+  if (basic_cfg == NULL) return false;
+
+  bool result = false;
+  database *db = new database();
+  result = db->connect() && db->get_channel_basic_cfg(getId(), basic_cfg);
+  delete db;
+
+  return result;
+}
+
+bool supla_client_channel::funclist_contains_function(int funcList, int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATE) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_LIGHTSWITCH) > 0;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return (funcList & SUPLA_BIT_FUNC_STAIRCASETIMER) > 0;
+  }
+
+  return false;
+}
+
+bool supla_client_channel::set_function(int new_function, bool *not_allowed) {
+  if (getType() != SUPLA_CHANNELTYPE_BRIDGE) {
+    if (not_allowed) {
+      *not_allowed = true;
+    }
+    return false;
+  }
+
+  bool result = false;
+  database *db = new database();
+
+  if (db->connect() == true) {
+    TSC_ChannelBasicCfg basic_cfg;
+    memset(&basic_cfg, 0, sizeof(TSC_ChannelBasicCfg));
+
+    if (db->get_channel_basic_cfg(getId(), &basic_cfg)) {
+      if ((new_function == 0 ||
+           funclist_contains_function(basic_cfg.FuncList, new_function)) &&
+          db->set_channel_function(getDeviceId(), getId(), new_function)) {
+        result = true;
+
+      } else if (not_allowed) {
+        *not_allowed = true;
+      }
+    }
+  }
+  delete db;
+
+  return result;
 }

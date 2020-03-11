@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "lck.h"
+#include "log.h"
 
 typedef struct {
   pthread_t _thread;
@@ -55,6 +56,7 @@ void *_sthread_run(void *ptr) {
 
 void *sthread_run(Tsthread_params *sthread_params) {
   Tsthread *sthread = malloc(sizeof(Tsthread));
+  int r = -1;
 
   if (sthread == NULL) return NULL;
 
@@ -63,10 +65,14 @@ void *sthread_run(Tsthread_params *sthread_params) {
   sthread->lck = lck_init();
   memcpy(&sthread->params, sthread_params, sizeof(Tsthread_params));
 
-  pthread_create(&sthread->_thread, NULL, &_sthread_run, sthread);
+  if ((r = pthread_create(&sthread->_thread, NULL, &_sthread_run, sthread)) !=
+      0) {
+    supla_log(LOG_ERR, "Could not create a new thread. Error code: %i", r);
+  }
 
   return sthread;
 }
+
 
 void *sthread_simple_run(_func_sthread_execute execute, void *user_data,
                          char free_on_finish) {

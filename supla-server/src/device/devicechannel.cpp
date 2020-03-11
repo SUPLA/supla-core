@@ -65,7 +65,8 @@ supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity,
 }
 
 supla_channel_temphum::supla_channel_temphum(
-    bool TempAndHumidity, int ChannelId, char value[SUPLA_CHANNELVALUE_SIZE]) {
+    bool TempAndHumidity, int ChannelId,
+    const char value[SUPLA_CHANNELVALUE_SIZE]) {
   this->ChannelId = ChannelId;
   this->TempAndHumidity = TempAndHumidity;
   this->Temperature = -273;
@@ -285,6 +286,9 @@ void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
       case SUPLA_CHANNELFNC_IC_WATER_METER:
         // UTF(³) == 0xc2b3
         snprintf(unit, 9, "m%c%c", 0xc2, 0xb3);  // NOLINT
+        break;
+      case SUPLA_CHANNELFNC_IC_HEAT_METER:
+        snprintf(unit, 9, "GJ");  // NOLINT
         break;
     }
   }
@@ -647,6 +651,8 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
       return 1;
 
       break;
@@ -667,6 +673,8 @@ bool supla_device_channel::isCharValueWritable(void) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
       return 1;
 
       break;
@@ -767,43 +775,33 @@ std::list<int> supla_device_channel::master_channel(void) {
 }
 
 supla_channel_temphum *supla_device_channel::getTempHum(void) {
-  double temp;
+  supla_channel_temphum *result = NULL;
 
   if ((getType() == SUPLA_CHANNELTYPE_THERMOMETERDS18B20 ||
        getType() == SUPLA_CHANNELTYPE_THERMOMETER) &&
       getFunc() == SUPLA_CHANNELFNC_THERMOMETER) {
-    getDouble(&temp);
-
-    if (temp > -273 && temp <= 1000) {
-      return new supla_channel_temphum(0, getId(), value);
-    }
+    result = new supla_channel_temphum(false, getId(), value);
 
   } else if ((getType() == SUPLA_CHANNELTYPE_DHT11 ||
               getType() == SUPLA_CHANNELTYPE_DHT22 ||
               getType() == SUPLA_CHANNELTYPE_DHT21 ||
               getType() == SUPLA_CHANNELTYPE_AM2301 ||
               getType() == SUPLA_CHANNELTYPE_AM2302 ||
+              getType() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
               getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
              (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
-    int n;
-    char value[SUPLA_CHANNELVALUE_SIZE];
-    double humidity;
-
-    getValue(value);
-    memcpy(&n, value, 4);
-    temp = n / 1000.00;
-
-    memcpy(&n, &value[4], 4);
-    humidity = n / 1000.00;
-
-    if (temp > -273 && temp <= 1000 && humidity >= 0 && humidity <= 100) {
-      return new supla_channel_temphum(1, getId(), value);
-    }
+    result = new supla_channel_temphum(true, getId(), value);
   }
 
-  return NULL;
+  if (result != NULL && result->getTemperature() == -273 &&
+      result->getHumidity() == -1) {
+    delete result;
+    result = NULL;
+  }
+
+  return result;
 }
 
 supla_channel_electricity_measurement *
@@ -826,7 +824,8 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
   switch (getFunc()) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER: {
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER: {
       char value[SUPLA_CHANNELVALUE_SIZE];
       getValue(value);
 
@@ -870,6 +869,7 @@ bool supla_device_channel::converValueToExtended(void) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
       char value[SUPLA_CHANNELVALUE_SIZE];
       TSuplaChannelExtendedValue ev;
       TSC_ImpulseCounter_ExtendedValue ic_ev;
@@ -1600,7 +1600,9 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+      case SUPLA_CHANNELFNC_VALVE_PERCENTAGE: {
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         value->hi = cv[0] > 0;

@@ -143,6 +143,7 @@ class database : public dbcommon {
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
+  bool set_reg_enabled(int UserID, int deviceRegTimeSec, int clientRegTimeSec);
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
@@ -160,6 +161,8 @@ class database : public dbcommon {
   bool google_home_load_token(supla_google_home *google_home);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
+  bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
+  bool set_channel_function(int DeviceID, int ChannelID, int Func);
 };
 
 #endif /* DATABASE_H_ */

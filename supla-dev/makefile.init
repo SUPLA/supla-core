@@ -1,7 +1,3 @@
 ifndef SSLDIR
 SSLDIR=/usr/src/openssl
 endif
-
-ifndef SSOCKET_WRITE_TO_FILE
-SSOCKET_WRITE_TO_FILE=0
-endif

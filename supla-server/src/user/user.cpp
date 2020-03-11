@@ -1104,33 +1104,49 @@ bool supla_user::device_get_channel_state(int SenderID, int DeviceId,
   return result;
 }
 
-void supla_user::reconnect(event_source_type eventSourceType) {
+void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
+                           bool allClients) {
   int a;
+  if (!allDevices && !allClients) {
+    return;
+  }
 
   cgroups->load();  // load == reload
 
-  supla_device *device;
   std::list<cdbase *> cdb;
 
-  for (a = 0; a < device_container->count(); a++)
-    if (NULL != (device = device_container->get(a))) {
-      cdb.push_back(device);
-    }
+  if (allDevices) {
+    supla_device *device;
 
-  supla_client *client;
-
-  for (a = 0; a < client_container->count(); a++)
-    if (NULL != (client = client_container->get(a))) {
-      cdb.push_back(client);
-    }
-
-  for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end(); it++) {
-    (*it)->terminate();
-    (*it)->releasePtr();
+    for (a = 0; a < device_container->count(); a++)
+      if (NULL != (device = device_container->get(a))) {
+        cdb.push_back(device);
+      }
   }
 
-  supla_http_request_queue::getInstance()->onUserReconnectEvent(
-      this, eventSourceType);
+  if (allClients) {
+    supla_client *client;
+
+    for (a = 0; a < client_container->count(); a++)
+      if (NULL != (client = client_container->get(a))) {
+        cdb.push_back(client);
+      }
+  }
+
+  if (cdb.size() > 0) {
+    for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end();
+         it++) {
+      (*it)->terminate();
+      (*it)->releasePtr();
+    }
+
+    supla_http_request_queue::getInstance()->onUserReconnectEvent(
+        this, eventSourceType);
+  }
+}
+
+void supla_user::reconnect(event_source_type eventSourceType) {
+  reconnect(eventSourceType, true, true);
 }
 
 bool supla_user::client_reconnect(int ClientID) {
@@ -1141,6 +1157,20 @@ bool supla_user::client_reconnect(int ClientID) {
   if (client) {
     client->terminate();
     client->releasePtr();
+    result = true;
+  }
+
+  return result;
+}
+
+bool supla_user::device_reconnect(int DeviceID) {
+  bool result = false;
+
+  supla_device *device = device_container->findByID(DeviceID);
+
+  if (device) {
+    device->terminate();
+    device->releasePtr();
     result = true;
   }
 
@@ -1166,6 +1196,17 @@ bool supla_user::client_reconnect(int UserID, int ClientID) {
 
   if (user) {
     return user->client_reconnect(ClientID);
+  }
+
+  return false;
+}
+
+// static
+bool supla_user::device_reconnect(int UserID, int DeviceID) {
+  supla_user *user = find(UserID, true);
+
+  if (user) {
+    return user->device_reconnect(DeviceID);
   }
 
   return false;

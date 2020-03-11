@@ -72,6 +72,18 @@ typedef void (*_suplaclient_cb_on_device_calcfg_result)(
 typedef void (*_suplaclient_cb_on_device_channel_state)(
     void *_suplaclient, void *user_data, TDSC_ChannelState *state);
 
+typedef void (*_suplaclient_cb_on_channel_basic_cfg)(void *_suplaclient,
+                                                     void *user_data,
+                                                     TSC_ChannelBasicCfg *cfg);
+typedef void (*_suplaclient_cb_on_channel_function_set_result)(
+    void *_suplaclient, void *user_data, TSC_SetChannelFunctionResult *result);
+typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
+    void *_suplaclient, void *user_data,
+    TSC_ClientsReconnectRequestResult *result);
+typedef void (*_suplaclient_cb_on_set_registration_enabled_result)(
+    void *_suplaclient, void *user_data,
+    TSC_SetRegistrationEnabledResult *result);
+
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
   char Name[SUPLA_CLIENT_NAME_MAXSIZE];  // UTF8
@@ -94,6 +106,7 @@ typedef struct {
   int iterate_wait_usec;
 
   unsigned char protocol_version;
+  unsigned int registration_flags;
 
   _suplaclient_cb_on_versionerror cb_on_versionerror;
   _suplaclient_cb_on_error cb_on_connerror;
@@ -123,12 +136,19 @@ typedef struct {
 
   _suplaclient_cb_on_device_calcfg_result cb_on_device_calcfg_result;
   _suplaclient_cb_on_device_channel_state cb_on_device_channel_state;
+
+  _suplaclient_cb_on_channel_basic_cfg cb_on_channel_basic_cfg;
+  _suplaclient_cb_on_channel_function_set_result
+      cb_on_channel_function_set_result;
+  _suplaclient_cb_on_clients_reconnect_request_result
+      cb_on_clients_reconnect_request_result;
+  _suplaclient_cb_on_set_registration_enabled_result
+      cb_on_set_registration_enabled_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 void supla_client_cfginit(TSuplaClientCfg *sclient_cfg);
 
 void *supla_client_init(TSuplaClientCfg *sclient_cfg);
@@ -161,6 +181,14 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
 char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request);
 char supla_client_get_channel_state(void *_suplaclient, int ChannelID);
+char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID);
+char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
+                                       int Function);
+char supla_client_reconnect_all_clients(void *_suplaclient);
+char supla_client_set_registration_enabled(void *_suplaclient,
+                                           int ioDeviceRegTimeSec,
+                                           int clientRegTimeSec);
+char supla_client_reconnect_device(void *_suplaclient, int DeviceID);
 
 #ifdef __cplusplus
 }

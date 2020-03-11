@@ -23,13 +23,17 @@
 #include "log.h"
 #include "proto.h"
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 
 #include <mem.h>
+#if !defined(ESP32)
 #include <osapi.h>
+#endif
 
-#ifdef ARDUINO_ARCH_ESP8266
+#if defined(ARDUINO_ARCH_ESP8266)
 #include <ets_sys.h>
+#define __EH_DISABLED
+#elif defined(ARDUINO_ARCH_ESP32)
 #define __EH_DISABLED
 #else
 #include <user_interface.h>
@@ -108,10 +112,12 @@ void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params) {
   srpc->proto = sproto_init();
 
 #ifndef ESP8266
+#ifndef ESP32
 #ifndef __AVR__
   assert(params != 0);
   assert(params->data_read != 0);
   assert(params->data_write != 0);
+#endif
 #endif
 #endif
 
@@ -241,11 +247,11 @@ char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
 }
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
 
-unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(Tsrpc *srpc) {
+unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc) {
 #ifdef SRPC_WITHOUT_OUT_QUEUE
   return 0;
 #else
-  return srpc->out_queue.item_count;
+  return ((Tsrpc *)srpc)->out_queue.item_count;
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
 }
 
@@ -254,6 +260,14 @@ char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc) {
   Tsrpc *srpc = (Tsrpc *)_srpc;
   lck_lock(srpc->lck);
   result = sproto_in_dataexists(srpc->proto);
+  return lck_unlock_r(srpc->lck, result);
+}
+
+char SRPC_ICACHE_FLASH srpc_output_dataexists(void *_srpc) {
+  int result = SUPLA_RESULT_FALSE;
+  Tsrpc *srpc = (Tsrpc *)_srpc;
+  lck_lock(srpc->lck);
+  result = sproto_out_dataexists(srpc->proto);
   return lck_unlock_r(srpc->lck, result);
 }
 
@@ -1129,6 +1143,71 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         }
         break;
 
+      case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
+        if (srpc->sdp.data_size == sizeof(TCS_ChannelBasicCfgRequest))
+          rd->data.cs_channel_basic_cfg_request =
+              (TCS_ChannelBasicCfgRequest *)malloc(
+                  sizeof(TCS_ChannelBasicCfgRequest));
+        break;
+      case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+        if (srpc->sdp.data_size >=
+                (sizeof(TSC_ChannelBasicCfg) - SUPLA_CHANNEL_CAPTION_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_ChannelBasicCfg))
+          rd->data.sc_channel_basic_cfg =
+              (TSC_ChannelBasicCfg *)malloc(sizeof(TSC_ChannelBasicCfg));
+        break;
+
+      case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+        if (srpc->sdp.data_size == sizeof(TCS_SetChannelFunction))
+          rd->data.cs_set_channel_function =
+              (TCS_SetChannelFunction *)malloc(sizeof(TCS_SetChannelFunction));
+        break;
+
+      case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SetChannelFunctionResult))
+          rd->data.sc_set_channel_function_result =
+              (TSC_SetChannelFunctionResult *)malloc(
+                  sizeof(TSC_SetChannelFunctionResult));
+        break;
+
+      case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
+        call_with_no_data = 1;
+        break;
+
+      case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_ClientsReconnectRequestResult))
+          rd->data.sc_clients_reconnect_result =
+              (TSC_ClientsReconnectRequestResult *)malloc(
+                  sizeof(TSC_ClientsReconnectRequestResult));
+        break;
+
+      case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+        if (srpc->sdp.data_size == sizeof(TCS_SetRegistrationEnabled))
+          rd->data.cs_set_registration_enabled =
+              (TCS_SetRegistrationEnabled *)malloc(
+                  sizeof(TCS_SetRegistrationEnabled));
+        break;
+
+      case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_SetRegistrationEnabledResult))
+          rd->data.sc_set_registration_enabled_result =
+              (TSC_SetRegistrationEnabledResult *)malloc(
+                  sizeof(TSC_SetRegistrationEnabledResult));
+        break;
+
+      case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
+        if (srpc->sdp.data_size == sizeof(TCS_DeviceReconnectRequest))
+          rd->data.cs_device_reconnect_request =
+              (TCS_DeviceReconnectRequest *)malloc(
+                  sizeof(TCS_DeviceReconnectRequest));
+        break;
+      case SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_DeviceReconnectRequestResult))
+          rd->data.sc_device_reconnect_request_result =
+              (TSC_DeviceReconnectRequestResult *)malloc(
+                  sizeof(TSC_DeviceReconnectRequestResult));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1240,6 +1319,16 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_REGISTER_CLIENT_D:
     case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
     case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
+    case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
+    case SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT:
+    case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
+    case SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT:
+    case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
+    case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
+    case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
+    case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
+    case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
+    case SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT:
       return 12;
   }
 
@@ -1355,7 +1444,7 @@ srpc_sdc_async_versionerror(void *_srpc, unsigned char remote_version) {
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
   TDCS_SuplaPingServer ps;
 
-#if defined(ESP8266)
+#if defined(ESP8266) || defined(ESP32)
   unsigned int time = system_get_time();
   ps.now.tv_sec = time / 1000000;
   ps.now.tv_usec = time % 1000000;
@@ -1376,7 +1465,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_ping_server_result(void *_srpc) {
-#if !defined(ESP8266) && !defined(__AVR__)
+#if !defined(ESP8266) && !defined(__AVR__) && !defined(ESP32)
   TSDC_SuplaPingServerResult ps;
 
   struct timeval now;
@@ -1991,6 +2080,79 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_calcfg_result(
                          (char *)result,
                          sizeof(TSC_DeviceCalCfgResult) -
                              SUPLA_CALCFG_DATA_MAXSIZE + result->DataSize);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_channel_basic_cfg(void *_srpc, _supla_int_t ChannelID) {
+  TCS_ChannelBasicCfgRequest request;
+  memset(&request, 0, sizeof(TCS_ChannelBasicCfgRequest));
+  request.ChannelID = ChannelID;
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
+                         (char *)&request, sizeof(TCS_ChannelBasicCfgRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_basic_cfg_result(
+    void *_srpc, TSC_ChannelBasicCfg *basic_cfg) {
+  _supla_int_t size = sizeof(TSC_ChannelBasicCfg) -
+                      SUPLA_CHANNEL_CAPTION_MAXSIZE + basic_cfg->CaptionSize;
+
+  if (size > sizeof(TSC_ChannelBasicCfg)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
+                         (char *)basic_cfg, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
+                         (char *)func, sizeof(TCS_SetChannelFunction));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
+    void *_srpc, TSC_SetChannelFunctionResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+                         (char *)result, sizeof(TSC_SetChannelFunctionResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_clients_reconnect_request(void *_srpc) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST, NULL,
+                         0);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
+    void *_srpc, TSC_ClientsReconnectRequestResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
+                         (char *)result,
+                         sizeof(TSC_ClientsReconnectRequestResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_registration_enabled(
+    void *_srpc, TCS_SetRegistrationEnabled *reg_enabled) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
+                         (char *)reg_enabled,
+                         sizeof(TCS_SetRegistrationEnabled));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
+    void *_srpc, TSC_SetRegistrationEnabledResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
+                         (char *)result,
+                         sizeof(TSC_SetRegistrationEnabledResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_reconnect_request(
+    void *_srpc, TCS_DeviceReconnectRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
+                         (char *)request, sizeof(TCS_DeviceReconnectRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
+    void *_srpc, TSC_DeviceReconnectRequestResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
+                         (char *)result,
+                         sizeof(TSC_DeviceReconnectRequestResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

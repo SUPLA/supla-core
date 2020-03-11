@@ -22,15 +22,16 @@
 #include <string.h>
 #include "log.h"
 
-#ifdef ESP8266
+#if defined(ESP8266) || defined(ESP32)
 
 #include <mem.h>
+#if !defined(ARDUINO_ARCH_ESP32)
 #include <osapi.h>
-
+#endif
 #define BUFFER_MIN_SIZE 512
 #define BUFFER_MAX_SIZE 2048
 
-#ifndef ARDUINO_ARCH_ESP8266
+#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32)
 #include <user_interface.h>
 #include "espmissingincludes.h"
 #endif
@@ -126,8 +127,10 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer,
     }
 
 #ifndef ESP8266
+#ifndef ESP32
 #ifndef __AVR__
     if (errno == ENOMEM) return (SUPLA_RESULT_FALSE);
+#endif
 #endif
 #endif
 
@@ -351,7 +354,8 @@ void sproto_sdp_free(TSuplaDataPacket *sdp) { free(sdp); }
 char sproto_set_data(TSuplaDataPacket *sdp, char *data,
                      unsigned _supla_int_t data_size,
                      unsigned _supla_int_t call_type) {
-  if (data_size > SUPLA_MAX_DATA_SIZE) return SUPLA_RESULT_FALSE;
+  if (data_size > SUPLA_MAX_DATA_SIZE || (data_size > 0 && data == 0))
+    return SUPLA_RESULT_FALSE;
 
   if (data_size > 0) memcpy(sdp->data, data, data_size);
 
