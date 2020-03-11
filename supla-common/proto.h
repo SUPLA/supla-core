@@ -1099,7 +1099,28 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
-#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000  // v. >= 11
+#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000   // v. >= 11
+#define SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR 2000  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_NODE_ADD 2010         // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_NODE_REMOVE 2020      // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_NODE_GET_LIST 2030    // v. >= 12
+
+#define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
+#define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
+#define CALCFG_ZWAVE_SCREENTYPE_BINARY 2
+#define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL_AUTOSHADE 3
+#define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL_COLOR_CONTROL 4
+#define CALCFG_ZWAVE_SCREENTYPE_BINARY_COLOR_CONTROL 5
+
+typedef struct {
+  unsigned char Id;
+  unsigned char ScreenType;
+  char Name[100];  // UTF8
+  char Online;
+  char Errors;
+  char Value;
+  char EOL;            // End Of List
+} TCalCfg_ZWave_Node;  // v. >= 12
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
