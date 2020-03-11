@@ -165,6 +165,8 @@ void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params);
 void SRPC_ICACHE_FLASH srpc_free(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc);
+char SRPC_ICACHE_FLASH srpc_output_dataexists(void *_srpc);
+unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc);
 
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 

@@ -247,11 +247,11 @@ char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
 }
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
 
-unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(Tsrpc *srpc) {
+unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc) {
 #ifdef SRPC_WITHOUT_OUT_QUEUE
   return 0;
 #else
-  return srpc->out_queue.item_count;
+  return ((Tsrpc *)srpc)->out_queue.item_count;
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
 }
 
@@ -260,6 +260,14 @@ char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc) {
   Tsrpc *srpc = (Tsrpc *)_srpc;
   lck_lock(srpc->lck);
   result = sproto_in_dataexists(srpc->proto);
+  return lck_unlock_r(srpc->lck, result);
+}
+
+char SRPC_ICACHE_FLASH srpc_output_dataexists(void *_srpc) {
+  int result = SUPLA_RESULT_FALSE;
+  Tsrpc *srpc = (Tsrpc *)_srpc;
+  lck_lock(srpc->lck);
+  result = sproto_out_dataexists(srpc->proto);
   return lck_unlock_r(srpc->lck, result);
 }
 
