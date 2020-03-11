@@ -1160,16 +1160,6 @@ typedef struct {
 } TSD_DeviceCalCfgRequest;               // v. >= 10
 
 typedef struct {
-  _supla_int_t SenderID;
-  _supla_int_t ChannelNumber;
-  _supla_int_t Command;
-  char SuperUserAuthorized;
-  _supla_int_t DataType;
-  unsigned _supla_int_t DataSize;
-  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
-} TSD_DeviceCalCfgRequest_B;             // v. >= 11
-
-typedef struct {
   _supla_int_t ReceiverID;
   _supla_int_t ChannelNumber;
   _supla_int_t Command;

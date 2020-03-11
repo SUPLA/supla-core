@@ -239,8 +239,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
     void *_srpc, TSD_DeviceCalCfgRequest *request);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request_b(
-    void *_srpc, TSD_DeviceCalCfgRequest_B *request_b);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_device_calcfg_result(void *_srpc, TDS_DeviceCalCfgResult *result);
 
