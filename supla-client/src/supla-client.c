@@ -1209,6 +1209,6 @@ char supla_client_reconnect_device(void *_suplaclient, int DeviceID) {
   memset(&request, 0, sizeof(TCS_DeviceReconnectRequest));
   request.DeviceID = DeviceID;
 
-  return srpc_cs_async_clients_reconnect_request(
-      ((TSuplaClientData *)_suplaclient)->srpc);
+  return srpc_cs_async_device_reconnect_request(
+      ((TSuplaClientData *)_suplaclient)->srpc, &request);
 }
