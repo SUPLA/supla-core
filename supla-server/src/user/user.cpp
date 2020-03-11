@@ -1133,13 +1133,15 @@ void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
       }
   }
 
-  for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end(); it++) {
-    (*it)->terminate();
-    (*it)->releasePtr();
-  }
+  if (cdb.size() > 0) {
+	  for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end(); it++) {
+	    (*it)->terminate();
+	    (*it)->releasePtr();
+	  }
 
-  supla_http_request_queue::getInstance()->onUserReconnectEvent(
-      this, eventSourceType);
+	  supla_http_request_queue::getInstance()->onUserReconnectEvent(
+	      this, eventSourceType);
+  }
 }
 
 void supla_user::reconnect(event_source_type eventSourceType) {
