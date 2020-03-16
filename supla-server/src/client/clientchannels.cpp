@@ -36,6 +36,11 @@ supla_client_channel *supla_client_channels::find_channel(int Id) {
   return static_cast<supla_client_channel *>(find(Id, master));
 }
 
+supla_client_channel *supla_client_channels::any_channel_with_deviceid(
+    int DeviceId) {
+  return static_cast<supla_client_channel *>(find(DeviceId, master, true));
+}
+
 bool supla_client_channels::channel_exists(int ChannelID) {
   bool result = false;
 
@@ -279,7 +284,9 @@ bool supla_client_channels::set_device_channel_new_value(
 
 bool supla_client_channels::device_calcfg_request(
     TCS_DeviceCalCfgRequest_B *request) {
-  if (request == NULL || request->Target != SUPLA_TARGET_CHANNEL) return false;
+  if (request == NULL || (request->Target != SUPLA_TARGET_CHANNEL &&
+                          request->Target != SUPLA_TARGET_IODEVICE))
+    return false;
 
   if (channel_exists(request->Id)) {
     safe_array_lock(getArr());
@@ -287,7 +294,13 @@ bool supla_client_channels::device_calcfg_request(
     supla_client_channel *channel;
     int DeviceID = 0;
 
-    if (NULL != (channel = find_channel(request->Id))) {
+    if (request->Target != SUPLA_TARGET_CHANNEL) {
+      channel = find_channel(request->Id);
+    } else {
+      channel = any_channel_with_deviceid(request->Id);
+    }
+
+    if (channel != NULL) {
       DeviceID = channel->getDeviceId();
     }
 

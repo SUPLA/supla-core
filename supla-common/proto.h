@@ -209,6 +209,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST 600           // ver. >= 12
 #define SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT 610    // ver. >= 12
 
+#define SUPLA_RESULT_SENDER_CONFLICT -9  // ver. >= 12
+#define SUPLA_RESULT_TIMEOUT -8          // ver. >= 12
+#define SUPLA_RESULT_IN_PROGRESS -7      // ver. >= 12
+#define SUPLA_RESULT_NOT_SUPPORTED -6    // ver. >= 12
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
 #define SUPLA_RESULT_BUFFER_OVERFLOW -3
@@ -384,6 +388,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_TARGET_CHANNEL 0
 #define SUPLA_TARGET_GROUP 1
+#define SUPLA_TARGET_IODEVICE 2
 
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
@@ -952,7 +957,7 @@ typedef struct {
 typedef struct {
   // client -> server
   _supla_int_t Id;
-  char Target;  // SUPLA_NEW_VALUE_TARGET_
+  char Target;  // SUPLA_TARGET_
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TCS_SuplaNewValue;  // ver. >= 9
 
@@ -1134,7 +1139,7 @@ typedef struct {
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
   _supla_int_t Id;
-  char Target;  // SUPLA_NEW_VALUE_TARGET_
+  char Target;  // SUPLA_TARGET_
   _supla_int_t Command;
   _supla_int_t DataType;
   unsigned _supla_int_t DataSize;

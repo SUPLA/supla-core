@@ -426,7 +426,8 @@ void supla_client::superuser_authorization_request(
 }
 
 void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
-  if (request->Target == SUPLA_TARGET_CHANNEL) {
+  if (request->Target == SUPLA_TARGET_CHANNEL ||
+      request->Target == SUPLA_TARGET_IODEVICE) {
     channels->device_calcfg_request(request);
   } else if (request->Target == SUPLA_TARGET_GROUP) {
     cgroups->device_calcfg_request(request);

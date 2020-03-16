@@ -26,6 +26,7 @@ class supla_client_channel;
 class supla_client_channels : public supla_client_objcontainer {
  private:
   supla_client_channel *find_channel(int Id);
+  supla_client_channel *any_channel_with_deviceid(int DeviceId);
   template <typename TSuplaDataPack, class TObjClass>
   bool get_datapack_for_remote(supla_client_objcontainer_item *obj, void **data,
                                int max_count);
