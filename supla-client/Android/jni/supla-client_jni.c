@@ -36,6 +36,40 @@
     return __VA_ARGS__;                    \
   }
 
+#define JNI_FUNCTION_V(jni_function_suffix, supla_client_function)       \
+  JNIEXPORT jboolean JNICALL                                             \
+  Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(            \
+      JNIEnv *env, jobject thiz, jlong _asc) {                           \
+    void *supla_client = supla_client_ptr(_asc);                         \
+    if (supla_client) {                                                  \
+      return supla_client_function(supla_client) ? JNI_TRUE : JNI_FALSE; \
+    }                                                                    \
+    return JNI_FALSE;                                                    \
+  }
+
+#define JNI_FUNCTION_I(jni_function_suffix, supla_client_function)           \
+  JNIEXPORT jboolean JNICALL                                                 \
+  Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(                \
+      JNIEnv *env, jobject thiz, jlong _asc, jint i1) {                      \
+    void *supla_client = supla_client_ptr(_asc);                             \
+    if (supla_client) {                                                      \
+      return supla_client_function(supla_client, i1) ? JNI_TRUE : JNI_FALSE; \
+    }                                                                        \
+    return JNI_FALSE;                                                        \
+  }
+
+#define JNI_FUNCTION_II(jni_function_suffix, supla_client_function)   \
+  JNIEXPORT jboolean JNICALL                                          \
+  Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(         \
+      JNIEnv *env, jobject thiz, jlong _asc, jint i1, jint i2) {      \
+    void *supla_client = supla_client_ptr(_asc);                      \
+    if (supla_client) {                                               \
+      return supla_client_function(supla_client, i1, i2) ? JNI_TRUE   \
+                                                         : JNI_FALSE; \
+    }                                                                 \
+    return JNI_FALSE;                                                 \
+  }
+
 static char log_tag[] = "LibSuplaClient";
 //  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
 
@@ -1645,92 +1679,16 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
       void *_suplaclient, char *email, char *password);
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scGetChannelState(JNIEnv *env,
-                                                         jobject thiz,
-                                                         jlong _asc,
-                                                         jint channelId) {
-  void *supla_client = supla_client_ptr(_asc);
+JNI_FUNCTION_I(scGetChannelState, supla_client_get_channel_state);
 
-  if (supla_client) {
-    return supla_client_get_channel_state(supla_client, channelId) ? JNI_TRUE
-                                                                   : JNI_FALSE;
-  }
+JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
 
-  return JNI_FALSE;
-}
+JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scGetChannelBasicCfg(JNIEnv *env,
-                                                            jobject thiz,
-                                                            jlong _asc,
-                                                            jint channelId) {
-  void *supla_client = supla_client_ptr(_asc);
+JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
 
-  if (supla_client) {
-    return supla_client_get_channel_basic_cfg(supla_client, channelId)
-               ? JNI_TRUE
-               : JNI_FALSE;
-  }
+JNI_FUNCTION_II(scSetRegistrationEnabled,
+                supla_client_set_registration_enabled);
 
-  return JNI_FALSE;
-}
+JNI_FUNCTION_I(scReconnectDevice, supla_client_reconnect_device);
 
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scSetChannelFunction(
-    JNIEnv *env, jobject thiz, jlong _asc, jint channelId, jint function) {
-  void *supla_client = supla_client_ptr(_asc);
-
-  if (supla_client) {
-    return supla_client_set_channel_function(supla_client, channelId, function)
-               ? JNI_TRUE
-               : JNI_FALSE;
-  }
-
-  return JNI_FALSE;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scReconnectAllClients(JNIEnv *env,
-                                                             jobject thiz,
-                                                             jlong _asc) {
-  void *supla_client = supla_client_ptr(_asc);
-
-  if (supla_client) {
-    return supla_client_reconnect_all_clients(supla_client) ? JNI_TRUE
-                                                            : JNI_FALSE;
-  }
-
-  return JNI_FALSE;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scSetRegistrationEnabled(
-    JNIEnv *env, jobject thiz, jlong _asc, jint iodevice_reg_timesec,
-    jint client_reg_timesec) {
-  void *supla_client = supla_client_ptr(_asc);
-
-  if (supla_client) {
-    return supla_client_set_registration_enabled(
-               supla_client, iodevice_reg_timesec, client_reg_timesec)
-               ? JNI_TRUE
-               : JNI_FALSE;
-  }
-
-  return JNI_FALSE;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scReconnectDevice(JNIEnv *env,
-                                                         jobject thiz,
-                                                         jlong _asc,
-                                                         jint deviceId) {
-  void *supla_client = supla_client_ptr(_asc);
-
-  if (supla_client) {
-    return supla_client_reconnect_device(supla_client, deviceId) ? JNI_TRUE
-                                                                 : JNI_FALSE;
-  }
-
-  return JNI_FALSE;
-}
