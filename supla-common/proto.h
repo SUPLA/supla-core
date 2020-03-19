@@ -221,6 +221,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULT_TRUE 1
 #define SUPLA_RESULT_IN_PROGRESS 2   // ver. >= 12
 #define SUPLA_RESULT_OBJECT_FOUND 3  // ver. >= 12
+#define SUPLA_RESULT_DONE 4          // ver. >= 12
 
 #define SUPLA_RESULTCODE_NONE 0
 #define SUPLA_RESULTCODE_UNSUPORTED 1
