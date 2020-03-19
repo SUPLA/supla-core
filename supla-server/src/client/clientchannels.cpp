@@ -290,10 +290,10 @@ bool supla_client_channels::device_calcfg_request(
 
   safe_array_lock(getArr());
 
-  supla_client_channel *channel;
+  supla_client_channel *channel = NULL;
   int DeviceID = 0;
 
-  if (request->Target != SUPLA_TARGET_CHANNEL) {
+  if (request->Target == SUPLA_TARGET_CHANNEL) {
     channel = find_channel(request->Id);
   } else {
     channel = any_channel_with_deviceid(request->Id);
