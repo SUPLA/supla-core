@@ -460,6 +460,45 @@ void supla_client_on_oauth_token_request_result(
     scd->cfg.cb_on_oauth_token_request_result(scd, scd->cfg.user_data, result);
 }
 
+void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
+                                          TSC_DeviceCalCfgResult *result) {
+  if (scd->cfg.cb_on_device_calcfg_result) {
+    scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data, result);
+  }
+
+  switch (result->Command) {
+    case SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR:
+      if (scd->cfg.cb_on_zwave_reset_and_clear_result) {
+        scd->cfg.cb_on_zwave_reset_and_clear_result(scd, scd->cfg.user_data,
+                                                    result->Result);
+      }
+      break;
+    case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
+      if (scd->cfg.cb_on_zwave_add_node_result) {
+        scd->cfg.cb_on_zwave_add_node_result(scd, scd->cfg.user_data,
+                                             result->Result);
+      }
+      break;
+    case SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE:
+      if (scd->cfg.cb_on_zwave_remove_node_result) {
+        scd->cfg.cb_on_zwave_remove_node_result(scd, scd->cfg.user_data,
+                                                result->Result);
+      }
+      break;
+    case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
+      if (scd->cfg.cb_on_zwave_get_node_list_result) {
+        TCalCfg_ZWave_Node *node = NULL;
+        if (result->DataSize == sizeof(TCalCfg_ZWave_Node) &&
+            result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
+          node = (TCalCfg_ZWave_Node *)result->Data;
+        }
+        scd->cfg.cb_on_zwave_get_node_list_result(scd, scd->cfg.user_data,
+                                                  result->Result, node);
+      }
+      break;
+  }
+}
+
 void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                           unsigned int call_type, void *_scd,
                                           unsigned char proto_version) {
@@ -634,10 +673,9 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         }
         break;
       case SUPLA_SC_CALL_DEVICE_CALCFG_RESULT:
-        if (scd->cfg.cb_on_device_calcfg_result &&
-            rd.data.sc_device_calcfg_result) {
-          scd->cfg.cb_on_device_calcfg_result(scd, scd->cfg.user_data,
-                                              rd.data.sc_device_calcfg_result);
+        if (rd.data.sc_device_calcfg_result) {
+          supla_client_on_device_calcfg_result(scd,
+                                               rd.data.sc_device_calcfg_result);
         }
         break;
       case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
