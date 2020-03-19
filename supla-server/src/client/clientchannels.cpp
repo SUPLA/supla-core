@@ -292,6 +292,7 @@ bool supla_client_channels::device_calcfg_request(
 
   supla_client_channel *channel = NULL;
   int DeviceID = 0;
+  int ChannelID = 0;
 
   if (request->Target == SUPLA_TARGET_CHANNEL) {
     channel = find_channel(request->Id);
@@ -301,13 +302,14 @@ bool supla_client_channels::device_calcfg_request(
 
   if (channel != NULL) {
     DeviceID = channel->getDeviceId();
+    ChannelID = channel->getId();
   }
 
   safe_array_unlock(getArr());
 
   if (DeviceID) {
     return getClient()->getUser()->device_calcfg_request(
-        getClient()->getID(), DeviceID, request->Id, request);
+        getClient()->getID(), DeviceID, ChannelID, request);
   }
 
   return false;
