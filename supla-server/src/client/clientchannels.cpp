@@ -288,28 +288,26 @@ bool supla_client_channels::device_calcfg_request(
                           request->Target != SUPLA_TARGET_IODEVICE))
     return false;
 
-  if (channel_exists(request->Id)) {
-    safe_array_lock(getArr());
+  safe_array_lock(getArr());
 
-    supla_client_channel *channel;
-    int DeviceID = 0;
+  supla_client_channel *channel;
+  int DeviceID = 0;
 
-    if (request->Target != SUPLA_TARGET_CHANNEL) {
-      channel = find_channel(request->Id);
-    } else {
-      channel = any_channel_with_deviceid(request->Id);
-    }
+  if (request->Target != SUPLA_TARGET_CHANNEL) {
+    channel = find_channel(request->Id);
+  } else {
+    channel = any_channel_with_deviceid(request->Id);
+  }
 
-    if (channel != NULL) {
-      DeviceID = channel->getDeviceId();
-    }
+  if (channel != NULL) {
+    DeviceID = channel->getDeviceId();
+  }
 
-    safe_array_unlock(getArr());
+  safe_array_unlock(getArr());
 
-    if (DeviceID) {
-      return getClient()->getUser()->device_calcfg_request(
-          getClient()->getID(), DeviceID, request->Id, request);
-    }
+  if (DeviceID) {
+    return getClient()->getUser()->device_calcfg_request(
+        getClient()->getID(), DeviceID, request->Id, request);
   }
 
   return false;
