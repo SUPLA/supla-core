@@ -211,7 +211,6 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_RESULT_SENDER_CONFLICT -9  // ver. >= 12
 #define SUPLA_RESULT_TIMEOUT -8          // ver. >= 12
-#define SUPLA_RESULT_IN_PROGRESS -7      // ver. >= 12
 #define SUPLA_RESULT_NOT_SUPPORTED -6    // ver. >= 12
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -220,6 +219,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULT_VERSION_ERROR -1
 #define SUPLA_RESULT_FALSE 0
 #define SUPLA_RESULT_TRUE 1
+#define SUPLA_RESULT_IN_PROGRESS 2   // ver. >= 12
+#define SUPLA_RESULT_OBJECT_FOUND 3  // ver. >= 12
 
 #define SUPLA_RESULTCODE_NONE 0
 #define SUPLA_RESULTCODE_UNSUPORTED 1
