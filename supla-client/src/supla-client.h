@@ -86,7 +86,11 @@ typedef void (*_suplaclient_cb_on_set_registration_enabled_result)(
 typedef void (*_suplaclient_cb_on_zwave_basic_result)(void *_suplaclient,
                                                       void *user_data,
                                                       _supla_int_t result);
-typedef void (*_suplaclient_cb_on_zwave_get_node_list_result)(
+typedef void (*_suplaclient_cb_on_zwave_remove_node_result)(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char node_id);
+
+typedef void (*_suplaclient_cb_on_zwave_result_with_node)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_Node *node);
 
@@ -151,10 +155,9 @@ typedef struct {
   _suplaclient_cb_on_set_registration_enabled_result
       cb_on_set_registration_enabled_result;
   _suplaclient_cb_on_zwave_basic_result cb_on_zwave_reset_and_clear_result;
-  _suplaclient_cb_on_zwave_basic_result cb_on_zwave_add_node_result;
-  _suplaclient_cb_on_zwave_basic_result cb_on_zwave_remove_node_result;
-  _suplaclient_cb_on_zwave_get_node_list_result
-      cb_on_zwave_get_node_list_result;
+  _suplaclient_cb_on_zwave_result_with_node cb_on_zwave_add_node_result;
+  _suplaclient_cb_on_zwave_remove_node_result cb_on_zwave_remove_node_result;
+  _suplaclient_cb_on_zwave_result_with_node cb_on_zwave_get_node_list_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus

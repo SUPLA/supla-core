@@ -460,6 +460,15 @@ void supla_client_on_oauth_token_request_result(
     scd->cfg.cb_on_oauth_token_request_result(scd, scd->cfg.user_data, result);
 }
 
+TCalCfg_ZWave_Node *supla_client_zwave_node(TSC_DeviceCalCfgResult *result) {
+  TCalCfg_ZWave_Node *node = NULL;
+  if (result != NULL && result->DataSize == sizeof(TCalCfg_ZWave_Node) &&
+      result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
+    node = (TCalCfg_ZWave_Node *)result->Data;
+  }
+  return node;
+}
+
 void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
                                           TSC_DeviceCalCfgResult *result) {
   if (scd->cfg.cb_on_device_calcfg_result) {
@@ -476,24 +485,27 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
     case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
       if (scd->cfg.cb_on_zwave_add_node_result) {
         scd->cfg.cb_on_zwave_add_node_result(scd, scd->cfg.user_data,
-                                             result->Result);
+                                             result->Result,
+                                             supla_client_zwave_node(result));
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE:
       if (scd->cfg.cb_on_zwave_remove_node_result) {
+        unsigned char id = 0;
+        memset(&id, 0, sizeof(unsigned char));
+        if (result->DataSize == sizeof(unsigned char) &&
+            sizeof(unsigned char) <= SUPLA_CALCFG_DATA_MAXSIZE) {
+          id = (unsigned char)result->Data[0];
+        }
         scd->cfg.cb_on_zwave_remove_node_result(scd, scd->cfg.user_data,
-                                                result->Result);
+                                                result->Result, id);
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
       if (scd->cfg.cb_on_zwave_get_node_list_result) {
-        TCalCfg_ZWave_Node *node = NULL;
-        if (result->DataSize == sizeof(TCalCfg_ZWave_Node) &&
-            result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
-          node = (TCalCfg_ZWave_Node *)result->Data;
-        }
-        scd->cfg.cb_on_zwave_get_node_list_result(scd, scd->cfg.user_data,
-                                                  result->Result, node);
+        scd->cfg.cb_on_zwave_get_node_list_result(
+            scd, scd->cfg.user_data, result->Result,
+            supla_client_zwave_node(result));
       }
       break;
   }

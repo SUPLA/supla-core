@@ -1106,8 +1106,31 @@ void supla_android_client_cb_on_min_version_required(
 }
 
 JNI_CALLBACK_I(on_zwave_reset_and_clear_result);
-JNI_CALLBACK_I(on_zwave_add_node_result);
-JNI_CALLBACK_I(on_zwave_remove_node_result);
+
+void supla_android_client_cb_on_zwave_remove_node_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char node_id) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_remove_node_result == NULL) {
+    return;
+  }
+
+  jshort id = node_id;
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_remove_node_result, result, id);
+}
+
+void supla_android_client_cb_on_zwave_add_node_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_Node *node) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_add_node_result) {
+  }
+}
 
 void supla_android_client_cb_on_zwave_get_node_list_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
@@ -1361,7 +1384,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
     _asc->j_mid_on_zwave_reset_and_clear_result = supla_client_GetMethodID(
         env, oclass, "onZWaveResetAndClearResult", "(I)V");
     _asc->j_mid_on_zwave_add_node_result =
-        supla_client_GetMethodID(env, oclass, "onZWaveAddNodeResult", "(I)V");
+        supla_client_GetMethodID(env, oclass, "onZWaveAddNodeResult",
+                                 "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_remove_node_result = supla_client_GetMethodID(
         env, oclass, "onZWaveRemoveNodeResult", "(I)V");
     _asc->j_mid_on_zwave_get_node_list_result =
