@@ -1162,6 +1162,18 @@ char supla_client_device_calcfg_request(void *_suplaclient,
   return 0;
 }
 
+char supla_client_device_calcfg_command(void *_suplaclient,
+                                        _supla_int_t deviceId,
+                                        _supla_int_t command) {
+  TCS_DeviceCalCfgRequest_B request;
+  memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+  request.Target = SUPLA_TARGET_IODEVICE;
+  request.Id = deviceId;
+  request.Command = command;
+
+  return supla_client_device_calcfg_request(_suplaclient, &request);
+}
+
 char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
   TCSD_ChannelStateRequest request;
   memset(&request, 0, sizeof(TCSD_ChannelStateRequest));
@@ -1204,11 +1216,31 @@ char supla_client_set_registration_enabled(void *_suplaclient,
       ((TSuplaClientData *)_suplaclient)->srpc, &re);
 }
 
-char supla_client_reconnect_device(void *_suplaclient, int DeviceID) {
+char supla_client_reconnect_device(void *_suplaclient, int deviceID) {
   TCS_DeviceReconnectRequest request;
   memset(&request, 0, sizeof(TCS_DeviceReconnectRequest));
-  request.DeviceID = DeviceID;
+  request.DeviceID = deviceID;
 
   return srpc_cs_async_device_reconnect_request(
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
+}
+
+char supla_client_zwave_reset_and_clear(void *_suplaclient, int deviceID) {
+  return supla_client_device_calcfg_command(
+      _suplaclient, deviceID, SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR);
+}
+
+char supla_client_zwave_add_node(void *_suplaclient, int deviceID) {
+  return supla_client_device_calcfg_command(_suplaclient, deviceID,
+                                            SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE);
+}
+
+char supla_client_zwave_remove_node(void *_suplaclient, int deviceID) {
+  return supla_client_device_calcfg_command(_suplaclient, deviceID,
+                                            SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE);
+}
+
+char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID) {
+  return supla_client_device_calcfg_command(
+      _suplaclient, deviceID, SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST);
 }

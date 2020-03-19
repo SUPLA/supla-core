@@ -188,7 +188,11 @@ char supla_client_reconnect_all_clients(void *_suplaclient);
 char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,
                                            int clientRegTimeSec);
-char supla_client_reconnect_device(void *_suplaclient, int DeviceID);
+char supla_client_reconnect_device(void *_suplaclient, int deviceID);
+char supla_client_zwave_reset_and_clear(void *_suplaclient, int deviceID);
+char supla_client_zwave_add_node(void *_suplaclient, int deviceID);
+char supla_client_zwave_remove_node(void *_suplaclient, int deviceID);
+char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID);
 
 #ifdef __cplusplus
 }

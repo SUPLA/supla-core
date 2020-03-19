@@ -1692,3 +1692,11 @@ JNI_FUNCTION_II(scSetRegistrationEnabled,
 
 JNI_FUNCTION_I(scReconnectDevice, supla_client_reconnect_device);
 
+JNI_FUNCTION_I(scZWaveResetAndClear, supla_client_zwave_reset_and_clear);
+
+JNI_FUNCTION_I(scZWaveAddNode, supla_client_zwave_add_node);
+
+JNI_FUNCTION_I(scZWaveRemoveNode, supla_client_zwave_remove_node);
+
+JNI_FUNCTION_I(scZWaveGetNodeList, supla_client_zwave_get_node_list);
+
