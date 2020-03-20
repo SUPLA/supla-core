@@ -465,7 +465,7 @@ TCalCfg_ZWave_Node *supla_client_zwave_node(TSC_DeviceCalCfgResult *result) {
   if (result != NULL && result->DataSize == sizeof(TCalCfg_ZWave_Node) &&
       result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
     node = (TCalCfg_ZWave_Node *)result->Data;
-    node->Name[sizeof(node->Name)-1] = 0;
+    node->Name[sizeof(node->Name) - 1] = 0;
   }
   return node;
 }
@@ -477,6 +477,17 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
   }
 
   switch (result->Command) {
+    case SUPLA_CALCFG_CMD_DEBUG_STRING:
+      if (result->DataSize > 0 && scd->cfg.cb_on_device_calcfg_debug_string) {
+        if (result->DataSize >= SUPLA_CALCFG_DATA_MAXSIZE) {
+          result->DataSize = SUPLA_CALCFG_DATA_MAXSIZE - 1;
+          result->Data[result->DataSize] = 0;
+        }
+
+        scd->cfg.cb_on_device_calcfg_debug_string(scd, scd->cfg.user_data,
+                                                  result->Data);
+      }
+      break;
     case SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR:
       if (scd->cfg.cb_on_zwave_reset_and_clear_result) {
         scd->cfg.cb_on_zwave_reset_and_clear_result(scd, scd->cfg.user_data,
@@ -492,14 +503,11 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE:
       if (scd->cfg.cb_on_zwave_remove_node_result) {
-        unsigned char id = 0;
-        memset(&id, 0, sizeof(unsigned char));
-        if (result->DataSize == sizeof(unsigned char) &&
-            sizeof(unsigned char) <= SUPLA_CALCFG_DATA_MAXSIZE) {
-          id = (unsigned char)result->Data[0];
-        }
-        scd->cfg.cb_on_zwave_remove_node_result(scd, scd->cfg.user_data,
-                                                result->Result, id);
+        scd->cfg.cb_on_zwave_remove_node_result(
+            scd, scd->cfg.user_data, result->Result,
+            result->DataSize == sizeof(unsigned char)
+                ? (unsigned char *)&result->Data[0]
+                : NULL);
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
@@ -507,6 +515,15 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
         scd->cfg.cb_on_zwave_get_node_list_result(
             scd, scd->cfg.user_data, result->Result,
             supla_client_zwave_node(result));
+      }
+      break;
+    case SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID:
+      if (scd->cfg.cb_on_zwave_get_assigned_node_id_result) {
+        scd->cfg.cb_on_zwave_get_assigned_node_id_result(
+            scd, scd->cfg.user_data, result->Result,
+            result->DataSize == sizeof(unsigned char)
+                ? (unsigned char *)&result->Data[0]
+                : NULL);
       }
       break;
   }
@@ -737,7 +754,6 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
     }
 
     srpc_rd_free(&rd);
-
   } else if (result == (char)SUPLA_RESULT_DATA_ERROR) {
     supla_log(LOG_DEBUG, "DATA ERROR!");
   }
@@ -1294,4 +1310,26 @@ char supla_client_zwave_remove_node(void *_suplaclient, int deviceID) {
 char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID) {
   return supla_client_device_calcfg_command(
       _suplaclient, deviceID, SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST);
+}
+
+char supla_client_zwave_get_assigned_node_id(void *_suplaclient,
+                                             int channelID) {
+  return supla_client_device_calcfg_command(
+      _suplaclient, channelID, SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID);
+}
+
+char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
+                                       unsigned char *nodeID) {
+  TCS_DeviceCalCfgRequest_B request;
+  memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+  request.Target = SUPLA_TARGET_CHANNEL;
+  request.Id = channelID;
+  request.Command = SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID;
+
+  if (nodeID != NULL) {
+    request.DataSize = sizeof(unsigned char);
+    memcpy(request.Data, nodeID, request.DataSize);
+  }
+
+  return supla_client_device_calcfg_request(_suplaclient, &request);
 }

@@ -81,6 +81,18 @@
     (*env)->CallVoidMethod(env, asc->j_obj, asc->j_mid_##jni_function_cb, i1); \
   }
 
+#define JNI_CALLBACK_STRING(jni_function_cb)                                   \
+  void supla_android_client_cb_##jni_function_cb(void *_suplaclient,           \
+                                                 void *user_data, char *str) { \
+    ASC_VAR_DECLARATION();                                                     \
+    ENV_VAR_DECLARATION();                                                     \
+    if (asc->j_mid_##jni_function_cb == NULL) {                                \
+      return;                                                                  \
+    }                                                                          \
+    (*env)->CallVoidMethod(env, asc->j_obj, asc->j_mid_##jni_function_cb,      \
+                           str ? (*env)->NewStringUTF(env, str) : NULL);       \
+  }
+
 static char log_tag[] = "LibSuplaClient";
 //  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
 
@@ -108,6 +120,7 @@ typedef struct {
   jmethodID j_mid_on_oauth_token_request_result;
   jmethodID j_mid_on_superuser_authorization_result;
   jmethodID j_mid_on_device_calcfg_result;
+  jmethodID j_mid_on_device_calcfg_debug_string;
   jmethodID j_mid_on_channel_state;
   jmethodID j_mid_on_channel_basic_cfg;
   jmethodID j_mid_on_channel_function_set_result;
@@ -117,6 +130,7 @@ typedef struct {
   jmethodID j_mid_on_zwave_add_node_result;
   jmethodID j_mid_on_zwave_remove_node_result;
   jmethodID j_mid_on_zwave_get_node_list_result;
+  jmethodID j_mid_on_zwave_get_assigned_node_id_result;
 
 } TAndroidSuplaClient;
 
@@ -186,6 +200,64 @@ void supla_android_client(TAndroidSuplaClient *asc, jmethodID mid,
   } else {
     (*env)->CallVoidMethod(env, asc->j_obj, mid);
   }
+}
+
+void supla_android_client_stringobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
+                                           const char *name, char *buff,
+                                           int size) {
+  jfieldID fid = supla_client_GetFieldID(env, jcs, name, "Ljava/lang/String;");
+  jstring js_str = (*env)->GetObjectField(env, cfg, fid);
+  const char *str = (*env)->GetStringUTFChars(env, js_str, 0);
+
+  if (str) {
+    memcpy(buff, str, strlen(str) >= size ? size - 1 : strlen(str));
+    (*env)->ReleaseStringUTFChars(env, js_str, str);
+  }
+}
+
+void supla_android_client_bytearrobj2buffer(JNIEnv *env, jobject cfg,
+                                            jclass jcs, const char *name,
+                                            char *buff, int size) {
+  jfieldID fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
+  jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
+
+  if (size == (*env)->GetArrayLength(env, barr)) {
+    jbyte *data = (jbyte *)(*env)->GetByteArrayElements(env, barr, NULL);
+    if (data) {
+      memcpy(buff, data, size);
+      (*env)->ReleaseByteArrayElements(env, barr, data, 0);
+    }
+  }
+}
+
+unsigned char supla_android_client_shortobj2jshort(JNIEnv *env, jobject in,
+                                                   jshort *out) {
+  if (env == NULL || in == NULL || out == NULL) {
+    return 0;
+  }
+
+  jclass in_cls = (*env)->GetObjectClass(env, in);
+
+  jmethodID m_get_short_val =
+      (*env)->GetMethodID(env, in_cls, "shortValue", "()S");
+  if (m_get_short_val == NULL) {
+    return 0;
+  }
+
+  *out = (*env)->CallShortMethod(env, in, m_get_short_val);
+
+  return 1;
+}
+
+jobject supla_android_client_jshort2shortobj(JNIEnv *env, jshort in) {
+  jclass cls = (*env)->FindClass(env, "java/lang/Short");
+
+  jmethodID m_init = (*env)->GetMethodID(env, cls, "<init>", "(S)V");
+  if (NULL == m_init) {
+    return NULL;
+  };
+
+  return (*env)->NewObject(env, cls, m_init, in);
 }
 
 void supla_android_client_cb_on_versionerror(void *_suplaclient,
@@ -935,6 +1007,8 @@ void supla_android_client_cb_on_device_calcfg_result(
   }
 }
 
+JNI_CALLBACK_STRING(on_device_calcfg_debug_string);
+
 void supla_android_client_cb_on_channel_state(void *_suplaclient,
                                               void *user_data,
                                               TDSC_ChannelState *state) {
@@ -1109,7 +1183,7 @@ JNI_CALLBACK_I(on_zwave_reset_and_clear_result);
 
 void supla_android_client_cb_on_zwave_remove_node_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char node_id) {
+    unsigned char *node_id) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1117,9 +1191,11 @@ void supla_android_client_cb_on_zwave_remove_node_result(
     return;
   }
 
-  jshort id = node_id;
-  (*env)->CallVoidMethod(env, asc->j_obj,
-                         asc->j_mid_on_zwave_remove_node_result, result, id);
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_zwave_remove_node_result, result,
+      node_id == NULL
+          ? NULL
+          : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
 }
 
 jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
@@ -1168,32 +1244,21 @@ void supla_android_client_cb_on_zwave_get_node_list_result(
           : supla_android_client_zwave_node_to_jobject(asc, env, node));
 }
 
-void supla_android_client_jstring_to_buffer(JNIEnv *env, jobject cfg,
-                                            jclass jcs, const char *name,
-                                            char *buff, int size) {
-  jfieldID fid = supla_client_GetFieldID(env, jcs, name, "Ljava/lang/String;");
-  jstring js_str = (*env)->GetObjectField(env, cfg, fid);
-  const char *str = (*env)->GetStringUTFChars(env, js_str, 0);
+void supla_android_client_cb_on_zwave_get_assigned_node_id_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char *node_id) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
 
-  if (str) {
-    memcpy(buff, str, strlen(str) >= size ? size - 1 : strlen(str));
-    (*env)->ReleaseStringUTFChars(env, js_str, str);
+  if (asc->j_mid_on_zwave_get_assigned_node_id_result == NULL) {
+    return;
   }
-}
 
-void supla_android_client_barr_to_buffer(JNIEnv *env, jobject cfg, jclass jcs,
-                                         const char *name, char *buff,
-                                         int size) {
-  jfieldID fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
-  jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
-
-  if (size == (*env)->GetArrayLength(env, barr)) {
-    jbyte *data = (jbyte *)(*env)->GetByteArrayElements(env, barr, NULL);
-    if (data) {
-      memcpy(buff, data, size);
-      (*env)->ReleaseByteArrayElements(env, barr, data, 0);
-    }
-  }
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_zwave_get_assigned_node_id_result, result,
+      node_id == NULL
+          ? NULL
+          : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
 }
 
 void *supla_client_ptr(jlong _asc) {
@@ -1301,12 +1366,12 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
     jstring js_host = (*env)->GetObjectField(env, cfg, fid);
     sclient_cfg.host = (char *)(*env)->GetStringUTFChars(env, js_host, 0);
 
-    supla_android_client_jstring_to_buffer(
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "SoftVer", sclient_cfg.SoftVer, SUPLA_SOFTVER_MAXSIZE);
 
-    supla_android_client_jstring_to_buffer(env, cfg, jcs, "AccessIDpwd",
-                                           sclient_cfg.AccessIDpwd,
-                                           SUPLA_ACCESSID_PWD_MAXSIZE);
+    supla_android_client_stringobj2buffer(env, cfg, jcs, "AccessIDpwd",
+                                          sclient_cfg.AccessIDpwd,
+                                          SUPLA_ACCESSID_PWD_MAXSIZE);
 
     fid = supla_client_GetFieldID(env, jcs, "AccessID", "I");
     sclient_cfg.AccessID = (*env)->GetIntField(env, cfg, fid);
@@ -1319,16 +1384,16 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
       sclient_cfg.protocol_version = SUPLA_PROTO_VERSION;
     }
 
-    supla_android_client_jstring_to_buffer(
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "Email", sclient_cfg.Email, SUPLA_EMAIL_MAXSIZE);
 
-    supla_android_client_jstring_to_buffer(
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "Name", sclient_cfg.Name, SUPLA_CLIENT_NAME_MAXSIZE);
 
-    supla_android_client_barr_to_buffer(
+    supla_android_client_bytearrobj2buffer(
         env, cfg, jcs, "clientGUID", sclient_cfg.clientGUID, SUPLA_GUID_SIZE);
 
-    supla_android_client_barr_to_buffer(
+    supla_android_client_bytearrobj2buffer(
         env, cfg, jcs, "AuthKey", sclient_cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
 
     fid = supla_client_GetFieldID(env, jcs, "registration_flags", "I");
@@ -1395,6 +1460,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onSuperUserAuthorizationResult", "(ZI)V");
     _asc->j_mid_on_device_calcfg_result = supla_client_GetMethodID(
         env, oclass, "onDeviceCalCfgResult", "(III[B)V");
+    _asc->j_mid_on_device_calcfg_debug_string = supla_client_GetMethodID(
+        env, oclass, "onDeviceCalCfgDebugString", "(Ljava/lang/String;)V");
     _asc->j_mid_on_channel_state = supla_client_GetMethodID(
         env, oclass, "onChannelState",
         "(Lorg/supla/android/lib/SuplaChannelState;)V");
@@ -1413,10 +1480,12 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_client_GetMethodID(env, oclass, "onZWaveAddNodeResult",
                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_remove_node_result = supla_client_GetMethodID(
-        env, oclass, "onZWaveRemoveNodeResult", "(IS)V");
+        env, oclass, "onZWaveRemoveNodeResult", "(ILjava/lang/Short;)V");
     _asc->j_mid_on_zwave_get_node_list_result =
         supla_client_GetMethodID(env, oclass, "onZWaveGetNodeListResult",
                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
+    _asc->j_mid_on_zwave_get_assigned_node_id_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveGetAssignedNodeIdResult", "(ILjava/lang/Short;)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -1447,6 +1516,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_superuser_authorization_result;
     sclient_cfg.cb_on_device_calcfg_result =
         supla_android_client_cb_on_device_calcfg_result;
+    sclient_cfg.cb_on_device_calcfg_debug_string =
+        supla_android_client_cb_on_device_calcfg_debug_string;
     sclient_cfg.cb_on_device_channel_state =
         supla_android_client_cb_on_channel_state;
     sclient_cfg.cb_on_channel_basic_cfg =
@@ -1465,6 +1536,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_zwave_remove_node_result;
     sclient_cfg.cb_on_zwave_get_node_list_result =
         supla_android_client_cb_on_zwave_get_node_list_result;
+    sclient_cfg.cb_on_zwave_get_assigned_node_id_result =
+        supla_android_client_cb_on_zwave_get_assigned_node_id_result;
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
     if (sclient_cfg.host) {
@@ -1793,3 +1866,33 @@ JNI_FUNCTION_I(scZWaveAddNode, supla_client_zwave_add_node);
 JNI_FUNCTION_I(scZWaveRemoveNode, supla_client_zwave_remove_node);
 
 JNI_FUNCTION_I(scZWaveGetNodeList, supla_client_zwave_get_node_list);
+
+JNI_FUNCTION_I(scZWaveGetAssignedNodeId,
+               supla_client_zwave_get_assigned_node_id);
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jobject node_id) {
+  void *supla_client = supla_client_ptr(_asc);
+  if (supla_client) {
+    unsigned char id = 0;
+
+    if (node_id != NULL) {
+      jshort js = 0;
+      if (supla_android_client_shortobj2jshort(env, node_id, &js)) {
+        if (js < 0) {
+          js = 0;
+        } else if (js > 255) {
+          js = 255;
+        }
+        id = js;
+      }
+    }
+
+    return supla_client_zwave_assign_node_id(supla_client, channel_id,
+                                             node_id == NULL ? NULL : &id)
+               ? JNI_TRUE
+               : JNI_FALSE;
+  }
+  return JNI_FALSE;
+}

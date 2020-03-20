@@ -83,16 +83,20 @@ typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
 typedef void (*_suplaclient_cb_on_set_registration_enabled_result)(
     void *_suplaclient, void *user_data,
     TSC_SetRegistrationEnabledResult *result);
+typedef void (*_suplaclient_cb_on_device_calcfg_debug_string)(
+    void *_suplaclient, void *user_data, char *str);
 typedef void (*_suplaclient_cb_on_zwave_basic_result)(void *_suplaclient,
                                                       void *user_data,
                                                       _supla_int_t result);
 typedef void (*_suplaclient_cb_on_zwave_remove_node_result)(
     void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char node_id);
-
+    unsigned char *node_id);
 typedef void (*_suplaclient_cb_on_zwave_result_with_node)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_Node *node);
+typedef void (*_suplaclient_cb_on_zwave_get_assigned_node_id_result)(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char *node_id);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -154,10 +158,14 @@ typedef struct {
       cb_on_clients_reconnect_request_result;
   _suplaclient_cb_on_set_registration_enabled_result
       cb_on_set_registration_enabled_result;
+  _suplaclient_cb_on_device_calcfg_debug_string
+      cb_on_device_calcfg_debug_string;
   _suplaclient_cb_on_zwave_basic_result cb_on_zwave_reset_and_clear_result;
   _suplaclient_cb_on_zwave_result_with_node cb_on_zwave_add_node_result;
   _suplaclient_cb_on_zwave_remove_node_result cb_on_zwave_remove_node_result;
   _suplaclient_cb_on_zwave_result_with_node cb_on_zwave_get_node_list_result;
+  _suplaclient_cb_on_zwave_get_assigned_node_id_result
+      cb_on_zwave_get_assigned_node_id_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -207,6 +215,9 @@ char supla_client_zwave_reset_and_clear(void *_suplaclient, int deviceID);
 char supla_client_zwave_add_node(void *_suplaclient, int deviceID);
 char supla_client_zwave_remove_node(void *_suplaclient, int deviceID);
 char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID);
+char supla_client_zwave_get_assigned_node_id(void *_suplaclient, int channelID);
+char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
+                                       unsigned char *nodeID);
 
 #ifdef __cplusplus
 }

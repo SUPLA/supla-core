@@ -1112,6 +1112,7 @@ typedef struct {
 #define SUPLA_CALCFG_RESULT_ID_NOT_EXISTS 103    // ver. >= 12
 #define SUPLA_CALCFG_RESULT_UNAUTHORIZED 104     // ver. >= 12
 
+#define SUPLA_CALCFG_CMD_DEBUG_STRING 1                   // v. >= 12
 #define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000        // v. >= 11
 #define SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR 2000       // v. >= 12
 #define SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE 2010              // v. >= 12
