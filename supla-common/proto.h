@@ -1463,9 +1463,8 @@ void sproto_free(void *spd_ptr);
 char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp);
 unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
                                           unsigned _supla_int_t buffer_size);
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 char sproto_out_dataexists(void *spd_ptr);
-#endif
-
 char sproto_in_buffer_append(void *spd_ptr, char *data,
                              unsigned _supla_int_t data_size);
 

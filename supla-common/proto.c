@@ -213,12 +213,16 @@ unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
 
   return (buffer_size);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 char sproto_out_dataexists(void *spd_ptr) {
+#ifdef SPROTO_WITHOUT_OUT_BUFFER
+  return SUPLA_RESULT_FALSE;
+#else
   return ((TSuplaProtoData *)spd_ptr)->out.data_size > 0 ? SUPLA_RESULT_TRUE
                                                          : SUPLA_RESULT_FALSE;
+#endif
 }
-#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 char sproto_in_dataexists(void *spd_ptr) {
   return ((TSuplaProtoData *)spd_ptr)->in.data_size > 0 ? SUPLA_RESULT_TRUE
