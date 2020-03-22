@@ -16,6 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+/*
+https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+
+Type Signature | Java Type
+Z | boolean
+B | byte
+C | char
+S | short
+I | int
+J | long
+F | float
+D | double
+ */
+
 #include <android/log.h>
 #include <jni.h>
 #include <string.h>
