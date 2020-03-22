@@ -1314,8 +1314,13 @@ char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID) {
 
 char supla_client_zwave_get_assigned_node_id(void *_suplaclient,
                                              int channelID) {
-  return supla_client_device_calcfg_command(
-      _suplaclient, channelID, SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID);
+  TCS_DeviceCalCfgRequest_B request;
+  memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+  request.Target = SUPLA_TARGET_CHANNEL;
+  request.Id = channelID;
+  request.Command = SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID;
+
+  return supla_client_device_calcfg_request(_suplaclient, &request);
 }
 
 char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
