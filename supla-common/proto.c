@@ -389,7 +389,7 @@ void sproto_log_summary(void *spd_ptr) {
 
 void sproto_buffer_dump(void *spd_ptr, unsigned char in) {
   _supla_int_t a;
-  char *buffer;
+  char *buffer = NULL;
   _supla_int_t size = 0;
 
   TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
