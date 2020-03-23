@@ -1131,7 +1131,7 @@ typedef struct {
 typedef struct {
   unsigned char Id;
   unsigned char ScreenType;
-  char Name[100];  // UTF8
+  char Name[50];  // UTF8
   char Online;
   char Errors;
   char Value;
