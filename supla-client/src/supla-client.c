@@ -526,6 +526,15 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
                 : NULL);
       }
       break;
+    case SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID:
+      if (scd->cfg.cb_on_zwave_assign_node_id_result) {
+        scd->cfg.cb_on_zwave_assign_node_id_result(
+            scd, scd->cfg.user_data, result->Result,
+            result->DataSize == sizeof(unsigned char)
+                ? (unsigned char *)&result->Data[0]
+                : NULL);
+      }
+      break;
   }
 }
 
@@ -1239,6 +1248,12 @@ char supla_client_device_calcfg_command(void *_suplaclient,
   request.Command = command;
 
   return supla_client_device_calcfg_request(_suplaclient, &request);
+}
+
+char supla_client_device_calcfg_cancel_all_commands(void *_suplaclient,
+                                                    int DeviceID) {
+  return supla_client_device_calcfg_command(
+      _suplaclient, DeviceID, SUPLA_CALCFG_CMD_CANCEL_ALL_COMMANDS);
 }
 
 char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {

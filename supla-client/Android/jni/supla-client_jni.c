@@ -145,6 +145,7 @@ typedef struct {
   jmethodID j_mid_on_zwave_remove_node_result;
   jmethodID j_mid_on_zwave_get_node_list_result;
   jmethodID j_mid_on_zwave_get_assigned_node_id_result;
+  jmethodID j_mid_on_zwave_assign_node_id_result;
 
 } TAndroidSuplaClient;
 
@@ -1275,6 +1276,23 @@ void supla_android_client_cb_on_zwave_get_assigned_node_id_result(
           : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
 }
 
+void supla_android_client_cb_on_zwave_assign_node_id_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char *node_id) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_assign_node_id_result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_zwave_assign_node_id_result, result,
+      node_id == NULL
+          ? NULL
+          : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
+}
+
 void *supla_client_ptr(jlong _asc) {
 #ifdef _LP64
   TAndroidSuplaClient *asc = (void *)_asc;
@@ -1500,6 +1518,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_get_assigned_node_id_result = supla_client_GetMethodID(
         env, oclass, "onZWaveGetAssignedNodeIdResult", "(ILjava/lang/Short;)V");
+    _asc->j_mid_on_zwave_assign_node_id_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveAssignNodeIdResult", "(ILjava/lang/Short;)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -1552,6 +1572,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_zwave_get_node_list_result;
     sclient_cfg.cb_on_zwave_get_assigned_node_id_result =
         supla_android_client_cb_on_zwave_get_assigned_node_id_result;
+    sclient_cfg.cb_on_zwave_assign_node_id_result =
+        supla_android_client_cb_on_zwave_assign_node_id_result;
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
     if (sclient_cfg.host) {
@@ -1910,3 +1932,6 @@ Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
   }
   return JNI_FALSE;
 }
+
+JNI_FUNCTION_I(scDeviceCalCfgCancelAllCommands,
+               supla_client_device_calcfg_cancel_all_commands);

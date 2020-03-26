@@ -88,15 +88,12 @@ typedef void (*_suplaclient_cb_on_device_calcfg_debug_string)(
 typedef void (*_suplaclient_cb_on_zwave_basic_result)(void *_suplaclient,
                                                       void *user_data,
                                                       _supla_int_t result);
-typedef void (*_suplaclient_cb_on_zwave_remove_node_result)(
+typedef void (*_suplaclient_cb_on_zwave_result_with_node_id)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     unsigned char *node_id);
 typedef void (*_suplaclient_cb_on_zwave_result_with_node)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_Node *node);
-typedef void (*_suplaclient_cb_on_zwave_get_assigned_node_id_result)(
-    void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char *node_id);
 
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
@@ -162,10 +159,12 @@ typedef struct {
       cb_on_device_calcfg_debug_string;
   _suplaclient_cb_on_zwave_basic_result cb_on_zwave_reset_and_clear_result;
   _suplaclient_cb_on_zwave_result_with_node cb_on_zwave_add_node_result;
-  _suplaclient_cb_on_zwave_remove_node_result cb_on_zwave_remove_node_result;
+  _suplaclient_cb_on_zwave_result_with_node_id cb_on_zwave_remove_node_result;
   _suplaclient_cb_on_zwave_result_with_node cb_on_zwave_get_node_list_result;
-  _suplaclient_cb_on_zwave_get_assigned_node_id_result
+  _suplaclient_cb_on_zwave_result_with_node_id
       cb_on_zwave_get_assigned_node_id_result;
+  _suplaclient_cb_on_zwave_result_with_node_id
+      cb_on_zwave_assign_node_id_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -202,6 +201,8 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   char *email, char *password);
 char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request);
+char supla_client_device_calcfg_cancel_all_commands(void *_suplaclient,
+                                                    int DeviceID);
 char supla_client_get_channel_state(void *_suplaclient, int ChannelID);
 char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID);
 char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
