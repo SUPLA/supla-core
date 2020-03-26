@@ -1253,7 +1253,7 @@ char supla_client_device_calcfg_command(void *_suplaclient,
 char supla_client_device_calcfg_cancel_all_commands(void *_suplaclient,
                                                     int DeviceID) {
   return supla_client_device_calcfg_command(
-      _suplaclient, DeviceID, SUPLA_CALCFG_CMD_CANCEL_ALL_COMMANDS);
+      _suplaclient, DeviceID, SUPLA_CALCFG_CMD_CANCEL_ALL_CLIENT_COMMANDS);
 }
 
 char supla_client_get_channel_state(void *_suplaclient, int ChannelID) {
