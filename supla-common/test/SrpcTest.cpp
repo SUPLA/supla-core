@@ -381,6 +381,7 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
                  SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
+                 SUPLA_SD_CALL_CHANNEL_SET_VALUE_B,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -1420,25 +1421,13 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
 // SET CHANNEL NEW VALUE
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_sd_set_channel_value) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_value, TSD_SuplaChannelNewValue,
+                     SUPLA_SD_CALL_CHANNEL_SET_VALUE, 40, sd_channel_new_value);
 
-  DECLARE_WITH_RANDOM(TSD_SuplaChannelNewValue, value);
-
-  ASSERT_GT(srpc_sd_async_set_channel_value(srpc, &value), 0);
-  SendAndReceive(SUPLA_SD_CALL_CHANNEL_SET_VALUE, 40);
-
-  ASSERT_FALSE(cr_rd.data.sd_channel_new_value == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sd_channel_new_value, &value,
-                      sizeof(TSD_SuplaChannelNewValue)));
-
-  free(cr_rd.data.sd_channel_new_value);
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_value_b,
+                     TSD_SuplaChannelNewValue_B,
+                     SUPLA_SD_CALL_CHANNEL_SET_VALUE_B, 44,
+                     sd_channel_new_value_b);
 
 TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   data_read_result = -1;

@@ -118,6 +118,7 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelValue *sc_channel_value;
   TSC_SuplaEvent *sc_event;
   TSD_SuplaChannelNewValue *sd_channel_new_value;
+  TSD_SuplaChannelNewValue_B *sd_channel_new_value_b;
   TDS_SuplaChannelNewValueResult *ds_channel_new_value_result;
   TCS_SuplaChannelNewValue *cs_channel_new_value;
   TCS_SuplaChannelNewValue_B *cs_channel_new_value_b;
@@ -230,6 +231,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     TSuplaChannelExtendedValue *value);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_value_b(
+    void *_srpc, TSD_SuplaChannelNewValue_B *value);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
                                  _supla_int_t SenderID, char Success);

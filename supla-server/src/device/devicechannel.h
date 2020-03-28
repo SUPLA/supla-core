@@ -209,6 +209,10 @@ class supla_device_channels {
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
+  void async_set_channel_value(void *srpc, supla_device_channel *channel,
+                               int SenderID,
+                               const char value[SUPLA_CHANNELVALUE_SIZE]);
+
  public:
   supla_device_channels();
   virtual ~supla_device_channels();
