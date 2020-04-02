@@ -452,7 +452,7 @@ bool supla_device_channel::getHidden(void) { return Hidden; }
 
 unsigned int supla_device_channel::getFlags() { return Flags; }
 
-bool supla_device_channel::isOffline(void) { return Offline; };
+bool supla_device_channel::isOffline(void) { return Offline; }
 
 void supla_device_channel::setOffline(bool Offline) { this->Offline = Offline; }
 
