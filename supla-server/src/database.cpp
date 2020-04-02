@@ -720,8 +720,9 @@ void database::get_device_channels(int DeviceID,
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
       "SELECT `type`, `func`, `param1`, `param2`, `param3`, `text_param1`, "
-      "`text_param2`, `text_param3`, `channel_number`, `id`, `hidden` FROM "
-      "`supla_dev_channel` WHERE `iodevice_id` = ? ORDER BY `channel_number`";
+      "`text_param2`, `text_param3`, `channel_number`, `id`, `hidden`, `flags` "
+      "FROM `supla_dev_channel` WHERE `iodevice_id` = ? ORDER BY "
+      "`channel_number`";
 
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
@@ -732,10 +733,18 @@ void database::get_device_channels(int DeviceID,
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     my_bool is_null[8];
 
-    MYSQL_BIND rbind[11];
+    MYSQL_BIND rbind[12];
     memset(rbind, 0, sizeof(rbind));
 
-    int type, func, param1, param2, param3, number, id, hidden;
+    int type = 0;
+    int func = 0;
+    int param1 = 0;
+    int param2 = 0;
+    int param3 = 0;
+    int number = 0;
+    int id = 0;
+    int hidden = 0;
+    int flags = 0;
 
     char text_param1[256];
     char text_param2[256];
@@ -792,6 +801,9 @@ void database::get_device_channels(int DeviceID,
     rbind[10].buffer_type = MYSQL_TYPE_LONG;
     rbind[10].buffer = (char *)&hidden;
 
+    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer = (char *)&flags;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -815,7 +827,7 @@ void database::get_device_channels(int DeviceID,
 
           channels->add_channel(id, number, type, func, param1, param2, param3,
                                 text_param1, text_param2, text_param3,
-                                hidden > 0);
+                                hidden > 0, flags);
         }
       }
     }

@@ -154,6 +154,8 @@ class supla_device_channel {
   char *TextParam2;
   char *TextParam3;
   bool Hidden;
+  bool Offline;
+  unsigned int Flags;
 
   char value[8];
   TSuplaChannelExtendedValue *extendedValue;
@@ -161,7 +163,8 @@ class supla_device_channel {
  public:
   supla_device_channel(int Id, int Number, int Type, int Func, int Param1,
                        int Param2, int Param3, char *TextParam1,
-                       char *TextParam2, char *TextParam3, bool Hidden);
+                       char *TextParam2, char *TextParam3, bool Hidden,
+                       unsigned int Flags);
   virtual ~supla_device_channel();
 
   int getId(void);
@@ -170,6 +173,9 @@ class supla_device_channel {
   int getType(void);
   int getParam1(void);
   bool getHidden(void);
+  unsigned int getFlags();
+  bool isOffline(void);
+  void setOffline(bool Offline);
   bool isValueWritable(void);
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
@@ -218,8 +224,9 @@ class supla_device_channels {
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, char *TextParam1, char *TextParam2,
-                   char *TextParam3, bool Hidden);
-  bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+                   char *TextParam3, bool Hidden, unsigned int Flags);
+  bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+                         char *online);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_double_value(int ChannelID, double *Value);
@@ -234,6 +241,7 @@ class supla_device_channels {
   int get_channel_func(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          bool *converted2extended);
+  void set_channel_offline(int ChannelID, bool Offline);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);

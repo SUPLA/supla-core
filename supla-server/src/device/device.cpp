@@ -226,6 +226,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                 ChannelFlags = dev_channels_c[a].Flags;
               }
 
+              if (Type == 0) {
+                break;
+              }
+
               if (db->get_device_channel(DeviceID, Number, &ChannelType) == 0) {
                 ChannelType = 0;
               }
@@ -329,12 +333,22 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 void supla_device::load_config(void) { channels->load(getID()); }
 
 void supla_device::on_device_channel_value_changed(
-    TDS_SuplaDeviceChannelValue *value) {
-  int ChannelId = channels->get_channel_id(value->ChannelNumber);
+    TDS_SuplaDeviceChannelValue *value,
+    TDS_SuplaDeviceChannelValue_B *value_b) {
+  if (value == NULL && value_b == NULL) {
+    return;
+  }
+
+  int ChannelId = channels->get_channel_id(value ? value->ChannelNumber
+                                                 : value_b->ChannelNumber);
 
   if (ChannelId != 0) {
     bool converted2extended;
-    channels->set_channel_value(ChannelId, value->value, &converted2extended);
+    channels->set_channel_value(
+        ChannelId, value ? value->value : value_b->value, &converted2extended);
+    if (value_b) {
+      channels->set_channel_offline(ChannelId, value_b->Offline > 0);
+    }
     getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
 
     if (converted2extended) {
@@ -404,8 +418,9 @@ void supla_device::on_channel_set_value_result(
 }
 
 bool supla_device::get_channel_value(int ChannelID,
-                                     char value[SUPLA_CHANNELVALUE_SIZE]) {
-  return channels->get_channel_value(ChannelID, value);
+                                     char value[SUPLA_CHANNELVALUE_SIZE],
+                                     char *online) {
+  return channels->get_channel_value(ChannelID, value, online);
 }
 
 bool supla_device::get_channel_extendedvalue(

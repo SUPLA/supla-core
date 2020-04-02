@@ -400,7 +400,7 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
                                            int Func, int Param1, int Param2,
                                            int Param3, char *TextParam1,
                                            char *TextParam2, char *TextParam3,
-                                           bool Hidden) {
+                                           bool Hidden, unsigned int Flags) {
   this->Id = Id;
   this->Number = Number;
   this->Type = Type;
@@ -412,6 +412,8 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
   this->Hidden = Hidden;
+  this->Flags = Flags;
+  this->Offline = Flags & SUPLA_CHANNEL_OFFLINE_DURING_REGISTRATION;
   this->extendedValue = NULL;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -447,6 +449,12 @@ int supla_device_channel::getType(void) { return Type; }
 int supla_device_channel::getParam1(void) { return Param1; }
 
 bool supla_device_channel::getHidden(void) { return Hidden; }
+
+unsigned int supla_device_channel::getFlags() { return Flags; }
+
+bool supla_device_channel::isOffline(void) { return Offline; };
+
+void supla_device_channel::setOffline(bool Offline) { this->Offline = Offline; }
 
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
@@ -926,13 +934,14 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
                                         int Param1, int Param2, int Param3,
                                         char *TextParam1, char *TextParam2,
-                                        char *TextParam3, bool Hidden) {
+                                        char *TextParam3, bool Hidden,
+                                        unsigned int Flags) {
   safe_array_lock(arr);
 
   if (find_channel(Id) == 0) {
-    supla_device_channel *c =
-        new supla_device_channel(Id, Number, Type, Func, Param1, Param2, Param3,
-                                 TextParam1, TextParam2, TextParam3, Hidden);
+    supla_device_channel *c = new supla_device_channel(
+        Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
+        TextParam3, Hidden, Flags);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -959,7 +968,7 @@ void supla_device_channels::load(int DeviceID) {
 }
 
 bool supla_device_channels::get_channel_value(
-    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]) {
+    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online) {
   bool result = false;
 
   if (ChannelID) {
@@ -968,6 +977,9 @@ bool supla_device_channels::get_channel_value(
 
     if (channel) {
       channel->getValue(value);
+      if (online) {
+        *online = channel->isOffline() ? 0 : 1;
+      }
       result = true;
     }
 
@@ -1101,6 +1113,20 @@ void supla_device_channels::set_channel_value(
         *converted2extended = true;
       }
     }
+  }
+
+  safe_array_unlock(arr);
+}
+
+void supla_device_channels::set_channel_offline(int ChannelID, bool Offline) {
+  if (ChannelID == 0) return;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) {
+    channel->setOffline(Offline);
   }
 
   safe_array_unlock(arr);

@@ -382,6 +382,7 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
                  SUPLA_SD_CALL_CHANNEL_SET_VALUE_B,
+				 SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -1334,6 +1335,34 @@ TEST_F(SrpcTest, call_channel_value_changed) {
             0);
 
   free(cr_rd.data.ds_device_channel_value);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// DS CHANNEL VALUE CHANGED (B)
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channel_value_changed_b) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  set_random(value, SUPLA_CHANNELVALUE_SIZE);
+
+  ASSERT_GT(srpc_ds_async_channel_value_changed_b(srpc, 1, value, 1), 0);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B, 33);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_channel_value_b == NULL);
+
+  ASSERT_EQ(cr_rd.data.ds_device_channel_value_b->ChannelNumber, 1);
+  ASSERT_EQ(cr_rd.data.ds_device_channel_value_b->Offline, 1);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_device_channel_value_b->value, value,
+                   SUPLA_CHANNELVALUE_SIZE),
+            0);
+
+  free(cr_rd.data.ds_device_channel_value_b);
   srpc_free(srpc);
   srpc = NULL;
 }

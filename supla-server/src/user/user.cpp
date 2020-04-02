@@ -569,8 +569,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   supla_device *related_device = NULL;
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    *online = 1;
-    result = device->get_channel_value(ChannelID, value->value);
+    result = device->get_channel_value(ChannelID, value->value, online);
 
     if (result) {
       std::list<int> related_list = device->related_channel(ChannelID);
@@ -580,7 +579,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
       if (related_list.size() == 1 && *it > 0) {
         related_device = device_container->findByChannelID(*it);
         if (related_device) {
-          related_device->get_channel_value(*it, value->sub_value);
+          related_device->get_channel_value(*it, value->sub_value, NULL);
           related_device->releasePtr();
           related_device = NULL;
         }
@@ -595,7 +594,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
           if (*it > 0) {
             related_device = device_container->findByChannelID(*it);
             if (related_device) {
-              related_device->get_channel_value(*it, sub_value);
+              related_device->get_channel_value(*it, sub_value, NULL);
               value->sub_value[n] = sub_value[0];
               related_device->releasePtr();
               related_device = NULL;

@@ -826,6 +826,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B:
+
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaDeviceChannelValue_B))
+          rd->data.ds_device_channel_value_b =
+              (TDS_SuplaDeviceChannelValue_B *)malloc(
+                  sizeof(TDS_SuplaDeviceChannelValue_B));
+
+        break;
+
       case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
 
         if (srpc->sdp.data_size <=
@@ -1339,6 +1348,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
     case SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT:
     case SUPLA_SD_CALL_CHANNEL_SET_VALUE_B:
+    case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B:
       return 12;
   }
 
@@ -1666,6 +1676,18 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
 
   return srpc_async_call(_srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED,
                          (char *)&ncsc, sizeof(TDS_SuplaDeviceChannelValue));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_channel_value_changed_b(void *_srpc, unsigned char channel_number,
+                                      char *value, unsigned char offline) {
+  TDS_SuplaDeviceChannelValue_B ncsc;
+  ncsc.ChannelNumber = channel_number;
+  ncsc.Offline = !!offline;
+  memcpy(ncsc.value, value, SUPLA_CHANNELVALUE_SIZE);
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
+                         (char *)&ncsc, sizeof(TDS_SuplaDeviceChannelValue_B));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(

@@ -609,7 +609,13 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
         case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
           if (rd.data.ds_device_channel_value) {
             device->on_device_channel_value_changed(
-                rd.data.ds_device_channel_value);
+                rd.data.ds_device_channel_value, NULL);
+          }
+          break;
+        case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B:
+          if (rd.data.ds_device_channel_value_b) {
+            device->on_device_channel_value_changed(
+                NULL, rd.data.ds_device_channel_value_b);
           }
           break;
 
