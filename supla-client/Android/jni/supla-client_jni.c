@@ -1221,8 +1221,7 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                 "(SSLjava/lang/String;ZSSZ)V");
   return (*env)->NewObject(
       env, cls, methodID, (jshort)node->Id, (jshort)node->ScreenType,
-      (*env)->NewStringUTF(env, node->Name), (jboolean)node->Online > 0,
-      (jshort)node->Errors, (jshort)node->Value, (jboolean)node->EOL > 0);
+      (*env)->NewStringUTF(env, node->Name), (jboolean)node->EOL > 0);
 }
 
 void supla_android_client_cb_on_zwave_add_node_result(
