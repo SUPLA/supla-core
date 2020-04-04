@@ -1154,9 +1154,6 @@ typedef struct {
   unsigned char Id;
   unsigned char ScreenType;
   char Name[50];  // UTF8
-  char Online;
-  char Errors;
-  char Value;
   char EOL;            // End Of List
 } TCalCfg_ZWave_Node;  // v. >= 12
 
