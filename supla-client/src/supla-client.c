@@ -462,10 +462,11 @@ void supla_client_on_oauth_token_request_result(
 
 TCalCfg_ZWave_Node *supla_client_zwave_node(TSC_DeviceCalCfgResult *result) {
   TCalCfg_ZWave_Node *node = NULL;
-  if (result != NULL && result->DataSize == sizeof(TCalCfg_ZWave_Node) &&
+  if (result != NULL && result->DataSize <= sizeof(TCalCfg_ZWave_Node) &&
+      result->DataSize >=
+          sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE &&
       result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
-    node = (TCalCfg_ZWave_Node *)result->Data;
-    node->Name[sizeof(node->Name) - 1] = 0;
+    supla_client_set_str(node->Name, &node->NameSize, ZWAVE_NODE_NAME_MAXSIZE);
   }
   return node;
 }

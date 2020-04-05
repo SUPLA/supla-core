@@ -1150,12 +1150,15 @@ typedef struct {
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL_COLOR_CONTROL 4
 #define CALCFG_ZWAVE_SCREENTYPE_BINARY_COLOR_CONTROL 5
 
+#define ZWAVE_NODE_NAME_MAXSIZE 50
+
 typedef struct {
   unsigned char Id;
   unsigned char ScreenType;
-  char Name[50];  // UTF8
-  char EOL;            // End Of List
-} TCalCfg_ZWave_Node;  // v. >= 12
+  unsigned char NameSize;  // including the terminating null byte ('\0')
+  char Name[ZWAVE_NODE_NAME_MAXSIZE];  // UTF8
+  char EOL;                            // End Of List
+} TCalCfg_ZWave_Node;                  // v. >= 12
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
