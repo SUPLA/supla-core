@@ -1198,7 +1198,7 @@ JNI_CALLBACK_I(on_zwave_reset_and_clear_result);
 
 void supla_android_client_cb_on_zwave_remove_node_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char *node_id) {
+    unsigned char node_id) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1206,11 +1206,9 @@ void supla_android_client_cb_on_zwave_remove_node_result(
     return;
   }
 
-  (*env)->CallVoidMethod(
-      env, asc->j_obj, asc->j_mid_on_zwave_remove_node_result, result,
-      node_id == NULL
-          ? NULL
-          : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_remove_node_result, result,
+                         (jshort)node_id);
 }
 
 jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
@@ -1218,7 +1216,7 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                    TCalCfg_ZWave_Node *node) {
   jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
   jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>",
-                                                "(SSLjava/lang/String;ZSSZ)V");
+                                                "(SSLjava/lang/String;)V");
   return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
                            (jshort)node->ScreenType,
                            (*env)->NewStringUTF(env, node->Name));
@@ -1260,7 +1258,7 @@ void supla_android_client_cb_on_zwave_get_node_list_result(
 
 void supla_android_client_cb_on_zwave_get_assigned_node_id_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char *node_id) {
+    unsigned char node_id) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1268,16 +1266,14 @@ void supla_android_client_cb_on_zwave_get_assigned_node_id_result(
     return;
   }
 
-  (*env)->CallVoidMethod(
-      env, asc->j_obj, asc->j_mid_on_zwave_get_assigned_node_id_result, result,
-      node_id == NULL
-          ? NULL
-          : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_get_assigned_node_id_result,
+                         result, (jshort)node_id);
 }
 
 void supla_android_client_cb_on_zwave_assign_node_id_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char *node_id) {
+    unsigned char node_id) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1285,11 +1281,9 @@ void supla_android_client_cb_on_zwave_assign_node_id_result(
     return;
   }
 
-  (*env)->CallVoidMethod(
-      env, asc->j_obj, asc->j_mid_on_zwave_assign_node_id_result, result,
-      node_id == NULL
-          ? NULL
-          : supla_android_client_jshort2shortobj(env, (jshort)*node_id));
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_assign_node_id_result, result,
+                         (jshort)node_id);
 }
 
 void *supla_client_ptr(jlong _asc) {
@@ -1511,14 +1505,14 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_client_GetMethodID(env, oclass, "onZWaveAddNodeResult",
                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_remove_node_result = supla_client_GetMethodID(
-        env, oclass, "onZWaveRemoveNodeResult", "(ILjava/lang/Short;)V");
+        env, oclass, "onZWaveRemoveNodeResult", "(IS)V");
     _asc->j_mid_on_zwave_get_node_list_result =
         supla_client_GetMethodID(env, oclass, "onZWaveGetNodeListResult",
                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_get_assigned_node_id_result = supla_client_GetMethodID(
-        env, oclass, "onZWaveGetAssignedNodeIdResult", "(ILjava/lang/Short;)V");
+        env, oclass, "onZWaveGetAssignedNodeIdResult", "(IS)V");
     _asc->j_mid_on_zwave_assign_node_id_result = supla_client_GetMethodID(
-        env, oclass, "onZWaveAssignNodeIdResult", "(ILjava/lang/Short;)V");
+        env, oclass, "onZWaveAssignNodeIdResult", "(IS)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;

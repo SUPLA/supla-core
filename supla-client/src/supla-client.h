@@ -90,7 +90,7 @@ typedef void (*_suplaclient_cb_on_zwave_basic_result)(void *_suplaclient,
                                                       _supla_int_t result);
 typedef void (*_suplaclient_cb_on_zwave_result_with_node_id)(
     void *_suplaclient, void *user_data, _supla_int_t result,
-    unsigned char *node_id);
+    unsigned char node_id);
 typedef void (*_suplaclient_cb_on_zwave_result_with_node)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_Node *node);

@@ -466,6 +466,7 @@ TCalCfg_ZWave_Node *supla_client_zwave_node(TSC_DeviceCalCfgResult *result) {
       result->DataSize >=
           sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE &&
       result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
+    node = (TCalCfg_ZWave_Node *)result->Data;
     unsigned int NameSize = node->NameSize;
     supla_client_set_str(node->Name, &NameSize, ZWAVE_NODE_NAME_MAXSIZE);
     node->NameSize = NameSize;
@@ -509,8 +510,8 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
         scd->cfg.cb_on_zwave_remove_node_result(
             scd, scd->cfg.user_data, result->Result,
             result->DataSize == sizeof(unsigned char)
-                ? (unsigned char *)&result->Data[0]
-                : NULL);
+                ? (unsigned char)result->Data[0]
+                : 0);
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
@@ -525,8 +526,8 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
         scd->cfg.cb_on_zwave_get_assigned_node_id_result(
             scd, scd->cfg.user_data, result->Result,
             result->DataSize == sizeof(unsigned char)
-                ? (unsigned char *)&result->Data[0]
-                : NULL);
+                ? (unsigned char)result->Data[0]
+                : 0);
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID:
@@ -534,8 +535,8 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
         scd->cfg.cb_on_zwave_assign_node_id_result(
             scd, scd->cfg.user_data, result->Result,
             result->DataSize == sizeof(unsigned char)
-                ? (unsigned char *)&result->Data[0]
-                : NULL);
+                ? (unsigned char)result->Data[0]
+                : 0);
       }
       break;
   }
