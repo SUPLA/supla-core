@@ -1156,8 +1156,7 @@ typedef struct {
   unsigned char Id;
   unsigned char ScreenType;
   unsigned char NameSize;  // including the terminating null byte ('\0')
-  char Name[ZWAVE_NODE_NAME_MAXSIZE];  // UTF8
-  char EOL;                            // End Of List
+  char Name[ZWAVE_NODE_NAME_MAXSIZE];  // UTF8. Last variable in struct!
 } TCalCfg_ZWave_Node;                  // v. >= 12
 
 // CALCFG == CALIBRATION / CONFIG

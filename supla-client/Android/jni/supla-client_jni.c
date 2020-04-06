@@ -1219,9 +1219,9 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
   jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
   jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>",
                                                 "(SSLjava/lang/String;ZSSZ)V");
-  return (*env)->NewObject(
-      env, cls, methodID, (jshort)node->Id, (jshort)node->ScreenType,
-      (*env)->NewStringUTF(env, node->Name), (jboolean)node->EOL > 0);
+  return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
+                           (jshort)node->ScreenType,
+                           (*env)->NewStringUTF(env, node->Name));
 }
 
 void supla_android_client_cb_on_zwave_add_node_result(

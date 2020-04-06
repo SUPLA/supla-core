@@ -466,7 +466,9 @@ TCalCfg_ZWave_Node *supla_client_zwave_node(TSC_DeviceCalCfgResult *result) {
       result->DataSize >=
           sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE &&
       result->DataSize <= SUPLA_CALCFG_DATA_MAXSIZE) {
-    supla_client_set_str(node->Name, &node->NameSize, ZWAVE_NODE_NAME_MAXSIZE);
+    unsigned int NameSize = node->NameSize;
+    supla_client_set_str(node->Name, &NameSize, ZWAVE_NODE_NAME_MAXSIZE);
+    node->NameSize = NameSize;
   }
   return node;
 }
