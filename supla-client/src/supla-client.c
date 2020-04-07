@@ -1343,17 +1343,15 @@ char supla_client_zwave_get_assigned_node_id(void *_suplaclient,
 }
 
 char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
-                                       unsigned char *nodeID) {
+                                       unsigned char nodeID) {
   TCS_DeviceCalCfgRequest_B request;
   memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
   request.Target = SUPLA_TARGET_CHANNEL;
   request.Id = channelID;
   request.Command = SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID;
 
-  if (nodeID != NULL) {
-    request.DataSize = sizeof(unsigned char);
-    memcpy(request.Data, nodeID, request.DataSize);
-  }
+  request.DataSize = sizeof(unsigned char);
+  memcpy(request.Data, &nodeID, request.DataSize);
 
   return supla_client_device_calcfg_request(_suplaclient, &request);
 }

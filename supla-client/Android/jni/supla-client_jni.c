@@ -1215,8 +1215,8 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                    JNIEnv *env,
                                                    TCalCfg_ZWave_Node *node) {
   jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
-  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>",
-                                                "(SSLjava/lang/String;)V");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(SSLjava/lang/String;)V");
   return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
                            (jshort)node->ScreenType,
                            (*env)->NewStringUTF(env, node->Name));
@@ -1901,25 +1901,19 @@ JNI_FUNCTION_I(scZWaveGetAssignedNodeId,
 
 JNIEXPORT jboolean JNICALL
 Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
-    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jobject node_id) {
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jshort node_id) {
   void *supla_client = supla_client_ptr(_asc);
   if (supla_client) {
     unsigned char id = 0;
 
-    if (node_id != NULL) {
-      jshort js = 0;
-      if (supla_android_client_shortobj2jshort(env, node_id, &js)) {
-        if (js < 0) {
-          js = 0;
-        } else if (js > 255) {
-          js = 255;
-        }
-        id = js;
-      }
+    if (node_id < 0) {
+      node_id = 0;
+    } else if (node_id > 255) {
+      node_id = 255;
     }
+    id = node_id;
 
-    return supla_client_zwave_assign_node_id(supla_client, channel_id,
-                                             node_id == NULL ? NULL : &id)
+    return supla_client_zwave_assign_node_id(supla_client, channel_id, id)
                ? JNI_TRUE
                : JNI_FALSE;
   }

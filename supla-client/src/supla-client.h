@@ -218,7 +218,7 @@ char supla_client_zwave_remove_node(void *_suplaclient, int deviceID);
 char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID);
 char supla_client_zwave_get_assigned_node_id(void *_suplaclient, int channelID);
 char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
-                                       unsigned char *nodeID);
+                                       unsigned char nodeID);
 
 #ifdef __cplusplus
 }
