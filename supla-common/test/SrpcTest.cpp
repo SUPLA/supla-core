@@ -381,7 +381,6 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
                  SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
-                 SUPLA_SD_CALL_CHANNEL_SET_VALUE_B,
                  SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
                  0};
 
