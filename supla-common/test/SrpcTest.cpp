@@ -1453,11 +1453,6 @@ TEST_F(SrpcTest, call_channel_extendedvalue_changed_with_full_size) {
 SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_value, TSD_SuplaChannelNewValue,
                      SUPLA_SD_CALL_CHANNEL_SET_VALUE, 40, sd_channel_new_value);
 
-SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_value_b,
-                     TSD_SuplaChannelNewValue_B,
-                     SUPLA_SD_CALL_CHANNEL_SET_VALUE_B, 44,
-                     sd_channel_new_value_b);
-
 TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   data_read_result = -1;
   srpc = srpcInit();

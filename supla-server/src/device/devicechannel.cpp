@@ -1262,28 +1262,15 @@ int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
 void supla_device_channels::async_set_channel_value(
     void *srpc, supla_device_channel *channel, int SenderID,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  if (srpc_get_proto_version(srpc) >= 12) {
-    TSD_SuplaChannelNewValue_B s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelNewValue_B));
+  TSD_SuplaChannelNewValue s;
+  memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
 
-    s.ChannelNumber = channel->getNumber();
-    s.DurationMS = channel->getValueDuration();
-    s.ChannelFunc = channel->getFunc();
-    s.SenderID = SenderID;
-    memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
+  s.ChannelNumber = channel->getNumber();
+  s.DurationMS = channel->getValueDuration();
+  s.SenderID = SenderID;
+  memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
-    srpc_sd_async_set_channel_value_b(srpc, &s);
-  } else {
-    TSD_SuplaChannelNewValue s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
-
-    s.ChannelNumber = channel->getNumber();
-    s.DurationMS = channel->getValueDuration();
-    s.SenderID = SenderID;
-    memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
-
-    srpc_sd_async_set_channel_value(srpc, &s);
-  }
+  srpc_sd_async_set_channel_value(srpc, &s);
 }
 
 void supla_device_channels::set_device_channel_value(

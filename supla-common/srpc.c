@@ -856,15 +856,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
-      case SUPLA_SD_CALL_CHANNEL_SET_VALUE_B:
-
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelNewValue_B))
-          rd->data.sd_channel_new_value_b =
-              (TSD_SuplaChannelNewValue_B *)malloc(
-                  sizeof(TSD_SuplaChannelNewValue_B));
-
-        break;
-
       case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
 
         if (srpc->sdp.data_size == sizeof(TDS_SuplaChannelNewValueResult))
@@ -1347,7 +1338,6 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT:
     case SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST:
     case SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT:
-    case SUPLA_SD_CALL_CHANNEL_SET_VALUE_B:
     case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B:
       return 12;
   }
@@ -1639,12 +1629,6 @@ _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value) {
   return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_SET_VALUE, (char *)value,
                          sizeof(TSD_SuplaChannelNewValue));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_value_b(
-    void *_srpc, TSD_SuplaChannelNewValue_B *value) {
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_SET_VALUE_B,
-                         (char *)value, sizeof(TSD_SuplaChannelNewValue_B));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
