@@ -209,6 +209,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT 590    // ver. >= 12
 #define SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST 600           // ver. >= 12
 #define SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT 610    // ver. >= 12
+#define SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS 620              // ver. >= 12
+#define SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT 630       // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -629,6 +631,13 @@ typedef struct {
   TDS_SuplaDeviceChannel_C
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
 } TDS_SuplaRegisterDevice_E;            // ver. >= 10
+
+typedef struct {
+  // server -> device
+
+  unsigned char channel_count;
+  _supla_int_t functions[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+} TSD_ChannelFunctions;                           // ver. >= 12
 
 typedef struct {
   // server -> device
