@@ -20,6 +20,7 @@
 #define DBCOMMON_H_
 
 #define mysql (MYSQL *)_mysql
+#define DB_VERSION "20200322123636"
 
 class dbcommon {
  protected:
