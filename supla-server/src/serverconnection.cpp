@@ -197,6 +197,27 @@ void serverconnection::on_device_reconnect_request(
   srpc_sc_async_device_reconnect_request_result(_srpc, &result);
 }
 
+void serverconnection::on_set_channel_function_request(
+    TCS_SetChannelFunction *cs_set_channel_function) {
+  if (cs_set_channel_function != NULL) {
+    client->set_channel_function_request(cs_set_channel_function);
+  }
+}
+
+void serverconnection::on_set_channel_caption_request(
+    TCS_SetChannelCaption *cs_set_channel_caption) {
+  if (cs_set_channel_caption != NULL) {
+    if (cs_set_channel_caption->CaptionSize > 0) {
+      if (cs_set_channel_caption->CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
+        cs_set_channel_caption->CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+      }
+      cs_set_channel_caption->Caption[cs_set_channel_caption->CaptionSize - 1] =
+          0;
+    }
+
+    client->set_channel_caption_request(cs_set_channel_caption);
+  }
+}
 void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                                                unsigned int call_type,
                                                unsigned char proto_version) {
@@ -766,26 +787,10 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           }
           break;
         case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
-          if (rd.data.cs_set_channel_function != NULL) {
-            client->set_channel_function_request(
-                rd.data.cs_set_channel_function);
-          }
+          on_set_channel_function_request(rd.data.cs_set_channel_function);
           break;
         case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
-          if (rd.data.cs_set_channel_caption != NULL) {
-            if (rd.data.cs_set_channel_caption->CaptionSize > 0) {
-              if (rd.data.cs_set_channel_caption->CaptionSize >
-                  SUPLA_CHANNEL_CAPTION_MAXSIZE) {
-                rd.data.cs_set_channel_caption->CaptionSize =
-                    SUPLA_CHANNEL_CAPTION_MAXSIZE;
-              }
-              rd.data.cs_set_channel_caption
-                  ->Caption[rd.data.cs_set_channel_caption->CaptionSize - 1] =
-                  0;
-            }
-
-            client->set_channel_caption_request(rd.data.cs_set_channel_caption);
-          }
+          on_set_channel_caption_request(rd.data.cs_set_channel_caption);
           break;
         case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
           if (client->is_superuser_authorized()) {

@@ -36,6 +36,10 @@ class serverconnection {
   void set_registered(char registered);
   void on_device_reconnect_request(
       void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request);
+  void on_set_channel_function_request(
+      TCS_SetChannelFunction *cs_set_channel_function);
+  void on_set_channel_caption_request(
+      TCS_SetChannelCaption *cs_set_channel_caption);
 
  protected:
   unsigned int client_ipv4;
