@@ -87,7 +87,6 @@ class supla_device : public cdbase {
   bool get_channel_state(int SenderID, TCSD_ChannelStateRequest *request);
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
-
 };
 
 #endif /* DEVICE_H_ */
