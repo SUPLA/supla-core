@@ -141,7 +141,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
   ASSERT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
   ASSERT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
-
+  ASSERT_EQ((unsigned int)409, sizeof(TCS_SetChannelCaption));
+  ASSERT_EQ((unsigned int)410, sizeof(TSC_SetChannelCaptionResult));
+  ASSERT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
   ASSERT_EQ((unsigned int)53, sizeof(TCalCfg_ZWave_Node));
   ASSERT_LE(sizeof(TCalCfg_ZWave_Node),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);

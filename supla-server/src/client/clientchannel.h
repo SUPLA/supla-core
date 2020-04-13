@@ -69,10 +69,10 @@ class supla_client_channel : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannelValue *channel_value, supla_client *client);
   bool proto_get(TSC_SuplaChannelExtendedValue *cev, supla_client *client);
   bool get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg);
-  bool funclist_contains_function(int funcList, int func);
-  bool set_function(int new_function, bool *not_allowed);
   int getType();
   int getFunc();
+  void setFunc(int Func);
+  void setCaption(const char *Caption);
   int getDeviceId();
   short getManufacturerID();
   short getProductID();

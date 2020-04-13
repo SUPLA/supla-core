@@ -201,7 +201,11 @@ class supla_user {
   bool device_get_channel_state(int SenderID, int DeviceId,
                                 TCSD_ChannelStateRequest *request);
 
-  channel_complex_value get_channel_complex_value(int DeviceId, int ChannelID);
+  channel_complex_value get_channel_complex_value(int ChannelID);
+
+  void set_channel_function(supla_client *sender, TCS_SetChannelFunction *func);
+  void set_channel_caption(supla_client *sender,
+                           TCS_SetChannelCaption *caption);
 
   supla_amazon_alexa *amazonAlexa(void);
   supla_google_home *googleHome(void);

@@ -162,7 +162,10 @@ class database : public dbcommon {
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
-  bool set_channel_function(int DeviceID, int ChannelID, int Func);
+  bool set_channel_function(int UserID, int ChannelID, int Func);
+  bool get_channel_type_and_funclist(int UserID, int ChannelID, int *Type,
+                                     unsigned int *FuncList);
+  bool set_channel_caption(int UserID, int ChannelID, char *Caption);
 };
 
 #endif /* DATABASE_H_ */

@@ -81,7 +81,12 @@ class supla_client : public cdbase {
   void on_device_channel_state_result(int ChannelID, TDSC_ChannelState *state);
 
   void get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request);
-  void set_channel_function(TCS_SetChannelFunction *func);
+  void set_channel_function(int ChannelId, int Func);
+  void set_channel_function_request(TCS_SetChannelFunction *func);
+  void set_channel_function_result(TSC_SetChannelFunctionResult *result);
+  void set_channel_caption(int ChannelId, char *Caption);
+  void set_channel_caption_request(TCS_SetChannelCaption *caption);
+  void set_channel_caption_result(TSC_SetChannelCaptionResult *result);
 
   virtual ~supla_client();
 };

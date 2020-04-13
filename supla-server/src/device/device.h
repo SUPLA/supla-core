@@ -38,6 +38,9 @@ class supla_device : public cdbase {
 
  public:
   explicit supla_device(serverconnection *svrconn);
+
+  static bool funclist_contains_function(int funcList, int func);
+
   char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        unsigned char proto_version);
@@ -83,6 +86,8 @@ class supla_device : public cdbase {
   void on_channel_state_result(TDSC_ChannelState *state);
   bool get_channel_state(int SenderID, TCSD_ChannelStateRequest *request);
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
+  void set_channel_function(int ChannelId, int Func);
+
 };
 
 #endif /* DEVICE_H_ */

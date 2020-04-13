@@ -767,7 +767,24 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
         case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
           if (rd.data.cs_set_channel_function != NULL) {
-            client->set_channel_function(rd.data.cs_set_channel_function);
+            client->set_channel_function_request(
+                rd.data.cs_set_channel_function);
+          }
+          break;
+        case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
+          if (rd.data.cs_set_channel_caption != NULL) {
+            if (rd.data.cs_set_channel_caption->CaptionSize > 0) {
+              if (rd.data.cs_set_channel_caption->CaptionSize >
+                  SUPLA_CHANNEL_CAPTION_MAXSIZE) {
+                rd.data.cs_set_channel_caption->CaptionSize =
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE;
+              }
+              rd.data.cs_set_channel_caption
+                  ->Caption[rd.data.cs_set_channel_caption->CaptionSize - 1] =
+                  0;
+            }
+
+            client->set_channel_caption_request(rd.data.cs_set_channel_caption);
           }
           break;
         case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:

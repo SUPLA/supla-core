@@ -57,52 +57,61 @@ namespace {
     srpc = NULL;                                                    \
   }
 
-#define SRPC_CALL_BASIC_TEST_WITH_CAPTION(                           \
-    spc_function, structure_name, call_id, expected_data_size1,      \
-    expected_data_size2, rd_data_variable, caption_max_size)         \
-  TEST_F(SrpcTest, spc_function##_with_over_size) {                  \
-    data_read_result = -1;                                           \
-    srpc = srpcInit();                                               \
-    ASSERT_FALSE(expected_data_size1 == expected_data_size2);        \
-    ASSERT_FALSE(srpc == NULL);                                      \
-    DECLARE_WITH_RANDOM(structure_name, param);                      \
-    param.CaptionSize = caption_max_size + 1;                        \
-    ASSERT_EQ(spc_function(srpc, &param), 0);                        \
-    srpc_free(srpc);                                                 \
-    srpc = NULL;                                                     \
-  }                                                                  \
-                                                                     \
-  TEST_F(SrpcTest, spc_function##_with_minimum_size) {               \
-    data_read_result = -1;                                           \
-    srpc = srpcInit();                                               \
-    ASSERT_FALSE(srpc == NULL);                                      \
-    DECLARE_WITH_RANDOM(structure_name, param);                      \
-    param.CaptionSize = 0;                                           \
-    ASSERT_GT(spc_function(srpc, &param), 0);                        \
-    SendAndReceive(call_id, expected_data_size1);                    \
-    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);               \
-    ASSERT_EQ(0, memcmp(cr_rd.data.rd_data_variable, &param,         \
-                        sizeof(structure_name) - caption_max_size)); \
-    free(cr_rd.data.rd_data_variable);                               \
-    srpc_free(srpc);                                                 \
-    srpc = NULL;                                                     \
-  }                                                                  \
-                                                                     \
-  TEST_F(SrpcTest, spc_function##_with_full_size) {                  \
-    data_read_result = -1;                                           \
-    srpc = srpcInit();                                               \
-    ASSERT_FALSE(srpc == NULL);                                      \
-    DECLARE_WITH_RANDOM(structure_name, param);                      \
-    param.CaptionSize = caption_max_size;                            \
-    ASSERT_GT(spc_function(srpc, &param), 0);                        \
-    SendAndReceive(call_id, expected_data_size2);                    \
-    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);               \
-    ASSERT_EQ(0, memcmp(cr_rd.data.rd_data_variable, &param,         \
-                        sizeof(structure_name)));                    \
-    free(cr_rd.data.rd_data_variable);                               \
-    srpc_free(srpc);                                                 \
-    srpc = NULL;                                                     \
+#define SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(                                \
+    spc_function, structure_name, call_id, expected_data_size1,              \
+    expected_data_size2, rd_data_variable, max_size, subparam_name,          \
+    size_subparam_name)                                                      \
+  TEST_F(SrpcTest, spc_function##_with_over_size) {                          \
+    data_read_result = -1;                                                   \
+    srpc = srpcInit();                                                       \
+    ASSERT_FALSE(expected_data_size1 == expected_data_size2);                \
+    ASSERT_FALSE(srpc == NULL);                                              \
+    DECLARE_WITH_RANDOM(structure_name, param);                              \
+    param.size_subparam_name = max_size + 1;                                 \
+    ASSERT_EQ(spc_function(srpc, &param), 0);                                \
+    srpc_free(srpc);                                                         \
+    srpc = NULL;                                                             \
+  }                                                                          \
+                                                                             \
+  TEST_F(SrpcTest, spc_function##_with_minimum_size) {                       \
+    data_read_result = -1;                                                   \
+    srpc = srpcInit();                                                       \
+    ASSERT_FALSE(srpc == NULL);                                              \
+    DECLARE_WITH_RANDOM(structure_name, param);                              \
+    param.size_subparam_name = 0;                                            \
+    ASSERT_GT(spc_function(srpc, &param), 0);                                \
+    SendAndReceive(call_id, expected_data_size1);                            \
+    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);                       \
+    ASSERT_EQ(0,                                                             \
+              memcmp(cr_rd.data.rd_data_variable, &param,                    \
+                     sizeof(structure_name) - sizeof(param.subparam_name))); \
+    free(cr_rd.data.rd_data_variable);                                       \
+    srpc_free(srpc);                                                         \
+    srpc = NULL;                                                             \
+  }                                                                          \
+                                                                             \
+  TEST_F(SrpcTest, spc_function##_with_full_size) {                          \
+    data_read_result = -1;                                                   \
+    srpc = srpcInit();                                                       \
+    ASSERT_FALSE(srpc == NULL);                                              \
+    DECLARE_WITH_RANDOM(structure_name, param);                              \
+    param.size_subparam_name = max_size;                                     \
+    ASSERT_GT(spc_function(srpc, &param), 0);                                \
+    SendAndReceive(call_id, expected_data_size2);                            \
+    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);                       \
+    ASSERT_EQ(0, memcmp(cr_rd.data.rd_data_variable, &param,                 \
+                        sizeof(structure_name)));                            \
+    free(cr_rd.data.rd_data_variable);                                       \
+    srpc_free(srpc);                                                         \
+    srpc = NULL;                                                             \
   }
+
+#define SRPC_CALL_BASIC_TEST_WITH_CAPTION(                        \
+    spc_function, structure_name, call_id, expected_data_size1,   \
+    expected_data_size2, rd_data_variable, max_size)              \
+  SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(                           \
+      spc_function, structure_name, call_id, expected_data_size1, \
+      expected_data_size2, rd_data_variable, max_size, Caption, CaptionSize)
 
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
@@ -375,6 +384,8 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
                  SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
                  SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+                 SUPLA_CS_CALL_SET_CHANNEL_CAPTION,
+                 SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT,
                  SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
                  SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
@@ -382,6 +393,8 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
                  SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
+                 SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
+                 SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -3311,6 +3324,22 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
                      sc_set_channel_function_result);
 
 //---------------------------------------------------------
+// SET CHANNEL CAPTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_caption,
+                                  TCS_SetChannelCaption,
+                                  SUPLA_CS_CALL_SET_CHANNEL_CAPTION, 31, 432,
+                                  cs_set_channel_caption,
+                                  SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
+                                  TSC_SetChannelCaptionResult,
+                                  SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
+                                  433, sc_set_channel_caption_result,
+                                  SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+//---------------------------------------------------------
 // CLIENTS RECONNECT REQUEST
 //---------------------------------------------------------
 
@@ -3349,5 +3378,19 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_device_reconnect_request_result,
                      TSC_DeviceReconnectRequestResult,
                      SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT, 28,
                      sc_device_reconnect_request_result);
+
+//---------------------------------------------------------
+// GET CHANNEL FUNCTIONS
+//---------------------------------------------------------
+
+SRPC_CALL_WITH_NO_DATA(srpc_ds_async_get_channel_functions,
+                       SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
+                                     TSD_ChannelFunctions,
+                                     SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
+                                     24, 536, sd_channel_functions,
+                                     SUPLA_CHANNELMAXCOUNT, Functions,
+                                     ChannelCount);
 
 }  // namespace

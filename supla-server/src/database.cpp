@@ -2337,10 +2337,20 @@ bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
   return result;
 }
 
-bool database::set_channel_function(int DeviceID, int ChannelID, int Func) {
+bool database::set_channel_function(int UserID, int ChannelID, int Func) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_set_channel_function`(%i, %i, %i)",
-           DeviceID, ChannelID, Func);
+           UserID, ChannelID, Func);
 
   return query(sql, true) == 0;
+}
+
+bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
+                                             int *Type,
+                                             unsigned int *FuncList) {
+  return false;
+}
+
+bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
+  return false;
 }

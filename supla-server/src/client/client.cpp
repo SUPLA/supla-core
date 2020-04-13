@@ -474,6 +474,34 @@ void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
   channels->get_channel_basic_cfg(getSvrConn()->srpc(), request);
 }
 
-void supla_client::set_channel_function(TCS_SetChannelFunction *func) {
-  channels->set_channel_function(getSvrConn()->srpc(), func);
+void supla_client::set_channel_function(int ChannelId, int Func) {
+  channels->set_channel_function(ChannelId, Func);
+}
+
+void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
+  getUser()->set_channel_function(this, func);
+}
+
+void supla_client::set_channel_function_result(
+    TSC_SetChannelFunctionResult *result) {
+  if (result == NULL) {
+    return;
+  }
+  srpc_sc_async_set_channel_function_result(getSvrConn()->srpc(), result);
+}
+
+void supla_client::set_channel_caption(int ChannelId, char *Caption) {
+  channels->set_channel_caption(ChannelId, Caption);
+}
+
+void supla_client::set_channel_caption_request(TCS_SetChannelCaption *caption) {
+  getUser()->set_channel_caption(this, caption);
+}
+
+void supla_client::set_channel_caption_result(
+    TSC_SetChannelCaptionResult *result) {
+  if (result == NULL) {
+    return;
+  }
+  srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
 }

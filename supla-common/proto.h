@@ -211,6 +211,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT 610    // ver. >= 12
 #define SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS 620              // ver. >= 12
 #define SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT 630       // ver. >= 12
+#define SUPLA_CS_CALL_SET_CHANNEL_CAPTION 640                // ver. >= 12
+#define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650         // ver. >= 12
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -631,13 +633,6 @@ typedef struct {
   TDS_SuplaDeviceChannel_C
       channels[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
 } TDS_SuplaRegisterDevice_E;            // ver. >= 10
-
-typedef struct {
-  // server -> device
-
-  unsigned char channel_count;
-  _supla_int_t functions[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
-} TSD_ChannelFunctions;                           // ver. >= 12
 
 typedef struct {
   // server -> device
@@ -1402,7 +1397,7 @@ typedef struct {
 
 typedef struct {
   _supla_int_t ChannelID;
-} TCS_ChannelBasicCfgRequest;
+} TCS_ChannelBasicCfgRequest;  // v. >= 12
 
 typedef struct {
   char DeviceName[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
@@ -1418,48 +1413,71 @@ typedef struct {
   _supla_int_t Func;
   union {
     _supla_int_t FuncList;
-    _supla_int_t Param;  // v. >= 12
+    _supla_int_t Param;
   };
   unsigned _supla_int_t ChannelFlags;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_ChannelBasicCfg;
+} TSC_ChannelBasicCfg;                          // v. >= 12
 
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Func;
-} TCS_SetChannelFunction;
+} TCS_SetChannelFunction;  // v. >= 12
 
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Func;
   unsigned char ResultCode;
-} TSC_SetChannelFunctionResult;
+} TSC_SetChannelFunctionResult;  // v. >= 12
+
+typedef struct {
+  _supla_int_t ChannelID;
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
+} TCS_SetChannelCaption;                        // v. >= 12
+
+typedef struct {
+  _supla_int_t ChannelID;
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
+  unsigned char ResultCode;
+} TSC_SetChannelCaptionResult;  // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;
-} TSC_ClientsReconnectRequestResult;
+} TSC_ClientsReconnectRequestResult;  // v. >= 12
 
 typedef struct {
   // Disabled: 0
   // Ignore: <0
   _supla_int_t IODeviceRegistrationTimeSec;
   _supla_int_t ClientRegistrationTimeSec;
-} TCS_SetRegistrationEnabled;
+} TCS_SetRegistrationEnabled;  // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;
-} TSC_SetRegistrationEnabledResult;
+} TSC_SetRegistrationEnabledResult;  // v. >= 12
 
 typedef struct {
   int DeviceID;
-} TCS_DeviceReconnectRequest;
+} TCS_DeviceReconnectRequest;  // v. >= 12
 
 typedef struct {
   int DeviceID;
   unsigned char ResultCode;
-} TSC_DeviceReconnectRequestResult;
+} TSC_DeviceReconnectRequestResult;  // v. >= 12
+
+typedef struct {
+  // server -> device
+
+  unsigned char ChannelCount;
+  _supla_int_t Functions[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+  // Functions[ChannelNumber]
+} TSD_ChannelFunctions;  // ver. >= 12
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2

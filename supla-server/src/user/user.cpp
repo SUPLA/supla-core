@@ -1275,8 +1275,7 @@ void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
   safe_array_unlock(complex_value_functions_arr);
 }
 
-channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
-                                                            int ChannelID) {
+channel_complex_value supla_user::get_channel_complex_value(int ChannelID) {
   channel_complex_value value;
   memset(&value, 0, sizeof(channel_complex_value));
 
@@ -1295,6 +1294,110 @@ channel_complex_value supla_user::get_channel_complex_value(int DeviceId,
   }
 
   return value;
+}
+
+void supla_user::set_channel_function(supla_client *sender,
+                                      TCS_SetChannelFunction *func) {
+  if (sender == NULL || func == NULL) {
+    return;
+  }
+
+  TSC_SetChannelFunctionResult result;
+  memset(&result, 0, sizeof(TSC_SetChannelFunctionResult));
+  result.ChannelID = func->ChannelID;
+  result.Func = func->Func;
+  result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
+
+  if (!sender->is_superuser_authorized()) {
+    result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+  } else {
+    database *db = new database();
+
+    if (db->connect()) {
+      int Type = 0;
+      unsigned int FuncList = 0;
+      if (!db->get_channel_type_and_funclist(getUserID(), func->ChannelID,
+                                             &Type, &FuncList)) {
+        result.ResultCode = SUPLA_RESULTCODE_CHANNELNOTFOUND;
+      } else {
+        if (Type != SUPLA_CHANNELTYPE_BRIDGE ||
+            !supla_device::funclist_contains_function(FuncList, func->Func)) {
+          result.ResultCode = SUPLA_RESULTCODE_NOT_ALLOWED;
+        } else {
+          if (db->set_channel_function(getUserID(), func->ChannelID,
+                                       func->Func)) {
+            result.ResultCode = SUPLA_RESULTCODE_TRUE;
+          } else {
+            result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
+          }
+        }
+      }
+    } else {
+      result.ResultCode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
+    }
+    delete db;
+  }
+
+  if (result.ResultCode == SUPLA_RESULTCODE_TRUE) {
+    supla_device *device = device_container->findByChannelID(func->ChannelID);
+    if (device != NULL) {
+      device->set_channel_function(func->ChannelID, func->Func);
+      device->releasePtr();
+    }
+
+    supla_client *client = NULL;
+
+    for (int a = 0; a < client_container->count(); a++)
+      if (NULL != (client = client_container->get(a))) {
+        client->set_channel_function(func->ChannelID, func->Func);
+        client->releasePtr();
+      }
+  }
+
+  sender->set_channel_function_result(&result);
+}
+
+void supla_user::set_channel_caption(supla_client *sender,
+                                     TCS_SetChannelCaption *caption) {
+  if (sender == NULL || caption == NULL) {
+    return;
+  }
+
+  TSC_SetChannelCaptionResult result;
+  memset(&result, 0, sizeof(TSC_SetChannelCaptionResult));
+  result.ChannelID = caption->ChannelID;
+  memcpy(result.Caption, caption->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
+
+  if (!sender->is_superuser_authorized()) {
+    result.ResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+  } else {
+    database *db = new database();
+
+    if (db->connect()) {
+      if (db->set_channel_caption(getUserID(), caption->ChannelID,
+                                  caption->Caption)) {
+        result.ResultCode = SUPLA_RESULTCODE_TRUE;
+      } else {
+        result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
+      }
+    } else {
+      result.ResultCode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
+    }
+    delete db;
+  }
+
+  if (result.ResultCode == SUPLA_RESULTCODE_TRUE) {
+    supla_client *client = NULL;
+
+    for (int a = 0; a < client_container->count(); a++)
+      if (NULL != (client = client_container->get(a))) {
+        client->set_channel_caption(caption->ChannelID, caption->Caption);
+        client->releasePtr();
+      }
+  }
+
+  sender->set_channel_caption_result(&result);
 }
 
 supla_amazon_alexa *supla_user::amazonAlexa(void) { return amazon_alexa; }

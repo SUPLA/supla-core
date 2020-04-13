@@ -444,6 +444,8 @@ int supla_device_channel::getNumber(void) { return Number; }
 
 int supla_device_channel::getFunc(void) { return Func; }
 
+void supla_device_channel::setFunc(int Func) { this->Func = Func; }
+
 int supla_device_channel::getType(void) { return Type; }
 
 int supla_device_channel::getParam1(void) { return Param1; }
@@ -1658,4 +1660,12 @@ std::list<int> supla_device_channels::get_channel_ids(void) {
   safe_array_unlock(arr);
 
   return result;
+}
+
+void supla_device_channels::set_channel_function(int ChannelId, int Func) {
+  supla_device_channel *channel = find_channel(ChannelId);
+
+  if (channel) {
+    channel->setFunc(Func);
+  }
 }

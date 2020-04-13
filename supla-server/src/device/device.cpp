@@ -46,6 +46,30 @@ supla_device::~supla_device() {
   delete channels;
 }
 
+// static
+bool supla_device::funclist_contains_function(int funcList, int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATE) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_LIGHTSWITCH) > 0;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return (funcList & SUPLA_BIT_FUNC_STAIRCASETIMER) > 0;
+  }
+
+  return false;
+}
+
 bool supla_device::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                                    const char Email[SUPLA_EMAIL_MAXSIZE],
                                    const char AuthKey[SUPLA_AUTHKEY_SIZE],
@@ -552,4 +576,8 @@ bool supla_device::get_channel_state(int SenderID,
 bool supla_device::get_channel_complex_value(channel_complex_value *value,
                                              int ChannelID) {
   return channels->get_channel_complex_value(value, ChannelID);
+}
+
+void supla_device::set_channel_function(int ChannelId, int Func) {
+  channels->set_channel_function(ChannelId, Func);
 }
