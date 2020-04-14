@@ -50,8 +50,7 @@ int database::cfg_get_port(void) { return scfg_int(CFG_MYSQL_PORT); }
 
 bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
                     int *UserID, bool *is_enabled) {
-  if (_mysql == NULL || ID == 0 || strnlen(PWD, PWD_MAXSIZE) < 1)
-    return false;
+  if (_mysql == NULL || ID == 0 || strnlen(PWD, PWD_MAXSIZE) < 1) return false;
 
   MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
@@ -85,8 +84,7 @@ bool database::location_auth(int LocationID, char *LocationPWD, int *UserID,
   return auth(
       "SELECT id, user_id, enabled FROM `supla_location` WHERE id = ? AND "
       "password = ?",
-      LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID,
-      is_enabled);
+      LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID, is_enabled);
 }
 
 bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
@@ -2315,9 +2313,92 @@ bool database::set_channel_function(int UserID, int ChannelID, int Func) {
 bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
                                              int *Type,
                                              unsigned int *FuncList) {
-  return false;
+  if (Type == NULL || FuncList == NULL) {
+    return false;
+  }
+
+  *Type = 0;
+  *FuncList = 0;
+
+  bool result = false;
+  char sql[] =
+      "SELECT type, flist FROM `supla_dev_channel` WHERE user_id = ? AND id = "
+      "?";
+
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&ChannelID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    MYSQL_BIND rbind[2];
+    memset(rbind, 0, sizeof(rbind));
+
+    my_bool flist_is_null = true;
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)Type;
+
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)FuncList;
+    rbind[1].is_null = &flist_is_null;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        if (flist_is_null) {
+          *FuncList = 0;
+        }
+        result = true;
+      }
+    }
+  }
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+
+  return result;
 }
 
 bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
-  return false;
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  my_bool caption_is_null = true;
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&ChannelID;
+
+  pbind[2].is_null = &caption_is_null;
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer_length =
+      Caption == NULL ? 0 : strnlen(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+  if (pbind[2].buffer_length > 0) {
+    pbind[2].buffer = Caption;
+    caption_is_null = false;
+  }
+
+  bool result = false;
+  MYSQL_STMT *stmt = NULL;
+
+  if (stmt_execute((void **)&stmt, "CALL `supla_set_channel_function`(?,?,?)",
+                   pbind, 3, true)) {
+    result = true;
+  }
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+
+  return result;
 }

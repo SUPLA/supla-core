@@ -581,3 +581,7 @@ bool supla_device::get_channel_complex_value(channel_complex_value *value,
 void supla_device::set_channel_function(int ChannelId, int Func) {
   channels->set_channel_function(ChannelId, Func);
 }
+
+void supla_device::get_channel_functions_request(void *srpc) {
+  channels->get_functions_request(srpc);
+}

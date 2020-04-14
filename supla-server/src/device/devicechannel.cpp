@@ -1669,3 +1669,25 @@ void supla_device_channels::set_channel_function(int ChannelId, int Func) {
     channel->setFunc(Func);
   }
 }
+
+void supla_device_channels::get_functions_request(void *srpc) {
+  TSD_ChannelFunctions result;
+  memset(&result, 0, sizeof(TSD_ChannelFunctions));
+
+  safe_array_lock(arr);
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    supla_device_channel *channel =
+        static_cast<supla_device_channel *>(safe_array_get(arr, a));
+    if (channel && channel->getNumber() >= 0 &&
+        channel->getNumber() < SUPLA_CHANNELMAXCOUNT) {
+      if (result.ChannelCount >= channel->getNumber()) {
+        result.ChannelCount = channel->getNumber() + 1;
+      }
+
+      result.Functions[channel->getNumber()] = channel->getFunc();
+    }
+  }
+  safe_array_unlock(arr);
+
+  srpc_sd_async_get_channel_functions_result(srpc, &result);
+}

@@ -283,6 +283,7 @@ class supla_device_channels {
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
+  void get_functions_request(void *srpc);
 };
 
 #endif /* DEVICECHANNEL_H_ */

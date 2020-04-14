@@ -35,8 +35,8 @@ class database : public dbcommon {
   virtual char *cfg_get_database(void);
   virtual int cfg_get_port(void);
 
-  bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE,
-            int *UserID, bool *is_enabled);
+  bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
+            bool *is_enabled);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
