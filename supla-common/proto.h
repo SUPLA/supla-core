@@ -104,13 +104,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #endif
 #define SUPLA_RC_MAX_DEV_COUNT 50
 #define SUPLA_SOFTVER_MAXSIZE 21
-#define SUPLA_SOFTVERHEX_MAXSIZE 43
 
 #define SUPLA_GUID_SIZE 16
 #define SUPLA_GUID_HEXSIZE 33
-#define SUPLA_LOCATION_PWDHEX_MAXSIZE 65
 #define SUPLA_LOCATION_PWD_MAXSIZE 33
-#define SUPLA_ACCESSID_PWDHEX_MAXSIZE 65
 #define SUPLA_ACCESSID_PWD_MAXSIZE 33
 #define SUPLA_LOCATION_CAPTION_MAXSIZE 401
 #define SUPLA_LOCATIONPACK_MAXCOUNT 20
@@ -120,9 +117,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_URL_PATH_MAXSIZE 101
 #define SUPLA_SERVER_NAME_MAXSIZE 65
 #define SUPLA_EMAIL_MAXSIZE 256                     // ver. >= 7
-#define SUPLA_EMAILHEX_MAXSIZE 513                  // ver. >= 7
 #define SUPLA_PASSWORD_MAXSIZE 64                   // ver. >= 10
-#define SUPLA_PASSWORDHEX_MAXSIZE 129               // ver. >= 10
 #define SUPLA_AUTHKEY_SIZE 16                       // ver. >= 7
 #define SUPLA_AUTHKEY_HEXSIZE 33                    // ver. >= 7
 #define SUPLA_OAUTH_TOKEN_MAXSIZE 256               // ver. >= 10
@@ -255,9 +250,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE 2  // ver. >= 10
 
 #define SUPLA_DEVICE_NAME_MAXSIZE 201
-#define SUPLA_DEVICE_NAMEHEX_MAXSIZE 401
 #define SUPLA_CLIENT_NAME_MAXSIZE 201
-#define SUPLA_CLIENT_NAMEHEX_MAXSIZE 401
 #define SUPLA_SENDER_NAME_MAXSIZE 201
 
 #ifdef __AVR__
