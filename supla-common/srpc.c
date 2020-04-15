@@ -1769,7 +1769,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_functions_result(
   }
 
   return srpc_async_call(_srpc, SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
-                         result, size);
+                         (char *)result, size);
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/
