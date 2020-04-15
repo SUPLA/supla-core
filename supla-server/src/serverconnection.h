@@ -22,6 +22,7 @@
 #include <stddef.h>
 #include <sys/time.h>
 #include "eh.h"
+#include "srpc.h"
 
 #define LOCAL_IPV4_ARRAY_SIZE 5
 
@@ -40,6 +41,9 @@ class serverconnection {
       TCS_SetChannelFunction *cs_set_channel_function);
   void on_set_channel_caption_request(
       TCS_SetChannelCaption *cs_set_channel_caption);
+  void on_register_device_request(void *_srpc, unsigned int call_type,
+                                  unsigned char proto_version,
+                                  TsrpcReceivedData *rd);
 
  protected:
   unsigned int client_ipv4;
