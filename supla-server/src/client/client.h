@@ -47,7 +47,7 @@ class supla_client : public cdbase {
                        const char Email[SUPLA_EMAIL_MAXSIZE],
                        const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
                        database *db);
-  void superuser_authorize(const char Email[SUPLA_EMAIL_MAXSIZE],
+  void superuser_authorize(int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
                            const char Password[SUPLA_PASSWORD_MAXSIZE],
                            bool *connection_failed);
 

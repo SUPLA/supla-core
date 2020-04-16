@@ -162,7 +162,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
 
           if (pwd_is_set) {
-            superuser_authorize(register_client_d->Email,
+            superuser_authorize(UserID, register_client_d->Email,
                                 register_client_d->Password, NULL);
           }
 
@@ -377,9 +377,9 @@ void supla_client::oauth_token_request(void) {
 }
 
 void supla_client::superuser_authorize(
-    const char Email[SUPLA_EMAIL_MAXSIZE],
+    int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
     const char Password[SUPLA_PASSWORD_MAXSIZE], bool *connection_failed) {
-  if (Email == NULL || Password == NULL ||
+  if (UserID == 0 || Email == NULL || Password == NULL ||
       strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0 ||
       strnlen(Password, SUPLA_PASSWORD_MAXSIZE) == 0) {
     lck_lock(lck);
@@ -388,28 +388,26 @@ void supla_client::superuser_authorize(
     return;
   }
 
-  if (getUser()) {
-    database *db = new database();
+  database *db = new database();
 
-    if (db->connect() == true) {
-      if (db->superuser_authorization(getUser()->getUserID(), Email,
-                                      Password)) {
-        lck_lock(lck);
-        superuser_authorized = true;
-        lck_unlock(lck);
-      }
-    } else if (connection_failed) {
-      *connection_failed = true;
+  if (db->connect() == true) {
+    if (db->superuser_authorization(UserID, Email, Password)) {
+      lck_lock(lck);
+      superuser_authorized = true;
+      lck_unlock(lck);
     }
-
-    delete db;
+  } else if (connection_failed) {
+    *connection_failed = true;
   }
+
+  delete db;
 }
 
 void supla_client::superuser_authorization_request(
     TCS_SuperUserAuthorizationRequest *request) {
   bool connection_failed = false;
-  superuser_authorize(request ? request->Email : NULL,
+
+  superuser_authorize(getUserID(), request ? request->Email : NULL,
                       request ? request->Password : NULL, &connection_failed);
 
   TSC_SuperUserAuthorizationResult result;
