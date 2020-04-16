@@ -82,7 +82,7 @@ void IntegrationTest::Init(int argc, char **argv) {
       IntegrationTest::dbHost = argv[a + 1];
 
     } else if (strcmp("-h", argv[a]) == 0 || strcmp("--help", argv[a]) == 0) {
-      printf(kHelpMessage);
+      printf("%s", kHelpMessage);
     }
   }
 }
