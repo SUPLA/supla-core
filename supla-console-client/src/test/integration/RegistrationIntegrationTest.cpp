@@ -148,9 +148,8 @@ TEST_F(RegistrationIntegrationTest, RegistrationWhenClientLimitIsExceeded) {
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(
-    RegistrationIntegrationTest,
-    RegistrationAsSecondClientWhenRegistrationIsDisabledWithSuperuserIncorrectCredentials) {
+TEST_F(RegistrationIntegrationTest,
+       RegAsSecondClientWhenRegIsDisabledWithSuperuserIncorrectCredentials) {
   GUID[0] = 10;
   snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "supla@test");
   expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
@@ -158,9 +157,8 @@ TEST_F(
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(
-    RegistrationIntegrationTest,
-    RegistrationAsSecondClientWhenRegistrationIsDisabledWithSuperuserCredentials) {
+TEST_F(RegistrationIntegrationTest,
+       RegAsSecondClientWhenRegIsDisabledWithSuperuserCredentials) {
   GUID[0] = 10;
   snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "supla!test");
   initTestDatabase();
