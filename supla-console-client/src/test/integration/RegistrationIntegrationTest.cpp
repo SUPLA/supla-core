@@ -125,4 +125,17 @@ TEST_F(RegistrationIntegrationTest, RegistrationWhenClientIsDisabled) {
   iterateUntilDefaultTimeout();
 }
 
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess) {
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationUsingAccessID) {
+  Email[0] = 0;
+  AccessID = 2;
+  snprintf(AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "3311dbb5");
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
 } /* namespace testing */
