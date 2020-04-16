@@ -19,17 +19,25 @@
 #ifndef INTEGRATIONTEST_H_
 #define INTEGRATIONTEST_H_
 
-#include "supla-client.h"
 #include "gtest/gtest.h"
+#include "supla-client.h"
 
 namespace testing {
 
 class IntegrationTest : public Test {
  private:
   void *sclient;
+  static char *sqlDir;
+  static char *dbName;
+  static char *dbHost;
+  static char *dbUser;
+  static char defaultDbName[];
+  static char defaultDbHost[];
+  static char defaultDbUser[];
+  bool iterationCancelled;
+
   void clientInit();
   void clientFree();
-  bool iterationCancelled;
 
  protected:
   void iterateUntilTimeout(unsigned int timeoutMS);
@@ -37,14 +45,17 @@ class IntegrationTest : public Test {
   void cancelIteration(void);
   void fillArrayWithOrdinalNumbers(char *arr, int arr_size, char start);
   virtual void beforeClientInit(TSuplaClientCfg *scc);
-
+  void runSqlScript(const char *script);
+  void initTestDatabase();
 
  public:
+  static void Init(int argc, char **argv);
   IntegrationTest();
   virtual ~IntegrationTest();
   virtual void onConnected();
   virtual void onDisconnected();
   virtual void onConnectionError(int code);
+  virtual void onRegistered(TSC_SuplaRegisterClientResult_B *result);
   virtual void onRegistrationError(int code);
 };
 

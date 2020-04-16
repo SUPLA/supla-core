@@ -18,8 +18,17 @@
 
 #include "IntegrationTest.h"
 #include "log.h"
+#include "tools.h"
 
 namespace testing {
+
+char *IntegrationTest::sqlDir = NULL;
+char IntegrationTest::defaultDbName[] = "supla_test";
+char IntegrationTest::defaultDbHost[] = "db";
+char IntegrationTest::defaultDbUser[] = "supla";
+char *IntegrationTest::dbName = IntegrationTest::defaultDbName;
+char *IntegrationTest::dbHost = IntegrationTest::defaultDbHost;
+char *IntegrationTest::dbUser = IntegrationTest::defaultDbUser;
 
 void integration_test_on_connected(void *_suplaclient, void *instance) {
   static_cast<IntegrationTest *>(instance)->onConnected();
@@ -34,9 +43,48 @@ void integration_test_on_connerror(void *_suplaclient, void *instance,
   static_cast<IntegrationTest *>(instance)->onConnectionError(code);
 }
 
+void integration_test_on_registered(void *_suplaclient, void *instance,
+                                    TSC_SuplaRegisterClientResult_B *result) {
+  static_cast<IntegrationTest *>(instance)->onRegistered(result);
+}
+
 void integration_test_on_registererror(void *_suplaclient, void *instance,
                                        int code) {
   static_cast<IntegrationTest *>(instance)->onRegistrationError(code);
+}
+
+// static
+void IntegrationTest::Init(int argc, char **argv) {
+  const char kHelpMessage[] =
+      "\n"
+      "Arguments:\n"
+      "   -h         Print this help\n"
+      "   -dbname    Database name\n (default: supla_test)\n"
+      "   -dbhost    Database server hostname\n (default: db)\n"
+      "   -dbuser    Database server username\n (default: supla)\n"
+      "   -sqldir    Specifies the path of the sql script directory\n\n";
+
+  for (int a = 1; a < argc; a++) {
+    if (strcmp("-sqldir", argv[a]) == 0 && a < argc - 1 &&
+        strlen(argv[a + 1]) > 0) {
+      IntegrationTest::sqlDir = argv[a + 1];
+
+    } else if (strcmp("-dbname", argv[a]) == 0 && a < argc - 1 &&
+               strlen(argv[a + 1]) > 0) {
+      IntegrationTest::dbName = argv[a + 1];
+
+    } else if (strcmp("-dbuser", argv[a]) == 0 && a < argc - 1 &&
+               strlen(argv[a + 1]) > 0) {
+      IntegrationTest::dbUser = argv[a + 1];
+
+    } else if (strcmp("-dbhost", argv[a]) == 0 && a < argc - 1 &&
+               strlen(argv[a + 1]) > 0) {
+      IntegrationTest::dbHost = argv[a + 1];
+
+    } else if (strcmp("-h", argv[a]) == 0 || strcmp("--help", argv[a]) == 0) {
+      printf(kHelpMessage);
+    }
+  }
 }
 
 IntegrationTest::IntegrationTest() {
@@ -56,9 +104,11 @@ void IntegrationTest::clientInit() {
 
   scc.protocol_version = SUPLA_PROTO_VERSION;
 
-  snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Console client test");
+  snprintf(scc.Name, SUPLA_CLIENT_NAME_MAXSIZE, "Console Test Client");
   snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
   snprintf(scc.Email, SUPLA_EMAIL_MAXSIZE, "test@supla.org");
+
+  // Password "supla!test"
 
   fillArrayWithOrdinalNumbers(scc.clientGUID, SUPLA_GUID_SIZE, 0);
   fillArrayWithOrdinalNumbers(scc.AuthKey, SUPLA_AUTHKEY_SIZE, 0);
@@ -72,6 +122,7 @@ void IntegrationTest::clientInit() {
 
   scc.cb_on_connected = &integration_test_on_connected;
   scc.cb_on_connerror = &integration_test_on_connerror;
+  scc.cb_on_registered = &integration_test_on_registered;
   scc.cb_on_registererror = &integration_test_on_registererror;
 
   beforeClientInit(&scc);
@@ -93,7 +144,7 @@ void IntegrationTest::clientFree() {
 }
 
 void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
-  ASSERT_GT(timeoutMS, 0);
+  ASSERT_GT(timeoutMS, (unsigned int)0);
   iterationCancelled = false;
 
   clientFree();
@@ -122,6 +173,35 @@ void IntegrationTest::iterateUntilDefaultTimeout() {
   iterateUntilTimeout(5000);
 }
 
+void IntegrationTest::runSqlScript(const char *script) {
+  ASSERT_FALSE(script == NULL);
+  ASSERT_GT(strlen(script), (unsigned long)0);
+  char path[500];
+
+  if (IntegrationTest::sqlDir == NULL) {
+    snprintf(path, sizeof(path), "./%s", script);
+  } else {
+    snprintf(path, sizeof(path), "%s/%s", IntegrationTest::sqlDir, script);
+  }
+
+  if (st_file_exists(path) == 0) {
+    supla_log(LOG_ERR, "File %s not exists!", path);
+    ASSERT_TRUE(false);
+  }
+
+  char command[1000];
+  snprintf(command, sizeof(command), "mysql -u %s -h %s %s < %s",
+           IntegrationTest::dbUser, IntegrationTest::dbHost,
+           IntegrationTest::dbName, path);
+  supla_log(LOG_DEBUG, "%s", command);
+
+  ASSERT_EQ(system(command), 0);
+}
+
+void IntegrationTest::initTestDatabase() {
+  runSqlScript("TestDatabaseStructureAndData.sql");
+}
+
 void IntegrationTest::cancelIteration(void) { iterationCancelled = true; }
 
 void IntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {}
@@ -131,6 +211,11 @@ void IntegrationTest::onConnected() {}
 void IntegrationTest::onDisconnected() {}
 
 void IntegrationTest::onConnectionError(int code) { ASSERT_TRUE(false); }
+
+void IntegrationTest::onRegistered(TSC_SuplaRegisterClientResult_B *result) {
+  ASSERT_FALSE(result == NULL);
+  ASSERT_EQ(result->result_code, SUPLA_RESULTCODE_TRUE);
+}
 
 void IntegrationTest::onRegistrationError(int code) {}
 

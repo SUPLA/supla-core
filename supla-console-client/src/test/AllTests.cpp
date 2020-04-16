@@ -17,8 +17,10 @@
  */
 
 #include "gtest/gtest.h"
+#include "integration/IntegrationTest.h"
 
 int main(int argc, char **argv) {
+  ::testing::IntegrationTest::Init(argc, argv);
   ::testing::InitGoogleTest(&argc, argv);
 
   return RUN_ALL_TESTS();

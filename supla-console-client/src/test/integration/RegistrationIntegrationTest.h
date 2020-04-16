@@ -27,13 +27,17 @@ class RegistrationIntegrationTest : public IntegrationTest {
  protected:
   char GUID[SUPLA_GUID_SIZE];
   char AuthKey[SUPLA_AUTHKEY_SIZE];
+  char Email[SUPLA_EMAIL_MAXSIZE];
   bool sslEnabled;
   int expectedRegistrationErrorCode;
+  int AccessID;
+  char AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE];
 
  public:
   RegistrationIntegrationTest();
   virtual ~RegistrationIntegrationTest();
   virtual void beforeClientInit(TSuplaClientCfg *scc);
+  virtual void onRegistered(TSC_SuplaRegisterClientResult_B *result);
   virtual void onRegistrationError(int code);
 };
 

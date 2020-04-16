@@ -24,6 +24,10 @@ RegistrationIntegrationTest::RegistrationIntegrationTest() {
   sslEnabled = true;
   fillArrayWithOrdinalNumbers(GUID, SUPLA_GUID_SIZE, 0);
   fillArrayWithOrdinalNumbers(AuthKey, SUPLA_AUTHKEY_SIZE, 0);
+
+  snprintf(Email, SUPLA_EMAIL_MAXSIZE, "test@supla.org");
+  AccessID = 0;
+  memset(AccessIDpwd, 0, SUPLA_ACCESSID_PWD_MAXSIZE);
 }
 
 RegistrationIntegrationTest::~RegistrationIntegrationTest() {}
@@ -32,6 +36,15 @@ void RegistrationIntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {
   scc->ssl_enabled = sslEnabled;
   memcpy(scc->clientGUID, GUID, SUPLA_GUID_SIZE);
   memcpy(scc->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+  memcpy(scc->Email, Email, SUPLA_EMAIL_MAXSIZE);
+  scc->AccessID = AccessID;
+  memcpy(scc->AccessIDpwd, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE);
+}
+
+void RegistrationIntegrationTest::onRegistered(
+    TSC_SuplaRegisterClientResult_B *result) {
+  IntegrationTest::onRegistered(result);
+  cancelIteration();
 }
 
 void RegistrationIntegrationTest::onRegistrationError(int code) {
@@ -45,9 +58,55 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithBadGUID) {
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(RegistrationIntegrationTest, RegistrationWithBadauthKey) {
+TEST_F(RegistrationIntegrationTest, RegistrationWithBadGUID_NoSSL) {
+  memset(GUID, 0, SUPLA_GUID_SIZE);
+  sslEnabled = false;
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_GUID_ERROR;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithBadAuthKey) {
   memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
   expectedRegistrationErrorCode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithBadCredentials_Email) {
+  snprintf(Email, SUPLA_EMAIL_MAXSIZE, "noneistent@supla.org");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithBadCredentials_AccessID) {
+  Email[0] = 0;
+  AccessID = 1;
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest,
+       RegistrationWhenRegistrationIsDisabledAndThereIsNoAnyClientsRegistered) {
+  initTestDatabase();
+  runSqlScript("RemoveTestClient.sql");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest,
+       RegistrationWhenRegistrationIsEnabledAndThereIsNoAnyClientsRegistered) {
+  initTestDatabase();
+  runSqlScript("RemoveTestClient.sql");
+  runSqlScript("EnableClientRegistrationForTestUser.sql");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest,
+       RegistrationAsSecondClientWhenRegistrationIsEnabled) {
+  GUID[0] = 10;
+  initTestDatabase();
+  runSqlScript("EnableClientRegistrationForTestUser.sql");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
   iterateUntilDefaultTimeout();
 }
 
