@@ -44,6 +44,7 @@ void RegistrationIntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {
 void RegistrationIntegrationTest::onRegistered(
     TSC_SuplaRegisterClientResult_B *result) {
   IntegrationTest::onRegistered(result);
+  ASSERT_EQ(expectedRegistrationErrorCode, 0);
   cancelIteration();
 }
 
@@ -68,6 +69,13 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithBadGUID_NoSSL) {
 TEST_F(RegistrationIntegrationTest, RegistrationWithBadAuthKey) {
   memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
   expectedRegistrationErrorCode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithModifiedAuthKey) {
+  AuthKey[0] = 50;
+  initTestDatabase();
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
   iterateUntilDefaultTimeout();
 }
 
@@ -107,6 +115,13 @@ TEST_F(RegistrationIntegrationTest,
   initTestDatabase();
   runSqlScript("EnableClientRegistrationForTestUser.sql");
   expectedRegistrationErrorCode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWhenClientIsDisabled) {
+  initTestDatabase();
+  runSqlScript("DisableTestClient.sql");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_CLIENT_DISABLED;
   iterateUntilDefaultTimeout();
 }
 

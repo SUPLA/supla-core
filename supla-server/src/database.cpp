@@ -241,7 +241,7 @@ bool database::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
 
   if (ID == 0) ID = Client ? get_client_id(_UserID, GUID) : get_device_id(GUID);
 
-  if (ID == 0) {  // Yes. When client not exists then is authorized
+  if (ID == 0) {  // Yes. When client/device not exists then is authorized
     *UserID = _UserID;
     return true;
   }
