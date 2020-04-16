@@ -28,6 +28,7 @@ class RegistrationIntegrationTest : public IntegrationTest {
   char GUID[SUPLA_GUID_SIZE];
   char AuthKey[SUPLA_AUTHKEY_SIZE];
   char Email[SUPLA_EMAIL_MAXSIZE];
+  char Password[SUPLA_PASSWORD_MAXSIZE];
   bool sslEnabled;
   int expectedRegistrationErrorCode;
   int AccessID;

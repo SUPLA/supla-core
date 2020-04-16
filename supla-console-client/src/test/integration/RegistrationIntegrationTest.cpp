@@ -28,6 +28,7 @@ RegistrationIntegrationTest::RegistrationIntegrationTest() {
   snprintf(Email, SUPLA_EMAIL_MAXSIZE, "test@supla.org");
   AccessID = 0;
   memset(AccessIDpwd, 0, SUPLA_ACCESSID_PWD_MAXSIZE);
+  memset(Password, 0, Password[SUPLA_PASSWORD_MAXSIZE]);
 }
 
 RegistrationIntegrationTest::~RegistrationIntegrationTest() {}
@@ -37,6 +38,7 @@ void RegistrationIntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {
   memcpy(scc->clientGUID, GUID, SUPLA_GUID_SIZE);
   memcpy(scc->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
   memcpy(scc->Email, Email, SUPLA_EMAIL_MAXSIZE);
+  memcpy(scc->Password, Password, SUPLA_PASSWORD_MAXSIZE);
   scc->AccessID = AccessID;
   memcpy(scc->AccessIDpwd, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE);
 }
@@ -105,7 +107,6 @@ TEST_F(RegistrationIntegrationTest,
   initTestDatabase();
   runSqlScript("RemoveTestClient.sql");
   runSqlScript("EnableClientRegistrationForTestUser.sql");
-  expectedRegistrationErrorCode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
   iterateUntilDefaultTimeout();
 }
 
@@ -134,6 +135,34 @@ TEST_F(RegistrationIntegrationTest, RegistrationUsingAccessID) {
   Email[0] = 0;
   AccessID = 2;
   snprintf(AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "3311dbb5");
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWhenClientLimitIsExceeded) {
+  GUID[0] = 10;
+  initTestDatabase();
+  runSqlScript("EnableClientRegistrationForTestUser.sql");
+  runSqlScript("SetClientLimitToOne.sql");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED;
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(
+    RegistrationIntegrationTest,
+    RegistrationAsSecondClientWhenRegistrationIsDisabledWithSuperuserIncorrectCredentials) {
+  GUID[0] = 10;
+  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "supla@test");
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(
+    RegistrationIntegrationTest,
+    RegistrationAsSecondClientWhenRegistrationIsDisabledWithSuperuserCredentials) {
+  GUID[0] = 10;
+  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "supla!test");
   initTestDatabase();
   iterateUntilDefaultTimeout();
 }

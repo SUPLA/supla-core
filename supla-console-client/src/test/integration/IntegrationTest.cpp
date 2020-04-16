@@ -108,8 +108,6 @@ void IntegrationTest::clientInit() {
   snprintf(scc.SoftVer, SUPLA_SOFTVER_MAXSIZE, "1.0-Linux");
   snprintf(scc.Email, SUPLA_EMAIL_MAXSIZE, "test@supla.org");
 
-  // Password "supla!test"
-
   fillArrayWithOrdinalNumbers(scc.clientGUID, SUPLA_GUID_SIZE, 0);
   fillArrayWithOrdinalNumbers(scc.AuthKey, SUPLA_AUTHKEY_SIZE, 0);
 
