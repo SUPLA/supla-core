@@ -131,6 +131,12 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess) {
   iterateUntilDefaultTimeout();
 }
 
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_NoSSL) {
+  sslEnabled = false;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
 TEST_F(RegistrationIntegrationTest, RegistrationUsingAccessID) {
   Email[0] = 0;
   AccessID = 2;
