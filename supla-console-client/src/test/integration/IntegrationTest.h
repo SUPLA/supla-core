@@ -26,7 +26,6 @@ namespace testing {
 
 class IntegrationTest : public Test {
  private:
-  void *sclient;
   static char *sqlDir;
   static char *dbName;
   static char *dbHost;
@@ -40,6 +39,7 @@ class IntegrationTest : public Test {
   void clientFree();
 
  protected:
+  void *sclient;
   void iterateUntilTimeout(unsigned int timeoutMS);
   void iterateUntilDefaultTimeout();
   void cancelIteration(void);
@@ -52,11 +52,13 @@ class IntegrationTest : public Test {
   static void Init(int argc, char **argv);
   IntegrationTest();
   virtual ~IntegrationTest();
+  virtual void SetUp();
   virtual void onConnected();
   virtual void onDisconnected();
   virtual void onConnectionError(int code);
   virtual void onRegistered(TSC_SuplaRegisterClientResult_B *result);
   virtual void onRegistrationError(int code);
+  virtual void onSuperuserAuthorizationResult(bool authorized, int code);
 };
 
 } /* namespace testing */

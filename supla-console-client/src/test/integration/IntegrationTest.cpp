@@ -53,6 +53,14 @@ void integration_test_on_registererror(void *_suplaclient, void *instance,
   static_cast<IntegrationTest *>(instance)->onRegistrationError(code);
 }
 
+void integration_test_on_superuser_authorization_result(void *_suplaclient,
+                                                        void *instance,
+                                                        char authorized,
+                                                        _supla_int_t code) {
+  static_cast<IntegrationTest *>(instance)->onSuperuserAuthorizationResult(
+      authorized, code);
+}
+
 // static
 void IntegrationTest::Init(int argc, char **argv) {
   const char kHelpMessage[] =
@@ -94,6 +102,8 @@ IntegrationTest::IntegrationTest() {
 
 IntegrationTest::~IntegrationTest() { clientFree(); }
 
+void IntegrationTest::SetUp() { clientInit(); }
+
 void IntegrationTest::clientInit() {
   if (sclient != NULL) {
     return;
@@ -122,6 +132,8 @@ void IntegrationTest::clientInit() {
   scc.cb_on_connerror = &integration_test_on_connerror;
   scc.cb_on_registered = &integration_test_on_registered;
   scc.cb_on_registererror = &integration_test_on_registererror;
+  scc.cb_on_superuser_authorization_result =
+      &integration_test_on_superuser_authorization_result;
 
   beforeClientInit(&scc);
   sclient = supla_client_init(&scc);
@@ -145,14 +157,12 @@ void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
   ASSERT_GT(timeoutMS, (unsigned int)0);
   iterationCancelled = false;
 
-  clientFree();
-  clientInit();
-
   struct timeval now;
   gettimeofday(&now, NULL);
   unsigned int start_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
 
-  if (0 == supla_client_connect(sclient)) {
+  if (0 == supla_client_connected(sclient) &&
+      0 == supla_client_connect(sclient)) {
     return;
   }
 
@@ -216,5 +226,8 @@ void IntegrationTest::onRegistered(TSC_SuplaRegisterClientResult_B *result) {
 }
 
 void IntegrationTest::onRegistrationError(int code) {}
+
+void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
+                                                     int code) {}
 
 } /* namespace testing */
