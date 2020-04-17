@@ -25,5 +25,5 @@ matrix:
         hosts:
           - db
       script:
-        - ./test/all-tests.sh
+        - sudo ./test/all-tests.sh
 
