@@ -43,7 +43,8 @@ if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   ./supla-server -c /etc/supla-server/supla-test.cfg -d
   cd ../../
 fi
-
+ps ax
+pwd
 cd supla-console-client/Test
 make clean && make all
 
