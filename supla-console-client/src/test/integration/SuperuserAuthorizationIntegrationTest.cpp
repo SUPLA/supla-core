@@ -36,6 +36,7 @@ void SuperuserAuthorizationIntegrationTest::onSuperuserAuthorizationResult(
 TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithBadEmail) {
   char email[] = "test.supla.org";
   char password[] = "supla!test";
+  ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
       supla_client_superuser_authorization_request(sclient, email, password),
       0);
@@ -47,6 +48,7 @@ TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithBadEmail) {
 TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithBadPassword) {
   char email[] = "test@supla.org";
   char password[] = "supla@test";
+  ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
       supla_client_superuser_authorization_request(sclient, email, password),
       0);
@@ -58,6 +60,7 @@ TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithBadPassword) {
 TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithCorrectCredentials) {
   char email[] = "test@supla.org";
   char password[] = "supla!test";
+  ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(
       supla_client_superuser_authorization_request(sclient, email, password),
       0);

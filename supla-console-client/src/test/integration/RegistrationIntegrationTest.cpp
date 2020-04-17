@@ -17,6 +17,7 @@
  */
 
 #include "RegistrationIntegrationTest.h"
+#include "log.h"
 
 namespace testing {
 
@@ -174,7 +175,7 @@ TEST_F(RegistrationIntegrationTest,
 TEST_F(RegistrationIntegrationTest,
        RegAsSecondClientWhenRegIsDisabledWithSuperuserCredentials) {
   GUID[0] = 10;
-  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "%s", TESTUSER_PASS);
+  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "%s", TESTUSER_PASSWD);
   initTestDatabase();
   iterateUntilDefaultTimeout();
 }
@@ -182,7 +183,7 @@ TEST_F(RegistrationIntegrationTest,
 TEST_F(RegistrationIntegrationTest,
        AuthorizationShouldBeRevokedAfterRegistration) {
   GUID[0] = 10;
-  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "%s", TESTUSER_PASS);
+  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "%s", TESTUSER_PASSWD);
 
   initTestDatabase();
   iterateUntilDefaultTimeout();
@@ -190,9 +191,11 @@ TEST_F(RegistrationIntegrationTest,
   // There is no function to check if the superuser is authored, so use one of
   // the functions that checks the authorization
 
+  ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(supla_client_set_channel_function(sclient, 100000,
                                               SUPLA_CHANNELFNC_POWERSWITCH),
             0);
+
   iterateUntilDefaultTimeout();
 }
 

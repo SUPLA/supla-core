@@ -16,25 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SETCHANNELFUNCTIONINTEGRATIONTEST_H_
-#define SETCHANNELFUNCTIONTEGRATIONTEST_H_
-
 #include "SuperuserAuthorization.h"
 
 namespace testing {
 
-class SetChannelFunctionIntegrationTest : public SuperuserAuthorization {
- protected:
-  unsigned char expectedResultCode;
-  int expectedChannelID;
-  int expectedFunction;
+SuperuserAuthorization::SuperuserAuthorization() {}
 
- public:
-  SetChannelFunctionIntegrationTest();
-  virtual ~SetChannelFunctionIntegrationTest();
-  virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
-};
+SuperuserAuthorization::~SuperuserAuthorization() {}
+
+void SuperuserAuthorization::onSuperuserAuthorizationResult(bool authorized,
+                                                            int code) {
+  ASSERT_TRUE(authorized);
+  ASSERT_EQ(code, 10);
+  cancelIteration();
+}
+
+void SuperuserAuthorization::SuperuserAuthorize() {
+  char email[] = TESTUSER_EMAIL;
+  char password[] = TESTUSER_PASSWD;
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_superuser_authorization_request(sclient, email, password),
+      0);
+
+  iterateUntilDefaultTimeout();
+}
 
 } /* namespace testing */
-
-#endif /* SETCHANNELFUNCTIONTEGRATIONTEST_H_ */

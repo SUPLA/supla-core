@@ -170,6 +170,7 @@ void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
     clientFree();
     clientInit();
     if (0 == supla_client_connect(sclient)) {
+      clientFree();
       return;
     }
   }

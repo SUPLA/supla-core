@@ -23,7 +23,7 @@
 #include "supla-client.h"
 
 #define TESTUSER_EMAIL "test@supla.org"
-#define TESTUSER_PASS "supla!test"
+#define TESTUSER_PASSWD "supla!test"
 
 namespace testing {
 
