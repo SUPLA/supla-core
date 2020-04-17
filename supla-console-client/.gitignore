@@ -1,3 +1,4 @@
 Debug/supla-console-client
 Release/supla-console-client
-/Test/
+Test/supla-console-client
+vg-test.log
