@@ -102,8 +102,6 @@ IntegrationTest::IntegrationTest() {
 
 IntegrationTest::~IntegrationTest() { clientFree(); }
 
-void IntegrationTest::SetUp() { clientInit(); }
-
 void IntegrationTest::clientInit() {
   if (sclient != NULL) {
     return;
@@ -161,9 +159,12 @@ void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
   gettimeofday(&now, NULL);
   unsigned int start_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
 
-  if (0 == supla_client_connected(sclient) &&
-      0 == supla_client_connect(sclient)) {
-    return;
+  if (sclient == NULL || 0 == supla_client_connected(sclient)) {
+    clientFree();
+    clientInit();
+    if (0 == supla_client_connect(sclient)) {
+      return;
+    }
   }
 
   while (!iterationCancelled) {

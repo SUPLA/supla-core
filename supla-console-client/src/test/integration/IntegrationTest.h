@@ -52,7 +52,6 @@ class IntegrationTest : public Test {
   static void Init(int argc, char **argv);
   IntegrationTest();
   virtual ~IntegrationTest();
-  virtual void SetUp();
   virtual void onConnected();
   virtual void onDisconnected();
   virtual void onConnectionError(int code);
