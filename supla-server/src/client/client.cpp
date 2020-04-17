@@ -68,6 +68,12 @@ void supla_client::setAccessID(int AccessID) { access_id = AccessID; }
 
 int supla_client::getAccessID(void) { return access_id; }
 
+void supla_client::revoke_superuser_authorization(void) {
+  lck_lock(lck);
+  superuser_authorized = false;
+  lck_unlock(lck);
+}
+
 bool supla_client::is_superuser_authorized(void) {
   bool result = false;
   lck_lock(lck);
@@ -263,6 +269,8 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
     delete db;
   }
+
+  revoke_superuser_authorization();
 
   if (proto_version >= 9) {
     TSC_SuplaRegisterClientResult_B srcr;
