@@ -16,23 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "SuperuserAuthorizationTest.h"
+#include "SuperuserAuthorizationIntegrationTest.h"
 #include "log.h"
 namespace testing {
 
-SuperuserAuthorizationTest::SuperuserAuthorizationTest() {
+SuperuserAuthorizationIntegrationTest::SuperuserAuthorizationIntegrationTest() {
   exceptedAuthorizationResultCode = 0;
 }
 
-SuperuserAuthorizationTest::~SuperuserAuthorizationTest() {}
+SuperuserAuthorizationIntegrationTest::
+    ~SuperuserAuthorizationIntegrationTest() {}
 
-void SuperuserAuthorizationTest::onSuperuserAuthorizationResult(bool authorized,
-                                                                int code) {
+void SuperuserAuthorizationIntegrationTest::onSuperuserAuthorizationResult(
+    bool authorized, int code) {
   ASSERT_EQ(code, exceptedAuthorizationResultCode);
   cancelIteration();
 }
 
-TEST_F(SuperuserAuthorizationTest, AuthorizeWithBadEmail) {
+TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithBadEmail) {
   char email[] = "test.supla.org";
   char password[] = "supla!test";
   ASSERT_GT(
@@ -43,7 +44,7 @@ TEST_F(SuperuserAuthorizationTest, AuthorizeWithBadEmail) {
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(SuperuserAuthorizationTest, AuthorizeWithBadPassword) {
+TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithBadPassword) {
   char email[] = "test@supla.org";
   char password[] = "supla@test";
   ASSERT_GT(
@@ -54,7 +55,7 @@ TEST_F(SuperuserAuthorizationTest, AuthorizeWithBadPassword) {
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(SuperuserAuthorizationTest, AuthorizeWithCorrectCredentials) {
+TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithCorrectCredentials) {
   char email[] = "test@supla.org";
   char password[] = "supla!test";
   ASSERT_GT(

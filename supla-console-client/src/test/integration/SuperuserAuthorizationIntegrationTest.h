@@ -16,23 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPERUSERAUTHORIZATIONTEST_H_
-#define SUPERUSERAUTHORIZATIONTEST_H_
+#ifndef SUPERUSERAUTHORIZATIONTEGRATIONTEST_H_
+#define SUPERUSERAUTHORIZATIONTEGRATIONTEST_H_
 
 #include "ProperlyRegistered.h"
 
 namespace testing {
 
-class SuperuserAuthorizationTest : public ProperlyRegistered {
+class SuperuserAuthorizationIntegrationTest : public ProperlyRegistered {
  protected:
   int exceptedAuthorizationResultCode;
 
  public:
-  SuperuserAuthorizationTest();
-  virtual ~SuperuserAuthorizationTest();
+  SuperuserAuthorizationIntegrationTest();
+  virtual ~SuperuserAuthorizationIntegrationTest();
   virtual void onSuperuserAuthorizationResult(bool authorized, int code);
 };
 
 } /* namespace testing */
 
-#endif /* SUPERUSERAUTHORIZATIONTEST_H_ */
+#endif /* SUPERUSERAUTHORIZATIONTEGRATIONTEST_H_ */

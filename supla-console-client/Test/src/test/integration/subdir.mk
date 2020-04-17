@@ -8,21 +8,24 @@ CPP_SRCS += \
 ../src/test/integration/IntegrationTest.cpp \
 ../src/test/integration/ProperlyRegistered.cpp \
 ../src/test/integration/RegistrationIntegrationTest.cpp \
-../src/test/integration/SuperuserAuthorizationTest.cpp 
+../src/test/integration/SetChannelFunctionIntegrationTest.cpp \
+../src/test/integration/SuperuserAuthorizationIntegrationTest.cpp 
 
 OBJS += \
 ./src/test/integration/ConnectionIntegrationTest.o \
 ./src/test/integration/IntegrationTest.o \
 ./src/test/integration/ProperlyRegistered.o \
 ./src/test/integration/RegistrationIntegrationTest.o \
-./src/test/integration/SuperuserAuthorizationTest.o 
+./src/test/integration/SetChannelFunctionIntegrationTest.o \
+./src/test/integration/SuperuserAuthorizationIntegrationTest.o 
 
 CPP_DEPS += \
 ./src/test/integration/ConnectionIntegrationTest.d \
 ./src/test/integration/IntegrationTest.d \
 ./src/test/integration/ProperlyRegistered.d \
 ./src/test/integration/RegistrationIntegrationTest.d \
-./src/test/integration/SuperuserAuthorizationTest.d 
+./src/test/integration/SetChannelFunctionIntegrationTest.d \
+./src/test/integration/SuperuserAuthorizationIntegrationTest.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
