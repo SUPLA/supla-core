@@ -5,6 +5,9 @@ set -e
 [ -d ../test ] && cd ../
 . ./test/common
 
+mkdir -p /etc/supla-server
+[ -e /etc/supla-server/supla-test.cfg ] || touch /etc/supla-server/supla-test.cfg
+
 cd supla-server/Test 
 make clean && make all 
 
