@@ -40,6 +40,7 @@ class RegistrationIntegrationTest : public IntegrationTest {
   virtual void beforeClientInit(TSuplaClientCfg *scc);
   virtual void onRegistered(TSC_SuplaRegisterClientResult_B *result);
   virtual void onRegistrationError(int code);
+  virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
 };
 
 } /* namespace testing */

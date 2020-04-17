@@ -26,7 +26,7 @@ RegistrationIntegrationTest::RegistrationIntegrationTest() {
   fillArrayWithOrdinalNumbers(GUID, SUPLA_GUID_SIZE, 0);
   fillArrayWithOrdinalNumbers(AuthKey, SUPLA_AUTHKEY_SIZE, 0);
 
-  snprintf(Email, SUPLA_EMAIL_MAXSIZE, "test@supla.org");
+  snprintf(Email, SUPLA_EMAIL_MAXSIZE, TESTUSER_EMAIL);
   AccessID = 0;
   memset(AccessIDpwd, 0, SUPLA_ACCESSID_PWD_MAXSIZE);
   memset(Password, 0, Password[SUPLA_PASSWORD_MAXSIZE]);
@@ -53,6 +53,13 @@ void RegistrationIntegrationTest::onRegistered(
 
 void RegistrationIntegrationTest::onRegistrationError(int code) {
   ASSERT_EQ(code, expectedRegistrationErrorCode);
+  cancelIteration();
+}
+
+void RegistrationIntegrationTest::onChannelFunctionSetResult(
+    TSC_SetChannelFunctionResult *result) {
+  ASSERT_FALSE(result == NULL);
+  ASSERT_EQ(result->ResultCode, SUPLA_RESULTCODE_UNAUTHORIZED);
   cancelIteration();
 }
 
@@ -167,8 +174,25 @@ TEST_F(RegistrationIntegrationTest,
 TEST_F(RegistrationIntegrationTest,
        RegAsSecondClientWhenRegIsDisabledWithSuperuserCredentials) {
   GUID[0] = 10;
-  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "supla!test");
+  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "%s", TESTUSER_PASS);
   initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest,
+       AuthorizationShouldBeRevokedAfterRegistration) {
+  GUID[0] = 10;
+  snprintf(Password, SUPLA_PASSWORD_MAXSIZE, "%s", TESTUSER_PASS);
+
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+
+  // There is no function to check if the superuser is authored, so use one of
+  // the functions that checks the authorization
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, 100000,
+                                              SUPLA_CHANNELFNC_POWERSWITCH),
+            0);
   iterateUntilDefaultTimeout();
 }
 

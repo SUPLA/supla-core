@@ -61,6 +61,11 @@ void integration_test_on_superuser_authorization_result(void *_suplaclient,
       authorized, code);
 }
 
+void integration_test_on_channel_function_set_result(
+    void *_suplaclient, void *instance, TSC_SetChannelFunctionResult *result) {
+  static_cast<IntegrationTest *>(instance)->onChannelFunctionSetResult(result);
+}
+
 // static
 void IntegrationTest::Init(int argc, char **argv) {
   const char kHelpMessage[] =
@@ -132,6 +137,8 @@ void IntegrationTest::clientInit() {
   scc.cb_on_registererror = &integration_test_on_registererror;
   scc.cb_on_superuser_authorization_result =
       &integration_test_on_superuser_authorization_result;
+  scc.cb_on_channel_function_set_result =
+      integration_test_on_channel_function_set_result;
 
   beforeClientInit(&scc);
   sclient = supla_client_init(&scc);
@@ -230,5 +237,8 @@ void IntegrationTest::onRegistrationError(int code) {}
 
 void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
                                                      int code) {}
+
+void IntegrationTest::onChannelFunctionSetResult(
+    TSC_SetChannelFunctionResult *result) {}
 
 } /* namespace testing */

@@ -22,6 +22,9 @@
 #include "gtest/gtest.h"
 #include "supla-client.h"
 
+#define TESTUSER_EMAIL "test@supla.org"
+#define TESTUSER_PASS "supla!test"
+
 namespace testing {
 
 class IntegrationTest : public Test {
@@ -58,6 +61,7 @@ class IntegrationTest : public Test {
   virtual void onRegistered(TSC_SuplaRegisterClientResult_B *result);
   virtual void onRegistrationError(int code);
   virtual void onSuperuserAuthorizationResult(bool authorized, int code);
+  virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
 };
 
 } /* namespace testing */
