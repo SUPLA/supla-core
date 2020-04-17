@@ -24,14 +24,6 @@ matrix:
         mariadb: '10.1'
         hosts:
           - db
-      jobs:
-        include:
-          - stage: server
-          - script: ./test/supla-server-test.sh
-          - stage: scheduler
-          - script: ./test/supla-scheduler-test.sh
-          - stage: dev
-          - script: ./test/supla-dev.sh
-          - stage: client
-          - script: ./test/supla-console-client.sh
+      script:
+        - ./test/all-tests.sh
 
