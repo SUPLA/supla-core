@@ -208,8 +208,10 @@ void serverconnection::on_set_channel_caption_request(
     TCS_SetChannelCaption *cs_set_channel_caption) {
   if (cs_set_channel_caption != NULL) {
     if (cs_set_channel_caption->CaptionSize > 0) {
-      if (cs_set_channel_caption->CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
-        cs_set_channel_caption->CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+      // ! The field in the database is limited to 100 characters !
+
+      if (cs_set_channel_caption->CaptionSize > 101) {
+        cs_set_channel_caption->CaptionSize = 101;
       }
     } else {
       cs_set_channel_caption->CaptionSize = 1;
