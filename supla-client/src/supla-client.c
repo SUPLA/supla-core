@@ -1294,7 +1294,6 @@ char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
 
 char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption) {
-
   TCS_SetChannelCaption caption;
   memset(&caption, 0, sizeof(TCS_SetChannelCaption));
 
