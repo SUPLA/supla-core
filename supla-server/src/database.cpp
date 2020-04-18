@@ -2394,7 +2394,7 @@ bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
   bool result = false;
   MYSQL_STMT *stmt = NULL;
 
-  if (stmt_execute((void **)&stmt, "CALL `supla_set_channel_function`(?,?,?)",
+  if (stmt_execute((void **)&stmt, "CALL `supla_set_channel_caption`(?,?,?)",
                    pbind, 3, true)) {
     result = true;
   }
