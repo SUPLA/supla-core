@@ -1367,6 +1367,10 @@ void supla_user::set_channel_caption(supla_client *sender,
   memset(&result, 0, sizeof(TSC_SetChannelCaptionResult));
   result.ChannelID = caption->ChannelID;
   memcpy(result.Caption, caption->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  result.CaptionSize = caption->CaptionSize;
+  if (result.CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
+    result.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+  }
   result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
 
   if (!sender->is_superuser_authorized()) {
