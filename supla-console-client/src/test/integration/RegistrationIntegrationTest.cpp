@@ -22,6 +22,7 @@
 namespace testing {
 
 RegistrationIntegrationTest::RegistrationIntegrationTest() {
+  ProtocolVersion = SUPLA_PROTO_VERSION;
   expectedRegistrationErrorCode = 0;
   sslEnabled = true;
   fillArrayWithOrdinalNumbers(GUID, SUPLA_GUID_SIZE, 0);
@@ -36,6 +37,7 @@ RegistrationIntegrationTest::RegistrationIntegrationTest() {
 RegistrationIntegrationTest::~RegistrationIntegrationTest() {}
 
 void RegistrationIntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {
+  scc->protocol_version = ProtocolVersion;
   scc->ssl_enabled = sslEnabled;
   memcpy(scc->clientGUID, GUID, SUPLA_GUID_SIZE);
   memcpy(scc->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
@@ -146,7 +148,42 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_NoSSL) {
   iterateUntilDefaultTimeout();
 }
 
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion12) {
+  ProtocolVersion = 12;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion11) {
+  ProtocolVersion = 11;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion7) {
+  ProtocolVersion = 7;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest, RegistrationWithEmail_ProtocolVersion6) {
+  ProtocolVersion = 6;
+  expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
 TEST_F(RegistrationIntegrationTest, RegistrationUsingAccessID) {
+  Email[0] = 0;
+  AccessID = 2;
+  snprintf(AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "3311dbb5");
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(RegistrationIntegrationTest,
+       RegistrationUsingAccessID_ProtocolVersion1) {
+  ProtocolVersion = 1;
   Email[0] = 0;
   AccessID = 2;
   snprintf(AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "3311dbb5");

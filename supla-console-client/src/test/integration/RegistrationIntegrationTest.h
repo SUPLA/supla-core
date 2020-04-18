@@ -33,6 +33,7 @@ class RegistrationIntegrationTest : public IntegrationTest {
   int expectedRegistrationErrorCode;
   int AccessID;
   char AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE];
+  int ProtocolVersion;
 
  public:
   RegistrationIntegrationTest();
