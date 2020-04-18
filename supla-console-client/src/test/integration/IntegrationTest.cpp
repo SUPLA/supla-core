@@ -66,6 +66,11 @@ void integration_test_on_channel_function_set_result(
   static_cast<IntegrationTest *>(instance)->onChannelFunctionSetResult(result);
 }
 
+void integration_test_on_channel_caption_set_result(
+    void *_suplaclient, void *instance, TSC_SetChannelCaptionResult *result) {
+  static_cast<IntegrationTest *>(instance)->onChannelCaptionSetResult(result);
+}
+
 void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
                                            TSC_ChannelBasicCfg *cfg) {
   static_cast<IntegrationTest *>(instance)->onChannelBasicCfg(cfg);
@@ -144,6 +149,8 @@ void IntegrationTest::clientInit() {
       &integration_test_on_superuser_authorization_result;
   scc.cb_on_channel_function_set_result =
       &integration_test_on_channel_function_set_result;
+  scc.cb_on_channel_caption_set_result =
+      &integration_test_on_channel_caption_set_result;
   scc.cb_on_channel_basic_cfg = &integration_test_on_channel_basic_cfg;
 
   beforeClientInit(&scc);
@@ -256,6 +263,9 @@ void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
 
 void IntegrationTest::onChannelFunctionSetResult(
     TSC_SetChannelFunctionResult *result) {}
+
+void IntegrationTest::onChannelCaptionSetResult(
+    TSC_SetChannelCaptionResult *result) {}
 
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 

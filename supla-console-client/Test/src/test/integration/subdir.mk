@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/test/integration/IntegrationTest.cpp \
 ../src/test/integration/ProperlyRegistered.cpp \
 ../src/test/integration/RegistrationIntegrationTest.cpp \
+../src/test/integration/SetChannelCaptionIntegrationTest.cpp \
 ../src/test/integration/SetChannelFunctionIntegrationTest.cpp \
 ../src/test/integration/SuperuserAuthorization.cpp \
 ../src/test/integration/SuperuserAuthorizationIntegrationTest.cpp 
@@ -19,6 +20,7 @@ OBJS += \
 ./src/test/integration/IntegrationTest.o \
 ./src/test/integration/ProperlyRegistered.o \
 ./src/test/integration/RegistrationIntegrationTest.o \
+./src/test/integration/SetChannelCaptionIntegrationTest.o \
 ./src/test/integration/SetChannelFunctionIntegrationTest.o \
 ./src/test/integration/SuperuserAuthorization.o \
 ./src/test/integration/SuperuserAuthorizationIntegrationTest.o 
@@ -29,6 +31,7 @@ CPP_DEPS += \
 ./src/test/integration/IntegrationTest.d \
 ./src/test/integration/ProperlyRegistered.d \
 ./src/test/integration/RegistrationIntegrationTest.d \
+./src/test/integration/SetChannelCaptionIntegrationTest.d \
 ./src/test/integration/SetChannelFunctionIntegrationTest.d \
 ./src/test/integration/SuperuserAuthorization.d \
 ./src/test/integration/SuperuserAuthorizationIntegrationTest.d 

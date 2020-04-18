@@ -63,6 +63,7 @@ class IntegrationTest : public Test {
   virtual void onRegistrationError(int code);
   virtual void onSuperuserAuthorizationResult(bool authorized, int code);
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
+  virtual void onChannelCaptionSetResult(TSC_SetChannelCaptionResult *result);
   virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
 };
 
