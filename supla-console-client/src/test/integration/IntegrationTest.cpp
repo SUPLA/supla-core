@@ -76,6 +76,11 @@ void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
   static_cast<IntegrationTest *>(instance)->onChannelBasicCfg(cfg);
 }
 
+void integration_test_channel_update(void *_suplaclient, void *instance,
+                                        TSC_SuplaChannel_C *channel) {
+  static_cast<IntegrationTest *>(instance)->channelUpdate(channel);
+}
+
 // static
 void IntegrationTest::Init(int argc, char **argv) {
   const char kHelpMessage[] =
@@ -152,6 +157,7 @@ void IntegrationTest::clientInit() {
   scc.cb_on_channel_caption_set_result =
       &integration_test_on_channel_caption_set_result;
   scc.cb_on_channel_basic_cfg = &integration_test_on_channel_basic_cfg;
+  scc.cb_channel_update = &integration_test_channel_update;
 
   beforeClientInit(&scc);
   sclient = supla_client_init(&scc);
@@ -268,5 +274,7 @@ void IntegrationTest::onChannelCaptionSetResult(
     TSC_SetChannelCaptionResult *result) {}
 
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
+
+void IntegrationTest::channelUpdate(TSC_SuplaChannel_C *channel) {}
 
 } /* namespace testing */

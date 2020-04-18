@@ -17,6 +17,7 @@
  */
 
 #include "SetChannelCaptionIntegrationTest.h"
+#include "log.h"
 
 namespace testing {
 
@@ -28,16 +29,44 @@ SetChannelCaptionIntegrationTest::SetChannelCaptionIntegrationTest() {
 
 SetChannelCaptionIntegrationTest::~SetChannelCaptionIntegrationTest() {}
 
+void SetChannelCaptionIntegrationTest::channelMatch(
+    TSC_SetChannelCaptionResult *result, TSC_SuplaChannel_C *channel) {
+  if (result) {
+    ASSERT_EQ(result->ResultCode, expectedResultCode);
+    ASSERT_EQ(result->ChannelID, expectedChannelID);
+    ASSERT_EQ(strncmp(expectedCaption, result->Caption,
+                      SUPLA_CHANNEL_CAPTION_MAXSIZE),
+              0);
+
+    match |= 0x1;
+  } else if (channel && channel->Id == expectedChannelID) {
+    if (strncmp(expectedCaption, channel->Caption,
+                SUPLA_CHANNEL_CAPTION_MAXSIZE) == 0) {
+      match |= 0x2;
+    }
+  }
+
+  if (match & 0x1 &&
+      (match & 0x2 || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
+    cancelIteration();
+  }
+}
+
 void SetChannelCaptionIntegrationTest::onChannelCaptionSetResult(
     TSC_SetChannelCaptionResult *result) {
   ASSERT_FALSE(result == NULL);
-  ASSERT_EQ(result->ChannelID, expectedChannelID);
-  ASSERT_EQ(result->ResultCode, expectedResultCode);
+  channelMatch(result, NULL);
+}
 
-  ASSERT_EQ(
-      strncmp(expectedCaption, result->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE),
-      0);
-  cancelIteration();
+void SetChannelCaptionIntegrationTest::channelUpdate(
+    TSC_SuplaChannel_C *channel) {
+  ASSERT_FALSE(channel == NULL);
+  channelMatch(NULL, channel);
+}
+
+void SetChannelCaptionIntegrationTest::reconnect() {
+  match = 0;
+  GetChannelBasicCfg::reconnect();
 }
 
 TEST_F(SetChannelCaptionIntegrationTest, SetCaptionWhtnClientIsNotAuthorized) {
@@ -95,7 +124,6 @@ TEST_F(SetChannelCaptionIntegrationTest, SetFewViarintsOfCaption) {
             0);
 
   // Emoji -----------------
-
   reconnect();
   superuserAuthorize();
   snprintf(expectedCaption, SUPLA_CHANNEL_CAPTION_MAXSIZE,

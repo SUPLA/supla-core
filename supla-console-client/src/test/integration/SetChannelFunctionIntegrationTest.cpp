@@ -17,6 +17,7 @@
  */
 
 #include "SetChannelFunctionIntegrationTest.h"
+#include "log.h"
 
 namespace testing {
 
@@ -24,17 +25,45 @@ SetChannelFunctionIntegrationTest::SetChannelFunctionIntegrationTest() {
   expectedResultCode = 0;
   expectedChannelID = 0;
   expectedFunction = 0;
+  match = 0;
 }
 
 SetChannelFunctionIntegrationTest::~SetChannelFunctionIntegrationTest() {}
 
+void SetChannelFunctionIntegrationTest::channelMatch(
+    TSC_SetChannelFunctionResult *result, TSC_SuplaChannel_C *channel) {
+  if (result) {
+    ASSERT_EQ(result->ResultCode, expectedResultCode);
+    ASSERT_EQ(result->ChannelID, expectedChannelID);
+    ASSERT_EQ(result->Func, expectedFunction);
+    match |= 0x1;
+  } else if (channel && channel->Id == expectedChannelID) {
+    if (channel->Func == expectedFunction) {
+      match |= 0x2;
+    }
+  }
+
+  if (match & 0x1 &&
+      (match & 0x2 || expectedResultCode != SUPLA_RESULTCODE_TRUE)) {
+    cancelIteration();
+  }
+}
+
 void SetChannelFunctionIntegrationTest::onChannelFunctionSetResult(
     TSC_SetChannelFunctionResult *result) {
   ASSERT_FALSE(result == NULL);
-  ASSERT_EQ(result->ResultCode, expectedResultCode);
-  ASSERT_EQ(result->ChannelID, expectedChannelID);
-  ASSERT_EQ(result->Func, expectedFunction);
-  cancelIteration();
+  channelMatch(result, NULL);
+}
+
+void SetChannelFunctionIntegrationTest::channelUpdate(
+    TSC_SuplaChannel_C *channel) {
+  ASSERT_FALSE(channel == NULL);
+  channelMatch(NULL, channel);
+}
+
+void SetChannelFunctionIntegrationTest::reconnect() {
+  match = 0;
+  GetChannelBasicCfg::reconnect();
 }
 
 TEST_F(SetChannelFunctionIntegrationTest,

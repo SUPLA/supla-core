@@ -24,15 +24,22 @@
 namespace testing {
 
 class SetChannelCaptionIntegrationTest : public GetChannelBasicCfg {
+ private:
+  unsigned char match;
+  void channelMatch(TSC_SetChannelCaptionResult *result,
+                    TSC_SuplaChannel_C *channel);
+
  protected:
   unsigned char expectedResultCode;
   int expectedChannelID;
   char expectedCaption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+  void reconnect();
 
  public:
   SetChannelCaptionIntegrationTest();
   virtual ~SetChannelCaptionIntegrationTest();
   virtual void onChannelCaptionSetResult(TSC_SetChannelCaptionResult *result);
+  virtual void channelUpdate(TSC_SuplaChannel_C *channel);
 };
 
 } /* namespace testing */

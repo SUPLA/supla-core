@@ -65,6 +65,7 @@ class IntegrationTest : public Test {
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
   virtual void onChannelCaptionSetResult(TSC_SetChannelCaptionResult *result);
   virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
+  virtual void channelUpdate(TSC_SuplaChannel_C *channel);
 };
 
 } /* namespace testing */
