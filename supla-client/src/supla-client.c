@@ -749,6 +749,13 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
               scd, scd->cfg.user_data, rd.data.sc_set_channel_function_result);
         }
         break;
+      case SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT:
+        if (scd->cfg.cb_on_channel_caption_set_result &&
+            rd.data.sc_set_channel_caption_result) {
+          scd->cfg.cb_on_channel_caption_set_result(
+              scd, scd->cfg.user_data, rd.data.sc_set_channel_caption_result);
+        }
+        break;
       case SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT:
         if (scd->cfg.cb_on_clients_reconnect_request_result &&
             rd.data.sc_clients_reconnect_result) {

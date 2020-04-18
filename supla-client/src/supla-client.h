@@ -77,6 +77,8 @@ typedef void (*_suplaclient_cb_on_channel_basic_cfg)(void *_suplaclient,
                                                      TSC_ChannelBasicCfg *cfg);
 typedef void (*_suplaclient_cb_on_channel_function_set_result)(
     void *_suplaclient, void *user_data, TSC_SetChannelFunctionResult *result);
+typedef void (*_suplaclient_cb_on_channel_caption_set_result)(
+    void *_suplaclient, void *user_data, TSC_SetChannelCaptionResult *result);
 typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
     void *_suplaclient, void *user_data,
     TSC_ClientsReconnectRequestResult *result);
@@ -151,6 +153,8 @@ typedef struct {
   _suplaclient_cb_on_channel_basic_cfg cb_on_channel_basic_cfg;
   _suplaclient_cb_on_channel_function_set_result
       cb_on_channel_function_set_result;
+  _suplaclient_cb_on_channel_caption_set_result
+      cb_on_channel_caption_set_result;
   _suplaclient_cb_on_clients_reconnect_request_result
       cb_on_clients_reconnect_request_result;
   _suplaclient_cb_on_set_registration_enabled_result
