@@ -19,11 +19,11 @@
 #ifndef SETCHANNELFUNCTIONINTEGRATIONTEST_H_
 #define SETCHANNELFUNCTIONTEGRATIONTEST_H_
 
-#include "SuperuserAuthorization.h"
+#include "GetChannelBasicCfg.h"
 
 namespace testing {
 
-class SetChannelFunctionIntegrationTest : public SuperuserAuthorization {
+class SetChannelFunctionIntegrationTest : public GetChannelBasicCfg {
  protected:
   unsigned char expectedResultCode;
   int expectedChannelID;

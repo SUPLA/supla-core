@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/integration/ConnectionIntegrationTest.cpp \
+../src/test/integration/GetChannelBasicCfg.cpp \
 ../src/test/integration/IntegrationTest.cpp \
 ../src/test/integration/ProperlyRegistered.cpp \
 ../src/test/integration/RegistrationIntegrationTest.cpp \
@@ -14,6 +15,7 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/test/integration/ConnectionIntegrationTest.o \
+./src/test/integration/GetChannelBasicCfg.o \
 ./src/test/integration/IntegrationTest.o \
 ./src/test/integration/ProperlyRegistered.o \
 ./src/test/integration/RegistrationIntegrationTest.o \
@@ -23,6 +25,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./src/test/integration/ConnectionIntegrationTest.d \
+./src/test/integration/GetChannelBasicCfg.d \
 ./src/test/integration/IntegrationTest.d \
 ./src/test/integration/ProperlyRegistered.d \
 ./src/test/integration/RegistrationIntegrationTest.d \

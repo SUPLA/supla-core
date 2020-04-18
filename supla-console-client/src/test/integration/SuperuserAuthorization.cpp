@@ -27,11 +27,11 @@ SuperuserAuthorization::~SuperuserAuthorization() {}
 void SuperuserAuthorization::onSuperuserAuthorizationResult(bool authorized,
                                                             int code) {
   ASSERT_TRUE(authorized);
-  ASSERT_EQ(code, 10);
+  ASSERT_EQ(code, SUPLA_RESULTCODE_AUTHORIZED);
   cancelIteration();
 }
 
-void SuperuserAuthorization::SuperuserAuthorize() {
+void SuperuserAuthorization::superuserAuthorize() {
   char email[] = TESTUSER_EMAIL;
   char password[] = TESTUSER_PASSWD;
   ASSERT_FALSE(sclient == NULL);

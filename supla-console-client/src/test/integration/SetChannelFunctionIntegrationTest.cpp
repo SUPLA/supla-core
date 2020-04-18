@@ -43,11 +43,61 @@ TEST_F(SetChannelFunctionIntegrationTest,
   expectedChannelID = 100000;
   expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
   ASSERT_FALSE(sclient == NULL);
-  ASSERT_GT(supla_client_set_channel_function(sclient, 100000,
-                                              SUPLA_CHANNELFNC_POWERSWITCH),
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
             0);
 
   iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest, SetFunctionForNonexistentChannel) {
+  superuserAuthorize();
+
+  expectedResultCode = SUPLA_RESULTCODE_CHANNELNOTFOUND;
+  expectedChannelID = 100000;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetFunctionForChannelWithNotAllowedType) {
+  superuserAuthorize();
+
+  expectedResultCode = SUPLA_RESULTCODE_NOT_ALLOWED;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest, SetAllowedFunction) {
+  expectedResultCode = SUPLA_RESULTCODE_TRUE;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+  getBasicCfg(expectedChannelID);
+
+  ASSERT_EQ(channelBasicCfg.Func, SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER);
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+  reconnect();
+  getBasicCfg(expectedChannelID);
+  ASSERT_EQ(channelBasicCfg.Func, expectedFunction);
 }
 
 } /* namespace testing */

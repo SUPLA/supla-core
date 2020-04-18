@@ -16,22 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPERUSERAUTHORIZATION_H_
-#define SUPERUSERAUTHORIZATION_H_
-
-#include "ProperlyRegistered.h"
+#include "GetChannelBasicCfg.h"
 
 namespace testing {
 
-class SuperuserAuthorization : public ProperlyRegistered {
- protected:
- public:
-  SuperuserAuthorization();
-  virtual ~SuperuserAuthorization();
-  virtual void onSuperuserAuthorizationResult(bool authorized, int code);
-  void superuserAuthorize();
-};
+GetChannelBasicCfg::GetChannelBasicCfg() {
+  cfgGetDone = false;
+  memset(&channelBasicCfg, 0, sizeof(TSC_ChannelBasicCfg));
+}
+
+GetChannelBasicCfg::~GetChannelBasicCfg() {}
+
+void GetChannelBasicCfg::getBasicCfg(int ChannelID) {
+  cfgGetDone = false;
+  memset(&channelBasicCfg, 0, sizeof(TSC_ChannelBasicCfg));
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(supla_client_get_channel_basic_cfg(sclient, ChannelID), 0);
+  iterateUntilDefaultTimeout();
+  ASSERT_TRUE(cfgGetDone);
+}
+
+void GetChannelBasicCfg::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {
+  ASSERT_FALSE(cfg == NULL);
+  memcpy(&this->channelBasicCfg, cfg, sizeof(TSC_ChannelBasicCfg));
+  cfgGetDone = true;
+  cancelIteration();
+}
 
 } /* namespace testing */
-
-#endif /* SUPERUSERAUTHORIZATION_H_ */

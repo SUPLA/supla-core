@@ -16,22 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPERUSERAUTHORIZATION_H_
-#define SUPERUSERAUTHORIZATION_H_
+#ifndef GETCHANNELBASICCFG_H_
+#define GETCHANNELBASICCFG_H_
 
-#include "ProperlyRegistered.h"
+#include "SuperuserAuthorization.h"
 
 namespace testing {
 
-class SuperuserAuthorization : public ProperlyRegistered {
+class GetChannelBasicCfg : public SuperuserAuthorization {
+ private:
+  bool cfgGetDone;
+
  protected:
+  TSC_ChannelBasicCfg channelBasicCfg;
+
  public:
-  SuperuserAuthorization();
-  virtual ~SuperuserAuthorization();
-  virtual void onSuperuserAuthorizationResult(bool authorized, int code);
-  void superuserAuthorize();
+  GetChannelBasicCfg();
+  virtual ~GetChannelBasicCfg();
+  void getBasicCfg(int ChannelID);
+  virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
 };
 
 } /* namespace testing */
 
-#endif /* SUPERUSERAUTHORIZATION_H_ */
+#endif /* GETCHANNELBASICCFG_H_ */

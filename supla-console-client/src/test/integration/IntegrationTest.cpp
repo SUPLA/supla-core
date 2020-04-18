@@ -66,6 +66,11 @@ void integration_test_on_channel_function_set_result(
   static_cast<IntegrationTest *>(instance)->onChannelFunctionSetResult(result);
 }
 
+void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
+                                           TSC_ChannelBasicCfg *cfg) {
+  static_cast<IntegrationTest *>(instance)->onChannelBasicCfg(cfg);
+}
+
 // static
 void IntegrationTest::Init(int argc, char **argv) {
   const char kHelpMessage[] =
@@ -138,7 +143,8 @@ void IntegrationTest::clientInit() {
   scc.cb_on_superuser_authorization_result =
       &integration_test_on_superuser_authorization_result;
   scc.cb_on_channel_function_set_result =
-      integration_test_on_channel_function_set_result;
+      &integration_test_on_channel_function_set_result;
+  scc.cb_on_channel_basic_cfg = &integration_test_on_channel_basic_cfg;
 
   beforeClientInit(&scc);
   sclient = supla_client_init(&scc);
@@ -184,6 +190,15 @@ void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
 
     usleep(1000);
   }
+}
+
+void IntegrationTest::reconnect() {
+  if (sclient != NULL) {
+    supla_client_disconnect(sclient);
+    clientFree();
+  }
+
+  iterateUntilDefaultTimeout();
 }
 
 void IntegrationTest::iterateUntilDefaultTimeout() {
@@ -241,5 +256,7 @@ void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
 
 void IntegrationTest::onChannelFunctionSetResult(
     TSC_SetChannelFunctionResult *result) {}
+
+void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 
 } /* namespace testing */
