@@ -211,9 +211,12 @@ void serverconnection::on_set_channel_caption_request(
       if (cs_set_channel_caption->CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
         cs_set_channel_caption->CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
       }
-      cs_set_channel_caption->Caption[cs_set_channel_caption->CaptionSize - 1] =
-          0;
+    } else {
+      cs_set_channel_caption->CaptionSize = 1;
     }
+
+    cs_set_channel_caption->Caption[cs_set_channel_caption->CaptionSize - 1] =
+        0;
 
     client->set_channel_caption_request(cs_set_channel_caption);
   }
