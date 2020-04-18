@@ -69,7 +69,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
   superuserAuthorize();
 
   expectedResultCode = SUPLA_RESULTCODE_NOT_ALLOWED;
-  expectedChannelID = 303;
+  expectedChannelID = 301;
   expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
   ASSERT_FALSE(sclient == NULL);
   ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
