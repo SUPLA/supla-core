@@ -1434,11 +1434,11 @@ typedef struct {
 
 typedef struct {
   _supla_int_t ChannelID;
+  unsigned char ResultCode;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-  unsigned char ResultCode;
-} TSC_SetChannelCaptionResult;  // v. >= 12
+} TSC_SetChannelCaptionResult;                  // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;

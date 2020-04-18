@@ -1294,14 +1294,18 @@ char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
 
 char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption) {
+
   TCS_SetChannelCaption caption;
   memset(&caption, 0, sizeof(TCS_SetChannelCaption));
+
   caption.ChannelID = ChannelID;
-  caption.CaptionSize = strnlen(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) + 1;
-  if (caption.CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
-    caption.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+  if (Caption != NULL) {
+    caption.CaptionSize = strnlen(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE) + 1;
+    if (caption.CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
+      caption.CaptionSize = SUPLA_CHANNEL_CAPTION_MAXSIZE;
+    }
+    snprintf(caption.Caption, caption.CaptionSize, "%s", Caption);
   }
-  snprintf(caption.Caption, Caption, caption.CaptionSize, "%s", Caption);
 
   return srpc_cs_async_set_channel_caption(
       ((TSuplaClientData *)_suplaclient)->srpc, &caption);
