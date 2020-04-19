@@ -30,6 +30,11 @@ char *IntegrationTest::dbName = IntegrationTest::defaultDbName;
 char *IntegrationTest::dbHost = IntegrationTest::defaultDbHost;
 char *IntegrationTest::dbUser = IntegrationTest::defaultDbUser;
 
+void integration_test_on_getversion_result(void *_suplaclient, void *instance,
+                                           TSDC_SuplaGetVersionResult *result) {
+  static_cast<IntegrationTest *>(instance)->onGetVersionResult(result);
+}
+
 void integration_test_on_connected(void *_suplaclient, void *instance) {
   static_cast<IntegrationTest *>(instance)->onConnected();
 }
@@ -158,6 +163,7 @@ void IntegrationTest::clientInit() {
   scc.ssl_port = 2016;
   scc.ssl_enabled = true;
 
+  scc.cb_on_getversion_result = &integration_test_on_getversion_result;
   scc.cb_on_connected = &integration_test_on_connected;
   scc.cb_on_connerror = &integration_test_on_connerror;
   scc.cb_on_registered = &integration_test_on_registered;
@@ -192,7 +198,8 @@ void IntegrationTest::clientFree() {
   }
 }
 
-void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
+void IntegrationTest::iterateUntilTimeout(bool doRegister,
+                                          unsigned int timeoutMS) {
   ASSERT_GT(timeoutMS, (unsigned int)0);
   iterationCancelled = false;
 
@@ -210,7 +217,7 @@ void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
   }
 
   while (!iterationCancelled) {
-    supla_client_iterate(sclient, 10);
+    supla_client__iterate(sclient, doRegister ? 1 : 0, 10);
 
     gettimeofday(&now, NULL);
     unsigned int time_diff = now.tv_sec * 1000 + now.tv_usec / 1000 - start_ms;
@@ -218,6 +225,10 @@ void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
 
     usleep(1000);
   }
+}
+
+void IntegrationTest::iterateUntilTimeout(unsigned int timeoutMS) {
+  iterateUntilTimeout(true, timeoutMS);
 }
 
 void IntegrationTest::reconnect() {
@@ -297,5 +308,7 @@ void IntegrationTest::onRegistrationEnabled(
 
 void IntegrationTest::onSetRegistrationEnabledResult(
     TSC_SetRegistrationEnabledResult *result) {}
+
+void IntegrationTest::onGetVersionResult(TSDC_SuplaGetVersionResult *result) {}
 
 } /* namespace testing */
