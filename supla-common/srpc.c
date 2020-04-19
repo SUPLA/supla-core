@@ -2099,8 +2099,7 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request(void *_srpc) {
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result) {
-  if (result == NULL || result->Token.TokenSize < 1 ||
-      result->Token.TokenSize > SUPLA_OAUTH_TOKEN_MAXSIZE) {
+  if (result == NULL || result->Token.TokenSize > SUPLA_OAUTH_TOKEN_MAXSIZE) {
     return 0;
   }
 

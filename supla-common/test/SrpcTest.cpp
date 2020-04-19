@@ -2854,21 +2854,6 @@ TEST_F(SrpcTest, call_cs_set_channel_value_b) {
 SRPC_CALL_WITH_NO_DATA(srpc_cs_async_oauth_token_request,
                        SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST);
 
-TEST_F(SrpcTest, call_oauth_token_request_result_with_zero_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_OAuthTokenRequestResult, result);
-
-  result.Token.TokenSize = 0;
-
-  ASSERT_EQ(srpc_cs_async_oauth_token_request_result(srpc, &result), 0);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
 TEST_F(SrpcTest, call_oauth_token_request_result_with_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
