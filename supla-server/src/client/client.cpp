@@ -373,6 +373,8 @@ void supla_client::oauth_token_request(void) {
       if (db->oauth_get_token(&result.Token, getUser()->getUserID(),
                               AccessID)) {
         result.ResultCode = SUPLA_OAUTH_RESULTCODE_SUCCESS;
+      } else {
+        memset(&result.Token, 0, sizeof(TSC_OAuthToken));
       }
     } else {
       result.ResultCode = SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE;
