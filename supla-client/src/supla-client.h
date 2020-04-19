@@ -29,6 +29,8 @@ typedef struct {
   char *Caption;
 } TSuplaClientDeviceChannel;
 
+typedef void (*_suplaclient_cb_on_getversion_result)(
+    void *_suplaclient, void *user_data, TSDC_SuplaGetVersionResult *result);
 typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
                                                 void *user_data, int version,
                                                 int remote_version_min,
@@ -121,6 +123,7 @@ typedef struct {
   unsigned char protocol_version;
   unsigned int registration_flags;
 
+  _suplaclient_cb_on_getversion_result cb_on_getversion_result;
   _suplaclient_cb_on_versionerror cb_on_versionerror;
   _suplaclient_cb_on_error cb_on_connerror;
   _suplaclient_cb_on_action cb_on_connected;
@@ -185,6 +188,8 @@ char supla_client_registered(void *_suplaclient);
 void supla_client_disconnect(void *_suplaclient);
 
 // For _WIN32 wait_usec mean wait_msec
+char supla_client__iterate(void *_suplaclient, unsigned char reg,
+                           int wait_usec);
 char supla_client_iterate(void *_suplaclient, int wait_usec);
 void supla_client_raise_event(void *_suplaclient);
 void *supla_client_get_userdata(void *_suplaclient);
@@ -200,6 +205,7 @@ char supla_client_set_dimmer(void *_suplaclient, int ID, char group,
                              char brightness, char turn_onoff);
 char supla_client_get_registration_enabled(void *_suplaclient);
 unsigned char supla_client_get_proto_version(void *_suplaclient);
+char supla_client_get_version(void *_suplaclient);
 char supla_client_oauth_token_request(void *_suplaclient);
 char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   char *email, char *password);
@@ -211,9 +217,8 @@ char supla_client_get_channel_state(void *_suplaclient, int ChannelID);
 char supla_client_get_channel_basic_cfg(void *_suplaclient, int ChannelID);
 char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
                                        int Function);
-char supla_client_set_channel_caption(
-    void *_suplaclient, int ChannelID,
-    const char *Caption);
+char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
+                                      const char *Caption);
 char supla_client_reconnect_all_clients(void *_suplaclient);
 char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,

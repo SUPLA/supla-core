@@ -555,6 +555,13 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
 
   if (SUPLA_RESULT_TRUE == (result = srpc_getdata(_srpc, &rd, 0))) {
     switch (rd.call_type) {
+      case SUPLA_SDC_CALL_GETVERSION_RESULT:
+        if (scd->cfg.cb_on_getversion_result && rd.data.sdc_getversion_result) {
+          rd.data.sdc_getversion_result->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
+          scd->cfg.cb_on_getversion_result(scd, scd->cfg.user_data,
+                                           rd.data.sdc_getversion_result);
+        }
+        break;
       case SUPLA_SDC_CALL_VERSIONERROR:
         if (rd.data.sdc_version_error) {
           supla_client_on_version_error(scd, rd.data.sdc_version_error);
@@ -1068,12 +1075,13 @@ void supla_client_ping(TSuplaClientData *suplaclient) {
   }
 }
 
-char supla_client_iterate(void *_suplaclient, int wait_usec) {
+char supla_client__iterate(void *_suplaclient, unsigned char reg,
+                           int wait_usec) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
 
   if (supla_client_connected(_suplaclient) == 0) return 0;
 
-  if (supla_client_registered(_suplaclient) == 0) {
+  if (reg && supla_client_registered(_suplaclient) == 0) {
     supla_client_set_registered(_suplaclient, -1);
     supla_client_register(suplaclient);
 
@@ -1092,6 +1100,10 @@ char supla_client_iterate(void *_suplaclient, int wait_usec) {
   }
 
   return 1;
+}
+
+char supla_client_iterate(void *_suplaclient, int wait_usec) {
+  return supla_client__iterate(_suplaclient, 1, wait_usec);
 }
 
 void supla_client_raise_event(void *_suplaclient) {
@@ -1207,6 +1219,10 @@ char supla_client_get_registration_enabled(void *_suplaclient) {
 
 unsigned char supla_client_get_proto_version(void *_suplaclient) {
   return srpc_get_proto_version(((TSuplaClientData *)_suplaclient)->srpc);
+}
+
+char supla_client_get_version(void *_suplaclient) {
+  return srpc_dcs_async_getversion(((TSuplaClientData *)_suplaclient)->srpc);
 }
 
 char supla_client_oauth_token_request(void *_suplaclient) {
