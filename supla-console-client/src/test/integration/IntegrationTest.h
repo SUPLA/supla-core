@@ -71,6 +71,7 @@ class IntegrationTest : public Test {
   virtual void onSetRegistrationEnabledResult(
       TSC_SetRegistrationEnabledResult *result);
   virtual void onGetVersionResult(TSDC_SuplaGetVersionResult *result);
+  virtual void onOAuthTokenRequestResult(TSC_OAuthTokenRequestResult *result);
 };
 
 } /* namespace testing */
