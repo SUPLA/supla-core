@@ -1404,10 +1404,8 @@ typedef struct {
   unsigned char Number;
   _supla_int_t Type;
   _supla_int_t Func;
-  union {
-    _supla_int_t FuncList;
-    _supla_int_t Param;
-  };
+  _supla_int_t FuncList;
+
   unsigned _supla_int_t ChannelFlags;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
