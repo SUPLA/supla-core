@@ -77,8 +77,20 @@ void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
 }
 
 void integration_test_channel_update(void *_suplaclient, void *instance,
-                                        TSC_SuplaChannel_C *channel) {
+                                     TSC_SuplaChannel_C *channel) {
   static_cast<IntegrationTest *>(instance)->channelUpdate(channel);
+}
+
+void integration_test_on_registration_enabled(
+    void *_suplaclient, void *instance, TSDC_RegistrationEnabled *reg_enabled) {
+  static_cast<IntegrationTest *>(instance)->onRegistrationEnabled(reg_enabled);
+}
+
+void integration_test_on_set_registration_enabled_result(
+    void *_suplaclient, void *instance,
+    TSC_SetRegistrationEnabledResult *result) {
+  static_cast<IntegrationTest *>(instance)->onSetRegistrationEnabledResult(
+      result);
 }
 
 // static
@@ -158,6 +170,9 @@ void IntegrationTest::clientInit() {
       &integration_test_on_channel_caption_set_result;
   scc.cb_on_channel_basic_cfg = &integration_test_on_channel_basic_cfg;
   scc.cb_channel_update = &integration_test_channel_update;
+  scc.cb_on_registration_enabled = &integration_test_on_registration_enabled;
+  scc.cb_on_set_registration_enabled_result =
+      &integration_test_on_set_registration_enabled_result;
 
   beforeClientInit(&scc);
   sclient = supla_client_init(&scc);
@@ -276,5 +291,11 @@ void IntegrationTest::onChannelCaptionSetResult(
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 
 void IntegrationTest::channelUpdate(TSC_SuplaChannel_C *channel) {}
+
+void IntegrationTest::onRegistrationEnabled(
+    TSDC_RegistrationEnabled *reg_enabled) {}
+
+void IntegrationTest::onSetRegistrationEnabledResult(
+    TSC_SetRegistrationEnabledResult *result) {}
 
 } /* namespace testing */
