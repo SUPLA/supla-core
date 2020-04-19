@@ -43,6 +43,7 @@ class IntegrationTest : public Test {
 
  protected:
   void *sclient;
+  void iterateUntilTimeout(bool doRegister, unsigned int timeoutMS);
   void iterateUntilTimeout(unsigned int timeoutMS);
   void iterateUntilDefaultTimeout();
   void cancelIteration(void);
@@ -69,6 +70,7 @@ class IntegrationTest : public Test {
   virtual void onRegistrationEnabled(TSDC_RegistrationEnabled *reg_enabled);
   virtual void onSetRegistrationEnabledResult(
       TSC_SetRegistrationEnabledResult *result);
+  virtual void onGetVersionResult(TSDC_SuplaGetVersionResult *result);
 };
 
 } /* namespace testing */
