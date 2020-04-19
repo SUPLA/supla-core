@@ -318,6 +318,7 @@ void IntegrationTest::onSetRegistrationEnabledResult(
 
 void IntegrationTest::onGetVersionResult(TSDC_SuplaGetVersionResult *result) {}
 
-void IntegrationTest::onOAuthTokenRequestResult(TSC_OAuthTokenRequestResult *result) {}
+void IntegrationTest::onOAuthTokenRequestResult(
+    TSC_OAuthTokenRequestResult *result) {}
 
 } /* namespace testing */
