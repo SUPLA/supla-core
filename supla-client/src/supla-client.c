@@ -759,6 +759,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT:
         if (scd->cfg.cb_on_channel_caption_set_result &&
             rd.data.sc_set_channel_caption_result) {
+          supla_client_set_str(
+              rd.data.sc_set_channel_caption_result->Caption,
+              &rd.data.sc_set_channel_caption_result->CaptionSize,
+              SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
           scd->cfg.cb_on_channel_caption_set_result(
               scd, scd->cfg.user_data, rd.data.sc_set_channel_caption_result);
         }
