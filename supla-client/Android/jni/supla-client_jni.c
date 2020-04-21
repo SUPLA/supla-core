@@ -1227,7 +1227,7 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                    TCalCfg_ZWave_Node *node) {
   jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
   jmethodID methodID = supla_client_GetMethodID(
-      env, cls, "<init>", "(SSILjava/lang/Integer;Ljava/lang/String;)V");
+      env, cls, "<init>", "(SSLjava/lang/Integer;Ljava/lang/String;)V");
 
   jobject channelID =
       node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED
