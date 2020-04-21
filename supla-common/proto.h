@@ -1138,8 +1138,15 @@ typedef struct {
 
 #define ZWAVE_NODE_NAME_MAXSIZE 50
 
+#define ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED 0x1
+
 typedef struct {
   unsigned char Id;
+  unsigned char Flags;
+  union {
+    unsigned char ChannelNumber;
+    _supla_int_t ChannelID;
+  };
   unsigned char ScreenType;
   unsigned char NameSize;  // including the terminating null byte ('\0')
   char Name[ZWAVE_NODE_NAME_MAXSIZE];  // UTF8. Last variable in struct!

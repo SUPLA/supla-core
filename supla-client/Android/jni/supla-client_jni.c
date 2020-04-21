@@ -275,6 +275,17 @@ jobject supla_android_client_jshort2shortobj(JNIEnv *env, jshort in) {
   return (*env)->NewObject(env, cls, m_init, in);
 }
 
+jobject supla_android_client_jint2integerobj(JNIEnv *env, jint in) {
+  jclass cls = (*env)->FindClass(env, "java/lang/Integer");
+
+  jmethodID m_init = (*env)->GetMethodID(env, cls, "<init>", "(I)V");
+  if (NULL == m_init) {
+    return NULL;
+  };
+
+  return (*env)->NewObject(env, cls, m_init, in);
+}
+
 void supla_android_client_cb_on_versionerror(void *_suplaclient,
                                              void *user_data, int version,
                                              int remote_version_min,
@@ -1215,10 +1226,16 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                    JNIEnv *env,
                                                    TCalCfg_ZWave_Node *node) {
   jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
-  jmethodID methodID =
-      supla_client_GetMethodID(env, cls, "<init>", "(SSLjava/lang/String;)V");
+  jmethodID methodID = supla_client_GetMethodID(
+      env, cls, "<init>", "(SSILjava/lang/Integer;Ljava/lang/String;)V");
+
+  jobject channelID =
+      node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED
+          ? supla_android_client_jint2integerobj(env, node->ChannelID)
+          : 0;
+
   return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
-                           (jshort)node->ScreenType,
+                           (jshort)node->ScreenType, channelID,
                            (*env)->NewStringUTF(env, node->Name));
 }
 

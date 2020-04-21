@@ -555,8 +555,25 @@ bool supla_device::calcfg_request(int SenderID, int ChannelID,
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
-  int ChannelID;
-  if ((ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
+  int ChannelID = channels->get_channel_id(result->ChannelNumber);
+  if (ChannelID != 0) {
+    if (result->DataSize == sizeof(TCalCfg_ZWave_Node) && result->Command) {
+      switch (result->Command) {
+        case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
+        case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
+          TCalCfg_ZWave_Node *node = (TCalCfg_ZWave_Node *)result->Data;
+          if (node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED) {
+            node->ChannelID = channels->get_channel_id(node->ChannelNumber);
+            if (node->ChannelID == 0) {
+              node->Flags ^= ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED;
+            }
+          } else {
+            node->ChannelID = 0;
+          }
+          break;
+      }
+    }
+
     getUser()->on_device_calcfg_result(ChannelID, result);
   }
 }
