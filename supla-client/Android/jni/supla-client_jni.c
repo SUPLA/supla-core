@@ -1603,6 +1603,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_channel_basic_cfg;
     sclient_cfg.cb_on_channel_function_set_result =
         supla_android_client_cb_on_channel_function_set_result;
+    sclient_cfg.cb_on_channel_caption_set_result =
+        supla_android_client_cb_on_channel_caption_set_result;
     sclient_cfg.cb_on_clients_reconnect_request_result =
         supla_android_client_cb_on_clients_reconnect_result;
     sclient_cfg.cb_on_set_registration_enabled_result =
