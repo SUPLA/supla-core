@@ -557,7 +557,9 @@ bool supla_device::calcfg_request(int SenderID, int ChannelID,
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
   int ChannelID = channels->get_channel_id(result->ChannelNumber);
   if (ChannelID != 0) {
-    if (result->DataSize == sizeof(TCalCfg_ZWave_Node) && result->Command) {
+    if (result->DataSize >=
+            (sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE) &&
+        result->DataSize <= sizeof(TCalCfg_ZWave_Node)) {
       switch (result->Command) {
         case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
         case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
