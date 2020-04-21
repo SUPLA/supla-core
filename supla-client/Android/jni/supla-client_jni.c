@@ -84,6 +84,23 @@ D | double
     return JNI_FALSE;                                                 \
   }
 
+#define JNI_FUNCTION_IString(jni_function_suffix, supla_client_function)   \
+  JNIEXPORT jboolean JNICALL                                               \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(        \
+          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jstring s1) {    \
+    jboolean result = JNI_FALSE;                                           \
+    const char *str = (*env)->GetStringUTFChars(env, s1, 0);               \
+    if (str) {                                                             \
+      void *supla_client = supla_client_ptr(_asc);                         \
+      if (supla_client) {                                                  \
+        result = supla_client_function(supla_client, i1, str) ? JNI_TRUE   \
+                                                              : JNI_FALSE; \
+      }                                                                    \
+      (*env)->ReleaseStringUTFChars(env, s1, str);                         \
+    }                                                                      \
+    return result;                                                         \
+  }
+
 #define JNI_CALLBACK_I(jni_function_cb)                                        \
   void supla_android_client_cb_##jni_function_cb(                              \
       void *_suplaclient, void *user_data, _supla_int_t i1) {                  \
@@ -1915,6 +1932,8 @@ JNI_FUNCTION_I(scGetChannelState, supla_client_get_channel_state);
 JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
 
 JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
+
+JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
 
 JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
 
