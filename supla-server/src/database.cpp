@@ -2403,3 +2403,21 @@ bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
 
   return result;
 }
+
+bool database::channel_belong_to_group(int channel_id) {
+  const char sql[] =
+      "SELECT group_id FROM supla_rel_cg WHERE channel_id = ? LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}
+
+bool database::channel_has_schedule(int channel_id) {
+  const char sql[] =
+      "SELECT id FROM supla_schedule WHERE channel_id = ? LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}
+
+bool database::channel_is_associated_with_scene(int channel_id) {
+  const char sql[] =
+      "SELECT id FROM supla_scene_operation WHERE channel_id = ? LIMIT 1";
+  return get_int(channel_id, 0, sql) > 0;
+}

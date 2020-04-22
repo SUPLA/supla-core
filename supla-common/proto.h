@@ -232,18 +232,21 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED 12
 #define SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED 13
 #define SUPLA_RESULTCODE_GUID_ERROR 14
-#define SUPLA_RESULTCODE_HOSTNOTFOUND 15           // ver. >= 5
-#define SUPLA_RESULTCODE_CANTCONNECTTOHOST 16      // ver. >= 5
-#define SUPLA_RESULTCODE_REGISTRATION_DISABLED 17  // ver. >= 7
-#define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED 18  // ver. >= 7
-#define SUPLA_RESULTCODE_AUTHKEY_ERROR 19          // ver. >= 7
-#define SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE 20  // ver. >= 7
-#define SUPLA_RESULTCODE_USER_CONFLICT 21          // ver. >= 7
-#define SUPLA_RESULTCODE_UNAUTHORIZED 22           // ver. >= 10
-#define SUPLA_RESULTCODE_AUTHORIZED 23             // ver. >= 10
-#define SUPLA_RESULTCODE_NOT_ALLOWED 24            // ver. >= 12
-#define SUPLA_RESULTCODE_CHANNELNOTFOUND 25        // ver. >= 12
-#define SUPLA_RESULTCODE_UNKNOWN_ERROR 26          // ver. >= 12
+#define SUPLA_RESULTCODE_HOSTNOTFOUND 15                           // ver. >= 5
+#define SUPLA_RESULTCODE_CANTCONNECTTOHOST 16                      // ver. >= 5
+#define SUPLA_RESULTCODE_REGISTRATION_DISABLED 17                  // ver. >= 7
+#define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED 18                  // ver. >= 7
+#define SUPLA_RESULTCODE_AUTHKEY_ERROR 19                          // ver. >= 7
+#define SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE 20                  // ver. >= 7
+#define SUPLA_RESULTCODE_USER_CONFLICT 21                          // ver. >= 7
+#define SUPLA_RESULTCODE_UNAUTHORIZED 22                           // ver. >= 10
+#define SUPLA_RESULTCODE_AUTHORIZED 23                             // ver. >= 10
+#define SUPLA_RESULTCODE_NOT_ALLOWED 24                            // ver. >= 12
+#define SUPLA_RESULTCODE_CHANNELNOTFOUND 25                        // ver. >= 12
+#define SUPLA_RESULTCODE_UNKNOWN_ERROR 26                          // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_BELONG_TO_GROUP 27           // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE 28              // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10

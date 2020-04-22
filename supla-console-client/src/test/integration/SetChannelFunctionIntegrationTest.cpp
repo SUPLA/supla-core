@@ -129,4 +129,76 @@ TEST_F(SetChannelFunctionIntegrationTest, SetAllowedFunction) {
   ASSERT_EQ(channelBasicCfg.Func, expectedFunction);
 }
 
+TEST_F(SetChannelFunctionIntegrationTest, SetFunctionNone) {
+  expectedResultCode = SUPLA_RESULTCODE_TRUE;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_NONE;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+  getBasicCfg(expectedChannelID);
+
+  ASSERT_EQ(channelBasicCfg.Func, SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER);
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+  reconnect();
+  getBasicCfg(expectedChannelID);
+  ASSERT_EQ(channelBasicCfg.Func, expectedFunction);
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelBelongingToGroup) {
+  runSqlScript("CreateChannelGroupWithChannelId303.sql");
+  expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_BELONG_TO_GROUP;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelWithSchedule) {
+  runSqlScript("CreateScheduleForChannelId303.sql");
+  expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelAssociatedWithSchedule) {
+  runSqlScript("CreateSceneForChannelId303.sql");
+  expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
 } /* namespace testing */

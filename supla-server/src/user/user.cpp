@@ -1316,12 +1316,21 @@ void supla_user::set_channel_function(supla_client *sender,
     if (db->connect()) {
       int Type = 0;
       unsigned int FuncList = 0;
+
       if (!db->get_channel_type_and_funclist(getUserID(), func->ChannelID,
                                              &Type, &FuncList)) {
         result.ResultCode = SUPLA_RESULTCODE_CHANNELNOTFOUND;
+      } else if (db->channel_belong_to_group(func->ChannelID)) {
+        result.ResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_BELONG_TO_GROUP;
+      } else if (db->channel_has_schedule(func->ChannelID)) {
+        result.ResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE;
+      } else if (db->channel_is_associated_with_scene(func->ChannelID)) {
+        result.ResultCode =
+            SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE;
       } else {
         if (Type != SUPLA_CHANNELTYPE_BRIDGE ||
-            !supla_device::funclist_contains_function(FuncList, func->Func)) {
+            (func->Func != SUPLA_CHANNELFNC_NONE &&
+             !supla_device::funclist_contains_function(FuncList, func->Func))) {
           result.ResultCode = SUPLA_RESULTCODE_NOT_ALLOWED;
         } else {
           if (db->set_channel_function(getUserID(), func->ChannelID,

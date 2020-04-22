@@ -166,6 +166,9 @@ class database : public dbcommon {
   bool get_channel_type_and_funclist(int UserID, int ChannelID, int *Type,
                                      unsigned int *FuncList);
   bool set_channel_caption(int UserID, int ChannelID, char *Caption);
+  bool channel_belong_to_group(int channel_id);
+  bool channel_has_schedule(int channel_id);
+  bool channel_is_associated_with_scene(int channel_id);
 };
 
 #endif /* DATABASE_H_ */
