@@ -564,7 +564,9 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                                    TSuplaChannelValue *value, char *online) {
   bool result = false;
   memset(value, 0, sizeof(TSuplaChannelValue));
-  *online = 0;
+  if (online) {
+    *online = 0;
+  }
 
   supla_device *related_device = NULL;
   supla_device *device = device_container->findByID(DeviceID);
