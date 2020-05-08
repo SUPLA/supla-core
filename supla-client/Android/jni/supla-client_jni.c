@@ -38,6 +38,49 @@ D | double
 #include "srpc.h"
 #include "supla-client.h"
 
+static int android_api_level = 0;
+static char log_tag[] = "LibSuplaClient";
+//  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
+
+jstring new_string_utf(JNIEnv *env, char *string) {
+  if (android_api_level >= 19) {
+    return (*env)->NewStringUTF(env, string);
+  } else {
+    // For API level <19, emoticons will crash the application
+    jobject bb =
+        (*env)->NewDirectByteBuffer(env, (void *)string, strlen(string));
+
+    jclass cls_charset = (*env)->FindClass(env, "java/nio/charset/Charset");
+
+    jmethodID mid_for_name = (*env)->GetStaticMethodID(
+        env, cls_charset, "forName",
+        "(Ljava/lang/String;)Ljava/nio/charset/Charset;");
+
+    jobject charset = (*env)->CallStaticObjectMethod(
+        env, cls_charset, mid_for_name, (*env)->NewStringUTF(env, "UTF-8"));
+
+    jmethodID mid_decode =
+        (*env)->GetMethodID(env, cls_charset, "decode",
+                            "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;");
+
+    jobject cb = (*env)->CallObjectMethod(env, charset, mid_decode, bb);
+
+    (*env)->DeleteLocalRef(env, bb);
+    (*env)->DeleteLocalRef(env, charset);
+
+    jclass cls_char_buffer = (*env)->FindClass(env, "java/nio/CharBuffer");
+
+    jmethodID mid_to_string = (*env)->GetMethodID(
+        env, cls_char_buffer, "toString", "()Ljava/lang/String;");
+
+    jstring result = (*env)->CallObjectMethod(env, cb, mid_to_string);
+
+    (*env)->DeleteLocalRef(env, cb);
+
+    return result;
+  }
+}
+
 #define ASC_VAR_DECLARATION(...)                               \
   TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data; \
   if (asc == NULL) {                                           \
@@ -121,11 +164,8 @@ D | double
       return;                                                                  \
     }                                                                          \
     (*env)->CallVoidMethod(env, asc->j_obj, asc->j_mid_##jni_function_cb,      \
-                           str ? (*env)->NewStringUTF(env, str) : NULL);       \
+                           str ? new_string_utf(env, str) : NULL);             \
   }
-
-static char log_tag[] = "LibSuplaClient";
-//  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
 
 typedef struct {
   void *_supla_client;
@@ -176,6 +216,15 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
   if ((*vm)->GetEnv(vm, (void **)&env, JNI_VERSION_1_6) != JNI_OK) {
     __android_log_write(ANDROID_LOG_DEBUG, log_tag, "GetEnv failed.");
     return -1;
+  }
+
+  jclass cls_version = (*env)->FindClass(env, "android/os/Build$VERSION");
+  if (NULL != cls_version) {
+    jfieldID fid_sdk =
+        (*env)->GetStaticFieldID(env, cls_version, "SDK_INT", "I");
+    if (fid_sdk != NULL) {
+      android_api_level = (*env)->GetStaticIntField(env, cls_version, fid_sdk);
+    }
   }
 
   return JNI_VERSION_1_6;
@@ -466,7 +515,7 @@ void supla_android_client_cb_location_update(void *_suplaclient,
 
     fid = supla_client_GetFieldID(env, cloc, "Caption", "Ljava/lang/String;");
     (*env)->SetObjectField(env, loc, fid,
-                           (*env)->NewStringUTF(env, location->Caption));
+                           new_string_utf(env, location->Caption));
 
     supla_android_client(asc, asc->j_mid_location_update, loc);
   }
@@ -556,8 +605,7 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
     (*env)->SetObjectField(env, ch, fid, chv);
 
     fid = supla_client_GetFieldID(env, cch, "Caption", "Ljava/lang/String;");
-    (*env)->SetObjectField(env, ch, fid,
-                           (*env)->NewStringUTF(env, channel->Caption));
+    (*env)->SetObjectField(env, ch, fid, new_string_utf(env, channel->Caption));
 
     fid = supla_client_GetFieldID(env, cch, "AltIcon", "I");
     (*env)->SetIntField(env, ch, fid, channel->AltIcon);
@@ -672,10 +720,9 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(
       env, "org/supla/android/lib/SuplaChannelElectricityMeterValue");
   jmethodID methodID =
       supla_client_GetMethodID(env, cls, "<init>", "(IIIILjava/lang/String;)V");
-  jobject val =
-      (*env)->NewObject(env, cls, methodID, em_ev->measured_values,
-                        em_ev->period, em_ev->total_cost, em_ev->price_per_unit,
-                        (*env)->NewStringUTF(env, currency));
+  jobject val = (*env)->NewObject(
+      env, cls, methodID, em_ev->measured_values, em_ev->period,
+      em_ev->total_cost, em_ev->price_per_unit, new_string_utf(env, currency));
   jclass cval = (*env)->GetObjectClass(env, val);
 
   for (a = 0; a < 3; a++) {
@@ -703,11 +750,10 @@ jobject supla_android_client_impulsecountervalue_to_jobject(
 
   ic_ev->custom_unit[sizeof(ic_ev->custom_unit) - 1] = 0;
 
-  return (*env)->NewObject(env, cls, methodID, ic_ev->impulses_per_unit,
-                           ic_ev->counter, ic_ev->calculated_value,
-                           ic_ev->total_cost, ic_ev->price_per_unit,
-                           (*env)->NewStringUTF(env, currency),
-                           (*env)->NewStringUTF(env, ic_ev->custom_unit));
+  return (*env)->NewObject(
+      env, cls, methodID, ic_ev->impulses_per_unit, ic_ev->counter,
+      ic_ev->calculated_value, ic_ev->total_cost, ic_ev->price_per_unit,
+      new_string_utf(env, currency), new_string_utf(env, ic_ev->custom_unit));
 }
 
 jobject supla_android_client_thermostatvalue_to_jobject(
@@ -961,7 +1007,7 @@ void supla_android_client_cb_channelgroup_update(
 
     fid = supla_client_GetFieldID(env, cchg, "Caption", "Ljava/lang/String;");
     (*env)->SetObjectField(env, chg, fid,
-                           (*env)->NewStringUTF(env, channel_group->Caption));
+                           new_string_utf(env, channel_group->Caption));
 
     supla_android_client(asc, asc->j_mid_channelgroup_update, chg);
   }
@@ -1009,7 +1055,7 @@ void supla_android_client_cb_on_oauth_token_request_result(
         supla_client_GetMethodID(env, cls, "<init>", "(IILjava/lang/String;)V");
     jobject token_obj = (*env)->NewObject(
         env, cls, methodID, result->ResultCode, result->Token.ExpiresIn,
-        (*env)->NewStringUTF(env, result->Token.Token));
+        new_string_utf(env, result->Token.Token));
 
     supla_android_client(asc, asc->j_mid_on_oauth_token_request_result,
                          token_obj);
@@ -1086,11 +1132,11 @@ void supla_android_client_cb_on_channel_basic_cfg(void *_suplaclient,
       "(Ljava/lang/String;Ljava/lang/String;IIIIIIIIIILjava/lang/String;)V");
 
   jobject channel_basic_cfg_obj = (*env)->NewObject(
-      env, cls, methodID, (*env)->NewStringUTF(env, cfg->DeviceName),
-      (*env)->NewStringUTF(env, cfg->DeviceSoftVer), cfg->DeviceID,
-      cfg->DeviceFlags, cfg->ManufacturerID, cfg->ProductID, cfg->ID,
-      cfg->Number, cfg->Type, cfg->Func, cfg->FuncList, cfg->ChannelFlags,
-      (*env)->NewStringUTF(env, cfg->Caption));
+      env, cls, methodID, new_string_utf(env, cfg->DeviceName),
+      new_string_utf(env, cfg->DeviceSoftVer), cfg->DeviceID, cfg->DeviceFlags,
+      cfg->ManufacturerID, cfg->ProductID, cfg->ID, cfg->Number, cfg->Type,
+      cfg->Func, cfg->FuncList, cfg->ChannelFlags,
+      new_string_utf(env, cfg->Caption));
 
   supla_android_client(asc, asc->j_mid_on_channel_basic_cfg,
                        channel_basic_cfg_obj);
@@ -1121,7 +1167,7 @@ void supla_android_client_cb_on_channel_caption_set_result(
 
   (*env)->CallVoidMethod(
       env, asc->j_obj, asc->j_mid_on_channel_caption_set_result,
-      result->ChannelID, (*env)->NewStringUTF(env, result->Caption),
+      result->ChannelID, new_string_utf(env, result->Caption),
       result->ResultCode);
 }
 
@@ -1182,7 +1228,7 @@ void supla_android_client_cb_on_event(void *_suplaclient, void *user_data,
 
     fid = supla_client_GetFieldID(env, cev, "SenderName", "Ljava/lang/String;");
     (*env)->SetObjectField(env, ev, fid,
-                           (*env)->NewStringUTF(env, event->SenderName));
+                           new_string_utf(env, event->SenderName));
 
     supla_android_client(asc, asc->j_mid_on_event, ev);
   }
@@ -1269,7 +1315,7 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
 
   return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
                            (jshort)node->ScreenType, channelID,
-                           (*env)->NewStringUTF(env, node->Name));
+                           new_string_utf(env, node->Name));
 }
 
 void supla_android_client_cb_on_zwave_add_node_result(
@@ -1372,16 +1418,16 @@ JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_cfgInit(
 
     fid = supla_client_GetFieldID(env, jcs, "Host", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.host));
+                           new_string_utf(env, sclient_cfg.host));
 
     fid = supla_client_GetFieldID(env, jcs, "SoftVer", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.SoftVer));
+                           new_string_utf(env, sclient_cfg.SoftVer));
 
     fid =
         supla_client_GetFieldID(env, jcs, "AccessIDpwd", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.AccessIDpwd));
+                           new_string_utf(env, sclient_cfg.AccessIDpwd));
 
     fid = supla_client_GetFieldID(env, jcs, "AccessID", "I");
     (*env)->SetIntField(env, cfg, fid, sclient_cfg.AccessID);
@@ -1391,15 +1437,15 @@ JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_cfgInit(
 
     fid = supla_client_GetFieldID(env, jcs, "Email", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.Email));
+                           new_string_utf(env, sclient_cfg.Email));
 
     fid = supla_client_GetFieldID(env, jcs, "Password", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.Password));
+                           new_string_utf(env, sclient_cfg.Password));
 
     fid = supla_client_GetFieldID(env, jcs, "Name", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.Name));
+                           new_string_utf(env, sclient_cfg.Name));
 
     jbyteArray arr = (*env)->NewByteArray(env, SUPLA_GUID_SIZE);
     (*env)->SetByteArrayRegion(env, arr, 0, SUPLA_GUID_SIZE,
