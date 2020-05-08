@@ -393,10 +393,19 @@ void supla_device::on_device_channel_extendedvalue_changed(
 
 void supla_device::on_channel_set_value_result(
     TDS_SuplaChannelNewValueResult *result) {
-  int ChannelID;
+  if (result == NULL || result->SenderID == 0) {
+    return;
+  }
 
-  if (result->Success == 1 && result->SenderID != 0 &&
-      (ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
+  int ChannelID = channels->get_channel_id(result->ChannelNumber);
+
+  if (ChannelID == 0) {
+    return;
+  }
+
+  int ChannelType = channels->get_channel_type(ChannelID);
+
+  if (result->Success == 1 || ChannelType == SUPLA_CHANNELTYPE_BRIDGE) {
     TSC_SuplaEvent event;
     memset(&event, 0, sizeof(TSC_SuplaEvent));
     event.ChannelID = ChannelID;
@@ -407,34 +416,38 @@ void supla_device::on_channel_set_value_result(
     event.SenderNameSize =
         strnlen(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE - 1) + 1;
 
-    switch (channels->get_channel_func(ChannelID)) {
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEGATE;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEDOORLOCK;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER;
-        break;
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-        event.Event = SUPLA_EVENT_POWERONOFF;
-        break;
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        event.Event = SUPLA_EVENT_LIGHTONOFF;
-        break;
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
-        break;
-      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-        event.Event = SUPLA_EVENT_VALVEOPENCLOSE;
-        break;
+    if (result->Success == 0 && ChannelType == SUPLA_CHANNELTYPE_BRIDGE) {
+      event.Event = SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED;
+    } else {
+      switch (channels->get_channel_func(ChannelID)) {
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEGATE;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEDOORLOCK;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER;
+          break;
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+          event.Event = SUPLA_EVENT_POWERONOFF;
+          break;
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+          event.Event = SUPLA_EVENT_LIGHTONOFF;
+          break;
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
+          event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
+          break;
+        case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+          event.Event = SUPLA_EVENT_VALVEOPENCLOSE;
+          break;
+      }
     }
 
     getUser()->call_event(&event);

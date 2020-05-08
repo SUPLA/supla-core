@@ -1179,6 +1179,22 @@ int supla_device_channels::get_channel_func(int ChannelID) {
   return Func;
 }
 
+int supla_device_channels::get_channel_type(int ChannelID) {
+  if (ChannelID == 0) return 0;
+
+  int Type = 0;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) Type = channel->getType();
+
+  safe_array_unlock(arr);
+
+  return Type;
+}
+
 std::list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
   std::list<int> result;
   if (ChannelID == 0) return result;

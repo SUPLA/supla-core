@@ -240,6 +240,7 @@ class supla_device_channels {
 
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
+  int get_channel_type(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          bool *converted2extended);
   void set_channel_offline(int ChannelID, bool Offline);

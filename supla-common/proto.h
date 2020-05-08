@@ -374,8 +374,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER 50
 #define SUPLA_EVENT_POWERONOFF 60
 #define SUPLA_EVENT_LIGHTONOFF 70
-#define SUPLA_EVENT_STAIRCASETIMERONOFF 80  // ver. >= 9
-#define SUPLA_EVENT_VALVEOPENCLOSE 90       // ver. >= 12
+#define SUPLA_EVENT_STAIRCASETIMERONOFF 80       // ver. >= 9
+#define SUPLA_EVENT_VALVEOPENCLOSE 90            // ver. >= 12
+#define SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED 100  // ver. >= 12
 
 #define SUPLA_URL_PROTO_HTTP 0x01
 #define SUPLA_URL_PROTO_HTTPS 0x02
@@ -1110,17 +1111,18 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
-#define SUPLA_CALCFG_RESULT_FALSE 0              // ver. >= 12
-#define SUPLA_CALCFG_RESULT_TRUE 1               // ver. >= 12
-#define SUPLA_CALCFG_RESULT_DONE 2               // ver. >= 12
-#define SUPLA_CALCFG_RESULT_IN_PROGRESS 3        // ver. >= 12
-#define SUPLA_CALCFG_RESULT_NODE_FOUND 4         // ver. >= 12
-#define SUPLA_CALCFG_RESULT_SENDER_CONFLICT 100  // ver. >= 12
-#define SUPLA_CALCFG_RESULT_TIMEOUT 101          // ver. >= 12
-#define SUPLA_CALCFG_RESULT_NOT_SUPPORTED 102    // ver. >= 12
-#define SUPLA_CALCFG_RESULT_ID_NOT_EXISTS 103    // ver. >= 12
-#define SUPLA_CALCFG_RESULT_UNAUTHORIZED 104     // ver. >= 12
-#define SUPLA_CALCFG_RESULT_DEBUG 105            // ver. >= 12
+#define SUPLA_CALCFG_RESULT_FALSE 0                          // ver. >= 12
+#define SUPLA_CALCFG_RESULT_TRUE 1                           // ver. >= 12
+#define SUPLA_CALCFG_RESULT_DONE 2                           // ver. >= 12
+#define SUPLA_CALCFG_RESULT_IN_PROGRESS 3                    // ver. >= 12
+#define SUPLA_CALCFG_RESULT_NODE_FOUND 4                     // ver. >= 12
+#define SUPLA_CALCFG_RESULT_SENDER_CONFLICT 100              // ver. >= 12
+#define SUPLA_CALCFG_RESULT_TIMEOUT 101                      // ver. >= 12
+#define SUPLA_CALCFG_RESULT_NOT_SUPPORTED 102                // ver. >= 12
+#define SUPLA_CALCFG_RESULT_ID_NOT_EXISTS 103                // ver. >= 12
+#define SUPLA_CALCFG_RESULT_UNAUTHORIZED 104                 // ver. >= 12
+#define SUPLA_CALCFG_RESULT_DEBUG 105                        // ver. >= 12
+#define SUPLA_CALCFG_RESULT_NOT_SUPPORTED_IN_SLAVE_MODE 106  // ver. >= 12
 
 #define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000        // v. >= 11
 #define SUPLA_CALCFG_CMD_CANCEL_ALL_CLIENT_COMMANDS 1010  // v. >= 12
@@ -1130,7 +1132,9 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST 2030         // v. >= 12
 #define SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID 2040  // v. >= 12
 #define SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID 2050        // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_CONFIG_MODE_ACTIVE 4000    // v. >= 12
 #define SUPLA_CALCFG_CMD_DEBUG_STRING 5000                // v. >= 12
+#define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1154,6 +1158,10 @@ typedef struct {
   unsigned char NameSize;  // including the terminating null byte ('\0')
   char Name[ZWAVE_NODE_NAME_MAXSIZE];  // UTF8. Last variable in struct!
 } TCalCfg_ZWave_Node;                  // v. >= 12
+
+typedef struct {
+  unsigned char Progress;  // 0 - 100%
+} TCalCfg_ZWave_ProgressReport;
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {

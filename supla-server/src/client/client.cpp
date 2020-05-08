@@ -355,7 +355,10 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
 }
 
 void supla_client::call_event(TSC_SuplaEvent *event) {
-  srpc_sc_async_event(getSvrConn()->srpc(), event);
+  if (event != NULL && (event->Event != SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED ||
+                        event->SenderID == getID())) {
+    srpc_sc_async_event(getSvrConn()->srpc(), event);
+  }
 }
 
 void supla_client::oauth_token_request(void) {
