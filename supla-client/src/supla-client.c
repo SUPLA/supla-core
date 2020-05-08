@@ -1357,6 +1357,11 @@ char supla_client_reconnect_device(void *_suplaclient, int deviceID) {
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
 }
 
+char supla_client_zwave_config_mode_active(void *_suplaclient, int deviceID) {
+  return supla_client_device_calcfg_command(
+      _suplaclient, deviceID, SUPLA_CALCFG_CMD_ZWAVE_CONFIG_MODE_ACTIVE);
+}
+
 char supla_client_zwave_reset_and_clear(void *_suplaclient, int deviceID) {
   return supla_client_device_calcfg_command(
       _suplaclient, deviceID, SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR);

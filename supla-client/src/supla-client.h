@@ -224,6 +224,7 @@ char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,
                                            int clientRegTimeSec);
 char supla_client_reconnect_device(void *_suplaclient, int deviceID);
+char supla_client_zwave_config_mode_active(void *_suplaclient, int deviceID);
 char supla_client_zwave_reset_and_clear(void *_suplaclient, int deviceID);
 char supla_client_zwave_add_node(void *_suplaclient, int deviceID);
 char supla_client_zwave_remove_node(void *_suplaclient, int deviceID);
