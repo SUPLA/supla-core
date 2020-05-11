@@ -1160,8 +1160,9 @@ typedef struct {
 } TCalCfg_ZWave_Node;                  // v. >= 12
 
 typedef struct {
+  _supla_int_t Command;
   unsigned char Progress;  // 0 - 100%
-} TCalCfg_ZWave_ProgressReport;
+} TCalCfg_ProgressReport;
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {

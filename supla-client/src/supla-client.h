@@ -87,6 +87,9 @@ typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
 typedef void (*_suplaclient_cb_on_set_registration_enabled_result)(
     void *_suplaclient, void *user_data,
     TSC_SetRegistrationEnabledResult *result);
+typedef void (*_suplaclient_cb_on_device_calcfg_progress_report)(
+    void *_suplaclient, void *user_data, int ChannelID,
+    TCalCfg_ProgressReport *progress_report);
 typedef void (*_suplaclient_cb_on_device_calcfg_debug_string)(
     void *_suplaclient, void *user_data, char *str);
 typedef void (*_suplaclient_cb_on_zwave_basic_result)(void *_suplaclient,
@@ -162,6 +165,8 @@ typedef struct {
       cb_on_clients_reconnect_request_result;
   _suplaclient_cb_on_set_registration_enabled_result
       cb_on_set_registration_enabled_result;
+  _suplaclient_cb_on_device_calcfg_progress_report
+      cb_on_device_calcfg_progress_report;
   _suplaclient_cb_on_device_calcfg_debug_string
       cb_on_device_calcfg_debug_string;
   _suplaclient_cb_on_zwave_basic_result cb_on_zwave_reset_and_clear_result;

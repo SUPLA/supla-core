@@ -481,6 +481,15 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
   }
 
   switch (result->Command) {
+    case SUPLA_CALCFG_CMD_PROGRESS_REPORT:
+      if (result->Result == SUPLA_CALCFG_RESULT_TRUE &&
+          result->DataSize == sizeof(TCalCfg_ProgressReport) &&
+          scd->cfg.cb_on_device_calcfg_progress_report) {
+        scd->cfg.cb_on_device_calcfg_progress_report(
+            scd, scd->cfg.user_data, result->ChannelID,
+            (TCalCfg_ProgressReport *)result->Data);
+      }
+      break;
     case SUPLA_CALCFG_CMD_DEBUG_STRING:
       if (result->DataSize > 0 && scd->cfg.cb_on_device_calcfg_debug_string) {
         if (result->DataSize >= SUPLA_CALCFG_DATA_MAXSIZE) {

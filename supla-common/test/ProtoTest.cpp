@@ -148,6 +148,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_ZWave_Node),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
   ASSERT_LE(sizeof(unsigned char), (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+  ASSERT_LE(sizeof(TCalCfg_ProgressReport),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 }
 
 TEST_F(ProtoTest, init) {

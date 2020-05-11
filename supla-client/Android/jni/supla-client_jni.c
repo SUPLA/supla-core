@@ -192,6 +192,7 @@ typedef struct {
   jmethodID j_mid_on_superuser_authorization_result;
   jmethodID j_mid_on_device_calcfg_result;
   jmethodID j_mid_on_device_calcfg_debug_string;
+  jmethodID j_mid_on_device_calcfg_progress_report;
   jmethodID j_mid_on_channel_state;
   jmethodID j_mid_on_channel_basic_cfg;
   jmethodID j_mid_on_channel_function_set_result;
@@ -1097,6 +1098,20 @@ void supla_android_client_cb_on_device_calcfg_result(
   }
 }
 
+void supla_android_client_cb_on_device_calcfg_progress_report(
+    void *_suplaclient, void *user_data, int ChannelID, TCalCfg_ProgressReport *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_device_calcfg_progress_report) {
+    jbyteArray data = NULL;
+
+    (*env)->CallVoidMethod(
+        env, asc->j_obj, asc->j_mid_on_device_calcfg_progress_report,
+        ChannelID, result->Command, result->Progress);
+  }
+}
+
 JNI_CALLBACK_STRING(on_device_calcfg_debug_string);
 
 void supla_android_client_cb_on_channel_state(void *_suplaclient,
@@ -1581,6 +1596,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onSuperUserAuthorizationResult", "(ZI)V");
     _asc->j_mid_on_device_calcfg_result = supla_client_GetMethodID(
         env, oclass, "onDeviceCalCfgResult", "(III[B)V");
+    _asc->j_mid_on_device_calcfg_progress_report = supla_client_GetMethodID(
+        env, oclass, "onDeviceCalCfgProgressReport", "(IIS)V");
     _asc->j_mid_on_device_calcfg_debug_string = supla_client_GetMethodID(
         env, oclass, "onDeviceCalCfgDebugString", "(Ljava/lang/String;)V");
     _asc->j_mid_on_channel_state = supla_client_GetMethodID(
@@ -1641,6 +1658,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_superuser_authorization_result;
     sclient_cfg.cb_on_device_calcfg_result =
         supla_android_client_cb_on_device_calcfg_result;
+    sclient_cfg.cb_on_device_calcfg_progress_report =
+        supla_android_client_cb_on_device_calcfg_progress_report;
     sclient_cfg.cb_on_device_calcfg_debug_string =
         supla_android_client_cb_on_device_calcfg_debug_string;
     sclient_cfg.cb_on_device_channel_state =
