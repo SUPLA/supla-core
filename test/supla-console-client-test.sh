@@ -5,7 +5,7 @@ set -e
 [ -d ../test ] && cd ../
 . ./test/common
 
-DBHOST=db
+DBHOST=127.0.0.1
 
 if ! (echo "" | mysql -u supla -h $DBHOST); then
   if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql; then
