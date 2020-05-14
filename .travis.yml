@@ -19,8 +19,9 @@ matrix:
       dist: bionic
       compiler: gcc
       install:
-        - sudo apt-get -y install valgrind mariadb-server libmariadbclient-dev
+        - sudo apt-get -y install valgrind libmariadbclient-dev
       addons:
+        mariadb: '10.1'
         hosts:
           - db
       script:
