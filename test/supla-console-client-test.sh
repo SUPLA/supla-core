@@ -44,6 +44,9 @@ if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ../../
 fi
 
+sleep 2
+[ -e /var/log/syslog ] && grep "Incorrect database version!" /var/log/syslog && exit 1
+
 cd supla-console-client/Test
 make clean && make all
 
