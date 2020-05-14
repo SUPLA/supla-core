@@ -16,12 +16,12 @@ matrix:
     - language: cpp
       sudo: false
       os: linux
-      dist: bionic
+      dist: eoan
       compiler: gcc
       install:
         - sudo apt-get -y install valgrind libmariadbclient-dev
       addons:
-        mariadb: '10.1.45'
+        mariadb: '10.3'
         hosts:
           - db
       script:
