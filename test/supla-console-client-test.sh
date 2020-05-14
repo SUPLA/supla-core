@@ -7,9 +7,9 @@ set -e
 
 DBHOST=db
 
-if ! (echo "" | mysql -u supla -h $DBHOST); then
-  if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql; then
-    if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql; then
+if ! (echo "" | mysql -u supla -h $DBHOST) 2> /dev/null; then
+  if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+    if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
       echo "Enter mariadb root password.";
       mysql -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql 
     fi
