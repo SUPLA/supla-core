@@ -21,7 +21,7 @@ matrix:
       before_install:
         - sudo apt-get update
       install:
-        - sudo apt-get -y install valgrind libmariadb-dev
+        - sudo apt-get -y install valgrind 
       addons:
         mariadb: '10.3'
         hosts:
