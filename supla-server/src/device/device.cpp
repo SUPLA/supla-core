@@ -126,7 +126,6 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
     if (db->connect() == true) {
       int UserID = 0;
-      int _UserID = 0;
       bool LocationEnabled = false;
       bool DeviceEnabled = true;
       int _LocationID = 0;
@@ -153,9 +152,9 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
         db->start_transaction();
 
-        int DeviceID = db->get_device(db->get_device_id(GUID), &DeviceEnabled,
-                                      &_OriginalLocationID, &_LocationID,
-                                      &LocationEnabled, &_UserID);
+        int DeviceID = db->get_device(db->get_device_id(UserID, GUID),
+                                      &DeviceEnabled, &_OriginalLocationID,
+                                      &_LocationID, &LocationEnabled);
 
         if (LocationID == 0) LocationID = _LocationID;
 
@@ -186,7 +185,6 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
             if (LocationID != 0) {
               new_device = true;
 
-              _UserID = UserID;
               _LocationID = LocationID;
 
               DeviceID = db->add_device(LocationID, GUID, AuthKey, Name,
@@ -198,12 +196,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
         }
 
         if (DeviceID != 0) {
-          if (UserID != _UserID) {
-            DeviceID = 0;
-            db->rollback();
-            resultcode = SUPLA_RESULTCODE_USER_CONFLICT;
-
-          } else if (!DeviceEnabled) {
+          if (!DeviceEnabled) {
             DeviceID = 0;
             db->rollback();
             resultcode = SUPLA_RESULTCODE_DEVICE_DISABLED;
