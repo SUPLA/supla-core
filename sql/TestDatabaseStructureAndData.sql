@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `esp_update`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `esp_update` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `device_id` int(11) NOT NULL,
   `device_name` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `platform` tinyint(4) NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE `migration_versions` (
 
 LOCK TABLES `migration_versions` WRITE;
 /*!40000 ALTER TABLE `migration_versions` DISABLE KEYS */;
-INSERT INTO `migration_versions` VALUES ('20170101000000'),('20170414101854'),('20170612204116'),('20170818114139'),('20171013140904'),('20171208222022'),('20171210105120'),('20180108224520'),('20180113234138'),('20180116184415'),('20180203231115'),('20180208145738'),('20180224184251'),('20180324222844'),('20180326134725'),('20180403175932'),('20180403203101'),('20180403211558'),('20180411202101'),('20180411203913'),('20180416201401'),('20180423121539'),('20180507095139'),('20180518131234'),('20180707221458'),('20180717094843'),('20180723132652'),('20180807083217'),('20180812205513'),('20180814155501'),('20180914222230'),('20181001221229'),('20181007112610'),('20181019115859'),('20181024164957'),('20181025171850'),('20181026171557'),('20181105144611'),('20181126225634'),('20181129170610'),('20181129195431'),('20181129231132'),('20181204174603'),('20181205092324'),('20181222001450'),('20190105130410'),('20190117075805'),('20190219184847'),('20190325215115'),('20190401151822'),('20190720215803'),('20190813232026'),('20190815154016'),('20191226160845'),('20200108201101'),('20200122200601'),('20200123235701'),('20200124084227'),('20200204170901'),('20200210145902'),('20200229122103'),('20200322123636'),('20200412183701'),('20200414213205'),('20200416225304'),('20200419190150');
+INSERT INTO `migration_versions` VALUES ('20170101000000'),('20170414101854'),('20170612204116'),('20170818114139'),('20171013140904'),('20171208222022'),('20171210105120'),('20180108224520'),('20180113234138'),('20180116184415'),('20180203231115'),('20180208145738'),('20180224184251'),('20180324222844'),('20180326134725'),('20180403175932'),('20180403203101'),('20180403211558'),('20180411202101'),('20180411203913'),('20180416201401'),('20180423121539'),('20180507095139'),('20180518131234'),('20180707221458'),('20180717094843'),('20180723132652'),('20180807083217'),('20180812205513'),('20180814155501'),('20180914222230'),('20181001221229'),('20181007112610'),('20181019115859'),('20181024164957'),('20181025171850'),('20181026171557'),('20181105144611'),('20181126225634'),('20181129170610'),('20181129195431'),('20181129231132'),('20181204174603'),('20181205092324'),('20181222001450'),('20190105130410'),('20190117075805'),('20190219184847'),('20190325215115'),('20190401151822'),('20190720215803'),('20190813232026'),('20190815154016'),('20191226160845'),('20200108201101'),('20200122200601'),('20200123235701'),('20200124084227'),('20200204170901'),('20200210145902'),('20200229122103'),('20200322123636'),('20200412183701'),('20200414213205'),('20200416225304'),('20200419190150'),('20200423130550'),('20200430113342'),('20200514132030');
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -377,9 +377,8 @@ DROP TABLE IF EXISTS `supla_em_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `supla_em_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `channel_id` int(11) NOT NULL,
-  `date` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
+  `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `phase1_fae` bigint(20) DEFAULT NULL,
   `phase1_rae` bigint(20) DEFAULT NULL,
   `phase1_fre` bigint(20) DEFAULT NULL,
@@ -392,9 +391,7 @@ CREATE TABLE `supla_em_log` (
   `phase3_rae` bigint(20) DEFAULT NULL,
   `phase3_fre` bigint(20) DEFAULT NULL,
   `phase3_rre` bigint(20) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `channel_id_idx` (`channel_id`),
-  KEY `date_idx` (`date`)
+  PRIMARY KEY (`channel_id`,`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -442,14 +439,11 @@ DROP TABLE IF EXISTS `supla_ic_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `supla_ic_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `channel_id` int(11) NOT NULL,
-  `date` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
+  `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `counter` bigint(20) NOT NULL,
   `calculated_value` bigint(20) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `channel_id_idx` (`channel_id`),
-  KEY `date_idx` (`date`)
+  PRIMARY KEY (`channel_id`,`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -489,7 +483,7 @@ CREATE TABLE `supla_iodevice` (
   `manufacturer_id` smallint(6) DEFAULT NULL,
   `product_id` smallint(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UNIQ_793D49D2B6FCFB2` (`guid`),
+  UNIQUE KEY `UNIQUE_USER_GUID` (`user_id`,`guid`),
   KEY `IDX_793D49D64D218E` (`location_id`),
   KEY `IDX_793D49DA76ED395` (`user_id`),
   KEY `IDX_793D49DF142C1A4` (`original_location_id`),
@@ -926,13 +920,10 @@ DROP TABLE IF EXISTS `supla_temperature_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `supla_temperature_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `channel_id` int(11) NOT NULL,
-  `date` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
+  `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `temperature` decimal(8,4) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `channel_id_idx` (`channel_id`),
-  KEY `date_idx` (`date`)
+  PRIMARY KEY (`channel_id`,`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -953,14 +944,11 @@ DROP TABLE IF EXISTS `supla_temphumidity_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `supla_temphumidity_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `channel_id` int(11) NOT NULL,
-  `date` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
+  `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `temperature` decimal(8,4) NOT NULL,
   `humidity` decimal(8,4) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `channel_id_idx` (`channel_id`),
-  KEY `date_idx` (`date`)
+  PRIMARY KEY (`channel_id`,`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -981,15 +969,12 @@ DROP TABLE IF EXISTS `supla_thermostat_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `supla_thermostat_log` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `channel_id` int(11) NOT NULL,
-  `date` datetime NOT NULL COMMENT '(DC2Type:utcdatetime)',
+  `date` datetime NOT NULL COMMENT '(DC2Type:stringdatetime)',
   `on` tinyint(1) NOT NULL,
   `measured_temperature` decimal(5,2) NOT NULL,
   `preset_temperature` decimal(5,2) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `channel_id_idx` (`channel_id`),
-  KEY `date_idx` (`date`)
+  PRIMARY KEY (`channel_id`,`date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1951,4 +1936,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-04-19 20:16:04
+-- Dump completed on 2020-05-14 18:08:37
