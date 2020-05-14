@@ -19,7 +19,7 @@ matrix:
       dist: eoan
       compiler: gcc
       before_install:
-        - apt-cache search mariadb
+        - sudo apt-get update
       install:
         - sudo apt-get -y install valgrind 
       addons:
