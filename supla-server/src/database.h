@@ -46,6 +46,8 @@ class database : public dbcommon {
                         bool *is_null, const char *sql);
 
   void em_set_longlong(unsigned _supla_int64_t *v, void *pbind);
+  int get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
+                           bool client);
 
  public:
   bool location_auth(int LocationID, char *LocationPWD, int *UserID,
@@ -84,10 +86,9 @@ class database : public dbcommon {
   int get_location_id(int UserID, bool enabled);
 
   bool get_device_reg_enabled(int UserID);
-  int get_device_id_and_user(const char GUID[SUPLA_GUID_SIZE], int *UserID);
-  int get_device_id(const char GUID[SUPLA_GUID_SIZE]);
+  int get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
   int get_device(int DeviceID, bool *device_enabled, int *original_location_id,
-                 int *location_id, bool *location_enabled, int *UserID);
+                 int *location_id, bool *location_enabled);
 
   int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
   int get_device_channel_count(int DeviceID);

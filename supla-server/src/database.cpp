@@ -241,15 +241,11 @@ bool database::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
   int ID = 0;
   int _UserID = get_user_id_by_email(Email);
 
-  if (_UserID == 0 && !Client) {
-    ID = get_device_id_and_user(GUID, &_UserID);
-  }
-
   if (_UserID == 0) {
     return false;
   }
 
-  if (ID == 0) ID = Client ? get_client_id(_UserID, GUID) : get_device_id(GUID);
+  ID = Client ? get_client_id(_UserID, GUID) : get_device_id(_UserID, GUID);
 
   if (ID == 0) {  // Yes. When client not exists then is authorized
     *UserID = _UserID;
@@ -299,40 +295,42 @@ bool database::device_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                       "SELECT auth_key FROM supla_iodevice WHERE id = ?");
 }
 
-int database::get_device_id_and_user(const char GUID[SUPLA_GUID_SIZE],
-                                     int *UserID) {
-  if (_mysql == NULL) return false;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
+int database::get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
+                                   bool client) {
+  MYSQL_STMT *stmt;
+  int Result = 0;
 
   char GUIDHEX[SUPLA_GUID_HEXSIZE];
   st_guid2hex(GUIDHEX, GUID);
 
-  pbind[0].buffer_type = MYSQL_TYPE_STRING;
-  pbind[0].buffer = (char *)GUIDHEX;
-  pbind[0].buffer_length = SUPLA_GUID_HEXSIZE - 1;
+  MYSQL_BIND pbind[2];
+  memset(pbind, 0, sizeof(pbind));
 
-  MYSQL_STMT *stmt;
-  int dev_id;
-  if (stmt_get_int(
-          (void **)&stmt, &dev_id, UserID, NULL, NULL,
-          "SELECT id, user_id FROM supla_iodevice WHERE guid = unhex(?)", pbind,
-          1)) {
-    return dev_id;
-  }
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
 
-  return 0;
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)GUIDHEX;
+  pbind[1].buffer_length = SUPLA_GUID_HEXSIZE - 1;
+
+  if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
+                    client ? "SELECT id FROM supla_client WHERE user_id = ? "
+                             "AND guid = unhex(?)"
+                           : "SELECT id FROM supla_iodevice WHERE user_id = ? "
+                             "AND guid = unhex(?)",
+                    pbind, 2))
+    return 0;
+
+  return Result;
 }
 
-int database::get_device_id(const char GUID[SUPLA_GUID_SIZE]) {
-  int UserID = 0;
-  return get_device_id_and_user(GUID, &UserID);
+int database::get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
+  return get_device_client_id(UserID, GUID, false);
 }
 
 int database::get_device(int DeviceID, bool *device_enabled,
                          int *original_location_id, int *location_id,
-                         bool *location_enabled, int *UserID) {
+                         bool *location_enabled) {
   if (_mysql == NULL || DeviceID == 0) return 0;
 
   MYSQL_STMT *stmt = NULL;
@@ -347,7 +345,6 @@ int database::get_device(int DeviceID, bool *device_enabled,
   int _original_location_id = 0;
   int _location_id = 0;
   int _location_enabled = 0;
-  int _UserID = 0;
 
   bool result = false;
 
@@ -355,10 +352,10 @@ int database::get_device(int DeviceID, bool *device_enabled,
                    "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
                    "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, "
                    "0), IFNULL(CAST(l.`enabled` AS unsigned integer), 0) "
-                   "`l_enabled`, d.`user_id` FROM supla_iodevice d LEFT JOIN "
-                   "supla_location l ON l.id = d.location_id WHERE d.id = ?",
+                   "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
+                   "l ON l.id = d.location_id WHERE d.id = ?",
                    pbind, 1, true)) {
-    MYSQL_BIND rbind[5];
+    MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -373,9 +370,6 @@ int database::get_device(int DeviceID, bool *device_enabled,
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
     rbind[3].buffer = (char *)&_location_enabled;
 
-    rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&_UserID;
-
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -387,7 +381,6 @@ int database::get_device(int DeviceID, bool *device_enabled,
         *original_location_id = _original_location_id;
         *location_id = _location_id;
         *location_enabled = _location_enabled == 1;
-        *UserID = _UserID;
 
         result = true;
       }
@@ -825,29 +818,7 @@ void database::get_device_channels(int DeviceID,
 }
 
 int database::get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
-  MYSQL_STMT *stmt;
-  int Result = 0;
-
-  char GUIDHEX[SUPLA_GUID_HEXSIZE];
-  st_guid2hex(GUIDHEX, GUID);
-
-  MYSQL_BIND pbind[2];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)GUIDHEX;
-  pbind[1].buffer_length = SUPLA_GUID_HEXSIZE - 1;
-
-  if (!stmt_get_int(
-          (void **)&stmt, &Result, NULL, NULL, NULL,
-          "SELECT id FROM supla_client WHERE user_id = ? AND guid = unhex(?)",
-          pbind, 2))
-    return 0;
-
-  return Result;
+  return get_device_client_id(UserID, GUID, true);
 }
 
 int database::get_client(int ClientID, bool *client_enabled, int *access_id,
