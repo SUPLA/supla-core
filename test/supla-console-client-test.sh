@@ -44,6 +44,11 @@ if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ../../
 fi
 
+sleep 2
+ps ax
+netstat -an
+grep supla-server /var/log/*
+
 cd supla-console-client/Test
 make clean && make all
 
