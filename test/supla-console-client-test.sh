@@ -5,10 +5,6 @@ set -e
 [ -d ../test ] && cd ../
 . ./test/common
 
-ps ax
-find /etc/init.d/ -name my*
-find /etc/init.d/ -name ma*
-
 DBHOST=127.0.0.1
 
 if ! (echo "" | mysql -u supla -h $DBHOST); then
