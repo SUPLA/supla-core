@@ -5,6 +5,9 @@ set -e
 [ -d ../test ] && cd ../
 . ./test/common
 
+cat /etc/hosts
+host db
+
 DBHOST=db
 
 if ! (echo "" | mysql -u supla -h $DBHOST); then
