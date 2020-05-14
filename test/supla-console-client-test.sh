@@ -5,7 +5,7 @@ set -e
 [ -d ../test ] && cd ../
 . ./test/common
 
-/etc/init.d/mysql start
+/etc/init.d/mysql start || journalctl -xe
 ps ax
 find /etc/init.d/ -name my*
 find /etc/init.d/ -name ma*
