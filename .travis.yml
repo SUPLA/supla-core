@@ -21,7 +21,7 @@ matrix:
       install:
         - sudo apt-get -y install valgrind libmariadbclient-dev
       addons:
-        mariadb: '10.1'
+        mariadb: '10.3'
         hosts:
           - db
       script:
