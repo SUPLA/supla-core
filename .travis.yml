@@ -18,6 +18,8 @@ matrix:
       os: linux
       dist: eoan
       compiler: gcc
+      before_install:
+        - sudo apt-get update
       install:
         - sudo apt-get -y install valgrind libmariadbclient-dev
       addons:
