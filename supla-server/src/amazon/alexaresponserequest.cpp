@@ -58,7 +58,7 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
   }
 
   channel_complex_value summary =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+      getUser()->get_channel_complex_value(getChannelId());
 
   switch (summary.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -85,7 +85,7 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
 
 void supla_alexa_response_request::execute(void *sthread) {
   channel_complex_value value =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+      getUser()->get_channel_complex_value(getChannelId());
 
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:

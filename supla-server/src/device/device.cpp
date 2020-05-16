@@ -46,6 +46,30 @@ supla_device::~supla_device() {
   delete channels;
 }
 
+// static
+bool supla_device::funclist_contains_function(int funcList, int func) {
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATE) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      return (funcList & SUPLA_BIT_FUNC_LIGHTSWITCH) > 0;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return (funcList & SUPLA_BIT_FUNC_STAIRCASETIMER) > 0;
+  }
+
+  return false;
+}
+
 bool supla_device::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                                    const char Email[SUPLA_EMAIL_MAXSIZE],
                                    const char AuthKey[SUPLA_AUTHKEY_SIZE],
@@ -219,15 +243,25 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                 ChannelFlags = dev_channels_c[a].Flags;
               }
 
+              if (Type == 0) {
+                break;
+              }
+
               if (db->get_device_channel(DeviceID, Number, &ChannelType) == 0) {
                 ChannelType = 0;
+              }
+
+              if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
+                  Default == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+                // Issue #115
+                Default = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
               }
 
               if (ChannelType == 0) {
                 bool new_channel = false;
                 int ChannelID = db->add_device_channel(
-                    DeviceID, Number, Type, Default ? Default : 0, FuncList,
-                    ChannelFlags, UserID, &new_channel);
+                    DeviceID, Number, Type, Default, FuncList, ChannelFlags,
+                    UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
@@ -316,12 +350,22 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 void supla_device::load_config(void) { channels->load(getID()); }
 
 void supla_device::on_device_channel_value_changed(
-    TDS_SuplaDeviceChannelValue *value) {
-  int ChannelId = channels->get_channel_id(value->ChannelNumber);
+    TDS_SuplaDeviceChannelValue *value,
+    TDS_SuplaDeviceChannelValue_B *value_b) {
+  if (value == NULL && value_b == NULL) {
+    return;
+  }
+
+  int ChannelId = channels->get_channel_id(value ? value->ChannelNumber
+                                                 : value_b->ChannelNumber);
 
   if (ChannelId != 0) {
     bool converted2extended;
-    channels->set_channel_value(ChannelId, value->value, &converted2extended);
+    channels->set_channel_value(
+        ChannelId, value ? value->value : value_b->value, &converted2extended);
+    if (value_b) {
+      channels->set_channel_offline(ChannelId, value_b->Offline > 0);
+    }
     getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
 
     if (converted2extended) {
@@ -342,10 +386,19 @@ void supla_device::on_device_channel_extendedvalue_changed(
 
 void supla_device::on_channel_set_value_result(
     TDS_SuplaChannelNewValueResult *result) {
-  int ChannelID;
+  if (result == NULL || result->SenderID == 0) {
+    return;
+  }
 
-  if (result->Success == 1 && result->SenderID != 0 &&
-      (ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
+  int ChannelID = channels->get_channel_id(result->ChannelNumber);
+
+  if (ChannelID == 0) {
+    return;
+  }
+
+  int ChannelType = channels->get_channel_type(ChannelID);
+
+  if (result->Success == 1 || ChannelType == SUPLA_CHANNELTYPE_BRIDGE) {
     TSC_SuplaEvent event;
     memset(&event, 0, sizeof(TSC_SuplaEvent));
     event.ChannelID = ChannelID;
@@ -356,34 +409,38 @@ void supla_device::on_channel_set_value_result(
     event.SenderNameSize =
         strnlen(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE - 1) + 1;
 
-    switch (channels->get_channel_func(ChannelID)) {
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEGATE;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEDOORLOCK;
-        break;
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-        event.Event = SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER;
-        break;
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-        event.Event = SUPLA_EVENT_POWERONOFF;
-        break;
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        event.Event = SUPLA_EVENT_LIGHTONOFF;
-        break;
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
-        break;
-      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-        event.Event = SUPLA_EVENT_VALVEOPENCLOSE;
-        break;
+    if (result->Success == 0 && ChannelType == SUPLA_CHANNELTYPE_BRIDGE) {
+      event.Event = SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED;
+    } else {
+      switch (channels->get_channel_func(ChannelID)) {
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEGATE;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEDOORLOCK;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER;
+          break;
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+          event.Event = SUPLA_EVENT_POWERONOFF;
+          break;
+        case SUPLA_CHANNELFNC_LIGHTSWITCH:
+          event.Event = SUPLA_EVENT_LIGHTONOFF;
+          break;
+        case SUPLA_CHANNELFNC_STAIRCASETIMER:
+          event.Event = SUPLA_EVENT_STAIRCASETIMERONOFF;
+          break;
+        case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+          event.Event = SUPLA_EVENT_VALVEOPENCLOSE;
+          break;
+      }
     }
 
     getUser()->call_event(&event);
@@ -391,8 +448,9 @@ void supla_device::on_channel_set_value_result(
 }
 
 bool supla_device::get_channel_value(int ChannelID,
-                                     char value[SUPLA_CHANNELVALUE_SIZE]) {
-  return channels->get_channel_value(ChannelID, value);
+                                     char value[SUPLA_CHANNELVALUE_SIZE],
+                                     char *online) {
+  return channels->get_channel_value(ChannelID, value, online);
 }
 
 bool supla_device::get_channel_extendedvalue(
@@ -503,13 +561,52 @@ bool supla_device::calcfg_request(int SenderID, int ChannelID,
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
-  int ChannelID;
-  if ((ChannelID = channels->get_channel_id(result->ChannelNumber)) != 0) {
+  int ChannelID = channels->get_channel_id(result->ChannelNumber);
+  if (ChannelID != 0) {
+    if (result->DataSize >=
+            (sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE) &&
+        result->DataSize <= sizeof(TCalCfg_ZWave_Node)) {
+      switch (result->Command) {
+        case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
+        case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
+          TCalCfg_ZWave_Node *node = (TCalCfg_ZWave_Node *)result->Data;
+          if (node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED) {
+            node->ChannelID = channels->get_channel_id(node->ChannelNumber);
+            if (node->ChannelID == 0) {
+              node->Flags ^= ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED;
+            }
+          } else {
+            node->ChannelID = 0;
+          }
+          break;
+      }
+    }
+
     getUser()->on_device_calcfg_result(ChannelID, result);
   }
+}
+
+void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
+  int ChannelID;
+  if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
+    getUser()->on_device_channel_state_result(ChannelID, state);
+  }
+}
+
+bool supla_device::get_channel_state(int SenderID,
+                                     TCSD_ChannelStateRequest *request) {
+  return channels->get_channel_state(getSvrConn()->srpc(), SenderID, request);
 }
 
 bool supla_device::get_channel_complex_value(channel_complex_value *value,
                                              int ChannelID) {
   return channels->get_channel_complex_value(value, ChannelID);
+}
+
+void supla_device::set_channel_function(int ChannelId, int Func) {
+  channels->set_channel_function(ChannelId, Func);
+}
+
+void supla_device::get_channel_functions_request(void *srpc) {
+  channels->get_functions_request(srpc);
 }

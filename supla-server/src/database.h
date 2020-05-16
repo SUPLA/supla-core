@@ -35,8 +35,8 @@ class database : public dbcommon {
   virtual char *cfg_get_database(void);
   virtual int cfg_get_port(void);
 
-  bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE,
-            int *UserID, bool *is_enabled);
+  bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
+            bool *is_enabled);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
@@ -144,6 +144,7 @@ class database : public dbcommon {
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
+  bool set_reg_enabled(int UserID, int deviceRegTimeSec, int clientRegTimeSec);
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
@@ -161,6 +162,14 @@ class database : public dbcommon {
   bool google_home_load_token(supla_google_home *google_home);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
+  bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
+  bool set_channel_function(int UserID, int ChannelID, int Func);
+  bool get_channel_type_and_funclist(int UserID, int ChannelID, int *Type,
+                                     unsigned int *FuncList);
+  bool set_channel_caption(int UserID, int ChannelID, char *Caption);
+  bool channel_belong_to_group(int channel_id);
+  bool channel_has_schedule(int channel_id);
+  bool channel_is_associated_with_scene(int channel_id);
 };
 
 #endif /* DATABASE_H_ */

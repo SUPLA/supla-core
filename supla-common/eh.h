@@ -18,7 +18,8 @@
 #ifndef EH_H_
 #define EH_H_
 
-#if !defined(ESP8266) && !defined(__AVR__) && !defined(_WIN32)
+#if !defined(ESP8266) && !defined(__AVR__) && !defined(_WIN32) && \
+    !defined(ESP32)
 #include <sys/select.h>
 #endif
 

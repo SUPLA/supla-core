@@ -78,7 +78,7 @@ bool supla_google_home_statereport_request::verifyExisting(
 
 bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   channel_complex_value value =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+      getUser()->get_channel_complex_value(getChannelId());
 
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -125,7 +125,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
     int ChannelId = (long long)safe_array_get(channel_arr, a);
 
     channel_complex_value value =
-        getUser()->get_channel_complex_value(getDeviceId(), ChannelId);
+        getUser()->get_channel_complex_value(ChannelId);
 
     if (!value.hidden_channel) {
       switch (value.function) {

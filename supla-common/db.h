@@ -64,6 +64,8 @@ class dbcommon {
   bool get_db_version(char *buffer, int buffer_size);
   bool check_db_version(const char *expected_version,
                         int connection_timeout_sec);
+  void set_terminating_byte(char *result_str, int buffer_size, int data_size,
+                            bool is_null);
 };
 
 #endif /* DBCOMMON_H_ */

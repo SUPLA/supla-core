@@ -59,7 +59,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
     case EST_AMAZON_ALEXA:
     case EST_IPC: {
       channel_complex_value value =
-          getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+          getUser()->get_channel_complex_value(getChannelId());
 
       switch (value.function) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -89,7 +89,7 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
 
 void supla_alexa_changereport_request::execute(void *sthread) {
   channel_complex_value value =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+      getUser()->get_channel_complex_value(getChannelId());
 
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:

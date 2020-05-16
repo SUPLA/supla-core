@@ -64,6 +64,8 @@ bool dbcommon::connect(int connection_timeout_sec) {
       if (mysql_real_connect(mysql, cfg_get_host(), cfg_get_user(),
                              cfg_get_password(), cfg_get_database(),
                              cfg_get_port(), NULL, 0) == NULL) {
+        supla_log(LOG_ERR, "Failed to connect to database: Error: %s",
+                  mysql_error(mysql));
         disconnect();
       } else {
         if (mysql_set_character_set(mysql, "utf8mb4")) {
@@ -367,9 +369,23 @@ bool dbcommon::check_db_version(const char *expected_version,
     if (strncmp(version, expected_version, 14) == 0) {
       return true;
     } else {
-      supla_log(LOG_ERR, "Incorrect database version!");
+      supla_log(LOG_ERR, "Incorrect database version! Expected: %s",
+                expected_version);
     }
   }
 
   return false;
+}
+
+void dbcommon::set_terminating_byte(char *result_str, int buffer_size,
+                                    int data_size, bool is_null) {
+  if (is_null) {
+    data_size = 0;
+  }
+
+  if (data_size >= buffer_size) {
+    data_size = buffer_size - 1;
+  }
+
+  result_str[data_size] = 0;
 }
