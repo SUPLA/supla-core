@@ -244,7 +244,7 @@ bool dbcommon::stmt_get_int(void **_stmt, int *value1, int *value2, int *value3,
 }
 
 int dbcommon::get_int(int ID, int default_value, const char *sql) {
-  MYSQL_STMT *stmt;
+  MYSQL_STMT *stmt = NULL;
   int Result = default_value;
 
   MYSQL_BIND pbind[1];
@@ -302,7 +302,7 @@ int dbcommon::add_by_proc_call(const char *stmt_str, void *bind,
 }
 
 int dbcommon::get_last_insert_id(void) {
-  MYSQL_STMT *stmt;
+  MYSQL_STMT *stmt = NULL;
   int Result = 0;
 
   if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
