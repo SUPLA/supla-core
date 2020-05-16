@@ -2388,6 +2388,19 @@ bool database::channel_has_schedule(int channel_id) {
 }
 
 bool database::channel_is_associated_with_scene(int channel_id) {
+#warning "Remove migration check in version v2.4"
+  const char sql_check_db_version[] =
+      "SELECT 1 FROM migration_versions WHERE version = '20190815154016'";
+
+  MYSQL_STMT *stmt = NULL;
+  int table_exists = 0;
+  stmt_get_int((void **)&stmt, &table_exists, NULL, NULL, NULL,
+               sql_check_db_version, NULL, 0);
+
+  if (table_exists == 0) {
+    return false;
+  }
+
   const char sql[] =
       "SELECT id FROM supla_scene_operation WHERE channel_id = ? LIMIT 1";
   return get_int(channel_id, 0, sql) > 0;
