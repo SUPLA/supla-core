@@ -18,6 +18,7 @@
 
 #include "SetChannelFunctionIntegrationTest.h"
 #include "log.h"
+#include "svrcfg.h"
 
 namespace testing {
 
@@ -184,6 +185,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
   iterateUntilDefaultTimeout();
 }
 
+#ifndef SERVER_VERSION_23
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithSchedule) {
   runSqlScript("CreateSceneForChannelId303.sql");
@@ -200,5 +202,6 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
   iterateUntilDefaultTimeout();
 }
+#endif /*SERVER_VERSION_23*/
 
 } /* namespace testing */
