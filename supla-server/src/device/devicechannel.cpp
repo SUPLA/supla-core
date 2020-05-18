@@ -872,7 +872,12 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
 
 supla_channel_electricity_measurement *
 supla_device_channel::getElectricityMeasurement(void) {
+#ifdef SERVER_VERSION_23
+  if (getType() == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
+      getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
+#else
   if (getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
+#endif /*SERVER_VERSION_23*/
       extendedValue != NULL) {
     if (extendedValue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
       TElectricityMeter_ExtendedValue em_ev;
@@ -897,21 +902,29 @@ supla_device_channel::getElectricityMeasurement(void) {
 
 supla_channel_ic_measurement *
 supla_device_channel::getImpulseCounterMeasurement(void) {
-  switch (getFunc()) {
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      getValue(value);
+#ifdef SERVER_VERSION_23
+  if (getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+#endif /*SERVER_VERSION_23*/
+    switch (getFunc()) {
+#ifdef SERVER_VERSION_23
+      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#endif /*SERVER_VERSION_23*/
+      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_IC_WATER_METER:
+      case SUPLA_CHANNELFNC_IC_GAS_METER:
+      case SUPLA_CHANNELFNC_IC_HEAT_METER: {
+        char value[SUPLA_CHANNELVALUE_SIZE];
+        getValue(value);
 
-      TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
+        TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
 
-      return new supla_channel_ic_measurement(getId(), Func, ic_val, TextParam1,
-                                              TextParam2, Param2, Param3);
+        return new supla_channel_ic_measurement(
+            getId(), Func, ic_val, TextParam1, TextParam2, Param2, Param3);
+      }
     }
+#ifdef SERVER_VERSION_23
   }
-
+#endif /*SERVER_VERSION_23*/
   return NULL;
 }
 
@@ -941,28 +954,36 @@ supla_device_channel::getThermostatMeasurement(void) {
 bool supla_device_channel::converValueToExtended(void) {
   bool result = false;
 
-  switch (getFunc()) {
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      char value[SUPLA_CHANNELVALUE_SIZE];
-      TSuplaChannelExtendedValue ev;
-      TSC_ImpulseCounter_ExtendedValue ic_ev;
-      memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
+#ifdef SERVER_VERSION_23
+  if (getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+#endif /*SERVER_VERSION_23*/
+    switch (getFunc()) {
+#ifdef SERVER_VERSION_23
+      case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#endif /*SERVER_VERSION_23*/
+      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      case SUPLA_CHANNELFNC_IC_GAS_METER:
+      case SUPLA_CHANNELFNC_IC_WATER_METER:
+      case SUPLA_CHANNELFNC_IC_HEAT_METER:
+        char value[SUPLA_CHANNELVALUE_SIZE];
+        TSuplaChannelExtendedValue ev;
+        TSC_ImpulseCounter_ExtendedValue ic_ev;
+        memset(&ic_ev, 0, sizeof(TSC_ImpulseCounter_ExtendedValue));
 
-      getValue(value);
+        getValue(value);
 
-      TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
-      ic_ev.counter = ic_val->counter;
+        TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
+        ic_ev.counter = ic_val->counter;
 
-      srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
+        srpc_evtool_v1_icextended2extended(&ic_ev, &ev);
 
-      setExtendedValue(&ev);
-      result = true;
-      break;
+        setExtendedValue(&ev);
+        result = true;
+        break;
+    }
+#ifdef SERVER_VERSION_23
   }
-
+#endif /*SERVER_VERSION_23*/
   return result;
 }
 

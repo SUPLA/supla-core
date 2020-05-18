@@ -30,9 +30,10 @@ extern "C" {
 
 #define SERVER_VERSION "2.3.25"
 
+#ifdef SERVER_VERSION_23
 #warning \
-    "Delete the definition below in version 2.4 together with the ref. code."
-#define SERVER_VERSION_23
+    "Delete the SERVER_VERSION_23 def. in v2.4 together with the ref. code."
+#endif /*SERVER_VERSION_23*/
 
 #define CFG_UID 0
 #define CFG_GID 1
