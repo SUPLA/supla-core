@@ -482,7 +482,10 @@ typedef struct {
   char sub_value[SUPLA_CHANNELVALUE_SIZE];  // For example sensor value
 } TSuplaChannelValue;
 
+#ifdef USE_DEPRECATED_EMEV_V1
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
+#endif /*USE_DEPRECATED_EMEV_V1*/
+#define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 12
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
 #define EV_TYPE_CHANNEL_STATE_V1 40
@@ -1045,10 +1048,13 @@ typedef struct {
 #define EM_VAR_FORWARD_REACTIVE_ENERGY 0x0400
 #define EM_VAR_REVERSE_REACTIVE_ENERGY 0x0800
 #define EM_VAR_CURRENT_OVER_65A 0x1000
+#define EM_VAR_BALANCED_FORWARD_REACTIVE_ENERGY 0x2000
+#define EM_VAR_BALANCED_REVERSE_REACTIVE_ENERGY 0x4000
 #define EM_VAR_ALL 0xFFFF
 
 #define EM_MEASUREMENT_COUNT 5
 
+#ifdef USE_DEPRECATED_EMEV_V1
 // [IODevice->Server->Client]
 typedef struct {
   unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
@@ -1069,6 +1075,7 @@ typedef struct {
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
 } TElectricityMeter_ExtendedValue;                        // v. >= 10
+#endif /*USE_DEPRECATED_EMEV_V1*/
 
 #define EM_VALUE_FLAG_PHASE1_ON 0x01
 #define EM_VALUE_FLAG_PHASE2_ON 0x02

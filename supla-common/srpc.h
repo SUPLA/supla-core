@@ -348,10 +348,12 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
+#ifdef USE_DEPRECATED_EMEV_V1
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
     TElectricityMeter_ExtendedValue *em_ev, TSuplaChannelExtendedValue *ev);
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
     TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue *em_ev);
+#endif /*USE_DEPRECATED_EMEV_V1*/
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
     TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);
