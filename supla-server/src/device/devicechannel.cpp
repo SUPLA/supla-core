@@ -142,6 +142,24 @@ supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     char *TextParam1) {
   this->ChannelId = ChannelId;
   if (em_ev == NULL) {
+    assign(Param2, TextParam1, NULL);
+  } else {
+    TElectricityMeter_ExtendedValue_V2 em_ev_v2;
+    srpc_evtool_emev_v1to2(em_ev, &em_ev_v2);
+    assign(Param2, TextParam1, &em_ev_v2);
+  }
+}
+
+supla_channel_electricity_measurement::supla_channel_electricity_measurement(
+    int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
+    char *TextParam1) {
+  this->ChannelId = ChannelId;
+  assign(Param2, TextParam1, em_ev);
+}
+
+void supla_channel_electricity_measurement::assign(
+    int Param2, char *TextParam1, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+  if (em_ev == NULL) {
     memset(&this->em_ev, 0, sizeof(TElectricityMeter_ExtendedValue));
   } else {
     memcpy(&this->em_ev, em_ev, sizeof(TElectricityMeter_ExtendedValue));
@@ -151,13 +169,8 @@ supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     }
   }
 
-  double sum = this->em_ev.total_forward_active_energy[0] * 0.00001;
-  sum += this->em_ev.total_forward_active_energy[1] * 0.00001;
-  sum += this->em_ev.total_forward_active_energy[2] * 0.00001;
-
-  supla_channel_ic_measurement::get_cost_and_currency(
-      TextParam1, Param2, this->em_ev.currency, &this->em_ev.total_cost,
-      &this->em_ev.price_per_unit, sum);
+  supla_channel_electricity_measurement::set_costs(Param2, TextParam1,
+                                                   &this->em_ev);
 }
 
 int supla_channel_electricity_measurement::getChannelId(void) {
@@ -167,7 +180,14 @@ int supla_channel_electricity_measurement::getChannelId(void) {
 void supla_channel_electricity_measurement::getMeasurement(
     TElectricityMeter_ExtendedValue *em_ev) {
   if (em_ev) {
-    memcpy(em_ev, &this->em_ev, sizeof(TElectricityMeter_ExtendedValue));
+    srpc_evtool_emev_v2to1(&this->em_ev, em_ev);
+  }
+}
+
+void supla_channel_electricity_measurement::getMeasurement(
+    TElectricityMeter_ExtendedValue_V2 *em_ev) {
+  if (em_ev) {
+    memcpy(em_ev, &this->em_ev, sizeof(TElectricityMeter_ExtendedValue_V2));
   }
 }
 
@@ -177,20 +197,62 @@ void supla_channel_electricity_measurement::getCurrency(char currency[4]) {
 }
 
 // static
+void supla_channel_electricity_measurement::set_costs(
+    int Param2, char *TextParam1, TElectricityMeter_ExtendedValue *em_ev) {
+  double sum = em_ev->total_forward_active_energy[0] * 0.00001;
+  sum += em_ev->total_forward_active_energy[1] * 0.00001;
+  sum += em_ev->total_forward_active_energy[2] * 0.00001;
+
+  supla_channel_ic_measurement::get_cost_and_currency(
+      TextParam1, Param2, em_ev->currency, &em_ev->total_cost,
+      &em_ev->price_per_unit, sum);
+}
+
+// static
+void supla_channel_electricity_measurement::set_costs(
+    int Param2, char *TextParam1, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+  double sum = em_ev->total_forward_active_energy[0] * 0.00001;
+  sum += em_ev->total_forward_active_energy[1] * 0.00001;
+  sum += em_ev->total_forward_active_energy[2] * 0.00001;
+
+  supla_channel_ic_measurement::get_cost_and_currency(
+      TextParam1, Param2, em_ev->currency, &em_ev->total_cost,
+      &em_ev->price_per_unit, sum);
+
+  if (em_ev->measured_values & EM_VAR_FORWARD_REACTIVE_ENERGY_BALANCED) {
+    supla_channel_ic_measurement::get_cost_and_currency(
+        TextParam1, Param2, em_ev->currency, &em_ev->total_cost_balanced,
+        &em_ev->price_per_unit, em_ev->total_forward_active_energy_balanced);
+  } else {
+    em_ev->total_cost_balanced = 0;
+  }
+}
+
+// static
 bool supla_channel_electricity_measurement::update_cev(
-    TSC_SuplaChannelExtendedValue *cev, int Param2, char *TextParam1) {
+    TSC_SuplaChannelExtendedValue *cev, int Param2, char *TextParam1,
+    bool convert_to_v1) {
   if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
     TElectricityMeter_ExtendedValue em_ev;
     if (srpc_evtool_v1_extended2emextended(&cev->value, &em_ev)) {
-      double sum = em_ev.total_forward_active_energy[0] * 0.00001;
-      sum += em_ev.total_forward_active_energy[1] * 0.00001;
-      sum += em_ev.total_forward_active_energy[2] * 0.00001;
-
-      supla_channel_ic_measurement::get_cost_and_currency(
-          TextParam1, Param2, em_ev.currency, &em_ev.total_cost,
-          &em_ev.price_per_unit, sum);
-
+      supla_channel_electricity_measurement::set_costs(Param2, TextParam1,
+                                                       &em_ev);
       srpc_evtool_v1_emextended2extended(&em_ev, &cev->value);
+      return true;
+    }
+  } else if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+    TElectricityMeter_ExtendedValue_V2 em_ev;
+    if (srpc_evtool_v2_extended2emextended(&cev->value, &em_ev)) {
+      supla_channel_electricity_measurement::set_costs(Param2, TextParam1,
+                                                       &em_ev);
+      if (convert_to_v1) {
+        TElectricityMeter_ExtendedValue em_ev_v1;
+        srpc_evtool_emev_v2to1(&em_ev, &em_ev_v1);
+        srpc_evtool_v1_emextended2extended(&em_ev_v1, &cev->value);
+      } else {
+        srpc_evtool_v2_emextended2extended(&em_ev, &cev->value);
+      }
+
       return true;
     }
   }
@@ -812,11 +874,21 @@ supla_channel_electricity_measurement *
 supla_device_channel::getElectricityMeasurement(void) {
   if (getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
       extendedValue != NULL) {
-    TElectricityMeter_ExtendedValue em_ev;
+    if (extendedValue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+      TElectricityMeter_ExtendedValue em_ev;
 
-    if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev) == 1) {
-      return new supla_channel_electricity_measurement(getId(), &em_ev, Param2,
-                                                       TextParam1);
+      if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev) == 1) {
+        return new supla_channel_electricity_measurement(getId(), &em_ev,
+                                                         Param2, TextParam1);
+      }
+    } else if (extendedValue->type ==
+               EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+      TElectricityMeter_ExtendedValue_V2 em_ev;
+
+      if (srpc_evtool_v2_extended2emextended(extendedValue, &em_ev) == 1) {
+        return new supla_channel_electricity_measurement(getId(), &em_ev,
+                                                         Param2, TextParam1);
+      }
     }
   }
 

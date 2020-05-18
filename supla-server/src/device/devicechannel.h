@@ -62,20 +62,31 @@ class supla_channel_temphum {
 
 class supla_channel_electricity_measurement {
  private:
-  TElectricityMeter_ExtendedValue em_ev;
+  TElectricityMeter_ExtendedValue_V2 em_ev;
   int ChannelId;
+  void assign(int Param2, char *TextParam1,
+              TElectricityMeter_ExtendedValue_V2 *em_ev);
+
+  static void set_costs(int Param2, char *TextParam1,
+                        TElectricityMeter_ExtendedValue *em_ev);
+  static void set_costs(int Param2, char *TextParam1,
+                        TElectricityMeter_ExtendedValue_V2 *em_ev);
 
  public:
   supla_channel_electricity_measurement(int ChannelId,
                                         TElectricityMeter_ExtendedValue *em_ev,
                                         int Param2, char *TextParam1);
+  supla_channel_electricity_measurement(
+      int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
+      char *TextParam1);
 
   int getChannelId(void);
   void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
+  void getMeasurement(TElectricityMeter_ExtendedValue_V2 *em_ev);
   void getCurrency(char currency[4]);
 
   static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
-                         char *TextParam1);
+                         char *TextParam1, bool convert_to_v1);
   static void free(void *emarr);
 };
 

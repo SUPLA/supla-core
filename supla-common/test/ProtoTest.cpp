@@ -93,6 +93,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)265, sizeof(TSC_OAuthTokenRequestResult));
   ASSERT_EQ((unsigned int)62, sizeof(TElectricityMeter_Measurement));
   ASSERT_EQ((unsigned int)429, sizeof(TElectricityMeter_ExtendedValue));
+  ASSERT_EQ((unsigned int)449, sizeof(TElectricityMeter_ExtendedValue_V2));
   ASSERT_EQ((unsigned int)5, sizeof(TElectricityMeter_Value));
   ASSERT_EQ((unsigned int)40, sizeof(TSC_ImpulseCounter_ExtendedValue));
   ASSERT_EQ((unsigned int)8, sizeof(TSC_ImpulseCounter_Value));
@@ -111,6 +112,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TElectricityMeter_Value),
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);
   ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue_V2),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
   ASSERT_EQ((unsigned int)4, sizeof(TThermostat_Time));

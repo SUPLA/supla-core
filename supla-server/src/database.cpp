@@ -1515,11 +1515,11 @@ void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind) {
 
 void database::add_electricity_measurement(
     supla_channel_electricity_measurement *em) {
-  MYSQL_BIND pbind[14];
+  MYSQL_BIND pbind[16];
   memset(pbind, 0, sizeof(pbind));
 
   int ChannelID = em->getChannelId();
-  TElectricityMeter_ExtendedValue em_ev;
+  TElectricityMeter_ExtendedValue_V2 em_ev;
   em->getMeasurement(&em_ev);
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -1535,10 +1535,14 @@ void database::add_electricity_measurement(
     n += 4;
   }
 
-  const char sql[] = "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[14]);
+  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[15]);
+
+  const char sql[] =
+      "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
   MYSQL_STMT *stmt;
-  stmt_execute((void **)&stmt, sql, pbind, 13, true);
+  stmt_execute((void **)&stmt, sql, pbind, 15, true);
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }

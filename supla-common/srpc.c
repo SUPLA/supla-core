@@ -2309,7 +2309,120 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
 
   return 1;
 }
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_emev_v1to2(TElectricityMeter_ExtendedValue *v1,
+                       TElectricityMeter_ExtendedValue_V2 *v2) {
+  if (v1 == NULL || v2 == NULL) {
+    return 0;
+  }
+  memset(v2, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  for (int a = 0; a < 3; a++) {
+    v2->total_forward_active_energy[a] = v1->total_forward_active_energy[a];
+    v2->total_reverse_active_energy[a] = v1->total_reverse_active_energy[a];
+    v2->total_forward_reactive_energy[a] = v1->total_forward_reactive_energy[a];
+    v2->total_reverse_reactive_energy[a] = v1->total_reverse_reactive_energy[a];
+  }
+
+  v2->total_cost = v1->total_cost;
+  v2->price_per_unit = v1->price_per_unit;
+  memcpy(v2->currency, v1->currency, sizeof(v2->currency));
+  v2->measured_values = v1->measured_values;
+  v2->period = v1->period;
+  v2->m_count = v1->m_count;
+
+  memcpy(v2->m, v1->m,
+         sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT);
+
+  return 1;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_emev_v2to1(TElectricityMeter_ExtendedValue_V2 *v2,
+                       TElectricityMeter_ExtendedValue *v1) {
+  if (v1 == NULL || v2 == NULL) {
+    return 0;
+  }
+  memset(v1, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  for (int a = 0; a < 3; a++) {
+    v1->total_forward_active_energy[a] = v2->total_forward_active_energy[a];
+    v1->total_reverse_active_energy[a] = v2->total_reverse_active_energy[a];
+    v1->total_forward_reactive_energy[a] = v2->total_forward_reactive_energy[a];
+    v1->total_reverse_reactive_energy[a] = v2->total_reverse_reactive_energy[a];
+  }
+
+  v1->total_cost = v2->total_cost;
+  v1->price_per_unit = v2->price_per_unit;
+  memcpy(v1->currency, v2->currency, sizeof(v2->currency));
+  v1->measured_values = v2->measured_values;
+  v1->period = v2->period;
+  v1->m_count = v2->m_count;
+
+  memcpy(v1->m, v2->m,
+         sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT);
+
+  v1->measured_values ^=
+      v1->measured_values & EM_VAR_FORWARD_REACTIVE_ENERGY_BALANCED;
+  v1->measured_values ^=
+      v1->measured_values & EM_VAR_REVERSE_REACTIVE_ENERGY_BALANCED;
+
+  return 1;
+}
+
 #endif /*USE_DEPRECATED_EMEV_V1*/
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_emextended2extended(
+    TElectricityMeter_ExtendedValue_V2 *em_ev, TSuplaChannelExtendedValue *ev) {
+  if (em_ev == NULL || ev == NULL || em_ev->m_count > EM_MEASUREMENT_COUNT ||
+      em_ev->m_count < 0) {
+    return 0;
+  }
+
+  memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+  ev->type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
+
+  ev->size = sizeof(TElectricityMeter_ExtendedValue_V2) -
+             sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT +
+             sizeof(TElectricityMeter_Measurement) * em_ev->m_count;
+
+  if (ev->size > 0 && ev->size <= SUPLA_CHANNELEXTENDEDVALUE_SIZE) {
+    memcpy(ev->value, em_ev, ev->size);
+    return 1;
+  }
+
+  ev->size = 0;
+  return 0;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_extended2emextended(
+    TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+  if (em_ev == NULL || ev == NULL ||
+      ev->type != EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 || ev->size == 0 ||
+      ev->size > sizeof(TElectricityMeter_ExtendedValue_V2)) {
+    return 0;
+  }
+
+  memset(em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  memcpy(em_ev, ev->value, ev->size);
+
+  _supla_int_t expected_size = 0;
+
+  if (em_ev->m_count <= EM_MEASUREMENT_COUNT) {
+    expected_size =
+        sizeof(TElectricityMeter_ExtendedValue_V2) -
+        sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT +
+        sizeof(TElectricityMeter_Measurement) * em_ev->m_count;
+  }
+
+  if (ev->size != expected_size) {
+    memset(em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+    return 0;
+  }
+
+  return 1;
+}
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
     TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev) {

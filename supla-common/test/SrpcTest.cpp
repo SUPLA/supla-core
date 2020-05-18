@@ -3111,6 +3111,119 @@ TEST_F(SrpcTest, evtool_electricity_meter_value_to_extended) {
   ASSERT_EQ(0, srpc_evtool_v1_extended2emextended(&ev, &em_ev_dst));
 }
 
+TEST_F(SrpcTest, evtool_electricity_meter_value_v2_to_extended) {
+  TSuplaChannelExtendedValue ev;
+  DECLARE_WITH_RANDOM(TElectricityMeter_ExtendedValue_V2, em_ev_src);
+  TElectricityMeter_ExtendedValue_V2 em_ev_dst;
+
+  memset(&em_ev_dst, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT;
+
+  ASSERT_EQ(1, srpc_evtool_v2_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(1, srpc_evtool_v2_extended2emextended(&ev, &em_ev_dst));
+
+  ASSERT_EQ(0, memcmp(&em_ev_src, &em_ev_dst,
+                      sizeof(TElectricityMeter_ExtendedValue_V2)));
+
+  ASSERT_EQ(1, srpc_evtool_v2_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v2_emextended2extended(NULL, &ev));
+  ASSERT_EQ(0, srpc_evtool_v2_emextended2extended(&em_ev_src, NULL));
+
+  em_ev_src.m_count = -1;
+  ASSERT_EQ(0, srpc_evtool_v2_emextended2extended(&em_ev_src, &ev));
+
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT + 1;
+  ASSERT_EQ(0, srpc_evtool_v2_emextended2extended(&em_ev_src, &ev));
+
+  em_ev_src.m_count = EM_MEASUREMENT_COUNT;
+  ASSERT_EQ(1, srpc_evtool_v2_emextended2extended(&em_ev_src, &ev));
+  ASSERT_EQ(0, srpc_evtool_v2_extended2emextended(NULL, &em_ev_dst));
+  ASSERT_EQ(0, srpc_evtool_v2_extended2emextended(&ev, NULL));
+
+  ev.type = 0;
+  ASSERT_EQ(0, srpc_evtool_v2_extended2emextended(&ev, &em_ev_dst));
+
+  ev.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2;
+  ev.size = 0;
+  ASSERT_EQ(0, srpc_evtool_v2_extended2emextended(&ev, &em_ev_dst));
+
+  ev.size = sizeof(TElectricityMeter_ExtendedValue_V2) + 1;
+  ASSERT_EQ(0, srpc_evtool_v2_extended2emextended(&ev, &em_ev_dst));
+
+  ev.size = sizeof(TElectricityMeter_ExtendedValue_V2) - 1;
+  ASSERT_EQ(0, srpc_evtool_v2_extended2emextended(&ev, &em_ev_dst));
+}
+
+TEST_F(SrpcTest, srpc_evtool_emev_v1to2) {
+  DECLARE_WITH_RANDOM(TElectricityMeter_ExtendedValue, emev_v1);
+  TElectricityMeter_ExtendedValue_V2 emev_v2;
+  memset(&emev_v2, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  ASSERT_EQ(srpc_evtool_emev_v1to2(NULL, &emev_v2), 0);
+  ASSERT_EQ(srpc_evtool_emev_v1to2(&emev_v1, NULL), 0);
+  ASSERT_EQ(srpc_evtool_emev_v1to2(&emev_v1, &emev_v2), 1);
+
+  for (int a = 0; a < 3; a++) {
+    ASSERT_EQ(emev_v1.total_forward_active_energy[a],
+              emev_v2.total_forward_active_energy[a]);
+    ASSERT_EQ(emev_v1.total_reverse_active_energy[a],
+              emev_v2.total_reverse_active_energy[a]);
+    ASSERT_EQ(emev_v1.total_forward_reactive_energy[a],
+              emev_v2.total_forward_reactive_energy[a]);
+    ASSERT_EQ(emev_v1.total_reverse_reactive_energy[a],
+              emev_v2.total_reverse_reactive_energy[a]);
+  }
+
+  ASSERT_EQ(emev_v2.total_forward_active_energy_balanced, (unsigned long)0);
+  ASSERT_EQ(emev_v2.total_reverse_active_energy_balanced, (unsigned long)0);
+
+  ASSERT_EQ(emev_v1.total_cost, emev_v2.total_cost);
+  ASSERT_EQ(emev_v2.total_cost_balanced, 0);
+  ASSERT_EQ(emev_v1.price_per_unit, emev_v2.price_per_unit);
+  ASSERT_EQ(
+      memcmp(emev_v1.currency, emev_v2.currency, sizeof(emev_v1.currency)), 0);
+  ASSERT_EQ(emev_v1.measured_values, emev_v2.measured_values);
+  ASSERT_EQ(emev_v1.period, emev_v2.period);
+  ASSERT_EQ(emev_v1.m_count, emev_v2.m_count);
+  ASSERT_EQ(memcmp(emev_v1.m, emev_v2.m, sizeof(emev_v1.m)), 0);
+}
+
+TEST_F(SrpcTest, srpc_evtool_emev_v2to1) {
+  DECLARE_WITH_RANDOM(TElectricityMeter_ExtendedValue_V2, emev_v2);
+  TElectricityMeter_ExtendedValue emev_v1;
+  memset(&emev_v1, 0, sizeof(TElectricityMeter_ExtendedValue));
+
+  emev_v2.measured_values |= EM_VAR_FORWARD_REACTIVE_ENERGY_BALANCED;
+  emev_v2.measured_values |= EM_VAR_REVERSE_REACTIVE_ENERGY_BALANCED;
+
+  ASSERT_EQ(srpc_evtool_emev_v2to1(NULL, &emev_v1), 0);
+  ASSERT_EQ(srpc_evtool_emev_v2to1(&emev_v2, NULL), 0);
+  ASSERT_EQ(srpc_evtool_emev_v2to1(&emev_v2, &emev_v1), 1);
+
+  for (int a = 0; a < 3; a++) {
+    ASSERT_EQ(emev_v1.total_forward_active_energy[a],
+              emev_v2.total_forward_active_energy[a]);
+    ASSERT_EQ(emev_v1.total_reverse_active_energy[a],
+              emev_v2.total_reverse_active_energy[a]);
+    ASSERT_EQ(emev_v1.total_forward_reactive_energy[a],
+              emev_v2.total_forward_reactive_energy[a]);
+    ASSERT_EQ(emev_v1.total_reverse_reactive_energy[a],
+              emev_v2.total_reverse_reactive_energy[a]);
+  }
+
+  emev_v1.measured_values ^= EM_VAR_FORWARD_REACTIVE_ENERGY_BALANCED;
+  emev_v1.measured_values ^= EM_VAR_REVERSE_REACTIVE_ENERGY_BALANCED;
+
+  ASSERT_EQ(emev_v1.total_cost, emev_v2.total_cost);
+  ASSERT_EQ(emev_v1.price_per_unit, emev_v2.price_per_unit);
+  ASSERT_EQ(
+      memcmp(emev_v1.currency, emev_v2.currency, sizeof(emev_v1.currency)), 0);
+  ASSERT_EQ(emev_v1.measured_values, emev_v2.measured_values);
+  ASSERT_EQ(emev_v1.period, emev_v2.period);
+  ASSERT_EQ(emev_v1.m_count, emev_v2.m_count);
+  ASSERT_EQ(memcmp(emev_v1.m, emev_v2.m, sizeof(emev_v1.m)), 0);
+}
+
 TEST_F(SrpcTest, evtool_input_counter_value_to_extended) {
   ASSERT_GE((unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE,
             sizeof(TSC_ImpulseCounter_ExtendedValue));

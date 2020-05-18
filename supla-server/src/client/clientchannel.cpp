@@ -250,8 +250,9 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
                                                    &cev->value)) {
     switch (cev->value.type) {
       case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
-        return supla_channel_electricity_measurement::update_cev(cev, Param2,
-                                                                 TextParam1);
+      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
+        return supla_channel_electricity_measurement::update_cev(
+            cev, Param2, TextParam1, this->ProtocolVersion < 12);
 
       case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
         return supla_channel_ic_measurement::update_cev(
