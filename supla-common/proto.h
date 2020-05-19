@@ -1085,8 +1085,10 @@ typedef struct {
   unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvarh
   unsigned _supla_int64_t
       total_forward_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
   unsigned _supla_int64_t
       total_reverse_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
 
   // The price per unit, total cost and currency is overwritten by the server
   // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
