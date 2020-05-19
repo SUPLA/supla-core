@@ -2364,9 +2364,9 @@ srpc_evtool_emev_v2to1(TElectricityMeter_ExtendedValue_V2 *v2,
          sizeof(TElectricityMeter_Measurement) * EM_MEASUREMENT_COUNT);
 
   v1->measured_values ^=
-      v1->measured_values & EM_VAR_FORWARD_REACTIVE_ENERGY_BALANCED;
+      v1->measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED;
   v1->measured_values ^=
-      v1->measured_values & EM_VAR_REVERSE_REACTIVE_ENERGY_BALANCED;
+      v1->measured_values & EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED;
 
   return 1;
 }
