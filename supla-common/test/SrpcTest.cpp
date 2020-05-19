@@ -3174,6 +3174,11 @@ TEST_F(SrpcTest, srpc_evtool_emev_v1to2) {
               emev_v2.total_reverse_reactive_energy[a]);
   }
 
+  emev_v1.measured_values ^=
+      emev_v1.measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED;
+  emev_v1.measured_values ^=
+      emev_v1.measured_values & EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED;
+
   ASSERT_EQ(emev_v2.total_forward_active_energy_balanced, (unsigned long)0);
   ASSERT_EQ(emev_v2.total_reverse_active_energy_balanced, (unsigned long)0);
 
@@ -3211,8 +3216,8 @@ TEST_F(SrpcTest, srpc_evtool_emev_v2to1) {
               emev_v2.total_reverse_reactive_energy[a]);
   }
 
-  emev_v1.measured_values ^= EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED;
-  emev_v1.measured_values ^= EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED;
+  emev_v2.measured_values ^= EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED;
+  emev_v2.measured_values ^= EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED;
 
   ASSERT_EQ(emev_v1.total_cost, emev_v2.total_cost);
   ASSERT_EQ(emev_v1.price_per_unit, emev_v2.price_per_unit);
