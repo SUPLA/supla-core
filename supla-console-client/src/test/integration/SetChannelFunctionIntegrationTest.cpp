@@ -18,7 +18,6 @@
 
 #include "SetChannelFunctionIntegrationTest.h"
 #include "log.h"
-#include "svrcfg.h"
 
 namespace testing {
 
