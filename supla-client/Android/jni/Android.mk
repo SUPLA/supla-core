@@ -19,6 +19,7 @@ LOCAL_MODULE    := libsuplaclient
 LOCAL_STATIC_LIBRARIES := cpufeatures 
 LOCAL_LDLIBS := -llog -landroid
 LOCAL_SHARED_LIBRARIES = ssl crypto
+LOCAL_CFLAGS += -DUSE_DEPRECATED_EMEV_V1
 
 LOCAL_SRC_FILES := supla-client_jni.c \
     ../../src/cfg.c \
