@@ -2344,7 +2344,7 @@ srpc_evtool_emev_v2to1(TElectricityMeter_ExtendedValue_V2 *v2,
   if (v1 == NULL || v2 == NULL) {
     return 0;
   }
-  memset(v1, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+  memset(v1, 0, sizeof(TElectricityMeter_ExtendedValue));
 
   for (int a = 0; a < 3; a++) {
     v1->total_forward_active_energy[a] = v2->total_forward_active_energy[a];
