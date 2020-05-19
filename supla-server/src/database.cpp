@@ -1515,7 +1515,7 @@ void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind) {
 
 void database::add_electricity_measurement(
     supla_channel_electricity_measurement *em) {
-  MYSQL_BIND pbind[16];
+  MYSQL_BIND pbind[15];
   memset(pbind, 0, sizeof(pbind));
 
   int ChannelID = em->getChannelId();
@@ -1535,8 +1535,8 @@ void database::add_electricity_measurement(
     n += 4;
   }
 
-  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[14]);
-  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[15]);
+  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[13]);
+  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[14]);
 
   const char sql[] =
       "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
