@@ -219,7 +219,7 @@ void supla_channel_electricity_measurement::set_costs(
       TextParam1, Param2, em_ev->currency, &em_ev->total_cost,
       &em_ev->price_per_unit, sum);
 
-  if (em_ev->measured_values & EM_VAR_FORWARD_REACTIVE_ENERGY_BALANCED) {
+  if (em_ev->measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
     supla_channel_ic_measurement::get_cost_and_currency(
         TextParam1, Param2, em_ev->currency, &em_ev->total_cost_balanced,
         &em_ev->price_per_unit, em_ev->total_forward_active_energy_balanced);
