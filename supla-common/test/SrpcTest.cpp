@@ -371,14 +371,14 @@ TEST_F(SrpcTest, call_allowed_v10) {
 TEST_F(SrpcTest, call_allowed_v11) {
   int calls[] = {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
                  SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
-                 SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B,
-                 SUPLA_CS_CALL_REGISTER_CLIENT_D, 0};
+                 SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B, 0};
 
   srpcCallAllowed(11, calls);
 }
 
 TEST_F(SrpcTest, call_allowed_v12) {
-  int calls[] = {SUPLA_CSD_CALL_GET_CHANNEL_STATE,
+  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D,
+                 SUPLA_CSD_CALL_GET_CHANNEL_STATE,
                  SUPLA_DSC_CALL_CHANNEL_STATE_RESULT,
                  SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
                  SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,

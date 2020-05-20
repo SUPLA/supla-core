@@ -943,7 +943,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
-      case SUPLA_CS_CALL_REGISTER_CLIENT_D:  // ver. >= 11
+      case SUPLA_CS_CALL_REGISTER_CLIENT_D:  // ver. >= 12
 
         if (srpc->sdp.data_size == sizeof(TCS_SuplaRegisterClient_D))
           rd->data.cs_register_client_d = (TCS_SuplaRegisterClient_D *)malloc(
@@ -1353,8 +1353,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME:
     case SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT:
     case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
-    case SUPLA_CS_CALL_REGISTER_CLIENT_D:
       return 11;
+    case SUPLA_CS_CALL_REGISTER_CLIENT_D:
     case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
     case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
     case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
