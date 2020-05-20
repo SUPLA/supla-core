@@ -1753,7 +1753,7 @@ TEST_F(SrpcTest, call_registerclient_d) {
   DECLARE_WITH_RANDOM(TCS_SuplaRegisterClient_D, registerclient_d);
 
   ASSERT_GT(srpc_cs_async_registerclient_d(srpc, &registerclient_d), 0);
-  SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_D, 666);
+  SendAndReceive(SUPLA_CS_CALL_REGISTER_CLIENT_D, 662);
 
   ASSERT_FALSE(cr_rd.data.cs_register_client_d == NULL);
 

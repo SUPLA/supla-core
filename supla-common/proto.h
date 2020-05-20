@@ -922,8 +922,6 @@ typedef struct {
   char SoftVer[SUPLA_SOFTVER_MAXSIZE];
 
   char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
-
-  unsigned _supla_int_t Flags;
 } TCS_SuplaRegisterClient_D;  // ver. >= 12
 
 typedef struct {
