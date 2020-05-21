@@ -910,7 +910,7 @@ void serverconnection::execute(void *sthread) {
             ssocket_is_secure(ssd));
 
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, 120000000);
+    eh_wait(eh, registered == REG_NONE ? 1000000 : 120000000);
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       // supla_log(LOG_DEBUG, "srpc_iterate(_srpc) == SUPLA_RESULT_FALSE");
