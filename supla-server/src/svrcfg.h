@@ -28,7 +28,7 @@ extern "C" {
 #define CFG_OAUTH_URL_MAXSIZE 96
 #define CFG_OAUTH_TOKEN_SIZE 86
 
-#define SERVER_VERSION "2.4"
+#define SERVER_VERSION "2.4.0"
 
 #warning "Delete the code where SERVER_VERSION_23 occurs"
 
