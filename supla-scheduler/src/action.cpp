@@ -42,8 +42,6 @@ bool s_worker_action::is_function_allowed(void) {
 
 bool s_worker_action::check_before_start(void) { return false; }
 
-bool s_worker_action::no_sensor(void) { return false; }
-
 bool s_worker_action::retry_when_fail(void) {
   return worker->retry_when_fail();
 }
