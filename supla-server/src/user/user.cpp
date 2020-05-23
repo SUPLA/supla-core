@@ -430,6 +430,20 @@ bool supla_user::get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
   return result;
 }
 
+bool supla_user::get_channel_valve_value(int DeviceID, int ChannelID,
+                                         TValve_Value *Value) {
+  bool result = false;
+
+  supla_device *device = device_container->findByID(DeviceID);
+
+  if (device != NULL) {
+    result = device->get_channel_valve_value(ChannelID, Value) == 1;
+    device->releasePtr();
+  }
+
+  return result;
+}
+
 // static
 bool supla_user::get_channel_double_value(int UserID, int DeviceID,
                                           int ChannelID, double *Value,
@@ -553,6 +567,25 @@ supla_channel_ic_measurement *supla_user::supla_user::get_ic_measurement(
 
   if (user) {
     result = user->get_ic_measurement(DeviceID, ChannelID);
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+
+  return result;
+}
+
+// static
+bool supla_user::get_channel_valve_value(int UserID, int DeviceID,
+                                         int ChannelID, TValve_Value *Value) {
+  bool result = false;
+
+  safe_array_lock(supla_user::user_arr);
+
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+    result = user->get_channel_valve_value(DeviceID, ChannelID, Value) == true;
   }
 
   safe_array_unlock(supla_user::user_arr);

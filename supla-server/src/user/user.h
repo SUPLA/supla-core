@@ -105,6 +105,9 @@ class supla_user {
   static supla_channel_ic_measurement *get_ic_measurement(int UserID,
                                                           int DeviceID,
                                                           int ChannelID);
+  static bool get_channel_valve_value(int UserID, int DeviceID, int ChannelID,
+                                      TValve_Value *Value);
+
   static int user_count(void);
   static supla_user *get_user(int idx);
   static bool set_device_channel_char_value(int UserID, int SenderID,
@@ -157,6 +160,8 @@ class supla_user {
   bool get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
                               char *color_brightness, char *brightness,
                               char *on_off);
+  bool get_channel_valve_value(int DeviceID, int ChannelID,
+                               TValve_Value *Value);
 
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
