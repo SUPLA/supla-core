@@ -79,13 +79,16 @@ int s_worker_action_openclose::waiting_time_to_check(void) {
   return garage_group() ? 55 : 2;
 }
 
-bool s_worker_action_openclose::check_result() {
+bool s_worker_action_openclose::result_success(int *fail_result_code) {
   noSensor = false;
 
   if (garage_group()) {
     char sensor_value = worker->ipcc_get_opening_sensor_value();
     if (sensor_value == -1) {
       noSensor = true;
+      if (fail_result_code) {
+        *fail_result_code = ACTION_EXECUTION_RESULT_NO_SENSOR;
+      }
     } else {
       return doOpen == (sensor_value == 1 ? false : true);
     }

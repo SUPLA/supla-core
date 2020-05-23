@@ -117,7 +117,7 @@ char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
   return result;
 }
 
-bool s_worker_action_rgb::check_result() {
+bool s_worker_action_rgb::result_success(int *fail_result_code) {
   int color, expected_color = 0;
   char color_brightness, expected_color_brightness = 0;
   char brightness, expected_brightness = 0;

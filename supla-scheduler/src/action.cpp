@@ -53,7 +53,7 @@ void s_worker_action::execute(void) {
     return;
 
   if (!worker->channel_group() && check_before_start() &&
-      worker->get_retry_count() == 0 && check_result()) {
+      worker->get_retry_count() == 0 && result_success(NULL)) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
     return;
@@ -85,8 +85,10 @@ void s_worker_action::execute(void) {
     return;
   }
 
+  int fail_result_code = 0;
+
   // CHECK
-  if (check_result()) {
+  if (result_success(&fail_result_code)) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_SUCCESS);
   } else if (retry_when_fail() &&
@@ -94,9 +96,8 @@ void s_worker_action::execute(void) {
     worker->get_db()->set_retry(
         worker->get_id(), waiting_time_to_retry() - waiting_time_to_check());
 
-  } else if (no_sensor()) {
-    worker->get_db()->set_result(worker->get_id(),
-                                 ACTION_EXECUTION_RESULT_NO_SENSOR);
+  } else if (fail_result_code > 0) {
+    worker->get_db()->set_result(worker->get_id(), fail_result_code);
 
   } else {
     switch (worker->ipcc_is_connected()) {
