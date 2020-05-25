@@ -49,7 +49,7 @@ bool s_worker_action_valve_openclose::result_success(int *fail_result_code) {
 
   if (!value.closed == doOpen) {
     return true;
-  };
+  }
 
   if (fail_result_code && doOpen &&
       (value.flags & SUPLA_VALVE_FLAG_FLOODING ||
