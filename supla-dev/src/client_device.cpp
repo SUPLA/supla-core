@@ -113,7 +113,8 @@ void client_device_channel::getDouble(double *result) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
     case SUPLA_CHANNELFNC_MAILSENSOR:
-      *result = this->value[0] == 1 ? 1 : 0;
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+      *result = this->value[0] > 0 ? 1 : 0;
       break;
     case SUPLA_CHANNELFNC_THERMOMETER:
     case SUPLA_CHANNELFNC_DISTANCESENSOR:
@@ -355,8 +356,10 @@ int client_device_channel::getType(void) {
         this->type = SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS;
         break;
       case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:  // ver. >= 12
+        this->type = SUPLA_CHANNELTYPE_VALVE_OPENCLOSE;
+        break;
       case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-        this->type = SUPLA_CHANNELTYPE_VALVE;
+        this->type = SUPLA_CHANNELTYPE_VALVE_PERCENTAGE;
         break;
 
       case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
@@ -387,6 +390,12 @@ std::string client_device_channel::getPayloadOn(void) {
 void client_device_channel::setFileWriteCheckSec(int value) {
   this->fileWriteCheckSeck = value;
 }
+
+std::string client_device_channel::getIdTemplate(void) {
+  return this->idTemplate;
+}
+
+std::string client_device_channel::getIdValue(void) { return this->idValue; }
 
 std::string client_device_channel::getPayloadOff(void) {
   return this->payloadOff;
@@ -421,6 +430,15 @@ void client_device_channel::setType(int type) { this->type = type; }
 void client_device_channel::setFunction(int function) {
   this->function = function;
 }
+
+void client_device_channel::setIdTemplate(const char *idTemplate) {
+  this->idTemplate = std::string(idTemplate);
+}
+
+void client_device_channel::setIdValue(const char *idValue) {
+  this->idValue = std::string(idValue);
+}
+
 void client_device_channel::setNumber(int number) { this->number = number; }
 void client_device_channel::setFileName(const char *filename) {
   this->fileName = std::string(filename);
@@ -536,6 +554,23 @@ client_device_channel *client_device_channels::find_channel(int number) {
 
   return channel;
 }
+
+void client_device_channels::get_channels_for_topic(
+    std::string topic, std::vector<client_device_channel *> *vect) {
+  int i;
+
+  client_device_channel *channel;
+
+  for (i = 0; i < safe_array_count(arr); i++) {
+    channel = (client_device_channel *)safe_array_get(arr, i);
+    std::string topic_str = channel->getStateTopic();
+
+    if (topic_str.length() > 0 && (topic_str.compare(topic) == 0)) {
+      vect->push_back(channel);
+    }
+  };
+}
+
 client_device_channel *client_device_channels::find_channel_by_topic(
     std::string topic) {
   int i;

@@ -49,6 +49,10 @@ class client_device_channel {
   std::string execute;
   std::string executeOn;
   std::string executeOff;
+
+  std::string idTemplate;
+  std::string idValue;
+
   bool retain;
   bool online;
   bool toggled;
@@ -80,6 +84,8 @@ class client_device_channel {
   std::string getExecute(void);
   std::string getExecuteOn(void);
   std::string getExecuteOff(void);
+  std::string getIdTemplate(void);
+  std::string getIdValue(void);
   bool getRetain(void);
   bool getOnline(void);
   bool getToggled(void);
@@ -107,6 +113,8 @@ class client_device_channel {
   void setToggled(bool toggled);
   void setLastSeconds(void);
   void setFileWriteCheckSec(int value);
+  void setIdTemplate(const char *idTemplate);
+  void setIdValue(const char *idValue);
 
   /* value handler */
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -138,6 +146,9 @@ class client_device_channels {
 
   client_device_channel *find_channel(int number);
   client_device_channel *find_channel_by_topic(std::string topic);
+  void get_channels_for_topic(std::string topic,
+                              std::vector<client_device_channel *> *vect);
+
   client_device_channel *getChannel(int idx);
   int getChannelCount(void);
 

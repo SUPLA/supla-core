@@ -28,7 +28,7 @@
 #include "json/jsoncons_ext/jsonpointer/jsonpointer.hpp"
 #include "supla-client-lib/log.h"
 
-void handle_subscribed_message(client_device_channel* channel,
+bool handle_subscribed_message(client_device_channel* channel,
                                std::string topic, std::string message,
                                _func_channelio_valuechanged cb,
                                void* user_data);

@@ -28,11 +28,11 @@ bool value_exists(jsoncons::json payload, std::string path) {
   }
 }
 
-void handle_subscribed_message(client_device_channel* channel,
+bool handle_subscribed_message(client_device_channel* channel,
                                std::string topic, std::string message,
                                _func_channelio_valuechanged cb,
                                void* user_data) {
-  if (message.length() == 0) return;
+  if (message.length() == 0) return false;
 
   while (!cb) {
     supla_log(LOG_DEBUG, "waiting for registration result...");
@@ -54,14 +54,29 @@ void handle_subscribed_message(client_device_channel* channel,
 
     if (channel->getPayloadValue().length() > 0) {
       std::string payloadValue = std::string(channel->getPayloadValue());
+
       template_value =
           jsoncons::jsonpointer::get(payload, payloadValue).as<std::string>();
-      if (template_value.length() == 0) return;
+
+      if (template_value.length() == 0) return false;
     }
+
+    if (channel->getIdTemplate().length() > 0) {
+      std::string idTemplate = channel->getIdTemplate();
+      std::string id =
+          jsoncons::jsonpointer::get(payload, idTemplate).as<std::string>();
+      std::string idValue = channel->getIdValue();
+
+      if (id.length() == 0 || id.compare(idValue) != 0) {
+        return false;
+      }
+    }
+
   } catch (jsoncons::ser_error& ser) {
   } catch (jsoncons::jsonpointer::jsonpointer_error& error) {
   }
-  if (template_value.length() == 0) return;
+
+  if (template_value.length() == 0) return false;
 
   std::string payloadOn = channel->getPayloadOn();
   std::string payloadOff = channel->getPayloadOff();
@@ -108,7 +123,7 @@ void handle_subscribed_message(client_device_channel* channel,
           if (cb) cb(channelNumber, value, user_data);
         };
 
-        return;
+        return hasChanged;
       }
       case SUPLA_CHANNELFNC_DISTANCESENSOR:
       case SUPLA_CHANNELFNC_DEPTHSENSOR:
@@ -121,7 +136,8 @@ void handle_subscribed_message(client_device_channel* channel,
         channel->setValue(value);
 
         if (cb) cb(channel->getNumber(), value, user_data);
-        return;
+
+        return true;
       };
       case SUPLA_CHANNELFNC_THERMOMETER: {
         std::string::size_type sz;  // alias of size_t
@@ -132,7 +148,7 @@ void handle_subscribed_message(client_device_channel* channel,
 
         if (cb) cb(channelNumber, value, user_data);
 
-        return;
+        return true;
 
       } break;
       case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE: {
@@ -145,7 +161,7 @@ void handle_subscribed_message(client_device_channel* channel,
 
         if (cb) cb(channelNumber, value, user_data);
 
-        return;
+        return true;
 
       } break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER: {
@@ -158,14 +174,18 @@ void handle_subscribed_message(client_device_channel* channel,
         channel->setValue(value);
 
         if (cb) cb(channel->getNumber(), value, user_data);
-        return;
+        return true;
       } break;
     };
+
+    return false;
 
   } catch (jsoncons::json_exception& je) {
     supla_log(LOG_ERR, "error while trying get value from payload [error: %s]",
               je.what());
+    return false;
   } catch (std::exception& exception) {
     supla_log(LOG_ERR, "general error %s", exception.what());
+    return false;
   }
 }

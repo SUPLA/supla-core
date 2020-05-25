@@ -53,7 +53,8 @@ void channelio_set_execute_on(unsigned char number, const char *value);
 void channelio_set_execute_off(unsigned char number, const char *value);
 void channelio_set_toggle(unsigned char number, int toggle);
 void channelio_set_file_write_check(unsigned char number, int value);
-
+void channelio_set_id_template(unsigned char number, const char *value);
+void channelio_set_id_value(unsigned char number, const char *value);
 void channelio_set_gpio1(unsigned char number, unsigned char gpio1);
 void channelio_set_gpio2(unsigned char number, unsigned char gpio2);
 void channelio_set_bistable_flag(unsigned char number, unsigned char bistable);

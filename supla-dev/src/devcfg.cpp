@@ -99,6 +99,8 @@ static int decode_function_type(const char *fnc) {
     return SUPLA_CHANNELFNC_WINDSENSOR;
   } else if (strcasecmp(fnc, "MAILSENSOR") == 0) {
     return SUPLA_CHANNELFNC_MAILSENSOR;
+  } else if (strcasecmp(fnc, "VALVE_OPENCLOSE") == 0) {
+    return SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
   } else
     return SUPLA_CHANNELFNC_NONE;
 }
@@ -132,6 +134,8 @@ static int decode_channel_type(const char *type) {
     return SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
   } else if (strcasecmp(type, "HUMIDITYSENSOR") == 0) {
     return SUPLA_CHANNELTYPE_HUMIDITYSENSOR;
+  } else if (strcasecmp(type, "VALVE") == 0) {
+    return SUPLA_CHANNELTYPE_VALVE_OPENCLOSE;
   };
 
   return atoi(type);
@@ -195,6 +199,10 @@ void devcfg_channel_cfg(const char *section, const char *name,
   } else if (strcasecmp(name, "file_write_check_sec") == 0 &&
              strlen(value) > 0) {
     channelio_set_file_write_check(number, atoi(value) % 100000);
+  } else if (strcasecmp(name, "idTemplate") == 0 && strlen(value) > 0) {
+    channelio_set_id_template(number, value);
+  } else if (strcasecmp(name, "idValue") == 0 && strlen(value) > 0) {
+    channelio_set_id_value(number, value);
   }
 }
 

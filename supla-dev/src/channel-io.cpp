@@ -183,17 +183,21 @@ void mqtt_subscribe_callback(void **state,
                              struct mqtt_response_publish *publish) {
   std::string topic =
       std::string((char *)publish->topic_name, publish->topic_name_size);
+
   std::string message = std::string((char *)publish->application_message,
                                     publish->application_message_size);
-  client_device_channel *channel =
-      channels->find_channel_by_topic(topic.c_str());
 
-  if (channel) {
-    handle_subscribed_message(channel, topic, message,
-                              channels->on_valuechanged,
-                              channels->on_valuechanged_user_data);
+  std::vector<client_device_channel *> chnls;
+  channels->get_channels_for_topic(topic, &chnls);
 
-    channelio_raise_execute_command(channel);
+  if (chnls.size() > 0) {
+    for (client_device_channel *channel : chnls) {
+      if (handle_subscribed_message(channel, topic, message,
+                                    channels->on_valuechanged,
+                                    channels->on_valuechanged_user_data)) {
+        channelio_raise_execute_command(channel);
+      }
+    }
   }
 }
 
@@ -260,6 +264,18 @@ void channelio_set_file_write_check(unsigned char number, int value) {
   if (channels == NULL) return;
   client_device_channel *channel = channels->find_channel(number);
   if (channel) channel->setFileWriteCheckSec(value);
+}
+
+void channelio_set_id_template(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setIdTemplate(value);
+}
+
+void channelio_set_id_value(unsigned char number, const char *value) {
+  if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
+  if (channel) channel->setIdValue(value);
 }
 
 void channelio_set_payload_on(unsigned char number, const char *value) {

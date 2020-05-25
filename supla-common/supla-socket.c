@@ -692,16 +692,6 @@ int ssocket_read(void *_ssd, void *_supla_socket, void *buf, int count) {
     count = recv(supla_socket->sfd, buf, count, MSG_DONTWAIT);
   }
 
-#if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
-  if (count > 0) {
-    FILE *f = fopen("ssocket_read.raw", "ab");
-    if (f) {
-      fwrite(buf, count, 1, f);
-      fclose(f);
-    }
-  }
-#endif /*defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1*/
-
   return count;
 }
 
@@ -713,15 +703,6 @@ int ssocket_write(void *_ssd, void *_supla_socket, const void *buf, int count) {
 
   assert(ssd != NULL);
 
-#if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
-  if (count > 0) {
-    FILE *f = fopen("ssocket_write.raw", "ab");
-    if (f) {
-      fwrite(buf, count, 1, f);
-      fclose(f);
-    }
-  }
-#endif /*defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1*/
 
   if (ssd->secure == 1) {
 #ifndef NOSSL
