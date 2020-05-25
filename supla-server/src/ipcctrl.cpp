@@ -609,7 +609,7 @@ void svr_ipcctrl::execute(void *sthread) {
           get_impulsecounter_value(cmd_get_ic_value);
 
         } else if (match_command(cmd_get_valve_value, len)) {
-          get_char(cmd_get_valve_value);
+          get_valve_value(cmd_get_valve_value);
 
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);
