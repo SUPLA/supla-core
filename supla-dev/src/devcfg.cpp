@@ -199,9 +199,9 @@ void devcfg_channel_cfg(const char *section, const char *name,
   } else if (strcasecmp(name, "file_write_check_sec") == 0 &&
              strlen(value) > 0) {
     channelio_set_file_write_check(number, atoi(value) % 100000);
-  } else if (strcasecmp(name, "idTemplate") == 0 && strlen(value) > 0) {
+  } else if (strcasecmp(name, "id_Template") == 0 && strlen(value) > 0) {
     channelio_set_id_template(number, value);
-  } else if (strcasecmp(name, "idValue") == 0 && strlen(value) > 0) {
+  } else if (strcasecmp(name, "id_Value") == 0 && strlen(value) > 0) {
     channelio_set_id_value(number, value);
   }
 }

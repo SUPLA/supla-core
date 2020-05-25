@@ -31,6 +31,7 @@ void handle_subscribed_message(void* supla_client,
                                client_device_channels* channels,
                                client_config* config, std::string topic,
                                std::string message) {
+
   supla_log(LOG_DEBUG, "handling message %s", message.c_str());
 
   if (supla_client == NULL) return;
