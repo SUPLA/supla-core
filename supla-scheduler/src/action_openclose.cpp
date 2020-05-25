@@ -146,7 +146,7 @@ bool s_worker_action_openclose::do_action() {
       }
     }
 
-    return worker->ipcc_set_char_value(doOpen ? 0 : 1);
+    return worker->ipcc_set_char_value(doOpen ? 1 : 0);
   } else if (!garage_func() || worker->ipcc_get_opening_sensor_value() != -1) {
     return worker->ipcc_set_char_value(1);
   }
