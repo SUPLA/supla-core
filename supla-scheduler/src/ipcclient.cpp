@@ -216,7 +216,7 @@ bool ipc_client::get_rgbw_value(int user_id, int device_id, int channel_id,
 bool ipc_client::get_valve_value(int user_id, int device_id, int channel_id,
                                  TValve_Value *value) {
   if (value == NULL ||
-      !get_value(cmd_get_char_value, user_id, device_id, channel_id) ||
+      !get_value(cmd_get_valve_value, user_id, device_id, channel_id) ||
       sscanf(&buffer[strnlen(ipc_result_value, 255)], "%hhu,%hhu",
              &value->closed, &value->flags) != 2) {
     memset(value, 0, sizeof(TValve_Value));
