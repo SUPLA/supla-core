@@ -203,6 +203,7 @@ class supla_device_channel {
   void getChar(char *Value);
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
+  bool getValveValue(TValve_Value *Value);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
@@ -270,6 +271,7 @@ class supla_device_channels {
   bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID,
                                      int color, char color_brightness,
                                      char brightness, char on_off);
+  bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
 
   std::list<int> master_channel(int ChannelID);
   std::list<int> related_channel(int ChannelID);

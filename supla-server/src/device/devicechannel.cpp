@@ -625,6 +625,18 @@ bool supla_device_channel::getRGBW(int *color, char *color_brightness,
   return result;
 }
 
+bool supla_device_channel::getValveValue(TValve_Value *Value) {
+  if (Value == NULL) return false;
+  switch (Func) {
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+      memcpy(Value, this->value, sizeof(TValve_Value));
+      return true;
+  }
+
+  return false;
+}
+
 void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
@@ -1182,6 +1194,22 @@ bool supla_device_channels::get_channel_char_value(int ChannelID, char *Value) {
       channel->getChar(Value);
       result = true;
     }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
+bool supla_device_channels::get_channel_valve_value(int ChannelID,
+                                                    TValve_Value *Value) {
+  bool result = false;
+
+  if (ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    result = channel && channel->getValveValue(Value);
 
     safe_array_unlock(arr);
   }

@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_TURN_ONOFF_H_
-#define ACTION_TURN_ONOFF_H_
+#ifndef ACTION_VALVE_OPENCLOSE_H_
+#define ACTION_VALVE_OPENCLOSE_H_
 
 #include "action.h"
 
-class s_worker_action_turn_onoff : public s_worker_action {
+class s_worker_action_valve_openclose : public s_worker_action {
  private:
-  bool setOn;
+  bool doOpen;
 
  protected:
   void get_function_list(int list[FUNCTION_LIST_SIZE]);
@@ -34,17 +34,17 @@ class s_worker_action_turn_onoff : public s_worker_action {
   bool do_action();
 
  public:
-  s_worker_action_turn_onoff(s_worker *worker, bool setOn);
+  s_worker_action_valve_openclose(s_worker *worker, bool doOpen);
 };
 
-class s_worker_action_turn_on : public s_worker_action_turn_onoff {
+class s_worker_action_valve_open : public s_worker_action_valve_openclose {
  public:
-  explicit s_worker_action_turn_on(s_worker *worker);
+  explicit s_worker_action_valve_open(s_worker *worker);
 };
 
-class s_worker_action_turn_off : public s_worker_action_turn_onoff {
+class s_worker_action_valve_close : public s_worker_action_valve_openclose {
  public:
-  explicit s_worker_action_turn_off(s_worker *worker);
+  explicit s_worker_action_valve_close(s_worker *worker);
 };
 
-#endif /*ACTION_TURN_ONOFF_*/
+#endif /*ACTION_VALVE_OPENCLOSE_*/

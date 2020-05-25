@@ -24,7 +24,6 @@ s_worker_action_openclose::s_worker_action_openclose(s_worker *worker,
                                                      bool doOpen)
     : s_worker_action(worker) {
   this->doOpen = doOpen;
-  noSensor = false;
 }
 
 void s_worker_action_openclose::get_function_list(
@@ -34,8 +33,6 @@ void s_worker_action_openclose::get_function_list(
     list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
   }
 }
-
-bool s_worker_action_openclose::no_sensor(void) { return noSensor; }
 
 bool s_worker_action_openclose::garage_group(void) {
   switch (worker->get_channel_func()) {
@@ -79,13 +76,13 @@ int s_worker_action_openclose::waiting_time_to_check(void) {
   return garage_group() ? 55 : 2;
 }
 
-bool s_worker_action_openclose::check_result() {
-  noSensor = false;
-
+bool s_worker_action_openclose::result_success(int *fail_result_code) {
   if (garage_group()) {
     char sensor_value = worker->ipcc_get_opening_sensor_value();
     if (sensor_value == -1) {
-      noSensor = true;
+      if (fail_result_code) {
+        *fail_result_code = ACTION_EXECUTION_RESULT_NO_SENSOR;
+      }
     } else {
       return doOpen == (sensor_value == 1 ? false : true);
     }

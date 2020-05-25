@@ -540,6 +540,10 @@ bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
                                           brightness, on_off);
 }
 
+bool supla_device::get_channel_valve_value(int ChannelID, TValve_Value *Value) {
+  return channels->get_channel_valve_value(ChannelID, Value);
+}
+
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   TSD_FirmwareUpdate_UrlResult result;
   memset(&result, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
