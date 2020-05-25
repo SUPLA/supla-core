@@ -66,13 +66,7 @@ s_worker_action_close::s_worker_action_close(s_worker *worker)
     : s_worker_action_openclose(worker, false) {}
 
 int s_worker_action_openclose::try_limit(void) {
-  if (valve_func()) {
-    return 2;
-  } else if (garage_func()) {
-    return 4;
-  }
-
-  return 1;
+  return garage_func() || valve_func() ? 4 : 1;
 }
 
 bool s_worker_action_openclose::retry_when_fail(void) {
@@ -81,23 +75,11 @@ bool s_worker_action_openclose::retry_when_fail(void) {
 }
 
 int s_worker_action_openclose::waiting_time_to_retry(void) {
-  if (valve_func()) {
-    return 10;
-  } else if (garage_func()) {
-    return 60;
-  }
-
-  return 30;
+  return garage_func() || valve_func() ? 60 : 30;
 }
 
 int s_worker_action_openclose::waiting_time_to_check(void) {
-  if (valve_func()) {
-    return 8;
-  } else if (garage_func()) {
-    return 55;
-  }
-
-  return 2;
+  return garage_func() || valve_func() ? 55 : 2;
 }
 
 bool s_worker_action_openclose::result_success(int *fail_result_code) {
