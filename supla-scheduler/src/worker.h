@@ -49,6 +49,7 @@ class s_worker {
   bool ipcc_get_rgbw_value(int *color, char *color_brightness,
                            char *brightness);
   bool ipcc_set_rgbw_value(int color, char color_brightness, char brightness);
+  bool ipcc_get_valve_value(TValve_Value *value);
   char ipcc_is_connected(void);
 };
 

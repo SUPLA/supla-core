@@ -21,6 +21,7 @@ CPP_SRCS += \
 ../src/action_rgb.cpp \
 ../src/action_shutreveal.cpp \
 ../src/action_turn_onoff.cpp \
+../src/action_valve_openclose.cpp \
 ../src/database.cpp \
 ../src/db.cpp \
 ../src/ipcclient.cpp \
@@ -34,6 +35,7 @@ OBJS += \
 ./src/action_rgb.o \
 ./src/action_shutreveal.o \
 ./src/action_turn_onoff.o \
+./src/action_valve_openclose.o \
 ./src/cfg.o \
 ./src/database.o \
 ./src/db.o \
@@ -69,6 +71,7 @@ CPP_DEPS += \
 ./src/action_rgb.d \
 ./src/action_shutreveal.d \
 ./src/action_turn_onoff.d \
+./src/action_valve_openclose.d \
 ./src/database.d \
 ./src/db.d \
 ./src/ipcclient.d \

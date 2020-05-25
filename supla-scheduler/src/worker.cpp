@@ -135,6 +135,11 @@ bool s_worker::ipcc_set_rgbw_value(int color, char color_brightness,
                               color_brightness, brightness);
 }
 
+bool s_worker::ipcc_get_valve_value(TValve_Value *value) {
+  return ipcc->get_valve_value(s_exec.user_id, s_exec.iodevice_id,
+                               s_exec.channel_id, value);
+}
+
 char s_worker::ipcc_is_connected(void) {
   return ipcc->is_connected(s_exec.user_id, s_exec.iodevice_id);
 }
