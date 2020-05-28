@@ -48,7 +48,7 @@ int s_worker_action_shutreveal::waiting_time_to_retry(void) { return 120; }
 
 int s_worker_action_shutreveal::waiting_time_to_check(void) { return 90; }
 
-bool s_worker_action_shutreveal::check_result() {
+bool s_worker_action_shutreveal::result_success(int *fail_result_code) {
   char value = 0;  // percent of shut
   char expected_value = 0;
   if (!worker->ipcc_get_char_value(&value)) {

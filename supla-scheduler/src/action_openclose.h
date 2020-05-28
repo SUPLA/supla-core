@@ -24,7 +24,6 @@
 class s_worker_action_openclose : public s_worker_action {
  private:
   bool doOpen;
-  bool noSensor;
 
  protected:
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
@@ -32,11 +31,11 @@ class s_worker_action_openclose : public s_worker_action {
   int try_limit(void);
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
-  bool check_result();
+  bool result_success(int *fail_result_code);
   bool do_action();
-  bool garage_group(void);
+  bool garage_func(void);
+  bool valve_func(void);
   bool check_before_start(void);
-  bool no_sensor(void);
 
  public:
   s_worker_action_openclose(s_worker *worker, bool doOpen);

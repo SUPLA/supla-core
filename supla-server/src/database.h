@@ -35,8 +35,8 @@ class database : public dbcommon {
   virtual char *cfg_get_database(void);
   virtual int cfg_get_port(void);
 
-  bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE,
-            int *UserID, bool *is_enabled);
+  bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
+            bool *is_enabled);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
@@ -46,6 +46,8 @@ class database : public dbcommon {
                         bool *is_null, const char *sql);
 
   void em_set_longlong(unsigned _supla_int64_t *v, void *pbind);
+  int get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
+                           bool client);
 
  public:
   bool location_auth(int LocationID, char *LocationPWD, int *UserID,
@@ -84,10 +86,9 @@ class database : public dbcommon {
   int get_location_id(int UserID, bool enabled);
 
   bool get_device_reg_enabled(int UserID);
-  int get_device_id_and_user(const char GUID[SUPLA_GUID_SIZE], int *UserID);
-  int get_device_id(const char GUID[SUPLA_GUID_SIZE]);
+  int get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
   int get_device(int DeviceID, bool *device_enabled, int *original_location_id,
-                 int *location_id, bool *location_enabled, int *UserID);
+                 int *location_id, bool *location_enabled);
 
   int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
   int get_device_channel_count(int DeviceID);
@@ -143,6 +144,7 @@ class database : public dbcommon {
 
   bool get_reg_enabled(int UserID, unsigned int *client,
                        unsigned int *iodevice);
+  bool set_reg_enabled(int UserID, int deviceRegTimeSec, int clientRegTimeSec);
 
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
@@ -160,6 +162,14 @@ class database : public dbcommon {
   bool google_home_load_token(supla_google_home *google_home);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
+  bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
+  bool set_channel_function(int UserID, int ChannelID, int Func);
+  bool get_channel_type_and_funclist(int UserID, int ChannelID, int *Type,
+                                     unsigned int *FuncList);
+  bool set_channel_caption(int UserID, int ChannelID, char *Caption);
+  bool channel_belong_to_group(int channel_id);
+  bool channel_has_schedule(int channel_id);
+  bool channel_is_associated_with_scene(int channel_id);
 };
 
 #endif /* DATABASE_H_ */

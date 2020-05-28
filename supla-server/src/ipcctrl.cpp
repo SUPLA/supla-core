@@ -44,6 +44,7 @@ const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 const char cmd_get_em_value[] = "GET-EM-VALUE:";
 const char cmd_get_ic_value[] = "GET-IC-VALUE:";
+const char cmd_get_valve_value[] = "GET-VALVE-VALUE:";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
@@ -281,6 +282,31 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
       delete em;
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_valve_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  TValve_Value Value;
+  memset(&Value, 0, sizeof(TValve_Value));
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool r = supla_user::get_channel_valve_value(UserID, DeviceID, ChannelID,
+                                                 &Value);
+
+    if (r) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i", Value.closed,
+               Value.flags);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
       return;
     }
   }
@@ -581,6 +607,9 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_get_ic_value, len)) {
           get_impulsecounter_value(cmd_get_ic_value);
+
+        } else if (match_command(cmd_get_valve_value, len)) {
+          get_valve_value(cmd_get_valve_value);
 
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);

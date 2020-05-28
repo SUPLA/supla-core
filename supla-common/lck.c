@@ -23,7 +23,8 @@
 #include <string.h>
 #endif /*__LCK_DEBUG*/
 
-#if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)
+#if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
+    defined(ARDUINO_ARCH_ESP32)
 #define __SINGLE_THREAD
 #else
 
@@ -34,7 +35,8 @@
 #include <time.h>
 #endif /*_WIN32*/
 
-#endif /*defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)*/
+#endif  // defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266)
+        // || defined(ARDUINO_ARCH_ESP32)
 
 #include <stdlib.h>
 

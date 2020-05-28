@@ -64,6 +64,8 @@ bool dbcommon::connect(int connection_timeout_sec) {
       if (mysql_real_connect(mysql, cfg_get_host(), cfg_get_user(),
                              cfg_get_password(), cfg_get_database(),
                              cfg_get_port(), NULL, 0) == NULL) {
+        supla_log(LOG_ERR, "Failed to connect to database: Error: %s",
+                  mysql_error(mysql));
         disconnect();
       } else {
         if (mysql_set_character_set(mysql, "utf8mb4")) {
@@ -242,7 +244,7 @@ bool dbcommon::stmt_get_int(void **_stmt, int *value1, int *value2, int *value3,
 }
 
 int dbcommon::get_int(int ID, int default_value, const char *sql) {
-  MYSQL_STMT *stmt;
+  MYSQL_STMT *stmt = NULL;
   int Result = default_value;
 
   MYSQL_BIND pbind[1];
@@ -300,7 +302,7 @@ int dbcommon::add_by_proc_call(const char *stmt_str, void *bind,
 }
 
 int dbcommon::get_last_insert_id(void) {
-  MYSQL_STMT *stmt;
+  MYSQL_STMT *stmt = NULL;
   int Result = 0;
 
   if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
@@ -367,9 +369,23 @@ bool dbcommon::check_db_version(const char *expected_version,
     if (strncmp(version, expected_version, 14) == 0) {
       return true;
     } else {
-      supla_log(LOG_ERR, "Incorrect database version!");
+      supla_log(LOG_ERR, "Incorrect database version! Expected: %s",
+                expected_version);
     }
   }
 
   return false;
+}
+
+void dbcommon::set_terminating_byte(char *result_str, int buffer_size,
+                                    int data_size, bool is_null) {
+  if (is_null) {
+    data_size = 0;
+  }
+
+  if (data_size >= buffer_size) {
+    data_size = buffer_size - 1;
+  }
+
+  result_str[data_size] = 0;
 }

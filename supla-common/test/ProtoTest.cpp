@@ -55,6 +55,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)3784, sizeof(TDS_SuplaRegisterDevice_E));
   ASSERT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
   ASSERT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
+  ASSERT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
   ASSERT_EQ((unsigned int)1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
   ASSERT_EQ((unsigned int)17, sizeof(TSD_SuplaChannelNewValue));
   ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
@@ -92,6 +93,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)265, sizeof(TSC_OAuthTokenRequestResult));
   ASSERT_EQ((unsigned int)62, sizeof(TElectricityMeter_Measurement));
   ASSERT_EQ((unsigned int)429, sizeof(TElectricityMeter_ExtendedValue));
+  ASSERT_EQ((unsigned int)449, sizeof(TElectricityMeter_ExtendedValue_V2));
   ASSERT_EQ((unsigned int)5, sizeof(TElectricityMeter_Value));
   ASSERT_EQ((unsigned int)40, sizeof(TSC_ImpulseCounter_ExtendedValue));
   ASSERT_EQ((unsigned int)8, sizeof(TSC_ImpulseCounter_Value));
@@ -111,6 +113,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);
   ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue_V2),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
   ASSERT_EQ((unsigned int)4, sizeof(TThermostat_Time));
   ASSERT_EQ((unsigned int)246, sizeof(TThermostat_ExtendedValue));
@@ -129,8 +133,26 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   ASSERT_EQ((unsigned int)63, sizeof(TSDC_UserLocalTimeResult));
 
-  ASSERT_EQ((unsigned int)25, sizeof(TSC_ChannelState));
-  ASSERT_EQ((unsigned int)4, sizeof(TCS_ChannelStateRequest));
+  ASSERT_EQ((unsigned int)50, sizeof(TDSC_ChannelState));
+  ASSERT_EQ((unsigned int)8, sizeof(TCSD_ChannelStateRequest));
+  ASSERT_EQ((unsigned int)8, sizeof(TCS_SetChannelFunction));
+  ASSERT_EQ((unsigned int)9, sizeof(TSC_SetChannelFunctionResult));
+  ASSERT_EQ((unsigned int)660, sizeof(TSC_ChannelBasicCfg));
+  ASSERT_EQ((unsigned int)4, sizeof(TCS_ChannelBasicCfgRequest));
+  ASSERT_EQ((unsigned int)1, sizeof(TSC_ClientsReconnectRequestResult));
+  ASSERT_EQ((unsigned int)8, sizeof(TCS_SetRegistrationEnabled));
+  ASSERT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
+  ASSERT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
+  ASSERT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
+  ASSERT_EQ((unsigned int)409, sizeof(TCS_SetChannelCaption));
+  ASSERT_EQ((unsigned int)410, sizeof(TSC_SetChannelCaptionResult));
+  ASSERT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
+  ASSERT_EQ((unsigned int)58, sizeof(TCalCfg_ZWave_Node));
+  ASSERT_LE(sizeof(TCalCfg_ZWave_Node),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+  ASSERT_LE(sizeof(unsigned char), (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+  ASSERT_LE(sizeof(TCalCfg_ProgressReport),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 }
 
 TEST_F(ProtoTest, init) {

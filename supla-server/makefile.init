@@ -14,17 +14,15 @@ ifeq ($(CC), cc)
 CC=gcc
 endif
 
-ifdef MARIADB
+ifdef MYSQL
+LIBMYSQL=mysqlclient
+INCMYSQL=/usr/include/mysql
+else
 LIBMYSQL=mariadbclient
 INCMYSQL=/usr/include/mariadb
-
 ifeq (,$(wildcard $(INCMYSQL)))
     INCMYSQL=/usr/include/mysql
 endif
-
-else
-LIBMYSQL=mysqlclient
-INCMYSQL=/usr/include/mysql
 endif
 
 ifndef SSOCKET_WRITE_TO_FILE

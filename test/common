@@ -1,0 +1,14 @@
+#!/bin/bash
+
+vg_verify() {
+   valgrind --version
+   ../../tools/valgrind-full.sh "$1" 2> vg-test.log 
+   cat ./vg-test.log
+   if ! grep "All heap blocks were freed -- no leaks are possible" ./vg-test.log; then
+     rm ./vg-test.log
+     echo "Memory leak error!"
+     exit 1
+   fi
+   
+   rm -f ./vg-test.log
+}

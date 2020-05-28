@@ -61,7 +61,7 @@ build()
         export CROSS_TOP="${DEVELOPER}/Platforms/${PLATFORM}.platform/Developer"
         export CROSS_SDK="${PLATFORM}${SDK_VERSION}.sdk"
 
-        export PARAMS=${PARAMS}"-DTARGET_OS_IOS=1 -fembed-bitcode -I${IOS_OPENSSL_LIB_INC} -arch ${ARCH} -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -miphoneos-version-min=${SDK_VERSION}"
+        export PARAMS=${PARAMS}"-DUSE_DEPRECATED_EMEV_V1 -DTARGET_OS_IOS=1 -fembed-bitcode -I${IOS_OPENSSL_LIB_INC} -arch ${ARCH} -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} -miphoneos-version-min=${SDK_VERSION}"
         
         make clean
         make

@@ -24,7 +24,6 @@ s_worker_action_openclose::s_worker_action_openclose(s_worker *worker,
                                                      bool doOpen)
     : s_worker_action(worker) {
   this->doOpen = doOpen;
-  noSensor = false;
 }
 
 void s_worker_action_openclose::get_function_list(
@@ -32,12 +31,11 @@ void s_worker_action_openclose::get_function_list(
   if (!worker->channel_group()) {
     list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
     list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
+    list[2] = SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
   }
 }
 
-bool s_worker_action_openclose::no_sensor(void) { return noSensor; }
-
-bool s_worker_action_openclose::garage_group(void) {
+bool s_worker_action_openclose::garage_func(void) {
   switch (worker->get_channel_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -47,8 +45,12 @@ bool s_worker_action_openclose::garage_group(void) {
   return false;
 }
 
+bool s_worker_action_openclose::valve_func(void) {
+  return worker->get_channel_func() == SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
+}
+
 bool s_worker_action_openclose::check_before_start(void) {
-  return garage_group();
+  return garage_func();
 }
 
 s_worker_action_open::s_worker_action_open(s_worker *worker)
@@ -56,36 +58,55 @@ s_worker_action_open::s_worker_action_open(s_worker *worker)
 
 void s_worker_action_open::get_function_list(int list[FUNCTION_LIST_SIZE]) {
   s_worker_action_openclose::get_function_list(list);
-  list[2] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK;
-  list[3] = SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK;
+  list[3] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK;
+  list[4] = SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK;
 }
 
 s_worker_action_close::s_worker_action_close(s_worker *worker)
     : s_worker_action_openclose(worker, false) {}
 
 int s_worker_action_openclose::try_limit(void) {
-  return garage_group() ? 4 : 1;
+  return garage_func() || valve_func() ? 4 : 1;
 }
 
 bool s_worker_action_openclose::retry_when_fail(void) {
-  return garage_group() ? true : s_worker_action::retry_when_fail();
+  return valve_func() || garage_func() ? true
+                                       : s_worker_action::retry_when_fail();
 }
 
 int s_worker_action_openclose::waiting_time_to_retry(void) {
-  return garage_group() ? 60 : 30;
+  return garage_func() || valve_func() ? 60 : 30;
 }
 
 int s_worker_action_openclose::waiting_time_to_check(void) {
-  return garage_group() ? 55 : 2;
+  return garage_func() || valve_func() ? 55 : 2;
 }
 
-bool s_worker_action_openclose::check_result() {
-  noSensor = false;
+bool s_worker_action_openclose::result_success(int *fail_result_code) {
+  if (valve_func()) {
+    TValve_Value value;
+    if (!worker->ipcc_get_valve_value(&value)) {
+      return false;
+    }
 
-  if (garage_group()) {
+    if (!value.closed == doOpen) {
+      return true;
+    }
+
+    if (fail_result_code && doOpen &&
+        (value.flags & SUPLA_VALVE_FLAG_FLOODING ||
+         value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)) {
+      *fail_result_code =
+          ACTION_EXECUTION_RESULT_VALVE_CLOSED_MANUALLY_OR_FLOODING;
+    }
+
+    return false;
+  } else if (garage_func()) {
     char sensor_value = worker->ipcc_get_opening_sensor_value();
     if (sensor_value == -1) {
-      noSensor = true;
+      if (fail_result_code) {
+        *fail_result_code = ACTION_EXECUTION_RESULT_NO_SENSOR;
+      }
     } else {
       return doOpen == (sensor_value == 1 ? false : true);
     }
@@ -97,7 +118,18 @@ bool s_worker_action_openclose::check_result() {
 }
 
 bool s_worker_action_openclose::do_action() {
-  if (!garage_group() || worker->ipcc_get_opening_sensor_value() != -1) {
+  if (valve_func()) {
+    if (doOpen) {
+      TValve_Value value;
+      if (!worker->ipcc_get_valve_value(&value) ||
+          (value.flags & SUPLA_VALVE_FLAG_FLOODING ||
+           value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)) {
+        return false;
+      }
+    }
+
+    return worker->ipcc_set_char_value(doOpen ? 1 : 0);
+  } else if (!garage_func() || worker->ipcc_get_opening_sensor_value() != -1) {
     return worker->ipcc_set_char_value(1);
   }
   return false;

@@ -37,10 +37,9 @@ class s_worker_action {
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]) = 0;
   virtual int try_limit(void) = 0;
   virtual bool do_action(void) = 0;
-  virtual bool check_result(void) = 0;
+  virtual bool result_success(int *fail_result_code) = 0;
 
   virtual bool check_before_start(void);
-  virtual bool no_sensor(void);
   virtual bool retry_when_fail(void);
 
  public:

@@ -74,8 +74,8 @@ class supla_user {
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
                                 char Type);
 
-  void reconnect(event_source_type eventSourceType);
   bool client_reconnect(int ClientID);
+  bool device_reconnect(int DeviceID);
   void loadUniqueIDs(void);
 
  public:
@@ -86,6 +86,7 @@ class supla_user {
   static supla_user *find(int UserID, bool create);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
+  static bool device_reconnect(int UserID, int DeviceID);
   static bool is_client_online(int UserID, int ClientID);
   static bool is_device_online(int UserID, int DeviceID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
@@ -104,6 +105,9 @@ class supla_user {
   static supla_channel_ic_measurement *get_ic_measurement(int UserID,
                                                           int DeviceID,
                                                           int ChannelID);
+  static bool get_channel_valve_value(int UserID, int DeviceID, int ChannelID,
+                                      TValve_Value *Value);
+
   static int user_count(void);
   static supla_user *get_user(int idx);
   static bool set_device_channel_char_value(int UserID, int SenderID,
@@ -130,6 +134,10 @@ class supla_user {
   static unsigned int total_cd_count(bool client);
   static void print_metrics(int min_interval_sec);
 
+  void reconnect(event_source_type eventSourceType);
+  void reconnect(event_source_type eventSourceType, bool allDevices,
+                 bool allClients);
+
   void on_device_added(int DeviceID, event_source_type eventSourceType);
 
   void setUniqueId(const char shortID[], const char longID[]);
@@ -152,6 +160,8 @@ class supla_user {
   bool get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
                               char *color_brightness, char *brightness,
                               char *on_off);
+  bool get_channel_valve_value(int DeviceID, int ChannelID,
+                               TValve_Value *Value);
 
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
@@ -191,8 +201,16 @@ class supla_user {
   bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
                              TCS_DeviceCalCfgRequest_B *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
+  void on_device_channel_state_result(int ChannelID, TDSC_ChannelState *state);
 
-  channel_complex_value get_channel_complex_value(int DeviceId, int ChannelID);
+  bool device_get_channel_state(int SenderID, int DeviceId,
+                                TCSD_ChannelStateRequest *request);
+
+  channel_complex_value get_channel_complex_value(int ChannelID);
+
+  void set_channel_function(supla_client *sender, TCS_SetChannelFunction *func);
+  void set_channel_caption(supla_client *sender,
+                           TCS_SetChannelCaption *caption);
 
   supla_amazon_alexa *amazonAlexa(void);
   supla_google_home *googleHome(void);

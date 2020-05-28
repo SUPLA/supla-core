@@ -38,12 +38,16 @@ class supla_device : public cdbase {
 
  public:
   explicit supla_device(serverconnection *svrconn);
+
+  static bool funclist_contains_function(int funcList, int func);
+
   char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        unsigned char proto_version);
   virtual ~supla_device();
 
-  bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+  bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+                         char *online);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   void set_device_channel_value(int SenderID, int ChannelID,
@@ -55,7 +59,8 @@ class supla_device : public cdbase {
                                      char on_off);
 
   bool channel_exists(int ChannelID);
-  void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value);
+  void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value,
+                                       TDS_SuplaDeviceChannelValue_B *value_b);
   void on_device_channel_extendedvalue_changed(
       TDS_SuplaDeviceChannelExtendedValue *ev);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);
@@ -74,11 +79,16 @@ class supla_device : public cdbase {
   bool get_channel_char_value(int ChannelID, char *Value);
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);
+  bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
   bool calcfg_request(int SenderID, int ChannelID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  void on_channel_state_result(TDSC_ChannelState *state);
+  bool get_channel_state(int SenderID, TCSD_ChannelStateRequest *request);
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
+  void set_channel_function(int ChannelId, int Func);
+  void get_channel_functions_request(void *srpc);
 };
 
 #endif /* DEVICE_H_ */

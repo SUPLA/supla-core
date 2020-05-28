@@ -46,7 +46,7 @@ int s_worker_action_turn_onoff::waiting_time_to_retry(void) { return 30; }
 
 int s_worker_action_turn_onoff::waiting_time_to_check(void) { return 5; }
 
-bool s_worker_action_turn_onoff::check_result() {
+bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
   char value = 0;
   worker->ipcc_get_char_value(&value);
 
