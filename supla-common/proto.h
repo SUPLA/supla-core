@@ -421,6 +421,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_OFFLINE_DURING_REGISTRATION 0x00400000      // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_ZIGBEE_BRIDGE 0x00800000               // ver. >= 12
 
+#define SUPLA_DEVICE_FLAG_GROUP_CONTROL_EXPECTED 0x0001  // ver. >= 12
+
 #pragma pack(push, 1)
 
 typedef struct {
