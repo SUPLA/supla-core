@@ -87,7 +87,6 @@ void client_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
   }
 }
 
-
 void client_device_channel::toggleValue(void) {
   switch (this->function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -245,8 +244,6 @@ bool client_device_channel::getRGBW(int *color, char *color_brightness,
 char client_device_channel::getChar(void) { return this->value[0]; }
 void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   lck_lock(lck);
-
-
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 

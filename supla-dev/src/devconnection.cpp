@@ -88,12 +88,10 @@ void devconnection_channel_valuechanged(unsigned char number,
                                       number, value);
 }
 
-void devconnection_channel_extendedValuechanged(unsigned char number,
-										TSuplaChannelExtendedValue *value,
-                                        void *_dcd) {
-
-  srpc_ds_async_channel_extendedvalue_changed(((TDeviceConnectionData *)_dcd)->srpc,
-          number, value);
+void devconnection_channel_extendedValuechanged(
+    unsigned char number, TSuplaChannelExtendedValue *value, void *_dcd) {
+  srpc_ds_async_channel_extendedvalue_changed(
+      ((TDeviceConnectionData *)_dcd)->srpc, number, value);
 }
 
 void devconnection_on_register_result(
@@ -125,7 +123,7 @@ void devconnection_on_register_result(
 
       channelio_setcalback_on_channel_value_changed(
           &devconnection_channel_valuechanged,
-		  &devconnection_channel_extendedValuechanged,  dcd);
+          &devconnection_channel_extendedValuechanged, dcd);
 
       supla_write_state_file(scfg_string(CFG_STATE_FILE), LOG_DEBUG,
                              "Registered and ready.");
@@ -183,13 +181,10 @@ void devconnection_channel_set_value(TDeviceConnectionData *dcd,
                                    new_value->SenderID, Success);
 }
 
-void devconnection_channel_calcfg_request(TDeviceConnectionData *dcd, TSD_DeviceCalCfgRequest* cal_cfg_request) {
-
-
-	TSD_DeviceCalCfgRequest_B* test = (TSD_DeviceCalCfgRequest_B*)cal_cfg_request;
-
-
-
+void devconnection_channel_calcfg_request(
+    TDeviceConnectionData *dcd, TSD_DeviceCalCfgRequest *cal_cfg_request) {
+  TSD_DeviceCalCfgRequest_B *test =
+      (TSD_DeviceCalCfgRequest_B *)cal_cfg_request;
 }
 
 void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
@@ -214,7 +209,8 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
         devconnection_channel_set_value(dcd, rd.data.sd_channel_new_value);
         break;
       case SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST:
-        devconnection_channel_calcfg_request(dcd, rd.data.sd_device_calcfg_request);
+        devconnection_channel_calcfg_request(dcd,
+                                             rd.data.sd_device_calcfg_request);
     }
     srpc_rd_free(&rd);
   } else if (result == SUPLA_RESULT_DATA_ERROR) {

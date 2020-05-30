@@ -60,7 +60,7 @@ class client_device_channel {
   void *lck;
   struct timeval last;
   char value[SUPLA_CHANNELVALUE_SIZE];
-  TSuplaChannelExtendedValue* extendedValue;
+  TSuplaChannelExtendedValue *extendedValue;
 
   bool isSensorNONC(void);
 

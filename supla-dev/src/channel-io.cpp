@@ -57,20 +57,17 @@ void channelio_raise_valuechanged(client_device_channel *channel) {
 
   channel->getValue(value);
 
-
-
   TSuplaChannelExtendedValue extended;
 
   if (channels->on_valuechanged)
     channels->on_valuechanged(channel->getNumber(), value,
                               channels->on_valuechanged_user_data);
 
-  if (channels->on_extendedValueChanged && channel->getExtendedValue(&extended)) {
-	  channels->on_extendedValueChanged(channel->getNumber(), &extended, channels->on_valuechanged_user_data);
+  if (channels->on_extendedValueChanged &&
+      channel->getExtendedValue(&extended)) {
+    channels->on_extendedValueChanged(channel->getNumber(), &extended,
+                                      channels->on_valuechanged_user_data);
   }
-
-
-
 }
 
 bool isFileOk(std::string filename, int file_write_sec) {
@@ -159,67 +156,59 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
             n = val2 * 1000;
             memcpy(&tmp_value[4], &n, 4);
           } break;
-          case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS : {
+          case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
+            int mode;
+            int power;
+            int fan;
+            double preset;
+            double measured;
 
-        	  int mode;
-        	  int power;
-        	  int fan;
-        	  double preset;
-        	  double measured;
+            read_result =
+                file_read_ac_data(channel->getFileName().c_str(), &mode, &power,
+                                  &preset, &measured, &fan);
 
-        	  read_result = file_read_ac_data(channel->getFileName().c_str(), &mode, &power, &preset, &measured, &fan);
+            if (read_result) {
+              TSuplaChannelExtendedValue value;
+              memset(&value, 0, sizeof(TSuplaChannelExtendedValue));
+              TThermostat_ExtendedValue tv;
+              memset(&tv, 0, sizeof(TSuplaChannelExtendedValue));
 
-        	  if (read_result) {
+              TThermostat_Value *tv1 = (TThermostat_Value *)tmp_value;
 
-        		  TSuplaChannelExtendedValue value;
-        		  memset(&value, 0, sizeof(TSuplaChannelExtendedValue));
-        		  TThermostat_ExtendedValue tv;
-        		  memset(&tv, 0, sizeof(TSuplaChannelExtendedValue));
+              if (channel->getExtendedValue(&value)) {
+                if (srpc_evtool_v1_extended2thermostatextended(&value, &tv)) {
+                  tv.Fields = THERMOSTAT_FIELD_Flags |
+                              THERMOSTAT_FIELD_MeasuredTemperatures;
+                  if (power == 1)
+                    tv.Flags[4] = SUPLA_THERMOSTAT_VALUE_FLAG_ON;
+                  else
+                    tv.Flags[4] = 0;
 
-        		  TThermostat_Value* tv1 = (TThermostat_Value*)tmp_value;
+                  tv1->MeasuredTemperature = measured * 100;
+                  tv1->PresetTemperature = preset * 100;
 
-        		  if (channel->getExtendedValue(&value)) {
-        			  if (srpc_evtool_v1_extended2thermostatextended(&value, &tv)) {
+                  if (srpc_evtool_v1_thermostatextended2extended(&tv, &value)) {
+                    channel->setExtendedValue(&value);
+                  }
+                }
 
-        		      tv.Fields = THERMOSTAT_FIELD_Flags | THERMOSTAT_FIELD_MeasuredTemperatures;
-        		      if (power == 1)
-        		              		          			   tv.Flags[4] = SUPLA_THERMOSTAT_VALUE_FLAG_ON;
-        		      else
-        		    	  tv.Flags[4] = 0;
+              } else { /* value not assigned */
+                tv.Fields = THERMOSTAT_FIELD_Flags |
+                            THERMOSTAT_FIELD_MeasuredTemperatures;
 
+                if (power == 1)
+                  tv.Flags[4] = SUPLA_THERMOSTAT_VALUE_FLAG_ON;
+                else
+                  tv.Flags[4] = 0;
 
-        		      tv1->MeasuredTemperature = measured * 100;
-        		      tv1->PresetTemperature = preset * 100;
+                tv1->MeasuredTemperature = measured * 100;
+                tv1->PresetTemperature = preset * 100;
 
-        		      if (srpc_evtool_v1_thermostatextended2extended(&tv,&value)) {
-        		          				  channel->setExtendedValue(&value);
-        		          			  }
-
-        		          		  }
-
-
-        		          	  } else { /* value not assigned */
-        		          		   tv.Fields = THERMOSTAT_FIELD_Flags | THERMOSTAT_FIELD_MeasuredTemperatures;
-
-        		          		   if (power == 1)
-        		          			   tv.Flags[4] = SUPLA_THERMOSTAT_VALUE_FLAG_ON;
-        		          		   else
-        		          			   tv.Flags[4] = 0;
-
-        		          		   tv1->MeasuredTemperature = measured * 100;
-        		          		   tv1->PresetTemperature = preset * 100;
-
-        		          		  if (srpc_evtool_v1_thermostatextended2extended(&tv,&value)) {
-        		          		          				  channel->setExtendedValue(&value);
-        		          		          			  }
-
-        		          	  }
-
-
-        	  }
-
-
-
+                if (srpc_evtool_v1_thermostatextended2extended(&tv, &value)) {
+                  channel->setExtendedValue(&value);
+                }
+              }
+            }
           }
         }
 
@@ -608,8 +597,8 @@ void channelio_channels_to_srd(unsigned char *channel_count,
 
 void channelio_setcalback_on_channel_value_changed(
     _func_channelio_valuechanged on_valuechanged,
-	_func_channelio_extendedValueChanged on_extendedValueChanged,
-	void *user_data) {
+    _func_channelio_extendedValueChanged on_extendedValueChanged,
+    void *user_data) {
   supla_log(LOG_DEBUG, "setting callbacks for value changing...");
 
   channels->on_valuechanged = on_valuechanged;

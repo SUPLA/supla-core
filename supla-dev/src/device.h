@@ -17,9 +17,8 @@
 typedef void (*_func_channelio_valuechanged)(
     unsigned char number, char value[SUPLA_CHANNELVALUE_SIZE], void *user_data);
 
-typedef void (*_func_channelio_extendedValueChanged) (
-	unsigned char number, TSuplaChannelExtendedValue* value, void *user_data);
-
+typedef void (*_func_channelio_extendedValueChanged)(
+    unsigned char number, TSuplaChannelExtendedValue *value, void *user_data);
 
 typedef struct {
 #ifdef __SINGLE_THREAD

@@ -104,7 +104,7 @@ static int decode_function_type(const char *fnc) {
   } else if (strcasecmp(fnc, "THERMOSTAT") == 0) {
     return SUPLA_CHANNELFNC_THERMOSTAT;
   } else if (strcasecmp(fnc, "THERMOSTAT_HEATPOOL")) {
-	return SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
+    return SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
   } else
     return SUPLA_CHANNELFNC_NONE;
 }
@@ -141,9 +141,9 @@ static int decode_channel_type(const char *type) {
   } else if (strcasecmp(type, "VALVE") == 0) {
     return SUPLA_CHANNELTYPE_VALVE_OPENCLOSE;
   } else if (strcasecmp(type, "THERMOSTAT") == 0) {
-	return SUPLA_CHANNELTYPE_THERMOSTAT;
+    return SUPLA_CHANNELTYPE_THERMOSTAT;
   } else if (strcasecmp(type, "THERMOSTAT_HEATPOOL") == 0) {
-	return SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS;
+    return SUPLA_CHANNELTYPE_THERMOSTAT_HEATPOL_HOMEPLUS;
   }
 
   return atoi(type);

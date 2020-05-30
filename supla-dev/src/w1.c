@@ -55,38 +55,37 @@ char file_read_sensor(const char *filepath, double *line1, double *line2) {
   return 1;
 }
 
-char file_read_ac_data(const char *filepath, int* mode, int* power, double* preset, double* measured, int* fan) {
+char file_read_ac_data(const char *filepath, int *mode, int *power,
+                       double *preset, double *measured, int *fan) {
+  FILE *file;
 
-	FILE *file;
+  file = fopen(filepath, "r");
+  if (!file) return -1;
 
-	  file = fopen(filepath, "r");
-	  if (!file) return -1;
+  char line[100];
+  if (fgets(line, sizeof(line), file) != NULL) {
+    if (strlen(line) == 0) {
+      return -1;
+    }
+    *mode = atoi(line);
+  } else {
+    return -1;
+  }
+  if (fgets(line, sizeof(line), file) != NULL) {
+    *power = strncmp(line, "true", 4) == 0 ? 1 : 0;
+  }
+  if (fgets(line, sizeof(line), file) != NULL) {
+    *preset = atof(line);
+  }
+  if (fgets(line, sizeof(line), file) != NULL) {
+    *measured = atof(line);
+  }
+  if (fgets(line, sizeof(line), file) != NULL) {
+    *fan = atoi(line);
+  }
 
-	  char line[100];
-	  if (fgets(line, sizeof(line), file) != NULL) {
-	    if (strlen(line) == 0) {
-	      return -1;
-	    }
-	    *mode = atoi(line);
-	  } else {
-	    return -1;
-	  }
-	  if (fgets(line, sizeof(line), file) != NULL) {
-	    *power = strncmp(line, "true", 4) == 0 ? 1 : 0;
-	  }
-	  if (fgets(line, sizeof(line), file) != NULL) {
-	  	*preset = atof(line);
-	  }
-	  if (fgets(line, sizeof(line), file) != NULL) {
-	   	*measured = atof(line);
-	  }
-	  if (fgets(line, sizeof(line), file) != NULL) {
-	  	*fan = atoi(line);
-	  }
-
-	  fclose(file);
-	  return 1;
-
+  fclose(file);
+  return 1;
 }
 
 char w1_ds18b20_get_temp(char *device, double *temp) {
