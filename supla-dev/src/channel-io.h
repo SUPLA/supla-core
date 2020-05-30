@@ -96,7 +96,9 @@ void channelio_raise_execute_command(client_device_channel *channel);
 void tmp_channelio_raise_valuechanged(unsigned char number);
 
 void channelio_setcalback_on_channel_value_changed(
-    _func_channelio_valuechanged on_valuechanged, void *user_data);
+    _func_channelio_valuechanged on_valuechanged,
+	_func_channelio_extendedValueChanged on_extendedValueChanged,
+	void *user_data);
 
 #ifdef __SINGLE_THREAD
 void channelio_iterate(void);

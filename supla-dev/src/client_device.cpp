@@ -59,6 +59,35 @@ void client_device_channel::setToggleSec(int interval) {
   this->toggleSec = interval;
 }
 
+bool client_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
+  if (ev == NULL) {
+    return false;
+  }
+
+  if (extendedValue == NULL) {
+    memset(ev, 0, sizeof(TSuplaChannelExtendedValue));
+    return false;
+  }
+
+  memcpy(ev, extendedValue, sizeof(TSuplaChannelExtendedValue));
+  return true;
+}
+
+void client_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
+  if (ev == NULL) {
+    if (extendedValue != NULL) {
+      delete extendedValue;
+      extendedValue = NULL;
+    }
+  } else {
+    if (extendedValue == NULL) {
+      extendedValue = new TSuplaChannelExtendedValue;
+    }
+    memcpy(extendedValue, ev, sizeof(TSuplaChannelExtendedValue));
+  }
+}
+
+
 void client_device_channel::toggleValue(void) {
   switch (this->function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -216,7 +245,11 @@ bool client_device_channel::getRGBW(int *color, char *color_brightness,
 char client_device_channel::getChar(void) { return this->value[0]; }
 void client_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   lck_lock(lck);
+
+
+
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
+
   lck_unlock(lck);
 }
 void client_device_channel::setDouble(double value) {

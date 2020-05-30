@@ -60,6 +60,7 @@ class client_device_channel {
   void *lck;
   struct timeval last;
   char value[SUPLA_CHANNELVALUE_SIZE];
+  TSuplaChannelExtendedValue* extendedValue;
 
   bool isSensorNONC(void);
 
@@ -115,6 +116,8 @@ class client_device_channel {
   void setFileWriteCheckSec(int value);
   void setIdTemplate(const char *idTemplate);
   void setIdValue(const char *idValue);
+  bool getExtendedValue(TSuplaChannelExtendedValue *ev);
+  void setExtendedValue(TSuplaChannelExtendedValue *ev);
 
   /* value handler */
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
@@ -158,6 +161,7 @@ class client_device_channels {
   void setInitialized(bool initialized);
 
   _func_channelio_valuechanged on_valuechanged;
+  _func_channelio_extendedValueChanged on_extendedValueChanged;
   void *on_valuechanged_user_data;
 };
 
