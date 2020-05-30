@@ -167,7 +167,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
                 file_read_ac_data(channel->getFileName().c_str(), &mode, &power,
                                   &preset, &measured, &fan);
 
-            if (read_result) {
+            if (read_result == 1) {
               TSuplaChannelExtendedValue value;
               memset(&value, 0, sizeof(TSuplaChannelExtendedValue));
               TThermostat_ExtendedValue tv;
@@ -211,8 +211,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
             }
           }
         }
-
-        channel->setValue(tmp_value);
+        if (read_result == 1) channel->setValue(tmp_value);
 
         if (read_result == 0 && log_err == 1)
           supla_log(LOG_ERR, "Can't read file %s",
