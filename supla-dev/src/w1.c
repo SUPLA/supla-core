@@ -73,15 +73,23 @@ char file_read_ac_data(const char *filepath, int *mode, int *power,
   }
   if (fgets(line, sizeof(line), file) != NULL) {
     *power = strncmp(line, "true", 4) == 0 ? 1 : 0;
+  } else {
+    return -1;
   }
   if (fgets(line, sizeof(line), file) != NULL) {
     *preset = atof(line);
+  } else {
+    return -1;
   }
   if (fgets(line, sizeof(line), file) != NULL) {
     *measured = atof(line);
+  } else {
+    return -1;
   }
   if (fgets(line, sizeof(line), file) != NULL) {
     *fan = atoi(line);
+  } else {
+    return -1;
   }
 
   fclose(file);
