@@ -395,6 +395,7 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
                  SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
                  SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
+                 SUPLA_SD_CALL_GROUP_SET_VALUE,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -1485,6 +1486,16 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// SET CHANNEL GROUP NEW VALUE
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_group_value,
+                                     TSD_SuplaGroupNewValue,
+                                     SUPLA_SD_CALL_GROUP_SET_VALUE, 40, 168,
+                                     sd_group_new_value, SUPLA_CHANNELMAXCOUNT,
+                                     ChannelNumber, ChannelCount);
 
 //---------------------------------------------------------
 // GET FIRMWARE UPDATE URL
