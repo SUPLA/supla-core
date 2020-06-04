@@ -63,4 +63,9 @@ typedef struct {
   int function;
 } channel_function_t;
 
+typedef struct {
+  int DeviceId;
+  int ChannelId;
+} t_dc_pair;
+
 #endif /* COMMONTYPES_H_ */
