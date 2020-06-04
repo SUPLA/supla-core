@@ -17,6 +17,7 @@
  */
 
 #include "DCPairTest.h"
+#include <list>
 
 namespace testing {
 
