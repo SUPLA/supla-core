@@ -69,4 +69,25 @@ TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithCorrectCredentials) {
   iterateUntilDefaultTimeout();
 }
 
+TEST_F(SuperuserAuthorizationIntegrationTest, ReauthorizationWithIncorrectPassword) {
+  char email[] = "test@supla.org";
+  char password[] = "supla!test";
+  ASSERT_FALSE(sclient == NULL);
+  ASSERT_GT(
+      supla_client_superuser_authorization_request(sclient, email, password),
+      0);
+
+  exceptedAuthorizationResultCode = SUPLA_RESULTCODE_AUTHORIZED;
+  iterateUntilDefaultTimeout();
+
+  password[0] = '!';
+
+  ASSERT_GT(
+      supla_client_superuser_authorization_request(sclient, email, password),
+      0);
+
+  exceptedAuthorizationResultCode = SUPLA_RESULTCODE_UNAUTHORIZED;
+  iterateUntilDefaultTimeout();
+}
+
 } /* namespace testing */
