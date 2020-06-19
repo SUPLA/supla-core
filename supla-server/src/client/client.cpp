@@ -392,12 +392,11 @@ void supla_client::oauth_token_request(void) {
 void supla_client::superuser_authorize(
     int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
     const char Password[SUPLA_PASSWORD_MAXSIZE], bool *connection_failed) {
+  revoke_superuser_authorization();
+
   if (UserID == 0 || Email == NULL || Password == NULL ||
       strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0 ||
       strnlen(Password, SUPLA_PASSWORD_MAXSIZE) == 0) {
-    lck_lock(lck);
-    superuser_authorized = false;
-    lck_unlock(lck);
     return;
   }
 

@@ -69,7 +69,8 @@ TEST_F(SuperuserAuthorizationIntegrationTest, AuthorizeWithCorrectCredentials) {
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(SuperuserAuthorizationIntegrationTest, ReauthorizationWithIncorrectPassword) {
+TEST_F(SuperuserAuthorizationIntegrationTest,
+       ReauthorizationWithIncorrectPassword) {
   char email[] = "test@supla.org";
   char password[] = "supla!test";
   ASSERT_FALSE(sclient == NULL);
