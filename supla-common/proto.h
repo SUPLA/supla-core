@@ -1473,6 +1473,8 @@ typedef struct {
     unsigned _supla_int_t RemainingTimeTs;  // Unix timestamp - Filled by server
   };
 
+  unsigned char TargetValue;
+
   _supla_int_t SenderID;
   unsigned _supla_int_t
       SenderNameSize;  // including the terminating null byte ('\0')
