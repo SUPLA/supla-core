@@ -156,8 +156,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   ASSERT_EQ((unsigned int)145, sizeof(TSD_SuplaGroupNewValue));
 
-  ASSERT_EQ((unsigned int)214, sizeof(TTimerState_ExtendedValue));
-  ASSERT_EQ((unsigned int)264, sizeof(TChannelAndTimerState_ExtendedValue));
+  ASSERT_EQ((unsigned int)221, sizeof(TTimerState_ExtendedValue));
+  ASSERT_EQ((unsigned int)271, sizeof(TChannelAndTimerState_ExtendedValue));
 
   ASSERT_LE(sizeof(TTimerState_ExtendedValue),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
