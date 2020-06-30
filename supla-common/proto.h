@@ -1455,8 +1455,8 @@ typedef struct {
   unsigned char BatteryHealth;
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
   unsigned short LightSourceHealthTotal;   // 0 - 65535 hours
-  unsigned short
-      LightSourceHealthLeft;  // 0.00 - 100.00% LightSourceHealthTotal * 0.01
+  short
+      LightSourceHealthLeft;  // -327,67 - 100.00% LightSourceHealthTotal * 0.01
   char EmptySpace[4];         // Empty space for future use
 } TDSC_ChannelState;          // v. >= 12 Device -> Server -> Client
 
