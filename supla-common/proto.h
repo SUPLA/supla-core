@@ -1481,7 +1481,6 @@ typedef struct {
       SenderNameSize;  // including the terminating null byte ('\0')
   char SenderName[SUPLA_SENDER_NAME_MAXSIZE];  // Last variable in struct!
                                                // UTF8 | Filled by server
-
 } TTimerState_ExtendedValue;
 
 typedef struct {
