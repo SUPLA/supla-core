@@ -423,6 +423,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_OFFLINE_DURING_REGISTRATION 0x00400000      // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_ZIGBEE_BRIDGE 0x00800000               // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000   // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_LIGHTSOURCEHEALTH_SETTABLE 0x02000000  // ver. >= 12
 
 #define SUPLA_DEVICE_FLAG_GROUP_CONTROL_EXPECTED 0x0001  // ver. >= 12
 
@@ -1187,6 +1188,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_ZWAVE_CONFIG_MODE_ACTIVE 4000    // v. >= 12
 #define SUPLA_CALCFG_CMD_DEBUG_STRING 5000                // v. >= 12
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
+#define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_HEALTH           // v. >= 12
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1215,6 +1217,12 @@ typedef struct {
   _supla_int_t Command;
   unsigned char Progress;  // 0 - 100%
 } TCalCfg_ProgressReport;
+
+typedef struct {
+  unsigned char ResetCounter;             // 0 - NO, 1 - YES
+  unsigned char SetTime;                  // 0 - NO, 1 - YES
+  unsigned short LightSourceHealthTotal;  // 0 - 65535 hours
+} TCalCfg_LightSourceHealth;
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
