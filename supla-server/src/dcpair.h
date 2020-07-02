@@ -16,41 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef suplasvrcfg_H_
-#define suplasvrcfg_H_
+#ifndef DCPAIR_H_
+#define DCPAIR_H_
+#include <list>
 
-#include "cfg.h"
+class dcpair {
+ private:
+  int DeviceId;
+  int ChannelId;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+ public:
+  dcpair(int DeviceId, int ChannelId);
+  int getDeviceId();
+  int getChannelId();
 
-#define SCHEDULER_VERSION "2.3.9"
+  static bool popDeviceChannelIDs(std::list<dcpair> *pairs, int *deviceId,
+                                  std::list<int> *cids);
+};
 
-#define CFG_UID 0
-#define CFG_GID 1
-
-#define CFG_SCHEDULER_MYSQL_HOST 2
-#define CFG_SCHEDULER_MYSQL_PORT 3
-#define CFG_SCHEDULER_MYSQL_DB 4
-#define CFG_SCHEDULER_MYSQL_USER 5
-#define CFG_SCHEDULER_MYSQL_PASSWORD 6
-
-#define CFG_MYSQL_HOST 7
-#define CFG_MYSQL_PORT 8
-#define CFG_MYSQL_DB 9
-#define CFG_MYSQL_USER 10
-#define CFG_MYSQL_PASSWORD 11
-
-#define CFG_MAX_WORKERS 12
-#define CFG_MAX_JOB_PER_SECOND 13
-
-#define CFG_IPC_SOCKET_PATH 14
-
-unsigned char schedulercfg_init(int argc, char* argv[]);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* suplasvrcfg_H_ */
+#endif /* DCPAIR_H_ */

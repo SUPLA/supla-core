@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/test/CDBaseMock.cpp \
 ../src/test/CDBaseTest.cpp \
 ../src/test/CDContainerTest.cpp \
+../src/test/DCPairTest.cpp \
 ../src/test/DeviceChannelTest.cpp \
 ../src/test/ProtoTest.cpp \
 ../src/test/STCDContainer.cpp \
@@ -22,6 +23,7 @@ OBJS += \
 ./src/test/CDBaseMock.o \
 ./src/test/CDBaseTest.o \
 ./src/test/CDContainerTest.o \
+./src/test/DCPairTest.o \
 ./src/test/DeviceChannelTest.o \
 ./src/test/ProtoTest.o \
 ./src/test/STCDContainer.o \
@@ -36,6 +38,7 @@ CPP_DEPS += \
 ./src/test/CDBaseMock.d \
 ./src/test/CDBaseTest.d \
 ./src/test/CDContainerTest.d \
+./src/test/DCPairTest.d \
 ./src/test/DeviceChannelTest.d \
 ./src/test/ProtoTest.d \
 ./src/test/STCDContainer.d \
