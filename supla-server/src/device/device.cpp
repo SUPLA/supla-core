@@ -65,6 +65,20 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
       return (funcList & SUPLA_BIT_FUNC_LIGHTSWITCH) > 0;
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
       return (funcList & SUPLA_BIT_FUNC_STAIRCASETIMER) > 0;
+    case SUPLA_CHANNELFNC_THERMOMETER:
+      return (funcList & SUPLA_BIT_FUNC_THERMOMETER) > 0;
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      return (funcList & SUPLA_BIT_FUNC_HUMIDITYANDTEMPERATURE) > 0;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+      return (funcList & SUPLA_BIT_FUNC_HUMIDITY) > 0;
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+      return (funcList & SUPLA_BIT_FUNC_WINDSENSOR) > 0;
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+      return (funcList & SUPLA_BIT_FUNC_PRESSURESENSOR) > 0;
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+      return (funcList & SUPLA_BIT_FUNC_RAINSENSOR) > 0;
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      return (funcList & SUPLA_BIT_FUNC_WEIGHTSENSOR) > 0;
   }
 
   return false;
