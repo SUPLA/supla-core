@@ -407,7 +407,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HEATPOL 8
 #define SUPLA_MFR_FAKRO 9
 #define SUPLA_MFR_PEVEKO 10
-#define SUPLA_MFR_LUXINO 11
+#define SUPLA_MFR_WEKTA 11
+#define SUPLA_MFR_LUXINO 12
 
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001                    // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002                       // ver. >= 12
