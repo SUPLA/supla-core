@@ -422,6 +422,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CAP_ACTION3 0x0200                     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CAP_ACTION4 0x0400                     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CAP_ACTION5 0x0800                     // ver. >= 12
+// Four free bists 0x1000, 0x2000, 0x4000, 0x8000
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000          // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000          // ver. >= 12
