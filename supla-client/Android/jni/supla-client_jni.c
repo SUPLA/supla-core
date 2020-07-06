@@ -865,6 +865,24 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jint)state->LightSourceHealthTotal, (jint)state->LightSourceHealthLeft);
 }
 
+jobject supla_android_client_timerstate_to_jobject(
+    TAndroidSuplaClient *asc, JNIEnv *env, TTimerState_ExtendedValue *state) {
+  jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaTimerState");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(J[BILjava/lang/String;)V");
+
+  supla_client_set_str(state->SenderName, &state->SenderNameSize,
+                       SUPLA_SENDER_NAME_MAXSIZE);
+
+  jbyteArray arr = (*env)->NewByteArray(env, SUPLA_CHANNELVALUE_SIZE);
+  (*env)->SetByteArrayRegion(env, arr, 0, SUPLA_CHANNELVALUE_SIZE,
+                             (const jbyte *)state->TargetValue);
+
+  return (*env)->NewObject(env, cls, methodID, (jlong)state->RemainingTimeTs,
+                           arr, state->SenderID,
+                           new_string_utf(env, state->SenderName));
+}
+
 jobject supla_android_client_channelextendedvalue_to_jobject(
     void *_suplaclient, void *user_data,
     TSuplaChannelExtendedValue *channel_extendedvalue) {
@@ -881,6 +899,9 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
   fid = supla_client_GetFieldID(env, cval, "Type", "I");
   (*env)->SetIntField(env, val, fid, channel_extendedvalue->type);
+
+  TChannelState_ExtendedValue *channel_state = NULL;
+  TTimerState_ExtendedValue *timer_state = NULL;
 
   if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 ||
       channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
@@ -935,14 +956,27 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
   } else if (channel_extendedvalue->type == EV_TYPE_CHANNEL_STATE_V1 &&
              channel_extendedvalue->size ==
                  sizeof(TChannelState_ExtendedValue)) {
-    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
-                                  "Lorg/supla/android/lib/SuplaChannelState;");
+    channel_state = (TChannelState_ExtendedValue *)channel_extendedvalue->value;
 
-    // TChannelState_ExtendedValue is equal to TDSC_ChannelState
-    jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
-        asc, env, (TDSC_ChannelState *)channel_extendedvalue->value);
+  } else if (channel_extendedvalue->type == EV_TYPE_TIMER_STATE_V1 &&
+             channel_extendedvalue->size <= sizeof(TTimerState_ExtendedValue) &&
+             channel_extendedvalue->size >= sizeof(TTimerState_ExtendedValue) -
+                                                SUPLA_SENDER_NAME_MAXSIZE) {
+    timer_state = (TTimerState_ExtendedValue *)channel_extendedvalue->value;
 
-    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+  } else if (channel_extendedvalue->type ==
+                 EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 &&
+             channel_extendedvalue->size <=
+                 sizeof(TChannelAndTimerState_ExtendedValue) &&
+             channel_extendedvalue->size >=
+                 sizeof(TChannelAndTimerState_ExtendedValue) -
+                     SUPLA_SENDER_NAME_MAXSIZE) {
+    channel_state =
+        &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
+             ->Channel;
+    timer_state =
+        &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
+             ->Timer;
 
   } else if (channel_extendedvalue->size > 0) {
     jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
@@ -951,6 +985,27 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
     fid = supla_client_GetFieldID(env, cval, "Value", "[B");
     (*env)->SetObjectField(env, val, fid, arr);
+  }
+
+  if (channel_state) {
+    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
+                                  "Lorg/supla/android/lib/SuplaChannelState;");
+
+    // TChannelState_ExtendedValue is equal to TDSC_ChannelState
+    jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
+        asc, env, (TDSC_ChannelState *)channel_state);
+
+    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+  }
+
+  if (timer_state) {
+    fid = supla_client_GetFieldID(env, cval, "TimerStateValue",
+                                  "Lorg/supla/android/lib/SuplaTimerState;");
+
+    jobject timer_state_obj = supla_android_client_timerstate_to_jobject(
+        asc, env, (TTimerState_ExtendedValue *)timer_state);
+
+    (*env)->SetObjectField(env, val, fid, timer_state_obj);
   }
 
   return val;
