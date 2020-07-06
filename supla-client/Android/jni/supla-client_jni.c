@@ -849,7 +849,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
   jclass cls =
       (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
   jmethodID methodID =
-      supla_client_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBBIIBB)V");
+      supla_client_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBBIIBBII)V");
 
   jbyteArray mac = (*env)->NewByteArray(env, 6);
   (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
@@ -861,7 +861,8 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jbyte)state->WiFiRSSI, (jbyte)state->WiFiSignalStrength,
       (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeSignalStrength,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
-      (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause);
+      (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
+      (jint)state->LightSourceHealthTotal, (jint)state->LightSourceHealthLeft);
 }
 
 jobject supla_android_client_channelextendedvalue_to_jobject(
