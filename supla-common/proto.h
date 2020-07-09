@@ -366,7 +366,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER 0x00000010
 #define SUPLA_BIT_FUNC_POWERSWITCH 0x00000020
 #define SUPLA_BIT_FUNC_LIGHTSWITCH 0x00000040
-#define SUPLA_BIT_FUNC_STAIRCASETIMER 0x00000080  // ver. >= 8
+#define SUPLA_BIT_FUNC_STAIRCASETIMER 0x00000080          // ver. >= 8
 #define SUPLA_BIT_FUNC_THERMOMETER 0x00000100             // ver. >= 12
 #define SUPLA_BIT_FUNC_HUMIDITYANDTEMPERATURE 0x00000200  // ver. >= 12
 #define SUPLA_BIT_FUNC_HUMIDITY 0x00000400                // ver. >= 12
@@ -1439,7 +1439,7 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED 0x0008
 #define SUPLA_CHANNELSTATE_FIELD_WIFIRSSI 0x0010
 #define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0020
-#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0040
+#define SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH 0x0040
 #define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080
 #define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
@@ -1468,7 +1468,7 @@ typedef struct {
   char WiFiRSSI;
   unsigned char WiFiSignalStrength;        // 0 - 100%
   unsigned char BridgeNodeOnline;          // 0/1
-  unsigned char BridgeSignalStrength;      // 0 - 100%
+  unsigned char BridgeNodeSignalStrength;  // 0 - 100%
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;

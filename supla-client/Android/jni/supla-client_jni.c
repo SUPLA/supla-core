@@ -859,7 +859,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jint)state->defaultIconField, (jint)state->IPv4, mac,
       (jbyte)state->BatteryLevel, (jbyte)state->BatteryPowered,
       (jbyte)state->WiFiRSSI, (jbyte)state->WiFiSignalStrength,
-      (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeSignalStrength,
+      (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
       (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
       (jint)state->LightSourceHealthTotal, (jint)state->LightSourceHealthLeft);
