@@ -432,7 +432,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION 0x00400000  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_ZIGBEE_BRIDGE 0x00800000                // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000    // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_LIGHTSOURCEHEALTH_SETTABLE 0x02000000   // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_LIGHTSOURCELIFESPAN_SETTABLE \
+  0x02000000  // ver. >= 12
 
 #define SUPLA_DEVICE_FLAG_GROUP_CONTROL_EXPECTED 0x0001  // ver. >= 12
 
@@ -1229,10 +1230,10 @@ typedef struct {
 } TCalCfg_ProgressReport;
 
 typedef struct {
-  unsigned char ResetCounter;             // 0 - NO, 1 - YES
-  unsigned char SetTime;                  // 0 - NO, 1 - YES
-  unsigned short LightSourceHealthTotal;  // 0 - 65535 hours
-} TCalCfg_LightSourceHealth;
+  unsigned char ResetCounter;          // 0 - NO, 1 - YES
+  unsigned char SetTime;               // 0 - NO, 1 - YES
+  unsigned short LightSourceLifespan;  // 0 - 65535 hours
+} TCalCfg_LightSourceLifespan;
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
@@ -1445,7 +1446,7 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
 #define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
-#define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEHEALTH 0x1000
+#define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN 0x1000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
@@ -1473,11 +1474,11 @@ typedef struct {
   unsigned _supla_int_t ConnectionUptime;  // sec.
   unsigned char BatteryHealth;
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
-  unsigned short LightSourceHealthTotal;   // 0 - 65535 hours
+  unsigned short LightSourceLifespan;      // 0 - 65535 hours
   short
-      LightSourceHealthLeft;  // -327,67 - 100.00% LightSourceHealthTotal * 0.01
-  char EmptySpace[4];         // Empty space for future use
-} TDSC_ChannelState;          // v. >= 12 Device -> Server -> Client
+      LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan * 0.01
+  char EmptySpace[4];           // Empty space for future use
+} TDSC_ChannelState;            // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
 

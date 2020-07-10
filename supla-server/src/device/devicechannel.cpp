@@ -476,7 +476,7 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
   this->Hidden = Hidden;
   this->Flags = Flags;
-  this->Offline = Flags & SUPLA_CHANNEL_OFFLINE_DURING_REGISTRATION;
+  this->Offline = Flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extendedValue = NULL;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);

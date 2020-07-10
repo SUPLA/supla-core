@@ -862,7 +862,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
       (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
-      (jint)state->LightSourceHealthTotal, (jint)state->LightSourceHealthLeft);
+      (jint)state->LightSourceLifespan, (jint)state->LightSourceLifespanLeft);
 }
 
 jobject supla_android_client_timerstate_to_jobject(
