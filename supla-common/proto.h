@@ -1419,14 +1419,6 @@ typedef struct {
 } TSDC_UserLocalTimeResult;
 
 typedef struct {
-  _supla_int_t SenderID;  // Filled by server
-  union {
-    _supla_int_t ChannelID;       // Server -> Client
-    unsigned char ChannelNumber;  // Device -> Server
-  };
-} TCS_ChannelStateRequest;  // v. >= 12
-
-typedef struct {
   _supla_int_t SenderID;
   union {
     _supla_int_t ChannelID;       // Server -> Client
