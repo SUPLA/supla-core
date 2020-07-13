@@ -44,6 +44,7 @@ const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 const char cmd_get_em_value[] = "GET-EM-VALUE:";
 const char cmd_get_ic_value[] = "GET-IC-VALUE:";
+const char cmd_get_valve_value[] = "GET-VALVE-VALUE:";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
@@ -240,22 +241,31 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
       em->getMeasurement(&em_ev);
       em->getCurrency(currency);
 
+      unsigned int current1 = em_ev.m[0].current[0];
+      unsigned int current2 = em_ev.m[0].current[1];
+      unsigned int current3 = em_ev.m[0].current[2];
+
+      if ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
+          !(em_ev.measured_values & EM_VAR_CURRENT)) {
+        current1 *= 10;
+        current2 *= 10;
+        current3 *= 10;
+      }
+
       snprintf(buffer, sizeof(buffer),
-               "VALUE:%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
+               "VALUE:%i,%i,%i,%i,%i,%u,%u,%u,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
                "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
                "llu,%llu,%llu,%i,%i,%s\n",
                em_ev.measured_values, em_ev.m[0].freq, em_ev.m[0].voltage[0],
-               em_ev.m[0].voltage[1], em_ev.m[0].voltage[2],
-               em_ev.m[0].current[0], em_ev.m[0].current[1],
-               em_ev.m[0].current[2], em_ev.m[0].power_active[0],
-               em_ev.m[0].power_active[1], em_ev.m[0].power_active[2],
-               em_ev.m[0].power_reactive[0], em_ev.m[0].power_reactive[1],
-               em_ev.m[0].power_reactive[2], em_ev.m[0].power_apparent[0],
-               em_ev.m[0].power_apparent[1], em_ev.m[0].power_apparent[2],
-               em_ev.m[0].power_factor[0], em_ev.m[0].power_factor[1],
-               em_ev.m[0].power_factor[2], em_ev.m[0].phase_angle[0],
-               em_ev.m[0].phase_angle[1], em_ev.m[0].phase_angle[2],
-               em_ev.total_forward_active_energy[0],
+               em_ev.m[0].voltage[1], em_ev.m[0].voltage[2], current1, current2,
+               current3, em_ev.m[0].power_active[0], em_ev.m[0].power_active[1],
+               em_ev.m[0].power_active[2], em_ev.m[0].power_reactive[0],
+               em_ev.m[0].power_reactive[1], em_ev.m[0].power_reactive[2],
+               em_ev.m[0].power_apparent[0], em_ev.m[0].power_apparent[1],
+               em_ev.m[0].power_apparent[2], em_ev.m[0].power_factor[0],
+               em_ev.m[0].power_factor[1], em_ev.m[0].power_factor[2],
+               em_ev.m[0].phase_angle[0], em_ev.m[0].phase_angle[1],
+               em_ev.m[0].phase_angle[2], em_ev.total_forward_active_energy[0],
                em_ev.total_forward_active_energy[1],
                em_ev.total_forward_active_energy[2],
                em_ev.total_reverse_active_energy[0],
@@ -272,6 +282,31 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
       delete em;
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_valve_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  TValve_Value Value;
+  memset(&Value, 0, sizeof(TValve_Value));
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool r = supla_user::get_channel_valve_value(UserID, DeviceID, ChannelID,
+                                                 &Value);
+
+    if (r) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i", Value.closed,
+               Value.flags);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
       return;
     }
   }
@@ -572,6 +607,9 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_get_ic_value, len)) {
           get_impulsecounter_value(cmd_get_ic_value);
+
+        } else if (match_command(cmd_get_valve_value, len)) {
+          get_valve_value(cmd_get_valve_value);
 
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);

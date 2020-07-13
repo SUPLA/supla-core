@@ -28,7 +28,12 @@ extern "C" {
 #define CFG_OAUTH_URL_MAXSIZE 96
 #define CFG_OAUTH_TOKEN_SIZE 86
 
-#define SERVER_VERSION "2.3.16"
+#define SERVER_VERSION "2.3.26"
+
+#ifdef SERVER_VERSION_23
+#warning \
+    "Delete the SERVER_VERSION_23 def. in v2.4 together with the ref. code."
+#endif /*SERVER_VERSION_23*/
 
 #define CFG_UID 0
 #define CFG_GID 1
@@ -59,6 +64,9 @@ extern "C" {
 
 #define CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT 20
 #define CFG_GOOGLE_HOME_STATEREPORT_TIMEOUT 21
+
+#define CFG_LIMIT_CONCURRENT_REGISTRATIONS 22
+#define CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE 23
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;

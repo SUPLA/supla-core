@@ -58,7 +58,8 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        int Param2, int Param3, char *TextParam1,
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
-                       short ProductID, unsigned char ProtocolVersion);
+                       short ProductID, unsigned char ProtocolVersion,
+                       int Flags);
   virtual ~supla_client_channel(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);
@@ -67,7 +68,15 @@ class supla_client_channel : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannel_C *channel, supla_client *client);
   void proto_get(TSC_SuplaChannelValue *channel_value, supla_client *client);
   bool proto_get(TSC_SuplaChannelExtendedValue *cev, supla_client *client);
+  bool get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg);
+  int getType();
+  int getFunc();
+  void setFunc(int Func);
+  void setCaption(const char *Caption);
   int getDeviceId();
+  short getManufacturerID();
+  short getProductID();
+  int getFlags();
   int getExtraId();
 };
 

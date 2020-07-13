@@ -29,6 +29,7 @@ supla_datalogger::supla_datalogger() {
   this->temperature_tv.tv_usec = 0;
   this->electricitymeter_tv = this->temperature_tv;
   this->impulsecounter_tv = this->temperature_tv;
+  this->thermostat_tv = this->temperature_tv;
   this->db = NULL;
 }
 
@@ -47,11 +48,14 @@ void supla_datalogger::log_temperature() {
     supla_channel_temphum *sct =
         (supla_channel_temphum *)safe_array_get(tarr, a);
 
-    if (sct->isTempAndHumidity() == 1)
-      db->add_temperature_and_humidity(
-          sct->getChannelId(), sct->getTemperature(), sct->getHumidity());
-    else
+    if (sct->isTempAndHumidity() == 1) {
+      if (sct->getTemperature() > -273 || sct->getHumidity() > -1) {
+        db->add_temperature_and_humidity(
+            sct->getChannelId(), sct->getTemperature(), sct->getHumidity());
+      }
+    } else if (sct->getTemperature() > -273) {
       db->add_temperature(sct->getChannelId(), sct->getTemperature());
+    }
   }
 
   supla_channel_temphum::free(tarr);
@@ -101,6 +105,28 @@ void supla_datalogger::log_ic_measurement(void) {
   supla_channel_ic_measurement::free(icarr);
 }
 
+void supla_datalogger::log_thermostat_measurement(void) {
+  supla_user *user;
+  int a;
+  int n = 0;
+  void *tharr = safe_array_init();
+
+  while ((user = supla_user::get_user(n)) != NULL) {
+    n++;
+    user->get_thermostat_measurements(tharr);
+  }
+
+  for (a = 0; a < safe_array_count(tharr); a++) {
+    supla_channel_thermostat_measurement *th =
+        (supla_channel_thermostat_measurement *)safe_array_get(tharr, a);
+    if (th) {
+      db->add_thermostat_measurements(th);
+    }
+  }
+
+  supla_channel_thermostat_measurement::free(tharr);
+}
+
 bool supla_datalogger::dbinit(void) {
   if (db == NULL) {
     db = new database();
@@ -133,6 +159,12 @@ void supla_datalogger::log(void) {
     impulsecounter_tv = now;
 
     if (dbinit()) log_ic_measurement();
+  }
+
+  if (now.tv_sec - thermostat_tv.tv_sec >= THERMOSTATLOG_INTERVAL) {
+    thermostat_tv = now;
+
+    if (dbinit()) log_thermostat_measurement();
   }
 
   if (db != NULL) {

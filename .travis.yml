@@ -16,10 +16,14 @@ matrix:
     - language: cpp
       sudo: false
       os: linux
+      dist: eoan
       compiler: gcc
-      #      install:
-      #  - sudo apt-get -y install cppcheck
+      install:
+        - sudo apt-get -y install valgrind libmariadbclient-dev-compat
+      addons:
+        mariadb: '10.3'
+        hosts:
+          - db
       script:
-      #  - ./tools/cppcheck.sh
-        - ./tools/test.sh
+        - sudo ./test/all-tests.sh
 

@@ -19,7 +19,7 @@
 #ifndef suplalog_H_
 #define suplalog_H_
 
-#if defined(ESP8266) || defined(__AVR__) || defined(_WIN32)
+#if defined(ESP8266) || defined(__AVR__) || defined(_WIN32) || defined(ESP32)
 
 #define LOG_EMERG 0
 #define LOG_ALERT 1
@@ -34,7 +34,8 @@
 
 #include <syslog.h>
 
-#endif /*defined(ESP8266) || defined(__AVR__) || defined(_WIN32)*/
+#endif  // defined(ESP8266) || defined(__AVR__)
+        // || defined(_WIN32) || defined(ESP32)
 
 #ifdef __cplusplus
 extern "C" {

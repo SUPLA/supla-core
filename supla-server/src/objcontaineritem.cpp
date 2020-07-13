@@ -43,7 +43,7 @@ void supla_objcontainer_item::mark_for_remote_update(int mark) {
 }
 
 void supla_objcontainer_item::unmark_for_remote_update(int unmark) {
-  RemoteUpdateMark ^= unmark;
+  RemoteUpdateMark ^= RemoteUpdateMark & unmark;
 }
 
 int supla_objcontainer_item::marked_for_remote_update(void) {

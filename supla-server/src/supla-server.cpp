@@ -26,6 +26,7 @@
 #include "database.h"
 #include "datalogger.h"
 #include "ipcsocket.h"
+#include "lck.h"
 #include "log.h"
 #include "proto.h"
 #include "srpc.h"
@@ -46,8 +47,13 @@ int main(int argc, char *argv[]) {
   void *datalogger_loop_thread = NULL;
   void *http_request_queue_loop_thread = NULL;
 
-  // INIT BLOCK
-  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+#ifdef __LCK_DEBUG
+  lck_debug_init();
+  supla_log(LOG_DEBUG, "!!! LCK DEBUG ENABED !!!");
+#endif /*__LCK_DEBUG*/
+
+      // INIT BLOCK
+      if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
 #if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
   unlink("ssocket_read.raw");
@@ -67,21 +73,13 @@ int main(int argc, char *argv[]) {
     goto exit_fail;
   }
 
-  {
-    struct rlimit limit;
-
-    limit.rlim_cur = 10240;
-    limit.rlim_max = 10240;
-    setrlimit(RLIMIT_NOFILE, &limit);
-  }
-
   if (database::mainthread_init() == false) {
     goto exit_fail;
   }
 
   {
     database *db = new database();
-    if (!db->check_db_version("20190813232026", 60)) {
+    if (!db->check_db_version(DB_VERSION, 60)) {
       delete db;
       database::mainthread_end();
       goto exit_fail;
@@ -118,6 +116,7 @@ int main(int argc, char *argv[]) {
   }
 
   supla_user::init();
+  serverconnection::init();
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
@@ -145,9 +144,14 @@ int main(int argc, char *argv[]) {
   // MAIN LOOP
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
+    supla_user::print_metrics(3600);
   }
 
   supla_log(LOG_INFO, "Shutting down...");
+
+#ifdef __LCK_DEBUG
+  lck_debug_dump();
+#endif /*__LCK_DEBUG*/
 
   // RELEASE BLOCK
 
@@ -179,6 +183,7 @@ int main(int argc, char *argv[]) {
   st_delpidfile(pidfile_path);
 
   supla_http_request_queue::queueFree();  // ! before user_free()
+  serverconnection::serverconnection_free();
   supla_user::user_free();
   database::mainthread_end();
   sslcrypto_free();

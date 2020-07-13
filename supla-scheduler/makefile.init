@@ -1,5 +1,10 @@
-ifdef MARIADB
-LIBMYSQL=mariadbclient
-else
+ifdef MYSQL
 LIBMYSQL=mysqlclient
+INCMYSQL=/usr/include/mysql
+else
+LIBMYSQL=mariadbclient
+INCMYSQL=/usr/include/mariadb
+ifeq (,$(wildcard $(INCMYSQL)))
+    INCMYSQL=/usr/include/mysql
+endif
 endif

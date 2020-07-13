@@ -20,6 +20,7 @@
 #define IPCCLIENT_H_
 
 #include "supla-scheduler.h"
+#include "proto.h"
 
 #define IPC_BUFFER_SIZE 256
 
@@ -49,6 +50,8 @@ class ipc_client {
   bool get_char_value(int user_id, int device_id, int channel_id, char *value);
   bool get_rgbw_value(int user_id, int device_id, int channel_id, int *color,
                       char *color_brightness, char *brightness);
+  bool get_valve_value(int user_id, int device_id, int channel_id,
+                       TValve_Value *value);
 
   bool set_char_value(int user_id, int device_id, int channel_id,
                       int channel_group_id, char value);

@@ -31,7 +31,7 @@ class s_worker_action_rgb : public s_worker_action {
   int try_limit(void);
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
-  bool check_result();
+  bool result_success(int *fail_result_code);
   bool do_action();
 
  public:

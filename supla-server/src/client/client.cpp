@@ -29,7 +29,7 @@
 #include "srpc.h"
 #include "user.h"
 
-supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
+supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
@@ -39,9 +39,6 @@ supla_client::supla_client(serverconnection *svrconn) : cdcommon(svrconn) {
 }
 
 supla_client::~supla_client() {
-  if (getUser())  // 1st line !!!
-    getUser()->remove_client(this);
-
   delete cgroups;
   delete channels;
   delete locations;
@@ -71,6 +68,12 @@ void supla_client::setAccessID(int AccessID) { access_id = AccessID; }
 
 int supla_client::getAccessID(void) { return access_id; }
 
+void supla_client::revoke_superuser_authorization(void) {
+  lck_lock(lck);
+  superuser_authorized = false;
+  lck_unlock(lck);
+}
+
 bool supla_client::is_superuser_authorized(void) {
   bool result = false;
   lck_lock(lck);
@@ -80,8 +83,15 @@ bool supla_client::is_superuser_authorized(void) {
   return result;
 }
 
+bool supla_client::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+                                   const char Email[SUPLA_EMAIL_MAXSIZE],
+                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
+                                   int *UserID, database *db) {
+  return db->client_authkey_auth(GUID, Email, AuthKey, UserID);
+}
+
 char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
-                                   TCS_SuplaRegisterClient_C *register_client_c,
+                                   TCS_SuplaRegisterClient_D *register_client_d,
                                    unsigned char proto_version) {
   int resultcode = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
   char result = 0;
@@ -98,20 +108,20 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     AccessID = register_client_b->AccessID;
     SoftVer = register_client_b->SoftVer;
   } else {
-    GUID = register_client_c->GUID;
-    Name = register_client_c->Name;
-    AuthKey = register_client_c->AuthKey;
-    SoftVer = register_client_c->SoftVer;
+    GUID = register_client_d->GUID;
+    Name = register_client_d->Name;
+    AuthKey = register_client_d->AuthKey;
+    SoftVer = register_client_d->SoftVer;
   }
 
   if (!setGUID(GUID)) {
     resultcode = SUPLA_RESULTCODE_GUID_ERROR;
 
-  } else if (register_client_c != NULL &&
-             !setAuthKey(register_client_c->AuthKey)) {
+  } else if (register_client_d != NULL &&
+             !setAuthKey(register_client_d->AuthKey)) {
     resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
 
-  } else if (register_client_b == NULL && register_client_c == NULL) {
+  } else if (register_client_b == NULL && register_client_d == NULL) {
     resultcode = SUPLA_RESULTCODE_UNSUPORTED;
 
   } else {
@@ -119,19 +129,18 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
     if (db->connect() == true) {
       int UserID = 0;
+      bool pwd_is_set = false;
       bool accessid_enabled = false;
 
       if (register_client_b != NULL &&
-          false ==
-              db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
-                                &UserID, &accessid_enabled)) {
+          false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
+                                     &UserID, &accessid_enabled)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
-      } else if (register_client_c != NULL &&
-                 false ==
-                     db->client_authkey_auth(GUID, register_client_c->Email,
-                                             register_client_c->AuthKey,
-                                             &UserID)) {
+      } else if (register_client_d != NULL &&
+                 false == authkey_auth(GUID, register_client_d->Email,
+                                       register_client_d->AuthKey, &UserID,
+                                       db)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (UserID == 0) {
@@ -154,18 +163,29 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
         if (ClientID == 0) {
           do_update = false;
+          pwd_is_set =
+              register_client_d != NULL &&
+              strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
 
-          if (false == db->get_client_reg_enabled(UserID)) {
+          if (pwd_is_set) {
+            superuser_authorize(UserID, register_client_d->Email,
+                                register_client_d->Password, NULL);
+          }
+
+          if (false == db->get_client_reg_enabled(UserID) &&
+              false == is_superuser_authorized()) {
             db->rollback();
-            resultcode = SUPLA_RESULTCODE_REGISTRATION_DISABLED;
+            resultcode = pwd_is_set ? SUPLA_RESULTCODE_BAD_CREDENTIALS
+                                    : SUPLA_RESULTCODE_REGISTRATION_DISABLED;
 
           } else if (db->get_client_limit_left(UserID) <= 0) {
             db->rollback();
             resultcode = SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED;
 
           } else {
-            if (AccessID == 0 && register_client_c != NULL &&
-                db->get_client_count(UserID) == 0) {
+            if (AccessID == 0 && register_client_d != NULL &&
+                (db->get_client_count(UserID) == 0 ||
+                 is_superuser_authorized())) {
               AccessID = db->get_access_id(UserID, true);
 
               if (AccessID > 0) {
@@ -199,7 +219,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
             }
           }
 
-        } else if (_AccessID > 0 && register_client_c != NULL) {
+        } else if (_AccessID > 0 && register_client_d != NULL) {
           AccessID = _AccessID;
         }
 
@@ -210,10 +230,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
           } else {
             if (do_update) {
-              if (false ==
-                  db->update_client(ClientID, AccessID, AuthKey, Name,
-                                    getSvrConn()->getClientIpv4(), SoftVer,
-                                    proto_version)) {
+              if (false == db->update_client(ClientID, AccessID, AuthKey, Name,
+                                             getSvrConn()->getClientIpv4(),
+                                             SoftVer, proto_version)) {
                 // something goes wrong
                 ClientID = 0;
                 db->rollback();
@@ -224,7 +243,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               db->commit();
 
               if (AccessID == 0) {
-                resultcode = SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
+                resultcode = pwd_is_set
+                                 ? SUPLA_RESULTCODE_BAD_CREDENTIALS
+                                 : SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED;
 
               } else if (!accessid_enabled) {
                 resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
@@ -249,12 +270,14 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     delete db;
   }
 
+  revoke_superuser_authorization();
+
   if (proto_version >= 9) {
     TSC_SuplaRegisterClientResult_B srcr;
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
-    srcr.version_min = SUPLA_PROTO_VERSION;
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
@@ -266,7 +289,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
-    srcr.version_min = SUPLA_PROTO_VERSION;
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
@@ -324,15 +347,18 @@ void supla_client::set_device_channel_new_value(
 }
 
 void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
-  if (new_value->Target == SUPLA_NEW_VALUE_TARGET_CHANNEL) {
+  if (new_value->Target == SUPLA_TARGET_CHANNEL) {
     channels->set_device_channel_new_value(new_value);
-  } else if (new_value->Target == SUPLA_NEW_VALUE_TARGET_GROUP) {
+  } else if (new_value->Target == SUPLA_TARGET_GROUP) {
     cgroups->set_device_channel_new_value(new_value);
   }
 }
 
 void supla_client::call_event(TSC_SuplaEvent *event) {
-  srpc_sc_async_event(getSvrConn()->srpc(), event);
+  if (event != NULL && (event->Event != SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED ||
+                        event->SenderID == getID())) {
+    srpc_sc_async_event(getSvrConn()->srpc(), event);
+  }
 }
 
 void supla_client::oauth_token_request(void) {
@@ -350,6 +376,8 @@ void supla_client::oauth_token_request(void) {
       if (db->oauth_get_token(&result.Token, getUser()->getUserID(),
                               AccessID)) {
         result.ResultCode = SUPLA_OAUTH_RESULTCODE_SUCCESS;
+      } else {
+        memset(&result.Token, 0, sizeof(TSC_OAuthToken));
       }
     } else {
       result.ResultCode = SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE;
@@ -361,43 +389,60 @@ void supla_client::oauth_token_request(void) {
   srpc_cs_async_oauth_token_request_result(getSvrConn()->srpc(), &result);
 }
 
-void supla_client::superuser_authorization_request(
-    TCS_SuperUserAuthorizationRequest *request) {
-  if (request == NULL) {
+void supla_client::superuser_authorize(
+    int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
+    const char Password[SUPLA_PASSWORD_MAXSIZE], bool *connection_failed) {
+  if (UserID == 0 || Email == NULL || Password == NULL ||
+      strnlen(Email, SUPLA_EMAIL_MAXSIZE) == 0 ||
+      strnlen(Password, SUPLA_PASSWORD_MAXSIZE) == 0) {
     lck_lock(lck);
     superuser_authorized = false;
     lck_unlock(lck);
     return;
   }
 
+  database *db = new database();
+
+  if (db->connect() == true) {
+    if (db->superuser_authorization(UserID, Email, Password)) {
+      lck_lock(lck);
+      superuser_authorized = true;
+      lck_unlock(lck);
+    }
+  } else if (connection_failed) {
+    *connection_failed = true;
+  }
+
+  delete db;
+}
+
+void supla_client::superuser_authorization_request(
+    TCS_SuperUserAuthorizationRequest *request) {
+  bool connection_failed = false;
+
+  superuser_authorize(getUserID(), request ? request->Email : NULL,
+                      request ? request->Password : NULL, &connection_failed);
+
   TSC_SuperUserAuthorizationResult result;
   memset(&result, 0, sizeof(TSC_SuperUserAuthorizationResult));
-  result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
-
-  if (getUser()) {
-    database *db = new database();
-
-    if (db->connect() == true) {
-      if (db->superuser_authorization(getUser()->getUserID(), request->Email,
-                                      request->Password)) {
-        lck_lock(lck);
-        superuser_authorized = true;
-        lck_unlock(lck);
-
-        result.Result = SUPLA_RESULTCODE_AUTHORIZED;
-      }
-    } else {
-      result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
-    }
-
-    delete db;
+  if (is_superuser_authorized()) {
+    result.Result = SUPLA_RESULTCODE_AUTHORIZED;
+  } else if (connection_failed) {
+    result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
+  } else {
+    result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
   }
 
   srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
 }
 
-void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest *request) {
-  channels->device_calcfg_request(request);
+void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
+  if (request->Target == SUPLA_TARGET_CHANNEL ||
+      request->Target == SUPLA_TARGET_IODEVICE) {
+    channels->device_calcfg_request(request);
+  } else if (request->Target == SUPLA_TARGET_GROUP) {
+    cgroups->device_calcfg_request(request);
+  }
 }
 
 void supla_client::on_device_calcfg_result(int ChannelID,
@@ -416,4 +461,58 @@ void supla_client::on_device_calcfg_result(int ChannelID,
   memcpy(cresult.Data, result->Data, SUPLA_CALCFG_DATA_MAXSIZE);
 
   srpc_sc_async_device_calcfg_result(getSvrConn()->srpc(), &cresult);
+}
+
+void supla_client::device_get_channel_state(TCSD_ChannelStateRequest *request) {
+  channels->device_get_channel_state(request);
+}
+
+void supla_client::on_device_channel_state_result(int ChannelID,
+                                                  TDSC_ChannelState *state) {
+  if (state == NULL) return;
+
+  TDSC_ChannelState cstate;
+  memcpy(&cstate, state, sizeof(TDSC_ChannelState));
+
+  cstate.ChannelID = ChannelID;
+  cstate.ReceiverID = getID();
+
+  srpc_csd_async_channel_state_result(getSvrConn()->srpc(), &cstate);
+}
+
+void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
+  if (request == NULL) return;
+  channels->get_channel_basic_cfg(getSvrConn()->srpc(), request);
+}
+
+void supla_client::set_channel_function(int ChannelId, int Func) {
+  channels->set_channel_function(ChannelId, Func);
+}
+
+void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
+  getUser()->set_channel_function(this, func);
+}
+
+void supla_client::set_channel_function_result(
+    TSC_SetChannelFunctionResult *result) {
+  if (result == NULL) {
+    return;
+  }
+  srpc_sc_async_set_channel_function_result(getSvrConn()->srpc(), result);
+}
+
+void supla_client::set_channel_caption(int ChannelId, char *Caption) {
+  channels->set_channel_caption(ChannelId, Caption);
+}
+
+void supla_client::set_channel_caption_request(TCS_SetChannelCaption *caption) {
+  getUser()->set_channel_caption(this, caption);
+}
+
+void supla_client::set_channel_caption_result(
+    TSC_SetChannelCaptionResult *result) {
+  if (result == NULL) {
+    return;
+  }
+  srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
 }

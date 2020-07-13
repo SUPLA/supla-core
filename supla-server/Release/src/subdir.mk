@@ -21,7 +21,8 @@ C_SRCS += \
 
 CPP_SRCS += \
 ../src/accept_loop.cpp \
-../src/cdcommon.cpp \
+../src/cdbase.cpp \
+../src/cdcontainer.cpp \
 ../src/database.cpp \
 ../src/datalogger.cpp \
 ../src/db.cpp \
@@ -35,7 +36,8 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/accept_loop.o \
-./src/cdcommon.o \
+./src/cdbase.o \
+./src/cdcontainer.o \
 ./src/cfg.o \
 ./src/database.o \
 ./src/datalogger.o \
@@ -79,7 +81,8 @@ C_DEPS += \
 
 CPP_DEPS += \
 ./src/accept_loop.d \
-./src/cdcommon.d \
+./src/cdbase.d \
+./src/cdcontainer.d \
 ./src/database.d \
 ./src/datalogger.d \
 ./src/db.d \
@@ -96,14 +99,14 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__BCRYPT=1 -D__OPENSSL_TOOLS=1 -I/usr/include/mysql -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__BCRYPT=1 -DSERVER_VERSION_23 -DUSE_DEPRECATED_EMEV_V1 -D__OPENSSL_TOOLS=1 -I$(INCMYSQL) -I../src/client -I../src/user -I../src/device -I../src -I$(SSLDIR)/include -O3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -std=c++11 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
 src/%.o: ../src/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__BCRYPT=1 -D__OPENSSL_TOOLS=1 -I$(SSLDIR)/include -I../src -I../src/user -I../src/device -I../src/client -O3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__BCRYPT=1 -DSERVER_VERSION_23 -DUSE_DEPRECATED_EMEV_V1 -D__OPENSSL_TOOLS=1 -I$(SSLDIR)/include -I../src -I../src/user -I../src/device -I../src/client -O3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

@@ -47,7 +47,7 @@ class supla_channel_temphum {
   supla_channel_temphum(bool TempAndHumidity, int ChannelId, double Temperature,
                         double Humidity);
   supla_channel_temphum(bool TempAndHumidity, int ChannelId,
-                        char value[SUPLA_CHANNELVALUE_SIZE]);
+                        const char value[SUPLA_CHANNELVALUE_SIZE]);
 
   int getChannelId(void);
   bool isTempAndHumidity(void);
@@ -62,20 +62,31 @@ class supla_channel_temphum {
 
 class supla_channel_electricity_measurement {
  private:
-  TElectricityMeter_ExtendedValue em_ev;
+  TElectricityMeter_ExtendedValue_V2 em_ev;
   int ChannelId;
+  void assign(int Param2, char *TextParam1,
+              TElectricityMeter_ExtendedValue_V2 *em_ev);
+
+  static void set_costs(int Param2, char *TextParam1,
+                        TElectricityMeter_ExtendedValue *em_ev);
+  static void set_costs(int Param2, char *TextParam1,
+                        TElectricityMeter_ExtendedValue_V2 *em_ev);
 
  public:
   supla_channel_electricity_measurement(int ChannelId,
                                         TElectricityMeter_ExtendedValue *em_ev,
                                         int Param2, char *TextParam1);
+  supla_channel_electricity_measurement(
+      int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
+      char *TextParam1);
 
   int getChannelId(void);
   void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
+  void getMeasurement(TElectricityMeter_ExtendedValue_V2 *em_ev);
   void getCurrency(char currency[4]);
 
   static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
-                         char *TextParam1);
+                         char *TextParam1, bool convert_to_v1);
   static void free(void *emarr);
 };
 
@@ -121,6 +132,26 @@ class supla_channel_ic_measurement {
   static void free(void *icarr);
 };
 
+class supla_channel_thermostat_measurement {
+ private:
+  int ChannelId;
+  bool on;
+  double MeasuredTemperature;
+  double PresetTemperature;
+
+ public:
+  supla_channel_thermostat_measurement(int ChannelId, bool on,
+                                       double MeasuredTemperature,
+                                       double PresetTemperature);
+
+  int getChannelId(void);
+  double getMeasuredTemperature(void);
+  double getPresetTemperature(void);
+  bool getOn(void);
+
+  static void free(void *icarr);
+};
+
 class supla_device_channel {
  private:
   int Id;
@@ -134,6 +165,8 @@ class supla_device_channel {
   char *TextParam2;
   char *TextParam3;
   bool Hidden;
+  bool Offline;
+  unsigned int Flags;
 
   char value[8];
   TSuplaChannelExtendedValue *extendedValue;
@@ -141,15 +174,20 @@ class supla_device_channel {
  public:
   supla_device_channel(int Id, int Number, int Type, int Func, int Param1,
                        int Param2, int Param3, char *TextParam1,
-                       char *TextParam2, char *TextParam3, bool Hidden);
+                       char *TextParam2, char *TextParam3, bool Hidden,
+                       unsigned int Flags);
   virtual ~supla_device_channel();
 
   int getId(void);
   int getNumber(void);
   int getFunc(void);
+  void setFunc(int Func);
   int getType(void);
   int getParam1(void);
   bool getHidden(void);
+  unsigned int getFlags();
+  bool isOffline(void);
+  void setOffline(bool Offline);
   bool isValueWritable(void);
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
@@ -165,12 +203,14 @@ class supla_device_channel {
   void getChar(char *Value);
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
+  bool getValveValue(TValve_Value *Value);
 
   std::list<int> master_channel(void);
-  std::list<int> slave_channel(void);
+  std::list<int> related_channel(void);
   supla_channel_temphum *getTempHum(void);
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
+  supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   bool converValueToExtended(void);
 };
 
@@ -186,15 +226,20 @@ class supla_device_channels {
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
 
-  std::list<int> ms_channel(int ChannelID, bool Master);
+  std::list<int> mr_channel(int ChannelID, bool Master);
+
+  void async_set_channel_value(void *srpc, supla_device_channel *channel,
+                               int SenderID,
+                               const char value[SUPLA_CHANNELVALUE_SIZE]);
 
  public:
   supla_device_channels();
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int Type, int Func, int Param1,
                    int Param2, int Param3, char *TextParam1, char *TextParam2,
-                   char *TextParam3, bool Hidden);
-  bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE]);
+                   char *TextParam3, bool Hidden, unsigned int Flags);
+  bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+                         char *online);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_double_value(int ChannelID, double *Value);
@@ -207,8 +252,10 @@ class supla_device_channels {
 
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
+  int get_channel_type(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          bool *converted2extended);
+  void set_channel_offline(int ChannelID, bool Offline);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);
@@ -224,9 +271,10 @@ class supla_device_channels {
   bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID,
                                      int color, char color_brightness,
                                      char brightness, char on_off);
+  bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
 
   std::list<int> master_channel(int ChannelID);
-  std::list<int> slave_channel(int ChannelID);
+  std::list<int> related_channel(int ChannelID);
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
@@ -238,11 +286,18 @@ class supla_device_channels {
       int ChannelID);
   void get_ic_measurements(void *icarr);
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
+  void get_thermostat_measurements(void *tharr);
 
-  bool calcfg_request(void *srpc, int SenderID, bool SuperUserAuthorized,
-                      TCS_DeviceCalCfgRequest *request);
+  bool calcfg_request(void *srpc, int SenderID, int ChannelID,
+                      bool SuperUserAuthorized,
+                      TCS_DeviceCalCfgRequest_B *request);
+
+  bool get_channel_state(void *srpc, int SenderID,
+                         TCSD_ChannelStateRequest *request);
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
+  void set_channel_function(int ChannelId, int Func);
+  void get_functions_request(void *srpc);
 };
 
 #endif /* DEVICECHANNEL_H_ */
