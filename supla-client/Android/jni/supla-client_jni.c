@@ -862,7 +862,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
       (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
-      (jint)state->LightSourceLifespan, (jint)state->LightSourceLifespanLeft);
+      (jint)state->LightSourceLifespan, (jshort)state->LightSourceLifespanLeft);
 }
 
 jobject supla_android_client_timerstate_to_jobject(
@@ -994,6 +994,9 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
     // TChannelState_ExtendedValue is equal to TDSC_ChannelState
     jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
         asc, env, (TDSC_ChannelState *)channel_state);
+
+    __android_log_print(ANDROID_LOG_INFO, log_tag,
+                        "channel_state=%i",channel_state->LightSourceLifespanLeft);
 
     (*env)->SetObjectField(env, val, fid, channel_state_obj);
   }
@@ -2114,3 +2117,24 @@ Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
 
 JNI_FUNCTION_I(scDeviceCalCfgCancelAllCommands,
                supla_client_device_calcfg_cancel_all_commands);
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSetLightsourceLifespan(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id,
+    jboolean reset_counter, jboolean set_time, jint lifespan) {
+  void *supla_client = supla_client_ptr(_asc);
+  if (supla_client) {
+    if (lifespan < 0) {
+      lifespan = 0;
+    } else if (lifespan > 65535) {
+      lifespan = 65535;
+    }
+
+    return supla_client_set_lightsource_lifespan(
+               supla_client, channel_id, reset_counter, set_time, lifespan)
+               ? JNI_TRUE
+               : JNI_FALSE;
+  }
+
+  return JNI_FALSE;
+}

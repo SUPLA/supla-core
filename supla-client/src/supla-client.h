@@ -236,6 +236,10 @@ char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID);
 char supla_client_zwave_get_assigned_node_id(void *_suplaclient, int channelID);
 char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
                                        unsigned char nodeID);
+char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
+                                           unsigned char resetCounter,
+                                           unsigned char setTime,
+                                           unsigned short lightSourceLifespan);
 
 #ifdef __cplusplus
 }
