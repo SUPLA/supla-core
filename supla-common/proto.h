@@ -1421,8 +1421,8 @@ typedef struct {
 typedef struct {
   _supla_int_t SenderID;
   union {
-    _supla_int_t ChannelID;       // Server -> Client
-    unsigned char ChannelNumber;  // Device -> Server
+    _supla_int_t ChannelID;       // Client -> Server
+    unsigned char ChannelNumber;  // Server -> Device
   };
 } TCSD_ChannelStateRequest;  // v. >= 12 Client -> Server -> Device
 
