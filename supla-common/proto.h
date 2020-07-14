@@ -1471,7 +1471,7 @@ typedef struct {
   union {
     short LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan *
                                     // 0.01
-    _supla_int_t LightSourceLifespanLeftSec;  // -3932100sec. - 3932100sec.
+    _supla_int_t LightSourceOperatingTime;  // -3932100sec. - 3932100sec.
   };
   char EmptySpace[2];  // Empty space for future use
 } TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client

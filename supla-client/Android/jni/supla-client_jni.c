@@ -863,7 +863,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
       (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
       (jint)state->LightSourceLifespan,
-      (jint)state->LightSourceLifespanLeftSec);
+      (jint)state->LightSourceOperatingTime);
 }
 
 jobject supla_android_client_timerstate_to_jobject(
