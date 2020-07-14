@@ -863,7 +863,9 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
       (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
       (jint)state->LightSourceLifespan,
-      (jint)state->LightSourceOperatingTime);
+      state->Fields & SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME
+          ? (jint)state->LightSourceOperatingTime
+          : (jshort)state->LightSourceLifespanLeft);
 }
 
 jobject supla_android_client_timerstate_to_jobject(
@@ -995,7 +997,6 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
     // TChannelState_ExtendedValue is equal to TDSC_ChannelState
     jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
         asc, env, (TDSC_ChannelState *)channel_state);
-
 
     (*env)->SetObjectField(env, val, fid, channel_state_obj);
   }
