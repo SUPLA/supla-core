@@ -1439,6 +1439,7 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
 #define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
 #define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN 0x1000
+#define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPANLEFTSEC 0x2000
 
 #define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
 #define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
@@ -1467,10 +1468,13 @@ typedef struct {
   unsigned char BatteryHealth;
   unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
   unsigned short LightSourceLifespan;      // 0 - 65535 hours
-  short
-      LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan * 0.01
-  char EmptySpace[4];           // Empty space for future use
-} TDSC_ChannelState;            // v. >= 12 Device -> Server -> Client
+  union {
+    short LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan *
+                                    // 0.01
+    _supla_int_t LightSourceLifespanLeftSec;  // -3932100sec. - 3932100sec.
+  };
+  char EmptySpace[2];  // Empty space for future use
+} TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
 
 #define TChannelState_ExtendedValue TDSC_ChannelState
 

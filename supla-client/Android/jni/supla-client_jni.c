@@ -862,7 +862,8 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
       (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
-      (jint)state->LightSourceLifespan, (jshort)state->LightSourceLifespanLeft);
+      (jint)state->LightSourceLifespan,
+      (jint)state->LightSourceLifespanLeftSec);
 }
 
 jobject supla_android_client_timerstate_to_jobject(
@@ -995,8 +996,6 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
     jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
         asc, env, (TDSC_ChannelState *)channel_state);
 
-    __android_log_print(ANDROID_LOG_INFO, log_tag,
-                        "channel_state=%i",channel_state->LightSourceLifespanLeft);
 
     (*env)->SetObjectField(env, val, fid, channel_state_obj);
   }
