@@ -1242,7 +1242,8 @@ char supla_client_oauth_token_request(void *_suplaclient) {
 }
 
 char supla_client_superuser_authorization_request(void *_suplaclient,
-                                                  char *email, char *password) {
+                                                  const char *email,
+                                                  const char *password) {
   TCS_SuperUserAuthorizationRequest request;
   snprintf(
       request.Email, SUPLA_EMAIL_MAXSIZE, "%s",
