@@ -862,7 +862,7 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                 sizeof(TSD_SuplaGroupNewValue) -
                     (sizeof(unsigned char) * SUPLA_CHANNELMAXCOUNT) &&
             srpc->sdp.data_size <= sizeof(TSD_SuplaGroupNewValue))
-          rd->data.sd_channel_new_value =
+          rd->data.sd_group_new_value =
               (TSD_SuplaGroupNewValue *)malloc(sizeof(TSD_SuplaGroupNewValue));
 
         break;
