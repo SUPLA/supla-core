@@ -99,10 +99,10 @@ TEST_F(SetRegistrationEnabledIntegrationTest, SubZeroValueTest) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
-  timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
+  unsigned int timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
   ASSERT_TRUE(timediff >= 99 && timediff <= 101);
 
-  unsigned int timediff = abs(regEnabled.client_timestamp - now.tv_sec);
+  timediff = abs(regEnabled.client_timestamp - now.tv_sec);
   ASSERT_TRUE(timediff >= 199 && timediff <= 201);
 
 
@@ -117,19 +117,22 @@ TEST_F(SetRegistrationEnabledIntegrationTest, SubZeroValueTest) {
   timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
   ASSERT_TRUE(timediff >= 99 && timediff <= 101);
 
-  unsigned int timediff = abs(regEnabled.client_timestamp - now.tv_sec);
+  timediff = abs(regEnabled.client_timestamp - now.tv_sec);
   ASSERT_TRUE(timediff >= 299 && timediff <= 301);
 
-
   ASSERT_GT(supla_client_set_registration_enabled(sclient, 400, -1), 0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_GT(supla_client_get_registration_enabled(sclient), 0);
   iterateUntilDefaultTimeout();
 
   gettimeofday(&now, NULL);
 
   timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
+
   ASSERT_TRUE(timediff >= 399 && timediff <= 401);
 
-  unsigned int timediff = abs(regEnabled.client_timestamp - now.tv_sec);
+  timediff = abs(regEnabled.client_timestamp - now.tv_sec);
   ASSERT_TRUE(timediff >= 299 && timediff <= 301);
 }
 
