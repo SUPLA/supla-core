@@ -55,8 +55,8 @@ void supla_voice_assistant_client::terminate(void) {
   lck_unlock(lck);
 }
 
-supla_itrivial_http_client *supla_voice_assistant_client::getHttpClient(void) {
-  supla_itrivial_http_client *result = NULL;
+supla_trivial_http *supla_voice_assistant_client::getHttpClient(void) {
+  supla_trivial_http *result = NULL;
   lck_lock(lck);
   if (!http) {
     httpClientInit();

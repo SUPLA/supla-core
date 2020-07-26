@@ -25,9 +25,6 @@
 
 #include <stdio.h>
 
-#ifdef __TEST
-typedef bool (*_extern_send_recv)(const char *out, char **in, bool *result);
-#endif /* __TEST */
 
 class supla_trivial_http {
  protected:

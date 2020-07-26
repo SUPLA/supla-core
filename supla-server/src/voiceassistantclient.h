@@ -20,18 +20,18 @@
 #define VOICEASSISTANTCLIENT_H_
 
 #include "voiceassistant.h"
-#include "http/itrivialhttp.h"
+#include "http/trivialhttp.h"
 
 class supla_voice_assistant_client {
  private:
   void httpClientInit();
   void *lck;
-  supla_itrivial_http_client *http;
+  supla_trivial_http *http;
   supla_voice_assistant *voice_assistant;
 
  protected:
   void httpClientFree();
-  supla_itrivial_http_client *getHttpClient(void);
+  supla_trivial_http *getHttpClient(void);
   supla_voice_assistant *getVoiceAssistant(void);
   char *getEndpointId(int channelId, short subChannel);
 
