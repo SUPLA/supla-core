@@ -16,29 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOICEASSISTANTCLIENT_H_
-#define VOICEASSISTANTCLIENT_H_
+#ifndef SUPLA_ITRIVIALHTTP_H_
+#define SUPLA_ITRIVIALHTTP_H_
 
-#include "voiceassistant.h"
-#include "http/itrivialhttp.h"
-
-class supla_voice_assistant_client {
- private:
-  void httpClientInit();
-  void *lck;
-  supla_itrivial_http_client *http;
-  supla_voice_assistant *voice_assistant;
-
- protected:
-  void httpClientFree();
-  supla_itrivial_http_client *getHttpClient(void);
-  supla_voice_assistant *getVoiceAssistant(void);
-  char *getEndpointId(int channelId, short subChannel);
-
+class supla_itrivial_http_client {
  public:
-  explicit supla_voice_assistant_client(supla_voice_assistant *voice_assistant);
-  virtual ~supla_voice_assistant_client();
-  void terminate(void);
+  supla_itrivial_http_client();
+  virtual void setHost(char *host, bool copy = true) = 0;
+  virtual void setPort(int port) = 0;
+  virtual void setResource(char *resource, bool copy = true) = 0;
+  virtual int getResultCode(void) = 0;
+  virtual int getContentLength(void) = 0;
+  virtual const char *getContentType(void) = 0;
+  virtual const char *getBody(void) = 0;
+  virtual void setToken(char *token, bool copy = true) = 0;
+  virtual bool http_get(void) = 0;
+  virtual bool http_post(char *header, char *data) = 0;
+  virtual void terminate(void) = 0;
 };
 
-#endif /* VOICEASSISTANTCLIENT_H_ */
+#endif /* SUPLA_ITRIVIALHTTP_H_ */

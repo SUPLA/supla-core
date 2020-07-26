@@ -15,30 +15,9 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include <http/itrivialhttp.h>
 
-#ifndef VOICEASSISTANTCLIENT_H_
-#define VOICEASSISTANTCLIENT_H_
+supla_itrivial_http_client::supla_itrivial_http_client() {
 
-#include "voiceassistant.h"
-#include "http/itrivialhttp.h"
+}
 
-class supla_voice_assistant_client {
- private:
-  void httpClientInit();
-  void *lck;
-  supla_itrivial_http_client *http;
-  supla_voice_assistant *voice_assistant;
-
- protected:
-  void httpClientFree();
-  supla_itrivial_http_client *getHttpClient(void);
-  supla_voice_assistant *getVoiceAssistant(void);
-  char *getEndpointId(int channelId, short subChannel);
-
- public:
-  explicit supla_voice_assistant_client(supla_voice_assistant *voice_assistant);
-  virtual ~supla_voice_assistant_client();
-  void terminate(void);
-};
-
-#endif /* VOICEASSISTANTCLIENT_H_ */

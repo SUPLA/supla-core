@@ -160,8 +160,8 @@ void supla_alexa_client::refresh_roken(void) {
     char host[] = "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com";
     char resource[] = "/default/amazonRefreshTokenBridge";
 
-    getHttps()->setHost(host);
-    getHttps()->setResource(resource);
+    getHttpClient()->setHost(host);
+    getHttpClient()->setResource(resource);
     {
       char *refresh_token = getAlexa()->getRefreshToken();
       if (refresh_token) {
@@ -172,7 +172,7 @@ void supla_alexa_client::refresh_roken(void) {
           char *str = cJSON_PrintUnformatted(root);
           cJSON_Delete(root);
 
-          getHttps()->http_post(NULL, str);
+          getHttpClient()->http_post(NULL, str);
           free(str);
         }
 
@@ -180,8 +180,8 @@ void supla_alexa_client::refresh_roken(void) {
       }
     }
 
-    if (getHttps()->getResultCode() == 200 && getHttps()->getBody()) {
-      cJSON *root = cJSON_Parse(getHttps()->getBody());
+    if (getHttpClient()->getResultCode() == 200 && getHttpClient()->getBody()) {
+      cJSON *root = cJSON_Parse(getHttpClient()->getBody());
       if (root) {
         cJSON *access_token = cJSON_GetObjectItem(root, "access_token");
         cJSON *expires_in = cJSON_GetObjectItem(root, "expires_in");
@@ -198,7 +198,7 @@ void supla_alexa_client::refresh_roken(void) {
       }
     }
 
-    httpsFree();
+    httpClientFree();
 
 #endif /*NOSSL*/
   }
@@ -223,7 +223,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 
     snprintf(host, sizeof(host), "api.%s%samazonalexa.com",
              region ? region : "", region ? "." : "");
-    getHttps()->setHost(host);
+    getHttpClient()->setHost(host);
 
     if (region) {
       free(region);
@@ -232,19 +232,19 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 
   char header[] = "Content-Type: application/json";
   char resource[] = "/v3/events";
-  getHttps()->setResource(resource);
-  getHttps()->setToken(getAlexa()->getAccessToken(), false);
+  getHttpClient()->setResource(resource);
+  getHttpClient()->setToken(getAlexa()->getAccessToken(), false);
 
-  if (!getHttps()->http_post(header, data)) {
+  if (!getHttpClient()->http_post(header, data)) {
     return POST_RESULT_REQUEST_ERROR;
   } else {
     if (httpResultCode) {
-      *httpResultCode = getHttps()->getResultCode();
+      *httpResultCode = getHttpClient()->getResultCode();
     }
-    if (getHttps()->getResultCode() != 200 &&
-        getHttps()->getResultCode() != 202) {
-      if (getHttps()->getBody()) {
-        cJSON *root = cJSON_Parse(getHttps()->getBody());
+    if (getHttpClient()->getResultCode() != 200 &&
+        getHttpClient()->getResultCode() != 202) {
+      if (getHttpClient()->getBody()) {
+        cJSON *root = cJSON_Parse(getHttpClient()->getBody());
         if (root) {
           cJSON *payload = cJSON_GetObjectItem(root, "payload");
           if (payload) {
@@ -261,7 +261,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     }
   }
 
-  httpsFree();
+  httpClientFree();
 
 #endif /*NOSSL*/
 

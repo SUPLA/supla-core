@@ -19,7 +19,7 @@
 #include "voiceassistantclient.h"
 #include <stdlib.h>
 #include <string.h>
-#include "http/trivialhttps.h"
+#include "http/trivialhttp.h"
 #include "lck.h"
 #include "user/user.h"
 #include "voiceassistant.h"
@@ -27,41 +27,41 @@
 supla_voice_assistant_client::supla_voice_assistant_client(
     supla_voice_assistant *voice_assistant) {
   this->lck = lck_init();
-  this->https = NULL;
+  this->http = NULL;
   this->voice_assistant = voice_assistant;
 }
 
-void supla_voice_assistant_client::httpsInit(void) {
-  httpsFree();
+void supla_voice_assistant_client::httpClientInit(void) {
+  httpClientFree();
   lck_lock(lck);
-  https = new supla_trivial_https();
+  // http = new supla_trivial_http();
   lck_unlock(lck);
 }
 
-void supla_voice_assistant_client::httpsFree(void) {
+void supla_voice_assistant_client::httpClientFree(void) {
   lck_lock(lck);
-  if (https) {
-    delete https;
-    https = NULL;
+  if (http) {
+    delete http;
+    http = NULL;
   }
   lck_unlock(lck);
 }
 
 void supla_voice_assistant_client::terminate(void) {
   lck_lock(lck);
-  if (https) {
-    https->terminate();
+  if (http) {
+    http->terminate();
   }
   lck_unlock(lck);
 }
 
-supla_trivial_https *supla_voice_assistant_client::getHttps(void) {
-  supla_trivial_https *result = NULL;
+supla_itrivial_http_client *supla_voice_assistant_client::getHttpClient(void) {
+  supla_itrivial_http_client *result = NULL;
   lck_lock(lck);
-  if (!https) {
-    httpsInit();
+  if (!http) {
+    httpClientInit();
   }
-  result = https;
+  result = http;
   lck_unlock(lck);
   return result;
 }
@@ -71,7 +71,7 @@ supla_voice_assistant *supla_voice_assistant_client::getVoiceAssistant(void) {
 }
 
 supla_voice_assistant_client::~supla_voice_assistant_client() {
-  httpsFree();
+  httpClientFree();
   lck_free(lck);
 }
 

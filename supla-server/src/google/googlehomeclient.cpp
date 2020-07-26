@@ -68,8 +68,8 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
   char host[] = "2rxqysinpg.execute-api.eu-west-1.amazonaws.com";
   char resource[] = "/default/googleHomeGraphBridge";
 
-  getHttps()->setHost(host);
-  getHttps()->setResource(resource);
+  getHttpClient()->setHost(host);
+  getHttpClient()->setResource(resource);
 
 #ifdef ONLY_LOG_REQUESTS
   char *data = cJSON_Print((cJSON *)json_data);
@@ -84,25 +84,25 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
 #ifdef ONLY_LOG_REQUESTS
     supla_log(LOG_DEBUG, "%s", data);
 #else
-    getHttps()->setToken(getVoiceAssistant()->getAccessToken(), false);
+    getHttpClient()->setToken(getVoiceAssistant()->getAccessToken(), false);
     result =
-        getHttps()->http_post(NULL, data) && getHttps()->getResultCode() == 200;
+        getHttpClient()->http_post(NULL, data) && getHttpClient()->getResultCode() == 200;
 
     if (resultCode) {
-      *resultCode = getHttps()->getResultCode();
+      *resultCode = getHttpClient()->getResultCode();
     }
 
     if (!result) {
       supla_log(LOG_ERR,
                 "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
-                getVoiceAssistant()->getUserID(), getHttps()->getResultCode(),
-                getHttps()->getBody());
+                getVoiceAssistant()->getUserID(), getHttpClient()->getResultCode(),
+                getHttpClient()->getBody());
     }
 #endif /*ONLY_LOG_REQUESTS*/
     free(data);
   }
 
-  httpsFree();
+  httpClientFree();
 
 #endif /*NOSSL*/
 
