@@ -36,11 +36,6 @@
 #include <unistd.h>
 #include "log.h"
 
-#ifdef __TEST
-// static
-_extern_send_recv supla_trivial_http::extern_send_recv;
-#endif /* __TEST */
-
 supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
   this->sfd = -1;
   this->resultCode = 0;
@@ -182,12 +177,6 @@ void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
 
 bool supla_trivial_http::send_recv(const char *out, char **in) {
   bool result = false;
-
-#ifdef __TEST
-  if (extern_send_recv && extern_send_recv(out, in, &result)) {
-    return result;
-  }
-#endif /* __TEST */
 
   struct addrinfo *ai = NULL;
 

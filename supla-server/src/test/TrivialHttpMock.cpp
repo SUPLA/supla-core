@@ -16,41 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "test/STTrivialHttp.h"
+#include "test/TrivialHttpMock.h"
 #include "http/trivialhttp.h"
 #include "log.h"
 
-#define OUTDATA_MAXSIZE 102400
-#define INDATA_MAXSIZE 102400
-
-char th_test_out_buff[OUTDATA_MAXSIZE];
-char th_test_in_buff[INDATA_MAXSIZE];
-
-bool th_test_send_recv(const char *out, char **in, bool *result) {
-  th_test_out_buff[0] = 0;
-  strncpy(th_test_out_buff, out, OUTDATA_MAXSIZE);
-  th_test_out_buff[OUTDATA_MAXSIZE - 1] = 0;
-  th_test_in_buff[INDATA_MAXSIZE - 1] = 0;
-  *in = strndup(th_test_in_buff, INDATA_MAXSIZE);
-  *result = true;
-  return true;
-}
-
-bool STTrivialHttp::outputEqualTo(const char *str) {
-  if (strncmp(th_test_out_buff, str, OUTDATA_MAXSIZE) == 0) {
+bool TrivialHttpMock::outputEqualTo(const char *str) {
+  if (strncmp(out_buff, str, sizeof(out_buff)) == 0) {
     return true;
   }
 
-  supla_log(LOG_DEBUG, "OUT: [%s] STR: [%s]", th_test_out_buff, str);
+  supla_log(LOG_DEBUG, "OUT: [%s] STR: [%s]", out_buff, str);
 
   return false;
 }
 
-STTrivialHttp::STTrivialHttp() {
-  snprintf(th_test_in_buff, INDATA_MAXSIZE,
+TrivialHttpMock::TrivialHttpMock() {
+  snprintf(in_buff, sizeof(in_buff),
            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n");
-
-  supla_trivial_http::extern_send_recv = &th_test_send_recv;
 }
 
-STTrivialHttp::~STTrivialHttp() {}
+bool TrivialHttpMock::send_recv(const char *out, char **in) {
+  out_buff[0] = 0;
+  strncpy(out_buff, out, sizeof(out_buff));
+  out_buff[sizeof(out_buff) - 1] = 0;
+  in_buff[sizeof(in_buff) - 1] = 0;
+  *in = strndup(in_buff, sizeof(in_buff));
+  return true;
+}
+
+TrivialHttpMock::~TrivialHttpMock() {}

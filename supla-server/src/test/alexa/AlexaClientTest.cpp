@@ -22,7 +22,7 @@
 
 namespace {
 
-class AlexaClientTest : public STTrivialHttp {
+class AlexaClientTest : public TrivialHttpMock {
  protected:
   supla_alexa_client *client;
 

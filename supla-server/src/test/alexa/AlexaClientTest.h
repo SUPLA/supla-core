@@ -19,9 +19,9 @@
 #ifndef H_ALEXACLIENT_TEST_H_
 #define H_ALEXACLIENT_TEST_H_
 
-#include "STTrivialHttp.h"
+#include "TrivialHttpMock.h"
 
-class AlexaClientTest : STTrivialHttp {
+class AlexaClientTest : TrivialHttpMock {
  public:
   virtual ~AlexaClientTest();
   AlexaClientTest();

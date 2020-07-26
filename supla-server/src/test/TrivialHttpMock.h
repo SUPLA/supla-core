@@ -16,17 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_STTrivialHttp_H_
-#define H_STTrivialHttp_H_
+#ifndef H_TrivialHttpMock_H_
+#define H_TrivialHttpMock_H_
 
 #include "gtest/gtest.h"  // NOLINT
 #include "test/STUserSpace.h"
 
-class STTrivialHttp : public STUserSpace {
+class TrivialHttpMock : public STUserSpace {
+ private:
+  char out_buff[102400];
+  char in_buff[102400];
+ protected:
+  bool send_recv(const char *out, char **in);
+
  public:
-  STTrivialHttp();
-  virtual ~STTrivialHttp();
+  TrivialHttpMock();
+  virtual ~TrivialHttpMock();
   bool outputEqualTo(const char *str);
 };
 
-#endif /*H_STTrivialHttp_TEST_H_*/
+#endif /*H_TrivialHttpMock_TEST_H_*/
