@@ -310,6 +310,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
+#define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -358,6 +359,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS 800                    // ver. >= 12
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -410,9 +412,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_WEKTA 11
 #define SUPLA_MFR_STA_SYSTEM 12
 
-#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001                    // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002                       // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004                       // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12
 // Free bit for future use: 0x0008
 #define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
@@ -1292,6 +1294,14 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
+
+#define DIGIGLASS_FLAG_HORIZONATAL 0x1
+
+typedef struct {
+  unsigned char sectionCount;  // 1 - 16
+  unsigned char flags;
+  unsigned short opaqueSections;
+} TDigiglass_Value;
 
 typedef struct {
   unsigned char sec;        // 0-59
