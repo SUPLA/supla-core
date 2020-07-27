@@ -167,6 +167,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)4, sizeof(TCalCfg_LightSourceLifespan));
   ASSERT_LE(sizeof(TCalCfg_LightSourceLifespan),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ(unsigned int)4, sizeof(TDigiglass_Value))
 }
 
 TEST_F(ProtoTest, init) {
