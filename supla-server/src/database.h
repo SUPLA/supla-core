@@ -25,7 +25,7 @@
 #include "proto.h"
 #include "user.h"
 
-class supla_amazon_alexa;
+class supla_amazon_alexa_credentials;
 
 class database : public dbcommon {
  private:
@@ -154,12 +154,12 @@ class database : public dbcommon {
                                const char email[SUPLA_EMAIL_MAXSIZE],
                                const char password[SUPLA_PASSWORD_MAXSIZE]);
 
-  bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
-  void amazon_alexa_remove_token(supla_amazon_alexa *alexa);
-  void amazon_alexa_update_token(supla_amazon_alexa *alexa, const char *token,
+  bool amazon_alexa_load_token(supla_amazon_alexa_credentials *alexa);
+  void amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa);
+  void amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa, const char *token,
                                  const char *refresh_token, int expires_in);
 
-  bool google_home_load_token(supla_google_home *google_home);
+  bool google_home_load_token(supla_google_home_credentials *google_home);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);

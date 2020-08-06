@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexacredentials.h>
 #include <ctype.h>
+#include <google/googlehomecredentials.h>
 #include <mysql.h>
 #include <stdio.h>
 #include <time.h>
-#include "amazon/alexa.h"
-#include "google/googlehome.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
 #ifdef min
@@ -1911,7 +1911,7 @@ bool database::superuser_authorization(
   return result;
 }
 
-bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
+bool database::amazon_alexa_load_token(supla_amazon_alexa_credentials *alexa) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
@@ -1994,7 +1994,7 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
   return result;
 }
 
-void database::amazon_alexa_remove_token(supla_amazon_alexa *alexa) {
+void database::amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa) {
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
 
@@ -2011,7 +2011,7 @@ void database::amazon_alexa_remove_token(supla_amazon_alexa *alexa) {
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
+void database::amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
                                          const char *token,
                                          const char *refresh_token,
                                          int expires_in) {
@@ -2042,7 +2042,7 @@ void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-bool database::google_home_load_token(supla_google_home *google_home) {
+bool database::google_home_load_token(supla_google_home_credentials *google_home) {
   bool result = false;
   char sql[] =
       "SELECT `access_token` FROM `supla_google_home` WHERE user_id = ? AND "

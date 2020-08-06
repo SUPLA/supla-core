@@ -16,18 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexacredentials.h>
+#include <google/googlehomecredentials.h>
 #include "user.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <list>
-#include "amazon/alexa.h"
 #include "client.h"
 #include "clientcontainer.h"
 #include "database.h"
 #include "device.h"
 #include "devicecontainer.h"
-#include "google/googlehome.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -53,14 +53,14 @@ supla_user::supla_user(int UserID) {
   this->client_container = new supla_user_client_container();
   this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
-  this->amazon_alexa = new supla_amazon_alexa(this);
-  this->google_home = new supla_google_home(this);
+  this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
+  this->google_home_credentials = new supla_google_home_credentials(this);
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;
   this->lck = lck_init();
-  this->amazon_alexa->load();
-  this->google_home->load();
+  this->amazon_alexa_credentials->load();
+  this->google_home_credentials->load();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -80,8 +80,8 @@ supla_user::~supla_user() {
 
   lck_free(lck);
   delete cgroups;
-  delete amazon_alexa;
-  delete google_home;
+  delete amazon_alexa_credentials;
+  delete google_home_credentials;
 
   compex_value_cache_clean(0);
   safe_array_free(complex_value_functions_arr);
@@ -764,7 +764,7 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-    user->amazonAlexa()->on_credentials_changed();
+    user->amazonAlexaCredentials()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -777,7 +777,7 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-    user->googleHome()->on_credentials_changed();
+    user->googleHomeCredentials()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -1448,6 +1448,6 @@ void supla_user::set_channel_caption(supla_client *sender,
   sender->set_channel_caption_result(&result);
 }
 
-supla_amazon_alexa *supla_user::amazonAlexa(void) { return amazon_alexa; }
+supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) { return amazon_alexa_credentials; }
 
-supla_google_home *supla_user::googleHome(void) { return google_home; }
+supla_google_home_credentials *supla_user::googleHomeCredentials(void) { return google_home_credentials; }

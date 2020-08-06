@@ -23,13 +23,13 @@
 
 #include <webhook/webhookcredentialsbase.h>
 
-class supla_google_home : public supla_webhook_credentials_base {
+class supla_google_home_credentials : public supla_webhook_credentials_base {
  protected:
   virtual int get_token_maxsize(void);
   int sync_40x_counter;
 
  public:
-  explicit supla_google_home(supla_user *user);
+  explicit supla_google_home_credentials(supla_user *user);
   void load();
   void on_credentials_changed();
   void on_sync_40x_error();

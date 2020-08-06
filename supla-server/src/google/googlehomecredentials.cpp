@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "google/googlehome.h"
+#include <google/googlehomecredentials.h>
 #include "database.h"
 #include "http/httprequestqueue.h"
 #include "log.h"
 #include "user/user.h"
 
-supla_google_home::supla_google_home(supla_user *user)
+supla_google_home_credentials::supla_google_home_credentials(supla_user *user)
     : supla_webhook_credentials_base(user) {
   sync_40x_counter = 0;
 }
 
-int supla_google_home::get_token_maxsize(void) { return GH_TOKEN_MAXSIZE; }
+int supla_google_home_credentials::get_token_maxsize(void) { return GH_TOKEN_MAXSIZE; }
 
-void supla_google_home::load() {
+void supla_google_home_credentials::load() {
   database *db = new database();
 
   if (!db->connect() || !db->google_home_load_token(this)) {
@@ -39,9 +39,9 @@ void supla_google_home::load() {
   delete db;
 }
 
-void supla_google_home::on_credentials_changed() { load(); }
+void supla_google_home_credentials::on_credentials_changed() { load(); }
 
-void supla_google_home::on_sync_40x_error() {
+void supla_google_home_credentials::on_sync_40x_error() {
   bool _set_null = false;
 
   data_lock();
@@ -62,7 +62,7 @@ void supla_google_home::on_sync_40x_error() {
   }
 }
 
-void supla_google_home::on_reportstate_404_error() {
+void supla_google_home_credentials::on_reportstate_404_error() {
   supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
       getUser(), EST_GOOGLE_HOME);
 }

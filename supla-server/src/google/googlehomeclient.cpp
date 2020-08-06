@@ -45,8 +45,8 @@
 #endif /*ONLY_LOG_REQUESTS*/
 
 supla_google_home_client::supla_google_home_client(
-    supla_google_home *google_home)
-    : supla_voice_assistant_client(google_home) {
+    supla_google_home_credentials *google_home_credentials)
+    : supla_voice_assistant_client(google_home_credentials) {
   jsonStates = cJSON_CreateObject();
 }
 

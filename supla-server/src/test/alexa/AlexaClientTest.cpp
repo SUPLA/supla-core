@@ -28,8 +28,8 @@ class AlexaClientTest : public STTrivialHttp {
 
  public:
   void SetUp() override {
-    getUser()->amazonAlexa()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600, "eu");
-    client = new supla_alexa_client(getUser()->amazonAlexa());
+    getUser()->amazonAlexaCredentials()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600, "eu");
+    client = new supla_alexa_client(getUser()->amazonAlexaCredentials());
   }
 
   void TearDown() override {

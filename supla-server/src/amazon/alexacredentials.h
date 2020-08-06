@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_H_
-#define AMAZON_ALEXA_H_
+#ifndef AMAZON_ALEXACREDENTIALS_H_
+#define AMAZON_ALEXACREDENTIALS_H_
 
 #define ALEXA_TOKEN_MAXSIZE 1024
 #define ALEXA_REGION_MAXSIZE 5
@@ -26,7 +26,7 @@
 
 class supla_user;
 
-class supla_amazon_alexa : public supla_webhook_credentials_base {
+class supla_amazon_alexa_credentials : public supla_webhook_credentials_base {
  private:
   char *refresh_token;
   char *region;
@@ -38,8 +38,8 @@ class supla_amazon_alexa : public supla_webhook_credentials_base {
   virtual int get_token_maxsize(void);
 
  public:
-  explicit supla_amazon_alexa(supla_user *user);
-  virtual ~supla_amazon_alexa();
+  explicit supla_amazon_alexa_credentials(supla_user *user);
+  virtual ~supla_amazon_alexa_credentials();
 
   virtual void load();
   virtual void remove();
@@ -55,4 +55,4 @@ class supla_amazon_alexa : public supla_webhook_credentials_base {
   char *getRegion(void);
 };
 
-#endif /* AMAZON_ALEXA_H_ */
+#endif /* AMAZON_ALEXACREDENTIALS_H_ */

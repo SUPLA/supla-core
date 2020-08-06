@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexacredentials.h>
 #include "amazon/alexaclient.h"
 #include <stdlib.h>
 #include <string.h>
 #include <map>
 #include <string>
-#include "amazon/alexa.h"
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
 #include "lck.h"
@@ -114,7 +114,7 @@ static const _alexa_code_t alexa_causes[]{
     {NULL, 0},
 };
 
-supla_alexa_client::supla_alexa_client(supla_amazon_alexa *alexa)
+supla_alexa_client::supla_alexa_client(supla_amazon_alexa_credentials *alexa)
     : supla_voice_assistant_client(alexa) {}
 
 int supla_alexa_client::getErrorCode(const char *code) {
@@ -129,8 +129,8 @@ int supla_alexa_client::getErrorCode(const char *code) {
   return POST_RESULT_UNKNOWN_ERROR;
 }
 
-supla_amazon_alexa *supla_alexa_client::getAlexa(void) {
-  return static_cast<supla_amazon_alexa *>(getVoiceAssistant());
+supla_amazon_alexa_credentials *supla_alexa_client::getAlexa(void) {
+  return static_cast<supla_amazon_alexa_credentials *>(getVoiceAssistant());
 }
 
 const char *supla_alexa_client::getErrorString(const int code) {

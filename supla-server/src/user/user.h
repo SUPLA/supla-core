@@ -25,12 +25,12 @@
 #include <cstddef>
 #include "commontypes.h"
 #include "proto.h"
+#include "google/googlehomecredentials.h"
+#include "amazon/alexacredentials.h"
 
 class supla_device;
 class supla_client;
 class supla_user_channelgroups;
-class supla_amazon_alexa;
-class supla_google_home;
 class supla_user_client_container;
 class supla_user_device_container;
 class supla_channel_electricity_measurement;
@@ -57,8 +57,8 @@ class supla_user {
   void *complex_value_functions_arr;
 
   supla_user_channelgroups *cgroups;
-  supla_amazon_alexa *amazon_alexa;
-  supla_google_home *google_home;
+  supla_amazon_alexa_credentials *amazon_alexa_credentials;
+  supla_google_home_credentials *google_home_credentials;
   int UserID;
   bool connections_allowed;
 
@@ -212,8 +212,8 @@ class supla_user {
   void set_channel_caption(supla_client *sender,
                            TCS_SetChannelCaption *caption);
 
-  supla_amazon_alexa *amazonAlexa(void);
-  supla_google_home *googleHome(void);
+  supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
+  supla_google_home_credentials *googleHomeCredentials(void);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

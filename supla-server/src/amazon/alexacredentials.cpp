@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <amazon/alexa.h>
+#include <amazon/alexacredentials.h>
 #include <stdlib.h>
 #include <string.h>
 #include "database.h"
@@ -24,7 +24,7 @@
 #include "log.h"
 #include "user.h"
 
-supla_amazon_alexa::supla_amazon_alexa(supla_user *user)
+supla_amazon_alexa_credentials::supla_amazon_alexa_credentials(supla_user *user)
     : supla_webhook_credentials_base(user) {
   this->refresh_token = NULL;
   this->region = NULL;
@@ -34,9 +34,9 @@ supla_amazon_alexa::supla_amazon_alexa(supla_user *user)
   set(NULL, NULL, 0, NULL);
 }
 
-supla_amazon_alexa::~supla_amazon_alexa() { strings_free(); }
+supla_amazon_alexa_credentials::~supla_amazon_alexa_credentials() { strings_free(); }
 
-void supla_amazon_alexa::strings_free(void) {
+void supla_amazon_alexa_credentials::strings_free(void) {
   if (this->refresh_token) {
     free(this->refresh_token);
     this->refresh_token = NULL;
@@ -48,9 +48,9 @@ void supla_amazon_alexa::strings_free(void) {
   }
 }
 
-int supla_amazon_alexa::get_token_maxsize(void) { return ALEXA_TOKEN_MAXSIZE; }
+int supla_amazon_alexa_credentials::get_token_maxsize(void) { return ALEXA_TOKEN_MAXSIZE; }
 
-void supla_amazon_alexa::set(const char *access_token,
+void supla_amazon_alexa_credentials::set(const char *access_token,
                              const char *refresh_token, int expires_in,
                              const char *region) {
   data_lock();
@@ -82,7 +82,7 @@ void supla_amazon_alexa::set(const char *access_token,
   data_unlock();
 }
 
-void supla_amazon_alexa::load() {
+void supla_amazon_alexa_credentials::load() {
   database *db = new database();
 
   if (!db->connect() || !db->amazon_alexa_load_token(this)) {
@@ -92,7 +92,7 @@ void supla_amazon_alexa::load() {
   delete db;
 }
 
-void supla_amazon_alexa::remove() {
+void supla_amazon_alexa_credentials::remove() {
   set(NULL, NULL, 0, NULL);
   database *db = new database();
 
@@ -103,9 +103,9 @@ void supla_amazon_alexa::remove() {
   delete db;
 }
 
-void supla_amazon_alexa::on_credentials_changed() { load(); }
+void supla_amazon_alexa_credentials::on_credentials_changed() { load(); }
 
-void supla_amazon_alexa::update(const char *access_token,
+void supla_amazon_alexa_credentials::update(const char *access_token,
                                 const char *refresh_token, int expires_in) {
   char *region = getRegion();
 
@@ -125,7 +125,7 @@ void supla_amazon_alexa::update(const char *access_token,
   delete db;
 }
 
-bool supla_amazon_alexa::isRefreshTokenExists(void) {
+bool supla_amazon_alexa_credentials::isRefreshTokenExists(void) {
   bool result = false;
 
   data_lock();
@@ -135,7 +135,7 @@ bool supla_amazon_alexa::isRefreshTokenExists(void) {
   return result;
 }
 
-int supla_amazon_alexa::expiresIn(void) {
+int supla_amazon_alexa_credentials::expiresIn(void) {
   int result = 0;
 
   data_lock();
@@ -149,7 +149,7 @@ int supla_amazon_alexa::expiresIn(void) {
   return result;
 }
 
-char *supla_amazon_alexa::getRefreshToken(void) {
+char *supla_amazon_alexa_credentials::getRefreshToken(void) {
   char *result = NULL;
 
   data_lock();
@@ -163,7 +163,7 @@ char *supla_amazon_alexa::getRefreshToken(void) {
   return result;
 }
 
-char *supla_amazon_alexa::getRegion(void) {
+char *supla_amazon_alexa_credentials::getRegion(void) {
   char *result = NULL;
 
   data_lock();

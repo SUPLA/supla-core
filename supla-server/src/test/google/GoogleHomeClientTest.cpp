@@ -28,8 +28,8 @@ class GoogleHomeClientTest : public STTrivialHttp {
 
  public:
   void SetUp() override {
-    getUser()->googleHome()->set("ACCESS-TOKEN");
-    client = new supla_google_home_client(getUser()->googleHome());
+    getUser()->googleHomeCredentials()->set("ACCESS-TOKEN");
+    client = new supla_google_home_client(getUser()->googleHomeCredentials());
   }
 
   void TearDown() override {
