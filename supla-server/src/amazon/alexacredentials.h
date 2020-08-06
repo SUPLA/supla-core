@@ -31,12 +31,11 @@ class supla_amazon_alexa_credentials : public supla_webhook_basic_credentials {
   char *region;
   void region_free(void);
 
- protected:
-  virtual int get_token_maxsize(void);
-
  public:
   explicit supla_amazon_alexa_credentials(supla_user *user);
   virtual ~supla_amazon_alexa_credentials();
+  virtual int get_token_maxsize(void);
+  virtual int get_region_maxsize(void);
 
   virtual void load();
   virtual void remove();

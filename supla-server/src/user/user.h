@@ -27,6 +27,7 @@
 #include "proto.h"
 #include "google/googlehomecredentials.h"
 #include "amazon/alexacredentials.h"
+#include "webhook/statewebhookcredentials.h"
 
 class supla_device;
 class supla_client;
@@ -59,6 +60,7 @@ class supla_user {
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa_credentials *amazon_alexa_credentials;
   supla_google_home_credentials *google_home_credentials;
+  supla_state_webhook_credentials *webhook;
   int UserID;
   bool connections_allowed;
 

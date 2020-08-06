@@ -16,24 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
-
-#define GH_TOKEN_MAXSIZE 255
+#ifndef WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
+#define WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
 
 #include "webhook/webhookbasiccredentials.h"
 
-class supla_google_home_credentials : public supla_webhook_basic_credentials {
- protected:
-  int sync_40x_counter;
+#define WEBHOOK_TOKEN_MAXSIZE 255
+#define WEBHOOK_URL_MAXSIZE 255
+#define WEBHOOK_FUNCTIONS_IDS_MAXSIZE 255
+
+class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
+ private:
+  char *url;
+  void url_free();
 
  public:
-  explicit supla_google_home_credentials(supla_user *user);
+  supla_state_webhook_credentials(supla_user *user);
+  ~supla_state_webhook_credentials(void);
   virtual int get_token_maxsize(void);
+  void set(const char *access_token, const char *refresh_token, int expires_in,
+           const char *url, const char *functions_ids);
   void load();
-  void on_credentials_changed();
-  void on_sync_40x_error();
-  void on_reportstate_404_error();
 };
 
-#endif /* GOOGLEHOME_H_ */
+#endif /* WEBHOOK_STATEWEBHOOKCREDENTIALS_H_ */

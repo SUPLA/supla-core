@@ -45,6 +45,10 @@ int supla_amazon_alexa_credentials::get_token_maxsize(void) {
   return ALEXA_TOKEN_MAXSIZE;
 }
 
+int supla_amazon_alexa_credentials::get_region_maxsize(void) {
+  return ALEXA_REGION_MAXSIZE;
+}
+
 void supla_amazon_alexa_credentials::set(const char *access_token,
                                          const char *refresh_token,
                                          int expires_in, const char *region) {

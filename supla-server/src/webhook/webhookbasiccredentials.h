@@ -38,13 +38,10 @@ class supla_webhook_basic_credentials {
   void access_token_free(void);
   void refresh_token_free(void);
 
- protected:
-  virtual int get_token_maxsize(void) = 0;
-
  public:
   explicit supla_webhook_basic_credentials(supla_user *user);
   virtual ~supla_webhook_basic_credentials();
-
+  virtual int get_token_maxsize(void) = 0;
   int getUserID();
   supla_user *getUser();
 

@@ -1911,7 +1911,8 @@ bool database::superuser_authorization(
   return result;
 }
 
-bool database::amazon_alexa_load_credentials(supla_amazon_alexa_credentials *alexa) {
+bool database::amazon_alexa_load_credentials(
+    supla_amazon_alexa_credentials *alexa) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
@@ -2085,6 +2086,94 @@ bool database::google_home_load_credentials(
         buffer_token[token_is_null ? 0 : token_size] = 0;
 
         google_home->set(buffer_token);
+        result = true;
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+bool database::state_webhook_load_credentials(
+    supla_state_webhook_credentials *webhook) {
+  bool result = false;
+  char sql[] =
+      "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
+      "UTC_TIMESTAMP(), expires_at) `expires_in`, `url`, `functions_ids` "
+      "FROM "
+      "`supla_state_webhooks` WHERE user_id = ? AND enabled = 1 AND AND "
+      "LENGTH(access_token) > 0";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  int UserID = webhook->getUserID();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[5];
+    memset(rbind, 0, sizeof(rbind));
+
+    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
+    buffer_token[0] = 0;
+    unsigned long token_size = 0;
+
+    char buffer_refresh_token[ALEXA_TOKEN_MAXSIZE + 1];
+    buffer_refresh_token[0] = 0;
+    unsigned long refresh_token_size = 0;
+
+    char buffer_url[WEBHOOK_URL_MAXSIZE + 1];
+    buffer_url[0] = 0;
+    unsigned long url_size = 0;
+
+    char buffer_functions[WEBHOOK_FUNCTIONS_IDS_MAXSIZE + 1];
+    buffer_functions[0] = 0;
+    unsigned long functions_size = 0;
+
+    int expires_in = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = buffer_token;
+    rbind[0].buffer_length = WEBHOOK_TOKEN_MAXSIZE;
+    rbind[0].length = &token_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = buffer_refresh_token;
+    rbind[1].buffer_length = WEBHOOK_TOKEN_MAXSIZE;
+    rbind[1].length = &refresh_token_size;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&expires_in;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = buffer_url;
+    rbind[3].buffer_length = WEBHOOK_URL_MAXSIZE;
+    rbind[3].length = &url_size;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = buffer_functions;
+    rbind[3].buffer_length = WEBHOOK_FUNCTIONS_IDS_MAXSIZE;
+    rbind[3].length = &functions_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        buffer_token[token_size] = 0;
+        buffer_refresh_token[refresh_token_size] = 0;
+        buffer_url[url_size] = 0;
+        buffer_functions[functions_size] = 0;
+
+        webhook->set(buffer_token, buffer_refresh_token, expires_in, buffer_url,
+                     buffer_functions);
         result = true;
       }
     }
