@@ -28,11 +28,9 @@ class supla_user;
 
 class supla_amazon_alexa_credentials : public supla_webhook_basic_credentials {
  private:
-  char *refresh_token;
-  char *region;
-  struct timeval expires_at;
 
-  void strings_free(void);
+  char *region;
+  void region_free(void);
 
  protected:
   virtual int get_token_maxsize(void);
@@ -49,9 +47,6 @@ class supla_amazon_alexa_credentials : public supla_webhook_basic_credentials {
   void set(const char *access_token, const char *refresh_token, int expires_in,
            const char *region);
 
-  bool isRefreshTokenExists(void);
-  int expiresIn(void);
-  char *getRefreshToken(void);
   char *getRegion(void);
 };
 

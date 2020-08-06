@@ -28,11 +28,15 @@ class supla_webhook_basic_credentials {
   supla_user *user;
 
   char *access_token;
+  char *refresh_token;
+
+  struct timeval expires_at;
   struct timeval set_at;
 
   void *lck1;
   void *lck2;
-  void token_free(void);
+  void access_token_free(void);
+  void refresh_token_free(void);
 
  protected:
   virtual int get_token_maxsize(void) = 0;
@@ -45,10 +49,16 @@ class supla_webhook_basic_credentials {
   supla_user *getUser();
 
   void set(const char *access_token);
+  void set(const char *access_token, const char *refresh_token, int expires_in);
 
   bool isAccessTokenExists(void);
+  bool isRefreshTokenExists(void);
+
   char *getAccessToken(void);
+  char *getRefreshToken(void);
   struct timeval getSetTime(void);
+
+  int expiresIn(void);
 
   void data_lock(void);
   void data_unlock(void);

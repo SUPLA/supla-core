@@ -26,58 +26,38 @@
 
 supla_amazon_alexa_credentials::supla_amazon_alexa_credentials(supla_user *user)
     : supla_webhook_basic_credentials(user) {
-  this->refresh_token = NULL;
   this->region = NULL;
-  this->expires_at.tv_sec = 0;
-  this->expires_at.tv_usec = 0;
-
   set(NULL, NULL, 0, NULL);
 }
 
-supla_amazon_alexa_credentials::~supla_amazon_alexa_credentials() { strings_free(); }
+supla_amazon_alexa_credentials::~supla_amazon_alexa_credentials() {
+  region_free();
+}
 
-void supla_amazon_alexa_credentials::strings_free(void) {
-  if (this->refresh_token) {
-    free(this->refresh_token);
-    this->refresh_token = NULL;
-  }
-
+void supla_amazon_alexa_credentials::region_free(void) {
   if (this->region) {
     free(this->region);
     this->region = NULL;
   }
 }
 
-int supla_amazon_alexa_credentials::get_token_maxsize(void) { return ALEXA_TOKEN_MAXSIZE; }
+int supla_amazon_alexa_credentials::get_token_maxsize(void) {
+  return ALEXA_TOKEN_MAXSIZE;
+}
 
 void supla_amazon_alexa_credentials::set(const char *access_token,
-                             const char *refresh_token, int expires_in,
-                             const char *region) {
+                                         const char *refresh_token,
+                                         int expires_in, const char *region) {
   data_lock();
-  strings_free();
+  region_free();
 
-  supla_webhook_basic_credentials::set(access_token);
-
-  int refresh_token_len =
-      refresh_token ? strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE) : 0;
   int region_len = region ? strnlen(region, ALEXA_REGION_MAXSIZE) : 0;
-
-  if (refresh_token_len > 0) {
-    this->refresh_token = strndup(refresh_token, refresh_token_len);
-  }
 
   if (region_len > 0) {
     this->region = strndup(region, region_len);
   }
 
-  if (expires_in == 0) {
-    expires_in = 3600 * 24 * 365 * 10;
-  }
-
-  struct timeval set_at = getSetTime();
-
-  this->expires_at.tv_sec = set_at.tv_sec + expires_in;
-  this->expires_at.tv_usec = set_at.tv_usec;
+  supla_webhook_basic_credentials::set(access_token, refresh_token, expires_in);
 
   data_unlock();
 }
@@ -106,7 +86,8 @@ void supla_amazon_alexa_credentials::remove() {
 void supla_amazon_alexa_credentials::on_credentials_changed() { load(); }
 
 void supla_amazon_alexa_credentials::update(const char *access_token,
-                                const char *refresh_token, int expires_in) {
+                                            const char *refresh_token,
+                                            int expires_in) {
   char *region = getRegion();
 
   set(access_token, refresh_token, expires_in, region);
@@ -123,44 +104,6 @@ void supla_amazon_alexa_credentials::update(const char *access_token,
   }
 
   delete db;
-}
-
-bool supla_amazon_alexa_credentials::isRefreshTokenExists(void) {
-  bool result = false;
-
-  data_lock();
-  result = refresh_token != NULL;
-  data_unlock();
-
-  return result;
-}
-
-int supla_amazon_alexa_credentials::expiresIn(void) {
-  int result = 0;
-
-  data_lock();
-
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  result = expires_at.tv_sec - now.tv_sec;
-
-  data_unlock();
-
-  return result;
-}
-
-char *supla_amazon_alexa_credentials::getRefreshToken(void) {
-  char *result = NULL;
-
-  data_lock();
-
-  if (refresh_token != NULL) {
-    result = strndup(refresh_token, ALEXA_TOKEN_MAXSIZE);
-  }
-
-  data_unlock();
-
-  return result;
 }
 
 char *supla_amazon_alexa_credentials::getRegion(void) {
