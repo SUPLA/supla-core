@@ -31,7 +31,6 @@ CPP_SRCS += \
 ../src/objcontainer.cpp \
 ../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
-../src/voiceassistant.cpp \
 ../src/voiceassistantclient.cpp 
 
 OBJS += \
@@ -60,7 +59,6 @@ OBJS += \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
 ./src/tools.o \
-./src/voiceassistant.o \
 ./src/voiceassistantclient.o 
 
 C_DEPS += \
@@ -91,7 +89,6 @@ CPP_DEPS += \
 ./src/objcontainer.d \
 ./src/objcontaineritem.d \
 ./src/serverconnection.d \
-./src/voiceassistant.d \
 ./src/voiceassistantclient.d 
 
 

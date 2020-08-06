@@ -23,7 +23,7 @@
 #include "user/user.h"
 
 supla_google_home::supla_google_home(supla_user *user)
-    : supla_voice_assistant(user) {
+    : supla_webhook_credentials_base(user) {
   sync_40x_counter = 0;
 }
 

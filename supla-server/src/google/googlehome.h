@@ -21,9 +21,9 @@
 
 #define GH_TOKEN_MAXSIZE 255
 
-#include <voiceassistant.h>
+#include <webhook/webhookcredentialsbase.h>
 
-class supla_google_home : public supla_voice_assistant {
+class supla_google_home : public supla_webhook_credentials_base {
  protected:
   virtual int get_token_maxsize(void);
   int sync_40x_counter;

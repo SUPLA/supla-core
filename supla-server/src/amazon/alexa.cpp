@@ -25,7 +25,7 @@
 #include "user.h"
 
 supla_amazon_alexa::supla_amazon_alexa(supla_user *user)
-    : supla_voice_assistant(user) {
+    : supla_webhook_credentials_base(user) {
   this->refresh_token = NULL;
   this->region = NULL;
   this->expires_at.tv_sec = 0;
@@ -56,7 +56,7 @@ void supla_amazon_alexa::set(const char *access_token,
   data_lock();
   strings_free();
 
-  supla_voice_assistant::set(access_token);
+  supla_webhook_credentials_base::set(access_token);
 
   int refresh_token_len =
       refresh_token ? strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE) : 0;

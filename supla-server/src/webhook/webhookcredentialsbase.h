@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOICEASSISTANT_H_
-#define VOICEASSISTANT_H_
+#ifndef WEBHOOK_WEBHOOKCREDENTIALSBASE_H_
+#define WEBHOOK_WEBHOOKCREDENTIALSBASE_H_
 
 #include <sys/time.h>
 
 class supla_user;
 
-class supla_voice_assistant {
+class supla_webhook_credentials_base {
  private:
   supla_user *user;
 
@@ -38,8 +38,8 @@ class supla_voice_assistant {
   virtual int get_token_maxsize(void) = 0;
 
  public:
-  explicit supla_voice_assistant(supla_user *user);
-  virtual ~supla_voice_assistant();
+  explicit supla_webhook_credentials_base(supla_user *user);
+  virtual ~supla_webhook_credentials_base();
 
   int getUserID();
   supla_user *getUser();
@@ -56,4 +56,4 @@ class supla_voice_assistant {
   void refresh_unlock(void);
 };
 
-#endif /* VOICEASSISTANT_H_ */
+#endif /* WEBHOOK_WEBHOOKCREDENTIALSBASE_H_ */
