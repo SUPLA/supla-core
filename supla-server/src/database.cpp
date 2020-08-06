@@ -2064,14 +2064,14 @@ bool database::google_home_load_credentials(
     MYSQL_BIND rbind[1];
     memset(rbind, 0, sizeof(rbind));
 
-    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
+    char buffer_token[GH_TOKEN_MAXSIZE + 1];
     buffer_token[0] = 0;
     unsigned long token_size = 0;
     my_bool token_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = buffer_token;
-    rbind[0].buffer_length = ALEXA_TOKEN_MAXSIZE;
+    rbind[0].buffer_length = GH_TOKEN_MAXSIZE;
     rbind[0].length = &token_size;
     rbind[0].is_null = &token_is_null;
 
