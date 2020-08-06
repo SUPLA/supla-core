@@ -21,9 +21,9 @@
 
 #define GH_TOKEN_MAXSIZE 255
 
-#include <webhook/webhookcredentialsbase.h>
+#include <webhook/webhookbasiccredentials.h>
 
-class supla_google_home_credentials : public supla_webhook_credentials_base {
+class supla_google_home_credentials : public supla_webhook_basic_credentials {
  protected:
   virtual int get_token_maxsize(void);
   int sync_40x_counter;

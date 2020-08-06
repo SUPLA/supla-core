@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef WEBHOOK_WEBHOOKCREDENTIALSBASE_H_
-#define WEBHOOK_WEBHOOKCREDENTIALSBASE_H_
+#ifndef WEBHOOK_WEBHOOKBASICCREDENTIALS_H_
+#define WEBHOOK_WEBHOOKBASICCREDENTIALS_H_
 
 #include <sys/time.h>
 
 class supla_user;
 
-class supla_webhook_credentials_base {
+class supla_webhook_basic_credentials {
  private:
   supla_user *user;
 
@@ -38,8 +38,8 @@ class supla_webhook_credentials_base {
   virtual int get_token_maxsize(void) = 0;
 
  public:
-  explicit supla_webhook_credentials_base(supla_user *user);
-  virtual ~supla_webhook_credentials_base();
+  explicit supla_webhook_basic_credentials(supla_user *user);
+  virtual ~supla_webhook_basic_credentials();
 
   int getUserID();
   supla_user *getUser();
@@ -56,4 +56,4 @@ class supla_webhook_credentials_base {
   void refresh_unlock(void);
 };
 
-#endif /* WEBHOOK_WEBHOOKCREDENTIALSBASE_H_ */
+#endif /* WEBHOOK_WEBHOOKBASICCREDENTIALS_H_ */

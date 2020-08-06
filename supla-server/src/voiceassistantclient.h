@@ -19,7 +19,8 @@
 #ifndef VOICEASSISTANTCLIENT_H_
 #define VOICEASSISTANTCLIENT_H_
 
-class supla_webhook_credentials_base;
+#include "webhook/webhookbasiccredentials.h"
+
 class supla_trivial_https;
 
 class supla_voice_assistant_client {
@@ -27,16 +28,16 @@ class supla_voice_assistant_client {
   void httpsInit();
   void *lck;
   supla_trivial_https *https;
-  supla_webhook_credentials_base *voice_assistant;
+  supla_webhook_basic_credentials *voice_assistant_credentials;
 
  protected:
   void httpsFree();
   supla_trivial_https *getHttps(void);
-  supla_webhook_credentials_base *getVoiceAssistant(void);
+  supla_webhook_basic_credentials *getVoiceAssistant(void);
   char *getEndpointId(int channelId, short subChannel);
 
  public:
-  explicit supla_voice_assistant_client(supla_webhook_credentials_base *voice_assistant);
+  explicit supla_voice_assistant_client(supla_webhook_basic_credentials *voice_assistant);
   virtual ~supla_voice_assistant_client();
   void terminate(void);
 };

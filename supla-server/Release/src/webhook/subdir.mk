@@ -4,13 +4,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/webhook/webhookcredentialsbase.cpp 
+../src/webhook/webhookbasiccredentials.cpp 
 
 OBJS += \
-./src/webhook/webhookcredentialsbase.o 
+./src/webhook/webhookbasiccredentials.o 
 
 CPP_DEPS += \
-./src/webhook/webhookcredentialsbase.d 
+./src/webhook/webhookbasiccredentials.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

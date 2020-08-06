@@ -18,13 +18,13 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <webhook/webhookcredentialsbase.h>
+#include <webhook/webhookbasiccredentials.h>
 #include "database.h"
 #include "lck.h"
 #include "log.h"
 #include "user.h"
 
-supla_webhook_credentials_base::supla_webhook_credentials_base(supla_user *user) {
+supla_webhook_basic_credentials::supla_webhook_basic_credentials(supla_user *user) {
   lck1 = lck_init();
   lck2 = lck_init();
 
@@ -36,14 +36,14 @@ supla_webhook_credentials_base::supla_webhook_credentials_base(supla_user *user)
   set(NULL);
 }
 
-void supla_webhook_credentials_base::token_free(void) {
+void supla_webhook_basic_credentials::token_free(void) {
   if (this->access_token) {
     free(this->access_token);
     this->access_token = NULL;
   }
 }
 
-supla_webhook_credentials_base::~supla_webhook_credentials_base() {
+supla_webhook_basic_credentials::~supla_webhook_basic_credentials() {
   if (lck1) {
     lck_free(lck1);
     lck1 = NULL;
@@ -57,19 +57,19 @@ supla_webhook_credentials_base::~supla_webhook_credentials_base() {
   token_free();
 }
 
-int supla_webhook_credentials_base::getUserID() { return user->getUserID(); }
+int supla_webhook_basic_credentials::getUserID() { return user->getUserID(); }
 
-supla_user *supla_webhook_credentials_base::getUser() { return user; }
+supla_user *supla_webhook_basic_credentials::getUser() { return user; }
 
-void supla_webhook_credentials_base::data_lock(void) { lck_lock(lck1); }
+void supla_webhook_basic_credentials::data_lock(void) { lck_lock(lck1); }
 
-void supla_webhook_credentials_base::data_unlock(void) { lck_unlock(lck1); }
+void supla_webhook_basic_credentials::data_unlock(void) { lck_unlock(lck1); }
 
-void supla_webhook_credentials_base::refresh_lock(void) { lck_lock(lck2); }
+void supla_webhook_basic_credentials::refresh_lock(void) { lck_lock(lck2); }
 
-void supla_webhook_credentials_base::refresh_unlock(void) { lck_unlock(lck2); }
+void supla_webhook_basic_credentials::refresh_unlock(void) { lck_unlock(lck2); }
 
-bool supla_webhook_credentials_base::isAccessTokenExists(void) {
+bool supla_webhook_basic_credentials::isAccessTokenExists(void) {
   bool result = false;
 
   data_lock();
@@ -79,7 +79,7 @@ bool supla_webhook_credentials_base::isAccessTokenExists(void) {
   return result;
 }
 
-char *supla_webhook_credentials_base::getAccessToken(void) {
+char *supla_webhook_basic_credentials::getAccessToken(void) {
   char *result = NULL;
 
   data_lock();
@@ -93,7 +93,7 @@ char *supla_webhook_credentials_base::getAccessToken(void) {
   return result;
 }
 
-struct timeval supla_webhook_credentials_base::getSetTime(void) {
+struct timeval supla_webhook_basic_credentials::getSetTime(void) {
   struct timeval result;
   result.tv_sec = 0;
   result.tv_usec = 0;
@@ -105,7 +105,7 @@ struct timeval supla_webhook_credentials_base::getSetTime(void) {
   return result;
 }
 
-void supla_webhook_credentials_base::set(const char *access_token) {
+void supla_webhook_basic_credentials::set(const char *access_token) {
   data_lock();
   token_free();
 

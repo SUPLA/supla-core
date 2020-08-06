@@ -19,16 +19,16 @@
 #include "voiceassistantclient.h"
 #include <stdlib.h>
 #include <string.h>
-#include <webhook/webhookcredentialsbase.h>
+#include <webhook/webhookbasiccredentials.h>
 #include "http/trivialhttps.h"
 #include "lck.h"
 #include "user/user.h"
 
 supla_voice_assistant_client::supla_voice_assistant_client(
-    supla_webhook_credentials_base *voice_assistant) {
+    supla_webhook_basic_credentials *voice_assistant) {
   this->lck = lck_init();
   this->https = NULL;
-  this->voice_assistant = voice_assistant;
+  this->voice_assistant_credentials = voice_assistant;
 }
 
 void supla_voice_assistant_client::httpsInit(void) {
@@ -66,8 +66,8 @@ supla_trivial_https *supla_voice_assistant_client::getHttps(void) {
   return result;
 }
 
-supla_webhook_credentials_base *supla_voice_assistant_client::getVoiceAssistant(void) {
-  return voice_assistant;
+supla_webhook_basic_credentials *supla_voice_assistant_client::getVoiceAssistant(void) {
+  return voice_assistant_credentials;
 }
 
 supla_voice_assistant_client::~supla_voice_assistant_client() {

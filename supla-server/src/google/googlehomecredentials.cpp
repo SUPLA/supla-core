@@ -23,7 +23,7 @@
 #include "user/user.h"
 
 supla_google_home_credentials::supla_google_home_credentials(supla_user *user)
-    : supla_webhook_credentials_base(user) {
+    : supla_webhook_basic_credentials(user) {
   sync_40x_counter = 0;
 }
 

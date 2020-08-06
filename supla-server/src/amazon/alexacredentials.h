@@ -22,11 +22,11 @@
 #define ALEXA_TOKEN_MAXSIZE 1024
 #define ALEXA_REGION_MAXSIZE 5
 
-#include <webhook/webhookcredentialsbase.h>
+#include <webhook/webhookbasiccredentials.h>
 
 class supla_user;
 
-class supla_amazon_alexa_credentials : public supla_webhook_credentials_base {
+class supla_amazon_alexa_credentials : public supla_webhook_basic_credentials {
  private:
   char *refresh_token;
   char *region;
