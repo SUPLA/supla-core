@@ -66,6 +66,7 @@ supla_webhook_basic_credentials::~supla_webhook_basic_credentials() {
   }
 
   access_token_free();
+  refresh_token_free();
 }
 
 int supla_webhook_basic_credentials::getUserID() { return user->getUserID(); }
