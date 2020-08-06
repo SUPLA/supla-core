@@ -27,7 +27,9 @@ supla_google_home_credentials::supla_google_home_credentials(supla_user *user)
   sync_40x_counter = 0;
 }
 
-int supla_google_home_credentials::get_token_maxsize(void) { return GH_TOKEN_MAXSIZE; }
+int supla_google_home_credentials::get_token_maxsize(void) {
+  return GH_TOKEN_MAXSIZE;
+}
 
 void supla_google_home_credentials::load() {
   database *db = new database();

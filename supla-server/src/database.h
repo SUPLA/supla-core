@@ -156,8 +156,9 @@ class database : public dbcommon {
 
   bool amazon_alexa_load_token(supla_amazon_alexa_credentials *alexa);
   void amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa);
-  void amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa, const char *token,
-                                 const char *refresh_token, int expires_in);
+  void amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
+                                 const char *token, const char *refresh_token,
+                                 int expires_in);
 
   bool google_home_load_token(supla_google_home_credentials *google_home);
 

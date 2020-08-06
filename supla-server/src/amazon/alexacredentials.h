@@ -28,7 +28,6 @@ class supla_user;
 
 class supla_amazon_alexa_credentials : public supla_webhook_basic_credentials {
  private:
-
   char *region;
   void region_free(void);
 

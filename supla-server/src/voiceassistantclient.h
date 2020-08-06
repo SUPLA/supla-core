@@ -37,7 +37,8 @@ class supla_voice_assistant_client {
   char *getEndpointId(int channelId, short subChannel);
 
  public:
-  explicit supla_voice_assistant_client(supla_webhook_basic_credentials *voice_assistant);
+  explicit supla_voice_assistant_client(
+      supla_webhook_basic_credentials *voice_assistant);
   virtual ~supla_voice_assistant_client();
   void terminate(void);
 };

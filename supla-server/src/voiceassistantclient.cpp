@@ -66,7 +66,8 @@ supla_trivial_https *supla_voice_assistant_client::getHttps(void) {
   return result;
 }
 
-supla_webhook_basic_credentials *supla_voice_assistant_client::getVoiceAssistant(void) {
+supla_webhook_basic_credentials *
+supla_voice_assistant_client::getVoiceAssistant(void) {
   return voice_assistant_credentials;
 }
 

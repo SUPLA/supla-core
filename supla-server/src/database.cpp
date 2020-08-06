@@ -1994,7 +1994,8 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa_credentials *alexa) {
   return result;
 }
 
-void database::amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa) {
+void database::amazon_alexa_remove_token(
+    supla_amazon_alexa_credentials *alexa) {
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
 
@@ -2042,7 +2043,8 @@ void database::amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-bool database::google_home_load_token(supla_google_home_credentials *google_home) {
+bool database::google_home_load_token(
+    supla_google_home_credentials *google_home) {
   bool result = false;
   char sql[] =
       "SELECT `access_token` FROM `supla_google_home` WHERE user_id = ? AND "

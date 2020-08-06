@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "user.h"
 #include <amazon/alexacredentials.h>
 #include <google/googlehomecredentials.h>
-#include "user.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -1448,6 +1448,10 @@ void supla_user::set_channel_caption(supla_client *sender,
   sender->set_channel_caption_result(&result);
 }
 
-supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) { return amazon_alexa_credentials; }
+supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) {
+  return amazon_alexa_credentials;
+}
 
-supla_google_home_credentials *supla_user::googleHomeCredentials(void) { return google_home_credentials; }
+supla_google_home_credentials *supla_user::googleHomeCredentials(void) {
+  return google_home_credentials;
+}

@@ -63,7 +63,8 @@ void supla_google_home_request::terminate(void *sthread) {
 bool supla_google_home_request::queueUp(void) { return true; }
 
 supla_google_home_client *supla_google_home_request::getClient(void) {
-  supla_google_home_credentials *google_home_credentials = getUser()->googleHomeCredentials();
+  supla_google_home_credentials *google_home_credentials =
+      getUser()->googleHomeCredentials();
   assert(google_home_credentials != NULL);
 
   supla_google_home_client *result = NULL;
@@ -79,8 +80,10 @@ supla_google_home_client *supla_google_home_request::getClient(void) {
 
 bool supla_google_home_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
-  supla_google_home_credentials *google_home_credentials = getUser()->googleHomeCredentials();
-  return google_home_credentials && google_home_credentials->isAccessTokenExists();
+  supla_google_home_credentials *google_home_credentials =
+      getUser()->googleHomeCredentials();
+  return google_home_credentials &&
+         google_home_credentials->isAccessTokenExists();
 }
 
 bool supla_google_home_request::isDeviceIdEqual(int DeviceId) { return true; }

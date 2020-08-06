@@ -32,7 +32,8 @@ class supla_google_home_client : public supla_voice_assistant_client {
   bool post(void *json_data, int *resultCode);
 
  public:
-  explicit supla_google_home_client(supla_google_home_credentials *google_home_credentils);
+  explicit supla_google_home_client(
+      supla_google_home_credentials *google_home_credentils);
   virtual ~supla_google_home_client(void);
   void clearStateReport(void);
   bool addOnOffState(int channelId, bool on, bool online);
