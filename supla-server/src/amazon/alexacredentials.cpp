@@ -65,7 +65,7 @@ void supla_amazon_alexa_credentials::set(const char *access_token,
 void supla_amazon_alexa_credentials::load() {
   database *db = new database();
 
-  if (!db->connect() || !db->amazon_alexa_load_token(this)) {
+  if (!db->connect() || !db->amazon_alexa_load_credentials(this)) {
     set(NULL, NULL, 0, NULL);
   }
 

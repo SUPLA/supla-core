@@ -22,7 +22,7 @@
 #define ALEXA_TOKEN_MAXSIZE 1024
 #define ALEXA_REGION_MAXSIZE 5
 
-#include <webhook/webhookbasiccredentials.h>
+#include "webhook/webhookbasiccredentials.h"
 
 class supla_user;
 

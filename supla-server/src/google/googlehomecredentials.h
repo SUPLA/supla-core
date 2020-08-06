@@ -21,7 +21,7 @@
 
 #define GH_TOKEN_MAXSIZE 255
 
-#include <webhook/webhookbasiccredentials.h>
+#include "webhook/webhookbasiccredentials.h"
 
 class supla_google_home_credentials : public supla_webhook_basic_credentials {
  protected:

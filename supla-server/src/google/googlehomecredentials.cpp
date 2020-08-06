@@ -34,7 +34,7 @@ int supla_google_home_credentials::get_token_maxsize(void) {
 void supla_google_home_credentials::load() {
   database *db = new database();
 
-  if (!db->connect() || !db->google_home_load_token(this)) {
+  if (!db->connect() || !db->google_home_load_credentials(this)) {
     set(NULL);
   }
 

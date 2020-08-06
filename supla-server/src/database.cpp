@@ -1911,7 +1911,7 @@ bool database::superuser_authorization(
   return result;
 }
 
-bool database::amazon_alexa_load_token(supla_amazon_alexa_credentials *alexa) {
+bool database::amazon_alexa_load_credentials(supla_amazon_alexa_credentials *alexa) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
@@ -2043,7 +2043,7 @@ void database::amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-bool database::google_home_load_token(
+bool database::google_home_load_credentials(
     supla_google_home_credentials *google_home) {
   bool result = false;
   char sql[] =
