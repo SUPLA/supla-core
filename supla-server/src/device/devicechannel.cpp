@@ -867,7 +867,8 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
               getType() == SUPLA_CHANNELTYPE_AM2301 ||
               getType() == SUPLA_CHANNELTYPE_AM2302 ||
               getType() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
-              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
+              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR ||
+              getType() == SUPLA_CHANNELTYPE_BRIDGE) &&
              (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
