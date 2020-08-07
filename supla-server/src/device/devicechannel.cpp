@@ -476,7 +476,7 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
   this->Hidden = Hidden;
   this->Flags = Flags;
-  this->Offline = Flags & SUPLA_CHANNEL_OFFLINE_DURING_REGISTRATION;
+  this->Offline = Flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extendedValue = NULL;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -867,7 +867,8 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
               getType() == SUPLA_CHANNELTYPE_AM2301 ||
               getType() == SUPLA_CHANNELTYPE_AM2302 ||
               getType() == SUPLA_CHANNELTYPE_HUMIDITYSENSOR ||
-              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR) &&
+              getType() == SUPLA_CHANNELTYPE_HUMIDITYANDTEMPSENSOR ||
+              getType() == SUPLA_CHANNELTYPE_BRIDGE) &&
              (getFunc() == SUPLA_CHANNELFNC_THERMOMETER ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {

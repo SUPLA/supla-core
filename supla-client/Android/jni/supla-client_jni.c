@@ -849,7 +849,7 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
   jclass cls =
       (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
   jmethodID methodID =
-      supla_client_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBBIIBB)V");
+      supla_client_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBBIIBBII)V");
 
   jbyteArray mac = (*env)->NewByteArray(env, 6);
   (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
@@ -859,9 +859,31 @@ jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
       (jint)state->defaultIconField, (jint)state->IPv4, mac,
       (jbyte)state->BatteryLevel, (jbyte)state->BatteryPowered,
       (jbyte)state->WiFiRSSI, (jbyte)state->WiFiSignalStrength,
-      (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeSignalStrength,
+      (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
       (jint)state->Uptime, (jint)state->ConnectionUptime,
-      (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause);
+      (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
+      (jint)state->LightSourceLifespan,
+      state->Fields & SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME
+          ? (jint)state->LightSourceOperatingTime
+          : (jshort)state->LightSourceLifespanLeft);
+}
+
+jobject supla_android_client_timerstate_to_jobject(
+    TAndroidSuplaClient *asc, JNIEnv *env, TTimerState_ExtendedValue *state) {
+  jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaTimerState");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(J[BILjava/lang/String;)V");
+
+  supla_client_set_str(state->SenderName, &state->SenderNameSize,
+                       SUPLA_SENDER_NAME_MAXSIZE);
+
+  jbyteArray arr = (*env)->NewByteArray(env, SUPLA_CHANNELVALUE_SIZE);
+  (*env)->SetByteArrayRegion(env, arr, 0, SUPLA_CHANNELVALUE_SIZE,
+                             (const jbyte *)state->TargetValue);
+
+  return (*env)->NewObject(env, cls, methodID, (jlong)state->RemainingTimeTs,
+                           arr, state->SenderID,
+                           new_string_utf(env, state->SenderName));
 }
 
 jobject supla_android_client_channelextendedvalue_to_jobject(
@@ -880,6 +902,9 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
   fid = supla_client_GetFieldID(env, cval, "Type", "I");
   (*env)->SetIntField(env, val, fid, channel_extendedvalue->type);
+
+  TChannelState_ExtendedValue *channel_state = NULL;
+  TTimerState_ExtendedValue *timer_state = NULL;
 
   if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 ||
       channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
@@ -934,14 +959,27 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
   } else if (channel_extendedvalue->type == EV_TYPE_CHANNEL_STATE_V1 &&
              channel_extendedvalue->size ==
                  sizeof(TChannelState_ExtendedValue)) {
-    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
-                                  "Lorg/supla/android/lib/SuplaChannelState;");
+    channel_state = (TChannelState_ExtendedValue *)channel_extendedvalue->value;
 
-    // TChannelState_ExtendedValue is equal to TDSC_ChannelState
-    jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
-        asc, env, (TDSC_ChannelState *)channel_extendedvalue->value);
+  } else if (channel_extendedvalue->type == EV_TYPE_TIMER_STATE_V1 &&
+             channel_extendedvalue->size <= sizeof(TTimerState_ExtendedValue) &&
+             channel_extendedvalue->size >= sizeof(TTimerState_ExtendedValue) -
+                                                SUPLA_SENDER_NAME_MAXSIZE) {
+    timer_state = (TTimerState_ExtendedValue *)channel_extendedvalue->value;
 
-    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+  } else if (channel_extendedvalue->type ==
+                 EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 &&
+             channel_extendedvalue->size <=
+                 sizeof(TChannelAndTimerState_ExtendedValue) &&
+             channel_extendedvalue->size >=
+                 sizeof(TChannelAndTimerState_ExtendedValue) -
+                     SUPLA_SENDER_NAME_MAXSIZE) {
+    channel_state =
+        &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
+             ->Channel;
+    timer_state =
+        &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
+             ->Timer;
 
   } else if (channel_extendedvalue->size > 0) {
     jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
@@ -950,6 +988,27 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
     fid = supla_client_GetFieldID(env, cval, "Value", "[B");
     (*env)->SetObjectField(env, val, fid, arr);
+  }
+
+  if (channel_state) {
+    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
+                                  "Lorg/supla/android/lib/SuplaChannelState;");
+
+    // TChannelState_ExtendedValue is equal to TDSC_ChannelState
+    jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
+        asc, env, (TDSC_ChannelState *)channel_state);
+
+    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+  }
+
+  if (timer_state) {
+    fid = supla_client_GetFieldID(env, cval, "TimerStateValue",
+                                  "Lorg/supla/android/lib/SuplaTimerState;");
+
+    jobject timer_state_obj = supla_android_client_timerstate_to_jobject(
+        asc, env, (TTimerState_ExtendedValue *)timer_state);
+
+    (*env)->SetObjectField(env, val, fid, timer_state_obj);
   }
 
   return val;
@@ -2058,3 +2117,24 @@ Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
 
 JNI_FUNCTION_I(scDeviceCalCfgCancelAllCommands,
                supla_client_device_calcfg_cancel_all_commands);
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSetLightsourceLifespan(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id,
+    jboolean reset_counter, jboolean set_time, jint lifespan) {
+  void *supla_client = supla_client_ptr(_asc);
+  if (supla_client) {
+    if (lifespan < 0) {
+      lifespan = 0;
+    } else if (lifespan > 65535) {
+      lifespan = 65535;
+    }
+
+    return supla_client_set_lightsource_lifespan(
+               supla_client, channel_id, reset_counter, set_time, lifespan)
+               ? JNI_TRUE
+               : JNI_FALSE;
+  }
+
+  return JNI_FALSE;
+}

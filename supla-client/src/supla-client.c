@@ -1242,7 +1242,8 @@ char supla_client_oauth_token_request(void *_suplaclient) {
 }
 
 char supla_client_superuser_authorization_request(void *_suplaclient,
-                                                  char *email, char *password) {
+                                                  const char *email,
+                                                  const char *password) {
   TCS_SuperUserAuthorizationRequest request;
   snprintf(
       request.Email, SUPLA_EMAIL_MAXSIZE, "%s",
@@ -1409,6 +1410,28 @@ char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
 
   request.DataSize = sizeof(unsigned char);
   memcpy(request.Data, &nodeID, request.DataSize);
+
+  return supla_client_device_calcfg_request(_suplaclient, &request);
+}
+
+char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
+                                           unsigned char resetCounter,
+                                           unsigned char setTime,
+                                           unsigned short lightSourceLifespan) {
+  TCS_DeviceCalCfgRequest_B request;
+  memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+  request.Target = SUPLA_TARGET_CHANNEL;
+  request.Id = channelID;
+  request.Command = SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN;
+
+  request.DataSize = sizeof(TCalCfg_LightSourceLifespan);
+
+  TCalCfg_LightSourceLifespan *lsls =
+      (TCalCfg_LightSourceLifespan *)request.Data;
+
+  lsls->ResetCounter = resetCounter;
+  lsls->SetTime = setTime;
+  lsls->LightSourceLifespan = lightSourceLifespan;
 
   return supla_client_device_calcfg_request(_suplaclient, &request);
 }
