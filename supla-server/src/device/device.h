@@ -60,7 +60,8 @@ class supla_device : public cdbase {
 
   bool channel_exists(int ChannelID);
   void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value,
-                                       TDS_SuplaDeviceChannelValue_B *value_b);
+                                       TDS_SuplaDeviceChannelValue_B *value_b,
+                                       TDS_SuplaDeviceChannelValue_C *value_c);
   void on_device_channel_extendedvalue_changed(
       TDS_SuplaDeviceChannelExtendedValue *ev);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);

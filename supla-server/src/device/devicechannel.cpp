@@ -637,7 +637,8 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
   return false;
 }
 
-void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
+void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
+                                    unsigned _supla_int_t validity_time_sec) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
   if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
@@ -1220,7 +1221,7 @@ bool supla_device_channels::get_channel_valve_value(int ChannelID,
 
 void supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended) {
+    bool *converted2extended, unsigned _supla_int_t validity_time_sec) {
   if (ChannelID == 0) return;
 
   if (converted2extended) {
@@ -1232,7 +1233,8 @@ void supla_device_channels::set_channel_value(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-    channel->setValue(value);
+    channel->setValue(value, validity_time_sec);
+
     if (channel->converValueToExtended()) {
       if (converted2extended) {
         *converted2extended = true;
@@ -1360,11 +1362,11 @@ void supla_device_channels::set_channels_value(
   if (schannel_b != NULL) {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_b[a].Number),
-                        schannel_b[a].value, NULL);
+                        schannel_b[a].value, NULL, 0);
   } else {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_c[a].Number),
-                        schannel_c[a].value, NULL);
+                        schannel_c[a].value, NULL, 0);
   }
 }
 
