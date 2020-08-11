@@ -480,7 +480,8 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->Flags = Flags;
   this->Offline = Flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extendedValue = NULL;
-  this->validity_time_sec = 0;
+  this->value_valid_to.tv_sec = 0;
+  this->value_valid_to.tv_usec = 0;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
@@ -520,7 +521,21 @@ bool supla_device_channel::getHidden(void) { return Hidden; }
 
 unsigned int supla_device_channel::getFlags() { return Flags; }
 
-bool supla_device_channel::isOffline(void) { return Offline; }
+bool supla_device_channel::isOffline(void) {
+  if (Offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    return (now.tv_sec * 1000000 + now.tv_usec) -
+                       (value_valid_to.tv_sec * 1000000 +
+                        value_valid_to.tv_usec) >
+                   0
+               ? true
+               : false;
+  }
+
+  return Offline;
+}
 
 void supla_device_channel::setOffline(bool Offline) { this->Offline = Offline; }
 
@@ -680,10 +695,12 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
 
   if ((Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) == 0) {
     validity_time_sec = VALID_UNTIL_ONLINE;
-  }
+    value_valid_to.tv_sec = 0;
+    value_valid_to.tv_usec = 0;
+  } else {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
 
-  if (validity_time_sec != this->validity_time_sec ||
-      validity_time_sec > VALID_UNTIL_ONLINE) {
     database *db = new database();
 
     if (db->connect() == true) {
@@ -692,8 +709,6 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
 
     delete db;
   }
-
-  this->validity_time_sec = validity_time_sec;
 }
 
 void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
