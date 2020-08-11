@@ -436,7 +436,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_ZIGBEE_BRIDGE 0x00800000                // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000    // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_LIGHTSOURCELIFESPAN_SETTABLE \
-  0x02000000  // ver. >= 12
+  0x02000000                                            // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL 0x04000000  // ver. >= 12
 
 #define SUPLA_DEVICE_FLAG_GROUP_CONTROL_EXPECTED 0x0001  // ver. >= 12
 
