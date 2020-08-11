@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "client.h"
+#include "clientobjcontainer.h"
 #include <stdlib.h>  // NOLINT
 #include "../database.h"
 #include "../log.h"
 #include "../safearray.h"
-#include "clientobjcontainer.h"
+#include "client.h"
 
 supla_client_objcontainer::supla_client_objcontainer(supla_client *client)
     : supla_objcontainer() {
@@ -86,6 +86,16 @@ bool supla_client_objcontainer::remote_update(void *srpc) {
   }
 
   return false;
+}
+
+void supla_client_objcontainer::on_value_changed(
+    void *srpc, supla_client_objcontainer_item *obj, int data_type) {
+  if (obj == NULL || srpc == NULL) {
+    return;
+  }
+
+  obj->mark_for_remote_update(data_type);
+  remote_update(srpc);
 }
 
 void supla_client_objcontainer::on_value_changed(void *srpc, int Id,

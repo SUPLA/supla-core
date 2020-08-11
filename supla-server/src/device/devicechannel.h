@@ -169,6 +169,7 @@ class supla_device_channel {
   unsigned int Flags;
 
   char value[8];
+  unsigned _supla_int_t validity_time_sec;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
 
  public:

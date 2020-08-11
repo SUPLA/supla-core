@@ -515,3 +515,17 @@ void supla_client::set_channel_caption_result(
   }
   srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
 }
+
+void supla_client::iterate() { channels->update_expired(getSvrConn()->srpc()); }
+
+unsigned _supla_int64_t supla_client::waitTimeUSec() {
+  unsigned _supla_int64_t time = channels->value_validity_time_usec();
+  if (time > 0 && time < 120000000) {
+    if (time < 1000000) {
+      return 1000000;
+    }
+    return time + 500000;
+  }
+
+  return 120000000;
+}

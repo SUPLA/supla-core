@@ -27,6 +27,8 @@
 #include "srpc.h"
 #include "user/user.h"
 
+#define VALID_UNTIL_ONLINE 0
+
 channel_address::channel_address(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;
   this->ChannelId = ChannelId;
@@ -478,6 +480,7 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->Flags = Flags;
   this->Offline = Flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extendedValue = NULL;
+  this->validity_time_sec = 0;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
@@ -674,6 +677,23 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
                       Type == SUPLA_CHANNELTYPE_SENSORNO)) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
+
+  if ((Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) == 0) {
+    validity_time_sec = VALID_UNTIL_ONLINE;
+  }
+
+  if (validity_time_sec != this->validity_time_sec ||
+      validity_time_sec > VALID_UNTIL_ONLINE) {
+    database *db = new database();
+
+    if (db->connect() == true) {
+      db->update_channel_value(getId(), value, validity_time_sec);
+    }
+
+    delete db;
+  }
+
+  this->validity_time_sec = validity_time_sec;
 }
 
 void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {

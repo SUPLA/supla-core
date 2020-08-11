@@ -2400,3 +2400,81 @@ bool database::channel_is_associated_with_scene(int channel_id) {
   return get_int(channel_id, 0, sql) > 0;
 #endif /*SERVER_VERSION_23*/
 }
+
+void database::update_channel_value(int channel_id,
+                                    const char value[SUPLA_CHANNELVALUE_SIZE],
+                                    unsigned _supla_int_t validity_time_sec) {
+  MYSQL_STMT *stmt;
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  char value_hex[SUPLA_CHANNELVALUE_SIZE * 2 + 1];
+  st_bin2hex(value_hex, value, SUPLA_CHANNELVALUE_SIZE);
+
+  bool result = false;
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&validity_time_sec;
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)value_hex;
+  pbind[1].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
+
+  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?))";
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+}
+
+bool database::get_channel_value(int channel_id,
+                                 char value[SUPLA_CHANNELVALUE_SIZE],
+                                 unsigned _supla_int_t *validity_time_sec) {
+  if (channel_id == 0 || value == NULL || validity_time_sec == NULL) {
+    return NULL;
+  }
+
+  bool result = false;
+  const char sql[] =
+      "SELECT `value`, TIME_TO_SEC(TIMEDIFF(`valid_to`, UTC_TIMESTAMP())) FROM "
+      "`supla_dev_channel_value` WHERE `channel_id` = ? AND `valid_to` >= "
+      "UTC_TIMESTAMP()";
+
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    MYSQL_BIND rbind[2];
+    memset(rbind, 0, sizeof(rbind));
+
+    rbind[0].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[0].buffer = value;
+    rbind[0].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)validity_time_sec;
+    rbind[2].buffer_length = sizeof(unsigned _supla_int_t);
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        result = true;
+      }
+    }
+  }
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+
+  return result;
+}

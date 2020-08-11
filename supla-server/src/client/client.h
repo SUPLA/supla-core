@@ -54,6 +54,9 @@ class supla_client : public cdbase {
  public:
   explicit supla_client(serverconnection *svrconn);
 
+  void iterate();
+  unsigned _supla_int64_t waitTimeUSec();
+
   void revoke_superuser_authorization(void);
   bool is_superuser_authorized(void);
   char register_client(TCS_SuplaRegisterClient_B *register_client_b,

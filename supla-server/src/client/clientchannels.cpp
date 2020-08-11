@@ -376,3 +376,44 @@ void supla_client_channels::set_channel_caption(int ChannelId, char *Caption) {
 
   if (channel != NULL) channel->setCaption(Caption);
 }
+
+unsigned _supla_int64_t supla_client_channels::value_validity_time_usec(void) {
+  unsigned _supla_int64_t result = 0;
+
+  void *arr = getArr();
+  supla_client_channel *channel = NULL;
+
+  safe_array_lock(arr);
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    channel = static_cast<supla_client_channel *>(safe_array_get(arr, a));
+    if (channel) {
+      unsigned _supla_int64_t t = channel->getValueValidityTimeUSec();
+      if (t > 0 && (result == 0 || t < result)) {
+        result = t;
+      }
+    }
+  }
+  safe_array_unlock(arr);
+
+  return result;
+}
+
+void supla_client_channels::update_expired(void *srpc) {
+  unsigned _supla_int64_t result = 0;
+
+  void *arr = getArr();
+  supla_client_channel *channel = NULL;
+
+  safe_array_lock(arr);
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    channel = static_cast<supla_client_channel *>(safe_array_get(arr, a));
+    if (channel) {
+      if (channel->getValueValidityTimeUSec() > 0) {
+        channel->resetValueValidityTime();
+
+        on_value_changed(srpc, channel, OI_REMOTEUPDATE_DATA2);
+      }
+    }
+  }
+  safe_array_unlock(arr);
+}
