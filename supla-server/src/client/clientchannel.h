@@ -81,7 +81,6 @@ class supla_client_channel : public supla_client_objcontainer_item {
   int getExtraId();
   unsigned _supla_int64_t getValueValidityTimeUSec(void);
   void resetValueValidityTime(void);
-
 };
 
 #endif /* CLIENTCHANNEL_H_ */
