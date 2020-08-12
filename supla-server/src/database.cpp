@@ -2412,8 +2412,6 @@ void database::update_channel_value(int channel_id,
   char value_hex[SUPLA_CHANNELVALUE_SIZE * 2 + 1];
   st_bin2hex(value_hex, value, SUPLA_CHANNELVALUE_SIZE);
 
-  bool result = false;
-
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
