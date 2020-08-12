@@ -58,6 +58,8 @@ class supla_channel_temphum {
   void setTemperature(double Temperature);
   void setHumidity(double Humidity);
   void toValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void assignValue(const char value[SUPLA_CHANNELVALUE_SIZE],
+                   bool TempAndHumidity);
 
   static void free(void *tarr);
 };
