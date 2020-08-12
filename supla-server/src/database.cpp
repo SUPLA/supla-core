@@ -2417,12 +2417,12 @@ void database::update_channel_value(int channel_id,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&validity_time_sec;
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)value_hex;
+  pbind[1].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
 
-  pbind[2].buffer_type = MYSQL_TYPE_STRING;
-  pbind[2].buffer = (char *)value_hex;
-  pbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&validity_time_sec;
 
   const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?))";
 
