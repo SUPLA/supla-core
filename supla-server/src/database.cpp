@@ -2457,9 +2457,9 @@ bool database::get_channel_value(int channel_id,
     rbind[0].buffer = value;
     rbind[0].buffer_length = SUPLA_CHANNELVALUE_SIZE;
 
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)validity_time_sec;
-    rbind[2].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)validity_time_sec;
+    rbind[1].buffer_length = sizeof(unsigned _supla_int_t);
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
