@@ -709,7 +709,7 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
 
-  if ((Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) == 0) {
+  if ((Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) == 0) {
     validity_time_sec = VALID_UNTIL_ONLINE;
     value_valid_to.tv_sec = 0;
     value_valid_to.tv_usec = 0;

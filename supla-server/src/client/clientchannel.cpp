@@ -188,7 +188,7 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
   value_valid_to.tv_sec = 0;
   value_valid_to.tv_usec = 0;
 
-  if (!result && (Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) &&
+  if (!result && (Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) &&
       (result == false || (online && *online == false))) {
     database *db = new database();
 
