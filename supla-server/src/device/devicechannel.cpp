@@ -46,57 +46,30 @@ supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity,
                                              double Humidity) {
   this->ChannelId = ChannelId;
   this->TempAndHumidity = TempAndHumidity;
-  this->Temperature = Temperature;
-  this->Humidity = Humidity;
 
-  if (this->Temperature < -273 || this->Temperature > 1000) {
-    this->Temperature = -273;
-  }
-
-  if (this->Humidity < -1 || this->Humidity > 100) {
-    this->Humidity = -1;
-  }
+  setTemperature(Temperature);
+  setHumidity(Humidity);
 }
 
 supla_channel_temphum::supla_channel_temphum(
     bool TempAndHumidity, int ChannelId,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  // Because of linter
   this->ChannelId = ChannelId;
   this->TempAndHumidity = TempAndHumidity;
   this->Temperature = -273;
   this->Humidity = -1;
-  // ----------------
 
-  if (TempAndHumidity) {
-    int n;
-
-    memcpy(&n, value, 4);
-    this->Temperature = n / 1000.00;
-
-    memcpy(&n, &value[4], 4);
-    this->Humidity = n / 1000.00;
-
-  } else {
-    memcpy(&this->Temperature, value, sizeof(double));
-  }
-
-  supla_channel_temphum(TempAndHumidity, ChannelId, this->Temperature,
-                        this->Humidity);
+  assignValue(value, TempAndHumidity);
 }
 
 supla_channel_temphum::supla_channel_temphum(
     int ChannelId, int Func, const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  // Because of linter
   this->ChannelId = ChannelId;
-  this->TempAndHumidity = false;
+  this->TempAndHumidity = Func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
   this->Temperature = -273;
   this->Humidity = -1;
-  // ----------------
 
-  bool TempAndHumidity = Func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
-
-  supla_channel_temphum(TempAndHumidity, ChannelId, value);
+  assignValue(value, TempAndHumidity);
 }
 
 int supla_channel_temphum::getChannelId(void) { return ChannelId; }
@@ -108,11 +81,41 @@ double supla_channel_temphum::getTemperature(void) { return Temperature; }
 double supla_channel_temphum::getHumidity(void) { return Humidity; }
 
 void supla_channel_temphum::setTemperature(double Temperature) {
+  if (Temperature < -273) {
+    Temperature = -273;
+  } else if (Temperature > 1000) {
+    Temperature = 1000;
+  }
+
   this->Temperature = Temperature;
 }
 
 void supla_channel_temphum::setHumidity(double Humidity) {
+  if (Humidity < -1) {
+    Humidity = -1;
+  } else if (Humidity > 100) {
+    Humidity = 100;
+  }
+
   this->Humidity = Humidity;
+}
+
+void supla_channel_temphum::assignValue(
+    const char value[SUPLA_CHANNELVALUE_SIZE], bool TempAndHumidity) {
+  if (TempAndHumidity) {
+    int n;
+
+    memcpy(&n, value, 4);
+    setTemperature(n / 1000.00);
+
+    memcpy(&n, &value[4], 4);
+    setHumidity(n / 1000.00);
+
+  } else {
+    double Temperature;
+    memcpy(&Temperature, value, sizeof(double));
+    setTemperature(Temperature);
+  }
 }
 
 void supla_channel_temphum::toValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
@@ -1556,7 +1559,7 @@ void supla_device_channels::get_temp_and_humidity(void *tarr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_temphum *temphum = channel->getTempHum();
 
       if (temphum != NULL) safe_array_add(tarr, temphum);
@@ -1609,7 +1612,7 @@ void supla_device_channels::get_electricity_measurements(void *emarr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_electricity_measurement *em =
           channel->getElectricityMeasurement();
       if (em) {
@@ -1646,7 +1649,7 @@ void supla_device_channels::get_ic_measurements(void *icarr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_ic_measurement *ic =
           channel->getImpulseCounterMeasurement();
       if (ic) {
@@ -1666,7 +1669,7 @@ void supla_device_channels::get_thermostat_measurements(void *tharr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_thermostat_measurement *th =
           channel->getThermostatMeasurement();
       if (th) {
