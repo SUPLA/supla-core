@@ -2468,6 +2468,7 @@ bool database::get_channel_value(int channel_id,
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        *validity_time_sec = *validity_time_sec + 2;  // Two seconds margin
         result = true;
       }
     }
