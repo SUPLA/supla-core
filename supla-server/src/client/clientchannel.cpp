@@ -188,8 +188,9 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
   value_valid_to.tv_usec = 0;
 
   if (client && client->getUser() &&
-      client->getUser()->get_channel_value(DeviceId, getId(), value, online,
-                                           true, &validity_time_sec)) {
+      client->getUser()->get_channel_value(
+          DeviceId, getId(), value, online,
+          Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE, &validity_time_sec)) {
     gettimeofday(&value_valid_to, NULL);
     value_valid_to.tv_sec += validity_time_sec;
 
