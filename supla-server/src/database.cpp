@@ -2451,7 +2451,7 @@ bool database::get_channel_value(int channel_id,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     MYSQL_BIND rbind[2];
     memset(rbind, 0, sizeof(rbind));
 
