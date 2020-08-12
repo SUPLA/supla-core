@@ -2487,7 +2487,7 @@ void database::load_temperatures_and_humidity(int UserID, void *tarr) {
   const char sql[] =
       "SELECT c.id, c.func, v.value FROM `supla_dev_channel` c, "
       "`supla_dev_channel_value` v WHERE c.user_id = ? AND c.id = v.channel_id "
-      "AND v.valid_to <= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
+      "AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
       "c.func = ?)";
 
   int func1 = SUPLA_CHANNELFNC_THERMOMETER;
