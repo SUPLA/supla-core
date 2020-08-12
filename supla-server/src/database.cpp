@@ -2412,19 +2412,17 @@ void database::update_channel_value(int channel_id,
   char value_hex[SUPLA_CHANNELVALUE_SIZE * 2 + 1];
   st_bin2hex(value_hex, value, SUPLA_CHANNELVALUE_SIZE);
 
-  bool result = false;
-
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&validity_time_sec;
 
   pbind[1].buffer_type = MYSQL_TYPE_STRING;
   pbind[1].buffer = (char *)value_hex;
   pbind[1].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
 
-  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?))";
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&validity_time_sec;
+
+  const char sql[] = "CALL `supla_update_channel_value`(?, unhex(?), ?)";
 
   if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
@@ -2435,7 +2433,7 @@ bool database::get_channel_value(int channel_id,
                                  char value[SUPLA_CHANNELVALUE_SIZE],
                                  unsigned _supla_int_t *validity_time_sec) {
   if (channel_id == 0 || value == NULL || validity_time_sec == NULL) {
-    return NULL;
+    return false;
   }
 
   bool result = false;
@@ -2451,7 +2449,7 @@ bool database::get_channel_value(int channel_id,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     MYSQL_BIND rbind[2];
     memset(rbind, 0, sizeof(rbind));
 
@@ -2459,9 +2457,9 @@ bool database::get_channel_value(int channel_id,
     rbind[0].buffer = value;
     rbind[0].buffer_length = SUPLA_CHANNELVALUE_SIZE;
 
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)validity_time_sec;
-    rbind[2].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[1].buffer_type = MYSQL_TYPE_LONG;
+    rbind[1].buffer = (char *)validity_time_sec;
+    rbind[1].buffer_length = sizeof(unsigned _supla_int_t);
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -2470,6 +2468,7 @@ bool database::get_channel_value(int channel_id,
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        *validity_time_sec = *validity_time_sec + 2;  // Two seconds margin
         result = true;
       }
     }
@@ -2489,7 +2488,7 @@ void database::load_temperatures_and_humidity(int UserID, void *tarr) {
   const char sql[] =
       "SELECT c.id, c.func, v.value FROM `supla_dev_channel` c, "
       "`supla_dev_channel_value` v WHERE c.user_id = ? AND c.id = v.channel_id "
-      "AND v.valid_to <= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
+      "AND v.valid_to >= UTC_TIMESTAMP() AND (c.func = ? OR c.func = ? OR "
       "c.func = ?)";
 
   int func1 = SUPLA_CHANNELFNC_THERMOMETER;

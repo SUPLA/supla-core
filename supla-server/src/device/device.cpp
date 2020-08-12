@@ -373,13 +373,16 @@ void supla_device::on_device_channel_value_changed(
 
   unsigned char ChannelNumber = 0;
   char *value_value = NULL;
+  bool offline = false;
 
   if (value_c) {
     ChannelNumber = value_c->ChannelNumber;
     value_value = value_c->value;
+    offline = value_c->Offline > 0;
   } else if (value_b) {
     ChannelNumber = value_b->ChannelNumber;
     value_value = value_b->value;
+    offline = value_b->Offline > 0;
   } else if (value) {
     ChannelNumber = value->ChannelNumber;
     value_value = value->value;
@@ -390,9 +393,9 @@ void supla_device::on_device_channel_value_changed(
   if (ChannelId != 0) {
     bool converted2extended;
     channels->set_channel_value(ChannelId, value_value, &converted2extended,
-                                value_c ? value_c->ValidityTimeSec : 0);
-    if (value_b) {
-      channels->set_channel_offline(ChannelId, value_b->Offline > 0);
+                                value_c ? &value_c->ValidityTimeSec : NULL);
+    if (value_b || value_c) {
+      channels->set_channel_offline(ChannelId, offline);
     }
     getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
 

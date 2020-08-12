@@ -102,14 +102,18 @@ short supla_client_channel::getProductID() { return ProductID; }
 
 int supla_client_channel::getFlags() { return Flags; }
 
+bool supla_client_channel::isValueValidityTimeSet() {
+  return value_valid_to.tv_sec || value_valid_to.tv_usec;
+}
+
 unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
-  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
+  if (isValueValidityTimeSet()) {
     struct timeval now;
     gettimeofday(&now, NULL);
 
     _supla_int64_t result =
-        (now.tv_sec * 1000000 + now.tv_usec) -
-        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec);
+        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
+        (now.tv_sec * 1000000 + now.tv_usec);
     if (result > 0) {
       return result;
     }
@@ -188,7 +192,7 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
   value_valid_to.tv_sec = 0;
   value_valid_to.tv_usec = 0;
 
-  if (!result && (Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) &&
+  if (!result && (Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) &&
       (result == false || (online && *online == false))) {
     database *db = new database();
 

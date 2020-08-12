@@ -27,8 +27,6 @@
 #include "srpc.h"
 #include "user/user.h"
 
-#define VALID_UNTIL_ONLINE 0
-
 channel_address::channel_address(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;
   this->ChannelId = ChannelId;
@@ -671,8 +669,9 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
   return false;
 }
 
-void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
-                                    unsigned _supla_int_t validity_time_sec) {
+void supla_device_channel::setValue(
+    const char value[SUPLA_CHANNELVALUE_SIZE],
+    const unsigned _supla_int_t *validity_time_sec) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
   if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
@@ -709,18 +708,15 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
 
-  if ((Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) == 0) {
-    validity_time_sec = VALID_UNTIL_ONLINE;
-    value_valid_to.tv_sec = 0;
-    value_valid_to.tv_usec = 0;
-  } else {
+  if (validity_time_sec &&
+      (Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) != 0) {
     gettimeofday(&value_valid_to, NULL);
-    value_valid_to.tv_sec += validity_time_sec;
+    value_valid_to.tv_sec += (*validity_time_sec);
 
     database *db = new database();
 
     if (db->connect() == true) {
-      db->update_channel_value(getId(), value, validity_time_sec);
+      db->update_channel_value(getId(), value, *validity_time_sec);
     }
 
     delete db;
@@ -1272,7 +1268,7 @@ bool supla_device_channels::get_channel_valve_value(int ChannelID,
 
 void supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended, unsigned _supla_int_t validity_time_sec) {
+    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec) {
   if (ChannelID == 0) return;
 
   if (converted2extended) {
