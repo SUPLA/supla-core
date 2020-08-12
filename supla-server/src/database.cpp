@@ -2433,7 +2433,7 @@ bool database::get_channel_value(int channel_id,
                                  char value[SUPLA_CHANNELVALUE_SIZE],
                                  unsigned _supla_int_t *validity_time_sec) {
   if (channel_id == 0 || value == NULL || validity_time_sec == NULL) {
-    return NULL;
+    return false;
   }
 
   bool result = false;
