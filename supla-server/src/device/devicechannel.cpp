@@ -63,10 +63,12 @@ supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity,
 supla_channel_temphum::supla_channel_temphum(
     bool TempAndHumidity, int ChannelId,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
+  // Because of linter
   this->ChannelId = ChannelId;
   this->TempAndHumidity = TempAndHumidity;
   this->Temperature = -273;
   this->Humidity = -1;
+  // ----------------
 
   if (TempAndHumidity) {
     int n;
@@ -83,6 +85,20 @@ supla_channel_temphum::supla_channel_temphum(
 
   supla_channel_temphum(TempAndHumidity, ChannelId, this->Temperature,
                         this->Humidity);
+}
+
+supla_channel_temphum::supla_channel_temphum(
+    int ChannelId, int Func, const char value[SUPLA_CHANNELVALUE_SIZE]) {
+  // Because of linter
+  this->ChannelId = ChannelId;
+  this->TempAndHumidity = false;
+  this->Temperature = -273;
+  this->Humidity = -1;
+  // ----------------
+
+  bool TempAndHumidity = Func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
+
+  supla_channel_temphum(TempAndHumidity, ChannelId, value);
 }
 
 int supla_channel_temphum::getChannelId(void) { return ChannelId; }

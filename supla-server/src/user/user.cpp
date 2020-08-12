@@ -1021,6 +1021,14 @@ void supla_user::get_temp_and_humidity(void *tarr) {
       device->releasePtr();
     }
   }
+
+  database *db = new database();
+
+  if (db->connect() == true) {
+    db->load_temperatures_and_humidity(getUserID(), tarr);
+  }
+
+  delete db;
 }
 
 void supla_user::get_electricity_measurements(void *emarr) {

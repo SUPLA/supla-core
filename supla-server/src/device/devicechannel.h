@@ -48,6 +48,8 @@ class supla_channel_temphum {
                         double Humidity);
   supla_channel_temphum(bool TempAndHumidity, int ChannelId,
                         const char value[SUPLA_CHANNELVALUE_SIZE]);
+  supla_channel_temphum(int ChannelId, int Func,
+                        const char value[SUPLA_CHANNELVALUE_SIZE]);
 
   int getChannelId(void);
   bool isTempAndHumidity(void);
