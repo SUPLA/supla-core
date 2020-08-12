@@ -399,8 +399,6 @@ unsigned _supla_int64_t supla_client_channels::value_validity_time_usec(void) {
 }
 
 void supla_client_channels::update_expired(void *srpc) {
-  unsigned _supla_int64_t result = 0;
-
   void *arr = getArr();
   supla_client_channel *channel = NULL;
 
