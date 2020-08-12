@@ -27,6 +27,8 @@
 #include "srpc.h"
 #include "user/user.h"
 
+#define VALID_UNTIL_ONLINE 0
+
 channel_address::channel_address(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;
   this->ChannelId = ChannelId;
@@ -61,10 +63,12 @@ supla_channel_temphum::supla_channel_temphum(bool TempAndHumidity,
 supla_channel_temphum::supla_channel_temphum(
     bool TempAndHumidity, int ChannelId,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
+  // Because of linter
   this->ChannelId = ChannelId;
   this->TempAndHumidity = TempAndHumidity;
   this->Temperature = -273;
   this->Humidity = -1;
+  // ----------------
 
   if (TempAndHumidity) {
     int n;
@@ -81,6 +85,20 @@ supla_channel_temphum::supla_channel_temphum(
 
   supla_channel_temphum(TempAndHumidity, ChannelId, this->Temperature,
                         this->Humidity);
+}
+
+supla_channel_temphum::supla_channel_temphum(
+    int ChannelId, int Func, const char value[SUPLA_CHANNELVALUE_SIZE]) {
+  // Because of linter
+  this->ChannelId = ChannelId;
+  this->TempAndHumidity = false;
+  this->Temperature = -273;
+  this->Humidity = -1;
+  // ----------------
+
+  bool TempAndHumidity = Func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
+
+  supla_channel_temphum(TempAndHumidity, ChannelId, value);
 }
 
 int supla_channel_temphum::getChannelId(void) { return ChannelId; }
@@ -478,6 +496,8 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->Flags = Flags;
   this->Offline = Flags & SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION;
   this->extendedValue = NULL;
+  this->value_valid_to.tv_sec = 0;
+  this->value_valid_to.tv_usec = 0;
 
   memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
 }
@@ -517,7 +537,21 @@ bool supla_device_channel::getHidden(void) { return Hidden; }
 
 unsigned int supla_device_channel::getFlags() { return Flags; }
 
-bool supla_device_channel::isOffline(void) { return Offline; }
+bool supla_device_channel::isOffline(void) {
+  if (Offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    return (now.tv_sec * 1000000 + now.tv_usec) -
+                       (value_valid_to.tv_sec * 1000000 +
+                        value_valid_to.tv_usec) >
+                   0
+               ? true
+               : false;
+  }
+
+  return Offline;
+}
 
 void supla_device_channel::setOffline(bool Offline) { this->Offline = Offline; }
 
@@ -637,7 +671,8 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
   return false;
 }
 
-void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
+void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE],
+                                    unsigned _supla_int_t validity_time_sec) {
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
   if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
@@ -672,6 +707,23 @@ void supla_device_channel::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   if (Param3 == 1 && (Type == SUPLA_CHANNELTYPE_SENSORNC ||
                       Type == SUPLA_CHANNELTYPE_SENSORNO)) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
+  }
+
+  if ((Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) == 0) {
+    validity_time_sec = VALID_UNTIL_ONLINE;
+    value_valid_to.tv_sec = 0;
+    value_valid_to.tv_usec = 0;
+  } else {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
+
+    database *db = new database();
+
+    if (db->connect() == true) {
+      db->update_channel_value(getId(), value, validity_time_sec);
+    }
+
+    delete db;
   }
 }
 
@@ -1220,7 +1272,7 @@ bool supla_device_channels::get_channel_valve_value(int ChannelID,
 
 void supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended) {
+    bool *converted2extended, unsigned _supla_int_t validity_time_sec) {
   if (ChannelID == 0) return;
 
   if (converted2extended) {
@@ -1232,7 +1284,8 @@ void supla_device_channels::set_channel_value(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-    channel->setValue(value);
+    channel->setValue(value, validity_time_sec);
+
     if (channel->converValueToExtended()) {
       if (converted2extended) {
         *converted2extended = true;
@@ -1360,11 +1413,11 @@ void supla_device_channels::set_channels_value(
   if (schannel_b != NULL) {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_b[a].Number),
-                        schannel_b[a].value, NULL);
+                        schannel_b[a].value, NULL, 0);
   } else {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_c[a].Number),
-                        schannel_c[a].value, NULL);
+                        schannel_c[a].value, NULL, 0);
   }
 }
 

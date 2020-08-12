@@ -35,6 +35,7 @@
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_client_connected[] = "IS-CLIENT-CONNECTED:";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
+const char cmd_is_channel_online[] = "IS-CHANNEL-ONLINE:";
 const char cmd_user_reconnect[] = "USER-RECONNECT:";
 const char cmd_client_reconnect[] = "CLIENT-RECONNECT:";
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";

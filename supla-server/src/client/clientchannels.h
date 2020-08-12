@@ -61,6 +61,8 @@ class supla_client_channels : public supla_client_objcontainer {
   void get_channel_basic_cfg(void *srpc, TCS_ChannelBasicCfgRequest *request);
   void set_channel_function(int ChannelId, int Func);
   void set_channel_caption(int ChannelId, char *Caption);
+  unsigned _supla_int64_t value_validity_time_usec(void);
+  void update_expired(void *srpc);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

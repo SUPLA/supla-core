@@ -170,6 +170,12 @@ class database : public dbcommon {
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);
+  void update_channel_value(int channel_id,
+                            const char value[SUPLA_CHANNELVALUE_SIZE],
+                            unsigned _supla_int_t validity_time_sec);
+  bool get_channel_value(int channel_id, char value[SUPLA_CHANNELVALUE_SIZE],
+                         unsigned _supla_int_t *validity_time_sec);
+  void load_temperatures_and_humidity(int UserID, void *tarr);
 };
 
 #endif /* DATABASE_H_ */

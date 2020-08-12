@@ -52,6 +52,7 @@ supla_client_channel::supla_client_channel(
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
+  resetValueValidityTime();
 }
 
 supla_client_channel::~supla_client_channel(void) {
@@ -100,6 +101,27 @@ short supla_client_channel::getManufacturerID() { return ManufacturerID; }
 short supla_client_channel::getProductID() { return ProductID; }
 
 int supla_client_channel::getFlags() { return Flags; }
+
+unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
+  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    _supla_int64_t result =
+        (now.tv_sec * 1000000 + now.tv_usec) -
+        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec);
+    if (result > 0) {
+      return result;
+    }
+  }
+
+  return 0;
+}
+
+void supla_client_channel::resetValueValidityTime(void) {
+  value_valid_to.tv_sec = 0;
+  value_valid_to.tv_usec = 0;
+}
 
 bool supla_client_channel::remote_update_is_possible(void) {
   switch (Func) {
@@ -156,8 +178,36 @@ bool supla_client_channel::remote_update_is_possible(void) {
 
 void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
                                            char *online, supla_client *client) {
+  bool result = false;
+
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), value, online);
+    result =
+        client->getUser()->get_channel_value(DeviceId, getId(), value, online);
+  }
+
+  value_valid_to.tv_sec = 0;
+  value_valid_to.tv_usec = 0;
+
+  if (!result && (Flags & SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL) &&
+      (result == false || (online && *online == false))) {
+    database *db = new database();
+
+    unsigned _supla_int_t validity_time_sec = 0;
+
+    if (db->connect() == true &&
+        db->get_channel_value(getId(), value->value, &validity_time_sec)) {
+      result = true;
+      if (online) {
+        *online = true;
+      }
+      gettimeofday(&value_valid_to, NULL);
+      value_valid_to.tv_sec += validity_time_sec;
+    }
+
+    delete db;
+  }
+
+  if (result) {
 #ifdef SERVER_VERSION_23
     if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
 #endif /*SERVER_VERSION_23*/

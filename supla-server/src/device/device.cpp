@@ -365,19 +365,32 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 void supla_device::load_config(void) { channels->load(getID()); }
 
 void supla_device::on_device_channel_value_changed(
-    TDS_SuplaDeviceChannelValue *value,
-    TDS_SuplaDeviceChannelValue_B *value_b) {
-  if (value == NULL && value_b == NULL) {
+    TDS_SuplaDeviceChannelValue *value, TDS_SuplaDeviceChannelValue_B *value_b,
+    TDS_SuplaDeviceChannelValue_C *value_c) {
+  if (value == NULL && value_b == NULL && value_c == NULL) {
     return;
   }
 
-  int ChannelId = channels->get_channel_id(value ? value->ChannelNumber
-                                                 : value_b->ChannelNumber);
+  unsigned char ChannelNumber = 0;
+  char *value_value = NULL;
+
+  if (value_c) {
+    ChannelNumber = value_c->ChannelNumber;
+    value_value = value_c->value;
+  } else if (value_b) {
+    ChannelNumber = value_b->ChannelNumber;
+    value_value = value_b->value;
+  } else if (value) {
+    ChannelNumber = value->ChannelNumber;
+    value_value = value->value;
+  }
+
+  int ChannelId = channels->get_channel_id(ChannelNumber);
 
   if (ChannelId != 0) {
     bool converted2extended;
-    channels->set_channel_value(
-        ChannelId, value ? value->value : value_b->value, &converted2extended);
+    channels->set_channel_value(ChannelId, value_value, &converted2extended,
+                                value_c ? value_c->ValidityTimeSec : 0);
     if (value_b) {
       channels->set_channel_offline(ChannelId, value_b->Offline > 0);
     }

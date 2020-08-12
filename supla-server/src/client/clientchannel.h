@@ -43,6 +43,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   short ProductID;
   unsigned char ProtocolVersion;
   unsigned int Flags;
+  struct timeval value_valid_to;  // during offline
 
   void get_cost_and_currency(char currency[3], _supla_int_t *total_cost,
                              _supla_int_t *price_per_unit, double count);
@@ -78,6 +79,8 @@ class supla_client_channel : public supla_client_objcontainer_item {
   short getProductID();
   int getFlags();
   int getExtraId();
+  unsigned _supla_int64_t getValueValidityTimeUSec(void);
+  void resetValueValidityTime(void);
 };
 
 #endif /* CLIENTCHANNEL_H_ */

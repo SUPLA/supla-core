@@ -153,6 +153,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B 102        // ver. >= 12
+#define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
 #define SUPLA_SD_CALL_GROUP_SET_VALUE 115
@@ -310,7 +311,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
-#define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
+#define SUPLA_CHANNELTYPE_SMARTGLASS 12000                  // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -359,7 +360,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
-#define SUPLA_CHANNELFNC_DIGIGLASS 800                    // ver. >= 12
+#define SUPLA_CHANNELFNC_SMARTGLASS 800                   // ver. >= 12
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -435,7 +436,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_ZIGBEE_BRIDGE 0x00800000                // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000    // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_LIGHTSOURCELIFESPAN_SETTABLE \
-  0x02000000  // ver. >= 12
+  0x02000000                                            // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_SLEEPING_CHANNEL 0x04000000  // ver. >= 12
 
 #define SUPLA_DEVICE_FLAG_GROUP_CONTROL_EXPECTED 0x0001  // ver. >= 12
 
@@ -677,7 +679,16 @@ typedef struct {
   unsigned char ChannelNumber;
   unsigned char Offline;
   char value[SUPLA_CHANNELVALUE_SIZE];
-} TDS_SuplaDeviceChannelValue_B;
+} TDS_SuplaDeviceChannelValue_B;  // v. >= 12
+
+typedef struct {
+  // device -> server
+
+  unsigned char ChannelNumber;
+  unsigned char Offline;
+  unsigned _supla_int_t ValidityTimeSec;
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TDS_SuplaDeviceChannelValue_C;  // v. >= 12
 
 typedef struct {
   // device -> server
@@ -1295,13 +1306,13 @@ typedef struct {
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
-#define DIGIGLASS_FLAG_HORIZONATAL 0x1
+#define SMARTGLASS_FLAG_HORIZONATAL 0x1
 
 typedef struct {
   unsigned char sectionCount;  // 1 - 16
   unsigned char flags;
   unsigned short opaqueSections;
-} TDigiglass_Value;
+} TSmartglass_Value;
 
 typedef struct {
   unsigned char sec;        // 0-59
