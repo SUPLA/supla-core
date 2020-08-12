@@ -81,20 +81,16 @@ double supla_channel_temphum::getTemperature(void) { return Temperature; }
 double supla_channel_temphum::getHumidity(void) { return Humidity; }
 
 void supla_channel_temphum::setTemperature(double Temperature) {
-  if (Temperature < -273) {
+  if (Temperature < -273 || Temperature > 1000) {
     Temperature = -273;
-  } else if (Temperature > 1000) {
-    Temperature = 1000;
   }
 
   this->Temperature = Temperature;
 }
 
 void supla_channel_temphum::setHumidity(double Humidity) {
-  if (Humidity < -1) {
+  if (Humidity < -1 || Humidity > 100) {
     Humidity = -1;
-  } else if (Humidity > 100) {
-    Humidity = 100;
   }
 
   this->Humidity = Humidity;
