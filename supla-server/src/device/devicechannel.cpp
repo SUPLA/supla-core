@@ -1556,7 +1556,7 @@ void supla_device_channels::get_temp_and_humidity(void *tarr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_temphum *temphum = channel->getTempHum();
 
       if (temphum != NULL) safe_array_add(tarr, temphum);
@@ -1609,7 +1609,7 @@ void supla_device_channels::get_electricity_measurements(void *emarr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_electricity_measurement *em =
           channel->getElectricityMeasurement();
       if (em) {
@@ -1646,7 +1646,7 @@ void supla_device_channels::get_ic_measurements(void *icarr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_ic_measurement *ic =
           channel->getImpulseCounterMeasurement();
       if (ic) {
@@ -1666,7 +1666,7 @@ void supla_device_channels::get_thermostat_measurements(void *tharr) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
 
-    if (channel != NULL) {
+    if (channel != NULL && !channel->isOffline()) {
       supla_channel_thermostat_measurement *th =
           channel->getThermostatMeasurement();
       if (th) {
