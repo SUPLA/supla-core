@@ -2422,7 +2422,7 @@ void database::update_channel_value(int channel_id,
   pbind[2].buffer_type = MYSQL_TYPE_LONG;
   pbind[2].buffer = (char *)&validity_time_sec;
 
-  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?))";
+  const char sql[] = "CALL `supla_update_channel_value`(?, unhex(?), ?)";
 
   if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
