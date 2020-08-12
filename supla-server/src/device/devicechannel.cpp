@@ -89,12 +89,11 @@ supla_channel_temphum::supla_channel_temphum(
     int ChannelId, int Func, const char value[SUPLA_CHANNELVALUE_SIZE]) {
   // Because of linter
   this->ChannelId = ChannelId;
-  this->TempAndHumidity = false;
   this->Temperature = -273;
   this->Humidity = -1;
   // ----------------
+  this->TempAndHumidity = Func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
 
-  bool TempAndHumidity = Func == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE;
 
   supla_channel_temphum(TempAndHumidity, ChannelId, value);
 }
