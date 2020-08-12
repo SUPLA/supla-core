@@ -102,14 +102,18 @@ short supla_client_channel::getProductID() { return ProductID; }
 
 int supla_client_channel::getFlags() { return Flags; }
 
+bool supla_client_channel::isValueValidityTimeSet() {
+  return value_valid_to.tv_sec || value_valid_to.tv_usec;
+}
+
 unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
-  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
+  if (isValueValidityTimeSet()) {
     struct timeval now;
     gettimeofday(&now, NULL);
 
     _supla_int64_t result =
-        (now.tv_sec * 1000000 + now.tv_usec) -
-        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec);
+        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
+        (now.tv_sec * 1000000 + now.tv_usec);
     if (result > 0) {
       return result;
     }
