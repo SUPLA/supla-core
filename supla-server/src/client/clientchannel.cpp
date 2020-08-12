@@ -182,36 +182,17 @@ bool supla_client_channel::remote_update_is_possible(void) {
 
 void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
                                            char *online, supla_client *client) {
-  bool result = false;
-
-  if (client && client->getUser()) {
-    result =
-        client->getUser()->get_channel_value(DeviceId, getId(), value, online);
-  }
+  unsigned _supla_int_t validity_time_sec = 0;
 
   value_valid_to.tv_sec = 0;
   value_valid_to.tv_usec = 0;
 
-  if (!result && (Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) &&
-      (result == false || (online && *online == false))) {
-    database *db = new database();
+  if (client && client->getUser() &&
+      client->getUser()->get_channel_value(DeviceId, getId(), value, online,
+                                           true, &validity_time_sec)) {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
 
-    unsigned _supla_int_t validity_time_sec = 0;
-
-    if (db->connect() == true &&
-        db->get_channel_value(getId(), value->value, &validity_time_sec)) {
-      result = true;
-      if (online) {
-        *online = true;
-      }
-      gettimeofday(&value_valid_to, NULL);
-      value_valid_to.tv_sec += validity_time_sec;
-    }
-
-    delete db;
-  }
-
-  if (result) {
 #ifdef SERVER_VERSION_23
     if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
 #endif /*SERVER_VERSION_23*/
