@@ -316,7 +316,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               setID(DeviceID);
 
-              load_config();
+              load_config(UserID);
 
               channels->set_channels_value(dev_channels_b, dev_channels_c,
                                            channel_count);
@@ -362,7 +362,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   return result;
 }
 
-void supla_device::load_config(void) { channels->load(getID()); }
+void supla_device::load_config(int UserID) { channels->load(UserID, getID()); }
 
 void supla_device::on_device_channel_value_changed(
     TDS_SuplaDeviceChannelValue *value, TDS_SuplaDeviceChannelValue_B *value_b,

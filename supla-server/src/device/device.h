@@ -29,7 +29,7 @@ class supla_device : public cdbase {
  protected:
   supla_device_channels *channels;
 
-  void load_config(void);
+  void load_config(int UserID);
   static char channels_clean_cnd(void *channel);
   bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                        const char Email[SUPLA_EMAIL_MAXSIZE],

@@ -652,7 +652,8 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
     unsigned _supla_int_t _validity_time_sec = 0;
 
     if (db->connect() == true &&
-        db->get_channel_value(ChannelID, value->value, &_validity_time_sec)) {
+        db->get_channel_value(ChannelID, getUserID(), value->value,
+                              &_validity_time_sec)) {
       result = true;
       if (online) {
         *online = true;

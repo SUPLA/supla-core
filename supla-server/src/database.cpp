@@ -688,7 +688,7 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   return get_device_channel(DeviceID, ChannelNumber, NULL);
 }
 
-void database::get_device_channels(int DeviceID,
+void database::get_device_channels(int UserID, int DeviceID,
                                    supla_device_channels *channels) {
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
@@ -798,7 +798,7 @@ void database::get_device_channels(int DeviceID,
           text_param2[text_param2_size] = 0;
           text_param3[text_param3_size] = 0;
 
-          channels->add_channel(id, number, type, func, param1, param2, param3,
+          channels->add_channel(id, number, UserID, type, func, param1, param2, param3,
                                 text_param1, text_param2, text_param3,
                                 hidden > 0, flags);
         }
@@ -2402,7 +2402,7 @@ bool database::channel_is_associated_with_scene(int channel_id) {
 #endif /*SERVER_VERSION_23*/
 }
 
-void database::update_channel_value(int channel_id,
+void database::update_channel_value(int channel_id, int user_id,
                                     const char value[SUPLA_CHANNELVALUE_SIZE],
                                     unsigned _supla_int_t validity_time_sec) {
   MYSQL_STMT *stmt = NULL;
@@ -2415,21 +2415,24 @@ void database::update_channel_value(int channel_id,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)value_hex;
-  pbind[1].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
 
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&validity_time_sec;
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)value_hex;
+  pbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
 
-  const char sql[] = "CALL `supla_update_channel_value`(?, unhex(?), ?)";
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&validity_time_sec;
+
+  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?), ?)";
 
   if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 }
 
-bool database::get_channel_value(int channel_id,
+bool database::get_channel_value(int user_id, int channel_id,
                                  char value[SUPLA_CHANNELVALUE_SIZE],
                                  unsigned _supla_int_t *validity_time_sec) {
   if (channel_id == 0 || value == NULL || validity_time_sec == NULL) {
@@ -2439,15 +2442,19 @@ bool database::get_channel_value(int channel_id,
   bool result = false;
   const char sql[] =
       "SELECT `value`, TIME_TO_SEC(TIMEDIFF(`valid_to`, UTC_TIMESTAMP())) FROM "
-      "`supla_dev_channel_value` WHERE `channel_id` = ? AND `valid_to` >= "
+      "`supla_dev_channel_value` WHERE `channel_id` = ? AND `user_id` = ? , "
+      "`valid_to` >= "
       "UTC_TIMESTAMP()";
 
   MYSQL_STMT *stmt = NULL;
-  MYSQL_BIND pbind[1];
+  MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     MYSQL_BIND rbind[2];

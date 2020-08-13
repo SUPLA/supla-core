@@ -474,13 +474,15 @@ void supla_channel_thermostat_measurement::free(void *tharr) {
 
 //-----------------------------------------------------
 
-supla_device_channel::supla_device_channel(int Id, int Number, int Type,
-                                           int Func, int Param1, int Param2,
-                                           int Param3, char *TextParam1,
-                                           char *TextParam2, char *TextParam3,
-                                           bool Hidden, unsigned int Flags) {
+supla_device_channel::supla_device_channel(int Id, int Number, int UserID,
+                                           int Type, int Func, int Param1,
+                                           int Param2, int Param3,
+                                           char *TextParam1, char *TextParam2,
+                                           char *TextParam3, bool Hidden,
+                                           unsigned int Flags) {
   this->Id = Id;
   this->Number = Number;
+  this->UserID = UserID;
   this->Type = Type;
   this->Func = Func;
   this->Param1 = Param1;
@@ -715,7 +717,7 @@ void supla_device_channel::setValue(
     database *db = new database();
 
     if (db->connect() == true) {
-      db->update_channel_value(getId(), value, *validity_time_sec);
+      db->update_channel_value(getId(), UserID, value, *validity_time_sec);
     }
 
     delete db;
@@ -1087,8 +1089,9 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
   return (supla_device_channel *)safe_array_findcnd(arr, arr_findncmp, &Number);
 }
 
-void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
-                                        int Param1, int Param2, int Param3,
+void supla_device_channels::add_channel(int Id, int Number, int UserID,
+                                        int Type, int Func, int Param1,
+                                        int Param2, int Param3,
                                         char *TextParam1, char *TextParam2,
                                         char *TextParam3, bool Hidden,
                                         unsigned int Flags) {
@@ -1096,8 +1099,8 @@ void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
 
   if (find_channel(Id) == 0) {
     supla_device_channel *c = new supla_device_channel(
-        Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
-        TextParam3, Hidden, Flags);
+        Id, Number, UserID, Type, Func, Param1, Param2, Param3, TextParam1,
+        TextParam2, TextParam3, Hidden, Flags);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -1108,14 +1111,14 @@ void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
   safe_array_unlock(arr);
 }
 
-void supla_device_channels::load(int DeviceID) {
+void supla_device_channels::load(int UserID, int DeviceID) {
   database *db = new database();
 
   if (db->connect() == true) {
     safe_array_lock(arr);
     arr_clean();
 
-    db->get_device_channels(DeviceID, this);
+    db->get_device_channels(UserID, DeviceID, this);
 
     safe_array_unlock(arr);
   }

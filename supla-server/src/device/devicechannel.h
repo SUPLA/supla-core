@@ -160,6 +160,7 @@ class supla_device_channel {
  private:
   int Id;
   unsigned char Number;
+  int UserID;
   int Type;
   int Func;
   int Param1;
@@ -177,8 +178,8 @@ class supla_device_channel {
   TSuplaChannelExtendedValue *extendedValue;
 
  public:
-  supla_device_channel(int Id, int Number, int Type, int Func, int Param1,
-                       int Param2, int Param3, char *TextParam1,
+  supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
+                       int Param1, int Param2, int Param3, char *TextParam1,
                        char *TextParam2, char *TextParam3, bool Hidden,
                        unsigned int Flags);
   virtual ~supla_device_channel();
@@ -241,9 +242,10 @@ class supla_device_channels {
  public:
   supla_device_channels();
   virtual ~supla_device_channels();
-  void add_channel(int Id, int Number, int Type, int Func, int Param1,
-                   int Param2, int Param3, char *TextParam1, char *TextParam2,
-                   char *TextParam3, bool Hidden, unsigned int Flags);
+  void add_channel(int Id, int Number, int UserID, int Type, int Func,
+                   int Param1, int Param2, int Param3, char *TextParam1,
+                   char *TextParam2, char *TextParam3, bool Hidden,
+                   unsigned int Flags);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online);
   bool get_channel_extendedvalue(int ChannelID,
@@ -285,7 +287,7 @@ class supla_device_channels {
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
-  void load(int DeviceID);
+  void load(int UserID, int DeviceID);
 
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurements(void *emarr);
