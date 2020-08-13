@@ -728,8 +728,7 @@ void supla_device_channel::setValue(
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
 
-  if (validity_time_sec &&
-      (Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) != 0) {
+  if (validity_time_sec) {
     gettimeofday(&value_valid_to, NULL);
     value_valid_to.tv_sec += (*validity_time_sec);
 

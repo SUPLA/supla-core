@@ -790,10 +790,12 @@ void database::get_device_channels(int UserID, int DeviceID,
     rbind[12].buffer_type = MYSQL_TYPE_BLOB;
     rbind[12].buffer = value;
     rbind[12].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[12].is_null = &value_is_null;
 
     rbind[13].buffer_type = MYSQL_TYPE_LONG;
     rbind[13].buffer = (char *)&validity_time_sec;
     rbind[13].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[13].is_null = &validity_time_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -1139,15 +1141,17 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
-      "`client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
+      "`protocol_version`, `flags`, `value`, `validity_time_sec` + 2 FROM "
+      "`supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, "
+      "`channel_number`";
   const char sql2[] =
       "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
-      "`client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
+      "`protocol_version`, `flags`, `value`, `validity_time_sec` + 2 FROM "
+      "`supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? "
+      "ORDER BY `channel_number`";
 
   MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
@@ -1160,7 +1164,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[18];
+    MYSQL_BIND rbind[20];
     memset(rbind, 0, sizeof(rbind));
 
     int id = 0, type = 0, func = 0, param1 = 0, param2 = 0, param3 = 0,
@@ -1183,6 +1187,13 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     my_bool text_param3_is_null = true;
 
     char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+    my_bool value_is_null = true;
+
+    unsigned _supla_int_t validity_time_sec = 0;
+    my_bool validity_time_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -1250,6 +1261,16 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[17].buffer_type = MYSQL_TYPE_LONG;
     rbind[17].buffer = (char *)&flags;
 
+    rbind[18].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[18].buffer = value;
+    rbind[18].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[18].is_null = &value_is_null;
+
+    rbind[19].buffer_type = MYSQL_TYPE_LONG;
+    rbind[19].buffer = (char *)&validity_time_sec;
+    rbind[19].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[19].is_null = &validity_time_is_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1267,13 +1288,22 @@ void database::get_client_channels(int ClientID, int *DeviceID,
           text_param2[text_param2_size] = 0;
           text_param3[text_param3_size] = 0;
 
+          if (value_is_null) {
+            memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+          }
+
+          if (validity_time_is_null) {
+            validity_time_sec = 0;
+          }
+
           supla_client_channel *channel = new supla_client_channel(
               channels, id, iodevice_id, location_id, type, func, param1,
               param2, param3, text_param1_is_null ? NULL : text_param1,
               text_param2_is_null ? NULL : text_param2,
               text_param3_is_null ? NULL : text_param3,
               caption_is_null ? NULL : caption, alt_icon, user_icon,
-              manufacturer_id, product_id, protocol_version, flags);
+              manufacturer_id, product_id, protocol_version, flags, value,
+              validity_time_sec);
 
           if (!channels->add(channel)) {
             delete channel;
