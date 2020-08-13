@@ -166,8 +166,7 @@ class supla_user {
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
-                         char *online, bool canLoad,
-                         unsigned _supla_int_t *validity_time_sec);
+                         char *online);
   bool get_channel_extendedvalue(int DeviceID, int ChannelID,
                                  TSuplaChannelExtendedValue *value);
 

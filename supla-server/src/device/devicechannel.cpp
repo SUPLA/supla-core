@@ -474,13 +474,14 @@ void supla_channel_thermostat_measurement::free(void *tharr) {
 
 //-----------------------------------------------------
 
-supla_device_channel::supla_device_channel(int Id, int Number, int Type,
-                                           int Func, int Param1, int Param2,
-                                           int Param3, char *TextParam1,
-                                           char *TextParam2, char *TextParam3,
-                                           bool Hidden, unsigned int Flags) {
+supla_device_channel::supla_device_channel(
+    int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
+    int Param3, char *TextParam1, char *TextParam2, char *TextParam3,
+    bool Hidden, unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int_t validity_time_sec) {
   this->Id = Id;
   this->Number = Number;
+  this->UserID = UserID;
   this->Type = Type;
   this->Func = Func;
   this->Param1 = Param1;
@@ -496,7 +497,12 @@ supla_device_channel::supla_device_channel(int Id, int Number, int Type,
   this->value_valid_to.tv_sec = 0;
   this->value_valid_to.tv_usec = 0;
 
-  memset(this->value, 0, SUPLA_CHANNELVALUE_SIZE);
+  if (validity_time_sec > 0) {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
+  }
+
+  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -671,6 +677,21 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
 void supla_device_channel::setValue(
     const char value[SUPLA_CHANNELVALUE_SIZE],
     const unsigned _supla_int_t *validity_time_sec) {
+  if (validity_time_sec == NULL &&
+      (value_valid_to.tv_usec || value_valid_to.tv_sec)) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    if ((value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
+            (now.tv_sec * 1000000 + now.tv_usec) >
+        0) {
+      return;
+    }
+
+    value_valid_to.tv_sec = 0;
+    value_valid_to.tv_usec = 0;
+  }
+
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
   if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
@@ -707,15 +728,14 @@ void supla_device_channel::setValue(
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   }
 
-  if (validity_time_sec &&
-      (Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE) != 0) {
+  if (validity_time_sec) {
     gettimeofday(&value_valid_to, NULL);
     value_valid_to.tv_sec += (*validity_time_sec);
 
     database *db = new database();
 
     if (db->connect() == true) {
-      db->update_channel_value(getId(), value, *validity_time_sec);
+      db->update_channel_value(getId(), UserID, value, *validity_time_sec);
     }
 
     delete db;
@@ -1087,17 +1107,17 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
   return (supla_device_channel *)safe_array_findcnd(arr, arr_findncmp, &Number);
 }
 
-void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
-                                        int Param1, int Param2, int Param3,
-                                        char *TextParam1, char *TextParam2,
-                                        char *TextParam3, bool Hidden,
-                                        unsigned int Flags) {
+void supla_device_channels::add_channel(
+    int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
+    int Param3, char *TextParam1, char *TextParam2, char *TextParam3,
+    bool Hidden, unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int_t validity_time_sec) {
   safe_array_lock(arr);
 
   if (find_channel(Id) == 0) {
     supla_device_channel *c = new supla_device_channel(
-        Id, Number, Type, Func, Param1, Param2, Param3, TextParam1, TextParam2,
-        TextParam3, Hidden, Flags);
+        Id, Number, UserID, Type, Func, Param1, Param2, Param3, TextParam1,
+        TextParam2, TextParam3, Hidden, Flags, value, validity_time_sec);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -1108,14 +1128,14 @@ void supla_device_channels::add_channel(int Id, int Number, int Type, int Func,
   safe_array_unlock(arr);
 }
 
-void supla_device_channels::load(int DeviceID) {
+void supla_device_channels::load(int UserID, int DeviceID) {
   database *db = new database();
 
   if (db->connect() == true) {
     safe_array_lock(arr);
     arr_clean();
 
-    db->get_device_channels(DeviceID, this);
+    db->get_device_channels(UserID, DeviceID, this);
 
     safe_array_unlock(arr);
   }

@@ -34,7 +34,9 @@ supla_client_channel::supla_client_channel(
     int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
     char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
     int UserIcon, short ManufacturerID, short ProductID,
-    unsigned char ProtocolVersion, int Flags)
+    unsigned char ProtocolVersion, int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int_t validity_time_sec)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
@@ -53,6 +55,13 @@ supla_client_channel::supla_client_channel(
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
   resetValueValidityTime();
+
+  if (validity_time_sec > 0) {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
+  }
+
+  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_client_channel::~supla_client_channel(void) {
@@ -182,20 +191,23 @@ bool supla_client_channel::remote_update_is_possible(void) {
 
 void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
                                            char *online, supla_client *client) {
-  unsigned _supla_int_t validity_time_sec = 0;
+  bool result = false;
 
-  value_valid_to.tv_sec = 0;
-  value_valid_to.tv_usec = 0;
+  if (client && client->getUser()) {
+    result =
+        client->getUser()->get_channel_value(DeviceId, getId(), value, online);
+  }
 
-  if (client && client->getUser() &&
-      client->getUser()->get_channel_value(
-          DeviceId, getId(), value, online,
-          Flags & SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE, &validity_time_sec)) {
-    if (validity_time_sec > 0) {
-      gettimeofday(&value_valid_to, NULL);
-      value_valid_to.tv_sec += validity_time_sec;
+  if ((!result || (online && !(*online))) && isValueValidityTimeSet() &&
+      getValueValidityTimeUSec() > 0) {
+    result = true;
+    if (online) {
+      *online = true;
     }
+    memcpy(value->value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  }
 
+  if (result) {
 #ifdef SERVER_VERSION_23
     if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
 #endif /*SERVER_VERSION_23*/

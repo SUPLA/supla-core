@@ -688,14 +688,17 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   return get_device_channel(DeviceID, ChannelNumber, NULL);
 }
 
-void database::get_device_channels(int DeviceID,
+void database::get_device_channels(int UserID, int DeviceID,
                                    supla_device_channels *channels) {
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT `type`, `func`, `param1`, `param2`, `param3`, `text_param1`, "
-      "`text_param2`, `text_param3`, `channel_number`, `id`, `hidden`, `flags` "
-      "FROM `supla_dev_channel` WHERE `iodevice_id` = ? ORDER BY "
-      "`channel_number`";
+      "SELECT c.`type`, c.`func`, c.`param1`, c.`param2`, c.`param3`, "
+      "c.`text_param1`, c.`text_param2`, c.`text_param3`, c.`channel_number`, "
+      "c.`id`, c.`hidden`, c.`flags`, v.`value`, "
+      "TIME_TO_SEC(TIMEDIFF(v.`valid_to`, UTC_TIMESTAMP())) + 2 FROM "
+      "`supla_dev_channel` c  LEFT JOIN `supla_dev_channel_value` v ON "
+      "v.channel_id = c.id AND v.valid_to >= UTC_TIMESTAMP() WHERE "
+      "c.`iodevice_id` = ? ORDER BY c.`channel_number`";
 
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
@@ -706,7 +709,7 @@ void database::get_device_channels(int DeviceID,
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     my_bool is_null[8];
 
-    MYSQL_BIND rbind[12];
+    MYSQL_BIND rbind[14];
     memset(rbind, 0, sizeof(rbind));
 
     int type = 0;
@@ -726,6 +729,13 @@ void database::get_device_channels(int DeviceID,
     unsigned long text_param1_size = 0;
     unsigned long text_param2_size = 0;
     unsigned long text_param3_size = 0;
+
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+    my_bool value_is_null = true;
+
+    unsigned _supla_int_t validity_time_sec = 0;
+    my_bool validity_time_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&type;
@@ -777,6 +787,16 @@ void database::get_device_channels(int DeviceID,
     rbind[11].buffer_type = MYSQL_TYPE_LONG;
     rbind[11].buffer = (char *)&flags;
 
+    rbind[12].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[12].buffer = value;
+    rbind[12].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[12].is_null = &value_is_null;
+
+    rbind[13].buffer_type = MYSQL_TYPE_LONG;
+    rbind[13].buffer = (char *)&validity_time_sec;
+    rbind[13].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[13].is_null = &validity_time_is_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -798,9 +818,17 @@ void database::get_device_channels(int DeviceID,
           text_param2[text_param2_size] = 0;
           text_param3[text_param3_size] = 0;
 
-          channels->add_channel(id, number, type, func, param1, param2, param3,
-                                text_param1, text_param2, text_param3,
-                                hidden > 0, flags);
+          if (value_is_null) {
+            memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+          }
+
+          if (validity_time_is_null) {
+            validity_time_sec = 0;
+          }
+
+          channels->add_channel(id, number, UserID, type, func, param1, param2,
+                                param3, text_param1, text_param2, text_param3,
+                                hidden > 0, flags, value, validity_time_sec);
         }
       }
     }
@@ -1113,15 +1141,17 @@ void database::get_client_channels(int ClientID, int *DeviceID,
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
-      "`client_id` = ? ORDER BY `iodevice_id`, `channel_number`";
+      "`protocol_version`, `flags`, `value`, `validity_time_sec` + 2 FROM "
+      "`supla_v_client_channel` WHERE `client_id` = ? ORDER BY `iodevice_id`, "
+      "`channel_number`";
   const char sql2[] =
       "SELECT `id`, `type`, `func`, `param1`, `param2`, `param3`, "
       "`text_param1`, "
       "`text_param2`, `text_param3`, `iodevice_id`, `location_id`, `caption`, "
       "`alt_icon`, `user_icon_id`, `manufacturer_id`, `product_id`, "
-      "`protocol_version`, `flags` FROM `supla_v_client_channel` WHERE "
-      "`client_id` = ? AND `iodevice_id` = ? ORDER BY `channel_number`";
+      "`protocol_version`, `flags`, `value`, `validity_time_sec` + 2 FROM "
+      "`supla_v_client_channel` WHERE `client_id` = ? AND `iodevice_id` = ? "
+      "ORDER BY `channel_number`";
 
   MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
@@ -1134,7 +1164,7 @@ void database::get_client_channels(int ClientID, int *DeviceID,
 
   if (stmt_execute((void **)&stmt, DeviceID ? sql2 : sql1, pbind,
                    DeviceID ? 2 : 1, true)) {
-    MYSQL_BIND rbind[18];
+    MYSQL_BIND rbind[20];
     memset(rbind, 0, sizeof(rbind));
 
     int id = 0, type = 0, func = 0, param1 = 0, param2 = 0, param3 = 0,
@@ -1157,6 +1187,13 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     my_bool text_param3_is_null = true;
 
     char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+    my_bool value_is_null = true;
+
+    unsigned _supla_int_t validity_time_sec = 0;
+    my_bool validity_time_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&id;
@@ -1224,6 +1261,16 @@ void database::get_client_channels(int ClientID, int *DeviceID,
     rbind[17].buffer_type = MYSQL_TYPE_LONG;
     rbind[17].buffer = (char *)&flags;
 
+    rbind[18].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[18].buffer = value;
+    rbind[18].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[18].is_null = &value_is_null;
+
+    rbind[19].buffer_type = MYSQL_TYPE_LONG;
+    rbind[19].buffer = (char *)&validity_time_sec;
+    rbind[19].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[19].is_null = &validity_time_is_null;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -1241,13 +1288,22 @@ void database::get_client_channels(int ClientID, int *DeviceID,
           text_param2[text_param2_size] = 0;
           text_param3[text_param3_size] = 0;
 
+          if (value_is_null) {
+            memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+          }
+
+          if (validity_time_is_null) {
+            validity_time_sec = 0;
+          }
+
           supla_client_channel *channel = new supla_client_channel(
               channels, id, iodevice_id, location_id, type, func, param1,
               param2, param3, text_param1_is_null ? NULL : text_param1,
               text_param2_is_null ? NULL : text_param2,
               text_param3_is_null ? NULL : text_param3,
               caption_is_null ? NULL : caption, alt_icon, user_icon,
-              manufacturer_id, product_id, protocol_version, flags);
+              manufacturer_id, product_id, protocol_version, flags, value,
+              validity_time_sec);
 
           if (!channels->add(channel)) {
             delete channel;
@@ -2402,7 +2458,7 @@ bool database::channel_is_associated_with_scene(int channel_id) {
 #endif /*SERVER_VERSION_23*/
 }
 
-void database::update_channel_value(int channel_id,
+void database::update_channel_value(int channel_id, int user_id,
                                     const char value[SUPLA_CHANNELVALUE_SIZE],
                                     unsigned _supla_int_t validity_time_sec) {
   MYSQL_STMT *stmt = NULL;
@@ -2415,21 +2471,24 @@ void database::update_channel_value(int channel_id,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
 
-  pbind[1].buffer_type = MYSQL_TYPE_STRING;
-  pbind[1].buffer = (char *)value_hex;
-  pbind[1].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
 
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&validity_time_sec;
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)value_hex;
+  pbind[2].buffer_length = SUPLA_CHANNELVALUE_SIZE * 2;
 
-  const char sql[] = "CALL `supla_update_channel_value`(?, unhex(?), ?)";
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&validity_time_sec;
+
+  const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?), ?)";
 
   if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 }
 
-bool database::get_channel_value(int channel_id,
+bool database::get_channel_value(int user_id, int channel_id,
                                  char value[SUPLA_CHANNELVALUE_SIZE],
                                  unsigned _supla_int_t *validity_time_sec) {
   if (channel_id == 0 || value == NULL || validity_time_sec == NULL) {
@@ -2438,16 +2497,19 @@ bool database::get_channel_value(int channel_id,
 
   bool result = false;
   const char sql[] =
-      "SELECT `value`, TIME_TO_SEC(TIMEDIFF(`valid_to`, UTC_TIMESTAMP())) FROM "
-      "`supla_dev_channel_value` WHERE `channel_id` = ? AND `valid_to` >= "
-      "UTC_TIMESTAMP()";
+      "SELECT `value`, TIME_TO_SEC(TIMEDIFF(`valid_to`, UTC_TIMESTAMP())) + 2 "
+      "FROM `supla_dev_channel_value` WHERE `channel_id` = ? AND `user_id` = ? "
+      ", `valid_to` >= UTC_TIMESTAMP()";
 
   MYSQL_STMT *stmt = NULL;
-  MYSQL_BIND pbind[1];
+  MYSQL_BIND pbind[2];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     MYSQL_BIND rbind[2];
@@ -2468,7 +2530,6 @@ bool database::get_channel_value(int channel_id,
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        *validity_time_sec = *validity_time_sec + 2;  // Two seconds margin
         result = true;
       }
     }

@@ -594,9 +594,7 @@ bool supla_user::get_channel_valve_value(int UserID, int DeviceID,
 }
 
 bool supla_user::get_channel_value(int DeviceID, int ChannelID,
-                                   TSuplaChannelValue *value, char *online,
-                                   bool canLoad,
-                                   unsigned _supla_int_t *validity_time_sec) {
+                                   TSuplaChannelValue *value, char *online) {
   bool result = false;
   memset(value, 0, sizeof(TSuplaChannelValue));
   if (online) {
@@ -644,25 +642,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
     }
 
     device->releasePtr();
-  }
-
-  if (canLoad && (result == false || (online && *online == false))) {
-    database *db = new database();
-
-    unsigned _supla_int_t _validity_time_sec = 0;
-
-    if (db->connect() == true &&
-        db->get_channel_value(ChannelID, value->value, &_validity_time_sec)) {
-      result = true;
-      if (online) {
-        *online = true;
-      }
-      if (validity_time_sec) {
-        *validity_time_sec = _validity_time_sec;
-      }
-    }
-
-    delete db;
   }
 
   return result;
