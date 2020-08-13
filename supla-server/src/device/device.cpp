@@ -480,8 +480,9 @@ void supla_device::on_channel_set_value_result(
 
 bool supla_device::get_channel_value(int ChannelID,
                                      char value[SUPLA_CHANNELVALUE_SIZE],
-                                     char *online) {
-  return channels->get_channel_value(ChannelID, value, online);
+                                     char *online,
+                                     unsigned _supla_int_t *validity_time_sec) {
+  return channels->get_channel_value(ChannelID, value, online, validity_time_sec);
 }
 
 bool supla_device::get_channel_extendedvalue(
