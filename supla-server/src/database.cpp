@@ -2483,7 +2483,7 @@ void database::update_channel_value(int channel_id, int user_id,
 
   const char sql[] = "CALL `supla_update_channel_value`(?, ?, unhex(?), ?)";
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 }
@@ -2511,7 +2511,7 @@ bool database::get_channel_value(int user_id, int channel_id,
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&user_id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
     MYSQL_BIND rbind[2];
     memset(rbind, 0, sizeof(rbind));
 
