@@ -562,6 +562,19 @@ void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
 }
 
+unsigned _supla_int_t supla_device_channel::getValueValidityTimeSec(void) {
+  if (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    if (now.tv_sec < value_valid_to.tv_sec) {
+      return value_valid_to.tv_sec - now.tv_sec;
+    }
+  }
+
+  return 0;
+}
+
 bool supla_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
   if (ev == NULL) {
     return false;
@@ -1144,7 +1157,8 @@ void supla_device_channels::load(int UserID, int DeviceID) {
 }
 
 bool supla_device_channels::get_channel_value(
-    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online) {
+    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
+    unsigned _supla_int_t *validity_time_sec) {
   bool result = false;
 
   if (ChannelID) {
@@ -1156,6 +1170,11 @@ bool supla_device_channels::get_channel_value(
       if (online) {
         *online = channel->isOffline() ? 0 : 1;
       }
+
+      if (validity_time_sec) {
+        *validity_time_sec = channel->getValueValidityTimeSec();
+      }
+
       result = true;
     }
 

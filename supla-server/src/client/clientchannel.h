@@ -85,6 +85,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   int getFlags();
   int getExtraId();
 
+  void setValueValidityTimeSec(unsigned _supla_int_t validity_time_sec);
   bool isValueValidityTimeSet();
   unsigned _supla_int64_t getValueValidityTimeUSec(void);
   void resetValueValidityTime(void);

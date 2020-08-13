@@ -47,7 +47,8 @@ class supla_device : public cdbase {
   virtual ~supla_device();
 
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-                         char *online);
+                         char *online,
+                         unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   void set_device_channel_value(int SenderID, int ChannelID,

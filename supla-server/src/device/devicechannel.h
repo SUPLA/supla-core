@@ -200,6 +200,7 @@ class supla_device_channel {
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
   unsigned int getValueDuration(void);
+  unsigned _supla_int_t getValueValidityTimeSec(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   void setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
                 const unsigned _supla_int_t *validity_time_sec);
@@ -251,7 +252,8 @@ class supla_device_channels {
                    const char value[SUPLA_CHANNELVALUE_SIZE],
                    unsigned _supla_int_t validity_time_sec);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-                         char *online);
+                         char *online,
+                         unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_double_value(int ChannelID, double *Value);

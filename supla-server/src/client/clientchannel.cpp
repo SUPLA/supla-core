@@ -54,12 +54,7 @@ supla_client_channel::supla_client_channel(
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
-  resetValueValidityTime();
-
-  if (validity_time_sec > 0) {
-    gettimeofday(&value_valid_to, NULL);
-    value_valid_to.tv_sec += validity_time_sec;
-  }
+  setValueValidityTimeSec(validity_time_sec);
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
@@ -110,6 +105,16 @@ short supla_client_channel::getManufacturerID() { return ManufacturerID; }
 short supla_client_channel::getProductID() { return ProductID; }
 
 int supla_client_channel::getFlags() { return Flags; }
+
+void supla_client_channel::setValueValidityTimeSec(
+    unsigned _supla_int_t validity_time_sec) {
+  resetValueValidityTime();
+
+  if (validity_time_sec > 0) {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
+  }
+}
 
 bool supla_client_channel::isValueValidityTimeSet() {
   return value_valid_to.tv_sec || value_valid_to.tv_usec;
@@ -194,8 +199,12 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
   bool result = false;
 
   if (client && client->getUser()) {
-    result =
-        client->getUser()->get_channel_value(DeviceId, getId(), value, online);
+    unsigned _supla_int_t validity_time_sec = 0;
+    result = client->getUser()->get_channel_value(DeviceId, getId(), value,
+                                                  online, &validity_time_sec);
+    if (result) {
+      setValueValidityTimeSec(validity_time_sec);
+    }
   }
 
   if ((!result || (online && !(*online))) && isValueValidityTimeSet() &&
