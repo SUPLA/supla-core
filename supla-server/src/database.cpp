@@ -2462,7 +2462,7 @@ void database::update_channel_value(int channel_id, int user_id,
                                     const char value[SUPLA_CHANNELVALUE_SIZE],
                                     unsigned _supla_int_t validity_time_sec) {
   MYSQL_STMT *stmt = NULL;
-  MYSQL_BIND pbind[3];
+  MYSQL_BIND pbind[4];
   memset(pbind, 0, sizeof(pbind));
 
   char value_hex[SUPLA_CHANNELVALUE_SIZE * 2 + 1];
