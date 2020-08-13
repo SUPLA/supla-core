@@ -173,7 +173,7 @@ class supla_device_channel {
   bool Offline;
   unsigned int Flags;
 
-  char value[8];
+  char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
 
@@ -181,7 +181,9 @@ class supla_device_channel {
   supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
                        int Param1, int Param2, int Param3, char *TextParam1,
                        char *TextParam2, char *TextParam3, bool Hidden,
-                       unsigned int Flags);
+                       unsigned int Flags,
+                       const char value[SUPLA_CHANNELVALUE_SIZE],
+                       unsigned _supla_int_t validity_time_sec);
   virtual ~supla_device_channel();
 
   int getId(void);
@@ -245,7 +247,9 @@ class supla_device_channels {
   void add_channel(int Id, int Number, int UserID, int Type, int Func,
                    int Param1, int Param2, int Param3, char *TextParam1,
                    char *TextParam2, char *TextParam3, bool Hidden,
-                   unsigned int Flags);
+                   unsigned int Flags,
+                   const char value[SUPLA_CHANNELVALUE_SIZE],
+                   unsigned _supla_int_t validity_time_sec);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online);
   bool get_channel_extendedvalue(int ChannelID,
