@@ -1224,6 +1224,7 @@ typedef struct {
 #define ZWAVE_NODE_NAME_MAXSIZE 50
 
 #define ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED 0x1
+#define ZWAVE_NODE_FLAG_WAKEUP_TIME_SETTABLE 0x2
 
 typedef struct {
   unsigned char Id;
