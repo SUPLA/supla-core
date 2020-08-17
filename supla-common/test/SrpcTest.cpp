@@ -1524,7 +1524,7 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_group_value,
                                      TSD_SuplaGroupNewValue,
-                                     SUPLA_SD_CALL_GROUP_SET_VALUE, 40, 168,
+                                     SUPLA_SD_CALL_GROUP_SET_VALUE, 44, 172,
                                      sd_group_new_value, SUPLA_CHANNELMAXCOUNT,
                                      ChannelNumber, ChannelCount);
 
