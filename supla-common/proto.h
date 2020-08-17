@@ -709,6 +709,7 @@ typedef struct {
 typedef struct {
   // server -> device
   _supla_int_t SenderID;
+  _supla_int_t GroupID;
   unsigned _supla_int_t DurationMS;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
