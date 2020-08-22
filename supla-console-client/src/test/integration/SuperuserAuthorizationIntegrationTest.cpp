@@ -99,7 +99,8 @@ TEST_F(SuperuserAuthorizationIntegrationTest, GetResultWithoutAuthorization) {
   iterateUntilDefaultTimeout();
 }
 
-TEST_F(SuperuserAuthorizationIntegrationTest, GetResultAfterCorrectAuthorization) {
+TEST_F(SuperuserAuthorizationIntegrationTest,
+       GetResultAfterCorrectAuthorization) {
   char email[] = "test@supla.org";
   char password[] = "supla!test";
   ASSERT_FALSE(sclient == NULL);
