@@ -397,7 +397,7 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
                  SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
                  SUPLA_SD_CALL_GROUP_SET_VALUE,
-				 SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT,
+                 SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT,
                  0};
 
   srpcCallAllowed(12, calls);
