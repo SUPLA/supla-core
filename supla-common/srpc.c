@@ -1152,6 +1152,9 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TCS_SuperUserAuthorizationRequest *)malloc(
                   sizeof(TCS_SuperUserAuthorizationRequest));
         break;
+      case SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT:
+        call_with_no_data = 1;
+        break;
       case SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT:
         if (srpc->sdp.data_size == sizeof(TSC_SuperUserAuthorizationResult))
           rd->data.sc_superuser_authorization_result =
@@ -1394,6 +1397,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS:
     case SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT:
     case SUPLA_SD_CALL_GROUP_SET_VALUE:
+    case SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT:
       return 12;
   }
 
@@ -2161,6 +2165,12 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
   return srpc_async_call(_srpc, SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
                          (char *)request,
                          sizeof(TCS_SuperUserAuthorizationRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_superuser_authorization_result(void *_srpc) {
+  return srpc_async_call(
+      _srpc, SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT, NULL, 0);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(

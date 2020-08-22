@@ -2061,10 +2061,10 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
   }
 
   return result;
-
-  char supla_client_superuser_authorization_request(
-      void *_suplaclient, char *email, char *password);
 }
+
+JNI_FUNCTION_V(scGetSuperUserAuthorizationResult,
+               supla_client_get_superuser_authorization_result);
 
 JNI_FUNCTION_I(scGetChannelState, supla_client_get_channel_state);
 

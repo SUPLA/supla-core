@@ -397,6 +397,7 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
                  SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
                  SUPLA_SD_CALL_GROUP_SET_VALUE,
+				 SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT,
                  0};
 
   srpcCallAllowed(12, calls);
@@ -1524,7 +1525,7 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
 
 SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_set_group_value,
                                      TSD_SuplaGroupNewValue,
-                                     SUPLA_SD_CALL_GROUP_SET_VALUE, 40, 168,
+                                     SUPLA_SD_CALL_GROUP_SET_VALUE, 44, 172,
                                      sd_group_new_value, SUPLA_CHANNELMAXCOUNT,
                                      ChannelNumber, ChannelCount);
 
@@ -2977,6 +2978,9 @@ TEST_F(SrpcTest, call_superuser_authorization_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+SRPC_CALL_WITH_NO_DATA(srpc_cs_async_get_superuser_authorization_result,
+                       SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT);
 
 //---------------------------------------------------------
 // DEVICE CALIBRATION / CONFIG

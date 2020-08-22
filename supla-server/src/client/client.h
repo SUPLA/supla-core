@@ -77,6 +77,7 @@ class supla_client : public cdbase {
   void oauth_token_request(void);
   void superuser_authorization_request(
       TCS_SuperUserAuthorizationRequest *request);
+  void send_superuser_authorization_result(bool *connection_failed);
 
   void device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
