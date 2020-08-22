@@ -214,6 +214,7 @@ char supla_client_oauth_token_request(void *_suplaclient);
 char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   const char *email,
                                                   const char *password);
+char supla_client_get_superuser_authorization_result(void *_suplaclient);
 char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request);
 char supla_client_device_calcfg_cancel_all_commands(void *_suplaclient,

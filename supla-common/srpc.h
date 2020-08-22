@@ -320,6 +320,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
     void *_srpc, TCS_SuperUserAuthorizationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_superuser_authorization_result(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
     void *_srpc, TSC_SuperUserAuthorizationResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(

@@ -770,6 +770,11 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           break;
 
+        case SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT:
+          client->send_superuser_authorization_result(NULL);
+
+          break;
+
         case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST:
           if (rd.data.cs_device_calcfg_request != NULL) {
             TCS_DeviceCalCfgRequest_B *cs_device_calcfg_request_b =

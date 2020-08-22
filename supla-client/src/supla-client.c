@@ -1254,6 +1254,11 @@ char supla_client_superuser_authorization_request(void *_suplaclient,
       ((TSuplaClientData *)_suplaclient)->srpc, &request);
 }
 
+char supla_client_get_superuser_authorization_result(void *_suplaclient) {
+  return srpc_cs_async_get_superuser_authorization_result(
+      ((TSuplaClientData *)_suplaclient)->srpc);
+}
+
 char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request) {
   if (request == NULL) return 0;
