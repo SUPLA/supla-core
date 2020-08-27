@@ -540,8 +540,7 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_GET_WAKE_UP_SETTINGS:
-      if (scd->cfg.cb_on_zwave_wake_up_settings_report &&
-          result->DataSize == sizeof(TCalCfg_ZWave_WakeupSettingsReport)) {
+      if (scd->cfg.cb_on_zwave_wake_up_settings_report) {
         scd->cfg.cb_on_zwave_wake_up_settings_report(
             scd, scd->cfg.user_data, result->Result,
             (TCalCfg_ZWave_WakeupSettingsReport *)result->Data);
