@@ -204,6 +204,7 @@ typedef struct {
   jmethodID j_mid_on_zwave_remove_node_result;
   jmethodID j_mid_on_zwave_get_node_list_result;
   jmethodID j_mid_on_zwave_get_assigned_node_id_result;
+  jmethodID j_mid_on_zwave_wake_up_settings_report;
   jmethodID j_mid_on_zwave_assign_node_id_result;
 
 } TAndroidSuplaClient;
@@ -1408,6 +1409,18 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                            new_string_utf(env, node->Name));
 }
 
+jobject supla_android_client_zwave_wake_up_settings_report_to_jobject(
+    TAndroidSuplaClient *asc, JNIEnv *env,
+    TCalCfg_ZWave_WakeupSettingsReport *report) {
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/ZWaveWakeUpSettings");
+  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IIII)V");
+
+  return (*env)->NewObject(env, cls, methodID, (jint)report->MinimumSec,
+                           (jint)report->MaximumSec, (jint)report->ValueSec,
+                           (jint)report->IntervalStepSec);
+}
+
 void supla_android_client_cb_on_zwave_add_node_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_Node *node) {
@@ -1455,6 +1468,25 @@ void supla_android_client_cb_on_zwave_get_assigned_node_id_result(
   (*env)->CallVoidMethod(env, asc->j_obj,
                          asc->j_mid_on_zwave_get_assigned_node_id_result,
                          result, (jshort)node_id);
+}
+
+void supla_android_client_cb_on_zwave_wake_up_settings_report(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_WakeupSettingsReport *report) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_wake_up_settings_report == NULL) {
+    return;
+  }
+
+  jobject settings =
+      supla_android_client_zwave_wake_up_settings_report_to_jobject(asc, env,
+                                                                    report);
+
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_wake_up_settings_report, result,
+                         settings);
 }
 
 void supla_android_client_cb_on_zwave_assign_node_id_result(
@@ -1698,6 +1730,9 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
                                  "(ILorg/supla/android/lib/ZWaveNode;)V");
     _asc->j_mid_on_zwave_get_assigned_node_id_result = supla_client_GetMethodID(
         env, oclass, "onZWaveGetAssignedNodeIdResult", "(IS)V");
+    _asc->j_mid_on_zwave_wake_up_settings_report = supla_client_GetMethodID(
+        env, oclass, "onZWaveWakeUpSettingsReport",
+        "(ILorg/supla/android/lib/ZWaveWakeUpSettings;)V");
     _asc->j_mid_on_zwave_assign_node_id_result = supla_client_GetMethodID(
         env, oclass, "onZWaveAssignNodeIdResult", "(IS)V");
 
@@ -1758,6 +1793,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_zwave_get_assigned_node_id_result;
     sclient_cfg.cb_on_zwave_assign_node_id_result =
         supla_android_client_cb_on_zwave_assign_node_id_result;
+    sclient_cfg.cb_on_zwave_wake_up_settings_report =
+        supla_android_client_cb_on_zwave_wake_up_settings_report;
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
     if (sclient_cfg.host) {
@@ -2114,6 +2151,9 @@ Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
   }
   return JNI_FALSE;
 }
+
+JNI_FUNCTION_I(scZWaveGetWakeUpSettings,
+               supla_client_zwave_get_wake_up_settings);
 
 JNI_FUNCTION_I(scDeviceCalCfgCancelAllCommands,
                supla_client_device_calcfg_cancel_all_commands);
