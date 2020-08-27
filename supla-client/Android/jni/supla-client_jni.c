@@ -1412,6 +1412,9 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
 jobject supla_android_client_zwave_wake_up_settings_report_to_jobject(
     TAndroidSuplaClient *asc, JNIEnv *env,
     TCalCfg_ZWave_WakeupSettingsReport *report) {
+  if (report == NULL) {
+    return NULL;
+  }
   jclass cls =
       (*env)->FindClass(env, "org/supla/android/lib/ZWaveWakeUpSettings");
   jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IIII)V");

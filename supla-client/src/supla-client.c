@@ -543,7 +543,9 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
       if (scd->cfg.cb_on_zwave_wake_up_settings_report) {
         scd->cfg.cb_on_zwave_wake_up_settings_report(
             scd, scd->cfg.user_data, result->Result,
-            (TCalCfg_ZWave_WakeupSettingsReport *)result->Data);
+            result->DataSize == sizeof(TCalCfg_ZWave_WakeupSettingsReport)
+                ? (TCalCfg_ZWave_WakeupSettingsReport *)result->Data
+                : NULL);
       }
       break;
     case SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID:
