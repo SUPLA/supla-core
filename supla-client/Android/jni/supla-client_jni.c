@@ -1405,8 +1405,8 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
           : 0;
 
   return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
-                           (jshort)node->ScreenType, channelID,
-                           new_string_utf(env, node->Name));
+                           (jshort)node->ScreenType, (jint)node->Flags,
+                           channelID, new_string_utf(env, node->Name));
 }
 
 jobject supla_android_client_zwave_wake_up_settings_report_to_jobject(
