@@ -175,8 +175,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsReport),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 
-  ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeupSettingsChangeRequst));
-  ASSERT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsChangeRequst),
+  ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
+  ASSERT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 }
 

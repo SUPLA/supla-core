@@ -1202,20 +1202,20 @@ typedef struct {
 #define SUPLA_CALCFG_RESULT_DEBUG 105                        // ver. >= 12
 #define SUPLA_CALCFG_RESULT_NOT_SUPPORTED_IN_SLAVE_MODE 106  // ver. >= 12
 
-#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000                   // v. >= 11
-#define SUPLA_CALCFG_CMD_CANCEL_ALL_CLIENT_COMMANDS 1010             // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR 2000                  // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE 2010                         // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE 2020                      // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST 2030                    // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID 2040             // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID 2050                   // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_GET_WAKE_UP_SETTINGS 2060             // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_WAKE_UP_SETTINGS_CHANGE_REQUEST 2070  // v. >= 12
-#define SUPLA_CALCFG_CMD_ZWAVE_CONFIG_MODE_ACTIVE 4000               // v. >= 12
-#define SUPLA_CALCFG_CMD_DEBUG_STRING 5000                           // v. >= 12
-#define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001                        // v. >= 12
-#define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000               // v. >= 12
+#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000        // v. >= 11
+#define SUPLA_CALCFG_CMD_CANCEL_ALL_CLIENT_COMMANDS 1010  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR 2000       // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE 2010              // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE 2020           // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST 2030         // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID 2040  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID 2050        // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_GET_WAKE_UP_SETTINGS 2060  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_SET_WAKE_UP_TIME 2070      // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_CONFIG_MODE_ACTIVE 4000    // v. >= 12
+#define SUPLA_CALCFG_CMD_DEBUG_STRING 5000                // v. >= 12
+#define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
+#define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1250,8 +1250,8 @@ typedef struct {
 } TCalCfg_ZWave_WakeupSettingsReport;
 
 typedef struct {
-  unsigned int ValueSec : 24;
-} TCalCfg_ZWave_WakeupSettingsChangeRequst;
+  unsigned int TimeSec : 24;
+} TCalCfg_ZWave_WakeUpTime;
 
 typedef struct {
   _supla_int_t Command;
