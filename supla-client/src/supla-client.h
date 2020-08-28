@@ -182,6 +182,7 @@ typedef struct {
       cb_on_zwave_assign_node_id_result;
   _suplaclient_cb_on_zwave_wake_up_settings_report
       cb_on_zwave_wake_up_settings_report;
+  _suplaclient_cb_on_zwave_basic_result cb_on_zwave_set_wake_up_time_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -245,6 +246,8 @@ char supla_client_zwave_get_assigned_node_id(void *_suplaclient, int channelID);
 char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
                                        unsigned char nodeID);
 char supla_client_zwave_get_wake_up_settings(void *_suplaclient, int channelID);
+char supla_client_zwave_set_wake_up_time(void *_suplaclient, int channelID,
+                                         unsigned int time);
 char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
                                            unsigned char resetCounter,
                                            unsigned char setTime,

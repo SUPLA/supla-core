@@ -206,6 +206,7 @@ typedef struct {
   jmethodID j_mid_on_zwave_get_assigned_node_id_result;
   jmethodID j_mid_on_zwave_wake_up_settings_report;
   jmethodID j_mid_on_zwave_assign_node_id_result;
+  jmethodID j_mid_on_zwave_set_wake_up_time_result;
 
 } TAndroidSuplaClient;
 
@@ -1376,6 +1377,7 @@ void supla_android_client_cb_on_min_version_required(
 }
 
 JNI_CALLBACK_I(on_zwave_reset_and_clear_result);
+JNI_CALLBACK_I(on_zwave_set_wake_up_time_result);
 
 void supla_android_client_cb_on_zwave_remove_node_result(
     void *_suplaclient, void *user_data, _supla_int_t result,
@@ -1397,7 +1399,7 @@ jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
                                                    TCalCfg_ZWave_Node *node) {
   jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
   jmethodID methodID = supla_client_GetMethodID(
-      env, cls, "<init>", "(SSLjava/lang/Integer;Ljava/lang/String;)V");
+      env, cls, "<init>", "(SSILjava/lang/Integer;Ljava/lang/String;)V");
 
   jobject channelID =
       node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED
@@ -1738,6 +1740,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         "(ILorg/supla/android/lib/ZWaveWakeUpSettings;)V");
     _asc->j_mid_on_zwave_assign_node_id_result = supla_client_GetMethodID(
         env, oclass, "onZWaveAssignNodeIdResult", "(IS)V");
+    _asc->j_mid_on_zwave_set_wake_up_time_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveSetWakeUpTimeResult", "(I)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -1798,6 +1802,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_zwave_assign_node_id_result;
     sclient_cfg.cb_on_zwave_wake_up_settings_report =
         supla_android_client_cb_on_zwave_wake_up_settings_report;
+    sclient_cfg.cb_on_zwave_set_wake_up_time_result =
+        supla_android_client_cb_on_zwave_set_wake_up_time_result;
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
     if (sclient_cfg.host) {
@@ -2157,6 +2163,8 @@ Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
 
 JNI_FUNCTION_I(scZWaveGetWakeUpSettings,
                supla_client_zwave_get_wake_up_settings);
+
+JNI_FUNCTION_II(scZWaveSetWakeUpTime, supla_client_zwave_set_wake_up_time);
 
 JNI_FUNCTION_I(scDeviceCalCfgCancelAllCommands,
                supla_client_device_calcfg_cancel_all_commands);
