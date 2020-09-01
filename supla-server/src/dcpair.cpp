@@ -52,3 +52,28 @@ bool dcpair::popDeviceChannelIDs(std::list<dcpair> *pairs, int *deviceId,
 
   return false;
 }
+
+// static
+bool dcpair::compare(const dcpair p1, const dcpair p2) {
+  return p1.DeviceId < p2.DeviceId ||
+         (p1.DeviceId == p2.DeviceId && p1.ChannelId <= p2.ChannelId);
+}
+
+// static
+void dcpair::sort_by_device_id(std::list<dcpair> *pairs) {
+  pairs->sort(dcpair::compare);
+}
+
+// static
+bool dcpair::last_one(std::list<dcpair> *pairs,
+                      std::list<dcpair>::iterator it) {
+  if (pairs->end() == it) {
+    return true;
+  }
+
+  int deviceID1 = it->getDeviceId();
+  it++;
+  int deviceID2 = it->getDeviceId();
+
+  return deviceID1 != deviceID2;
+}

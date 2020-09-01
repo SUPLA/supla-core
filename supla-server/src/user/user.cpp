@@ -665,9 +665,9 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
 
 // static
 bool supla_user::set_device_channel_char_value(
-    int UserID, int SenderID, int DeviceID, int ChannelID, const char value,
-    event_source_type eventSourceType, char *AlexaCorrelationToken,
-    char *GoogleRequestId) {
+    int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
+    unsigned char EOL, const char value, event_source_type eventSourceType,
+    char *AlexaCorrelationToken, char *GoogleRequestId) {
   bool result = false;
 
   safe_array_lock(supla_user::user_arr);
@@ -683,7 +683,7 @@ bool supla_user::set_device_channel_char_value(
     }
 
     result = user->set_device_channel_char_value(SenderID, DeviceID, ChannelID,
-                                                 value) == true;
+                                                 GroupID, EOL, value) == true;
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -693,9 +693,9 @@ bool supla_user::set_device_channel_char_value(
 
 // static
 bool supla_user::set_device_channel_rgbw_value(
-    int UserID, int SenderID, int DeviceID, int ChannelID, int color,
-    char color_brightness, char brightness, char on_off,
-    event_source_type eventSourceType, char *AlexaCorrelationToken,
+    int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
+    unsigned char EOL, int color, char color_brightness, char brightness,
+    char on_off, event_source_type eventSourceType, char *AlexaCorrelationToken,
     char *GoogleRequestId) {
   bool result = false;
 
@@ -711,9 +711,9 @@ bool supla_user::set_device_channel_rgbw_value(
           GoogleRequestId);
     }
 
-    result = user->set_device_channel_rgbw_value(SenderID, DeviceID, ChannelID,
-                                                 color, color_brightness,
-                                                 brightness, on_off) == true;
+    result = user->set_device_channel_rgbw_value(
+                 SenderID, DeviceID, ChannelID, GroupID, EOL, color,
+                 color_brightness, brightness, on_off) == true;
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -872,7 +872,8 @@ void supla_user::on_device_added(int DeviceID,
 
 bool supla_user::set_device_channel_value(
     event_source_type eventSourceType, int SenderID, int DeviceID,
-    int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
+    int ChannelID, int GroupID, unsigned char EOL,
+    const char value[SUPLA_CHANNELVALUE_SIZE]) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
@@ -880,7 +881,7 @@ bool supla_user::set_device_channel_value(
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceID, ChannelID, eventSourceType);
 
-    device->set_device_channel_value(SenderID, ChannelID, value);
+    device->set_device_channel_value(SenderID, ChannelID, GroupID, EOL, value);
     device->releasePtr();
   }
 
@@ -888,13 +889,15 @@ bool supla_user::set_device_channel_value(
 }
 
 bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
-                                               int ChannelID,
+                                               int ChannelID, int GroupID,
+                                               unsigned char EOL,
                                                const char value) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->set_device_channel_char_value(SenderID, ChannelID, value);
+    result = device->set_device_channel_char_value(SenderID, ChannelID, GroupID,
+                                                   EOL, value);
     device->releasePtr();
   }
 
@@ -902,15 +905,17 @@ bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
 }
 
 bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
-                                               int ChannelID, int color,
+                                               int ChannelID, int GroupID,
+                                               unsigned char EOL, int color,
                                                char color_brightness,
                                                char brightness, char on_off) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->set_device_channel_rgbw_value(
-        SenderID, ChannelID, color, color_brightness, brightness, on_off);
+    result = device->set_device_channel_rgbw_value(SenderID, ChannelID, GroupID,
+                                                   EOL, color, color_brightness,
+                                                   brightness, on_off);
     device->releasePtr();
   }
 

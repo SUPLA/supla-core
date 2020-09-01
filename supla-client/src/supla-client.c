@@ -539,6 +539,23 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
                 : 0);
       }
       break;
+    case SUPLA_CALCFG_CMD_ZWAVE_GET_WAKE_UP_SETTINGS:
+      if (scd->cfg.cb_on_zwave_wake_up_settings_report) {
+        scd->cfg.cb_on_zwave_wake_up_settings_report(
+            scd, scd->cfg.user_data, result->Result,
+            result->DataSize == sizeof(TCalCfg_ZWave_WakeupSettingsReport)
+                ? (TCalCfg_ZWave_WakeupSettingsReport *)result->Data
+                : NULL);
+      }
+      break;
+
+    case SUPLA_CALCFG_CMD_ZWAVE_SET_WAKE_UP_TIME:
+      if (scd->cfg.cb_on_zwave_set_wake_up_time_result) {
+        scd->cfg.cb_on_zwave_set_wake_up_time_result(scd, scd->cfg.user_data,
+                                                     result->Result);
+      }
+      break;
+
     case SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID:
       if (scd->cfg.cb_on_zwave_assign_node_id_result) {
         scd->cfg.cb_on_zwave_assign_node_id_result(
@@ -1415,6 +1432,31 @@ char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
 
   request.DataSize = sizeof(unsigned char);
   memcpy(request.Data, &nodeID, request.DataSize);
+
+  return supla_client_device_calcfg_request(_suplaclient, &request);
+}
+
+char supla_client_zwave_get_wake_up_settings(void *_suplaclient,
+                                             int channelID) {
+  TCS_DeviceCalCfgRequest_B request;
+  memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+  request.Target = SUPLA_TARGET_CHANNEL;
+  request.Id = channelID;
+  request.Command = SUPLA_CALCFG_CMD_ZWAVE_GET_WAKE_UP_SETTINGS;
+
+  return supla_client_device_calcfg_request(_suplaclient, &request);
+}
+
+char supla_client_zwave_set_wake_up_time(void *_suplaclient, int channelID,
+                                         unsigned int time) {
+  TCS_DeviceCalCfgRequest_B request;
+  memset(&request, 0, sizeof(TCS_DeviceCalCfgRequest_B));
+  request.Target = SUPLA_TARGET_CHANNEL;
+  request.Id = channelID;
+  request.Command = SUPLA_CALCFG_CMD_ZWAVE_SET_WAKE_UP_TIME;
+
+  ((TCalCfg_ZWave_WakeUpTime *)request.Data)->TimeSec = time;
+  request.DataSize = sizeof(TCalCfg_ZWave_WakeUpTime);
 
   return supla_client_device_calcfg_request(_suplaclient, &request);
 }

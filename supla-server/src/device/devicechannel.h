@@ -239,7 +239,7 @@ class supla_device_channels {
   std::list<int> mr_channel(int ChannelID, bool Master);
 
   void async_set_channel_value(void *srpc, supla_device_channel *channel,
-                               int SenderID,
+                               int SenderID, int GroupID, unsigned char EOL,
                                const char value[SUPLA_CHANNELVALUE_SIZE]);
 
  public:
@@ -280,12 +280,15 @@ class supla_device_channels {
                             TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
+                                int GroupID, unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(void *srpc, int SenderID, int ChannelID,
+                                     int GroupID, unsigned char EOL,
                                      const char value);
   bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID,
-                                     int color, char color_brightness,
-                                     char brightness, char on_off);
+                                     int GroupID, unsigned char EOL, int color,
+                                     char color_brightness, char brightness,
+                                     char on_off);
   bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
 
   std::list<int> master_channel(int ChannelID);
