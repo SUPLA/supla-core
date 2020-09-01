@@ -32,7 +32,7 @@
 
 #define W1_DEFAULT_PIN 4
 
-char file_read_sensor(const char *filepath, double *line1, double *line2) {
+char file_read_sensor(const char *filepath, double *line1, double *line2, unsigned char* line3) {
   FILE *file;
 
   file = fopen(filepath, "r");
@@ -47,8 +47,13 @@ char file_read_sensor(const char *filepath, double *line1, double *line2) {
   } else {
     return -1;
   }
+
   if (fgets(line, sizeof(line), file) != NULL) {
     *line2 = atof(line);
+  }
+
+  if (fgets(line, sizeof(line), file) != NULL) {
+	 *line3 = atoi(line);
   }
 
   fclose(file);

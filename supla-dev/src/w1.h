@@ -28,7 +28,7 @@ char w1_ds18b20_get_temp(char *device, double *temp);
 // DHT11, DHT22, AM2302
 char w1_dht_read(const char *w1, double *temp, double *humidity,
                  char chip_type);
-char file_read_sensor(const char *filepath, double *line1, double *line2);
+char file_read_sensor(const char *filepath, double *line1, double *line2, unsigned char* line3);
 char file_read_ac_data(const char *filepath, int *mode, int *power,
                        double *preset, double *measured, int *fan);
 #ifdef __cplusplus

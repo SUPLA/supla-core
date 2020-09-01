@@ -211,6 +211,9 @@ void devcfg_channel_cfg(const char *section, const char *name,
     channelio_set_id_template(number, value);
   } else if (strcasecmp(name, "id_Value") == 0 && strlen(value) > 0) {
     channelio_set_id_value(number, value);
+
+  } else if (strcasecmp(name, "battery_powered") == 0 && strlen(value) == 1) {
+	channelio_set_battery_powered(number, atoi(value));
   }
 }
 

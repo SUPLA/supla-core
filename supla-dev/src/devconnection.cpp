@@ -181,6 +181,20 @@ void devconnection_channel_set_value(TDeviceConnectionData *dcd,
                                    new_value->SenderID, Success);
 }
 
+void devconnection_channel_get_channel_state(TDeviceConnectionData *dcd, TCSD_ChannelStateRequest* request)
+{
+	TDSC_ChannelState state;
+	        memset(&state, 0, sizeof(TDSC_ChannelState));
+	state.ReceiverID = request->SenderID;
+	state.ChannelNumber = request->ChannelNumber;
+
+	channelio_get_channel_state(request->ChannelNumber, &state);
+
+
+	srpc_csd_async_channel_state_result(dcd->srpc, &state);
+
+}
+
 void devconnection_channel_calcfg_request(
     TDeviceConnectionData *dcd, TSD_DeviceCalCfgRequest *cal_cfg_request) {
   TSD_DeviceCalCfgRequest_B *test =
@@ -211,6 +225,10 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST:
         devconnection_channel_calcfg_request(dcd,
                                              rd.data.sd_device_calcfg_request);
+
+      case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
+        devconnection_channel_get_channel_state(dcd, rd.data.csd_channel_state_request);
+      break;
     }
     srpc_rd_free(&rd);
   } else if (result == SUPLA_RESULT_DATA_ERROR) {
@@ -237,13 +255,13 @@ void devconnection_register(TDeviceConnectionData *dcd) {
 
     memcpy(srd.GUID, DEVICE_GUID, SUPLA_GUID_SIZE);
 
-    channelio_channels_to_srd(&srd.channel_count, srd.channels);
+    channelio_channels_to_srd_b(&srd.channel_count, srd.channels);
 
     srpc_ds_async_registerdevice_c(dcd->srpc, &srd);
 
   } else {
-    TDS_SuplaRegisterDevice_D srd;
-    memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice_D));
+    TDS_SuplaRegisterDevice_E srd;
+    memset(&srd, 0, sizeof(TDS_SuplaRegisterDevice_E));
 
     srd.channel_count = 0;
 
@@ -257,9 +275,9 @@ void devconnection_register(TDeviceConnectionData *dcd) {
     memcpy(srd.GUID, DEVICE_GUID, SUPLA_GUID_SIZE);
     memcpy(srd.AuthKey, DEVICE_AUTHKEY, SUPLA_AUTHKEY_SIZE);
 
-    channelio_channels_to_srd(&srd.channel_count, srd.channels);
+    channelio_channels_to_srd_c(&srd.channel_count, srd.channels);
 
-    srpc_ds_async_registerdevice_d(dcd->srpc, &srd);
+    srpc_ds_async_registerdevice_e(dcd->srpc, &srd);
   }
 }
 

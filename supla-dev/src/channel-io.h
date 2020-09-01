@@ -72,14 +72,19 @@ void channelio_set_mqtt_template_in(unsigned char number, const char *value);
 void channelio_set_mqtt_template_out(unsigned char number, const char *value);
 
 void channelio_set_mqtt_retain(unsigned char number, unsigned char value);
+void channelio_set_battery_powered(unsigned char number, unsigned char value);
 
 void channelio_get_value(unsigned char number,
                          char value[SUPLA_CHANNELVALUE_SIZE]);
 char channelio_set_value(unsigned char number, char hi[SUPLA_CHANNELVALUE_SIZE],
                          unsigned int time_ms);
 
-void channelio_channels_to_srd(unsigned char *channel_count,
+void channelio_channels_to_srd_c(unsigned char *channel_count,
+                               TDS_SuplaDeviceChannel_C *channels);
+void channelio_channels_to_srd_b(unsigned char *channel_count,
                                TDS_SuplaDeviceChannel_B *channels);
+
+void channelio_get_channel_state(unsigned char number, TDSC_ChannelState *state);
 
 void mqtt_subscribe_callback(void **state,
                              struct mqtt_response_publish *publish);

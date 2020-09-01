@@ -56,11 +56,14 @@ class client_device_channel {
   bool retain;
   bool online;
   bool toggled;
+  bool batteryPowered;
+  unsigned char batteryLevel;
 
   void *lck;
   struct timeval last;
   char value[SUPLA_CHANNELVALUE_SIZE];
   TSuplaChannelExtendedValue *extendedValue;
+
 
   bool isSensorNONC(void);
 
@@ -135,6 +138,12 @@ class client_device_channel {
   void setChar(char value);
 
   void toggleValue(void);
+  bool isBatteryPowered(void);
+  unsigned char getBatteryLevel(void);
+
+  void setBatteryLevel(unsigned char level);
+  void setBatteryPowered(bool value);
+
 };
 
 class client_device_channels {

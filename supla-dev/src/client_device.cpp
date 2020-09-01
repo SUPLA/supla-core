@@ -40,6 +40,8 @@ client_device_channel::client_device_channel(int number) {
   this->online = true;
   this->toggled = true;
   this->fileWriteCheckSeck = 0;
+  this->batteryPowered = false;
+  this->batteryLevel = 0;
 
   this->last = (struct timeval){0};
 
@@ -53,10 +55,27 @@ void client_device_channel::setToggled(bool toggled) {
   this->toggled = toggled;
 }
 
+void client_device_channel::setBatteryPowered(bool value) {
+	this->batteryPowered = value;
+}
+
+
+void client_device_channel::setBatteryLevel(unsigned char level) {
+  this->batteryLevel = level;
+}
+
 int client_device_channel::getToggleSec(void) { return this->toggleSec; }
 
 void client_device_channel::setToggleSec(int interval) {
   this->toggleSec = interval;
+}
+
+bool client_device_channel::isBatteryPowered(void) {
+	return this->batteryPowered;
+}
+
+unsigned char client_device_channel::getBatteryLevel(void) {
+	return this->batteryLevel;
 }
 
 bool client_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {
