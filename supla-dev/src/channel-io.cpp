@@ -231,7 +231,8 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
           }
         }
 
-        if (channel->isBatteryPowered() && val3 != NULL) channel->setBatteryLevel(val3);
+        if (channel->isBatteryPowered() && val3 != NULL)
+          channel->setBatteryLevel(val3);
         if (read_result == 1) channel->setValue(tmp_value);
 
         if (read_result == 0 && log_err == 1)
