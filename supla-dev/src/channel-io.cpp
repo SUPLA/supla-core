@@ -107,8 +107,8 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
       supla_log(LOG_DEBUG, "reading channel_%d value from file %s",
                 channel->getNumber(), channel->getFileName().c_str());
       try {
-        read_result =
-            file_read_sensor(channel->getFileName().c_str(), &val1, &val2, &val3);
+        read_result = file_read_sensor(channel->getFileName().c_str(), &val1,
+                                       &val2, &val3);
 
         char tmp_value[SUPLA_CHANNELVALUE_SIZE];
 
@@ -452,11 +452,11 @@ void channelio_set_mqtt_retain(unsigned char number, unsigned char value) {
 }
 
 void channelio_set_battery_powered(unsigned char number, unsigned char value) {
-	if (channels == NULL) return;
+  if (channels == NULL) return;
 
-	client_device_channel *channel = channels->find_channel(number);
+  client_device_channel *channel = channels->find_channel(number);
 
-	if (channel) channel->setBatteryPowered(value);
+  if (channel) channel->setBatteryPowered(value);
 }
 
 void channelio_set_mqtt_template_in(unsigned char number, const char *value) {
@@ -591,7 +591,7 @@ char channelio_set_value(unsigned char number,
 }
 
 void channelio_channels_to_srd_b(unsigned char *channel_count,
-                               TDS_SuplaDeviceChannel_B *chnl) {
+                                 TDS_SuplaDeviceChannel_B *chnl) {
   int a;
 
   *channel_count = channels->getChannelCount();
@@ -608,7 +608,7 @@ void channelio_channels_to_srd_b(unsigned char *channel_count,
 }
 
 void channelio_channels_to_srd_c(unsigned char *channel_count,
-                               TDS_SuplaDeviceChannel_C *chnl) {
+                                 TDS_SuplaDeviceChannel_C *chnl) {
   int a;
 
   *channel_count = channels->getChannelCount();
@@ -625,22 +625,21 @@ void channelio_channels_to_srd_c(unsigned char *channel_count,
   }
 }
 
-void channelio_get_channel_state(unsigned char number, TDSC_ChannelState *state) {
+void channelio_get_channel_state(unsigned char number,
+                                 TDSC_ChannelState *state) {
+  if (channels == NULL) return;
 
-	if (channels == NULL) return;
+  client_device_channel *channel = channels->find_channel(number);
 
-	client_device_channel *channel = channels->find_channel(number);
+  if (channel == NULL) return;
 
-	if (channel == NULL) return;
-
-	if (channel->isBatteryPowered()) {
-		state->Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED |
-                SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
-		state->BatteryPowered = true;
-		state->BatteryLevel = channel->getBatteryLevel();
-	}
+  if (channel->isBatteryPowered()) {
+    state->Fields |= SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED |
+                     SUPLA_CHANNELSTATE_FIELD_BATTERYLEVEL;
+    state->BatteryPowered = true;
+    state->BatteryLevel = channel->getBatteryLevel();
+  }
 }
-
 
 void channelio_setcalback_on_channel_value_changed(
     _func_channelio_valuechanged on_valuechanged,

@@ -181,18 +181,16 @@ void devconnection_channel_set_value(TDeviceConnectionData *dcd,
                                    new_value->SenderID, Success);
 }
 
-void devconnection_channel_get_channel_state(TDeviceConnectionData *dcd, TCSD_ChannelStateRequest* request)
-{
-	TDSC_ChannelState state;
-	        memset(&state, 0, sizeof(TDSC_ChannelState));
-	state.ReceiverID = request->SenderID;
-	state.ChannelNumber = request->ChannelNumber;
+void devconnection_channel_get_channel_state(
+    TDeviceConnectionData *dcd, TCSD_ChannelStateRequest *request) {
+  TDSC_ChannelState state;
+  memset(&state, 0, sizeof(TDSC_ChannelState));
+  state.ReceiverID = request->SenderID;
+  state.ChannelNumber = request->ChannelNumber;
 
-	channelio_get_channel_state(request->ChannelNumber, &state);
+  channelio_get_channel_state(request->ChannelNumber, &state);
 
-
-	srpc_csd_async_channel_state_result(dcd->srpc, &state);
-
+  srpc_csd_async_channel_state_result(dcd->srpc, &state);
 }
 
 void devconnection_channel_calcfg_request(
@@ -227,8 +225,9 @@ void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                              rd.data.sd_device_calcfg_request);
 
       case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
-        devconnection_channel_get_channel_state(dcd, rd.data.csd_channel_state_request);
-      break;
+        devconnection_channel_get_channel_state(
+            dcd, rd.data.csd_channel_state_request);
+        break;
     }
     srpc_rd_free(&rd);
   } else if (result == SUPLA_RESULT_DATA_ERROR) {

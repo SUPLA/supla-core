@@ -64,7 +64,6 @@ class client_device_channel {
   char value[SUPLA_CHANNELVALUE_SIZE];
   TSuplaChannelExtendedValue *extendedValue;
 
-
   bool isSensorNONC(void);
 
  public:
@@ -143,7 +142,6 @@ class client_device_channel {
 
   void setBatteryLevel(unsigned char level);
   void setBatteryPowered(bool value);
-
 };
 
 class client_device_channels {

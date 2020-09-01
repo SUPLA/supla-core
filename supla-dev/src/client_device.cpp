@@ -56,9 +56,8 @@ void client_device_channel::setToggled(bool toggled) {
 }
 
 void client_device_channel::setBatteryPowered(bool value) {
-	this->batteryPowered = value;
+  this->batteryPowered = value;
 }
-
 
 void client_device_channel::setBatteryLevel(unsigned char level) {
   this->batteryLevel = level;
@@ -71,11 +70,11 @@ void client_device_channel::setToggleSec(int interval) {
 }
 
 bool client_device_channel::isBatteryPowered(void) {
-	return this->batteryPowered;
+  return this->batteryPowered;
 }
 
 unsigned char client_device_channel::getBatteryLevel(void) {
-	return this->batteryLevel;
+  return this->batteryLevel;
 }
 
 bool client_device_channel::getExtendedValue(TSuplaChannelExtendedValue *ev) {

@@ -80,11 +80,12 @@ char channelio_set_value(unsigned char number, char hi[SUPLA_CHANNELVALUE_SIZE],
                          unsigned int time_ms);
 
 void channelio_channels_to_srd_c(unsigned char *channel_count,
-                               TDS_SuplaDeviceChannel_C *channels);
+                                 TDS_SuplaDeviceChannel_C *channels);
 void channelio_channels_to_srd_b(unsigned char *channel_count,
-                               TDS_SuplaDeviceChannel_B *channels);
+                                 TDS_SuplaDeviceChannel_B *channels);
 
-void channelio_get_channel_state(unsigned char number, TDSC_ChannelState *state);
+void channelio_get_channel_state(unsigned char number,
+                                 TDSC_ChannelState *state);
 
 void mqtt_subscribe_callback(void **state,
                              struct mqtt_response_publish *publish);
