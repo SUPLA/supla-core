@@ -90,7 +90,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 12
+#define SUPLA_PROTO_VERSION 13
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -156,7 +156,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
-#define SUPLA_SD_CALL_GROUP_SET_VALUE 115
+#define SUPLA_SD_CALL_CHANNEL_SET_VALUE_B 115  // ver. >= 13
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
 #define SUPLA_SC_CALL_LOCATION_UPDATE 130
 #define SUPLA_SC_CALL_LOCATIONPACK_UPDATE 140
@@ -440,8 +440,6 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
   0x02000000                                               // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE 0x04000000  // ver. >= 12
 
-#define SUPLA_DEVICE_FLAG_GROUP_CONTROL_EXPECTED 0x0001  // ver. >= 12
-
 #pragma pack(push, 1)
 
 typedef struct {
@@ -711,13 +709,12 @@ typedef struct {
   // server -> device
   _supla_int_t SenderID;
   _supla_int_t GroupID;
+  unsigned char EOL;  // End Of List
+  unsigned char ChannelNumber;
   unsigned _supla_int_t DurationMS;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
-  unsigned char ChannelCount;
-  unsigned char
-      ChannelNumber[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
-} TSD_SuplaGroupNewValue;
+} TSD_SuplaChannelNewValue_B;  // v. >= 13
 
 typedef struct {
   // device -> server

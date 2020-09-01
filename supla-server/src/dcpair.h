@@ -32,6 +32,11 @@ class dcpair {
 
   static bool popDeviceChannelIDs(std::list<dcpair> *pairs, int *deviceId,
                                   std::list<int> *cids);
+
+  static bool compare(const dcpair p1, const dcpair p2);
+  static void sort_by_device_id(std::list<dcpair> *pairs);
+  static bool last_one(std::list<dcpair> *pairs,
+                       std::list<dcpair>::iterator it);
 };
 
 #endif /* DCPAIR_H_ */

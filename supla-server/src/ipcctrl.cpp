@@ -390,7 +390,7 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
       result = supla_user::set_channelgroup_char_value(UserID, CGID, Value);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_char_value(
-          UserID, 0, DeviceID, CGID, Value,
+          UserID, 0, DeviceID, CGID, 0, false, Value,
           AlexaCorrelationToken ? EST_AMAZON_ALEXA
                                 : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
           AlexaCorrelationToken, GoogleRequestId);
@@ -458,7 +458,8 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
           UserID, CGID, Color, ColorBrightness, Brightness, 0);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
-          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness, 0,
+          UserID, 0, DeviceID, CGID, 0, false, Color, ColorBrightness,
+          Brightness, 0,
           AlexaCorrelationToken ? EST_AMAZON_ALEXA
                                 : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
           AlexaCorrelationToken, GoogleRequestId);

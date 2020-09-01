@@ -492,24 +492,27 @@ bool supla_device::get_channel_extendedvalue(
 }
 
 void supla_device::set_device_channel_value(
-    int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
+    int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+    const char value[SUPLA_CHANNELVALUE_SIZE]) {
   channels->set_device_channel_value(getSvrConn()->srpc(), SenderID, ChannelID,
-                                     value);
+                                     GroupID, EOL, value);
 }
 
 bool supla_device::set_device_channel_char_value(int SenderID, int ChannelID,
+                                                 int GroupID, unsigned char EOL,
                                                  const char value) {
-  return channels->set_device_channel_char_value(getSvrConn()->srpc(), SenderID,
-                                                 ChannelID, value);
+  return channels->set_device_channel_char_value(
+      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, value);
 }
 
 bool supla_device::set_device_channel_rgbw_value(int SenderID, int ChannelID,
+                                                 int GroupID, unsigned char EOL,
                                                  int color,
                                                  char color_brightness,
                                                  char brightness, char on_off) {
   return channels->set_device_channel_rgbw_value(
-      getSvrConn()->srpc(), SenderID, ChannelID, color, color_brightness,
-      brightness, on_off);
+      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, color,
+      color_brightness, brightness, on_off);
 }
 
 bool supla_device::channel_exists(int ChannelID) {

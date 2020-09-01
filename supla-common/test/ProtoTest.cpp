@@ -59,6 +59,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
   ASSERT_EQ((unsigned int)1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
   ASSERT_EQ((unsigned int)17, sizeof(TSD_SuplaChannelNewValue));
+  ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelNewValue_B));
   ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
   ASSERT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
   ASSERT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
@@ -154,8 +155,6 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(unsigned char), (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
   ASSERT_LE(sizeof(TCalCfg_ProgressReport),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
-
-  ASSERT_EQ((unsigned int)149, sizeof(TSD_SuplaGroupNewValue));
 
   ASSERT_EQ((unsigned int)221, sizeof(TTimerState_ExtendedValue));
   ASSERT_EQ((unsigned int)271, sizeof(TChannelAndTimerState_ExtendedValue));

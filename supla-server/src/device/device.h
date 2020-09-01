@@ -51,11 +51,13 @@ class supla_device : public cdbase {
                          unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
-  void set_device_channel_value(int SenderID, int ChannelID,
+  void set_device_channel_value(int SenderID, int ChannelID, int GroupID,
+                                unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
-  bool set_device_channel_char_value(int SenderID, int ChannelID,
-                                     const char value);
-  bool set_device_channel_rgbw_value(int SenderID, int ChannelID, int color,
+  bool set_device_channel_char_value(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL, const char value);
+  bool set_device_channel_rgbw_value(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
 
