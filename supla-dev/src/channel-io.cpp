@@ -89,7 +89,7 @@ bool isFileOk(std::string filename, int file_write_sec) {
 
 char channelio_read_from_file(client_device_channel *channel, char log_err) {
   double val1 = -275, val2 = -1;
-  unsigned char val3 = 0;
+  unsigned char val3 = NULL;
 
   struct timeval now;
   char read_result = 0;
@@ -231,7 +231,7 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
           }
         }
 
-        if (channel->isBatteryPowered()) channel->setBatteryLevel(val3);
+        if (channel->isBatteryPowered() && val3 != NULL) channel->setBatteryLevel(val3);
         if (read_result == 1) channel->setValue(tmp_value);
 
         if (read_result == 0 && log_err == 1)
