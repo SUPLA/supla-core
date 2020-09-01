@@ -158,6 +158,23 @@ char channelio_read_from_file(client_device_channel *channel, char log_err) {
             n = val2 * 1000;
             memcpy(&tmp_value[4], &n, 4);
           } break;
+          case SUPLA_CHANNELFNC_HUMIDITY: {
+            if (!isFileOk(channel->getFileName(),
+                          channel->getFileWriteCheckSec())) {
+              val1 = -1;
+            }
+
+            int n;
+
+            n = 0 * 1000;
+            memcpy(tmp_value, &n, 4);
+
+            n = val1 * 1000;
+            memcpy(&tmp_value[4], &n, 4);
+
+            val3 = val2;
+
+          } break;
           case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
             int mode;
             int power;
