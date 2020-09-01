@@ -619,7 +619,10 @@ void channelio_channels_to_srd_c(unsigned char *channel_count,
       chnl[a].Number = channel->getNumber();
       chnl[a].Type = channel->getType();
       chnl[a].Default = channel->getFunction();
-      chnl[a].Flags |= SUPLA_CHANNEL_FLAG_CHANNELSTATE;
+
+      if (channel->isBatteryPowered())
+        chnl[a].Flags |= SUPLA_CHANNEL_FLAG_CHANNELSTATE;
+
       channel->getValue(chnl[a].value);
     }
   }
