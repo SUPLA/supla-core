@@ -1491,8 +1491,8 @@ void supla_device_channels::async_set_channel_value(
     void *srpc, supla_device_channel *channel, int SenderID, int GroupID,
     unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE]) {
   if (GroupID && srpc_get_proto_version(srpc) >= 13) {
-    TSD_SuplaChannelNewValue_B s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelNewValue_B));
+    TSD_SuplaChannelGroupNewValue s;
+    memset(&s, 0, sizeof(TSD_SuplaChannelGroupNewValue));
 
     s.ChannelNumber = channel->getNumber();
     s.DurationMS = channel->getValueDuration();
@@ -1501,7 +1501,7 @@ void supla_device_channels::async_set_channel_value(
     s.EOL = EOL;
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
-    srpc_sd_async_set_channel_value_b(srpc, &s);
+    srpc_sd_async_set_channelgroup_value(srpc, &s);
   } else {
     TSD_SuplaChannelNewValue s;
     memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));

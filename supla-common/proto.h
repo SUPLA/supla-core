@@ -156,7 +156,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
-#define SUPLA_SD_CALL_CHANNEL_SET_VALUE_B 115  // ver. >= 13
+#define SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE 115  // ver. >= 13
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
 #define SUPLA_SC_CALL_LOCATION_UPDATE 130
 #define SUPLA_SC_CALL_LOCATIONPACK_UPDATE 140
@@ -714,7 +714,7 @@ typedef struct {
   unsigned _supla_int_t DurationMS;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
-} TSD_SuplaChannelNewValue_B;  // v. >= 13
+} TSD_SuplaChannelGroupNewValue;  // v. >= 13
 
 typedef struct {
   // device -> server
