@@ -156,8 +156,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
-#define SUPLA_SD_CALL_CHANNEL_SET_VALUE_B 115  // ver. >= 13
+#define SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE 115  // ver. >= 13
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
+#define SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT 125  // ver. >= 13
 #define SUPLA_SC_CALL_LOCATION_UPDATE 130
 #define SUPLA_SC_CALL_LOCATIONPACK_UPDATE 140
 #define SUPLA_SC_CALL_CHANNEL_UPDATE 150
@@ -165,6 +166,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE 170
 #define SUPLA_CS_CALL_GET_NEXT 180
 #define SUPLA_SC_CALL_EVENT 190
+#define SUPLA_SC_CALL_EVENT_B 195  // ver. >= 13
 #define SUPLA_CS_CALL_CHANNEL_SET_VALUE 200
 #define SUPLA_CS_CALL_CHANNEL_SET_VALUE_B 205                 // ver. >= 3
 #define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT 210               // ver. >= 2
@@ -714,7 +716,7 @@ typedef struct {
   unsigned _supla_int_t DurationMS;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
-} TSD_SuplaChannelNewValue_B;  // v. >= 13
+} TSD_SuplaChannelGroupNewValue;  // v. >= 13
 
 typedef struct {
   // device -> server
@@ -722,6 +724,13 @@ typedef struct {
   _supla_int_t SenderID;
   char Success;
 } TDS_SuplaChannelNewValueResult;
+
+typedef struct {
+  // device -> server
+  _supla_int_t GroupID;
+  _supla_int_t SenderID;
+  char Success;
+} TDS_SuplaChannelGroupNewValueResult;  // v. >= 13
 
 typedef struct {
   // server -> client
@@ -1023,6 +1032,21 @@ typedef struct {
   char
       SenderName[SUPLA_SENDER_NAME_MAXSIZE];  // Last variable in struct! | UTF8
 } TSC_SuplaEvent;
+
+typedef struct {
+  // server -> client
+  _supla_int_t Event;
+  _supla_int_t ID;
+  _supla_int_t GroupID;
+  _supla_int_t ChannelID;
+  unsigned _supla_int_t DurationMS;
+
+  _supla_int_t SenderID;
+  unsigned _supla_int_t
+      SenderNameSize;  // including the terminating null byte ('\0')
+  char
+      SenderName[SUPLA_SENDER_NAME_MAXSIZE];  // Last variable in struct! | UTF8
+} TSC_SuplaEvent_B;
 
 typedef struct {
   char Platform;

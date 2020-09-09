@@ -119,9 +119,11 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelPack_C *sc_channel_pack_c;
   TSC_SuplaChannelValue *sc_channel_value;
   TSC_SuplaEvent *sc_event;
+  TSC_SuplaEvent_B *sc_event_b;
   TSD_SuplaChannelNewValue *sd_channel_new_value;
-  TSD_SuplaChannelNewValue_B *sd_channel_new_value_b;
+  TSD_SuplaChannelGroupNewValue *sd_channelgroup_new_value;
   TDS_SuplaChannelNewValueResult *ds_channel_new_value_result;
+  TDS_SuplaChannelGroupNewValueResult *ds_channelgroup_new_value_result;
   TCS_SuplaChannelNewValue *cs_channel_new_value;
   TCS_SuplaChannelNewValue_B *cs_channel_new_value_b;
   TDS_FirmwareUpdateParams *ds_firmware_update_params;
@@ -242,11 +244,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     TSuplaChannelExtendedValue *value);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_value_b(
-    void *_srpc, TSD_SuplaChannelNewValue_B *value);  // ver. >= 13
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channelgroup_value(
+    void *_srpc, TSD_SuplaChannelGroupNewValue *value);  // ver. >= 13
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
                                  _supla_int_t SenderID, char Success);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channelgroup_result(
+    void *_srpc, _supla_int_t GroupID, _supla_int_t SenderID, char Success);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url(
     void *_srpc, TDS_FirmwareUpdateParams *params);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
@@ -309,6 +313,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelextendedvalue_pack_update(
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_get_next(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc,
                                                    TSC_SuplaEvent *event);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event_b(void *_srpc,
+                                                   TSC_SuplaEvent_B *event);  // ver. >= 13
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_set_channel_value(void *_srpc, TCS_SuplaChannelNewValue *value);
 _supla_int_t SRPC_ICACHE_FLASH

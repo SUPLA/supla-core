@@ -72,7 +72,7 @@ class supla_client : public cdbase {
   int getName(char *buffer, int size);
   int getAccessID(void);
 
-  void call_event(TSC_SuplaEvent *event);
+  void raise_channel_event(TSC_SuplaEvent_B *event_b);
 
   void oauth_token_request(void);
   void superuser_authorization_request(

@@ -59,8 +59,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
   ASSERT_EQ((unsigned int)1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
   ASSERT_EQ((unsigned int)17, sizeof(TSD_SuplaChannelNewValue));
-  ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelNewValue_B));
+  ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelGroupNewValue));
   ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
+  ASSERT_EQ((unsigned int)9, sizeof(TDS_SuplaChannelGroupNewValueResult));
   ASSERT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
   ASSERT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
   ASSERT_EQ((unsigned int)448, sizeof(TSC_SuplaChannelValuePack));
@@ -87,6 +88,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)12, sizeof(TCS_SuplaChannelNewValue_B));
   ASSERT_EQ((unsigned int)13, sizeof(TCS_SuplaNewValue));
   ASSERT_EQ((unsigned int)221, sizeof(TSC_SuplaEvent));
+  ASSERT_EQ((unsigned int)225, sizeof(TSC_SuplaEvent_B));
   ASSERT_EQ((unsigned int)17, sizeof(TDS_FirmwareUpdateParams));
   ASSERT_EQ((unsigned int)207, sizeof(TSD_FirmwareUpdate_Url));
   ASSERT_EQ((unsigned int)208, sizeof(TSD_FirmwareUpdate_UrlResult));

@@ -113,6 +113,14 @@ namespace {
       spc_function, structure_name, call_id, expected_data_size1, \
       expected_data_size2, rd_data_variable, max_size, Caption, CaptionSize)
 
+#define SRPC_CALL_BASIC_TEST_WITH_SENDERNAME(                                 \
+    spc_function, structure_name, call_id, expected_data_size1,               \
+    expected_data_size2, rd_data_variable, max_size)                          \
+  SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(spc_function, structure_name, call_id, \
+                                       expected_data_size1,                   \
+                                       expected_data_size2, rd_data_variable, \
+                                       max_size, SenderName, SenderNameSize)
+
 int *all_calls = NULL;  // Possible memory leak
 int all_calls_size = 0;
 
@@ -403,7 +411,9 @@ TEST_F(SrpcTest, call_allowed_v12) {
 }
 
 TEST_F(SrpcTest, call_allowed_v13) {
-  int calls[] = {SUPLA_SD_CALL_CHANNEL_SET_VALUE_B, 0};
+  int calls[] = {SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE,
+                 SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT,
+                 SUPLA_SC_CALL_EVENT_B, 0};
   srpcCallAllowed(13, calls);
 }
 
@@ -1507,8 +1517,6 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  DECLARE_WITH_RANDOM(TSD_SuplaChannelNewValue, value);
-
   ASSERT_GT(srpc_ds_async_set_channel_result(srpc, 3, 2, 1), 0);
   SendAndReceive(SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT, 29);
 
@@ -1523,14 +1531,33 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   srpc = NULL;
 }
 
+TEST_F(SrpcTest, call_ds_set_channelgroup_value_result) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  ASSERT_GT(srpc_ds_async_set_channelgroup_result(srpc, 3, 2, 1), 0);
+  SendAndReceive(SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT, 32);
+
+  ASSERT_FALSE(cr_rd.data.ds_channelgroup_new_value_result == NULL);
+
+  ASSERT_EQ(3, cr_rd.data.ds_channelgroup_new_value_result->GroupID);
+  ASSERT_EQ(2, cr_rd.data.ds_channelgroup_new_value_result->SenderID);
+  ASSERT_EQ(1, cr_rd.data.ds_channelgroup_new_value_result->Success);
+
+  free(cr_rd.data.ds_channelgroup_new_value_result);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
 //---------------------------------------------------------
 // SET CHANNEL NEW VALUE B
 //---------------------------------------------------------
 
-SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channel_value_b,
-                     TSD_SuplaChannelNewValue_B,
-                     SUPLA_SD_CALL_CHANNEL_SET_VALUE_B, 45,
-                     sd_channel_new_value_b);
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channelgroup_value,
+                     TSD_SuplaChannelGroupNewValue,
+                     SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE, 45,
+                     sd_channelgroup_new_value);
 
 //---------------------------------------------------------
 // GET FIRMWARE UPDATE URL
@@ -2791,63 +2818,13 @@ SRPC_CALL_WITH_NO_DATA(srpc_cs_async_get_next, SUPLA_CS_CALL_GET_NEXT);
 // EVENT
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_event_with_zero_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+SRPC_CALL_BASIC_TEST_WITH_SENDERNAME(srpc_sc_async_event, TSC_SuplaEvent,
+                                     SUPLA_SC_CALL_EVENT, 43, 244, sc_event,
+                                     SUPLA_SENDER_NAME_MAXSIZE);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaEvent, event);
-
-  event.SenderNameSize = 0;
-
-  ASSERT_GT(srpc_sc_async_event(srpc, &event), 0);
-  SendAndReceive(SUPLA_SC_CALL_EVENT, 43);
-
-  ASSERT_FALSE(cr_rd.data.sc_event == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_event, &event,
-                      sizeof(TSC_SuplaEvent) - SUPLA_SENDER_NAME_MAXSIZE));
-
-  free(cr_rd.data.sc_event);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_event_with_full_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaEvent, event);
-
-  event.SenderNameSize = SUPLA_SENDER_NAME_MAXSIZE;
-
-  ASSERT_GT(srpc_sc_async_event(srpc, &event), 0);
-  SendAndReceive(SUPLA_SC_CALL_EVENT, 244);
-
-  ASSERT_FALSE(cr_rd.data.sc_event == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_event, &event, sizeof(TSC_SuplaEvent)));
-
-  free(cr_rd.data.sc_event);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_event_with_over_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaEvent, event);
-
-  event.SenderNameSize = SUPLA_SENDER_NAME_MAXSIZE + 1;
-
-  ASSERT_EQ(srpc_sc_async_event(srpc, &event), 0);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_BASIC_TEST_WITH_SENDERNAME(srpc_sc_async_event_b, TSC_SuplaEvent_B,
+                                     SUPLA_SC_CALL_EVENT_B, 47, 248, sc_event_b,
+                                     SUPLA_SENDER_NAME_MAXSIZE);
 
 //---------------------------------------------------------
 // CS - SET CHANNEL NEW VALUE

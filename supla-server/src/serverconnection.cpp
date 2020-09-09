@@ -678,6 +678,14 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
           break;
 
+        case SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT:
+          if (rd.data.ds_channelgroup_new_value_result) {
+            device->on_channelgroup_set_value_result(
+                rd.data.ds_channelgroup_new_value_result);
+          }
+
+          break;
+
         case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
           if (rd.data.ds_firmware_update_params) {
             device->get_firmware_update_url(rd.data.ds_firmware_update_params);

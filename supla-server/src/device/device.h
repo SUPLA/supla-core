@@ -26,6 +26,10 @@
 
 class supla_user;
 class supla_device : public cdbase {
+ private:
+  void raise_channel_event(int ChannelID, int GroupID, int SenderID,
+                           char Success, int ChannelType);
+
  protected:
   supla_device_channels *channels;
 
@@ -68,6 +72,8 @@ class supla_device : public cdbase {
   void on_device_channel_extendedvalue_changed(
       TDS_SuplaDeviceChannelExtendedValue *ev);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);
+  void on_channelgroup_set_value_result(
+      TDS_SuplaChannelGroupNewValueResult *result);
   std::list<int> master_channel(int ChannelID);
   std::list<int> related_channel(int ChannelID);
   bool get_channel_double_value(int ChannelID, double *Value);

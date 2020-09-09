@@ -865,12 +865,12 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
-      case SUPLA_SD_CALL_CHANNEL_SET_VALUE_B:
+      case SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE:
 
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelNewValue_B))
-          rd->data.sd_channel_new_value_b =
-              (TSD_SuplaChannelNewValue_B *)malloc(
-                  sizeof(TSD_SuplaChannelNewValue_B));
+        if (srpc->sdp.data_size == sizeof(TSD_SuplaChannelGroupNewValue))
+          rd->data.sd_channelgroup_new_value =
+              (TSD_SuplaChannelGroupNewValue *)malloc(
+                  sizeof(TSD_SuplaChannelGroupNewValue));
 
         break;
 
@@ -880,6 +880,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
           rd->data.ds_channel_new_value_result =
               (TDS_SuplaChannelNewValueResult *)malloc(
                   sizeof(TDS_SuplaChannelNewValueResult));
+
+        break;
+
+      case SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT:
+
+        if (srpc->sdp.data_size == sizeof(TDS_SuplaChannelGroupNewValueResult))
+          rd->data.ds_channelgroup_new_value_result =
+              (TDS_SuplaChannelGroupNewValueResult *)malloc(
+                  sizeof(TDS_SuplaChannelGroupNewValueResult));
 
         break;
 
@@ -1127,6 +1136,17 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                 (sizeof(TSC_SuplaEvent) - SUPLA_SENDER_NAME_MAXSIZE) &&
             srpc->sdp.data_size <= sizeof(TSC_SuplaEvent)) {
           rd->data.sc_event = (TSC_SuplaEvent *)malloc(sizeof(TSC_SuplaEvent));
+        }
+
+        break;
+
+      case SUPLA_SC_CALL_EVENT_B:
+
+        if (srpc->sdp.data_size >=
+                (sizeof(TSC_SuplaEvent_B) - SUPLA_SENDER_NAME_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_SuplaEvent_B)) {
+          rd->data.sc_event_b =
+              (TSC_SuplaEvent_B *)malloc(sizeof(TSC_SuplaEvent_B));
         }
 
         break;
@@ -1396,7 +1416,9 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT:
     case SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT:
       return 12;
-    case SUPLA_SD_CALL_CHANNEL_SET_VALUE_B:
+    case SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE:
+    case SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT:
+    case SUPLA_SC_CALL_EVENT_B:
       return 13;
   }
 
@@ -1689,10 +1711,10 @@ srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value) {
                          sizeof(TSD_SuplaChannelNewValue));
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channel_value_b(
-    void *_srpc, TSD_SuplaChannelNewValue_B *value) {
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNEL_SET_VALUE_B,
-                         (char *)value, sizeof(TSD_SuplaChannelNewValue_B));
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channelgroup_value(
+    void *_srpc, TSD_SuplaChannelGroupNewValue *value) {
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE,
+                         (char *)value, sizeof(TSD_SuplaChannelGroupNewValue));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
@@ -1706,6 +1728,18 @@ srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
   return srpc_async_call(_srpc, SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
                          (char *)&result,
                          sizeof(TDS_SuplaChannelNewValueResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_set_channelgroup_result(
+    void *_srpc, _supla_int_t GroupID, _supla_int_t SenderID, char Success) {
+  TDS_SuplaChannelGroupNewValueResult result;
+  result.GroupID = GroupID;
+  result.SenderID = SenderID;
+  result.Success = Success;
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_CHANNELGROUP_SET_VALUE_RESULT,
+                         (char *)&result,
+                         sizeof(TDS_SuplaChannelGroupNewValueResult));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
@@ -2117,6 +2151,16 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event(void *_srpc,
   if (size > sizeof(TSC_SuplaEvent)) return 0;
 
   return srpc_async_call(_srpc, SUPLA_SC_CALL_EVENT, (char *)event, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_event_b(void *_srpc,
+                                                     TSC_SuplaEvent_B *event) {
+  _supla_int_t size = sizeof(TSC_SuplaEvent_B) - SUPLA_SENDER_NAME_MAXSIZE +
+                      event->SenderNameSize;
+
+  if (size > sizeof(TSC_SuplaEvent_B)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_EVENT_B, (char *)event, size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH

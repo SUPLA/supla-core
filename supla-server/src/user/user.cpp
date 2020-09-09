@@ -1008,12 +1008,12 @@ void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
       this, DeviceId, ChannelId, EST_DEVICE);
 }
 
-void supla_user::call_event(TSC_SuplaEvent *event) {
+void supla_user::raise_channel_event(TSC_SuplaEvent_B *event) {
   supla_client *client;
 
   for (int a = 0; a < client_container->count(); a++)
     if (NULL != (client = client_container->get(a))) {
-      client->call_event(event);
+      client->raise_channel_event(event);
       client->releasePtr();
     }
 }
@@ -1461,6 +1461,10 @@ void supla_user::set_channel_caption(supla_client *sender,
   }
 
   sender->set_channel_caption_result(&result);
+}
+
+int supla_user::get_first_channel_id_int_group(int GroupId, int DeviceId) {
+  return cgroups->get_first_channel_id_in_group(GroupId, DeviceId);
 }
 
 supla_amazon_alexa *supla_user::amazonAlexa(void) { return amazon_alexa; }

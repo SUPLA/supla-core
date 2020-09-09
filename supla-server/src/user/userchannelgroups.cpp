@@ -95,3 +95,23 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
 
   return result;
 }
+
+int supla_user_channelgroups::get_first_channel_id_in_group(int GroupID,
+                                                            int DeviceID) {
+  int result = 0;
+  void *arr = getArr(master);
+  safe_array_lock(arr);
+
+  for (int a = 0; a < safe_array_count(arr); a++) {
+    supla_user_channelgroup *g =
+        static_cast<supla_user_channelgroup *>(safe_array_get(arr, a));
+    if (g && g->getGroupId() == GroupID && g->getDeviceId() == DeviceID) {
+      result = g->getChannelId();
+      break;
+    }
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}

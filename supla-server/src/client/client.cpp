@@ -354,10 +354,22 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
   }
 }
 
-void supla_client::call_event(TSC_SuplaEvent *event) {
+void supla_client::raise_channel_event(TSC_SuplaEvent_B *event_b) {
   if (event != NULL && (event->Event != SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED ||
                         event->SenderID == getID())) {
-    srpc_sc_async_event(getSvrConn()->srpc(), event);
+    if (getSvrConn()->getProtocolVersion() >= 13) {
+      srpc_sc_async_event_b(getSvrConn()->srpc(), event_b);
+    } else {
+      TSC_SuplaEvent event;
+      event.Event = event_b->Event;
+      event.ChannelID = event_b->ChannelID;
+      event.DurationMS = event_b->DurationMS;
+      event.SenderID = event_b->SenderID;
+      event.SenderNameSize = event_b->SenderNameSize;
+      memcpy(event.SenderName, event_b->SenderName, SUPLA_SENDER_NAME_MAXSIZE);
+
+      srpc_sc_async_event(getSvrConn()->srpc(), &event);
+    }
   }
 }
 

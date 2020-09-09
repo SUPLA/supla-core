@@ -189,7 +189,7 @@ class supla_user {
                                 int ChannelId = 0, bool Extended = false);
   void on_channel_become_online(int DeviceId, int ChannelId);
 
-  void call_event(TSC_SuplaEvent *event);
+  void raise_channel_event(TSC_SuplaEvent_B *event);
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurements(void *emarr);
   supla_channel_electricity_measurement *get_electricity_measurement(
@@ -211,6 +211,8 @@ class supla_user {
   void set_channel_function(supla_client *sender, TCS_SetChannelFunction *func);
   void set_channel_caption(supla_client *sender,
                            TCS_SetChannelCaption *caption);
+
+  int get_first_channel_id_int_group(int GroupId, int DeviceId);
 
   supla_amazon_alexa *amazonAlexa(void);
   supla_google_home *googleHome(void);
