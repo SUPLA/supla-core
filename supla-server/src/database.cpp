@@ -2159,7 +2159,7 @@ bool database::state_webhook_load_credentials(
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
       "UTC_TIMESTAMP(), expires_at) `expires_in`, `url`, `functions_ids` "
       "FROM "
-      "`supla_state_webhooks` WHERE user_id = ? AND enabled = 1 AND AND "
+      "`supla_state_webhooks` WHERE user_id = ? AND enabled = 1 AND "
       "LENGTH(access_token) > 0";
 
   MYSQL_STMT *stmt = NULL;
