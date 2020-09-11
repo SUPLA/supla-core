@@ -19,6 +19,7 @@
 #ifndef WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
 #define WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
 
+#include <list>
 #include "webhook/webhookbasiccredentials.h"
 
 #define WEBHOOK_TOKEN_MAXSIZE 255
@@ -28,6 +29,7 @@
 class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
  private:
   char *url;
+  std::list<int> functions_ids;
   void url_free();
 
  public:
@@ -38,6 +40,8 @@ class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
            const char *url, const char *functions_ids);
   void load();
   void on_credentials_changed();
+  char *getUrl(void);
+  std::list<int> getFunctionsIds(void);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCREDENTIALS_H_ */
