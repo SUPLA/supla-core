@@ -2212,10 +2212,10 @@ bool database::state_webhook_load_credentials(
     rbind[3].buffer_length = WEBHOOK_URL_MAXSIZE;
     rbind[3].length = &url_size;
 
-    rbind[3].buffer_type = MYSQL_TYPE_STRING;
-    rbind[3].buffer = buffer_functions;
-    rbind[3].buffer_length = WEBHOOK_FUNCTIONS_IDS_MAXSIZE;
-    rbind[3].length = &functions_size;
+    rbind[4].buffer_type = MYSQL_TYPE_STRING;
+    rbind[4].buffer = buffer_functions;
+    rbind[4].buffer_length = WEBHOOK_FUNCTIONS_IDS_MAXSIZE;
+    rbind[4].length = &functions_size;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
