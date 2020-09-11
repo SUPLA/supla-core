@@ -18,27 +18,27 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <webhook/statewebhookbasicclient.h>
+#include <webhook/webhookbasicclient.h>
 #include <webhook/webhookbasiccredentials.h>
 #include "http/trivialhttps.h"
 #include "lck.h"
 #include "user/user.h"
 
-supla_state_webhook_basic_client::supla_state_webhook_basic_client(
+supla_webhook_basic_client::supla_webhook_basic_client(
     supla_webhook_basic_credentials *credentials) {
   this->lck = lck_init();
   this->https = NULL;
   this->credentials = credentials;
 }
 
-void supla_state_webhook_basic_client::httpsInit(void) {
+void supla_webhook_basic_client::httpsInit(void) {
   httpsFree();
   lck_lock(lck);
   https = new supla_trivial_https();
   lck_unlock(lck);
 }
 
-void supla_state_webhook_basic_client::httpsFree(void) {
+void supla_webhook_basic_client::httpsFree(void) {
   lck_lock(lck);
   if (https) {
     delete https;
@@ -47,7 +47,7 @@ void supla_state_webhook_basic_client::httpsFree(void) {
   lck_unlock(lck);
 }
 
-void supla_state_webhook_basic_client::terminate(void) {
+void supla_webhook_basic_client::terminate(void) {
   lck_lock(lck);
   if (https) {
     https->terminate();
@@ -55,7 +55,7 @@ void supla_state_webhook_basic_client::terminate(void) {
   lck_unlock(lck);
 }
 
-supla_trivial_https *supla_state_webhook_basic_client::getHttps(void) {
+supla_trivial_https *supla_webhook_basic_client::getHttps(void) {
   supla_trivial_https *result = NULL;
   lck_lock(lck);
   if (!https) {
@@ -67,11 +67,11 @@ supla_trivial_https *supla_state_webhook_basic_client::getHttps(void) {
 }
 
 supla_webhook_basic_credentials *
-supla_state_webhook_basic_client::getCredentials(void) {
+supla_webhook_basic_client::getCredentials(void) {
   return credentials;
 }
 
-supla_state_webhook_basic_client::~supla_state_webhook_basic_client() {
+supla_webhook_basic_client::~supla_webhook_basic_client() {
   httpsFree();
   lck_free(lck);
 }

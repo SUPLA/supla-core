@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef WEBHOOK_STATEWEBHOOKBASICCLIENT_H_
-#define WEBHOOK_STATEWEBHOOKBASICCLIENT_H_
+#ifndef WEBHOOK_WEBHOOKBASICCLIENT_H_
+#define WEBHOOK_WEBHOOKBASICCLIENT_H_
 
 #include "webhook/webhookbasiccredentials.h"
 
 class supla_trivial_https;
 
-class supla_state_webhook_basic_client {
+class supla_webhook_basic_client {
  private:
   void httpsInit();
   void *lck;
@@ -37,10 +37,10 @@ class supla_state_webhook_basic_client {
   char *getEndpointId(int channelId, short subChannel);
 
  public:
-  explicit supla_state_webhook_basic_client(
+  explicit supla_webhook_basic_client(
       supla_webhook_basic_credentials *credentials);
-  virtual ~supla_state_webhook_basic_client();
+  virtual ~supla_webhook_basic_client();
   void terminate(void);
 };
 
-#endif /* WEBHOOK_STATEWEBHOOKBASICCLIENT_H_ */
+#endif /* WEBHOOK_WEBHOOKBASICCLIENT_H_ */

@@ -19,9 +19,9 @@
 #ifndef VOICEASSISTANTCLIENT_H_
 #define VOICEASSISTANTCLIENT_H_
 
-#include "webhook/statewebhookbasicclient.h"
+#include <webhook/webhookbasicclient.h>
 
-class supla_voice_assistant_client : public supla_state_webhook_basic_client {
+class supla_voice_assistant_client : public supla_webhook_basic_client {
  public:
   explicit supla_voice_assistant_client(
       supla_webhook_basic_credentials *credentials);

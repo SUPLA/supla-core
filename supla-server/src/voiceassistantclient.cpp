@@ -25,7 +25,7 @@
 
 supla_voice_assistant_client::supla_voice_assistant_client(
     supla_webhook_basic_credentials *credentials)
-    : supla_state_webhook_basic_client(credentials) {}
+    : supla_webhook_basic_client(credentials) {}
 
 char *supla_voice_assistant_client::getEndpointId(int channelId,
                                                   short subChannel) {
