@@ -25,6 +25,7 @@
 supla_state_webhook_credentials::supla_state_webhook_credentials(
     supla_user *user)
     : supla_webhook_basic_credentials(user) {
+  this->url = NULL;
   set(NULL, NULL, 0, NULL, NULL);
 }
 
