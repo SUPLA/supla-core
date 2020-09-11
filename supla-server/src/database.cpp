@@ -2240,6 +2240,35 @@ bool database::state_webhook_load_credentials(
   return result;
 }
 
+void database::state_webhook_update_token(int UserID, const char *token,
+                                          const char *refresh_token,
+                                          int expires_in) {
+  MYSQL_BIND pbind[4];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_STRING;
+  pbind[0].buffer = (char *)token;
+  pbind[0].buffer_length = strnlen((char *)token, WEBHOOK_TOKEN_MAXSIZE);
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)refresh_token;
+  pbind[1].buffer_length =
+      strnlen((char *)refresh_token, WEBHOOK_TOKEN_MAXSIZE);
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&expires_in;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&UserID;
+
+  const char sql[] = "CALL `supla_update_state_webhook`(?,?,?,?)";
+
+  MYSQL_STMT *stmt = NULL;
+  stmt_execute((void **)&stmt, sql, pbind, 4, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
   bool result = false;
   char sql[] =
