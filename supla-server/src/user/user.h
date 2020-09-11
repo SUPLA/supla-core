@@ -23,10 +23,10 @@
 #define LONG_UNIQUEID_MAXSIZE 201
 
 #include <cstddef>
-#include "commontypes.h"
-#include "proto.h"
-#include "google/googlehomecredentials.h"
 #include "amazon/alexacredentials.h"
+#include "commontypes.h"
+#include "google/googlehomecredentials.h"
+#include "proto.h"
 #include "webhook/statewebhookcredentials.h"
 
 class supla_device;
@@ -60,7 +60,7 @@ class supla_user {
   supla_user_channelgroups *cgroups;
   supla_amazon_alexa_credentials *amazon_alexa_credentials;
   supla_google_home_credentials *google_home_credentials;
-  supla_state_webhook_credentials *webhook;
+  supla_state_webhook_credentials *state_webhook_credentials;
   int UserID;
   bool connections_allowed;
 
@@ -132,6 +132,7 @@ class supla_user {
                                           char brightness, char on_off);
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
+  static void on_state_webhook_changed(int UserID);
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
   static void print_metrics(int min_interval_sec);
@@ -216,6 +217,7 @@ class supla_user {
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);
+  supla_state_webhook_credentials *stateWebhookCredentials(void);
 
   explicit supla_user(int UserID);
   virtual ~supla_user();

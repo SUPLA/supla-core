@@ -130,7 +130,7 @@ int supla_alexa_client::getErrorCode(const char *code) {
 }
 
 supla_amazon_alexa_credentials *supla_alexa_client::getAlexa(void) {
-  return static_cast<supla_amazon_alexa_credentials *>(getVoiceAssistant());
+  return static_cast<supla_amazon_alexa_credentials *>(getCredentials());
 }
 
 const char *supla_alexa_client::getErrorString(const int code) {

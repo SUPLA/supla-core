@@ -16,17 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOICEASSISTANTCLIENT_H_
-#define VOICEASSISTANTCLIENT_H_
+#include <webhook/statewebhookclient.h>
 
-#include "webhook/statewebhookbasicclient.h"
-
-class supla_voice_assistant_client : public supla_state_webhook_basic_client {
- public:
-  explicit supla_voice_assistant_client(
-      supla_webhook_basic_credentials *credentials);
-
-  char *getEndpointId(int channelId, short subChannel);
-};
-
-#endif /* VOICEASSISTANTCLIENT_H_ */
+supla_state_webhook_client::supla_state_webhook_client() {}

@@ -84,7 +84,7 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
 #ifdef ONLY_LOG_REQUESTS
     supla_log(LOG_DEBUG, "%s", data);
 #else
-    getHttps()->setToken(getVoiceAssistant()->getAccessToken(), false);
+    getHttps()->setToken(getCredentials()->getAccessToken(), false);
     result =
         getHttps()->http_post(NULL, data) && getHttps()->getResultCode() == 200;
 
@@ -95,7 +95,7 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
     if (!result) {
       supla_log(LOG_ERR,
                 "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
-                getVoiceAssistant()->getUserID(), getHttps()->getResultCode(),
+                getCredentials()->getUserID(), getHttps()->getResultCode(),
                 getHttps()->getBody());
     }
 #endif /*ONLY_LOG_REQUESTS*/
@@ -203,7 +203,7 @@ void *supla_google_home_client::getHeader(const char requestId[]) {
       cJSON_AddStringToObject(header, name, reqId);
     }
 
-    char *longUniqueId = getVoiceAssistant()->getUser()->getLongUniqueID();
+    char *longUniqueId = getCredentials()->getUser()->getLongUniqueID();
     if (longUniqueId) {
       cJSON_AddStringToObject(header, "agentUserId", longUniqueId);
       free(longUniqueId);

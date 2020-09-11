@@ -4,14 +4,20 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/webhook/statewebhookbasicclient.cpp \
+../src/webhook/statewebhookclient.cpp \
 ../src/webhook/statewebhookcredentials.cpp \
 ../src/webhook/webhookbasiccredentials.cpp 
 
 OBJS += \
+./src/webhook/statewebhookbasicclient.o \
+./src/webhook/statewebhookclient.o \
 ./src/webhook/statewebhookcredentials.o \
 ./src/webhook/webhookbasiccredentials.o 
 
 CPP_DEPS += \
+./src/webhook/statewebhookbasicclient.d \
+./src/webhook/statewebhookclient.d \
 ./src/webhook/statewebhookcredentials.d \
 ./src/webhook/webhookbasiccredentials.d 
 

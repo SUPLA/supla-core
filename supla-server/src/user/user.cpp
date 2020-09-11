@@ -55,12 +55,14 @@ supla_user::supla_user(int UserID) {
   this->cgroups = new supla_user_channelgroups(this);
   this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
   this->google_home_credentials = new supla_google_home_credentials(this);
+  this->state_webhook_credentials = new supla_state_webhook_credentials(this);
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;
   this->lck = lck_init();
   this->amazon_alexa_credentials->load();
   this->google_home_credentials->load();
+  this->state_webhook_credentials->load();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -82,6 +84,7 @@ supla_user::~supla_user() {
   delete cgroups;
   delete amazon_alexa_credentials;
   delete google_home_credentials;
+  delete state_webhook_credentials;
 
   compex_value_cache_clean(0);
   safe_array_free(complex_value_functions_arr);
@@ -784,6 +787,19 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
 }
 
 // static
+void supla_user::on_state_webhook_changed(int UserID) {
+  safe_array_lock(supla_user::user_arr);
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+    user->stateWebhookCredentials()->on_credentials_changed();
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+}
+
+// static
 void supla_user::on_device_deleted(int UserID,
                                    event_source_type eventSourceType) {
   safe_array_lock(supla_user::user_arr);
@@ -1454,4 +1470,8 @@ supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) {
 
 supla_google_home_credentials *supla_user::googleHomeCredentials(void) {
   return google_home_credentials;
+}
+
+supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
+  return state_webhook_credentials;
 }

@@ -16,28 +16,31 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
-#define WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
+#ifndef WEBHOOK_STATEWEBHOOKBASICCLIENT_H_
+#define WEBHOOK_STATEWEBHOOKBASICCLIENT_H_
 
 #include "webhook/webhookbasiccredentials.h"
 
-#define WEBHOOK_TOKEN_MAXSIZE 255
-#define WEBHOOK_URL_MAXSIZE 255
-#define WEBHOOK_FUNCTIONS_IDS_MAXSIZE 255
+class supla_trivial_https;
 
-class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
+class supla_state_webhook_basic_client {
  private:
-  char *url;
-  void url_free();
+  void httpsInit();
+  void *lck;
+  supla_trivial_https *https;
+  supla_webhook_basic_credentials *credentials;
+
+ protected:
+  void httpsFree();
+  supla_trivial_https *getHttps(void);
+  supla_webhook_basic_credentials *getCredentials(void);
+  char *getEndpointId(int channelId, short subChannel);
 
  public:
-  supla_state_webhook_credentials(supla_user *user);
-  ~supla_state_webhook_credentials(void);
-  virtual int get_token_maxsize(void);
-  void set(const char *access_token, const char *refresh_token, int expires_in,
-           const char *url, const char *functions_ids);
-  void load();
-  void on_credentials_changed();
+  explicit supla_state_webhook_basic_client(
+      supla_webhook_basic_credentials *credentials);
+  virtual ~supla_state_webhook_basic_client();
+  void terminate(void);
 };
 
-#endif /* WEBHOOK_STATEWEBHOOKCREDENTIALS_H_ */
+#endif /* WEBHOOK_STATEWEBHOOKBASICCLIENT_H_ */

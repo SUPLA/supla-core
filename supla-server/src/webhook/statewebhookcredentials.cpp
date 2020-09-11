@@ -71,3 +71,5 @@ void supla_state_webhook_credentials::set(const char *access_token,
 
   data_unlock();
 }
+
+void supla_state_webhook_credentials::on_credentials_changed() { load(); }
