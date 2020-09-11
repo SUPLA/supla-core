@@ -18,4 +18,6 @@
 
 #include <webhook/statewebhookclient.h>
 
-supla_state_webhook_client::supla_state_webhook_client() {}
+supla_state_webhook_client::supla_state_webhook_client(
+    supla_webhook_basic_credentials *credentials)
+    : supla_webhook_basic_client(credentials) {}

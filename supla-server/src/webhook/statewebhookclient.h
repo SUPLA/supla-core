@@ -16,13 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-
 #ifndef WEBHOOK_STATEWEBHOOKCLIENT_H_
 #define WEBHOOK_STATEWEBHOOKCLIENT_H_
 
-class supla_state_webhook_client {
+#include <webhook/webhookbasicclient.h>
+
+class supla_state_webhook_client : public supla_webhook_basic_client {
  public:
-  supla_state_webhook_client();
+  supla_state_webhook_client(supla_webhook_basic_credentials *credentials);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

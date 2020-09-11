@@ -86,6 +86,7 @@ class supla_http_request {
   virtual bool isEventTypeAccepted(event_type eventType, bool verification) = 0;
   virtual void execute(void *sthread) = 0;
   virtual void terminate(void *sthread);
+  virtual void requestWillBeAdded(void);
   virtual ~supla_http_request();
 };
 
