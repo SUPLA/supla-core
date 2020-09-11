@@ -316,7 +316,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               setID(DeviceID);
 
-              load_config();
+              load_config(UserID);
 
               channels->set_channels_value(dev_channels_b, dev_channels_c,
                                            channel_count);
@@ -362,24 +362,40 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   return result;
 }
 
-void supla_device::load_config(void) { channels->load(getID()); }
+void supla_device::load_config(int UserID) { channels->load(UserID, getID()); }
 
 void supla_device::on_device_channel_value_changed(
-    TDS_SuplaDeviceChannelValue *value,
-    TDS_SuplaDeviceChannelValue_B *value_b) {
-  if (value == NULL && value_b == NULL) {
+    TDS_SuplaDeviceChannelValue *value, TDS_SuplaDeviceChannelValue_B *value_b,
+    TDS_SuplaDeviceChannelValue_C *value_c) {
+  if (value == NULL && value_b == NULL && value_c == NULL) {
     return;
   }
 
-  int ChannelId = channels->get_channel_id(value ? value->ChannelNumber
-                                                 : value_b->ChannelNumber);
+  unsigned char ChannelNumber = 0;
+  char *value_value = NULL;
+  bool offline = false;
+
+  if (value_c) {
+    ChannelNumber = value_c->ChannelNumber;
+    value_value = value_c->value;
+    offline = value_c->Offline > 0;
+  } else if (value_b) {
+    ChannelNumber = value_b->ChannelNumber;
+    value_value = value_b->value;
+    offline = value_b->Offline > 0;
+  } else if (value) {
+    ChannelNumber = value->ChannelNumber;
+    value_value = value->value;
+  }
+
+  int ChannelId = channels->get_channel_id(ChannelNumber);
 
   if (ChannelId != 0) {
     bool converted2extended;
-    channels->set_channel_value(
-        ChannelId, value ? value->value : value_b->value, &converted2extended);
-    if (value_b) {
-      channels->set_channel_offline(ChannelId, value_b->Offline > 0);
+    channels->set_channel_value(ChannelId, value_value, &converted2extended,
+                                value_c ? &value_c->ValidityTimeSec : NULL);
+    if (value_b || value_c) {
+      channels->set_channel_offline(ChannelId, offline);
     }
     getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
 
@@ -464,8 +480,10 @@ void supla_device::on_channel_set_value_result(
 
 bool supla_device::get_channel_value(int ChannelID,
                                      char value[SUPLA_CHANNELVALUE_SIZE],
-                                     char *online) {
-  return channels->get_channel_value(ChannelID, value, online);
+                                     char *online,
+                                     unsigned _supla_int_t *validity_time_sec) {
+  return channels->get_channel_value(ChannelID, value, online,
+                                     validity_time_sec);
 }
 
 bool supla_device::get_channel_extendedvalue(
@@ -474,24 +492,27 @@ bool supla_device::get_channel_extendedvalue(
 }
 
 void supla_device::set_device_channel_value(
-    int SenderID, int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
+    int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+    const char value[SUPLA_CHANNELVALUE_SIZE]) {
   channels->set_device_channel_value(getSvrConn()->srpc(), SenderID, ChannelID,
-                                     value);
+                                     GroupID, EOL, value);
 }
 
 bool supla_device::set_device_channel_char_value(int SenderID, int ChannelID,
+                                                 int GroupID, unsigned char EOL,
                                                  const char value) {
-  return channels->set_device_channel_char_value(getSvrConn()->srpc(), SenderID,
-                                                 ChannelID, value);
+  return channels->set_device_channel_char_value(
+      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, value);
 }
 
 bool supla_device::set_device_channel_rgbw_value(int SenderID, int ChannelID,
+                                                 int GroupID, unsigned char EOL,
                                                  int color,
                                                  char color_brightness,
                                                  char brightness, char on_off) {
   return channels->set_device_channel_rgbw_value(
-      getSvrConn()->srpc(), SenderID, ChannelID, color, color_brightness,
-      brightness, on_off);
+      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, color,
+      color_brightness, brightness, on_off);
 }
 
 bool supla_device::channel_exists(int ChannelID) {

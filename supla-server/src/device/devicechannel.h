@@ -48,6 +48,8 @@ class supla_channel_temphum {
                         double Humidity);
   supla_channel_temphum(bool TempAndHumidity, int ChannelId,
                         const char value[SUPLA_CHANNELVALUE_SIZE]);
+  supla_channel_temphum(int ChannelId, int Func,
+                        const char value[SUPLA_CHANNELVALUE_SIZE]);
 
   int getChannelId(void);
   bool isTempAndHumidity(void);
@@ -56,6 +58,8 @@ class supla_channel_temphum {
   void setTemperature(double Temperature);
   void setHumidity(double Humidity);
   void toValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void assignValue(const char value[SUPLA_CHANNELVALUE_SIZE],
+                   bool TempAndHumidity);
 
   static void free(void *tarr);
 };
@@ -156,6 +160,7 @@ class supla_device_channel {
  private:
   int Id;
   unsigned char Number;
+  int UserID;
   int Type;
   int Func;
   int Param1;
@@ -168,14 +173,17 @@ class supla_device_channel {
   bool Offline;
   unsigned int Flags;
 
-  char value[8];
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  struct timeval value_valid_to;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
 
  public:
-  supla_device_channel(int Id, int Number, int Type, int Func, int Param1,
-                       int Param2, int Param3, char *TextParam1,
+  supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
+                       int Param1, int Param2, int Param3, char *TextParam1,
                        char *TextParam2, char *TextParam3, bool Hidden,
-                       unsigned int Flags);
+                       unsigned int Flags,
+                       const char value[SUPLA_CHANNELVALUE_SIZE],
+                       unsigned _supla_int_t validity_time_sec);
   virtual ~supla_device_channel();
 
   int getId(void);
@@ -192,8 +200,10 @@ class supla_device_channel {
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
   unsigned int getValueDuration(void);
+  unsigned _supla_int_t getValueValidityTimeSec(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
+  void setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
+                const unsigned _supla_int_t *validity_time_sec);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
@@ -229,17 +239,21 @@ class supla_device_channels {
   std::list<int> mr_channel(int ChannelID, bool Master);
 
   void async_set_channel_value(void *srpc, supla_device_channel *channel,
-                               int SenderID,
+                               int SenderID, int GroupID, unsigned char EOL,
                                const char value[SUPLA_CHANNELVALUE_SIZE]);
 
  public:
   supla_device_channels();
   virtual ~supla_device_channels();
-  void add_channel(int Id, int Number, int Type, int Func, int Param1,
-                   int Param2, int Param3, char *TextParam1, char *TextParam2,
-                   char *TextParam3, bool Hidden, unsigned int Flags);
+  void add_channel(int Id, int Number, int UserID, int Type, int Func,
+                   int Param1, int Param2, int Param3, char *TextParam1,
+                   char *TextParam2, char *TextParam3, bool Hidden,
+                   unsigned int Flags,
+                   const char value[SUPLA_CHANNELVALUE_SIZE],
+                   unsigned _supla_int_t validity_time_sec);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-                         char *online);
+                         char *online,
+                         unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_double_value(int ChannelID, double *Value);
@@ -254,7 +268,8 @@ class supla_device_channels {
   int get_channel_func(int ChannelID);
   int get_channel_type(int ChannelID);
   void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-                         bool *converted2extended);
+                         bool *converted2extended,
+                         const unsigned _supla_int_t *validity_time_sec);
   void set_channel_offline(int ChannelID, bool Offline);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
@@ -265,12 +280,15 @@ class supla_device_channels {
                             TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
   void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
+                                int GroupID, unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(void *srpc, int SenderID, int ChannelID,
+                                     int GroupID, unsigned char EOL,
                                      const char value);
   bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID,
-                                     int color, char color_brightness,
-                                     char brightness, char on_off);
+                                     int GroupID, unsigned char EOL, int color,
+                                     char color_brightness, char brightness,
+                                     char on_off);
   bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
 
   std::list<int> master_channel(int ChannelID);
@@ -278,7 +296,7 @@ class supla_device_channels {
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
-  void load(int DeviceID);
+  void load(int UserID, int DeviceID);
 
   void get_temp_and_humidity(void *tarr);
   void get_electricity_measurements(void *emarr);

@@ -102,6 +102,10 @@ typedef void (*_suplaclient_cb_on_zwave_result_with_node)(
     void *_suplaclient, void *user_data, _supla_int_t result,
     TCalCfg_ZWave_Node *node);
 
+typedef void (*_suplaclient_cb_on_zwave_wake_up_settings_report)(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_WakeupSettingsReport *report);
+
 typedef struct {
   char clientGUID[SUPLA_GUID_SIZE];
   char Name[SUPLA_CLIENT_NAME_MAXSIZE];  // UTF8
@@ -176,6 +180,9 @@ typedef struct {
       cb_on_zwave_get_assigned_node_id_result;
   _suplaclient_cb_on_zwave_result_with_node_id
       cb_on_zwave_assign_node_id_result;
+  _suplaclient_cb_on_zwave_wake_up_settings_report
+      cb_on_zwave_wake_up_settings_report;
+  _suplaclient_cb_on_zwave_basic_result cb_on_zwave_set_wake_up_time_result;
 } TSuplaClientCfg;
 
 #ifdef __cplusplus
@@ -214,6 +221,7 @@ char supla_client_oauth_token_request(void *_suplaclient);
 char supla_client_superuser_authorization_request(void *_suplaclient,
                                                   const char *email,
                                                   const char *password);
+char supla_client_get_superuser_authorization_result(void *_suplaclient);
 char supla_client_device_calcfg_request(void *_suplaclient,
                                         TCS_DeviceCalCfgRequest_B *request);
 char supla_client_device_calcfg_cancel_all_commands(void *_suplaclient,
@@ -237,6 +245,9 @@ char supla_client_zwave_get_node_list(void *_suplaclient, int deviceID);
 char supla_client_zwave_get_assigned_node_id(void *_suplaclient, int channelID);
 char supla_client_zwave_assign_node_id(void *_suplaclient, int channelID,
                                        unsigned char nodeID);
+char supla_client_zwave_get_wake_up_settings(void *_suplaclient, int channelID);
+char supla_client_zwave_set_wake_up_time(void *_suplaclient, int channelID,
+                                         unsigned int time);
 char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
                                            unsigned char resetCounter,
                                            unsigned char setTime,

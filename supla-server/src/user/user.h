@@ -112,19 +112,15 @@ class supla_user {
 
   static int user_count(void);
   static supla_user *get_user(int idx);
-  static bool set_device_channel_char_value(int UserID, int SenderID,
-                                            int DeviceID, int ChannelID,
-                                            const char value,
-                                            event_source_type eventSourceType,
-                                            char *AlexaCorrelationToken,
-                                            char *GoogleRequestId);
-  static bool set_device_channel_rgbw_value(int UserID, int SenderID,
-                                            int DeviceID, int ChannelID,
-                                            int color, char color_brightness,
-                                            char brightness, char on_off,
-                                            event_source_type eventSourceType,
-                                            char *AlexaCorrelationToken,
-                                            char *GoogleRequestId);
+  static bool set_device_channel_char_value(
+      int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
+      unsigned char EOL, const char value, event_source_type eventSourceType,
+      char *AlexaCorrelationToken, char *GoogleRequestId);
+  static bool set_device_channel_rgbw_value(
+      int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
+      unsigned char EOL, int color, char color_brightness, char brightness,
+      char on_off, event_source_type eventSourceType,
+      char *AlexaCorrelationToken, char *GoogleRequestId);
   static bool set_channelgroup_char_value(int UserID, int GroupID,
                                           const char value);
   static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
@@ -169,18 +165,22 @@ class supla_user {
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
-                         char *online);
+                         char *online,
+                         unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int DeviceID, int ChannelID,
                                  TSuplaChannelExtendedValue *value);
 
   bool set_device_channel_value(event_source_type eventSourceType, int SenderID,
-                                int DeviceID, int ChannelID,
+                                int DeviceID, int ChannelID, int GroupID,
+                                unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
   bool set_device_channel_char_value(int SenderID, int DeviceID, int ChannelID,
+                                     int GroupID, unsigned char EOL,
                                      const char value);
   bool set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID,
-                                     int color, char color_brightness,
-                                     char brightness, char on_off);
+                                     int GroupID, unsigned char EOL, int color,
+                                     char color_brightness, char brightness,
+                                     char on_off);
 
   bool set_channelgroup_char_value(int GroupID, const char value);
   bool set_channelgroup_rgbw_value(int GroupID, int color,

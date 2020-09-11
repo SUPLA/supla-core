@@ -63,6 +63,8 @@ class cdbase {
   static int getAuthKeyCacheSize(void);
   explicit cdbase(serverconnection *svrconn);
   virtual ~cdbase();
+  virtual void iterate();
+  virtual unsigned _supla_int64_t waitTimeUSec(void);
 
   // Thread safe start
   void terminate(void);

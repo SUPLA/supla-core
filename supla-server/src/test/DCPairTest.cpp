@@ -58,4 +58,141 @@ TEST_F(DCPairTest, popDeviceChannelIDs) {
   ASSERT_EQ((int)5, a);
 }
 
+TEST_F(DCPairTest, sortByDeviceId) {
+  std::list<dcpair> pairs;
+
+  {
+    dcpair p(1, 1);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(2, 1);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(3, 1);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(1, 2);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(2, 2);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(3, 2);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(1, 3);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(2, 3);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(3, 3);
+    pairs.push_back(p);
+  }
+
+  int DeviceID = 1;
+  int ChannelID = 1;
+
+  dcpair::sort_by_device_id(&pairs);
+
+  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
+       it++) {
+    ASSERT_EQ(DeviceID, it->getDeviceId());
+    ASSERT_EQ(ChannelID, it->getChannelId());
+
+    ChannelID++;
+    if (ChannelID > 3) {
+      ChannelID = 1;
+      DeviceID++;
+    }
+  }
+}
+
+TEST_F(DCPairTest, detectingTheLastOne) {
+  std::list<dcpair> pairs;
+
+  {
+    dcpair p(1, 1);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(2, 1);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(3, 1);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(1, 2);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(2, 2);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(3, 2);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(1, 3);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(2, 3);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(3, 3);
+    pairs.push_back(p);
+  }
+
+  {
+    dcpair p(4, 10);
+    pairs.push_back(p);
+  }
+
+  dcpair::sort_by_device_id(&pairs);
+
+  int n = 1;
+
+  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
+       it++) {
+    if (n == 10) {
+      ASSERT_TRUE(dcpair::last_one(&pairs, it));
+    } else {
+      ASSERT_EQ(n % 3 == 0 ? 1 : 0, dcpair::last_one(&pairs, it) ? 1 : 0);
+    }
+
+    n++;
+  }
+
+  ASSERT_EQ(n, 11);
+}
+
 } /* namespace testing */

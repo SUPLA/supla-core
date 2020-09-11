@@ -39,6 +39,8 @@ class supla_client_objcontainer : public supla_objcontainer {
 
   void on_value_changed(void *srpc, int Id, int ExtraId, e_objc_scope scope,
                         int data_type);
+  void on_value_changed(void *srpc, supla_client_objcontainer_item *obj,
+                        int data_type);
 
  public:
   explicit supla_client_objcontainer(supla_client *client);

@@ -29,7 +29,7 @@ class supla_device : public cdbase {
  protected:
   supla_device_channels *channels;
 
-  void load_config(void);
+  void load_config(int UserID);
   static char channels_clean_cnd(void *channel);
   bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                        const char Email[SUPLA_EMAIL_MAXSIZE],
@@ -47,20 +47,24 @@ class supla_device : public cdbase {
   virtual ~supla_device();
 
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-                         char *online);
+                         char *online,
+                         unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
-  void set_device_channel_value(int SenderID, int ChannelID,
+  void set_device_channel_value(int SenderID, int ChannelID, int GroupID,
+                                unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
-  bool set_device_channel_char_value(int SenderID, int ChannelID,
-                                     const char value);
-  bool set_device_channel_rgbw_value(int SenderID, int ChannelID, int color,
+  bool set_device_channel_char_value(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL, const char value);
+  bool set_device_channel_rgbw_value(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
 
   bool channel_exists(int ChannelID);
   void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value,
-                                       TDS_SuplaDeviceChannelValue_B *value_b);
+                                       TDS_SuplaDeviceChannelValue_B *value_b,
+                                       TDS_SuplaDeviceChannelValue_C *value_c);
   void on_device_channel_extendedvalue_changed(
       TDS_SuplaDeviceChannelExtendedValue *ev);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);

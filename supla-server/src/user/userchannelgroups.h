@@ -23,6 +23,7 @@
 #include "objcontainer.h"
 #include "user.h"
 #include "userchannelgroup.h"
+#include "dcpair.h"
 
 class supla_user;
 class supla_user_channelgroups : public supla_objcontainer {
@@ -31,7 +32,7 @@ class supla_user_channelgroups : public supla_objcontainer {
 
  protected:
   void _load(database *db, e_objc_scope scope);
-  std::list<t_dc_pair> find_channels(int GroupId);
+  std::list<dcpair> find_channels(int GroupId);
   int available_data_types_for_remote(e_objc_scope scope);
 
  public:

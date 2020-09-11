@@ -415,6 +415,21 @@ void supla_client::superuser_authorize(
   delete db;
 }
 
+void supla_client::send_superuser_authorization_result(
+    bool *connection_failed) {
+  TSC_SuperUserAuthorizationResult result;
+  memset(&result, 0, sizeof(TSC_SuperUserAuthorizationResult));
+  if (is_superuser_authorized()) {
+    result.Result = SUPLA_RESULTCODE_AUTHORIZED;
+  } else if (connection_failed && *connection_failed) {
+    result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
+  } else {
+    result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
+  }
+
+  srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
+}
+
 void supla_client::superuser_authorization_request(
     TCS_SuperUserAuthorizationRequest *request) {
   bool connection_failed = false;
@@ -422,17 +437,7 @@ void supla_client::superuser_authorization_request(
   superuser_authorize(getUserID(), request ? request->Email : NULL,
                       request ? request->Password : NULL, &connection_failed);
 
-  TSC_SuperUserAuthorizationResult result;
-  memset(&result, 0, sizeof(TSC_SuperUserAuthorizationResult));
-  if (is_superuser_authorized()) {
-    result.Result = SUPLA_RESULTCODE_AUTHORIZED;
-  } else if (connection_failed) {
-    result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
-  } else {
-    result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
-  }
-
-  srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
+  send_superuser_authorization_result(&connection_failed);
 }
 
 void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
@@ -514,4 +519,18 @@ void supla_client::set_channel_caption_result(
     return;
   }
   srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
+}
+
+void supla_client::iterate() { channels->update_expired(getSvrConn()->srpc()); }
+
+unsigned _supla_int64_t supla_client::waitTimeUSec() {
+  unsigned _supla_int64_t time = channels->value_validity_time_usec();
+  if (time > 0 && time < 120000000) {
+    if (time < 1000000) {
+      return 1000000;
+    }
+    return time + 500000;
+  }
+
+  return 120000000;
 }
