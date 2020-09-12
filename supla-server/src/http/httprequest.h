@@ -93,11 +93,12 @@ class supla_http_request {
 class AbstractHttpRequestFactory {
  private:
   int ClassID;
-  static std::list<AbstractHttpRequestFactory *> factories;
   virtual supla_http_request *create(supla_user *user, int ClassID,
                                      int DeviceId, int ChannelId,
                                      event_type EventType,
                                      event_source_type EventSourceType) = 0;
+
+  static std::list<AbstractHttpRequestFactory *> &getFactories(void);
 
  public:
   AbstractHttpRequestFactory(void);
