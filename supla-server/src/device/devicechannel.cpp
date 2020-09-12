@@ -1559,15 +1559,15 @@ bool supla_device_channels::set_device_channel_char_value(
         result = set_device_channel_rgbw_value(
             srpc, SenderID, ChannelID, GroupID, EOL, color, color_brightness,
             brightness, on_off);
-      } else if (channel->isCharValueWritable()) {
-        char v[SUPLA_CHANNELVALUE_SIZE];
-        memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
-        channel->assignCharValue(v, value);
-
-        async_set_channel_value(srpc, channel, SenderID, GroupID, EOL, v);
-
-        result = true;
       }
+    } else if (channel->isCharValueWritable()) {
+      char v[SUPLA_CHANNELVALUE_SIZE];
+      memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
+      channel->assignCharValue(v, value);
+
+      async_set_channel_value(srpc, channel, SenderID, GroupID, EOL, v);
+
+      result = true;
     }
   }
 
