@@ -16,20 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "test/STUserSpace.h"
+#ifndef H_TrivialHttpFactoryMock_H_
+#define H_TrivialHttpFactoryMock_H_
 
-STUserSpace::STUserSpace() {
-  user = NULL;
-  supla_user::init();
-}
+#include "http/trivialhttpfactory.h"
 
-STUserSpace::~STUserSpace() { supla_user::user_free(); }
+class TrivialHttpFactoryMock : public supla_trivial_http_factory {
+ public:
+  TrivialHttpFactoryMock();
+  virtual supla_trivial_http* createConnection(void);
+};
 
-supla_user *STUserSpace::getUser(void) {
-  if (!user) {
-    user = new supla_user(1001);
-    user->setUniqueId("qwerty", "zxcvbnm");
-  }
-
-  return user;
-}
+#endif /*H_TrivialHttpFactoryMock_TEST_H_*/

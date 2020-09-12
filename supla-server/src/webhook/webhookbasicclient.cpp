@@ -28,42 +28,64 @@
 supla_webhook_basic_client::supla_webhook_basic_client(
     supla_webhook_basic_credentials *credentials) {
   this->lck = lck_init();
-  this->https = NULL;
+  this->httpConnection = NULL;
   this->credentials = credentials;
 }
 
-void supla_webhook_basic_client::httpsInit(void) {
-  httpClientFree();
+void supla_webhook_basic_client::httpConnectionInit(void) {
+  httpConnectionFree();
   lck_lock(lck);
-  https = new supla_trivial_https();
+  if (httpConnectionFactory) {
+    httpConnection = httpConnectionFactory->createConnection();
+  } else {
+    httpConnection = new supla_trivial_https();
+  }
+
   lck_unlock(lck);
 }
 
-void supla_webhook_basic_client::httpClientFree(void) {
+void supla_webhook_basic_client::httpConnectionFree(void) {
   lck_lock(lck);
-  if (https) {
-    delete https;
-    https = NULL;
+  if (httpConnection) {
+    delete httpConnection;
+    httpConnection = NULL;
   }
   lck_unlock(lck);
 }
 
 void supla_webhook_basic_client::terminate(void) {
   lck_lock(lck);
-  if (https) {
-    https->terminate();
+  if (httpConnection) {
+    httpConnection->terminate();
   }
   lck_unlock(lck);
 }
 
-supla_trivial_http *supla_webhook_basic_client::getHttpClient(void) {
-  supla_trivial_https *result = NULL;
+supla_trivial_http *supla_webhook_basic_client::getHttpConnection(void) {
+  supla_trivial_http *result = NULL;
   lck_lock(lck);
-  if (!https) {
-    httpsInit();
+  if (!httpConnection) {
+    httpConnectionInit();
   }
-  result = https;
+  result = httpConnection;
   lck_unlock(lck);
+  return result;
+}
+
+void supla_webhook_basic_client::setHttpConnectionFactory(
+    supla_trivial_http_factory *httpConnectionFactory) {
+  lck_lock(lck);
+  this->httpConnectionFactory = httpConnectionFactory;
+  lck_unlock(lck);
+}
+
+supla_trivial_http_factory *
+supla_webhook_basic_client::getHttpConnectionFactory(void) {
+  supla_trivial_http_factory *result = NULL;
+  lck_lock(lck);
+  result = httpConnectionFactory;
+  lck_unlock(lck);
+
   return result;
 }
 
@@ -85,8 +107,8 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
 
-    getHttpClient()->setHost(host);
-    getHttpClient()->setResource(resource);
+    getHttpConnection()->setHost(host);
+    getHttpConnection()->setResource(resource);
     {
       char *refresh_token = getCredentials()->getRefreshToken();
       if (refresh_token) {
@@ -98,7 +120,7 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
           char *str = cJSON_PrintUnformatted(root);
           cJSON_Delete(root);
 
-          getHttpClient()->http_post(NULL, str);
+          getHttpConnection()->http_post(NULL, str);
           free(str);
         }
 
@@ -106,8 +128,9 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       }
     }
 
-    if (getHttpClient()->getResultCode() == 200 && getHttpClient()->getBody()) {
-      cJSON *root = cJSON_Parse(getHttpClient()->getBody());
+    if (getHttpConnection()->getResultCode() == 200 &&
+        getHttpConnection()->getBody()) {
+      cJSON *root = cJSON_Parse(getHttpConnection()->getBody());
       if (root) {
         cJSON *access_token = cJSON_GetObjectItem(root, "access_token");
         cJSON *expires_in = cJSON_GetObjectItem(root, "expires_in");
@@ -124,7 +147,7 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       }
     }
 
-    httpClientFree();
+    httpConnectionFree();
 
 #endif /*NOSSL*/
   }
@@ -133,6 +156,6 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
 }
 
 supla_webhook_basic_client::~supla_webhook_basic_client() {
-  httpClientFree();
+  httpConnectionFree();
   lck_free(lck);
 }

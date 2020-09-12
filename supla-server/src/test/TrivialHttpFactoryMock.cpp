@@ -16,23 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_TrivialHttpMock_H_
-#define H_TrivialHttpMock_H_
+#include "test/TrivialHttpFactoryMock.h"
+#include "test/TrivialHttpMock.h"
 
-#include "http/trivialhttp.h"
+TrivialHttpFactoryMock::TrivialHttpFactoryMock() {}
 
-class TrivialHttpMock : public supla_trivial_http {
- private:
-  static char out_buff[102400];
-  char in_buff[102400];
-
- protected:
-  bool send_recv(const char *out, char **in);
-
- public:
-  TrivialHttpMock();
-  virtual ~TrivialHttpMock();
-  static bool outputEqualTo(const char *str);
-};
-
-#endif /*H_TrivialHttpMock_TEST_H_*/
+supla_trivial_http* TrivialHttpFactoryMock::createConnection(void) {
+  return new TrivialHttpMock();
+}

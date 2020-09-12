@@ -17,9 +17,13 @@
  */
 
 #include "test/TrivialHttpMock.h"
+#include <string.h>
 #include "http/trivialhttp.h"
 #include "log.h"
 
+char TrivialHttpMock::out_buff[102400];
+
+// static
 bool TrivialHttpMock::outputEqualTo(const char *str) {
   if (strncmp(out_buff, str, sizeof(out_buff)) == 0) {
     return true;
@@ -36,7 +40,7 @@ TrivialHttpMock::TrivialHttpMock() {
 }
 
 bool TrivialHttpMock::send_recv(const char *out, char **in) {
-  out_buff[0] = 0;
+  TrivialHttpMock::out_buff[0] = 0;
   strncpy(out_buff, out, sizeof(out_buff));
   out_buff[sizeof(out_buff) - 1] = 0;
   in_buff[sizeof(in_buff) - 1] = 0;

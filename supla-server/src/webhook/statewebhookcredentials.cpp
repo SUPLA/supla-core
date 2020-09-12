@@ -126,3 +126,7 @@ std::list<int> supla_state_webhook_credentials::getFunctionsIds(void) {
 }
 
 void supla_state_webhook_credentials::on_credentials_changed() { load(); }
+
+char *supla_state_webhook_credentials::getHost(void) { return NULL; }
+
+char *supla_state_webhook_credentials::getResource(void) { return NULL; }

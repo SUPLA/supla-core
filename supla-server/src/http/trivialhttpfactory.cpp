@@ -16,21 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_STUSERSPACE_H_
-#define H_STUSERSPACE_H_
+#include <http/trivialhttpfactory.h>
 
-#include "gtest/gtest.h"  // NOLINT
-#include "user/user.h"
+supla_trivial_http_factory::supla_trivial_http_factory() {}
 
-class STUserSpace : public ::testing::Test {
- protected:
-  supla_user *user;
-
- public:
-  STUserSpace();
-
-  virtual ~STUserSpace();
-  supla_user *getUser(void);
-};
-
-#endif /*H_STUSERSPACE_TEST_H_*/
+supla_trivial_http_factory::~supla_trivial_http_factory() {}

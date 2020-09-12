@@ -41,6 +41,8 @@ class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
   void load();
   void on_credentials_changed();
   char *getUrl(void);
+  char *getHost(void);
+  char *getResource(void);
   std::list<int> getFunctionsIds(void);
 };
 

@@ -12,10 +12,10 @@ CPP_SRCS += \
 ../src/test/DeviceChannelTest.cpp \
 ../src/test/ProtoTest.cpp \
 ../src/test/STCDContainer.cpp \
-../src/test/STUserSpace.cpp \
 ../src/test/SafeArrayTest.cpp \
 ../src/test/SrpcTest.cpp \
 ../src/test/ToolsTest.cpp \
+../src/test/TrivialHttpFactoryMock.cpp \
 ../src/test/TrivialHttpMock.cpp 
 
 OBJS += \
@@ -27,10 +27,10 @@ OBJS += \
 ./src/test/DeviceChannelTest.o \
 ./src/test/ProtoTest.o \
 ./src/test/STCDContainer.o \
-./src/test/STUserSpace.o \
 ./src/test/SafeArrayTest.o \
 ./src/test/SrpcTest.o \
 ./src/test/ToolsTest.o \
+./src/test/TrivialHttpFactoryMock.o \
 ./src/test/TrivialHttpMock.o 
 
 CPP_DEPS += \
@@ -42,10 +42,10 @@ CPP_DEPS += \
 ./src/test/DeviceChannelTest.d \
 ./src/test/ProtoTest.d \
 ./src/test/STCDContainer.d \
-./src/test/STUserSpace.d \
 ./src/test/SafeArrayTest.d \
 ./src/test/SrpcTest.d \
 ./src/test/ToolsTest.d \
+./src/test/TrivialHttpFactoryMock.d \
 ./src/test/TrivialHttpMock.d 
 
 

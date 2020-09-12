@@ -19,19 +19,21 @@
 #ifndef WEBHOOK_WEBHOOKBASICCLIENT_H_
 #define WEBHOOK_WEBHOOKBASICCLIENT_H_
 
+#include "http/trivialhttp.h"
+#include "http/trivialhttpfactory.h"
 #include "webhook/webhookbasiccredentials.h"
-#include "http/trivialhttps.h"
 
 class supla_webhook_basic_client {
  private:
-  void httpsInit();
+  void httpConnectionInit();
   void *lck;
-  supla_trivial_https *https;
+  supla_trivial_http *httpConnection;
+  supla_trivial_http_factory *httpConnectionFactory;
   supla_webhook_basic_credentials *credentials;
 
  protected:
-  void httpClientFree();
-  supla_trivial_http *getHttpClient(void);
+  void httpConnectionFree();
+  supla_trivial_http *getHttpConnection(void);
   supla_webhook_basic_credentials *getCredentials(void);
   char *getEndpointId(int channelId, short subChannel);
   void refreshToken(char *host, char *resource);
@@ -41,6 +43,9 @@ class supla_webhook_basic_client {
       supla_webhook_basic_credentials *credentials);
   virtual ~supla_webhook_basic_client();
   void terminate(void);
+  void setHttpConnectionFactory(
+      supla_trivial_http_factory *httpConnectionFactory);
+  supla_trivial_http_factory *getHttpConnectionFactory(void);
 };
 
 #endif /* WEBHOOK_WEBHOOKBASICCLIENT_H_ */
