@@ -95,7 +95,8 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
     if (!result) {
       supla_log(LOG_ERR,
                 "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
-                getCredentials()->getUserID(), getHttpConnection()->getResultCode(),
+                getCredentials()->getUserID(),
+                getHttpConnection()->getResultCode(),
                 getHttpConnection()->getBody());
     }
 #endif /*ONLY_LOG_REQUESTS*/
