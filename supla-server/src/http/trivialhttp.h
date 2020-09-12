@@ -25,9 +25,6 @@
 
 #include <stdio.h>
 
-#ifdef __TEST
-typedef bool (*_extern_send_recv)(const char *out, char **in, bool *result);
-#endif /* __TEST */
 
 class supla_trivial_http {
  protected:
@@ -81,10 +78,6 @@ class supla_trivial_http {
   bool http_get(void);
   bool http_post(char *header, char *data);
   virtual void terminate(void);
-
-#ifdef __TEST
-static _extern_send_recv extern_send_recv;
-#endif /* __TEST */
 };
 
 #endif /* TRIVIAL_HTTP_H_ */

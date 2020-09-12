@@ -168,7 +168,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 
     snprintf(host, sizeof(host), "api.%s%samazonalexa.com",
              region ? region : "", region ? "." : "");
-    getHttps()->setHost(host);
+    getHttpClient()->setHost(host);
 
     if (region) {
       free(region);
@@ -177,19 +177,19 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 
   char header[] = "Content-Type: application/json";
   char resource[] = "/v3/events";
-  getHttps()->setResource(resource);
-  getHttps()->setToken(getAlexa()->getAccessToken(), false);
+  getHttpClient()->setResource(resource);
+  getHttpClient()->setToken(getAlexa()->getAccessToken(), false);
 
-  if (!getHttps()->http_post(header, data)) {
+  if (!getHttpClient()->http_post(header, data)) {
     return POST_RESULT_REQUEST_ERROR;
   } else {
     if (httpResultCode) {
-      *httpResultCode = getHttps()->getResultCode();
+      *httpResultCode = getHttpClient()->getResultCode();
     }
-    if (getHttps()->getResultCode() != 200 &&
-        getHttps()->getResultCode() != 202) {
-      if (getHttps()->getBody()) {
-        cJSON *root = cJSON_Parse(getHttps()->getBody());
+    if (getHttpClient()->getResultCode() != 200 &&
+        getHttpClient()->getResultCode() != 202) {
+      if (getHttpClient()->getBody()) {
+        cJSON *root = cJSON_Parse(getHttpClient()->getBody());
         if (root) {
           cJSON *payload = cJSON_GetObjectItem(root, "payload");
           if (payload) {
@@ -206,7 +206,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     }
   }
 
-  httpsFree();
+  httpClientFree();
 
 #endif /*NOSSL*/
 

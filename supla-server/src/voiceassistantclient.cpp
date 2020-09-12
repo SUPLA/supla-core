@@ -19,7 +19,7 @@
 #include "voiceassistantclient.h"
 #include <stdlib.h>
 #include <string.h>
-#include "http/trivialhttps.h"
+#include "http/trivialhttp.h"
 #include "lck.h"
 #include "user/user.h"
 

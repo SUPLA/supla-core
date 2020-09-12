@@ -22,7 +22,7 @@
 
 namespace {
 
-class GoogleHomeClientTest : public STTrivialHttp {
+class GoogleHomeClientTest : public TrivialHttpMock {
  protected:
   supla_google_home_client *client;
 

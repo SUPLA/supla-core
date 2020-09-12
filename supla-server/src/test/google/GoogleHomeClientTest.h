@@ -19,9 +19,9 @@
 #ifndef H_GOOGLEHOMECLIENT_TEST_H_
 #define H_GOOGLEHOMECLIENT_TEST_H_
 
-#include "STTrivialHttp.h"
+#include "TrivialHttpMock.h"
 
-class GoogleHomeClientTest : STTrivialHttp {
+class GoogleHomeClientTest : TrivialHttpMock {
  public:
   virtual ~GoogleHomeClientTest();
   GoogleHomeClientTest();
