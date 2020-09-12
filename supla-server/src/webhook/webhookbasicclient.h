@@ -35,6 +35,7 @@ class supla_webhook_basic_client {
   supla_trivial_https *getHttps(void);
   supla_webhook_basic_credentials *getCredentials(void);
   char *getEndpointId(int channelId, short subChannel);
+  void refreshToken(char *host, char *resource);
 
  public:
   explicit supla_webhook_basic_client(

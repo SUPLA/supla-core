@@ -60,7 +60,7 @@
 
 class supla_alexa_client : public supla_voice_assistant_client {
  private:
-  void refresh_roken(void);
+  void refreshToken(void);
 
  protected:
   supla_amazon_alexa_credentials *getAlexa(void);

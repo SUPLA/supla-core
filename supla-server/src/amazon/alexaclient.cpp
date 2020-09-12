@@ -145,65 +145,10 @@ const char *supla_alexa_client::getErrorString(const int code) {
   return "UNKNOWN";
 }
 
-void supla_alexa_client::refresh_roken(void) {
-  if (!getAlexa()->isRefreshTokenExists()) {
-    return;
-  }
-
-  struct timeval last_set_time = getAlexa()->getSetTime();
-  getAlexa()->refresh_lock();
-
-  struct timeval current_set_time = getAlexa()->getSetTime();
-  if (last_set_time.tv_sec == current_set_time.tv_sec &&
-      last_set_time.tv_usec == current_set_time.tv_usec) {
-#ifndef NOSSL
-    char host[] = "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com";
-    char resource[] = "/default/amazonRefreshTokenBridge";
-
-    getHttps()->setHost(host);
-    getHttps()->setResource(resource);
-    {
-      char *refresh_token = getAlexa()->getRefreshToken();
-      if (refresh_token) {
-        int rtoken_len = strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE);
-        if (rtoken_len != 0) {
-          cJSON *root = cJSON_CreateObject();
-          cJSON_AddStringToObject(root, "refresh_token", refresh_token);
-          char *str = cJSON_PrintUnformatted(root);
-          cJSON_Delete(root);
-
-          getHttps()->http_post(NULL, str);
-          free(str);
-        }
-
-        free(refresh_token);
-      }
-    }
-
-    if (getHttps()->getResultCode() == 200 && getHttps()->getBody()) {
-      cJSON *root = cJSON_Parse(getHttps()->getBody());
-      if (root) {
-        cJSON *access_token = cJSON_GetObjectItem(root, "access_token");
-        cJSON *expires_in = cJSON_GetObjectItem(root, "expires_in");
-        cJSON *refresh_token = cJSON_GetObjectItem(root, "refresh_token");
-
-        if (access_token && cJSON_IsString(access_token) && refresh_token &&
-            cJSON_IsString(refresh_token)) {
-          int ex_in = cJSON_IsNumber(expires_in) ? expires_in->valueint : 0;
-          getAlexa()->update(cJSON_GetStringValue(access_token),
-                             cJSON_GetStringValue(refresh_token), ex_in);
-        }
-
-        cJSON_Delete(root);
-      }
-    }
-
-    httpsFree();
-
-#endif /*NOSSL*/
-  }
-
-  getAlexa()->refresh_unlock();
+void supla_alexa_client::refreshToken(void) {
+  char host[] = "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com";
+  char resource[] = "/default/amazonRefreshTokenBridge";
+  supla_voice_assistant_client::refreshToken(host, resource);
 }
 
 int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
@@ -277,7 +222,7 @@ int supla_alexa_client::aeg_post(char *data) {
 
   if (getAlexa()->expiresIn() <= 30) {
     refresh_attempt = true;
-    refresh_roken();
+    refreshToken();
   }
 
   int httpResultCode = 0;
@@ -285,7 +230,7 @@ int supla_alexa_client::aeg_post(char *data) {
   if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION) {
     if (!refresh_attempt) {
       refresh_attempt = true;
-      refresh_roken();
+      refreshToken();
       result = aeg_post_request(data, &httpResultCode);
     }
   }
