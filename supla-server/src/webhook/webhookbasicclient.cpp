@@ -33,13 +33,13 @@ supla_webhook_basic_client::supla_webhook_basic_client(
 }
 
 void supla_webhook_basic_client::httpsInit(void) {
-  httpsFree();
+  httpClientFree();
   lck_lock(lck);
   https = new supla_trivial_https();
   lck_unlock(lck);
 }
 
-void supla_webhook_basic_client::httpsFree(void) {
+void supla_webhook_basic_client::httpClientFree(void) {
   lck_lock(lck);
   if (https) {
     delete https;
@@ -56,7 +56,7 @@ void supla_webhook_basic_client::terminate(void) {
   lck_unlock(lck);
 }
 
-supla_trivial_https *supla_webhook_basic_client::getHttps(void) {
+supla_trivial_http *supla_webhook_basic_client::getHttpClient(void) {
   supla_trivial_https *result = NULL;
   lck_lock(lck);
   if (!https) {
@@ -85,8 +85,8 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
 
-    getHttps()->setHost(host);
-    getHttps()->setResource(resource);
+    getHttpClient()->setHost(host);
+    getHttpClient()->setResource(resource);
     {
       char *refresh_token = getCredentials()->getRefreshToken();
       if (refresh_token) {
@@ -98,7 +98,7 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
           char *str = cJSON_PrintUnformatted(root);
           cJSON_Delete(root);
 
-          getHttps()->http_post(NULL, str);
+          getHttpClient()->http_post(NULL, str);
           free(str);
         }
 
@@ -106,8 +106,8 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       }
     }
 
-    if (getHttps()->getResultCode() == 200 && getHttps()->getBody()) {
-      cJSON *root = cJSON_Parse(getHttps()->getBody());
+    if (getHttpClient()->getResultCode() == 200 && getHttpClient()->getBody()) {
+      cJSON *root = cJSON_Parse(getHttpClient()->getBody());
       if (root) {
         cJSON *access_token = cJSON_GetObjectItem(root, "access_token");
         cJSON *expires_in = cJSON_GetObjectItem(root, "expires_in");
@@ -124,7 +124,7 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       }
     }
 
-    httpsFree();
+    httpClientFree();
 
 #endif /*NOSSL*/
   }
@@ -133,6 +133,6 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
 }
 
 supla_webhook_basic_client::~supla_webhook_basic_client() {
-  httpsFree();
+  httpClientFree();
   lck_free(lck);
 }

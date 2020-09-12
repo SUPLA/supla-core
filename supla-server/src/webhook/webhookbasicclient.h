@@ -20,8 +20,7 @@
 #define WEBHOOK_WEBHOOKBASICCLIENT_H_
 
 #include "webhook/webhookbasiccredentials.h"
-
-class supla_trivial_https;
+#include "http/trivialhttps.h"
 
 class supla_webhook_basic_client {
  private:
@@ -31,8 +30,8 @@ class supla_webhook_basic_client {
   supla_webhook_basic_credentials *credentials;
 
  protected:
-  void httpsFree();
-  supla_trivial_https *getHttps(void);
+  void httpClientFree();
+  supla_trivial_http *getHttpClient(void);
   supla_webhook_basic_credentials *getCredentials(void);
   char *getEndpointId(int channelId, short subChannel);
   void refreshToken(char *host, char *resource);

@@ -84,9 +84,9 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
 #ifdef ONLY_LOG_REQUESTS
     supla_log(LOG_DEBUG, "%s", data);
 #else
-    getHttps()->setToken(getCredentials()->getAccessToken(), false);
-    result =
-        getHttpClient()->http_post(NULL, data) && getHttpClient()->getResultCode() == 200;
+    getHttpClient()->setToken(getCredentials()->getAccessToken(), false);
+    result = getHttpClient()->http_post(NULL, data) &&
+             getHttpClient()->getResultCode() == 200;
 
     if (resultCode) {
       *resultCode = getHttpClient()->getResultCode();
@@ -95,8 +95,8 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
     if (!result) {
       supla_log(LOG_ERR,
                 "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
-                getCredentials()->getUserID(), getHttps()->getResultCode(),
-                getHttps()->getBody());
+                getCredentials()->getUserID(), getHttpClient()->getResultCode(),
+                getHttpClient()->getBody());
     }
 #endif /*ONLY_LOG_REQUESTS*/
     free(data);
