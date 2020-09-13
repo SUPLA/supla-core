@@ -127,6 +127,36 @@ std::list<int> supla_state_webhook_credentials::getFunctionsIds(void) {
 
 void supla_state_webhook_credentials::on_credentials_changed() { load(); }
 
-char *supla_state_webhook_credentials::getHost(void) { return NULL; }
+bool supla_state_webhook_credentials::isUrlProtocolAccepted(void) {
+  bool result = false;
+  data_lock();
+  if (url) {
+    int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
+    if (len >= 8) {
+      result = (url[0] == 'h' || url[0] == 'H') &&
+               (url[1] == 't' || url[1] == 'T') &&
+               (url[2] == 't' || url[2] == 'T') &&
+               (url[3] == 'p' || url[3] == 'P') &&
+               (url[4] == 's' || url[4] == 'S') && url[5] == ':' &&
+               url[6] == '/' && url[7] == '/';
+    }
+  }
+  data_unlock();
+  return result;
+}
+
+char *supla_state_webhook_credentials::getHost(void) {
+  char *result = NULL;
+  /*
+    data_lock();
+
+    if (url != NULL) {
+      result = strndup(url, WEBHOOK_URL_MAXSIZE);
+    }
+
+    data_unlock();
+  */
+  return result;
+}
 
 char *supla_state_webhook_credentials::getResource(void) { return NULL; }

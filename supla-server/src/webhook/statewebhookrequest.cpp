@@ -73,7 +73,8 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
   supla_state_webhook_credentials *credentials =
       getUser()->stateWebhookCredentials();
-  if (credentials == NULL || !credentials->isAccessTokenExists()) {
+  if (credentials == NULL ||
+      !credentials->isAccessTokenExists() && credentials->isUrlValid()) {
     return false;
   }
 
