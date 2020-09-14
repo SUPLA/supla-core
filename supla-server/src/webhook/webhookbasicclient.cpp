@@ -29,6 +29,7 @@ supla_webhook_basic_client::supla_webhook_basic_client(
     supla_webhook_basic_credentials *credentials) {
   this->lck = lck_init();
   this->httpConnection = NULL;
+  this->httpConnectionFactory = NULL;
   this->credentials = credentials;
 }
 
