@@ -41,4 +41,19 @@ TEST_F(StateWebhookCredentialsTest, urlProtocolVerification) {
   delete c;
 }
 
+TEST_F(StateWebhookCredentialsTest, urlValidation) {
+  supla_state_webhook_credentials *c =
+      new supla_state_webhook_credentials(NULL);
+  c->set(NULL, NULL, 0, NULL, NULL);
+  ASSERT_FALSE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "http://", NULL);
+  ASSERT_FALSE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "https://abc", NULL);
+  ASSERT_FALSE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "https://b.pl", NULL);
+  ASSERT_TRUE(c->isUrlValid());
+
+  delete c;
+}
+
 } /* namespace testing */

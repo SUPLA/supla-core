@@ -145,6 +145,10 @@ bool supla_state_webhook_credentials::isUrlProtocolAccepted(void) {
   return result;
 }
 
+bool supla_state_webhook_credentials::isUrlValid(void) {
+  return isUrlProtocolAccepted() && strnlen(url, WEBHOOK_URL_MAXSIZE) > 11;
+}
+
 char *supla_state_webhook_credentials::getHost(void) {
   char *result = NULL;
   /*
