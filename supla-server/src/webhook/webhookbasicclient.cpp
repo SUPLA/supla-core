@@ -94,7 +94,8 @@ supla_webhook_basic_credentials *supla_webhook_basic_client::getCredentials(
   return credentials;
 }
 
-void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
+void supla_webhook_basic_client::refreshToken(char *host, char *resource,
+                                              bool copy) {
   if (!getCredentials()->isRefreshTokenExists()) {
     return;
   }
@@ -107,8 +108,8 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource) {
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
 
-    getHttpConnection()->setHost(host);
-    getHttpConnection()->setResource(resource);
+    getHttpConnection()->setHost(host, copy);
+    getHttpConnection()->setResource(resource, copy);
     {
       char *refresh_token = getCredentials()->getRefreshToken();
       if (refresh_token) {

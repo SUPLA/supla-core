@@ -238,10 +238,9 @@ void supla_trivial_http::parse_header_item(const char *item, unsigned int size,
     }
     contentType = strdup(match);
 
-  } else if (chunked &&
-             NULL !=
-                 (match = header_item_match(item, size, _transferEncoding,
-                                            sizeof(_transferEncoding) - 1))) {
+  } else if (chunked && NULL != (match = header_item_match(
+                                     item, size, _transferEncoding,
+                                     sizeof(_transferEncoding) - 1))) {
     *chunked = true;
   } else if (NULL != (match = header_item_match(item, size, _contentLength,
                                                 sizeof(_contentLength) - 1))) {
@@ -444,7 +443,7 @@ void supla_trivial_http::setToken(char *token, bool copy) {
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
 
-bool supla_trivial_http::http_post(char *header, char *data) {
+bool supla_trivial_http::http_post(char *header, const char *data) {
   return request("POST", header, data);
 }
 

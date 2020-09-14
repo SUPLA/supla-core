@@ -150,17 +150,54 @@ bool supla_state_webhook_credentials::isUrlValid(void) {
 }
 
 char *supla_state_webhook_credentials::getHost(void) {
+  if (!isUrlValid()) {
+    return NULL;
+  }
+
+  data_lock();
   char *result = NULL;
-  /*
-    data_lock();
 
-    if (url != NULL) {
-      result = strndup(url, WEBHOOK_URL_MAXSIZE);
+  int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
+  for (int a = 8; a < len; a++) {
+    if (url[a] == '/' || a == len - 1) {
+      len = a == len - 1 ? a - 6 : a - 7;
+      result = (char *)malloc(len);
+      memcpy(result, &url[8], len - 1);
+      result[len - 1] = 0;
+      break;
     }
+  }
+  data_unlock();
 
-    data_unlock();
-  */
   return result;
 }
 
-char *supla_state_webhook_credentials::getResource(void) { return NULL; }
+char *supla_state_webhook_credentials::getResource(void) {
+  if (!isUrlValid()) {
+    return NULL;
+  }
+
+  data_lock();
+  char *result = NULL;
+  int slash_pos = 0;
+
+  int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
+  for (int a = 8; a < len; a++) {
+    if (url[a] == '/') {
+      slash_pos = a;
+    }
+    if (a == len - 1) {
+      if (slash_pos == a || slash_pos == 0) {
+        result = strdup("/");
+      } else {
+        result = (char *)malloc(len - slash_pos + 1);
+        memcpy(result, &url[slash_pos], len - slash_pos);
+        result[len - slash_pos] = 0;
+      }
+      break;
+    }
+  }
+  data_unlock();
+
+  return result;
+}

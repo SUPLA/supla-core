@@ -63,7 +63,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
   void refreshToken(void);
 
  protected:
-  supla_amazon_alexa_credentials *getAlexa(void);
+  supla_amazon_alexa_credentials *getAlexaCredentials(void);
   const char *getErrorString(const int code);
   int getErrorCode(const char *code);
   int aeg_post_request(char *data, int *httpResultCode);

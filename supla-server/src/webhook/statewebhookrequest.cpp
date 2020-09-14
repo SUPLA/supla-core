@@ -17,6 +17,7 @@
  */
 
 #include "webhook/statewebhookrequest.h"
+#include <assert.h>
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
@@ -60,7 +61,6 @@ bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
   duplicateExists = true;
   if (!static_cast<supla_state_webhook_request *>(existing)
            ->isMeasuringSensor()) {
-    existing->setDelay(1000000);
     supla_http_request_queue::getInstance()->raiseEvent();
   }
 
@@ -73,8 +73,8 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
   supla_state_webhook_credentials *credentials =
       getUser()->stateWebhookCredentials();
-  if (credentials == NULL ||
-      !credentials->isAccessTokenExists() && credentials->isUrlValid()) {
+  if (credentials == NULL || !credentials->isAccessTokenExists() ||
+      !credentials->isUrlValid()) {
     return false;
   }
 
@@ -96,9 +96,13 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_HUMIDITY:
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
                 measuringSensor = true;
-                break;
+                return true;
+              case SUPLA_CHANNELFNC_POWERSWITCH:
+              case SUPLA_CHANNELFNC_LIGHTSWITCH:
+                return true;
+              default:
+                return false;
             }
-            return true;
           }
         }
       }
@@ -117,14 +121,36 @@ bool supla_state_webhook_request::isEventTypeAccepted(event_type eventType,
   return eventType == ET_CHANNEL_VALUE_CHANGED;
 }
 
+supla_state_webhook_client *supla_state_webhook_request::getClient(void) {
+  supla_state_webhook_credentials *credentials =
+      getUser()->stateWebhookCredentials();
+  assert(credentials != NULL);
+
+  supla_state_webhook_client *result = NULL;
+  lck_lock(lck);
+  if (!client) {
+    client = new supla_state_webhook_client(credentials);
+  }
+  result = client;
+  lck_unlock(lck);
+
+  return result;
+}
+
 void supla_state_webhook_request::execute(void *sthread) {
   channel_complex_value value =
       getUser()->get_channel_complex_value(getChannelId());
 
-  /*
   switch (value.function) {
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      getClient()->sendPowerSwitchReport(getChannelId(), value.hi,
+                                         value.online);
+      break;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      getClient()->sendLightSwitchReport(getChannelId(), value.hi,
+                                         value.online);
+      break;
   }
-  */
 }
 
 void supla_state_webhook_request::terminate(void *sthread) {
@@ -137,7 +163,7 @@ void supla_state_webhook_request::terminate(void *sthread) {
 }
 
 void supla_state_webhook_request::requestWillBeAdded(void) {
-  setDelay(measuringSensor ? 30000000 : 1500000);
+  setDelay(measuringSensor ? 30000000 : 500000);
 }
 
 REGISTER_HTTP_REQUEST_CLASS(supla_state_webhook_request);

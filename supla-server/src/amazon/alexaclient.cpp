@@ -129,7 +129,7 @@ int supla_alexa_client::getErrorCode(const char *code) {
   return POST_RESULT_UNKNOWN_ERROR;
 }
 
-supla_amazon_alexa_credentials *supla_alexa_client::getAlexa(void) {
+supla_amazon_alexa_credentials *supla_alexa_client::getAlexaCredentials(void) {
   return static_cast<supla_amazon_alexa_credentials *>(getCredentials());
 }
 
@@ -164,7 +164,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
   {
     char host[30];
     host[0] = 0;
-    char *region = getAlexa()->getRegion();
+    char *region = getAlexaCredentials()->getRegion();
 
     snprintf(host, sizeof(host), "api.%s%samazonalexa.com",
              region ? region : "", region ? "." : "");
@@ -178,7 +178,7 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
   char header[] = "Content-Type: application/json";
   char resource[] = "/v3/events";
   getHttpConnection()->setResource(resource);
-  getHttpConnection()->setToken(getAlexa()->getAccessToken(), false);
+  getHttpConnection()->setToken(getAlexaCredentials()->getAccessToken(), false);
 
   if (!getHttpConnection()->http_post(header, data)) {
     return POST_RESULT_REQUEST_ERROR;
@@ -214,13 +214,13 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 }
 
 int supla_alexa_client::aeg_post(char *data) {
-  if (!getAlexa()->isAccessTokenExists()) {
+  if (!getAlexaCredentials()->isAccessTokenExists()) {
     return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
   }
 
   bool refresh_attempt = false;
 
-  if (getAlexa()->expiresIn() <= 30) {
+  if (getAlexaCredentials()->expiresIn() <= 30) {
     refresh_attempt = true;
     refreshToken();
   }
@@ -239,7 +239,7 @@ int supla_alexa_client::aeg_post(char *data) {
       result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION ||
       (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION &&
        refresh_attempt)) {
-    getAlexa()->remove();
+    getAlexaCredentials()->remove();
     return result;
   }
 
@@ -247,7 +247,7 @@ int supla_alexa_client::aeg_post(char *data) {
     supla_log(LOG_ERR,
               "Alexa event gateway client error (UserID: %i, httpCode: %i, "
               "Result: %i): %s",
-              getAlexa()->getUserID(), httpResultCode, result,
+              getAlexaCredentials()->getUserID(), httpResultCode, result,
               getErrorString(result));
   }
 
@@ -412,7 +412,7 @@ void *supla_alexa_client::getResponseHeader(const char correlationToken[]) {
 void *supla_alexa_client::getEndpoint(int channelId, short subChannel) {
   cJSON *endpoint = cJSON_CreateObject();
   if (endpoint) {
-    char *token = getAlexa()->getAccessToken();
+    char *token = getAlexaCredentials()->getAccessToken();
     if (token) {
       cJSON *scope = cJSON_CreateObject();
       if (scope) {

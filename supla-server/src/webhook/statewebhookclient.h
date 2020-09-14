@@ -19,11 +19,24 @@
 #ifndef WEBHOOK_STATEWEBHOOKCLIENT_H_
 #define WEBHOOK_STATEWEBHOOKCLIENT_H_
 
-#include <webhook/webhookbasicclient.h>
+#include "json/cJSON.h"
+#include "webhook/statewebhookcredentials.h"
+#include "webhook/webhookbasicclient.h"
 
 class supla_state_webhook_client : public supla_webhook_basic_client {
+ private:
+  supla_state_webhook_credentials *getStateWebhookCredentials(void);
+  bool postRequest(const char *data, int *httpResultCode);
+  bool postRequest(const char *data);
+  bool sendReport(cJSON *json);
+  cJSON *getHeader(const char *function, int channelId);
+  bool sendOnOffReport(const char *function, int channelId, bool on,
+                       bool connected);
+
  public:
   supla_state_webhook_client(supla_webhook_basic_credentials *credentials);
+  bool sendLightSwitchReport(int channelId, bool on, bool connected);
+  bool sendPowerSwitchReport(int channelId, bool on, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

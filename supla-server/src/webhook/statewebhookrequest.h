@@ -27,6 +27,7 @@ class supla_state_webhook_request : public supla_http_request {
   supla_state_webhook_client *client;
   bool duplicateExists;
   bool measuringSensor;
+  supla_state_webhook_client *getClient(void);
 
  public:
   supla_state_webhook_request(supla_user *user, int ClassID, int DeviceId,
