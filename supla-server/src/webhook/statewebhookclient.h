@@ -26,6 +26,7 @@
 class supla_state_webhook_client : public supla_webhook_basic_client {
  private:
   supla_state_webhook_credentials *getStateWebhookCredentials(void);
+  void refreshToken(void);
   bool postRequest(const char *data, int *httpResultCode);
   bool postRequest(const char *data);
   bool sendReport(cJSON *json);

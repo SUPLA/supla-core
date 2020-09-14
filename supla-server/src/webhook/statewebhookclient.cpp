@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <webhook/statewebhookclient.h>
 #include "user/user.h"
 
@@ -64,6 +65,30 @@ bool supla_state_webhook_client::postRequest(const char *data,
   return result;
 }
 
+void supla_state_webhook_client::refreshToken(void) {
+  char *refresh_token = getCredentials()->getRefreshToken();
+  if (refresh_token) {
+    int rtoken_len =
+        strnlen(refresh_token, getCredentials()->get_token_maxsize());
+    if (rtoken_len != 0) {
+      cJSON *root = cJSON_CreateObject();
+      cJSON_AddStringToObject(root, "refresh_token", refresh_token);
+      char *shortUniqueId = getCredentials()->getUser()->getShortUniqueID();
+      cJSON_AddStringToObject(root, "userShortUniqueId", shortUniqueId);
+      free(shortUniqueId);
+      char *str = cJSON_PrintUnformatted(root);
+      cJSON_Delete(root);
+
+      supla_webhook_basic_client::refreshToken(
+          getStateWebhookCredentials()->getHost(),
+          getStateWebhookCredentials()->getResource(), false, str);
+      free(str);
+    }
+
+    free(refresh_token);
+  }
+}
+
 bool supla_state_webhook_client::postRequest(const char *data) {
   if (!getStateWebhookCredentials()->isAccessTokenExists() ||
       !getStateWebhookCredentials()->isUrlValid()) {
@@ -71,8 +96,7 @@ bool supla_state_webhook_client::postRequest(const char *data) {
   }
 
   if (getStateWebhookCredentials()->expiresIn() <= 30) {
-    refreshToken(getStateWebhookCredentials()->getHost(),
-                 getStateWebhookCredentials()->getResource(), false);
+    refreshToken();
   }
 
   return postRequest(data, NULL);
