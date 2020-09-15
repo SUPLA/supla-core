@@ -527,4 +527,64 @@ TEST_F(StateWebhookClientTest, sendPressureSensorReport) {
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
+TEST_F(StateWebhookClientTest, sendRainSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"RAINSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"value\":55.55,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendRainSensorReport(123, 55.55, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"RAINSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"value\":66.66,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendRainSensorReport(123, 66.66, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendWeightSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"WEIGHTSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"value\":55.55,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendWeightSensorReport(123, 55.55, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 178\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"WEIGHTSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"value\":66.66,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendWeightSensorReport(123, 66.66, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
 } /* namespace testing */

@@ -402,3 +402,15 @@ bool supla_state_webhook_client::sendPressureSensorReport(int channelId,
                                                           bool connected) {
   return sendValueReport("PRESSURESENSOR", channelId, value, connected);
 }
+
+bool supla_state_webhook_client::sendRainSensorReport(int channelId,
+                                                      double value,
+                                                      bool connected) {
+  return sendValueReport("RAINSENSOR", channelId, value, connected);
+}
+
+bool supla_state_webhook_client::sendWeightSensorReport(int channelId,
+                                                        double value,
+                                                        bool connected) {
+  return sendValueReport("WEIGHTSENSOR", channelId, value, connected);
+}

@@ -88,6 +88,8 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
               case SUPLA_CHANNELFNC_WINDSENSOR:
               case SUPLA_CHANNELFNC_PRESSURESENSOR:
+              case SUPLA_CHANNELFNC_RAINSENSOR:
+              case SUPLA_CHANNELFNC_WEIGHTSENSOR:
                 delayTime = 15000000;
                 return true;
               case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -207,6 +209,14 @@ void supla_state_webhook_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
       getClient()->sendPressureSensorReport(getChannelId(), value.pressure,
                                             value.online);
+      break;
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+      getClient()->sendRainSensorReport(getChannelId(), value.rain,
+                                        value.online);
+      break;
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      getClient()->sendWeightSensorReport(getChannelId(), value.weight,
+                                          value.online);
       break;
   }
 }
