@@ -95,7 +95,8 @@ void supla_state_webhook_client::refreshToken(void) {
           char *str = cJSON_PrintUnformatted(root);
           cJSON_Delete(root);
 
-          getHttpConnection()->http_put(NULL, str);
+          char header[] = "Content-Type: application/json";
+          getHttpConnection()->http_put(header, str);
           free(str);
         }
 
