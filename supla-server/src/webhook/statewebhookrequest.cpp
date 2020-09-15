@@ -29,8 +29,8 @@ supla_state_webhook_request::supla_state_webhook_request(
     : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
                          EventSourceType) {
   client = NULL;
+  delayTime = 500000;
   duplicateExists = false;
-  measuringSensor = false;
   lck = lck_init();
 }
 
@@ -45,10 +45,6 @@ supla_state_webhook_request::~supla_state_webhook_request() {
   lck_free(lck);
 }
 
-bool supla_state_webhook_request::isMeasuringSensor(void) {
-  return measuringSensor;
-}
-
 bool supla_state_webhook_request::isCancelled(void *sthread) {
   if (sthread_isterminated(sthread)) {
     return true;
@@ -59,11 +55,6 @@ bool supla_state_webhook_request::isCancelled(void *sthread) {
 
 bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
   duplicateExists = true;
-  if (!static_cast<supla_state_webhook_request *>(existing)
-           ->isMeasuringSensor()) {
-    supla_http_request_queue::getInstance()->raiseEvent();
-  }
-
   return true;
 }
 
@@ -95,7 +86,7 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_THERMOMETER:
               case SUPLA_CHANNELFNC_HUMIDITY:
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-                measuringSensor = true;
+                delayTime = 30000000;
                 return true;
               case SUPLA_CHANNELFNC_POWERSWITCH:
               case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -220,7 +211,7 @@ void supla_state_webhook_request::terminate(void *sthread) {
 }
 
 void supla_state_webhook_request::requestWillBeAdded(void) {
-  setDelay(measuringSensor ? 30000000 : 500000);
+  setDelay(delayTime);
 }
 
 REGISTER_HTTP_REQUEST_CLASS(supla_state_webhook_request);

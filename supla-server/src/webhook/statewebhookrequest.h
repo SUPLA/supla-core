@@ -26,7 +26,7 @@ class supla_state_webhook_request : public supla_http_request {
   void *lck;
   supla_state_webhook_client *client;
   bool duplicateExists;
-  bool measuringSensor;
+  int delayTime;
   supla_state_webhook_client *getClient(void);
 
  public:
