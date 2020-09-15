@@ -186,4 +186,244 @@ TEST_F(StateWebhookClientTest, sendTemperatureAndHumidityReport) {
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
+TEST_F(StateWebhookClientTest, sendGatewayOpeningSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 182\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_GATEWAY\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendGatewayOpeningSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 184\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_GATEWAY\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendGatewayOpeningSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendGateOpeningSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_GATE\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendGateOpeningSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_GATE\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendGateOpeningSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendGarageDoorOpeningSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 185\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_GARAGEDOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendGarageDoorOpeningSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 187\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_GARAGEDOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendGarageDoorOpeningSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendNoLiquidSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"NOLIQUIDSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendNoLiquidSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"NOLIQUIDSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendNoLiquidSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendDoorOpeningSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_DOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendDoorOpeningSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_DOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendDoorOpeningSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendRollerShutterOpeningSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 188\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_ROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendRollerShutterOpeningSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 190\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_ROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendRollerShutterOpeningSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendWindowOpeningSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendWindowOpeningSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendWindowOpeningSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendMailSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 171\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"MAILSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendMailSensorReport(123, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 173\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"MAILSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"hi\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendMailSensorReport(123, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
 } /* namespace testing */

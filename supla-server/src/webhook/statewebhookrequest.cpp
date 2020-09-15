@@ -99,6 +99,14 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
                 return true;
               case SUPLA_CHANNELFNC_POWERSWITCH:
               case SUPLA_CHANNELFNC_LIGHTSWITCH:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+              case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+              case SUPLA_CHANNELFNC_WINDSENSOR:
+              case SUPLA_CHANNELFNC_MAILSENSOR:
                 return true;
               default:
                 return false;
@@ -162,6 +170,37 @@ void supla_state_webhook_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       getClient()->sendTemperatureAndHumidityReport(
           getChannelId(), value.temperature, value.humidity, value.online);
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      getClient()->sendGatewayOpeningSensorReport(getChannelId(), value.hi,
+                                                  value.online);
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      getClient()->sendGateOpeningSensorReport(getChannelId(), value.hi,
+                                               value.online);
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      getClient()->sendGarageDoorOpeningSensorReport(getChannelId(), value.hi,
+                                                     value.online);
+      break;
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      getClient()->sendNoLiquidSensorReport(getChannelId(), value.hi,
+                                            value.online);
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      getClient()->sendDoorOpeningSensorReport(getChannelId(), value.hi,
+                                               value.online);
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      getClient()->sendRollerShutterOpeningSensorReport(getChannelId(),
+                                                        value.hi, value.online);
+      break;
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+      getClient()->sendWindowOpeningSensorReport(getChannelId(), value.hi,
+                                                 value.online);
+      break;
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      getClient()->sendMailSensorReport(getChannelId(), value.hi, value.online);
       break;
   }
 }

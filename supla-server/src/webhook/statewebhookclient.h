@@ -31,8 +31,12 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool postRequest(const char *data);
   bool sendReport(cJSON *json);
   cJSON *getHeader(const char *function, int channelId);
-  bool sendOnOffReport(const char *function, int channelId, bool on,
-                       bool connected);
+  bool sendBinaryReport(const char *function, int channelId, const char *name,
+                        bool _true, bool connected);
+  bool sendOnReport(const char *function, int channelId, bool on,
+                    bool connected);
+  bool sendHiReport(const char *function, int channelId, bool hi,
+                    bool connected);
   bool sendTemperatureAndHumidityReport(const char *function, int channelId,
                                         double *temperature, double *humidity,
                                         bool connected);
@@ -46,6 +50,16 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendHumidityReport(int channelId, double humidity, bool connected);
   bool sendTemperatureAndHumidityReport(int channelId, double temperature,
                                         double humidity, bool connected);
+  bool sendGatewayOpeningSensorReport(int channelId, bool hi, bool connected);
+  bool sendGateOpeningSensorReport(int channelId, bool hi, bool connected);
+  bool sendGarageDoorOpeningSensorReport(int channelId, bool hi,
+                                         bool connected);
+  bool sendNoLiquidSensorReport(int channelId, bool hi, bool connected);
+  bool sendDoorOpeningSensorReport(int channelId, bool hi, bool connected);
+  bool sendRollerShutterOpeningSensorReport(int channelId, bool hi,
+                                            bool connected);
+  bool sendWindowOpeningSensorReport(int channelId, bool hi, bool connected);
+  bool sendMailSensorReport(int channelId, bool hi, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */
