@@ -78,9 +78,9 @@ void supla_state_webhook_client::refreshToken(void) {
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
 
-    getHttpConnection()->setHost(getStateWebhookCredentials()->getHost(), true);
+    getHttpConnection()->setHost(getStateWebhookCredentials()->getHost(), false);
     getHttpConnection()->setResource(
-        getStateWebhookCredentials()->getResource(), true);
+        getStateWebhookCredentials()->getResource(), false);
     {
       char *refresh_token = getCredentials()->getRefreshToken();
       if (refresh_token) {
