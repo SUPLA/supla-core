@@ -2293,6 +2293,8 @@ bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
       "DAY(@date) d, DAYOFWEEK(@date) w, HOUR(@date) h, MINUTE(@date) n, "
       "SECOND(@date) s FROM `supla_user` WHERE id = ?";
 
+  memset(time, 0, sizeof(TSDC_UserLocalTimeResult));
+
   MYSQL_STMT *stmt = NULL;
 
   MYSQL_BIND pbind[1];
@@ -2354,6 +2356,7 @@ bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
           !timezone_is_null) {
         time->timezone[timezone_size] = 0;
+        time->timezoneSize = timezone_size + 1;
         result = true;
       }
     }
