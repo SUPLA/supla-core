@@ -66,27 +66,68 @@ bool supla_state_webhook_client::postRequest(const char *data,
 }
 
 void supla_state_webhook_client::refreshToken(void) {
-  char *refresh_token = getCredentials()->getRefreshToken();
-  if (refresh_token) {
-    int rtoken_len =
-        strnlen(refresh_token, getCredentials()->get_token_maxsize());
-    if (rtoken_len != 0) {
-      cJSON *root = cJSON_CreateObject();
-      cJSON_AddStringToObject(root, "refresh_token", refresh_token);
-      char *shortUniqueId = getCredentials()->getUser()->getShortUniqueID();
-      cJSON_AddStringToObject(root, "userShortUniqueId", shortUniqueId);
-      free(shortUniqueId);
-      char *str = cJSON_PrintUnformatted(root);
-      cJSON_Delete(root);
+  if (!getCredentials()->isRefreshTokenExists()) {
+    return;
+  }
 
-      supla_webhook_basic_client::refreshToken(
-          getStateWebhookCredentials()->getHost(),
-          getStateWebhookCredentials()->getResource(), false, str, true);
-      free(str);
+  struct timeval last_set_time = getCredentials()->getSetTime();
+  getCredentials()->refresh_lock();
+
+  struct timeval current_set_time = getCredentials()->getSetTime();
+  if (last_set_time.tv_sec == current_set_time.tv_sec &&
+      last_set_time.tv_usec == current_set_time.tv_usec) {
+#ifndef NOSSL
+
+    getHttpConnection()->setHost(getStateWebhookCredentials()->getHost(), true);
+    getHttpConnection()->setResource(
+        getStateWebhookCredentials()->getResource(), true);
+    {
+      char *refresh_token = getCredentials()->getRefreshToken();
+      if (refresh_token) {
+        int rtoken_len =
+            strnlen(refresh_token, getCredentials()->get_token_maxsize());
+        if (rtoken_len != 0) {
+          cJSON *root = cJSON_CreateObject();
+          cJSON_AddStringToObject(root, "refreshToken", refresh_token);
+          char *shortUniqueId = getCredentials()->getUser()->getShortUniqueID();
+          cJSON_AddStringToObject(root, "userShortUniqueId", shortUniqueId);
+          free(shortUniqueId);
+          char *str = cJSON_PrintUnformatted(root);
+          cJSON_Delete(root);
+
+          getHttpConnection()->http_put(NULL, str);
+          free(str);
+        }
+
+        free(refresh_token);
+      }
     }
 
-    free(refresh_token);
+    if (getHttpConnection()->getResultCode() == 200 &&
+        getHttpConnection()->getBody()) {
+      cJSON *root = cJSON_Parse(getHttpConnection()->getBody());
+      if (root) {
+        cJSON *access_token = cJSON_GetObjectItem(root, "accessToken");
+        cJSON *expires_in = cJSON_GetObjectItem(root, "expiresIn");
+        cJSON *refresh_token = cJSON_GetObjectItem(root, "refreshToken");
+
+        if (access_token && cJSON_IsString(access_token) && refresh_token &&
+            cJSON_IsString(refresh_token)) {
+          int ex_in = cJSON_IsNumber(expires_in) ? expires_in->valueint : 0;
+          getCredentials()->update(cJSON_GetStringValue(access_token),
+                                   cJSON_GetStringValue(refresh_token), ex_in);
+        }
+
+        cJSON_Delete(root);
+      }
+    }
+
+    httpConnectionFree();
+
+#endif /*NOSSL*/
   }
+
+  getCredentials()->refresh_unlock();
 }
 
 bool supla_state_webhook_client::postRequest(const char *data) {
@@ -98,7 +139,7 @@ bool supla_state_webhook_client::postRequest(const char *data) {
   bool refresh_attempt = false;
 
   if (getStateWebhookCredentials()->expiresIn() <= 30) {
-    int httpResultCode = 0;
+    refresh_attempt = true;
     refreshToken();
   }
 
