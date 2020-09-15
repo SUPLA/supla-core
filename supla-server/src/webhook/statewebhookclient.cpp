@@ -78,7 +78,8 @@ void supla_state_webhook_client::refreshToken(void) {
       last_set_time.tv_usec == current_set_time.tv_usec) {
 #ifndef NOSSL
 
-    getHttpConnection()->setHost(getStateWebhookCredentials()->getHost(), false);
+    getHttpConnection()->setHost(getStateWebhookCredentials()->getHost(),
+                                 false);
     getHttpConnection()->setResource(
         getStateWebhookCredentials()->getResource(), false);
     {
@@ -229,6 +230,32 @@ bool supla_state_webhook_client::sendOnOffReport(const char *function,
   return false;
 }
 
+bool supla_state_webhook_client::sendTemperatureAndHumidityReport(
+    const char *function, int channelId, double *temperature, double *humidity,
+    bool connected) {
+  cJSON *root = getHeader(function, channelId);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      if (temperature) {
+        cJSON_AddNumberToObject(state, "temperature", *temperature);
+      }
+
+      if (humidity) {
+        cJSON_AddNumberToObject(state, "humidity", *humidity);
+      }
+
+      cJSON_AddBoolToObject(state, "connected", connected);
+      cJSON_AddItemToObject(root, "state", state);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}
+
 bool supla_state_webhook_client::sendLightSwitchReport(int channelId, bool on,
                                                        bool connected) {
   const char function[] = "LIGHTSWITCH";
@@ -239,4 +266,27 @@ bool supla_state_webhook_client::sendPowerSwitchReport(int channelId, bool on,
                                                        bool connected) {
   const char function[] = "POWERSWITCH";
   return sendOnOffReport(function, channelId, on, connected);
+}
+
+bool supla_state_webhook_client::sendTemperatureReport(int channelId,
+                                                       double temperature,
+                                                       bool connected) {
+  const char function[] = "THERMOMETER";
+  return sendTemperatureAndHumidityReport(function, channelId, &temperature,
+                                          NULL, connected);
+}
+
+bool supla_state_webhook_client::sendHumidityReport(int channelId,
+                                                    double humidity,
+                                                    bool connected) {
+  const char function[] = "HUMIDITY";
+  return sendTemperatureAndHumidityReport(function, channelId, NULL, &humidity,
+                                          connected);
+}
+
+bool supla_state_webhook_client::sendTemperatureAndHumidityReport(
+    int channelId, double temperature, double humidity, bool connected) {
+  const char function[] = "HUMIDITYANDTEMPERATURE";
+  return sendTemperatureAndHumidityReport(function, channelId, &temperature,
+                                          &humidity, connected);
 }

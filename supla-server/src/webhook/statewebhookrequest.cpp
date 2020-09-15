@@ -150,6 +150,19 @@ void supla_state_webhook_request::execute(void *sthread) {
       getClient()->sendLightSwitchReport(getChannelId(), value.hi,
                                          value.online);
       break;
+
+    case SUPLA_CHANNELFNC_THERMOMETER:
+      getClient()->sendTemperatureReport(getChannelId(), value.temperature,
+                                         value.online);
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+      getClient()->sendHumidityReport(getChannelId(), value.humidity,
+                                      value.online);
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      getClient()->sendTemperatureAndHumidityReport(
+          getChannelId(), value.temperature, value.humidity, value.online);
+      break;
   }
 }
 
