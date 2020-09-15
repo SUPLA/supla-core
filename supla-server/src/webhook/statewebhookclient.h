@@ -31,12 +31,16 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool postRequest(const char *data);
   bool sendReport(cJSON *json);
   cJSON *getHeader(const char *function, int channelId);
-  bool sendBinaryReport(const char *function, int channelId, const char *name,
-                        bool _true, bool connected);
+  bool sendReportWithBool(const char *function, int channelId, const char *name,
+                          bool _true, bool connected);
+  bool sendReportWithNumber(const char *function, int channelId,
+                            const char *name, double number, bool connected);
   bool sendOnReport(const char *function, int channelId, bool on,
                     bool connected);
   bool sendHiReport(const char *function, int channelId, bool hi,
                     bool connected);
+  bool sendValueReport(const char *function, int channelId, double number,
+                       bool connected);
   bool sendTemperatureAndHumidityReport(const char *function, int channelId,
                                         double *temperature, double *humidity,
                                         bool connected);
@@ -61,6 +65,7 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendWindowOpeningSensorReport(int channelId, bool hi, bool connected);
   bool sendMailSensorReport(int channelId, bool hi, bool connected);
   bool sendRollerShutterReport(int channelId, char shut, bool connected);
+  bool sendWindSensorReport(int channelId, double value, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

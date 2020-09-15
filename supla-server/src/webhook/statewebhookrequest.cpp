@@ -86,7 +86,8 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_THERMOMETER:
               case SUPLA_CHANNELFNC_HUMIDITY:
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-                delayTime = 30000000;
+              case SUPLA_CHANNELFNC_WINDSENSOR:
+                delayTime = 15000000;
                 return true;
               case SUPLA_CHANNELFNC_POWERSWITCH:
               case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -96,7 +97,7 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
               case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
               case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-              case SUPLA_CHANNELFNC_WINDSENSOR:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
               case SUPLA_CHANNELFNC_MAILSENSOR:
               case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
                 return true;
@@ -187,7 +188,7 @@ void supla_state_webhook_request::execute(void *sthread) {
       getClient()->sendRollerShutterOpeningSensorReport(getChannelId(),
                                                         value.hi, value.online);
       break;
-    case SUPLA_CHANNELFNC_WINDSENSOR:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       getClient()->sendWindowOpeningSensorReport(getChannelId(), value.hi,
                                                  value.online);
       break;
@@ -197,6 +198,10 @@ void supla_state_webhook_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       getClient()->sendRollerShutterReport(getChannelId(), value.shut,
                                            value.online);
+      break;
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+      getClient()->sendWindSensorReport(getChannelId(), value.wind,
+                                        value.online);
       break;
   }
 }

@@ -211,10 +211,11 @@ cJSON *supla_state_webhook_client::getHeader(const char *function,
   return header;
 }
 
-bool supla_state_webhook_client::sendBinaryReport(const char *function,
-                                                  int channelId,
-                                                  const char *name, bool _true,
-                                                  bool connected) {
+bool supla_state_webhook_client::sendReportWithBool(const char *function,
+                                                    int channelId,
+                                                    const char *name,
+                                                    bool _true,
+                                                    bool connected) {
   cJSON *root = getHeader(function, channelId);
   if (root) {
     cJSON *state = cJSON_CreateObject();
@@ -231,16 +232,43 @@ bool supla_state_webhook_client::sendBinaryReport(const char *function,
   return false;
 }
 
+bool supla_state_webhook_client::sendReportWithNumber(const char *function,
+                                                      int channelId,
+                                                      const char *name,
+                                                      double number,
+                                                      bool connected) {
+  cJSON *root = getHeader(function, channelId);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      cJSON_AddNumberToObject(state, name, number);
+      cJSON_AddBoolToObject(state, "connected", connected);
+      cJSON_AddItemToObject(root, "state", state);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}
+
+bool supla_state_webhook_client::sendValueReport(const char *function,
+                                                 int channelId, double number,
+                                                 bool connected) {
+  return sendReportWithNumber(function, channelId, "value", number, connected);
+}
+
 bool supla_state_webhook_client::sendOnReport(const char *function,
                                               int channelId, bool on,
                                               bool connected) {
-  return sendBinaryReport(function, channelId, "on", on, connected);
+  return sendReportWithBool(function, channelId, "on", on, connected);
 }
 
 bool supla_state_webhook_client::sendHiReport(const char *function,
                                               int channelId, bool hi,
                                               bool connected) {
-  return sendBinaryReport(function, channelId, "hi", hi, connected);
+  return sendReportWithBool(function, channelId, "hi", hi, connected);
 }
 
 bool supla_state_webhook_client::sendTemperatureAndHumidityReport(
@@ -271,89 +299,76 @@ bool supla_state_webhook_client::sendTemperatureAndHumidityReport(
 
 bool supla_state_webhook_client::sendLightSwitchReport(int channelId, bool on,
                                                        bool connected) {
-  const char function[] = "LIGHTSWITCH";
-  return sendOnReport(function, channelId, on, connected);
+  return sendOnReport("LIGHTSWITCH", channelId, on, connected);
 }
 
 bool supla_state_webhook_client::sendPowerSwitchReport(int channelId, bool on,
                                                        bool connected) {
-  const char function[] = "POWERSWITCH";
-  return sendOnReport(function, channelId, on, connected);
+  return sendOnReport("POWERSWITCH", channelId, on, connected);
 }
 
 bool supla_state_webhook_client::sendTemperatureReport(int channelId,
                                                        double temperature,
                                                        bool connected) {
-  const char function[] = "THERMOMETER";
-  return sendTemperatureAndHumidityReport(function, channelId, &temperature,
-                                          NULL, connected);
+  return sendTemperatureAndHumidityReport("THERMOMETER", channelId,
+                                          &temperature, NULL, connected);
 }
 
 bool supla_state_webhook_client::sendHumidityReport(int channelId,
                                                     double humidity,
                                                     bool connected) {
-  const char function[] = "HUMIDITY";
-  return sendTemperatureAndHumidityReport(function, channelId, NULL, &humidity,
-                                          connected);
+  return sendTemperatureAndHumidityReport("HUMIDITY", channelId, NULL,
+                                          &humidity, connected);
 }
 
 bool supla_state_webhook_client::sendTemperatureAndHumidityReport(
     int channelId, double temperature, double humidity, bool connected) {
-  const char function[] = "HUMIDITYANDTEMPERATURE";
-  return sendTemperatureAndHumidityReport(function, channelId, &temperature,
-                                          &humidity, connected);
+  return sendTemperatureAndHumidityReport("HUMIDITYANDTEMPERATURE", channelId,
+                                          &temperature, &humidity, connected);
 }
 
 bool supla_state_webhook_client::sendGatewayOpeningSensorReport(
     int channelId, bool hi, bool connected) {
-  const char function[] = "OPENINGSENSOR_GATEWAY";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("OPENINGSENSOR_GATEWAY", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendGateOpeningSensorReport(int channelId,
                                                              bool hi,
                                                              bool connected) {
-  const char function[] = "OPENINGSENSOR_GATE";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("OPENINGSENSOR_GATE", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendGarageDoorOpeningSensorReport(
     int channelId, bool hi, bool connected) {
-  const char function[] = "OPENINGSENSOR_GARAGEDOOR";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("OPENINGSENSOR_GARAGEDOOR", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendNoLiquidSensorReport(int channelId,
                                                           bool hi,
                                                           bool connected) {
-  const char function[] = "NOLIQUIDSENSOR";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("NOLIQUIDSENSOR", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendDoorOpeningSensorReport(int channelId,
                                                              bool hi,
                                                              bool connected) {
-  const char function[] = "OPENINGSENSOR_DOOR";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("OPENINGSENSOR_DOOR", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendRollerShutterOpeningSensorReport(
     int channelId, bool hi, bool connected) {
-  const char function[] = "OPENINGSENSOR_ROLLERSHUTTER";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("OPENINGSENSOR_ROLLERSHUTTER", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendWindowOpeningSensorReport(int channelId,
                                                                bool hi,
                                                                bool connected) {
-  const char function[] = "OPENINGSENSOR_WINDOW";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("OPENINGSENSOR_WINDOW", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendMailSensorReport(int channelId, bool hi,
                                                       bool connected) {
-  const char function[] = "MAILSENSOR";
-  return sendHiReport(function, channelId, hi, connected);
+  return sendHiReport("MAILSENSOR", channelId, hi, connected);
 }
 
 bool supla_state_webhook_client::sendRollerShutterReport(int channelId,
@@ -374,4 +389,10 @@ bool supla_state_webhook_client::sendRollerShutterReport(int channelId,
   }
 
   return false;
+}
+
+bool supla_state_webhook_client::sendWindSensorReport(int channelId,
+                                                      double value,
+                                                      bool connected) {
+  return sendValueReport("WINDSENSOR", channelId, value, connected);
 }
