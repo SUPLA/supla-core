@@ -414,3 +414,17 @@ bool supla_state_webhook_client::sendWeightSensorReport(int channelId,
                                                         bool connected) {
   return sendValueReport("WEIGHTSENSOR", channelId, value, connected);
 }
+
+bool supla_state_webhook_client::sendDistanceSensorReport(int channelId,
+                                                          double distance,
+                                                          bool connected) {
+  return sendReportWithNumber("DISTANCESENSOR", channelId, "distance", distance,
+                              connected);
+}
+
+bool supla_state_webhook_client::sendDepthSensorReport(int channelId,
+                                                       double depth,
+                                                       bool connected) {
+  return sendReportWithNumber("DEPTHSENSOR", channelId, "depth", depth,
+                              connected);
+}

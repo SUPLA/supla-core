@@ -69,6 +69,8 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendPressureSensorReport(int channelId, double value, bool connected);
   bool sendRainSensorReport(int channelId, double value, bool connected);
   bool sendWeightSensorReport(int channelId, double value, bool connected);
+  bool sendDistanceSensorReport(int channelId, double distance, bool connected);
+  bool sendDepthSensorReport(int channelId, double depth, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

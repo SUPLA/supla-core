@@ -587,4 +587,64 @@ TEST_F(StateWebhookClientTest, sendWeightSensorReport) {
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
+TEST_F(StateWebhookClientTest, sendDistanceSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 182\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DISTANCESENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"distance\":55.55,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendDistanceSensorReport(123, 55.55, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DISTANCESENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"distance\":66.66,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendDistanceSensorReport(123, 66.66, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendDepthSensorReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DEPTHSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"depth\":55.55,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendDepthSensorReport(123, 55.55, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DEPTHSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"depth\":66.66,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendDepthSensorReport(123, 66.66, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
 } /* namespace testing */
