@@ -183,7 +183,7 @@ char *supla_state_webhook_credentials::getResource(void) {
 
   int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
   for (int a = 8; a < len; a++) {
-    if (url[a] == '/') {
+    if (slash_pos == 0 && url[a] == '/') {
       slash_pos = a;
     }
     if (a == len - 1) {

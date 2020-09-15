@@ -103,6 +103,12 @@ TEST_F(StateWebhookCredentialsTest, getResource) {
   ASSERT_TRUE(strcmp(resource, "/xyz.php") == 0);
   free(resource);
 
+  c->set(NULL, NULL, 0, "https://localhost/api/xyz.php", NULL);
+  resource = c->getResource();
+  ASSERT_FALSE(resource == NULL);
+  ASSERT_TRUE(strcmp(resource, "/api/xyz.php") == 0);
+  free(resource);
+
   delete c;
 }
 
