@@ -87,6 +87,7 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_HUMIDITY:
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
               case SUPLA_CHANNELFNC_WINDSENSOR:
+              case SUPLA_CHANNELFNC_PRESSURESENSOR:
                 delayTime = 15000000;
                 return true;
               case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -202,6 +203,10 @@ void supla_state_webhook_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_WINDSENSOR:
       getClient()->sendWindSensorReport(getChannelId(), value.wind,
                                         value.online);
+      break;
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+      getClient()->sendPressureSensorReport(getChannelId(), value.pressure,
+                                            value.online);
       break;
   }
 }
