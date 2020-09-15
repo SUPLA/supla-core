@@ -38,6 +38,8 @@ class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
   virtual int get_token_maxsize(void);
   void set(const char *access_token, const char *refresh_token, int expires_in,
            const char *url, const char *functions_ids);
+  virtual void update(const char *access_token, const char *refresh_token,
+                      int expires_in);
   void load();
   void remove(void);
   void on_credentials_changed();

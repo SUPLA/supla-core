@@ -68,3 +68,7 @@ void supla_google_home_credentials::on_reportstate_404_error() {
   supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
       getUser(), EST_GOOGLE_HOME);
 }
+
+void supla_google_home_credentials::update(const char *access_token,
+                                           const char *refresh_token,
+                                           int expires_in) {}

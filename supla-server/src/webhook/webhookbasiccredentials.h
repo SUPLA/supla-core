@@ -47,8 +47,8 @@ class supla_webhook_basic_credentials {
 
   void set(const char *access_token);
   void set(const char *access_token, const char *refresh_token, int expires_in);
-  void update(const char *access_token, const char *refresh_token,
-              int expires_in);
+  virtual void update(const char *access_token, const char *refresh_token,
+                      int expires_in) = 0;
 
   bool isAccessTokenExists(void);
   bool isRefreshTokenExists(void);

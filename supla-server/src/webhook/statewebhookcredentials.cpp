@@ -112,6 +112,21 @@ void supla_state_webhook_credentials::set(const char *access_token,
   data_unlock();
 }
 
+void supla_state_webhook_credentials::update(const char *access_token,
+                                             const char *refresh_token,
+                                             int expires_in) {
+  supla_webhook_basic_credentials::set(access_token, refresh_token, expires_in);
+
+  database *db = new database();
+
+  if (db->connect()) {
+    db->state_webhook_update_token(getUserID(), access_token, refresh_token,
+                                   expires_in);
+  }
+
+  delete db;
+}
+
 char *supla_state_webhook_credentials::getUrl(void) {
   char *result = NULL;
 

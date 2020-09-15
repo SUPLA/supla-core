@@ -34,6 +34,10 @@ class supla_google_home_credentials : public supla_webhook_basic_credentials {
   void on_credentials_changed();
   void on_sync_40x_error();
   void on_reportstate_404_error();
+
+  // unused
+  virtual void update(const char *access_token, const char *refresh_token,
+                      int expires_in);
 };
 
 #endif /* GOOGLEHOME_H_ */

@@ -195,7 +195,3 @@ void supla_webhook_basic_credentials::set(const char *access_token,
 
   data_unlock();
 }
-
-void supla_webhook_basic_credentials::update(const char *access_token,
-                                             const char *refresh_token,
-                                             int expires_in) {}
