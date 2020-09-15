@@ -22,6 +22,7 @@
 #include "json/cJSON.h"
 #include "webhook/statewebhookcredentials.h"
 #include "webhook/webhookbasicclient.h"
+#include "device/devicechannel.h"
 
 class supla_state_webhook_client : public supla_webhook_basic_client {
  private:
@@ -47,6 +48,9 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendDimmerAndRgbReport(const char *function, int channelId, int *color,
                               char *color_brightness, char *brightness, char on,
                               bool connected);
+  bool sendImpulseCounterMeasurementReport(const char *function, int channelId,
+                                           supla_channel_ic_measurement *icm,
+                                           bool connected);
 
  public:
   supla_state_webhook_client(supla_webhook_basic_credentials *credentials);
@@ -76,9 +80,21 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendDepthSensorReport(int channelId, double depth, bool connected);
   bool sendRgbReport(int channelId, int color, char color_brightness, char on,
                      bool connected);
-  bool sendDimmerReport(int channelId, char brightness, char on, bool connected);
+  bool sendDimmerReport(int channelId, char brightness, char on,
+                        bool connected);
   bool sendDimmerAndRgbReport(int channelId, int color, char color_brightness,
                               char brightness, char on, bool connected);
+  bool sendElectricityMeasurementReport(
+      int channelId, supla_channel_electricity_measurement *em, bool connected);
+  bool sendImpulseCounterElectricityMeasurementReport(
+      int channelId, supla_channel_ic_measurement *icm, bool connected);
+  bool sendImpulseCounterGasMeasurementReport(int channelId,
+                                              supla_channel_ic_measurement *icm,
+                                              bool connected);
+  bool sendImpulseCounterWaterMeasurementReport(
+      int channelId, supla_channel_ic_measurement *icm, bool connected);
+  bool sendImpulseCounterHeatMeasurementReport(
+      int channelId, supla_channel_ic_measurement *icm, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

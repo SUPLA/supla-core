@@ -1317,7 +1317,7 @@ channel_function_t supla_user::compex_value_cache_get_function(
 }
 
 void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
-                                                    int Function,
+                                                    int Type, int Function,
                                                     bool channel_is_hidden) {
   if (!Function || !DeviceId || !ChannelID) return;
   safe_array_lock(complex_value_functions_arr);
@@ -1326,6 +1326,7 @@ void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
   if (compex_value_cache_get_function(ChannelID, &fnc).function) {
     if (fnc) {
       fnc->deviceId = DeviceId;
+      fnc->channel_type = Type;
       fnc->function = Function;
       fnc->channel_is_hidden = channel_is_hidden;
     }
@@ -1349,12 +1350,14 @@ channel_complex_value supla_user::get_channel_complex_value(int ChannelID) {
   if (device == NULL) {
     channel_function_t f = compex_value_cache_get_function(ChannelID);
     value.function = f.function;
+    value.channel_type = f.channel_type;
     value.hidden_channel = f.channel_is_hidden;
   } else {
     device->get_channel_complex_value(&value, ChannelID);
     if (value.function) {
       compex_value_cache_update_function(device->getID(), ChannelID,
-                                         value.function, value.hidden_channel);
+                                         value.channel_type, value.function,
+                                         value.hidden_channel);
     }
     device->releasePtr();
   }

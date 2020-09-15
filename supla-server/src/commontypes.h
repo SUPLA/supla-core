@@ -40,6 +40,7 @@ typedef struct {
   bool online;
   bool hidden_channel;
   int function;
+  int channel_type;
   bool hi;
   char brightness;
   char color_brightness;
@@ -60,6 +61,7 @@ typedef struct {
   int deviceId;
   int channelId;
   bool channel_is_hidden;
+  int channel_type;
   int function;
 } channel_function_t;
 

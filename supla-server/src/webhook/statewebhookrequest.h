@@ -28,6 +28,8 @@ class supla_state_webhook_request : public supla_http_request {
   bool duplicateExists;
   int delayTime;
   supla_state_webhook_client *getClient(void);
+  void electricityMeterChannelType(channel_complex_value *value);
+  void impulseCounterChannelType(channel_complex_value *value);
 
  public:
   supla_state_webhook_request(supla_user *user, int ClassID, int DeviceId,

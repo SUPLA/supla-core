@@ -485,3 +485,72 @@ bool supla_state_webhook_client::sendDimmerAndRgbReport(
   return sendDimmerAndRgbReport("DIMMERANDRGBLIGHTING", channelId, &color,
                                 &color_brightness, &brightness, on, connected);
 }
+
+bool supla_state_webhook_client::sendElectricityMeasurementReport(
+    int channelId, supla_channel_electricity_measurement *em, bool connected) {
+  return false;
+}
+
+bool supla_state_webhook_client::sendImpulseCounterMeasurementReport(
+    const char *function, int channelId, supla_channel_ic_measurement *icm,
+    bool connected) {
+  cJSON *root = getHeader(function, channelId);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      if (connected && icm != NULL) {
+        cJSON_AddNumberToObject(state, "totalCost", icm->getTotalCost() * 0.01);
+        cJSON_AddNumberToObject(state, "pricePerUnit",
+                                icm->getPricePerUnit() * 0.0001);
+        cJSON_AddNumberToObject(state, "impulsesPerUnit",
+                                icm->getImpulsesPerUnit());
+        cJSON_AddNumberToObject(state, "counter", icm->getCounter());
+        cJSON_AddNumberToObject(state, "calculatedValue",
+                                icm->getCalculatedValue() * 0.001);
+        if (strnlen(icm->getCurrncy(), 4) == 0) {
+          cJSON_AddNullToObject(state, "currency");
+        } else {
+          cJSON_AddStringToObject(state, "currency", icm->getCurrncy());
+        }
+
+        if (strnlen(icm->getCustomUnit(), 9) == 0) {
+          cJSON_AddNullToObject(state, "unit");
+        } else {
+          cJSON_AddStringToObject(state, "unit", icm->getCustomUnit());
+        }
+      }
+
+      cJSON_AddBoolToObject(state, "connected", connected);
+      cJSON_AddItemToObject(root, "state", state);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}
+
+bool supla_state_webhook_client::sendImpulseCounterElectricityMeasurementReport(
+    int channelId, supla_channel_ic_measurement *icm, bool connected) {
+  return sendImpulseCounterMeasurementReport("IC_ELECTRICITYMETER", channelId,
+                                             icm, connected);
+}
+
+bool supla_state_webhook_client::sendImpulseCounterGasMeasurementReport(
+    int channelId, supla_channel_ic_measurement *icm, bool connected) {
+  return sendImpulseCounterMeasurementReport("IC_GASMETER", channelId, icm,
+                                             connected);
+}
+
+bool supla_state_webhook_client::sendImpulseCounterWaterMeasurementReport(
+    int channelId, supla_channel_ic_measurement *icm, bool connected) {
+  return sendImpulseCounterMeasurementReport("IC_WATERMETER", channelId, icm,
+                                             connected);
+}
+
+bool supla_state_webhook_client::sendImpulseCounterHeatMeasurementReport(
+    int channelId, supla_channel_ic_measurement *icm, bool connected) {
+  return sendImpulseCounterMeasurementReport("IC_HEATMETER", channelId, icm,
+                                             connected);
+}

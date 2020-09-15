@@ -67,7 +67,7 @@ class supla_user {
   void compex_value_cache_clean(int DeviceId);
   channel_function_t compex_value_cache_get_function(
       int ChannelID, channel_function_t **_fnc = NULL);
-  void compex_value_cache_update_function(int DeviceId, int ChannelID,
+  void compex_value_cache_update_function(int DeviceId, int ChannelID, int Type,
                                           int Function, bool channel_is_hidden);
 
   static char find_user_byid(void *ptr, void *UserID);

@@ -91,14 +91,17 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_THERMOMETER:
               case SUPLA_CHANNELFNC_HUMIDITY:
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-                delayTime = 30000000;
-                return true;
               case SUPLA_CHANNELFNC_WINDSENSOR:
               case SUPLA_CHANNELFNC_PRESSURESENSOR:
               case SUPLA_CHANNELFNC_RAINSENSOR:
               case SUPLA_CHANNELFNC_WEIGHTSENSOR:
               case SUPLA_CHANNELFNC_DISTANCESENSOR:
               case SUPLA_CHANNELFNC_DEPTHSENSOR:
+              case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+              case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+              case SUPLA_CHANNELFNC_IC_GAS_METER:
+              case SUPLA_CHANNELFNC_IC_WATER_METER:
+              case SUPLA_CHANNELFNC_IC_HEAT_METER:
                 delayTime = 15000000;
                 return true;
               case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -148,6 +151,53 @@ supla_state_webhook_client *supla_state_webhook_request::getClient(void) {
   lck_unlock(lck);
 
   return result;
+}
+
+void supla_state_webhook_request::electricityMeterChannelType(
+    channel_complex_value *value) {
+  if (value->function == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+    supla_channel_electricity_measurement *em =
+        getUser()->get_electricity_measurement(getDeviceId(), getChannelId());
+
+    getClient()->sendElectricityMeasurementReport(getChannelId(), em,
+                                                  value->online);
+
+    if (em != NULL) {
+      delete em;
+    }
+  }
+}
+
+void supla_state_webhook_request::impulseCounterChannelType(
+    channel_complex_value *value) {
+  supla_channel_ic_measurement *icm =
+      getUser()->get_ic_measurement(getDeviceId(), getChannelId());
+
+  switch (value->function) {
+#ifdef SERVER_VERSION_23
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#endif /*SERVER_VERSION_23*/
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      getClient()->sendImpulseCounterElectricityMeasurementReport(
+          getChannelId(), icm, value->online);
+      break;
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+      getClient()->sendImpulseCounterGasMeasurementReport(getChannelId(), icm,
+                                                          value->online);
+      break;
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+      getClient()->sendImpulseCounterWaterMeasurementReport(getChannelId(), icm,
+                                                            value->online);
+      break;
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+      getClient()->sendImpulseCounterHeatMeasurementReport(getChannelId(), icm,
+                                                           value->online);
+      break;
+  }
+
+  if (icm != NULL) {
+    delete icm;
+  }
 }
 
 void supla_state_webhook_request::execute(void *sthread) {
@@ -250,6 +300,15 @@ void supla_state_webhook_request::execute(void *sthread) {
       getClient()->sendRgbReport(getChannelId(), value.color,
                                  value.color_brightness, value.on_off,
                                  value.online);
+      break;
+  }
+
+  switch (value.channel_type) {
+    case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+      electricityMeterChannelType(&value);
+      break;
+    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+      impulseCounterChannelType(&value);
       break;
   }
 }
