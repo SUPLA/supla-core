@@ -44,6 +44,9 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendTemperatureAndHumidityReport(const char *function, int channelId,
                                         double *temperature, double *humidity,
                                         bool connected);
+  bool sendDimmerAndRgbReport(const char *function, int channelId, int *color,
+                              char *color_brightness, char *brightness, char on,
+                              bool connected);
 
  public:
   supla_state_webhook_client(supla_webhook_basic_credentials *credentials);
@@ -71,6 +74,11 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendWeightSensorReport(int channelId, double value, bool connected);
   bool sendDistanceSensorReport(int channelId, double distance, bool connected);
   bool sendDepthSensorReport(int channelId, double depth, bool connected);
+  bool sendRgbReport(int channelId, int color, char color_brightness, char on,
+                     bool connected);
+  bool sendDimmerReport(int channelId, char brightness, char on, bool connected);
+  bool sendDimmerAndRgbReport(int channelId, int color, char color_brightness,
+                              char brightness, char on, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

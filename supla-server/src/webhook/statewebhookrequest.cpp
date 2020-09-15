@@ -83,6 +83,11 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
         for (int f : fids) {
           if (f == value.function) {
             switch (value.function) {
+              case SUPLA_CHANNELFNC_DIMMER:
+              case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+              case SUPLA_CHANNELFNC_RGBLIGHTING:
+                delayTime = 2500000;
+                return true;
               case SUPLA_CHANNELFNC_THERMOMETER:
               case SUPLA_CHANNELFNC_HUMIDITY:
               case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
@@ -229,6 +234,22 @@ void supla_state_webhook_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_DEPTHSENSOR:
       getClient()->sendDepthSensorReport(getChannelId(), value.depth,
                                          value.online);
+      break;
+    case SUPLA_CHANNELFNC_DIMMER:
+
+      getClient()->sendDimmerReport(getChannelId(), value.brightness,
+                                    value.on_off, value.online);
+
+      break;
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      getClient()->sendDimmerAndRgbReport(
+          getChannelId(), value.color, value.color_brightness, value.brightness,
+          value.on_off, value.online);
+      break;
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+      getClient()->sendRgbReport(getChannelId(), value.color,
+                                 value.color_brightness, value.on_off,
+                                 value.online);
       break;
   }
 }

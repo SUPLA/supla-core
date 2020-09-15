@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <webhook/statewebhookclient.h>
+#include "tools.h"
 #include "user/user.h"
 
 supla_state_webhook_client::supla_state_webhook_client(
@@ -427,4 +428,60 @@ bool supla_state_webhook_client::sendDepthSensorReport(int channelId,
                                                        bool connected) {
   return sendReportWithNumber("DEPTHSENSOR", channelId, "depth", depth,
                               connected);
+}
+
+bool supla_state_webhook_client::sendDimmerAndRgbReport(
+    const char *function, int channelId, int *color, char *color_brightness,
+    char *brightness, char on, bool connected) {
+  cJSON *root = getHeader(function, channelId);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      if (color) {
+        char color_hex[9];
+        snprintf(color_hex, sizeof(color_hex), "0x%02X%02X%02X",
+                 ((unsigned char *)color)[2], ((unsigned char *)color)[1],
+                 ((unsigned char *)color)[0]);
+        cJSON_AddStringToObject(state, "color", color_hex);
+      }
+
+      if (color_brightness) {
+        cJSON_AddNumberToObject(state, "color_brightness", *color_brightness);
+      }
+
+      if (brightness) {
+        cJSON_AddNumberToObject(state, "brightness", *brightness);
+      }
+
+      cJSON_AddBoolToObject(state, "on", on);
+      cJSON_AddBoolToObject(state, "connected", connected);
+      cJSON_AddItemToObject(root, "state", state);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}
+
+bool supla_state_webhook_client::sendRgbReport(int channelId, int color,
+                                               char color_brightness, char on,
+                                               bool connected) {
+  return sendDimmerAndRgbReport("RGBLIGHTING", channelId, &color,
+                                &color_brightness, NULL, on, connected);
+}
+
+bool supla_state_webhook_client::sendDimmerReport(int channelId,
+                                                  char brightness, char on,
+                                                  bool connected) {
+  return sendDimmerAndRgbReport("DIMMER", channelId, NULL, NULL, &brightness,
+                                on, connected);
+}
+
+bool supla_state_webhook_client::sendDimmerAndRgbReport(
+    int channelId, int color, char color_brightness, char brightness, char on,
+    bool connected) {
+  return sendDimmerAndRgbReport("DIMMERANDRGBLIGHTING", channelId, &color,
+                                &color_brightness, &brightness, on, connected);
 }

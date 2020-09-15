@@ -647,4 +647,135 @@ TEST_F(StateWebhookClientTest, sendDepthSensorReport) {
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
+TEST_F(StateWebhookClientTest, sendDimmerReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DIMMER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"brightness\":20,\"on\":true,\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendDimmerReport(123, 20, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 184\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DIMMER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"brightness\":30,\"on\":false,\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendDimmerReport(123, 30, false, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 185\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DIMMER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"brightness\":10,\"on\":false,\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendDimmerReport(123, 10, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
+}
+
+TEST_F(StateWebhookClientTest, sendRgbReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 213\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"RGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"color\":\"0xAABBCC\",\"color_brightness\":20,\"on\":true,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendRgbReport(123, 0xAABBCC, 20, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 214\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"RGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"color\":\"0xDDEEFF\",\"color_brightness\":10,\"on\":false,"
+      "\"connected\":true}}";
+
+  ASSERT_TRUE(client->sendRgbReport(123, 0xDDEEFF, 10, false, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 214\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"RGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"color\":\"0x001122\",\"color_brightness\":5,\"on\":false,"
+      "\"connected\":false}}";
+
+  ASSERT_TRUE(client->sendRgbReport(123, 0x001122, 5, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
+}
+
+TEST_F(StateWebhookClientTest, sendDimmerAndRgbReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 238\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"color\":\"0xAABBCC\",\"color_brightness\":20,\"brightness\":40,\"on\":"
+      "true,\"connected\":true}}";
+
+  ASSERT_TRUE(
+      client->sendDimmerAndRgbReport(123, 0xAABBCC, 20, 40, true, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 239\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"color\":\"0x334455\",\"color_brightness\":25,\"brightness\":45,\"on\":"
+      "false,\"connected\":true}}";
+
+  ASSERT_TRUE(
+      client->sendDimmerAndRgbReport(123, 0x334455, 25, 45, false, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 240\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"color\":\"0x344556\",\"color_brightness\":26,\"brightness\":46,\"on\":"
+      "false,\"connected\":false}}";
+
+  ASSERT_TRUE(
+      client->sendDimmerAndRgbReport(123, 0x344556, 26, 46, false, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
+}
 } /* namespace testing */
