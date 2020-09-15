@@ -149,7 +149,7 @@ bool supla_state_webhook_client::postRequest(const char *data) {
     return true;
   }
 
-  if (httpResultCode == 403) {
+  if (refresh_attempt && httpResultCode == 403) {
     getStateWebhookCredentials()->remove();
   }
 
