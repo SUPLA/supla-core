@@ -447,6 +447,10 @@ bool supla_trivial_http::http_post(char *header, const char *data) {
   return request("POST", header, data);
 }
 
+bool supla_trivial_http::http_put(char *header, const char *data) {
+  return request("PUT", header, data);
+}
+
 void supla_trivial_http::terminate(void) {
   if (sfd >= 0) {
     close(sfd);

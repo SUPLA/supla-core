@@ -81,7 +81,7 @@ void supla_state_webhook_client::refreshToken(void) {
 
       supla_webhook_basic_client::refreshToken(
           getStateWebhookCredentials()->getHost(),
-          getStateWebhookCredentials()->getResource(), false, str);
+          getStateWebhookCredentials()->getResource(), false, str, true);
       free(str);
     }
 
@@ -95,11 +95,23 @@ bool supla_state_webhook_client::postRequest(const char *data) {
     return false;
   }
 
+  bool refresh_attempt = false;
+
   if (getStateWebhookCredentials()->expiresIn() <= 30) {
+    int httpResultCode = 0;
     refreshToken();
   }
 
-  return postRequest(data, NULL);
+  int httpResultCode = 0;
+  if (postRequest(data, &httpResultCode)) {
+    return true;
+  }
+
+  if (httpResultCode == 403) {
+    getStateWebhookCredentials()->remove();
+  }
+
+  return false;
 }
 
 bool supla_state_webhook_client::sendReport(cJSON *json) {

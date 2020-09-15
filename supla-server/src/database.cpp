@@ -2269,6 +2269,21 @@ void database::state_webhook_update_token(int UserID, const char *token,
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
+void database::state_webhook_remove_token(int UserID) {
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  const char sql[] = "CALL `supla_update_state_webhook`('','',0,?)";
+
+  MYSQL_STMT *stmt = NULL;
+  stmt_execute((void **)&stmt, sql, pbind, 1, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
   bool result = false;
   char sql[] =

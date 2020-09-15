@@ -56,6 +56,17 @@ void supla_state_webhook_credentials::load() {
   delete db;
 }
 
+void supla_state_webhook_credentials::remove(void) {
+  set(NULL, NULL, 0, NULL, NULL);
+  database *db = new database();
+
+  if (db->connect()) {
+    db->state_webhook_remove_token(getUserID());
+  }
+
+  delete db;
+}
+
 void supla_state_webhook_credentials::set(const char *access_token,
                                           const char *refresh_token,
                                           int expires_in, const char *url,

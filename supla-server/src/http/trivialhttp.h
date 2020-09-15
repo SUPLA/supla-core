@@ -77,6 +77,7 @@ class supla_trivial_http {
 
   bool http_get(void);
   bool http_post(char *header, const char *data);
+  bool http_put(char *header, const char *data);
   virtual void terminate(void);
 };
 

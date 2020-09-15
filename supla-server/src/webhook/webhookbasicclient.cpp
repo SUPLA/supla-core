@@ -96,7 +96,8 @@ supla_webhook_basic_credentials *supla_webhook_basic_client::getCredentials(
 }
 
 void supla_webhook_basic_client::refreshToken(char *host, char *resource,
-                                              bool copy, const char *body) {
+                                              bool copy, const char *body,
+                                              bool put) {
   if (!getCredentials()->isRefreshTokenExists()) {
     return;
   }
@@ -112,7 +113,12 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource,
     getHttpConnection()->setHost(host, copy);
     getHttpConnection()->setResource(resource, copy);
     if (body) {
-      getHttpConnection()->http_post(NULL, body);
+      if (put) {
+        getHttpConnection()->http_put(NULL, body);
+      } else {
+        getHttpConnection()->http_post(NULL, body);
+      }
+
     } else {
       char *refresh_token = getCredentials()->getRefreshToken();
       if (refresh_token) {
@@ -124,7 +130,12 @@ void supla_webhook_basic_client::refreshToken(char *host, char *resource,
           char *str = cJSON_PrintUnformatted(root);
           cJSON_Delete(root);
 
-          getHttpConnection()->http_post(NULL, str);
+          if (put) {
+            getHttpConnection()->http_put(NULL, str);
+          } else {
+            getHttpConnection()->http_post(NULL, str);
+          }
+
           free(str);
         }
 
