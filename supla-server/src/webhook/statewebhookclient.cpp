@@ -355,3 +355,23 @@ bool supla_state_webhook_client::sendMailSensorReport(int channelId, bool hi,
   const char function[] = "MAILSENSOR";
   return sendHiReport(function, channelId, hi, connected);
 }
+
+bool supla_state_webhook_client::sendRollerShutterReport(int channelId,
+                                                         char shut,
+                                                         bool connected) {
+  cJSON *root = getHeader("CONTROLLINGTHEROLLERSHUTTER", channelId);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      cJSON_AddNumberToObject(state, "shut", shut >= 0 ? shut : 0);
+      cJSON_AddBoolToObject(state, "connected", connected);
+      cJSON_AddBoolToObject(state, "is_calibrating", shut < 0);
+      cJSON_AddItemToObject(root, "state", state);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}

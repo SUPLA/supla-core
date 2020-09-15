@@ -60,6 +60,7 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
                                             bool connected);
   bool sendWindowOpeningSensorReport(int channelId, bool hi, bool connected);
   bool sendMailSensorReport(int channelId, bool hi, bool connected);
+  bool sendRollerShutterReport(int channelId, char shut, bool connected);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

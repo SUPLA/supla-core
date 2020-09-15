@@ -426,4 +426,45 @@ TEST_F(StateWebhookClientTest, sendMailSensorReport) {
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
+TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 209\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"shut\":0,\"connected\":true,\"is_calibrating\":true}}";
+
+  ASSERT_TRUE(client->sendRollerShutterReport(123, -1, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 211\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"shut\":25,\"connected\":true,\"is_calibrating\":false}}";
+
+  ASSERT_TRUE(client->sendRollerShutterReport(123, 25, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 211\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
+      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "\"shut\":5,\"connected\":false,\"is_calibrating\":false}}";
+
+  ASSERT_TRUE(client->sendRollerShutterReport(123, 5, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
+}
+
 } /* namespace testing */

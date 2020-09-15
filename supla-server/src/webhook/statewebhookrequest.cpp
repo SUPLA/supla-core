@@ -107,6 +107,7 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
               case SUPLA_CHANNELFNC_WINDSENSOR:
               case SUPLA_CHANNELFNC_MAILSENSOR:
+              case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
                 return true;
               default:
                 return false;
@@ -201,6 +202,10 @@ void supla_state_webhook_request::execute(void *sthread) {
       break;
     case SUPLA_CHANNELFNC_MAILSENSOR:
       getClient()->sendMailSensorReport(getChannelId(), value.hi, value.online);
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      getClient()->sendRollerShutterReport(getChannelId(), value.shut,
+                                           value.online);
       break;
   }
 }
