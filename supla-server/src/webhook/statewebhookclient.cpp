@@ -207,19 +207,16 @@ cJSON *supla_state_webhook_client::getHeader(const char *function,
     cJSON_AddStringToObject(header, "userShortUniqueId", shortUniqueId);
     free(shortUniqueId);
 
-    char number[12];
-    snprintf(number, sizeof(number), "%i", channelId);
-    cJSON_AddStringToObject(header, "channelId", number);
+    cJSON_AddNumberToObject(header, "channelId", channelId);
 
     cJSON_AddStringToObject(header, "channelFunction", function);
 
 #ifdef __TEST
-    cJSON_AddStringToObject(header, "timestamp", "1600097258");
+    cJSON_AddNumberToObject(header, "timestamp", 1600097258);
 #else
     struct timeval now;
     gettimeofday(&now, NULL);
-    snprintf(number, sizeof(number), "%lu", now.tv_sec);
-    cJSON_AddStringToObject(header, "timestamp", number);
+    cJSON_AddNumbeToObject(header, "timestamp", now.tv_sec);
 #endif /*__TEST*/
   }
 

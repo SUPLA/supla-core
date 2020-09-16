@@ -47,12 +47,12 @@ void StateWebhookClientTest::TearDown() {
 TEST_F(StateWebhookClientTest, sendLightSwitchReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 172\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 168\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"LIGHTSWITCH\",\"timestamp\":\"1600097258\",\"state\":{\"on\":true,"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"LIGHTSWITCH\",\"timestamp\":1600097258,\"state\":{\"on\":true,"
       "\"connected\":true}}";
 
   ASSERT_TRUE(client->sendLightSwitchReport(123, true, true));
@@ -60,12 +60,12 @@ TEST_F(StateWebhookClientTest, sendLightSwitchReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 174\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 170\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"LIGHTSWITCH\",\"timestamp\":\"1600097258\",\"state\":{\"on\":false,"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"LIGHTSWITCH\",\"timestamp\":1600097258,\"state\":{\"on\":false,"
       "\"connected\":false}}";
 
   ASSERT_TRUE(client->sendLightSwitchReport(123, false, false));
@@ -75,12 +75,12 @@ TEST_F(StateWebhookClientTest, sendLightSwitchReport) {
 TEST_F(StateWebhookClientTest, sendPowerSwitchReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 172\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 168\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"POWERSWITCH\",\"timestamp\":\"1600097258\",\"state\":{\"on\":true,"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"POWERSWITCH\",\"timestamp\":1600097258,\"state\":{\"on\":true,"
       "\"connected\":true}}";
 
   ASSERT_TRUE(client->sendPowerSwitchReport(123, true, true));
@@ -88,12 +88,12 @@ TEST_F(StateWebhookClientTest, sendPowerSwitchReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 174\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 170\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"POWERSWITCH\",\"timestamp\":\"1600097258\",\"state\":{\"on\":false,"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"POWERSWITCH\",\"timestamp\":1600097258,\"state\":{\"on\":false,"
       "\"connected\":false}}";
 
   ASSERT_TRUE(client->sendPowerSwitchReport(123, false, false));
@@ -103,12 +103,12 @@ TEST_F(StateWebhookClientTest, sendPowerSwitchReport) {
 TEST_F(StateWebhookClientTest, sendTemperatureReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 182\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 178\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"THERMOMETER\",\"timestamp\":\"1600097258\",\"state\":{\"temperature\":"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"THERMOMETER\",\"timestamp\":1600097258,\"state\":{\"temperature\":"
       "55.55,\"connected\":true}}";
 
   ASSERT_TRUE(client->sendTemperatureReport(123, 55.55, true));
@@ -116,12 +116,12 @@ TEST_F(StateWebhookClientTest, sendTemperatureReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"THERMOMETER\",\"timestamp\":\"1600097258\",\"state\":{\"temperature\":"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"THERMOMETER\",\"timestamp\":1600097258,\"state\":{\"temperature\":"
       "44.44,\"connected\":false}}";
 
   ASSERT_TRUE(client->sendTemperatureReport(123, 44.44, false));
@@ -131,12 +131,12 @@ TEST_F(StateWebhookClientTest, sendTemperatureReport) {
 TEST_F(StateWebhookClientTest, sendHumidityReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 172\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"HUMIDITY\",\"timestamp\":\"1600097258\",\"state\":{\"humidity\":66.55,"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"HUMIDITY\",\"timestamp\":1600097258,\"state\":{\"humidity\":66.55,"
       "\"connected\":true}}";
 
   ASSERT_TRUE(client->sendHumidityReport(123, 66.55, true));
@@ -144,12 +144,12 @@ TEST_F(StateWebhookClientTest, sendHumidityReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 173\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"HUMIDITY\",\"timestamp\":\"1600097258\",\"state\":{\"humidity\":50.44,"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"HUMIDITY\",\"timestamp\":1600097258,\"state\":{\"humidity\":50.44,"
       "\"connected\":false}}";
 
   ASSERT_TRUE(client->sendHumidityReport(123, 50.44, false));
@@ -159,12 +159,12 @@ TEST_F(StateWebhookClientTest, sendHumidityReport) {
 TEST_F(StateWebhookClientTest, sendTemperatureAndHumidityReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 210\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 206\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"HUMIDITYANDTEMPERATURE\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"HUMIDITYANDTEMPERATURE\",\"timestamp\":1600097258,\"state\":{"
       "\"temperature\":11.11,\"humidity\":22.22,\"connected\":true}}";
 
   ASSERT_TRUE(
@@ -173,12 +173,12 @@ TEST_F(StateWebhookClientTest, sendTemperatureAndHumidityReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 211\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"HUMIDITYANDTEMPERATURE\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"HUMIDITYANDTEMPERATURE\",\"timestamp\":1600097258,\"state\":{"
       "\"temperature\":33.33,\"humidity\":44.44,\"connected\":false}}";
 
   ASSERT_TRUE(
@@ -189,12 +189,12 @@ TEST_F(StateWebhookClientTest, sendTemperatureAndHumidityReport) {
 TEST_F(StateWebhookClientTest, sendGatewayOpeningSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 182\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 178\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_GATEWAY\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_GATEWAY\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -203,12 +203,12 @@ TEST_F(StateWebhookClientTest, sendGatewayOpeningSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 184\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 180\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_GATEWAY\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_GATEWAY\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -219,12 +219,12 @@ TEST_F(StateWebhookClientTest, sendGatewayOpeningSensorReport) {
 TEST_F(StateWebhookClientTest, sendGateOpeningSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_GATE\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_GATE\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -233,12 +233,12 @@ TEST_F(StateWebhookClientTest, sendGateOpeningSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_GATE\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_GATE\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -249,12 +249,12 @@ TEST_F(StateWebhookClientTest, sendGateOpeningSensorReport) {
 TEST_F(StateWebhookClientTest, sendGarageDoorOpeningSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 185\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_GARAGEDOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_GARAGEDOOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -263,12 +263,12 @@ TEST_F(StateWebhookClientTest, sendGarageDoorOpeningSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 187\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_GARAGEDOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_GARAGEDOOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -279,12 +279,12 @@ TEST_F(StateWebhookClientTest, sendGarageDoorOpeningSensorReport) {
 TEST_F(StateWebhookClientTest, sendNoLiquidSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 171\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"NOLIQUIDSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"NOLIQUIDSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -293,12 +293,12 @@ TEST_F(StateWebhookClientTest, sendNoLiquidSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 173\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"NOLIQUIDSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"NOLIQUIDSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -309,12 +309,12 @@ TEST_F(StateWebhookClientTest, sendNoLiquidSensorReport) {
 TEST_F(StateWebhookClientTest, sendDoorOpeningSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_DOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_DOOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -323,12 +323,12 @@ TEST_F(StateWebhookClientTest, sendDoorOpeningSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_DOOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_DOOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -339,12 +339,12 @@ TEST_F(StateWebhookClientTest, sendDoorOpeningSensorReport) {
 TEST_F(StateWebhookClientTest, sendRollerShutterOpeningSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 188\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 184\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_ROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_ROLLERSHUTTER\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -353,12 +353,12 @@ TEST_F(StateWebhookClientTest, sendRollerShutterOpeningSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 190\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 186\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_ROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_ROLLERSHUTTER\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -369,12 +369,12 @@ TEST_F(StateWebhookClientTest, sendRollerShutterOpeningSensorReport) {
 TEST_F(StateWebhookClientTest, sendWindowOpeningSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -383,12 +383,12 @@ TEST_F(StateWebhookClientTest, sendWindowOpeningSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"OPENINGSENSOR_WINDOW\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -399,12 +399,12 @@ TEST_F(StateWebhookClientTest, sendWindowOpeningSensorReport) {
 TEST_F(StateWebhookClientTest, sendMailSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 171\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 167\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"MAILSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"MAILSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":true,"
       "\"connected\":true}}";
 
@@ -413,12 +413,12 @@ TEST_F(StateWebhookClientTest, sendMailSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 173\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 169\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"MAILSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"MAILSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"hi\":false,"
       "\"connected\":false}}";
 
@@ -429,12 +429,12 @@ TEST_F(StateWebhookClientTest, sendMailSensorReport) {
 TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 209\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 205\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":1600097258,\"state\":{"
       "\"shut\":0,\"connected\":true,\"is_calibrating\":true}}";
 
   ASSERT_TRUE(client->sendRollerShutterReport(123, -1, true));
@@ -442,12 +442,12 @@ TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 211\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":1600097258,\"state\":{"
       "\"shut\":25,\"connected\":true,\"is_calibrating\":false}}";
 
   ASSERT_TRUE(client->sendRollerShutterReport(123, 25, true));
@@ -455,12 +455,12 @@ TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
 
   const char expectedRequest3[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 211\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"CONTROLLINGTHEROLLERSHUTTER\",\"timestamp\":1600097258,\"state\":{"
       "\"shut\":5,\"connected\":false,\"is_calibrating\":false}}";
 
   ASSERT_TRUE(client->sendRollerShutterReport(123, 5, false));
@@ -470,12 +470,12 @@ TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
 TEST_F(StateWebhookClientTest, sendWindSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 171\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"WINDSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"WINDSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":55.55,"
       "\"connected\":true}}";
 
@@ -484,12 +484,12 @@ TEST_F(StateWebhookClientTest, sendWindSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 172\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"WINDSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"WINDSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":66.66,"
       "\"connected\":false}}";
 
@@ -500,12 +500,12 @@ TEST_F(StateWebhookClientTest, sendWindSensorReport) {
 TEST_F(StateWebhookClientTest, sendPressureSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"PRESSURESENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"PRESSURESENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":55.55,"
       "\"connected\":true}}";
 
@@ -514,12 +514,12 @@ TEST_F(StateWebhookClientTest, sendPressureSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 180\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"PRESSURESENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"PRESSURESENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":66.66,"
       "\"connected\":false}}";
 
@@ -530,12 +530,12 @@ TEST_F(StateWebhookClientTest, sendPressureSensorReport) {
 TEST_F(StateWebhookClientTest, sendRainSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 175\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 171\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"RAINSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"RAINSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":55.55,"
       "\"connected\":true}}";
 
@@ -544,12 +544,12 @@ TEST_F(StateWebhookClientTest, sendRainSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 172\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"RAINSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"RAINSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":66.66,"
       "\"connected\":false}}";
 
@@ -560,12 +560,12 @@ TEST_F(StateWebhookClientTest, sendRainSensorReport) {
 TEST_F(StateWebhookClientTest, sendWeightSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 173\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"WEIGHTSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"WEIGHTSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":55.55,"
       "\"connected\":true}}";
 
@@ -574,12 +574,12 @@ TEST_F(StateWebhookClientTest, sendWeightSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 178\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 174\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"WEIGHTSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"WEIGHTSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"value\":66.66,"
       "\"connected\":false}}";
 
@@ -590,12 +590,12 @@ TEST_F(StateWebhookClientTest, sendWeightSensorReport) {
 TEST_F(StateWebhookClientTest, sendDistanceSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 182\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 178\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DISTANCESENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DISTANCESENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"distance\":55.55,"
       "\"connected\":true}}";
 
@@ -604,12 +604,12 @@ TEST_F(StateWebhookClientTest, sendDistanceSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DISTANCESENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DISTANCESENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"distance\":66.66,"
       "\"connected\":false}}";
 
@@ -620,12 +620,12 @@ TEST_F(StateWebhookClientTest, sendDistanceSensorReport) {
 TEST_F(StateWebhookClientTest, sendDepthSensorReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 176\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 172\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DEPTHSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DEPTHSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"depth\":55.55,"
       "\"connected\":true}}";
 
@@ -634,12 +634,12 @@ TEST_F(StateWebhookClientTest, sendDepthSensorReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 177\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 173\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DEPTHSENSOR\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DEPTHSENSOR\",\"timestamp\":1600097258,\"state\":{"
       "\"depth\":66.66,"
       "\"connected\":false}}";
 
@@ -650,12 +650,12 @@ TEST_F(StateWebhookClientTest, sendDepthSensorReport) {
 TEST_F(StateWebhookClientTest, sendDimmerReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 183\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DIMMER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DIMMER\",\"timestamp\":1600097258,\"state\":{"
       "\"brightness\":20,\"on\":true,\"connected\":true}}";
 
   ASSERT_TRUE(client->sendDimmerReport(123, 20, true, true));
@@ -663,12 +663,12 @@ TEST_F(StateWebhookClientTest, sendDimmerReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 184\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 180\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DIMMER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DIMMER\",\"timestamp\":1600097258,\"state\":{"
       "\"brightness\":30,\"on\":false,\"connected\":true}}";
 
   ASSERT_TRUE(client->sendDimmerReport(123, 30, false, true));
@@ -676,12 +676,12 @@ TEST_F(StateWebhookClientTest, sendDimmerReport) {
 
   const char expectedRequest3[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 185\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 181\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DIMMER\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DIMMER\",\"timestamp\":1600097258,\"state\":{"
       "\"brightness\":10,\"on\":false,\"connected\":false}}";
 
   ASSERT_TRUE(client->sendDimmerReport(123, 10, false, false));
@@ -691,12 +691,12 @@ TEST_F(StateWebhookClientTest, sendDimmerReport) {
 TEST_F(StateWebhookClientTest, sendRgbReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 213\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 209\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"RGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"RGBLIGHTING\",\"timestamp\":1600097258,\"state\":{"
       "\"color\":\"0xAABBCC\",\"color_brightness\":20,\"on\":true,"
       "\"connected\":true}}";
 
@@ -705,12 +705,12 @@ TEST_F(StateWebhookClientTest, sendRgbReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 214\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 210\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"RGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"RGBLIGHTING\",\"timestamp\":1600097258,\"state\":{"
       "\"color\":\"0xDDEEFF\",\"color_brightness\":10,\"on\":false,"
       "\"connected\":true}}";
 
@@ -719,12 +719,12 @@ TEST_F(StateWebhookClientTest, sendRgbReport) {
 
   const char expectedRequest3[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 214\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 210\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"RGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"RGBLIGHTING\",\"timestamp\":1600097258,\"state\":{"
       "\"color\":\"0x001122\",\"color_brightness\":5,\"on\":false,"
       "\"connected\":false}}";
 
@@ -735,12 +735,12 @@ TEST_F(StateWebhookClientTest, sendRgbReport) {
 TEST_F(StateWebhookClientTest, sendDimmerAndRgbReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 238\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 234\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":1600097258,\"state\":{"
       "\"color\":\"0xAABBCC\",\"color_brightness\":20,\"brightness\":40,\"on\":"
       "true,\"connected\":true}}";
 
@@ -750,12 +750,12 @@ TEST_F(StateWebhookClientTest, sendDimmerAndRgbReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 239\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 235\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":1600097258,\"state\":{"
       "\"color\":\"0x334455\",\"color_brightness\":25,\"brightness\":45,\"on\":"
       "false,\"connected\":true}}";
 
@@ -765,12 +765,12 @@ TEST_F(StateWebhookClientTest, sendDimmerAndRgbReport) {
 
   const char expectedRequest3[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 240\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 236\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
-      "e8be5c71ae5b\",\"channelId\":\"123\",\"channelFunction\":"
-      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":\"1600097258\",\"state\":{"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"DIMMERANDRGBLIGHTING\",\"timestamp\":1600097258,\"state\":{"
       "\"color\":\"0x344556\",\"color_brightness\":26,\"brightness\":46,\"on\":"
       "false,\"connected\":false}}";
 
