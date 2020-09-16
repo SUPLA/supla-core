@@ -216,7 +216,7 @@ cJSON *supla_state_webhook_client::getHeader(const char *function,
 #else
     struct timeval now;
     gettimeofday(&now, NULL);
-    cJSON_AddNumbeToObject(header, "timestamp", now.tv_sec);
+    cJSON_AddNumberToObject(header, "timestamp", now.tv_sec);
 #endif /*__TEST*/
   }
 
