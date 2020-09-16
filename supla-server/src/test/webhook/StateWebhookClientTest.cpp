@@ -778,4 +778,168 @@ TEST_F(StateWebhookClientTest, sendDimmerAndRgbReport) {
       client->sendDimmerAndRgbReport(123, 0x344556, 26, 46, false, false));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
+
+TEST_F(StateWebhookClientTest, sendImpulseCounterHeatMeasurementReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 292\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_HEATMETER\",\"timestamp\":1600097258,\"state\":{\"totalCost\":555."
+      "5,\"pricePerUnit\":0.5555,\"impulsesPerUnit\":1000,\"counter\":1000000,"
+      "\"calculatedValue\":1000,\"currency\":\"PLN\",\"unit\":\"m3\","
+      "\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "m3";
+
+  supla_channel_ic_measurement icm(123, SUPLA_CHANNELFNC_IC_HEAT_METER, &ic_val,
+                                   currency, unit, 5555, 1000);
+
+  ASSERT_TRUE(client->sendImpulseCounterHeatMeasurementReport(123, &icm, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 160\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_HEATMETER\",\"timestamp\":1600097258,\"state\":{\"connected\":"
+      "false}}";
+
+  ASSERT_TRUE(
+      client->sendImpulseCounterHeatMeasurementReport(123, &icm, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendImpulseCounterWaterMeasurementReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 293\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_WATERMETER\",\"timestamp\":1600097258,\"state\":{\"totalCost\":555."
+      "5,\"pricePerUnit\":0.5555,\"impulsesPerUnit\":1000,\"counter\":1000000,"
+      "\"calculatedValue\":1000,\"currency\":\"PLN\",\"unit\":\"m3\","
+      "\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "m3";
+
+  supla_channel_ic_measurement icm(123, SUPLA_CHANNELFNC_IC_WATER_METER,
+                                   &ic_val, currency, unit, 5555, 1000);
+
+  ASSERT_TRUE(
+      client->sendImpulseCounterWaterMeasurementReport(123, &icm, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 161\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_WATERMETER\",\"timestamp\":1600097258,\"state\":{\"connected\":"
+      "false}}";
+
+  ASSERT_TRUE(
+      client->sendImpulseCounterWaterMeasurementReport(123, &icm, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendImpulseCounterGasMeasurementReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 291\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_GASMETER\",\"timestamp\":1600097258,\"state\":{\"totalCost\":555."
+      "5,\"pricePerUnit\":0.5555,\"impulsesPerUnit\":1000,\"counter\":1000000,"
+      "\"calculatedValue\":1000,\"currency\":\"PLN\",\"unit\":\"m3\","
+      "\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "m3";
+
+  supla_channel_ic_measurement icm(123, SUPLA_CHANNELFNC_IC_GAS_METER, &ic_val,
+                                   currency, unit, 5555, 1000);
+
+  ASSERT_TRUE(client->sendImpulseCounterGasMeasurementReport(123, &icm, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 159\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_GASMETER\",\"timestamp\":1600097258,\"state\":{\"connected\":"
+      "false}}";
+
+  ASSERT_TRUE(client->sendImpulseCounterGasMeasurementReport(123, &icm, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, sendImpulseCounterElectricityMeasurementReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 300\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{"
+      "\"totalCost\":555."
+      "5,\"pricePerUnit\":0.5555,\"impulsesPerUnit\":1000,\"counter\":1000000,"
+      "\"calculatedValue\":1000,\"currency\":\"PLN\",\"unit\":\"kWh\","
+      "\"connected\":true}}";
+
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1000000;
+
+  char currency[] = "PLN";
+  char unit[] = "kWh";
+
+  supla_channel_ic_measurement icm(123, SUPLA_CHANNELFNC_IC_ELECTRICITY_METER,
+                                   &ic_val, currency, unit, 5555, 1000);
+
+  ASSERT_TRUE(
+      client->sendImpulseCounterElectricityMeasurementReport(123, &icm, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 167\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"IC_ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{"
+      "\"connected\":"
+      "false}}";
+
+  ASSERT_TRUE(
+      client->sendImpulseCounterElectricityMeasurementReport(123, &icm, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
 } /* namespace testing */
