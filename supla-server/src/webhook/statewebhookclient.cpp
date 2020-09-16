@@ -499,6 +499,137 @@ bool supla_state_webhook_client::sendDimmerAndRgbReport(
 
 bool supla_state_webhook_client::sendElectricityMeasurementReport(
     int channelId, supla_channel_electricity_measurement *em, bool connected) {
+  cJSON *root = getHeader("ELECTRICITYMETER", channelId);
+  if (root) {
+    cJSON *state = cJSON_CreateObject();
+    if (state) {
+      if (connected && em != NULL) {
+        TElectricityMeter_ExtendedValue_V2 em_ev;
+        char currency[4];
+        em->getMeasurement(&em_ev);
+        em->getCurrency(currency);
+
+        if ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
+            !(em_ev.measured_values & EM_VAR_CURRENT)) {
+          em_ev.m[0].current[0] *= 10;
+          em_ev.m[0].current[1] *= 10;
+          em_ev.m[0].current[2] *= 10;
+        }
+
+        cJSON_AddNumberToObject(state, "support", em_ev.measured_values);
+
+        if (strnlen(currency, 4) == 0) {
+          cJSON_AddNullToObject(state, "currency");
+        } else {
+          cJSON_AddStringToObject(state, "currency", currency);
+        }
+
+        cJSON_AddNumberToObject(state, "pricePerUnit",
+                                em_ev.price_per_unit * 0.0001);
+
+        cJSON_AddNumberToObject(state, "totalCost", em_ev.total_cost * 0.01);
+
+        cJSON *phases = cJSON_AddArrayToObject(state, "phases");
+        if (phases) {
+          for (int p = 0; p < 3; p++) {
+            cJSON *phase = cJSON_CreateObject();
+            if (phase) {
+              cJSON_AddNumberToObject(phase, "number", p + 1);
+
+              if (em_ev.m_count > 0) {
+                if (em_ev.measured_values & EM_VAR_FREQ) {
+                  cJSON_AddNumberToObject(phase, "frequency",
+                                          em_ev.m[0].freq * 0.01);
+                }
+
+                if (em_ev.measured_values & EM_VAR_VOLTAGE) {
+                  cJSON_AddNumberToObject(phase, "voltage",
+                                          em_ev.m[0].voltage[p] * 0.01);
+                }
+
+                if (em_ev.measured_values & EM_VAR_CURRENT) {
+                  cJSON_AddNumberToObject(phase, "current",
+                                          em_ev.m[0].current[p] * 0.001);
+                }
+
+                if (em_ev.measured_values & EM_VAR_POWER_ACTIVE) {
+                  cJSON_AddNumberToObject(phase, "powerActive",
+                                          em_ev.m[0].power_active[p] * 0.00001);
+                }
+
+                if (em_ev.measured_values & EM_VAR_POWER_REACTIVE) {
+                  cJSON_AddNumberToObject(
+                      phase, "powerReactive",
+                      em_ev.m[0].power_reactive[p] * 0.00001);
+                }
+
+                if (em_ev.measured_values & EM_VAR_POWER_APPARENT) {
+                  cJSON_AddNumberToObject(
+                      phase, "powerApparent",
+                      em_ev.m[0].power_apparent[p] * 0.00001);
+                }
+
+                if (em_ev.measured_values & EM_VAR_POWER_FACTOR) {
+                  cJSON_AddNumberToObject(phase, "powerFactor",
+                                          em_ev.m[0].power_factor[p] * 0.001);
+                }
+
+                if (em_ev.measured_values & EM_VAR_PHASE_ANGLE) {
+                  cJSON_AddNumberToObject(phase, "phaseAngle",
+                                          em_ev.m[0].phase_angle[p] * 0.1);
+                }
+              }
+
+              if (em_ev.measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY) {
+                cJSON_AddNumberToObject(
+                    phase, "totalForwardActiveEnergy",
+                    em_ev.total_forward_active_energy[p] * 0.00001);
+              }
+
+              if (em_ev.measured_values & EM_VAR_REVERSE_ACTIVE_ENERGY) {
+                cJSON_AddNumberToObject(
+                    phase, "totalReverseActiveEnergy",
+                    em_ev.total_reverse_active_energy[p] * 0.00001);
+              }
+
+              if (em_ev.measured_values & EM_VAR_FORWARD_REACTIVE_ENERGY) {
+                cJSON_AddNumberToObject(
+                    phase, "totalForwardReactiveEnergy",
+                    em_ev.total_forward_reactive_energy[p] * 0.00001);
+              }
+
+              if (em_ev.measured_values & EM_VAR_REVERSE_REACTIVE_ENERGY) {
+                cJSON_AddNumberToObject(
+                    phase, "totalReverseReactiveEnergy",
+                    em_ev.total_reverse_reactive_energy[p] * 0.00001);
+              }
+
+              cJSON_AddItemToArray(phases, phase);
+            }
+          }
+        }
+
+        if (em_ev.measured_values & EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED) {
+          cJSON_AddNumberToObject(
+              state, "totalForwardActiveEnergyBalanced",
+              em_ev.total_forward_active_energy_balanced * 0.00001);
+        }
+
+        if (em_ev.measured_values & EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED) {
+          cJSON_AddNumberToObject(
+              state, "totalReverseActiveEnergyBalanced",
+              em_ev.total_reverse_active_energy_balanced * 0.00001);
+        }
+      }
+
+      cJSON_AddBoolToObject(state, "connected", connected);
+      cJSON_AddItemToObject(root, "state", state);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
   return false;
 }
 
