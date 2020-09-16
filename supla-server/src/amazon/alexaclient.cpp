@@ -174,8 +174,10 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
   getHttpConnection()->setResource(resource);
   getHttpConnection()->setToken(getAlexaCredentials()->getAccessToken(), false);
 
-  if (!getHttpConnection()->http_post(header, data)) {
-    return POST_RESULT_REQUEST_ERROR;
+  if (!getAlexaCredentials()->isAccessTokenExists()) {
+    result = POST_RESULT_TOKEN_DOES_NOT_EXISTS;
+  } else if (!getHttpConnection()->http_post(header, data)) {
+    result = POST_RESULT_REQUEST_ERROR;
   } else {
     if (httpResultCode) {
       *httpResultCode = getHttpConnection()->getResultCode();

@@ -41,6 +41,11 @@ bool supla_state_webhook_client::postRequest(const char *data,
   return false;
 #else
 
+  if (!getStateWebhookCredentials()->isAccessTokenExists() ||
+      !getStateWebhookCredentials()->isUrlValid()) {
+    return false;
+  }
+
   char header[] = "Content-Type: application/json";
   bool result = false;
 
