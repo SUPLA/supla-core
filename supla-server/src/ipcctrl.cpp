@@ -420,6 +420,7 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   int Color = 0;
   int ColorBrightness = 0;
   int Brightness = 0;
+  int TurnOnOff = 0;
 
   if (random) {
     if (group) {
@@ -436,15 +437,16 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
   } else {
     if (group) {
-      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
-             &CGID, &Color, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
+             &UserID, &CGID, &Color, &ColorBrightness, &Brightness, &TurnOnOff);
 
     } else {
       cut_correlation_token(cmd);
       cut_google_requestid(cmd);
 
-      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
-             &UserID, &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i,%i",
+             &UserID, &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness,
+             &TurnOnOff);
     }
   }
 
@@ -457,11 +459,11 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
     if (group) {
       result = supla_user::set_channelgroup_rgbw_value(
-          UserID, CGID, Color, ColorBrightness, Brightness, 0);
+          UserID, CGID, Color, ColorBrightness, Brightness, TurnOnOff ? 1 : 0);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
           UserID, 0, DeviceID, CGID, 0, false, Color, ColorBrightness,
-          Brightness, 0,
+          Brightness, TurnOnOff ? 1 : 0,
           AlexaCorrelationToken ? EST_AMAZON_ALEXA
                                 : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
           AlexaCorrelationToken, GoogleRequestId);
