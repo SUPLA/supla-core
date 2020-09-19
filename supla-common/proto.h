@@ -1240,14 +1240,14 @@ typedef struct {
 } TCalCfg_ZWave_Node;                  // v. >= 12
 
 typedef struct {
-  unsigned int MinimumSec : 24;
-  unsigned int MaximumSec : 24;
-  unsigned int ValueSec : 24;
-  unsigned int IntervalStepSec : 24;
+  unsigned _supla_int_t MinimumSec : 24;
+  unsigned _supla_int_t MaximumSec : 24;
+  unsigned _supla_int_t ValueSec : 24;
+  unsigned _supla_int_t IntervalStepSec : 24;
 } TCalCfg_ZWave_WakeupSettingsReport;
 
 typedef struct {
-  unsigned int TimeSec : 24;
+  unsigned _supla_int_t TimeSec : 24;
 } TCalCfg_ZWave_WakeUpTime;
 
 typedef struct {
