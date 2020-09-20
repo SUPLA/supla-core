@@ -312,7 +312,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
-#define SUPLA_CHANNELTYPE_SMARTGLASS 12000                  // ver. >= 12
+#define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -361,7 +361,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
-#define SUPLA_CHANNELFNC_SMARTGLASS 800                   // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS 800                    // ver. >= 12
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -1319,13 +1319,13 @@ typedef struct {
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
-#define SMARTGLASS_FLAG_HORIZONATAL 0x1
+#define DIGIGLASS_FLAG_HORIZONATAL 0x1
 
 typedef struct {
   unsigned char sectionCount;  // 1 - 16
   unsigned char flags;
   unsigned short opaqueSections;
-} TSmartglass_Value;
+} TDigiglass_Value;
 
 typedef struct {
   unsigned char sec;        // 0-59
