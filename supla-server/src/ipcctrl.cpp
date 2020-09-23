@@ -459,11 +459,11 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
     if (group) {
       result = supla_user::set_channelgroup_rgbw_value(
-          UserID, CGID, Color, ColorBrightness, Brightness, TurnOnOff ? 1 : 0);
+          UserID, CGID, Color, ColorBrightness, Brightness, TurnOnOff);
     } else if (!group && DeviceID) {
       result = supla_user::set_device_channel_rgbw_value(
           UserID, 0, DeviceID, CGID, 0, false, Color, ColorBrightness,
-          Brightness, TurnOnOff ? 1 : 0,
+          Brightness, TurnOnOff,
           AlexaCorrelationToken ? EST_AMAZON_ALEXA
                                 : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
           AlexaCorrelationToken, GoogleRequestId);
