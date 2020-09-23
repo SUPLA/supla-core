@@ -787,8 +787,9 @@ void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
     value[2] = (char)((color & 0x000000FF));
     value[3] = (char)((color & 0x0000FF00) >> 8);
     value[4] = (char)((color & 0x00FF0000) >> 16);
-    value[5] = on_off;
   }
+
+  value[5] = on_off;
 }
 
 void supla_device_channel::assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE],
