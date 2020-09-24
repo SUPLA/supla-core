@@ -364,6 +364,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
 #define SUPLA_CHANNELFNC_DIGIGLASS 800                    // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 810         // ver. >= 13
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -1322,8 +1323,6 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
-
-#define DIGIGLASS_FLAG_HORIZONATAL 0x1
 
 typedef struct {
   unsigned char sectionCount;  // 1 - 16
