@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexacredentials.h>
 #include <ctype.h>
+#include <google/googlehomecredentials.h>
 #include <mysql.h>
 #include <stdio.h>
 #include <time.h>
-#include "amazon/alexa.h"
-#include "google/googlehome.h"
 #include "safearray.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
@@ -1968,7 +1968,8 @@ bool database::superuser_authorization(
   return result;
 }
 
-bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
+bool database::amazon_alexa_load_credentials(
+    supla_amazon_alexa_credentials *alexa) {
   bool result = false;
   char sql[] =
       "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
@@ -2051,7 +2052,8 @@ bool database::amazon_alexa_load_token(supla_amazon_alexa *alexa) {
   return result;
 }
 
-void database::amazon_alexa_remove_token(supla_amazon_alexa *alexa) {
+void database::amazon_alexa_remove_token(
+    supla_amazon_alexa_credentials *alexa) {
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
 
@@ -2068,7 +2070,7 @@ void database::amazon_alexa_remove_token(supla_amazon_alexa *alexa) {
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
+void database::amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
                                          const char *token,
                                          const char *refresh_token,
                                          int expires_in) {
@@ -2099,7 +2101,8 @@ void database::amazon_alexa_update_token(supla_amazon_alexa *alexa,
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-bool database::google_home_load_token(supla_google_home *google_home) {
+bool database::google_home_load_credentials(
+    supla_google_home_credentials *google_home) {
   bool result = false;
   char sql[] =
       "SELECT `access_token` FROM `supla_google_home` WHERE user_id = ? AND "
@@ -2119,14 +2122,14 @@ bool database::google_home_load_token(supla_google_home *google_home) {
     MYSQL_BIND rbind[1];
     memset(rbind, 0, sizeof(rbind));
 
-    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
+    char buffer_token[GH_TOKEN_MAXSIZE + 1];
     buffer_token[0] = 0;
     unsigned long token_size = 0;
     my_bool token_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_STRING;
     rbind[0].buffer = buffer_token;
-    rbind[0].buffer_length = ALEXA_TOKEN_MAXSIZE;
+    rbind[0].buffer_length = GH_TOKEN_MAXSIZE;
     rbind[0].length = &token_size;
     rbind[0].is_null = &token_is_null;
 
@@ -2149,6 +2152,138 @@ bool database::google_home_load_token(supla_google_home *google_home) {
   return result;
 }
 
+bool database::state_webhook_load_credentials(
+    supla_state_webhook_credentials *webhook) {
+  bool result = false;
+  char sql[] =
+      "SELECT `access_token`, `refresh_token`, TIMESTAMPDIFF(SECOND, "
+      "UTC_TIMESTAMP(), expires_at) `expires_in`, `url`, `functions_ids` "
+      "FROM "
+      "`supla_state_webhooks` WHERE user_id = ? AND enabled = 1 AND "
+      "LENGTH(access_token) > 0";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  int UserID = webhook->getUserID();
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    MYSQL_BIND rbind[5];
+    memset(rbind, 0, sizeof(rbind));
+
+    char buffer_token[ALEXA_TOKEN_MAXSIZE + 1];
+    buffer_token[0] = 0;
+    unsigned long token_size = 0;
+
+    char buffer_refresh_token[ALEXA_TOKEN_MAXSIZE + 1];
+    buffer_refresh_token[0] = 0;
+    unsigned long refresh_token_size = 0;
+
+    char buffer_url[WEBHOOK_URL_MAXSIZE + 1];
+    buffer_url[0] = 0;
+    unsigned long url_size = 0;
+
+    char buffer_functions[WEBHOOK_FUNCTIONS_IDS_MAXSIZE + 1];
+    buffer_functions[0] = 0;
+    unsigned long functions_size = 0;
+
+    int expires_in = 0;
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = buffer_token;
+    rbind[0].buffer_length = WEBHOOK_TOKEN_MAXSIZE;
+    rbind[0].length = &token_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = buffer_refresh_token;
+    rbind[1].buffer_length = WEBHOOK_TOKEN_MAXSIZE;
+    rbind[1].length = &refresh_token_size;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)&expires_in;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = buffer_url;
+    rbind[3].buffer_length = WEBHOOK_URL_MAXSIZE;
+    rbind[3].length = &url_size;
+
+    rbind[4].buffer_type = MYSQL_TYPE_STRING;
+    rbind[4].buffer = buffer_functions;
+    rbind[4].buffer_length = WEBHOOK_FUNCTIONS_IDS_MAXSIZE;
+    rbind[4].length = &functions_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        buffer_token[token_size] = 0;
+        buffer_refresh_token[refresh_token_size] = 0;
+        buffer_url[url_size] = 0;
+        buffer_functions[functions_size] = 0;
+
+        webhook->set(buffer_token, buffer_refresh_token, expires_in, buffer_url,
+                     buffer_functions);
+        result = true;
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+void database::state_webhook_update_token(int UserID, const char *token,
+                                          const char *refresh_token,
+                                          int expires_in) {
+  MYSQL_BIND pbind[4];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_STRING;
+  pbind[0].buffer = (char *)token;
+  pbind[0].buffer_length = strnlen((char *)token, WEBHOOK_TOKEN_MAXSIZE);
+
+  pbind[1].buffer_type = MYSQL_TYPE_STRING;
+  pbind[1].buffer = (char *)refresh_token;
+  pbind[1].buffer_length =
+      strnlen((char *)refresh_token, WEBHOOK_TOKEN_MAXSIZE);
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&expires_in;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&UserID;
+
+  const char sql[] = "CALL `supla_update_state_webhook`(?,?,?,?)";
+
+  MYSQL_STMT *stmt = NULL;
+  stmt_execute((void **)&stmt, sql, pbind, 4, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
+void database::state_webhook_remove_token(int UserID) {
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  const char sql[] = "CALL `supla_update_state_webhook`('','',0,?)";
+
+  MYSQL_STMT *stmt = NULL;
+  stmt_execute((void **)&stmt, sql, pbind, 1, true);
+
+  if (stmt != NULL) mysql_stmt_close(stmt);
+}
+
 bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
   bool result = false;
   char sql[] =
@@ -2157,6 +2292,8 @@ bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
       "NULL THEN 'UTC' ELSE timezone END tz, YEAR(@date) y, MONTH(@date) m, "
       "DAY(@date) d, DAYOFWEEK(@date) w, HOUR(@date) h, MINUTE(@date) n, "
       "SECOND(@date) s FROM `supla_user` WHERE id = ?";
+
+  memset(time, 0, sizeof(TSDC_UserLocalTimeResult));
 
   MYSQL_STMT *stmt = NULL;
 
@@ -2219,6 +2356,7 @@ bool database::get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time) {
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt) &&
           !timezone_is_null) {
         time->timezone[timezone_size] = 0;
+        time->timezoneSize = timezone_size + 1;
         result = true;
       }
     }

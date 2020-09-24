@@ -787,8 +787,9 @@ void supla_device_channel::assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE],
     value[2] = (char)((color & 0x000000FF));
     value[3] = (char)((color & 0x0000FF00) >> 8);
     value[4] = (char)((color & 0x00FF0000) >> 16);
-    value[5] = on_off;
   }
+
+  value[5] = on_off;
 }
 
 void supla_device_channel::assignCharValue(char value[SUPLA_CHANNELVALUE_SIZE],
@@ -1490,9 +1491,9 @@ int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
 void supla_device_channels::async_set_channel_value(
     void *srpc, supla_device_channel *channel, int SenderID, int GroupID,
     unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  if (srpc_get_proto_version(srpc) >= 13) {
-    TSD_SuplaChannelNewValue_B s;
-    memset(&s, 0, sizeof(TSD_SuplaChannelNewValue_B));
+  if (GroupID && srpc_get_proto_version(srpc) >= 13) {
+    TSD_SuplaChannelGroupNewValue s;
+    memset(&s, 0, sizeof(TSD_SuplaChannelGroupNewValue));
 
     s.ChannelNumber = channel->getNumber();
     s.DurationMS = channel->getValueDuration();
@@ -1501,14 +1502,14 @@ void supla_device_channels::async_set_channel_value(
     s.EOL = EOL;
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
-    srpc_sd_async_set_channel_value_b(srpc, &s);
+    srpc_sd_async_set_channelgroup_value(srpc, &s);
   } else {
     TSD_SuplaChannelNewValue s;
     memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
 
     s.ChannelNumber = channel->getNumber();
     s.DurationMS = channel->getValueDuration();
-    s.SenderID = SenderID;
+    s.SenderID = GroupID ? 0 : SenderID;
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
     srpc_sd_async_set_channel_value(srpc, &s);
@@ -1559,15 +1560,15 @@ bool supla_device_channels::set_device_channel_char_value(
         result = set_device_channel_rgbw_value(
             srpc, SenderID, ChannelID, GroupID, EOL, color, color_brightness,
             brightness, on_off);
-      } else if (channel->isCharValueWritable()) {
-        char v[SUPLA_CHANNELVALUE_SIZE];
-        memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
-        channel->assignCharValue(v, value);
-
-        async_set_channel_value(srpc, channel, SenderID, GroupID, EOL, v);
-
-        result = true;
       }
+    } else if (channel->isCharValueWritable()) {
+      char v[SUPLA_CHANNELVALUE_SIZE];
+      memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
+      channel->assignCharValue(v, value);
+
+      async_set_channel_value(srpc, channel, SenderID, GroupID, EOL, v);
+
+      result = true;
     }
   }
 

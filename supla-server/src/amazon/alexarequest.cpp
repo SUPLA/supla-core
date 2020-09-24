@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <amazon/alexacredentials.h>
 #include "amazon/alexarequest.h"
 #include <assert.h>
 #include <stdlib.h>
-#include "amazon/alexa.h"
 #include "amazon/alexaclient.h"
 #include "lck.h"
 #include "log.h"
@@ -53,7 +53,7 @@ bool supla_alexa_request::isCancelled(void *sthread) {
     return true;
   }
 
-  return !getUser()->amazonAlexa()->isAccessTokenExists();
+  return !getUser()->amazonAlexaCredentials()->isAccessTokenExists();
 }
 
 void supla_alexa_request::terminate(void *sthread) {
@@ -68,7 +68,7 @@ void supla_alexa_request::terminate(void *sthread) {
 bool supla_alexa_request::queueUp(void) { return true; }
 
 supla_alexa_client *supla_alexa_request::getClient(void) {
-  supla_amazon_alexa *alexa = getUser()->amazonAlexa();
+  supla_amazon_alexa_credentials *alexa = getUser()->amazonAlexaCredentials();
   assert(alexa != NULL);
 
   supla_alexa_client *result = NULL;
@@ -84,7 +84,7 @@ supla_alexa_client *supla_alexa_request::getClient(void) {
 
 bool supla_alexa_request::isEventSourceTypeAccepted(
     event_source_type eventSourceType, bool verification) {
-  supla_amazon_alexa *alexa = getUser()->amazonAlexa();
+  supla_amazon_alexa_credentials *alexa = getUser()->amazonAlexaCredentials();
   return alexa && alexa->isAccessTokenExists() &&
          getUser()->is_device_online(getDeviceId());
 }

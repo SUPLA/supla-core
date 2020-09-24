@@ -17,27 +17,31 @@
  */
 
 #include "GoogleHomeClientTest.h"
-#include "google/googlehomeclient.h"
+#include "TrivialHttpFactoryMock.h"
+#include "TrivialHttpMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
-namespace {
+namespace testing {
 
-class GoogleHomeClientTest : public STTrivialHttp {
- protected:
-  supla_google_home_client *client;
+GoogleHomeClientTest::GoogleHomeClientTest() {}
 
- public:
-  void SetUp() override {
-    getUser()->googleHome()->set("ACCESS-TOKEN");
-    client = new supla_google_home_client(getUser()->googleHome());
-  }
+void GoogleHomeClientTest::SetUp() {
+  supla_user::init();
+  user = new supla_user(1001);
+  user->setUniqueId("qwerty", "zxcvbnm");
 
-  void TearDown() override {
-    delete client;
-    client = NULL;
-  }
-};
+  user->googleHomeCredentials()->set("ACCESS-TOKEN");
+  client = new supla_google_home_client(user->googleHomeCredentials());
 
+  client->setHttpConnectionFactory(new TrivialHttpFactoryMock());
+}
+void GoogleHomeClientTest::TearDown() {
+  delete client->getHttpConnectionFactory();
+  delete client;
+  delete user;
+
+  supla_user::user_free();
+}
 TEST_F(GoogleHomeClientTest, requestSync) {
   const char expectedRequest[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -48,7 +52,7 @@ TEST_F(GoogleHomeClientTest, requestSync) {
       "\"agentUserId\":\"zxcvbnm\",\"intent\":\"action.devices.SYNC\"}";
 
   ASSERT_TRUE(client->requestSync());
-  ASSERT_TRUE(outputEqualTo(expectedRequest));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest));
 }
 
 TEST_F(GoogleHomeClientTest, onOffRepoerState) {
@@ -63,7 +67,7 @@ TEST_F(GoogleHomeClientTest, onOffRepoerState) {
 
   ASSERT_TRUE(client->addOnOffState(10, true, false));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -76,7 +80,7 @@ TEST_F(GoogleHomeClientTest, onOffRepoerState) {
 
   ASSERT_TRUE(client->addOnOffState(10, true, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
 TEST_F(GoogleHomeClientTest, brightnessState) {
@@ -91,7 +95,7 @@ TEST_F(GoogleHomeClientTest, brightnessState) {
 
   ASSERT_TRUE(client->addBrightnessState(10, 55, false, 0));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -104,7 +108,7 @@ TEST_F(GoogleHomeClientTest, brightnessState) {
 
   ASSERT_TRUE(client->addBrightnessState(10, 55, true, 0));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -117,7 +121,7 @@ TEST_F(GoogleHomeClientTest, brightnessState) {
 
   ASSERT_TRUE(client->addBrightnessState(10, 80, true, 1));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(GoogleHomeClientTest, colorState) {
@@ -133,7 +137,7 @@ TEST_F(GoogleHomeClientTest, colorState) {
 
   ASSERT_TRUE(client->addColorState(10, 0xFF00BB, 55, false, 0));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -146,7 +150,7 @@ TEST_F(GoogleHomeClientTest, colorState) {
 
   ASSERT_TRUE(client->addColorState(10, 0x447722, 55, true, 0));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -159,7 +163,7 @@ TEST_F(GoogleHomeClientTest, colorState) {
 
   ASSERT_TRUE(client->addColorState(10, 0xFFFF00, 80, true, 1));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(GoogleHomeClientTest, rollerShutterState) {
@@ -174,7 +178,7 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
 
   ASSERT_TRUE(client->addRollerShutterState(10, 55, false));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -187,7 +191,7 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
 
   ASSERT_TRUE(client->addRollerShutterState(10, 55, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -200,7 +204,7 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
 
   ASSERT_TRUE(client->addRollerShutterState(10, 80, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 
   const char expectedRequest4[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -213,8 +217,7 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
 
   ASSERT_TRUE(client->addRollerShutterState(10, 0, true));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest4));
-
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest4));
 }
 
 TEST_F(GoogleHomeClientTest, sendFullReportState) {
@@ -245,7 +248,7 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
   ASSERT_TRUE(client->addRollerShutterState(6, 30, true));
   ASSERT_FALSE(client->addRollerShutterState(6, 45, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest));
 }
 
-}  // namespace
+} /* namespace testing */

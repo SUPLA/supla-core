@@ -156,7 +156,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
-#define SUPLA_SD_CALL_CHANNEL_SET_VALUE_B 115  // ver. >= 13
+#define SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE 115  // ver. >= 13
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
 #define SUPLA_SC_CALL_LOCATION_UPDATE 130
 #define SUPLA_SC_CALL_LOCATIONPACK_UPDATE 140
@@ -312,7 +312,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
-#define SUPLA_CHANNELTYPE_SMARTGLASS 12000                  // ver. >= 12
+#define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -330,7 +330,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK 90
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR 100
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER 110
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW 115  // ver. >= 13
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER 120
+#define SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW 125  // ver. >= 13
 #define SUPLA_CHANNELFNC_POWERSWITCH 130
 #define SUPLA_CHANNELFNC_LIGHTSWITCH 140
 #define SUPLA_CHANNELFNC_RING 150
@@ -361,7 +363,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
-#define SUPLA_CHANNELFNC_SMARTGLASS 800                   // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS 800                    // ver. >= 12
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -370,20 +372,22 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER 0x00000010
 #define SUPLA_BIT_FUNC_POWERSWITCH 0x00000020
 #define SUPLA_BIT_FUNC_LIGHTSWITCH 0x00000040
-#define SUPLA_BIT_FUNC_STAIRCASETIMER 0x00000080          // ver. >= 8
-#define SUPLA_BIT_FUNC_THERMOMETER 0x00000100             // ver. >= 12
-#define SUPLA_BIT_FUNC_HUMIDITYANDTEMPERATURE 0x00000200  // ver. >= 12
-#define SUPLA_BIT_FUNC_HUMIDITY 0x00000400                // ver. >= 12
-#define SUPLA_BIT_FUNC_WINDSENSOR 0x00000800              // ver. >= 12
-#define SUPLA_BIT_FUNC_PRESSURESENSOR 0x00001000          // ver. >= 12
-#define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000              // ver. >= 12
-#define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000            // ver. >= 12
+#define SUPLA_BIT_FUNC_STAIRCASETIMER 0x00000080            // ver. >= 8
+#define SUPLA_BIT_FUNC_THERMOMETER 0x00000100               // ver. >= 12
+#define SUPLA_BIT_FUNC_HUMIDITYANDTEMPERATURE 0x00000200    // ver. >= 12
+#define SUPLA_BIT_FUNC_HUMIDITY 0x00000400                  // ver. >= 12
+#define SUPLA_BIT_FUNC_WINDSENSOR 0x00000800                // ver. >= 12
+#define SUPLA_BIT_FUNC_PRESSURESENSOR 0x00001000            // ver. >= 12
+#define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000                // ver. >= 12
+#define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000              // ver. >= 12
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000  // ver. >= 13
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
 #define SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR 30
 #define SUPLA_EVENT_CONTROLLINGTHEDOORLOCK 40
 #define SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER 50
+#define SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW 55
 #define SUPLA_EVENT_POWERONOFF 60
 #define SUPLA_EVENT_LIGHTONOFF 70
 #define SUPLA_EVENT_STAIRCASETIMERONOFF 80       // ver. >= 9
@@ -714,7 +718,7 @@ typedef struct {
   unsigned _supla_int_t DurationMS;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
-} TSD_SuplaChannelNewValue_B;  // v. >= 13
+} TSD_SuplaChannelGroupNewValue;  // v. >= 13
 
 typedef struct {
   // device -> server
@@ -1240,14 +1244,14 @@ typedef struct {
 } TCalCfg_ZWave_Node;                  // v. >= 12
 
 typedef struct {
-  unsigned int MinimumSec : 24;
-  unsigned int MaximumSec : 24;
-  unsigned int ValueSec : 24;
-  unsigned int IntervalStepSec : 24;
+  unsigned _supla_int_t MinimumSec : 24;
+  unsigned _supla_int_t MaximumSec : 24;
+  unsigned _supla_int_t ValueSec : 24;
+  unsigned _supla_int_t IntervalStepSec : 24;
 } TCalCfg_ZWave_WakeupSettingsReport;
 
 typedef struct {
-  unsigned int TimeSec : 24;
+  unsigned _supla_int_t TimeSec : 24;
 } TCalCfg_ZWave_WakeUpTime;
 
 typedef struct {
@@ -1319,13 +1323,13 @@ typedef struct {
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
-#define SMARTGLASS_FLAG_HORIZONATAL 0x1
+#define DIGIGLASS_FLAG_HORIZONATAL 0x1
 
 typedef struct {
   unsigned char sectionCount;  // 1 - 16
   unsigned char flags;
   unsigned short opaqueSections;
-} TSmartglass_Value;
+} TDigiglass_Value;
 
 typedef struct {
   unsigned char sec;        // 0-59

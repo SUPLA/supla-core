@@ -16,17 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_STTrivialHttp_H_
-#define H_STTrivialHttp_H_
+#ifndef GOOGLEHOME_H_
+#define GOOGLEHOME_H_
 
-#include "gtest/gtest.h"  // NOLINT
-#include "test/STUserSpace.h"
+#define GH_TOKEN_MAXSIZE 255
 
-class STTrivialHttp : public STUserSpace {
+#include "webhook/webhookbasiccredentials.h"
+
+class supla_google_home_credentials : public supla_webhook_basic_credentials {
+ protected:
+  int sync_40x_counter;
+
  public:
-  STTrivialHttp();
-  virtual ~STTrivialHttp();
-  bool outputEqualTo(const char *str);
+  explicit supla_google_home_credentials(supla_user *user);
+  virtual int get_token_maxsize(void);
+  void load();
+  void on_credentials_changed();
+  void on_sync_40x_error();
+  void on_reportstate_404_error();
+
+  // unused
+  virtual void update(const char *access_token, const char *refresh_token,
+                      int expires_in);
 };
 
-#endif /*H_STTrivialHttp_TEST_H_*/
+#endif /* GOOGLEHOME_H_ */

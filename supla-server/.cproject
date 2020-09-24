@@ -189,7 +189,7 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="crypt_blowfish/Makefile|test|bcrypt" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+                        <entry excluding="t|crypt_blowfish/Makefile|test|bcrypt" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
                         					
                     </sourceEntries>
                     				
@@ -377,7 +377,7 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="crypt_blowfish/Makefile|test|bcrypt" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+                        <entry excluding="t|crypt_blowfish/Makefile|test|bcrypt" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
                         					
                     </sourceEntries>
                     				
@@ -621,7 +621,7 @@
                     					
                     <sourceEntries>
                         						
-                        <entry excluding="crypt_blowfish/Makefile|supla-server.cpp|bcrypt|gtest|test/gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+                        <entry excluding="t|crypt_blowfish/Makefile|supla-server.cpp|bcrypt|gtest|test/gtest" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
                         						
                         <entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/test/gtest"/>
                         					
