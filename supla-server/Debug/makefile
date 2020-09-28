@@ -8,6 +8,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/webhook/subdir.mk
 -include src/user/subdir.mk
 -include src/json/subdir.mk
 -include src/http/subdir.mk

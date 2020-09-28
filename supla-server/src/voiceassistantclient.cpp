@@ -19,66 +19,18 @@
 #include "voiceassistantclient.h"
 #include <stdlib.h>
 #include <string.h>
-#include "http/trivialhttps.h"
+#include "http/trivialhttp.h"
 #include "lck.h"
 #include "user/user.h"
-#include "voiceassistant.h"
 
 supla_voice_assistant_client::supla_voice_assistant_client(
-    supla_voice_assistant *voice_assistant) {
-  this->lck = lck_init();
-  this->https = NULL;
-  this->voice_assistant = voice_assistant;
-}
-
-void supla_voice_assistant_client::httpsInit(void) {
-  httpsFree();
-  lck_lock(lck);
-  https = new supla_trivial_https();
-  lck_unlock(lck);
-}
-
-void supla_voice_assistant_client::httpsFree(void) {
-  lck_lock(lck);
-  if (https) {
-    delete https;
-    https = NULL;
-  }
-  lck_unlock(lck);
-}
-
-void supla_voice_assistant_client::terminate(void) {
-  lck_lock(lck);
-  if (https) {
-    https->terminate();
-  }
-  lck_unlock(lck);
-}
-
-supla_trivial_https *supla_voice_assistant_client::getHttps(void) {
-  supla_trivial_https *result = NULL;
-  lck_lock(lck);
-  if (!https) {
-    httpsInit();
-  }
-  result = https;
-  lck_unlock(lck);
-  return result;
-}
-
-supla_voice_assistant *supla_voice_assistant_client::getVoiceAssistant(void) {
-  return voice_assistant;
-}
-
-supla_voice_assistant_client::~supla_voice_assistant_client() {
-  httpsFree();
-  lck_free(lck);
-}
+    supla_webhook_basic_credentials *credentials)
+    : supla_webhook_basic_client(credentials) {}
 
 char *supla_voice_assistant_client::getEndpointId(int channelId,
                                                   short subChannel) {
   char *result = NULL;
-  char *uuid = getVoiceAssistant()->getUser()->getShortUniqueID();
+  char *uuid = getCredentials()->getUser()->getShortUniqueID();
   if (!uuid) {
     return NULL;
   }

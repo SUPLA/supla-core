@@ -16,21 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_STUSERSPACE_H_
-#define H_STUSERSPACE_H_
+#ifndef GOOGLEHOME_H_
+#define GOOGLEHOME_H_
 
-#include "gtest/gtest.h"  // NOLINT
-#include "user/user.h"
+#define GH_TOKEN_MAXSIZE 255
 
-class STUserSpace : public ::testing::Test {
+#include "webhook/webhookbasiccredentials.h"
+
+class supla_google_home_credentials : public supla_webhook_basic_credentials {
  protected:
-  supla_user *user;
+  int sync_40x_counter;
 
  public:
-  STUserSpace();
+  explicit supla_google_home_credentials(supla_user *user);
+  virtual int get_token_maxsize(void);
+  void load();
+  void on_credentials_changed();
+  void on_sync_40x_error();
+  void on_reportstate_404_error();
 
-  virtual ~STUserSpace();
-  supla_user *getUser(void);
+  // unused
+  virtual void update(const char *access_token, const char *refresh_token,
+                      int expires_in);
 };
 
-#endif /*H_STUSERSPACE_TEST_H_*/
+#endif /* GOOGLEHOME_H_ */

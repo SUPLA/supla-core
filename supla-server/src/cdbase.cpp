@@ -313,3 +313,7 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
     return db_authkey_auth(GUID, Email, AuthKey, UserID, db);
   }
 }
+
+void cdbase::iterate() {}
+
+unsigned _supla_int64_t cdbase::waitTimeUSec() { return 120000000; }

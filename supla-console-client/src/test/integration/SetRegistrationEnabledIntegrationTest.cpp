@@ -84,4 +84,56 @@ TEST_F(SetRegistrationEnabledIntegrationTest, SetRegistrationEnabled) {
   ASSERT_TRUE(timediff >= 99 && timediff <= 101);
 }
 
+TEST_F(SetRegistrationEnabledIntegrationTest, SubZeroValueTest) {
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  expectedResultCode = SUPLA_RESULTCODE_TRUE;
+  ASSERT_GT(supla_client_set_registration_enabled(sclient, 100, 200), 0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_GT(supla_client_get_registration_enabled(sclient), 0);
+  iterateUntilDefaultTimeout();
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  unsigned int timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
+  ASSERT_TRUE(timediff >= 99 && timediff <= 101);
+
+  timediff = abs(regEnabled.client_timestamp - now.tv_sec);
+  ASSERT_TRUE(timediff >= 199 && timediff <= 201);
+
+
+  ASSERT_GT(supla_client_set_registration_enabled(sclient, -1, 300), 0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_GT(supla_client_get_registration_enabled(sclient), 0);
+  iterateUntilDefaultTimeout();
+
+  gettimeofday(&now, NULL);
+
+  timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
+  ASSERT_TRUE(timediff >= 99 && timediff <= 101);
+
+  timediff = abs(regEnabled.client_timestamp - now.tv_sec);
+  ASSERT_TRUE(timediff >= 299 && timediff <= 301);
+
+  ASSERT_GT(supla_client_set_registration_enabled(sclient, 400, -1), 0);
+  iterateUntilDefaultTimeout();
+
+  ASSERT_GT(supla_client_get_registration_enabled(sclient), 0);
+  iterateUntilDefaultTimeout();
+
+  gettimeofday(&now, NULL);
+
+  timediff = abs(regEnabled.iodevice_timestamp - now.tv_sec);
+
+  ASSERT_TRUE(timediff >= 399 && timediff <= 401);
+
+  timediff = abs(regEnabled.client_timestamp - now.tv_sec);
+  ASSERT_TRUE(timediff >= 299 && timediff <= 301);
+}
+
 } /* namespace testing */

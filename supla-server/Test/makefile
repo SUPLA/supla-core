@@ -8,7 +8,9 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/webhook/subdir.mk
 -include src/user/subdir.mk
+-include src/test/webhook/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
 -include src/test/alexa/subdir.mk

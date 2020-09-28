@@ -34,7 +34,9 @@ supla_client_channel::supla_client_channel(
     int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
     char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
     int UserIcon, short ManufacturerID, short ProductID,
-    unsigned char ProtocolVersion, int Flags)
+    unsigned char ProtocolVersion, int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int_t validity_time_sec)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
@@ -52,6 +54,9 @@ supla_client_channel::supla_client_channel(
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
+  setValueValidityTimeSec(validity_time_sec);
+
+  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_client_channel::~supla_client_channel(void) {
@@ -100,6 +105,41 @@ short supla_client_channel::getManufacturerID() { return ManufacturerID; }
 short supla_client_channel::getProductID() { return ProductID; }
 
 int supla_client_channel::getFlags() { return Flags; }
+
+void supla_client_channel::setValueValidityTimeSec(
+    unsigned _supla_int_t validity_time_sec) {
+  resetValueValidityTime();
+
+  if (validity_time_sec > 0) {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
+  }
+}
+
+bool supla_client_channel::isValueValidityTimeSet() {
+  return value_valid_to.tv_sec || value_valid_to.tv_usec;
+}
+
+unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
+  if (isValueValidityTimeSet()) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    _supla_int64_t result =
+        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
+        (now.tv_sec * 1000000 + now.tv_usec);
+    if (result > 0) {
+      return result;
+    }
+  }
+
+  return 0;
+}
+
+void supla_client_channel::resetValueValidityTime(void) {
+  value_valid_to.tv_sec = 0;
+  value_valid_to.tv_usec = 0;
+}
 
 bool supla_client_channel::remote_update_is_possible(void) {
   switch (Func) {
@@ -156,8 +196,27 @@ bool supla_client_channel::remote_update_is_possible(void) {
 
 void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
                                            char *online, supla_client *client) {
+  bool result = false;
+
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), value, online);
+    unsigned _supla_int_t validity_time_sec = 0;
+    result = client->getUser()->get_channel_value(DeviceId, getId(), value,
+                                                  online, &validity_time_sec);
+    if (result) {
+      setValueValidityTimeSec(validity_time_sec);
+    }
+  }
+
+  if ((!result || (online && !(*online))) && isValueValidityTimeSet() &&
+      getValueValidityTimeUSec() > 0) {
+    result = true;
+    if (online) {
+      *online = true;
+    }
+    memcpy(value->value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  }
+
+  if (result) {
 #ifdef SERVER_VERSION_23
     if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
 #endif /*SERVER_VERSION_23*/

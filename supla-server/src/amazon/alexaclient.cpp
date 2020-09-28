@@ -17,11 +17,11 @@
  */
 
 #include "amazon/alexaclient.h"
+#include <amazon/alexacredentials.h>
 #include <stdlib.h>
 #include <string.h>
 #include <map>
 #include <string>
-#include "amazon/alexa.h"
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
 #include "lck.h"
@@ -114,7 +114,7 @@ static const _alexa_code_t alexa_causes[]{
     {NULL, 0},
 };
 
-supla_alexa_client::supla_alexa_client(supla_amazon_alexa *alexa)
+supla_alexa_client::supla_alexa_client(supla_amazon_alexa_credentials *alexa)
     : supla_voice_assistant_client(alexa) {}
 
 int supla_alexa_client::getErrorCode(const char *code) {
@@ -129,8 +129,8 @@ int supla_alexa_client::getErrorCode(const char *code) {
   return POST_RESULT_UNKNOWN_ERROR;
 }
 
-supla_amazon_alexa *supla_alexa_client::getAlexa(void) {
-  return static_cast<supla_amazon_alexa *>(getVoiceAssistant());
+supla_amazon_alexa_credentials *supla_alexa_client::getAlexaCredentials(void) {
+  return static_cast<supla_amazon_alexa_credentials *>(getCredentials());
 }
 
 const char *supla_alexa_client::getErrorString(const int code) {
@@ -143,67 +143,6 @@ const char *supla_alexa_client::getErrorString(const int code) {
   }
 
   return "UNKNOWN";
-}
-
-void supla_alexa_client::refresh_roken(void) {
-  if (!getAlexa()->isRefreshTokenExists()) {
-    return;
-  }
-
-  struct timeval last_set_time = getAlexa()->getSetTime();
-  getAlexa()->refresh_lock();
-
-  struct timeval current_set_time = getAlexa()->getSetTime();
-  if (last_set_time.tv_sec == current_set_time.tv_sec &&
-      last_set_time.tv_usec == current_set_time.tv_usec) {
-#ifndef NOSSL
-    char host[] = "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com";
-    char resource[] = "/default/amazonRefreshTokenBridge";
-
-    getHttps()->setHost(host);
-    getHttps()->setResource(resource);
-    {
-      char *refresh_token = getAlexa()->getRefreshToken();
-      if (refresh_token) {
-        int rtoken_len = strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE);
-        if (rtoken_len != 0) {
-          cJSON *root = cJSON_CreateObject();
-          cJSON_AddStringToObject(root, "refresh_token", refresh_token);
-          char *str = cJSON_PrintUnformatted(root);
-          cJSON_Delete(root);
-
-          getHttps()->http_post(NULL, str);
-          free(str);
-        }
-
-        free(refresh_token);
-      }
-    }
-
-    if (getHttps()->getResultCode() == 200 && getHttps()->getBody()) {
-      cJSON *root = cJSON_Parse(getHttps()->getBody());
-      if (root) {
-        cJSON *access_token = cJSON_GetObjectItem(root, "access_token");
-        cJSON *expires_in = cJSON_GetObjectItem(root, "expires_in");
-        cJSON *refresh_token = cJSON_GetObjectItem(root, "refresh_token");
-
-        if (access_token && cJSON_IsString(access_token) && refresh_token &&
-            cJSON_IsString(refresh_token)) {
-          int ex_in = cJSON_IsNumber(expires_in) ? expires_in->valueint : 0;
-          getAlexa()->update(cJSON_GetStringValue(access_token),
-                             cJSON_GetStringValue(refresh_token), ex_in);
-        }
-
-        cJSON_Delete(root);
-      }
-    }
-
-    httpsFree();
-
-#endif /*NOSSL*/
-  }
-
-  getAlexa()->refresh_unlock();
 }
 
 int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
@@ -219,11 +158,11 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
   {
     char host[30];
     host[0] = 0;
-    char *region = getAlexa()->getRegion();
+    char *region = getAlexaCredentials()->getRegion();
 
     snprintf(host, sizeof(host), "api.%s%samazonalexa.com",
              region ? region : "", region ? "." : "");
-    getHttps()->setHost(host);
+    getHttpConnection()->setHost(host);
 
     if (region) {
       free(region);
@@ -232,19 +171,21 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
 
   char header[] = "Content-Type: application/json";
   char resource[] = "/v3/events";
-  getHttps()->setResource(resource);
-  getHttps()->setToken(getAlexa()->getAccessToken(), false);
+  getHttpConnection()->setResource(resource);
+  getHttpConnection()->setToken(getAlexaCredentials()->getAccessToken(), false);
 
-  if (!getHttps()->http_post(header, data)) {
-    return POST_RESULT_REQUEST_ERROR;
+  if (!getAlexaCredentials()->isAccessTokenExists()) {
+    result = POST_RESULT_TOKEN_DOES_NOT_EXISTS;
+  } else if (!getHttpConnection()->http_post(header, data)) {
+    result = POST_RESULT_REQUEST_ERROR;
   } else {
     if (httpResultCode) {
-      *httpResultCode = getHttps()->getResultCode();
+      *httpResultCode = getHttpConnection()->getResultCode();
     }
-    if (getHttps()->getResultCode() != 200 &&
-        getHttps()->getResultCode() != 202) {
-      if (getHttps()->getBody()) {
-        cJSON *root = cJSON_Parse(getHttps()->getBody());
+    if (getHttpConnection()->getResultCode() != 200 &&
+        getHttpConnection()->getResultCode() != 202) {
+      if (getHttpConnection()->getBody()) {
+        cJSON *root = cJSON_Parse(getHttpConnection()->getBody());
         if (root) {
           cJSON *payload = cJSON_GetObjectItem(root, "payload");
           if (payload) {
@@ -261,23 +202,86 @@ int supla_alexa_client::aeg_post_request(char *data, int *httpResultCode) {
     }
   }
 
-  httpsFree();
+  httpConnectionFree();
 
 #endif /*NOSSL*/
 
   return result;
 }
 
+void supla_alexa_client::refreshToken(void) {
+  if (!getAlexaCredentials()->isRefreshTokenExists()) {
+    return;
+  }
+
+  struct timeval last_set_time = getAlexaCredentials()->getSetTime();
+  getAlexaCredentials()->refresh_lock();
+
+  struct timeval current_set_time = getAlexaCredentials()->getSetTime();
+  if (last_set_time.tv_sec == current_set_time.tv_sec &&
+      last_set_time.tv_usec == current_set_time.tv_usec) {
+#ifndef NOSSL
+    char host[] = "xatgh8yc1j.execute-api.eu-west-1.amazonaws.com";
+    char resource[] = "/default/amazonRefreshTokenBridge";
+
+    getHttpConnection()->setHost(host);
+    getHttpConnection()->setResource(resource);
+    {
+      char *refresh_token = getAlexaCredentials()->getRefreshToken();
+      if (refresh_token) {
+        int rtoken_len = strnlen(refresh_token, ALEXA_TOKEN_MAXSIZE);
+        if (rtoken_len != 0) {
+          cJSON *root = cJSON_CreateObject();
+          cJSON_AddStringToObject(root, "refresh_token", refresh_token);
+          char *str = cJSON_PrintUnformatted(root);
+          cJSON_Delete(root);
+
+          getHttpConnection()->http_post(NULL, str);
+          free(str);
+        }
+
+        free(refresh_token);
+      }
+    }
+
+    if (getHttpConnection()->getResultCode() == 200 &&
+        getHttpConnection()->getBody()) {
+      cJSON *root = cJSON_Parse(getHttpConnection()->getBody());
+      if (root) {
+        cJSON *access_token = cJSON_GetObjectItem(root, "access_token");
+        cJSON *expires_in = cJSON_GetObjectItem(root, "expires_in");
+        cJSON *refresh_token = cJSON_GetObjectItem(root, "refresh_token");
+
+        if (access_token && cJSON_IsString(access_token) && refresh_token &&
+            cJSON_IsString(refresh_token)) {
+          int ex_in = cJSON_IsNumber(expires_in) ? expires_in->valueint : 0;
+          getAlexaCredentials()->update(cJSON_GetStringValue(access_token),
+                                        cJSON_GetStringValue(refresh_token),
+                                        ex_in);
+        }
+
+        cJSON_Delete(root);
+      }
+    }
+
+    httpConnectionFree();
+
+#endif /*NOSSL*/
+  }
+
+  getAlexaCredentials()->refresh_unlock();
+}
+
 int supla_alexa_client::aeg_post(char *data) {
-  if (!getAlexa()->isAccessTokenExists()) {
+  if (!getAlexaCredentials()->isAccessTokenExists()) {
     return POST_RESULT_TOKEN_DOES_NOT_EXISTS;
   }
 
   bool refresh_attempt = false;
 
-  if (getAlexa()->expiresIn() <= 30) {
+  if (getAlexaCredentials()->expiresIn() <= 30) {
     refresh_attempt = true;
-    refresh_roken();
+    refreshToken();
   }
 
   int httpResultCode = 0;
@@ -285,7 +289,7 @@ int supla_alexa_client::aeg_post(char *data) {
   if (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION) {
     if (!refresh_attempt) {
       refresh_attempt = true;
-      refresh_roken();
+      refreshToken();
       result = aeg_post_request(data, &httpResultCode);
     }
   }
@@ -294,7 +298,7 @@ int supla_alexa_client::aeg_post(char *data) {
       result == POST_RESULT_SKILL_NOT_FOUND_EXCEPTION ||
       (result == POST_RESULT_INVALID_ACCESS_TOKEN_EXCEPTION &&
        refresh_attempt)) {
-    getAlexa()->remove();
+    getAlexaCredentials()->remove();
     return result;
   }
 
@@ -302,7 +306,7 @@ int supla_alexa_client::aeg_post(char *data) {
     supla_log(LOG_ERR,
               "Alexa event gateway client error (UserID: %i, httpCode: %i, "
               "Result: %i): %s",
-              getAlexa()->getUserID(), httpResultCode, result,
+              getAlexaCredentials()->getUserID(), httpResultCode, result,
               getErrorString(result));
   }
 
@@ -467,7 +471,7 @@ void *supla_alexa_client::getResponseHeader(const char correlationToken[]) {
 void *supla_alexa_client::getEndpoint(int channelId, short subChannel) {
   cJSON *endpoint = cJSON_CreateObject();
   if (endpoint) {
-    char *token = getAlexa()->getAccessToken();
+    char *token = getAlexaCredentials()->getAccessToken();
     if (token) {
       cJSON *scope = cJSON_CreateObject();
       if (scope) {

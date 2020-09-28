@@ -259,11 +259,11 @@ bool ipc_client::set_rgbw_value(int user_id, int device_id, int channel_id,
   if (!ipc_connect()) return false;
 
   if (channel_group_id) {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i\n",
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,0\n",
              cmd_set_cg_rgbw_value, user_id, channel_group_id, color,
              color_brightness, brightness);
   } else {
-    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i\n",
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i,%i,0\n",
              cmd_set_rgbw_value, user_id, device_id, channel_id, color,
              color_brightness, brightness);
   }

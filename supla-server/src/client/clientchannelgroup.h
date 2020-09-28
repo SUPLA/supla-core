@@ -22,6 +22,7 @@
 #include <list>
 #include "clientchannelgrouprelation.h"
 #include "clientobjcontaineritem.h"
+#include "dcpair.h"
 
 class supla_client;
 class supla_client_channelgroups;
@@ -45,7 +46,7 @@ class supla_client_channelgroup : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannelGroup_B *group);
   bool add_relation(supla_client_channelgroup_relation *cg_rel);
   bool remote_update_is_possible(void);
-  std::list<t_dc_pair> get_channel_list(void);
+  std::list<dcpair> get_channel_list(void);
 };
 
 #endif /* CLIENTCHANNELGROUP_H_ */

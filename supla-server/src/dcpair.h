@@ -16,17 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_STTrivialHttp_H_
-#define H_STTrivialHttp_H_
+#ifndef DCPAIR_H_
+#define DCPAIR_H_
+#include <list>
 
-#include "gtest/gtest.h"  // NOLINT
-#include "test/STUserSpace.h"
+class dcpair {
+ private:
+  int DeviceId;
+  int ChannelId;
 
-class STTrivialHttp : public STUserSpace {
  public:
-  STTrivialHttp();
-  virtual ~STTrivialHttp();
-  bool outputEqualTo(const char *str);
+  dcpair(int DeviceId, int ChannelId);
+  int getDeviceId();
+  int getChannelId();
+
+  static bool popDeviceChannelIDs(std::list<dcpair> *pairs, int *deviceId,
+                                  std::list<int> *cids);
+
+  static bool compare(const dcpair p1, const dcpair p2);
+  static void sort_by_device_id(std::list<dcpair> *pairs);
+  static bool last_one(std::list<dcpair> *pairs,
+                       std::list<dcpair>::iterator it);
 };
 
-#endif /*H_STTrivialHttp_TEST_H_*/
+#endif /* DCPAIR_H_ */

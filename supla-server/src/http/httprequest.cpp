@@ -258,19 +258,25 @@ void supla_http_request::terminate(void *sthread) {
   lck_unlock(this->lck);
 }
 
-//-----------------------------------------------------------------
-//-----------------------------------------------------------------
-//-----------------------------------------------------------------
+void supla_http_request::requestWillBeAdded(void) {}
 
-std::list<AbstractHttpRequestFactory *> AbstractHttpRequestFactory::factories;
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
+//-----------------------------------------------------------------
 
 AbstractHttpRequestFactory::AbstractHttpRequestFactory(void) {
-  factories.push_back(this);
-  ClassID = factories.size();
+  getFactories().push_back(this);
+  ClassID = getFactories().size();
 }
 
 AbstractHttpRequestFactory::~AbstractHttpRequestFactory(void) {
-  factories.remove(this);
+  getFactories().remove(this);
+}
+
+std::list<AbstractHttpRequestFactory *>
+    &AbstractHttpRequestFactory::getFactories(void) {
+  static std::list<AbstractHttpRequestFactory *> factories;
+  return factories;
 }
 
 int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
@@ -280,10 +286,10 @@ std::list<supla_http_request *>
 AbstractHttpRequestFactory::createByChannelEventSourceType(
     supla_user *user, int DeviceId, int ChannelId, event_type EventType,
     event_source_type EventSourceType) {
+  std::list<AbstractHttpRequestFactory *> factories = getFactories();
   std::list<supla_http_request *> result;
-  for (std::list<AbstractHttpRequestFactory *>::iterator it =
-           AbstractHttpRequestFactory::factories.begin();
-       it != AbstractHttpRequestFactory::factories.end(); it++) {
+  for (std::list<AbstractHttpRequestFactory *>::iterator it = factories.begin();
+       it != factories.end(); it++) {
     supla_http_request *request =
         (*it)->create(user, (*it)->getClassID(), DeviceId, ChannelId, EventType,
                       EventSourceType);

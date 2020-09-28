@@ -4,22 +4,22 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/google/googlehome.cpp \
 ../src/google/googlehomeclient.cpp \
+../src/google/googlehomecredentials.cpp \
 ../src/google/googlehomerequest.cpp \
 ../src/google/googlehomestatereportrequest.cpp \
 ../src/google/googlehomesyncrequest.cpp 
 
 OBJS += \
-./src/google/googlehome.o \
 ./src/google/googlehomeclient.o \
+./src/google/googlehomecredentials.o \
 ./src/google/googlehomerequest.o \
 ./src/google/googlehomestatereportrequest.o \
 ./src/google/googlehomesyncrequest.o 
 
 CPP_DEPS += \
-./src/google/googlehome.d \
 ./src/google/googlehomeclient.d \
+./src/google/googlehomecredentials.d \
 ./src/google/googlehomerequest.d \
 ./src/google/googlehomestatereportrequest.d \
 ./src/google/googlehomesyncrequest.d 

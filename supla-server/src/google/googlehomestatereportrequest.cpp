@@ -167,7 +167,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
     getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
 
     if (resultCode == 404) {
-      getUser()->googleHome()->on_reportstate_404_error();
+      getUser()->googleHomeCredentials()->on_reportstate_404_error();
     }
   }
 }
