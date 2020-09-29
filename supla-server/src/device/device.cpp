@@ -391,16 +391,27 @@ void supla_device::on_device_channel_value_changed(
   int ChannelId = channels->get_channel_id(ChannelNumber);
 
   if (ChannelId != 0) {
-    bool converted2extended;
-    channels->set_channel_value(ChannelId, value_value, &converted2extended,
-                                value_c ? &value_c->ValidityTimeSec : NULL);
-    if (value_b || value_c) {
-      channels->set_channel_offline(ChannelId, offline);
-    }
-    getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
+    bool converted2extended = false;
+    bool changed = false;
 
-    if (converted2extended) {
-      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, true);
+    if (channels->set_channel_value(
+            ChannelId, value_value, &converted2extended,
+            value_c ? &value_c->ValidityTimeSec : NULL)) {
+      changed = true;
+    }
+
+    if ((value_b || value_c) &&
+        channels->set_channel_offline(ChannelId, offline)) {
+      changed = true;
+    }
+
+    if (changed) {
+      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
+
+      if (converted2extended) {
+        getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId,
+                                            true);
+      }
     }
   }
 }
