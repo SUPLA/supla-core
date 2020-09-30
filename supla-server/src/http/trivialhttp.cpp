@@ -163,6 +163,9 @@ void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
            _should_retry(ptr)) {
       if (read_len > 0 && size + read_len < INDATA_MAXSIZE) {
         *in = (char *)realloc((void *)*in, size + read_len + 1);
+        if (*in == NULL) {
+          break;
+        }
         memcpy(&((*in)[size]), in_buff, read_len);
         size += read_len;
       }
