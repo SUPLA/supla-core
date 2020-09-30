@@ -195,14 +195,14 @@ class supla_device_channel {
   bool getHidden(void);
   unsigned int getFlags();
   bool isOffline(void);
-  bool setOffline(bool Offline);
+  void setOffline(bool Offline);
   bool isValueWritable(void);
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
   unsigned int getValueDuration(void);
   unsigned _supla_int_t getValueValidityTimeSec(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
+  void setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
                 const unsigned _supla_int_t *validity_time_sec);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);

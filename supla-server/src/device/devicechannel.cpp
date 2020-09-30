@@ -556,13 +556,7 @@ bool supla_device_channel::isOffline(void) {
   return Offline;
 }
 
-bool supla_device_channel::setOffline(bool Offline) {
-  if (this->Offline != Offline) {
-    this->Offline = Offline;
-    return true;
-  }
-  return false;
-}
+void supla_device_channel::setOffline(bool Offline) { this->Offline = Offline; }
 
 void supla_device_channel::getValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
   memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
@@ -1339,8 +1333,6 @@ void supla_device_channels::set_channel_value(
 
 void supla_device_channels::set_channel_offline(int ChannelID, bool Offline) {
   if (ChannelID == 0) return;
-
-  bool result = false;
 
   safe_array_lock(arr);
 
