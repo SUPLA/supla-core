@@ -154,27 +154,32 @@ ssize_t supla_trivial_http::_read(void *ptr, void *__buf, size_t __n) {
 bool supla_trivial_http::_should_retry(void *ptr) { return false; }
 
 void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
-  if (_write(ptr, out, strnlen(out, OUTDATA_MAXSIZE)) >= 0) {
-    char in_buff[IN_BUFFER_SIZE];
-    int size = 0;
-    int len = 0;
+  int len = 0;
 
-    while ((len = _read(ptr, in_buff, sizeof(IN_BUFFER_SIZE))) > 0 ||
-           _should_retry(ptr)) {
-      if (len > 0 && size + len < INDATA_MAXSIZE) {
-        *in = (char *)realloc((void *)*in, size + len + 1);
-        if (*in == NULL) {
-          break;
-        }
-        memcpy(&((*in)[size]), in_buff, len);
-        size += len;
+  if ((len = _write(ptr, out, strnlen(out, OUTDATA_MAXSIZE))_ <= 0) {
+    supla_log(LOG_ERR, "Http request - write error: len=%i");
+    return;
+  }
+
+  char in_buff[IN_BUFFER_SIZE];
+  int size = 0;
+  len = 0;
+
+  while ((len = _read(ptr, in_buff, sizeof(IN_BUFFER_SIZE))) > 0 ||
+         _should_retry(ptr)) {
+    if (len > 0 && size + len < INDATA_MAXSIZE) {
+      *in = (char *)realloc((void *)*in, size + len + 1);
+      if (*in == NULL) {
+        break;
       }
+      memcpy(&((*in)[size]), in_buff, len);
+      size += len;
     }
+  }
 
-    if (*in) {
-      // size+read_len+1
-      (*in)[size] = 0;
-    }
+  if (*in) {
+    // size+read_len+1
+    (*in)[size] = 0;
   }
 }
 
