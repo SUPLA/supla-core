@@ -391,7 +391,7 @@ void supla_device::on_device_channel_value_changed(
   int ChannelId = channels->get_channel_id(ChannelNumber);
 
   if (ChannelId != 0) {
-    bool converted2extended;
+    bool converted2extended = false;
     channels->set_channel_value(ChannelId, value_value, &converted2extended,
                                 value_c ? &value_c->ValidityTimeSec : NULL);
     if (value_b || value_c) {
