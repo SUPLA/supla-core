@@ -59,6 +59,8 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW) > 0;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -458,6 +460,9 @@ void supla_device::on_channel_set_value_result(
           break;
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
           event.Event = SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW;
           break;
         case SUPLA_CHANNELFNC_POWERSWITCH:
           event.Event = SUPLA_EVENT_POWERONOFF;
