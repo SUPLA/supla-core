@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "http/httprequest.h"
+#include "http/httprequestqueue.h"
 #include <unistd.h>  // NOLINT
 #include <cstddef>   // NOLINT
 #include <list>      // NOLINT
 #include "database.h"
-#include "http/httprequestqueue.h"
+#include "http/httprequest.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -274,6 +274,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
       supla_http_request *request = NULL;
 
       if (threadCount() < threadCountLimit()) {
+        warn_msg = false;
         request = queuePop(q_sthread);
         if (request) {
           runThread(request);
