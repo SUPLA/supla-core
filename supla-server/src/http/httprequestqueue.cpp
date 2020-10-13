@@ -199,7 +199,7 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! UserID: %i, IODevice: %i "
                     "Channel: %i "
-                    "EventSourceType: %i (%ul/%ul/%i/%ul/%ul)",
+                    "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu)",
                     request->getUserID(), request->getDeviceId(),
                     request->getChannelId(), request->getEventSourceType(),
                     request->getTimeout(), request->getStartTime(), now.tv_sec,
