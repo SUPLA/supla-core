@@ -28,8 +28,7 @@
 #include <string>
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
-
-class supla_user;
+#include "user/user.h"
 
 class supla_http_request {
  private:
@@ -43,7 +42,9 @@ class supla_http_request {
   int DeviceId;
   int ChannelId;
   struct timeval startTime;
-  int timeoutUs;
+  unsigned long timeoutUs;
+  unsigned long touchTimeSec;
+  unsigned long touchCount;
 
  protected:
   char *correlationToken;
@@ -56,6 +57,7 @@ class supla_http_request {
                      event_type EventType, event_source_type EventSourceType);
   int getClassID(void);
   supla_user *getUser(void);
+  int getUserID(void);
   void setEventSourceType(event_source_type EventSourceType);
   event_source_type getEventSourceType(void);
   void setEventType(event_type EventType);
@@ -70,13 +72,16 @@ class supla_http_request {
   const char *getCorrelationTokenPtr(void);
   virtual void setGoogleRequestId(const char googleRequestId[]);
   const char *getGoogleRequestIdPtr(void);
-  void setDelay(int delayUs);
-  void setTimeout(int timeoutUs);
-  int getTimeout(void);
-  int getStartTime(void);
-  int timeLeft(struct timeval *now);
+  void setDelay(unsigned long delayUs);
+  void setTimeout(unsigned long timeoutUs);
+  unsigned long getTimeout(void);
+  unsigned long getStartTime(void);
+  long timeLeft(struct timeval *now);
   bool isWaiting(struct timeval *now);
   bool timeout(struct timeval *now);
+  void touch(struct timeval *now);
+  unsigned long getTouchTimeSec(void);
+  unsigned long getTouchCount(void);
 
   virtual bool isCancelled(void *sthread) = 0;
   virtual bool verifyExisting(supla_http_request *existing) = 0;

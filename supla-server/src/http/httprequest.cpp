@@ -42,6 +42,8 @@ supla_http_request::supla_http_request(supla_user *user, int ClassID,
   this->startTime.tv_usec = 0;
   this->correlationToken = NULL;
   this->googleRequestId = NULL;
+  this->touchTimeSec = 0;
+  this->touchCount = 0;
 
   setTimeout(scfg_int(CFG_HTTP_REQUEST_TIMEOUT) * 1000);
   setDelay(0);
@@ -98,6 +100,8 @@ supla_trivial_https *supla_http_request::getHttps() {
 int supla_http_request::getClassID(void) { return ClassID; }
 
 supla_user *supla_http_request::getUser(void) { return user; }
+
+int supla_http_request::getUserID(void) { return user ? user->getUserID() : 0; }
 
 void supla_http_request::setEventType(event_type EventType) {
   this->EventType = EventType;
@@ -178,7 +182,7 @@ const char *supla_http_request::getGoogleRequestIdPtr(void) {
   return result;
 }
 
-void supla_http_request::setDelay(int delayUs) {
+void supla_http_request::setDelay(unsigned long delayUs) {
   gettimeofday(&startTime, NULL);
 
   if (delayUs > 0) {
@@ -187,15 +191,17 @@ void supla_http_request::setDelay(int delayUs) {
   }
 }
 
-void supla_http_request::setTimeout(int timeoutUs) {
+void supla_http_request::setTimeout(unsigned long timeoutUs) {
   this->timeoutUs = timeoutUs;
 }
 
-int supla_http_request::getTimeout(void) { return this->timeoutUs; }
+unsigned long supla_http_request::getTimeout(void) { return this->timeoutUs; }
 
-int supla_http_request::getStartTime(void) { return startTime.tv_sec; }
+unsigned long supla_http_request::getStartTime(void) {
+  return startTime.tv_sec;
+}
 
-int supla_http_request::timeLeft(struct timeval *now) {
+long supla_http_request::timeLeft(struct timeval *now) {
   struct timeval _now;
   if (!now) {
     gettimeofday(&_now, NULL);
@@ -203,7 +209,7 @@ int supla_http_request::timeLeft(struct timeval *now) {
   }
 
   if (now->tv_sec <= startTime.tv_sec) {
-    int us = (startTime.tv_sec - now->tv_sec) * 1000000;
+    long us = (startTime.tv_sec - now->tv_sec) * 1000000;
     us += startTime.tv_usec - now->tv_usec;
     return us;
   }
@@ -241,6 +247,17 @@ bool supla_http_request::timeout(struct timeval *now) {
 
   return true;
 }
+
+void supla_http_request::touch(struct timeval *now) {
+  touchCount++;
+  if (now) {
+    touchTimeSec = now->tv_sec;
+  }
+}
+
+unsigned long supla_http_request::getTouchTimeSec(void) { return touchTimeSec; }
+
+unsigned long supla_http_request::getTouchCount(void) { return touchCount; }
 
 void supla_http_request::terminate(void *sthread) {
   if (sthread) {

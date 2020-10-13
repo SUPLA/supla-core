@@ -194,21 +194,29 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
       if (request && !request->isWaiting(&now)) {
         if (request->isCancelled(q_sthread)) {
           delete request;
+          request = NULL;
         } else if (request->timeout(NULL)) {
           supla_log(LOG_WARNING,
-                    "HTTP request execution timeout! IODevice: %i Channel: %i "
-                    "EventSourceType: %i (%i/%i/%i)",
-                    request->getDeviceId(), request->getChannelId(),
-                    request->getEventSourceType(), request->getTimeout(),
-                    request->getStartTime(), now.tv_sec);
+                    "HTTP request execution timeout! UserID: %i, IODevice: %i "
+                    "Channel: %i "
+                    "EventSourceType: %i (%ul/%ul/%i/%ul/%ul)",
+                    request->getUserID(), request->getDeviceId(),
+                    request->getChannelId(), request->getEventSourceType(),
+                    request->getTimeout(), request->getStartTime(), now.tv_sec,
+                    request->getTouchTimeSec(), request->getTouchCount());
 
           delete request;
+          request = NULL;
         } else {
           result = request;
         }
 
         safe_array_delete(user_space->arr_queue, b);
         break;
+      }
+
+      if (request) {
+        request->touch(&now);
       }
     }
     safe_array_unlock(user_space->arr_queue);
