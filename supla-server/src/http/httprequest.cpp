@@ -189,6 +189,8 @@ void supla_http_request::setDelay(unsigned long delayUs) {
     startTime.tv_sec += delayUs / 1000000;
     startTime.tv_usec += delayUs % 1000000;
   }
+
+  supla_http_request_queue::getInstance()->raiseEvent();
 }
 
 void supla_http_request::setTimeout(unsigned long timeoutUs) {
