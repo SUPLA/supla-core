@@ -1561,12 +1561,16 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature,
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
-void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind) {
+void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                               bool *not_null_flag) {
   if (*v == 0) {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_NULL;
   } else {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_LONGLONG;
     ((MYSQL_BIND *)pbind)->buffer = (char *)v;
+    if (not_null_flag) {
+      *not_null_flag = true;
+    }
   }
 }
 
@@ -1583,17 +1587,28 @@ void database::add_electricity_measurement(
   pbind[0].buffer = (char *)&ChannelID;
 
   int n = 0;
+  bool not_null = false;
   for (int a = 0; a < 3; a++) {
-    em_set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n]);
-    em_set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n]);
-    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n]);
-    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n]);
+    em_set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n],
+                    &not_null);
+    em_set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n],
+                    &not_null);
+    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n],
+                    &not_null);
+    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n],
+                    &not_null);
 
     n += 4;
   }
 
-  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[13]);
-  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[14]);
+  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[13],
+                  &not_null);
+  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[14],
+                  &not_null);
+
+  if (!not_null) {
+    return;
+  }
 
   const char sql[] =
       "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";

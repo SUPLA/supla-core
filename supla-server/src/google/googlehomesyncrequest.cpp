@@ -38,7 +38,6 @@ bool supla_google_home_sync_request::verifyExisting(
     supla_http_request *existing) {
   duplicateExists = true;
   existing->setDelay(5000000);
-  supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 }
 

@@ -40,6 +40,7 @@ s_worker_action_reveal_partially::s_worker_action_reveal_partially(
 void s_worker_action_shutreveal::get_function_list(
     int list[FUNCTION_LIST_SIZE]) {
   list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
+  list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW;
 }
 
 int s_worker_action_shutreveal::try_limit(void) { return 2; }

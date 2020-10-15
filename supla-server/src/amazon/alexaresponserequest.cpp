@@ -39,7 +39,6 @@ bool supla_alexa_response_request::verifyExisting(
     supla_http_request *existing) {
   if (getEventSourceType() == EST_DEVICE) {
     existing->setDelay(0);
-    supla_http_request_queue::getInstance()->raiseEvent();
     return true;
   }
   return false;

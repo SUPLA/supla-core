@@ -72,7 +72,6 @@ bool supla_google_home_statereport_request::verifyExisting(
 
   existing->setDelay(existing->getGoogleRequestIdPtr() ? 3000000 : 1000000);
 
-  supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 }
 

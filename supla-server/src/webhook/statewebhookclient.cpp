@@ -372,6 +372,11 @@ bool supla_state_webhook_client::sendRollerShutterOpeningSensorReport(
   return sendHiReport("OPENINGSENSOR_ROLLERSHUTTER", channelId, hi, connected);
 }
 
+bool supla_state_webhook_client::sendRoofWindowOpeningSensorReport(
+    int channelId, bool hi, bool connected) {
+  return sendHiReport("OPENINGSENSOR_ROOFWINDOW", channelId, hi, connected);
+}
+
 bool supla_state_webhook_client::sendWindowOpeningSensorReport(int channelId,
                                                                bool hi,
                                                                bool connected) {
@@ -383,10 +388,10 @@ bool supla_state_webhook_client::sendMailSensorReport(int channelId, bool hi,
   return sendHiReport("MAILSENSOR", channelId, hi, connected);
 }
 
-bool supla_state_webhook_client::sendRollerShutterReport(int channelId,
-                                                         char shut,
-                                                         bool connected) {
-  cJSON *root = getHeader("CONTROLLINGTHEROLLERSHUTTER", channelId);
+bool supla_state_webhook_client::sendShutReport(const char *function,
+                                                int channelId, char shut,
+                                                bool connected) {
+  cJSON *root = getHeader(function, channelId);
   if (root) {
     cJSON *state = cJSON_CreateObject();
     if (state) {
@@ -401,6 +406,18 @@ bool supla_state_webhook_client::sendRollerShutterReport(int channelId,
   }
 
   return false;
+}
+
+bool supla_state_webhook_client::sendRollerShutterReport(int channelId,
+                                                         char shut,
+                                                         bool connected) {
+  return sendShutReport("CONTROLLINGTHEROLLERSHUTTER", channelId, shut,
+                        connected);
+}
+
+bool supla_state_webhook_client::sendRoofWindowReport(int channelId, char shut,
+                                                      bool connected) {
+  return sendShutReport("CONTROLLINGTHEROOFWINDOW", channelId, shut, connected);
 }
 
 bool supla_state_webhook_client::sendWindSensorReport(int channelId,

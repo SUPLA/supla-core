@@ -43,7 +43,8 @@ class database : public dbcommon {
   bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                         bool *is_null, const char *sql);
 
-  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind);
+  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                       bool *not_null_flag);
   int get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
                            bool client);
 
