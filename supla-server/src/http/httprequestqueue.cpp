@@ -282,7 +282,7 @@ void supla_http_request_queue::raiseEvent(void) { eh_raise_event(main_eh); }
 void supla_http_request_queue::iterate(void *q_sthread) {
   bool warn_msg = false;
   while (sthread_isterminated(q_sthread) == 0) {
-    long wait_time = 10000000;
+    long wait_time = 200000;
     if (queueSize() > 0) {
       supla_http_request *request = NULL;
 
@@ -291,7 +291,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
         request = queuePop(q_sthread);
         if (request) {
           runThread(request);
-          wait_time = 0;
+          wait_time = 1000;
         } else {
           wait_time = getNextTimeOfDelayedExecution(wait_time);
         }
@@ -301,18 +301,12 @@ void supla_http_request_queue::iterate(void *q_sthread) {
                   threadCountLimit());
         warn_msg = true;
       }
+    } else {
+      wait_time = 1000000;
     }
-
-    wait_time += 1000;
 
     if (wait_time < 1000) {
       wait_time = 1000;
-    } else if (wait_time > 10000000) {
-      wait_time = 10000000;
-    }
-
-    if (wait_time > 1000000 && queueSize() > 0) {
-      wait_time = 1000000;
     }
 
     eh_wait(main_eh, wait_time);
