@@ -39,14 +39,16 @@ class supla_http_request_queue {
   void *arr_thread;
   int thread_count_limit;
   int last_user_offset;
+  struct timeval moment_before_waiting;
 
   void terminateAllThreads(void);
   void runThread(supla_http_request *request);
   _heq_user_space_t *getUserSpace(supla_user *user);
   void addRequest(_heq_user_space_t *user_space, supla_http_request *request);
   supla_http_request *queuePop(void *q_sthread);
-  int getNextTimeOfDelayedExecution(int time);
+  long getNextTimeOfDelayedExecution(int time);
   int queueSize(void);
+  int userCount(void);
   int threadCount(void);
   int threadCountLimit(void);
   void createByChannelEventSourceType(supla_user *user, int deviceId,
