@@ -106,8 +106,6 @@ supla_http_request_queue::supla_http_request_queue() {
   this->arr_thread = safe_array_init();
   this->thread_count_limit = scfg_int(CFG_HTTP_THREAD_COUNT_LIMIT);
   this->last_user_offset = -1;
-  this->moment_before_waiting.tv_sec = 0;
-  this->moment_before_waiting.tv_usec = 0;
 }
 
 void supla_http_request_queue::terminateAllThreads(void) {
@@ -205,12 +203,11 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! UserID: %i, IODevice: %i "
                     "Channel: %i QS: %i, UC: %i, TC: %i,"
-                    "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu/%lu)",
+                    "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu)",
                     request->getUserID(), request->getDeviceId(),
                     request->getChannelId(), queueSize(), userCount(),
                     threadCount(), request->getEventSourceType(),
-                    request->getTimeout(), request->getStartTime(),
-                    moment_before_waiting.tv_sec, now.tv_sec,
+                    request->getTimeout(), request->getStartTime(), now.tv_sec,
                     request->getTouchTimeSec(), request->getTouchCount());
 
           delete request;
@@ -239,7 +236,7 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
   return result;
 }
 
-long supla_http_request_queue::getNextTimeOfDelayedExecution(int time) {
+long supla_http_request_queue::getNextTimeOfDelayedExecution(long time) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
@@ -318,7 +315,6 @@ void supla_http_request_queue::iterate(void *q_sthread) {
       wait_time = 1000000;
     }
 
-    gettimeofday(&moment_before_waiting, NULL);
     eh_wait(main_eh, wait_time);
   }
 

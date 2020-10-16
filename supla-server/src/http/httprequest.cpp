@@ -211,9 +211,8 @@ long supla_http_request::timeLeft(struct timeval *now) {
   }
 
   if (now->tv_sec <= startTime.tv_sec) {
-    long us = (startTime.tv_sec - now->tv_sec) * 1000000;
-    us += startTime.tv_usec - now->tv_usec;
-    return us;
+    return (startTime.tv_sec * (long)1000000 + startTime.tv_usec) -
+           (now->tv_sec * (long)1000000 + now->tv_usec);
   }
 
   return 0;
