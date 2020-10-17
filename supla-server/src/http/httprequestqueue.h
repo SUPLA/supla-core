@@ -29,6 +29,7 @@ class supla_user;
 typedef struct {
   supla_user *user;
   void *arr_queue;
+  unsigned long last_touch_time;
 } _heq_user_space_t;
 
 class supla_http_request_queue {
@@ -38,7 +39,8 @@ class supla_http_request_queue {
   void *arr_user_space;
   void *arr_thread;
   int thread_count_limit;
-  int last_user_offset;
+  int user_offset;
+  unsigned long last_iterate_time_sec;
 
   void terminateAllThreads(void);
   void runThread(supla_http_request *request);
