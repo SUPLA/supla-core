@@ -206,7 +206,7 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
           supla_log(LOG_WARNING,
                     "HTTP request execution timeout! UserID: %i, IODevice: %i "
                     "Channel: %i QS: %i, UC: %i, TC: %i,"
-                    "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu/%ul/%ul/%i/%i)",
+                    "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu/%lu/%lu/%i/%i)",
                     request->getUserID(), request->getDeviceId(),
                     request->getChannelId(), queueSize(), userCount(),
                     threadCount(), request->getEventSourceType(),
