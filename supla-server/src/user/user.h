@@ -131,7 +131,7 @@ class supla_user {
   static void on_state_webhook_changed(int UserID);
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
-  static void print_metrics(int min_interval_sec);
+  static void log_metrics(int min_interval_sec);
 
   void reconnect(event_source_type eventSourceType);
   void reconnect(event_source_type eventSourceType, bool allDevices,

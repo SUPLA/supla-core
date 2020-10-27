@@ -182,7 +182,7 @@ const char *supla_http_request::getGoogleRequestIdPtr(void) {
   return result;
 }
 
-void supla_http_request::setDelay(unsigned long delayUs) {
+void supla_http_request::setDelay(unsigned long long delayUs) {
   gettimeofday(&startTime, NULL);
 
   if (delayUs > 0) {
@@ -190,20 +190,20 @@ void supla_http_request::setDelay(unsigned long delayUs) {
     startTime.tv_usec += delayUs % 1000000;
   }
 
-  supla_http_request_queue::getInstance()->raiseEvent();
+  supla_http_request_queue::getInstance()->recalculateTime();
 }
 
-void supla_http_request::setTimeout(unsigned long timeoutUs) {
+void supla_http_request::setTimeout(unsigned long long timeoutUs) {
   this->timeoutUs = timeoutUs;
 }
 
-unsigned long supla_http_request::getTimeout(void) { return this->timeoutUs; }
+unsigned long long supla_http_request::getTimeout(void) { return this->timeoutUs; }
 
-unsigned long supla_http_request::getStartTime(void) {
+unsigned long long supla_http_request::getStartTime(void) {
   return startTime.tv_sec;
 }
 
-long supla_http_request::timeLeft(struct timeval *now) {
+long long supla_http_request::timeLeft(struct timeval *now) {
   struct timeval _now;
   if (!now) {
     gettimeofday(&_now, NULL);
@@ -211,8 +211,8 @@ long supla_http_request::timeLeft(struct timeval *now) {
   }
 
   if (now->tv_sec <= startTime.tv_sec) {
-    return (startTime.tv_sec * (long)1000000 + startTime.tv_usec) -
-           (now->tv_sec * (long)1000000 + now->tv_usec);
+    return (startTime.tv_sec * (long long)1000000 + startTime.tv_usec) -
+           (now->tv_sec * (long long)1000000 + now->tv_usec);
   }
 
   return 0;
@@ -256,9 +256,9 @@ void supla_http_request::touch(struct timeval *now) {
   }
 }
 
-unsigned long supla_http_request::getTouchTimeSec(void) { return touchTimeSec; }
+unsigned long long supla_http_request::getTouchTimeSec(void) { return touchTimeSec; }
 
-unsigned long supla_http_request::getTouchCount(void) { return touchCount; }
+unsigned long long supla_http_request::getTouchCount(void) { return touchCount; }
 
 void supla_http_request::terminate(void *sthread) {
   if (sthread) {

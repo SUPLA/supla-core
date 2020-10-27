@@ -26,30 +26,23 @@
 class supla_http_request;
 class supla_user;
 
-typedef struct {
-  supla_user *user;
-  void *arr_queue;
-  unsigned long last_touch_time;
-} _heq_user_space_t;
-
 class supla_http_request_queue {
  private:
   static supla_http_request_queue *instance;
   TEventHandler *main_eh;
-  void *arr_user_space;
+  void *lck;
+  void *arr_queue;
   void *arr_thread;
   int thread_count_limit;
-  int user_offset;
-  unsigned long last_iterate_time_sec;
+  int queue_offset;
+  int last_user_id;
+  unsigned long long last_iterate_time_sec;
+  unsigned long long time_of_the_next_iteration_usec;
 
   void terminateAllThreads(void);
   void runThread(supla_http_request *request);
-  _heq_user_space_t *getUserSpace(supla_user *user);
-  void addRequest(_heq_user_space_t *user_space, supla_http_request *request);
-  supla_http_request *queuePop(void *q_sthread);
-  long getNextTimeOfDelayedExecution(long time);
+  supla_http_request *queuePop(void *q_sthread, struct timeval *now);
   int queueSize(void);
-  int userCount(void);
   int threadCount(void);
   int threadCountLimit(void);
   void createByChannelEventSourceType(supla_user *user, int deviceId,
@@ -57,6 +50,7 @@ class supla_http_request_queue {
                                       event_source_type eventSourceType,
                                       const char correlationToken[],
                                       const char googleRequestId[]);
+  void recalculateTime(struct timeval *now);
 
  public:
   static void init();
@@ -65,7 +59,10 @@ class supla_http_request_queue {
   supla_http_request_queue();
   virtual ~supla_http_request_queue();
 
+  void recalculateTime(void);
   void raiseEvent(void);
+  void logStuckWarning(void);
+
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
   void onChannelValueChangeEvent(supla_user *user, int deviceId, int channelId,
