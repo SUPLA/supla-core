@@ -95,6 +95,8 @@ supla_http_request_queue::supla_http_request_queue() {
   this->last_user_id = 0;
   this->last_iterate_time_sec = 0;
   this->time_of_the_next_iteration_usec = 0;
+  this->request_total_count = 0;
+  this->last_metric_log_time_sec = 0;
 }
 
 void supla_http_request_queue::terminateAllThreads(void) {
@@ -142,6 +144,10 @@ void supla_http_request_queue::runThread(supla_http_request *request) {
 
     ptr->sthread = sthread_run(&stp);
     safe_array_unlock(arr_thread);
+
+    lck_lock(lck);
+    request_total_count++;
+    lck_unlock(lck);
   }
 }
 
@@ -213,6 +219,14 @@ int supla_http_request_queue::threadCount(void) {
 
 int supla_http_request_queue::threadCountLimit(void) {
   return thread_count_limit;
+}
+
+unsigned long long supla_http_request_queue::requestTotalCount(void) {
+  unsigned long long result = 0;
+  lck_lock(lck);
+  result = request_total_count;
+  lck_unlock(lck);
+  return result;
 }
 
 void supla_http_request_queue::raiseEvent(void) { eh_raise_event(main_eh); }
@@ -290,6 +304,25 @@ void supla_http_request_queue::logStuckWarning(void) {
   if (time > 10) {
     supla_log(LOG_WARNING, "Queue iteration is stuck!");
   }
+}
+
+void supla_http_request_queue::logMetrics(int min_interval_sec) {
+  if (min_interval_sec > 0) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    if (last_metric_log_time_sec == 0) {
+      last_metric_log_time_sec = now.tv_sec;
+    }
+    if (now.tv_sec - last_metric_log_time_sec < min_interval_sec) {
+      return;
+    }
+    last_metric_log_time_sec = now.tv_sec;
+  }
+
+  supla_log(LOG_INFO,
+            "HTTP QUEUE METRICS: CURRENT[Thread Count: %i, Queue Size: %i] "
+            "TOTAL[Request Count: %lu]",
+            threadCount(), queueSize(), requestTotalCount());
 }
 
 void supla_http_request_queue::recalculateTime(struct timeval *now) {

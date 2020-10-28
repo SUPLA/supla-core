@@ -145,6 +145,7 @@ int main(int argc, char *argv[]) {
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
     supla_user::log_metrics(3600);
+    supla_http_request_queue::getInstance()->logMetrics(3600);
     supla_http_request_queue::getInstance()->logStuckWarning();
   }
 

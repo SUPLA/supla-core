@@ -39,12 +39,16 @@ class supla_http_request_queue {
   unsigned long long last_iterate_time_sec;
   unsigned long long time_of_the_next_iteration_usec;
 
+  unsigned long long last_metric_log_time_sec;
+  unsigned long long request_total_count;
+
   void terminateAllThreads(void);
   void runThread(supla_http_request *request);
   supla_http_request *queuePop(void *q_sthread, struct timeval *now);
   int queueSize(void);
   int threadCount(void);
   int threadCountLimit(void);
+  unsigned long long requestTotalCount(void);
   void createByChannelEventSourceType(supla_user *user, int deviceId,
                                       int channelId, event_type eventType,
                                       event_source_type eventSourceType,
@@ -62,6 +66,7 @@ class supla_http_request_queue {
   void recalculateTime(void);
   void raiseEvent(void);
   void logStuckWarning(void);
+  void logMetrics(int min_interval_sec);
 
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
