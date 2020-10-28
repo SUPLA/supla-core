@@ -197,7 +197,9 @@ void supla_http_request::setTimeout(unsigned long long timeoutUs) {
   this->timeoutUs = timeoutUs;
 }
 
-unsigned long long supla_http_request::getTimeout(void) { return this->timeoutUs; }
+unsigned long long supla_http_request::getTimeout(void) {
+  return this->timeoutUs;
+}
 
 unsigned long long supla_http_request::getStartTime(void) {
   return startTime.tv_sec;
@@ -256,9 +258,13 @@ void supla_http_request::touch(struct timeval *now) {
   }
 }
 
-unsigned long long supla_http_request::getTouchTimeSec(void) { return touchTimeSec; }
+unsigned long long supla_http_request::getTouchTimeSec(void) {
+  return touchTimeSec;
+}
 
-unsigned long long supla_http_request::getTouchCount(void) { return touchCount; }
+unsigned long long supla_http_request::getTouchCount(void) {
+  return touchCount;
+}
 
 void supla_http_request::terminate(void *sthread) {
   if (sthread) {
