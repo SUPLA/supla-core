@@ -189,7 +189,8 @@ class supla_user {
 
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,
-                                int ChannelId = 0, bool Extended = false);
+                                int ChannelId = 0, bool Extended = false,
+                                bool RealChange = true);
   void on_channel_become_online(int DeviceId, int ChannelId);
 
   void call_event(TSC_SuplaEvent *event);
