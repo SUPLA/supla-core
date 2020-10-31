@@ -403,11 +403,13 @@ void supla_device::on_device_channel_value_changed(
         channels->set_channel_offline(ChannelId, offline)) {
       differ = true;
     }
-    getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, false,
-                                        differ);
+    if (differ) {
+      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
 
-    if (converted2extended) {
-      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, true);
+      if (converted2extended) {
+        getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId,
+                                            true);
+      }
     }
   }
 }

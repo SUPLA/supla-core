@@ -710,10 +710,11 @@ bool supla_device_channel::setValue(
     value_valid_to.tv_usec = 0;
   }
 
-  if (memcmp(this->value, value, SUPLA_CHANNELVALUE_SIZE) == 0) {
-    return false;
-  }
-
+  char
+      old_value[SUPLA_CHANNELVALUE_SIZE];  // Because of
+                                           // TempHum->toValue(this->value) and
+                                           // this->value[0] = this->value[0]...
+  memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
   if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
@@ -763,7 +764,7 @@ bool supla_device_channel::setValue(
     delete db;
   }
 
-  return true;
+  return memcmp(this->value, old_value, SUPLA_CHANNELVALUE_SIZE) != 0;
 }
 
 void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
