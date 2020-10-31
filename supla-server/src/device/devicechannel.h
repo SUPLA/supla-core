@@ -203,7 +203,8 @@ class supla_device_channel {
   unsigned _supla_int_t getValueValidityTimeSec(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
-                const unsigned _supla_int_t *validity_time_sec);
+                const unsigned _supla_int_t *validity_time_sec,
+                bool *significantChange);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
@@ -269,7 +270,8 @@ class supla_device_channels {
   int get_channel_type(int ChannelID);
   bool set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          bool *converted2extended,
-                         const unsigned _supla_int_t *validity_time_sec);
+                         const unsigned _supla_int_t *validity_time_sec,
+                         bool *significantChange);
   bool set_channel_offline(int ChannelID, bool Offline);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,

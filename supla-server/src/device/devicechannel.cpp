@@ -694,7 +694,7 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
 
 bool supla_device_channel::setValue(
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t *validity_time_sec) {
+    const unsigned _supla_int_t *validity_time_sec, bool *significantChange) {
   if (validity_time_sec == NULL &&
       (value_valid_to.tv_usec || value_valid_to.tv_sec)) {
     struct timeval now;
@@ -714,6 +714,10 @@ bool supla_device_channel::setValue(
       old_value[SUPLA_CHANNELVALUE_SIZE];  // Because of
                                            // TempHum->toValue(this->value) and
                                            // this->value[0] = this->value[0]...
+
+  supla_channel_temphum *OldTempHum = getTempHum();
+  supla_channel_temphum *TempHum = NULL;
+
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
@@ -726,7 +730,7 @@ bool supla_device_channel::setValue(
     this->value[0] = this->value[0] == 0 ? 1 : 0;
 
   } else {
-    supla_channel_temphum *TempHum = getTempHum();
+    TempHum = getTempHum();
 
     if (TempHum) {
       if ((Param2 != 0 || Param3 != 0)) {
@@ -741,8 +745,6 @@ bool supla_device_channel::setValue(
 
         TempHum->toValue(this->value);
       }
-
-      delete TempHum;
     }
   }
 
@@ -764,7 +766,32 @@ bool supla_device_channel::setValue(
     delete db;
   }
 
-  return memcmp(this->value, old_value, SUPLA_CHANNELVALUE_SIZE) != 0;
+  bool differ = memcmp(this->value, old_value, SUPLA_CHANNELVALUE_SIZE) != 0;
+
+  if (significantChange) {
+    if (TempHum || OldTempHum) {
+      *significantChange = (TempHum && !OldTempHum) ||
+                           (!TempHum && OldTempHum) ||
+                           ((int)(TempHum->getHumidity() * 100) !=
+                                (int)(OldTempHum->getHumidity() * 100) ||
+                            (int)(TempHum->getTemperature() * 100) !=
+                                (int)(OldTempHum->getTemperature() * 100));
+    } else {
+      *significantChange = differ;
+    }
+  }
+
+  if (TempHum) {
+    delete TempHum;
+    TempHum = NULL;
+  }
+
+  if (OldTempHum) {
+    delete OldTempHum;
+    OldTempHum = NULL;
+  }
+
+  return differ;
 }
 
 void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
@@ -971,12 +998,6 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
               getFunc() == SUPLA_CHANNELFNC_HUMIDITY ||
               getFunc() == SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE)) {
     result = new supla_channel_temphum(true, getId(), value);
-  }
-
-  if (result != NULL && result->getTemperature() == -273 &&
-      result->getHumidity() == -1) {
-    delete result;
-    result = NULL;
   }
 
   return result;
@@ -1324,7 +1345,8 @@ bool supla_device_channels::get_channel_valve_value(int ChannelID,
 
 bool supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
-    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec) {
+    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
+    bool *significantChange) {
   if (ChannelID == 0) return false;
   bool result = false;
 
@@ -1337,7 +1359,7 @@ bool supla_device_channels::set_channel_value(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-    result = channel->setValue(value, validity_time_sec);
+    result = channel->setValue(value, validity_time_sec, significantChange);
 
     if (channel->converValueToExtended()) {
       if (converted2extended) {
@@ -1469,11 +1491,11 @@ void supla_device_channels::set_channels_value(
   if (schannel_b != NULL) {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_b[a].Number),
-                        schannel_b[a].value, NULL, 0);
+                        schannel_b[a].value, NULL, 0, NULL);
   } else {
     for (int a = 0; a < count; a++)
       set_channel_value(get_channel_id(schannel_c[a].Number),
-                        schannel_c[a].value, NULL, 0);
+                        schannel_c[a].value, NULL, 0, NULL);
   }
 }
 

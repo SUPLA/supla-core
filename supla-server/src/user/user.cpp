@@ -963,8 +963,9 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
 
 void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           int DeviceId, int ChannelId,
-                                          bool Extended, bool RealChange) {
-  if (RealChange && !Extended && DeviceId && ChannelId &&
+                                          bool Extended,
+                                          bool SignificantChange) {
+  if (SignificantChange && !Extended && DeviceId && ChannelId &&
       eventSourceType != EST_UNKNOWN) {
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceId, ChannelId, eventSourceType);
