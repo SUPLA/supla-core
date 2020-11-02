@@ -400,8 +400,7 @@ void supla_device::on_device_channel_value_changed(
     differ = channels->set_channel_value(
         ChannelId, value_value, &converted2extended,
         value_c ? &value_c->ValidityTimeSec : NULL, &significantChange);
-    if ((value_b || value_c) &&
-        channels->set_channel_offline(ChannelId, offline)) {
+    if (channels->set_channel_offline(ChannelId, offline)) {
       differ = true;
     }
     if (differ) {
