@@ -52,8 +52,8 @@ int main(int argc, char *argv[]) {
   supla_log(LOG_DEBUG, "!!! LCK DEBUG ENABED !!!");
 #endif /*__LCK_DEBUG*/
 
-      // INIT BLOCK
-      if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+  // INIT BLOCK
+  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
 #if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
   unlink("ssocket_read.raw");
@@ -144,7 +144,9 @@ int main(int argc, char *argv[]) {
   // MAIN LOOP
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
-    supla_user::print_metrics(3600);
+    supla_user::log_metrics(3600);
+    supla_http_request_queue::getInstance()->logMetrics(3600);
+    supla_http_request_queue::getInstance()->logStuckWarning();
   }
 
   supla_log(LOG_INFO, "Shutting down...");

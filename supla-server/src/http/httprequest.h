@@ -42,9 +42,9 @@ class supla_http_request {
   int DeviceId;
   int ChannelId;
   struct timeval startTime;
-  unsigned long timeoutUs;
-  unsigned long touchTimeSec;
-  unsigned long touchCount;
+  unsigned long long timeoutUs;
+  unsigned long long touchTimeSec;
+  unsigned long long touchCount;
 
  protected:
   char *correlationToken;
@@ -72,16 +72,16 @@ class supla_http_request {
   const char *getCorrelationTokenPtr(void);
   virtual void setGoogleRequestId(const char googleRequestId[]);
   const char *getGoogleRequestIdPtr(void);
-  void setDelay(unsigned long delayUs);
-  void setTimeout(unsigned long timeoutUs);
-  unsigned long getTimeout(void);
-  unsigned long getStartTime(void);
-  long timeLeft(struct timeval *now);
+  void setDelay(unsigned long long delayUs);
+  void setTimeout(unsigned long long timeoutUs);
+  unsigned long long getTimeout(void);
+  unsigned long long getStartTime(void);
+  long long timeLeft(struct timeval *now);
   bool isWaiting(struct timeval *now);
   bool timeout(struct timeval *now);
   void touch(struct timeval *now);
-  unsigned long getTouchTimeSec(void);
-  unsigned long getTouchCount(void);
+  unsigned long long getTouchTimeSec(void);
+  unsigned long long getTouchCount(void);
 
   virtual bool isCancelled(void *sthread) = 0;
   virtual bool verifyExisting(supla_http_request *existing) = 0;

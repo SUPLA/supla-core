@@ -131,7 +131,7 @@ class supla_user {
   static void on_state_webhook_changed(int UserID);
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
-  static void print_metrics(int min_interval_sec);
+  static void log_metrics(int min_interval_sec);
 
   void reconnect(event_source_type eventSourceType);
   void reconnect(event_source_type eventSourceType, bool allDevices,
@@ -189,7 +189,8 @@ class supla_user {
 
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,
-                                int ChannelId = 0, bool Extended = false);
+                                int ChannelId = 0, bool Extended = false,
+                                bool SignificantChange = true);
   void on_channel_become_online(int DeviceId, int ChannelId);
 
   void call_event(TSC_SuplaEvent *event);

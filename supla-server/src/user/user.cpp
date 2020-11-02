@@ -835,7 +835,7 @@ unsigned int supla_user::total_cd_count(bool client) {
 }
 
 // static
-void supla_user::print_metrics(int min_interval_sec) {
+void supla_user::log_metrics(int min_interval_sec) {
   if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -963,8 +963,10 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
 
 void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           int DeviceId, int ChannelId,
-                                          bool Extended) {
-  if (!Extended && DeviceId && ChannelId && eventSourceType != EST_UNKNOWN) {
+                                          bool Extended,
+                                          bool SignificantChange) {
+  if (SignificantChange && !Extended && DeviceId && ChannelId &&
+      eventSourceType != EST_UNKNOWN) {
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceId, ChannelId, eventSourceType);
   }

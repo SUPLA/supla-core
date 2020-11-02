@@ -26,36 +26,35 @@
 class supla_http_request;
 class supla_user;
 
-typedef struct {
-  supla_user *user;
-  void *arr_queue;
-} _heq_user_space_t;
-
 class supla_http_request_queue {
  private:
   static supla_http_request_queue *instance;
   TEventHandler *main_eh;
-  void *arr_user_space;
+  void *lck;
+  void *arr_queue;
   void *arr_thread;
   int thread_count_limit;
-  int last_user_offset;
-  struct timeval moment_before_waiting;
+  int queue_offset;
+  int last_user_id;
+  unsigned long long last_iterate_time_sec;
+  unsigned long long time_of_the_next_iteration_usec;
+
+  unsigned long long last_metric_log_time_sec;
+  unsigned long long request_total_count;
 
   void terminateAllThreads(void);
   void runThread(supla_http_request *request);
-  _heq_user_space_t *getUserSpace(supla_user *user);
-  void addRequest(_heq_user_space_t *user_space, supla_http_request *request);
-  supla_http_request *queuePop(void *q_sthread);
-  long getNextTimeOfDelayedExecution(int time);
+  supla_http_request *queuePop(void *q_sthread, struct timeval *now);
   int queueSize(void);
-  int userCount(void);
   int threadCount(void);
   int threadCountLimit(void);
+  unsigned long long requestTotalCount(void);
   void createByChannelEventSourceType(supla_user *user, int deviceId,
                                       int channelId, event_type eventType,
                                       event_source_type eventSourceType,
                                       const char correlationToken[],
                                       const char googleRequestId[]);
+  void recalculateTime(struct timeval *now);
 
  public:
   static void init();
@@ -64,7 +63,11 @@ class supla_http_request_queue {
   supla_http_request_queue();
   virtual ~supla_http_request_queue();
 
+  void recalculateTime(void);
   void raiseEvent(void);
+  void logStuckWarning(void);
+  void logMetrics(int min_interval_sec);
+
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
   void onChannelValueChangeEvent(supla_user *user, int deviceId, int channelId,
