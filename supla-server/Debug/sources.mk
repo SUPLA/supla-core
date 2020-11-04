@@ -31,6 +31,7 @@ src/device \
 src/google \
 src/http \
 src/json \
+src/mqtt \
 src/user \
 src/webhook \
 

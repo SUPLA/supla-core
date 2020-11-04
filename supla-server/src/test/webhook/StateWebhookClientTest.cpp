@@ -534,7 +534,7 @@ TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
       "\"CONTROLLINGTHEROOFWINDOW\",\"timestamp\":1600097258,\"state\":{"
       "\"shut\":5,\"connected\":false,\"is_calibrating\":false}}";
 
-  ASSERT_TRUE(client->senRoofWindowReport(123, 5, false));
+  ASSERT_TRUE(client->sendRoofWindowReport(123, 5, false));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
