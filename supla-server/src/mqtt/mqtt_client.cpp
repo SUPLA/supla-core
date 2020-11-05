@@ -108,6 +108,7 @@ supla_mqtt_client::supla_mqtt_client(supla_mqtt_client_settings *settings,
   this->sthread = NULL;
   this->sockfd = -1;
   this->sbio = NULL;
+  this->eh = NULL;
 }
 
 supla_mqtt_client::~supla_mqtt_client(void) { stop(); }
@@ -130,8 +131,10 @@ void supla_mqtt_client::job(void *sthread) {
 
   while (!sthread_isterminated(sthread)) {
     mqtt_sync(&client);
-    usleep(1000);
+    eh_wait(eh, 1000000);
   }
+
+  disconnect();
 }
 
 void supla_mqtt_client::connect(void) {
@@ -140,15 +143,35 @@ void supla_mqtt_client::connect(void) {
   if (settings->isSSLEnabled()) {
   } else {
   }
+
+  if (eh == NULL) {
+    eh = eh_init();
+  }
 }
 
 void supla_mqtt_client::disconnect(void) {
+  if (eh != NULL) {
+    eh_free(eh);
+    eh = NULL;
+  }
+
   if (sockfd != -1) {
   } else if (sbio) {
   }
 }
 
-void supla_mqtt_client::reconnect(struct mqtt_client *client) {}
+void supla_mqtt_client::reconnect(struct mqtt_client *client) {
+  disconnect();
+
+  if (client->error != MQTT_ERROR_INITIAL_RECONNECT) {
+    usleep(5000000);
+  }
+
+  connect();
+
+  supla_log(LOG_DEBUG, "Reconnect %u,%u", pthread_self(), client->error);
+  eh_raise_event(eh);
+}
 
 void supla_mqtt_client::on_message_received(
     struct mqtt_response_publish *message) {}

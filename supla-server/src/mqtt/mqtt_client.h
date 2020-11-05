@@ -19,6 +19,7 @@
 #ifndef MQTT_CLIENT_H_
 #define MQTT_CLIENT_H_
 
+#include "eh.h"
 #include "mqtt.h"
 #include "mqtt_channel_source.h"
 #include "mqtt_client_settings.h"
@@ -28,6 +29,7 @@ class supla_mqtt_client {
   int sockfd;
   void *sthread;
   void *sbio;
+  TEventHandler *eh;
   static void job(void *supla_client_instance, void *sthread);
   static ssize_t __mqtt_pal_sendall(supla_mqtt_client *supla_client_instance,
                                     const char *buf, size_t len, int flags);
