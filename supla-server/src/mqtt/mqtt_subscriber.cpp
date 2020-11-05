@@ -20,5 +20,5 @@
 
 supla_mqtt_subscriber::supla_mqtt_subscriber(
     supla_mqtt_client_settings *settings,
-    supla_mqtt_channel_source *channel_source)
-    : supla_mqtt_client_connection(settings, channel_source) {}
+    supla_mqtt_client_datasource *channel_source)
+    : supla_mqtt_client(settings, channel_source) {}

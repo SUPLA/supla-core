@@ -83,6 +83,16 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_int_param(s_limit, "concurrent_registrations", 50);
   scfg_add_int_param(s_limit, "authkey_auth_cache_size", 2000);
 
+  char *s_mqtt = "MQTT-BROKER";
+  scfg_add_int_param(s_mqtt, "enabled", 0);
+  scfg_add_str_param(s_mqtt, "host", NULL);
+  scfg_add_int_param(s_mqtt, "port", 8883);
+  scfg_add_str_param(s_mqtt, "username", NULL);
+  scfg_add_str_param(s_mqtt, "password", NULL);
+  scfg_add_str_param(s_mqtt, "prefix", NULL);
+  scfg_add_int_param(s_mqtt, "ssl", 1);
+  scfg_add_str_param(s_mqtt, "client_id", NULL);
+
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");
 #else

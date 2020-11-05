@@ -16,8 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <http/httprequestqueue.h>
-#include <http/trivialhttps.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,9 +23,12 @@
 #include "accept_loop.h"
 #include "database.h"
 #include "datalogger.h"
+#include "http/httprequestqueue.h"
+#include "http/trivialhttps.h"
 #include "ipcsocket.h"
 #include "lck.h"
 #include "log.h"
+#include "mqtt_client_suite.h"
 #include "proto.h"
 #include "srpc.h"
 #include "sslcrypto.h"
@@ -141,6 +142,9 @@ int main(int argc, char *argv[]) {
   http_request_queue_loop_thread =
       sthread_simple_run(http_request_queue_loop, NULL, 0);
 
+  // MQTT
+  supla_mqtt_client_suite::globalInstance()->start();
+
   // MAIN LOOP
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
@@ -156,6 +160,8 @@ int main(int argc, char *argv[]) {
 #endif /*__LCK_DEBUG*/
 
   // RELEASE BLOCK
+
+  supla_mqtt_client_suite::globalInstanceRelease();
 
   if (ipc != NULL) {
     ipcsocket_close(ipc);

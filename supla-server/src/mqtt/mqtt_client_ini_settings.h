@@ -16,13 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEL_SOURCE_H_
-#define MQTT_CHANNEL_SOURCE_H_
+#ifndef MQTT_CLIENT_INI_SETTINGS_H_
+#define MQTT_CLIENT_INI_SETTINGS_H_
 
-class supla_mqtt_client_datasource {
+#include "mqtt_client_settings.h"
+
+class supla_mqtt_client_ini_settings : public supla_mqtt_client_settings {
  public:
-  supla_mqtt_client_datasource(void);
-  virtual ~supla_mqtt_client_datasource(void);
+  supla_mqtt_client_ini_settings(void);
+  virtual ~supla_mqtt_client_ini_settings(void);
+  virtual const char *getHost(void);
+  virtual int getPort(void);
+  virtual const char *getUsername(void);
+  virtual const char *getPassword(void);
+  virtual const char *getPrefix(void);
+  virtual bool isMQTTEnabled(void);
+  virtual bool isSSLEnabled(void);
+  virtual void getClientId(char *clientId, size_t len, const char *suffix);
 };
 
-#endif /*MQTT_CHANNEL_SOURCE_H_*/
+#endif /*MQTT_CLIENT_INI_SETTINGS_H_*/

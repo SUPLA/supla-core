@@ -18,6 +18,6 @@
 
 #include "mqtt_channel_source.h"
 
-supla_mqtt_channel_source::supla_mqtt_channel_source(void) {}
+supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {}
 
-supla_mqtt_channel_source::~supla_mqtt_channel_source(void) {}
+supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {}

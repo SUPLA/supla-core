@@ -17,7 +17,23 @@
  */
 
 #include "mqtt_client_settings.h"
+#include <string.h>
+#include <cstdio>
 
 supla_mqtt_client_settings::supla_mqtt_client_settings(void) {}
 
 supla_mqtt_client_settings::~supla_mqtt_client_settings(void) {}
+
+void supla_mqtt_client_settings::makeClientId(char *clientId, size_t len,
+                                              const char *prefix,
+                                              const char *suffix) {
+  if (clientId && len && prefix) {
+    bool s = suffix && strnlen(suffix, 2) > 0;
+    snprintf(clientId, len, "%s%s%s", prefix, s ? "-" : "", s ? suffix : "");
+  }
+}
+
+void supla_mqtt_client_settings::getClientId(char *clientId, size_t len,
+                                             const char *suffix) {
+  makeClientId(clientId, len, "supla-server", suffix);
+}

@@ -19,12 +19,12 @@
 #ifndef MQTT_SUBSCRIBER_H_
 #define MQTT_SUBSCRIBER_H_
 
-#include "mqtt_client_connection.h"
+#include <mqtt_client.h>
 
-class supla_mqtt_subscriber : public supla_mqtt_client_connection {
+class supla_mqtt_subscriber : public supla_mqtt_client {
  public:
   supla_mqtt_subscriber(supla_mqtt_client_settings *settings,
-                        supla_mqtt_channel_source *channel_source);
+                        supla_mqtt_client_datasource *datasource);
 };
 
 #endif /*MQTT_SUBSCRIBER_H_*/

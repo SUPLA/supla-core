@@ -16,19 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "mqtt_client_connection.h"
+#ifndef MQTT_CLIENT_H_
+#define MQTT_CLIENT_H_
 
-supla_mqtt_client_connection::supla_mqtt_client_connection(
-    supla_mqtt_client_settings *settings,
-    supla_mqtt_channel_source *channel_source) {
-  this->settings = settings;
-  this->channel_source = channel_source;
-}
+#include "mqtt_channel_source.h"
+#include "mqtt_client_settings.h"
 
-supla_mqtt_client_connection::~supla_mqtt_client_connection(void) {}
+class supla_mqtt_client {
+ private:
+  void *sthread;
+  static void job(void *client, void *sthread);
+  void job(void *sthread);
 
-void supla_mqtt_client_connection::start(void) {
-  // sthread_simple_run(ipc_accept_loop, ipc, 0);
-}
+ protected:
+  supla_mqtt_client_settings *settings;
+  supla_mqtt_client_datasource *datasource;
 
-void supla_mqtt_client_connection::stop(void) {}
+ public:
+  supla_mqtt_client(supla_mqtt_client_settings *settings,
+                    supla_mqtt_client_datasource *datasource);
+  virtual ~supla_mqtt_client(void);
+  void start(void);
+  void stop(void);
+};
+
+#endif /*MQTT_CLIENT_H_*/

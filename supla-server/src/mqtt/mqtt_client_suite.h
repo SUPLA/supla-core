@@ -16,23 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CLIENT_CONNECTION_H_
-#define MQTT_CLIENT_CONNECTION_H_
+#ifndef MQTT_CLIENT_SUITE_H_
+#define MQTT_CLIENT_SUITE_H_
 
-#include "mqtt_channel_source.h"
-#include "mqtt_client_settings.h"
+#include "mqtt_client_ini_settings.h"
+#include "mqtt_publisher.h"
+#include "mqtt_subscriber.h"
 
-class supla_mqtt_client_connection {
+class supla_mqtt_client_suite {
+ private:
+  static supla_mqtt_client_suite *_globalInstance;
+
+  supla_mqtt_client_ini_settings *ini_settings;
+  supla_mqtt_publisher *publisher;
+  supla_mqtt_subscriber *subscriber;
+
  protected:
-  supla_mqtt_client_settings *settings;
-  supla_mqtt_channel_source *channel_source;
-
  public:
-  supla_mqtt_client_connection(supla_mqtt_client_settings *settings,
-                               supla_mqtt_channel_source *channel_source);
-  virtual ~supla_mqtt_client_connection(void);
+  static supla_mqtt_client_suite *globalInstance(void);
+  static void globalInstanceRelease(void);
+  supla_mqtt_client_suite(void);
+  virtual ~supla_mqtt_client_suite(void);
   void start(void);
   void stop(void);
 };
 
-#endif /*MQTT_CLIENT_CONNECTION_H_*/
+#endif /*MQTT_CLIENT_SUITE_H_*/
