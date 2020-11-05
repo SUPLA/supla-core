@@ -19,14 +19,27 @@
 #ifndef MQTT_CLIENT_H_
 #define MQTT_CLIENT_H_
 
+#include "mqtt.h"
 #include "mqtt_channel_source.h"
 #include "mqtt_client_settings.h"
 
 class supla_mqtt_client {
  private:
+  int sockfd;
   void *sthread;
-  static void job(void *client, void *sthread);
+  void *sbio;
+  static void job(void *supla_client_instance, void *sthread);
+  static void reconnect(struct mqtt_client *client,
+                        void **supla_client_instance);
+  static void on_message_received(void **supla_client_instance,
+                                  struct mqtt_response_publish *message);
+
   void job(void *sthread);
+
+  void connect(void);
+  void disconnect(void);
+  void reconnect(struct mqtt_client *client);
+  void on_message_received(struct mqtt_response_publish *message);
 
  protected:
   supla_mqtt_client_settings *settings;
@@ -38,6 +51,9 @@ class supla_mqtt_client {
   virtual ~supla_mqtt_client(void);
   void start(void);
   void stop(void);
+
+  ssize_t __mqtt_pal_sendall(const char *buf, size_t len, int flags);
+  ssize_t __mqtt_pal_recvall(char *buf, size_t bufsz, int flags);
 };
 
 #endif /*MQTT_CLIENT_H_*/
