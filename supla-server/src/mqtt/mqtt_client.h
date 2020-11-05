@@ -29,12 +29,19 @@ class supla_mqtt_client {
   void *sthread;
   void *sbio;
   static void job(void *supla_client_instance, void *sthread);
+  static ssize_t __mqtt_pal_sendall(supla_mqtt_client *supla_client_instance,
+                                    const char *buf, size_t len, int flags);
+  static ssize_t __mqtt_pal_recvall(supla_mqtt_client *supla_client_instance,
+                                    char *buf, size_t bufsz, int flags);
+
   static void reconnect(struct mqtt_client *client,
                         void **supla_client_instance);
   static void on_message_received(void **supla_client_instance,
                                   struct mqtt_response_publish *message);
 
   void job(void *sthread);
+  ssize_t mqtt_pal_sendall(const char *buf, size_t len, int flags);
+  ssize_t mqtt_pal_recvall(char *buf, size_t bufsz, int flags);
 
   void connect(void);
   void disconnect(void);
@@ -51,9 +58,6 @@ class supla_mqtt_client {
   virtual ~supla_mqtt_client(void);
   void start(void);
   void stop(void);
-
-  ssize_t __mqtt_pal_sendall(const char *buf, size_t len, int flags);
-  ssize_t __mqtt_pal_recvall(char *buf, size_t bufsz, int flags);
 };
 
 #endif /*MQTT_CLIENT_H_*/

@@ -24,12 +24,34 @@
 #include "log.h"
 #include "sthread.h"
 
+typedef struct {
+  supla_mqtt_client *instance;
+  ssize_t (*__sendall)(supla_mqtt_client *supla_client_instance,
+                       const char *buf, size_t len, int flags);
+  ssize_t (*__recvall)(supla_mqtt_client *supla_client_instance, char *buf,
+                       size_t bufsz, int flags);
+} _sendrecv_methods_t;
+
+// static
+ssize_t supla_mqtt_client::__mqtt_pal_sendall(
+    supla_mqtt_client *supla_client_instance, const char *buf, size_t len,
+    int flags) {
+  return supla_client_instance->mqtt_pal_sendall(buf, len, flags);
+}
+
+// static
+ssize_t supla_mqtt_client::__mqtt_pal_recvall(
+    supla_mqtt_client *supla_client_instance, char *buf, size_t bufsz,
+    int flags) {
+  return supla_client_instance->mqtt_pal_recvall(buf, bufsz, flags);
+}
+
 ssize_t mqtt_pal_sendall(mqtt_pal_socket_handle supla_client_instance,
                          const void *buf, size_t len, int flags) {
-  supla_mqtt_client *client =
-      static_cast<supla_mqtt_client *>(supla_client_instance);
-  if (client) {
-    return client->__mqtt_pal_sendall((const char *)buf, len, flags);
+  _sendrecv_methods_t *m =
+      static_cast<_sendrecv_methods_t *>(supla_client_instance);
+  if (m) {
+    return m->__sendall(m->instance, (const char *)buf, len, flags);
   }
 
   return MQTT_ERROR_SOCKET_ERROR;
@@ -37,10 +59,10 @@ ssize_t mqtt_pal_sendall(mqtt_pal_socket_handle supla_client_instance,
 
 ssize_t mqtt_pal_recvall(mqtt_pal_socket_handle supla_client_instance,
                          void *buf, size_t bufsz, int flags) {
-  supla_mqtt_client *client =
-      static_cast<supla_mqtt_client *>(supla_client_instance);
-  if (client) {
-    return client->__mqtt_pal_recvall((char *)buf, bufsz, flags);
+  _sendrecv_methods_t *m =
+      static_cast<_sendrecv_methods_t *>(supla_client_instance);
+  if (m) {
+    return m->__recvall(m->instance, (char *)buf, bufsz, flags);
   }
 
   return MQTT_ERROR_SOCKET_ERROR;
@@ -97,6 +119,12 @@ void supla_mqtt_client::job(void *sthread) {
   mqtt_init_reconnect(&client, supla_mqtt_client::reconnect, this,
                       supla_mqtt_client::on_message_received);
 
+  _sendrecv_methods_t m;
+  m.instance = this;
+  m.__recvall = supla_mqtt_client::__mqtt_pal_recvall;
+  m.__sendall = supla_mqtt_client::__mqtt_pal_sendall;
+
+  client.socketfd = &m;
   client.publish_response_callback_state = this;
   client.reconnect_state = this;
 
@@ -138,8 +166,8 @@ void supla_mqtt_client::stop(void) {
   }
 }
 
-ssize_t supla_mqtt_client::__mqtt_pal_sendall(const char *buf, size_t len,
-                                              int flags) {
+ssize_t supla_mqtt_client::mqtt_pal_sendall(const char *buf, size_t len,
+                                            int flags) {
   size_t sent = 0;
 
   if (sockfd != -1) {
@@ -172,8 +200,8 @@ ssize_t supla_mqtt_client::__mqtt_pal_sendall(const char *buf, size_t len,
   return MQTT_ERROR_SOCKET_ERROR;
 }
 
-ssize_t supla_mqtt_client::__mqtt_pal_recvall(char *buf, size_t bufsz,
-                                              int flags) {
+ssize_t supla_mqtt_client::mqtt_pal_recvall(char *buf, size_t bufsz,
+                                            int flags) {
   char *start = buf;
 
   if (sockfd != -1) {
