@@ -17,14 +17,26 @@
  */
 
 #include "mqtt_publisher.h"
+#include "log.h"
 
 supla_mqtt_publisher::supla_mqtt_publisher(
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *channel_source)
     : supla_mqtt_client(settings, channel_source) {}
 
-void supla_mqtt_publisher::getClientId(char *clientId, size_t len) {
+ssize_t supla_mqtt_publisher::get_send_buffer_size(void) { return 8192; }
+
+ssize_t supla_mqtt_publisher::get_recv_buffer_size(void) { return 8192; }
+
+void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
   if (settings) {
     settings->getClientId(clientId, len, "pub");
   }
 }
+
+void supla_mqtt_publisher::on_connected(void) {}
+
+void supla_mqtt_publisher::on_iterate(void) {}
+
+void supla_mqtt_publisher::on_message_received(
+    struct mqtt_response_publish *message) {}

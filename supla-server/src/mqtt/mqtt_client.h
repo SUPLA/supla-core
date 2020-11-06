@@ -29,7 +29,9 @@ class supla_mqtt_client {
   bool unable_to_connect_notified;
   int sockfd;
   void *sthread;
-  void *sbio;
+  void *bio;
+  void *ssl_ctx;
+  struct mqtt_client *client;
   TEventHandler *eh;
 
   void *recvbuf;
@@ -50,18 +52,25 @@ class supla_mqtt_client {
   ssize_t mqtt_pal_sendall(const char *buf, size_t len, int flags);
   ssize_t mqtt_pal_recvall(char *buf, size_t bufsz, int flags);
 
-  bool posix_connect(void);
-  bool ssl_connect(void);
+  bool posix_connect(const char *port);
+  void ssl_free(void);
+  bool ssl_connect(const char *portd);
   void disconnect(void);
   void reconnect(struct mqtt_client *client);
-  void on_message_received(struct mqtt_response_publish *message);
 
  protected:
   supla_mqtt_client_settings *settings;
   supla_mqtt_client_datasource *datasource;
-  virtual void getClientId(char *clientId, size_t len) = 0;
+
+  virtual ssize_t get_send_buffer_size(void) = 0;
+  virtual ssize_t get_recv_buffer_size(void) = 0;
+
+  virtual void get_client_id(char *clientId, size_t len) = 0;
   virtual void on_connected(void);
   virtual void on_iterate(void);
+  virtual void on_message_received(struct mqtt_response_publish *message);
+
+  bool subscribe(const char *topic_name, int max_qos_level);
 
  public:
   supla_mqtt_client(supla_mqtt_client_settings *settings,

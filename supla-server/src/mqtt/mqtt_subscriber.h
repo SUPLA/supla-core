@@ -23,7 +23,9 @@
 
 class supla_mqtt_subscriber : public supla_mqtt_client {
  protected:
-  virtual void getClientId(char *clientId, size_t len);
+  virtual ssize_t get_send_buffer_size(void);
+  virtual ssize_t get_recv_buffer_size(void);
+  virtual void get_client_id(char *clientId, size_t len);
 
  public:
   supla_mqtt_subscriber(supla_mqtt_client_settings *settings,

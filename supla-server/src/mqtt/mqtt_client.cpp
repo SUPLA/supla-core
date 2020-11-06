@@ -28,9 +28,7 @@
 #include <unistd.h>
 #include "log.h"
 #include "sthread.h"
-
-#define SEND_BUFFER_SIZE 8192
-#define RECV_BUFFER_SIZE 262144
+#include "supla-socket.h"
 
 typedef struct {
   supla_mqtt_client *instance;
@@ -111,11 +109,13 @@ void supla_mqtt_client::on_message_received(
 
 supla_mqtt_client::supla_mqtt_client(supla_mqtt_client_settings *settings,
                                      supla_mqtt_client_datasource *datasource) {
+  this->client = NULL;
   this->settings = settings;
   this->datasource = datasource;
   this->sthread = NULL;
   this->sockfd = -1;
-  this->sbio = NULL;
+  this->bio = NULL;
+  this->ssl_ctx = NULL;
   this->eh = NULL;
   this->recvbuf = NULL;
   this->sendbuf = NULL;
@@ -125,20 +125,31 @@ supla_mqtt_client::supla_mqtt_client(supla_mqtt_client_settings *settings,
 supla_mqtt_client::~supla_mqtt_client(void) { stop(); }
 
 void supla_mqtt_client::job(void *sthread) {
-  struct mqtt_client client;
-  memset(&client, 0, sizeof(struct mqtt_client));
-
-  mqtt_init_reconnect(&client, supla_mqtt_client::reconnect, this,
-                      supla_mqtt_client::on_message_received);
+  this->sthread = sthread;
 
   _sendrecv_methods_t m;
   m.instance = this;
   m.__recvall = supla_mqtt_client::__mqtt_pal_recvall;
   m.__sendall = supla_mqtt_client::__mqtt_pal_sendall;
 
+  struct mqtt_client client;
+  memset(&client, 0, sizeof(struct mqtt_client));
+
+  if (settings->isSSLEnabled()) {
+    SSL_load_error_strings();
+    ERR_load_BIO_strings();
+    OpenSSL_add_all_algorithms();
+    SSL_library_init();
+  }
+
+  mqtt_init_reconnect(&client, supla_mqtt_client::reconnect, this,
+                      supla_mqtt_client::on_message_received);
+
   client.socketfd = &m;  // !This is not socketfd!
   client.publish_response_callback_state = this;
   client.reconnect_state = this;
+
+  this->client = &client;
 
   while (!sthread_isterminated(sthread)) {
     mqtt_sync(&client);
@@ -147,9 +158,18 @@ void supla_mqtt_client::job(void *sthread) {
   }
 
   disconnect();
+  this->client = NULL;
+
+  if (settings->isSSLEnabled()) {
+    EVP_cleanup();
+    ERR_clear_error();
+    ERR_remove_thread_state(NULL);
+    ERR_free_strings();
+    CRYPTO_cleanup_all_ex_data();
+  }
 }
 
-bool supla_mqtt_client::posix_connect(void) {
+bool supla_mqtt_client::posix_connect(const char *port) {
   // The source of this code fragment
   // https://github.com/LiamBindle/MQTT-C/blob/9a7cc93eb09680140ab963e1faecfe3d2f80829c/examples/templates/posix_sockets.h#L16
   struct addrinfo hints = {0};
@@ -158,9 +178,6 @@ bool supla_mqtt_client::posix_connect(void) {
   sockfd = -1;
   int rv;
   struct addrinfo *p, *servinfo;
-
-  char port[15];
-  snprintf(port, sizeof(port), "%i", settings->getPort());
 
   /* get address information */
   rv = getaddrinfo(settings->getHost(), port, &hints, &servinfo);
@@ -191,19 +208,64 @@ bool supla_mqtt_client::posix_connect(void) {
   /* make non-blocking */
   if (sockfd != -1) {
     fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK);
-    unable_to_connect_notified = false;
     return true;
-  }
-
-  if (!unable_to_connect_notified) {
-    supla_log(LOG_ERR, "MQTT: Can't connect to %s", settings->getHost());
-    unable_to_connect_notified = true;
   }
 
   return false;
 }
 
-bool supla_mqtt_client::ssl_connect(void) { return false; }
+void supla_mqtt_client::ssl_free(void) {
+  if (bio) {
+    BIO_free_all((BIO *)bio);
+    bio = NULL;
+  }
+
+  if (ssl_ctx) {
+    SSL_CTX_free((SSL_CTX *)ssl_ctx);
+    ssl_ctx = NULL;
+  }
+
+  sockfd = -1;
+}
+
+bool supla_mqtt_client::ssl_connect(const char *port) {
+  // The source of this code fragment
+  // https://github.com/LiamBindle/MQTT-C/blob/9a7cc93eb09680140ab963e1faecfe3d2f80829c/examples/templates/openssl_sockets.h
+  SSL_CTX *ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+  if (ssl_ctx == NULL) {
+    ssocket_ssl_error_log();
+    return false;
+  }
+
+  SSL *ssl = NULL;
+
+  /* open BIO socket */
+  BIO *bio = BIO_new_ssl_connect(ssl_ctx);
+  BIO_get_ssl(bio, &ssl);
+  SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+  BIO_set_conn_hostname(bio, settings->getHost());
+  BIO_set_nbio(bio, 1);
+  BIO_set_conn_port(bio, port);
+
+  this->bio = bio;
+  this->ssl_ctx = ssl_ctx;
+
+  int start_time = time(NULL);
+  int rv = BIO_do_connect(bio);
+  while (rv <= 0 && !sthread_isterminated(sthread) && BIO_should_retry(bio) &&
+         (int)time(NULL) - start_time < 10) {
+    rv = BIO_do_connect(bio);
+  }
+
+  if (rv <= 0) {
+    ssl_free();
+    return false;
+  }
+
+  BIO_get_fd(bio, &sockfd);
+
+  return true;
+}
 
 void supla_mqtt_client::disconnect(void) {
   if (eh != NULL) {
@@ -211,7 +273,8 @@ void supla_mqtt_client::disconnect(void) {
     eh = NULL;
   }
 
-  if (sbio) {
+  if (bio) {
+    ssl_free();
   } else if (sockfd != -1) {
     close(sockfd);
     sockfd = -1;
@@ -219,6 +282,10 @@ void supla_mqtt_client::disconnect(void) {
 }
 
 void supla_mqtt_client::reconnect(struct mqtt_client *client) {
+  if (sthread_isterminated(sthread)) {
+    return;
+  }
+
   if (client->error != MQTT_ERROR_INITIAL_RECONNECT) {
     if (sockfd != -1) {
       supla_log(LOG_ERR, "%s", mqtt_error_str(client->error));
@@ -228,19 +295,29 @@ void supla_mqtt_client::reconnect(struct mqtt_client *client) {
 
   disconnect();
 
+  char port[15];
+  snprintf(port, sizeof(port), "%i", settings->getPort());
+
   if (settings->isSSLEnabled()) {
-    ssl_connect();
+    ssl_connect(port);
   } else {
-    posix_connect();
+    posix_connect(port);
   }
 
-  if (sockfd != -1) {
+  if (sockfd == -1) {
+    if (!unable_to_connect_notified) {
+      supla_log(LOG_ERR, "MQTT: Can't connect to %s", settings->getHost());
+      unable_to_connect_notified = true;
+    }
+  } else {
+    unable_to_connect_notified = false;
+
     if (sendbuf == NULL) {
-      sendbuf = malloc(SEND_BUFFER_SIZE);
+      sendbuf = malloc(get_send_buffer_size());
     }
 
     if (recvbuf == NULL) {
-      recvbuf = malloc(RECV_BUFFER_SIZE);
+      recvbuf = malloc(get_recv_buffer_size());
     }
 
     if (eh == NULL) {
@@ -248,11 +325,12 @@ void supla_mqtt_client::reconnect(struct mqtt_client *client) {
       eh_add_fd(eh, sockfd);
     }
 
-    mqtt_reinit(client, client->socketfd, (uint8_t *)sendbuf, SEND_BUFFER_SIZE,
-                (uint8_t *)recvbuf, RECV_BUFFER_SIZE);
+    mqtt_reinit(client, client->socketfd, (uint8_t *)sendbuf,
+                get_send_buffer_size(), (uint8_t *)recvbuf,
+                get_recv_buffer_size());
 
     char clientId[CLIENTID_MAX_SIZE];
-    getClientId(clientId, sizeof(clientId));
+    get_client_id(clientId, sizeof(clientId));
 
     mqtt_connect(client, clientId, NULL, NULL, 0, settings->getUsername(),
                  settings->getPassword(), MQTT_CONNECT_CLEAN_SESSION,
@@ -270,6 +348,13 @@ void supla_mqtt_client::on_message_received(
 void supla_mqtt_client::on_connected(void) {}
 
 void supla_mqtt_client::on_iterate(void) {}
+
+bool supla_mqtt_client::subscribe(const char *topic_name, int max_qos_level) {
+  if (client && sockfd != -1) {
+    return MQTT_OK == mqtt_subscribe(client, topic_name, max_qos_level);
+  }
+  return false;
+}
 
 void supla_mqtt_client::start(void) {
   if (sthread == NULL && settings && settings->isMQTTEnabled()) {
@@ -298,16 +383,16 @@ ssize_t supla_mqtt_client::mqtt_pal_sendall(const char *buf, size_t len,
                                             int flags) {
   size_t sent = 0;
 
-  if (sbio != NULL) {
+  if (bio != NULL) {
     // The source of this code fragment
     // https://github.com/LiamBindle/MQTT-C/blob/9a7cc93eb09680140ab963e1faecfe3d2f80829c/src/mqtt_pal.c#L224
 
     size_t sent = 0;
     while (sent < len) {
-      int tmp = BIO_write((BIO *)sbio, (const char *)buf + sent, len - sent);
+      int tmp = BIO_write((BIO *)bio, (const char *)buf + sent, len - sent);
       if (tmp > 0) {
         sent += (size_t)tmp;
-      } else if (tmp <= 0 && !BIO_should_retry((BIO *)sbio)) {
+      } else if (tmp <= 0 && !BIO_should_retry((BIO *)bio)) {
         return MQTT_ERROR_SOCKET_ERROR;
       }
     }
@@ -334,22 +419,22 @@ ssize_t supla_mqtt_client::mqtt_pal_recvall(char *buf, size_t bufsz,
                                             int flags) {
   char *start = buf;
 
-  if (sbio != NULL) {
+  if (bio != NULL) {
     // The source of this code fragment
     // https://github.com/LiamBindle/MQTT-C/blob/9a7cc93eb09680140ab963e1faecfe3d2f80829c/src/mqtt_pal.c#L237
     char *bufptr = (char *)buf;
     int rv;
     do {
-      rv = BIO_read((BIO *)sbio, bufptr, bufsz);
+      rv = BIO_read((BIO *)bio, bufptr, bufsz);
       if (rv > 0) {
         /* successfully read bytes from the socket */
         bufptr += rv;
         bufsz -= rv;
-      } else if (!BIO_should_retry((BIO *)sbio)) {
+      } else if (!BIO_should_retry((BIO *)bio)) {
         /* an error occurred that wasn't "nothing to read". */
         return MQTT_ERROR_SOCKET_ERROR;
       }
-    } while (!BIO_should_read((BIO *)sbio));
+    } while (!BIO_should_read((BIO *)bio));
 
     return (ssize_t)(bufptr - start);
   } else if (sockfd != -1) {

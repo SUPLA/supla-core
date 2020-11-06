@@ -23,8 +23,11 @@ supla_mqtt_subscriber::supla_mqtt_subscriber(
     supla_mqtt_client_datasource *channel_source)
     : supla_mqtt_client(settings, channel_source) {}
 
+ssize_t supla_mqtt_subscriber::get_send_buffer_size(void) { return 8192; }
 
-void supla_mqtt_subscriber::getClientId(char *clientId, size_t len) {
+ssize_t supla_mqtt_subscriber::get_recv_buffer_size(void) { return 262144; }
+
+void supla_mqtt_subscriber::get_client_id(char *clientId, size_t len) {
   if (settings) {
     settings->getClientId(clientId, len, "sub");
   }

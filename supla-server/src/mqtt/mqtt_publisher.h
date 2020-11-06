@@ -25,12 +25,17 @@ class supla_mqtt_publisher : public supla_mqtt_client {
  private:
   static supla_mqtt_publisher *_globalInstance;
 
-  protected:
-   virtual void getClientId(char *clientId, size_t len);
+ protected:
+  virtual ssize_t get_send_buffer_size(void);
+  virtual ssize_t get_recv_buffer_size(void);
+  virtual void get_client_id(char *clientId, size_t len);
+  virtual void on_connected(void);
+  virtual void on_iterate(void);
+  virtual void on_message_received(struct mqtt_response_publish *message);
 
-  public:
-   supla_mqtt_publisher(supla_mqtt_client_settings *settings,
-                        supla_mqtt_client_datasource *datasource);
+ public:
+  supla_mqtt_publisher(supla_mqtt_client_settings *settings,
+                       supla_mqtt_client_datasource *datasource);
 };
 
 #endif /*MQTT_PUBLISHER_H_*/
