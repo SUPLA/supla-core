@@ -63,3 +63,7 @@ void supla_mqtt_client_ini_settings::getClientId(char *clientId, size_t len,
     supla_mqtt_client_settings::getClientId(clientId, len, suffix);
   }
 }
+
+int supla_mqtt_client_ini_settings::getKeepAlive(void) {
+  return scfg_int(CFG_MQTT_KEEP_ALIVE_SEC);
+}

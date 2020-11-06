@@ -19,6 +19,8 @@
 #ifndef MQTT_CLIENT_SETTINGS_H_
 #define MQTT_CLIENT_SETTINGS_H_
 
+#define CLIENTID_MAX_SIZE 23
+
 #include <cstddef>
 
 class supla_mqtt_client_settings {
@@ -37,6 +39,7 @@ class supla_mqtt_client_settings {
   virtual bool isMQTTEnabled(void) = 0;
   virtual bool isSSLEnabled(void) = 0;
   virtual void getClientId(char *clientId, size_t len, const char *suffix);
+  virtual int getKeepAlive(void) = 0;
 };
 
 #endif /*MQTT_CLIENT_SETTINGS_H_*/

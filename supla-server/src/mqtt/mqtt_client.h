@@ -26,10 +26,15 @@
 
 class supla_mqtt_client {
  private:
+  bool unable_to_connect_notified;
   int sockfd;
   void *sthread;
   void *sbio;
   TEventHandler *eh;
+
+  void *recvbuf;
+  void *sendbuf;
+
   static void job(void *supla_client_instance, void *sthread);
   static ssize_t __mqtt_pal_sendall(supla_mqtt_client *supla_client_instance,
                                     const char *buf, size_t len, int flags);
@@ -45,7 +50,8 @@ class supla_mqtt_client {
   ssize_t mqtt_pal_sendall(const char *buf, size_t len, int flags);
   ssize_t mqtt_pal_recvall(char *buf, size_t bufsz, int flags);
 
-  void connect(void);
+  bool posix_connect(void);
+  bool ssl_connect(void);
   void disconnect(void);
   void reconnect(struct mqtt_client *client);
   void on_message_received(struct mqtt_response_publish *message);
@@ -53,6 +59,9 @@ class supla_mqtt_client {
  protected:
   supla_mqtt_client_settings *settings;
   supla_mqtt_client_datasource *datasource;
+  virtual void getClientId(char *clientId, size_t len) = 0;
+  virtual void on_connected(void);
+  virtual void on_iterate(void);
 
  public:
   supla_mqtt_client(supla_mqtt_client_settings *settings,

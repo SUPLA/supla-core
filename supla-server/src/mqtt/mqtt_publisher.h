@@ -25,9 +25,12 @@ class supla_mqtt_publisher : public supla_mqtt_client {
  private:
   static supla_mqtt_publisher *_globalInstance;
 
- public:
-  supla_mqtt_publisher(supla_mqtt_client_settings *settings,
-                       supla_mqtt_client_datasource *datasource);
+  protected:
+   virtual void getClientId(char *clientId, size_t len);
+
+  public:
+   supla_mqtt_publisher(supla_mqtt_client_settings *settings,
+                        supla_mqtt_client_datasource *datasource);
 };
 
 #endif /*MQTT_PUBLISHER_H_*/

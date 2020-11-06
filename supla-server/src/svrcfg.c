@@ -92,6 +92,7 @@ unsigned char svrcfg_init(int argc, char *argv[]) {
   scfg_add_str_param(s_mqtt, "prefix", NULL);
   scfg_add_int_param(s_mqtt, "ssl", 1);
   scfg_add_str_param(s_mqtt, "client_id", NULL);
+  scfg_add_int_param(s_mqtt, "keep_alive_sec", 30);
 
 #ifdef __TEST
   result = scfg_load(argc, argv, "/etc/supla-server/supla-test.cfg");

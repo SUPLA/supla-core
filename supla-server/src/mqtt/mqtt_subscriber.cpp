@@ -22,3 +22,10 @@ supla_mqtt_subscriber::supla_mqtt_subscriber(
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *channel_source)
     : supla_mqtt_client(settings, channel_source) {}
+
+
+void supla_mqtt_subscriber::getClientId(char *clientId, size_t len) {
+  if (settings) {
+    settings->getClientId(clientId, len, "sub");
+  }
+}

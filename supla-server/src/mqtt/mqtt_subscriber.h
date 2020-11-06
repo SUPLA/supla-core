@@ -22,6 +22,9 @@
 #include <mqtt_client.h>
 
 class supla_mqtt_subscriber : public supla_mqtt_client {
+ protected:
+  virtual void getClientId(char *clientId, size_t len);
+
  public:
   supla_mqtt_subscriber(supla_mqtt_client_settings *settings,
                         supla_mqtt_client_datasource *datasource);

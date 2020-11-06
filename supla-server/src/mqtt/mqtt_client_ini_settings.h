@@ -33,6 +33,7 @@ class supla_mqtt_client_ini_settings : public supla_mqtt_client_settings {
   virtual bool isMQTTEnabled(void);
   virtual bool isSSLEnabled(void);
   virtual void getClientId(char *clientId, size_t len, const char *suffix);
+  virtual int getKeepAlive(void);
 };
 
 #endif /*MQTT_CLIENT_INI_SETTINGS_H_*/
