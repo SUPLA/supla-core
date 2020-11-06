@@ -122,7 +122,7 @@ supla_mqtt_client::supla_mqtt_client(supla_mqtt_client_settings *settings,
   this->unable_to_connect_notified = false;
 }
 
-supla_mqtt_client::~supla_mqtt_client(void) { stop(); }
+supla_mqtt_client::~supla_mqtt_client(void) {}
 
 void supla_mqtt_client::job(void *sthread) {
   this->sthread = sthread;
@@ -153,8 +153,15 @@ void supla_mqtt_client::job(void *sthread) {
 
   while (!sthread_isterminated(sthread)) {
     mqtt_sync(&client);
+
+    if (mqtt_mq_length(&client.mq) > 0) {
+      mqtt_mq_clean(&client.mq);
+    }
+
     eh_wait(eh, 1000000);
-    on_iterate();
+    if (sockfd != -1) {
+      on_iterate();
+    }
   }
 
   disconnect();
@@ -350,9 +357,29 @@ void supla_mqtt_client::on_connected(void) {}
 void supla_mqtt_client::on_iterate(void) {}
 
 bool supla_mqtt_client::subscribe(const char *topic_name, int max_qos_level) {
-  if (client && sockfd != -1) {
-    return MQTT_OK == mqtt_subscribe(client, topic_name, max_qos_level);
+  bool result = false;
+  if (client && sockfd != -1 && !sthread_isterminated(sthread) &&
+      MQTT_OK == mqtt_subscribe(client, topic_name, max_qos_level)) {
+    eh_raise_event(eh);
+    return true;
   }
+  return false;
+}
+
+bool supla_mqtt_client::publish(const char *topic_name, const void *message,
+                                size_t message_size, uint8_t publish_flags) {
+  if (client && sockfd != -1 && !sthread_isterminated(sthread)) {
+    MQTTErrors r =
+        mqtt_publish(client, topic_name, message, message_size, publish_flags);
+
+    if (r == MQTT_OK) {
+      eh_raise_event(eh);
+      return true;
+    } else if (r == MQTT_ERROR_SEND_BUFFER_IS_FULL) {
+      client->error = MQTT_OK;
+    }
+  }
+
   return false;
 }
 
@@ -404,9 +431,15 @@ ssize_t supla_mqtt_client::mqtt_pal_sendall(const char *buf, size_t len,
     while (sent < len) {
       ssize_t tmp = send(sockfd, buf + sent, len - sent, flags);
       if (tmp < 1) {
-        return MQTT_ERROR_SOCKET_ERROR;
+        if (errno == EAGAIN) {
+          usleep(1000);
+        } else {
+          return MQTT_ERROR_SOCKET_ERROR;
+        }
+
+      } else {
+        sent += (size_t)tmp;
       }
-      sent += (size_t)tmp;
     }
 
     return sent;

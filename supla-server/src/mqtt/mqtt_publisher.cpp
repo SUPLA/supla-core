@@ -17,16 +17,21 @@
  */
 
 #include "mqtt_publisher.h"
+#include <cstdio>
 #include "log.h"
 
 supla_mqtt_publisher::supla_mqtt_publisher(
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *channel_source)
-    : supla_mqtt_client(settings, channel_source) {}
+    : supla_mqtt_client(settings, channel_source) {
+  left = 0;
+}
 
-ssize_t supla_mqtt_publisher::get_send_buffer_size(void) { return 8192; }
+supla_mqtt_publisher::~supla_mqtt_publisher(void) {}
 
-ssize_t supla_mqtt_publisher::get_recv_buffer_size(void) { return 8192; }
+ssize_t supla_mqtt_publisher::get_send_buffer_size(void) { return 32768; }
+
+ssize_t supla_mqtt_publisher::get_recv_buffer_size(void) { return 32768; }
 
 void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
   if (settings) {
@@ -34,9 +39,11 @@ void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
   }
 }
 
-void supla_mqtt_publisher::on_connected(void) {}
+void supla_mqtt_publisher::on_connected(void) { left = 50000; }
 
-void supla_mqtt_publisher::on_iterate(void) {}
+void supla_mqtt_publisher::on_iterate(void) {
+
+}
 
 void supla_mqtt_publisher::on_message_received(
     struct mqtt_response_publish *message) {}

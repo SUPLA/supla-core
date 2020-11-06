@@ -46,9 +46,11 @@ supla_mqtt_client_suite::supla_mqtt_client_suite(void) {
 }
 
 supla_mqtt_client_suite::~supla_mqtt_client_suite(void) {
+  publisher->stop();
   delete publisher;
   publisher = NULL;
 
+  // publisher->stop();
   // delete subscriber;
   // subscriber = NULL;
 

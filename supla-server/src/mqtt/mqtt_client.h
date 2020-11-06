@@ -71,6 +71,8 @@ class supla_mqtt_client {
   virtual void on_message_received(struct mqtt_response_publish *message);
 
   bool subscribe(const char *topic_name, int max_qos_level);
+  bool publish(const char *topic_name, const void *message, size_t message_size,
+               uint8_t publish_flags);
 
  public:
   supla_mqtt_client(supla_mqtt_client_settings *settings,

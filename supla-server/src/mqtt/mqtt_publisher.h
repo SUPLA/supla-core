@@ -24,6 +24,7 @@
 class supla_mqtt_publisher : public supla_mqtt_client {
  private:
   static supla_mqtt_publisher *_globalInstance;
+  int left;
 
  protected:
   virtual ssize_t get_send_buffer_size(void);
@@ -36,6 +37,7 @@ class supla_mqtt_publisher : public supla_mqtt_client {
  public:
   supla_mqtt_publisher(supla_mqtt_client_settings *settings,
                        supla_mqtt_client_datasource *datasource);
+  virtual ~supla_mqtt_publisher(void);
 };
 
 #endif /*MQTT_PUBLISHER_H_*/
