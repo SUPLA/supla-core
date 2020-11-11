@@ -19,9 +19,10 @@
 #include "mqtt_subscriber.h"
 
 supla_mqtt_subscriber::supla_mqtt_subscriber(
+    supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *channel_source)
-    : supla_mqtt_client(settings, channel_source) {}
+    : supla_mqtt_client(library_adapter, settings, channel_source) {}
 
 ssize_t supla_mqtt_subscriber::get_send_buffer_size(void) { return 8192; }
 

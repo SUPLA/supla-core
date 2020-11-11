@@ -22,12 +22,17 @@
 #include "mqtt_client_ini_settings.h"
 #include "mqtt_publisher.h"
 #include "mqtt_subscriber.h"
+#include "mqttc_library_adapter.h"
 
 class supla_mqtt_client_suite {
  private:
   static supla_mqtt_client_suite *_globalInstance;
 
   supla_mqtt_client_ini_settings *ini_settings;
+
+  supla_mqttc_library_adapter *library_adapter_pub;
+  supla_mqttc_library_adapter *library_adapter_sub;
+
   supla_mqtt_publisher *publisher;
   supla_mqtt_subscriber *subscriber;
 

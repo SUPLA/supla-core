@@ -16,22 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_SUBSCRIBER_H_
-#define MQTT_SUBSCRIBER_H_
+#include <mqtt_client_library_adapter.h>
 
-#include <mqtt_client.h>
-
-class supla_mqtt_subscriber : public supla_mqtt_client {
- protected:
-  virtual ssize_t get_send_buffer_size(void);
-  virtual ssize_t get_recv_buffer_size(void);
-  virtual void get_client_id(char *clientId, size_t len);
-
- public:
-  supla_mqtt_subscriber(
-      supla_mqtt_client_library_adapter *library_adapter,
-      supla_mqtt_client_settings *settings,
-      supla_mqtt_client_datasource *datasource);
-};
-
-#endif /*MQTT_SUBSCRIBER_H_*/
+supla_mqtt_client_library_adapter::supla_mqtt_client_library_adapter(
+    supla_mqtt_client_settings *settings) {
+  this->settings = settings;
+}
+supla_mqtt_client_library_adapter::~supla_mqtt_client_library_adapter(void) {}

@@ -17,13 +17,15 @@
  */
 
 #include "mqtt_publisher.h"
+#include <string.h>
 #include <cstdio>
 #include "log.h"
 
 supla_mqtt_publisher::supla_mqtt_publisher(
+    supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *channel_source)
-    : supla_mqtt_client(settings, channel_source) {
+    : supla_mqtt_client(library_adapter, settings, channel_source) {
   left = 0;
 }
 
@@ -42,7 +44,19 @@ void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
 void supla_mqtt_publisher::on_connected(void) { left = 50000; }
 
 void supla_mqtt_publisher::on_iterate(void) {
+  if (left > 0) {
+    char topic[2000];
+    snprintf(topic, sizeof(topic),
+             "/tdasdas/asdasd/asdasd/asdasd/asdasd/asdasd/asdasd/asdas/asdasd/"
+             "asdasd/asdasd/asdasd/asdasd/%i",
+             left);
+    char msg[20];
+    snprintf(msg, sizeof(msg), "d%i", left);
 
+    if (publish(topic, msg, strnlen(msg, sizeof(msg)), SUPLA_MQTT_QOS_1)) {
+      left--;
+    }
+  }
 }
 
 void supla_mqtt_publisher::on_message_received(
