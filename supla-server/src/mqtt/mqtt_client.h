@@ -19,8 +19,8 @@
 #ifndef MQTT_CLIENT_H_
 #define MQTT_CLIENT_H_
 
+#include <mqtt_client_datasource.h>
 #include <mqtt_client_library_adapter.h>
-#include "mqtt_channel_source.h"
 #include "mqtt_client_settings.h"
 
 class supla_mqtt_client {

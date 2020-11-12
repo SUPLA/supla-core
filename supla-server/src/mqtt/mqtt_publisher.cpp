@@ -41,25 +41,24 @@ void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
   }
 }
 
-void supla_mqtt_publisher::on_connected(void) {
-  supla_log(LOG_DEBUG, "xxxx");
-  left = 50000;
-}
-
 void supla_mqtt_publisher::on_iterate(void) {
-  if (left > 0) {
-    char topic[2000];
-    snprintf(topic, sizeof(topic),
-             "/tdasdas/asdasd/asdasd/asdasd/asdasd/asdasd/asdasd/asdas/asdasd/"
-             "asdasd/asdasd/asdasd/asdasd/%i",
-             left);
-    char msg[20];
-    snprintf(msg, sizeof(msg), "d%i", left);
+  char *topic_name = NULL;
+  void *message = NULL;
+  size_t message_size = 0;
+  QOS_Level qos_level = SUPLA_MQTT_QOS_1;
+  bool retain = false;
 
-    if (publish(topic, msg, strnlen(msg, sizeof(msg)), SUPLA_MQTT_QOS_0,
-                false)) {
-      left--;
-    }
+  if (datasource->pop(&topic_name, &message, &message_size, &qos_level,
+                      &retain)) {
+    publish(topic_name, message, message_size, qos_level, retain);
+  }
+
+  if (topic_name) {
+    free(topic_name);
+  }
+
+  if (message) {
+    free(message);
   }
 }
 

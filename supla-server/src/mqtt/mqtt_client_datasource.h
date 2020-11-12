@@ -16,8 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "mqtt_channel_source.h"
+#ifndef MQTT_CHANNEL_SOURCE_H_
+#define MQTT_CHANNEL_SOURCE_H_
 
-supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {}
+#include <stdlib.h>
+#include "mqtt_client_library_adapter.h"
 
-supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {}
+enum MQTTDataSourceEventType {
+  MQTTDS_EVENT_RECONNECT,
+  MQTTDS_EVENT_USER_DATACHANGED,
+  MQTTDS_EVENT_DEVICEDATACHANGED,
+  MQTTDS_EVENT_CHANNELDATACHANGED
+};
+
+class supla_mqtt_client_datasource {
+ public:
+  supla_mqtt_client_datasource(void);
+  virtual ~supla_mqtt_client_datasource(void);
+  virtual bool pop(char **topic_name, void **message, size_t *message_size,
+                   QOS_Level *qos_level, bool *retain) = 0;
+  virtual bool pop(char **topic_name, QOS_Level *qos_level) = 0;
+  virtual void raise_event(MQTTDataSourceEventType event_type, int id = 0) = 0;
+};
+
+#endif /*MQTT_CHANNEL_SOURCE_H_*/

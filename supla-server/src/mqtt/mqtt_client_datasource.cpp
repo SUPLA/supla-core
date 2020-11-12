@@ -16,13 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEL_SOURCE_H_
-#define MQTT_CHANNEL_SOURCE_H_
+#include <mqtt_client_datasource.h>
 
-class supla_mqtt_client_datasource {
- public:
-  supla_mqtt_client_datasource(void);
-  virtual ~supla_mqtt_client_datasource(void);
-};
+supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {}
 
-#endif /*MQTT_CHANNEL_SOURCE_H_*/
+supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {}
