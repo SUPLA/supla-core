@@ -21,5 +21,17 @@
 supla_mqtt_client_library_adapter::supla_mqtt_client_library_adapter(
     supla_mqtt_client_settings *settings) {
   this->settings = settings;
+  on_message_received_callback = NULL;
+  on_connected_callback = NULL;
 }
 supla_mqtt_client_library_adapter::~supla_mqtt_client_library_adapter(void) {}
+
+void supla_mqtt_client_library_adapter::set_on_message_received_callback(
+    _on_message_received_cb cb) {
+  on_message_received_callback = cb;
+}
+
+void supla_mqtt_client_library_adapter::set_on_connected_callback(
+    _on_connected_cb cb) {
+  on_connected_callback = cb;
+}

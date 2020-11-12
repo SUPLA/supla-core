@@ -22,18 +22,14 @@
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <sthread.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include "log.h"
-
-typedef struct {
-  supla_mqttc_library_adapter *instance;
-  ssize_t (*__sendall)(supla_mqttc_library_adapter *adapter_instance,
-                       const char *buf, size_t len, int flags);
-  ssize_t (*__recvall)(supla_mqttc_library_adapter *adapter_instance, char *buf,
-                       size_t bufsz, int flags);
-} _sendrecv_methods_t;
+#include "mqtt_client.h"
+#include "supla-socket.h"
 
 // static
 ssize_t supla_mqttc_library_adapter::__mqtt_pal_sendall(
@@ -94,28 +90,58 @@ void supla_mqttc_library_adapter::on_message_received(
 }
 
 void supla_mqttc_library_adapter::on_message_received(
-    struct mqtt_response_publish *message) {}
+    struct mqtt_response_publish *message) {
+  if (on_message_received_callback) {
+    _received_mqtt_message_t msg;
+    msg.packet_id = message->packet_id;
 
-supla_mqttc_library_adapter::supla_mqttc_library_adapter(void)
-    : supla_mqtt_client_library_adapter_interface() {
-  this->client = NULL;
+    switch (message->qos_level) {
+      case 0:
+        msg.qos_level = SUPLA_MQTT_QOS_0;
+        break;
+      case 1:
+        msg.qos_level = SUPLA_MQTT_QOS_1;
+        break;
+      case 2:
+        msg.qos_level = SUPLA_MQTT_QOS_2;
+        break;
+    }
+    msg.re_delivery = message->dup_flag;
+    msg.retain = message->retain_flag;
+    msg.topic_name_size = message->topic_name_size;
+    msg.topic_name = message->topic_name;
+    msg.message_size = message->application_message_size;
+    msg.message = message->application_message;
+
+    on_message_received_callback(supla_client_instance, &msg);
+  }
+}
+
+supla_mqttc_library_adapter::supla_mqttc_library_adapter(
+    supla_mqtt_client_settings *settings)
+    : supla_mqtt_client_library_adapter(settings) {
+  memset(&client, 0, sizeof(struct mqtt_client));
   this->sockfd = -1;
   this->bio = NULL;
   this->ssl_ctx = NULL;
   this->eh = NULL;
   this->recvbuf = NULL;
   this->sendbuf = NULL;
-}
-supla_mqttc_library_adapter::~supla_mqttc_library_adapter(void) {}
+  this->unable_to_connect_notified = false;
+  this->supla_client_instance = NULL;
 
-void supla_mqttc_library_adapter::connect(void) {
-  _sendrecv_methods_t m;
+  ;
   m.instance = this;
   m.__recvall = supla_mqttc_library_adapter::__mqtt_pal_recvall;
   m.__sendall = supla_mqttc_library_adapter::__mqtt_pal_sendall;
+}
+supla_mqttc_library_adapter::~supla_mqttc_library_adapter(void) {}
 
-  struct mqtt_client client;
-  memset(&client, 0, sizeof(struct mqtt_client));
+void supla_mqttc_library_adapter::client_connect(
+    supla_mqtt_client *supla_client_instance) {
+  this->supla_client_instance = supla_client_instance;
+
+  disconnect();
 
   if (settings->isSSLEnabled()) {
     SSL_load_error_strings();
@@ -130,8 +156,6 @@ void supla_mqttc_library_adapter::connect(void) {
   client.socketfd = &m;  // !This is not socketfd!
   client.publish_response_callback_state = this;
   client.reconnect_state = this;
-
-  this->client = &client;
 }
 
 bool supla_mqttc_library_adapter::is_connected(void) { return sockfd != -1; }
@@ -158,19 +182,6 @@ void supla_mqttc_library_adapter::disconnect(void) {
     close(sockfd);
     sockfd = -1;
   }
-}
-
-void supla_mqttc_library_adapter::cleanup(void) {
-  disconnect();
-  this->client = NULL;
-
-  if (settings->isSSLEnabled()) {
-    EVP_cleanup();
-    ERR_clear_error();
-    ERR_remove_thread_state(NULL);
-    ERR_free_strings();
-    CRYPTO_cleanup_all_ex_data();
-  }
 
   if (recvbuf != NULL) {
     free(recvbuf);
@@ -182,6 +193,20 @@ void supla_mqttc_library_adapter::cleanup(void) {
     sendbuf = NULL;
   }
 }
+
+void supla_mqttc_library_adapter::cleanup(void) {
+  disconnect();
+
+  if (settings->isSSLEnabled()) {
+    EVP_cleanup();
+    ERR_clear_error();
+    ERR_remove_thread_state(NULL);
+    ERR_free_strings();
+    CRYPTO_cleanup_all_ex_data();
+  }
+}
+
+void supla_mqttc_library_adapter::raise_event(void) { eh_raise_event(eh); }
 
 bool supla_mqttc_library_adapter::posix_connect(const char *port) {
   // The source of this code fragment
@@ -245,6 +270,7 @@ void supla_mqttc_library_adapter::ssl_free(void) {
 bool supla_mqttc_library_adapter::ssl_connect(const char *port) {
   // The source of this code fragment
   // https://github.com/LiamBindle/MQTT-C/blob/9a7cc93eb09680140ab963e1faecfe3d2f80829c/examples/templates/openssl_sockets.h
+
   SSL_CTX *ssl_ctx = SSL_CTX_new(SSLv23_client_method());
   if (ssl_ctx == NULL) {
     ssocket_ssl_error_log();
@@ -266,8 +292,8 @@ bool supla_mqttc_library_adapter::ssl_connect(const char *port) {
 
   int start_time = time(NULL);
   int rv = BIO_do_connect(bio);
-  while (rv <= 0 && !sthread_isterminated(sthread) && BIO_should_retry(bio) &&
-         (int)time(NULL) - start_time < 10) {
+  while (rv <= 0 && !supla_client_instance->is_terminated() &&
+         BIO_should_retry(bio) && (int)time(NULL) - start_time < 10) {
     rv = BIO_do_connect(bio);
   }
 
@@ -277,12 +303,11 @@ bool supla_mqttc_library_adapter::ssl_connect(const char *port) {
   }
 
   BIO_get_fd(bio, &sockfd);
-
   return true;
 }
 
 void supla_mqttc_library_adapter::reconnect(struct mqtt_client *client) {
-  if (sthread_isterminated(sthread)) {
+  if (supla_client_instance->is_terminated()) {
     return;
   }
 
@@ -294,6 +319,12 @@ void supla_mqttc_library_adapter::reconnect(struct mqtt_client *client) {
   }
 
   disconnect();
+
+  size_t sendbuf_size = supla_client_instance->get_send_buffer_size();
+  size_t recvbuf_size = supla_client_instance->get_recv_buffer_size();
+
+  sendbuf = malloc(sendbuf_size);
+  recvbuf = malloc(recvbuf_size);
 
   char port[15];
   snprintf(port, sizeof(port), "%i", settings->getPort());
@@ -312,31 +343,24 @@ void supla_mqttc_library_adapter::reconnect(struct mqtt_client *client) {
   } else {
     unable_to_connect_notified = false;
 
-    if (sendbuf == NULL) {
-      sendbuf = malloc(get_send_buffer_size());
-    }
-
-    if (recvbuf == NULL) {
-      recvbuf = malloc(get_recv_buffer_size());
-    }
-
     if (eh == NULL) {
       eh = eh_init();
       eh_add_fd(eh, sockfd);
     }
 
-    mqtt_reinit(client, client->socketfd, (uint8_t *)sendbuf,
-                get_send_buffer_size(), (uint8_t *)recvbuf,
-                get_recv_buffer_size());
+    mqtt_reinit(client, client->socketfd, (uint8_t *)sendbuf, sendbuf_size,
+                (uint8_t *)recvbuf, recvbuf_size);
 
     char clientId[CLIENTID_MAX_SIZE];
-    get_client_id(clientId, sizeof(clientId));
+    supla_client_instance->get_client_id(clientId, sizeof(clientId));
 
     mqtt_connect(client, clientId, NULL, NULL, 0, settings->getUsername(),
                  settings->getPassword(), MQTT_CONNECT_CLEAN_SESSION,
                  settings->getKeepAlive());
 
-    on_connected();
+    if (on_connected_callback) {
+      on_connected_callback(supla_client_instance);
+    }
   }
 
   eh_raise_event(eh);
@@ -387,7 +411,6 @@ ssize_t supla_mqttc_library_adapter::mqtt_pal_sendall(const char *buf,
 ssize_t supla_mqttc_library_adapter::mqtt_pal_recvall(char *buf, size_t bufsz,
                                                       int flags) {
   char *start = buf;
-
   if (bio != NULL) {
     // The source of this code fragment
     // https://github.com/LiamBindle/MQTT-C/blob/9a7cc93eb09680140ab963e1faecfe3d2f80829c/src/mqtt_pal.c#L237
@@ -429,10 +452,23 @@ ssize_t supla_mqttc_library_adapter::mqtt_pal_recvall(char *buf, size_t bufsz,
 }
 
 bool supla_mqttc_library_adapter::subscribe(const char *topic_name,
-                                            SuplaMQTTFlags max_qos_level) {
-  bool result = false;
-  if (client && sockfd != -1 &&
-      MQTT_OK == mqtt_subscribe(client, topic_name, max_qos_level)) {
+                                            QOS_Level max_qos_level) {
+  int _max_qos_level = 0;
+
+  switch (max_qos_level) {
+    case SUPLA_MQTT_QOS_0:
+      _max_qos_level = 0;
+      break;
+    case SUPLA_MQTT_QOS_1:
+      _max_qos_level = 1;
+      break;
+    case SUPLA_MQTT_QOS_2:
+      _max_qos_level = 2;
+      break;
+  }
+
+  if (is_connected() &&
+      MQTT_OK == mqtt_subscribe(&client, topic_name, _max_qos_level)) {
     eh_raise_event(eh);
     return true;
   }
@@ -442,16 +478,34 @@ bool supla_mqttc_library_adapter::subscribe(const char *topic_name,
 bool supla_mqttc_library_adapter::publish(const char *topic_name,
                                           const void *message,
                                           size_t message_size,
-                                          SuplaMQTTFlags publish_flags) {
-  if (client && sockfd != -1) {
+                                          QOS_Level qos_level, bool retain) {
+  if (is_connected()) {
+    int publish_flags = 0;
+
+    switch (qos_level) {
+      case SUPLA_MQTT_QOS_0:
+        publish_flags = MQTT_PUBLISH_QOS_0;
+        break;
+      case SUPLA_MQTT_QOS_1:
+        publish_flags = MQTT_PUBLISH_QOS_1;
+        break;
+      case SUPLA_MQTT_QOS_2:
+        publish_flags = MQTT_PUBLISH_QOS_2;
+        break;
+    }
+
+    if (retain) {
+      publish_flags |= MQTT_PUBLISH_RETAIN;
+    }
+
     MQTTErrors r =
-        mqtt_publish(client, topic_name, message, message_size, publish_flags);
+        mqtt_publish(&client, topic_name, message, message_size, publish_flags);
 
     if (r == MQTT_OK) {
       eh_raise_event(eh);
       return true;
     } else if (r == MQTT_ERROR_SEND_BUFFER_IS_FULL) {
-      client->error = MQTT_OK;
+      client.error = MQTT_OK;
     }
   }
 

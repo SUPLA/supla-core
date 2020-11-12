@@ -23,13 +23,25 @@
 #include "eh.h"
 #include "mqtt.h"
 
+class supla_mqttc_library_adapter;
+typedef struct {
+  supla_mqttc_library_adapter *instance;
+  ssize_t (*__sendall)(supla_mqttc_library_adapter *adapter_instance,
+                       const char *buf, size_t len, int flags);
+  ssize_t (*__recvall)(supla_mqttc_library_adapter *adapter_instance, char *buf,
+                       size_t bufsz, int flags);
+} _sendrecv_methods_t;
+
 class supla_mqttc_library_adapter : public supla_mqtt_client_library_adapter {
  private:
+  _sendrecv_methods_t m;
+  supla_mqtt_client *supla_client_instance;
   int sockfd;
   void *bio;
   void *ssl_ctx;
-  struct mqtt_client *client;
+  struct mqtt_client client;
   TEventHandler *eh;
+  bool unable_to_connect_notified;
 
   void *recvbuf;
   void *sendbuf;
@@ -56,17 +68,18 @@ class supla_mqttc_library_adapter : public supla_mqtt_client_library_adapter {
   void reconnect(struct mqtt_client *client);
 
  public:
-  supla_mqttc_library_adapter(void);
+  supla_mqttc_library_adapter(supla_mqtt_client_settings *settings);
   virtual ~supla_mqttc_library_adapter(void);
-  virtual void connect(void);
+  virtual void client_connect(supla_mqtt_client *supla_client_instance);
   virtual bool is_connected(void);
   virtual void iterate(void);
   virtual void disconnect(void);
   virtual void cleanup(void);
+  virtual void raise_event(void);
 
-  virtual bool subscribe(const char *topic_name, SuplaMQTTFlags max_qos_level);
+  virtual bool subscribe(const char *topic_name, QOS_Level max_qos_level);
   virtual bool publish(const char *topic_name, const void *message,
-                       size_t message_size, SuplaMQTTFlags publish_flags);
+                       size_t message_size, QOS_Level qos_level, bool retain);
 };
 
 #endif /*MQTTC_LIBRARY_ADAPTER_H_*/

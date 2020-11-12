@@ -25,37 +25,40 @@
 
 class supla_mqtt_client {
  private:
-  bool unable_to_connect_notified;
   void *sthread;
 
   static void job(void *supla_client_instance, void *sthread);
   void job(void *sthread);
+
+  static void on_connected(supla_mqtt_client *client_instance);
+  static void on_message_received(supla_mqtt_client *client_instance,
+                                  const _received_mqtt_message_t *msg);
 
  protected:
   supla_mqtt_client_settings *settings;
   supla_mqtt_client_datasource *datasource;
   supla_mqtt_client_library_adapter *library_adapter;
 
-  virtual ssize_t get_send_buffer_size(void) = 0;
-  virtual ssize_t get_recv_buffer_size(void) = 0;
-
-  virtual void get_client_id(char *clientId, size_t len) = 0;
   virtual void on_connected(void);
+  virtual void on_message_received(const _received_mqtt_message_t *msg);
   virtual void on_iterate(void);
-  virtual void on_message_received(struct mqtt_response_publish *message);
 
-  bool subscribe(const char *topic_name, SuplaMQTTFlags max_qos_level);
+  bool subscribe(const char *topic_name, QOS_Level max_qos_level);
   bool publish(const char *topic_name, const void *message, size_t message_size,
-               SuplaMQTTFlags publish_flags);
+               QOS_Level qos_level, bool retain);
 
  public:
-  supla_mqtt_client(
-      supla_mqtt_client_library_adapter *library_adapter,
-      supla_mqtt_client_settings *settings,
-      supla_mqtt_client_datasource *datasource);
+  supla_mqtt_client(supla_mqtt_client_library_adapter *library_adapter,
+                    supla_mqtt_client_settings *settings,
+                    supla_mqtt_client_datasource *datasource);
   virtual ~supla_mqtt_client(void);
   void start(void);
   void stop(void);
+  bool is_terminated(void);
+
+  virtual ssize_t get_send_buffer_size(void) = 0;
+  virtual ssize_t get_recv_buffer_size(void) = 0;
+  virtual void get_client_id(char *clientId, size_t len) = 0;
 };
 
 #endif /*MQTT_CLIENT_H_*/

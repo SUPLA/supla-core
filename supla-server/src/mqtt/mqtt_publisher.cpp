@@ -41,7 +41,10 @@ void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
   }
 }
 
-void supla_mqtt_publisher::on_connected(void) { left = 50000; }
+void supla_mqtt_publisher::on_connected(void) {
+  supla_log(LOG_DEBUG, "xxxx");
+  left = 50000;
+}
 
 void supla_mqtt_publisher::on_iterate(void) {
   if (left > 0) {
@@ -53,7 +56,8 @@ void supla_mqtt_publisher::on_iterate(void) {
     char msg[20];
     snprintf(msg, sizeof(msg), "d%i", left);
 
-    if (publish(topic, msg, strnlen(msg, sizeof(msg)), SUPLA_MQTT_QOS_1)) {
+    if (publish(topic, msg, strnlen(msg, sizeof(msg)), SUPLA_MQTT_QOS_0,
+                false)) {
       left--;
     }
   }

@@ -17,10 +17,8 @@
  */
 
 #include "mqtt_client.h"
-#include <unistd.h>
 #include "log.h"
 #include "sthread.h"
-#include "supla-socket.h"
 
 // static
 void supla_mqtt_client::job(void *supla_client_instance, void *sthread) {
@@ -31,6 +29,17 @@ void supla_mqtt_client::job(void *supla_client_instance, void *sthread) {
   }
 }
 
+// static
+void supla_mqtt_client::on_connected(supla_mqtt_client *client_instance) {
+  client_instance->on_connected();
+}
+
+// static
+void supla_mqtt_client::on_message_received(
+    supla_mqtt_client *client_instance, const _received_mqtt_message_t *msg) {
+  client_instance->on_message_received(msg);
+}
+
 supla_mqtt_client::supla_mqtt_client(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
@@ -39,7 +48,6 @@ supla_mqtt_client::supla_mqtt_client(
   this->settings = settings;
   this->datasource = datasource;
   this->sthread = NULL;
-  this->unable_to_connect_notified = false;
 }
 
 supla_mqtt_client::~supla_mqtt_client(void) {}
@@ -47,7 +55,11 @@ supla_mqtt_client::~supla_mqtt_client(void) {}
 void supla_mqtt_client::job(void *sthread) {
   this->sthread = sthread;
 
-  library_adapter->connect();
+  library_adapter->set_on_message_received_callback(
+      supla_mqtt_client::on_message_received);
+  library_adapter->set_on_connected_callback(supla_mqtt_client::on_connected);
+
+  library_adapter->client_connect(this);
 
   while (!sthread_isterminated(sthread)) {
     library_adapter->iterate();
@@ -62,24 +74,24 @@ void supla_mqtt_client::job(void *sthread) {
 }
 
 void supla_mqtt_client::on_message_received(
-    struct mqtt_response_publish *message) {}
+    const _received_mqtt_message_t *msg) {}
 
 void supla_mqtt_client::on_connected(void) {}
 
 void supla_mqtt_client::on_iterate(void) {}
 
 bool supla_mqtt_client::subscribe(const char *topic_name,
-                                  SuplaMQTTFlags max_qos_level) {
-  return !sthread_isterminated(sthread) &&
+                                  QOS_Level max_qos_level) {
+  return !sthread_isterminated(sthread) && library_adapter->is_connected() &&
          library_adapter->subscribe(topic_name, max_qos_level);
 }
 
 bool supla_mqtt_client::publish(const char *topic_name, const void *message,
-                                size_t message_size,
-                                SuplaMQTTFlags publish_flags) {
-  return !sthread_isterminated(sthread) &&
-         library_adapter->publish(topic_name, message, message_size,
-                                  publish_flags);
+                                size_t message_size, QOS_Level qos_level,
+                                bool retain) {
+  return !sthread_isterminated(sthread) && library_adapter->is_connected() &&
+         library_adapter->publish(topic_name, message, message_size, qos_level,
+                                  retain);
 }
 
 void supla_mqtt_client::start(void) {
@@ -90,7 +102,13 @@ void supla_mqtt_client::start(void) {
 
 void supla_mqtt_client::stop(void) {
   if (sthread != NULL) {
+    sthread_terminate(sthread);
+    library_adapter->raise_event();
     sthread_twf(sthread);
     sthread = NULL;
   }
+}
+
+bool supla_mqtt_client::is_terminated(void) {
+  return sthread == NULL || sthread_isterminated(sthread);
 }
