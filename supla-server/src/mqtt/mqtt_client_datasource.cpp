@@ -28,7 +28,6 @@ supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {
 }
 
 supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
-  cursor_release();
   lck_free(lck);
 }
 
@@ -56,17 +55,19 @@ bool supla_mqtt_client_datasource::cursor_should_be_initialized(void) {
       context.scope = MQTTDS_SCOPE_FULL;
       result = true;
     } else if (user_queue.size()) {
-      context.scope = MQTTDS_SCOPE_FULL;
+      context.scope = MQTTDS_SCOPE_USER;
       context.user_id = user_queue.front();
       user_queue.pop_front();
       result = true;
     } else if (device_queue.size()) {
+      context.scope = MQTTDS_SCOPE_DEVICE;
       _mqtt_ds_device_id_t id = device_queue.front();
       device_queue.pop_front();
       context.user_id = id.user_id;
       context.device_id = id.device_id;
       result = true;
     } else if (channel_queue.size()) {
+      context.scope = MQTTDS_SCOPE_CHANNEL_VALUE;
       _mqtt_ds_channel_id_t id = channel_queue.front();
       channel_queue.pop_front();
       context.user_id = id.user_id;
@@ -90,7 +91,7 @@ bool supla_mqtt_client_datasource::pop(char **topic_name, void **message,
 
   if (cursor) {
     bool eof = false;
-    result = pop(&context, cursor, topic_name, message, message_size, &eof);
+    result = _pop(&context, cursor, topic_name, message, message_size, &eof);
 
     if (!result || eof) {
       cursor_release();
@@ -151,6 +152,8 @@ void supla_mqtt_client_datasource::on_broker_connected(void) {
 void supla_mqtt_client_datasource::on_userdata_changed(int user_id) {
   lck_lock(lck);
   if (!all_data_expected && !is_user_queued(user_id)) {
+    user_queue.push_back(user_id);
+
     for (std::list<_mqtt_ds_device_id_t>::iterator it = device_queue.begin();
          it != device_queue.end(); ++it) {
       if ((*it).user_id == user_id) {
@@ -194,7 +197,7 @@ void supla_mqtt_client_datasource::on_channelvalue_changed(int user_id,
                                                            int channel_id) {
   lck_lock(lck);
   if (!all_data_expected && !is_user_queued(user_id) &&
-      is_device_queued(device_id) && !is_channel_queued(device_id)) {
+      !is_device_queued(device_id) && !is_channel_queued(channel_id)) {
     _mqtt_ds_channel_id_t id = {
         .user_id = user_id, .device_id = device_id, .channel_id = channel_id};
     channel_queue.push_back(id);

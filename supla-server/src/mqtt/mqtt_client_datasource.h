@@ -71,7 +71,7 @@ class supla_mqtt_client_datasource {
 
  protected:
   virtual void *cursor_init(const _mqtt_ds_context_t *context) = 0;
-  virtual bool pop(const _mqtt_ds_context_t *context, void *cursor,
+  virtual bool _pop(const _mqtt_ds_context_t *context, void *cursor,
                    char **topic_name, void **message, size_t *message_size,
                    bool *eof) = 0;
   virtual void cursor_release(const _mqtt_ds_context_t *context,

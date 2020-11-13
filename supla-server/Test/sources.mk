@@ -36,6 +36,7 @@ src/test \
 src/test/alexa \
 src/test/google \
 src/test/gtest \
+src/test/mqtt \
 src/test/webhook \
 src/user \
 src/webhook \
