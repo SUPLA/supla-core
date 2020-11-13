@@ -16,27 +16,77 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEL_SOURCE_H_
-#define MQTT_CHANNEL_SOURCE_H_
+#ifndef MQTT_CLIENT_DATASOURCE_H_
+#define MQTT_CLIENT_DATASOURCE_H_
 
 #include <stdlib.h>
+#include <list>
 #include "mqtt_client_library_adapter.h"
 
-enum MQTTDataSourceEventType {
-  MQTTDS_EVENT_RECONNECT,
-  MQTTDS_EVENT_USER_DATACHANGED,
-  MQTTDS_EVENT_DEVICEDATACHANGED,
-  MQTTDS_EVENT_CHANNELDATACHANGED
+typedef struct {
+  int user_id;
+  int device_id;
+} _mqtt_ds_device_id_t;
+
+typedef struct {
+  int user_id;
+  int device_id;
+  int channel_id;
+} _mqtt_ds_channel_id_t;
+
+enum MQTTDataSourceScope {
+  MQTTDS_SCOPE_NONE,
+  MQTTDS_SCOPE_FULL,
+  MQTTDS_SCOPE_USER,
+  MQTTDS_SCOPE_DEVICE,
+  MQTTDS_SCOPE_CHANNEL_VALUE,
 };
 
+typedef struct {
+  MQTTDataSourceScope scope;
+  int user_id;
+  int device_id;
+  int channel_id;
+} _mqtt_ds_context_t;
+
 class supla_mqtt_client_datasource {
+ private:
+  void *lck;
+  void *cursor;
+
+  _mqtt_ds_context_t context;
+
+  bool all_data_expected;
+  std::list<int> user_queue;
+  std::list<_mqtt_ds_device_id_t> device_queue;
+  std::list<_mqtt_ds_channel_id_t> channel_queue;
+
+  bool is_user_queued(int user_id);
+  bool is_device_queued(int device_id);
+  bool is_channel_queued(int channel_id);
+
+  bool cursor_should_be_initialized(void);
+  void reset_context(_mqtt_ds_context_t *scope);
+  void cursor_release(void);
+
+ protected:
+  virtual void *cursor_init(const _mqtt_ds_context_t *context) = 0;
+  virtual bool pop(const _mqtt_ds_context_t *context, void *cursor,
+                   char **topic_name, void **message, size_t *message_size,
+                   bool *eof) = 0;
+  virtual void cursor_release(const _mqtt_ds_context_t *context,
+                              void *cursor) = 0;
+
  public:
   supla_mqtt_client_datasource(void);
   virtual ~supla_mqtt_client_datasource(void);
-  virtual bool pop(char **topic_name, void **message, size_t *message_size,
-                   QOS_Level *qos_level, bool *retain) = 0;
-  virtual bool pop(char **topic_name, QOS_Level *qos_level) = 0;
-  virtual void raise_event(MQTTDataSourceEventType event_type, int id = 0) = 0;
+  bool pop(char **topic_name, void **message, size_t *message_size);
+  bool pop(char **topic_name);
+
+  void on_broker_connected(void);
+  void on_userdata_changed(int user_id);
+  void on_devicedata_changed(int user_id, int device_id);
+  void on_channelvalue_changed(int user_id, int device_id, int channel_id);
 };
 
-#endif /*MQTT_CHANNEL_SOURCE_H_*/
+#endif /*MQTT_CLIENT_DATASOURCE_H_*/

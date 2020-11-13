@@ -77,7 +77,7 @@ void supla_mqtt_client::on_message_received(
     const _received_mqtt_message_t *msg) {}
 
 void supla_mqtt_client::on_connected(void) {
-  datasource->raise_event(MQTTDS_EVENT_RECONNECT);
+  datasource->on_broker_connected();
 }
 
 void supla_mqtt_client::on_iterate(void) {}

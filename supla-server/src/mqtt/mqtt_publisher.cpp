@@ -48,9 +48,10 @@ void supla_mqtt_publisher::on_iterate(void) {
   QOS_Level qos_level = SUPLA_MQTT_QOS_1;
   bool retain = false;
 
-  if (datasource->pop(&topic_name, &message, &message_size, &qos_level,
-                      &retain)) {
+  if (datasource->pop(&topic_name, &message, &message_size)) {
     publish(topic_name, message, message_size, qos_level, retain);
+  } else if (datasource->pop(&topic_name, &message, &message_size)) {
+
   }
 
   if (topic_name) {

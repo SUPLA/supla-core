@@ -17,7 +17,187 @@
  */
 
 #include <mqtt_client_datasource.h>
+#include <string.h>
+#include "lck.h"
 
-supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {}
+supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {
+  lck = lck_init();
+  cursor = NULL;
+  all_data_expected = false;
+  reset_context(&context);
+}
 
-supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {}
+supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
+  cursor_release();
+  lck_free(lck);
+}
+
+void supla_mqtt_client_datasource::reset_context(_mqtt_ds_context_t *scope) {
+  memset(scope, 0, sizeof(_mqtt_ds_context_t));
+  scope->scope = MQTTDS_SCOPE_NONE;
+}
+
+void supla_mqtt_client_datasource::cursor_release(void) {
+  if (cursor) {
+    cursor_release(&context, cursor);
+    cursor = NULL;
+  }
+
+  reset_context(&context);
+}
+
+bool supla_mqtt_client_datasource::cursor_should_be_initialized(void) {
+  bool result = false;
+  lck_lock(lck);
+
+  if (cursor == NULL) {
+    if (all_data_expected) {
+      all_data_expected = false;
+      context.scope = MQTTDS_SCOPE_FULL;
+      result = true;
+    } else if (user_queue.size()) {
+      context.scope = MQTTDS_SCOPE_FULL;
+      context.user_id = user_queue.front();
+      user_queue.pop_front();
+      result = true;
+    } else if (device_queue.size()) {
+      _mqtt_ds_device_id_t id = device_queue.front();
+      device_queue.pop_front();
+      context.user_id = id.user_id;
+      context.device_id = id.device_id;
+      result = true;
+    } else if (channel_queue.size()) {
+      _mqtt_ds_channel_id_t id = channel_queue.front();
+      channel_queue.pop_front();
+      context.user_id = id.user_id;
+      context.device_id = id.device_id;
+      context.channel_id = id.channel_id;
+      result = true;
+    }
+  }
+
+  lck_unlock(lck);
+  return result;
+}
+
+bool supla_mqtt_client_datasource::pop(char **topic_name, void **message,
+                                       size_t *message_size) {
+  if (cursor_should_be_initialized()) {
+    cursor = cursor_init(&context);
+  }
+
+  bool result = false;
+
+  if (cursor) {
+    bool eof = false;
+    result = pop(&context, cursor, topic_name, message, message_size, &eof);
+
+    if (!result || eof) {
+      cursor_release();
+    }
+  }
+
+  return result;
+}
+
+bool supla_mqtt_client_datasource::pop(char **topic_name) {
+  return pop(topic_name, NULL, NULL);
+}
+
+bool supla_mqtt_client_datasource::is_user_queued(int user_id) {
+  for (std::list<int>::iterator it = user_queue.begin(); it != user_queue.end();
+       ++it) {
+    if (*it == user_id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool supla_mqtt_client_datasource::is_device_queued(int device_id) {
+  for (std::list<_mqtt_ds_device_id_t>::iterator it = device_queue.begin();
+       it != device_queue.end(); ++it) {
+    if ((*it).device_id == device_id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool supla_mqtt_client_datasource::is_channel_queued(int channel_id) {
+  for (std::list<_mqtt_ds_channel_id_t>::iterator it = channel_queue.begin();
+       it != channel_queue.end(); ++it) {
+    if ((*it).channel_id == channel_id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void supla_mqtt_client_datasource::on_broker_connected(void) {
+  lck_lock(lck);
+  if (!all_data_expected) {
+    all_data_expected = true;
+    user_queue.clear();
+    device_queue.clear();
+    channel_queue.clear();
+  }
+  lck_unlock(lck);
+}
+
+void supla_mqtt_client_datasource::on_userdata_changed(int user_id) {
+  lck_lock(lck);
+  if (!all_data_expected && !is_user_queued(user_id)) {
+    for (std::list<_mqtt_ds_device_id_t>::iterator it = device_queue.begin();
+         it != device_queue.end(); ++it) {
+      if ((*it).user_id == user_id) {
+        it = device_queue.erase(it);
+        --it;
+      }
+    }
+
+    for (std::list<_mqtt_ds_channel_id_t>::iterator it = channel_queue.begin();
+         it != channel_queue.end(); ++it) {
+      if ((*it).user_id == user_id) {
+        it = channel_queue.erase(it);
+        --it;
+      }
+    }
+  }
+  lck_unlock(lck);
+}
+
+void supla_mqtt_client_datasource::on_devicedata_changed(int user_id,
+                                                         int device_id) {
+  lck_lock(lck);
+  if (!all_data_expected && !is_user_queued(user_id) &&
+      !is_device_queued(device_id)) {
+    _mqtt_ds_device_id_t id = {.user_id = user_id, .device_id = device_id};
+    device_queue.push_back(id);
+
+    for (std::list<_mqtt_ds_channel_id_t>::iterator it = channel_queue.begin();
+         it != channel_queue.end(); ++it) {
+      if ((*it).user_id == user_id && (*it).device_id == device_id) {
+        it = channel_queue.erase(it);
+        --it;
+      }
+    }
+  }
+  lck_unlock(lck);
+}
+
+void supla_mqtt_client_datasource::on_channelvalue_changed(int user_id,
+                                                           int device_id,
+                                                           int channel_id) {
+  lck_lock(lck);
+  if (!all_data_expected && !is_user_queued(user_id) &&
+      is_device_queued(device_id) && !is_channel_queued(device_id)) {
+    _mqtt_ds_channel_id_t id = {
+        .user_id = user_id, .device_id = device_id, .channel_id = channel_id};
+    channel_queue.push_back(id);
+  }
+  lck_unlock(lck);
+}
