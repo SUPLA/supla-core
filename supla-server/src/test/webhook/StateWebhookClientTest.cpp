@@ -500,7 +500,7 @@ TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
 TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 205\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 202\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
@@ -513,7 +513,7 @@ TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 204\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
@@ -526,7 +526,7 @@ TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
 
   const char expectedRequest3[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 204\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
