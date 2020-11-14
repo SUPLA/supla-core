@@ -17,6 +17,7 @@
  */
 
 #include "IntegrationTest.h"
+#include "MySqlShell.h"
 #include "log.h"
 #include "tools.h"
 
@@ -252,32 +253,15 @@ void IntegrationTest::iterateUntilDefaultTimeout() {
 }
 
 void IntegrationTest::runSqlScript(const char *script) {
-  ASSERT_FALSE(script == NULL);
-  ASSERT_GT(strlen(script), (unsigned long)0);
-  char path[500];
-
-  if (IntegrationTest::sqlDir == NULL) {
-    snprintf(path, sizeof(path), "./%s", script);
-  } else {
-    snprintf(path, sizeof(path), "%s/%s", IntegrationTest::sqlDir, script);
-  }
-
-  if (st_file_exists(path) == 0) {
-    supla_log(LOG_ERR, "File %s not exists!", path);
-    ASSERT_TRUE(false);
-  }
-
-  char command[1000];
-  snprintf(command, sizeof(command), "mysql -u %s -h %s %s < %s",
-           IntegrationTest::dbUser, IntegrationTest::dbHost,
-           IntegrationTest::dbName, path);
-  supla_log(LOG_DEBUG, "%s", command);
-
-  ASSERT_EQ(system(command), 0);
+  MySqlShell::runSqlScript(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                           IntegrationTest::dbUser, IntegrationTest::dbName,
+                           script);
 }
 
 void IntegrationTest::initTestDatabase() {
-  runSqlScript("TestDatabaseStructureAndData.sql");
+  MySqlShell::initTestDatabase(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                               IntegrationTest::dbUser,
+                               IntegrationTest::dbName);
 }
 
 void IntegrationTest::cancelIteration(void) { iterationCancelled = true; }
