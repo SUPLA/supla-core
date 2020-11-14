@@ -50,7 +50,7 @@ sleep 2
 cd supla-console-client/Test
 make clean && make all
 
-vg_verify "./supla-console-client -sqldir ../../sql"
+vg_verify "./supla-console-client --sqldir ../../sql"
 
 cd ../Debug 
 make clean && make 
