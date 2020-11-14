@@ -32,6 +32,10 @@ extern char *pidfile_path;
 extern char debug_mode;
 extern unsigned run_as_daemon;
 
+#ifdef __TEST
+extern char *cfg_sql_dir;
+#endif /*__TEST*/
+
 typedef void (*_func_cfg_callback)(const char *section, const char *name,
                                    const char *value);
 
