@@ -18,36 +18,54 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "MqttClientLibraryAdapterMock.h"
 #include <unistd.h>
+#include "lck.h"
 
-MqttClientLibraryAdpaterMock::MqttClientLibraryAdpaterMock(
+MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_library_adapter(settings) {
+  this->lck = lck_init();
   this->connected = false;
 }
 
-MqttClientLibraryAdpaterMock::~MqttClientLibraryAdpaterMock(void) {}
-
-void MqttClientLibraryAdpaterMock::client_connect(
-    supla_mqtt_client *supla_client_instance) {
-  connected = true;
+MqttClientLibraryAdapterMock::~MqttClientLibraryAdapterMock(void) {
+  lck_free(lck);
 }
 
-bool MqttClientLibraryAdpaterMock::is_connected(void) { return connected; }
+void MqttClientLibraryAdapterMock::client_connect(
+    supla_mqtt_client *supla_client_instance) {
+  lck_lock(lck);
+  connected = true;
+  lck_unlock(lck);
+}
 
-void MqttClientLibraryAdpaterMock::iterate(void) { usleep(100); }
+bool MqttClientLibraryAdapterMock::is_connected(void) {
+  bool result = false;
 
-void MqttClientLibraryAdpaterMock::disconnect(void) { connected = false; }
+  lck_lock(lck);
+  result = connected;
+  lck_unlock(lck);
 
-void MqttClientLibraryAdpaterMock::cleanup(void) {}
+  return result;
+}
 
-void MqttClientLibraryAdpaterMock::raise_event(void) {}
+void MqttClientLibraryAdapterMock::iterate(void) { usleep(100); }
 
-bool MqttClientLibraryAdpaterMock::subscribe(const char *topic_name,
+void MqttClientLibraryAdapterMock::disconnect(void) {
+  lck_lock(lck);
+  connected = false;
+  lck_unlock(lck);
+}
+
+void MqttClientLibraryAdapterMock::cleanup(void) {}
+
+void MqttClientLibraryAdapterMock::raise_event(void) {}
+
+bool MqttClientLibraryAdapterMock::subscribe(const char *topic_name,
                                              QOS_Level max_qos_level) {
   return true;
 }
 
-bool MqttClientLibraryAdpaterMock::publish(const char *topic_name,
+bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
                                            const void *message,
                                            size_t message_size,
                                            QOS_Level qos_level, bool retain) {

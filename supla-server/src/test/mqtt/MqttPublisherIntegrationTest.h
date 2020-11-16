@@ -19,11 +19,22 @@
 #ifndef MqttPublisherIntegrationTest_H_
 #define MqttPublisherIntegrationTest_H_
 
+#include <mqtt_publisher_datasource.h>
+#include "MqttClientLibraryAdapterMock.h"
 #include "integration/IntegrationTest.h"
+#include "mqtt_client_ini_settings.h"
+#include "mqtt_publisher.h"
 
 namespace testing {
 
 class MqttPublisherIntegrationTest : public IntegrationTest {
+ protected:
+  supla_mqtt_client_ini_settings *iniSettings;
+  MqttClientLibraryAdapterMock *libraryAdapter;
+  supla_mqtt_publisher_datasource *dataSource;
+  supla_mqtt_publisher *publisher;
+  void waitForConnection();
+
  public:
   virtual void SetUp();
   virtual void TearDown();

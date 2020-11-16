@@ -2058,3 +2058,5 @@ DELIMITER ;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2020-09-18 17:04:19
+
+ALTER TABLE supla_user ADD mqtt_broker_enabled TINYINT(1) DEFAULT '0' NOT NULL, ADD mqtt_broker_auth_password VARCHAR(64) DEFAULT NULL;

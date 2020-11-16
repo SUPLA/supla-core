@@ -21,13 +21,14 @@
 
 #include "mqtt_client_library_adapter.h"
 
-class MqttClientLibraryAdpaterMock : public supla_mqtt_client_library_adapter {
+class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
  private:
   bool connected;
+  void *lck;
 
  public:
-  MqttClientLibraryAdpaterMock(supla_mqtt_client_settings *settings);
-  ~MqttClientLibraryAdpaterMock(void);
+  MqttClientLibraryAdapterMock(supla_mqtt_client_settings *settings);
+  ~MqttClientLibraryAdapterMock(void);
   virtual void client_connect(supla_mqtt_client *supla_client_instance);
   virtual bool is_connected(void);
   virtual void iterate(void);
