@@ -16,24 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GOOGLEHOME_H_
-#define GOOGLEHOME_H_
+#ifndef WEBHOOK_STATEWEBHOOKCLIENTTEST_H_
+#define WEBHOOK_STATEWEBHOOKCLIENTTEST_H_
 
-#define GH_TOKEN_MAXSIZE 255
+#include "gtest/gtest.h"  // NOLINT
+#include "user/user.h"
+#include "webhook/statewebhookclient.h"
 
-#include <voiceassistant.h>
+namespace testing {
 
-class supla_google_home : public supla_voice_assistant {
- protected:
-  virtual int get_token_maxsize(void);
-  int sync_40x_counter;
-
+class StateWebhookClientTest : public Test {
  public:
-  explicit supla_google_home(supla_user *user);
-  void load();
-  void on_credentials_changed();
-  void on_sync_40x_error();
-  void on_reportstate_404_error();
+  supla_user *user;
+  supla_state_webhook_client *client;
+
+  virtual void SetUp();
+  virtual void TearDown();
+  StateWebhookClientTest();
 };
 
-#endif /* GOOGLEHOME_H_ */
+} /* namespace testing */
+
+#endif /* WEBHOOK_STATEWEBHOOKCLIENTTEST_H_ */

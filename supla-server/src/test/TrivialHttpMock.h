@@ -16,20 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "test/STUserSpace.h"
+#ifndef H_TrivialHttpMock_H_
+#define H_TrivialHttpMock_H_
 
-STUserSpace::STUserSpace() {
-  user = NULL;
-  supla_user::init();
-}
+#include "http/trivialhttp.h"
 
-STUserSpace::~STUserSpace() { supla_user::user_free(); }
+class TrivialHttpMock : public supla_trivial_http {
+ private:
+  static char out_buff[102400];
+  char in_buff[102400];
 
-supla_user *STUserSpace::getUser(void) {
-  if (!user) {
-    user = new supla_user(1001);
-    user->setUniqueId("qwerty", "zxcvbnm");
-  }
+ protected:
+  bool send_recv(const char *out, char **in);
 
-  return user;
-}
+ public:
+  TrivialHttpMock();
+  virtual ~TrivialHttpMock();
+  static bool outputEqualTo(const char *str);
+};
+
+#endif /*H_TrivialHttpMock_TEST_H_*/

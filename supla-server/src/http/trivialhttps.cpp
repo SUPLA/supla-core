@@ -120,15 +120,6 @@ bool supla_trivial_https::_should_retry(void *ptr) {
 }
 
 bool supla_trivial_https::send_recv(const char *out, char **in) {
-#ifdef __TEST
-  {
-    bool result = false;
-    if (extern_send_recv && extern_send_recv(out, in, &result)) {
-      return result;
-    }
-  }
-#endif /* __TEST */
-
   if (!host || strnlen(host, HOST_MAXSIZE) <= 0) {
     return false;
   }

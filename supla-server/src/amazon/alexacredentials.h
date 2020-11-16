@@ -16,30 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef AMAZON_ALEXA_H_
-#define AMAZON_ALEXA_H_
+#ifndef AMAZON_ALEXACREDENTIALS_H_
+#define AMAZON_ALEXACREDENTIALS_H_
 
 #define ALEXA_TOKEN_MAXSIZE 1024
 #define ALEXA_REGION_MAXSIZE 5
 
-#include "voiceassistant.h"
+#include "webhook/webhookbasiccredentials.h"
 
 class supla_user;
 
-class supla_amazon_alexa : public supla_voice_assistant {
+class supla_amazon_alexa_credentials : public supla_webhook_basic_credentials {
  private:
-  char *refresh_token;
   char *region;
-  struct timeval expires_at;
-
-  void strings_free(void);
-
- protected:
-  virtual int get_token_maxsize(void);
+  void region_free(void);
 
  public:
-  explicit supla_amazon_alexa(supla_user *user);
-  virtual ~supla_amazon_alexa();
+  explicit supla_amazon_alexa_credentials(supla_user *user);
+  virtual ~supla_amazon_alexa_credentials();
+  virtual int get_token_maxsize(void);
+  virtual int get_region_maxsize(void);
 
   virtual void load();
   virtual void remove();
@@ -49,10 +45,7 @@ class supla_amazon_alexa : public supla_voice_assistant {
   void set(const char *access_token, const char *refresh_token, int expires_in,
            const char *region);
 
-  bool isRefreshTokenExists(void);
-  int expiresIn(void);
-  char *getRefreshToken(void);
   char *getRegion(void);
 };
 
-#endif /* AMAZON_ALEXA_H_ */
+#endif /* AMAZON_ALEXACREDENTIALS_H_ */

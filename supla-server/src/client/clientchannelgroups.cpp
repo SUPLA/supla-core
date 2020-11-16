@@ -219,7 +219,7 @@ bool supla_client_channelgroups::set_device_channel_new_value(
     TCS_SuplaNewValue *new_value) {
   bool result = false;
 
-  std::list<t_dc_pair> pairs;
+  std::list<dcpair> pairs;
   void *arr = getArr(master);
 
   safe_array_lock(arr);
@@ -229,10 +229,14 @@ bool supla_client_channelgroups::set_device_channel_new_value(
   }
   safe_array_unlock(arr);
 
-  for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
+  dcpair::sort_by_device_id(&pairs);
+
+  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
     if (getClient()->getUser()->set_device_channel_value(
-            EST_CLIENT, 0, it->DeviceId, it->ChannelId, new_value->value)) {
+            EST_CLIENT, getClient()->getID(), it->getDeviceId(),
+            it->getChannelId(), new_value->Id, dcpair::last_one(&pairs, it),
+            new_value->value)) {
       result = true;
     }
   }
@@ -248,7 +252,7 @@ bool supla_client_channelgroups::device_calcfg_request(
     return false;
   }
 
-  std::list<t_dc_pair> pairs;
+  std::list<dcpair> pairs;
   void *arr = getArr(master);
 
   safe_array_lock(arr);
@@ -258,10 +262,11 @@ bool supla_client_channelgroups::device_calcfg_request(
   }
   safe_array_unlock(arr);
 
-  for (std::list<t_dc_pair>::iterator it = pairs.begin(); it != pairs.end();
+  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
     if (getClient()->getUser()->device_calcfg_request(
-            getClient()->getID(), it->DeviceId, it->ChannelId, request)) {
+            getClient()->getID(), it->getDeviceId(), it->getChannelId(),
+            request)) {
       result = true;
     }
   }

@@ -44,6 +44,11 @@ class supla_client_channel : public supla_client_objcontainer_item {
   unsigned char ProtocolVersion;
   unsigned int Flags;
 
+  // during offline
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  struct timeval value_valid_to;
+  // --------------
+
   void get_cost_and_currency(char currency[3], _supla_int_t *total_cost,
                              _supla_int_t *price_per_unit, double count);
   _supla_int64_t get_calculated_value(_supla_int_t impulses_per_unit,
@@ -59,7 +64,8 @@ class supla_client_channel : public supla_client_objcontainer_item {
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
                        short ProductID, unsigned char ProtocolVersion,
-                       int Flags);
+                       int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+                       unsigned _supla_int_t validity_time_sec);
   virtual ~supla_client_channel(void);
   void mark_for_remote_update(int mark);
   bool remote_update_is_possible(void);
@@ -78,6 +84,11 @@ class supla_client_channel : public supla_client_objcontainer_item {
   short getProductID();
   int getFlags();
   int getExtraId();
+
+  void setValueValidityTimeSec(unsigned _supla_int_t validity_time_sec);
+  bool isValueValidityTimeSet();
+  unsigned _supla_int64_t getValueValidityTimeUSec(void);
+  void resetValueValidityTime(void);
 };
 
 #endif /* CLIENTCHANNEL_H_ */

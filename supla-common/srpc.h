@@ -107,6 +107,7 @@ union TsrpcDataPacketData {
   TSC_SuplaRegisterClientResult_B *sc_register_client_result_b;
   TDS_SuplaDeviceChannelValue *ds_device_channel_value;
   TDS_SuplaDeviceChannelValue_B *ds_device_channel_value_b;
+  TDS_SuplaDeviceChannelValue_C *ds_device_channel_value_c;
   TDS_SuplaDeviceChannelExtendedValue *ds_device_channel_extendedvalue;
   TSC_SuplaLocation *sc_location;
   TSC_SuplaLocationPack *sc_location_pack;
@@ -119,6 +120,7 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelValue *sc_channel_value;
   TSC_SuplaEvent *sc_event;
   TSD_SuplaChannelNewValue *sd_channel_new_value;
+  TSD_SuplaChannelGroupNewValue *sd_channelgroup_new_value;
   TDS_SuplaChannelNewValueResult *ds_channel_new_value_result;
   TCS_SuplaChannelNewValue *cs_channel_new_value;
   TCS_SuplaChannelNewValue_B *cs_channel_new_value_b;
@@ -232,11 +234,16 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_channel_value_changed_b(void *_srpc, unsigned char channel_number,
                                       char *value, unsigned char offline);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed_c(
+    void *_srpc, unsigned char channel_number, char *value,
+    unsigned char offline, unsigned _supla_int_t validity_time_sec);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     void *_srpc, unsigned char channel_number,
     TSuplaChannelExtendedValue *value);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channelgroup_value(
+    void *_srpc, TSD_SuplaChannelGroupNewValue *value);  // ver. >= 13
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
                                  _supla_int_t SenderID, char Success);
@@ -313,6 +320,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
     void *_srpc, TCS_SuperUserAuthorizationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_superuser_authorization_result(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
     void *_srpc, TSC_SuperUserAuthorizationResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(

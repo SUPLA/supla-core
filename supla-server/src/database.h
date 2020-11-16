@@ -25,8 +25,6 @@
 #include "proto.h"
 #include "user.h"
 
-class supla_amazon_alexa;
-
 class database : public dbcommon {
  private:
   virtual char *cfg_get_host(void);
@@ -93,7 +91,8 @@ class database : public dbcommon {
   int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
   int get_device_channel_count(int DeviceID);
   int get_device_channel_type(int DeviceID, int ChannelNumber);
-  void get_device_channels(int DeviceID, supla_device_channels *channels);
+  void get_device_channels(int UserID, int DeviceID,
+                           supla_device_channels *channels);
 
   bool get_device_firmware_update_url(int DeviceID,
                                       TDS_FirmwareUpdateParams *params,
@@ -154,12 +153,17 @@ class database : public dbcommon {
                                const char email[SUPLA_EMAIL_MAXSIZE],
                                const char password[SUPLA_PASSWORD_MAXSIZE]);
 
-  bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
-  void amazon_alexa_remove_token(supla_amazon_alexa *alexa);
-  void amazon_alexa_update_token(supla_amazon_alexa *alexa, const char *token,
-                                 const char *refresh_token, int expires_in);
+  bool amazon_alexa_load_credentials(supla_amazon_alexa_credentials *alexa);
+  void amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa);
+  void amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
+                                 const char *token, const char *refresh_token,
+                                 int expires_in);
 
-  bool google_home_load_token(supla_google_home *google_home);
+  bool google_home_load_credentials(supla_google_home_credentials *google_home);
+  bool state_webhook_load_credentials(supla_state_webhook_credentials *webhook);
+  void state_webhook_update_token(int UserID, const char *token,
+                                  const char *refresh_token, int expires_in);
+  void state_webhook_remove_token(int UserID);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
@@ -170,6 +174,13 @@ class database : public dbcommon {
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);
+  void update_channel_value(int channel_id, int user_id,
+                            const char value[SUPLA_CHANNELVALUE_SIZE],
+                            unsigned _supla_int_t validity_time_sec);
+  bool get_channel_value(int channel_id, int user_id,
+                         char value[SUPLA_CHANNELVALUE_SIZE],
+                         unsigned _supla_int_t *validity_time_sec);
+  void load_temperatures_and_humidity(int UserID, void *tarr);
 };
 
 #endif /* DATABASE_H_ */

@@ -56,8 +56,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
   ASSERT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
   ASSERT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
+  ASSERT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
   ASSERT_EQ((unsigned int)1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
   ASSERT_EQ((unsigned int)17, sizeof(TSD_SuplaChannelNewValue));
+  ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelGroupNewValue));
   ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
   ASSERT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
   ASSERT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
@@ -152,6 +154,28 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
   ASSERT_LE(sizeof(unsigned char), (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
   ASSERT_LE(sizeof(TCalCfg_ProgressReport),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ((unsigned int)221, sizeof(TTimerState_ExtendedValue));
+  ASSERT_EQ((unsigned int)271, sizeof(TChannelAndTimerState_ExtendedValue));
+
+  ASSERT_LE(sizeof(TTimerState_ExtendedValue),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  ASSERT_LE(sizeof(TChannelAndTimerState_ExtendedValue),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+
+  ASSERT_EQ((unsigned int)4, sizeof(TCalCfg_LightSourceLifespan));
+  ASSERT_LE(sizeof(TCalCfg_LightSourceLifespan),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ((unsigned int)4, sizeof(TDigiglass_Value));
+
+  ASSERT_EQ((unsigned int)12, sizeof(TCalCfg_ZWave_WakeupSettingsReport));
+  ASSERT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsReport),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
+  ASSERT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 }
 

@@ -16,44 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VOICEASSISTANT_H_
-#define VOICEASSISTANT_H_
+#ifndef H_TrivialHttpFactoryMock_H_
+#define H_TrivialHttpFactoryMock_H_
 
-#include <sys/time.h>
+#include "http/trivialhttpfactory.h"
 
-class supla_user;
-
-class supla_voice_assistant {
- private:
-  supla_user *user;
-
-  char *access_token;
-  struct timeval set_at;
-
-  void *lck1;
-  void *lck2;
-  void token_free(void);
-
- protected:
-  virtual int get_token_maxsize(void) = 0;
-
+class TrivialHttpFactoryMock : public supla_trivial_http_factory {
  public:
-  explicit supla_voice_assistant(supla_user *user);
-  virtual ~supla_voice_assistant();
-
-  int getUserID();
-  supla_user *getUser();
-
-  void set(const char *access_token);
-
-  bool isAccessTokenExists(void);
-  char *getAccessToken(void);
-  struct timeval getSetTime(void);
-
-  void data_lock(void);
-  void data_unlock(void);
-  void refresh_lock(void);
-  void refresh_unlock(void);
+  TrivialHttpFactoryMock();
+  virtual supla_trivial_http* createConnection(void);
 };
 
-#endif /* VOICEASSISTANT_H_ */
+#endif /*H_TrivialHttpFactoryMock_TEST_H_*/

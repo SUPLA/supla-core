@@ -19,12 +19,22 @@
 #ifndef H_GOOGLEHOMECLIENT_TEST_H_
 #define H_GOOGLEHOMECLIENT_TEST_H_
 
-#include "STTrivialHttp.h"
+#include "google/googlehomeclient.h"
+#include "gtest/gtest.h"  // NOLINT
+#include "user/user.h"
 
-class GoogleHomeClientTest : STTrivialHttp {
+namespace testing {
+
+class GoogleHomeClientTest : public Test {
  public:
-  virtual ~GoogleHomeClientTest();
+  supla_user *user;
+  supla_google_home_client *client;
+
+  virtual void SetUp();
+  virtual void TearDown();
   GoogleHomeClientTest();
 };
+
+} /* namespace testing */
 
 #endif /*H_GOOGLEHOMECLIENT_TEST_H_*/

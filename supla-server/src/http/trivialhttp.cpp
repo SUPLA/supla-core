@@ -36,11 +36,6 @@
 #include <unistd.h>
 #include "log.h"
 
-#ifdef __TEST
-// static
-_extern_send_recv supla_trivial_http::extern_send_recv;
-#endif /* __TEST */
-
 supla_trivial_http::supla_trivial_http(const char *host, const char *resource) {
   this->sfd = -1;
   this->resultCode = 0;
@@ -183,12 +178,6 @@ void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
 bool supla_trivial_http::send_recv(const char *out, char **in) {
   bool result = false;
 
-#ifdef __TEST
-  if (extern_send_recv && extern_send_recv(out, in, &result)) {
-    return result;
-  }
-#endif /* __TEST */
-
   struct addrinfo *ai = NULL;
 
   if (!get_addrinfo((void **)&ai)) {
@@ -249,10 +238,9 @@ void supla_trivial_http::parse_header_item(const char *item, unsigned int size,
     }
     contentType = strdup(match);
 
-  } else if (chunked &&
-             NULL !=
-                 (match = header_item_match(item, size, _transferEncoding,
-                                            sizeof(_transferEncoding) - 1))) {
+  } else if (chunked && NULL != (match = header_item_match(
+                                     item, size, _transferEncoding,
+                                     sizeof(_transferEncoding) - 1))) {
     *chunked = true;
   } else if (NULL != (match = header_item_match(item, size, _contentLength,
                                                 sizeof(_contentLength) - 1))) {
@@ -455,8 +443,12 @@ void supla_trivial_http::setToken(char *token, bool copy) {
 
 bool supla_trivial_http::http_get(void) { return request("GET", NULL, NULL); }
 
-bool supla_trivial_http::http_post(char *header, char *data) {
+bool supla_trivial_http::http_post(char *header, const char *data) {
   return request("POST", header, data);
+}
+
+bool supla_trivial_http::http_put(char *header, const char *data) {
+  return request("PUT", header, data);
 }
 
 void supla_trivial_http::terminate(void) {

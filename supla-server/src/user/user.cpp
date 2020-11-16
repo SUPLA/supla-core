@@ -17,17 +17,17 @@
  */
 
 #include "user.h"
+#include <amazon/alexacredentials.h>
+#include <google/googlehomecredentials.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <list>
-#include "amazon/alexa.h"
 #include "client.h"
 #include "clientcontainer.h"
 #include "database.h"
 #include "device.h"
 #include "devicecontainer.h"
-#include "google/googlehome.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -53,14 +53,16 @@ supla_user::supla_user(int UserID) {
   this->client_container = new supla_user_client_container();
   this->complex_value_functions_arr = safe_array_init();
   this->cgroups = new supla_user_channelgroups(this);
-  this->amazon_alexa = new supla_amazon_alexa(this);
-  this->google_home = new supla_google_home(this);
+  this->amazon_alexa_credentials = new supla_amazon_alexa_credentials(this);
+  this->google_home_credentials = new supla_google_home_credentials(this);
+  this->state_webhook_credentials = new supla_state_webhook_credentials(this);
   this->connections_allowed = true;
   this->short_unique_id = NULL;
   this->long_unique_id = NULL;
   this->lck = lck_init();
-  this->amazon_alexa->load();
-  this->google_home->load();
+  this->amazon_alexa_credentials->load();
+  this->google_home_credentials->load();
+  this->state_webhook_credentials->load();
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -80,8 +82,9 @@ supla_user::~supla_user() {
 
   lck_free(lck);
   delete cgroups;
-  delete amazon_alexa;
-  delete google_home;
+  delete amazon_alexa_credentials;
+  delete google_home_credentials;
+  delete state_webhook_credentials;
 
   compex_value_cache_clean(0);
   safe_array_free(complex_value_functions_arr);
@@ -594,7 +597,8 @@ bool supla_user::get_channel_valve_value(int UserID, int DeviceID,
 }
 
 bool supla_user::get_channel_value(int DeviceID, int ChannelID,
-                                   TSuplaChannelValue *value, char *online) {
+                                   TSuplaChannelValue *value, char *online,
+                                   unsigned _supla_int_t *validity_time_sec) {
   bool result = false;
   memset(value, 0, sizeof(TSuplaChannelValue));
   if (online) {
@@ -604,7 +608,8 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   supla_device *related_device = NULL;
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->get_channel_value(ChannelID, value->value, online);
+    result = device->get_channel_value(ChannelID, value->value, online,
+                                       validity_time_sec);
 
     if (result) {
       std::list<int> related_list = device->related_channel(ChannelID);
@@ -614,7 +619,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
       if (related_list.size() == 1 && *it > 0) {
         related_device = device_container->findByChannelID(*it);
         if (related_device) {
-          related_device->get_channel_value(*it, value->sub_value, NULL);
+          related_device->get_channel_value(*it, value->sub_value, NULL, NULL);
           related_device->releasePtr();
           related_device = NULL;
         }
@@ -629,7 +634,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
           if (*it > 0) {
             related_device = device_container->findByChannelID(*it);
             if (related_device) {
-              related_device->get_channel_value(*it, sub_value, NULL);
+              related_device->get_channel_value(*it, sub_value, NULL, NULL);
               value->sub_value[n] = sub_value[0];
               related_device->releasePtr();
               related_device = NULL;
@@ -663,9 +668,9 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
 
 // static
 bool supla_user::set_device_channel_char_value(
-    int UserID, int SenderID, int DeviceID, int ChannelID, const char value,
-    event_source_type eventSourceType, char *AlexaCorrelationToken,
-    char *GoogleRequestId) {
+    int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
+    unsigned char EOL, const char value, event_source_type eventSourceType,
+    char *AlexaCorrelationToken, char *GoogleRequestId) {
   bool result = false;
 
   safe_array_lock(supla_user::user_arr);
@@ -681,7 +686,7 @@ bool supla_user::set_device_channel_char_value(
     }
 
     result = user->set_device_channel_char_value(SenderID, DeviceID, ChannelID,
-                                                 value) == true;
+                                                 GroupID, EOL, value) == true;
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -691,9 +696,9 @@ bool supla_user::set_device_channel_char_value(
 
 // static
 bool supla_user::set_device_channel_rgbw_value(
-    int UserID, int SenderID, int DeviceID, int ChannelID, int color,
-    char color_brightness, char brightness, char on_off,
-    event_source_type eventSourceType, char *AlexaCorrelationToken,
+    int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
+    unsigned char EOL, int color, char color_brightness, char brightness,
+    char on_off, event_source_type eventSourceType, char *AlexaCorrelationToken,
     char *GoogleRequestId) {
   bool result = false;
 
@@ -709,9 +714,9 @@ bool supla_user::set_device_channel_rgbw_value(
           GoogleRequestId);
     }
 
-    result = user->set_device_channel_rgbw_value(SenderID, DeviceID, ChannelID,
-                                                 color, color_brightness,
-                                                 brightness, on_off) == true;
+    result = user->set_device_channel_rgbw_value(
+                 SenderID, DeviceID, ChannelID, GroupID, EOL, color,
+                 color_brightness, brightness, on_off) == true;
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -764,7 +769,7 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-    user->amazonAlexa()->on_credentials_changed();
+    user->amazonAlexaCredentials()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -777,7 +782,20 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
   if (user) {
-    user->googleHome()->on_credentials_changed();
+    user->googleHomeCredentials()->on_credentials_changed();
+  }
+
+  safe_array_unlock(supla_user::user_arr);
+}
+
+// static
+void supla_user::on_state_webhook_changed(int UserID) {
+  safe_array_lock(supla_user::user_arr);
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
+
+  if (user) {
+    user->stateWebhookCredentials()->on_credentials_changed();
   }
 
   safe_array_unlock(supla_user::user_arr);
@@ -870,7 +888,8 @@ void supla_user::on_device_added(int DeviceID,
 
 bool supla_user::set_device_channel_value(
     event_source_type eventSourceType, int SenderID, int DeviceID,
-    int ChannelID, const char value[SUPLA_CHANNELVALUE_SIZE]) {
+    int ChannelID, int GroupID, unsigned char EOL,
+    const char value[SUPLA_CHANNELVALUE_SIZE]) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
@@ -878,7 +897,7 @@ bool supla_user::set_device_channel_value(
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceID, ChannelID, eventSourceType);
 
-    device->set_device_channel_value(SenderID, ChannelID, value);
+    device->set_device_channel_value(SenderID, ChannelID, GroupID, EOL, value);
     device->releasePtr();
   }
 
@@ -886,13 +905,15 @@ bool supla_user::set_device_channel_value(
 }
 
 bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
-                                               int ChannelID,
+                                               int ChannelID, int GroupID,
+                                               unsigned char EOL,
                                                const char value) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->set_device_channel_char_value(SenderID, ChannelID, value);
+    result = device->set_device_channel_char_value(SenderID, ChannelID, GroupID,
+                                                   EOL, value);
     device->releasePtr();
   }
 
@@ -900,15 +921,17 @@ bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
 }
 
 bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
-                                               int ChannelID, int color,
+                                               int ChannelID, int GroupID,
+                                               unsigned char EOL, int color,
                                                char color_brightness,
                                                char brightness, char on_off) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->set_device_channel_rgbw_value(
-        SenderID, ChannelID, color, color_brightness, brightness, on_off);
+    result = device->set_device_channel_rgbw_value(SenderID, ChannelID, GroupID,
+                                                   EOL, color, color_brightness,
+                                                   brightness, on_off);
     device->releasePtr();
   }
 
@@ -1021,6 +1044,14 @@ void supla_user::get_temp_and_humidity(void *tarr) {
       device->releasePtr();
     }
   }
+
+  database *db = new database();
+
+  if (db->connect() == true) {
+    db->load_temperatures_and_humidity(getUserID(), tarr);
+  }
+
+  delete db;
 }
 
 void supla_user::get_electricity_measurements(void *emarr) {
@@ -1286,7 +1317,7 @@ channel_function_t supla_user::compex_value_cache_get_function(
 }
 
 void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
-                                                    int Function,
+                                                    int Type, int Function,
                                                     bool channel_is_hidden) {
   if (!Function || !DeviceId || !ChannelID) return;
   safe_array_lock(complex_value_functions_arr);
@@ -1295,6 +1326,7 @@ void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
   if (compex_value_cache_get_function(ChannelID, &fnc).function) {
     if (fnc) {
       fnc->deviceId = DeviceId;
+      fnc->channel_type = Type;
       fnc->function = Function;
       fnc->channel_is_hidden = channel_is_hidden;
     }
@@ -1318,12 +1350,14 @@ channel_complex_value supla_user::get_channel_complex_value(int ChannelID) {
   if (device == NULL) {
     channel_function_t f = compex_value_cache_get_function(ChannelID);
     value.function = f.function;
+    value.channel_type = f.channel_type;
     value.hidden_channel = f.channel_is_hidden;
   } else {
     device->get_channel_complex_value(&value, ChannelID);
     if (value.function) {
       compex_value_cache_update_function(device->getID(), ChannelID,
-                                         value.function, value.hidden_channel);
+                                         value.channel_type, value.function,
+                                         value.hidden_channel);
     }
     device->releasePtr();
   }
@@ -1448,6 +1482,14 @@ void supla_user::set_channel_caption(supla_client *sender,
   sender->set_channel_caption_result(&result);
 }
 
-supla_amazon_alexa *supla_user::amazonAlexa(void) { return amazon_alexa; }
+supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) {
+  return amazon_alexa_credentials;
+}
 
-supla_google_home *supla_user::googleHome(void) { return google_home; }
+supla_google_home_credentials *supla_user::googleHomeCredentials(void) {
+  return google_home_credentials;
+}
+
+supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
+  return state_webhook_credentials;
+}

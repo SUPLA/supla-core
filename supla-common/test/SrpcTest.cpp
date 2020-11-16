@@ -393,11 +393,18 @@ TEST_F(SrpcTest, call_allowed_v12) {
                  SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
                  SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
                  SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
+                 SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C,
                  SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
                  SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
+                 SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT,
                  0};
 
   srpcCallAllowed(12, calls);
+}
+
+TEST_F(SrpcTest, call_allowed_v13) {
+  int calls[] = {SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE, 0};
+  srpcCallAllowed(13, calls);
 }
 
 TEST_F(SrpcTest, call_not_allowed) {
@@ -1380,6 +1387,36 @@ TEST_F(SrpcTest, call_channel_value_changed_b) {
 }
 
 //---------------------------------------------------------
+// DS CHANNEL VALUE CHANGED (C)
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_channel_value_changed_c) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  set_random(value, SUPLA_CHANNELVALUE_SIZE);
+
+  ASSERT_GT(srpc_ds_async_channel_value_changed_c(srpc, 2, value, 1, 777), 0);
+  SendAndReceive(SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C, 37);
+
+  ASSERT_FALSE(cr_rd.data.ds_device_channel_value_c == NULL);
+
+  ASSERT_EQ(cr_rd.data.ds_device_channel_value_c->ChannelNumber, 2);
+  ASSERT_EQ(cr_rd.data.ds_device_channel_value_c->Offline, 1);
+  ASSERT_EQ(cr_rd.data.ds_device_channel_value_c->ValidityTimeSec,
+            (unsigned _supla_int_t)777);
+  ASSERT_EQ(memcmp(cr_rd.data.ds_device_channel_value_c->value, value,
+                   SUPLA_CHANNELVALUE_SIZE),
+            0);
+
+  free(cr_rd.data.ds_device_channel_value_c);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
 // DS CHANNEL EXTENDED-VALUE CHANGED
 //---------------------------------------------------------
 
@@ -1485,6 +1522,15 @@ TEST_F(SrpcTest, call_ds_set_channel_value_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+//---------------------------------------------------------
+// SET CHANNEL NEW VALUE B
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_sd_async_set_channelgroup_value,
+                     TSD_SuplaChannelGroupNewValue,
+                     SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE, 45,
+                     sd_channelgroup_new_value);
 
 //---------------------------------------------------------
 // GET FIRMWARE UPDATE URL
@@ -2935,6 +2981,9 @@ TEST_F(SrpcTest, call_superuser_authorization_result) {
   srpc_free(srpc);
   srpc = NULL;
 }
+
+SRPC_CALL_WITH_NO_DATA(srpc_cs_async_get_superuser_authorization_result,
+                       SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT);
 
 //---------------------------------------------------------
 // DEVICE CALIBRATION / CONFIG

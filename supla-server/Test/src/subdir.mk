@@ -26,11 +26,11 @@ CPP_SRCS += \
 ../src/database.cpp \
 ../src/datalogger.cpp \
 ../src/db.cpp \
+../src/dcpair.cpp \
 ../src/ipcctrl.cpp \
 ../src/objcontainer.cpp \
 ../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
-../src/voiceassistant.cpp \
 ../src/voiceassistantclient.cpp 
 
 OBJS += \
@@ -41,6 +41,7 @@ OBJS += \
 ./src/database.o \
 ./src/datalogger.o \
 ./src/db.o \
+./src/dcpair.o \
 ./src/eh.o \
 ./src/ini.o \
 ./src/ipcctrl.o \
@@ -58,7 +59,6 @@ OBJS += \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
 ./src/tools.o \
-./src/voiceassistant.o \
 ./src/voiceassistantclient.o 
 
 C_DEPS += \
@@ -84,11 +84,11 @@ CPP_DEPS += \
 ./src/database.d \
 ./src/datalogger.d \
 ./src/db.d \
+./src/dcpair.d \
 ./src/ipcctrl.d \
 ./src/objcontainer.d \
 ./src/objcontaineritem.d \
 ./src/serverconnection.d \
-./src/voiceassistant.d \
 ./src/voiceassistantclient.d 
 
 

@@ -411,6 +411,7 @@ void supla_http_request_queue::createByChannelEventSourceType(
       if (request) {
         request->setCorrelationToken(correlationToken);
         request->setGoogleRequestId(googleRequestId);
+        request->requestWillBeAdded();
         addRequest(user_space, request);
       }
     }

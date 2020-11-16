@@ -17,26 +17,32 @@
  */
 
 #include "AlexaClientTest.h"
-#include "amazon/alexaclient.h"
+#include "TrivialHttpFactoryMock.h"
+#include "TrivialHttpMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
-namespace {
+namespace testing {
 
-class AlexaClientTest : public STTrivialHttp {
- protected:
-  supla_alexa_client *client;
+AlexaClientTest::AlexaClientTest() {}
 
- public:
-  void SetUp() override {
-    getUser()->amazonAlexa()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600, "eu");
-    client = new supla_alexa_client(getUser()->amazonAlexa());
-  }
+void AlexaClientTest::SetUp() {
+  supla_user::init();
+  user = new supla_user(1001);
+  user->setUniqueId("qwerty", "zxcvbnm");
 
-  void TearDown() override {
-    delete client;
-    client = NULL;
-  }
-};
+  user->amazonAlexaCredentials()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600,
+                                      "eu");
+  client = new supla_alexa_client(user->amazonAlexaCredentials());
+
+  client->setHttpConnectionFactory(new TrivialHttpFactoryMock());
+}
+void AlexaClientTest::TearDown() {
+  delete client->getHttpConnectionFactory();
+  delete client;
+  delete user;
+
+  supla_user::user_free();
+}
 
 TEST_F(AlexaClientTest, sendPowerChangeReport) {
   const char expectedRequest1[] =
@@ -63,7 +69,7 @@ TEST_F(AlexaClientTest, sendPowerChangeReport) {
 
   ASSERT_TRUE(
       client->sendPowerChangeReport(CAUSE_APP_INTERACTION, 1, true, true));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -82,7 +88,7 @@ TEST_F(AlexaClientTest, sendPowerChangeReport) {
 
   ASSERT_TRUE(
       client->sendPowerChangeReport(CAUSE_APP_INTERACTION, 1, true, false));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
 TEST_F(AlexaClientTest, sendContactChangeReport) {
@@ -103,7 +109,7 @@ TEST_F(AlexaClientTest, sendContactChangeReport) {
 
   ASSERT_TRUE(client->sendContactChangeReport(CAUSE_PHYSICAL_INTERACTION, 2,
                                               true, false));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -130,7 +136,7 @@ TEST_F(AlexaClientTest, sendContactChangeReport) {
 
   ASSERT_TRUE(
       client->sendContactChangeReport(CAUSE_PERIODIC_POLL, 2, false, true));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
 TEST_F(AlexaClientTest, sendBrightnessChangeReport) {
@@ -150,7 +156,7 @@ TEST_F(AlexaClientTest, sendBrightnessChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(
       client->sendBrightnessChangeReport(CAUSE_RULE_TRIGGER, 3, 10, false, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -180,7 +186,7 @@ TEST_F(AlexaClientTest, sendBrightnessChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(client->sendBrightnessChangeReport(CAUSE_VOICE_INTERACTION, 3, 10,
                                                  true, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -210,7 +216,7 @@ TEST_F(AlexaClientTest, sendBrightnessChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(client->sendBrightnessChangeReport(CAUSE_VOICE_INTERACTION, 4,
                                                  100, true, 1));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(AlexaClientTest, sendColorChangeReport) {
@@ -230,7 +236,7 @@ TEST_F(AlexaClientTest, sendColorChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(client->sendColorChangeReport(CAUSE_RULE_TRIGGER, 3, 0xFFAABB, 10,
                                             false, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -267,7 +273,7 @@ TEST_F(AlexaClientTest, sendColorChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(client->sendColorChangeReport(CAUSE_VOICE_INTERACTION, 3,
                                             0xFFAABB, 10, true, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -303,7 +309,7 @@ TEST_F(AlexaClientTest, sendColorChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(client->sendColorChangeReport(CAUSE_VOICE_INTERACTION, 4,
                                             0x00FF00, 100, true, 1));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(AlexaClientTest, sendPercentageChangeReport) {
@@ -323,7 +329,7 @@ TEST_F(AlexaClientTest, sendPercentageChangeReport) {
       "\"uncertaintyInMilliseconds\":50}]}}}}";
   ASSERT_TRUE(
       client->sendPercentageChangeReport(CAUSE_RULE_TRIGGER, 1, 50, false));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -349,7 +355,7 @@ TEST_F(AlexaClientTest, sendPercentageChangeReport) {
       "50}]}}}}";
   ASSERT_TRUE(
       client->sendPercentageChangeReport(CAUSE_VOICE_INTERACTION, 1, 60, true));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
 TEST_F(AlexaClientTest, powerControllerSendResponse) {
@@ -367,7 +373,7 @@ TEST_F(AlexaClientTest, powerControllerSendResponse) {
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
   ASSERT_TRUE(
       client->powerControllerSendResponse("correlationToken", 15, true, false));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -384,7 +390,7 @@ TEST_F(AlexaClientTest, powerControllerSendResponse) {
       "TOKEN\"},\"endpointId\":\"qwerty-15\"},\"payload\":{}}}";
   ASSERT_TRUE(
       client->powerControllerSendResponse("correlationToken", 15, true, true));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
 TEST_F(AlexaClientTest, brightnessControllerSendResponse) {
@@ -402,7 +408,7 @@ TEST_F(AlexaClientTest, brightnessControllerSendResponse) {
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
   ASSERT_TRUE(client->brightnessControllerSendResponse("correlationToken", 3,
                                                        10, false, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -422,7 +428,7 @@ TEST_F(AlexaClientTest, brightnessControllerSendResponse) {
       "\"qwerty-3\"},\"payload\":{}}}";
   ASSERT_TRUE(client->brightnessControllerSendResponse("correlationToken", 3,
                                                        10, true, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -442,7 +448,7 @@ TEST_F(AlexaClientTest, brightnessControllerSendResponse) {
       "\"qwerty-4-1\"},\"payload\":{}}}";
   ASSERT_TRUE(client->brightnessControllerSendResponse("correlationToken", 4,
                                                        100, true, 1));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(AlexaClientTest, colorControllerSendResponse) {
@@ -460,7 +466,7 @@ TEST_F(AlexaClientTest, colorControllerSendResponse) {
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
   ASSERT_TRUE(client->colorControllerSendResponse("correlationToken", 3,
                                                   0xFFAABB, 10, false, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -483,7 +489,7 @@ TEST_F(AlexaClientTest, colorControllerSendResponse) {
       "TOKEN\"},\"endpointId\":\"qwerty-3\"},\"payload\":{}}}";
   ASSERT_TRUE(client->colorControllerSendResponse("correlationToken", 3,
                                                   0xFFAABB, 10, true, 0));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -506,7 +512,7 @@ TEST_F(AlexaClientTest, colorControllerSendResponse) {
       "\"qwerty-4-1\"},\"payload\":{}}}";
   ASSERT_TRUE(client->colorControllerSendResponse("correlationToken", 4,
                                                   0x00FF00, 100, true, 1));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(AlexaClientTest, percentageControllerSendResponse) {
@@ -524,7 +530,7 @@ TEST_F(AlexaClientTest, percentageControllerSendResponse) {
       "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
   ASSERT_TRUE(client->percentageControllerSendResponse("correlationToken", 1,
                                                        50, false));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
@@ -541,7 +547,7 @@ TEST_F(AlexaClientTest, percentageControllerSendResponse) {
       "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{}}}";
   ASSERT_TRUE(client->percentageControllerSendResponse("correlationToken", 1,
                                                        60, true));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
-}  // namespace
+} /* namespace testing */

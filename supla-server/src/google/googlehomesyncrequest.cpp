@@ -52,7 +52,7 @@ void supla_google_home_sync_request::execute(void *sthread) {
   getClient()->requestSync(&resultCode);
 
   if (resultCode == 403 || resultCode == 404) {
-    getUser()->googleHome()->on_sync_40x_error();
+    getUser()->googleHomeCredentials()->on_sync_40x_error();
   }
 }
 

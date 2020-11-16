@@ -8,42 +8,45 @@ CPP_SRCS += \
 ../src/test/CDBaseMock.cpp \
 ../src/test/CDBaseTest.cpp \
 ../src/test/CDContainerTest.cpp \
+../src/test/DCPairTest.cpp \
 ../src/test/DeviceChannelTest.cpp \
 ../src/test/ProtoTest.cpp \
 ../src/test/STCDContainer.cpp \
-../src/test/STTrivialHttp.cpp \
-../src/test/STUserSpace.cpp \
 ../src/test/SafeArrayTest.cpp \
 ../src/test/SrpcTest.cpp \
-../src/test/ToolsTest.cpp 
+../src/test/ToolsTest.cpp \
+../src/test/TrivialHttpFactoryMock.cpp \
+../src/test/TrivialHttpMock.cpp 
 
 OBJS += \
 ./src/test/AllTests.o \
 ./src/test/CDBaseMock.o \
 ./src/test/CDBaseTest.o \
 ./src/test/CDContainerTest.o \
+./src/test/DCPairTest.o \
 ./src/test/DeviceChannelTest.o \
 ./src/test/ProtoTest.o \
 ./src/test/STCDContainer.o \
-./src/test/STTrivialHttp.o \
-./src/test/STUserSpace.o \
 ./src/test/SafeArrayTest.o \
 ./src/test/SrpcTest.o \
-./src/test/ToolsTest.o 
+./src/test/ToolsTest.o \
+./src/test/TrivialHttpFactoryMock.o \
+./src/test/TrivialHttpMock.o 
 
 CPP_DEPS += \
 ./src/test/AllTests.d \
 ./src/test/CDBaseMock.d \
 ./src/test/CDBaseTest.d \
 ./src/test/CDContainerTest.d \
+./src/test/DCPairTest.d \
 ./src/test/DeviceChannelTest.d \
 ./src/test/ProtoTest.d \
 ./src/test/STCDContainer.d \
-./src/test/STTrivialHttp.d \
-./src/test/STUserSpace.d \
 ./src/test/SafeArrayTest.d \
 ./src/test/SrpcTest.d \
-./src/test/ToolsTest.d 
+./src/test/ToolsTest.d \
+./src/test/TrivialHttpFactoryMock.d \
+./src/test/TrivialHttpMock.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
