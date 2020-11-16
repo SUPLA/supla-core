@@ -19,8 +19,7 @@
 #ifndef MqttPublisherIntegrationTest_H_
 #define MqttPublisherIntegrationTest_H_
 
-#include "IntegrationTest.h"
-#include
+#include "integration/IntegrationTest.h"
 
 namespace testing {
 

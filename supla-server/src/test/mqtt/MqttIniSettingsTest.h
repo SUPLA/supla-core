@@ -16,28 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTTDATASOURCETEST_H_
-#define MQTTDATASOURCETEST_H_
+#ifndef MQTTINISETTINGSTEST_H_
+#define MQTTINISETTINGSTEST_H_
 
-#include "MqttDataSourceMock.h"
 #include "gtest/gtest.h"  // NOLINT
+#include "mqtt_client_ini_settings.h"
 
 namespace testing {
 
-class MqttDataSourceTest : public Test {
+class MqttIniSettingsTest : public Test {
  protected:
-  MqttDataSourceMock *ds;
-  bool dataExists(void);
-  bool popMessage(const char *scope, int user_id, int device_id, int channel_id,
-                  int idx);
+  supla_mqtt_client_ini_settings *iniSettings;
 
  public:
   virtual void SetUp();
   virtual void TearDown();
-  MqttDataSourceTest();
-  virtual ~MqttDataSourceTest();
+  MqttIniSettingsTest();
+  virtual ~MqttIniSettingsTest();
 };
 
 } /* namespace testing */
 
-#endif /* MQTTDATASOURCETEST_H_ */
+#endif /* MQTTINISETTINGSTEST_H_ */

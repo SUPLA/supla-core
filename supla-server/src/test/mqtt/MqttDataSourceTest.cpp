@@ -21,6 +21,7 @@
 namespace testing {
 
 MqttDataSourceTest::MqttDataSourceTest(void) {}
+MqttDataSourceTest::~MqttDataSourceTest(void) {}
 void MqttDataSourceTest::SetUp() { ds = new MqttDataSourceMock(); }
 void MqttDataSourceTest::TearDown() { delete ds; }
 
