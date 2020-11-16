@@ -10,11 +10,11 @@ mkdir -p /etc/supla-server
 cd supla-server/Test 
 make clean && make all 
 
+cat > /etc/supla-server/supla-test.cfg <<- ENDOFCFG
 [NET]
 cert=/etc/supla-server/cert.crt
 private_key=/etc/supla-server/private.key
 
-cat > /etc/supla-server/supla-test.cfg <<- ENDOFCFG
 [MySQL]
 host=db
 port=3306
