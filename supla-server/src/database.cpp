@@ -2777,3 +2777,192 @@ void database::load_temperatures_and_humidity(int UserID, void *tarr) {
     mysql_stmt_close(stmt);
   }
 }
+
+typedef struct {
+  MYSQL_STMT *stmt;
+  _db_mqtt_data_row *row;
+
+  // Auxiliary variables
+  unsigned long user_timezone_len;
+  my_bool user_timezone_is_null;
+  unsigned long user_email_len;
+  my_bool user_email_is_null;
+  unsigned long user_shortuniqueid_len;
+  my_bool user_shortuniqueid_is_null;
+  int device_enabled;
+  unsigned long device_last_connected_len;
+  my_bool device_last_connected_is_null;
+  unsigned long device_last_ipv4_len;
+  my_bool device_last_ipv4_is_null;
+  unsigned long device_name_len;
+  my_bool device_name_is_null;
+  unsigned long device_softver_len;
+  my_bool device_softver_is_null;
+  unsigned long channel_caption_len;
+  my_bool channel_caption_is_null;
+  int channel_hidden;
+
+} _db_mqtt_query_t;
+
+void *database::mqtt_open_query(int UserID, int DeviceID, int ChannelID,
+                                _db_mqtt_data_row *row) {
+  _db_mqtt_query_t *query =
+      (_db_mqtt_query_t *)malloc(sizeof(_db_mqtt_query_t));
+
+  if (query == NULL) {
+    return NULL;
+  }
+
+  memset(query, 0, sizeof(_db_mqtt_query_t));
+  query->row = row;
+
+  const char sql[] =
+      "SELECT u.`id`, u.`email`, u.`timezone`, u.`short_unique_id`, "
+      "d.`enabled`, DATE_FORMAT(d.`last_connected`, '%Y-%m-%dT%H:%i:%sZ'), "
+      "INET_NTOA(d.`last_ipv4`), d.`manufacturer_id`, d.`name`, "
+      "d.`protocol_version`, d.`software_version`, c.`id`, c.`type`, c.`func`, "
+      "c.`caption`, c.`hidden` FROM `supla_dev_channel` c LEFT JOIN "
+      "`supla_iodevice` d ON d.`id` = c.`iodevice_id` LEFT JOIN `supla_user` u "
+      "ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = true AND (? = 0 "
+      "OR u.`id` = ?) AND (? = 0 OR d.`id` = ?) AND (? = 0 OR c.`id` = ?)";
+
+  MYSQL_BIND pbind[6];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&UserID;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&DeviceID;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&DeviceID;
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&ChannelID;
+
+  pbind[5].buffer_type = MYSQL_TYPE_LONG;
+  pbind[5].buffer = (char *)&ChannelID;
+
+  if (stmt_execute((void **)&query->stmt, sql, pbind, 4, true)) {
+    MYSQL_BIND rbind[16];
+    memset(rbind, 0, sizeof(rbind));
+
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&query->row->user_id;
+    rbind[0].buffer_length = sizeof(query->row->user_id);
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = query->row->user_timezone;
+    rbind[1].buffer_length = sizeof(query->row->user_timezone);
+    rbind[1].length = &query->user_timezone_len;
+    rbind[1].is_null = &query->user_timezone_is_null;
+
+    rbind[2].buffer_type = MYSQL_TYPE_STRING;
+    rbind[2].buffer = query->row->user_email;
+    rbind[2].buffer_length = sizeof(query->row->user_email);
+    rbind[2].length = &query->user_email_len;
+    rbind[2].is_null = &query->user_email_is_null;
+
+    rbind[3].buffer_type = MYSQL_TYPE_STRING;
+    rbind[3].buffer = query->row->user_shortuniqueid;
+    rbind[3].buffer_length = sizeof(query->row->user_shortuniqueid);
+    rbind[3].length = &query->user_shortuniqueid_len;
+    rbind[3].is_null = &query->user_shortuniqueid_is_null;
+
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&query->device_enabled;
+    rbind[4].buffer_length = sizeof(int);
+
+    rbind[5].buffer_type = MYSQL_TYPE_STRING;
+    rbind[5].buffer = query->row->device_last_connected;
+    rbind[5].buffer_length = sizeof(query->row->device_last_connected);
+    rbind[5].length = &query->device_last_connected_len;
+    rbind[5].is_null = &query->device_last_connected_is_null;
+
+    rbind[6].buffer_type = MYSQL_TYPE_STRING;
+    rbind[6].buffer = query->row->device_last_ipv4;
+    rbind[6].buffer_length = sizeof(query->row->device_last_ipv4);
+    rbind[6].length = &query->device_last_ipv4_len;
+    rbind[6].is_null = &query->device_last_ipv4_is_null;
+
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&query->row->device_mfr_id;
+    rbind[7].buffer_length = sizeof(query->row->device_mfr_id);
+
+    rbind[8].buffer_type = MYSQL_TYPE_STRING;
+    rbind[8].buffer = query->row->device_name;
+    rbind[8].buffer_length = sizeof(query->row->device_name);
+    rbind[8].length = &query->device_name_len;
+    rbind[8].is_null = &query->device_name_is_null;
+
+    rbind[9].buffer_type = MYSQL_TYPE_LONG;
+    rbind[9].buffer = (char *)&query->row->device_proto_version;
+    rbind[9].buffer_length = sizeof(query->row->device_proto_version);
+
+    rbind[10].buffer_type = MYSQL_TYPE_STRING;
+    rbind[10].buffer = query->row->device_softver;
+    rbind[10].buffer_length = sizeof(query->row->device_softver);
+    rbind[10].length = &query->device_softver_len;
+    rbind[10].is_null = &query->device_softver_is_null;
+
+    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer = (char *)&query->row->channel_id;
+    rbind[11].buffer_length = sizeof(query->row->channel_id);
+
+    rbind[12].buffer_type = MYSQL_TYPE_LONG;
+    rbind[12].buffer = (char *)&query->row->channel_type;
+    rbind[12].buffer_length = sizeof(query->row->channel_type);
+
+    rbind[13].buffer_type = MYSQL_TYPE_LONG;
+    rbind[13].buffer = (char *)&query->row->channel_func;
+    rbind[13].buffer_length = sizeof(query->row->channel_func);
+
+    rbind[14].buffer_type = MYSQL_TYPE_STRING;
+    rbind[14].buffer = query->row->channel_caption;
+    rbind[14].buffer_length = sizeof(query->row->channel_caption);
+    rbind[14].length = &query->channel_caption_len;
+    rbind[14].is_null = &query->channel_caption_is_null;
+
+    rbind[15].buffer_type = MYSQL_TYPE_LONG;
+    rbind[15].buffer = (char *)&query->channel_hidden;
+    rbind[15].buffer_length = sizeof(int);
+
+    if (mysql_stmt_bind_result(query->stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(query->stmt));
+    } else {
+      mysql_stmt_store_result(query->stmt);
+
+      if (mysql_stmt_num_rows(query->stmt) > 0) {
+        return query;
+      }
+    }
+  }
+
+  mqtt_close_query(query);
+  return NULL;
+}
+
+bool database::mqtt_query_fetch_row(void *_query) {
+  _db_mqtt_query_t *query = static_cast<_db_mqtt_query_t *>(_query);
+  if (query) {
+  }
+  return false;
+}
+
+void database::mqtt_close_query(void *_query) {
+  _db_mqtt_query_t *query = static_cast<_db_mqtt_query_t *>(_query);
+  if (query) {
+    if (query->stmt != NULL) {
+      mysql_stmt_close(query->stmt);
+
+      // set_terminating_byte(cfg->DeviceName, sizeof(cfg->DeviceName),
+      //                    device_name_size, device_name_is_null);
+    }
+    free(query);
+  }
+}

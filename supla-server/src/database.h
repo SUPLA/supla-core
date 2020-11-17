@@ -25,6 +25,28 @@
 #include "proto.h"
 #include "user.h"
 
+#define IPV4_STRING_MAXSIZE 16
+#define DATE_STRING_MAXSIZE 21
+
+typedef struct {
+  int user_id;
+  char user_email[SUPLA_EMAIL_MAXSIZE];
+  char user_timezone[SUPLA_TIMEZONE_MAXSIZE];
+  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
+  bool device_enabled;
+  char device_last_connected[DATE_STRING_MAXSIZE];
+  char device_last_ipv4[IPV4_STRING_MAXSIZE];
+  int device_mfr_id;
+  char device_name[SUPLA_DEVICE_NAME_MAXSIZE];
+  int device_proto_version;
+  char device_softver[SUPLA_SOFTVER_MAXSIZE];
+  int channel_id;
+  int channel_type;
+  int channel_func;
+  char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+  bool channel_hidden;
+} _db_mqtt_data_row;
+
 class database : public dbcommon {
  private:
   virtual char *cfg_get_host(void);
@@ -182,6 +204,10 @@ class database : public dbcommon {
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned _supla_int_t *validity_time_sec);
   void load_temperatures_and_humidity(int UserID, void *tarr);
+  void *mqtt_open_query(int UserID, int DeviceID, int ChannelID,
+                        _db_mqtt_data_row *row);
+  bool mqtt_query_fetch_row(void *query);
+  void mqtt_close_query(void *query);
 };
 
 #endif /* DATABASE_H_ */
