@@ -2848,7 +2848,7 @@ void *database::mqtt_open_query(int UserID, int DeviceID, int ChannelID,
   pbind[5].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&query->stmt, sql, pbind, 4, true)) {
-    MYSQL_BIND rbind[16];
+    MYSQL_BIND rbind[17];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
