@@ -17,14 +17,27 @@
  */
 
 #include <mqtt_publisher_datasource.h>
+#include <string.h>
 
 supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(void)
-    : supla_mqtt_client_datasource() {}
+    : supla_mqtt_client_db_datasource() {
+  memset(&data_row, 0, sizeof(_db_mqtt_data_row_t));
+}
 
 supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
 
 void *supla_mqtt_publisher_datasource::cursor_init(
     const _mqtt_ds_context_t *context) {
+  if (db_connect()) {
+    void *query = get_db()->mqtt_open_query(
+        context->user_id, context->device_id, context->channel_id, &data_row);
+    if (!query) {
+      db_disconnect();
+    }
+
+    return query;
+  }
+
   return NULL;
 }
 
@@ -36,4 +49,9 @@ bool supla_mqtt_publisher_datasource::_pop(const _mqtt_ds_context_t *context,
 }
 
 void supla_mqtt_publisher_datasource::cursor_release(
-    const _mqtt_ds_context_t *context, void *cursor) {}
+    const _mqtt_ds_context_t *context, void *cursor) {
+  if (get_db()) {
+    get_db()->mqtt_close_query(cursor);
+    db_disconnect();
+  }
+}

@@ -9,6 +9,7 @@ C_SRCS += \
 CPP_SRCS += \
 ../src/mqtt/mqtt_client.cpp \
 ../src/mqtt/mqtt_client_datasource.cpp \
+../src/mqtt/mqtt_client_db_datasource.cpp \
 ../src/mqtt/mqtt_client_ini_settings.cpp \
 ../src/mqtt/mqtt_client_library_adapter.cpp \
 ../src/mqtt/mqtt_client_settings.cpp \
@@ -22,6 +23,7 @@ OBJS += \
 ./src/mqtt/mqtt.o \
 ./src/mqtt/mqtt_client.o \
 ./src/mqtt/mqtt_client_datasource.o \
+./src/mqtt/mqtt_client_db_datasource.o \
 ./src/mqtt/mqtt_client_ini_settings.o \
 ./src/mqtt/mqtt_client_library_adapter.o \
 ./src/mqtt/mqtt_client_settings.o \
@@ -37,6 +39,7 @@ C_DEPS += \
 CPP_DEPS += \
 ./src/mqtt/mqtt_client.d \
 ./src/mqtt/mqtt_client_datasource.d \
+./src/mqtt/mqtt_client_db_datasource.d \
 ./src/mqtt/mqtt_client_ini_settings.d \
 ./src/mqtt/mqtt_client_library_adapter.d \
 ./src/mqtt/mqtt_client_settings.d \

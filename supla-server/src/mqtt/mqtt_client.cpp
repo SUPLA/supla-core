@@ -55,6 +55,7 @@ supla_mqtt_client::~supla_mqtt_client(void) {}
 void supla_mqtt_client::job(void *sthread) {
   this->sthread = sthread;
 
+  datasource->thread_init();
   library_adapter->set_on_message_received_callback(
       supla_mqtt_client::on_message_received);
   library_adapter->set_on_connected_callback(supla_mqtt_client::on_connected);
@@ -71,6 +72,7 @@ void supla_mqtt_client::job(void *sthread) {
 
   library_adapter->disconnect();
   library_adapter->cleanup();
+  datasource->thread_cleanup();
 }
 
 void supla_mqtt_client::on_message_received(

@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <list>
+#include "database.h"
 #include "mqtt_client_library_adapter.h"
 
 typedef struct {
@@ -72,14 +73,16 @@ class supla_mqtt_client_datasource {
  protected:
   virtual void *cursor_init(const _mqtt_ds_context_t *context) = 0;
   virtual bool _pop(const _mqtt_ds_context_t *context, void *cursor,
-                   char **topic_name, void **message, size_t *message_size,
-                   bool *eof) = 0;
+                    char **topic_name, void **message, size_t *message_size,
+                    bool *eof) = 0;
   virtual void cursor_release(const _mqtt_ds_context_t *context,
                               void *cursor) = 0;
 
  public:
   supla_mqtt_client_datasource(void);
   virtual ~supla_mqtt_client_datasource(void);
+  void thread_init(void);
+  void thread_cleanup(void);
   bool pop(char **topic_name, void **message, size_t *message_size);
   bool pop(char **topic_name);
 

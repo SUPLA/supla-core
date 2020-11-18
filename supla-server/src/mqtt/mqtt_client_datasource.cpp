@@ -31,6 +31,13 @@ supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
   lck_free(lck);
 }
 
+void supla_mqtt_client_datasource::thread_init(void) {
+}
+
+void supla_mqtt_client_datasource::thread_cleanup(void) {
+}
+
+
 void supla_mqtt_client_datasource::reset_context(_mqtt_ds_context_t *scope) {
   memset(scope, 0, sizeof(_mqtt_ds_context_t));
   scope->scope = MQTTDS_SCOPE_NONE;
@@ -50,6 +57,8 @@ bool supla_mqtt_client_datasource::cursor_should_be_initialized(void) {
   lck_lock(lck);
 
   if (cursor == NULL) {
+    memset(&context, 0, sizeof(_mqtt_ds_context_t));
+
     if (all_data_expected) {
       all_data_expected = false;
       context.scope = MQTTDS_SCOPE_FULL;

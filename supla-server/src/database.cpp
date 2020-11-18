@@ -40,6 +40,32 @@
 #include "tools.h"
 #include "userchannelgroups.h"
 
+typedef struct {
+  MYSQL_STMT *stmt;
+  _db_mqtt_data_row_t *row;
+
+  // Auxiliary variables
+  unsigned long user_email_len;
+  my_bool user_email_is_null;
+  unsigned long user_timezone_len;
+  my_bool user_timezone_is_null;
+  unsigned long user_shortuniqueid_len;
+  my_bool user_shortuniqueid_is_null;
+  int device_enabled;
+  unsigned long device_last_connected_len;
+  my_bool device_last_connected_is_null;
+  unsigned long device_last_ipv4_len;
+  my_bool device_last_ipv4_is_null;
+  unsigned long device_name_len;
+  my_bool device_name_is_null;
+  unsigned long device_softver_len;
+  my_bool device_softver_is_null;
+  unsigned long channel_caption_len;
+  my_bool channel_caption_is_null;
+  int channel_hidden;
+
+} _db_mqtt_query_t;
+
 char *database::cfg_get_host(void) { return scfg_string(CFG_MYSQL_HOST); }
 
 char *database::cfg_get_user(void) { return scfg_string(CFG_MYSQL_USER); }
@@ -2778,34 +2804,8 @@ void database::load_temperatures_and_humidity(int UserID, void *tarr) {
   }
 }
 
-typedef struct {
-  MYSQL_STMT *stmt;
-  _db_mqtt_data_row *row;
-
-  // Auxiliary variables
-  unsigned long user_timezone_len;
-  my_bool user_timezone_is_null;
-  unsigned long user_email_len;
-  my_bool user_email_is_null;
-  unsigned long user_shortuniqueid_len;
-  my_bool user_shortuniqueid_is_null;
-  int device_enabled;
-  unsigned long device_last_connected_len;
-  my_bool device_last_connected_is_null;
-  unsigned long device_last_ipv4_len;
-  my_bool device_last_ipv4_is_null;
-  unsigned long device_name_len;
-  my_bool device_name_is_null;
-  unsigned long device_softver_len;
-  my_bool device_softver_is_null;
-  unsigned long channel_caption_len;
-  my_bool channel_caption_is_null;
-  int channel_hidden;
-
-} _db_mqtt_query_t;
-
 void *database::mqtt_open_query(int UserID, int DeviceID, int ChannelID,
-                                _db_mqtt_data_row *row) {
+                                _db_mqtt_data_row_t *row) {
   _db_mqtt_query_t *query =
       (_db_mqtt_query_t *)malloc(sizeof(_db_mqtt_query_t));
 
@@ -2949,8 +2949,37 @@ void *database::mqtt_open_query(int UserID, int DeviceID, int ChannelID,
 
 bool database::mqtt_query_fetch_row(void *_query) {
   _db_mqtt_query_t *query = static_cast<_db_mqtt_query_t *>(_query);
-  if (query) {
+  if (query && mysql_stmt_fetch(query->stmt)) {
+    set_terminating_byte(query->row->user_email, sizeof(query->row->user_email),
+                         query->user_email_len, query->user_email_is_null);
+    set_terminating_byte(
+        query->row->user_timezone, sizeof(query->row->user_timezone),
+        query->user_timezone_len, query->user_timezone_is_null);
+    set_terminating_byte(
+        query->row->user_shortuniqueid, sizeof(query->row->user_shortuniqueid),
+        query->user_shortuniqueid_len, query->user_shortuniqueid_is_null);
+    set_terminating_byte(query->row->device_last_connected,
+                         sizeof(query->row->device_last_connected),
+                         query->device_last_connected_len,
+                         query->device_last_connected_is_null);
+    set_terminating_byte(
+        query->row->device_last_ipv4, sizeof(query->row->device_last_ipv4),
+        query->device_last_ipv4_len, query->device_last_ipv4_is_null);
+    set_terminating_byte(query->row->device_name,
+                         sizeof(query->row->device_name),
+                         query->device_name_len, query->device_name_is_null);
+    set_terminating_byte(
+        query->row->device_softver, sizeof(query->row->device_softver),
+        query->device_softver_len, query->device_softver_is_null);
+    set_terminating_byte(
+        query->row->channel_caption, sizeof(query->row->channel_caption),
+        query->channel_caption_len, query->channel_caption_is_null);
+
+    query->row->device_enabled = query->device_enabled > 0;
+    query->row->channel_hidden = query->channel_hidden > 0;
+    return true;
   }
+
   return false;
 }
 
@@ -2959,9 +2988,6 @@ void database::mqtt_close_query(void *_query) {
   if (query) {
     if (query->stmt != NULL) {
       mysql_stmt_close(query->stmt);
-
-      // set_terminating_byte(cfg->DeviceName, sizeof(cfg->DeviceName),
-      //                    device_name_size, device_name_is_null);
     }
     free(query);
   }

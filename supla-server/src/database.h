@@ -45,7 +45,7 @@ typedef struct {
   int channel_func;
   char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   bool channel_hidden;
-} _db_mqtt_data_row;
+} _db_mqtt_data_row_t;
 
 class database : public dbcommon {
  private:
@@ -205,7 +205,7 @@ class database : public dbcommon {
                          unsigned _supla_int_t *validity_time_sec);
   void load_temperatures_and_humidity(int UserID, void *tarr);
   void *mqtt_open_query(int UserID, int DeviceID, int ChannelID,
-                        _db_mqtt_data_row *row);
+                        _db_mqtt_data_row_t *row);
   bool mqtt_query_fetch_row(void *query);
   void mqtt_close_query(void *query);
 };

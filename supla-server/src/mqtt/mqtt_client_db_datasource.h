@@ -16,25 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEL_SOURCE_H_
-#define MQTT_CHANNEL_SOURCE_H_
+#ifndef MQTT_CLIENT_DBDATASOURCE_H_
+#define MQTT_CLIENT_DBDATASOURCE_H_
 
-#include "mqtt_client_db_datasource.h"
+#include "database.h"
+#include "mqtt_client_datasource.h"
 
-class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
+class supla_mqtt_client_db_datasource : public supla_mqtt_client_datasource {
  private:
-  _db_mqtt_data_row_t data_row;
+  database *db;
 
  protected:
-  virtual void *cursor_init(const _mqtt_ds_context_t *context);
-  virtual bool _pop(const _mqtt_ds_context_t *context, void *cursor,
-                    char **topic_name, void **message, size_t *message_size,
-                    bool *eof);
-  virtual void cursor_release(const _mqtt_ds_context_t *context, void *cursor);
+
+  bool db_connect(void);
+  void db_disconnect(void);
+  database *get_db(void);
 
  public:
-  supla_mqtt_publisher_datasource(void);
-  virtual ~supla_mqtt_publisher_datasource(void);
+  supla_mqtt_client_db_datasource(void);
+  virtual ~supla_mqtt_client_db_datasource(void);
+  void thread_init(void);
+  void thread_cleanup(void);
 };
 
-#endif /*MQTT_CHANNEL_SOURCE_H_*/
+#endif /*MQTT_CLIENT_DBDATASOURCE_H_*/
