@@ -29,30 +29,51 @@ supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
 
 void *supla_mqtt_publisher_datasource::cursor_init(
     const _mqtt_ds_context_t *context) {
-  if (db_connect()) {
+  void *result = NULL;
+  if (!topic_provider) {
+    topic_provider = new supla_mqtt_message_provider();
+  }
+
+  if (context->scope == MQTTDS_SCOPE_CHANNEL_VALUE) {
+    result = this;
+  } else if (db_connect()) {
     void *query = get_db()->mqtt_open_query(
         context->user_id, context->device_id, context->channel_id, &data_row);
-    if (query) {
-      if (!topic_provider) {
-        topic_provider = new supla_mqtt_topic_provider();
-      }
-    } else {
+    if (!query) {
       db_disconnect();
     }
 
-    return query;
+    result = query;
   }
 
-  return NULL;
+  if (!result && topic_provider) {
+    delete topic_provider;
+    topic_provider = NULL;
+  }
+
+  return result;
 }
 
 bool supla_mqtt_publisher_datasource::_fetch(const _mqtt_ds_context_t *context,
                                              void *cursor, char **topic_name,
                                              void **message,
                                              size_t *message_size, bool *eof) {
-  if (topic_provider->fetch(topic_name, message, message_size)) {
+  if (context->scope == MQTTDS_SCOPE_CHANNEL_VALUE) {
+    if (topic_provider->fetch(topic_name, message, message_size)) {
+      return true;
+    } else {
+      memset(&data_row, 0, sizeof(_db_mqtt_data_row_t));
+      data_row.user_id = context->user_id;
+      data_row.device_id = context->device_id;
+      data_row.channel_id = context->channel_id;
+
+      topic_provider->datarow_changed(&data_row);
+      return topic_provider->fetch(topic_name, message, message_size);
+    }
+  } else if (topic_provider->fetch(topic_name, message, message_size)) {
     return true;
-  } else if (get_db()->mqtt_query_fetch_row(cursor)) {
+  } else if (cursor != this && get_db() &&
+             get_db()->mqtt_query_fetch_row(cursor)) {
     topic_provider->datarow_changed(&data_row);
     return topic_provider->fetch(topic_name, message, message_size);
   }
@@ -63,7 +84,10 @@ bool supla_mqtt_publisher_datasource::_fetch(const _mqtt_ds_context_t *context,
 void supla_mqtt_publisher_datasource::cursor_release(
     const _mqtt_ds_context_t *context, void *cursor) {
   if (get_db()) {
-    get_db()->mqtt_close_query(cursor);
+    if (cursor != this) {
+      get_db()->mqtt_close_query(cursor);
+    }
+
     db_disconnect();
   }
 

@@ -33,6 +33,7 @@ typedef struct {
   char user_email[SUPLA_EMAIL_MAXSIZE];
   char user_timezone[SUPLA_TIMEZONE_MAXSIZE];
   char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
+  int device_id;
   bool device_enabled;
   char device_last_connected[DATE_STRING_MAXSIZE];
   char device_last_ipv4[IPV4_STRING_MAXSIZE];

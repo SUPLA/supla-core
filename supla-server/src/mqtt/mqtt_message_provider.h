@@ -21,14 +21,14 @@
 
 #include "database.h"
 
-class supla_mqtt_topic_provider {
+class supla_mqtt_message_provider {
  private:
   _db_mqtt_data_row_t *data_row;
 
  protected:
  public:
-  supla_mqtt_topic_provider(void);
-  virtual ~supla_mqtt_topic_provider(void);
+  supla_mqtt_message_provider(void);
+  virtual ~supla_mqtt_message_provider(void);
   void datarow_changed(_db_mqtt_data_row_t *data_row);
   bool fetch(char **topic_name, void **message, size_t *message_size);
 };

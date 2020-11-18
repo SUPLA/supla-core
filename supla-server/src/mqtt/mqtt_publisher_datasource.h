@@ -19,12 +19,12 @@
 #ifndef MQTT_CHANNEL_SOURCE_H_
 #define MQTT_CHANNEL_SOURCE_H_
 
+#include <mqtt_message_provider.h>
 #include "mqtt_client_db_datasource.h"
-#include "mqtt_topic_provider.h"
 
 class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
  private:
-  supla_mqtt_topic_provider *topic_provider;
+  supla_mqtt_message_provider *topic_provider;
   _db_mqtt_data_row_t data_row;
 
  protected:

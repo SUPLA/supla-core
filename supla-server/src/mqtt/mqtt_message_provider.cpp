@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_topic_provider.h>
+#include <mqtt_message_provider.h>
 
-supla_mqtt_topic_provider::supla_mqtt_topic_provider(void) {}
+supla_mqtt_message_provider::supla_mqtt_message_provider(void) {}
 
-supla_mqtt_topic_provider::~supla_mqtt_topic_provider(void) {}
+supla_mqtt_message_provider::~supla_mqtt_message_provider(void) {}
 
-void supla_mqtt_topic_provider::datarow_changed(_db_mqtt_data_row_t *data_row) {
+void supla_mqtt_message_provider::datarow_changed(_db_mqtt_data_row_t *data_row) {
 
 }
 
-bool supla_mqtt_topic_provider::fetch(char **topic_name, void **message,
+bool supla_mqtt_message_provider::fetch(char **topic_name, void **message,
                                       size_t *message_size) {
   return false;
 }
