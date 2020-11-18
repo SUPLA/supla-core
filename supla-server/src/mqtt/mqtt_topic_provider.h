@@ -16,27 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEL_SOURCE_H_
-#define MQTT_CHANNEL_SOURCE_H_
+#ifndef MQTT_TOPIC_PROVIDER_H_
+#define MQTT_TOPIC_PROVIDER_H_
 
-#include "mqtt_client_db_datasource.h"
-#include "mqtt_topic_provider.h"
+#include "database.h"
 
-class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
+class supla_mqtt_topic_provider {
  private:
-  supla_mqtt_topic_provider *topic_provider;
-  _db_mqtt_data_row_t data_row;
+  _db_mqtt_data_row_t *data_row;
 
  protected:
-  virtual void *cursor_init(const _mqtt_ds_context_t *context);
-  virtual bool _fetch(const _mqtt_ds_context_t *context, void *cursor,
-                      char **topic_name, void **message, size_t *message_size,
-                      bool *eof);
-  virtual void cursor_release(const _mqtt_ds_context_t *context, void *cursor);
-
  public:
-  supla_mqtt_publisher_datasource(void);
-  virtual ~supla_mqtt_publisher_datasource(void);
+  supla_mqtt_topic_provider(void);
+  virtual ~supla_mqtt_topic_provider(void);
+  void datarow_changed(_db_mqtt_data_row_t *data_row);
+  bool fetch(char **topic_name, void **message, size_t *message_size);
 };
 
-#endif /*MQTT_CHANNEL_SOURCE_H_*/
+#endif /*MQTT_TOPIC_PROVIDER_H_*/

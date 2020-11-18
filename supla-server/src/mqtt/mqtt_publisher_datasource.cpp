@@ -22,6 +22,7 @@
 supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(void)
     : supla_mqtt_client_db_datasource() {
   memset(&data_row, 0, sizeof(_db_mqtt_data_row_t));
+  topic_provider = NULL;
 }
 
 supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
@@ -31,7 +32,11 @@ void *supla_mqtt_publisher_datasource::cursor_init(
   if (db_connect()) {
     void *query = get_db()->mqtt_open_query(
         context->user_id, context->device_id, context->channel_id, &data_row);
-    if (!query) {
+    if (query) {
+      if (!topic_provider) {
+        topic_provider = new supla_mqtt_topic_provider();
+      }
+    } else {
       db_disconnect();
     }
 
@@ -45,6 +50,13 @@ bool supla_mqtt_publisher_datasource::_fetch(const _mqtt_ds_context_t *context,
                                              void *cursor, char **topic_name,
                                              void **message,
                                              size_t *message_size, bool *eof) {
+  if (topic_provider->fetch(topic_name, message, message_size)) {
+    return true;
+  } else if (get_db()->mqtt_query_fetch_row(cursor)) {
+    topic_provider->datarow_changed(&data_row);
+    return topic_provider->fetch(topic_name, message, message_size);
+  }
+
   return false;
 }
 
@@ -53,5 +65,10 @@ void supla_mqtt_publisher_datasource::cursor_release(
   if (get_db()) {
     get_db()->mqtt_close_query(cursor);
     db_disconnect();
+  }
+
+  if (topic_provider) {
+    delete topic_provider;
+    topic_provider = NULL;
   }
 }
