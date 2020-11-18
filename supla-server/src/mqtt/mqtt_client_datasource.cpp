@@ -31,12 +31,9 @@ supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
   lck_free(lck);
 }
 
-void supla_mqtt_client_datasource::thread_init(void) {
-}
+void supla_mqtt_client_datasource::thread_init(void) {}
 
-void supla_mqtt_client_datasource::thread_cleanup(void) {
-}
-
+void supla_mqtt_client_datasource::thread_cleanup(void) {}
 
 void supla_mqtt_client_datasource::reset_context(_mqtt_ds_context_t *scope) {
   memset(scope, 0, sizeof(_mqtt_ds_context_t));
@@ -90,8 +87,8 @@ bool supla_mqtt_client_datasource::cursor_should_be_initialized(void) {
   return result;
 }
 
-bool supla_mqtt_client_datasource::pop(char **topic_name, void **message,
-                                       size_t *message_size) {
+bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
+                                         size_t *message_size) {
   if (cursor_should_be_initialized()) {
     cursor = cursor_init(&context);
   }
@@ -100,7 +97,7 @@ bool supla_mqtt_client_datasource::pop(char **topic_name, void **message,
 
   if (cursor) {
     bool eof = false;
-    result = _pop(&context, cursor, topic_name, message, message_size, &eof);
+    result = _fetch(&context, cursor, topic_name, message, message_size, &eof);
 
     if (!result || eof) {
       cursor_release();
@@ -110,8 +107,8 @@ bool supla_mqtt_client_datasource::pop(char **topic_name, void **message,
   return result;
 }
 
-bool supla_mqtt_client_datasource::pop(char **topic_name) {
-  return pop(topic_name, NULL, NULL);
+bool supla_mqtt_client_datasource::fetch(char **topic_name) {
+  return fetch(topic_name, NULL, NULL);
 }
 
 bool supla_mqtt_client_datasource::is_user_queued(int user_id) {

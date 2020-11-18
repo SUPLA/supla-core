@@ -30,7 +30,7 @@ bool MqttDataSourceTest::dataExists(void) {
   void *message = NULL;
   size_t message_size = 0;
 
-  bool result = ds->pop(&topic_name, &message, &message_size);
+  bool result = ds->fetch(&topic_name, &message, &message_size);
 
   if (message) {
     free(message);
@@ -53,7 +53,7 @@ bool MqttDataSourceTest::popMessage(const char *scope, int user_id,
   char _expected_message[100];
   char _expected_topic_name[100];
 
-  if (!ds->pop(&topic_name, &message, &message_size)) {
+  if (!ds->fetch(&topic_name, &message, &message_size)) {
     EXPECT_TRUE(false);
     return false;
   }
@@ -96,7 +96,7 @@ TEST_F(MqttDataSourceTest, empty) {
   char *topic_name = NULL;
   ASSERT_EQ(ds->initCount(), 0);
   ASSERT_EQ(ds->releaseCount(), 0);
-  ASSERT_FALSE(ds->pop(&topic_name));
+  ASSERT_FALSE(ds->fetch(&topic_name));
   ASSERT_TRUE(topic_name == NULL);
   ASSERT_EQ(ds->initCount(), 0);
   ASSERT_EQ(ds->releaseCount(), 0);

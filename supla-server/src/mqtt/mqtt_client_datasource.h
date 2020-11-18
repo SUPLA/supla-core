@@ -72,9 +72,9 @@ class supla_mqtt_client_datasource {
 
  protected:
   virtual void *cursor_init(const _mqtt_ds_context_t *context) = 0;
-  virtual bool _pop(const _mqtt_ds_context_t *context, void *cursor,
-                    char **topic_name, void **message, size_t *message_size,
-                    bool *eof) = 0;
+  virtual bool _fetch(const _mqtt_ds_context_t *context, void *cursor,
+                      char **topic_name, void **message, size_t *message_size,
+                      bool *eof) = 0;
   virtual void cursor_release(const _mqtt_ds_context_t *context,
                               void *cursor) = 0;
 
@@ -83,8 +83,8 @@ class supla_mqtt_client_datasource {
   virtual ~supla_mqtt_client_datasource(void);
   void thread_init(void);
   void thread_cleanup(void);
-  bool pop(char **topic_name, void **message, size_t *message_size);
-  bool pop(char **topic_name);
+  bool fetch(char **topic_name, void **message, size_t *message_size);
+  bool fetch(char **topic_name);
 
   void on_broker_connected(void);
   void on_userdata_changed(int user_id);

@@ -27,9 +27,9 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
 
  protected:
   virtual void *cursor_init(const _mqtt_ds_context_t *context);
-  virtual bool _pop(const _mqtt_ds_context_t *context, void *cursor,
-                    char **topic_name, void **message, size_t *message_size,
-                    bool *eof);
+  virtual bool _fetch(const _mqtt_ds_context_t *context, void *cursor,
+                      char **topic_name, void **message, size_t *message_size,
+                      bool *eof);
   virtual void cursor_release(const _mqtt_ds_context_t *context, void *cursor);
 
  public:

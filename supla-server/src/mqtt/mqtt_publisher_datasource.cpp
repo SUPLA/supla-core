@@ -41,10 +41,10 @@ void *supla_mqtt_publisher_datasource::cursor_init(
   return NULL;
 }
 
-bool supla_mqtt_publisher_datasource::_pop(const _mqtt_ds_context_t *context,
-                                           void *cursor, char **topic_name,
-                                           void **message, size_t *message_size,
-                                           bool *eof) {
+bool supla_mqtt_publisher_datasource::_fetch(const _mqtt_ds_context_t *context,
+                                             void *cursor, char **topic_name,
+                                             void **message,
+                                             size_t *message_size, bool *eof) {
   return false;
 }
 

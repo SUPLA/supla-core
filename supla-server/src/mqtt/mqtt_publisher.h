@@ -34,10 +34,9 @@ class supla_mqtt_publisher : public supla_mqtt_client {
   virtual void on_message_received(struct mqtt_response_publish *message);
 
  public:
-  supla_mqtt_publisher(
-      supla_mqtt_client_library_adapter *library_adapter,
-      supla_mqtt_client_settings *settings,
-      supla_mqtt_client_datasource *datasource);
+  supla_mqtt_publisher(supla_mqtt_client_library_adapter *library_adapter,
+                       supla_mqtt_client_settings *settings,
+                       supla_mqtt_client_datasource *datasource);
   virtual ~supla_mqtt_publisher(void);
 };
 

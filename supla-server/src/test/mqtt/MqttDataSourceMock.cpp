@@ -33,9 +33,9 @@ void *MqttDataSourceMock::cursor_init(const _mqtt_ds_context_t *context) {
   return this;
 }
 
-bool MqttDataSourceMock::_pop(const _mqtt_ds_context_t *context, void *cursor,
-                              char **topic_name, void **message,
-                              size_t *message_size, bool *eof) {
+bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context, void *cursor,
+                                char **topic_name, void **message,
+                                size_t *message_size, bool *eof) {
   if (idx < 0 || idx > 2) {
     return false;
   }
