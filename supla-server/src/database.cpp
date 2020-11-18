@@ -42,7 +42,7 @@
 
 typedef struct {
   MYSQL_STMT *stmt;
-  _db_mqtt_data_row_t *row;
+ // _db_mqtt_data_row_t *row;
 
   // Auxiliary variables
   unsigned long user_email_len;
@@ -2803,7 +2803,7 @@ void database::load_temperatures_and_humidity(int UserID, void *tarr) {
     mysql_stmt_close(stmt);
   }
 }
-
+/*
 void *database::mqtt_open_query(int UserID, int DeviceID, int ChannelID,
                                 _db_mqtt_data_row_t *row) {
   _db_mqtt_query_t *query =
@@ -2996,3 +2996,5 @@ void database::mqtt_close_query(void *_query) {
     free(query);
   }
 }
+
+*/

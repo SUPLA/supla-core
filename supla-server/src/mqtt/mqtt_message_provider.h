@@ -20,16 +20,18 @@
 #define MQTT_TOPIC_PROVIDER_H_
 
 #include "database.h"
+#include "mqtt_client_settings.h"
 
 class supla_mqtt_message_provider {
  private:
-  _db_mqtt_data_row_t *data_row;
+  supla_mqtt_client_settings *settings;
+  bool include_user_info;
+  int offset;
 
  protected:
  public:
-  supla_mqtt_message_provider(void);
+  supla_mqtt_message_provider(supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_message_provider(void);
-  void datarow_changed(_db_mqtt_data_row_t *data_row);
   bool fetch(char **topic_name, void **message, size_t *message_size);
 };
 

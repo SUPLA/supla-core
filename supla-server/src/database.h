@@ -32,6 +32,11 @@ typedef struct {
   int user_id;
   char user_email[SUPLA_EMAIL_MAXSIZE];
   char user_timezone[SUPLA_TIMEZONE_MAXSIZE];
+} _db_mqtt_userdata_row_t;
+
+typedef struct {
+  int user_id;
+  char user_email[SUPLA_EMAIL_MAXSIZE];
   char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
   int device_id;
   bool device_enabled;
@@ -41,12 +46,18 @@ typedef struct {
   char device_name[SUPLA_DEVICE_NAME_MAXSIZE];
   int device_proto_version;
   char device_softver[SUPLA_SOFTVER_MAXSIZE];
+} _db_mqtt_devicedata_row_t;
+
+typedef struct {
+  int user_id;
+  char user_email[SUPLA_EMAIL_MAXSIZE];
+  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
   int channel_id;
   int channel_type;
   int channel_func;
   char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   bool channel_hidden;
-} _db_mqtt_data_row_t;
+} _db_mqtt_channeldata_row_t;
 
 class database : public dbcommon {
  private:
@@ -205,10 +216,11 @@ class database : public dbcommon {
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned _supla_int_t *validity_time_sec);
   void load_temperatures_and_humidity(int UserID, void *tarr);
-  void *mqtt_open_query(int UserID, int DeviceID, int ChannelID,
-                        _db_mqtt_data_row_t *row);
-  bool mqtt_query_fetch_row(void *query);
-  void mqtt_close_query(void *query);
+
+  void *mqtt_open_userquery(int UserID, _db_mqtt_userdata_row_t *row);
+  bool mqtt_userquery_fetch_row(void *query);
+  void mqtt_close_userquery(void *query);
+
 };
 
 #endif /* DATABASE_H_ */

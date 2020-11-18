@@ -19,20 +19,29 @@
 #ifndef MQTT_CHANNEL_SOURCE_H_
 #define MQTT_CHANNEL_SOURCE_H_
 
-#include <mqtt_message_provider.h>
 #include "mqtt_client_db_datasource.h"
 
 class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
  private:
-  supla_mqtt_message_provider *topic_provider;
-  _db_mqtt_data_row_t data_row;
+  bool fetch_users;
+  bool fetch_devices;
+  bool fetch_channels;
+  bool fetch_values;
+
+  bool fetch_user(const _mqtt_ds_context_t *context, char **topic_name,
+                  void **message, size_t *message_size);
+  bool fetch_device(const _mqtt_ds_context_t *context, char **topic_name,
+                    void **message, size_t *message_size);
+  bool fetch_channel(const _mqtt_ds_context_t *context, char **topic_name,
+                     void **message, size_t *message_size);
+  bool fetch_value(const _mqtt_ds_context_t *context, char **topic_name,
+                   void **message, size_t *message_size);
 
  protected:
-  virtual void *cursor_init(const _mqtt_ds_context_t *context);
-  virtual bool _fetch(const _mqtt_ds_context_t *context, void *cursor,
-                      char **topic_name, void **message, size_t *message_size,
-                      bool *eof);
-  virtual void cursor_release(const _mqtt_ds_context_t *context, void *cursor);
+  virtual bool context_open(const _mqtt_ds_context_t *context);
+  virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
+                      void **message, size_t *message_size);
+  virtual void context_close(const _mqtt_ds_context_t *context);
 
  public:
   supla_mqtt_publisher_datasource(void);

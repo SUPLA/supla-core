@@ -21,21 +21,21 @@
 #include <string.h>
 
 MqttDataSourceMock::MqttDataSourceMock(void) : supla_mqtt_client_datasource() {
-  this->init_count = 0;
-  this->release_count = 0;
+  this->open_count = 0;
+  this->close_count = 0;
   this->idx = -1;
 }
 MqttDataSourceMock::~MqttDataSourceMock(void) {}
 
-void *MqttDataSourceMock::cursor_init(const _mqtt_ds_context_t *context) {
-  init_count++;
+bool MqttDataSourceMock::context_open(const _mqtt_ds_context_t *context) {
+  open_count++;
   idx = 0;
-  return this;
+  return true;
 }
 
-bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context, void *cursor,
+bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context,
                                 char **topic_name, void **message,
-                                size_t *message_size, bool *eof) {
+                                size_t *message_size) {
   if (idx < 0 || idx > 2) {
     return false;
   }
@@ -72,19 +72,14 @@ bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context, void *cursor,
     memcpy(*message, scope, *message_size);
   }
 
-  if (idx == 1 && eof) {
-    *eof = true;
-  }
-
   idx++;
   return true;
 }
 
-void MqttDataSourceMock::cursor_release(const _mqtt_ds_context_t *context,
-                                        void *cursor) {
-  release_count++;
+void MqttDataSourceMock::context_close(const _mqtt_ds_context_t *context) {
+  close_count++;
 }
 
-int MqttDataSourceMock::initCount(void) { return init_count; }
+int MqttDataSourceMock::openCount(void) { return open_count; }
 
-int MqttDataSourceMock::releaseCount(void) { return release_count; }
+int MqttDataSourceMock::closeCount(void) { return close_count; }

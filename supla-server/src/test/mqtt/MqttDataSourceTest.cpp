@@ -94,17 +94,17 @@ bool MqttDataSourceTest::popMessage(const char *scope, int user_id,
 
 TEST_F(MqttDataSourceTest, empty) {
   char *topic_name = NULL;
-  ASSERT_EQ(ds->initCount(), 0);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
   ASSERT_FALSE(ds->fetch(&topic_name));
   ASSERT_TRUE(topic_name == NULL);
-  ASSERT_EQ(ds->initCount(), 0);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
 }
 
 TEST_F(MqttDataSourceTest, onBrokerConnected) {
-  ASSERT_EQ(ds->initCount(), 0);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ds->on_channelvalue_changed(55, 1, 123);
   ds->on_devicedata_changed(56, 2);
@@ -118,20 +118,20 @@ TEST_F(MqttDataSourceTest, onBrokerConnected) {
 
   ASSERT_TRUE(popMessage("SCOPE_FULL", 0, 0, 0, 0));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("SCOPE_FULL", 0, 0, 0, 1));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_FALSE(dataExists());
 }
 
 TEST_F(MqttDataSourceTest, onUserDataChanged) {
-  ASSERT_EQ(ds->initCount(), 0);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ds->on_channelvalue_changed(55, 1, 123);
   ds->on_devicedata_changed(55, 2);
@@ -146,32 +146,32 @@ TEST_F(MqttDataSourceTest, onUserDataChanged) {
 
   ASSERT_TRUE(popMessage("SCOPE_USER", 55, 0, 0, 0));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("SCOPE_USER", 55, 0, 0, 1));
 
   ds->on_userdata_changed(52);
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_TRUE(popMessage("SCOPE_USER", 52, 0, 0, 0));
 
-  ASSERT_EQ(ds->initCount(), 2);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_TRUE(popMessage("SCOPE_USER", 52, 0, 0, 1));
 
-  ASSERT_EQ(ds->initCount(), 2);
-  ASSERT_EQ(ds->releaseCount(), 2);
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 2);
 
   ASSERT_FALSE(dataExists());
 }
 
 TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
-  ASSERT_EQ(ds->initCount(), 0);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ds->on_channelvalue_changed(55, 1, 123);
   ds->on_devicedata_changed(55, 1);
@@ -186,30 +186,30 @@ TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 1, 0, 0));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 1, 0, 1));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 2, 0, 0));
 
-  ASSERT_EQ(ds->initCount(), 2);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 2, 0, 1));
 
-  ASSERT_EQ(ds->initCount(), 2);
-  ASSERT_EQ(ds->releaseCount(), 2);
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 2);
 
   ASSERT_FALSE(dataExists());
 }
 
 TEST_F(MqttDataSourceTest, onChannelValueChanged) {
-  ASSERT_EQ(ds->initCount(), 0);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ds->on_channelvalue_changed(55, 15, 124);
   ds->on_channelvalue_changed(55, 15, 125);
@@ -220,23 +220,23 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
 
   ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 124, 0));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 0);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 124, 1));
 
-  ASSERT_EQ(ds->initCount(), 1);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 125, 0));
 
-  ASSERT_EQ(ds->initCount(), 2);
-  ASSERT_EQ(ds->releaseCount(), 1);
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 125, 1));
 
-  ASSERT_EQ(ds->initCount(), 2);
-  ASSERT_EQ(ds->releaseCount(), 2);
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 2);
 
   ASSERT_FALSE(dataExists());
 }

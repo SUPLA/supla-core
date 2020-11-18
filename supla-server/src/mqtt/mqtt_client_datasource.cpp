@@ -22,9 +22,9 @@
 
 supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {
   lck = lck_init();
-  cursor = NULL;
+  context_opened = false;
   all_data_expected = false;
-  reset_context(&context);
+  context_structure_clear(&context);
 }
 
 supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
@@ -35,25 +35,27 @@ void supla_mqtt_client_datasource::thread_init(void) {}
 
 void supla_mqtt_client_datasource::thread_cleanup(void) {}
 
-void supla_mqtt_client_datasource::reset_context(_mqtt_ds_context_t *scope) {
+void supla_mqtt_client_datasource::context_structure_clear(
+    _mqtt_ds_context_t *scope) {
   memset(scope, 0, sizeof(_mqtt_ds_context_t));
   scope->scope = MQTTDS_SCOPE_NONE;
 }
 
-void supla_mqtt_client_datasource::cursor_release(void) {
-  if (cursor) {
-    cursor_release(&context, cursor);
-    cursor = NULL;
+void supla_mqtt_client_datasource::context_open(void) {
+  if (context_opened) {
+    context_close(&context);
+    context_opened = false;
   }
 
-  reset_context(&context);
+  context_structure_clear(&context);
+  context_open(&context);
 }
 
-bool supla_mqtt_client_datasource::cursor_should_be_initialized(void) {
+bool supla_mqtt_client_datasource::context_should_be_opened(void) {
   bool result = false;
   lck_lock(lck);
 
-  if (cursor == NULL) {
+  if (!context_opened) {
     memset(&context, 0, sizeof(_mqtt_ds_context_t));
 
     if (all_data_expected) {
@@ -89,18 +91,19 @@ bool supla_mqtt_client_datasource::cursor_should_be_initialized(void) {
 
 bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
                                          size_t *message_size) {
-  if (cursor_should_be_initialized()) {
-    cursor = cursor_init(&context);
+  if (context_should_be_opened()) {
+    context_opened = context_open(&context);
   }
 
   bool result = false;
 
-  if (cursor) {
+  if (context_opened) {
     bool eof = false;
-    result = _fetch(&context, cursor, topic_name, message, message_size, &eof);
+    result = _fetch(&context, topic_name, message, message_size);
 
-    if (!result || eof) {
-      cursor_release();
+    if (!result) {
+      context_close(&context);
+      context_opened = false;
     }
   }
 

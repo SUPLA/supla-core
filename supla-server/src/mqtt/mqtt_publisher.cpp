@@ -50,7 +50,6 @@ void supla_mqtt_publisher::on_iterate(void) {
 
   if (datasource->fetch(&topic_name, &message, &message_size)) {
     publish(topic_name, message, message_size, qos_level, retain);
-  } else if (datasource->fetch(&topic_name, &message, &message_size)) {
   }
 
   if (topic_name) {

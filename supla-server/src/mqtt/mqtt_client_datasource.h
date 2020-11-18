@@ -53,7 +53,7 @@ typedef struct {
 class supla_mqtt_client_datasource {
  private:
   void *lck;
-  void *cursor;
+  bool context_opened;
 
   _mqtt_ds_context_t context;
 
@@ -66,17 +66,15 @@ class supla_mqtt_client_datasource {
   bool is_device_queued(int device_id);
   bool is_channel_queued(int channel_id);
 
-  bool cursor_should_be_initialized(void);
-  void reset_context(_mqtt_ds_context_t *scope);
-  void cursor_release(void);
+  bool context_should_be_opened(void);
+  void context_open(void);
+  void context_structure_clear(_mqtt_ds_context_t *scope);
 
  protected:
-  virtual void *cursor_init(const _mqtt_ds_context_t *context) = 0;
-  virtual bool _fetch(const _mqtt_ds_context_t *context, void *cursor,
-                      char **topic_name, void **message, size_t *message_size,
-                      bool *eof) = 0;
-  virtual void cursor_release(const _mqtt_ds_context_t *context,
-                              void *cursor) = 0;
+  virtual bool context_open(const _mqtt_ds_context_t *context) = 0;
+  virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
+                      void **message, size_t *message_size) = 0;
+  virtual void context_close(const _mqtt_ds_context_t *context) = 0;
 
  public:
   supla_mqtt_client_datasource(void);

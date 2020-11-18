@@ -18,15 +18,11 @@
 
 #include <mqtt_message_provider.h>
 
-supla_mqtt_message_provider::supla_mqtt_message_provider(void) {}
+#define MP_OFFSET_BEGIN -1
+
+supla_mqtt_message_provider::supla_mqtt_message_provider(
+    supla_mqtt_client_settings *settings) {
+  this->settings = settings;
+}
 
 supla_mqtt_message_provider::~supla_mqtt_message_provider(void) {}
-
-void supla_mqtt_message_provider::datarow_changed(_db_mqtt_data_row_t *data_row) {
-
-}
-
-bool supla_mqtt_message_provider::fetch(char **topic_name, void **message,
-                                      size_t *message_size) {
-  return false;
-}
