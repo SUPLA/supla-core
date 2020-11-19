@@ -308,7 +308,7 @@ void supla_http_request_queue::logStuckWarning(void) {
   }
 }
 
-void supla_http_request_queue::logMetrics(int min_interval_sec) {
+void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
   if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);

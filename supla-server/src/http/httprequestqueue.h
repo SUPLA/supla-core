@@ -66,7 +66,7 @@ class supla_http_request_queue {
   void recalculateTime(void);
   void raiseEvent(void);
   void logStuckWarning(void);
-  void logMetrics(int min_interval_sec);
+  void logMetrics(unsigned int min_interval_sec);
 
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
