@@ -28,6 +28,12 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   bool fetch_channels;
   bool fetch_values;
 
+  void *user_query;
+  void *device_query;
+  void *channel_query;
+
+  _db_mqtt_userdata_row_t *userdata_row;
+
   bool fetch_user(const _mqtt_ds_context_t *context, char **topic_name,
                   void **message, size_t *message_size);
   bool fetch_device(const _mqtt_ds_context_t *context, char **topic_name,
@@ -36,6 +42,10 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
                      void **message, size_t *message_size);
   bool fetch_value(const _mqtt_ds_context_t *context, char **topic_name,
                    void **message, size_t *message_size);
+
+  void close_userquery();
+  void close_devicequery();
+  void close_channelquery();
 
  protected:
   virtual bool context_open(const _mqtt_ds_context_t *context);
