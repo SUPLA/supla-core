@@ -261,6 +261,8 @@ void supla_http_request_queue::iterate(void *q_sthread) {
                   "Http request - thread count limit exceeded (%i)",
                   threadCountLimit());
         warn_msg = true;
+      } else {
+        eh_wait(main_eh, 10000);
       }
     } else {
       recalculateTime(&now);
@@ -348,7 +350,9 @@ void supla_http_request_queue::recalculateTime(struct timeval *now) {
   time_of_the_next_iteration_usec = now_usec + (time > 0 ? time : 0);
   lck_unlock(lck);
 
-  raiseEvent();
+  if (queueSize() > 0) {
+    raiseEvent();
+  }
 }
 
 void supla_http_request_queue::recalculateTime(void) {
