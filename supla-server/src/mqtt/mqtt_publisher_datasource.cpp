@@ -29,6 +29,8 @@ supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(void)
   this->device_query = NULL;
   this->channel_query = NULL;
   this->userdata_row = NULL;
+  this->devicedata_row = NULL;
+  this->channeldata_row = NULL;
 }
 
 supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
@@ -56,6 +58,8 @@ bool supla_mqtt_publisher_datasource::context_open(
     case MQTTDS_SCOPE_CHANNEL_VALUE:
       fetch_values = true;
       break;
+    default:
+      break;
   }
 
   return true;
@@ -66,13 +70,11 @@ bool supla_mqtt_publisher_datasource::fetch_user(
     size_t *message_size) {
   if (user_query == NULL) {
     if (db_connect() && get_db()) {
-      user_query =
-          get_db()->mqtt_open_userquery(context->user_id, userdata_row);
+      user_query = get_db()->open_userquery(context->user_id, userdata_row);
     }
   }
 
   if (user_query) {
-
   }
 
   return false;
@@ -137,7 +139,7 @@ bool supla_mqtt_publisher_datasource::_fetch(const _mqtt_ds_context_t *context,
 void supla_mqtt_publisher_datasource::close_userquery(void) {
   if (user_query) {
     if (get_db()) {
-      get_db()->mqtt_close_userquery(user_query);
+      get_db()->close_userquery(user_query);
     }
     user_query = NULL;
   }
@@ -151,7 +153,7 @@ void supla_mqtt_publisher_datasource::close_userquery(void) {
 void supla_mqtt_publisher_datasource::close_devicequery(void) {
   if (device_query) {
     if (get_db()) {
-      get_db()->mqtt_close_devicequery(user_query);
+      get_db()->close_devicequery(device_query);
     }
     device_query = NULL;
   }
@@ -165,7 +167,7 @@ void supla_mqtt_publisher_datasource::close_devicequery(void) {
 void supla_mqtt_publisher_datasource::close_channelquery(void) {
   if (channel_query) {
     if (get_db()) {
-      get_db()->mqtt_close_channelquery(user_query);
+      get_db()->close_channelquery(channel_query);
     }
     channel_query = NULL;
   }

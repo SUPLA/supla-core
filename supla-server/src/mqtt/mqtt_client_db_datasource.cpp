@@ -19,7 +19,7 @@
 #include <mqtt_client_db_datasource.h>
 
 supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(void) {
-  db = NULL;
+  mqtt_db = NULL;
 }
 
 supla_mqtt_client_db_datasource::~supla_mqtt_client_db_datasource(void) {}
@@ -35,22 +35,24 @@ void supla_mqtt_client_db_datasource::thread_cleanup(void) {
 }
 
 bool supla_mqtt_client_db_datasource::db_connect(void) {
-  if (!db) {
-    if (!db->connect()) {
-      delete db;
-      db = NULL;
+  if (!mqtt_db) {
+    mqtt_db = new supla_mqtt_db();
+
+    if (mqtt_db && !mqtt_db->connect()) {
+      delete mqtt_db;
+      mqtt_db = NULL;
     }
   }
 
-  return db != NULL;
+  return mqtt_db != NULL;
 }
 
 void supla_mqtt_client_db_datasource::db_disconnect(void) {
-  if (db) {
-    db->disconnect();
-    delete db;
-    db = NULL;
+  if (mqtt_db) {
+    mqtt_db->disconnect();
+    delete mqtt_db;
+    mqtt_db = NULL;
   }
 }
 
-database *supla_mqtt_client_db_datasource::get_db(void) { return db; }
+supla_mqtt_db *supla_mqtt_client_db_datasource::get_db(void) { return mqtt_db; }

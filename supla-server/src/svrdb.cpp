@@ -16,26 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CLIENT_DBDATASOURCE_H_
-#define MQTT_CLIENT_DBDATASOURCE_H_
+#include "svrdb.h"
+#include "svrcfg.h"
 
-#include "mqtt_client_datasource.h"
-#include "mqtt_db.h"
+svrdb::svrdb(void) : dbcommon() {}
 
-class supla_mqtt_client_db_datasource : public supla_mqtt_client_datasource {
- private:
-  supla_mqtt_db *mqtt_db;
+svrdb::~svrdb(void) {}
 
- protected:
-  bool db_connect(void);
-  void db_disconnect(void);
-  supla_mqtt_db *get_db(void);
+char *svrdb::cfg_get_host(void) { return scfg_string(CFG_MYSQL_HOST); }
 
- public:
-  supla_mqtt_client_db_datasource(void);
-  virtual ~supla_mqtt_client_db_datasource(void);
-  void thread_init(void);
-  void thread_cleanup(void);
-};
+char *svrdb::cfg_get_user(void) { return scfg_string(CFG_MYSQL_USER); }
 
-#endif /*MQTT_CLIENT_DBDATASOURCE_H_*/
+char *svrdb::cfg_get_password(void) { return scfg_string(CFG_MYSQL_PASSWORD); }
+
+char *svrdb::cfg_get_database(void) { return scfg_string(CFG_MYSQL_DB); }
+
+int svrdb::cfg_get_port(void) { return scfg_int(CFG_MYSQL_PORT); }

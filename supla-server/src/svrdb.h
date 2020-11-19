@@ -16,26 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CLIENT_DBDATASOURCE_H_
-#define MQTT_CLIENT_DBDATASOURCE_H_
+#ifndef SVRDB_H_
+#define SVRDB_H_
 
-#include "mqtt_client_datasource.h"
-#include "mqtt_db.h"
+#include <dbcommon.h>
 
-class supla_mqtt_client_db_datasource : public supla_mqtt_client_datasource {
- private:
-  supla_mqtt_db *mqtt_db;
-
+class svrdb : public dbcommon {
  protected:
-  bool db_connect(void);
-  void db_disconnect(void);
-  supla_mqtt_db *get_db(void);
+  virtual char *cfg_get_host(void);
+  virtual char *cfg_get_user(void);
+  virtual char *cfg_get_password(void);
+  virtual char *cfg_get_database(void);
+  virtual int cfg_get_port(void);
 
  public:
-  supla_mqtt_client_db_datasource(void);
-  virtual ~supla_mqtt_client_db_datasource(void);
-  void thread_init(void);
-  void thread_cleanup(void);
+  svrdb(void);
+  virtual ~svrdb(void);
 };
 
-#endif /*MQTT_CLIENT_DBDATASOURCE_H_*/
+#endif /* SVRDB_H_ */

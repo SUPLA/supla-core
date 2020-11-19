@@ -31,8 +31,9 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   void *user_query;
   void *device_query;
   void *channel_query;
-
-  _db_mqtt_userdata_row_t *userdata_row;
+  _mqtt_db_data_row_user_t *userdata_row;
+  _mqtt_db_data_row_device_t *devicedata_row;
+  _mqtt_db_data_row_channel_t *channeldata_row;
 
   bool fetch_user(const _mqtt_ds_context_t *context, char **topic_name,
                   void **message, size_t *message_size);

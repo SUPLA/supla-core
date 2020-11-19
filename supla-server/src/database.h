@@ -20,53 +20,13 @@
 #define DATABASE_H_
 
 #include "client.h"
-#include "db.h"
+#include "svrdb.h"
 #include "device.h"
 #include "proto.h"
 #include "user.h"
 
-#define IPV4_STRING_MAXSIZE 16
-#define DATE_STRING_MAXSIZE 21
-
-typedef struct {
-  int user_id;
-  char user_email[SUPLA_EMAIL_MAXSIZE];
-  char user_timezone[SUPLA_TIMEZONE_MAXSIZE];
-} _db_mqtt_userdata_row_t;
-
-typedef struct {
-  int user_id;
-  char user_email[SUPLA_EMAIL_MAXSIZE];
-  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
-  int device_id;
-  bool device_enabled;
-  char device_last_connected[DATE_STRING_MAXSIZE];
-  char device_last_ipv4[IPV4_STRING_MAXSIZE];
-  int device_mfr_id;
-  char device_name[SUPLA_DEVICE_NAME_MAXSIZE];
-  int device_proto_version;
-  char device_softver[SUPLA_SOFTVER_MAXSIZE];
-} _db_mqtt_devicedata_row_t;
-
-typedef struct {
-  int user_id;
-  char user_email[SUPLA_EMAIL_MAXSIZE];
-  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
-  int channel_id;
-  int channel_type;
-  int channel_func;
-  char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
-  bool channel_hidden;
-} _db_mqtt_channeldata_row_t;
-
-class database : public dbcommon {
+class database : public svrdb {
  private:
-  virtual char *cfg_get_host(void);
-  virtual char *cfg_get_user(void);
-  virtual char *cfg_get_password(void);
-  virtual char *cfg_get_database(void);
-  virtual int cfg_get_port(void);
-
   bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
             bool *is_enabled);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
@@ -216,10 +176,6 @@ class database : public dbcommon {
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned _supla_int_t *validity_time_sec);
   void load_temperatures_and_humidity(int UserID, void *tarr);
-
-  void *mqtt_open_userquery(int UserID, _db_mqtt_userdata_row_t *row);
-  bool mqtt_userquery_fetch_row(void *query);
-  void mqtt_close_userquery(void *query);
 
 };
 

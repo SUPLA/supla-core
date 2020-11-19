@@ -25,12 +25,13 @@ CPP_SRCS += \
 ../src/cdcontainer.cpp \
 ../src/database.cpp \
 ../src/datalogger.cpp \
-../src/db.cpp \
+../src/dbcommon.cpp \
 ../src/dcpair.cpp \
 ../src/ipcctrl.cpp \
 ../src/objcontainer.cpp \
 ../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
+../src/svrdb.cpp \
 ../src/voiceassistantclient.cpp 
 
 OBJS += \
@@ -40,7 +41,7 @@ OBJS += \
 ./src/cfg.o \
 ./src/database.o \
 ./src/datalogger.o \
-./src/db.o \
+./src/dbcommon.o \
 ./src/dcpair.o \
 ./src/eh.o \
 ./src/ini.o \
@@ -58,6 +59,7 @@ OBJS += \
 ./src/sthread.o \
 ./src/supla-socket.o \
 ./src/svrcfg.o \
+./src/svrdb.o \
 ./src/tools.o \
 ./src/voiceassistantclient.o 
 
@@ -83,12 +85,13 @@ CPP_DEPS += \
 ./src/cdcontainer.d \
 ./src/database.d \
 ./src/datalogger.d \
-./src/db.d \
+./src/dbcommon.d \
 ./src/dcpair.d \
 ./src/ipcctrl.d \
 ./src/objcontainer.d \
 ./src/objcontaineritem.d \
 ./src/serverconnection.d \
+./src/svrdb.d \
 ./src/voiceassistantclient.d 
 
 
