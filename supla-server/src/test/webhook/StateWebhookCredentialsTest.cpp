@@ -69,13 +69,13 @@ TEST_F(StateWebhookCredentialsTest, getHost) {
   c->set(NULL, NULL, 0, "https://localhost", NULL);
   host = c->getHost();
   ASSERT_FALSE(host == NULL);
-  ASSERT_TRUE(strcmp(host, "localhost") == 0);
+  ASSERT_EQ(strcmp(host, "localhost"), 0);
   free(host);
 
   c->set(NULL, NULL, 0, "https://localhost/xyz.php", NULL);
   host = c->getHost();
   ASSERT_FALSE(host == NULL);
-  ASSERT_TRUE(strcmp(host, "localhost") == 0);
+  ASSERT_EQ(strcmp(host, "localhost"), 0);
   free(host);
 
   delete c;
@@ -94,19 +94,19 @@ TEST_F(StateWebhookCredentialsTest, getResource) {
   c->set(NULL, NULL, 0, "https://localhost", NULL);
   resource = c->getResource();
   ASSERT_FALSE(resource == NULL);
-  ASSERT_TRUE(strcmp(resource, "/") == 0);
+  ASSERT_EQ(strcmp(resource, "/"), 0);
   free(resource);
 
   c->set(NULL, NULL, 0, "https://localhost/xyz.php", NULL);
   resource = c->getResource();
   ASSERT_FALSE(resource == NULL);
-  ASSERT_TRUE(strcmp(resource, "/xyz.php") == 0);
+  ASSERT_EQ(strcmp(resource, "/xyz.php"), 0);
   free(resource);
 
   c->set(NULL, NULL, 0, "https://localhost/api/xyz.php", NULL);
   resource = c->getResource();
   ASSERT_FALSE(resource == NULL);
-  ASSERT_TRUE(strcmp(resource, "/api/xyz.php") == 0);
+  ASSERT_EQ(strcmp(resource, "/api/xyz.php"), 0);
   free(resource);
 
   delete c;
