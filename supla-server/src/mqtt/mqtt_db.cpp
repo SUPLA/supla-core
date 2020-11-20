@@ -53,7 +53,6 @@ typedef struct {
   my_bool device_name_is_null;
   unsigned long device_softver_len;
   my_bool device_softver_is_null;
-
 } _mqtt_db_devicequery_t;
 
 typedef struct {
@@ -69,7 +68,6 @@ typedef struct {
   unsigned long channel_caption_len;
   my_bool channel_caption_is_null;
   int channel_hidden;
-
 } _mqtt_db_channelquery_t;
 
 supla_mqtt_db::supla_mqtt_db(void) : svrdb() {

@@ -30,7 +30,7 @@ class supla_mqtt_message_provider {
 
  protected:
  public:
-  supla_mqtt_message_provider(supla_mqtt_client_settings *settings);
+  explicit supla_mqtt_message_provider(supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_message_provider(void);
   bool fetch(char **topic_name, void **message, size_t *message_size);
 };

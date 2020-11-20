@@ -74,8 +74,8 @@ bool supla_mqtt_publisher_datasource::fetch_user(
     }
   }
 
-  if (user_query) {
-  }
+  // if (user_query) {
+  // }
 
   return false;
 }

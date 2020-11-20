@@ -49,7 +49,8 @@ class supla_mqtt_client_library_adapter {
   _on_connected_cb on_connected_callback;
 
  public:
-  supla_mqtt_client_library_adapter(supla_mqtt_client_settings *settings);
+  explicit supla_mqtt_client_library_adapter(
+      supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_client_library_adapter(void);
   virtual void client_connect(supla_mqtt_client *supla_client_instance) = 0;
   virtual bool is_connected(void) = 0;

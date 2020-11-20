@@ -130,7 +130,6 @@ supla_mqttc_library_adapter::supla_mqttc_library_adapter(
   this->unable_to_connect_notified = false;
   this->supla_client_instance = NULL;
 
-  ;
   m.instance = this;
   m.__recvall = supla_mqttc_library_adapter::__mqtt_pal_recvall;
   m.__sendall = supla_mqttc_library_adapter::__mqtt_pal_sendall;

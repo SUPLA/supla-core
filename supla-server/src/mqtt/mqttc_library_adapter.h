@@ -68,7 +68,7 @@ class supla_mqttc_library_adapter : public supla_mqtt_client_library_adapter {
   void reconnect(struct mqtt_client *client);
 
  public:
-  supla_mqttc_library_adapter(supla_mqtt_client_settings *settings);
+  explicit supla_mqttc_library_adapter(supla_mqtt_client_settings *settings);
   virtual ~supla_mqttc_library_adapter(void);
   virtual void client_connect(supla_mqtt_client *supla_client_instance);
   virtual bool is_connected(void);
