@@ -15,7 +15,13 @@ cpplint ./supla-server/src/device/*
 cpplint ./supla-server/src/google/* 
 cpplint ./supla-server/src/http/* 
 cpplint ./supla-server/src/user/* 
+cpplint --exclude=./supla-server/src/mqtt/mqtt.c --exclude=./supla-server/src/mqtt/mqtt.h ./supla-server/src/mqtt/*
 cpplint ./supla-server/src/test/* 
+cpplint ./supla-server/src/test/alexa/* 
+cpplint ./supla-server/src/test/google/* 
+cpplint ./supla-server/src/test/integration/* 
+cpplint ./supla-server/src/test/mqtt/* 
+cpplint ./supla-server/src/test/webhook/* 
 cpplint ./supla-scheduler/src/* 
 cpplint ./supla-scheduler/src/test/* 
 cpplint ./supla-dev/src/* 
