@@ -22,7 +22,7 @@ CPP_SRCS += \
 ../src/action_shutreveal.cpp \
 ../src/action_turn_onoff.cpp \
 ../src/database.cpp \
-../src/db.cpp \
+../src/dbcommon.cpp \
 ../src/ipcclient.cpp \
 ../src/queue.cpp \
 ../src/supla-scheduler.cpp \
@@ -36,7 +36,7 @@ OBJS += \
 ./src/action_turn_onoff.o \
 ./src/cfg.o \
 ./src/database.o \
-./src/db.o \
+./src/dbcommon.o \
 ./src/eh.o \
 ./src/ini.o \
 ./src/ipcclient.o \
@@ -70,7 +70,7 @@ CPP_DEPS += \
 ./src/action_shutreveal.d \
 ./src/action_turn_onoff.d \
 ./src/database.d \
-./src/db.d \
+./src/dbcommon.d \
 ./src/ipcclient.d \
 ./src/queue.d \
 ./src/supla-scheduler.d \

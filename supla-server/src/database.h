@@ -20,9 +20,9 @@
 #define DATABASE_H_
 
 #include "client.h"
-#include "svrdb.h"
 #include "device.h"
 #include "proto.h"
+#include "svrdb.h"
 #include "user.h"
 
 class database : public svrdb {
@@ -176,7 +176,6 @@ class database : public svrdb {
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned _supla_int_t *validity_time_sec);
   void load_temperatures_and_humidity(int UserID, void *tarr);
-
 };
 
 #endif /* DATABASE_H_ */
