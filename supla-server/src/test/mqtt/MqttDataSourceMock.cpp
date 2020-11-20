@@ -37,15 +37,14 @@ bool MqttDataSourceMock::context_open(const _mqtt_ds_context_t *context) {
 bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context,
                                 char **topic_name, void **message,
                                 size_t *message_size) {
-  if (idx < 0 || idx > 2) {
+  if (idx < 0 || idx >= 2) {
     return false;
   }
 
   if (topic_name) {
     *topic_name = (char *)malloc(100);
-    snprintf(*topic_name, sizeof(*topic_name),
-             "/user/%i/device/%i/channel/%i/%i", context->user_id,
-             context->device_id, context->channel_id, idx);
+    snprintf(*topic_name, 100, "/user/%i/device/%i/channel/%i/%i",  // NOLINT
+             context->user_id, context->device_id, context->channel_id, idx);
   }
 
   if (message && message_size) {
@@ -75,6 +74,7 @@ bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context,
   }
 
   idx++;
+
   return true;
 }
 

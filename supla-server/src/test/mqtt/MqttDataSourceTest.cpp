@@ -90,6 +90,7 @@ bool MqttDataSourceTest::popMessage(const char *scope, int user_id,
     if (strcmp(topic_name, _expected_topic_name) == 0) {
       pass++;
     } else {
+      printf("%s|%s\n", _expected_topic_name, topic_name);
       EXPECT_TRUE(false);
     }
 
@@ -132,9 +133,11 @@ TEST_F(MqttDataSourceTest, onBrokerConnected) {
   ASSERT_TRUE(popMessage("SCOPE_FULL", 0, 0, 0, 1));
 
   ASSERT_EQ(ds->openCount(), 1);
-  ASSERT_EQ(ds->closeCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_FALSE(dataExists());
+
+  ASSERT_EQ(ds->closeCount(), 1);
 }
 
 TEST_F(MqttDataSourceTest, onUserDataChanged) {
@@ -161,6 +164,10 @@ TEST_F(MqttDataSourceTest, onUserDataChanged) {
 
   ds->on_userdata_changed(52);
 
+  ASSERT_FALSE(dataExists());
+
+  ds->on_userdata_changed(52);
+
   ASSERT_EQ(ds->openCount(), 1);
   ASSERT_EQ(ds->closeCount(), 1);
 
@@ -172,9 +179,11 @@ TEST_F(MqttDataSourceTest, onUserDataChanged) {
   ASSERT_TRUE(popMessage("SCOPE_USER", 52, 0, 0, 1));
 
   ASSERT_EQ(ds->openCount(), 2);
-  ASSERT_EQ(ds->closeCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 1);
 
   ASSERT_FALSE(dataExists());
+  ASSERT_EQ(ds->openCount(), 2);
+  ASSERT_EQ(ds->closeCount(), 2);
 }
 
 TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
@@ -199,6 +208,8 @@ TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 1, 0, 1));
 
+  ASSERT_FALSE(dataExists());
+
   ASSERT_EQ(ds->openCount(), 1);
   ASSERT_EQ(ds->closeCount(), 1);
 
@@ -209,10 +220,10 @@ TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 2, 0, 1));
 
+  ASSERT_FALSE(dataExists());
+
   ASSERT_EQ(ds->openCount(), 2);
   ASSERT_EQ(ds->closeCount(), 2);
-
-  ASSERT_FALSE(dataExists());
 }
 
 TEST_F(MqttDataSourceTest, onChannelValueChanged) {
@@ -233,6 +244,8 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
 
   ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 124, 1));
 
+  ASSERT_FALSE(dataExists());
+
   ASSERT_EQ(ds->openCount(), 1);
   ASSERT_EQ(ds->closeCount(), 1);
 
@@ -243,10 +256,11 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
 
   ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 125, 1));
 
+  ASSERT_FALSE(dataExists());
+
   ASSERT_EQ(ds->openCount(), 2);
   ASSERT_EQ(ds->closeCount(), 2);
 
-  ASSERT_FALSE(dataExists());
 }
 
 } /* namespace testing */
