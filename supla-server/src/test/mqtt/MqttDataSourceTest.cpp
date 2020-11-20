@@ -260,7 +260,6 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
 
   ASSERT_EQ(ds->openCount(), 2);
   ASSERT_EQ(ds->closeCount(), 2);
-
 }
 
 } /* namespace testing */

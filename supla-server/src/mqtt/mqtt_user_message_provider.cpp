@@ -28,9 +28,21 @@ supla_mqtt_user_message_provider::~supla_mqtt_user_message_provider(void) {}
 bool supla_mqtt_user_message_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
-  if (row == NULL) {
-    return false;
+  if (row != NULL) {
+    switch (index) {
+      case 0:
+        return create_message(topic_prefix, row->user_email, topic_name,
+                              message, message_size, "/account/timezone",
+                              row->user_timezone, false);
+        break;
+      case 1:
+        return create_message(topic_prefix, row->user_email, topic_name,
+                              message, message_size, "/account/shortuniqueid",
+                              row->user_shortuniqueid, false);
+        break;
+    }
   }
+
   return false;
 }
 
