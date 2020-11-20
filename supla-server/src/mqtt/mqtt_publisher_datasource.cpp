@@ -18,9 +18,17 @@
 
 #include <mqtt_publisher_datasource.h>
 #include <string.h>
+#include "mqtt_channel_message_provider.h"
+#include "mqtt_device_message_provider.h"
+#include "mqtt_user_message_provider.h"
 
-supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(void)
-    : supla_mqtt_client_db_datasource() {
+#define MPD_DATATYPE_USER 1
+#define MPD_DATATYPE_DEVICE 2
+#define MPD_DATATYPE_CHANNEL 3
+
+supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(
+    supla_mqtt_client_settings *settings)
+    : supla_mqtt_client_db_datasource(settings) {
   this->fetch_users = false;
   this->fetch_devices = false;
   this->fetch_channels = false;
@@ -31,6 +39,9 @@ supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(void)
   this->userdata_row = NULL;
   this->devicedata_row = NULL;
   this->channeldata_row = NULL;
+  this->user_message_provider = NULL;
+  this->device_message_provider = NULL;
+  this->channel_message_provider = NULL;
 }
 
 supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
@@ -65,31 +76,148 @@ bool supla_mqtt_publisher_datasource::context_open(
   return true;
 }
 
-bool supla_mqtt_publisher_datasource::fetch_user(
-    const _mqtt_ds_context_t *context, char **topic_name, void **message,
-    size_t *message_size) {
-  if (user_query == NULL) {
+void *supla_mqtt_publisher_datasource::datarow_malloc(int datatype) {
+  switch (datatype) {
+    case MPD_DATATYPE_USER:
+      return malloc(sizeof(_mqtt_db_data_row_user_t));
+    case MPD_DATATYPE_DEVICE:
+      return malloc(sizeof(_mqtt_db_data_row_device_t));
+    case MPD_DATATYPE_CHANNEL:
+      return malloc(sizeof(_mqtt_db_data_row_channel_t));
+  }
+
+  return NULL;
+}
+
+void *supla_mqtt_publisher_datasource::open_query(
+    int datatype, const _mqtt_ds_context_t *context, void *data_row) {
+  switch (datatype) {
+    case MPD_DATATYPE_USER:
+      return get_db()->open_userquery(
+          context->user_id, static_cast<_mqtt_db_data_row_user_t *>(data_row));
+    case MPD_DATATYPE_DEVICE:
+      return get_db()->open_devicequery(
+          context->user_id, context->device_id,
+          static_cast<_mqtt_db_data_row_device_t *>(data_row));
+    case MPD_DATATYPE_CHANNEL:
+      return get_db()->open_channelquery(
+          context->user_id, context->device_id, context->channel_id,
+          static_cast<_mqtt_db_data_row_channel_t *>(data_row));
+  }
+
+  return NULL;
+}
+
+bool supla_mqtt_publisher_datasource::db_fetch_row(int datatype, void *query,
+                                                   void *data_row) {
+  switch (datatype) {
+    case MPD_DATATYPE_USER:
+      return get_db()->userquery_fetch_row(query);
+    case MPD_DATATYPE_DEVICE:
+      return get_db()->devicequery_fetch_row(query);
+    case MPD_DATATYPE_CHANNEL:
+      return get_db()->channelquery_fetch_row(query);
+  }
+
+  return false;
+}
+
+supla_mqtt_message_provider *supla_mqtt_publisher_datasource::new_provider(
+    int datatype, void *data_row) {
+  switch (datatype) {
+    case MPD_DATATYPE_USER:
+      return new supla_mqtt_user_message_provider();
+    case MPD_DATATYPE_DEVICE:
+      return new supla_mqtt_device_message_provider();
+    case MPD_DATATYPE_CHANNEL:
+      return new supla_mqtt_channel_message_provider();
+  }
+
+  return NULL;
+}
+
+void supla_mqtt_publisher_datasource::set_provider_data_row(
+    int datatype, supla_mqtt_message_provider *provider, void *data_row) {
+  switch (datatype) {
+    case MPD_DATATYPE_USER:
+      static_cast<supla_mqtt_user_message_provider *>(provider)->set_data_row(
+          static_cast<_mqtt_db_data_row_user_t *>(data_row));
+      break;
+    case MPD_DATATYPE_DEVICE:
+      static_cast<supla_mqtt_device_message_provider *>(provider)->set_data_row(
+          static_cast<_mqtt_db_data_row_device_t *>(data_row));
+      break;
+    case MPD_DATATYPE_CHANNEL:
+      static_cast<supla_mqtt_channel_message_provider *>(provider)
+          ->set_data_row(static_cast<_mqtt_db_data_row_channel_t *>(data_row));
+      break;
+  }
+}
+
+bool supla_mqtt_publisher_datasource::fetch(
+    int datatype, void **query, void **data_row,
+    supla_mqtt_message_provider **provider, const _mqtt_ds_context_t *context,
+    char **topic_name, void **message, size_t *message_size) {
+  if (*query == NULL) {
     if (db_connect() && get_db()) {
-      user_query = get_db()->open_userquery(context->user_id, userdata_row);
+      if (*data_row == NULL) {
+        *data_row = datarow_malloc(datatype);
+      }
+      if (*data_row) {
+        *query = open_query(datatype, context, *data_row);
+        if (*query && !db_fetch_row(datatype, *query, *data_row)) {
+          return false;
+        }
+      }
     }
   }
 
-  // if (user_query) {
-  // }
+  if (*query) {
+    if (*provider == NULL) {
+      *provider = new_provider(datatype, *data_row);
+      set_provider_data_row(datatype, *provider, *data_row);
+    }
+
+    if (*provider) {
+      if ((*provider)->fetch(get_settings()->getPrefix(), topic_name, message,
+                             message_size)) {
+        return true;
+      } else {
+        if (!db_fetch_row(datatype, *query, *data_row)) {
+          return false;
+        }
+        set_provider_data_row(datatype, *provider, *data_row);
+      }
+      return (*provider)->fetch(get_settings()->getPrefix(), topic_name,
+                                message, message_size);
+    }
+  }
 
   return false;
+}
+
+bool supla_mqtt_publisher_datasource::fetch_user(
+    const _mqtt_ds_context_t *context, char **topic_name, void **message,
+    size_t *message_size) {
+  return fetch(MPD_DATATYPE_USER, &user_query, &userdata_row,
+               &user_message_provider, context, topic_name, message,
+               message_size);
 }
 
 bool supla_mqtt_publisher_datasource::fetch_device(
     const _mqtt_ds_context_t *context, char **topic_name, void **message,
     size_t *message_size) {
-  return false;
+  return fetch(MPD_DATATYPE_DEVICE, &device_query, &devicedata_row,
+               &device_message_provider, context, topic_name, message,
+               message_size);
 }
 
 bool supla_mqtt_publisher_datasource::fetch_channel(
     const _mqtt_ds_context_t *context, char **topic_name, void **message,
     size_t *message_size) {
-  return false;
+  return fetch(MPD_DATATYPE_CHANNEL, &channel_query, &channeldata_row,
+               &channel_message_provider, context, topic_name, message,
+               message_size);
 }
 
 bool supla_mqtt_publisher_datasource::fetch_value(
@@ -148,6 +276,12 @@ void supla_mqtt_publisher_datasource::close_userquery(void) {
     free(userdata_row);
     userdata_row = NULL;
   }
+
+  if (user_message_provider) {
+    delete static_cast<supla_mqtt_user_message_provider *>(
+        user_message_provider);
+    user_message_provider = NULL;
+  }
 }
 
 void supla_mqtt_publisher_datasource::close_devicequery(void) {
@@ -162,6 +296,12 @@ void supla_mqtt_publisher_datasource::close_devicequery(void) {
     free(devicedata_row);
     devicedata_row = NULL;
   }
+
+  if (device_message_provider) {
+    delete static_cast<supla_mqtt_device_message_provider *>(
+        device_message_provider);
+    device_message_provider = NULL;
+  }
 }
 
 void supla_mqtt_publisher_datasource::close_channelquery(void) {
@@ -175,6 +315,12 @@ void supla_mqtt_publisher_datasource::close_channelquery(void) {
   if (channeldata_row) {
     free(channeldata_row);
     channeldata_row = NULL;
+  }
+
+  if (channel_message_provider) {
+    delete static_cast<supla_mqtt_channel_message_provider *>(
+        channel_message_provider);
+    channel_message_provider = NULL;
   }
 }
 

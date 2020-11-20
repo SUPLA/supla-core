@@ -23,6 +23,7 @@
 #include <list>
 #include "database.h"
 #include "mqtt_client_library_adapter.h"
+#include "mqtt_client_settings.h"
 
 typedef struct {
   int user_id;
@@ -54,6 +55,7 @@ class supla_mqtt_client_datasource {
  private:
   void *lck;
   bool context_opened;
+  supla_mqtt_client_settings *settings = NULL;
 
   _mqtt_ds_context_t context;
 
@@ -71,13 +73,14 @@ class supla_mqtt_client_datasource {
   void context_structure_clear(_mqtt_ds_context_t *scope);
 
  protected:
+  supla_mqtt_client_settings *get_settings(void);
   virtual bool context_open(const _mqtt_ds_context_t *context) = 0;
   virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
                       void **message, size_t *message_size) = 0;
   virtual void context_close(const _mqtt_ds_context_t *context) = 0;
 
  public:
-  supla_mqtt_client_datasource(void);
+  explicit supla_mqtt_client_datasource(supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_client_datasource(void);
   void thread_init(void);
   void thread_cleanup(void);

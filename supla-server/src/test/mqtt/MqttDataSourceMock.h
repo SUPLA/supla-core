@@ -34,7 +34,7 @@ class MqttDataSourceMock : public supla_mqtt_client_datasource {
   virtual void context_close(const _mqtt_ds_context_t *context);
 
  public:
-  MqttDataSourceMock(void);
+  explicit MqttDataSourceMock(supla_mqtt_client_settings *settings);
   virtual ~MqttDataSourceMock(void);
   int openCount(void);
   int closeCount(void);

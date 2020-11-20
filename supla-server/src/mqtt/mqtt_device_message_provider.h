@@ -16,28 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_MESSAGE_PROVIDER_H_
-#define MQTT_MESSAGE_PROVIDER_H_
+#ifndef MQTT_DEVICE_MESSAGE_PROVIDER_H_
+#define MQTT_DEVICE_MESSAGE_PROVIDER_H_
 
-#include "database.h"
-#include "mqtt_client_settings.h"
+#include "mqtt_db.h"
+#include "mqtt_message_provider.h"
 
-class supla_mqtt_message_provider {
+class supla_mqtt_device_message_provider : public supla_mqtt_message_provider {
  private:
-  unsigned short message_count;
-  unsigned short index;
+  _mqtt_db_data_row_device_t *row;
 
  protected:
-  void set_message_count(unsigned short message_count);
-  virtual bool get_message_at_index(unsigned short index,
-                                    const char *topic_prefix, char **topic_name,
-                                    void **message, size_t *message_size) = 0;
+  bool get_message_at_index(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size);
 
  public:
-  supla_mqtt_message_provider(void);
-  virtual ~supla_mqtt_message_provider(void);
-  bool fetch(const char *topic_prefix, char **topic_name, void **message,
-             size_t *message_size);
+  supla_mqtt_device_message_provider(void);
+  virtual ~supla_mqtt_device_message_provider(void);
+  void set_data_row(_mqtt_db_data_row_device_t *row);
 };
 
-#endif /*MQTT_MESSAGE_PROVIDER_H_*/
+#endif /*MQTT_USER_MESSAGE_PROVIDER_H_*/

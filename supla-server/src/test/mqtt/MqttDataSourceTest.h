@@ -21,11 +21,13 @@
 
 #include "MqttDataSourceMock.h"
 #include "gtest/gtest.h"  // NOLINT
+#include "mqtt_client_ini_settings.h"
 
 namespace testing {
 
 class MqttDataSourceTest : public Test {
  protected:
+  supla_mqtt_client_ini_settings *iniSettings;
   MqttDataSourceMock *ds;
   bool dataExists(void);
   bool popMessage(const char *scope, int user_id, int device_id, int channel_id,

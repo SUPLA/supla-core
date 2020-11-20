@@ -20,15 +20,21 @@
 #include <string.h>
 #include "lck.h"
 
-supla_mqtt_client_datasource::supla_mqtt_client_datasource(void) {
+supla_mqtt_client_datasource::supla_mqtt_client_datasource(
+    supla_mqtt_client_settings *settings) {
   lck = lck_init();
   context_opened = false;
   all_data_expected = false;
+  this->settings = settings;
   context_structure_clear(&context);
 }
 
 supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
   lck_free(lck);
+}
+
+supla_mqtt_client_settings *supla_mqtt_client_datasource::get_settings(void) {
+  return settings;
 }
 
 void supla_mqtt_client_datasource::thread_init(void) {}

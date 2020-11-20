@@ -31,7 +31,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
   iniSettings = new supla_mqtt_client_ini_settings();
   libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
-  dataSource = new supla_mqtt_publisher_datasource();
+  dataSource = new supla_mqtt_publisher_datasource(iniSettings);
 
   publisher = new supla_mqtt_publisher(libraryAdapter, iniSettings, dataSource);
   publisher->start();

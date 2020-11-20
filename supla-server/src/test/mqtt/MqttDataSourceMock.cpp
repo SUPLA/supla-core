@@ -20,7 +20,8 @@
 #include <stdio.h>
 #include <string.h>
 
-MqttDataSourceMock::MqttDataSourceMock(void) : supla_mqtt_client_datasource() {
+MqttDataSourceMock::MqttDataSourceMock(supla_mqtt_client_settings *settings)
+    : supla_mqtt_client_datasource(settings) {
   this->open_count = 0;
   this->close_count = 0;
   this->idx = -1;

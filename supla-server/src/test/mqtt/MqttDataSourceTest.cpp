@@ -22,8 +22,16 @@ namespace testing {
 
 MqttDataSourceTest::MqttDataSourceTest(void) {}
 MqttDataSourceTest::~MqttDataSourceTest(void) {}
-void MqttDataSourceTest::SetUp() { ds = new MqttDataSourceMock(); }
-void MqttDataSourceTest::TearDown() { delete ds; }
+
+void MqttDataSourceTest::SetUp() {
+  iniSettings = new supla_mqtt_client_ini_settings();
+  ds = new MqttDataSourceMock(iniSettings);
+}
+
+void MqttDataSourceTest::TearDown() {
+  delete ds;
+  delete iniSettings;
+}
 
 bool MqttDataSourceTest::dataExists(void) {
   char *topic_name = NULL;

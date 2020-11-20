@@ -16,27 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CLIENT_DBDATASOURCE_H_
-#define MQTT_CLIENT_DBDATASOURCE_H_
+#include <mqtt_channel_message_provider.h>
 
-#include "mqtt_client_datasource.h"
-#include "mqtt_db.h"
+supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
+    : supla_mqtt_message_provider() {
+  row = NULL;
+}
 
-class supla_mqtt_client_db_datasource : public supla_mqtt_client_datasource {
- private:
-  supla_mqtt_db *mqtt_db;
+supla_mqtt_channel_message_provider::~supla_mqtt_channel_message_provider(
+    void) {}
 
- protected:
-  bool db_connect(void);
-  void db_disconnect(void);
-  supla_mqtt_db *get_db(void);
+bool supla_mqtt_channel_message_provider::get_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (row == NULL) {
+    return false;
+  }
+  return false;
+}
 
- public:
-  explicit supla_mqtt_client_db_datasource(
-      supla_mqtt_client_settings *settings);
-  virtual ~supla_mqtt_client_db_datasource(void);
-  void thread_init(void);
-  void thread_cleanup(void);
-};
-
-#endif /*MQTT_CLIENT_DBDATASOURCE_H_*/
+void supla_mqtt_channel_message_provider::set_data_row(
+    _mqtt_db_data_row_channel_t *row) {
+  this->row = row;
+  set_message_count(4);
+}

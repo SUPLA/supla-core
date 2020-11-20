@@ -18,8 +18,10 @@
 
 #include <mqtt_client_db_datasource.h>
 
-supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(void) {
-  mqtt_db = NULL;
+supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(
+    supla_mqtt_client_settings *settings)
+    : supla_mqtt_client_datasource(settings) {
+  this->mqtt_db = NULL;
 }
 
 supla_mqtt_client_db_datasource::~supla_mqtt_client_db_datasource(void) {}
