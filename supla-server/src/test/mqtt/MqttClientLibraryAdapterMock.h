@@ -27,7 +27,7 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   void *lck;
 
  public:
-  MqttClientLibraryAdapterMock(supla_mqtt_client_settings *settings);
+  explicit MqttClientLibraryAdapterMock(supla_mqtt_client_settings *settings);
   ~MqttClientLibraryAdapterMock(void);
   virtual void client_connect(supla_mqtt_client *supla_client_instance);
   virtual bool is_connected(void);
