@@ -66,10 +66,90 @@ TEST_F(MqttUserMessageProviderTest, fetchAllWithoutPrefix) {
 
   provider->set_data_row(&row_user);
 
-  ASSERT_TRUE(
-      fetchAndCompare(provider, "/account/timezone", "Europe/Warsaw", false));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "/account/timezone",
+                              "Europe/Warsaw", false));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/account/shortuniqueid",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "/account/shortuniqueid",
+                              "7720767494dd87196e1896c7cbab707c", false));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttUserMessageProviderTest, fetchAllWithEmptyPrefix) {
+  _mqtt_db_data_row_user_t row_user;
+  fillUserData(&row_user);
+
+  provider->set_data_row(&row_user);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "", "/account/timezone",
+                              "Europe/Warsaw", false));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "", "/account/shortuniqueid",
+                              "7720767494dd87196e1896c7cbab707c", false));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttUserMessageProviderTest, fetchAllWithBadPrefix) {
+  _mqtt_db_data_row_user_t row_user;
+  fillUserData(&row_user);
+
+  provider->set_data_row(&row_user);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "abcd", "/account/timezone",
+                              "Europe/Warsaw", false));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "abcd", "/account/shortuniqueid",
+                              "7720767494dd87196e1896c7cbab707c", false));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttUserMessageProviderTest, fetchAllWithCorrectPrefix) {
+  _mqtt_db_data_row_user_t row_user;
+  fillUserData(&row_user);
+
+  provider->set_data_row(&row_user);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/abcd/xyz",
+                              "/abcd/xyz/account/timezone", "Europe/Warsaw",
+                              false));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/abcd/xyz",
+                              "/abcd/xyz/account/shortuniqueid",
+                              "7720767494dd87196e1896c7cbab707c", false));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttUserMessageProviderTest, fetchAllWithEmptyEmail) {
+  _mqtt_db_data_row_user_t row_user;
+  fillUserData(&row_user);
+
+  provider->set_data_row(&row_user);
+  row_user.user_email[0] = 0;
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "/account/timezone",
+                              "Europe/Warsaw", false));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "/account/shortuniqueid",
+                              "7720767494dd87196e1896c7cbab707c", false));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttUserMessageProviderTest, fetchAllWithCorrectEmail) {
+  _mqtt_db_data_row_user_t row_user;
+  fillUserData(&row_user);
+
+  provider->set_data_row(&row_user);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%",
+                              "/user@supla.org/account/timezone",
+                              "Europe/Warsaw", false));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%",
+                              "/user@supla.org/account/shortuniqueid",
                               "7720767494dd87196e1896c7cbab707c", false));
 
   ASSERT_FALSE(dataExists(provider));

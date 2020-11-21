@@ -45,13 +45,13 @@ bool MqttMessageProviderTest::dataExists(
 }
 
 bool MqttMessageProviderTest::fetchAndCompare(
-    supla_mqtt_message_provider *provider, const char *topic_name,
-    const char *message, bool include_zero_byte) {
+    supla_mqtt_message_provider *provider, const char *prefix,
+    const char *topic_name, const char *message, bool include_zero_byte) {
   char *_topic_name = NULL;
   void *_message = NULL;
   size_t _message_size = 0;
 
-  bool result = provider->fetch(NULL, NULL, &_message, &_message_size);
+  bool result = provider->fetch(prefix, NULL, &_message, &_message_size);
 
   EXPECT_FALSE(result);
   EXPECT_TRUE(_message == NULL);
@@ -64,7 +64,7 @@ bool MqttMessageProviderTest::fetchAndCompare(
 
   _message_size = 0;
 
-  result = provider->fetch(NULL, &_topic_name, &_message, &_message_size);
+  result = provider->fetch(prefix, &_topic_name, &_message, &_message_size);
 
   EXPECT_TRUE(result);
   EXPECT_FALSE(_topic_name == NULL);

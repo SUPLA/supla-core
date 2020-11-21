@@ -54,7 +54,8 @@ bool supla_mqtt_message_provider::create_message(
   bool result = false;
 
   if (topic_prefix &&
-      (prefix_len = strnlen(topic_prefix, MQTT_MAX_TOPIC_NAME_SIZE)) > 0) {
+      (prefix_len = strnlen(topic_prefix, MQTT_MAX_TOPIC_NAME_SIZE)) > 0 &&
+      topic_prefix[0] == '/') {
     if (strncmp(topic_prefix, "/%email%", MQTT_MAX_TOPIC_NAME_SIZE) == 0) {
       if (email && (email_len = strnlen(email, SUPLA_EMAIL_MAXSIZE)) > 0) {
         prefix_len = email_len + 1;
@@ -63,6 +64,8 @@ bool supla_mqtt_message_provider::create_message(
         email_len = 0;
       }
     }
+  } else {
+    prefix_len = 0;
   }
 
   tn_size += prefix_len + 1;
@@ -79,7 +82,7 @@ bool supla_mqtt_message_provider::create_message(
       snprintf(*topic_name_out, tn_size, "/%s", email);
       offset = email_len + 1;
     } else if (prefix_len) {
-      snprintf(*topic_name_out, tn_size, "%s", email);
+      snprintf(*topic_name_out, tn_size, "%s", topic_prefix);
       offset = prefix_len;
     }
 
