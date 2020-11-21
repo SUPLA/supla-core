@@ -71,7 +71,6 @@ bool MqttMessageProviderTest::fetchAndCompare(
 
   if (_topic_name) {
     if (strcmp(_topic_name, topic_name) != 0) {
-      printf("%s|%s\n", _topic_name, topic_name);
       EXPECT_TRUE(false);
       result = false;
     }

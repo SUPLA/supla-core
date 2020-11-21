@@ -17,6 +17,7 @@
  */
 
 #include <mqtt_message_provider.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -32,19 +33,25 @@ supla_mqtt_message_provider::~supla_mqtt_message_provider(void) {}
 
 bool supla_mqtt_message_provider::create_message(
     const char *topic_prefix, const char *email, char **topic_name_out,
-    void **message, size_t *message_size, const char *topic_name_in,
-    const char *message_string_in, bool include_null_byte) {
+    void **message, size_t *message_size, const char *message_string_in,
+    bool include_null_byte, const char *topic_name_in, ...) {
   if (topic_name_in == NULL || topic_name_out == NULL) {
     return false;
   }
-  size_t tn_size = strnlen(topic_name_in, MQTT_MAX_TOPIC_NAME_SIZE);
+
+  va_list args;
+  va_start(args, topic_name_in);
+
+  size_t tn_size = vsnprintf(NULL, 0, topic_name_in, args);
 
   if (tn_size == 0) {
+    va_end(args);
     return false;
   }
 
   size_t prefix_len = 0;
   size_t email_len = 0;
+  bool result = false;
 
   if (topic_prefix &&
       (prefix_len = strnlen(topic_prefix, MQTT_MAX_TOPIC_NAME_SIZE)) > 0) {
@@ -59,11 +66,26 @@ bool supla_mqtt_message_provider::create_message(
   }
 
   tn_size += prefix_len + 1;
+  if (tn_size > MQTT_MAX_TOPIC_NAME_SIZE) {
+    tn_size = MQTT_MAX_TOPIC_NAME_SIZE;
+  }
+
   *topic_name_out = (char *)malloc(tn_size);
+
   if (*topic_name_out) {
-    snprintf(*topic_name_out, tn_size, "%s%s%s", email_len ? "/" : "",
-             email_len ? email : (prefix_len ? topic_prefix : ""),
-             topic_name_in);
+    size_t offset = 0;
+
+    if (email_len) {
+      snprintf(*topic_name_out, tn_size, "/%s", email);
+      offset = email_len + 1;
+    } else if (prefix_len) {
+      snprintf(*topic_name_out, tn_size, "%s", email);
+      offset = prefix_len;
+    }
+
+    vsnprintf(&(*topic_name_out)[offset], tn_size - offset, topic_name_in,
+              args);
+    va_end(args);
 
     if (message && message_string_in) {
       size_t size = strnlen(message_string_in, MQTT_MAX_MESSAGE_SIZE);
@@ -80,10 +102,10 @@ bool supla_mqtt_message_provider::create_message(
       }
     }
 
-    return true;
+    result = true;
   }
 
-  return false;
+  return result;
 }
 
 void supla_mqtt_message_provider::set_message_count(

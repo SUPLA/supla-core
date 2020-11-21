@@ -30,8 +30,8 @@ class supla_mqtt_message_provider {
  protected:
   bool create_message(const char *topic_prefix, const char *email,
                       char **topic_name_out, void **message,
-                      size_t *message_size, const char *topic_name_in,
-                      const char *message_string_in, bool include_null_byte);
+                      size_t *message_size, const char *message_string_in,
+                      bool include_null_byte, const char *topic_name_in, ...);
 
   void set_message_count(unsigned short message_count);
   virtual bool get_message_at_index(unsigned short index,
