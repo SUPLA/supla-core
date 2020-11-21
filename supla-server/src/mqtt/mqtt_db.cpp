@@ -189,7 +189,7 @@ void *supla_mqtt_db::open_devicequery(int UserID, int DeviceID,
 
   const char sql[] =
       "SELECT u.`email`, d.`id`, d.`enabled`, DATE_FORMAT(d.`last_connected`, "
-      "'%Y-%m-%dT%H:%i:%sZ'), INET_NTOA(d.`last_ipv4`), d.`manufacturer_id`, "
+      "'%Y-%m-%dT%TZ'), INET_NTOA(d.`last_ipv4`), d.`manufacturer_id`, "
       "d.`name`, d.`protocol_version`, d.`software_version` FROM "
       "`supla_iodevice` d LEFT JOIN `supla_user` u ON u.id = d.`user_id` WHERE "
       "u.`mqtt_broker_enabled` = true AND (? = 0 OR u.`id` = ?) AND (? = 0 OR "
