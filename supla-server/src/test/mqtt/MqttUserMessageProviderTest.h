@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTTMESSAGEPROVIDERTEST_H_
-#define MQTTMESSAGEPROVIDERTEST_H_
+#ifndef MQTTDEVICEMESSAGEPROVIDERTEST_H_
+#define MQTTDEVICEMESSAGEPROVIDERTEST_H_
 
 #include "MqttMessageProviderTest.h"
 #include "gtest/gtest.h"  // NOLINT
@@ -40,4 +40,4 @@ class MqttUserMessageProviderTest : public MqttMessageProviderTest {
 
 } /* namespace testing */
 
-#endif /* MQTTMESSAGEPROVIDERTEST_H_ */
+#endif /* MQTTDEVICEMESSAGEPROVIDERTEST_H_ */
