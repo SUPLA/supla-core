@@ -31,7 +31,7 @@ void MqttDeviceMessageProviderTest::SetUp() {
 void MqttDeviceMessageProviderTest::TearDown() { delete provider; }
 
 void MqttDeviceMessageProviderTest::fillUserData(
-    _mqtt_db_data_row_device_t *row_user) {
+    _mqtt_db_data_row_device_t *row_device) {
   memset(row_device, 0, sizeof(_mqtt_db_data_row_device_t));
 
   snprintf(row_device->user_email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
@@ -48,8 +48,8 @@ void MqttDeviceMessageProviderTest::fillUserData(
   snprintf(row_device->device_softver, SUPLA_SOFTVER_MAXSIZE, "2.7.23");
 }
 
-TEST_F(MqttUserMessageProviderTest, fetchAll) {
-  _mqtt_db_data_row_device_t row_user;
+TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
+  _mqtt_db_data_row_device_t row_device;
   fillUserData(&row_device);
   provider->set_data_row(&row_device);
 }

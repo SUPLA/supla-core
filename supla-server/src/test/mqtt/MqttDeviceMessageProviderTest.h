@@ -22,7 +22,7 @@
 #include "MqttMessageProviderTest.h"
 #include "gtest/gtest.h"  // NOLINT
 #include "mqtt_db.h"
-#include "mqtt_message_provider.h"
+#include "mqtt_device_message_provider.h"
 
 namespace testing {
 
