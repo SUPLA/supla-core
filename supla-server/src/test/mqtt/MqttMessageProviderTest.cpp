@@ -46,7 +46,7 @@ bool MqttMessageProviderTest::dataExists(
 
 bool MqttMessageProviderTest::fetchAndCompare(
     supla_mqtt_message_provider *provider, const char *prefix,
-    const char *topic_name, const char *message, bool include_zero_byte) {
+    const char *message, bool include_zero_byte, const char *topic_name) {
   char *_topic_name = NULL;
   void *_message = NULL;
   size_t _message_size = 0;
