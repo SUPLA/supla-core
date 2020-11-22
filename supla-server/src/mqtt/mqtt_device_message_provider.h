@@ -27,6 +27,7 @@ class supla_mqtt_device_message_provider : public supla_mqtt_message_provider {
   _mqtt_db_data_row_device_t *row;
 
  protected:
+  void get_mfr_name(int mfr_id, char *buf, size_t buf_size);
   bool get_message_at_index(unsigned short index, const char *topic_prefix,
                             char **topic_name, void **message,
                             size_t *message_size);

@@ -37,6 +37,7 @@ typedef struct {
   char user_email[SUPLA_EMAIL_MAXSIZE];
   int device_id;
   bool device_enabled;
+  char device_location[SUPLA_LOCATION_CAPTION_MAXSIZE];
   char device_last_connected[DATE_STRING_MAXSIZE];
   char device_last_ipv4[IPV4_STRING_MAXSIZE];
   int device_mfr_id;
@@ -53,6 +54,7 @@ typedef struct {
   int channel_id;
   int channel_type;
   int channel_func;
+  char channel_location[SUPLA_LOCATION_CAPTION_MAXSIZE];
   char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   bool channel_hidden;
 } _mqtt_db_data_row_channel_t;
