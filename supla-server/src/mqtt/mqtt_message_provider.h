@@ -24,7 +24,6 @@
 
 class supla_mqtt_message_provider {
  private:
-  unsigned short message_count;
   unsigned short index;
 
  protected:
@@ -33,7 +32,7 @@ class supla_mqtt_message_provider {
                       size_t *message_size, const char *message_string_in,
                       bool include_null_byte, const char *topic_name_in, ...);
 
-  void set_message_count(unsigned short message_count);
+  void reset_index(void);
   virtual bool get_message_at_index(unsigned short index,
                                     const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size) = 0;

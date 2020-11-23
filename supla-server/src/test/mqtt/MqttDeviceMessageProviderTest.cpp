@@ -30,7 +30,7 @@ void MqttDeviceMessageProviderTest::SetUp() {
 
 void MqttDeviceMessageProviderTest::TearDown() { delete provider; }
 
-void MqttDeviceMessageProviderTest::fillUserData(
+void MqttDeviceMessageProviderTest::fillDeviceData(
     _mqtt_db_data_row_device_t *row_device) {
   memset(row_device, 0, sizeof(_mqtt_db_data_row_device_t));
 
@@ -52,7 +52,7 @@ void MqttDeviceMessageProviderTest::fillUserData(
 
 TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
   _mqtt_db_data_row_device_t row_device;
-  fillUserData(&row_device);
+  fillDeviceData(&row_device);
   provider->set_data_row(&row_device);
 
   ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,

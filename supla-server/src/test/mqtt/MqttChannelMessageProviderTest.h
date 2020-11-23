@@ -16,28 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTTDEVICEMESSAGEPROVIDERTEST_H_
-#define MQTTDEVICEMESSAGEPROVIDERTEST_H_
+#ifndef MQTTCHANNELMESSAGEPROVIDERTEST_H_
+#define MQTTCHANNELMESSAGEPROVIDERTEST_H_
 
 #include "MqttMessageProviderTest.h"
 #include "gtest/gtest.h"  // NOLINT
+#include "mqtt_channel_message_provider.h"
 #include "mqtt_db.h"
-#include "mqtt_device_message_provider.h"
 
 namespace testing {
 
-class MqttDeviceMessageProviderTest : public MqttMessageProviderTest {
+class MqttChannelMessageProviderTest : public MqttMessageProviderTest {
  protected:
-  supla_mqtt_device_message_provider *provider;
-  void fillDeviceData(_mqtt_db_data_row_device_t *row_device);
+  supla_mqtt_channel_message_provider *provider;
+  void fillChannelData(_mqtt_db_data_row_channel_t *row_channel);
 
  public:
   virtual void SetUp();
   virtual void TearDown();
-  MqttDeviceMessageProviderTest();
-  virtual ~MqttDeviceMessageProviderTest();
+  MqttChannelMessageProviderTest();
+  virtual ~MqttChannelMessageProviderTest();
 };
 
 } /* namespace testing */
 
-#endif /* MQTTDEVICEMESSAGEPROVIDERTEST_H_ */
+#endif /* MQTTCHANNELMESSAGEPROVIDERTEST_H_ */

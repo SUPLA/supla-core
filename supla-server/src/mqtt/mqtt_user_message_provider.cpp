@@ -49,5 +49,5 @@ bool supla_mqtt_user_message_provider::get_message_at_index(
 void supla_mqtt_user_message_provider::set_data_row(
     _mqtt_db_data_row_user_t *row) {
   this->row = row;
-  set_message_count(2);
+  reset_index();
 }

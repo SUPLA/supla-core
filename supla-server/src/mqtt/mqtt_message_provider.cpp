@@ -25,7 +25,6 @@
 #define MQTT_MAX_MESSAGE_SIZE 1048576
 
 supla_mqtt_message_provider::supla_mqtt_message_provider(void) {
-  this->message_count = 0;
   this->index = 0;
 }
 
@@ -113,22 +112,17 @@ bool supla_mqtt_message_provider::create_message(
   return result;
 }
 
-void supla_mqtt_message_provider::set_message_count(
-    unsigned short message_count) {
-  this->message_count = message_count;
-  index = 0;
-}
+void supla_mqtt_message_provider::reset_index(void) { index = 0; }
 
 bool supla_mqtt_message_provider::fetch(const char *topic_prefix,
                                         char **topic_name, void **message,
                                         size_t *message_size) {
-  bool result = false;
-  if (index < message_count && topic_name) {
-    result = get_message_at_index(index, topic_prefix, topic_name, message,
-                                  message_size) &&
-             ((topic_name && *topic_name) || (message && *message));
+  if (get_message_at_index(index, topic_prefix, topic_name, message,
+                           message_size) &&
+      ((topic_name && *topic_name) || (message && *message))) {
     index++;
+    return true;
   }
 
-  return result;
+  return false;
 }

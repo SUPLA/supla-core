@@ -23,15 +23,6 @@ supla_mqtt_device_message_provider::supla_mqtt_device_message_provider(void)
   row = NULL;
 }
 
-/*
-typedef struct {
-  int device_mfr_id;
-  char device_name[SUPLA_DEVICE_NAME_MAXSIZE];
-  int device_proto_version;
-  char device_softver[SUPLA_SOFTVER_MAXSIZE];
-} _mqtt_db_data_row_device_t;
- * */
-
 supla_mqtt_device_message_provider::~supla_mqtt_device_message_provider(void) {}
 
 void supla_mqtt_device_message_provider::get_mfr_name(int mfr_id, char *buf,
@@ -135,5 +126,5 @@ bool supla_mqtt_device_message_provider::get_message_at_index(
 void supla_mqtt_device_message_provider::set_data_row(
     _mqtt_db_data_row_device_t *row) {
   this->row = row;
-  set_message_count(8);
+  reset_index();
 }
