@@ -29,7 +29,7 @@ class MqttMessageProviderTest : public Test {
   bool dataExists(supla_mqtt_message_provider *provider);
   bool fetchAndCompare(supla_mqtt_message_provider *provider,
                        const char *prefix, const char *message,
-                       bool include_zero_byte, const char *topic_name);
+                       bool include_zero_byte, const char *topic_name, ...);
 
  public:
   MqttMessageProviderTest();

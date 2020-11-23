@@ -40,12 +40,13 @@ bool supla_mqtt_message_provider::create_message(
   }
 
   va_list args;
-  va_start(args, topic_name_in);
+  memset(&args, 0, sizeof(va_list));
 
+  va_start(args, topic_name_in);
   size_t tn_size = vsnprintf(NULL, 0, topic_name_in, args);
+  va_end(args);
 
   if (tn_size == 0) {
-    va_end(args);
     return false;
   }
 
@@ -86,6 +87,7 @@ bool supla_mqtt_message_provider::create_message(
       offset = prefix_len;
     }
 
+    va_start(args, topic_name_in);
     vsnprintf(&(*topic_name_out)[offset], tn_size - offset, topic_name_in,
               args);
     va_end(args);

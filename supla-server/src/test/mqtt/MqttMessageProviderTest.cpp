@@ -17,6 +17,7 @@
  */
 
 #include "MqttMessageProviderTest.h"
+#include <stdarg.h>
 
 namespace testing {
 
@@ -46,7 +47,7 @@ bool MqttMessageProviderTest::dataExists(
 
 bool MqttMessageProviderTest::fetchAndCompare(
     supla_mqtt_message_provider *provider, const char *prefix,
-    const char *message, bool include_zero_byte, const char *topic_name) {
+    const char *message, bool include_zero_byte, const char *topic_name, ...) {
   char *_topic_name = NULL;
   void *_message = NULL;
   size_t _message_size = 0;
@@ -70,9 +71,31 @@ bool MqttMessageProviderTest::fetchAndCompare(
   EXPECT_FALSE(_topic_name == NULL);
 
   if (_topic_name) {
-    if (strcmp(_topic_name, topic_name) != 0) {
+    char *tn = NULL;
+
+    va_list args;
+    va_start(args, topic_name);
+    size_t tn_size = vsnprintf(NULL, 0, topic_name, args);
+    va_end(args);
+
+    if (tn_size > 0) {
+      tn_size++;
+      tn = (char *)malloc(tn_size);
+
+      va_start(args, topic_name);
+      vsnprintf(tn, tn_size, topic_name, args);
+      va_end(args);
+    }
+
+    if (tn == NULL || strcmp(_topic_name, tn) != 0) {
       EXPECT_TRUE(false);
       result = false;
+      printf("DIFF:--->%s|%s\n", tn, _topic_name);
+    }
+
+    if (tn) {
+      free(tn);
+      tn = NULL;
     }
 
     free(_topic_name);

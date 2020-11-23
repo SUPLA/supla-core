@@ -37,11 +37,13 @@ void MqttDeviceMessageProviderTest::fillUserData(
   snprintf(row_device->user_email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
   row_device->device_id = 555;
   row_device->device_enabled = true;
+  snprintf(row_device->device_location, SUPLA_LOCATION_CAPTION_MAXSIZE,
+           "First floor");
   snprintf(row_device->device_last_connected, DATE_STRING_MAXSIZE,
            "2020-11-21T21:30:42Z");
   snprintf(row_device->device_last_ipv4, IPV4_STRING_MAXSIZE,
            "179.110.192.238");
-  row_device->device_mfr_id = 1;
+  row_device->device_mfr_id = SUPLA_MFR_ACSOFTWARE;
   snprintf(row_device->device_name, SUPLA_DEVICE_NAME_MAXSIZE,
            "GATE CONTROLLER");
   row_device->device_proto_version = 12;
@@ -52,6 +54,40 @@ TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
   _mqtt_db_data_row_device_t row_device;
   fillUserData(&row_device);
   provider->set_data_row(&row_device);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
+                              "/user@supla.org/devices/%i/enabled",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "First floor", false,
+                              "/user@supla.org/devices/%i/location",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "/%email%", "2020-11-21T21:30:42Z", false,
+      "/user@supla.org/devices/%i/last_connected", row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "179.110.192.238", false,
+                              "/user@supla.org/devices/%i/last_ipv4",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "AC SOFTWARE", false,
+                              "/user@supla.org/devices/%i/manufacturer",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "GATE CONTROLLER", false,
+                              "/user@supla.org/devices/%i/name",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "12", false,
+                              "/user@supla.org/devices/%i/proto_ver",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "2.7.23", false,
+                              "/user@supla.org/devices/%i/soft_ver",
+                              row_device.device_id));
+
+  ASSERT_FALSE(dataExists(provider));
 }
 
 } /* namespace testing */
