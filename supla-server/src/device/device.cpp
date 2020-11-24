@@ -653,7 +653,7 @@ bool supla_device::get_channel_state(int SenderID,
 
 bool supla_device::get_channel_complex_value(channel_complex_value *value,
                                              int ChannelID) {
-  return channels->get_channel_complex_value(value, ChannelID);
+  return channels->get_channel_complex_value(value, getID(), ChannelID);
 }
 
 void supla_device::set_channel_function(int ChannelId, int Func) {

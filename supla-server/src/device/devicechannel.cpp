@@ -530,6 +530,8 @@ int supla_device_channel::getNumber(void) { return Number; }
 
 int supla_device_channel::getFunc(void) { return Func; }
 
+int supla_device_channel::getUserID(void) { return UserID; }
+
 void supla_device_channel::setFunc(int Func) { this->Func = Func; }
 
 int supla_device_channel::getType(void) { return Type; }
@@ -1852,7 +1854,7 @@ bool supla_device_channels::get_channel_state(
 }
 
 bool supla_device_channels::get_channel_complex_value(
-    channel_complex_value *value, int ChannelID) {
+    channel_complex_value *value, int DeviceID, int ChannelID) {
   bool result = false;
   safe_array_lock(arr);
 
@@ -1898,9 +1900,7 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
       case SUPLA_CHANNELFNC_POWERSWITCH:
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-      case SUPLA_CHANNELFNC_VALVE_PERCENTAGE: {
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         value->hi = cv[0] > 0;
@@ -1921,9 +1921,41 @@ bool supla_device_channels::get_channel_complex_value(
         break;
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-        char cv[SUPLA_CHANNELVALUE_SIZE];
-        channel->getChar(cv);
-        value->shut = cv[0];
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
+        switch (value->function) {
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+          case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+            char cv[SUPLA_CHANNELVALUE_SIZE];
+            channel->getChar(cv);
+            value->shut = cv[0];
+            break;
+        }
+
+        // TODO: This should be better implemented. Right now, that's spaghetti
+        // code
+        value->hi = false;
+        value->partially_closed = false;
+        supla_user *user = supla_user::find(channel->getUserID(), false);
+        if (user) {
+          TSuplaChannelValue cv;
+          memset(&cv, 0, sizeof(TSuplaChannelValue));
+
+          if (user->get_channel_value(DeviceID, ChannelID, &cv, NULL, NULL)) {
+            if (cv.sub_value[0] > 0) {
+              value->hi = true;
+            } else if (value->function == SUPLA_CHANNELFNC_CONTROLLINGTHEGATE &&
+                       cv.sub_value[1] > 0 && cv.sub_value[0] == 0) {
+              value->partially_closed = true;
+            }
+          }
+        }
+      } break;
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+      case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+        channel->getValveValue(&value->valve_value);
         break;
     }
     result = true;

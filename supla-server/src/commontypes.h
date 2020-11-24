@@ -19,6 +19,8 @@
 #ifndef COMMONTYPES_H_
 #define COMMONTYPES_H_
 
+#include "proto.h"
+
 enum event_source_type {
   EST_UNKNOWN,
   EST_DEVICE,
@@ -55,6 +57,8 @@ typedef struct {
   double distance;
   double depth;
   char shut;
+  bool partially_closed;
+  TValve_Value valve_value;
 } channel_complex_value;
 
 typedef struct {

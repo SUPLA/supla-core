@@ -26,6 +26,7 @@
 class supla_mqtt_state_message_provider_abstract
     : public supla_mqtt_message_provider {
  private:
+  char user_email[SUPLA_EMAIL_MAXSIZE];
   int user_id;
   int device_id;
   int channel_id;
@@ -50,14 +51,91 @@ class supla_mqtt_state_message_provider_abstract
   supla_channel_electricity_measurement *get_electricity_measurement(void);
   supla_channel_ic_measurement *get_impulse_counter_measurement(void);
 
+  void get_temperature(const channel_complex_value *cvalue, char *buf,
+                       size_t buf_size);
+  void get_humidity(const channel_complex_value *cvalue, char *buf,
+                    size_t buf_size);
+  void get_brightness(char brightness, char *buf, size_t buf_size);
+  void get_color(const channel_complex_value *cvalue, char *buf,
+                 size_t buf_size);
+  void get_valve_closed(const channel_complex_value *cvalue, char *buf,
+                        size_t buf_size);
+
+  bool get_rs_message_at_index(const channel_complex_value *cvalue,
+                               unsigned short index, const char *topic_prefix,
+                               char **topic_name, void **message,
+                               size_t *message_size);
+
+  bool get_lck_message_at_index(const channel_complex_value *cvalue,
+                                unsigned short index, const char *topic_prefix,
+                                char **topic_name, void **message,
+                                size_t *message_size);
+
+  bool get_onoff_message_at_index(bool on, unsigned short index,
+                                  const char *topic_prefix, char **topic_name,
+                                  void **message, size_t *message_size);
+
+  bool get_depth_message_at_index(const channel_complex_value *cvalue,
+                                  unsigned short index,
+                                  const char *topic_prefix, char **topic_name,
+                                  void **message, size_t *message_size);
+
+  bool get_distance_message_at_index(const channel_complex_value *cvalue,
+                                     unsigned short index,
+                                     const char *topic_prefix,
+                                     char **topic_name, void **message,
+                                     size_t *message_size);
+
+  bool get_doublevalue_message_at_index(const channel_complex_value *cvalue,
+                                        unsigned short index,
+                                        const char *topic_prefix,
+                                        char **topic_name, void **message,
+                                        size_t *message_size);
+
+  bool get_sensor_message_at_index(const channel_complex_value *cvalue,
+                                   unsigned short index,
+                                   const char *topic_prefix, char **topic_name,
+                                   void **message, size_t *message_size);
+
+  bool get_temperature_message_at_index(const channel_complex_value *cvalue,
+                                        unsigned short index,
+                                        unsigned short expected_index,
+                                        const char *topic_prefix,
+                                        char **topic_name, void **message,
+                                        size_t *message_size);
+
+  bool get_humidity_message_at_index(const channel_complex_value *cvalue,
+                                     unsigned short index,
+                                     unsigned short expected_index,
+                                     const char *topic_prefix,
+                                     char **topic_name, void **message,
+                                     size_t *message_size);
+
+  bool get_brightness_message(const channel_complex_value *cvalue,
+                              const char *topic_prefix, char **topic_name,
+                              void **message, size_t *message_size);
+
+  bool get_color_brightness_message(const channel_complex_value *cvalue,
+                                    const char *topic_prefix, char **topic_name,
+                                    void **message, size_t *message_size);
+
+  bool get_color_message(const channel_complex_value *cvalue,
+                         const char *topic_prefix, char **topic_name,
+                         void **message, size_t *message_size);
+
   bool get_message_at_index(unsigned short index, const char *topic_prefix,
                             char **topic_name, void **message,
                             size_t *message_size);
 
+  bool get_valve_message_at_index(const channel_complex_value *cvalue,
+                                  unsigned short index,
+                                  const char *topic_prefix, char **topic_name,
+                                  void **message, size_t *message_size);
+
  public:
   supla_mqtt_state_message_provider_abstract(void);
   virtual ~supla_mqtt_state_message_provider_abstract(void);
-  void set_data(int user_id, int device_id, int channel_id);
+  void set_data(const char *email, int user_id, int device_id, int channel_id);
 };
 
 #endif /*MQTT_STATE_MESSAGE_PROVIDER_ABSTRACT_H_*/
