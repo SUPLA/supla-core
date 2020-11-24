@@ -301,21 +301,6 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
   }
 }
 
-/*
-typedef struct {
-  char user_email[SUPLA_EMAIL_MAXSIZE];
-  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
-  int device_id;
-  bool device_enabled;
-  int channel_id;
-  int channel_type;
-  int channel_func;
-  char channel_location[SUPLA_LOCATION_CAPTION_MAXSIZE];
-  char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
-  bool channel_hidden;
-} _mqtt_db_data_row_channel_t;
- */
-
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
