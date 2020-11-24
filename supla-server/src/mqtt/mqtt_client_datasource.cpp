@@ -104,7 +104,6 @@ bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
   bool result = false;
 
   if (context_opened) {
-    bool eof = false;
     result = _fetch(&context, topic_name, message, message_size);
 
     if (!result) {
