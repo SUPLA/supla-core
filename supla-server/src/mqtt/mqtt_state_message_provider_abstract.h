@@ -50,6 +50,10 @@ class supla_mqtt_state_message_provider_abstract
   supla_channel_electricity_measurement *get_electricity_measurement(void);
   supla_channel_ic_measurement *get_impulse_counter_measurement(void);
 
+  bool get_message_at_index(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size);
+
  public:
   supla_mqtt_state_message_provider_abstract(void);
   virtual ~supla_mqtt_state_message_provider_abstract(void);

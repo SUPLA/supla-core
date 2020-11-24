@@ -81,7 +81,7 @@ void supla_mqtt_state_message_provider_abstract::set_data(int user_id,
   }
 }
 
-channel_complex_value*
+channel_complex_value *
 supla_mqtt_state_message_provider_abstract::get_complex_value(void) {
   if (cvalue == NULL) {
     cvalue = _get_complex_value(user_id, device_id, channel_id);
@@ -90,7 +90,7 @@ supla_mqtt_state_message_provider_abstract::get_complex_value(void) {
   return cvalue;
 }
 
-supla_channel_electricity_measurement*
+supla_channel_electricity_measurement *
 supla_mqtt_state_message_provider_abstract::get_electricity_measurement(void) {
   if (em == NULL) {
     em = _get_electricity_measurement();
@@ -99,7 +99,7 @@ supla_mqtt_state_message_provider_abstract::get_electricity_measurement(void) {
   return em;
 }
 
-supla_channel_ic_measurement*
+supla_channel_ic_measurement *
 supla_mqtt_state_message_provider_abstract::get_impulse_counter_measurement(
     void) {
   if (icm == NULL) {
@@ -107,4 +107,10 @@ supla_mqtt_state_message_provider_abstract::get_impulse_counter_measurement(
   }
 
   return icm;
+}
+
+bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  return false;
 }
