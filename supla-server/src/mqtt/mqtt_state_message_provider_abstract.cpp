@@ -403,6 +403,13 @@ bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
                           get_channel_id());
   }
 
+  if (!cvalue->online) {
+    message = NULL;
+    if (message_size) {
+      *message_size = 0;
+    }
+  }
+
   switch (cvalue->function) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
