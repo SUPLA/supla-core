@@ -32,7 +32,6 @@ class supla_mqtt_message_provider {
                       size_t *message_size, const char *message_string_in,
                       bool include_null_byte, const char *topic_name_in, ...);
 
-  void reset_index(void);
   virtual bool get_message_at_index(unsigned short index,
                                     const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size) = 0;
@@ -40,6 +39,7 @@ class supla_mqtt_message_provider {
  public:
   supla_mqtt_message_provider(void);
   virtual ~supla_mqtt_message_provider(void);
+  virtual void reset_index(void);
   bool fetch(const char *topic_prefix, char **topic_name, void **message,
              size_t *message_size);
 };
