@@ -25,7 +25,10 @@ MqttStateMessageProviderMock::~MqttStateMessageProviderMock(void) {}
 
 channel_complex_value *MqttStateMessageProviderMock::_get_complex_value(
     int user_id, int device_id, int channel_id) {
-  return NULL;
+  channel_complex_value *cvalue =
+      (channel_complex_value *)malloc(sizeof(channel_complex_value));
+  memcpy(cvalue, cvalue_mock, sizeof(channel_complex_value));
+  return cvalue;
 }
 
 supla_channel_electricity_measurement *
@@ -36,4 +39,9 @@ MqttStateMessageProviderMock::_get_electricity_measurement(void) {
 supla_channel_ic_measurement *
 MqttStateMessageProviderMock::_get_impulse_counter_measurement(void) {
   return NULL;
+}
+
+void MqttStateMessageProviderMock::setComplexValue(
+    channel_complex_value *cvalue) {
+  cvalue_mock = cvalue;
 }

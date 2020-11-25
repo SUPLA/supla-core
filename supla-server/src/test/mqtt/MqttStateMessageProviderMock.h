@@ -25,6 +25,9 @@
 
 class MqttStateMessageProviderMock
     : public supla_mqtt_state_message_provider_abstract {
+ private:
+  channel_complex_value *cvalue_mock;
+
  protected:
   virtual channel_complex_value *_get_complex_value(int user_id, int device_id,
                                                     int channel_id);
@@ -35,6 +38,7 @@ class MqttStateMessageProviderMock
  public:
   MqttStateMessageProviderMock();
   virtual ~MqttStateMessageProviderMock();
+  void setComplexValue(channel_complex_value *cvalue);
 };
 
 #endif /* MQTTSTATEMESSAGEPROVIDERMOCK_H_ */

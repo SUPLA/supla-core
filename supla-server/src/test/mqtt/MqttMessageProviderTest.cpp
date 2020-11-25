@@ -30,7 +30,7 @@ bool MqttMessageProviderTest::dataExists(
   void *_message = NULL;
   size_t _message_size = 0;
 
-  bool result = provider->fetch(NULL, NULL, &_message, &_message_size);
+  bool result = provider->fetch(NULL, &_topic_name, &_message, &_message_size);
 
   if (_topic_name) {
     free(_topic_name);

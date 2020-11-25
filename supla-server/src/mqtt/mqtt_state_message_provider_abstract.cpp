@@ -124,7 +124,7 @@ void supla_mqtt_state_message_provider_abstract::get_humidity(
 
 void supla_mqtt_state_message_provider_abstract::get_brightness(
     char brightness, char *buf, size_t buf_size) {
-  snprintf(buf, buf_size, "%i", cvalue->brightness);
+  snprintf(buf, buf_size, "%i", brightness);
 }
 
 void supla_mqtt_state_message_provider_abstract::get_color(
@@ -192,6 +192,25 @@ bool supla_mqtt_state_message_provider_abstract::get_lck_message_at_index(
   return false;
 }
 
+bool supla_mqtt_state_message_provider_abstract::get_gate_message_at_index(
+    const channel_complex_value *cvalue, unsigned short index,
+    const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
+  switch (index) {
+    case 1:
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, cvalue->hi ? "true" : "false", false,
+                            "/channels/%i/state/hi", get_channel_id());
+    case 2:
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size,
+                            cvalue->partially_closed ? "true" : "false", false,
+                            "/channels/%i/state/partial_hi", get_channel_id());
+  }
+
+  return false;
+}
+
 bool supla_mqtt_state_message_provider_abstract::get_onoff_message_at_index(
     bool on, unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -212,10 +231,10 @@ bool supla_mqtt_state_message_provider_abstract::get_depth_message_at_index(
     char value[50];
     value[0] = 0;
 
-    snprintf(value, sizeof(value), "%f", cvalue->distance);
+    snprintf(value, sizeof(value), "%f", cvalue->depth);
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, value, false,
-                          "/channels/%i/state/distance", get_channel_id());
+                          "/channels/%i/state/depth", get_channel_id());
   }
 
   return false;
@@ -229,10 +248,10 @@ bool supla_mqtt_state_message_provider_abstract::get_distance_message_at_index(
     char value[50];
     value[0] = 0;
 
-    snprintf(value, sizeof(value), "%f", cvalue->depth);
+    snprintf(value, sizeof(value), "%f", cvalue->distance);
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, value, false,
-                          "/channels/%i/state/depth", get_channel_id());
+                          "/channels/%i/state/distance", get_channel_id());
   }
 
   return false;
@@ -388,6 +407,24 @@ bool supla_mqtt_state_message_provider_abstract::get_valve_message_at_index(
   return false;
 }
 
+bool supla_mqtt_state_message_provider_abstract::
+    get_impulsecounter_message_at_index(const channel_complex_value *cvalue,
+                                        unsigned short index,
+                                        const char *topic_prefix,
+                                        char **topic_name, void **message,
+                                        size_t *message_size) {
+  supla_channel_ic_measurement *icm = get_impulse_counter_measurement();
+  if (icm == NULL) {
+    if (message) {
+      message = NULL;
+    }
+
+    if (message_size) {
+      message_size = NULL;
+    }
+  }
+}
+
 bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -416,9 +453,12 @@ bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
       return get_rs_message_at_index(cvalue, index, topic_prefix, topic_name,
                                      message, message_size);
 
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      return get_gate_message_at_index(cvalue, index, topic_prefix, topic_name,
+                                       message, message_size);
+
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       return get_lck_message_at_index(cvalue, index, topic_prefix, topic_name,
                                       message, message_size);
@@ -529,10 +569,13 @@ bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
                                         message, message_size);
 
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      break;
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
+      return get_impulsecounter_message_at_index(
+          cvalue, index, topic_prefix, topic_name, message, message_size);
       break;
   }
 

@@ -71,6 +71,11 @@ class supla_mqtt_state_message_provider_abstract
                                 char **topic_name, void **message,
                                 size_t *message_size);
 
+  bool get_gate_message_at_index(const channel_complex_value *cvalue,
+                                 unsigned short index, const char *topic_prefix,
+                                 char **topic_name, void **message,
+                                 size_t *message_size);
+
   bool get_onoff_message_at_index(bool on, unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
@@ -131,6 +136,12 @@ class supla_mqtt_state_message_provider_abstract
                                   unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
+
+  bool get_impulsecounter_message_at_index(const channel_complex_value *cvalue,
+                                           unsigned short index,
+                                           const char *topic_prefix,
+                                           char **topic_name, void **message,
+                                           size_t *message_size);
 
  public:
   supla_mqtt_state_message_provider_abstract(void);
