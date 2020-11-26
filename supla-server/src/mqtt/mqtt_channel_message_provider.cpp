@@ -318,7 +318,7 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
 
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, device_id, false,
-                              "/channels/%i/device_id", row->channel_id);
+                              "channels/%i/device_id", row->channel_id);
       }
       case 1: {
         char channel_type[35];
@@ -327,7 +327,7 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
 
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, channel_type, false,
-                              "/channels/%i/type", row->channel_id);
+                              "channels/%i/type", row->channel_id);
       }
       case 2: {
         char channel_func[35];
@@ -336,23 +336,23 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
 
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, channel_func, false,
-                              "/channels/%i/function", row->channel_id);
+                              "channels/%i/function", row->channel_id);
       }
 
       case 3:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->channel_location,
-                              false, "/channels/%i/location", row->channel_id);
+                              false, "channels/%i/location", row->channel_id);
 
       case 4:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->channel_caption,
-                              false, "/channels/%i/caption", row->channel_id);
+                              false, "channels/%i/caption", row->channel_id);
       case 5:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size,
                               row->channel_hidden ? "true" : "false", false,
-                              "/channels/%i/hidden", row->channel_id);
+                              "channels/%i/hidden", row->channel_id);
     }
   }
 

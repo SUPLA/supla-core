@@ -156,11 +156,11 @@ bool supla_mqtt_state_message_provider_abstract::get_rs_message_at_index(
     case 1:
       return create_message(topic_prefix, user_email, topic_name, message,
                             message_size, cvalue->hi ? "true" : "false", false,
-                            "/channels/%i/state/hi", get_channel_id());
+                            "channels/%i/state/hi", get_channel_id());
     case 2:
       return create_message(topic_prefix, user_email, topic_name, message,
                             message_size, cvalue->shut == -1 ? "true" : "false",
-                            false, "/channels/%i/state/is_calibrating",
+                            false, "channels/%i/state/is_calibrating",
                             get_channel_id());
     case 3: {
       short shut = cvalue->shut;
@@ -172,7 +172,7 @@ bool supla_mqtt_state_message_provider_abstract::get_rs_message_at_index(
       snprintf(value, sizeof(value), "%i", shut);
       return create_message(topic_prefix, user_email, topic_name, message,
                             message_size, value, false,
-                            "/channels/%i/state/shut", get_channel_id());
+                            "channels/%i/state/shut", get_channel_id());
     }
   }
 
@@ -186,7 +186,7 @@ bool supla_mqtt_state_message_provider_abstract::get_lck_message_at_index(
   if (index == 1) {
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, cvalue->hi ? "true" : "false", false,
-                          "/channels/%i/state/hi", get_channel_id());
+                          "channels/%i/state/hi", get_channel_id());
   }
 
   return false;
@@ -200,12 +200,12 @@ bool supla_mqtt_state_message_provider_abstract::get_gate_message_at_index(
     case 1:
       return create_message(topic_prefix, user_email, topic_name, message,
                             message_size, cvalue->hi ? "true" : "false", false,
-                            "/channels/%i/state/hi", get_channel_id());
+                            "channels/%i/state/hi", get_channel_id());
     case 2:
       return create_message(topic_prefix, user_email, topic_name, message,
                             message_size,
                             cvalue->partially_closed ? "true" : "false", false,
-                            "/channels/%i/state/partial_hi", get_channel_id());
+                            "channels/%i/state/partial_hi", get_channel_id());
   }
 
   return false;
@@ -217,7 +217,7 @@ bool supla_mqtt_state_message_provider_abstract::get_onoff_message_at_index(
   if (index == 1) {
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, on ? "true" : "false", false,
-                          "/channels/%i/state/on", get_channel_id());
+                          "channels/%i/state/on", get_channel_id());
   }
 
   return false;
@@ -233,8 +233,8 @@ bool supla_mqtt_state_message_provider_abstract::get_depth_message_at_index(
 
     snprintf(value, sizeof(value), "%f", cvalue->depth);
     return create_message(topic_prefix, user_email, topic_name, message,
-                          message_size, value, false,
-                          "/channels/%i/state/depth", get_channel_id());
+                          message_size, value, false, "channels/%i/state/depth",
+                          get_channel_id());
   }
 
   return false;
@@ -251,7 +251,7 @@ bool supla_mqtt_state_message_provider_abstract::get_distance_message_at_index(
     snprintf(value, sizeof(value), "%f", cvalue->distance);
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, value, false,
-                          "/channels/%i/state/distance", get_channel_id());
+                          "channels/%i/state/distance", get_channel_id());
   }
 
   return false;
@@ -283,8 +283,8 @@ bool supla_mqtt_state_message_provider_abstract::
     }
 
     return create_message(topic_prefix, user_email, topic_name, message,
-                          message_size, value, false,
-                          "/channels/%i/state/value", get_channel_id());
+                          message_size, value, false, "channels/%i/state/value",
+                          get_channel_id());
   }
 
   return false;
@@ -297,7 +297,7 @@ bool supla_mqtt_state_message_provider_abstract::get_sensor_message_at_index(
   if (index == 1) {
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, cvalue->hi ? "true" : "false", false,
-                          "/channels/%i/state/hi", get_channel_id());
+                          "channels/%i/state/hi", get_channel_id());
   }
 
   return false;
@@ -317,7 +317,7 @@ bool supla_mqtt_state_message_provider_abstract::
     get_temperature(cvalue, value, sizeof(value));
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, value, false,
-                          "/channels/%i/state/temperature", get_channel_id());
+                          "channels/%i/state/temperature", get_channel_id());
   }
 
   return false;
@@ -334,7 +334,7 @@ bool supla_mqtt_state_message_provider_abstract::get_humidity_message_at_index(
     get_humidity(cvalue, value, sizeof(value));
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, value, false,
-                          "/channels/%i/state/humidity", get_channel_id());
+                          "channels/%i/state/humidity", get_channel_id());
   }
 
   return false;
@@ -349,7 +349,7 @@ bool supla_mqtt_state_message_provider_abstract::get_brightness_message(
   get_brightness(cvalue->brightness, value, sizeof(value));
   return create_message(topic_prefix, user_email, topic_name, message,
                         message_size, value, false,
-                        "/channels/%i/state/brightness", get_channel_id());
+                        "channels/%i/state/brightness", get_channel_id());
 }
 
 bool supla_mqtt_state_message_provider_abstract::get_color_brightness_message(
@@ -359,9 +359,9 @@ bool supla_mqtt_state_message_provider_abstract::get_color_brightness_message(
   value[0] = 0;
 
   get_brightness(cvalue->color_brightness, value, sizeof(value));
-  return create_message(
-      topic_prefix, user_email, topic_name, message, message_size, value, false,
-      "/channels/%i/state/color_brightness", get_channel_id());
+  return create_message(topic_prefix, user_email, topic_name, message,
+                        message_size, value, false,
+                        "channels/%i/state/color_brightness", get_channel_id());
 }
 
 bool supla_mqtt_state_message_provider_abstract::get_color_message(
@@ -372,7 +372,7 @@ bool supla_mqtt_state_message_provider_abstract::get_color_message(
 
   get_color(cvalue, value, sizeof(value));
   return create_message(topic_prefix, user_email, topic_name, message,
-                        message_size, value, false, "/channels/%i/state/color",
+                        message_size, value, false, "channels/%i/state/color",
                         get_channel_id());
 }
 
@@ -388,20 +388,20 @@ bool supla_mqtt_state_message_provider_abstract::get_valve_message_at_index(
       get_valve_closed(cvalue, value, sizeof(value));
       return create_message(topic_prefix, user_email, topic_name, message,
                             message_size, value, false,
-                            "/channels/%i/state/closed", get_channel_id());
+                            "channels/%i/state/closed", get_channel_id());
     case 2:
       return create_message(
           topic_prefix, user_email, topic_name, message, message_size,
           cvalue->valve_value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED
               ? "true"
               : "false",
-          false, "/channels/%i/state/manually_closed", get_channel_id());
+          false, "channels/%i/state/manually_closed", get_channel_id());
     case 3:
       return create_message(
           topic_prefix, user_email, topic_name, message, message_size,
           cvalue->valve_value.flags & SUPLA_VALVE_FLAG_FLOODING ? "true"
                                                                 : "false",
-          false, "/channels/%i/state/flooding", get_channel_id());
+          false, "channels/%i/state/flooding", get_channel_id());
   }
 
   return false;
@@ -436,7 +436,7 @@ bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
   if (index == 0) {
     return create_message(topic_prefix, user_email, topic_name, message,
                           message_size, cvalue->online ? "true" : "false",
-                          false, "/channels/%i/state/connected",
+                          false, "channels/%i/state/connected",
                           get_channel_id());
   }
 

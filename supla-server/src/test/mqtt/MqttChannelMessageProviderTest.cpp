@@ -56,28 +56,28 @@ TEST_F(MqttChannelMessageProviderTest, fetchAll) {
 
   char device_id[15];
   snprintf(device_id, sizeof(device_id), "%i", row_channel.device_id);
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "555", false,
-                              "/user@supla.org/channels/%i/device_id",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "555", false,
+                              "user@supla.org/channels/%i/device_id",
                               row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "RELAY", false,
-                              "/user@supla.org/channels/%i/type",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "RELAY", false,
+                              "user@supla.org/channels/%i/type",
                               row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "POWERSWITCH", false,
-                              "/user@supla.org/channels/%i/function",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "POWERSWITCH", false,
+                              "user@supla.org/channels/%i/function",
                               row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "Second floor", false,
-                              "/user@supla.org/channels/%i/location",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "Second floor", false,
+                              "user@supla.org/channels/%i/location",
                               row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "Socket", false,
-                              "/user@supla.org/channels/%i/caption",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "Socket", false,
+                              "user@supla.org/channels/%i/caption",
                               row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "false", false,
-                              "/user@supla.org/channels/%i/hidden",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
+                              "user@supla.org/channels/%i/hidden",
                               row_channel.channel_id));
 
   ASSERT_FALSE(dataExists(provider));

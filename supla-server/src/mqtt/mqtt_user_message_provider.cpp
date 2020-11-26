@@ -33,12 +33,12 @@ bool supla_mqtt_user_message_provider::get_message_at_index(
       case 0:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->user_timezone, false,
-                              "/account/timezone");
+                              "account/timezone");
         break;
       case 1:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->user_shortuniqueid,
-                              false, "/account/shortuniqueid");
+                              false, "account/shortuniqueid");
         break;
     }
   }

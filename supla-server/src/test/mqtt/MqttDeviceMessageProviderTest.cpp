@@ -55,36 +55,36 @@ TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
   fillDeviceData(&row_device);
   provider->set_data_row(&row_device);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/devices/%i/enabled",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/devices/%i/enabled",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "First floor", false,
-                              "/user@supla.org/devices/%i/location",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "First floor", false,
+                              "user@supla.org/devices/%i/location",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "/%email%", "2020-11-21T21:30:42Z", false,
-      "/user@supla.org/devices/%i/last_connected", row_device.device_id));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "179.110.192.238", false,
-                              "/user@supla.org/devices/%i/last_ipv4",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2020-11-21T21:30:42Z",
+                              false, "user@supla.org/devices/%i/last_connected",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "AC SOFTWARE", false,
-                              "/user@supla.org/devices/%i/manufacturer",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "179.110.192.238", false,
+                              "user@supla.org/devices/%i/last_ipv4",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "GATE CONTROLLER", false,
-                              "/user@supla.org/devices/%i/name",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "AC SOFTWARE", false,
+                              "user@supla.org/devices/%i/manufacturer",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "12", false,
-                              "/user@supla.org/devices/%i/proto_ver",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "GATE CONTROLLER", false,
+                              "user@supla.org/devices/%i/name",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "2.7.23", false,
-                              "/user@supla.org/devices/%i/soft_ver",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "12", false,
+                              "user@supla.org/devices/%i/proto_ver",
+                              row_device.device_id));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.7.23", false,
+                              "user@supla.org/devices/%i/soft_ver",
                               row_device.device_id));
 
   ASSERT_FALSE(dataExists(provider));

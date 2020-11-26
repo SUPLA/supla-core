@@ -61,19 +61,19 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterConnected) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "false", false,
-                              "/user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
+                              "user@supla.org/channels/%i/state/hi", 789));
 
-  ASSERT_TRUE(
-      fetchAndCompare(provider, "/%email%", "true", false,
-                      "/user@supla.org/channels/%i/state/is_calibrating", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/is_calibrating",
+                              789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "0", false,
-                              "/user@supla.org/channels/%i/state/shut", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "0", false,
+                              "user@supla.org/channels/%i/state/shut", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -90,19 +90,19 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterDisconnected) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "false", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", NULL, false,
-                              "/user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", NULL, false,
+                              "user@supla.org/channels/%i/state/hi", 789));
 
-  ASSERT_TRUE(
-      fetchAndCompare(provider, "/%email%", NULL, false,
-                      "/user@supla.org/channels/%i/state/is_calibrating", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", NULL, false,
+                              "user@supla.org/channels/%i/state/is_calibrating",
+                              789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", NULL, false,
-                              "/user@supla.org/channels/%i/state/shut", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", NULL, false,
+                              "user@supla.org/channels/%i/state/shut", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -119,15 +119,15 @@ TEST_F(MqttStateMessageProviderTest, gate) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "false", false,
-                              "/user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
+                              "user@supla.org/channels/%i/state/hi", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/partial_hi",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/partial_hi",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -144,12 +144,12 @@ TEST_F(MqttStateMessageProviderTest, lock) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/hi", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -165,12 +165,12 @@ TEST_F(MqttStateMessageProviderTest, onOff) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/on", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/on", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -186,12 +186,12 @@ TEST_F(MqttStateMessageProviderTest, depth) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "345.000000", false,
-                              "/user@supla.org/channels/%i/state/depth", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "345.000000", false,
+                              "user@supla.org/channels/%i/state/depth", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -207,12 +207,12 @@ TEST_F(MqttStateMessageProviderTest, distance) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "1345.000000", false,
-                              "/user@supla.org/channels/%i/state/distance",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1345.000000", false,
+                              "user@supla.org/channels/%i/state/distance",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -229,12 +229,12 @@ TEST_F(MqttStateMessageProviderTest, wightSensor) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "85.000000", false,
-                              "/user@supla.org/channels/%i/state/value", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "85.000000", false,
+                              "user@supla.org/channels/%i/state/value", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -250,12 +250,12 @@ TEST_F(MqttStateMessageProviderTest, garageDoorSensor) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/hi", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -271,12 +271,12 @@ TEST_F(MqttStateMessageProviderTest, thermometer) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "33.000000", false,
-                              "/user@supla.org/channels/%i/state/temperature",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "33.000000", false,
+                              "user@supla.org/channels/%i/state/temperature",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -293,12 +293,12 @@ TEST_F(MqttStateMessageProviderTest, humidity) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "85.000000", false,
-                              "/user@supla.org/channels/%i/state/humidity",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "85.000000", false,
+                              "user@supla.org/channels/%i/state/humidity",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -316,16 +316,16 @@ TEST_F(MqttStateMessageProviderTest, temperatureAndHumidity) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "83.000000", false,
-                              "/user@supla.org/channels/%i/state/humidity",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "83.000000", false,
+                              "user@supla.org/channels/%i/state/humidity",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "21.000000", false,
-                              "/user@supla.org/channels/%i/state/temperature",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "21.000000", false,
+                              "user@supla.org/channels/%i/state/temperature",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -342,15 +342,15 @@ TEST_F(MqttStateMessageProviderTest, dimmerOn) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/on", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/on", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "99", false,
-                              "/user@supla.org/channels/%i/state/brightness",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "99", false,
+                              "user@supla.org/channels/%i/state/brightness",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -367,15 +367,15 @@ TEST_F(MqttStateMessageProviderTest, dimmerOff) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "false", false,
-                              "/user@supla.org/channels/%i/state/on", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
+                              "user@supla.org/channels/%i/state/on", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "0", false,
-                              "/user@supla.org/channels/%i/state/brightness",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "0", false,
+                              "user@supla.org/channels/%i/state/brightness",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -393,18 +393,18 @@ TEST_F(MqttStateMessageProviderTest, rgb) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/on", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/on", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "0xAABBCC", false,
-                              "/user@supla.org/channels/%i/state/color", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "0xAABBCC", false,
+                              "user@supla.org/channels/%i/state/color", 789));
   ASSERT_TRUE(fetchAndCompare(
-      provider, "/%email%", "40", false,
-      "/user@supla.org/channels/%i/state/color_brightness", 789));
+      provider, "%email%", "40", false,
+      "user@supla.org/channels/%i/state/color_brightness", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -422,23 +422,25 @@ TEST_F(MqttStateMessageProviderTest, dimmerAndRgb) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, "supla/%email%", "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "supla/%email%", "true", false,
+                              "supla/user@supla.org/channels/%i/state/on",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/on", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "0xBBCCDD", false,
-                              "/user@supla.org/channels/%i/state/color", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "supla/%email%", "0xBBCCDD", false,
+                              "supla/user@supla.org/channels/%i/state/color",
+                              789));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, "/%email%", "0", false,
-      "/user@supla.org/channels/%i/state/color_brightness", 789));
+      provider, "supla/%email%", "0", false,
+      "supla/user@supla.org/channels/%i/state/color_brightness", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "80", false,
-                              "/user@supla.org/channels/%i/state/brightness",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "supla/%email%", "80", false,
+      "supla/user@supla.org/channels/%i/state/brightness", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -456,19 +458,19 @@ TEST_F(MqttStateMessageProviderTest, valveOpenClose) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/closed", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/closed", 789));
 
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "/%email%", "true", false,
-      "/user@supla.org/channels/%i/state/manually_closed", 789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, "%email%", "true", false,
+                      "user@supla.org/channels/%i/state/manually_closed", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/flooding",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/flooding",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -485,19 +487,19 @@ TEST_F(MqttStateMessageProviderTest, valvePercentage) {
   provider->setComplexValue(&cvalue);
   provider->set_data("user@supla.org", 123, 456, 789);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "true", false,
-                              "/user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "81", false,
-                              "/user@supla.org/channels/%i/state/closed", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "81", false,
+                              "user@supla.org/channels/%i/state/closed", 789));
 
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "/%email%", "false", false,
-      "/user@supla.org/channels/%i/state/manually_closed", 789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, "%email%", "false", false,
+                      "user@supla.org/channels/%i/state/manually_closed", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "/%email%", "false", false,
-                              "/user@supla.org/channels/%i/state/flooding",
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
+                              "user@supla.org/channels/%i/state/flooding",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
