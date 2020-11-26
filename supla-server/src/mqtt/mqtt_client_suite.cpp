@@ -45,7 +45,10 @@ supla_mqtt_client_suite::supla_mqtt_client_suite(void) {
   library_adapter_pub = new supla_mqttc_library_adapter(ini_settings);
   library_adapter_sub = new supla_mqttc_library_adapter(ini_settings);
 
-  publisher = new supla_mqtt_publisher(library_adapter_pub, ini_settings, NULL);
+  publisher_ds = new supla_mqtt_publisher_datasource(ini_settings);
+
+  publisher =
+      new supla_mqtt_publisher(library_adapter_pub, ini_settings, publisher_ds);
   // subscriber = new supla_mqtt_subscriber(library_adapter_sub, NULL, NULL);
 }
 
@@ -63,6 +66,9 @@ supla_mqtt_client_suite::~supla_mqtt_client_suite(void) {
 
   delete library_adapter_sub;
   library_adapter_sub = NULL;
+
+  delete publisher_ds;
+  publisher_ds = NULL;
 
   delete ini_settings;
   ini_settings = NULL;
