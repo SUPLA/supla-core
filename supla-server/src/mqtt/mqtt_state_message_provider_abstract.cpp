@@ -423,6 +423,50 @@ bool supla_mqtt_state_message_provider_abstract::
       message_size = NULL;
     }
   }
+
+  char value[50];
+  value[0] = 0;
+
+  switch (index) {
+    case 1:
+      snprintf(value, sizeof(value), "%.2f",
+               icm ? (icm->getTotalCost() * 0.01) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/total_cost", get_channel_id());
+    case 2:
+      snprintf(value, sizeof(value), "%.4f",
+               icm ? (icm->getPricePerUnit() * 0.0001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/price_per_unit", get_channel_id());
+    case 3:
+      snprintf(value, sizeof(value), "%i", icm ? icm->getImpulsesPerUnit() : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/impulses_per_unit", get_channel_id());
+    case 4:
+      snprintf(value, sizeof(value), "%llu", icm ? icm->getCounter() : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/counter", get_channel_id());
+    case 5:
+      snprintf(value, sizeof(value), "%.3f",
+               icm ? (icm->getCalculatedValue() * 0.001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/calculated_value", get_channel_id());
+    case 6:
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, icm ? icm->getCurrency() : "", false,
+                            "channels/%i/state/currency", get_channel_id());
+    case 7:
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, icm ? icm->getCustomUnit() : "",
+                            false, "channels/%i/state/unit", get_channel_id());
+  }
+
+  return false;
 }
 
 bool supla_mqtt_state_message_provider_abstract::get_message_at_index(

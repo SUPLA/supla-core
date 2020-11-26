@@ -328,7 +328,7 @@ _supla_int_t supla_channel_ic_measurement::getPricePerUnit(void) {
   return pricePerUnit;
 }
 
-const char *supla_channel_ic_measurement::getCurrncy(void) { return currency; }
+const char *supla_channel_ic_measurement::getCurrency(void) { return currency; }
 
 const char *supla_channel_ic_measurement::getCustomUnit(void) {
   return customUnit;

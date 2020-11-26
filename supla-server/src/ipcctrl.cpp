@@ -208,7 +208,7 @@ void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%llu,%lld,%s,%s\n",
                icm->getTotalCost(), icm->getPricePerUnit(),
                icm->getImpulsesPerUnit(), icm->getCounter(),
-               icm->getCalculatedValue(), icm->getCurrncy(),
+               icm->getCalculatedValue(), icm->getCurrency(),
                unit_b64 ? unit_b64 : "");
 
       if (unit_b64) {

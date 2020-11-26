@@ -666,10 +666,10 @@ bool supla_state_webhook_client::sendImpulseCounterMeasurementReport(
         cJSON_AddNumberToObject(state, "counter", icm->getCounter());
         cJSON_AddNumberToObject(state, "calculatedValue",
                                 icm->getCalculatedValue() * 0.001);
-        if (strnlen(icm->getCurrncy(), 4) == 0) {
+        if (strnlen(icm->getCurrency(), 4) == 0) {
           cJSON_AddNullToObject(state, "currency");
         } else {
-          cJSON_AddStringToObject(state, "currency", icm->getCurrncy());
+          cJSON_AddStringToObject(state, "currency", icm->getCurrency());
         }
 
         if (strnlen(icm->getCustomUnit(), 9) == 0) {

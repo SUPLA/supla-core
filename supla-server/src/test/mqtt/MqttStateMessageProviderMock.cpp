@@ -19,7 +19,9 @@
 #include "MqttStateMessageProviderMock.h"
 
 MqttStateMessageProviderMock::MqttStateMessageProviderMock(void)
-    : supla_mqtt_state_message_provider_abstract() {}
+    : supla_mqtt_state_message_provider_abstract() {
+  cvalue_mock = NULL;
+}
 
 MqttStateMessageProviderMock::~MqttStateMessageProviderMock(void) {}
 
@@ -27,7 +29,12 @@ channel_complex_value *MqttStateMessageProviderMock::_get_complex_value(
     int user_id, int device_id, int channel_id) {
   channel_complex_value *cvalue =
       (channel_complex_value *)malloc(sizeof(channel_complex_value));
-  memcpy(cvalue, cvalue_mock, sizeof(channel_complex_value));
+  if (cvalue_mock) {
+    memcpy(cvalue, cvalue_mock, sizeof(channel_complex_value));
+  } else {
+    memset(cvalue, 0, sizeof(channel_complex_value));
+  }
+
   return cvalue;
 }
 
@@ -38,7 +45,15 @@ MqttStateMessageProviderMock::_get_electricity_measurement(void) {
 
 supla_channel_ic_measurement *
 MqttStateMessageProviderMock::_get_impulse_counter_measurement(void) {
-  return NULL;
+  TDS_ImpulseCounter_Value ic_val;
+  ic_val.counter = 1230;
+
+  char customUnit[] = "m3";
+  char currency[] = "EUR";
+
+  return new supla_channel_ic_measurement(123, SUPLA_CHANNELFNC_IC_GAS_METER,
+                                          &ic_val, currency, customUnit, 10000,
+                                          1000);
 }
 
 void MqttStateMessageProviderMock::setComplexValue(

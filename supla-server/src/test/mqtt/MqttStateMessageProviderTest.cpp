@@ -505,4 +505,44 @@ TEST_F(MqttStateMessageProviderTest, valvePercentage) {
   ASSERT_FALSE(dataExists(provider));
 }
 
+TEST_F(MqttStateMessageProviderTest, impulseCounter) {
+  provider->set_data("user@supla.org", 123, 456, 789);
+
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+  cvalue.online = true;
+  cvalue.function = SUPLA_CHANNELFNC_IC_GAS_METER;
+  provider->setComplexValue(&cvalue);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.23", false,
+                              "user@supla.org/channels/%i/state/total_cost",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.0000", false,
+                              "user@supla.org/channels/%i/state/price_per_unit",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "1000", false,
+      "user@supla.org/channels/%i/state/impulses_per_unit", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1230", false,
+                              "user@supla.org/channels/%i/state/counter", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.230", false,
+                              "user@supla.org/channels/%i/state/calculated_value", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "EUR", false,
+                              "user@supla.org/channels/%i/state/currency", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "m3", false,
+                              "user@supla.org/channels/%i/state/unit", 789));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
 } /* namespace testing */

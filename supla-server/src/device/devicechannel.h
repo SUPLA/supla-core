@@ -115,7 +115,7 @@ class supla_channel_ic_measurement {
   int getChannelId(void);
   _supla_int_t getTotalCost(void);
   _supla_int_t getPricePerUnit(void);
-  const char *getCurrncy(void);
+  const char *getCurrency(void);
   const char *getCustomUnit(void);
   _supla_int_t getImpulsesPerUnit(void);
   unsigned _supla_int64_t getCounter(void);
