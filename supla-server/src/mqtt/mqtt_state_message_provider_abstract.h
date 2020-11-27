@@ -143,6 +143,14 @@ class supla_mqtt_state_message_provider_abstract
                                            char **topic_name, void **message,
                                            size_t *message_size);
 
+  void verify_flag(supla_channel_electricity_measurement **em, int flags,
+                   int flag1, int flag2, void **message, size_t *message_size);
+
+  bool get_electricitymeter_message_at_index(
+      const channel_complex_value *cvalue, unsigned short index,
+      const char *topic_prefix, char **topic_name, void **message,
+      size_t *message_size);
+
  public:
   supla_mqtt_state_message_provider_abstract(void);
   virtual ~supla_mqtt_state_message_provider_abstract(void);

@@ -533,16 +533,43 @@ TEST_F(MqttStateMessageProviderTest, impulseCounter) {
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1230", false,
                               "user@supla.org/channels/%i/state/counter", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.230", false,
-                              "user@supla.org/channels/%i/state/calculated_value", 789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "1.230", false,
+      "user@supla.org/channels/%i/state/calculated_value", 789));
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "EUR", false,
-                              "user@supla.org/channels/%i/state/currency", 789));
+                              "user@supla.org/channels/%i/state/currency",
+                              789));
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "m3", false,
                               "user@supla.org/channels/%i/state/unit", 789));
 
   ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, electricityMeter) {
+  provider->set_data("user@supla.org", 123, 456, 789);
+
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+  cvalue.online = true;
+  cvalue.channel_type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+  cvalue.function = SUPLA_CHANNELFNC_ELECTRICITY_METER;
+  provider->setComplexValue(&cvalue);
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
+                              "user@supla.org/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "66.90", false,
+                              "user@supla.org/channels/%i/state/total_cost",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "69.90", false,
+      "user@supla.org/channels/%i/state/total_cost_balanced", 789));
+
+  //  ASSERT_FALSE(dataExists(provider));
 }
 
 } /* namespace testing */

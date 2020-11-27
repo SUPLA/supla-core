@@ -469,6 +469,254 @@ bool supla_mqtt_state_message_provider_abstract::
   return false;
 }
 
+void supla_mqtt_state_message_provider_abstract::verify_flag(
+    supla_channel_electricity_measurement **em, int flags, int flag1, int flag2,
+    void **message, size_t *message_size) {
+  if ((flags & flag1) == 0 && (flags & flag2) == 0) {
+    em = NULL;
+    if (message) {
+      *message = NULL;
+    }
+    if (message_size) {
+      *message_size = 0;
+    }
+  }
+}
+
+bool supla_mqtt_state_message_provider_abstract::
+    get_electricitymeter_message_at_index(const channel_complex_value *cvalue,
+                                          unsigned short index,
+                                          const char *topic_prefix,
+                                          char **topic_name, void **message,
+                                          size_t *message_size) {
+  supla_channel_electricity_measurement *em = get_electricity_measurement();
+
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  if (em) {
+    em->getMeasurement(&em_ev);
+    if (em_ev.m_count == 0) {
+      em = NULL;
+    }
+  }
+
+  if (em == NULL) {
+    if (message) {
+      message = NULL;
+    }
+
+    if (message_size) {
+      message_size = NULL;
+    }
+  }
+
+  char value[50];
+  value[0] = 0;
+
+  short phase = (index - 12) / 8;
+
+  switch (index) {
+    case 1:
+      snprintf(value, sizeof(value), "%.2f",
+               em ? (em_ev.total_cost * 0.01) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/total_cost", get_channel_id());
+    case 2:
+      snprintf(value, sizeof(value), "%.2f",
+               em ? (em_ev.total_cost_balanced * 0.01) : 0);
+      printf("%s\n", value);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/total_cost_balanced", get_channel_id());
+
+    case 3:
+      snprintf(value, sizeof(value), "%.4f",
+               em ? (em_ev.price_per_unit * 0.0001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/price_per_unit", get_channel_id());
+
+    case 4:
+      if (em) {
+        em->getCurrency(value);
+      }
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/currency", get_channel_id());
+
+    case 5:
+      snprintf(value, sizeof(value), "%u", em ? em_ev.measured_values : 0);
+      // This topic should be called "measured_values" but for compatibility
+      // with the rest API it has been changed to "support"
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/support", get_channel_id());
+
+    case 6:
+      verify_flag(&em, em_ev.measured_values,
+                  EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.total_forward_active_energy_balanced * 0.00001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/total_forward_active_energy_balanced",
+          get_channel_id());
+
+    case 7:
+      verify_flag(&em, em_ev.measured_values,
+                  EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.total_reverse_active_energy_balanced * 0.00001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/total_reverse_active_energy_balanced",
+          get_channel_id());
+
+    case 8:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
+                  message, message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.total_forward_active_energy[phase] * 0.00001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/phases/%i/total_forward_active_energy",
+          get_channel_id(), phase);
+
+    case 9:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
+                  message, message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.total_reverse_active_energy[phase] * 0.00001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/phases/%i/total_reverse_active_energy",
+          get_channel_id(), phase);
+
+    case 10:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_REACTIVE_ENERGY, 0,
+                  message, message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.total_forward_reactive_energy[phase] * 0.00001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/phases/%i/total_forward_reactive_energy",
+          get_channel_id(), phase);
+
+    case 11:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_REACTIVE_ENERGY, 0,
+                  message, message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.total_reverse_reactive_energy[phase] * 0.00001) : 0);
+      return create_message(
+          topic_prefix, user_email, topic_name, message, message_size, value,
+          false, "channels/%i/state/phases/%i/total_reverse_reactive_energy",
+          get_channel_id(), phase);
+
+    case 12:
+    case 20:
+    case 28:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FREQ, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.2f", em ? (em_ev.m[0].freq * 0.01) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/frequency",
+                            get_channel_id(), phase);
+
+    case 13:
+    case 21:
+    case 29:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_VOLTAGE, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.2f",
+               em ? (em_ev.m[0].voltage[phase] * 0.01) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/voltage",
+                            get_channel_id(), phase);
+
+    case 14:
+    case 22:
+    case 30: {
+      verify_flag(&em, em_ev.measured_values, EM_VAR_CURRENT,
+                  EM_VAR_CURRENT_OVER_65A, message, message_size);
+      unsigned int current = em_ev.m[0].current[phase];
+
+      if ((em_ev.measured_values & EM_VAR_CURRENT_OVER_65A) &&
+          !(em_ev.measured_values & EM_VAR_CURRENT)) {
+        current *= 10;
+      }
+
+      snprintf(value, sizeof(value), "%.3f", em ? (current * 0.001) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/current",
+                            get_channel_id(), phase);
+    }
+    case 15:
+    case 23:
+    case 31:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/power_active",
+                            get_channel_id(), phase);
+    case 16:
+    case 24:
+    case 32:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/power_reactive",
+                            get_channel_id(), phase);
+    case 17:
+    case 25:
+    case 33:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_APPARENT, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.5f",
+               em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/power_apparent",
+                            get_channel_id(), phase);
+    case 18:
+    case 26:
+    case 34:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_FACTOR, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.3f",
+               em ? (em_ev.m[0].power_factor[phase] * 0.001) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/power_factor",
+                            get_channel_id(), phase);
+    case 19:
+    case 27:
+    case 35:
+      verify_flag(&em, em_ev.measured_values, EM_VAR_PHASE_ANGLE, 0, message,
+                  message_size);
+      snprintf(value, sizeof(value), "%.13f",
+               em ? (em_ev.m[0].phase_angle[phase] * 0.001) : 0);
+      return create_message(topic_prefix, user_email, topic_name, message,
+                            message_size, value, false,
+                            "channels/%i/state/phases/%i/phase_angle",
+                            get_channel_id(), phase);
+  }
+
+  return false;
+}
+
 bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
@@ -613,6 +861,18 @@ bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
                                         message, message_size);
 
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#ifdef SERVER_VERSION_23
+      if (cvalue->channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+        return get_electricitymeter_message_at_index(
+            cvalue, index, topic_prefix, topic_name, message, message_size);
+      } else if (cvalue->channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+        return get_impulsecounter_message_at_index(
+            cvalue, index, topic_prefix, topic_name, message, message_size);
+      }
+#else
+      return get_electricitymeter_message_at_index(
+          cvalue, index, topic_prefix, topic_name, message, message_size);
+#endif /*SERVER_VERSION_23*/
       break;
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:

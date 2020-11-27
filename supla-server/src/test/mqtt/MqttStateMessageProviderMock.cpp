@@ -40,7 +40,38 @@ channel_complex_value *MqttStateMessageProviderMock::_get_complex_value(
 
 supla_channel_electricity_measurement *
 MqttStateMessageProviderMock::_get_electricity_measurement(void) {
-  return NULL;
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  em_ev.m[0].freq = 4997;
+
+  for (short a = 0; a < 3; a++) {
+    em_ev.m[0].voltage[a] = 23706 + a * 10000;
+    em_ev.m[0].current[a] = 1123 + 1 * 1000;
+    em_ev.m[0].power_active[a] = 111223 + a * 100000;
+    em_ev.m[0].power_reactive[a] = 211223 + a * 100000;
+    em_ev.m[0].power_apparent[a] = 311223 + a * 100000;
+    em_ev.m[0].power_factor[a] = 1331 + a * 1000;
+    em_ev.m[0].phase_angle[a] = 11 + a * 10;
+
+    em_ev.total_forward_active_energy[a] = 1230000 + a * 1000000;
+    em_ev.total_reverse_active_energy[a] = 2230000 + a * 1000000;
+    em_ev.total_forward_reactive_energy[a] = 3230000 + a * 1000000;
+    em_ev.total_reverse_reactive_energy[a] = 4230000 + a * 1000000;
+
+    em_ev.total_forward_active_energy_balanced +=
+        em_ev.total_forward_active_energy[a] + 100000;
+    em_ev.total_reverse_active_energy_balanced +=
+        em_ev.total_reverse_active_energy[a] + 100000;
+  }
+
+  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.period = 1;
+  em_ev.m_count = 1;
+
+  char currency[] = "EUR";
+  return new supla_channel_electricity_measurement(123, &em_ev, 10000,
+                                                   currency);
 }
 
 supla_channel_ic_measurement *
