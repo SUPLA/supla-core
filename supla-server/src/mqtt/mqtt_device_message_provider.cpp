@@ -82,18 +82,14 @@ bool supla_mqtt_device_message_provider::get_message_at_index(
                               "devices/%i/enabled", row->device_id);
       case 1:
         return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size, row->device_location,
-                              false, "devices/%i/location", row->device_id);
-      case 2:
-        return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->device_last_connected,
                               false, "devices/%i/last_connected",
                               row->device_id);
-      case 3:
+      case 2:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->device_last_ipv4,
                               false, "devices/%i/last_ipv4", row->device_id);
-      case 4: {
+      case 3: {
         char mfr_name[20];
         get_mfr_name(row->device_mfr_id, mfr_name, sizeof(mfr_name));
         return create_message(topic_prefix, row->user_email, topic_name,
@@ -101,11 +97,11 @@ bool supla_mqtt_device_message_provider::get_message_at_index(
                               "devices/%i/manufacturer", row->device_id);
       }
 
-      case 5:
+      case 4:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->device_name, false,
                               "devices/%i/name", row->device_id);
-      case 6: {
+      case 5: {
         char proto_ver[15];
         snprintf(proto_ver, sizeof(proto_ver), "%i", row->device_proto_version);
 
@@ -113,7 +109,7 @@ bool supla_mqtt_device_message_provider::get_message_at_index(
                               message, message_size, proto_ver, false,
                               "devices/%i/proto_ver", row->device_id);
       }
-      case 7:
+      case 6:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->device_softver, false,
                               "devices/%i/soft_ver", row->device_id);

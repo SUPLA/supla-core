@@ -68,10 +68,6 @@ TEST_F(MqttChannelMessageProviderTest, fetchAll) {
                               "user@supla.org/channels/%i/function",
                               row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "Second floor", false,
-                              "user@supla.org/channels/%i/location",
-                              row_channel.channel_id));
-
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "Socket", false,
                               "user@supla.org/channels/%i/caption",
                               row_channel.channel_id));

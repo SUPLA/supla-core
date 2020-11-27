@@ -59,10 +59,6 @@ TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
                               "user@supla.org/devices/%i/enabled",
                               row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "First floor", false,
-                              "user@supla.org/devices/%i/location",
-                              row_device.device_id));
-
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2020-11-21T21:30:42Z",
                               false, "user@supla.org/devices/%i/last_connected",
                               row_device.device_id));

@@ -341,14 +341,9 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
 
       case 3:
         return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size, row->channel_location,
-                              false, "channels/%i/location", row->channel_id);
-
-      case 4:
-        return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->channel_caption,
                               false, "channels/%i/caption", row->channel_id);
-      case 5:
+      case 4:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size,
                               row->channel_hidden ? "true" : "false", false,
@@ -356,7 +351,7 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
     }
   }
 
-  if (index > 5) {
+  if (index > 4) {
     return get_home_assistant_cfgitem(index - 5, topic_prefix, topic_name,
                                       message, message_size);
   }
