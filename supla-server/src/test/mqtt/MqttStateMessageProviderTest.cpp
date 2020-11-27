@@ -569,7 +569,212 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
       provider, "%email%", "69.90", false,
       "user@supla.org/channels/%i/state/total_cost_balanced", 789));
 
-  //  ASSERT_FALSE(dataExists(provider));
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.0000", false,
+                              "user@supla.org/channels/%i/state/price_per_unit",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "EUR", false,
+                              "user@supla.org/channels/%i/state/currency",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "65535", false,
+                              "user@supla.org/channels/%i/state/support", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "69.90000", false,
+      "user@supla.org/channels/%i/state/total_forward_active_energy_balanced",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "99.90000", false,
+      "user@supla.org/channels/%i/state/total_reverse_active_energy_balanced",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "12.30000", false,
+      "user@supla.org/channels/%i/state/phases/%i/total_forward_active_energy",
+      789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "22.30000", false,
+      "user@supla.org/channels/%i/state/phases/%i/total_reverse_active_energy",
+      789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "32.30000", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "42.30000", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "49.97", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "237.06", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.123", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.331", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.1", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 1));
+
+  //------------
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "22.30000", false,
+      "user@supla.org/channels/%i/state/phases/%i/total_forward_active_energy",
+      789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "32.30000", false,
+      "user@supla.org/channels/%i/state/phases/%i/total_reverse_active_energy",
+      789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "42.30000", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "52.30000", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "49.97", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "337.06", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.123", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "4.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.331", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.1", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 2));
+
+  //------------
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "32.30000", false,
+      "user@supla.org/channels/%i/state/phases/%i/total_forward_active_energy",
+      789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "%email%", "42.30000", false,
+      "user@supla.org/channels/%i/state/phases/%i/total_reverse_active_energy",
+      789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "52.30000", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "62.30000", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "49.97", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "437.06", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.123", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "4.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "5.11223", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.331", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.1", false,
+                              "user@supla.org/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 3));
+
+  ASSERT_FALSE(dataExists(provider));
 }
 
 } /* namespace testing */

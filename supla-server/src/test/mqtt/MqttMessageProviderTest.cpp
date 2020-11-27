@@ -120,6 +120,7 @@ bool MqttMessageProviderTest::fetchAndCompare(
 
     if (message_size != _message_size ||
         (_message_size > 0 && memcmp(message, _message, _message_size))) {
+      printf("MSG: %s\n", message);
       EXPECT_TRUE(false);
     }
   }

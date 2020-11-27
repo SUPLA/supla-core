@@ -47,7 +47,7 @@ MqttStateMessageProviderMock::_get_electricity_measurement(void) {
 
   for (short a = 0; a < 3; a++) {
     em_ev.m[0].voltage[a] = 23706 + a * 10000;
-    em_ev.m[0].current[a] = 1123 + 1 * 1000;
+    em_ev.m[0].current[a] = 1123 + a * 1000;
     em_ev.m[0].power_active[a] = 111223 + a * 100000;
     em_ev.m[0].power_reactive[a] = 211223 + a * 100000;
     em_ev.m[0].power_apparent[a] = 311223 + a * 100000;
