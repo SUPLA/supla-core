@@ -27,7 +27,7 @@ class MqttStateMessageProviderMock
     : public supla_mqtt_state_message_provider_abstract {
  private:
   channel_complex_value *cvalue_mock;
-  const char email[SUPLA_EMAIL_MAXSIZE];
+  char email[SUPLA_EMAIL_MAXSIZE];
 
  protected:
   virtual const char *_get_user_email(void);
