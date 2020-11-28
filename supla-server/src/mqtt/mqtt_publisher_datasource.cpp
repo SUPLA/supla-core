@@ -226,7 +226,8 @@ bool supla_mqtt_publisher_datasource::fetch_state(
   if (state_message_provider == NULL) {
     state_message_provider = new supla_mqtt_state_message_provider();
     state_message_provider->set_ids(context->user_id, context->device_id,
-                                     context->channel_id);
+                                    context->channel_id);
+    state_message_provider->set_user_email();
   }
 
   if (state_message_provider) {

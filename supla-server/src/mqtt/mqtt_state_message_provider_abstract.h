@@ -142,6 +142,7 @@ class supla_mqtt_state_message_provider_abstract
   void set_ids(int user_id, int device_id, int channel_id);
   void set_channel_type_and_function(int channel_type, int channel_function);
   void set_user_email(char *user_email);
+  void set_user_email(void);
 };
 
 #endif /*MQTT_STATE_MESSAGE_PROVIDER_ABSTRACT_H_*/

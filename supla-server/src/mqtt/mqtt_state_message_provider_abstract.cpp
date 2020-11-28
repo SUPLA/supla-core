@@ -69,8 +69,6 @@ void supla_mqtt_state_message_provider_abstract::set_ids(int user_id,
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  user_email = (char *)_get_user_email();
-
   if (cvalue) {
     free(cvalue);
     cvalue = NULL;
@@ -96,6 +94,10 @@ void supla_mqtt_state_message_provider_abstract::set_channel_type_and_function(
 void supla_mqtt_state_message_provider_abstract::set_user_email(
     char *user_email) {
   this->user_email = user_email;
+}
+
+void supla_mqtt_state_message_provider_abstract::set_user_email(void) {
+  user_email = (char *)_get_user_email();
 }
 
 void supla_mqtt_state_message_provider_abstract::get_complex_value(void) {

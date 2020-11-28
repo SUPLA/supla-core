@@ -41,6 +41,7 @@ TEST_F(MqttStateMessageProviderTest, dataExistsMethodTest) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   for (int a = 0; a < 4; a++) {
     ASSERT_TRUE(dataExists(provider));
@@ -60,6 +61,7 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterConnected) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -89,6 +91,7 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterDisconnected) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -118,6 +121,7 @@ TEST_F(MqttStateMessageProviderTest, gate) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -143,6 +147,7 @@ TEST_F(MqttStateMessageProviderTest, lock) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -164,6 +169,7 @@ TEST_F(MqttStateMessageProviderTest, onOff) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -185,6 +191,7 @@ TEST_F(MqttStateMessageProviderTest, depth) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -206,6 +213,7 @@ TEST_F(MqttStateMessageProviderTest, distance) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -228,6 +236,7 @@ TEST_F(MqttStateMessageProviderTest, wightSensor) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -249,6 +258,7 @@ TEST_F(MqttStateMessageProviderTest, garageDoorSensor) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -270,6 +280,7 @@ TEST_F(MqttStateMessageProviderTest, thermometer) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -292,6 +303,7 @@ TEST_F(MqttStateMessageProviderTest, humidity) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -315,6 +327,7 @@ TEST_F(MqttStateMessageProviderTest, temperatureAndHumidity) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -341,6 +354,7 @@ TEST_F(MqttStateMessageProviderTest, dimmerOn) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -366,6 +380,7 @@ TEST_F(MqttStateMessageProviderTest, dimmerOff) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -392,6 +407,7 @@ TEST_F(MqttStateMessageProviderTest, rgb) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -421,6 +437,7 @@ TEST_F(MqttStateMessageProviderTest, dimmerAndRgb) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(
       fetchAndCompare(provider, "supla/%email%", "true", false,
@@ -457,6 +474,7 @@ TEST_F(MqttStateMessageProviderTest, valveOpenClose) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -486,6 +504,7 @@ TEST_F(MqttStateMessageProviderTest, valvePercentage) {
 
   provider->setComplexValue(&cvalue);
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
                               "user@supla.org/channels/%i/state/connected",
@@ -507,6 +526,7 @@ TEST_F(MqttStateMessageProviderTest, valvePercentage) {
 
 TEST_F(MqttStateMessageProviderTest, impulseCounter) {
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   channel_complex_value cvalue;
   memset(&cvalue, 0, sizeof(channel_complex_value));
@@ -549,6 +569,7 @@ TEST_F(MqttStateMessageProviderTest, impulseCounter) {
 
 TEST_F(MqttStateMessageProviderTest, electricityMeter) {
   provider->set_ids(123, 456, 789);
+  provider->set_user_email();
 
   channel_complex_value cvalue;
   memset(&cvalue, 0, sizeof(channel_complex_value));
