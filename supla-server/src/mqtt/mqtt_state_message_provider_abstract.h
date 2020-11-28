@@ -26,7 +26,7 @@
 class supla_mqtt_state_message_provider_abstract
     : public supla_mqtt_message_provider {
  private:
-  char user_email[SUPLA_EMAIL_MAXSIZE];
+  char *user_email;
   int user_id;
   int device_id;
   int channel_id;
@@ -129,10 +129,6 @@ class supla_mqtt_state_message_provider_abstract
                          const char *topic_prefix, char **topic_name,
                          void **message, size_t *message_size);
 
-  bool get_message_at_index(unsigned short index, const char *topic_prefix,
-                            char **topic_name, void **message,
-                            size_t *message_size);
-
   bool get_valve_message_at_index(const channel_complex_value *cvalue,
                                   unsigned short index,
                                   const char *topic_prefix, char **topic_name,
@@ -155,6 +151,9 @@ class supla_mqtt_state_message_provider_abstract
  public:
   supla_mqtt_state_message_provider_abstract(void);
   virtual ~supla_mqtt_state_message_provider_abstract(void);
+  bool get_message_at_index(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size);
   void set_data(int user_id, int device_id, int channel_id);
 };
 

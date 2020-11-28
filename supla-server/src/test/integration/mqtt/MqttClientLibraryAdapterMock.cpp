@@ -19,6 +19,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "MqttClientLibraryAdapterMock.h"
 #include <unistd.h>
 #include "lck.h"
+#include "log.h"
 
 MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
     supla_mqtt_client_settings *settings)
@@ -36,6 +37,10 @@ void MqttClientLibraryAdapterMock::client_connect(
   lck_lock(lck);
   connected = true;
   lck_unlock(lck);
+
+  if (on_connected_callback) {
+    on_connected_callback(supla_client_instance);
+  }
 }
 
 bool MqttClientLibraryAdapterMock::is_connected(void) {
@@ -69,5 +74,6 @@ bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
                                            const void *message,
                                            size_t message_size,
                                            QOS_Level qos_level, bool retain) {
+  supla_log(LOG_DEBUG, "%s", topic_name);
   return true;
 }

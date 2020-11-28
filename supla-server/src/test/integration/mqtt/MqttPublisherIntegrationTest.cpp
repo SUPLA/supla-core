@@ -26,8 +26,8 @@ MqttPublisherIntegrationTest::MqttPublisherIntegrationTest()
 MqttPublisherIntegrationTest::~MqttPublisherIntegrationTest() {}
 
 void MqttPublisherIntegrationTest::SetUp() {
-  initTestDatabase();
-  runSqlScript("DataForMqttTests.sql");
+  //initTestDatabase();
+  //runSqlScript("DataForMqttTests.sql");
 
   iniSettings = new supla_mqtt_client_ini_settings();
   libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
@@ -56,6 +56,9 @@ void MqttPublisherIntegrationTest::waitForConnection() {
   ASSERT_TRUE(false);
 }
 
-//TEST_F(MqttPublisherIntegrationTest, allEvents) { waitForConnection(); }
+TEST_F(MqttPublisherIntegrationTest, allEvents) {
+	waitForConnection();
+	usleep(5000000);
+}
 
 } /* namespace testing */

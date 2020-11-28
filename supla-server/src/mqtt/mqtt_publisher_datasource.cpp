@@ -18,6 +18,7 @@
 
 #include <mqtt_publisher_datasource.h>
 #include <string.h>
+#include "log.h"
 #include "mqtt_channel_message_provider.h"
 #include "mqtt_device_message_provider.h"
 #include "mqtt_user_message_provider.h"
@@ -60,12 +61,10 @@ bool supla_mqtt_publisher_datasource::context_open(
       fetch_users = true;
       fetch_devices = true;
       fetch_channels = true;
-      fetch_states = true;
       break;
     case MQTTDS_SCOPE_DEVICE:
       fetch_devices = true;
       fetch_channels = true;
-      fetch_states = true;
       break;
     case MQTTDS_SCOPE_CHANNEL_STATE:
       fetch_states = true;
@@ -244,33 +243,30 @@ bool supla_mqtt_publisher_datasource::_fetch(const _mqtt_ds_context_t *context,
   bool result = false;
   if (fetch_users) {
     result = fetch_user(context, topic_name, message, message_size);
-  }
-
-  if (!result) {
-    fetch_users = false;
-    close_userquery();
-
-    if (fetch_devices) {
-      result = fetch_device(context, topic_name, message, message_size);
+    if (!result) {
+      fetch_users = false;
+      close_userquery();
     }
   }
 
-  if (!result) {
-    fetch_devices = false;
-    close_devicequery();
-
-    if (fetch_channels) {
-      result = fetch_channel(context, topic_name, message, message_size);
+  if (!result && fetch_devices) {
+    result = fetch_device(context, topic_name, message, message_size);
+    if (!result) {
+      fetch_devices = false;
+      close_devicequery();
     }
   }
 
-  if (!result) {
-    fetch_channels = false;
-    close_channelquery();
-
-    if (fetch_states) {
-      result = fetch_state(context, topic_name, message, message_size);
+  if (!result && fetch_channels) {
+    result = fetch_channel(context, topic_name, message, message_size);
+    if (!result) {
+      fetch_channels = false;
+      close_channelquery();
     }
+  }
+
+  if (!result && fetch_states) {
+    result = fetch_state(context, topic_name, message, message_size);
   }
 
   return result;
@@ -350,4 +346,6 @@ void supla_mqtt_publisher_datasource::context_close(
   if (state_message_provider) {
     delete state_message_provider;
   }
+
+  db_disconnect();
 }

@@ -27,9 +27,6 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   _mqtt_db_data_row_channel_t *row;
 
  protected:
-  bool get_message_at_index(unsigned short index, const char *topic_prefix,
-                            char **topic_name, void **message,
-                            size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
@@ -39,6 +36,9 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   virtual ~supla_mqtt_channel_message_provider(void);
   void channel_type_to_string(int type, char *buf, size_t buf_size);
   void channel_function_to_string(int func, char *buf, size_t buf_size);
+  bool get_message_at_index(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size);
   void set_data_row(_mqtt_db_data_row_channel_t *row);
 };
 

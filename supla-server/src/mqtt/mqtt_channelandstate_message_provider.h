@@ -16,31 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_MESSAGE_PROVIDER_H_
-#define MQTT_MESSAGE_PROVIDER_H_
+#ifndef MQTT_CHANNELANDSTATE_MESSAGE_PROVIDER_H_
+#define MQTT_CHANNELANDSTATE_MESSAGE_PROVIDER_H_
 
-#include "database.h"
-#include "mqtt_client_settings.h"
+#include "mqtt_channel_message_provider.h"
+#include "mqtt_state_message_provider.h"
 
-class supla_mqtt_message_provider {
+class supla_mqtt_channelandstate_message_provider
+    : public supla_mqtt_message_provider {
  private:
-  unsigned short index;
-
- protected:
-  bool create_message(const char *topic_prefix, const char *email,
-                      char **topic_name_out, void **message,
-                      size_t *message_size, const char *message_string_in,
-                      bool include_null_byte, const char *topic_name_in, ...);
+  supla_mqtt_channel_message_provider *channel_message_provider;
+  supla_mqtt_state_message_provider *state_message_provider;
+  void init_providers_if_needed(void);
 
  public:
-  supla_mqtt_message_provider(void);
-  virtual ~supla_mqtt_message_provider(void);
+  supla_mqtt_channelandstate_message_provider(void);
+  virtual ~supla_mqtt_channelandstate_message_provider(void);
+  virtual void reset_index(void);
   virtual bool get_message_at_index(unsigned short index,
                                     const char *topic_prefix, char **topic_name,
-                                    void **message, size_t *message_size) = 0;
-  virtual void reset_index(void);
-  bool fetch(const char *topic_prefix, char **topic_name, void **message,
-             size_t *message_size);
+                                    void **message, size_t *message_size);
+  void set_data_row(_mqtt_db_data_row_channel_t *row);
 };
 
-#endif /*MQTT_MESSAGE_PROVIDER_H_*/
+#endif /*MQTT_CHANNELANDSTATE_MESSAGE_PROVIDER_H_*/

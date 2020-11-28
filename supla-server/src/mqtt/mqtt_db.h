@@ -47,6 +47,7 @@ typedef struct {
 } _mqtt_db_data_row_device_t;
 
 typedef struct {
+  int user_id;
   char user_email[SUPLA_EMAIL_MAXSIZE];
   char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
   int device_id;

@@ -8,6 +8,7 @@ C_SRCS += \
 
 CPP_SRCS += \
 ../src/mqtt/mqtt_channel_message_provider.cpp \
+../src/mqtt/mqtt_channelandstate_message_provider.cpp \
 ../src/mqtt/mqtt_client.cpp \
 ../src/mqtt/mqtt_client_datasource.cpp \
 ../src/mqtt/mqtt_client_db_datasource.cpp \
@@ -29,6 +30,7 @@ CPP_SRCS += \
 OBJS += \
 ./src/mqtt/mqtt.o \
 ./src/mqtt/mqtt_channel_message_provider.o \
+./src/mqtt/mqtt_channelandstate_message_provider.o \
 ./src/mqtt/mqtt_client.o \
 ./src/mqtt/mqtt_client_datasource.o \
 ./src/mqtt/mqtt_client_db_datasource.o \
@@ -52,6 +54,7 @@ C_DEPS += \
 
 CPP_DEPS += \
 ./src/mqtt/mqtt_channel_message_provider.d \
+./src/mqtt/mqtt_channelandstate_message_provider.d \
 ./src/mqtt/mqtt_client.d \
 ./src/mqtt/mqtt_client_datasource.d \
 ./src/mqtt/mqtt_client_db_datasource.d \

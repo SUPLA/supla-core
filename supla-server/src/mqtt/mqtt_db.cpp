@@ -332,7 +332,8 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   query->row = row;
 
   const char sql[] =
-      "SELECT u.`email`, u.`short_unique_id`, d.`id`, d.`enabled`, c.`id`, "
+      "SELECT u.`id`, u.`email`, u.`short_unique_id`, d.`id`, d.`enabled`, "
+      "c.`id`, "
       "c.`type`, c.`func`, IFNULL(l.`caption`, dl.`caption`), c.`caption`, "
       "c.`hidden` FROM `supla_dev_channel` c LEFT JOIN `supla_iodevice` d ON "
       "d.`id` = c.`iodevice_id` LEFT JOIN `supla_location` l ON l.`id` = "
@@ -363,56 +364,60 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   pbind[5].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&query->stmt, sql, pbind, 6, true)) {
-    MYSQL_BIND rbind[10];
+    MYSQL_BIND rbind[11];
     memset(rbind, 0, sizeof(rbind));
 
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = query->row->user_email;
-    rbind[0].buffer_length = sizeof(query->row->user_email);
-    rbind[0].length = &query->user_email_len;
-    rbind[0].is_null = &query->user_email_is_null;
+    rbind[0].buffer_type = MYSQL_TYPE_LONG;
+    rbind[0].buffer = (char *)&query->row->user_id;
+    rbind[0].buffer_length = sizeof(query->row->user_id);
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = query->row->user_shortuniqueid;
-    rbind[1].buffer_length = sizeof(query->row->user_shortuniqueid);
-    rbind[1].length = &query->user_shortuniqueid_len;
-    rbind[1].is_null = &query->user_shortuniqueid_is_null;
+    rbind[1].buffer = query->row->user_email;
+    rbind[1].buffer_length = sizeof(query->row->user_email);
+    rbind[1].length = &query->user_email_len;
+    rbind[1].is_null = &query->user_email_is_null;
 
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&query->row->device_id;
-    rbind[2].buffer_length = sizeof(query->row->device_id);
+    rbind[2].buffer_type = MYSQL_TYPE_STRING;
+    rbind[2].buffer = query->row->user_shortuniqueid;
+    rbind[2].buffer_length = sizeof(query->row->user_shortuniqueid);
+    rbind[2].length = &query->user_shortuniqueid_len;
+    rbind[2].is_null = &query->user_shortuniqueid_is_null;
 
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&query->device_enabled;
-    rbind[3].buffer_length = sizeof(int);
+    rbind[3].buffer = (char *)&query->row->device_id;
+    rbind[3].buffer_length = sizeof(query->row->device_id);
 
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&query->row->channel_id;
-    rbind[4].buffer_length = sizeof(query->row->channel_id);
+    rbind[4].buffer = (char *)&query->device_enabled;
+    rbind[4].buffer_length = sizeof(int);
 
     rbind[5].buffer_type = MYSQL_TYPE_LONG;
-    rbind[5].buffer = (char *)&query->row->channel_type;
-    rbind[5].buffer_length = sizeof(query->row->channel_type);
+    rbind[5].buffer = (char *)&query->row->channel_id;
+    rbind[5].buffer_length = sizeof(query->row->channel_id);
 
     rbind[6].buffer_type = MYSQL_TYPE_LONG;
-    rbind[6].buffer = (char *)&query->row->channel_func;
-    rbind[6].buffer_length = sizeof(query->row->channel_func);
+    rbind[6].buffer = (char *)&query->row->channel_type;
+    rbind[6].buffer_length = sizeof(query->row->channel_type);
 
-    rbind[7].buffer_type = MYSQL_TYPE_STRING;
-    rbind[7].buffer = query->row->channel_location;
-    rbind[7].buffer_length = sizeof(query->row->channel_location);
-    rbind[7].length = &query->channel_location_len;
-    rbind[7].is_null = &query->channel_location_is_null;
+    rbind[7].buffer_type = MYSQL_TYPE_LONG;
+    rbind[7].buffer = (char *)&query->row->channel_func;
+    rbind[7].buffer_length = sizeof(query->row->channel_func);
 
     rbind[8].buffer_type = MYSQL_TYPE_STRING;
-    rbind[8].buffer = query->row->channel_caption;
-    rbind[8].buffer_length = sizeof(query->row->channel_caption);
-    rbind[8].length = &query->channel_caption_len;
-    rbind[8].is_null = &query->channel_caption_is_null;
+    rbind[8].buffer = query->row->channel_location;
+    rbind[8].buffer_length = sizeof(query->row->channel_location);
+    rbind[8].length = &query->channel_location_len;
+    rbind[8].is_null = &query->channel_location_is_null;
 
-    rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&query->channel_hidden;
-    rbind[9].buffer_length = sizeof(int);
+    rbind[9].buffer_type = MYSQL_TYPE_STRING;
+    rbind[9].buffer = query->row->channel_caption;
+    rbind[9].buffer_length = sizeof(query->row->channel_caption);
+    rbind[9].length = &query->channel_caption_len;
+    rbind[9].is_null = &query->channel_caption_is_null;
+
+    rbind[10].buffer_type = MYSQL_TYPE_LONG;
+    rbind[10].buffer = (char *)&query->channel_hidden;
+    rbind[10].buffer_length = sizeof(int);
 
     if (mysql_stmt_bind_result(query->stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",

@@ -27,7 +27,7 @@ supla_mqtt_state_message_provider_abstract::
   this->device_id = 0;
   this->channel_id = 0;
   this->cvalue = NULL;
-  this->user_email[0] = 0;
+  this->user_email = NULL;
   this->em = NULL;
   this->icm = NULL;
 }
@@ -62,11 +62,11 @@ int supla_mqtt_state_message_provider_abstract::get_channel_id(void) {
 void supla_mqtt_state_message_provider_abstract::set_data(int user_id,
                                                           int device_id,
                                                           int channel_id) {
-  const char *email = _get_user_email();
-  snprintf(this->user_email, SUPLA_EMAIL_MAXSIZE, "%s", email ? email : "");
-  this->user_id = user_id;
-  this->device_id = device_id;
-  this->channel_id = channel_id;
+  user_id = user_id;
+  device_id = device_id;
+  channel_id = channel_id;
+
+  user_email = (char *)_get_user_email();
 
   if (cvalue) {
     free(cvalue);
@@ -727,6 +727,10 @@ bool supla_mqtt_state_message_provider_abstract::
 bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  if (user_id == 0 && device_id == 0 && channel_id == 0) {
+    return false;
+  }
+
   channel_complex_value *cvalue = get_complex_value();
   if (cvalue == NULL) {
     return false;
