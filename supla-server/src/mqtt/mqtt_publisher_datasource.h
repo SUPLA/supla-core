@@ -39,7 +39,7 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
 
   supla_mqtt_message_provider *user_message_provider;
   supla_mqtt_message_provider *device_message_provider;
-  supla_mqtt_message_provider *channel_message_provider;
+  supla_mqtt_message_provider *channelandstate_message_provider;
   supla_mqtt_state_message_provider *state_message_provider;
 
   void *datarow_malloc(int datatype);
