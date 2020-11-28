@@ -65,7 +65,7 @@ bool supla_mqtt_message_provider::create_message(
       email_len = strnlen(email, SUPLA_EMAIL_MAXSIZE);
     }
 
-    for (int a = 0; a < prefix_len; a++) {
+    for (size_t a = 0; a < prefix_len; a++) {
       if (topic_prefix[a] == '%' && prefix_len - a >= 7 &&
           topic_prefix[a + 1] == 'e' && topic_prefix[a + 2] == 'm' &&
           topic_prefix[a + 3] == 'a' && topic_prefix[a + 4] == 'i' &&
@@ -85,7 +85,7 @@ bool supla_mqtt_message_provider::create_message(
       }
     }
 
-    if (offset > 0 && (*topic_name_out)[offset-1] != '/') {
+    if (offset > 0 && (*topic_name_out)[offset - 1] != '/') {
       (*topic_name_out)[offset] = '/';
       offset++;
     }
