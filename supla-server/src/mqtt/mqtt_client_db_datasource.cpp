@@ -17,6 +17,7 @@
  */
 
 #include <mqtt_client_db_datasource.h>
+#include "log.h"
 
 supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(
     supla_mqtt_client_settings *settings)
@@ -32,7 +33,7 @@ void supla_mqtt_client_db_datasource::thread_init(void) {
 }
 
 void supla_mqtt_client_db_datasource::thread_cleanup(void) {
-  supla_mqtt_client_db_datasource::thread_cleanup();
+  supla_mqtt_client_datasource::thread_cleanup();
   database::thread_end();
 }
 

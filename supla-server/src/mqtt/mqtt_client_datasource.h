@@ -82,8 +82,8 @@ class supla_mqtt_client_datasource {
  public:
   explicit supla_mqtt_client_datasource(supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_client_datasource(void);
-  void thread_init(void);
-  void thread_cleanup(void);
+  virtual void thread_init(void);
+  virtual void thread_cleanup(void);
   bool fetch(char **topic_name, void **message, size_t *message_size);
   bool fetch(char **topic_name);
 
