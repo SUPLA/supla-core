@@ -48,6 +48,7 @@ char supla_user::find_user_byid(void *ptr, void *UserID) {
 
 supla_user::supla_user(int UserID) {
   this->UserID = UserID;
+  this->email = NULL;
 
   this->device_container = new supla_user_device_container();
   this->client_container = new supla_user_client_container();
