@@ -19,7 +19,7 @@
 #include <mqtt_publisher_datasource.h>
 #include <string.h>
 #include "log.h"
-#include "mqtt_channel_message_provider.h"
+#include "mqtt_channelandstate_message_provider.h"
 #include "mqtt_device_message_provider.h"
 #include "mqtt_user_message_provider.h"
 
@@ -42,7 +42,7 @@ supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(
   this->channeldata_row = NULL;
   this->user_message_provider = NULL;
   this->device_message_provider = NULL;
-  this->channel_message_provider = NULL;
+  this->channelandstate_message_provider = NULL;
   this->state_message_provider = NULL;
 }
 
@@ -58,8 +58,8 @@ bool supla_mqtt_publisher_datasource::context_open(
   switch (context->scope) {
     case MQTTDS_SCOPE_FULL:
     case MQTTDS_SCOPE_USER:
-      fetch_users = true;
-      fetch_devices = true;
+    //  fetch_users = true;
+    //  fetch_devices = true;
       fetch_channels = true;
       break;
     case MQTTDS_SCOPE_DEVICE:
@@ -130,7 +130,7 @@ supla_mqtt_message_provider *supla_mqtt_publisher_datasource::new_provider(
     case MPD_DATATYPE_DEVICE:
       return new supla_mqtt_device_message_provider();
     case MPD_DATATYPE_CHANNEL:
-      return new supla_mqtt_channel_message_provider();
+      return new supla_mqtt_channelandstate_message_provider();
   }
 
   return NULL;
@@ -148,7 +148,7 @@ void supla_mqtt_publisher_datasource::set_provider_data_row(
           static_cast<_mqtt_db_data_row_device_t *>(data_row));
       break;
     case MPD_DATATYPE_CHANNEL:
-      static_cast<supla_mqtt_channel_message_provider *>(provider)
+      static_cast<supla_mqtt_channelandstate_message_provider *>(provider)
           ->set_data_row(static_cast<_mqtt_db_data_row_channel_t *>(data_row));
       break;
   }
@@ -216,7 +216,7 @@ bool supla_mqtt_publisher_datasource::fetch_channel(
     const _mqtt_ds_context_t *context, char **topic_name, void **message,
     size_t *message_size) {
   return fetch(MPD_DATATYPE_CHANNEL, &channel_query, &channeldata_row,
-               &channel_message_provider, context, topic_name, message,
+               &channelandstate_message_provider, context, topic_name, message,
                message_size);
 }
 
@@ -225,7 +225,7 @@ bool supla_mqtt_publisher_datasource::fetch_state(
     size_t *message_size) {
   if (state_message_provider == NULL) {
     state_message_provider = new supla_mqtt_state_message_provider();
-    state_message_provider->set_data(context->user_id, context->device_id,
+    state_message_provider->set_ids(context->user_id, context->device_id,
                                      context->channel_id);
   }
 
@@ -325,10 +325,10 @@ void supla_mqtt_publisher_datasource::close_channelquery(void) {
     channeldata_row = NULL;
   }
 
-  if (channel_message_provider) {
-    delete static_cast<supla_mqtt_channel_message_provider *>(
-        channel_message_provider);
-    channel_message_provider = NULL;
+  if (channelandstate_message_provider) {
+    delete static_cast<supla_mqtt_channelandstate_message_provider *>(
+        channelandstate_message_provider);
+    channelandstate_message_provider = NULL;
   }
 }
 
