@@ -125,16 +125,16 @@ void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
     rbind[0].buffer_length = sizeof(query->row->user_id);
 
     rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = query->row->user_timezone;
-    rbind[1].buffer_length = sizeof(query->row->user_timezone);
-    rbind[1].length = &query->user_timezone_len;
-    rbind[1].is_null = &query->user_timezone_is_null;
+    rbind[1].buffer = query->row->user_email;
+    rbind[1].buffer_length = sizeof(query->row->user_email);
+    rbind[1].length = &query->user_email_len;
+    rbind[1].is_null = &query->user_email_is_null;
 
     rbind[2].buffer_type = MYSQL_TYPE_STRING;
-    rbind[2].buffer = query->row->user_email;
-    rbind[2].buffer_length = sizeof(query->row->user_email);
-    rbind[2].length = &query->user_email_len;
-    rbind[2].is_null = &query->user_email_is_null;
+    rbind[2].buffer = query->row->user_timezone;
+    rbind[2].buffer_length = sizeof(query->row->user_timezone);
+    rbind[2].length = &query->user_timezone_len;
+    rbind[2].is_null = &query->user_timezone_is_null;
 
     rbind[3].buffer_type = MYSQL_TYPE_STRING;
     rbind[3].buffer = query->row->user_shortuniqueid;
@@ -147,7 +147,6 @@ void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
                 mysql_stmt_error(query->stmt));
     } else {
       mysql_stmt_store_result(query->stmt);
-
       if (mysql_stmt_num_rows(query->stmt) > 0) {
         return query;
       }
@@ -160,7 +159,7 @@ void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
 
 bool supla_mqtt_db::userquery_fetch_row(void *_query) {
   _mqtt_db_userquery_t *query = static_cast<_mqtt_db_userquery_t *>(_query);
-  if (query && mysql_stmt_fetch(query->stmt)) {
+  if (query && !mysql_stmt_fetch(query->stmt)) {
     set_terminating_byte(query->row->user_email, sizeof(query->row->user_email),
                          query->user_email_len, query->user_email_is_null);
     set_terminating_byte(
@@ -289,7 +288,7 @@ void *supla_mqtt_db::open_devicequery(int UserID, int DeviceID,
 
 bool supla_mqtt_db::devicequery_fetch_row(void *_query) {
   _mqtt_db_devicequery_t *query = static_cast<_mqtt_db_devicequery_t *>(_query);
-  if (query && mysql_stmt_fetch(query->stmt)) {
+  if (query && !mysql_stmt_fetch(query->stmt)) {
     set_terminating_byte(query->row->user_email, sizeof(query->row->user_email),
                          query->user_email_len, query->user_email_is_null);
     set_terminating_byte(
@@ -434,7 +433,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
 bool supla_mqtt_db::channelquery_fetch_row(void *_query) {
   _mqtt_db_channelquery_t *query =
       static_cast<_mqtt_db_channelquery_t *>(_query);
-  if (query && mysql_stmt_fetch(query->stmt)) {
+  if (query && !mysql_stmt_fetch(query->stmt)) {
     set_terminating_byte(query->row->user_email, sizeof(query->row->user_email),
                          query->user_email_len, query->user_email_is_null);
     set_terminating_byte(
