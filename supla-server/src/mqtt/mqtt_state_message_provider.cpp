@@ -26,6 +26,15 @@ supla_mqtt_state_message_provider::supla_mqtt_state_message_provider(void)
 
 supla_mqtt_state_message_provider::~supla_mqtt_state_message_provider(void) {}
 
+const char *supla_mqtt_state_message_provider::_get_user_email(void) {
+  supla_user *user = supla_user::find(get_user_id(), false);
+  if (user != NULL) {
+    return user->getUserEmail();
+  }
+
+  return NULL;
+}
+
 channel_complex_value *supla_mqtt_state_message_provider::_get_complex_value(
     int user_id, int device_id, int channel_id) {
   channel_complex_value *result = NULL;

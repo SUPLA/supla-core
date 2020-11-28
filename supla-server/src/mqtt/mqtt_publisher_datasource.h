@@ -20,14 +20,14 @@
 #define MQTT_CHANNEL_SOURCE_H_
 
 #include "mqtt_client_db_datasource.h"
-#include "mqtt_message_provider.h"
+#include "mqtt_state_message_provider.h"
 
 class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
  private:
   bool fetch_users;
   bool fetch_devices;
   bool fetch_channels;
-  bool fetch_values;
+  bool fetch_states;
 
   void *user_query;
   void *device_query;
@@ -40,6 +40,7 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   supla_mqtt_message_provider *user_message_provider;
   supla_mqtt_message_provider *device_message_provider;
   supla_mqtt_message_provider *channel_message_provider;
+  supla_mqtt_state_message_provider *state_message_provider;
 
   void *datarow_malloc(int datatype);
   void *open_query(int datatype, const _mqtt_ds_context_t *context,
@@ -60,7 +61,7 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
                     void **message, size_t *message_size);
   bool fetch_channel(const _mqtt_ds_context_t *context, char **topic_name,
                      void **message, size_t *message_size);
-  bool fetch_value(const _mqtt_ds_context_t *context, char **topic_name,
+  bool fetch_state(const _mqtt_ds_context_t *context, char **topic_name,
                    void **message, size_t *message_size);
 
   void close_userquery();

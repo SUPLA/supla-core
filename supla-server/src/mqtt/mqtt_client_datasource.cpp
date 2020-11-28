@@ -81,7 +81,7 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
       context.device_id = id.device_id;
       result = true;
     } else if (channel_queue.size()) {
-      context.scope = MQTTDS_SCOPE_CHANNEL_VALUE;
+      context.scope = MQTTDS_SCOPE_CHANNEL_STATE;
       _mqtt_ds_channel_id_t id = channel_queue.front();
       channel_queue.pop_front();
       context.user_id = id.user_id;

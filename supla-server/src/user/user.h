@@ -39,6 +39,7 @@ class supla_channel_ic_measurement;
 
 class supla_user {
  private:
+  char *email;
   char *short_unique_id;
   char *long_unique_id;
   void *lck;
@@ -146,6 +147,7 @@ class supla_user {
   void emptyTrash(void);
 
   int getUserID(void);
+  const char *getUserEmail(void);
   char *getShortUniqueID(void);
   char *getLongUniqueID(void);
   bool getClientName(int ClientID, char *buffer, int size);

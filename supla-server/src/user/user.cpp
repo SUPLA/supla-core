@@ -80,6 +80,11 @@ supla_user::~supla_user() {
     long_unique_id = NULL;
   }
 
+  if (email) {
+    free(email);
+    email = NULL;
+  }
+
   lck_free(lck);
   delete cgroups;
   delete amazon_alexa_credentials;
@@ -153,6 +158,25 @@ void supla_user::loadUniqueIDs(void) {
     longID[LONG_UNIQUEID_MAXSIZE - 1] = 0;
     setUniqueId(shortID, longID);
   }
+}
+
+const char *supla_user::getUserEmail(void) {
+  char *result = NULL;
+
+  lck_lock(lck);
+  if (email == NULL) {
+    database *db = new database();
+
+    if (db->connect()) {
+      email = db->get_user_email(getUserID());
+    }
+
+    delete db;
+  }
+  result = email;
+  lck_unlock(lck);
+
+  return result;
 }
 
 char *supla_user::getShortUniqueID(void) {

@@ -21,9 +21,14 @@
 MqttStateMessageProviderMock::MqttStateMessageProviderMock(void)
     : supla_mqtt_state_message_provider_abstract() {
   cvalue_mock = NULL;
+  snprintf(email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
 }
 
 MqttStateMessageProviderMock::~MqttStateMessageProviderMock(void) {}
+
+const char *MqttStateMessageProviderMock::_get_user_email(void) {
+  return email;
+}
 
 channel_complex_value *MqttStateMessageProviderMock::_get_complex_value(
     int user_id, int device_id, int channel_id) {

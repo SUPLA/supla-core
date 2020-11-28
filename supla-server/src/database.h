@@ -48,6 +48,8 @@ class database : public svrdb {
   bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
                      bool *is_enabled);
 
+  char *get_user_email(int UserID);
+
   bool get_user_uniqueid(int UserID, char shortID[SHORT_UNIQUEID_MAXSIZE],
                          char longID[LONG_UNIQUEID_MAXSIZE]);
 

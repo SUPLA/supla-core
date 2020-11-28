@@ -89,6 +89,50 @@ bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
       AccessID, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, UserID, is_enabled);
 }
 
+char *database::get_user_email(int UserID) {
+  char *result = NULL;
+
+  char sql[] = "SELECT `email` FROM `supla_user` WHERE id = ?";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+    char email[SUPLA_EMAIL_MAXSIZE];
+    unsigned long size = 0;
+    my_bool is_null = true;
+
+    MYSQL_BIND rbind;
+    memset(&rbind, 0, sizeof(rbind));
+
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = email;
+    rbind.buffer_length = SUPLA_EMAIL_MAXSIZE;
+    rbind.length = &size;
+    rbind.is_null = &is_null;
+
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        set_terminating_byte(email, sizeof(email), size, is_null);
+        result = strndup(email, SUPLA_EMAIL_MAXSIZE);
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
 bool database::get_user_uniqueid(int UserID,
                                  char shortID[SHORT_UNIQUEID_MAXSIZE],
                                  char longID[LONG_UNIQUEID_MAXSIZE]) {
@@ -2768,4 +2812,3 @@ void database::load_temperatures_and_humidity(int UserID, void *tarr) {
     mysql_stmt_close(stmt);
   }
 }
-

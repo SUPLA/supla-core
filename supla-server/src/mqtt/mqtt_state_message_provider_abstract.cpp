@@ -59,10 +59,10 @@ int supla_mqtt_state_message_provider_abstract::get_channel_id(void) {
   return channel_id;
 }
 
-void supla_mqtt_state_message_provider_abstract::set_data(const char *email,
-                                                          int user_id,
+void supla_mqtt_state_message_provider_abstract::set_data(int user_id,
                                                           int device_id,
                                                           int channel_id) {
+  const char *email = _get_user_email();
   snprintf(this->user_email, SUPLA_EMAIL_MAXSIZE, "%s", email ? email : "");
   this->user_id = user_id;
   this->device_id = device_id;

@@ -27,6 +27,7 @@ class supla_mqtt_state_message_provider
     : public supla_mqtt_state_message_provider_abstract {
  private:
  protected:
+  virtual const char *_get_user_email(void);
   virtual channel_complex_value *_get_complex_value(int user_id, int device_id,
                                                     int channel_id);
   virtual supla_channel_electricity_measurement *_get_electricity_measurement(
