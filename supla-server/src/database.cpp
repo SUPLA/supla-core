@@ -96,13 +96,13 @@ char *database::get_user_email(int UserID) {
 
   MYSQL_STMT *stmt = NULL;
 
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
+  MYSQL_BIND pbind;
+  memset(&pbind, 0, sizeof(pbind));
 
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&UserID;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+  if (stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
     char email[SUPLA_EMAIL_MAXSIZE];
     unsigned long size = 0;
     my_bool is_null = true;
