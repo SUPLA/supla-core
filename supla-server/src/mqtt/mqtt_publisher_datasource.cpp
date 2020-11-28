@@ -58,8 +58,8 @@ bool supla_mqtt_publisher_datasource::context_open(
   switch (context->scope) {
     case MQTTDS_SCOPE_FULL:
     case MQTTDS_SCOPE_USER:
-    //  fetch_users = true;
-    //  fetch_devices = true;
+      fetch_users = true;
+      fetch_devices = true;
       fetch_channels = true;
       break;
     case MQTTDS_SCOPE_DEVICE:
