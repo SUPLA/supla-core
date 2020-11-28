@@ -26,7 +26,6 @@ namespace testing {
 GoogleHomeClientTest::GoogleHomeClientTest() {}
 
 void GoogleHomeClientTest::SetUp() {
-  supla_user::init();
   user = new supla_user(1001);
   user->setUniqueId("qwerty", "zxcvbnm");
 
@@ -39,8 +38,6 @@ void GoogleHomeClientTest::TearDown() {
   delete client->getHttpConnectionFactory();
   delete client;
   delete user;
-
-  supla_user::user_free();
 }
 TEST_F(GoogleHomeClientTest, requestSync) {
   const char expectedRequest[] =

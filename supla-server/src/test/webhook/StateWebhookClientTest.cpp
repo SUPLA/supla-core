@@ -26,7 +26,6 @@ namespace testing {
 StateWebhookClientTest::StateWebhookClientTest() {}
 
 void StateWebhookClientTest::SetUp() {
-  supla_user::init();
   user = new supla_user(1001);
   user->setUniqueId("dc85740d-cb27-405b-9da3-e8be5c71ae5b", "");
 
@@ -40,8 +39,6 @@ void StateWebhookClientTest::TearDown() {
   delete client->getHttpConnectionFactory();
   delete client;
   delete user;
-
-  supla_user::user_free();
 }
 
 TEST_F(StateWebhookClientTest, sendLightSwitchReport) {
