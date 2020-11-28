@@ -170,6 +170,7 @@ const char *supla_user::getUserEmail(void) {
 
     if (db->connect()) {
       email = db->get_user_email(getUserID());
+      supla_log(LOG_DEBUG, "Email->%s", email);
     }
 
     delete db;
@@ -271,7 +272,7 @@ supla_user *supla_user::find(int UserID, bool create) {
   supla_user *user =
       (supla_user *)safe_array_findcnd(user_arr, find_user_byid, &UserID);
 
-  if (user == NULL) user = new supla_user(UserID);
+  if (user == NULL && create) user = new supla_user(UserID);
 
   safe_array_unlock(supla_user::user_arr);
 
