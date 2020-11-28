@@ -237,24 +237,24 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
   ds->on_channelvalue_changed(55, 20, 124);
   //
 
-  ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 124, 0));
+  ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 124, 0));
 
   ASSERT_EQ(ds->openCount(), 1);
   ASSERT_EQ(ds->closeCount(), 0);
 
-  ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 124, 1));
+  ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 124, 1));
 
   ASSERT_FALSE(dataExists());
 
   ASSERT_EQ(ds->openCount(), 1);
   ASSERT_EQ(ds->closeCount(), 1);
 
-  ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 125, 0));
+  ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 125, 0));
 
   ASSERT_EQ(ds->openCount(), 2);
   ASSERT_EQ(ds->closeCount(), 1);
 
-  ASSERT_TRUE(popMessage("CHANNEL_VALUE", 55, 15, 125, 1));
+  ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 125, 1));
 
   ASSERT_FALSE(dataExists());
 

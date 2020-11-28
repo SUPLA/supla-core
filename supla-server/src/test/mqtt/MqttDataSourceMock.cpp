@@ -63,8 +63,8 @@ bool MqttDataSourceMock::_fetch(const _mqtt_ds_context_t *context,
       case MQTTDS_SCOPE_DEVICE:
         snprintf(scope, sizeof(scope), "%s%i", "SCOPE_DEVICE", idx);
         break;
-      case MQTTDS_SCOPE_CHANNEL_VALUE:
-        snprintf(scope, sizeof(scope), "%s%i", "CHANNEL_VALUE", idx);
+      case MQTTDS_SCOPE_CHANNEL_STATE:
+        snprintf(scope, sizeof(scope), "%s%i", "CHANNEL_STATE", idx);
         break;
     }
 
