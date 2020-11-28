@@ -26,7 +26,6 @@ namespace testing {
 AlexaClientTest::AlexaClientTest() {}
 
 void AlexaClientTest::SetUp() {
-  supla_user::init();
   user = new supla_user(1001);
   user->setUniqueId("qwerty", "zxcvbnm");
 
@@ -40,8 +39,6 @@ void AlexaClientTest::TearDown() {
   delete client->getHttpConnectionFactory();
   delete client;
   delete user;
-
-  supla_user::user_free();
 }
 
 TEST_F(AlexaClientTest, sendPowerChangeReport) {
