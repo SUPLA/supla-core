@@ -29,6 +29,7 @@
 int main(int argc, char **argv) {
   st_hook_signals();
 
+  supla_user::init();
   database::mainthread_init();
   ::testing::InitGoogleTest(&argc, argv);
 
@@ -47,6 +48,7 @@ int main(int argc, char **argv) {
 #endif /*__OPENSSL_TOOLS*/
 
   database::mainthread_end();
+  supla_user::user_free();
 
   return result;
 }
