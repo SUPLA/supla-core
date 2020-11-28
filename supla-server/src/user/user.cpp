@@ -170,7 +170,6 @@ const char *supla_user::getUserEmail(void) {
 
     if (db->connect()) {
       email = db->get_user_email(getUserID());
-      supla_log(LOG_DEBUG, "Email->%s", email);
     }
 
     delete db;
