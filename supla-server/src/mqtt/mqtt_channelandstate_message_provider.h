@@ -32,7 +32,6 @@ class supla_mqtt_channelandstate_message_provider
  public:
   supla_mqtt_channelandstate_message_provider(void);
   virtual ~supla_mqtt_channelandstate_message_provider(void);
-  virtual void reset_index(void);
   virtual bool get_message_at_index(unsigned short index,
                                     const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size);

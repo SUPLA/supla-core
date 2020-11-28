@@ -17,6 +17,7 @@
  */
 
 #include <mqtt_channelandstate_message_provider.h>
+#include "log.h"
 
 supla_mqtt_channelandstate_message_provider::
     supla_mqtt_channelandstate_message_provider(void)
@@ -27,10 +28,15 @@ supla_mqtt_channelandstate_message_provider::
 
 supla_mqtt_channelandstate_message_provider::
     ~supla_mqtt_channelandstate_message_provider(void) {
-  delete channel_message_provider;
-  channel_message_provider = NULL;
-  delete state_message_provider;
-  state_message_provider = NULL;
+  if (channel_message_provider) {
+    delete channel_message_provider;
+    channel_message_provider = NULL;
+  }
+
+  if (state_message_provider) {
+    delete state_message_provider;
+    state_message_provider = NULL;
+  }
 }
 
 bool supla_mqtt_channelandstate_message_provider::get_message_at_index(
@@ -43,6 +49,8 @@ bool supla_mqtt_channelandstate_message_provider::get_message_at_index(
     } else {
       delete channel_message_provider;
       channel_message_provider = NULL;
+      reset_index();
+      index = 0;
     }
   }
 
@@ -69,21 +77,16 @@ void supla_mqtt_channelandstate_message_provider::init_providers_if_needed(
   }
 }
 
-void supla_mqtt_channelandstate_message_provider::reset_index(void) {
-  init_providers_if_needed();
-
-  channel_message_provider->reset_index();
-  state_message_provider->reset_index();
-}
-
 void supla_mqtt_channelandstate_message_provider::set_data_row(
     _mqtt_db_data_row_channel_t *row) {
   init_providers_if_needed();
   channel_message_provider->set_data_row(row);
   if (row) {
-    state_message_provider->set_data(row->user_id, row->device_id,
-                                     row->channel_id);
+    state_message_provider->set_ids(row->user_id, row->device_id,
+                                    row->channel_id);
+    state_message_provider->set_channel_type_and_function(row->channel_func,
+                                                          row->channel_type);
   } else {
-    state_message_provider->set_data(0, 0, 0);
+    state_message_provider->set_ids(0, 0, 0);
   }
 }
