@@ -20,6 +20,7 @@ cpplint ./supla-server/src/test/*
 cpplint ./supla-server/src/test/alexa/* 
 cpplint ./supla-server/src/test/google/* 
 cpplint ./supla-server/src/test/integration/* 
+cpplint ./supla-server/src/test/integration/mqtt/* 
 cpplint ./supla-server/src/test/mqtt/* 
 cpplint ./supla-server/src/test/webhook/* 
 cpplint ./supla-scheduler/src/* 
