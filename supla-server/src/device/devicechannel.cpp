@@ -1934,8 +1934,8 @@ bool supla_device_channels::get_channel_complex_value(
             break;
         }
 
-        // TODO: This should be better implemented. Right now, that's spaghetti
-        // code
+        // TODO(anyone): This should be better implemented. Right now, that's
+        // spaghetti code
         value->hi = false;
         value->partially_closed = false;
         supla_user *user = supla_user::find(channel->getUserID(), false);
