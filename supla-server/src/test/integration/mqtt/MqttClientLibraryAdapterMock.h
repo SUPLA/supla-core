@@ -19,12 +19,20 @@
 #ifndef MQTT_CLIENTLIBRARYADAPTER_MOCK_H_
 #define MQTT_CLIENTLIBRARYADAPTER_MOCK_H_
 
+#include <list>
 #include "mqtt_client_library_adapter.h"
+
+typedef struct {
+  char *topic_name;
+  void *message;
+  size_t message_size;
+} _mqtt_test_message_t;
 
 class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
  private:
   bool connected;
   void *lck;
+  std::list<_mqtt_test_message_t> messages;
 
  public:
   explicit MqttClientLibraryAdapterMock(supla_mqtt_client_settings *settings);
@@ -38,6 +46,9 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   virtual bool subscribe(const char *topic_name, QOS_Level max_qos_level);
   virtual bool publish(const char *topic_name, const void *message,
                        size_t message_size, QOS_Level qos_level, bool retain);
+  void clear(void);
+  int count(void);
+  _mqtt_test_message_t pop(void);
 };
 
 #endif /* MQTT_CLIENTLIBRARYADAPTER_MOCK_H_ */

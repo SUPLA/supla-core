@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "MqttClientLibraryAdapterMock.h"
+#include <string.h>
 #include <unistd.h>
 #include "lck.h"
 #include "log.h"
@@ -29,6 +30,7 @@ MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
 }
 
 MqttClientLibraryAdapterMock::~MqttClientLibraryAdapterMock(void) {
+  clear();
   lck_free(lck);
 }
 
@@ -74,6 +76,51 @@ bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
                                            const void *message,
                                            size_t message_size,
                                            QOS_Level qos_level, bool retain) {
-  supla_log(LOG_DEBUG, "%s", topic_name);
+  _mqtt_test_message_t m;
+  memset(&m, 0, sizeof(_mqtt_test_message_t));
+
+  m.topic_name = strdup(topic_name);
+  if (message && message_size) {
+    m.message = malloc(message_size + 1);
+    if (m.message) {
+      memcpy(m.message, message, message_size);
+      ((char *)m.message)[message_size] = 0;
+      m.message_size = message_size;
+    }
+  }
+
+  messages.push_back(m);
   return true;
+}
+
+void MqttClientLibraryAdapterMock::clear(void) {
+  lck_lock(lck);
+  while (messages.size()) {
+    _mqtt_test_message_t m = messages.front();
+    if (m.topic_name != NULL) {
+      free(m.topic_name);
+    }
+    if (m.message) {
+      free(m.message);
+    }
+    messages.pop_front();
+  }
+  lck_unlock(lck);
+}
+
+int MqttClientLibraryAdapterMock::count(void) {
+  int result = 0;
+  lck_lock(lck);
+  result = messages.size();
+  lck_unlock(lck);
+  return result;
+}
+
+_mqtt_test_message_t MqttClientLibraryAdapterMock::pop(void) {
+  _mqtt_test_message_t result;
+  lck_lock(lck);
+  result = messages.front();
+  messages.pop_front();
+  lck_unlock(lck);
+  return result;
 }
