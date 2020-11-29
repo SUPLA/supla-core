@@ -81,7 +81,7 @@ bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
 
   m.topic_name = strdup(topic_name);
   if (message && message_size) {
-    m.message = malloc(message_size + 1);
+    m.message = (char *)malloc(message_size + 1);
     if (m.message) {
       memcpy(m.message, message, message_size);
       ((char *)m.message)[message_size] = 0;

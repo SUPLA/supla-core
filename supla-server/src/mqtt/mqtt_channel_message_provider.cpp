@@ -17,6 +17,7 @@
  */
 
 #include <mqtt_channel_message_provider.h>
+#include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
     : supla_mqtt_message_provider() {

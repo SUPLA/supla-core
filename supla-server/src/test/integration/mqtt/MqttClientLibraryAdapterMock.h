@@ -24,7 +24,7 @@
 
 typedef struct {
   char *topic_name;
-  void *message;
+  char *message;
   size_t message_size;
 } _mqtt_test_message_t;
 
