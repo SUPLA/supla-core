@@ -66,8 +66,8 @@ void MqttPublisherIntegrationTest::print(void) {
 }
 
 void MqttPublisherIntegrationTest::SetUp() {
-  // initTestDatabase();
-  // runSqlScript("DataForMqttTests.sql");
+  initTestDatabase();
+  runSqlScript("DataForMqttTests.sql");
 
   iniSettings = new supla_mqtt_client_ini_settings();
   libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
