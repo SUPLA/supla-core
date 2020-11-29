@@ -49,8 +49,14 @@ bool supla_mqtt_channelandstate_message_provider::get_message_at_index(
     } else {
       delete channel_message_provider;
       channel_message_provider = NULL;
-      reset_index();
-      index = 0;
+
+      if (index == 0 && state_message_provider) {
+        delete state_message_provider;
+        state_message_provider = NULL;
+      } else {
+        reset_index();
+        index = 0;
+      }
     }
   }
 
@@ -80,6 +86,7 @@ void supla_mqtt_channelandstate_message_provider::init_providers_if_needed(
 void supla_mqtt_channelandstate_message_provider::set_data_row(
     _mqtt_db_data_row_channel_t *row) {
   init_providers_if_needed();
+  reset_index();
   channel_message_provider->set_data_row(row);
   if (row) {
     state_message_provider->set_ids(row->user_id, row->device_id,
