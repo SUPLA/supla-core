@@ -25,9 +25,48 @@ MqttPublisherIntegrationTest::MqttPublisherIntegrationTest()
 
 MqttPublisherIntegrationTest::~MqttPublisherIntegrationTest() {}
 
+void MqttPublisherIntegrationTest::waitForData(int expectedTopicCount) {
+  for (int a = 0; a < 5000; a++) {
+    if (libraryAdapter->count() == expectedTopicCount &&
+        !dataSource->is_context_open()) {
+      return;
+    }
+    usleep(1000);
+  }
+
+  EXPECT_EQ(libraryAdapter->count(), expectedTopicCount);
+  EXPECT_TRUE(dataSource->is_context_open());
+  ASSERT_TRUE(false);
+}
+
+void MqttPublisherIntegrationTest::print(void) {
+  printf("const char *expectedData[] = {\n");
+  bool first = true;
+  while (libraryAdapter->count()) {
+    _mqtt_test_message_t m = libraryAdapter->pop();
+    if (first) {
+      first = false;
+    } else {
+      printf(", ");
+    }
+    printf("%s%s%s, %s%s%s\n", m.topic_name ? "\"" : "",
+           m.topic_name ? m.topic_name : "NULL", m.topic_name ? "\"" : "",
+           m.message ? "\"" : "", m.message ? (char *)m.message : "NULL",
+           m.message ? "\"" : "");
+
+    if (m.topic_name) {
+      free(m.topic_name);
+    }
+    if (m.message) {
+      free(m.message);
+    }
+  }
+  printf("};\n");
+}
+
 void MqttPublisherIntegrationTest::SetUp() {
-  //initTestDatabase();
-  //runSqlScript("DataForMqttTests.sql");
+  // initTestDatabase();
+  // runSqlScript("DataForMqttTests.sql");
 
   iniSettings = new supla_mqtt_client_ini_settings();
   libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
@@ -56,9 +95,12 @@ void MqttPublisherIntegrationTest::waitForConnection() {
   ASSERT_TRUE(false);
 }
 
-TEST_F(MqttPublisherIntegrationTest, allEvents) {
-	waitForConnection();
-	usleep(5000000);
+TEST_F(MqttPublisherIntegrationTest, fullScope) {
+  waitForConnection();
+  waitForData(464);
+
+  print();
+
 }
 
 } /* namespace testing */

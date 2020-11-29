@@ -34,7 +34,8 @@ class MqttPublisherIntegrationTest : public IntegrationTest {
   supla_mqtt_publisher_datasource *dataSource;
   supla_mqtt_publisher *publisher;
   void waitForConnection();
-
+  void waitForData(int expectedTopicCount);
+  void print(void);
  public:
   virtual void SetUp();
   virtual void TearDown();
