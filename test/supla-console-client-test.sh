@@ -7,17 +7,7 @@ set -e
 
 DBHOST=db
 
-if ! (echo "" | mysql -u supla -h $DBHOST) 2> /dev/null; then
-  if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
-    if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
-      echo "Enter mariadb root password.";
-      mysql -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql 
-    fi
-  fi
-fi
-
-mysql -u supla -h $DBHOST < sql/RecreateTestDatabase.sql
-mysql -u supla -h $DBHOST supla_test < sql/TestDatabaseStructureAndData.sql
+db_init
 
 mkdir -p /etc/supla-server
 cp ./test/cert/cert.crt /etc/supla-server/

@@ -5,6 +5,10 @@ set -e
 [ -d ../test ] && cd ../
 . ./test/common
 
+DBHOST=db
+
+db_init
+
 mkdir -p /etc/supla-server
 
 cd supla-server/Test 
@@ -16,7 +20,7 @@ cert=/etc/supla-server/cert.crt
 private_key=/etc/supla-server/private.key
 
 [MySQL]
-host=db
+host=$DBHOST
 port=3306
 database=supla_test
 user=supla
@@ -28,11 +32,10 @@ port=1883
 ssl=0
 username=supla-server
 password=alkdmalsdaskdn
-prefix=%email%
 client_id=NunYnx
 ENDOFCFG
 
-vg_verify "./supla-server"
+vg_verify "./supla-server --sqldir ../../sql"
 
 cd ../Release 
 make clean && make all 
