@@ -23,7 +23,7 @@
 supla_mqtt_client_datasource::supla_mqtt_client_datasource(
     supla_mqtt_client_settings *settings) {
   lck = lck_init();
-  context_opened = false;
+  _context_open = false;
   all_data_expected = false;
   this->settings = settings;
   context_structure_clear(&context);
@@ -39,7 +39,7 @@ supla_mqtt_client_settings *supla_mqtt_client_datasource::get_settings(void) {
 
 void supla_mqtt_client_datasource::thread_init(void) {}
 
-void supla_mqtt_client_datasource::thread_cleanup(void) {}
+void supla_mqtt_client_datasource::thread_cleanup(void) { context_close(); }
 
 void supla_mqtt_client_datasource::context_structure_clear(
     _mqtt_ds_context_t *scope) {
@@ -47,13 +47,19 @@ void supla_mqtt_client_datasource::context_structure_clear(
   scope->scope = MQTTDS_SCOPE_NONE;
 }
 
-void supla_mqtt_client_datasource::context_open(void) {
-  if (context_opened) {
+void supla_mqtt_client_datasource::context_close(void) {
+  if (is_context_open()) {
     context_close(&context);
-    context_opened = false;
+    lck_lock(lck);
+    _context_open = false;
+    lck_unlock(lck);
   }
 
   context_structure_clear(&context);
+}
+
+void supla_mqtt_client_datasource::context_open(void) {
+  context_close();
   context_open(&context);
 }
 
@@ -61,7 +67,7 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
   bool result = false;
   lck_lock(lck);
 
-  if (!context_opened) {
+  if (!is_context_open()) {
     memset(&context, 0, sizeof(_mqtt_ds_context_t));
 
     if (all_data_expected) {
@@ -98,17 +104,22 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
 bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
                                          size_t *message_size) {
   if (context_should_be_opened()) {
-    context_opened = context_open(&context);
+    bool __context_open = context_open(&context);
+    lck_lock(lck);
+    _context_open = __context_open;
+    lck_unlock(lck);
   }
 
   bool result = false;
 
-  if (context_opened) {
+  if (is_context_open()) {
     result = _fetch(&context, topic_name, message, message_size);
 
     if (!result) {
       context_close(&context);
-      context_opened = false;
+      lck_lock(lck);
+      _context_open = false;
+      lck_unlock(lck);
     }
   }
 
@@ -217,4 +228,13 @@ void supla_mqtt_client_datasource::on_channelvalue_changed(int user_id,
     channel_queue.push_back(id);
   }
   lck_unlock(lck);
+}
+
+bool supla_mqtt_client_datasource::is_context_open(void) {
+  bool result = false;
+  lck_lock(lck);
+  result = _context_open;
+  lck_unlock(lck);
+
+  return result;
 }

@@ -54,7 +54,7 @@ typedef struct {
 class supla_mqtt_client_datasource {
  private:
   void *lck;
-  bool context_opened;
+  bool _context_open;
   supla_mqtt_client_settings *settings = NULL;
 
   _mqtt_ds_context_t context;
@@ -70,6 +70,7 @@ class supla_mqtt_client_datasource {
 
   bool context_should_be_opened(void);
   void context_open(void);
+  void context_close(void);
   void context_structure_clear(_mqtt_ds_context_t *scope);
 
  protected:
@@ -91,6 +92,8 @@ class supla_mqtt_client_datasource {
   void on_userdata_changed(int user_id);
   void on_devicedata_changed(int user_id, int device_id);
   void on_channelvalue_changed(int user_id, int device_id, int channel_id);
+
+  bool is_context_open(void);
 };
 
 #endif /*MQTT_CLIENT_DATASOURCE_H_*/
