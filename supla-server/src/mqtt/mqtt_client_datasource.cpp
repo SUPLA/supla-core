@@ -217,7 +217,7 @@ void supla_mqtt_client_datasource::on_devicedata_changed(int user_id,
   lck_unlock(lck);
 }
 
-void supla_mqtt_client_datasource::on_channelvalue_changed(int user_id,
+void supla_mqtt_client_datasource::on_channelstate_changed(int user_id,
                                                            int device_id,
                                                            int channel_id) {
   lck_lock(lck);

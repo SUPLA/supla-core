@@ -1088,7 +1088,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/431test@supla.org/channels/10259/device_id",
       "7212",
       "supla/431test@supla.org/channels/10259/type",
-      "SENSORNC",
+      "DISTANCESENSOR",
       "supla/431test@supla.org/channels/10259/function",
       "DEPTHSENSOR",
       "supla/431test@supla.org/channels/10259/caption",
@@ -1230,7 +1230,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/2487test@supla.org/channels/17748/device_id",
       "10190",
       "supla/2487test@supla.org/channels/17748/type",
-      "SENSORNC",
+      "DISTANCESENSOR",
       "supla/2487test@supla.org/channels/17748/function",
       "DISTANCESENSOR",
       "supla/2487test@supla.org/channels/17748/caption",
@@ -1255,6 +1255,135 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "false",
       "supla/2337test@supla.org/channels/18023/state/hi",
       NULL};
+
+  verify(expectedData, sizeof(expectedData) / sizeof(void *));
+}
+
+TEST_F(MqttPublisherIntegrationTest, userScope) {
+  waitForConnection();
+  waitForData(548);
+  libraryAdapter->clear();
+
+  dataSource->on_userdata_changed(2487);
+  waitForData(16);
+
+  // print();
+
+  const char *expectedData[] = {
+      "supla/2487test@supla.org/account/timezone",
+      "Europe/Warsaw",
+      "supla/2487test@supla.org/account/shortuniqueid",
+      "7e2182788b9214ee5b66349d5b7668cf",
+      "supla/2487test@supla.org/devices/10190/enabled",
+      "true",
+      "supla/2487test@supla.org/devices/10190/last_connected",
+      "2020-11-11T16:23:05Z",
+      "supla/2487test@supla.org/devices/10190/last_ipv4",
+      "90.156.9.222",
+      "supla/2487test@supla.org/devices/10190/manufacturer",
+      NULL,
+      "supla/2487test@supla.org/devices/10190/name",
+      "SUPLA-Skalar",
+      "supla/2487test@supla.org/devices/10190/proto_ver",
+      "9",
+      "supla/2487test@supla.org/devices/10190/soft_ver",
+      "1.6.1",
+      "supla/2487test@supla.org/channels/17748/device_id",
+      "10190",
+      "supla/2487test@supla.org/channels/17748/type",
+      "DISTANCESENSOR",
+      "supla/2487test@supla.org/channels/17748/function",
+      "DISTANCESENSOR",
+      "supla/2487test@supla.org/channels/17748/caption",
+      NULL,
+      "supla/2487test@supla.org/channels/17748/hidden",
+      "false",
+      "supla/2487test@supla.org/channels/17748/state/connected",
+      "false",
+      "supla/2487test@supla.org/channels/17748/state/distance",
+      NULL};
+
+  verify(expectedData, sizeof(expectedData) / sizeof(void *));
+}
+
+TEST_F(MqttPublisherIntegrationTest, deviceScope) {
+  waitForConnection();
+  waitForData(548);
+  libraryAdapter->clear();
+
+  dataSource->on_userdata_changed(2487);
+  waitForData(16);
+  libraryAdapter->clear();
+
+  dataSource->on_devicedata_changed(1802, 9717);
+  waitForData(20);
+
+  // print();
+
+  const char *expectedData[] = {
+      "supla/1802test@supla.org/devices/9717/enabled",
+      "true",
+      "supla/1802test@supla.org/devices/9717/last_connected",
+      "2020-11-11T12:41:52Z",
+      "supla/1802test@supla.org/devices/9717/last_ipv4",
+      "188.137.114.68",
+      "supla/1802test@supla.org/devices/9717/manufacturer",
+      NULL,
+      "supla/1802test@supla.org/devices/9717/name",
+      "IMPULSE COUNTER",
+      "supla/1802test@supla.org/devices/9717/proto_ver",
+      "10",
+      "supla/1802test@supla.org/devices/9717/soft_ver",
+      "2.7.2",
+      "supla/1802test@supla.org/channels/16166/device_id",
+      "9717",
+      "supla/1802test@supla.org/channels/16166/type",
+      "IMPULSECOUNTER",
+      "supla/1802test@supla.org/channels/16166/function",
+      "ELECTRICITYMETER",
+      "supla/1802test@supla.org/channels/16166/caption",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/hidden",
+      "false",
+      "supla/1802test@supla.org/channels/16166/state/connected",
+      "false",
+      "supla/1802test@supla.org/channels/16166/state/total_cost",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/state/price_per_unit",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/state/impulses_per_unit",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/state/counter",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/state/calculated_value",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/state/currency",
+      NULL,
+      "supla/1802test@supla.org/channels/16166/state/unit",
+      NULL};
+
+  verify(expectedData, sizeof(expectedData) / sizeof(void *));
+}
+
+TEST_F(MqttPublisherIntegrationTest, stateScope) {
+  waitForConnection();
+  waitForData(548);
+  libraryAdapter->clear();
+
+  dataSource->on_userdata_changed(2487);
+  waitForData(16);
+  libraryAdapter->clear();
+
+  dataSource->on_devicedata_changed(1802, 9717);
+  waitForData(20);
+  libraryAdapter->clear();
+
+  dataSource->on_channelstate_changed(2645, 4124, 4688);
+  waitForData(1);
+
+  // print();
+
+  const char *expectedData[] = {"supla/channels/4688/state/connected", "false"};
 
   verify(expectedData, sizeof(expectedData) / sizeof(void *));
 }

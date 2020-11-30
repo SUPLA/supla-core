@@ -39,7 +39,7 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
       snprintf(buf, buf_size, "SENSORNC");
       break;
     case SUPLA_CHANNELTYPE_DISTANCESENSOR:
-      snprintf(buf, buf_size, "SENSORNC");
+      snprintf(buf, buf_size, "DISTANCESENSOR");
       break;
     case SUPLA_CHANNELTYPE_CALLBUTTON:
       snprintf(buf, buf_size, "CALLBUTTON");

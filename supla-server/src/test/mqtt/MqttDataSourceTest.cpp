@@ -115,7 +115,7 @@ TEST_F(MqttDataSourceTest, onBrokerConnected) {
   ASSERT_EQ(ds->openCount(), 0);
   ASSERT_EQ(ds->closeCount(), 0);
 
-  ds->on_channelvalue_changed(55, 1, 123);
+  ds->on_channelstate_changed(55, 1, 123);
   ds->on_devicedata_changed(56, 2);
   ds->on_userdata_changed(57);
 
@@ -123,7 +123,7 @@ TEST_F(MqttDataSourceTest, onBrokerConnected) {
 
   ds->on_userdata_changed(58);
   ds->on_devicedata_changed(59, 3);
-  ds->on_channelvalue_changed(60, 4, 125);
+  ds->on_channelstate_changed(60, 4, 125);
 
   ASSERT_TRUE(popMessage("SCOPE_FULL", 0, 0, 0, 0));
 
@@ -144,13 +144,13 @@ TEST_F(MqttDataSourceTest, onUserDataChanged) {
   ASSERT_EQ(ds->openCount(), 0);
   ASSERT_EQ(ds->closeCount(), 0);
 
-  ds->on_channelvalue_changed(55, 1, 123);
+  ds->on_channelstate_changed(55, 1, 123);
   ds->on_devicedata_changed(55, 2);
 
   ds->on_userdata_changed(55);
 
   ds->on_devicedata_changed(55, 3);
-  ds->on_channelvalue_changed(55, 4, 124);
+  ds->on_channelstate_changed(55, 4, 124);
 
   ds->on_userdata_changed(55);
   ds->on_userdata_changed(52);
@@ -190,9 +190,9 @@ TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
   ASSERT_EQ(ds->openCount(), 0);
   ASSERT_EQ(ds->closeCount(), 0);
 
-  ds->on_channelvalue_changed(55, 1, 123);
+  ds->on_channelstate_changed(55, 1, 123);
   ds->on_devicedata_changed(55, 1);
-  ds->on_channelvalue_changed(55, 1, 124);
+  ds->on_channelstate_changed(55, 1, 124);
 
   ds->on_devicedata_changed(55, 1);
   ds->on_devicedata_changed(55, 2);
@@ -230,11 +230,11 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
   ASSERT_EQ(ds->openCount(), 0);
   ASSERT_EQ(ds->closeCount(), 0);
 
-  ds->on_channelvalue_changed(55, 15, 124);
-  ds->on_channelvalue_changed(55, 15, 125);
+  ds->on_channelstate_changed(55, 15, 124);
+  ds->on_channelstate_changed(55, 15, 125);
 
   // The identifiers should be unique in themselves
-  ds->on_channelvalue_changed(55, 20, 124);
+  ds->on_channelstate_changed(55, 20, 124);
   //
 
   ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 124, 0));

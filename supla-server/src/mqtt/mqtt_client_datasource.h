@@ -91,7 +91,7 @@ class supla_mqtt_client_datasource {
   void on_broker_connected(void);
   void on_userdata_changed(int user_id);
   void on_devicedata_changed(int user_id, int device_id);
-  void on_channelvalue_changed(int user_id, int device_id, int channel_id);
+  void on_channelstate_changed(int user_id, int device_id, int channel_id);
 
   bool is_context_open(void);
 };
