@@ -39,7 +39,6 @@ class supla_mqtt_client_suite {
   supla_mqtt_publisher *publisher;
   supla_mqtt_subscriber *subscriber;
 
- protected:
  public:
   static supla_mqtt_client_suite *globalInstance(void);
   static void globalInstanceRelease(void);
