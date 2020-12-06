@@ -47,6 +47,9 @@ class supla_mqtt_client_suite {
   virtual ~supla_mqtt_client_suite(void);
   void start(void);
   void stop(void);
+  void onUserSettingsChanged(int UserID);
+  void onChannelsAdded(int UserID, int DeviceID);
+  void onChannelStateChanged(int UserID, int DeviceID, int ChannelID);
 };
 
 #endif /*MQTT_CLIENT_SUITE_H_*/

@@ -147,6 +147,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
       int _LocationID = 0;
       int _OriginalLocationID = 0;
       bool new_device = false;
+      bool channels_added = false;
 
       if (register_device_c != NULL &&
           db->location_auth(LocationID, register_device_c->LocationPWD, &UserID,
@@ -284,6 +285,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                   ChannelCount = -1;
                   break;
                 } else if (new_channel) {
+                  channels_added = true;
                   db->on_channeladded(DeviceID, ChannelID);
                 }
 
@@ -332,8 +334,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                                              dev_channels_b, dev_channels_c,
                                              channel_count);
 
-              if (new_device) {
-                getUser()->on_device_added(DeviceID, EST_DEVICE);
+              if (channels_added) {
+                getUser()->on_channels_added(DeviceID, EST_DEVICE);
               }
             }
           }

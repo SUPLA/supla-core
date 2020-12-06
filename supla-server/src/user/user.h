@@ -130,6 +130,7 @@ class supla_user {
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
   static void on_state_webhook_changed(int UserID);
+  static void on_mqtt_settings_changed(int UserID);
   static void on_device_deleted(int UserID, event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
   static void log_metrics(int min_interval_sec);
@@ -138,7 +139,7 @@ class supla_user {
   void reconnect(event_source_type eventSourceType, bool allDevices,
                  bool allClients);
 
-  void on_device_added(int DeviceID, event_source_type eventSourceType);
+  void on_channels_added(int DeviceID, event_source_type eventSourceType);
 
   void setUniqueId(const char shortID[], const char longID[]);
 

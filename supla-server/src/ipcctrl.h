@@ -33,10 +33,6 @@ class svr_ipcctrl {
   int sfd;
   TEventHandler *eh;
 
-  char auth_level;
-  int auth_expires_at;
-  int user_id;
-  int oauth_user_id;
   char *AlexaCorrelationToken = NULL;
   char *GoogleRequestId = NULL;
 
@@ -57,6 +53,7 @@ class svr_ipcctrl {
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);
   void state_webhook_changed(const char *cmd);
+  void mqtt_settings_changed(const char *cmd);
   void on_device_deleted(const char *cmd);
 
   void send_result(const char *result);

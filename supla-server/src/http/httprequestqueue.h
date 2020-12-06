@@ -75,7 +75,7 @@ class supla_http_request_queue {
                                  const char correlationToken[] = NULL,
                                  const char googleRequestId[] = NULL);
 
-  void onDeviceAddedEvent(supla_user *user, int deviceId,
+  void onChannelsAddedEvent(supla_user *user, int deviceId,
                           event_source_type eventSourceType,
                           const char correlationToken[] = NULL,
                           const char googleRequestId[] = NULL);

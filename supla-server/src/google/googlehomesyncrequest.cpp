@@ -58,7 +58,7 @@ void supla_google_home_sync_request::execute(void *sthread) {
 bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
                                                          bool verification) {
   switch (eventType) {
-    case ET_DEVICE_ADDED:
+    case ET_CHANNELS_ADDED:
     case ET_DEVICE_DELETED:
     case ET_USER_RECONNECT:
     case ET_GOOGLE_HOME_SYNC_NEEDED:

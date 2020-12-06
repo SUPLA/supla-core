@@ -65,6 +65,8 @@ const char cmd_user_state_webhook_changed[] = "USER-STATE-WEBHOOK-CHANGED:";
 
 const char cmd_user_on_device_deleted[] = "USER-ON-DEVICE-DELETED:";
 
+const char cmd_user_mqtt_settings_changed[] = "USER-MQTT-SETTINGS-CHANGED:";
+
 char ACT_VAR[] = ",ALEXA-CORRELATION-TOKEN=";
 char GRI_VAR[] = ",GOOGLE-REQUEST-ID=";
 
@@ -525,6 +527,19 @@ void svr_ipcctrl::state_webhook_changed(const char *cmd) {
   }
 }
 
+void svr_ipcctrl::mqtt_settings_changed(const char *cmd) {
+  int UserID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_mqtt_settings_changed, IPC_BUFFER_SIZE)],
+         "%i", &UserID);
+  if (UserID) {
+    supla_user::on_mqtt_settings_changed(UserID);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
 void svr_ipcctrl::on_device_deleted(const char *cmd) {
   int UserID = 0;
 
@@ -658,6 +673,9 @@ void svr_ipcctrl::execute(void *sthread) {
 
         } else if (match_command(cmd_user_state_webhook_changed, len)) {
           state_webhook_changed(cmd_user_state_webhook_changed);
+
+        } else if (match_command(cmd_user_mqtt_settings_changed, len)) {
+          mqtt_settings_changed(cmd_user_mqtt_settings_changed);
 
         } else if (match_command(cmd_user_on_device_deleted, len)) {
           on_device_deleted(cmd_user_on_device_deleted);

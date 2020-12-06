@@ -31,6 +31,7 @@
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "safearray.h"
 #include "userchannelgroups.h"
 
@@ -705,6 +706,7 @@ bool supla_user::set_device_channel_char_value(
 
   if (user) {
     if (eventSourceType > 0) {
+      // TODO(anyone): Check it out. I think there should be "will change"
       supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
           user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
           GoogleRequestId);
@@ -734,6 +736,7 @@ bool supla_user::set_device_channel_rgbw_value(
 
   if (user) {
     if (eventSourceType > 0) {
+      // TODO(anyone): Check it out. I think there should be "will change"
       supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
           user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
           GoogleRequestId);
@@ -827,6 +830,11 @@ void supla_user::on_state_webhook_changed(int UserID) {
 }
 
 // static
+void supla_user::on_mqtt_settings_changed(int UserID) {
+  supla_mqtt_client_suite::globalInstance()->onUserSettingsChanged(UserID);
+}
+
+// static
 void supla_user::on_device_deleted(int UserID,
                                    event_source_type eventSourceType) {
   safe_array_lock(supla_user::user_arr);
@@ -905,10 +913,12 @@ void supla_user::log_metrics(int min_interval_sec) {
             device_count, device_trash);
 }
 
-void supla_user::on_device_added(int DeviceID,
+void supla_user::on_channels_added(int DeviceID,
                                  event_source_type eventSourceType) {
-  supla_http_request_queue::getInstance()->onDeviceAddedEvent(this, DeviceID,
+  supla_http_request_queue::getInstance()->onChannelsAddedEvent(this, DeviceID,
                                                               eventSourceType);
+  supla_mqtt_client_suite::globalInstance()->onChannelsAdded(getUserID(),
+                                                           DeviceID);
 }
 
 bool supla_user::set_device_channel_value(
@@ -919,6 +929,7 @@ bool supla_user::set_device_channel_value(
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
+    // TODO(anyone): Check it out. I think there should be "will change"
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceID, ChannelID, eventSourceType);
 
@@ -994,6 +1005,8 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
       eventSourceType != EST_UNKNOWN) {
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceId, ChannelId, eventSourceType);
+    supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
+        getUserID(), DeviceId, ChannelId);
   }
 
   std::list<channel_address> ca_list;
@@ -1049,6 +1062,8 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
   supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
       this, DeviceId, ChannelId, EST_DEVICE);
+  supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
+      getUserID(), DeviceId, ChannelId);
 }
 
 void supla_user::call_event(TSC_SuplaEvent *event) {

@@ -425,10 +425,10 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                                  correlationToken, googleRequestId);
 }
 
-void supla_http_request_queue::onDeviceAddedEvent(
+void supla_http_request_queue::onChannelsAddedEvent(
     supla_user *user, int deviceId, event_source_type eventSourceType,
     const char correlationToken[], const char googleRequestId[]) {
-  createByChannelEventSourceType(user, deviceId, 0, ET_DEVICE_ADDED,
+  createByChannelEventSourceType(user, deviceId, 0, ET_CHANNELS_ADDED,
                                  eventSourceType, correlationToken,
                                  googleRequestId);
 }
