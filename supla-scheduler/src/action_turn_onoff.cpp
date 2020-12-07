@@ -38,6 +38,7 @@ void s_worker_action_turn_onoff::get_function_list(
   list[3] = SUPLA_CHANNELFNC_RGBLIGHTING;
   list[4] = SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
   list[5] = SUPLA_CHANNELFNC_STAIRCASETIMER;
+  list[6] = SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
 }
 
 int s_worker_action_turn_onoff::try_limit(void) { return 2; }
