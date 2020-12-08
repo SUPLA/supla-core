@@ -12,6 +12,7 @@ CPP_SRCS += \
 ../src/test/mqtt/MqttMessageProviderTest.cpp \
 ../src/test/mqtt/MqttStateMessageProviderMock.cpp \
 ../src/test/mqtt/MqttStateMessageProviderTest.cpp \
+../src/test/mqtt/MqttTopicCmpTest.cpp \
 ../src/test/mqtt/MqttUserMessageProviderTest.cpp 
 
 OBJS += \
@@ -23,6 +24,7 @@ OBJS += \
 ./src/test/mqtt/MqttMessageProviderTest.o \
 ./src/test/mqtt/MqttStateMessageProviderMock.o \
 ./src/test/mqtt/MqttStateMessageProviderTest.o \
+./src/test/mqtt/MqttTopicCmpTest.o \
 ./src/test/mqtt/MqttUserMessageProviderTest.o 
 
 CPP_DEPS += \
@@ -34,6 +36,7 @@ CPP_DEPS += \
 ./src/test/mqtt/MqttMessageProviderTest.d \
 ./src/test/mqtt/MqttStateMessageProviderMock.d \
 ./src/test/mqtt/MqttStateMessageProviderTest.d \
+./src/test/mqtt/MqttTopicCmpTest.d \
 ./src/test/mqtt/MqttUserMessageProviderTest.d 
 
 
