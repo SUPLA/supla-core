@@ -346,6 +346,7 @@ void supla_mqtt_publisher_datasource::context_close(
 
   if (state_message_provider) {
     delete state_message_provider;
+    state_message_provider = NULL;
   }
 
   db_disconnect();
