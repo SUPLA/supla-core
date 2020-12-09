@@ -21,14 +21,14 @@
 
 // static
 void supla_mqtt_topic_cmp::load(const char *topic_prefix,
-                                std::list<std::string> &topics,
+                                std::list<std::string> *topics,
                                 supla_mqtt_message_provider *provider) {
   char *topic_name = NULL;
   provider->reset_index();
   while (provider->fetch(topic_prefix, &topic_name, NULL, NULL)) {
     if (topic_name != NULL) {
       if (strnlen(topic_name, 1) > 0) {
-        topics.push_back(std::string(topic_name));
+        topics->push_back(std::string(topic_name));
       }
       free(topic_name);
       topic_name = NULL;
@@ -47,8 +47,8 @@ std::list<std::string> supla_mqtt_topic_cmp::topics_removed(
   std::list<std::string> topics_before;
   std::list<std::string> topics_after;
 
-  load(topic_prefix, topics_before, before);
-  load(topic_prefix, topics_after, after);
+  load(topic_prefix, &topics_before, before);
+  load(topic_prefix, &topics_after, after);
 
   std::list<std::string>::iterator ita;
   std::list<std::string>::iterator itb;

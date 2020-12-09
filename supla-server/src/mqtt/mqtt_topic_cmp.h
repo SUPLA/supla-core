@@ -25,7 +25,7 @@
 
 class supla_mqtt_topic_cmp {
  private:
-  static void load(const char *topic_prefix, std::list<std::string> &topics,
+  static void load(const char *topic_prefix, std::list<std::string> *topics,
                    supla_mqtt_message_provider *provider);
 
  public:
