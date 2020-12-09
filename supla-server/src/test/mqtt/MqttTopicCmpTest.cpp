@@ -16,6 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <list>
+#include <string>
+
 #include "MqttTopicCmpTest.h"
 #include "mqtt_channelandstate_message_provider.h"
 
