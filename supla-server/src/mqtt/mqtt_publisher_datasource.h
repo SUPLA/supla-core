@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEL_SOURCE_H_
-#define MQTT_CHANNEL_SOURCE_H_
+#ifndef MQTT_PUBLISHER_DATASOURCE_H_
+#define MQTT_PUBLISHER_DATASOURCE_H_
 
 #include "mqtt_client_db_datasource.h"
 #include "mqtt_state_message_provider.h"
@@ -80,4 +80,4 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   virtual ~supla_mqtt_publisher_datasource(void);
 };
 
-#endif /*MQTT_CHANNEL_SOURCE_H_*/
+#endif /*MQTT_PUBLISHER_DATASOURCE_H_*/

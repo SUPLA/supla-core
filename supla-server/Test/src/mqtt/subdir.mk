@@ -24,6 +24,8 @@ CPP_SRCS += \
 ../src/mqtt/mqtt_state_message_provider.cpp \
 ../src/mqtt/mqtt_state_message_provider_abstract.cpp \
 ../src/mqtt/mqtt_subscriber.cpp \
+../src/mqtt/mqtt_subscriber_datasource.cpp \
+../src/mqtt/mqtt_subscription_topic_provider.cpp \
 ../src/mqtt/mqtt_topic_cmp.cpp \
 ../src/mqtt/mqtt_user_message_provider.cpp \
 ../src/mqtt/mqttc_library_adapter.cpp 
@@ -47,6 +49,8 @@ OBJS += \
 ./src/mqtt/mqtt_state_message_provider.o \
 ./src/mqtt/mqtt_state_message_provider_abstract.o \
 ./src/mqtt/mqtt_subscriber.o \
+./src/mqtt/mqtt_subscriber_datasource.o \
+./src/mqtt/mqtt_subscription_topic_provider.o \
 ./src/mqtt/mqtt_topic_cmp.o \
 ./src/mqtt/mqtt_user_message_provider.o \
 ./src/mqtt/mqttc_library_adapter.o 
@@ -72,6 +76,8 @@ CPP_DEPS += \
 ./src/mqtt/mqtt_state_message_provider.d \
 ./src/mqtt/mqtt_state_message_provider_abstract.d \
 ./src/mqtt/mqtt_subscriber.d \
+./src/mqtt/mqtt_subscriber_datasource.d \
+./src/mqtt/mqtt_subscription_topic_provider.d \
 ./src/mqtt/mqtt_topic_cmp.d \
 ./src/mqtt/mqtt_user_message_provider.d \
 ./src/mqtt/mqttc_library_adapter.d 

@@ -20,6 +20,7 @@
 #define MQTT_CLIENTLIBRARYADAPTER_MOCK_H_
 
 #include <list>
+#include <string>
 #include "mqtt_client_library_adapter.h"
 
 typedef struct {
@@ -32,7 +33,8 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
  private:
   bool connected;
   void *lck;
-  std::list<_mqtt_test_message_t> messages;
+  std::list<_mqtt_test_message_t> published_messages;
+  std::list<std::string> subscribed_messages;
 
  public:
   explicit MqttClientLibraryAdapterMock(supla_mqtt_client_settings *settings);
@@ -46,9 +48,13 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   virtual bool subscribe(const char *topic_name, QOS_Level max_qos_level);
   virtual bool publish(const char *topic_name, const void *message,
                        size_t message_size, QOS_Level qos_level, bool retain);
-  void clear(void);
-  int count(void);
-  _mqtt_test_message_t pop(void);
+  void published_clear(void);
+  int published_count(void);
+  _mqtt_test_message_t published_pop(void);
+
+  void subscribed_clear(void);
+  int subscribed_count(void);
+  std::string subscribed_pop(void);
 };
 
 #endif /* MQTT_CLIENTLIBRARYADAPTER_MOCK_H_ */

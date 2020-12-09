@@ -33,3 +33,15 @@ void supla_mqtt_subscriber::get_client_id(char *clientId, size_t len) {
     settings->getClientId(clientId, len, "sub");
   }
 }
+
+void supla_mqtt_subscriber::on_iterate(void) {
+  char *topic_name = NULL;
+
+  if (datasource->fetch(&topic_name, NULL, NULL)) {
+    subscribe(topic_name, SUPLA_MQTT_QOS_0);
+  }
+
+  if (topic_name) {
+    free(topic_name);
+  }
+}

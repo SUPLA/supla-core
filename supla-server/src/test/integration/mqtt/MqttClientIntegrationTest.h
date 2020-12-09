@@ -16,31 +16,44 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MqttPublisherIntegrationTest_H_
-#define MqttPublisherIntegrationTest_H_
+#ifndef MQTTCLIENTINTEGRATIONTEST_H_
+#define MQTTCLIENTINTEGRATIONTEST_H_
 
-#include "MqttClientIntegrationTest.h"
+#include <mqtt_publisher_datasource.h>
+#include "MqttClientLibraryAdapterMock.h"
+#include "integration/IntegrationTest.h"
+#include "mqtt_client_ini_settings.h"
+#include "mqtt_publisher.h"
 
 namespace testing {
 
-class MqttPublisherIntegrationTest : public MqttClientIntegrationTest {
+class MqttClientIntegrationTest : public IntegrationTest {
+ private:
+  supla_mqtt_client_ini_settings *iniSettings;
+  MqttClientLibraryAdapterMock *libraryAdapter;
+  supla_mqtt_client_datasource *dataSource;
+  supla_mqtt_client *client;
+
  protected:
-  void waitForData(int expectedTopicCount);
-  void verify(const char *expectedData[], int count);
-  void print(void);
+  void waitForConnection();
+  supla_mqtt_client *getClient(void);
+  supla_mqtt_client_datasource *getDS(void);
+  MqttClientLibraryAdapterMock *getLibAdapter(void);
+
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,
       supla_mqtt_client_settings *settings,
-      supla_mqtt_client_datasource *datasource);
+      supla_mqtt_client_datasource *datasource) = 0;
   virtual supla_mqtt_client_datasource *dsInit(
-      supla_mqtt_client_settings *settings);
+      supla_mqtt_client_settings *settings) = 0;
 
  public:
   virtual void SetUp();
-  MqttPublisherIntegrationTest();
-  virtual ~MqttPublisherIntegrationTest();
+  virtual void TearDown();
+  MqttClientIntegrationTest();
+  virtual ~MqttClientIntegrationTest();
 };
 
 } /* namespace testing */
 
-#endif /* MqttPublisherIntegrationTest_H_ */
+#endif /* MQTTCLIENTINTEGRATIONTEST_H_ */

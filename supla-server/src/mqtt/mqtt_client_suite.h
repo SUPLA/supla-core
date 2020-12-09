@@ -23,6 +23,7 @@
 #include "mqtt_publisher.h"
 #include "mqtt_publisher_datasource.h"
 #include "mqtt_subscriber.h"
+#include "mqtt_subscriber_datasource.h"
 #include "mqttc_library_adapter.h"
 
 class supla_mqtt_client_suite {
@@ -35,6 +36,7 @@ class supla_mqtt_client_suite {
   supla_mqttc_library_adapter *library_adapter_sub;
 
   supla_mqtt_publisher_datasource *publisher_ds;
+  supla_mqtt_subscriber_datasource *subscriber_ds;
 
   supla_mqtt_publisher *publisher;
   supla_mqtt_subscriber *subscriber;

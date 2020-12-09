@@ -16,22 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_SUBSCRIBER_H_
-#define MQTT_SUBSCRIBER_H_
+#include <mqtt_subscription_topic_provider.h>
 
-#include <mqtt_client.h>
+supla_mqtt_subscription_topic_provider::supla_mqtt_subscription_topic_provider(
+    void)
+    : supla_mqtt_message_provider() {}
 
-class supla_mqtt_subscriber : public supla_mqtt_client {
- protected:
-  virtual ssize_t get_send_buffer_size(void);
-  virtual ssize_t get_recv_buffer_size(void);
-  virtual void get_client_id(char *clientId, size_t len);
-  virtual void on_iterate(void);
+supla_mqtt_subscription_topic_provider::~supla_mqtt_subscription_topic_provider(
+    void) {}
 
- public:
-  supla_mqtt_subscriber(supla_mqtt_client_library_adapter *library_adapter,
-                        supla_mqtt_client_settings *settings,
-                        supla_mqtt_client_datasource *datasource);
-};
+bool supla_mqtt_subscription_topic_provider::get_message_at_index(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index == 0) {
+    return create_message(topic_prefix, "+", topic_name, NULL, NULL, NULL,
+                          false, "channels/+/set");
+  }
 
-#endif /*MQTT_SUBSCRIBER_H_*/
+  return false;
+}

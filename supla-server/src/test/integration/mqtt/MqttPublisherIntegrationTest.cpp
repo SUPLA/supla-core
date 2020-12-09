@@ -18,33 +18,35 @@
 
 #include "MqttPublisherIntegrationTest.h"
 #include "log.h"
+#include "mqtt_publisher_datasource.h"
+#include "mqtt_publisher.h"
 
 namespace testing {
 
 MqttPublisherIntegrationTest::MqttPublisherIntegrationTest()
-    : IntegrationTest() {}
+    : MqttClientIntegrationTest() {}
 
 MqttPublisherIntegrationTest::~MqttPublisherIntegrationTest() {}
 
 void MqttPublisherIntegrationTest::waitForData(int expectedTopicCount) {
   for (int a = 0; a < 5000; a++) {
-    if (libraryAdapter->count() == expectedTopicCount &&
-        !dataSource->is_context_open()) {
+    if (getLibAdapter()->published_count() == expectedTopicCount &&
+        !getDS()->is_context_open()) {
       return;
     }
     usleep(1000);
   }
 
-  EXPECT_EQ(libraryAdapter->count(), expectedTopicCount);
-  EXPECT_TRUE(dataSource->is_context_open());
+  EXPECT_EQ(getLibAdapter()->published_count(), expectedTopicCount);
+  EXPECT_TRUE(getDS()->is_context_open());
   ASSERT_TRUE(false);
 }
 
 void MqttPublisherIntegrationTest::print(void) {
   printf("const char *expectedData[] = {\n");
   bool first = true;
-  while (libraryAdapter->count()) {
-    _mqtt_test_message_t m = libraryAdapter->pop();
+  while (getLibAdapter()->published_count()) {
+    _mqtt_test_message_t m = getLibAdapter()->published_pop();
     if (first) {
       first = false;
     } else {
@@ -65,45 +67,33 @@ void MqttPublisherIntegrationTest::print(void) {
   printf("};\n");
 }
 
+supla_mqtt_client *MqttPublisherIntegrationTest::clientInit(
+    supla_mqtt_client_library_adapter *library_adapter,
+    supla_mqtt_client_settings *settings,
+    supla_mqtt_client_datasource *datasource) {
+  return new supla_mqtt_publisher(library_adapter, settings, datasource);
+}
+
+supla_mqtt_client_datasource *MqttPublisherIntegrationTest::dsInit(
+    supla_mqtt_client_settings *settings) {
+  return new supla_mqtt_publisher_datasource(settings);
+}
+
 void MqttPublisherIntegrationTest::SetUp() {
   initTestDatabase();
   runSqlScript("DataForMqttTests.sql");
 
-  iniSettings = new supla_mqtt_client_ini_settings();
-  libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
-  dataSource = new supla_mqtt_publisher_datasource(iniSettings);
-
-  publisher = new supla_mqtt_publisher(libraryAdapter, iniSettings, dataSource);
-  publisher->start();
-}
-
-void MqttPublisherIntegrationTest::TearDown() {
-  publisher->stop();
-  delete publisher;
-  delete dataSource;
-  delete iniSettings;
-  delete libraryAdapter;
-}
-
-void MqttPublisherIntegrationTest::waitForConnection() {
-  for (int a = 0; a < 5000; a++) {
-    if (libraryAdapter->is_connected()) {
-      return;
-    }
-    usleep(1000);
-  }
-
-  ASSERT_TRUE(false);
+  MqttClientIntegrationTest::SetUp();
 }
 
 void MqttPublisherIntegrationTest::verify(const char *expectedData[],
                                           int count) {
-  ASSERT_EQ(count / 2, libraryAdapter->count());
+  ASSERT_EQ(count / 2, getLibAdapter()->published_count());
 
   int n = 0;
   bool ok = true;
-  while (libraryAdapter->count() && ok) {
-    _mqtt_test_message_t m = libraryAdapter->pop();
+  while (getLibAdapter()->published_count() && ok) {
+    _mqtt_test_message_t m = getLibAdapter()->published_pop();
 
     if ((m.topic_name != NULL && expectedData[n] == NULL) ||
         (m.topic_name == NULL && expectedData[n] != NULL) ||
@@ -1262,9 +1252,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
 TEST_F(MqttPublisherIntegrationTest, userScope) {
   waitForConnection();
   waitForData(548);
-  libraryAdapter->clear();
+  getLibAdapter()->published_clear();
 
-  dataSource->on_userdata_changed(2487);
+  getDS()->on_userdata_changed(2487);
   waitForData(16);
 
   // print();
@@ -1309,13 +1299,13 @@ TEST_F(MqttPublisherIntegrationTest, userScope) {
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
   waitForData(548);
-  libraryAdapter->clear();
+  getLibAdapter()->published_clear();
 
-  dataSource->on_userdata_changed(2487);
+  getDS()->on_userdata_changed(2487);
   waitForData(16);
-  libraryAdapter->clear();
+  getLibAdapter()->published_clear();
 
-  dataSource->on_devicedata_changed(1802, 9717);
+  getDS()->on_devicedata_changed(1802, 9717);
   waitForData(20);
 
   // print();
@@ -1368,17 +1358,17 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
 TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForConnection();
   waitForData(548);
-  libraryAdapter->clear();
+  getLibAdapter()->published_clear();
 
-  dataSource->on_userdata_changed(2487);
+  getDS()->on_userdata_changed(2487);
   waitForData(16);
-  libraryAdapter->clear();
+  getLibAdapter()->published_clear();
 
-  dataSource->on_devicedata_changed(1802, 9717);
+  getDS()->on_devicedata_changed(1802, 9717);
   waitForData(20);
-  libraryAdapter->clear();
+  getLibAdapter()->published_clear();
 
-  dataSource->on_channelstate_changed(2645, 4124, 4688);
+  getDS()->on_channelstate_changed(2645, 4124, 4688);
   waitForData(1);
 
   // print();

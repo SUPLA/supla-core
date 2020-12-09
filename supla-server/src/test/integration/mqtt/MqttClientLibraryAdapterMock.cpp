@@ -30,7 +30,8 @@ MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
 }
 
 MqttClientLibraryAdapterMock::~MqttClientLibraryAdapterMock(void) {
-  clear();
+  published_clear();
+  subscribed_clear();
   lck_free(lck);
 }
 
@@ -69,6 +70,7 @@ void MqttClientLibraryAdapterMock::raise_event(void) {}
 
 bool MqttClientLibraryAdapterMock::subscribe(const char *topic_name,
                                              QOS_Level max_qos_level) {
+  subscribed_messages.push_back(std::string(topic_name));
   return true;
 }
 
@@ -89,38 +91,61 @@ bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
     }
   }
 
-  messages.push_back(m);
+  published_messages.push_back(m);
   return true;
 }
 
-void MqttClientLibraryAdapterMock::clear(void) {
+void MqttClientLibraryAdapterMock::published_clear(void) {
   lck_lock(lck);
-  while (messages.size()) {
-    _mqtt_test_message_t m = messages.front();
+  while (published_messages.size()) {
+    _mqtt_test_message_t m = published_messages.front();
     if (m.topic_name != NULL) {
       free(m.topic_name);
     }
     if (m.message) {
       free(m.message);
     }
-    messages.pop_front();
+    published_messages.pop_front();
   }
   lck_unlock(lck);
 }
 
-int MqttClientLibraryAdapterMock::count(void) {
+int MqttClientLibraryAdapterMock::published_count(void) {
   int result = 0;
   lck_lock(lck);
-  result = messages.size();
+  result = published_messages.size();
   lck_unlock(lck);
   return result;
 }
 
-_mqtt_test_message_t MqttClientLibraryAdapterMock::pop(void) {
+_mqtt_test_message_t MqttClientLibraryAdapterMock::published_pop(void) {
   _mqtt_test_message_t result;
   lck_lock(lck);
-  result = messages.front();
-  messages.pop_front();
+  result = published_messages.front();
+  published_messages.pop_front();
+  lck_unlock(lck);
+  return result;
+}
+
+void MqttClientLibraryAdapterMock::subscribed_clear(void) {
+  lck_lock(lck);
+  subscribed_messages.clear();
+  lck_unlock(lck);
+}
+
+int MqttClientLibraryAdapterMock::subscribed_count(void) {
+  int result = 0;
+  lck_lock(lck);
+  result = subscribed_messages.size();
+  lck_unlock(lck);
+  return result;
+}
+
+std::string MqttClientLibraryAdapterMock::subscribed_pop(void) {
+  std::string result;
+  lck_lock(lck);
+  result = subscribed_messages.front();
+  subscribed_messages.pop_front();
   lck_unlock(lck);
   return result;
 }

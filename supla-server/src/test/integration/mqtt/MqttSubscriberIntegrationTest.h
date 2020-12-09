@@ -16,18 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MqttPublisherIntegrationTest_H_
-#define MqttPublisherIntegrationTest_H_
+#ifndef MqttSubscriberIntegrationTest_H_
+#define MqttSubscriberIntegrationTest_H_
 
 #include "MqttClientIntegrationTest.h"
 
 namespace testing {
 
-class MqttPublisherIntegrationTest : public MqttClientIntegrationTest {
+class MqttSubscriberIntegrationTest : public MqttClientIntegrationTest {
  protected:
   void waitForData(int expectedTopicCount);
-  void verify(const char *expectedData[], int count);
-  void print(void);
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,
       supla_mqtt_client_settings *settings,
@@ -36,11 +34,10 @@ class MqttPublisherIntegrationTest : public MqttClientIntegrationTest {
       supla_mqtt_client_settings *settings);
 
  public:
-  virtual void SetUp();
-  MqttPublisherIntegrationTest();
-  virtual ~MqttPublisherIntegrationTest();
+  MqttSubscriberIntegrationTest();
+  virtual ~MqttSubscriberIntegrationTest();
 };
 
 } /* namespace testing */
 
-#endif /* MqttPublisherIntegrationTest_H_ */
+#endif /* MqttSubscriberIntegrationTest_H_ */
