@@ -29,9 +29,9 @@ class supla_mqtt_user_message_provider : public supla_mqtt_message_provider {
  public:
   supla_mqtt_user_message_provider(void);
   virtual ~supla_mqtt_user_message_provider(void);
-  bool get_message_at_index(unsigned short index, const char *topic_prefix,
-                            char **topic_name, void **message,
-                            size_t *message_size);
+  virtual bool get_message_at_index(unsigned short index,
+                                    const char *topic_prefix, char **topic_name,
+                                    void **message, size_t *message_size);
   void set_data_row(_mqtt_db_data_row_user_t *row);
 };
 

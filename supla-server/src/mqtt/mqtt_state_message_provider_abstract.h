@@ -136,9 +136,9 @@ class supla_mqtt_state_message_provider_abstract
  public:
   supla_mqtt_state_message_provider_abstract(void);
   virtual ~supla_mqtt_state_message_provider_abstract(void);
-  bool get_message_at_index(unsigned short index, const char *topic_prefix,
-                            char **topic_name, void **message,
-                            size_t *message_size);
+  virtual bool get_message_at_index(unsigned short index,
+                                    const char *topic_prefix, char **topic_name,
+                                    void **message, size_t *message_size);
   void set_ids(int user_id, int device_id, int channel_id);
   void set_channel_type_and_function(int channel_type, int channel_function);
   void set_user_email(char *user_email);
