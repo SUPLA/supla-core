@@ -66,11 +66,13 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   ASSERT_EQ(removed.size(), (long unsigned int)3);
   std::list<std::string>::iterator rit = removed.begin();
 
-  ASSERT_EQ(rit->compare("channels/754/state/hi"), 0);
+  ASSERT_EQ(rit->compare("supla/user@supla.org/channels/754/state/hi"), 0);
   rit++;
-  ASSERT_EQ(rit->compare("channels/754/state/is_calibrating"), 0);
+  ASSERT_EQ(
+      rit->compare("supla/user@supla.org/channels/754/state/is_calibrating"),
+      0);
   rit++;
-  ASSERT_EQ(rit->compare("channels/754/state/shut"), 0);
+  ASSERT_EQ(rit->compare("supla/user@supla.org/channels/754/state/shut"), 0);
 }
 
 } /* namespace testing */

@@ -63,19 +63,21 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterConnected) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
+                              "supla/user@supla.org/channels/%i/state/hi",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
-                              "user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "true", false,
+      "supla/user@supla.org/channels/%i/state/is_calibrating", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/is_calibrating",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0", false,
+                              "supla/user@supla.org/channels/%i/state/shut",
                               789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "0", false,
-                              "user@supla.org/channels/%i/state/shut", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -93,19 +95,21 @@ TEST_F(MqttStateMessageProviderTest, rollerShutterDisconnected) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "false", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/user@supla.org/channels/%i/state/hi",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", NULL, false,
-                              "user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, NULL, false,
+      "supla/user@supla.org/channels/%i/state/is_calibrating", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", NULL, false,
-                              "user@supla.org/channels/%i/state/is_calibrating",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/user@supla.org/channels/%i/state/shut",
                               789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", NULL, false,
-                              "user@supla.org/channels/%i/state/shut", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -123,16 +127,17 @@ TEST_F(MqttStateMessageProviderTest, gate) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
+                              "supla/user@supla.org/channels/%i/state/hi",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
-                              "user@supla.org/channels/%i/state/hi", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/partial_hi",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "true", false,
+      "supla/user@supla.org/channels/%i/state/partial_hi", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -149,12 +154,13 @@ TEST_F(MqttStateMessageProviderTest, lock) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/hi",
+                              789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -171,12 +177,13 @@ TEST_F(MqttStateMessageProviderTest, onOff) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/on", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/on",
+                              789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -193,12 +200,13 @@ TEST_F(MqttStateMessageProviderTest, depth) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "345.000000", false,
-                              "user@supla.org/channels/%i/state/depth", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "345.000000", false,
+                              "supla/user@supla.org/channels/%i/state/depth",
+                              789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -215,12 +223,12 @@ TEST_F(MqttStateMessageProviderTest, distance) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1345.000000", false,
-                              "user@supla.org/channels/%i/state/distance",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "1345.000000", false,
+                              "supla/user@supla.org/channels/%i/state/distance",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -238,12 +246,13 @@ TEST_F(MqttStateMessageProviderTest, wightSensor) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "85.000000", false,
-                              "user@supla.org/channels/%i/state/value", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "85.000000", false,
+                              "supla/user@supla.org/channels/%i/state/value",
+                              789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -260,12 +269,13 @@ TEST_F(MqttStateMessageProviderTest, garageDoorSensor) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/hi", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/hi",
+                              789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -282,13 +292,13 @@ TEST_F(MqttStateMessageProviderTest, thermometer) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "33.000000", false,
-                              "user@supla.org/channels/%i/state/temperature",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "33.000000", false,
+      "supla/user@supla.org/channels/%i/state/temperature", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -305,12 +315,12 @@ TEST_F(MqttStateMessageProviderTest, humidity) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "85.000000", false,
-                              "user@supla.org/channels/%i/state/humidity",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "85.000000", false,
+                              "supla/user@supla.org/channels/%i/state/humidity",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -329,17 +339,17 @@ TEST_F(MqttStateMessageProviderTest, temperatureAndHumidity) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "83.000000", false,
+                              "supla/user@supla.org/channels/%i/state/humidity",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "83.000000", false,
-                              "user@supla.org/channels/%i/state/humidity",
-                              789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "21.000000", false,
-                              "user@supla.org/channels/%i/state/temperature",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "21.000000", false,
+      "supla/user@supla.org/channels/%i/state/temperature", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -356,16 +366,17 @@ TEST_F(MqttStateMessageProviderTest, dimmerOn) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/on",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/on", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "99", false,
-                              "user@supla.org/channels/%i/state/brightness",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "99", false,
+      "supla/user@supla.org/channels/%i/state/brightness", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -382,16 +393,17 @@ TEST_F(MqttStateMessageProviderTest, dimmerOff) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
+                              "supla/user@supla.org/channels/%i/state/on",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
-                              "user@supla.org/channels/%i/state/on", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "0", false,
-                              "user@supla.org/channels/%i/state/brightness",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "0", false,
+      "supla/user@supla.org/channels/%i/state/brightness", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -409,18 +421,20 @@ TEST_F(MqttStateMessageProviderTest, rgb) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/on",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/on", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "0xAABBCC", false,
-                              "user@supla.org/channels/%i/state/color", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0xAABBCC", false,
+                              "supla/user@supla.org/channels/%i/state/color",
+                              789));
   ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "40", false,
-      "user@supla.org/channels/%i/state/color_brightness", 789));
+      provider, NULL, "40", false,
+      "supla/user@supla.org/channels/%i/state/color_brightness", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -439,25 +453,25 @@ TEST_F(MqttStateMessageProviderTest, dimmerAndRgb) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "suffix", "true", false,
+      "suffix/supla/user@supla.org/channels/%i/state/connected", 789));
+
   ASSERT_TRUE(
-      fetchAndCompare(provider, "supla/%email%", "true", false,
-                      "supla/user@supla.org/channels/%i/state/connected", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "supla/%email%", "true", false,
-                              "supla/user@supla.org/channels/%i/state/on",
-                              789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "supla/%email%", "0xBBCCDD", false,
-                              "supla/user@supla.org/channels/%i/state/color",
-                              789));
+      fetchAndCompare(provider, "suffix", "true", false,
+                      "suffix/supla/user@supla.org/channels/%i/state/on", 789));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, "supla/%email%", "0", false,
-      "supla/user@supla.org/channels/%i/state/color_brightness", 789));
+      provider, "suffix", "0xBBCCDD", false,
+      "suffix/supla/user@supla.org/channels/%i/state/color", 789));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, "supla/%email%", "80", false,
-      "supla/user@supla.org/channels/%i/state/brightness", 789));
+      provider, "suffix", "0", false,
+      "suffix/supla/user@supla.org/channels/%i/state/color_brightness", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "suffix", "80", false,
+      "suffix/supla/user@supla.org/channels/%i/state/brightness", 789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -476,19 +490,20 @@ TEST_F(MqttStateMessageProviderTest, valveOpenClose) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/closed",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/closed", 789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "true", false,
+      "supla/user@supla.org/channels/%i/state/manually_closed", 789));
 
-  ASSERT_TRUE(
-      fetchAndCompare(provider, "%email%", "true", false,
-                      "user@supla.org/channels/%i/state/manually_closed", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/flooding",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/user@supla.org/channels/%i/state/flooding",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -506,19 +521,20 @@ TEST_F(MqttStateMessageProviderTest, valvePercentage) {
   provider->set_ids(123, 456, 789);
   provider->set_user_email();
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "81", false,
+                              "supla/user@supla.org/channels/%i/state/closed",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "81", false,
-                              "user@supla.org/channels/%i/state/closed", 789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/user@supla.org/channels/%i/state/manually_closed", 789));
 
-  ASSERT_TRUE(
-      fetchAndCompare(provider, "%email%", "false", false,
-                      "user@supla.org/channels/%i/state/manually_closed", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "false", false,
-                              "user@supla.org/channels/%i/state/flooding",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
+                              "supla/user@supla.org/channels/%i/state/flooding",
                               789));
 
   ASSERT_FALSE(dataExists(provider));
@@ -534,35 +550,37 @@ TEST_F(MqttStateMessageProviderTest, impulseCounter) {
   cvalue.function = SUPLA_CHANNELFNC_IC_GAS_METER;
   provider->setComplexValue(&cvalue);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
-                              789));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.23", false,
-                              "user@supla.org/channels/%i/state/total_cost",
-                              789));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "1.23", false,
+      "supla/user@supla.org/channels/%i/state/total_cost", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.0000", false,
-                              "user@supla.org/channels/%i/state/price_per_unit",
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "1.0000", false,
+      "supla/user@supla.org/channels/%i/state/price_per_unit", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "1000", false,
+      "supla/user@supla.org/channels/%i/state/impulses_per_unit", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "1230", false,
+                              "supla/user@supla.org/channels/%i/state/counter",
                               789));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "1000", false,
-      "user@supla.org/channels/%i/state/impulses_per_unit", 789));
+      provider, NULL, "1.230", false,
+      "supla/user@supla.org/channels/%i/state/calculated_value", 789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1230", false,
-                              "user@supla.org/channels/%i/state/counter", 789));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "1.230", false,
-      "user@supla.org/channels/%i/state/calculated_value", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "EUR", false,
-                              "user@supla.org/channels/%i/state/currency",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "EUR", false,
+                              "supla/user@supla.org/channels/%i/state/currency",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "m3", false,
-                              "user@supla.org/channels/%i/state/unit", 789));
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "m3", false,
+                              "supla/user@supla.org/channels/%i/state/unit",
+                              789));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -578,222 +596,253 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
   cvalue.function = SUPLA_CHANNELFNC_ELECTRICITY_METER;
   provider->setComplexValue(&cvalue);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "true", false,
-                              "user@supla.org/channels/%i/state/connected",
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "true", false,
+                      "supla/user@supla.org/channels/%i/state/connected", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "66.90", false,
+      "supla/user@supla.org/channels/%i/state/total_cost", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "69.90", false,
+      "supla/user@supla.org/channels/%i/state/total_cost_balanced", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "1.0000", false,
+      "supla/user@supla.org/channels/%i/state/price_per_unit", 789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "EUR", false,
+                              "supla/user@supla.org/channels/%i/state/currency",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "66.90", false,
-                              "user@supla.org/channels/%i/state/total_cost",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "65535", false,
+                              "supla/user@supla.org/channels/%i/state/support",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "69.90", false,
-      "user@supla.org/channels/%i/state/total_cost_balanced", 789));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.0000", false,
-                              "user@supla.org/channels/%i/state/price_per_unit",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "69.90000", false,
+                              "supla/user@supla.org/channels/%i/state/"
+                              "total_forward_active_energy_balanced",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "EUR", false,
-                              "user@supla.org/channels/%i/state/currency",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "99.90000", false,
+                              "supla/user@supla.org/channels/%i/state/"
+                              "total_reverse_active_energy_balanced",
                               789));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "65535", false,
-                              "user@supla.org/channels/%i/state/support", 789));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "69.90000", false,
-      "user@supla.org/channels/%i/state/total_forward_active_energy_balanced",
-      789));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "99.90000", false,
-      "user@supla.org/channels/%i/state/total_reverse_active_energy_balanced",
-      789));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "12.30000", false,
-      "user@supla.org/channels/%i/state/phases/%i/total_forward_active_energy",
-      789, 1));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "22.30000", false,
-      "user@supla.org/channels/%i/state/phases/%i/total_reverse_active_energy",
-      789, 1));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "32.30000", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "total_forward_reactive_energy",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "12.30000", false,
+                              "supla/user@supla.org/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
                               789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "42.30000", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "total_reverse_reactive_energy",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "22.30000", false,
+                              "supla/user@supla.org/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
                               789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "49.97", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "frequency",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "32.30000", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "total_forward_reactive_energy",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "237.06", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "voltage",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "42.30000", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "total_reverse_reactive_energy",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.123", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "current",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "49.97", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "frequency",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_active",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "237.06", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "voltage",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_reactive",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "1.123", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "current",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_apparent",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "1.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_active",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.331", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_factor",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "2.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_reactive",
+                      789, 1));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "1.1", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "phase_angle",
-                              789, 1));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "3.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_apparent",
+                      789, 1));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "1.331", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_factor",
+                      789, 1));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "1.1", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "phase_angle",
+                      789, 1));
 
   //------------
 
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "22.30000", false,
-      "user@supla.org/channels/%i/state/phases/%i/total_forward_active_energy",
-      789, 2));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "32.30000", false,
-      "user@supla.org/channels/%i/state/phases/%i/total_reverse_active_energy",
-      789, 2));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "42.30000", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "total_forward_reactive_energy",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "22.30000", false,
+                              "supla/user@supla.org/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
                               789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "52.30000", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "total_reverse_reactive_energy",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "32.30000", false,
+                              "supla/user@supla.org/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
                               789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "49.97", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "frequency",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "42.30000", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "total_forward_reactive_energy",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "337.06", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "voltage",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "52.30000", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "total_reverse_reactive_energy",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.123", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "current",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "49.97", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "frequency",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_active",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "337.06", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "voltage",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_reactive",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "2.123", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "current",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "4.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_apparent",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "2.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_active",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.331", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_factor",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "3.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_reactive",
+                      789, 2));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "2.1", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "phase_angle",
-                              789, 2));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "4.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_apparent",
+                      789, 2));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "2.331", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_factor",
+                      789, 2));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "2.1", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "phase_angle",
+                      789, 2));
 
   //------------
 
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "32.30000", false,
-      "user@supla.org/channels/%i/state/phases/%i/total_forward_active_energy",
-      789, 3));
-
-  ASSERT_TRUE(fetchAndCompare(
-      provider, "%email%", "42.30000", false,
-      "user@supla.org/channels/%i/state/phases/%i/total_reverse_active_energy",
-      789, 3));
-
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "52.30000", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "total_forward_reactive_energy",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "32.30000", false,
+                              "supla/user@supla.org/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
                               789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "62.30000", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "total_reverse_reactive_energy",
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "42.30000", false,
+                              "supla/user@supla.org/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
                               789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "49.97", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "frequency",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "52.30000", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "total_forward_reactive_energy",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "437.06", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "voltage",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "62.30000", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "total_reverse_reactive_energy",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.123", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "current",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "49.97", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "frequency",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_active",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "437.06", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "voltage",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "4.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_reactive",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "3.123", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "current",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "5.11223", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_apparent",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "3.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_active",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.331", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "power_factor",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "4.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_reactive",
+                      789, 3));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "%email%", "3.1", false,
-                              "user@supla.org/channels/%i/state/phases/%i/"
-                              "phase_angle",
-                              789, 3));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "5.11223", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_apparent",
+                      789, 3));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "3.331", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "power_factor",
+                      789, 3));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "3.1", false,
+                      "supla/user@supla.org/channels/%i/state/phases/%i/"
+                      "phase_angle",
+                      789, 3));
 
   ASSERT_FALSE(dataExists(provider));
 }

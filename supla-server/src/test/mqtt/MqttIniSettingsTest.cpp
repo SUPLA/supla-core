@@ -35,7 +35,7 @@ TEST_F(MqttIniSettingsTest, serverConfigurationTest) {
   ASSERT_EQ(iniSettings->getPort(), 1883);
   ASSERT_EQ(strcmp(iniSettings->getUsername(), "supla-server"), 0);
   ASSERT_EQ(strcmp(iniSettings->getPassword(), "alkdmalsdaskdn"), 0);
-  ASSERT_EQ(strcmp(iniSettings->getPrefix(), "supla/%email%"), 0);
+  ASSERT_TRUE(iniSettings->getPrefix() == NULL);
   ASSERT_EQ(iniSettings->isMQTTEnabled(), true);
   ASSERT_EQ(iniSettings->isSSLEnabled(), false);
 

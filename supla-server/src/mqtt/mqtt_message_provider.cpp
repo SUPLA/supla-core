@@ -34,7 +34,11 @@ bool supla_mqtt_message_provider::create_message(
     const char *topic_prefix, const char *email, char **topic_name_out,
     void **message, size_t *message_size, const char *message_string_in,
     bool include_null_byte, const char *topic_name_in, ...) {
-  if (topic_name_in == NULL || topic_name_out == NULL) {
+  size_t email_len = 0;
+  size_t prefix_len = 0;
+
+  if (topic_name_in == NULL || topic_name_out == NULL || email == NULL ||
+      (email_len = strnlen(email, SUPLA_EMAIL_MAXSIZE)) == 0) {
     return false;
   }
 
@@ -49,53 +53,22 @@ bool supla_mqtt_message_provider::create_message(
     return false;
   }
 
-  size_t email_len = 0;
-  size_t prefix_len = 0;
-  size_t offset = 0;
-  bool result = false;
-
-  if (topic_prefix &&
-      (prefix_len = strnlen(topic_prefix, MQTT_MAX_TOPIC_NAME_SIZE)) > 0) {
-    if (topic_prefix[prefix_len - 1] != '/') {
-      tn_size++;
-    }
-    tn_size += prefix_len + 1;
-    *topic_name_out = (char *)malloc(tn_size);
-    if (email) {
-      email_len = strnlen(email, SUPLA_EMAIL_MAXSIZE);
-    }
-
-    for (size_t a = 0; a < prefix_len; a++) {
-      if (topic_prefix[a] == '%' && prefix_len - a >= 7 &&
-          topic_prefix[a + 1] == 'e' && topic_prefix[a + 2] == 'm' &&
-          topic_prefix[a + 3] == 'a' && topic_prefix[a + 4] == 'i' &&
-          topic_prefix[a + 5] == 'l' && topic_prefix[a + 6] == '%') {
-        if (email_len != 7) {
-          tn_size += email_len - 7;
-          *topic_name_out = (char *)realloc(*topic_name_out, tn_size);
-        }
-        if (email_len != 0) {
-          memcpy(&(*topic_name_out)[offset], email, email_len);
-        }
-        a += 6;
-        offset += email_len;
-      } else {
-        (*topic_name_out)[offset] = topic_prefix[a];
-        offset++;
-      }
-    }
-
-    if (offset > 0 && (*topic_name_out)[offset - 1] != '/') {
-      (*topic_name_out)[offset] = '/';
-      offset++;
-    }
-
-  } else {
-    tn_size++;
-    *topic_name_out = (char *)malloc(tn_size);
+  prefix_len =
+      topic_prefix ? strnlen(topic_prefix, MQTT_MAX_TOPIC_NAME_SIZE) : 0;
+  if (prefix_len > 0) {
+    prefix_len++;
   }
+  tn_size += prefix_len + email_len + 8;
+
+  *topic_name_out = (char *)malloc(tn_size);
 
   if (*topic_name_out) {
+    snprintf(*topic_name_out, tn_size, "%s%ssupla/%s/",
+             prefix_len > 0 ? topic_prefix : "", prefix_len > 0 ? "/" : "",
+             email);
+
+    size_t offset = prefix_len + email_len + 7;
+
     va_start(args, topic_name_in);
     vsnprintf(&(*topic_name_out)[offset], tn_size - offset, topic_name_in,
               args);
@@ -116,10 +89,10 @@ bool supla_mqtt_message_provider::create_message(
       }
     }
 
-    result = true;
+    return true;
   }
 
-  return result;
+  return false;
 }
 
 void supla_mqtt_message_provider::reset_index(void) { index = 0; }

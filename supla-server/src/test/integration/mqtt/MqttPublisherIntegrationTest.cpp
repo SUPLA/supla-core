@@ -18,8 +18,8 @@
 
 #include "MqttPublisherIntegrationTest.h"
 #include "log.h"
-#include "mqtt_publisher_datasource.h"
 #include "mqtt_publisher.h"
+#include "mqtt_publisher_datasource.h"
 
 namespace testing {
 
@@ -1368,12 +1368,15 @@ TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForData(20);
   getLibAdapter()->published_clear();
 
+  ASSERT_TRUE(supla_user::find(2645, true) != NULL);
+
   getDS()->on_channelstate_changed(2645, 4124, 4688);
   waitForData(1);
 
   // print();
 
-  const char *expectedData[] = {"supla/channels/4688/state/connected", "false"};
+  const char *expectedData[] = {
+      "supla/2645test@supla.org/channels/4688/state/connected", "false"};
 
   verify(expectedData, sizeof(expectedData) / sizeof(void *));
 }
