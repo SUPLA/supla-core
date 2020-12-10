@@ -31,6 +31,7 @@ typedef struct {
 
 class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
  private:
+  supla_mqtt_client *supla_client_instance;
   bool connected;
   void *lck;
   std::list<_mqtt_test_message_t> published_messages;
@@ -55,6 +56,9 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   void subscribed_clear(void);
   int subscribed_count(void);
   std::string subscribed_pop(void);
+
+  void on_message_received(const char *topic_name, void *message,
+                           size_t *message_size);
 };
 
 #endif /* MQTT_CLIENTLIBRARYADAPTER_MOCK_H_ */

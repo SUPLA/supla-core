@@ -38,6 +38,7 @@ MqttClientLibraryAdapterMock::~MqttClientLibraryAdapterMock(void) {
 void MqttClientLibraryAdapterMock::client_connect(
     supla_mqtt_client *supla_client_instance) {
   lck_lock(lck);
+  this->supla_client_instance = supla_client_instance;
   connected = true;
   lck_unlock(lck);
 
@@ -148,4 +149,19 @@ std::string MqttClientLibraryAdapterMock::subscribed_pop(void) {
   subscribed_messages.pop_front();
   lck_unlock(lck);
   return result;
+}
+
+void MqttClientLibraryAdapterMock::on_message_received(const char *topic_name,
+                                                       void *message,
+                                                       size_t *message_size) {
+  if (on_message_received_callback) {
+    _received_mqtt_message_t msg;
+    memset(&msg, 0, sizeof(_received_mqtt_message_t));
+
+    msg.topic_name = topic_name;
+    msg.message = message;
+    msg.message_size = message_size ? *message_size : 0;
+
+    on_message_received_callback(supla_client_instance, &msg);
+  }
 }
