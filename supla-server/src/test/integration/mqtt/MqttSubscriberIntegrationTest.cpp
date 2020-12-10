@@ -24,7 +24,9 @@
 namespace testing {
 
 MqttSubscriberIntegrationTest::MqttSubscriberIntegrationTest()
-    : MqttClientIntegrationTest() {}
+    : MqttClientIntegrationTest() {
+  value_setter = NULL;
+}
 
 MqttSubscriberIntegrationTest::~MqttSubscriberIntegrationTest() {}
 
@@ -46,7 +48,17 @@ supla_mqtt_client *MqttSubscriberIntegrationTest::clientInit(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *datasource) {
-  return new supla_mqtt_subscriber(library_adapter, settings, datasource);
+  value_setter = new MqttChannelValueSetterMock(settings);
+  return new supla_mqtt_subscriber(library_adapter, settings, datasource, NULL);
+}
+
+void MqttSubscriberIntegrationTest::TearDown() {
+  if (value_setter != NULL) {
+    delete value_setter;
+    value_setter = NULL;
+  }
+
+  MqttClientIntegrationTest::TearDown();
 }
 
 supla_mqtt_client_datasource *MqttSubscriberIntegrationTest::dsInit(

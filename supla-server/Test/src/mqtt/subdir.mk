@@ -10,6 +10,7 @@ CPP_SRCS += \
 ../src/mqtt/mqtt_abstract_channel_value_setter.cpp \
 ../src/mqtt/mqtt_abstract_state_message_provider.cpp \
 ../src/mqtt/mqtt_channel_message_provider.cpp \
+../src/mqtt/mqtt_channel_value_setter.cpp \
 ../src/mqtt/mqtt_channelandstate_message_provider.cpp \
 ../src/mqtt/mqtt_client.cpp \
 ../src/mqtt/mqtt_client_datasource.cpp \
@@ -36,6 +37,7 @@ OBJS += \
 ./src/mqtt/mqtt_abstract_channel_value_setter.o \
 ./src/mqtt/mqtt_abstract_state_message_provider.o \
 ./src/mqtt/mqtt_channel_message_provider.o \
+./src/mqtt/mqtt_channel_value_setter.o \
 ./src/mqtt/mqtt_channelandstate_message_provider.o \
 ./src/mqtt/mqtt_client.o \
 ./src/mqtt/mqtt_client_datasource.o \
@@ -64,6 +66,7 @@ CPP_DEPS += \
 ./src/mqtt/mqtt_abstract_channel_value_setter.d \
 ./src/mqtt/mqtt_abstract_state_message_provider.d \
 ./src/mqtt/mqtt_channel_message_provider.d \
+./src/mqtt/mqtt_channel_value_setter.d \
 ./src/mqtt/mqtt_channelandstate_message_provider.d \
 ./src/mqtt/mqtt_client.d \
 ./src/mqtt/mqtt_client_datasource.d \

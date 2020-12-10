@@ -19,10 +19,18 @@
 #ifndef MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_
 #define MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_
 
+#include "stddef.h"
+#include "mqtt_client_settings.h"
+
 class supla_mqtt_abstract_channel_value_setter {
+private:
+	supla_mqtt_client_settings *settings;
  public:
-  supla_mqtt_abstract_channel_value_setter(void);
+  supla_mqtt_abstract_channel_value_setter(supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_abstract_channel_value_setter(void);
+
+  void set_value(const void *topic_name, unsigned short topic_name_size,
+                 const void *message, size_t message_size);
 };
 
 #endif /*MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_*/

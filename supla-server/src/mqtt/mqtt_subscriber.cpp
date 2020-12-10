@@ -21,8 +21,11 @@
 supla_mqtt_subscriber::supla_mqtt_subscriber(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
-    supla_mqtt_client_datasource *channel_source)
-    : supla_mqtt_client(library_adapter, settings, channel_source) {}
+    supla_mqtt_client_datasource *channel_source,
+    supla_mqtt_abstract_channel_value_setter *setter)
+    : supla_mqtt_client(library_adapter, settings, channel_source) {
+  this->setter = setter;
+}
 
 ssize_t supla_mqtt_subscriber::get_send_buffer_size(void) { return 8192; }
 
@@ -44,4 +47,11 @@ void supla_mqtt_subscriber::on_iterate(void) {
   if (topic_name) {
     free(topic_name);
   }
+}
+
+void supla_mqtt_subscriber::on_message_received(
+    const _received_mqtt_message_t *msg) {
+  supla_mqtt_client::on_message_received(msg);
+  setter->set_value(msg->topic_name, msg->topic_name_size, msg->message,
+                    msg->message_size);
 }

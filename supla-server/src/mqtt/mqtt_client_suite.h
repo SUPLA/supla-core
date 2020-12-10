@@ -19,6 +19,7 @@
 #ifndef MQTT_CLIENT_SUITE_H_
 #define MQTT_CLIENT_SUITE_H_
 
+#include "mqtt_channel_value_setter.h"
 #include "mqtt_client_ini_settings.h"
 #include "mqtt_publisher.h"
 #include "mqtt_publisher_datasource.h"
@@ -31,6 +32,7 @@ class supla_mqtt_client_suite {
   static supla_mqtt_client_suite *_globalInstance;
 
   supla_mqtt_client_ini_settings *ini_settings;
+  supla_mqtt_channel_value_setter *value_setter;
 
   supla_mqttc_library_adapter *library_adapter_pub;
   supla_mqttc_library_adapter *library_adapter_sub;

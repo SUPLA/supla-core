@@ -16,17 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_abstract_channel_value_setter.h>
+#include "mqtt_channel_value_setter.h"
 
-supla_mqtt_abstract_channel_value_setter::
-    supla_mqtt_abstract_channel_value_setter(
-        supla_mqtt_client_settings *settings) {
-  this->settings = settings;
-}
+supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
+    supla_mqtt_client_settings *settings)
+    : supla_mqtt_abstract_channel_value_setter(settings) {}
 
-supla_mqtt_abstract_channel_value_setter::
-    ~supla_mqtt_abstract_channel_value_setter(void) {}
-
-void supla_mqtt_abstract_channel_value_setter::set_value(
-    const void *topic_name, unsigned short topic_name_size, const void *message,
-    size_t message_size) {}
+supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {}

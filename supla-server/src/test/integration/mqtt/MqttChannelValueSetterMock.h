@@ -19,14 +19,12 @@
 #ifndef MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 #define MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 
-#include <list>
-#include <string>
 #include "mqtt_abstract_channel_value_setter.h"
 
 class MqttChannelValueSetterMock
     : public supla_mqtt_abstract_channel_value_setter {
  public:
-  MqttChannelValueSetterMock(void);
+  MqttChannelValueSetterMock(supla_mqtt_client_settings *settings);
   ~MqttChannelValueSetterMock(void);
 };
 

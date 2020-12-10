@@ -18,7 +18,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "MqttChannelValueSetterMock.h"
 
-MqttChannelValueSetterMock::MqttChannelValueSetterMock(void)
-    : supla_mqtt_abstract_channel_value_setter() {}
+MqttChannelValueSetterMock::MqttChannelValueSetterMock(
+    supla_mqtt_client_settings *settings)
+    : supla_mqtt_abstract_channel_value_setter(settings) {}
 
 MqttChannelValueSetterMock::~MqttChannelValueSetterMock(void) {}

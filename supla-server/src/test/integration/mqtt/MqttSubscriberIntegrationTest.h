@@ -19,11 +19,15 @@
 #ifndef MqttSubscriberIntegrationTest_H_
 #define MqttSubscriberIntegrationTest_H_
 
+#include "MqttChannelValueSetterMock.h"
 #include "MqttClientIntegrationTest.h"
 
 namespace testing {
 
 class MqttSubscriberIntegrationTest : public MqttClientIntegrationTest {
+ private:
+  MqttChannelValueSetterMock *value_setter;
+
  protected:
   void waitForData(int expectedTopicCount);
   virtual supla_mqtt_client *clientInit(
@@ -36,6 +40,7 @@ class MqttSubscriberIntegrationTest : public MqttClientIntegrationTest {
  public:
   MqttSubscriberIntegrationTest();
   virtual ~MqttSubscriberIntegrationTest();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
