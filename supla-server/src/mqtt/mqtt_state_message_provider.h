@@ -19,12 +19,12 @@
 #ifndef MQTT_STATE_MESSAGE_PROVIDER_H_
 #define MQTT_STATE_MESSAGE_PROVIDER_H_
 
+#include <mqtt_abstract_state_message_provider.h>
 #include "devicechannel.h"
 #include "mqtt_db.h"
-#include "mqtt_state_message_provider_abstract.h"
 
 class supla_mqtt_state_message_provider
-    : public supla_mqtt_state_message_provider_abstract {
+    : public supla_mqtt_abstract_state_message_provider {
  private:
  protected:
   virtual const char *_get_user_email(void);

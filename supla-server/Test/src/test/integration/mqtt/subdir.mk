@@ -4,18 +4,21 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/integration/mqtt/MqttChannelValueSetterMock.cpp \
 ../src/test/integration/mqtt/MqttClientIntegrationTest.cpp \
 ../src/test/integration/mqtt/MqttClientLibraryAdapterMock.cpp \
 ../src/test/integration/mqtt/MqttPublisherIntegrationTest.cpp \
 ../src/test/integration/mqtt/MqttSubscriberIntegrationTest.cpp 
 
 OBJS += \
+./src/test/integration/mqtt/MqttChannelValueSetterMock.o \
 ./src/test/integration/mqtt/MqttClientIntegrationTest.o \
 ./src/test/integration/mqtt/MqttClientLibraryAdapterMock.o \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.o \
 ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o 
 
 CPP_DEPS += \
+./src/test/integration/mqtt/MqttChannelValueSetterMock.d \
 ./src/test/integration/mqtt/MqttClientIntegrationTest.d \
 ./src/test/integration/mqtt/MqttClientLibraryAdapterMock.d \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d \

@@ -20,11 +20,11 @@
 #define MQTTSTATEMESSAGEPROVIDERMOCK_H_
 
 #include "gtest/gtest.h"  // NOLINT
+#include "mqtt_abstract_state_message_provider.h"
 #include "mqtt_db.h"
-#include "mqtt_state_message_provider_abstract.h"
 
 class MqttStateMessageProviderMock
-    : public supla_mqtt_state_message_provider_abstract {
+    : public supla_mqtt_abstract_state_message_provider {
  private:
   channel_complex_value *cvalue_mock;
   char email[SUPLA_EMAIL_MAXSIZE];

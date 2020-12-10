@@ -19,7 +19,7 @@
 #include "MqttStateMessageProviderMock.h"
 
 MqttStateMessageProviderMock::MqttStateMessageProviderMock(void)
-    : supla_mqtt_state_message_provider_abstract() {
+    : supla_mqtt_abstract_state_message_provider() {
   cvalue_mock = NULL;
   snprintf(email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
 }

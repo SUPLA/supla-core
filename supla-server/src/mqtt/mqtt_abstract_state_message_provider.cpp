@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_state_message_provider_abstract.h>
+#include <mqtt_abstract_state_message_provider.h>
 #include <stdlib.h>
 #include <string.h>
 #include "log.h"
 
-supla_mqtt_state_message_provider_abstract::
-    supla_mqtt_state_message_provider_abstract(void)
+supla_mqtt_abstract_state_message_provider::
+    supla_mqtt_abstract_state_message_provider(void)
     : supla_mqtt_message_provider() {
   this->user_id = 0;
   this->device_id = 0;
@@ -35,8 +35,8 @@ supla_mqtt_state_message_provider_abstract::
   this->icm = NULL;
 }
 
-supla_mqtt_state_message_provider_abstract::
-    ~supla_mqtt_state_message_provider_abstract(void) {
+supla_mqtt_abstract_state_message_provider::
+    ~supla_mqtt_abstract_state_message_provider(void) {
   if (cvalue) {
     free(cvalue);
   }
@@ -50,19 +50,19 @@ supla_mqtt_state_message_provider_abstract::
   }
 }
 
-int supla_mqtt_state_message_provider_abstract::get_user_id(void) {
+int supla_mqtt_abstract_state_message_provider::get_user_id(void) {
   return user_id;
 }
 
-int supla_mqtt_state_message_provider_abstract::get_device_id(void) {
+int supla_mqtt_abstract_state_message_provider::get_device_id(void) {
   return device_id;
 }
 
-int supla_mqtt_state_message_provider_abstract::get_channel_id(void) {
+int supla_mqtt_abstract_state_message_provider::get_channel_id(void) {
   return channel_id;
 }
 
-void supla_mqtt_state_message_provider_abstract::set_ids(int user_id,
+void supla_mqtt_abstract_state_message_provider::set_ids(int user_id,
                                                          int device_id,
                                                          int channel_id) {
   this->user_id = user_id;
@@ -85,22 +85,22 @@ void supla_mqtt_state_message_provider_abstract::set_ids(int user_id,
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::set_channel_type_and_function(
+void supla_mqtt_abstract_state_message_provider::set_channel_type_and_function(
     int channel_type, int channel_function) {
   this->channel_function = channel_function;
   this->channel_type = channel_type;
 }
 
-void supla_mqtt_state_message_provider_abstract::set_user_email(
+void supla_mqtt_abstract_state_message_provider::set_user_email(
     char *user_email) {
   this->user_email = user_email;
 }
 
-void supla_mqtt_state_message_provider_abstract::set_user_email(void) {
+void supla_mqtt_abstract_state_message_provider::set_user_email(void) {
   user_email = (char *)_get_user_email();
 }
 
-void supla_mqtt_state_message_provider_abstract::get_complex_value(void) {
+void supla_mqtt_abstract_state_message_provider::get_complex_value(void) {
   if (cvalue == NULL) {
     cvalue = _get_complex_value(user_id, device_id, channel_id);
     if (cvalue) {
@@ -110,42 +110,42 @@ void supla_mqtt_state_message_provider_abstract::get_complex_value(void) {
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::get_electricity_measurement(
+void supla_mqtt_abstract_state_message_provider::get_electricity_measurement(
     void) {
   if (em == NULL) {
     em = _get_electricity_measurement();
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::
+void supla_mqtt_abstract_state_message_provider::
     get_impulse_counter_measurement(void) {
   if (icm == NULL) {
     icm = _get_impulse_counter_measurement();
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::get_temperature(
+void supla_mqtt_abstract_state_message_provider::get_temperature(
     char *buf, size_t buf_size) {
   if (cvalue) {
     snprintf(buf, buf_size, "%f", cvalue->temperature);
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::get_humidity(char *buf,
+void supla_mqtt_abstract_state_message_provider::get_humidity(char *buf,
                                                               size_t buf_size) {
   if (cvalue) {
     snprintf(buf, buf_size, "%f", cvalue->humidity);
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::get_brightness(
+void supla_mqtt_abstract_state_message_provider::get_brightness(
     char *brightness, char *buf, size_t buf_size) {
   if (brightness) {
     snprintf(buf, buf_size, "%i", *brightness);
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::get_color(char *buf,
+void supla_mqtt_abstract_state_message_provider::get_color(char *buf,
                                                            size_t buf_size) {
   if (cvalue) {
     snprintf(buf, buf_size, "0x%02X%02X%02X",
@@ -155,7 +155,7 @@ void supla_mqtt_state_message_provider_abstract::get_color(char *buf,
   }
 }
 
-void supla_mqtt_state_message_provider_abstract::get_valve_closed(
+void supla_mqtt_abstract_state_message_provider::get_valve_closed(
     char *buf, size_t buf_size) {
   if (cvalue) {
     if (channel_function == SUPLA_CHANNELFNC_VALVE_PERCENTAGE) {
@@ -167,7 +167,7 @@ void supla_mqtt_state_message_provider_abstract::get_valve_closed(
   }
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_rs_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   char value[50];
@@ -201,7 +201,7 @@ bool supla_mqtt_state_message_provider_abstract::get_rs_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_lck_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_lck_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
@@ -213,7 +213,7 @@ bool supla_mqtt_state_message_provider_abstract::get_lck_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_gate_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_gate_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   switch (index) {
@@ -232,7 +232,7 @@ bool supla_mqtt_state_message_provider_abstract::get_gate_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_onoff_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_onoff_message_at_index(
     bool on, unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
@@ -244,7 +244,7 @@ bool supla_mqtt_state_message_provider_abstract::get_onoff_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_depth_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_depth_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
@@ -262,7 +262,7 @@ bool supla_mqtt_state_message_provider_abstract::get_depth_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_distance_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_distance_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
@@ -280,7 +280,7 @@ bool supla_mqtt_state_message_provider_abstract::get_distance_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::
+bool supla_mqtt_abstract_state_message_provider::
     get_doublevalue_message_at_index(unsigned short index,
                                      const char *topic_prefix,
                                      char **topic_name, void **message,
@@ -314,7 +314,7 @@ bool supla_mqtt_state_message_provider_abstract::
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_sensor_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_sensor_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
@@ -326,7 +326,7 @@ bool supla_mqtt_state_message_provider_abstract::get_sensor_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::
+bool supla_mqtt_abstract_state_message_provider::
     get_temperature_message_at_index(unsigned short index,
                                      unsigned short expected_index,
                                      const char *topic_prefix,
@@ -345,7 +345,7 @@ bool supla_mqtt_state_message_provider_abstract::
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_humidity_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_humidity_message_at_index(
     unsigned short index, unsigned short expected_index,
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
@@ -362,7 +362,7 @@ bool supla_mqtt_state_message_provider_abstract::get_humidity_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_brightness_message(
+bool supla_mqtt_abstract_state_message_provider::get_brightness_message(
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
   char value[50];
@@ -374,7 +374,7 @@ bool supla_mqtt_state_message_provider_abstract::get_brightness_message(
                         "channels/%i/state/brightness", get_channel_id());
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_color_brightness_message(
+bool supla_mqtt_abstract_state_message_provider::get_color_brightness_message(
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
   char value[50];
@@ -387,7 +387,7 @@ bool supla_mqtt_state_message_provider_abstract::get_color_brightness_message(
                         "channels/%i/state/color_brightness", get_channel_id());
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_color_message(
+bool supla_mqtt_abstract_state_message_provider::get_color_message(
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
   char value[50];
@@ -399,7 +399,7 @@ bool supla_mqtt_state_message_provider_abstract::get_color_message(
                         get_channel_id());
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_valve_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   char value[50];
@@ -430,7 +430,7 @@ bool supla_mqtt_state_message_provider_abstract::get_valve_message_at_index(
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::
+bool supla_mqtt_abstract_state_message_provider::
     get_impulsecounter_message_at_index(unsigned short index,
                                         const char *topic_prefix,
                                         char **topic_name, void **message,
@@ -490,7 +490,7 @@ bool supla_mqtt_state_message_provider_abstract::
   return false;
 }
 
-void supla_mqtt_state_message_provider_abstract::verify_flag(
+void supla_mqtt_abstract_state_message_provider::verify_flag(
     int flags, int flag1, int flag2, void **message, size_t *message_size) {
   if ((flags & flag1) == 0 && (flags & flag2) == 0) {
     em = NULL;
@@ -503,7 +503,7 @@ void supla_mqtt_state_message_provider_abstract::verify_flag(
   }
 }
 
-bool supla_mqtt_state_message_provider_abstract::
+bool supla_mqtt_abstract_state_message_provider::
     get_electricitymeter_message_at_index(unsigned short index,
                                           const char *topic_prefix,
                                           char **topic_name, void **message,
@@ -739,7 +739,7 @@ bool supla_mqtt_state_message_provider_abstract::
   return false;
 }
 
-bool supla_mqtt_state_message_provider_abstract::get_message_at_index(
+bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (user_id == 0 && device_id == 0 && channel_id == 0) {

@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_STATE_MESSAGE_PROVIDER_ABSTRACT_H_
-#define MQTT_STATE_MESSAGE_PROVIDER_ABSTRACT_H_
+#ifndef MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_
+#define MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_
 
 #include "devicechannel.h"
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
 
-class supla_mqtt_state_message_provider_abstract
+class supla_mqtt_abstract_state_message_provider
     : public supla_mqtt_message_provider {
  private:
   char *user_email;
@@ -134,8 +134,8 @@ class supla_mqtt_state_message_provider_abstract
                                              size_t *message_size);
 
  public:
-  supla_mqtt_state_message_provider_abstract(void);
-  virtual ~supla_mqtt_state_message_provider_abstract(void);
+  supla_mqtt_abstract_state_message_provider(void);
+  virtual ~supla_mqtt_abstract_state_message_provider(void);
   virtual bool get_message_at_index(unsigned short index,
                                     const char *topic_prefix, char **topic_name,
                                     void **message, size_t *message_size);
@@ -145,4 +145,4 @@ class supla_mqtt_state_message_provider_abstract
   void set_user_email(void);
 };
 
-#endif /*MQTT_STATE_MESSAGE_PROVIDER_ABSTRACT_H_*/
+#endif /*MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_*/

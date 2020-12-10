@@ -7,6 +7,8 @@ C_SRCS += \
 ../src/mqtt/mqtt.c 
 
 CPP_SRCS += \
+../src/mqtt/mqtt_abstract_channel_value_setter.cpp \
+../src/mqtt/mqtt_abstract_state_message_provider.cpp \
 ../src/mqtt/mqtt_channel_message_provider.cpp \
 ../src/mqtt/mqtt_channelandstate_message_provider.cpp \
 ../src/mqtt/mqtt_client.cpp \
@@ -22,7 +24,6 @@ CPP_SRCS += \
 ../src/mqtt/mqtt_publisher.cpp \
 ../src/mqtt/mqtt_publisher_datasource.cpp \
 ../src/mqtt/mqtt_state_message_provider.cpp \
-../src/mqtt/mqtt_state_message_provider_abstract.cpp \
 ../src/mqtt/mqtt_subscriber.cpp \
 ../src/mqtt/mqtt_subscriber_datasource.cpp \
 ../src/mqtt/mqtt_subscription_topic_provider.cpp \
@@ -32,6 +33,8 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/mqtt/mqtt.o \
+./src/mqtt/mqtt_abstract_channel_value_setter.o \
+./src/mqtt/mqtt_abstract_state_message_provider.o \
 ./src/mqtt/mqtt_channel_message_provider.o \
 ./src/mqtt/mqtt_channelandstate_message_provider.o \
 ./src/mqtt/mqtt_client.o \
@@ -47,7 +50,6 @@ OBJS += \
 ./src/mqtt/mqtt_publisher.o \
 ./src/mqtt/mqtt_publisher_datasource.o \
 ./src/mqtt/mqtt_state_message_provider.o \
-./src/mqtt/mqtt_state_message_provider_abstract.o \
 ./src/mqtt/mqtt_subscriber.o \
 ./src/mqtt/mqtt_subscriber_datasource.o \
 ./src/mqtt/mqtt_subscription_topic_provider.o \
@@ -59,6 +61,8 @@ C_DEPS += \
 ./src/mqtt/mqtt.d 
 
 CPP_DEPS += \
+./src/mqtt/mqtt_abstract_channel_value_setter.d \
+./src/mqtt/mqtt_abstract_state_message_provider.d \
 ./src/mqtt/mqtt_channel_message_provider.d \
 ./src/mqtt/mqtt_channelandstate_message_provider.d \
 ./src/mqtt/mqtt_client.d \
@@ -74,7 +78,6 @@ CPP_DEPS += \
 ./src/mqtt/mqtt_publisher.d \
 ./src/mqtt/mqtt_publisher_datasource.d \
 ./src/mqtt/mqtt_state_message_provider.d \
-./src/mqtt/mqtt_state_message_provider_abstract.d \
 ./src/mqtt/mqtt_subscriber.d \
 ./src/mqtt/mqtt_subscriber_datasource.d \
 ./src/mqtt/mqtt_subscription_topic_provider.d \

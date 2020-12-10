@@ -22,7 +22,7 @@
 #include "user.h"
 
 supla_mqtt_state_message_provider::supla_mqtt_state_message_provider(void)
-    : supla_mqtt_state_message_provider_abstract() {}
+    : supla_mqtt_abstract_state_message_provider() {}
 
 supla_mqtt_state_message_provider::~supla_mqtt_state_message_provider(void) {}
 
