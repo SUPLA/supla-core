@@ -86,12 +86,12 @@ supla_mqtt_client_suite::~supla_mqtt_client_suite(void) {
 
 void supla_mqtt_client_suite::start(void) {
   publisher->start();
-  // subscriber->start();
+  subscriber->start();
 }
 
 void supla_mqtt_client_suite::stop(void) {
   publisher->stop();
-  //  subscriber->stop();
+  subscriber->stop();
 }
 
 void supla_mqtt_client_suite::onUserSettingsChanged(int UserID) {
