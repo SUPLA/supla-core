@@ -30,7 +30,7 @@ bool supla_mqtt_subscription_topic_provider::get_message_at_index(
     void **message, size_t *message_size) {
   if (index == 0) {
     return create_message(topic_prefix, "+", topic_name, NULL, NULL, NULL,
-                          false, "channels/+/set");
+                          false, "channels/+/set/+");
   }
 
   return false;
