@@ -26,7 +26,6 @@ supla_mqtt_client_datasource::supla_mqtt_client_datasource(
   _context_open = false;
   all_data_expected = false;
   this->settings = settings;
-  context_structure_clear(&context);
 }
 
 supla_mqtt_client_datasource::~supla_mqtt_client_datasource(void) {
@@ -41,10 +40,17 @@ void supla_mqtt_client_datasource::thread_init(void) {}
 
 void supla_mqtt_client_datasource::thread_cleanup(void) { context_close(); }
 
-void supla_mqtt_client_datasource::context_structure_clear(
-    _mqtt_ds_context_t *scope) {
-  memset(scope, 0, sizeof(_mqtt_ds_context_t));
-  scope->scope = MQTTDS_SCOPE_NONE;
+bool supla_mqtt_client_datasource::is_mqtt_enabled(int user_id) {
+  bool result = false;
+  lck_lock(lck);
+  for (std::list<int>::iterator it = users.begin(); it != users.end(); ++it) {
+    if (*it == user_id) {
+      result = true;
+      break;
+    }
+  }
+  lck_unlock(lck);
+  return result;
 }
 
 void supla_mqtt_client_datasource::context_close(void) {
@@ -54,8 +60,6 @@ void supla_mqtt_client_datasource::context_close(void) {
     _context_open = false;
     lck_unlock(lck);
   }
-
-  context_structure_clear(&context);
 }
 
 void supla_mqtt_client_datasource::context_open(void) {
@@ -68,37 +72,70 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
   lck_lock(lck);
 
   if (!is_context_open()) {
-    memset(&context, 0, sizeof(_mqtt_ds_context_t));
-
     if (all_data_expected) {
       all_data_expected = false;
-      context.scope = MQTTDS_SCOPE_FULL;
+      context = supla_mqtt_ds_context(MQTTDS_SCOPE_FULL);
       result = true;
     } else if (user_queue.size()) {
-      context.scope = MQTTDS_SCOPE_USER;
-      context.user_id = user_queue.front();
+      context = supla_mqtt_ds_context(MQTTDS_SCOPE_USER, user_queue.front());
       user_queue.pop_front();
       result = true;
     } else if (device_queue.size()) {
-      context.scope = MQTTDS_SCOPE_DEVICE;
       _mqtt_ds_device_id_t id = device_queue.front();
       device_queue.pop_front();
-      context.user_id = id.user_id;
-      context.device_id = id.device_id;
+
+      context =
+          supla_mqtt_ds_context(MQTTDS_SCOPE_USER, id.user_id, id.device_id);
       result = true;
     } else if (channel_queue.size()) {
       context.scope = MQTTDS_SCOPE_CHANNEL_STATE;
       _mqtt_ds_channel_id_t id = channel_queue.front();
       channel_queue.pop_front();
-      context.user_id = id.user_id;
-      context.device_id = id.device_id;
-      context.channel_id = id.channel_id;
+
+      context = supla_mqtt_ds_context(MQTTDS_SCOPE_USER, id.user_id,
+                                      id.device_id, id.channel_id);
       result = true;
     }
   }
 
   lck_unlock(lck);
   return result;
+}
+
+void supla_mqtt_client_datasource::add_user_to_list(int user_id,
+                                                    std::list<int> *ulist) {
+  bool exists = false;
+  for (std::list<int>::iterator it = ulist->begin(); it != ulist->end(); ++it) {
+    if (*it == user_id) {
+      exists = true;
+      break;
+    }
+  }
+
+  if (!exists) {
+    printf("%i\n", user_id);
+    ulist->push_back(user_id);
+  }
+}
+
+void supla_mqtt_client_datasource::update_user_list() {
+  if (context.scope == MQTTDS_SCOPE_FULL) {
+    users = users_tmp;
+  } else if (context.scope == MQTTDS_SCOPE_USER) {
+    if (users_tmp.size()) {
+      add_user_to_list(users_tmp.front(), &users);
+    } else if (context.user_id) {
+      for (std::list<int>::iterator it = users.begin(); it != users.end();
+           ++it) {
+        if (*it == context.user_id) {
+          it = users.erase(it);
+          break;
+        }
+      }
+    }
+  }
+
+  users_tmp.clear();
 }
 
 bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
@@ -108,17 +145,29 @@ bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
     lck_lock(lck);
     _context_open = __context_open;
     lck_unlock(lck);
+
+    if (context.scope == MQTTDS_SCOPE_FULL ||
+        context.scope == MQTTDS_SCOPE_USER) {
+      users_tmp.clear();
+    }
   }
 
   bool result = false;
 
   if (is_context_open()) {
-    result = _fetch(&context, topic_name, message, message_size);
+    result = _fetch(&context, &user_id, topic_name, message, message_size);
 
-    if (!result) {
+    if (result && context.user_id) {
+      if (context.scope == MQTTDS_SCOPE_FULL) {
+        add_user_to_list(context.user_id, &users_tmp);
+      } else if (context.scope == MQTTDS_SCOPE_USER && users_tmp.size() == 0) {
+        users_tmp.push_back(context.user_id);
+      }
+    } else {
       context_close(&context);
       lck_lock(lck);
       _context_open = false;
+      update_user_list();
       lck_unlock(lck);
     }
   }
@@ -200,6 +249,10 @@ void supla_mqtt_client_datasource::on_userdata_changed(int user_id) {
 
 void supla_mqtt_client_datasource::on_devicedata_changed(int user_id,
                                                          int device_id) {
+  if (!is_mqtt_enabled(user_id)) {
+    return;
+  }
+
   lck_lock(lck);
   if (!all_data_expected && !is_user_queued(user_id) &&
       !is_device_queued(device_id)) {
@@ -220,6 +273,10 @@ void supla_mqtt_client_datasource::on_devicedata_changed(int user_id,
 void supla_mqtt_client_datasource::on_channelstate_changed(int user_id,
                                                            int device_id,
                                                            int channel_id) {
+  if (!is_mqtt_enabled(user_id)) {
+    return;
+  }
+
   lck_lock(lck);
   if (!all_data_expected && !is_user_queued(user_id) &&
       !is_device_queued(device_id) && !is_channel_queued(channel_id)) {

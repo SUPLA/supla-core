@@ -1379,6 +1379,19 @@ TEST_F(MqttPublisherIntegrationTest, stateScope) {
       "supla/2645test@supla.org/channels/4688/state/connected", "false"};
 
   verify(expectedData, sizeof(expectedData) / sizeof(void *));
+
+  runSqlScript("DisableMqttForUser2645.sql");
+
+  getLibAdapter()->published_clear();
+  getDS()->on_userdata_changed(2645);
+  usleep(250000);
+  waitForData(0);
+
+  getLibAdapter()->published_clear();
+
+  getDS()->on_channelstate_changed(2645, 4124, 4688);
+  usleep(250000);
+  waitForData(0);
 }
 
 } /* namespace testing */

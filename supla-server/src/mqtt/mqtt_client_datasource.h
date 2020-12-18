@@ -24,6 +24,7 @@
 #include "database.h"
 #include "mqtt_client_library_adapter.h"
 #include "mqtt_client_settings.h"
+#include "mqtt_ds_context.h"
 
 typedef struct {
   int user_id;
@@ -36,28 +37,16 @@ typedef struct {
   int channel_id;
 } _mqtt_ds_channel_id_t;
 
-enum MQTTDataSourceScope {
-  MQTTDS_SCOPE_NONE,
-  MQTTDS_SCOPE_FULL,
-  MQTTDS_SCOPE_USER,
-  MQTTDS_SCOPE_DEVICE,
-  MQTTDS_SCOPE_CHANNEL_STATE,
-};
-
-typedef struct {
-  MQTTDataSourceScope scope;
-  int user_id;
-  int device_id;
-  int channel_id;
-} _mqtt_ds_context_t;
-
 class supla_mqtt_client_datasource {
  private:
   void *lck;
   bool _context_open;
   supla_mqtt_client_settings *settings = NULL;
 
-  _mqtt_ds_context_t context;
+  supla_mqtt_ds_context context;
+
+  std::list<int> users;
+  std::list<int> users_tmp;
 
   bool all_data_expected;
   std::list<int> user_queue;
@@ -71,14 +60,16 @@ class supla_mqtt_client_datasource {
   bool context_should_be_opened(void);
   void context_open(void);
   void context_close(void);
-  void context_structure_clear(_mqtt_ds_context_t *scope);
+  void add_user_to_list(int user_id, std::list<int> *ulist);
+  void update_user_list();
+  bool is_mqtt_enabled(int user_id);
 
  protected:
   supla_mqtt_client_settings *get_settings(void);
-  virtual bool context_open(const _mqtt_ds_context_t *context) = 0;
-  virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
+  virtual bool context_open(const supla_mqtt_ds_context *context) = 0;
+  virtual bool _fetch(const supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size) = 0;
-  virtual void context_close(const _mqtt_ds_context_t *context) = 0;
+  virtual void context_close(const supla_mqtt_ds_context *context) = 0;
 
  public:
   explicit supla_mqtt_client_datasource(supla_mqtt_client_settings *settings);

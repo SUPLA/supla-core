@@ -29,4 +29,6 @@ supla_mqtt_abstract_channel_value_setter::
 
 void supla_mqtt_abstract_channel_value_setter::set_value(
     const void *topic_name, unsigned short topic_name_size, const void *message,
-    size_t message_size) {}
+    size_t message_size) {
+
+}
