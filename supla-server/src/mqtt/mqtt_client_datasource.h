@@ -66,10 +66,10 @@ class supla_mqtt_client_datasource {
 
  protected:
   supla_mqtt_client_settings *get_settings(void);
-  virtual bool context_open(const supla_mqtt_ds_context *context) = 0;
-  virtual bool _fetch(const supla_mqtt_ds_context *context, char **topic_name,
+  virtual bool context_open(supla_mqtt_ds_context *context) = 0;
+  virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size) = 0;
-  virtual void context_close(const supla_mqtt_ds_context *context) = 0;
+  virtual void context_close(supla_mqtt_ds_context *context) = 0;
 
  public:
   explicit supla_mqtt_client_datasource(supla_mqtt_client_settings *settings);

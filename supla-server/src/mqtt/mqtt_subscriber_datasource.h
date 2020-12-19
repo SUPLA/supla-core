@@ -27,10 +27,10 @@ class supla_mqtt_subscriber_datasource : public supla_mqtt_client_datasource {
   supla_mqtt_subscription_topic_provider *provider;
 
  protected:
-  virtual bool context_open(const _mqtt_ds_context_t *context);
-  virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
+  virtual bool context_open(supla_mqtt_ds_context *context);
+  virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);
-  virtual void context_close(const _mqtt_ds_context_t *context);
+  virtual void context_close(supla_mqtt_ds_context *context);
 
  public:
   explicit supla_mqtt_subscriber_datasource(

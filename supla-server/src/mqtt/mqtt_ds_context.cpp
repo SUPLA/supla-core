@@ -18,43 +18,59 @@
 
 #include <mqtt_ds_context.h>
 
-supla_mqtt_ds_context::supla_mqtt_ds_context(MQTTDataSourceScope scope) {
+void supla_mqtt_ds_context::set_vars(MQTTDataSourceScope scope, int user_id,
+                                     int device_id, int channel_id) {
   this->scope = scope;
+
   this->user_id = 0;
   this->device_id = 0;
   this->channel_id = 0;
+
+  if (scope != MQTTDS_SCOPE_NONE && scope != MQTTDS_SCOPE_FULL) {
+    this->user_id = user_id;
+  }
+
+  if (scope == MQTTDS_SCOPE_DEVICE || scope == MQTTDS_SCOPE_CHANNEL_STATE) {
+    this->device_id = device_id;
+  }
+
+  if (scope == MQTTDS_SCOPE_CHANNEL_STATE) {
+    this->channel_id = channel_id;
+  }
+}
+
+supla_mqtt_ds_context::supla_mqtt_ds_context(void) {
+  set_vars(MQTTDS_SCOPE_NONE, 0, 0, 0);
+}
+
+supla_mqtt_ds_context::supla_mqtt_ds_context(MQTTDataSourceScope scope) {
+  set_vars(scope, 0, 0, 0);
 }
 
 supla_mqtt_ds_context::supla_mqtt_ds_context(MQTTDataSourceScope scope,
                                              int user_id) {
-  this->scope = scope;
-  this->user_id = user_id;
-  this->device_id = 0;
-  this->channel_id = 0;
+  set_vars(scope, user_id, 0, 0);
 }
 
 supla_mqtt_ds_context::supla_mqtt_ds_context(MQTTDataSourceScope scope,
                                              int user_id, int device_id) {
-  this->scope = scope;
-  this->user_id = user_id;
-  this->device_id = device_id;
-  this->channel_id = 0;
+  set_vars(scope, user_id, device_id, 0);
 }
 
 supla_mqtt_ds_context::supla_mqtt_ds_context(MQTTDataSourceScope scope,
                                              int user_id, int device_id,
                                              int channel_id) {
-  this->scope = scope;
-  this->user_id = user_id;
-  this->device_id = device_id;
-  this->channel_id = channel_id;
+  set_vars(scope, user_id, device_id, channel_id);
 }
 
 void supla_mqtt_ds_context::set_user_id(int user_id) {
-  if (scope == MQTTDS_SCOPE_FULL) {
+  if (scope == MQTTDS_SCOPE_FULL &&
+      ((!user_id && this->user_id) || (user_id && !this->user_id))) {
     this->user_id = user_id;
   }
 }
+
+MQTTDataSourceScope supla_mqtt_ds_context::get_scope(void) { return scope; }
 
 int supla_mqtt_ds_context::get_user_id(void) { return user_id; }
 

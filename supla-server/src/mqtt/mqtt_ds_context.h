@@ -33,9 +33,12 @@ class supla_mqtt_ds_context {
   int device_id;
   int channel_id;
   MQTTDataSourceScope scope;
+  void set_vars(MQTTDataSourceScope scope, int user_id, int device_id,
+                int channel_id);
 
  public:
-  supla_mqtt_ds_context(MQTTDataSourceScope scope);
+  supla_mqtt_ds_context(void);
+  explicit supla_mqtt_ds_context(MQTTDataSourceScope scope);
   supla_mqtt_ds_context(MQTTDataSourceScope scope, int user_id);
   supla_mqtt_ds_context(MQTTDataSourceScope scope, int user_id, int device_id);
   supla_mqtt_ds_context(MQTTDataSourceScope scope, int user_id, int device_id,

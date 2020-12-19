@@ -85,14 +85,13 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
       device_queue.pop_front();
 
       context =
-          supla_mqtt_ds_context(MQTTDS_SCOPE_USER, id.user_id, id.device_id);
+          supla_mqtt_ds_context(MQTTDS_SCOPE_DEVICE, id.user_id, id.device_id);
       result = true;
     } else if (channel_queue.size()) {
-      context.scope = MQTTDS_SCOPE_CHANNEL_STATE;
       _mqtt_ds_channel_id_t id = channel_queue.front();
       channel_queue.pop_front();
 
-      context = supla_mqtt_ds_context(MQTTDS_SCOPE_USER, id.user_id,
+      context = supla_mqtt_ds_context(MQTTDS_SCOPE_CHANNEL_STATE, id.user_id,
                                       id.device_id, id.channel_id);
       result = true;
     }
@@ -113,21 +112,20 @@ void supla_mqtt_client_datasource::add_user_to_list(int user_id,
   }
 
   if (!exists) {
-    printf("%i\n", user_id);
     ulist->push_back(user_id);
   }
 }
 
 void supla_mqtt_client_datasource::update_user_list() {
-  if (context.scope == MQTTDS_SCOPE_FULL) {
+  if (context.get_scope() == MQTTDS_SCOPE_FULL) {
     users = users_tmp;
-  } else if (context.scope == MQTTDS_SCOPE_USER) {
+  } else if (context.get_scope() == MQTTDS_SCOPE_USER) {
     if (users_tmp.size()) {
       add_user_to_list(users_tmp.front(), &users);
-    } else if (context.user_id) {
+    } else if (context.get_user_id()) {
       for (std::list<int>::iterator it = users.begin(); it != users.end();
            ++it) {
-        if (*it == context.user_id) {
+        if (*it == context.get_user_id()) {
           it = users.erase(it);
           break;
         }
@@ -146,8 +144,8 @@ bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
     _context_open = __context_open;
     lck_unlock(lck);
 
-    if (context.scope == MQTTDS_SCOPE_FULL ||
-        context.scope == MQTTDS_SCOPE_USER) {
+    if (context.get_scope() == MQTTDS_SCOPE_FULL ||
+        context.get_scope() == MQTTDS_SCOPE_USER) {
       users_tmp.clear();
     }
   }
@@ -155,13 +153,19 @@ bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
   bool result = false;
 
   if (is_context_open()) {
-    result = _fetch(&context, &user_id, topic_name, message, message_size);
+    if (context.get_scope() == MQTTDS_SCOPE_FULL) {
+      context.set_user_id(0);
+    }
+    result = _fetch(&context, topic_name, message, message_size);
 
-    if (result && context.user_id) {
-      if (context.scope == MQTTDS_SCOPE_FULL) {
-        add_user_to_list(context.user_id, &users_tmp);
-      } else if (context.scope == MQTTDS_SCOPE_USER && users_tmp.size() == 0) {
-        users_tmp.push_back(context.user_id);
+    if (result) {
+      if (context.get_user_id()) {
+        if (context.get_scope() == MQTTDS_SCOPE_FULL) {
+          add_user_to_list(context.get_user_id(), &users_tmp);
+        } else if (context.get_scope() == MQTTDS_SCOPE_USER &&
+                   users_tmp.size() == 0) {
+          users_tmp.push_back(context.get_user_id());
+        }
       }
     } else {
       context_close(&context);

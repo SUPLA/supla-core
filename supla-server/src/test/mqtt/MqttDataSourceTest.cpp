@@ -101,6 +101,24 @@ bool MqttDataSourceTest::popMessage(const char *scope, int user_id,
   return pass == 2;
 }
 
+void MqttDataSourceTest::userTouch(int UserID) {
+  ASSERT_EQ(ds->openCount(), 0);
+  ASSERT_EQ(ds->closeCount(), 0);
+
+  ds->on_userdata_changed(UserID);
+
+  ASSERT_TRUE(popMessage("SCOPE_USER", UserID, 0, 0, 0));
+
+  ASSERT_EQ(ds->openCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
+
+  ASSERT_TRUE(popMessage("SCOPE_USER", UserID, 0, 0, 1));
+
+  ASSERT_FALSE(dataExists());
+  ASSERT_EQ(ds->closeCount(), 1);
+  ds->resetCounters();
+}
+
 TEST_F(MqttDataSourceTest, empty) {
   char *topic_name = NULL;
   ASSERT_EQ(ds->openCount(), 0);
@@ -187,6 +205,9 @@ TEST_F(MqttDataSourceTest, onUserDataChanged) {
 }
 
 TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
+  userTouch(55);
+  userTouch(56);
+
   ASSERT_EQ(ds->openCount(), 0);
   ASSERT_EQ(ds->closeCount(), 0);
 
@@ -227,6 +248,8 @@ TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
 }
 
 TEST_F(MqttDataSourceTest, onChannelValueChanged) {
+  userTouch(55);
+
   ASSERT_EQ(ds->openCount(), 0);
   ASSERT_EQ(ds->closeCount(), 0);
 

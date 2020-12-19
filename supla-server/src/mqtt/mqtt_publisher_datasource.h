@@ -43,25 +43,25 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   supla_mqtt_state_message_provider *state_message_provider;
 
   void *datarow_malloc(int datatype);
-  void *open_query(int datatype, const _mqtt_ds_context_t *context,
+  void *open_query(int datatype, supla_mqtt_ds_context *context,
                    void *data_row);
   bool db_fetch_row(int datatype, void *query, void *data_row);
   supla_mqtt_message_provider *new_provider(int datatype, void *data_row);
-  void set_provider_data_row(int datatype,
+  void set_provider_data_row(supla_mqtt_ds_context *context, int datatype,
                              supla_mqtt_message_provider *provider,
                              void *data_row);
 
   bool fetch(int datatype, void **query, void **data_row,
              supla_mqtt_message_provider **provider,
-             const _mqtt_ds_context_t *context, char **topic_name,
-             void **message, size_t *message_size);
-  bool fetch_user(const _mqtt_ds_context_t *context, char **topic_name,
+             supla_mqtt_ds_context *context, char **topic_name, void **message,
+             size_t *message_size);
+  bool fetch_user(supla_mqtt_ds_context *context, char **topic_name,
                   void **message, size_t *message_size);
-  bool fetch_device(const _mqtt_ds_context_t *context, char **topic_name,
+  bool fetch_device(supla_mqtt_ds_context *context, char **topic_name,
                     void **message, size_t *message_size);
-  bool fetch_channel(const _mqtt_ds_context_t *context, char **topic_name,
+  bool fetch_channel(supla_mqtt_ds_context *context, char **topic_name,
                      void **message, size_t *message_size);
-  bool fetch_state(const _mqtt_ds_context_t *context, char **topic_name,
+  bool fetch_state(supla_mqtt_ds_context *context, char **topic_name,
                    void **message, size_t *message_size);
 
   void close_userquery();
@@ -69,10 +69,10 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   void close_channelquery();
 
  protected:
-  virtual bool context_open(const _mqtt_ds_context_t *context);
-  virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
+  virtual bool context_open(supla_mqtt_ds_context *context);
+  virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);
-  virtual void context_close(const _mqtt_ds_context_t *context);
+  virtual void context_close(supla_mqtt_ds_context *context);
 
  public:
   explicit supla_mqtt_publisher_datasource(

@@ -8,6 +8,7 @@ CPP_SRCS += \
 ../src/test/mqtt/MqttDataSourceMock.cpp \
 ../src/test/mqtt/MqttDataSourceTest.cpp \
 ../src/test/mqtt/MqttDeviceMessageProviderTest.cpp \
+../src/test/mqtt/MqttDsContextTest.cpp \
 ../src/test/mqtt/MqttIniSettingsTest.cpp \
 ../src/test/mqtt/MqttMessageProviderTest.cpp \
 ../src/test/mqtt/MqttStateMessageProviderMock.cpp \
@@ -20,6 +21,7 @@ OBJS += \
 ./src/test/mqtt/MqttDataSourceMock.o \
 ./src/test/mqtt/MqttDataSourceTest.o \
 ./src/test/mqtt/MqttDeviceMessageProviderTest.o \
+./src/test/mqtt/MqttDsContextTest.o \
 ./src/test/mqtt/MqttIniSettingsTest.o \
 ./src/test/mqtt/MqttMessageProviderTest.o \
 ./src/test/mqtt/MqttStateMessageProviderMock.o \
@@ -32,6 +34,7 @@ CPP_DEPS += \
 ./src/test/mqtt/MqttDataSourceMock.d \
 ./src/test/mqtt/MqttDataSourceTest.d \
 ./src/test/mqtt/MqttDeviceMessageProviderTest.d \
+./src/test/mqtt/MqttDsContextTest.d \
 ./src/test/mqtt/MqttIniSettingsTest.d \
 ./src/test/mqtt/MqttMessageProviderTest.d \
 ./src/test/mqtt/MqttStateMessageProviderMock.d \

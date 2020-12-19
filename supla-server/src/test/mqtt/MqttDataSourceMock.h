@@ -28,16 +28,17 @@ class MqttDataSourceMock : public supla_mqtt_client_datasource {
   int idx;
 
  protected:
-  virtual bool context_open(const _mqtt_ds_context_t *context);
-  virtual bool _fetch(const _mqtt_ds_context_t *context, char **topic_name,
+  virtual bool context_open(supla_mqtt_ds_context *context);
+  virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);
-  virtual void context_close(const _mqtt_ds_context_t *context);
+  virtual void context_close(supla_mqtt_ds_context *context);
 
  public:
   explicit MqttDataSourceMock(supla_mqtt_client_settings *settings);
   virtual ~MqttDataSourceMock(void);
   int openCount(void);
   int closeCount(void);
+  void resetCounters(void);
 };
 
 #endif /* MQTT_DATASOURCE_MOCK_H_ */

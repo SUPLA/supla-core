@@ -21,6 +21,7 @@ CPP_SRCS += \
 ../src/mqtt/mqtt_client_suite.cpp \
 ../src/mqtt/mqtt_db.cpp \
 ../src/mqtt/mqtt_device_message_provider.cpp \
+../src/mqtt/mqtt_ds_context.cpp \
 ../src/mqtt/mqtt_message_provider.cpp \
 ../src/mqtt/mqtt_publisher.cpp \
 ../src/mqtt/mqtt_publisher_datasource.cpp \
@@ -48,6 +49,7 @@ OBJS += \
 ./src/mqtt/mqtt_client_suite.o \
 ./src/mqtt/mqtt_db.o \
 ./src/mqtt/mqtt_device_message_provider.o \
+./src/mqtt/mqtt_ds_context.o \
 ./src/mqtt/mqtt_message_provider.o \
 ./src/mqtt/mqtt_publisher.o \
 ./src/mqtt/mqtt_publisher_datasource.o \
@@ -77,6 +79,7 @@ CPP_DEPS += \
 ./src/mqtt/mqtt_client_suite.d \
 ./src/mqtt/mqtt_db.d \
 ./src/mqtt/mqtt_device_message_provider.d \
+./src/mqtt/mqtt_ds_context.d \
 ./src/mqtt/mqtt_message_provider.d \
 ./src/mqtt/mqtt_publisher.d \
 ./src/mqtt/mqtt_publisher_datasource.d \

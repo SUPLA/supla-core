@@ -27,15 +27,15 @@ supla_mqtt_subscriber_datasource::supla_mqtt_subscriber_datasource(
 supla_mqtt_subscriber_datasource::~supla_mqtt_subscriber_datasource(void) {}
 
 bool supla_mqtt_subscriber_datasource::context_open(
-    const _mqtt_ds_context_t *context) {
-  if (context->scope == MQTTDS_SCOPE_FULL) {
+    supla_mqtt_ds_context *context) {
+  if (context->get_scope() == MQTTDS_SCOPE_FULL) {
     provider = new supla_mqtt_subscription_topic_provider();
     return provider != NULL;
   }
   return false;
 }
 
-bool supla_mqtt_subscriber_datasource::_fetch(const _mqtt_ds_context_t *context,
+bool supla_mqtt_subscriber_datasource::_fetch(supla_mqtt_ds_context *context,
                                               char **topic_name, void **message,
                                               size_t *message_size) {
   if (provider) {
@@ -46,7 +46,7 @@ bool supla_mqtt_subscriber_datasource::_fetch(const _mqtt_ds_context_t *context,
 }
 
 void supla_mqtt_subscriber_datasource::context_close(
-    const _mqtt_ds_context_t *context) {
+    supla_mqtt_ds_context *context) {
   if (provider) {
     delete provider;
     provider = NULL;
