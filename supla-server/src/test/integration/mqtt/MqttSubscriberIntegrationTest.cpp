@@ -49,7 +49,8 @@ supla_mqtt_client *MqttSubscriberIntegrationTest::clientInit(
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *datasource) {
   value_setter = new MqttChannelValueSetterMock(settings);
-  return new supla_mqtt_subscriber(library_adapter, settings, datasource, NULL);
+  return new supla_mqtt_subscriber(library_adapter, settings, datasource,
+                                   value_setter);
 }
 
 void MqttSubscriberIntegrationTest::TearDown() {
@@ -68,10 +69,21 @@ supla_mqtt_client_datasource *MqttSubscriberIntegrationTest::dsInit(
 
 TEST_F(MqttSubscriberIntegrationTest, fullScope) {
   waitForConnection();
-  waitForData(1);
+  waitForData(2);
 
-  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare("supla/+/channels/+/set/+"),
+  ASSERT_EQ(
+      getLibAdapter()->subscribed_pop().compare("supla/+/channels/+/set/+"), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "supla/+/channels/+/execute_action"),
             0);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
+  waitForConnection();
+  waitForData(2);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/on", "1");
 }
 
 } /* namespace testing */

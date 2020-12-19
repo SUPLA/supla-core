@@ -57,8 +57,7 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   int subscribed_count(void);
   std::string subscribed_pop(void);
 
-  void on_message_received(const char *topic_name, void *message,
-                           size_t *message_size);
+  void on_message_received(const char *topic_name, const char *message);
 };
 
 #endif /* MQTT_CLIENTLIBRARYADAPTER_MOCK_H_ */

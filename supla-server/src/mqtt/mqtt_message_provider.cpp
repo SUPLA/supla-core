@@ -21,9 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MQTT_MAX_TOPIC_NAME_SIZE 32767
-#define MQTT_MAX_MESSAGE_SIZE 1048576
-
 supla_mqtt_message_provider::supla_mqtt_message_provider(void) {
   this->index = 0;
 }

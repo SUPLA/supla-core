@@ -22,6 +22,9 @@
 #include "database.h"
 #include "mqtt_client_settings.h"
 
+#define MQTT_MAX_TOPIC_NAME_SIZE 32767
+#define MQTT_MAX_MESSAGE_SIZE 1048576
+
 class supla_mqtt_message_provider {
  private:
   unsigned short index;

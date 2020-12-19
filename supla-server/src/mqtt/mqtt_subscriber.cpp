@@ -52,6 +52,6 @@ void supla_mqtt_subscriber::on_iterate(void) {
 void supla_mqtt_subscriber::on_message_received(
     const _received_mqtt_message_t *msg) {
   supla_mqtt_client::on_message_received(msg);
-  setter->set_value(msg->topic_name, msg->topic_name_size, msg->message,
-                    msg->message_size);
+  setter->set_value((const char *)msg->topic_name, msg->topic_name_size,
+                    msg->message, msg->message_size);
 }

@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <unistd.h>
 #include "lck.h"
 #include "log.h"
+#include "mqtt_message_provider.h"
 
 MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
     supla_mqtt_client_settings *settings)
@@ -152,15 +153,17 @@ std::string MqttClientLibraryAdapterMock::subscribed_pop(void) {
 }
 
 void MqttClientLibraryAdapterMock::on_message_received(const char *topic_name,
-                                                       void *message,
-                                                       size_t *message_size) {
+                                                       const char *message) {
   if (on_message_received_callback) {
     _received_mqtt_message_t msg;
     memset(&msg, 0, sizeof(_received_mqtt_message_t));
 
-    msg.topic_name = topic_name;
-    msg.message = message;
-    msg.message_size = message_size ? *message_size : 0;
+    msg.topic_name_size =
+        topic_name ? strnlen(topic_name, MQTT_MAX_TOPIC_NAME_SIZE) : 0;
+    msg.topic_name = msg.topic_name_size ? topic_name : NULL;
+
+    msg.message_size = message ? strnlen(message, MQTT_MAX_MESSAGE_SIZE) : 0;
+    msg.message = msg.message_size ? message : NULL;
 
     on_message_received_callback(supla_client_instance, &msg);
   }
