@@ -24,15 +24,42 @@
 
 class supla_mqtt_abstract_channel_value_setter {
  private:
+  char *topic_name;
+  size_t topic_name_size;
+  char *message;
+  size_t message_size;
+  int channel_id;
+  char *email_ptr;
+  size_t email_len;
+  char *email;
+
   supla_mqtt_client_settings *settings;
+  bool lc_equal(const char *str);
+
+  bool parse_on(void);
+  bool parse_perecntage(void);
+  bool parse_action(void);
+  int parse_int(const char *str, size_t len, bool *err);
+  void email_free(void);
+
+ protected:
+  const char *get_email(void);
+  int get_channel_id(void);
+
+  virtual void set_on(bool on) = 0;
+  virtual void action_toggle(void) = 0;
+  virtual void action_shut(void) = 0;
+  virtual void action_reveal(void) = 0;
+  virtual void action_stop(void) = 0;
+  virtual void action_open_close(void) = 0;
 
  public:
   supla_mqtt_abstract_channel_value_setter(
       supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_abstract_channel_value_setter(void);
 
-  void set_value(const char *topic_name, size_t topic_name_size,
-                 const void *message, size_t message_size);
+  void set_value(char *topic_name, size_t topic_name_size, char *message,
+                 size_t message_size);
 };
 
 #endif /*MQTT_ABSTRACT_CHANNEl_VALUE_SETTER_H_*/

@@ -23,3 +23,15 @@ supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
     : supla_mqtt_abstract_channel_value_setter(settings) {}
 
 supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {}
+
+void supla_mqtt_channel_value_setter::set_on(bool on) {}
+
+void supla_mqtt_channel_value_setter::action_toggle(void) {}
+
+void supla_mqtt_channel_value_setter::action_shut(void) {}
+
+void supla_mqtt_channel_value_setter::action_reveal(void) {}
+
+void supla_mqtt_channel_value_setter::action_stop(void) {}
+
+void supla_mqtt_channel_value_setter::action_open_close(void) {}

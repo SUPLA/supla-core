@@ -23,9 +23,37 @@
 
 class MqttChannelValueSetterMock
     : public supla_mqtt_abstract_channel_value_setter {
+ protected:
+  int on_counter;
+  int off_counter;
+  int toggle_counter;
+  int shut_counter;
+  int reveal_counter;
+  int stop_counter;
+  int open_close_counter;
+
+ protected:
+  void set_on(bool on);
+  void action_toggle(void);
+  void action_shut(void);
+  void action_reveal(void);
+  void action_stop(void);
+  void action_open_close(void);
+
  public:
-  MqttChannelValueSetterMock(supla_mqtt_client_settings *settings);
+  explicit MqttChannelValueSetterMock(supla_mqtt_client_settings *settings);
   ~MqttChannelValueSetterMock(void);
+  void clearCounters(void);
+
+  int getOnCounter(void);
+  int getOffCounter(void);
+  int getShutCounter(void);
+  int getRevealCounter(void);
+  int getStopCounter(void);
+  int getOpenCloseCounter(void);
+
+  bool emailEqualTo(const char *email);
+  bool channelEqualTo(int channel_id);
 };
 
 #endif /* MQTT_CHANNEL_VALUE_SETTER_MOCK_H_ */

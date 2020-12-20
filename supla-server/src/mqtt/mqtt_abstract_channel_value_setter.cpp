@@ -17,6 +17,7 @@
  */
 
 #include "mqtt_abstract_channel_value_setter.h"
+#include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,14 +26,131 @@ supla_mqtt_abstract_channel_value_setter::
     supla_mqtt_abstract_channel_value_setter(
         supla_mqtt_client_settings *settings) {
   this->settings = settings;
+  this->topic_name = NULL;
+  this->topic_name_size = 0L;
+  this->message = NULL;
+  this->message_size = 0;
+  this->channel_id = 0;
+  this->email_ptr = NULL;
+  this->email_len = 0;
+  this->email = NULL;
 }
 
 supla_mqtt_abstract_channel_value_setter::
-    ~supla_mqtt_abstract_channel_value_setter(void) {}
+    ~supla_mqtt_abstract_channel_value_setter(void) {
+  email_free();
+}
 
-void supla_mqtt_abstract_channel_value_setter::set_value(const char *topic_name,
+bool supla_mqtt_abstract_channel_value_setter::lc_equal(const char *str) {
+  for (size_t a = 0; a < message_size; a++) {
+    if (tolower(str[a]) != tolower(message[a])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool supla_mqtt_abstract_channel_value_setter::parse_on(void) {
+  if (topic_name_size == 6 &&
+      memcmp(topic_name, "set/on", topic_name_size) == 0) {
+    if ((message_size == 1 && message[0] == '1') ||
+        (message_size == 3 && lc_equal("yes")) ||
+        (message_size == 4 && lc_equal("true"))) {
+      set_on(true);
+    } else if ((message_size == 1 && message[0] == '0') ||
+               (message_size == 3 && lc_equal("no")) ||
+               (message_size == 4 && lc_equal("false"))) {
+      set_on(false);
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+bool supla_mqtt_abstract_channel_value_setter::parse_perecntage(void) {
+  if (topic_name_size == 22 &&
+      memcmp(topic_name, "set/closing_percentage", topic_name_size) == 0) {
+    return true;
+  } else if (topic_name_size == 22 &&
+             memcmp(topic_name, "set/opening_percentage", topic_name_size) ==
+                 0) {
+    return true;
+  }
+  return false;
+}
+
+bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
+  if (topic_name_size == 14 &&
+      memcmp(topic_name, "execute_action", topic_name_size) == 0) {
+    if (message_size == 7 && lc_equal("turn_on")) {
+      set_on(true);
+    } else if (message_size == 8 && lc_equal("turn_off")) {
+      set_on(false);
+    } else if (message_size == 6 && lc_equal("toggle")) {
+      action_toggle();
+    } else if (message_size == 4 && lc_equal("shut")) {
+      action_shut();
+    } else if (message_size == 6 && lc_equal("reveal")) {
+      action_reveal();
+    } else if (message_size == 4 && lc_equal("stop")) {
+      action_stop();
+    } else if (message_size == 10 && lc_equal("open_close")) {
+      action_open_close();
+    }
+    return true;
+  }
+  return false;
+}
+
+int supla_mqtt_abstract_channel_value_setter::parse_int(const char *str,
+                                                        size_t len, bool *err) {
+  size_t b = len - 1;
+  int result = 0;
+  while (1) {
+    if (str[b] < '0' || str[b] > '0') {
+      if (err) {
+        *err = true;
+      }
+      return 0;
+    }
+    result += (str[b] - '0') * pow(10, len - 1 - b);
+    if (b == 0) {
+      break;
+    }
+    b--;
+  }
+
+  return result;
+}
+
+void supla_mqtt_abstract_channel_value_setter::email_free(void) {
+  if (email) {
+    free(email);
+    email = NULL;
+  }
+}
+
+const char *supla_mqtt_abstract_channel_value_setter::get_email(void) {
+  email_free();
+  if (email_len && email_ptr) {
+    email = (char *)malloc(email_len + 1);
+    memcpy(email, email_ptr, email_len);
+    email[email_len] = 0;
+  }
+
+  return email;
+}
+
+int supla_mqtt_abstract_channel_value_setter::get_channel_id(void) {
+  return channel_id;
+}
+
+void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
                                                          size_t topic_name_size,
-                                                         const void *message,
+                                                         char *message,
                                                          size_t message_size) {
   if (topic_name == NULL || topic_name_size == 0 || message == NULL ||
       message_size == 0) {
@@ -69,8 +187,8 @@ void supla_mqtt_abstract_channel_value_setter::set_value(const char *topic_name,
   topic_name += 6;
   topic_name_size -= 6;
 
-  size_t email_len = 0;
-  char *email_ptr = NULL;
+  email_len = 0;
+  email_ptr = NULL;
 
   bool at = false;
   size_t a = 0;
@@ -98,7 +216,7 @@ void supla_mqtt_abstract_channel_value_setter::set_value(const char *topic_name,
 
   topic_name += 9;
   topic_name_size -= 9;
-  int channel_id = 0;
+  channel_id = 0;
 
   for (a = 0; a < topic_name_size; a++) {
     if (topic_name[a] == '/') {
@@ -106,21 +224,16 @@ void supla_mqtt_abstract_channel_value_setter::set_value(const char *topic_name,
         return;
       }
 
-      size_t b = a - 1;
-      while (1) {
-        channel_id += (topic_name[b] - 48) * pow(10, a - 1 - b);
-        if (b == 0) {
-          break;
-        }
-        b--;
+      bool err = false;
+      channel_id = parse_int(topic_name, a, &err);
+
+      if (err) {
+        return;
       }
 
       topic_name += a + 1;
       topic_name_size -= a + 1;
       break;
-
-    } else if (topic_name[a] < '0' || topic_name[a] > '9') {
-      return;
     }
   }
 
@@ -128,6 +241,20 @@ void supla_mqtt_abstract_channel_value_setter::set_value(const char *topic_name,
     return;
   }
 
-  if (topic_name_size == 6 && memcmp(topic_name, "set/on", 6) == 0) {
-  };
+  this->topic_name = topic_name;
+  this->topic_name_size = topic_name_size;
+  this->message = message;
+  this->message_size = message_size;
+
+  if (parse_on()) {
+    return;
+  }
+
+  if (parse_perecntage()) {
+    return;
+  }
+
+  if (parse_action()) {
+    return;
+  }
 }

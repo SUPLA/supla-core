@@ -23,8 +23,17 @@
 
 class supla_mqtt_channel_value_setter
     : public supla_mqtt_abstract_channel_value_setter {
+ protected:
+  void set_on(bool on);
+  void action_toggle(void);
+  void action_shut(void);
+  void action_reveal(void);
+  void action_stop(void);
+  void action_open_close(void);
+
  public:
-  supla_mqtt_channel_value_setter(supla_mqtt_client_settings *settings);
+  explicit supla_mqtt_channel_value_setter(
+      supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_channel_value_setter(void);
 };
 
