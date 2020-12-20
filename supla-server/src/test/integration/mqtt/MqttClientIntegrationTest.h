@@ -39,6 +39,7 @@ class MqttClientIntegrationTest : public IntegrationTest {
   supla_mqtt_client *getClient(void);
   supla_mqtt_client_datasource *getDS(void);
   MqttClientLibraryAdapterMock *getLibAdapter(void);
+  MqttClientSettingsMock *getSettings(void);
 
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,

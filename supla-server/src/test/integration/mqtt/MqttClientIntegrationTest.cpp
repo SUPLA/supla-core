@@ -52,6 +52,10 @@ MqttClientLibraryAdapterMock *MqttClientIntegrationTest::getLibAdapter(void) {
   return libraryAdapter;
 }
 
+MqttClientSettingsMock *MqttClientIntegrationTest::getSettings(void) {
+  return iniSettings;
+}
+
 void MqttClientIntegrationTest::waitForConnection() {
   for (int a = 0; a < 5000; a++) {
     if (libraryAdapter->is_connected()) {
