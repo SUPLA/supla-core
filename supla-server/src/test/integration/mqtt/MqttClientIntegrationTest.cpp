@@ -26,7 +26,7 @@ MqttClientIntegrationTest::MqttClientIntegrationTest() : IntegrationTest() {}
 MqttClientIntegrationTest::~MqttClientIntegrationTest() {}
 
 void MqttClientIntegrationTest::SetUp() {
-  iniSettings = new supla_mqtt_client_ini_settings();
+  iniSettings = new MqttClientSettingsMock();
   libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
   dataSource = dsInit(iniSettings);
 

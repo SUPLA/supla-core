@@ -21,15 +21,15 @@
 
 #include <mqtt_publisher_datasource.h>
 #include "MqttClientLibraryAdapterMock.h"
+#include "MqttClientSettingsMock.h"
 #include "integration/IntegrationTest.h"
-#include "mqtt_client_ini_settings.h"
 #include "mqtt_publisher.h"
 
 namespace testing {
 
 class MqttClientIntegrationTest : public IntegrationTest {
  private:
-  supla_mqtt_client_ini_settings *iniSettings;
+  MqttClientSettingsMock *iniSettings;
   MqttClientLibraryAdapterMock *libraryAdapter;
   supla_mqtt_client_datasource *dataSource;
   supla_mqtt_client *client;
