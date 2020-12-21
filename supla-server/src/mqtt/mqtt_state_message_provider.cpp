@@ -29,7 +29,7 @@ supla_mqtt_state_message_provider::~supla_mqtt_state_message_provider(void) {}
 const char *supla_mqtt_state_message_provider::_get_user_email(void) {
   supla_user *user = supla_user::find(get_user_id(), false);
   if (user != NULL) {
-    return user->getUserEmail();
+    return user->getUserEmail(true);
   }
 
   return NULL;

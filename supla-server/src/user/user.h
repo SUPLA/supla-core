@@ -71,7 +71,8 @@ class supla_user {
   void compex_value_cache_update_function(int DeviceId, int ChannelID, int Type,
                                           int Function, bool channel_is_hidden);
 
-  static char find_user_byid(void *ptr, void *UserID);
+  static char find_user_by_id(void *ptr, void *UserID);
+  static char find_user_by_email(void *ptr, void *email);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
@@ -87,6 +88,7 @@ class supla_user {
   static supla_user *add_device(supla_device *device, int UserID);
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
+  static supla_user *find_by_email(const char *email);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool device_reconnect(int UserID, int DeviceID);
@@ -148,7 +150,7 @@ class supla_user {
   void emptyTrash(void);
 
   int getUserID(void);
-  const char *getUserEmail(void);
+  const char *getUserEmail(bool fetchIfNull);
   char *getShortUniqueID(void);
   char *getLongUniqueID(void);
   bool getClientName(int ClientID, char *buffer, int size);
