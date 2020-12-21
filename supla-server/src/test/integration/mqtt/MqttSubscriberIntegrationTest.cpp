@@ -83,6 +83,53 @@ TEST_F(MqttSubscriberIntegrationTest, fullScope) {
             0);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, channelId) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(0));
+
+  getLibAdapter()->on_message_received("supla/user@supla.org/channels/1/set/on",
+                                       "1");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1));
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/12/set/on", "12");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(12));
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/123/set/on", "123");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(123));
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/-1/set/on", "1");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(0));
+}
+
+TEST_F(MqttSubscriberIntegrationTest, email) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_TRUE(getValueSetter()->emailEqualTo(NULL));
+
+  getLibAdapter()->on_message_received("supla/user@supla.org/channels/1/set/on",
+                                       "1");
+
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+
+  getLibAdapter()->on_message_received("supla/a@b/channels/1/set/on", "1");
+
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("a@b"));
+
+  getLibAdapter()->on_message_received("supla/abcd/channels/1/set/on", "1");
+
+  ASSERT_TRUE(getValueSetter()->emailEqualTo(NULL));
+}
+
 TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
   waitForConnection();
   waitForData(2);
@@ -92,6 +139,8 @@ TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/on", "1");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
 
@@ -126,6 +175,8 @@ TEST_F(MqttSubscriberIntegrationTest, setOnWithPrefix) {
   getLibAdapter()->on_message_received(
       "prefix/123/supla/user@supla.org/channels/1234/set/on", "1");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
 }
@@ -139,6 +190,8 @@ TEST_F(MqttSubscriberIntegrationTest, setOff) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/on", "0");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
 
@@ -170,6 +223,8 @@ TEST_F(MqttSubscriberIntegrationTest, turnOn) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/execute_action", "TuRn_On");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
 }
@@ -183,6 +238,8 @@ TEST_F(MqttSubscriberIntegrationTest, turnOff) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/execute_action", "TuRn_OfF");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
 }
@@ -196,6 +253,8 @@ TEST_F(MqttSubscriberIntegrationTest, toggle) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/execute_action", "tOgGle");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getToggleCounter(), 1);
 }
@@ -209,6 +268,8 @@ TEST_F(MqttSubscriberIntegrationTest, shut) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/execute_action", "sHuT");
 
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
 }
