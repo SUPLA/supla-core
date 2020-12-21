@@ -20,17 +20,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 MqttClientSettingsMock::MqttClientSettingsMock(void)
     : supla_mqtt_client_ini_settings() {
-  null_prefix = false;
+  prefix = NULL;
 }
 
 MqttClientSettingsMock::~MqttClientSettingsMock(void) {}
 
-const char *MqttClientSettingsMock::getPrefix(void) {
-  if (null_prefix) {
-    return NULL;
-  } else {
-    return supla_mqtt_client_ini_settings::getPrefix();
-  }
-}
+const char *MqttClientSettingsMock::getPrefix(void) { return prefix; }
 
-void MqttClientSettingsMock::setNullPrefix(bool null) { null_prefix = null; }
+void MqttClientSettingsMock::setPrefixPtr(char *prefix) {
+  this->prefix = prefix;
+}

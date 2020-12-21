@@ -23,14 +23,14 @@
 
 class MqttClientSettingsMock : public supla_mqtt_client_ini_settings {
  private:
-  bool null_prefix;
+  char *prefix;
 
  public:
   explicit MqttClientSettingsMock(void);
   ~MqttClientSettingsMock(void);
 
   virtual const char *getPrefix(void);
-  void setNullPrefix(bool empty);
+  void setPrefixPtr(char *prefix);
 };
 
 #endif /* MQTT_CLIENTSETTINGS_MOCK_H_ */

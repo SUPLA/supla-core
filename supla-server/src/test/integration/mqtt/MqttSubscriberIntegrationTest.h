@@ -30,6 +30,7 @@ class MqttSubscriberIntegrationTest : public MqttClientIntegrationTest {
 
  protected:
   void waitForData(int expectedTopicCount);
+  MqttChannelValueSetterMock *getValueSetter(void);
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,
       supla_mqtt_client_settings *settings,
