@@ -364,7 +364,9 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
 
   topic_name += 9;
   topic_name_size -= 9;
+  device_id = 0;
   channel_id = 0;
+
 
   for (a = 0; a < topic_name_size; a++) {
     if (topic_name[a] == '/') {

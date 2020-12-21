@@ -314,46 +314,41 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
   if (row != NULL) {
     switch (index) {
       case 0: {
-        char device_id[15];
-        snprintf(device_id, sizeof(device_id), "%i", row->device_id);
-
-        return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size, device_id, false,
-                              "channels/%i/device_id", row->channel_id);
-      }
-      case 1: {
         char channel_type[35];
         channel_type_to_string(row->channel_type, channel_type,
                                sizeof(channel_type));
 
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, channel_type, false,
-                              "channels/%i/type", row->channel_id);
+                              "devices/%i/channels/%i/type", row->device_id,
+                              row->channel_id);
       }
-      case 2: {
+      case 1: {
         char channel_func[35];
         channel_function_to_string(row->channel_func, channel_func,
                                    sizeof(channel_func));
 
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, channel_func, false,
-                              "channels/%i/function", row->channel_id);
+                              "devices/%i/channels/%i/function", row->device_id,
+                              row->channel_id);
       }
-
-      case 3:
+      case 2:
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, row->channel_caption,
-                              false, "channels/%i/caption", row->channel_id);
-      case 4:
-        return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size,
-                              row->channel_hidden ? "true" : "false", false,
-                              "channels/%i/hidden", row->channel_id);
+                              false, "devices/%i/channels/%i/caption",
+                              row->device_id, row->channel_id);
+
+      case 3:
+        return create_message(
+            topic_prefix, row->user_email, topic_name, message, message_size,
+            row->channel_hidden ? "true" : "false", false,
+            "devices/%i/channels/%i/hidden", row->device_id, row->channel_id);
     }
   }
 
-  if (index > 4) {
-    return get_home_assistant_cfgitem(index - 5, topic_prefix, topic_name,
+  if (index > 3) {
+    return get_home_assistant_cfgitem(index - 4, topic_prefix, topic_name,
                                       message, message_size);
   }
 

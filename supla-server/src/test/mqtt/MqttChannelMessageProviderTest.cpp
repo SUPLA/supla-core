@@ -54,27 +54,25 @@ TEST_F(MqttChannelMessageProviderTest, fetchAll) {
   fillChannelData(&row_channel);
   provider->set_data_row(&row_channel);
 
-  char device_id[15];
-  snprintf(device_id, sizeof(device_id), "%i", row_channel.device_id);
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "555", false,
-                              "supla/user@supla.org/channels/%i/device_id",
-                              row_channel.channel_id));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "RELAY", false,
+                      "supla/user@supla.org/devices/%i/channels/%i/type",
+                      row_channel.device_id, row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "RELAY", false,
-                              "supla/user@supla.org/channels/%i/type",
-                              row_channel.channel_id));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "POWERSWITCH", false,
+                      "supla/user@supla.org/devices/%i/channels/%i/function",
+                      row_channel.device_id, row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "POWERSWITCH", false,
-                              "supla/user@supla.org/channels/%i/function",
-                              row_channel.channel_id));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "Socket", false,
+                      "supla/user@supla.org/devices/%i/channels/%i/caption",
+                      row_channel.device_id, row_channel.channel_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "Socket", false,
-                              "supla/user@supla.org/channels/%i/caption",
-                              row_channel.channel_id));
-
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
-                              "supla/user@supla.org/channels/%i/hidden",
-                              row_channel.channel_id));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "false", false,
+                      "supla/user@supla.org/devices/%i/channels/%i/hidden",
+                      row_channel.device_id, row_channel.channel_id));
 
   ASSERT_FALSE(dataExists(provider));
 }

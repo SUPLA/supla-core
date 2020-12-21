@@ -28,6 +28,7 @@ class supla_mqtt_abstract_channel_value_setter {
   size_t topic_name_size;
   char *message;
   size_t message_size;
+  int device_id;
   int channel_id;
   char *email_ptr;
   size_t email_len;
@@ -47,6 +48,7 @@ class supla_mqtt_abstract_channel_value_setter {
 
  protected:
   const char *get_email(void);
+  int get_device_id(void);
   int get_channel_id(void);
 
   virtual void set_on(bool on) = 0;
