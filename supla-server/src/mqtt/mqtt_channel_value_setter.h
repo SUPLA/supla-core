@@ -26,7 +26,7 @@ class supla_mqtt_channel_value_setter
  protected:
   void set_on(bool on);
   void action_toggle(void);
-  void action_shut(void);
+  void action_shut(const int *closingPercentage);
   void action_reveal(void);
   void action_stop(void);
   void action_open_close(void);

@@ -23,12 +23,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 MqttChannelValueSetterMock::MqttChannelValueSetterMock(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_abstract_channel_value_setter(settings) {
-  clearCounters();
+  clear();
 }
 
 MqttChannelValueSetterMock::~MqttChannelValueSetterMock(void) {}
 
-void MqttChannelValueSetterMock::clearCounters(void) {
+void MqttChannelValueSetterMock::clear(void) {
   this->on_counter = 0;
   this->off_counter = 0;
   this->toggle_counter = 0;
@@ -36,6 +36,7 @@ void MqttChannelValueSetterMock::clearCounters(void) {
   this->reveal_counter = 0;
   this->stop_counter = 0;
   this->open_close_counter = 0;
+  this->closing_percentage = -1;
 }
 
 void MqttChannelValueSetterMock::set_on(bool on) {
@@ -48,7 +49,12 @@ void MqttChannelValueSetterMock::set_on(bool on) {
 
 void MqttChannelValueSetterMock::action_toggle(void) { toggle_counter++; }
 
-void MqttChannelValueSetterMock::action_shut(void) { shut_counter++; }
+void MqttChannelValueSetterMock::action_shut(const int *closingPercentage) {
+  shut_counter++;
+  if (closingPercentage) {
+    closing_percentage = *closingPercentage;
+  }
+}
 
 void MqttChannelValueSetterMock::action_reveal(void) { reveal_counter++; }
 
@@ -76,6 +82,10 @@ int MqttChannelValueSetterMock::getStopCounter(void) { return stop_counter; }
 
 int MqttChannelValueSetterMock::getOpenCloseCounter(void) {
   return open_close_counter;
+}
+
+int MqttChannelValueSetterMock::getClosingPercentage(void) {
+  return closing_percentage;
 }
 
 bool MqttChannelValueSetterMock::emailEqualTo(const char *email) {

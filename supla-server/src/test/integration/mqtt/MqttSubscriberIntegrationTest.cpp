@@ -319,4 +319,104 @@ TEST_F(MqttSubscriberIntegrationTest, openClose) {
   ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 1);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "33.33");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "-10");
+
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "0");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "33");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 33);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "100");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 100);
+
+  getValueSetter()->clear();
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "110");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "33.33");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "-10");
+
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "0");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 100);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "33");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 67);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "100");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 0);
+
+  getValueSetter()->clear();
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "110");
+
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+}
+
 } /* namespace testing */

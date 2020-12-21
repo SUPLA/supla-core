@@ -28,7 +28,8 @@ void supla_mqtt_channel_value_setter::set_on(bool on) {}
 
 void supla_mqtt_channel_value_setter::action_toggle(void) {}
 
-void supla_mqtt_channel_value_setter::action_shut(void) {}
+void supla_mqtt_channel_value_setter::action_shut(
+    const int *closingPercentage) {}
 
 void supla_mqtt_channel_value_setter::action_reveal(void) {}
 

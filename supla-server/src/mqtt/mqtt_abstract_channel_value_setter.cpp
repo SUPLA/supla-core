@@ -71,15 +71,29 @@ bool supla_mqtt_abstract_channel_value_setter::parse_on(void) {
 }
 
 bool supla_mqtt_abstract_channel_value_setter::parse_perecntage(void) {
+  bool closing_percentage = false;
+
   if (topic_name_size == 22 &&
       memcmp(topic_name, "set/closing_percentage", topic_name_size) == 0) {
-    return true;
+    closing_percentage = true;
   } else if (topic_name_size == 22 &&
              memcmp(topic_name, "set/opening_percentage", topic_name_size) ==
                  0) {
-    return true;
+    closing_percentage = false;
+  } else {
+    return false;
   }
-  return false;
+
+  bool err = false;
+  int percent = parse_int(message, message_size, &err);
+  if (!err && percent >= 0 && percent <= 100) {
+    if (!closing_percentage) {
+      percent = 100 - percent;
+    }
+    action_shut(&percent);
+  }
+
+  return true;
 }
 
 bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
@@ -92,7 +106,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
     } else if (message_size == 6 && lc_equal("toggle")) {
       action_toggle();
     } else if (message_size == 4 && lc_equal("shut")) {
-      action_shut();
+      action_shut(NULL);
     } else if (message_size == 6 && lc_equal("reveal")) {
       action_reveal();
     } else if (message_size == 4 && lc_equal("stop")) {
