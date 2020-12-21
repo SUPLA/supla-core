@@ -44,9 +44,11 @@ class MqttChannelValueSetterMock
   explicit MqttChannelValueSetterMock(supla_mqtt_client_settings *settings);
   ~MqttChannelValueSetterMock(void);
   void clearCounters(void);
+  int counterSetCount(void);
 
   int getOnCounter(void);
   int getOffCounter(void);
+  int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);
   int getStopCounter(void);

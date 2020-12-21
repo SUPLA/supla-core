@@ -62,6 +62,10 @@ int MqttChannelValueSetterMock::getOnCounter(void) { return on_counter; }
 
 int MqttChannelValueSetterMock::getOffCounter(void) { return off_counter; }
 
+int MqttChannelValueSetterMock::getToggleCounter(void) {
+  return toggle_counter;
+}
+
 int MqttChannelValueSetterMock::getShutCounter(void) { return shut_counter; }
 
 int MqttChannelValueSetterMock::getRevealCounter(void) {
@@ -88,4 +92,37 @@ bool MqttChannelValueSetterMock::emailEqualTo(const char *email) {
 
 bool MqttChannelValueSetterMock::channelEqualTo(int channel_id) {
   return channel_id == get_channel_id();
+}
+
+int MqttChannelValueSetterMock::counterSetCount(void) {
+  int result = 0;
+  if (on_counter > 0) {
+    result++;
+  }
+
+  if (off_counter > 0) {
+    result++;
+  }
+
+  if (toggle_counter > 0) {
+    result++;
+  }
+
+  if (shut_counter > 0) {
+    result++;
+  }
+
+  if (reveal_counter > 0) {
+    result++;
+  }
+
+  if (stop_counter > 0) {
+    result++;
+  }
+
+  if (open_close_counter > 0) {
+    result++;
+  }
+
+  return result;
 }
