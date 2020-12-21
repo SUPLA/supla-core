@@ -110,7 +110,7 @@ int supla_mqtt_abstract_channel_value_setter::parse_int(const char *str,
   size_t b = len - 1;
   int result = 0;
   while (1) {
-    if (str[b] < '0' || str[b] > '0') {
+    if (str[b] < '0' || str[b] > '9') {
       if (err) {
         *err = true;
       }
