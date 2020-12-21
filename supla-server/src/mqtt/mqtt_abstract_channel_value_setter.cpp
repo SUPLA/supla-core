@@ -59,8 +59,8 @@ bool supla_mqtt_abstract_channel_value_setter::parse_on(void) {
         (message_size == 4 && lc_equal("true"))) {
       set_on(true);
     } else if ((message_size == 1 && message[0] == '0') ||
-               (message_size == 3 && lc_equal("no")) ||
-               (message_size == 4 && lc_equal("false"))) {
+               (message_size == 2 && lc_equal("no")) ||
+               (message_size == 5 && lc_equal("false"))) {
       set_on(false);
     }
 
