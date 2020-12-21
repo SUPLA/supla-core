@@ -200,4 +200,17 @@ TEST_F(MqttSubscriberIntegrationTest, toggle) {
   ASSERT_EQ(getValueSetter()->getToggleCounter(), 1);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, shut) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/execute_action", "sHuT");
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+}
+
 } /* namespace testing */
