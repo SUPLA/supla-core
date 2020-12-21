@@ -25,6 +25,7 @@ class MqttChannelValueSetterMock
     : public supla_mqtt_abstract_channel_value_setter {
  protected:
   int on_counter;
+  int color_counter;
   int brightness_counter;
   int color_brightness_counter;
   int off_counter;
@@ -34,12 +35,14 @@ class MqttChannelValueSetterMock
   int stop_counter;
   int open_close_counter;
 
+  unsigned int color;
   char brightness;
   char color_brightness;
   char closing_percentage;
 
  protected:
   void set_on(bool on);
+  void set_color(unsigned int color);
   void set_brightness(char brightness);
   void set_color_brightness(char brightness);
   void action_toggle(void);
@@ -56,6 +59,7 @@ class MqttChannelValueSetterMock
 
   int getOnCounter(void);
   int getOffCounter(void);
+  int getColorCounter(void);
   int getBrightnessCounter(void);
   int getColorBrightnessCounter(void);
   int getToggleCounter(void);
@@ -64,6 +68,7 @@ class MqttChannelValueSetterMock
   int getStopCounter(void);
   int getOpenCloseCounter(void);
   char getClosingPercentage(void);
+  unsigned int getColor(void);
   char getBrightness(void);
   char getColorBrightness(void);
 

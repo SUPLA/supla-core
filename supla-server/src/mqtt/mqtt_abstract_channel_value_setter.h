@@ -40,7 +40,9 @@ class supla_mqtt_abstract_channel_value_setter {
   bool parse_perecntage(void);
   bool parse_action(void);
   bool parse_brightness(void);
-  int parse_int(const char *str, size_t len, bool *err);
+  bool parse_color(void);
+  int str2int(const char *str, size_t len, bool *err);
+  unsigned int hex2int(const char *str, size_t len, bool *err);
   void email_free(void);
 
  protected:
@@ -48,6 +50,7 @@ class supla_mqtt_abstract_channel_value_setter {
   int get_channel_id(void);
 
   virtual void set_on(bool on) = 0;
+  virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void action_toggle(void) = 0;

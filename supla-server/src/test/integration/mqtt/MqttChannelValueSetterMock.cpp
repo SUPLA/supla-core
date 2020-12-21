@@ -31,6 +31,7 @@ MqttChannelValueSetterMock::~MqttChannelValueSetterMock(void) {}
 
 void MqttChannelValueSetterMock::clear(void) {
   this->on_counter = 0;
+  this->color_counter = 0;
   this->brightness_counter = 0;
   this->color_brightness_counter = 0;
   this->off_counter = 0;
@@ -39,6 +40,7 @@ void MqttChannelValueSetterMock::clear(void) {
   this->reveal_counter = 0;
   this->stop_counter = 0;
   this->open_close_counter = 0;
+  this->color = 0x01FFFFFF;
   this->brightness = -1;
   this->color_brightness = -1;
   this->closing_percentage = -1;
@@ -50,6 +52,11 @@ void MqttChannelValueSetterMock::set_on(bool on) {
   } else {
     off_counter++;
   }
+}
+
+void MqttChannelValueSetterMock::set_color(unsigned int color) {
+  this->color = color;
+  color_counter++;
 }
 
 void MqttChannelValueSetterMock::set_brightness(char brightness) {
@@ -83,6 +90,8 @@ int MqttChannelValueSetterMock::getOnCounter(void) { return on_counter; }
 
 int MqttChannelValueSetterMock::getOffCounter(void) { return off_counter; }
 
+int MqttChannelValueSetterMock::getColorCounter(void) { return color_counter; }
+
 int MqttChannelValueSetterMock::getBrightnessCounter(void) {
   return brightness_counter;
 }
@@ -110,6 +119,8 @@ int MqttChannelValueSetterMock::getOpenCloseCounter(void) {
 char MqttChannelValueSetterMock::getClosingPercentage(void) {
   return closing_percentage;
 }
+
+unsigned int MqttChannelValueSetterMock::getColor(void) { return color; }
 
 char MqttChannelValueSetterMock::getBrightness(void) { return brightness; }
 
@@ -140,6 +151,10 @@ int MqttChannelValueSetterMock::counterSetCount(void) {
   }
 
   if (off_counter > 0) {
+    result++;
+  }
+
+  if (color_counter > 0) {
     result++;
   }
 

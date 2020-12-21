@@ -26,6 +26,8 @@ supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {}
 
 void supla_mqtt_channel_value_setter::set_on(bool on) {}
 
+void supla_mqtt_channel_value_setter::set_color(unsigned int color) {}
+
 void supla_mqtt_channel_value_setter::set_brightness(char brightness) {}
 
 void supla_mqtt_channel_value_setter::set_color_brightness(char brightness) {}

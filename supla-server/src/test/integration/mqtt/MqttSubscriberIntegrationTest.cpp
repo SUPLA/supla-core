@@ -521,4 +521,94 @@ TEST_F(MqttSubscriberIntegrationTest, setColorBrightness) {
   ASSERT_EQ(getValueSetter()->getColorBrightness(), 100);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, setColor) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0x01FFFFFF);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0xFF00FFa");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "#FF00FFa");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0xFF00FG");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "#FF00FG");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "#FFFFFF");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 1);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xFFFFFF);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "#000000");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 2);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "#AABBCC");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 3);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAABBCC);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0xFFFFFF");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 4);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xFFFFFF);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0x000000");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 5);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0xAABBCC");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 6);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAABBCC);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0xAA05CC");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 7);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAA05CC);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "255,255,255");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 8);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xFFFFFF);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "0,0,0");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 9);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0x000000);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "170,187,204");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 10);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAABBCC);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color", "170,5,204");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorCounter(), 11);
+  ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAA05CC);
+}
+
 } /* namespace testing */

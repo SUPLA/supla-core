@@ -83,7 +83,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_perecntage(void) {
   }
 
   bool err = false;
-  int _percent = parse_int(message, message_size, &err);
+  int _percent = str2int(message, message_size, &err);
   if (!err && _percent >= 0 && _percent <= 100) {
     if (!closing_percentage) {
       _percent = 100 - _percent;
@@ -130,7 +130,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_brightness(void) {
   }
 
   bool err = false;
-  int percent = parse_int(message, message_size, &err);
+  int percent = str2int(message, message_size, &err);
   if (!err && percent >= 0 && percent <= 100) {
     if (color) {
       set_color_brightness(percent);
@@ -142,8 +142,73 @@ bool supla_mqtt_abstract_channel_value_setter::parse_brightness(void) {
   return true;
 }
 
-int supla_mqtt_abstract_channel_value_setter::parse_int(const char *str,
-                                                        size_t len, bool *err) {
+bool supla_mqtt_abstract_channel_value_setter::parse_color(void) {
+  if (topic_name_size == 9 &&
+      memcmp(topic_name, "set/color", topic_name_size) == 0) {
+    bool err = false;
+    int color = 0;
+    int offset = 0;
+
+    if (message_size > 1 && message[0] == '#') {
+      offset = 1;
+    } else if (message_size > 2 && message[0] == '0' &&
+               (message[1] == 'x' || message[1] == 'X')) {
+      offset = 2;
+    }
+
+    if (offset && message_size - offset == 6) {
+      color = hex2int(&message[offset], message_size - offset, &err);
+
+      if (!err) {
+        set_color(color);
+        return true;
+      }
+    }
+
+    if (message_size <= 11) {
+      short commas[2] = {0, 0};
+      unsigned char ccount = 0;
+
+      for (size_t a = 0; a < message_size; a++) {
+        if (message[a] == ',') {
+          if (ccount > 1) {
+            return true;
+          }
+          commas[ccount] = a;
+          ccount++;
+        }
+      }
+
+      if (ccount == 2) {
+        unsigned char red = str2int(message, commas[0], &err);
+        if (err) {
+          return true;
+        }
+
+        unsigned char green =
+            str2int(&message[commas[0] + 1], commas[1] - commas[0] - 1, &err);
+        if (err) {
+          return true;
+        }
+
+        unsigned char blue = str2int(&message[commas[1] + 1],
+                                     message_size - commas[1] - 1, &err);
+        if (err) {
+          return true;
+        }
+
+        set_color((red << 16) | (green << 8) | blue);
+      }
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+int supla_mqtt_abstract_channel_value_setter::str2int(const char *str,
+                                                      size_t len, bool *err) {
   int result = 0;
   bool minus = false;
   bool dot = false;
@@ -151,13 +216,14 @@ int supla_mqtt_abstract_channel_value_setter::parse_int(const char *str,
   size_t _len = len;
 
   for (a = 0; a < len; a++) {
-    if (a == 0 && str[a] == '-') {
+    char c = str[a];
+    if (a == 0 && c == '-') {
       minus = true;
       continue;
-    } else if (a > 0 && !dot && str[a] == '.') {
+    } else if (a > 0 && !dot && c == '.') {
       dot = true;
       _len = a;
-    } else if (str[a] < '0' || str[a] > '9') {
+    } else if (c < '0' || c > '9') {
       if (err) {
         *err = true;
       }
@@ -171,6 +237,38 @@ int supla_mqtt_abstract_channel_value_setter::parse_int(const char *str,
 
   if (minus) {
     result *= -1;
+  }
+
+  return result;
+}
+
+unsigned int supla_mqtt_abstract_channel_value_setter::hex2int(const char *str,
+                                                               size_t len,
+                                                               bool *err) {
+  unsigned int result = 0;
+  if (len > 8) {
+    if (err) {
+      *err = true;
+    }
+    return 0;
+  }
+
+  for (size_t a = 0; a < len; a++) {
+    unsigned char c = (unsigned char)str[a];
+    if (c >= '0' && c <= '9') {
+      c -= '0';
+    } else if (c >= 'a' && c <= 'f') {
+      c -= 'a' - 10;
+    } else if (c >= 'A' && c <= 'F') {
+      c -= 'A' - 10;
+    } else {
+      if (err) {
+        *err = true;
+      }
+
+      return 0;
+    }
+    result += c * pow(16, len - 1 - a);
   }
 
   return result;
@@ -275,7 +373,7 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
       }
 
       bool err = false;
-      channel_id = parse_int(topic_name, a, &err);
+      channel_id = str2int(topic_name, a, &err);
 
       if (err) {
         return;
@@ -309,6 +407,10 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
   }
 
   if (parse_brightness()) {
+    return;
+  }
+
+  if (parse_color()) {
     return;
   }
 }
