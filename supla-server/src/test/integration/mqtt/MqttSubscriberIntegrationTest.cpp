@@ -164,6 +164,13 @@ TEST_F(MqttSubscriberIntegrationTest, setOff) {
   waitForConnection();
   waitForData(2);
 
+  ASSERT_EQ(getValueSetter()->getOnCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOffCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getRevealCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getStopCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/on", "0");
 
@@ -199,6 +206,50 @@ TEST_F(MqttSubscriberIntegrationTest, setOff) {
 
   ASSERT_EQ(getValueSetter()->getOnCounter(), 0);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 3);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getRevealCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getStopCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, turnOn) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->getOnCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOffCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getRevealCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getStopCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/execute_action", "TuRn_On");
+
+  ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
+  ASSERT_EQ(getValueSetter()->getOffCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getRevealCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getStopCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, turnOff) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->getOnCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOffCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getRevealCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getStopCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/execute_action", "TuRn_OfF");
+
+  ASSERT_EQ(getValueSetter()->getOnCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
   ASSERT_EQ(getValueSetter()->getRevealCounter(), 0);
   ASSERT_EQ(getValueSetter()->getStopCounter(), 0);
