@@ -274,4 +274,19 @@ TEST_F(MqttSubscriberIntegrationTest, shut) {
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, reveal) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/execute_action", "rEvEal");
+
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getRevealCounter(), 1);
+}
+
 } /* namespace testing */
