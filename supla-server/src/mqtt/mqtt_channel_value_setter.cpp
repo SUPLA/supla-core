@@ -24,6 +24,10 @@ supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
 
 supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {}
 
+supla_user *supla_mqtt_channel_value_setter::get_user(void) {
+  supla_user::find_by_email(get_email());
+}
+
 void supla_mqtt_channel_value_setter::set_on(bool on) {}
 
 void supla_mqtt_channel_value_setter::set_color(unsigned int color) {}

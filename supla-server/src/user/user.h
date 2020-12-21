@@ -150,7 +150,7 @@ class supla_user {
   void emptyTrash(void);
 
   int getUserID(void);
-  const char *getUserEmail(bool fetchIfNull);
+  const char *getUserEmail(void);
   char *getShortUniqueID(void);
   char *getLongUniqueID(void);
   bool getClientName(int ClientID, char *buffer, int size);

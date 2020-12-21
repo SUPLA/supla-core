@@ -49,7 +49,7 @@ char supla_user::find_user_by_id(void *ptr, void *UserID) {
 
 // static
 char supla_user::find_user_by_email(void *ptr, void *email) {
-  const char *_email = ((supla_user *)ptr)->getUserEmail(false);
+  const char *_email = ((supla_user *)ptr)->getUserEmail();
   if (_email == NULL) {
     return 0;
   }
@@ -75,6 +75,13 @@ supla_user::supla_user(int UserID) {
   this->amazon_alexa_credentials->load();
   this->google_home_credentials->load();
   this->state_webhook_credentials->load();
+
+  getUserEmail();
+
+  if (email == NULL || email[0] == 0) {
+    supla_log(LOG_ERR, "Failed to load the email address for user ID %i.",
+              UserID);
+  }
 
   safe_array_add(supla_user::user_arr, this);
 }
@@ -172,11 +179,11 @@ void supla_user::loadUniqueIDs(void) {
   }
 }
 
-const char *supla_user::getUserEmail(bool fetchIfNull) {
+const char *supla_user::getUserEmail(void) {
   char *result = NULL;
 
   lck_lock(lck);
-  if (email == NULL && fetchIfNull) {
+  if (email == NULL) {
     database *db = new database();
 
     if (db->connect()) {
