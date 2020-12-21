@@ -26,7 +26,7 @@ class MqttClientSettingsMock : public supla_mqtt_client_ini_settings {
   char *prefix;
 
  public:
-  explicit MqttClientSettingsMock(void);
+  MqttClientSettingsMock(void);
   ~MqttClientSettingsMock(void);
 
   virtual const char *getPrefix(void);
