@@ -25,18 +25,25 @@ class MqttChannelValueSetterMock
     : public supla_mqtt_abstract_channel_value_setter {
  protected:
   int on_counter;
+  int brightness_counter;
+  int color_brightness_counter;
   int off_counter;
   int toggle_counter;
   int shut_counter;
   int reveal_counter;
   int stop_counter;
   int open_close_counter;
-  int closing_percentage;
+
+  char brightness;
+  char color_brightness;
+  char closing_percentage;
 
  protected:
   void set_on(bool on);
+  void set_brightness(char brightness);
+  void set_color_brightness(char brightness);
   void action_toggle(void);
-  void action_shut(const int *closingPercentage);
+  void action_shut(const char *closingPercentage);
   void action_reveal(void);
   void action_stop(void);
   void action_open_close(void);
@@ -49,12 +56,16 @@ class MqttChannelValueSetterMock
 
   int getOnCounter(void);
   int getOffCounter(void);
+  int getBrightnessCounter(void);
+  int getColorBrightnessCounter(void);
   int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);
   int getStopCounter(void);
   int getOpenCloseCounter(void);
-  int getClosingPercentage(void);
+  char getClosingPercentage(void);
+  char getBrightness(void);
+  char getColorBrightness(void);
 
   bool emailEqualTo(const char *email);
   bool channelEqualTo(int channel_id);

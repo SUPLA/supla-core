@@ -107,7 +107,7 @@ TEST_F(MqttSubscriberIntegrationTest, channelId) {
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/-1/set/on", "1");
 
-  ASSERT_TRUE(getValueSetter()->channelEqualTo(0));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(-1));
 }
 
 TEST_F(MqttSubscriberIntegrationTest, email) {
@@ -327,16 +327,20 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/channels/1234/set/closing_percentage", "33.33");
+      "supla/user@supla.org/channels/1234/set/closing_percentage", "34.56");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
-  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 34);
+
+  getValueSetter()->clear();
 
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/closing_percentage", "-10");
 
-  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/closing_percentage", "0");
@@ -377,16 +381,20 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/channels/1234/set/opening_percentage", "33.33");
+      "supla/user@supla.org/channels/1234/set/opening_percentage", "45.6789");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
-  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+  ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getClosingPercentage(), 55);
+
+  getValueSetter()->clear();
 
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/opening_percentage", "-10");
 
-  ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 0);
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
       "supla/user@supla.org/channels/1234/set/opening_percentage", "0");
@@ -417,6 +425,100 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, setBrightness) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getBrightness(), -1);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/brightness", "33.33abcd");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/brightness", "-1");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/brightness", "110");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/brightness", "12.34");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getBrightnessCounter(), 1);
+  ASSERT_EQ(getValueSetter()->getBrightness(), 12);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/brightness", "0");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getBrightnessCounter(), 2);
+  ASSERT_EQ(getValueSetter()->getBrightness(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/brightness", "100");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getBrightnessCounter(), 3);
+  ASSERT_EQ(getValueSetter()->getBrightness(), 100);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, setColorBrightness) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+  ASSERT_EQ(getValueSetter()->getColorBrightness(), -1);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color_brightness", "33,33");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color_brightness", "-1");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color_brightness", "101");
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color_brightness", "12.34");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorBrightnessCounter(), 1);
+  ASSERT_EQ(getValueSetter()->getColorBrightness(), 12);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color_brightness", "0");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorBrightnessCounter(), 2);
+  ASSERT_EQ(getValueSetter()->getColorBrightness(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/channels/1234/set/color_brightness", "100");
+
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getColorBrightnessCounter(), 3);
+  ASSERT_EQ(getValueSetter()->getColorBrightness(), 100);
 }
 
 } /* namespace testing */

@@ -25,8 +25,10 @@ class supla_mqtt_channel_value_setter
     : public supla_mqtt_abstract_channel_value_setter {
  protected:
   void set_on(bool on);
+  void set_brightness(char brightness);
+  void set_color_brightness(char brightness);
   void action_toggle(void);
-  void action_shut(const int *closingPercentage);
+  void action_shut(const char *closingPercentage);
   void action_reveal(void);
   void action_stop(void);
   void action_open_close(void);

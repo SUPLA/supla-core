@@ -76,20 +76,19 @@ bool supla_mqtt_abstract_channel_value_setter::parse_perecntage(void) {
   if (topic_name_size == 22 &&
       memcmp(topic_name, "set/closing_percentage", topic_name_size) == 0) {
     closing_percentage = true;
-  } else if (topic_name_size == 22 &&
-             memcmp(topic_name, "set/opening_percentage", topic_name_size) ==
+  } else if (topic_name_size != 22 ||
+             memcmp(topic_name, "set/opening_percentage", topic_name_size) !=
                  0) {
-    closing_percentage = false;
-  } else {
     return false;
   }
 
   bool err = false;
-  int percent = parse_int(message, message_size, &err);
-  if (!err && percent >= 0 && percent <= 100) {
+  int _percent = parse_int(message, message_size, &err);
+  if (!err && _percent >= 0 && _percent <= 100) {
     if (!closing_percentage) {
-      percent = 100 - percent;
+      _percent = 100 - _percent;
     }
+    char percent = _percent;
     action_shut(&percent);
   }
 
@@ -119,22 +118,59 @@ bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
   return false;
 }
 
+bool supla_mqtt_abstract_channel_value_setter::parse_brightness(void) {
+  bool color = false;
+
+  if (topic_name_size == 20 &&
+      memcmp(topic_name, "set/color_brightness", topic_name_size) == 0) {
+    color = true;
+  } else if (topic_name_size != 14 ||
+             memcmp(topic_name, "set/brightness", topic_name_size) != 0) {
+    return false;
+  }
+
+  bool err = false;
+  int percent = parse_int(message, message_size, &err);
+  if (!err && percent >= 0 && percent <= 100) {
+    if (color) {
+      set_color_brightness(percent);
+    } else {
+      set_brightness(percent);
+    }
+  }
+
+  return true;
+}
+
 int supla_mqtt_abstract_channel_value_setter::parse_int(const char *str,
                                                         size_t len, bool *err) {
-  size_t b = len - 1;
   int result = 0;
-  while (1) {
-    if (str[b] < '0' || str[b] > '9') {
+  bool minus = false;
+  bool dot = false;
+  size_t a = 0;
+  size_t _len = len;
+
+  for (a = 0; a < len; a++) {
+    if (a == 0 && str[a] == '-') {
+      minus = true;
+      continue;
+    } else if (a > 0 && !dot && str[a] == '.') {
+      dot = true;
+      _len = a;
+    } else if (str[a] < '0' || str[a] > '9') {
       if (err) {
         *err = true;
       }
       return 0;
     }
-    result += (str[b] - '0') * pow(10, len - 1 - b);
-    if (b == 0) {
-      break;
-    }
-    b--;
+  }
+
+  for (a = minus ? 1 : 0; a < _len; a++) {
+    result += (str[a] - '0') * pow(10, _len - 1 - a);
+  }
+
+  if (minus) {
+    result *= -1;
   }
 
   return result;
@@ -251,7 +287,7 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
     }
   }
 
-  if (channel_id <= 0) {
+  if (channel_id == 0) {
     return;
   }
 
@@ -269,6 +305,10 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
   }
 
   if (parse_action()) {
+    return;
+  }
+
+  if (parse_brightness()) {
     return;
   }
 }

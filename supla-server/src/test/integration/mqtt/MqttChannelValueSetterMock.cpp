@@ -17,6 +17,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "MqttChannelValueSetterMock.h"
+#include <stdio.h>
 #include <string.h>
 #include "proto.h"
 
@@ -30,12 +31,16 @@ MqttChannelValueSetterMock::~MqttChannelValueSetterMock(void) {}
 
 void MqttChannelValueSetterMock::clear(void) {
   this->on_counter = 0;
+  this->brightness_counter = 0;
+  this->color_brightness_counter = 0;
   this->off_counter = 0;
   this->toggle_counter = 0;
   this->shut_counter = 0;
   this->reveal_counter = 0;
   this->stop_counter = 0;
   this->open_close_counter = 0;
+  this->brightness = -1;
+  this->color_brightness = -1;
   this->closing_percentage = -1;
 }
 
@@ -47,9 +52,19 @@ void MqttChannelValueSetterMock::set_on(bool on) {
   }
 }
 
+void MqttChannelValueSetterMock::set_brightness(char brightness) {
+  this->brightness = brightness;
+  brightness_counter++;
+}
+
+void MqttChannelValueSetterMock::set_color_brightness(char brightness) {
+  this->color_brightness = brightness;
+  color_brightness_counter++;
+}
+
 void MqttChannelValueSetterMock::action_toggle(void) { toggle_counter++; }
 
-void MqttChannelValueSetterMock::action_shut(const int *closingPercentage) {
+void MqttChannelValueSetterMock::action_shut(const char *closingPercentage) {
   shut_counter++;
   if (closingPercentage) {
     closing_percentage = *closingPercentage;
@@ -68,6 +83,14 @@ int MqttChannelValueSetterMock::getOnCounter(void) { return on_counter; }
 
 int MqttChannelValueSetterMock::getOffCounter(void) { return off_counter; }
 
+int MqttChannelValueSetterMock::getBrightnessCounter(void) {
+  return brightness_counter;
+}
+
+int MqttChannelValueSetterMock::getColorBrightnessCounter(void) {
+  return color_brightness_counter;
+}
+
 int MqttChannelValueSetterMock::getToggleCounter(void) {
   return toggle_counter;
 }
@@ -84,8 +107,14 @@ int MqttChannelValueSetterMock::getOpenCloseCounter(void) {
   return open_close_counter;
 }
 
-int MqttChannelValueSetterMock::getClosingPercentage(void) {
+char MqttChannelValueSetterMock::getClosingPercentage(void) {
   return closing_percentage;
+}
+
+char MqttChannelValueSetterMock::getBrightness(void) { return brightness; }
+
+char MqttChannelValueSetterMock::getColorBrightness(void) {
+  return color_brightness;
 }
 
 bool MqttChannelValueSetterMock::emailEqualTo(const char *email) {
@@ -111,6 +140,14 @@ int MqttChannelValueSetterMock::counterSetCount(void) {
   }
 
   if (off_counter > 0) {
+    result++;
+  }
+
+  if (brightness_counter > 0) {
+    result++;
+  }
+
+  if (color_brightness_counter > 0) {
     result++;
   }
 
