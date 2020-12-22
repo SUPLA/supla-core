@@ -76,10 +76,11 @@ TEST_F(MqttSubscriberIntegrationTest, fullScope) {
   waitForConnection();
   waitForData(2);
 
-  ASSERT_EQ(
-      getLibAdapter()->subscribed_pop().compare("supla/+/channels/+/set/+"), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "supla/+/channels/+/execute_action"),
+                "supla/+/devices/+/channels/+/set/+"),
+            0);
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "supla/+/devices/+/channels/+/execute_action"),
             0);
 }
 
