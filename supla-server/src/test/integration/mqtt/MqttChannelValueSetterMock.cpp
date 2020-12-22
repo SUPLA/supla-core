@@ -144,6 +144,10 @@ bool MqttChannelValueSetterMock::channelEqualTo(int channel_id) {
   return channel_id == get_channel_id();
 }
 
+bool MqttChannelValueSetterMock::deviceEqualTo(int device_id) {
+  return device_id == get_device_id();
+}
+
 int MqttChannelValueSetterMock::counterSetCount(void) {
   int result = 0;
   if (on_counter > 0) {

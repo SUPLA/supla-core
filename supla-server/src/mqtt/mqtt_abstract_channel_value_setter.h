@@ -45,6 +45,9 @@ class supla_mqtt_abstract_channel_value_setter {
   int str2int(const char *str, size_t len, bool *err);
   unsigned int hex2int(const char *str, size_t len, bool *err);
   void email_free(void);
+  int parse_int_with_prefix(const char *prefix, size_t prefix_len,
+                            char **topic_name, size_t *topic_name_size,
+                            bool *err);
 
  protected:
   const char *get_email(void);
