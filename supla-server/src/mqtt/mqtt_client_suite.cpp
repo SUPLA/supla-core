@@ -18,6 +18,7 @@
 
 #include <mqtt_client_suite.h>
 #include <cstddef>
+#include "tools.h"
 
 // static
 supla_mqtt_client_suite *supla_mqtt_client_suite::_globalInstance = NULL;
@@ -95,20 +96,20 @@ void supla_mqtt_client_suite::stop(void) {
 }
 
 void supla_mqtt_client_suite::onUserSettingsChanged(int UserID) {
-  if (publisher_ds) {
+  if (publisher_ds && st_app_terminate == 0) {
     publisher_ds->on_userdata_changed(UserID);
   }
 }
 
 void supla_mqtt_client_suite::onChannelsAdded(int UserID, int DeviceID) {
-  if (publisher_ds) {
+  if (publisher_ds && st_app_terminate == 0) {
     publisher_ds->on_devicedata_changed(UserID, DeviceID);
   }
 }
 
 void supla_mqtt_client_suite::onChannelStateChanged(int UserID, int DeviceID,
                                                     int ChannelID) {
-  if (publisher_ds) {
+  if (publisher_ds && st_app_terminate == 0) {
     publisher_ds->on_channelstate_changed(UserID, DeviceID, ChannelID);
   }
 }
