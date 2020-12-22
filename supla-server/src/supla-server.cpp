@@ -161,8 +161,6 @@ int main(int argc, char *argv[]) {
 
   // RELEASE BLOCK
 
-  supla_mqtt_client_suite::globalInstanceRelease();
-
   if (ipc != NULL) {
     ipcsocket_close(ipc);
     sthread_twf(ipc_accept_loop_thread);  // ! after ipcsocket_close and before
@@ -190,8 +188,12 @@ int main(int argc, char *argv[]) {
   st_mainloop_free();
   st_delpidfile(pidfile_path);
 
-  supla_http_request_queue::queueFree();  // ! before user_free()
   serverconnection::serverconnection_free();
+  supla_http_request_queue::queueFree();  // ! after serverconnection_free() and
+                                          // before user_free()
+  supla_mqtt_client_suite::globalInstanceRelease();  // ! after
+                                                     // serverconnection_free()
+                                                     // and before user_free()
   supla_user::user_free();
   database::mainthread_end();
   sslcrypto_free();
