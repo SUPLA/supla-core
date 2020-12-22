@@ -18,6 +18,7 @@
 
 #include "mqtt_channel_value_setter.h"
 #include "device.h"
+#include "tools.h"
 
 supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
     supla_mqtt_client_settings *settings)
