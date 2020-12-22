@@ -243,6 +243,16 @@ class supla_device_channels {
   void async_set_channel_value(void *srpc, supla_device_channel *channel,
                                int SenderID, int GroupID, unsigned char EOL,
                                const char value[SUPLA_CHANNELVALUE_SIZE]);
+  bool set_device_channel_char_value(void *srpc, int SenderID,
+                                     supla_device_channel *channel, int GroupID,
+                                     unsigned char EOL, const char value);
+  bool set_on(void *srpc, int SenderID, int ChannelID, int GroupID,
+              unsigned char EOL, bool on, bool toggle);
+  bool action_shut_reveal(void *srpc, int SenderID, int ChannelID, int GroupID,
+                          unsigned char EOL, bool shut,
+                          const char *closingPercentage, bool stop);
+  bool action_open_close(void *srpc, int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL, bool open_close);
 
  public:
   supla_device_channels();
@@ -320,6 +330,30 @@ class supla_device_channels {
                                  int ChannelID);
   void set_channel_function(int ChannelId, int Func);
   void get_functions_request(void *srpc);
+
+  bool set_on(void *srpc, int SenderID, int ChannelID, int GroupID,
+              unsigned char EOL, bool on);
+  bool set_rgbw(void *srpc, int SenderID, int ChannelID, int GroupID,
+                unsigned char EOL, unsigned int *color, char *color_brightness,
+                char *brightness, char *on_off);
+  bool set_color(void *srpc, int SenderID, int ChannelID, int GroupID,
+                 unsigned char EOL, unsigned int color);
+  bool set_color_brightness(void *srpc, int SenderID, int ChannelID,
+                            int GroupID, unsigned char EOL, char brightness);
+  bool set_brightness(void *srpc, int SenderID, int ChannelID, int GroupID,
+                      unsigned char EOL, char brightness);
+  bool action_toggle(void *srpc, int SenderID, int ChannelID, int GroupID,
+                     unsigned char EOL);
+  bool action_shut(void *srpc, int SenderID, int ChannelID, int GroupID,
+                   unsigned char EOL, const char *closingPercentage);
+  bool action_reveal(void *srpc, int SenderID, int ChannelID, int GroupID,
+                     unsigned char EOL);
+  bool action_stop(void *srpc, int SenderID, int ChannelID, int GroupID,
+                   unsigned char EOL);
+  bool action_open(void *srpc, int SenderID, int ChannelID, int GroupID,
+                   unsigned char EOL);
+  bool action_open_close(void *srpc, int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL);
 };
 
 #endif /* DEVICECHANNEL_H_ */

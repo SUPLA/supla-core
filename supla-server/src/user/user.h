@@ -156,6 +156,9 @@ class supla_user {
   bool getClientName(int ClientID, char *buffer, int size);
   bool isSuperUserAuthorized(int ClientID);
 
+  // Remember to call device->releasePtr()
+  supla_device *get_device(int DeviceID);
+
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
                                      double *Value);

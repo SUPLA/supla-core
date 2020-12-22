@@ -322,6 +322,21 @@ TEST_F(MqttSubscriberIntegrationTest, stop) {
   ASSERT_EQ(getValueSetter()->getStopCounter(), 1);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, open) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/user@supla.org/devices/10/channels/1234/execute_action", "oPeN");
+
+  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getOpenCounter(), 1);
+}
+
 TEST_F(MqttSubscriberIntegrationTest, openClose) {
   waitForConnection();
   waitForData(2);

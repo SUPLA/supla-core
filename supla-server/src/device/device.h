@@ -60,7 +60,24 @@ class supla_device : public cdbase {
                                      unsigned char EOL, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
-
+  bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+              bool on);
+  bool set_color(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                 unsigned int color);
+  bool set_brightness(int SenderID, int ChannelID, int GroupID,
+                      unsigned char EOL, unsigned int brightness);
+  bool set_color_brightness(int SenderID, int ChannelID, int GroupID,
+                            unsigned char EOL, unsigned int brightness);
+  bool action_toggle(int SenderID, int ChannelID, int GroupID,
+                     unsigned char EOL);
+  bool action_shut(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                   const char *closingPercentage);
+  bool action_reveal(int SenderID, int ChannelID, int GroupID,
+                     unsigned char EOL);
+  bool action_stop(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_open(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_open_close(int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL);
   bool channel_exists(int ChannelID);
   void on_device_channel_value_changed(TDS_SuplaDeviceChannelValue *value,
                                        TDS_SuplaDeviceChannelValue_B *value_b,

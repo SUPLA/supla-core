@@ -62,6 +62,7 @@ class supla_mqtt_abstract_channel_value_setter {
   virtual void action_shut(const char *closingPercentage) = 0;
   virtual void action_reveal(void) = 0;
   virtual void action_stop(void) = 0;
+  virtual void action_open(void) = 0;
   virtual void action_open_close(void) = 0;
 
  public:

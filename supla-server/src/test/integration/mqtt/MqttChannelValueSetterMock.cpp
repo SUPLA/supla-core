@@ -39,6 +39,7 @@ void MqttChannelValueSetterMock::clear(void) {
   this->shut_counter = 0;
   this->reveal_counter = 0;
   this->stop_counter = 0;
+  this->open_counter = 0;
   this->open_close_counter = 0;
   this->color = 0x01FFFFFF;
   this->brightness = -1;
@@ -82,6 +83,10 @@ void MqttChannelValueSetterMock::action_reveal(void) { reveal_counter++; }
 
 void MqttChannelValueSetterMock::action_stop(void) { stop_counter++; }
 
+void MqttChannelValueSetterMock::action_open(void) {
+  open_counter++;
+}
+
 void MqttChannelValueSetterMock::action_open_close(void) {
   open_close_counter++;
 }
@@ -111,6 +116,10 @@ int MqttChannelValueSetterMock::getRevealCounter(void) {
 }
 
 int MqttChannelValueSetterMock::getStopCounter(void) { return stop_counter; }
+
+int MqttChannelValueSetterMock::getOpenCounter(void) {
+  return open_counter;
+}
 
 int MqttChannelValueSetterMock::getOpenCloseCounter(void) {
   return open_close_counter;
@@ -183,6 +192,10 @@ int MqttChannelValueSetterMock::counterSetCount(void) {
   }
 
   if (stop_counter > 0) {
+    result++;
+  }
+
+  if (open_counter > 0) {
     result++;
   }
 

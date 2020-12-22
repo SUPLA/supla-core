@@ -113,6 +113,8 @@ bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
       action_stop();
     } else if (message_size == 10 && lc_equal("open_close")) {
       action_open_close();
+    } else if (message_size == 4 && lc_equal("open")) {
+      action_open();
     }
     return true;
   }

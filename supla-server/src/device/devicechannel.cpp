@@ -856,12 +856,10 @@ bool supla_device_channel::isValueWritable(void) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-      return 1;
-
-      break;
+      return true;
   }
 
-  return 0;
+  return false;
 }
 
 bool supla_device_channel::isCharValueWritable(void) {
@@ -879,12 +877,10 @@ bool supla_device_channel::isCharValueWritable(void) {
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-      return 1;
-
-      break;
+      return true;
   }
 
-  return 0;
+  return false;
 }
 
 bool supla_device_channel::isRgbwValueWritable(void) {
@@ -1577,13 +1573,9 @@ void supla_device_channels::set_device_channel_value(
 }
 
 bool supla_device_channels::set_device_channel_char_value(
-    void *srpc, int SenderID, int ChannelID, int GroupID, unsigned char EOL,
-
-    const char value) {
+    void *srpc, int SenderID, supla_device_channel *channel, int GroupID,
+    unsigned char EOL, const char value) {
   bool result = false;
-  safe_array_lock(arr);
-
-  supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
     if (channel->isRgbwValueWritable()) {
@@ -1604,8 +1596,8 @@ bool supla_device_channels::set_device_channel_char_value(
         on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
 
         result = set_device_channel_rgbw_value(
-            srpc, SenderID, ChannelID, GroupID, EOL, color, color_brightness,
-            brightness, on_off);
+            srpc, SenderID, channel->getId(), GroupID, EOL, color,
+            color_brightness, brightness, on_off);
       }
     } else if (channel->isCharValueWritable()) {
       char v[SUPLA_CHANNELVALUE_SIZE];
@@ -1617,6 +1609,17 @@ bool supla_device_channels::set_device_channel_char_value(
       result = true;
     }
   }
+
+  return result;
+}
+
+bool supla_device_channels::set_device_channel_char_value(
+    void *srpc, int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+    const char value) {
+  safe_array_lock(arr);
+
+  bool result = set_device_channel_char_value(
+      srpc, SenderID, find_channel(ChannelID), GroupID, EOL, value);
 
   safe_array_unlock(arr);
 
@@ -2009,4 +2012,198 @@ void supla_device_channels::get_functions_request(void *srpc) {
   safe_array_unlock(arr);
 
   srpc_sd_async_get_channel_functions_result(srpc, &result);
+}
+
+bool supla_device_channels::set_on(void *srpc, int SenderID, int ChannelID,
+                                   int GroupID, unsigned char EOL, bool on,
+                                   bool toggle) {
+  safe_array_lock(arr);
+
+  bool result = false;
+  supla_device_channel *channel = find_channel(ChannelID);
+  if (channel) {
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      case SUPLA_CHANNELFNC_THERMOSTAT:
+      case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      case SUPLA_CHANNELFNC_DIMMER:
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+        char c = on ? 1 : 0;
+        if (toggle) {
+          channel->getChar(&c);
+          c = c ? 0 : 1;
+        }
+        result = set_device_channel_char_value(srpc, SenderID, channel, GroupID,
+                                               EOL, on ? 1 : 0);
+        break;
+      }
+    }
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
+bool supla_device_channels::set_on(void *srpc, int SenderID, int ChannelID,
+                                   int GroupID, unsigned char EOL, bool on) {
+  return set_on(srpc, SenderID, ChannelID, GroupID, EOL, on, false);
+}
+
+bool supla_device_channels::set_rgbw(void *srpc, int SenderID, int ChannelID,
+                                     int GroupID, unsigned char EOL,
+                                     unsigned int *color,
+                                     char *color_brightness, char *brightness,
+                                     char *on_off) {
+  safe_array_lock(arr);
+
+  bool result = false;
+  supla_device_channel *channel = find_channel(ChannelID);
+  if (channel && channel->isRgbwValueWritable()) {
+    int _color = 0;
+    char _color_brightness = 0;
+    char _brightness = 0;
+    char _on_off = 0;
+
+    if (channel->getRGBW(&_color, &_color_brightness, &_brightness, &_on_off)) {
+      result = set_device_channel_rgbw_value(
+          srpc, SenderID, ChannelID, GroupID, EOL, color ? *color : _color,
+          color_brightness ? *color_brightness : _color_brightness,
+          brightness ? *brightness : _brightness, on_off ? *on_off : 0);
+    }
+  }
+
+  safe_array_unlock(arr);
+  return result;
+}
+
+bool supla_device_channels::set_color(void *srpc, int SenderID, int ChannelID,
+                                      int GroupID, unsigned char EOL,
+                                      unsigned int color) {
+  return set_rgbw(srpc, SenderID, ChannelID, GroupID, EOL, &color, NULL, NULL,
+                  NULL);
+}
+
+bool supla_device_channels::set_color_brightness(void *srpc, int SenderID,
+                                                 int ChannelID, int GroupID,
+                                                 unsigned char EOL,
+                                                 char brightness) {
+  return set_rgbw(srpc, SenderID, ChannelID, GroupID, EOL, NULL, &brightness,
+                  NULL, NULL);
+}
+
+bool supla_device_channels::set_brightness(void *srpc, int SenderID,
+                                           int ChannelID, int GroupID,
+                                           unsigned char EOL, char brightness) {
+  return set_rgbw(srpc, SenderID, ChannelID, GroupID, EOL, NULL, NULL,
+                  &brightness, NULL);
+}
+
+bool supla_device_channels::action_toggle(void *srpc, int SenderID,
+                                          int ChannelID, int GroupID,
+                                          unsigned char EOL) {
+  return set_on(srpc, SenderID, ChannelID, GroupID, EOL, false, true);
+}
+
+bool supla_device_channels::action_shut_reveal(void *srpc, int SenderID,
+                                               int ChannelID, int GroupID,
+                                               unsigned char EOL, bool shut,
+                                               const char *closingPercentage,
+                                               bool stop) {
+  safe_array_lock(arr);
+
+  bool result = false;
+  supla_device_channel *channel = find_channel(ChannelID);
+  if (channel && channel->isCharValueWritable()) {
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+        char v = 0;
+        if (shut) {
+          if (closingPercentage) {
+            v = *closingPercentage + 10;
+          } else {
+            v = 110;
+          }
+        } else if (!stop) {
+          v = 10;
+        }
+        result = set_device_channel_char_value(srpc, SenderID, channel, GroupID,
+                                               EOL, v);
+        break;
+    }
+  }
+
+  safe_array_unlock(arr);
+  return result;
+}
+
+bool supla_device_channels::action_shut(void *srpc, int SenderID, int ChannelID,
+                                        int GroupID, unsigned char EOL,
+                                        const char *closingPercentage) {
+  return action_shut_reveal(srpc, SenderID, ChannelID, GroupID, EOL, true,
+                            closingPercentage, false);
+}
+
+bool supla_device_channels::action_reveal(void *srpc, int SenderID,
+                                          int ChannelID, int GroupID,
+                                          unsigned char EOL) {
+  return action_shut_reveal(srpc, SenderID, ChannelID, GroupID, EOL, false,
+                            NULL, false);
+}
+
+bool supla_device_channels::action_stop(void *srpc, int SenderID, int ChannelID,
+                                        int GroupID, unsigned char EOL) {
+  return action_shut_reveal(srpc, SenderID, ChannelID, GroupID, EOL, false,
+                            NULL, true);
+}
+
+bool supla_device_channels::action_open_close(void *srpc, int SenderID,
+                                              int ChannelID, int GroupID,
+                                              unsigned char EOL,
+                                              bool open_close) {
+  safe_array_lock(arr);
+
+  bool result = false;
+  supla_device_channel *channel = find_channel(ChannelID);
+  if (channel && channel->isCharValueWritable()) {
+    char v = 0;
+    if (open_close) {
+      switch (channel->getFunc()) {
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          v = 1;
+          break;
+      }
+    } else {
+      switch (channel->getFunc()) {
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+          v = 1;
+          break;
+      }
+    }
+
+    if (v) {
+      result = set_device_channel_char_value(srpc, SenderID, channel, GroupID,
+                                             EOL, v);
+    }
+  }
+
+  safe_array_unlock(arr);
+  return result;
+}
+
+bool supla_device_channels::action_open(void *srpc, int SenderID, int ChannelID,
+                                        int GroupID, unsigned char EOL) {
+  return action_open_close(srpc, SenderID, ChannelID, GroupID, EOL, false);
+}
+
+bool supla_device_channels::action_open_close(void *srpc, int SenderID,
+                                              int ChannelID, int GroupID,
+                                              unsigned char EOL) {
+  return action_open_close(srpc, SenderID, ChannelID, GroupID, EOL, true);
 }

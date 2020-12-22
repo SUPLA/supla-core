@@ -33,6 +33,7 @@ class MqttChannelValueSetterMock
   int shut_counter;
   int reveal_counter;
   int stop_counter;
+  int open_counter;
   int open_close_counter;
 
   unsigned int color;
@@ -49,6 +50,7 @@ class MqttChannelValueSetterMock
   void action_shut(const char *closingPercentage);
   void action_reveal(void);
   void action_stop(void);
+  void action_open(void);
   void action_open_close(void);
 
  public:
@@ -66,6 +68,7 @@ class MqttChannelValueSetterMock
   int getShutCounter(void);
   int getRevealCounter(void);
   int getStopCounter(void);
+  int getOpenCounter(void);
   int getOpenCloseCounter(void);
   char getClosingPercentage(void);
   unsigned int getColor(void);

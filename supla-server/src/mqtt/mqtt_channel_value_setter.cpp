@@ -17,6 +17,7 @@
  */
 
 #include "mqtt_channel_value_setter.h"
+#include "device.h"
 
 supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
     supla_mqtt_client_settings *settings)
@@ -28,21 +29,92 @@ supla_user *supla_mqtt_channel_value_setter::get_user(void) {
   return supla_user::find_by_email(get_email());
 }
 
-void supla_mqtt_channel_value_setter::set_on(bool on) {}
+supla_device *supla_mqtt_channel_value_setter::get_device(void) {
+  supla_user *user = get_user();
+  if (user) {
+    return user->get_device(get_device_id());
+  }
 
-void supla_mqtt_channel_value_setter::set_color(unsigned int color) {}
+  return NULL;
+}
 
-void supla_mqtt_channel_value_setter::set_brightness(char brightness) {}
+void supla_mqtt_channel_value_setter::set_on(bool on) {
+  supla_device *device = get_device();
+  if (device) {
+    device->set_on(0, get_channel_id(), 0, 0, on ? 1 : 0);
+    device->retainPtr();
+  }
+}
 
-void supla_mqtt_channel_value_setter::set_color_brightness(char brightness) {}
+void supla_mqtt_channel_value_setter::set_color(unsigned int color) {
+  supla_device *device = get_device();
+  if (device) {
+    device->set_color(0, get_channel_id(), 0, 0, color);
+    device->retainPtr();
+  }
+}
 
-void supla_mqtt_channel_value_setter::action_toggle(void) {}
+void supla_mqtt_channel_value_setter::set_brightness(char brightness) {
+  supla_device *device = get_device();
+  if (device) {
+    device->set_brightness(0, get_channel_id(), 0, 0, brightness);
+    device->retainPtr();
+  }
+}
+
+void supla_mqtt_channel_value_setter::set_color_brightness(char brightness) {
+  supla_device *device = get_device();
+  if (device) {
+    device->set_color_brightness(0, get_channel_id(), 0, 0, brightness);
+    device->retainPtr();
+  }
+}
+
+void supla_mqtt_channel_value_setter::action_toggle(void) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_toggle(0, get_channel_id(), 0, 0);
+    device->retainPtr();
+  }
+}
 
 void supla_mqtt_channel_value_setter::action_shut(
-    const char *closingPercentage) {}
+    const char *closingPercentage) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_shut(0, get_channel_id(), 0, 0, closingPercentage);
+    device->retainPtr();
+  }
+}
 
-void supla_mqtt_channel_value_setter::action_reveal(void) {}
+void supla_mqtt_channel_value_setter::action_reveal(void) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_reveal(0, get_channel_id(), 0, 0);
+    device->retainPtr();
+  }
+}
 
-void supla_mqtt_channel_value_setter::action_stop(void) {}
+void supla_mqtt_channel_value_setter::action_stop(void) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_stop(0, get_channel_id(), 0, 0);
+    device->retainPtr();
+  }
+}
 
-void supla_mqtt_channel_value_setter::action_open_close(void) {}
+void supla_mqtt_channel_value_setter::action_open(void) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_open(0, get_channel_id(), 0, 0);
+    device->retainPtr();
+  }
+}
+
+void supla_mqtt_channel_value_setter::action_open_close(void) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_open_close(0, get_channel_id(), 0, 0);
+    device->retainPtr();
+  }
+}

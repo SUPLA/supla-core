@@ -530,6 +530,68 @@ bool supla_device::set_device_channel_rgbw_value(int SenderID, int ChannelID,
       color_brightness, brightness, on_off);
 }
 
+bool supla_device::set_on(int SenderID, int ChannelID, int GroupID,
+                          unsigned char EOL, bool on) {
+  return channels->set_on(getSvrConn()->srpc(), SenderID, ChannelID, GroupID,
+                          EOL, on);
+}
+
+bool supla_device::set_color(int SenderID, int ChannelID, int GroupID,
+                             unsigned char EOL, unsigned int color) {
+  return channels->set_color(getSvrConn()->srpc(), SenderID, ChannelID, GroupID,
+                             EOL, color);
+}
+
+bool supla_device::set_brightness(int SenderID, int ChannelID, int GroupID,
+                                  unsigned char EOL, unsigned int brightness) {
+  return channels->set_brightness(getSvrConn()->srpc(), SenderID, ChannelID,
+                                  GroupID, EOL, brightness);
+}
+
+bool supla_device::set_color_brightness(int SenderID, int ChannelID,
+                                        int GroupID, unsigned char EOL,
+                                        unsigned int brightness) {
+  return channels->set_color_brightness(getSvrConn()->srpc(), SenderID,
+                                        ChannelID, GroupID, EOL, brightness);
+}
+
+bool supla_device::action_toggle(int SenderID, int ChannelID, int GroupID,
+                                 unsigned char EOL) {
+  return channels->action_toggle(getSvrConn()->srpc(), SenderID, ChannelID,
+                                 GroupID, EOL);
+}
+
+bool supla_device::action_shut(int SenderID, int ChannelID, int GroupID,
+                               unsigned char EOL,
+                               const char *closingPercentage) {
+  return channels->action_shut(getSvrConn()->srpc(), SenderID, ChannelID,
+                               GroupID, EOL, closingPercentage);
+}
+
+bool supla_device::action_reveal(int SenderID, int ChannelID, int GroupID,
+                                 unsigned char EOL) {
+  return channels->action_reveal(getSvrConn()->srpc(), SenderID, ChannelID,
+                                 GroupID, EOL);
+}
+
+bool supla_device::action_stop(int SenderID, int ChannelID, int GroupID,
+                               unsigned char EOL) {
+  return channels->action_stop(getSvrConn()->srpc(), SenderID, ChannelID,
+                               GroupID, EOL);
+}
+
+bool supla_device::action_open(int SenderID, int ChannelID, int GroupID,
+                               unsigned char EOL) {
+  return channels->action_open(getSvrConn()->srpc(), SenderID, ChannelID,
+                               GroupID, EOL);
+}
+
+bool supla_device::action_open_close(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL) {
+  return channels->action_open_close(getSvrConn()->srpc(), SenderID, ChannelID,
+                                     GroupID, EOL);
+}
+
 bool supla_device::channel_exists(int ChannelID) {
   return channels->channel_exists(ChannelID);
 }
