@@ -26,6 +26,9 @@ supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
 supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {}
 
 supla_user *supla_mqtt_channel_value_setter::get_user(void) {
+  if (st_app_terminate) {
+    return NULL;
+  }
   return supla_user::find_by_email(get_email());
 }
 
