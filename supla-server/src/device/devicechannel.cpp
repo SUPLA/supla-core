@@ -2037,7 +2037,7 @@ bool supla_device_channels::set_on(void *srpc, int SenderID, int ChannelID,
           c = c ? 0 : 1;
         }
         result = set_device_channel_char_value(srpc, SenderID, channel, GroupID,
-                                               EOL, on ? 1 : 0);
+                                               EOL, c);
         break;
       }
     }
