@@ -40,8 +40,8 @@ class supla_mqtt_client {
   supla_mqtt_client_library_adapter *library_adapter;
 
   virtual void on_connected(void);
-  virtual void on_message_received(const _received_mqtt_message_t *msg);
-  virtual bool on_iterate(void);
+  virtual void on_message_received(const _received_mqtt_message_t *msg) = 0;
+  virtual bool on_iterate(void) = 0;
 
   bool subscribe(const char *topic_name, QOS_Level max_qos_level);
   bool publish(const char *topic_name, const void *message, size_t message_size,
@@ -62,7 +62,8 @@ class supla_mqtt_client {
 
   virtual void on_userdata_changed(int user_id);
   virtual void on_devicedata_changed(int user_id, int device_id);
-  virtual void on_channelstate_changed(int user_id, int device_id, int channel_id);
+  virtual void on_channelstate_changed(int user_id, int device_id,
+                                       int channel_id);
 };
 
 #endif /*MQTT_CLIENT_H_*/

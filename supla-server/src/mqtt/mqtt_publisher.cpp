@@ -62,4 +62,4 @@ bool supla_mqtt_publisher::on_iterate(void) {
 }
 
 void supla_mqtt_publisher::on_message_received(
-    struct mqtt_response_publish *message) {}
+    const _received_mqtt_message_t *msg) {}

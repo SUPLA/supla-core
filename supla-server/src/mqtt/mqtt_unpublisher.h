@@ -22,17 +22,9 @@
 #include <sys/time.h>
 #include <list>
 #include "mqtt_client.h"
-
-typedef struct {
-  int user_id;
-  bool enabled;
-  struct timeval time;
-} _unpub_user_item_t;
+#include "mqtt_unpublisher_datasource.h"
 
 class supla_mqtt_unpublisher : public supla_mqtt_client {
- private:
-  std::list<_unpub_user_item_t> users;
-
  protected:
   virtual ssize_t get_send_buffer_size(void);
   virtual ssize_t get_recv_buffer_size(void);
@@ -43,7 +35,7 @@ class supla_mqtt_unpublisher : public supla_mqtt_client {
  public:
   supla_mqtt_unpublisher(supla_mqtt_client_library_adapter *library_adapter,
                          supla_mqtt_client_settings *settings,
-                         supla_mqtt_client_datasource *datasource);
+                         supla_mqtt_unpublisher_datasource *datasource);
   virtual ~supla_mqtt_unpublisher(void);
 };
 

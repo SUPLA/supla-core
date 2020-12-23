@@ -19,12 +19,16 @@
 #include "mqtt_unpublisher.h"
 #include <string.h>
 #include <cstdio>
+#include "lck.h"
 #include "log.h"
+#include "mqtt_db.h"
+
+#define SUBSCRIPTION_TIME_SEC 5
 
 supla_mqtt_unpublisher::supla_mqtt_unpublisher(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
-    supla_mqtt_client_datasource *channel_source)
+    supla_mqtt_unpublisher_datasource *channel_source)
     : supla_mqtt_client(library_adapter, settings, channel_source) {}
 
 supla_mqtt_unpublisher::~supla_mqtt_unpublisher(void) {}
@@ -41,6 +45,7 @@ void supla_mqtt_unpublisher::get_client_id(char *clientId, size_t len) {
 
 bool supla_mqtt_unpublisher::on_iterate(void) {
   char *topic_name = NULL;
+
   bool result = false;
 
   if (datasource->fetch(&topic_name, NULL, NULL)) {

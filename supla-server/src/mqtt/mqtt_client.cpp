@@ -77,14 +77,9 @@ void supla_mqtt_client::job(void *sthread) {
   datasource->thread_cleanup();
 }
 
-void supla_mqtt_client::on_message_received(
-    const _received_mqtt_message_t *msg) {}
-
 void supla_mqtt_client::on_connected(void) {
   datasource->on_broker_connected();
 }
-
-bool supla_mqtt_client::on_iterate(void) {}
 
 bool supla_mqtt_client::subscribe(const char *topic_name,
                                   QOS_Level max_qos_level) {

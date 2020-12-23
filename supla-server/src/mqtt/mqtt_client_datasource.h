@@ -80,10 +80,11 @@ class supla_mqtt_client_datasource {
   bool fetch(char **topic_name, void **message, size_t *message_size);
   bool fetch(char **topic_name);
 
-  void on_broker_connected(void);
-  void on_userdata_changed(int user_id);
-  void on_devicedata_changed(int user_id, int device_id);
-  void on_channelstate_changed(int user_id, int device_id, int channel_id);
+  virtual void on_broker_connected(void);
+  virtual void on_userdata_changed(int user_id);
+  virtual void on_devicedata_changed(int user_id, int device_id);
+  virtual void on_channelstate_changed(int user_id, int device_id,
+                                       int channel_id);
 
   bool is_context_open(void);
 };

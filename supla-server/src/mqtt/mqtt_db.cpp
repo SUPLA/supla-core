@@ -91,6 +91,12 @@ void supla_mqtt_db::close_query(void *_query) {
   }
 }
 
+bool supla_mqtt_db::mqtt_enabled(int UserID) {
+  const char sql[] =
+      "SELECT id FROM `supla_user` WHERE id = ? AND mqtt_broker_enabled = 1";
+  return get_int(UserID, 0, sql) > 0;
+}
+
 void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
   _mqtt_db_userquery_t *query =
       (_mqtt_db_userquery_t *)malloc(sizeof(_mqtt_db_userquery_t));
@@ -104,7 +110,7 @@ void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
 
   const char sql[] =
       "SELECT u.`id`, u.`email`, u.`timezone`, u.`short_unique_id` FROM "
-      "`supla_user` u WHERE u.`mqtt_broker_enabled` = true AND (? = 0 OR "
+      "`supla_user` u WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 OR "
       "u.`id` = ?)";
 
   MYSQL_BIND pbind[2];
@@ -196,7 +202,7 @@ void *supla_mqtt_db::open_devicequery(int UserID, int DeviceID,
       "INET_NTOA(d.`last_ipv4`), d.`manufacturer_id`, d.`name`, "
       "d.`protocol_version`, d.`software_version` FROM `supla_iodevice` d LEFT "
       "JOIN `supla_user` u ON u.id = d.`user_id` LEFT JOIN `supla_location` l "
-      "ON l.id = d.`location_id` WHERE u.`mqtt_broker_enabled` = true AND (? = "
+      "ON l.id = d.`location_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = "
       "0 OR u.`id` = ?) AND (? = 0 OR d.`id` = ?)";
 
   MYSQL_BIND pbind[4];
@@ -339,7 +345,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
       "d.`id` = c.`iodevice_id` LEFT JOIN `supla_location` l ON l.`id` = "
       "c.`location_id` LEFT JOIN `supla_location` dl ON dl.`id` = "
       "d.`location_id` LEFT JOIN `supla_user` u ON u.id = c.`user_id` WHERE "
-      "u.`mqtt_broker_enabled` = true AND (? = 0 OR u.`id` = ?) AND (? = 0 OR "
+      "u.`mqtt_broker_enabled` = 1 AND (? = 0 OR u.`id` = ?) AND (? = 0 OR "
       "d.`id` = ?) AND (? = 0 OR c.`id` = ?)";
 
   MYSQL_BIND pbind[6];
