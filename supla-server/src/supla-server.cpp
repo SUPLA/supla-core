@@ -185,9 +185,6 @@ int main(int argc, char *argv[]) {
   sthread_twf(datalogger_loop_thread);
   sthread_twf(http_request_queue_loop_thread);
 
-  st_mainloop_free();
-  st_delpidfile(pidfile_path);
-
   serverconnection::serverconnection_free();
   supla_http_request_queue::queueFree();  // ! after serverconnection_free() and
                                           // before user_free()
@@ -198,6 +195,8 @@ int main(int argc, char *argv[]) {
   database::mainthread_end();
   sslcrypto_free();
 
+  st_mainloop_free();  // Almost at the end
+  st_delpidfile(pidfile_path);
   svrcfg_free();
 
   {
