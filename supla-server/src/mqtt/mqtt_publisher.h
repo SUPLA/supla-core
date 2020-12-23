@@ -22,10 +22,6 @@
 #include <mqtt_client.h>
 
 class supla_mqtt_publisher : public supla_mqtt_client {
- private:
-  static supla_mqtt_publisher *_globalInstance;
-  int left;
-
  protected:
   virtual ssize_t get_send_buffer_size(void);
   virtual ssize_t get_recv_buffer_size(void);
