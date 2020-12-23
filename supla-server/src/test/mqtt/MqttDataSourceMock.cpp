@@ -79,6 +79,10 @@ bool MqttDataSourceMock::_fetch(supla_mqtt_ds_context *context,
   return true;
 }
 
+bool MqttDataSourceMock::is_scope_allowed(MQTTDataSourceScope scope) {
+  return true;
+}
+
 void MqttDataSourceMock::context_close(supla_mqtt_ds_context *context) {
   close_count++;
 }

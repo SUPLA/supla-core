@@ -69,6 +69,7 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   void close_channelquery();
 
  protected:
+  virtual bool is_scope_allowed(MQTTDataSourceScope scope);
   virtual bool context_open(supla_mqtt_ds_context *context);
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);

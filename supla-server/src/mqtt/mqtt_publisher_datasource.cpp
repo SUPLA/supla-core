@@ -48,6 +48,11 @@ supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(
 
 supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
 
+bool supla_mqtt_publisher_datasource::is_scope_allowed(
+    MQTTDataSourceScope scope) {
+  return true;
+}
+
 bool supla_mqtt_publisher_datasource::context_open(
     supla_mqtt_ds_context *context) {
   fetch_users = false;

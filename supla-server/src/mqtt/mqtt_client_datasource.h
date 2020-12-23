@@ -65,6 +65,7 @@ class supla_mqtt_client_datasource {
   bool is_mqtt_enabled(int user_id);
 
  protected:
+  virtual bool is_scope_allowed(MQTTDataSourceScope scope) = 0;
   supla_mqtt_client_settings *get_settings(void);
   virtual bool context_open(supla_mqtt_ds_context *context) = 0;
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
