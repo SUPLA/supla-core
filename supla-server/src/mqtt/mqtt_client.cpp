@@ -119,4 +119,18 @@ bool supla_mqtt_client::is_terminated(void) {
   return sthread == NULL || sthread_isterminated(sthread);
 }
 
-void supla_mqtt_client::raise_event(void) { library_adapter->raise_event(); }
+void supla_mqtt_client::on_userdata_changed(int user_id) {
+  datasource->on_userdata_changed(user_id);
+  library_adapter->raise_event();
+}
+
+void supla_mqtt_client::on_devicedata_changed(int user_id, int device_id) {
+  datasource->on_devicedata_changed(user_id, device_id);
+  library_adapter->raise_event();
+}
+
+void supla_mqtt_client::on_channelstate_changed(int user_id, int device_id,
+                                                int channel_id) {
+  datasource->on_channelstate_changed(user_id, device_id, channel_id);
+  library_adapter->raise_event();
+}

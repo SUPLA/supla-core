@@ -59,7 +59,10 @@ class supla_mqtt_client {
   virtual ssize_t get_send_buffer_size(void) = 0;
   virtual ssize_t get_recv_buffer_size(void) = 0;
   virtual void get_client_id(char *clientId, size_t len) = 0;
-  void raise_event(void);
+
+  virtual void on_userdata_changed(int user_id);
+  virtual void on_devicedata_changed(int user_id, int device_id);
+  virtual void on_channelstate_changed(int user_id, int device_id, int channel_id);
 };
 
 #endif /*MQTT_CLIENT_H_*/
