@@ -41,7 +41,7 @@ class supla_mqtt_client {
 
   virtual void on_connected(void);
   virtual void on_message_received(const _received_mqtt_message_t *msg);
-  virtual void on_iterate(void);
+  virtual bool on_iterate(void);
 
   bool subscribe(const char *topic_name, QOS_Level max_qos_level);
   bool publish(const char *topic_name, const void *message, size_t message_size,
@@ -59,6 +59,7 @@ class supla_mqtt_client {
   virtual ssize_t get_send_buffer_size(void) = 0;
   virtual ssize_t get_recv_buffer_size(void) = 0;
   virtual void get_client_id(char *clientId, size_t len) = 0;
+  void raise_event(void);
 };
 
 #endif /*MQTT_CLIENT_H_*/

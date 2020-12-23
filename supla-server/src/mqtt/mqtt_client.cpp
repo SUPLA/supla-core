@@ -66,7 +66,9 @@ void supla_mqtt_client::job(void *sthread) {
     library_adapter->iterate();
 
     if (library_adapter->is_connected()) {
-      on_iterate();
+      if (on_iterate()) {
+        library_adapter->raise_event();
+      }
     }
   }
 
@@ -82,7 +84,7 @@ void supla_mqtt_client::on_connected(void) {
   datasource->on_broker_connected();
 }
 
-void supla_mqtt_client::on_iterate(void) {}
+bool supla_mqtt_client::on_iterate(void) {}
 
 bool supla_mqtt_client::subscribe(const char *topic_name,
                                   QOS_Level max_qos_level) {
@@ -116,3 +118,5 @@ void supla_mqtt_client::stop(void) {
 bool supla_mqtt_client::is_terminated(void) {
   return sthread == NULL || sthread_isterminated(sthread);
 }
+
+void supla_mqtt_client::raise_event(void) { library_adapter->raise_event(); }

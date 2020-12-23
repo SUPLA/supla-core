@@ -26,7 +26,7 @@ class supla_mqtt_publisher : public supla_mqtt_client {
   virtual ssize_t get_send_buffer_size(void);
   virtual ssize_t get_recv_buffer_size(void);
   virtual void get_client_id(char *clientId, size_t len);
-  virtual void on_iterate(void);
+  virtual bool on_iterate(void);
   virtual void on_message_received(struct mqtt_response_publish *message);
 
  public:

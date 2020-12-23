@@ -39,13 +39,15 @@ void supla_mqtt_publisher::get_client_id(char *clientId, size_t len) {
   }
 }
 
-void supla_mqtt_publisher::on_iterate(void) {
+bool supla_mqtt_publisher::on_iterate(void) {
   char *topic_name = NULL;
   void *message = NULL;
   size_t message_size = 0;
+  bool result = false;
 
   if (datasource->fetch(&topic_name, &message, &message_size)) {
     publish(topic_name, message, message_size, SUPLA_MQTT_QOS_0, true);
+    result = true;
   }
 
   if (topic_name) {
@@ -55,6 +57,8 @@ void supla_mqtt_publisher::on_iterate(void) {
   if (message) {
     free(message);
   }
+
+  return result;
 }
 
 void supla_mqtt_publisher::on_message_received(
