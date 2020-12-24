@@ -32,6 +32,7 @@ CPP_SRCS += \
 ../src/mqtt/mqtt_topic_cmp.cpp \
 ../src/mqtt/mqtt_unpublisher.cpp \
 ../src/mqtt/mqtt_unpublisher_datasource.cpp \
+../src/mqtt/mqtt_unpublisher_user_topic_provider.cpp \
 ../src/mqtt/mqtt_user_message_provider.cpp \
 ../src/mqtt/mqttc_library_adapter.cpp 
 
@@ -62,6 +63,7 @@ OBJS += \
 ./src/mqtt/mqtt_topic_cmp.o \
 ./src/mqtt/mqtt_unpublisher.o \
 ./src/mqtt/mqtt_unpublisher_datasource.o \
+./src/mqtt/mqtt_unpublisher_user_topic_provider.o \
 ./src/mqtt/mqtt_user_message_provider.o \
 ./src/mqtt/mqttc_library_adapter.o 
 
@@ -94,6 +96,7 @@ CPP_DEPS += \
 ./src/mqtt/mqtt_topic_cmp.d \
 ./src/mqtt/mqtt_unpublisher.d \
 ./src/mqtt/mqtt_unpublisher_datasource.d \
+./src/mqtt/mqtt_unpublisher_user_topic_provider.d \
 ./src/mqtt/mqtt_user_message_provider.d \
 ./src/mqtt/mqttc_library_adapter.d 
 

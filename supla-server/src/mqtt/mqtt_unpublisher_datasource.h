@@ -20,19 +20,23 @@
 #define MQTT_UNPUBLISHER_DATASOURCE_H_
 
 #include "mqtt_client_db_datasource.h"
+#include "mqtt_unpublisher_user_topic_provider.h"
 
 typedef struct {
   int user_id;
   bool mqtt_enabled;
-  struct timeval time;
+  bool needs_subscribe;
+  struct timeval subscribe_time;
 } _unpub_user_item_t;
 
 class supla_mqtt_unpublisher_datasource
     : public supla_mqtt_client_db_datasource {
  private:
-  std::list<_unpub_user_item_t> mqtt_users;
+  std::list<_unpub_user_item_t> users;
+  supla_mqtt_unpublisher_user_topic_provider *user_topic_provider;
 
  protected:
+  bool is_user_enabled(int user_id);
   virtual bool is_context_allowed(supla_mqtt_ds_context *context);
   virtual bool context_open(supla_mqtt_ds_context *context);
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
