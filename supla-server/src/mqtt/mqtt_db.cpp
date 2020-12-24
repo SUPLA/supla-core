@@ -24,6 +24,11 @@
 
 typedef struct {
   MYSQL_STMT *stmt;
+  int user_id;
+} _mqtt_db_mqttenabledquery_t;
+
+typedef struct {
+  MYSQL_STMT *stmt;
   _mqtt_db_data_row_user_t *row;
 
   // Auxiliary variables
@@ -95,6 +100,56 @@ bool supla_mqtt_db::mqtt_enabled(int UserID) {
   const char sql[] =
       "SELECT id FROM `supla_user` WHERE id = ? AND mqtt_broker_enabled = 1";
   return get_int(UserID, 0, sql) > 0;
+}
+
+void *supla_mqtt_db::open_mqttenabledquery(void) {
+  _mqtt_db_mqttenabledquery_t *query = (_mqtt_db_mqttenabledquery_t *)malloc(
+      sizeof(_mqtt_db_mqttenabledquery_t));
+
+  if (query == NULL) {
+    return NULL;
+  }
+
+  memset(query, 0, sizeof(_mqtt_db_mqttenabledquery_t));
+
+  const char sql[] =
+      "SELECT `id` FROM `supla_user` WHERE `mqtt_broker_enabled` = 1";
+
+  if (stmt_execute((void **)&query->stmt, sql, NULL, 0, true)) {
+    MYSQL_BIND rbind;
+    memset(&rbind, 0, sizeof(rbind));
+
+    rbind.buffer_type = MYSQL_TYPE_LONG;
+    rbind.buffer = (char *)&query->user_id;
+    rbind.buffer_length = sizeof(query->user_id);
+
+    if (mysql_stmt_bind_result(query->stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(query->stmt));
+    } else {
+      mysql_stmt_store_result(query->stmt);
+      if (mysql_stmt_num_rows(query->stmt) > 0) {
+        return query;
+      }
+    }
+  }
+
+  close_userquery(query);
+  return NULL;
+}
+
+int supla_mqtt_db::mqttenabledquery_fetch_row(void *_query) {
+  _mqtt_db_mqttenabledquery_t *query =
+      static_cast<_mqtt_db_mqttenabledquery_t *>(_query);
+  if (query && !mysql_stmt_fetch(query->stmt)) {
+    return query->user_id;
+  }
+
+  return 0;
+}
+
+void supla_mqtt_db::close_mqttenabledquery(void *query) {
+  close_query<_mqtt_db_mqttenabledquery_t>(query);
 }
 
 void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {

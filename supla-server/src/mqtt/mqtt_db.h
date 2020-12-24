@@ -75,6 +75,10 @@ class supla_mqtt_db : public svrdb {
 
   bool mqtt_enabled(int UserID);
 
+  void *open_mqttenabledquery(void);
+  int mqttenabledquery_fetch_row(void *query);
+  void close_mqttenabledquery(void *query);
+
   void *open_userquery(int UserID, _mqtt_db_data_row_user_t *row);
   bool userquery_fetch_row(void *query);
   void close_userquery(void *query);
