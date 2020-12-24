@@ -28,7 +28,7 @@ class MqttDataSourceMock : public supla_mqtt_client_datasource {
   int idx;
 
  protected:
-  virtual bool is_scope_allowed(MQTTDataSourceScope scope);
+  virtual bool is_context_allowed(supla_mqtt_ds_context *context);
   virtual bool context_open(supla_mqtt_ds_context *context);
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);

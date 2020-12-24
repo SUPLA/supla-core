@@ -20,13 +20,17 @@
 
 supla_mqtt_unpublisher_datasource::supla_mqtt_unpublisher_datasource(
     supla_mqtt_client_settings *settings)
-    : supla_mqtt_client_datasource(settings) {}
+    : supla_mqtt_client_db_datasource(settings) {}
 
 supla_mqtt_unpublisher_datasource::~supla_mqtt_unpublisher_datasource(void) {}
 
-bool supla_mqtt_unpublisher_datasource::is_scope_allowed(
-    MQTTDataSourceScope scope) {
-  return scope == MQTTDS_SCOPE_DEVICE;
+void supla_mqtt_unpublisher_datasource::thread_init(void) {
+  supla_mqtt_client_db_datasource::thread_init();
+}
+
+bool supla_mqtt_unpublisher_datasource::is_context_allowed(
+    supla_mqtt_ds_context *context) {
+  return context->get_scope() == MQTTDS_SCOPE_DEVICE;
 }
 
 bool supla_mqtt_unpublisher_datasource::context_open(

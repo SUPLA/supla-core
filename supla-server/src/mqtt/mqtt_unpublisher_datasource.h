@@ -19,7 +19,7 @@
 #ifndef MQTT_UNPUBLISHER_DATASOURCE_H_
 #define MQTT_UNPUBLISHER_DATASOURCE_H_
 
-#include "mqtt_client_datasource.h"
+#include "mqtt_client_db_datasource.h"
 
 typedef struct {
   int user_id;
@@ -27,12 +27,13 @@ typedef struct {
   struct timeval time;
 } _unpub_user_item_t;
 
-class supla_mqtt_unpublisher_datasource : public supla_mqtt_client_datasource {
+class supla_mqtt_unpublisher_datasource
+    : public supla_mqtt_client_db_datasource {
  private:
-  std::list<_unpub_user_item_t> users;
+  std::list<_unpub_user_item_t> mqtt_users;
 
  protected:
-  virtual bool is_scope_allowed(MQTTDataSourceScope scope);
+  virtual bool is_context_allowed(supla_mqtt_ds_context *context);
   virtual bool context_open(supla_mqtt_ds_context *context);
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);
@@ -42,6 +43,7 @@ class supla_mqtt_unpublisher_datasource : public supla_mqtt_client_datasource {
   explicit supla_mqtt_unpublisher_datasource(
       supla_mqtt_client_settings *settings);
   virtual ~supla_mqtt_unpublisher_datasource(void);
+  virtual void thread_init(void);
   bool fetch_subscription(char **topic_name, bool *unsubscribe);
   virtual void on_userdata_changed(int user_id);
 };

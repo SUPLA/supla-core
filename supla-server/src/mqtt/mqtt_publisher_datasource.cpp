@@ -48,9 +48,32 @@ supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(
 
 supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
 
-bool supla_mqtt_publisher_datasource::is_scope_allowed(
-    MQTTDataSourceScope scope) {
-  return true;
+bool supla_mqtt_publisher_datasource::is_context_allowed(
+    supla_mqtt_ds_context *context) {
+  switch (context->get_scope()) {
+    case MQTTDS_SCOPE_FULL:
+    case MQTTDS_SCOPE_USER:
+      return true;
+    case MQTTDS_SCOPE_DEVICE:
+    case MQTTDS_SCOPE_CHANNEL_STATE:
+      return is_user_enabled(context->get_user_id());
+    default:
+      return false;
+  }
+}
+
+bool supla_mqtt_publisher_datasource::is_user_enabled(int user_id) {
+  bool result = false;
+  lock();
+  for (std::list<int>::iterator it = users_enabled.begin();
+       it != users_enabled.end(); ++it) {
+    if (*it == user_id) {
+      result = true;
+      break;
+    }
+  }
+  unlock();
+  return result;
 }
 
 bool supla_mqtt_publisher_datasource::context_open(
@@ -66,6 +89,7 @@ bool supla_mqtt_publisher_datasource::context_open(
       fetch_users = true;
       fetch_devices = true;
       fetch_channels = true;
+      users_enabled_tmp.clear();
       break;
     case MQTTDS_SCOPE_DEVICE:
       fetch_devices = true;
@@ -287,6 +311,17 @@ bool supla_mqtt_publisher_datasource::_fetch(supla_mqtt_ds_context *context,
     result = fetch_state(context, topic_name, message, message_size);
   }
 
+  if (result) {
+    if (context->get_user_id()) {
+      if (context->get_scope() == MQTTDS_SCOPE_FULL) {
+        add_user_to_list(context->get_user_id(), &users_enabled_tmp);
+      } else if (context->get_scope() == MQTTDS_SCOPE_USER &&
+                 users_enabled_tmp.size() == 0) {
+        users_enabled_tmp.push_back(context->get_user_id());
+      }
+    }
+  }
+
   return result;
 }
 
@@ -350,8 +385,43 @@ void supla_mqtt_publisher_datasource::close_channelquery(void) {
   }
 }
 
+void supla_mqtt_publisher_datasource::add_user_to_list(int user_id,
+                                                       std::list<int> *ulist) {
+  bool exists = false;
+  for (std::list<int>::iterator it = ulist->begin(); it != ulist->end(); ++it) {
+    if (*it == user_id) {
+      exists = true;
+      break;
+    }
+  }
+
+  if (!exists) {
+    ulist->push_back(user_id);
+  }
+}
+
 void supla_mqtt_publisher_datasource::context_close(
     supla_mqtt_ds_context *context) {
+  lock();
+  if (context->get_scope() == MQTTDS_SCOPE_FULL) {
+    users_enabled = users_enabled_tmp;
+  } else if (context->get_scope() == MQTTDS_SCOPE_USER) {
+    if (users_enabled_tmp.size()) {
+      add_user_to_list(users_enabled_tmp.front(), &users_enabled);
+    } else if (context->get_user_id()) {
+      for (std::list<int>::iterator it = users_enabled.begin();
+           it != users_enabled.end(); ++it) {
+        if (*it == context->get_user_id()) {
+          it = users_enabled.erase(it);
+          break;
+        }
+      }
+    }
+  }
+
+  users_enabled_tmp.clear();
+  unlock();
+
   fetch_users = false;
   fetch_devices = false;
   fetch_channels = false;

@@ -19,11 +19,15 @@
 #ifndef MQTT_PUBLISHER_DATASOURCE_H_
 #define MQTT_PUBLISHER_DATASOURCE_H_
 
+#include <list>
 #include "mqtt_client_db_datasource.h"
 #include "mqtt_state_message_provider.h"
 
 class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
  private:
+  std::list<int> users_enabled;
+  std::list<int> users_enabled_tmp;
+
   bool fetch_users;
   bool fetch_devices;
   bool fetch_channels;
@@ -42,6 +46,8 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   supla_mqtt_message_provider *channelandstate_message_provider;
   supla_mqtt_state_message_provider *state_message_provider;
 
+  void add_user_to_list(int user_id, std::list<int> *ulist);
+  bool is_user_enabled(int user_id);
   void *datarow_malloc(int datatype);
   void *open_query(int datatype, supla_mqtt_ds_context *context,
                    void *data_row);
@@ -69,7 +75,7 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   void close_channelquery();
 
  protected:
-  virtual bool is_scope_allowed(MQTTDataSourceScope scope);
+  virtual bool is_context_allowed(supla_mqtt_ds_context *context);
   virtual bool context_open(supla_mqtt_ds_context *context);
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
                       void **message, size_t *message_size);

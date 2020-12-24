@@ -26,9 +26,9 @@ supla_mqtt_subscriber_datasource::supla_mqtt_subscriber_datasource(
 
 supla_mqtt_subscriber_datasource::~supla_mqtt_subscriber_datasource(void) {}
 
-bool supla_mqtt_subscriber_datasource::is_scope_allowed(
-    MQTTDataSourceScope scope) {
-  return scope == MQTTDS_SCOPE_FULL;
+bool supla_mqtt_subscriber_datasource::is_context_allowed(
+    supla_mqtt_ds_context *context) {
+  return context->get_scope() == MQTTDS_SCOPE_FULL;
 }
 
 bool supla_mqtt_subscriber_datasource::context_open(
