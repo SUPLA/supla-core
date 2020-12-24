@@ -78,6 +78,7 @@ class supla_mqttc_library_adapter : public supla_mqtt_client_library_adapter {
   virtual void raise_event(void);
 
   virtual bool subscribe(const char *topic_name, QOS_Level max_qos_level);
+  virtual bool unsubscribe(const char *topic_name);
   virtual bool publish(const char *topic_name, const void *message,
                        size_t message_size, QOS_Level qos_level, bool retain);
 };

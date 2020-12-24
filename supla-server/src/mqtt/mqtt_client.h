@@ -44,6 +44,7 @@ class supla_mqtt_client {
   virtual bool on_iterate(void) = 0;
 
   bool subscribe(const char *topic_name, QOS_Level max_qos_level);
+  bool subscribe(const char *topic_name);
   bool publish(const char *topic_name, const void *message, size_t message_size,
                QOS_Level qos_level, bool retain);
 

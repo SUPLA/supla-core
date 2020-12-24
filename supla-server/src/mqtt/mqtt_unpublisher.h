@@ -25,6 +25,9 @@
 #include "mqtt_unpublisher_datasource.h"
 
 class supla_mqtt_unpublisher : public supla_mqtt_client {
+ private:
+  supla_mqtt_unpublisher_datasource *ds;
+
  protected:
   virtual ssize_t get_send_buffer_size(void);
   virtual ssize_t get_recv_buffer_size(void);

@@ -28,8 +28,10 @@
 supla_mqtt_unpublisher::supla_mqtt_unpublisher(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
-    supla_mqtt_unpublisher_datasource *channel_source)
-    : supla_mqtt_client(library_adapter, settings, channel_source) {}
+    supla_mqtt_unpublisher_datasource *datasource)
+    : supla_mqtt_client(library_adapter, settings, datasource) {
+  ds = datasource;
+}
 
 supla_mqtt_unpublisher::~supla_mqtt_unpublisher(void) {}
 
@@ -48,13 +50,33 @@ bool supla_mqtt_unpublisher::on_iterate(void) {
 
   bool result = false;
 
-  if (datasource->fetch(&topic_name, NULL, NULL)) {
+  if (ds->fetch(&topic_name, NULL, NULL)) {
     publish(topic_name, NULL, 0, SUPLA_MQTT_QOS_0, true);
     result = true;
   }
 
   if (topic_name) {
     free(topic_name);
+    topic_name = NULL;
+  }
+
+  if (result) {
+    return true;
+  }
+
+  bool _unsubscribe = false;
+  if (ds->fetch_subscription(&topic_name, &_unsubscribe)) {
+    if (_unsubscribe) {
+      unsubscribe(topic_name);
+    } else {
+      subscribe(topic_name, SUPLA_MQTT_QOS_0);
+    }
+    result = true;
+  }
+
+  if (topic_name) {
+    free(topic_name);
+    topic_name = NULL;
   }
 
   return result;

@@ -87,6 +87,11 @@ bool supla_mqtt_client::subscribe(const char *topic_name,
          library_adapter->subscribe(topic_name, max_qos_level);
 }
 
+bool supla_mqtt_client::unsubscribe(const char *topic_name) {
+  return !sthread_isterminated(sthread) && library_adapter->is_connected() &&
+         library_adapter->unsubscribe(topic_name);
+}
+
 bool supla_mqtt_client::publish(const char *topic_name, const void *message,
                                 size_t message_size, QOS_Level qos_level,
                                 bool retain) {

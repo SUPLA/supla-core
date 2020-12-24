@@ -474,6 +474,14 @@ bool supla_mqttc_library_adapter::subscribe(const char *topic_name,
   return false;
 }
 
+bool supla_mqttc_library_adapter::unsubscribe(const char *topic_name) {
+  if (is_connected() && MQTT_OK == mqtt_unsubscribe(&client, topic_name)) {
+    eh_raise_event(eh);
+    return true;
+  }
+  return false;
+}
+
 bool supla_mqttc_library_adapter::publish(const char *topic_name,
                                           const void *message,
                                           size_t message_size,

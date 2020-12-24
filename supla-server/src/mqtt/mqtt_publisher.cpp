@@ -24,8 +24,8 @@
 supla_mqtt_publisher::supla_mqtt_publisher(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
-    supla_mqtt_client_datasource *channel_source)
-    : supla_mqtt_client(library_adapter, settings, channel_source) {}
+    supla_mqtt_client_datasource *datasource)
+    : supla_mqtt_client(library_adapter, settings, datasource) {}
 
 supla_mqtt_publisher::~supla_mqtt_publisher(void) {}
 

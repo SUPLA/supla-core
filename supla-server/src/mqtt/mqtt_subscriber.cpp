@@ -21,9 +21,9 @@
 supla_mqtt_subscriber::supla_mqtt_subscriber(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
-    supla_mqtt_client_datasource *channel_source,
+    supla_mqtt_client_datasource *datasource,
     supla_mqtt_abstract_channel_value_setter *setter)
-    : supla_mqtt_client(library_adapter, settings, channel_source) {
+    : supla_mqtt_client(library_adapter, settings, datasource) {
   this->setter = setter;
 }
 

@@ -76,6 +76,8 @@ bool MqttClientLibraryAdapterMock::subscribe(const char *topic_name,
   return true;
 }
 
+bool MqttClientLibraryAdapterMock::unsubscribe(const char *topic_name) {}
+
 bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
                                            const void *message,
                                            size_t message_size,
