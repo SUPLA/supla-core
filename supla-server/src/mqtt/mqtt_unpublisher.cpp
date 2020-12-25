@@ -26,10 +26,8 @@
 supla_mqtt_unpublisher::supla_mqtt_unpublisher(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
-    supla_mqtt_unpublisher_datasource *datasource)
-    : supla_mqtt_client(library_adapter, settings, datasource) {
-  ds = datasource;
-}
+    supla_mqtt_client_datasource *datasource)
+    : supla_mqtt_client(library_adapter, settings, datasource) {}
 
 supla_mqtt_unpublisher::~supla_mqtt_unpublisher(void) {}
 
@@ -47,6 +45,13 @@ bool supla_mqtt_unpublisher::on_iterate(void) {
   char *topic_name = NULL;
 
   bool result = false;
+
+  supla_mqtt_unpublisher_datasource *ds =
+      static_cast<supla_mqtt_unpublisher_datasource *>(datasource);
+
+  if (ds == NULL) {
+    return false;
+  }
 
   if (ds->fetch(&topic_name, NULL, NULL)) {
     publish(topic_name, NULL, 0, SUPLA_MQTT_QOS_0, true);
