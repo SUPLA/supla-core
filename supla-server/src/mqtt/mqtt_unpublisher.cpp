@@ -23,8 +23,6 @@
 #include "log.h"
 #include "mqtt_db.h"
 
-#define SUBSCRIPTION_TIME_SEC 5
-
 supla_mqtt_unpublisher::supla_mqtt_unpublisher(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,

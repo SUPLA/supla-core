@@ -152,7 +152,8 @@ void supla_mqtt_db::close_mqttenabledquery(void *query) {
   close_query<_mqtt_db_mqttenabledquery_t>(query);
 }
 
-void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
+void *supla_mqtt_db::open_userquery(int UserID, bool OnlyEnabled,
+                                    _mqtt_db_data_row_user_t *row) {
   _mqtt_db_userquery_t *query =
       (_mqtt_db_userquery_t *)malloc(sizeof(_mqtt_db_userquery_t));
 
@@ -165,19 +166,24 @@ void *supla_mqtt_db::open_userquery(int UserID, _mqtt_db_data_row_user_t *row) {
 
   const char sql[] =
       "SELECT u.`id`, u.`email`, u.`timezone`, u.`short_unique_id` FROM "
-      "`supla_user` u WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 OR "
-      "u.`id` = ?)";
+      "`supla_user` u WHERE (? = 0 OR u.`mqtt_broker_enabled` = 1) AND (? = 0 "
+      "OR u.`id` = ?)";
 
-  MYSQL_BIND pbind[2];
+  MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
 
+  int OE = OnlyEnabled ? 1 : 0;
+
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
+  pbind[0].buffer = (char *)&OE;
 
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&UserID;
 
-  if (stmt_execute((void **)&query->stmt, sql, pbind, 2, true)) {
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&query->stmt, sql, pbind, 3, true)) {
     MYSQL_BIND rbind[4];
     memset(rbind, 0, sizeof(rbind));
 

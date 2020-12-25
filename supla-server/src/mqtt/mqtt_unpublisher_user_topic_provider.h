@@ -19,16 +19,23 @@
 #ifndef MQTT_UNPUBLISHER_USER_TOPIC_PROVIDER_H_
 #define MQTT_UNPUBLISHER_USER_TOPIC_PROVIDER_H_
 
-#include <mqtt_message_provider.h>
+#include "mqtt_db.h"
+#include "mqtt_message_provider.h"
 
 class supla_mqtt_unpublisher_user_topic_provider
     : public supla_mqtt_message_provider {
+ private:
+  _mqtt_db_data_row_user_t *row;
+  bool unsubscribe;
+
  public:
   supla_mqtt_unpublisher_user_topic_provider(void);
   virtual ~supla_mqtt_unpublisher_user_topic_provider(void);
   bool get_message_at_index(unsigned short index, const char *topic_prefix,
                             char **topic_name, void **message,
                             size_t *message_size);
+  bool fetch(const char *topic_prefix, char **topic_name, bool *unsubscribe);
+  void set_data_row(_mqtt_db_data_row_user_t *row, bool unsubscribe);
 };
 
 #endif /*MQTT_UNPUBLISHER_USER_TOPIC_PROVIDER_H_*/

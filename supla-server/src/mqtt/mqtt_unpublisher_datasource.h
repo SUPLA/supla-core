@@ -26,7 +26,7 @@ typedef struct {
   int user_id;
   bool mqtt_enabled;
   bool needs_subscribe;
-  struct timeval subscribe_time;
+  struct timeval subscribe_timeto;
 } _unpub_user_item_t;
 
 class supla_mqtt_unpublisher_datasource
@@ -34,6 +34,7 @@ class supla_mqtt_unpublisher_datasource
  private:
   std::list<_unpub_user_item_t> users;
   supla_mqtt_unpublisher_user_topic_provider *user_topic_provider;
+  _mqtt_db_data_row_user_t row;
 
  protected:
   bool is_user_enabled(int user_id);

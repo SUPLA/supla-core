@@ -19,13 +19,18 @@
 #include <mqtt_unpublisher_datasource.h>
 #include <string.h>
 
+#define SUBSCRIPTION_TIME_SEC 10
+
 supla_mqtt_unpublisher_datasource::supla_mqtt_unpublisher_datasource(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_db_datasource(settings) {
-  user_topic_provider = NULL;
+  user_topic_provider = new supla_mqtt_unpublisher_user_topic_provider();
+  memset(&row, 0, sizeof(_mqtt_db_data_row_user_t));
 }
 
-supla_mqtt_unpublisher_datasource::~supla_mqtt_unpublisher_datasource(void) {}
+supla_mqtt_unpublisher_datasource::~supla_mqtt_unpublisher_datasource(void) {
+  delete user_topic_provider;
+}
 
 void supla_mqtt_unpublisher_datasource::thread_init(void) {
   supla_mqtt_client_db_datasource::thread_init();
@@ -95,11 +100,11 @@ void supla_mqtt_unpublisher_datasource::on_userdata_changed(int user_id) {
 
           if (mqtt_enabled) {
             it->needs_subscribe = false;
-            it->subscribe_time.tv_sec = 1;
+            it->subscribe_timeto.tv_sec = 1;
           } else {
             it->needs_subscribe = true;
-            it->subscribe_time.tv_sec = 0;
-            it->subscribe_time.tv_usec = 0;
+            it->subscribe_timeto.tv_sec = 0;
+            it->subscribe_timeto.tv_usec = 0;
           }
         }
         break;
@@ -124,7 +129,16 @@ bool supla_mqtt_unpublisher_datasource::_fetch(supla_mqtt_ds_context *context,
                                                char **topic_name,
                                                void **message,
                                                size_t *message_size) {
-  return false;
+  bool result = false;
+
+  lock();
+  for (std::list<_unpub_user_item_t>::iterator it = users.begin();
+       it != users.end(); ++it) {
+  }
+
+  unlock();
+
+  return result;
 }
 
 void supla_mqtt_unpublisher_datasource::context_close(
@@ -132,9 +146,46 @@ void supla_mqtt_unpublisher_datasource::context_close(
 
 bool supla_mqtt_unpublisher_datasource::fetch_subscription(char **topic_name,
                                                            bool *unsubscribe) {
+  if (user_topic_provider->fetch(get_settings()->getPrefix(), topic_name,
+                                 unsubscribe)) {
+    return true;
+  }
+
+  _unpub_user_item_t user;
+  memset(&user, 0, sizeof(_unpub_user_item_t));
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
   lock();
   for (std::list<_unpub_user_item_t>::iterator it = users.begin();
        it != users.end(); ++it) {
+    if (it->needs_subscribe || (it->subscribe_timeto.tv_sec &&
+                                it->subscribe_timeto.tv_sec <= now.tv_sec)) {
+      user = *it;
+      if (it->needs_subscribe) {
+        it->subscribe_timeto = now;
+        it->subscribe_timeto.tv_sec += SUBSCRIPTION_TIME_SEC;
+      } else {
+        users.erase(it);
+      }
+      break;
+    }
   }
   unlock();
+
+  if (user.user_id && db_connect()) {
+    void *query = get_db()->open_userquery(user.user_id, false, &row);
+    if (query) {
+      if (get_db()->userquery_fetch_row(query)) {
+        user_topic_provider->set_data_row(&row, !user.needs_subscribe);
+      }
+      get_db()->close_userquery(query);
+    }
+
+    db_disconnect();
+  }
+
+  return user_topic_provider->fetch(get_settings()->getPrefix(), topic_name,
+                                    unsubscribe);
 }

@@ -16,11 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_unpublisher_user_topic_provider.h>
+#include "mqtt_unpublisher_user_topic_provider.h"
+#include <string.h>
 
 supla_mqtt_unpublisher_user_topic_provider::
     supla_mqtt_unpublisher_user_topic_provider(void)
-    : supla_mqtt_message_provider() {}
+    : supla_mqtt_message_provider() {
+  row = NULL;
+}
 
 supla_mqtt_unpublisher_user_topic_provider::
     ~supla_mqtt_unpublisher_user_topic_provider(void) {}
@@ -28,5 +31,40 @@ supla_mqtt_unpublisher_user_topic_provider::
 bool supla_mqtt_unpublisher_user_topic_provider::get_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  if (row != NULL) {
+    switch (index) {
+      case 0:
+
+        return create_message(topic_prefix, row->user_email, topic_name, NULL,
+                              NULL, NULL, false, "#");
+        break;
+      case 1:
+        if (topic_name) {
+          *topic_name = strdup("homeassistant/+/+/+/config");  // NOLINT
+          return *topic_name != NULL;
+        }
+    }
+  }
+
   return false;
+}
+
+bool supla_mqtt_unpublisher_user_topic_provider::fetch(const char *topic_prefix,
+                                                       char **topic_name,
+                                                       bool *unsubscribe) {
+  if (supla_mqtt_message_provider::fetch(topic_prefix, topic_name, NULL,
+                                         NULL)) {
+    if (unsubscribe) {
+      *unsubscribe = this->unsubscribe;
+    }
+  }
+
+  return false;
+}
+
+void supla_mqtt_unpublisher_user_topic_provider::set_data_row(
+    _mqtt_db_data_row_user_t *row, bool unsubscribe) {
+  this->row = row;
+  this->unsubscribe = unsubscribe;
+  reset_index();
 }

@@ -123,7 +123,7 @@ void *supla_mqtt_publisher_datasource::open_query(
   switch (datatype) {
     case MPD_DATATYPE_USER:
       return get_db()->open_userquery(
-          context->get_user_id(),
+          context->get_user_id(), true,
           static_cast<_mqtt_db_data_row_user_t *>(data_row));
     case MPD_DATATYPE_DEVICE:
       return get_db()->open_devicequery(
