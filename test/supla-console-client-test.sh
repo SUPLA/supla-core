@@ -27,9 +27,9 @@ ENDOFCFG
 
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ./supla-server/Release
-  if ! [ -e ./supla-server ]; then
+  # if ! [ -e ./supla-server ]; then
      make clean && make all
-  fi
+  # fi
   ./supla-server -c /etc/supla-server/supla-test.cfg -d
   cd ../../
 fi
