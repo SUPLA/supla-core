@@ -19,7 +19,7 @@
 #include <mqtt_unpublisher_datasource.h>
 #include <string.h>
 
-#define SUBSCRIPTION_TIME_SEC 10
+#define SUBSCRIPTION_TIME_SEC 20
 
 supla_mqtt_unpublisher_datasource::supla_mqtt_unpublisher_datasource(
     supla_mqtt_client_settings *settings)
