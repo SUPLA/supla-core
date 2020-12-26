@@ -37,8 +37,11 @@ fi
 sleep 2
 [ -e /var/log/syslog ] && grep "Incorrect database version!" /var/log/syslog && exit 1
 
-ps ax
-netstat -an
+if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
+grep supla-server /var/log/syslog
+echo "supla-server did not start!"
+exit 1
+fi
 
 cd supla-console-client/Test
 make clean && make all
