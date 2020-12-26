@@ -76,7 +76,10 @@ bool MqttClientLibraryAdapterMock::subscribe(const char *topic_name,
   return true;
 }
 
-bool MqttClientLibraryAdapterMock::unsubscribe(const char *topic_name) {}
+bool MqttClientLibraryAdapterMock::unsubscribe(const char *topic_name) {
+  unsubscribed_messages.push_back(std::string(topic_name));
+  return true;
+}
 
 bool MqttClientLibraryAdapterMock::publish(const char *topic_name,
                                            const void *message,
@@ -150,6 +153,29 @@ std::string MqttClientLibraryAdapterMock::subscribed_pop(void) {
   lck_lock(lck);
   result = subscribed_messages.front();
   subscribed_messages.pop_front();
+  lck_unlock(lck);
+  return result;
+}
+
+void MqttClientLibraryAdapterMock::unsubscribed_clear(void) {
+  lck_lock(lck);
+  unsubscribed_messages.clear();
+  lck_unlock(lck);
+}
+
+int MqttClientLibraryAdapterMock::unsubscribed_count(void) {
+  int result = 0;
+  lck_lock(lck);
+  result = unsubscribed_messages.size();
+  lck_unlock(lck);
+  return result;
+}
+
+std::string MqttClientLibraryAdapterMock::unsubscribed_pop(void) {
+  std::string result;
+  lck_lock(lck);
+  result = unsubscribed_messages.front();
+  unsubscribed_messages.pop_front();
   lck_unlock(lck);
   return result;
 }

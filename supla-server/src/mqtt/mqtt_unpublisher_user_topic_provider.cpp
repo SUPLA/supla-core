@@ -17,12 +17,14 @@
  */
 
 #include "mqtt_unpublisher_user_topic_provider.h"
+#include <stdlib.h>
 #include <string.h>
 
 supla_mqtt_unpublisher_user_topic_provider::
     supla_mqtt_unpublisher_user_topic_provider(void)
     : supla_mqtt_message_provider() {
   row = NULL;
+  unsubscribe = NULL;
 }
 
 supla_mqtt_unpublisher_user_topic_provider::
@@ -40,7 +42,14 @@ bool supla_mqtt_unpublisher_user_topic_provider::get_message_at_index(
         break;
       case 1:
         if (topic_name) {
-          *topic_name = strdup("homeassistant/+/+/+/config");  // NOLINT
+          const char format[] = "homeassistant/+/%s/+/config";
+          size_t len = snprintf(NULL, 0, format, row->user_shortuniqueid);
+          if (len) {
+            len++;
+            *topic_name = (char *)malloc(len);
+            snprintf(*topic_name, len, format, row->user_shortuniqueid);
+          }
+
           return *topic_name != NULL;
         }
     }
@@ -57,6 +66,8 @@ bool supla_mqtt_unpublisher_user_topic_provider::fetch(const char *topic_prefix,
     if (unsubscribe) {
       *unsubscribe = this->unsubscribe;
     }
+
+    return true;
   }
 
   return false;

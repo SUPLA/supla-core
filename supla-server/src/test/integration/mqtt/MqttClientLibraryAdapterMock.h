@@ -36,6 +36,7 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   void *lck;
   std::list<_mqtt_test_message_t> published_messages;
   std::list<std::string> subscribed_messages;
+  std::list<std::string> unsubscribed_messages;
 
  public:
   explicit MqttClientLibraryAdapterMock(supla_mqtt_client_settings *settings);
@@ -57,6 +58,10 @@ class MqttClientLibraryAdapterMock : public supla_mqtt_client_library_adapter {
   void subscribed_clear(void);
   int subscribed_count(void);
   std::string subscribed_pop(void);
+
+  void unsubscribed_clear(void);
+  int unsubscribed_count(void);
+  std::string unsubscribed_pop(void);
 
   void on_message_received(const char *topic_name, const char *message);
 };

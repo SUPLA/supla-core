@@ -22,9 +22,16 @@
 #include "mqtt_client_datasource.h"
 #include "mqtt_db.h"
 
+#ifdef __TEST
+#include <pthread.h>
+#endif /*__TEST*/
+
 class supla_mqtt_client_db_datasource : public supla_mqtt_client_datasource {
  private:
   supla_mqtt_db *mqtt_db;
+#ifdef __TEST
+  pthread_t pthread;
+#endif /*__TEST*/
 
  protected:
   bool db_connect(void);

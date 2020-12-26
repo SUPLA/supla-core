@@ -19,6 +19,10 @@
 #include <mqtt_client_db_datasource.h>
 #include "log.h"
 
+#ifdef __TEST
+#include <assert.h>
+#endif /*__TEST*/
+
 supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_datasource(settings) {
@@ -30,6 +34,9 @@ supla_mqtt_client_db_datasource::~supla_mqtt_client_db_datasource(void) {}
 void supla_mqtt_client_db_datasource::thread_init(void) {
   supla_mqtt_client_datasource::thread_init();
   database::thread_init();
+#ifdef __TEST
+  pthread = pthread_self();
+#endif /*__TEST*/
 }
 
 void supla_mqtt_client_db_datasource::thread_cleanup(void) {
@@ -38,6 +45,10 @@ void supla_mqtt_client_db_datasource::thread_cleanup(void) {
 }
 
 bool supla_mqtt_client_db_datasource::db_connect(void) {
+#ifdef __TEST
+  assert(pthread == pthread_self());
+#endif /*__TEST*/
+
   if (!mqtt_db) {
     mqtt_db = new supla_mqtt_db();
 

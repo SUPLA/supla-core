@@ -86,8 +86,13 @@ bool supla_mqtt_unpublisher_datasource::context_open(
 }
 
 void supla_mqtt_unpublisher_datasource::on_userdata_changed(int user_id) {
-  if (db_connect()) {
-    bool mqtt_enabled = get_db()->mqtt_enabled(user_id);
+  supla_mqtt_db *mqtt_db = new supla_mqtt_db();
+  if (mqtt_db == NULL) {
+    return;
+  }
+
+  if (mqtt_db->connect()) {
+    bool mqtt_enabled = mqtt_db->mqtt_enabled(user_id);
 
     lock();
     bool exists = false;
@@ -122,6 +127,10 @@ void supla_mqtt_unpublisher_datasource::on_userdata_changed(int user_id) {
 
     db_disconnect();
   }
+
+  delete mqtt_db;
+  mqtt_db = NULL;
+
   supla_mqtt_client_db_datasource::on_userdata_changed(user_id);
 }
 
@@ -160,12 +169,14 @@ bool supla_mqtt_unpublisher_datasource::fetch_subscription(char **topic_name,
   lock();
   for (std::list<_unpub_user_item_t>::iterator it = users.begin();
        it != users.end(); ++it) {
-    if (it->needs_subscribe || (it->subscribe_timeto.tv_sec &&
-                                it->subscribe_timeto.tv_sec <= now.tv_sec)) {
+    if ((it->needs_subscribe && !it->subscribe_timeto.tv_sec) ||
+        (it->subscribe_timeto.tv_sec &&
+         it->subscribe_timeto.tv_sec <= now.tv_sec)) {
       user = *it;
       if (it->needs_subscribe) {
         it->subscribe_timeto = now;
         it->subscribe_timeto.tv_sec += SUBSCRIPTION_TIME_SEC;
+        it->needs_subscribe = false;
       } else {
         users.erase(it);
       }
