@@ -39,6 +39,9 @@ sleep 2
 
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
 grep supla-server /var/log/syslog
+cd ./supla-server/Debug
+addr2line -e ./supla-server 000056376869d2d5
+addr2line -e ./supla-server 0x000056376869d2d5
 echo "supla-server did not start!"
 exit 1
 fi

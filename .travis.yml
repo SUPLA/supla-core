@@ -19,7 +19,7 @@ matrix:
       dist: eoan
       compiler: gcc
       install:
-        - sudo apt-get -y install valgrind libmariadbclient-dev-compat
+        - sudo apt-get -y install binutils valgrind libmariadbclient-dev-compat
       addons:
         mariadb: '10.3'
         hosts:
