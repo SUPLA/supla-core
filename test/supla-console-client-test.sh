@@ -37,6 +37,9 @@ fi
 sleep 2
 [ -e /var/log/syslog ] && grep "Incorrect database version!" /var/log/syslog && exit 1
 
+ps ax
+netstat -an
+
 cd supla-console-client/Test
 make clean && make all
 
