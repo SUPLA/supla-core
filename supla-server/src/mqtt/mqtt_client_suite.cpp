@@ -55,6 +55,14 @@ supla_mqtt_client_suite::supla_mqtt_client_suite(void) {
     subscriber_ds = new supla_mqtt_subscriber_datasource(ini_settings);
     subscriber = new supla_mqtt_subscriber(library_adapter_sub, ini_settings,
                                            subscriber_ds, value_setter);
+  } else {
+    library_adapter_pub = NULL;
+    library_adapter_sub = NULL;
+    publisher_ds = NULL;
+    publisher = NULL;
+    value_setter = NULL;
+    subscriber_ds = NULL;
+    subscriber = NULL;
   }
 }
 
