@@ -25,9 +25,6 @@ database=supla_test
 user=supla
 ENDOFCFG
 
-pkill supla-server
-sleep 5
-
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ./supla-server/Release
   if ! [ -e ./supla-server ]; then
