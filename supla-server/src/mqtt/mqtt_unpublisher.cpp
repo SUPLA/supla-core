@@ -90,9 +90,12 @@ void supla_mqtt_unpublisher::on_message_received(
   if (msg->topic_name_size && msg->topic_name && msg->message_size &&
       msg->message) {
     char *topic_name = (char *)malloc(msg->topic_name_size + 1);
-    memcpy(topic_name, msg->topic_name, msg->topic_name_size);
-    topic_name[msg->topic_name_size] = 0;
-    publish(topic_name, NULL, 0, SUPLA_MQTT_QOS_0, true);
+    if (topic_name) {
+      memcpy(topic_name, msg->topic_name, msg->topic_name_size);
+      topic_name[msg->topic_name_size] = 0;
+      publish(topic_name, NULL, 0, SUPLA_MQTT_QOS_0, true);
+      free(topic_name);
+    }
   }
 }
 
