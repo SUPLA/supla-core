@@ -44,6 +44,7 @@ supla_mqtt_client_suite::supla_mqtt_client_suite(void) {
   ini_settings = new supla_mqtt_client_ini_settings();
   if (ini_settings->isMQTTEnabled()) {
     library_adapter_pub = new supla_mqttc_library_adapter(ini_settings);
+    library_adapter_unpub = new supla_mqttc_library_adapter(ini_settings);
     library_adapter_sub = new supla_mqttc_library_adapter(ini_settings);
 
     publisher_ds = new supla_mqtt_publisher_datasource(ini_settings);
@@ -51,15 +52,23 @@ supla_mqtt_client_suite::supla_mqtt_client_suite(void) {
     publisher = new supla_mqtt_publisher(library_adapter_pub, ini_settings,
                                          publisher_ds);
 
+    unpublisher_ds = new supla_mqtt_unpublisher_datasource(ini_settings);
+
+    unpublisher = new supla_mqtt_unpublisher(library_adapter_unpub,
+                                             ini_settings, unpublisher_ds);
+
     value_setter = new supla_mqtt_channel_value_setter(ini_settings);
     subscriber_ds = new supla_mqtt_subscriber_datasource(ini_settings);
     subscriber = new supla_mqtt_subscriber(library_adapter_sub, ini_settings,
                                            subscriber_ds, value_setter);
   } else {
     library_adapter_pub = NULL;
+    library_adapter_unpub = NULL;
     library_adapter_sub = NULL;
     publisher_ds = NULL;
     publisher = NULL;
+    unpublisher_ds = NULL;
+    unpublisher = NULL;
     value_setter = NULL;
     subscriber_ds = NULL;
     subscriber = NULL;
@@ -73,6 +82,12 @@ supla_mqtt_client_suite::~supla_mqtt_client_suite(void) {
     publisher = NULL;
   }
 
+  if (unpublisher) {
+    unpublisher->stop();
+    delete unpublisher;
+    unpublisher = NULL;
+  }
+
   if (subscriber) {
     subscriber->stop();
     delete subscriber;
@@ -84,6 +99,11 @@ supla_mqtt_client_suite::~supla_mqtt_client_suite(void) {
     library_adapter_pub = NULL;
   }
 
+  if (library_adapter_unpub) {
+    delete library_adapter_unpub;
+    library_adapter_unpub = NULL;
+  }
+
   if (library_adapter_sub) {
     delete library_adapter_sub;
     library_adapter_sub = NULL;
@@ -92,6 +112,11 @@ supla_mqtt_client_suite::~supla_mqtt_client_suite(void) {
   if (publisher_ds) {
     delete publisher_ds;
     publisher_ds = NULL;
+  }
+
+  if (unpublisher_ds) {
+    delete unpublisher_ds;
+    unpublisher_ds = NULL;
   }
 
   if (subscriber_ds) {
@@ -115,6 +140,10 @@ void supla_mqtt_client_suite::start(void) {
     publisher->start();
   }
 
+  if (unpublisher) {
+    unpublisher->start();
+  }
+
   if (subscriber) {
     subscriber->start();
   }
@@ -123,6 +152,10 @@ void supla_mqtt_client_suite::start(void) {
 void supla_mqtt_client_suite::stop(void) {
   if (publisher) {
     publisher->stop();
+  }
+
+  if (unpublisher) {
+    unpublisher->stop();
   }
 
   if (subscriber) {
@@ -150,6 +183,14 @@ void supla_mqtt_client_suite::onChannelStateChanged(int UserID, int DeviceID,
 }
 
 void supla_mqtt_client_suite::beforeChannelFunctionChange(int UserID,
-                                                          int ChannelID) {}
+                                                          int ChannelID) {
+  if (unpublisher && st_app_terminate == 0) {
+    unpublisher->before_channel_function_change(UserID, ChannelID);
+  }
+}
 
-void supla_mqtt_client_suite::beforeDeviceDelete(int UserID, int DeviceID) {}
+void supla_mqtt_client_suite::beforeDeviceDelete(int UserID, int DeviceID) {
+  if (unpublisher && st_app_terminate == 0) {
+    unpublisher->before_device_delete(UserID, DeviceID);
+  }
+}

@@ -134,6 +134,12 @@ void supla_mqtt_unpublisher_datasource::on_userdata_changed(int user_id) {
   supla_mqtt_client_db_datasource::on_userdata_changed(user_id);
 }
 
+void supla_mqtt_unpublisher_datasource::before_channel_function_change(
+    int UserID, int ChannelID) {}
+
+void supla_mqtt_unpublisher_datasource::before_device_delete(int UserID,
+                                                             int DeviceID) {}
+
 bool supla_mqtt_unpublisher_datasource::_fetch(supla_mqtt_ds_context *context,
                                                char **topic_name,
                                                void **message,

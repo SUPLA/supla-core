@@ -52,6 +52,8 @@ class supla_mqtt_unpublisher_datasource
   virtual void thread_init(void);
   bool fetch_subscription(char **topic_name, bool *unsubscribe);
   virtual void on_userdata_changed(int user_id);
+  virtual void before_channel_function_change(int UserID, int ChannelID);
+  virtual void before_device_delete(int UserID, int DeviceID);
 };
 
 #endif /*MQTT_UNPUBLISHER_DATASOURCE_H_*/

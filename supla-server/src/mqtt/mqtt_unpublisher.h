@@ -37,6 +37,8 @@ class supla_mqtt_unpublisher : public supla_mqtt_client {
                          supla_mqtt_client_settings *settings,
                          supla_mqtt_client_datasource *datasource);
   virtual ~supla_mqtt_unpublisher(void);
+  virtual void before_channel_function_change(int UserID, int ChannelID);
+  virtual void before_device_delete(int UserID, int DeviceID);
 };
 
 #endif /*MQTT_UNPUBLISHER_H_*/

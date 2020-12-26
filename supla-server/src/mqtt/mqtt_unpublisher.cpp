@@ -95,3 +95,22 @@ void supla_mqtt_unpublisher::on_message_received(
     publish(topic_name, NULL, 0, SUPLA_MQTT_QOS_0, true);
   }
 }
+
+void supla_mqtt_unpublisher::before_channel_function_change(int UserID,
+                                                            int ChannelID) {
+  supla_mqtt_unpublisher_datasource *ds =
+      static_cast<supla_mqtt_unpublisher_datasource *>(datasource);
+
+  if (ds != NULL) {
+    ds->before_channel_function_change(UserID, ChannelID);
+  }
+}
+
+void supla_mqtt_unpublisher::before_device_delete(int UserID, int DeviceID) {
+  supla_mqtt_unpublisher_datasource *ds =
+      static_cast<supla_mqtt_unpublisher_datasource *>(datasource);
+
+  if (ds != NULL) {
+    ds->before_device_delete(UserID, DeviceID);
+  }
+}
