@@ -20,6 +20,7 @@
 #define MQTT_CLIENT_DATASOURCE_H_
 
 #include <stdlib.h>
+#include <list>
 #include "database.h"
 #include "mqtt_client_library_adapter.h"
 #include "mqtt_client_settings.h"

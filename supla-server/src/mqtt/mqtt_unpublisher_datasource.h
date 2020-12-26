@@ -19,6 +19,7 @@
 #ifndef MQTT_UNPUBLISHER_DATASOURCE_H_
 #define MQTT_UNPUBLISHER_DATASOURCE_H_
 
+#include <list>
 #include "mqtt_client_db_datasource.h"
 #include "mqtt_unpublisher_user_topic_provider.h"
 
