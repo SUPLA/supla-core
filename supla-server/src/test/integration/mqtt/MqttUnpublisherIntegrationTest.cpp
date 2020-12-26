@@ -100,7 +100,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
                 "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
             0);
 
-  sleep(12);
+  sleep(22);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 2);
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
@@ -193,7 +193,92 @@ TEST_F(MqttUnpublisherIntegrationTest, disableEnabled) {
                 "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 
-  sleep(12);
+  sleep(22);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 2);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  ASSERT_EQ(
+      getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
+
+      0);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+            0);
+}
+
+TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
+  waitForConnection();
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  runSqlScript("DisableMqttForUser48.sql");
+
+  getDS()->on_userdata_changed(48);
+  sleep(2);
+
+  ASSERT_FALSE(getDS()->is_context_open());
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
+
+  ASSERT_EQ(
+      getLibAdapter()->subscribed_pop().compare("supla/48test@supla.org/#"),
+
+      0);
+
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+            0);
+
+  sleep(5);
+
+  runSqlScript("EnableMqttForUser48.sql");
+
+  getDS()->on_userdata_changed(48);
+  sleep(2);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 2);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  ASSERT_EQ(
+      getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
+
+      0);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+            0);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  runSqlScript("DisableMqttForUser48.sql");
+
+  getDS()->on_userdata_changed(48);
+  sleep(2);
+
+  ASSERT_FALSE(getDS()->is_context_open());
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
+
+  ASSERT_EQ(
+      getLibAdapter()->subscribed_pop().compare("supla/48test@supla.org/#"),
+
+      0);
+
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+            0);
+
+  sleep(22);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 2);
   ASSERT_EQ(getLibAdapter()->published_count(), 0);

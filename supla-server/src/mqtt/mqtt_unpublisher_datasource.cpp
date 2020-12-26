@@ -183,6 +183,9 @@ bool supla_mqtt_unpublisher_datasource::fetch_subscription(char **topic_name,
         it->subscribe_timeto = now;
         it->subscribe_timeto.tv_sec += SUBSCRIPTION_TIME_SEC;
         it->needs_subscribe = false;
+      } else if (it->mqtt_enabled) {
+        it->subscribe_timeto.tv_sec = 0;
+        it->subscribe_timeto.tv_usec = 0;
       } else {
         users.erase(it);
       }
