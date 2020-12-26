@@ -873,6 +873,18 @@ void supla_user::on_mqtt_settings_changed(int UserID) {
 }
 
 // static
+void supla_user::before_channel_function_change(int UserID, int ChannelID) {
+  supla_mqtt_client_suite::globalInstance()->beforeChannelFunctionChange(
+      UserID, ChannelID);
+}
+
+// static
+void supla_user::before_device_delete(int UserID, int DeviceID) {
+  supla_mqtt_client_suite::globalInstance()->beforeDeviceDelete(UserID,
+                                                                DeviceID);
+}
+
+// static
 void supla_user::on_device_deleted(int UserID,
                                    event_source_type eventSourceType) {
   safe_array_lock(supla_user::user_arr);

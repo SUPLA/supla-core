@@ -148,3 +148,8 @@ void supla_mqtt_client_suite::onChannelStateChanged(int UserID, int DeviceID,
     publisher->on_channelstate_changed(UserID, DeviceID, ChannelID);
   }
 }
+
+void supla_mqtt_client_suite::beforeChannelFunctionChange(int UserID,
+                                                          int ChannelID) {}
+
+void supla_mqtt_client_suite::beforeDeviceDelete(int UserID, int DeviceID) {}

@@ -54,6 +54,8 @@ class svr_ipcctrl {
   void google_home_credentials_changed(const char *cmd);
   void state_webhook_changed(const char *cmd);
   void mqtt_settings_changed(const char *cmd);
+  void before_channel_function_change(const char *cmd);
+  void before_device_delete(const char *cmd);
   void on_device_deleted(const char *cmd);
 
   void send_result(const char *result);

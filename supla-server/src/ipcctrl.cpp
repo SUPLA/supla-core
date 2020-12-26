@@ -67,6 +67,11 @@ const char cmd_user_on_device_deleted[] = "USER-ON-DEVICE-DELETED:";
 
 const char cmd_user_mqtt_settings_changed[] = "USER-MQTT-SETTINGS-CHANGED:";
 
+const char cmd_user_before_device_delete[] = "USER-BEFORE-DEVICE-DELETE:";
+
+const char cmd_user_before_channel_function_change[] =
+    "USER-BEFORE-CHANNEL-FUNCTION-CHANGE:";
+
 char ACT_VAR[] = ",ALEXA-CORRELATION-TOKEN=";
 char GRI_VAR[] = ",GOOGLE-REQUEST-ID=";
 
@@ -540,6 +545,35 @@ void svr_ipcctrl::mqtt_settings_changed(const char *cmd) {
   }
 }
 
+void svr_ipcctrl::before_channel_function_change(const char *cmd) {
+  int UserID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_before_channel_function_change,
+                         IPC_BUFFER_SIZE)],
+         "%i,%i", &UserID, &ChannelID);
+  if (UserID && ChannelID) {
+    supla_user::before_channel_function_change(UserID, EST_IPC);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
+void svr_ipcctrl::before_device_delete(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_before_device_delete, IPC_BUFFER_SIZE)],
+         "%i,%i", &UserID, &DeviceID);
+  if (UserID && DeviceID) {
+    supla_user::before_device_delete(UserID, EST_IPC);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
 void svr_ipcctrl::on_device_deleted(const char *cmd) {
   int UserID = 0;
 
@@ -680,7 +714,16 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_user_on_device_deleted, len)) {
           on_device_deleted(cmd_user_on_device_deleted);
 
+        } else if (match_command(cmd_user_before_device_delete, len)) {
+          before_device_delete(cmd_user_before_device_delete);
+
+        } else if (match_command(cmd_user_before_channel_function_change,
+                                 len)) {
+          before_channel_function_change(
+              cmd_user_before_channel_function_change);
+
         } else {
+          supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
           send_result("COMMAND_UNKNOWN");
         }
 
