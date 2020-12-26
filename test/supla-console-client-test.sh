@@ -26,7 +26,7 @@ user=supla
 ENDOFCFG
 
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
-  cd ./supla-server/Release
+  cd ./supla-server/Debug
   # if ! [ -e ./supla-server ]; then
      make clean && make all
   # fi
