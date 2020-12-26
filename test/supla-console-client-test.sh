@@ -39,6 +39,7 @@ sleep 2
 
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
 grep supla-server /var/log/syslog
+../../tools/valgrind-noundef.sh "./supla-server -c /etc/supla-server/supla-test.cfg"
 echo "supla-server did not start!"
 exit 1
 fi
