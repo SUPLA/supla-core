@@ -164,8 +164,14 @@ void supla_mqtt_client_suite::stop(void) {
 }
 
 void supla_mqtt_client_suite::onUserSettingsChanged(int UserID) {
-  if (publisher && st_app_terminate == 0) {
-    publisher->on_userdata_changed(UserID);
+  if (st_app_terminate == 0) {
+    if (publisher) {
+      publisher->on_userdata_changed(UserID);
+    }
+
+    if (unpublisher) {
+      unpublisher->on_userdata_changed(UserID);
+    }
   }
 }
 
