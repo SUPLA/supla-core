@@ -31,9 +31,12 @@ void MqttIniSettingsTest::SetUp() {
 void MqttIniSettingsTest::TearDown() { delete iniSettings; }
 
 TEST_F(MqttIniSettingsTest, serverConfigurationTest) {
+  ASSERT_FALSE(iniSettings->getHost() == NULL);
   ASSERT_EQ(strcmp(iniSettings->getHost(), "192.168.111.30"), 0);
   ASSERT_EQ(iniSettings->getPort(), 1883);
+  ASSERT_FALSE(iniSettings->getUsername() == NULL);
   ASSERT_EQ(strcmp(iniSettings->getUsername(), "supla-server"), 0);
+  ASSERT_FALSE(iniSettings->getPassword() == NULL);
   ASSERT_EQ(strcmp(iniSettings->getPassword(), "alkdmalsdaskdn"), 0);
   ASSERT_TRUE(iniSettings->getPrefix() == NULL);
   ASSERT_EQ(iniSettings->isMQTTEnabled(), true);
