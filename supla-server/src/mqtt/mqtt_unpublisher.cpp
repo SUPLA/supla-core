@@ -106,6 +106,7 @@ void supla_mqtt_unpublisher::before_channel_function_change(int UserID,
 
   if (ds != NULL) {
     ds->before_channel_function_change(UserID, ChannelID);
+    library_adapter->raise_event();
   }
 }
 
@@ -115,5 +116,16 @@ void supla_mqtt_unpublisher::before_device_delete(int UserID, int DeviceID) {
 
   if (ds != NULL) {
     ds->before_device_delete(UserID, DeviceID);
+    library_adapter->raise_event();
+  }
+}
+
+void supla_mqtt_unpublisher::on_device_deleted(int UserID, int DeviceID) {
+  supla_mqtt_unpublisher_datasource *ds =
+      static_cast<supla_mqtt_unpublisher_datasource *>(datasource);
+
+  if (ds != NULL) {
+    ds->on_device_deleted(UserID, DeviceID);
+    library_adapter->raise_event();
   }
 }

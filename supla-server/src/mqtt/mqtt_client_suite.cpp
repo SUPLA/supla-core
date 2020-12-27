@@ -200,3 +200,9 @@ void supla_mqtt_client_suite::beforeDeviceDelete(int UserID, int DeviceID) {
     unpublisher->before_device_delete(UserID, DeviceID);
   }
 }
+
+void supla_mqtt_client_suite::onDeviceDeleted(int UserID, int DeviceID) {
+  if (unpublisher && st_app_terminate == 0) {
+    unpublisher->on_device_deleted(UserID, DeviceID);
+  }
+}

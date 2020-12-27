@@ -885,7 +885,7 @@ void supla_user::before_device_delete(int UserID, int DeviceID) {
 }
 
 // static
-void supla_user::on_device_deleted(int UserID,
+void supla_user::on_device_deleted(int UserID, int DeviceID,
                                    event_source_type eventSourceType) {
   safe_array_lock(supla_user::user_arr);
   supla_user *user =
@@ -894,6 +894,9 @@ void supla_user::on_device_deleted(int UserID,
   if (user) {
     supla_http_request_queue::getInstance()->onDeviceDeletedEvent(
         user, 0, eventSourceType);
+
+    supla_mqtt_client_suite::globalInstance()->onDeviceDeleted(UserID,
+                                                               DeviceID);
   }
 
   safe_array_unlock(supla_user::user_arr);

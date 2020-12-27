@@ -60,6 +60,7 @@ class supla_mqtt_client_suite {
   void onChannelStateChanged(int UserID, int DeviceID, int ChannelID);
   void beforeChannelFunctionChange(int UserID, int ChannelID);
   void beforeDeviceDelete(int UserID, int DeviceID);
+  void onDeviceDeleted(int UserID, int DeviceID);
 };
 
 #endif /*MQTT_CLIENT_SUITE_H_*/

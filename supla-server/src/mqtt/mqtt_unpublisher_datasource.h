@@ -20,7 +20,9 @@
 #define MQTT_UNPUBLISHER_DATASOURCE_H_
 
 #include <list>
+#include "mqtt_channelandstate_message_provider.h"
 #include "mqtt_client_db_datasource.h"
+#include "mqtt_device_message_provider.h"
 #include "mqtt_unpublisher_user_topic_provider.h"
 
 typedef struct {
@@ -30,12 +32,27 @@ typedef struct {
   struct timeval subscribe_timeto;
 } _unpub_user_item_t;
 
+typedef struct {
+  _mqtt_db_data_row_device_t device;
+  std::list<_mqtt_db_data_row_channel_t> channels;
+  struct timeval event_time;
+} _unpub_device_item_t;
+
 class supla_mqtt_unpublisher_datasource
     : public supla_mqtt_client_db_datasource {
  private:
   std::list<_unpub_user_item_t> users;
   supla_mqtt_unpublisher_user_topic_provider *user_topic_provider;
   _mqtt_db_data_row_user_t row;
+
+  std::list<_unpub_device_item_t> deleted_devices;
+  _unpub_device_item_t current_device;
+  supla_mqtt_device_message_provider *device_message_provider;
+  supla_mqtt_channelandstate_message_provider *channel_message_provider;
+  _mqtt_db_data_row_channel_t *current_channel_row;
+
+  void remove_expired(void);
+  bool fetch_deleted_device(char **topic_name);
 
  protected:
   bool is_user_enabled(int user_id);
@@ -54,6 +71,7 @@ class supla_mqtt_unpublisher_datasource
   virtual void on_userdata_changed(int user_id);
   virtual void before_channel_function_change(int UserID, int ChannelID);
   virtual void before_device_delete(int UserID, int DeviceID);
+  virtual void on_device_deleted(int UserID, int DeviceID);
 };
 
 #endif /*MQTT_UNPUBLISHER_DATASOURCE_H_*/
