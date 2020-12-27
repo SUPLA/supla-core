@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_unpublisher_datasource.h>
+#include "mqtt_unpublisher_datasource.h"
 #include <string.h>
 
 #define SUBSCRIPTION_TIME_SEC 20
@@ -286,6 +286,7 @@ bool supla_mqtt_unpublisher_datasource::is_context_allowed(
 
 bool supla_mqtt_unpublisher_datasource::context_open(
     supla_mqtt_ds_context *context) {
+  bool result = false;
   if (context->get_scope() == MQTTDS_SCOPE_DEVICE) {
     lock();
     for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
@@ -300,11 +301,12 @@ bool supla_mqtt_unpublisher_datasource::context_open(
           device_message_provider = new supla_mqtt_device_message_provider();
         }
         device_message_provider->set_data_row(&current_device.device);
+        result = true;
       }
     }
     unlock();
   }
-  return false;
+  return result;
 }
 
 void supla_mqtt_unpublisher_datasource::context_close(

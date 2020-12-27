@@ -40,6 +40,11 @@ supla_mqtt_client_datasource *MqttUnpublisherIntegrationTest::dsInit(
   return new supla_mqtt_unpublisher_datasource(settings);
 }
 
+supla_mqtt_unpublisher_datasource *MqttUnpublisherIntegrationTest::getDS(void) {
+  return static_cast<supla_mqtt_unpublisher_datasource *>(
+      MqttClientIntegrationTest::getDS());
+}
+
 void MqttUnpublisherIntegrationTest::SetUp() {
   initTestDatabase();
   runSqlScript("DataForMqttTests.sql");
@@ -193,17 +198,29 @@ TEST_F(MqttUnpublisherIntegrationTest, disableEnabled) {
                 "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 
+  getLibAdapter()->on_message_received("supla/48test@supla.org/1", "123");
+  getLibAdapter()->on_message_received("supla/48test@supla.org/2", "123");
+  getLibAdapter()->on_message_received("supla/48test@supla.org/3", "123");
+  getLibAdapter()->on_message_received("supla/48test@supla.org/4", "123");
+  getLibAdapter()->on_message_received("supla/48test@supla.org/5", "123");
+
   sleep(22);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 2);
-  ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  // print_expected();
+
+  const char *expectedData[] = {
+      "supla/48test@supla.org/1", NULL, "supla/48test@supla.org/2", NULL,
+      "supla/48test@supla.org/3", NULL, "supla/48test@supla.org/4", NULL,
+      "supla/48test@supla.org/5", NULL};
+
+  verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 
   ASSERT_EQ(
       getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
-
       0);
-
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
                 "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
@@ -292,5 +309,227 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
                 "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
+}
+
+TEST_F(MqttUnpublisherIntegrationTest, deleteDeviceWithTimeout) {
+  waitForConnection();
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  getDS()->before_device_delete(743, 506);
+  sleep(15);
+  getDS()->on_device_deleted(743, 506);
+  sleep(2);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+}
+
+TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
+  waitForConnection();
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  getDS()->before_device_delete(117, 36);
+  getDS()->before_device_delete(743, 506);
+  sleep(2);
+  getDS()->on_device_deleted(117, 36);
+  getDS()->on_device_deleted(743, 506);
+  waitForPublications(74);
+
+  // print_expected();
+
+  const char *expectedData[] = {
+      "supla/117test@supla.org/devices/36/enabled",
+      NULL,
+      "supla/117test@supla.org/devices/36/last_connected",
+      NULL,
+      "supla/117test@supla.org/devices/36/last_ipv4",
+      NULL,
+      "supla/117test@supla.org/devices/36/manufacturer",
+      NULL,
+      "supla/117test@supla.org/devices/36/name",
+      NULL,
+      "supla/117test@supla.org/devices/36/proto_ver",
+      NULL,
+      "supla/117test@supla.org/devices/36/soft_ver",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/50/type",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/50/function",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/50/caption",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/50/hidden",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/50/state/connected",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/50/state/on",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/51/type",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/51/function",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/51/caption",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/51/hidden",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/51/state/connected",
+      NULL,
+      "supla/117test@supla.org/devices/36/channels/51/state/on",
+      NULL,
+      "supla/743test@supla.org/devices/506/enabled",
+      NULL,
+      "supla/743test@supla.org/devices/506/last_connected",
+      NULL,
+      "supla/743test@supla.org/devices/506/last_ipv4",
+      NULL,
+      "supla/743test@supla.org/devices/506/manufacturer",
+      NULL,
+      "supla/743test@supla.org/devices/506/name",
+      NULL,
+      "supla/743test@supla.org/devices/506/proto_ver",
+      NULL,
+      "supla/743test@supla.org/devices/506/soft_ver",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/type",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/function",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/caption",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/hidden",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/connected",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/total_cost",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_cost_balanced",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/price_per_unit",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/currency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/support",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_forward_active_energy_balanced",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_reverse_active_energy_balanced",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_reverse_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_forward_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_reverse_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "frequency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/voltage",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/current",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_active",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_reactive",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_apparent",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_factor",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "phase_angle",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_reverse_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_forward_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_reverse_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "frequency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/voltage",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/current",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_active",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_reactive",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_apparent",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_factor",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "phase_angle",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_reverse_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_forward_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_reverse_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "frequency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/voltage",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/current",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_active",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_reactive",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_apparent",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_factor",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "phase_angle",
+      NULL};
+
+  verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
 }
 } /* namespace testing */

@@ -20,6 +20,7 @@
 #define MqttUnpublisherIntegrationTest_H_
 
 #include "MqttClientIntegrationTest.h"
+#include "mqtt_unpublisher_datasource.h"
 
 namespace testing {
 
@@ -30,6 +31,9 @@ class MqttUnpublisherIntegrationTest : public MqttClientIntegrationTest {
       supla_mqtt_client_datasource *datasource);
   virtual supla_mqtt_client_datasource *dsInit(
       supla_mqtt_client_settings *settings);
+
+ protected:
+  supla_mqtt_unpublisher_datasource *getDS(void);
 
  public:
   virtual void SetUp();

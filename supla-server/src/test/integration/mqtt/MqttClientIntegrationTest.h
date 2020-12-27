@@ -36,10 +36,14 @@ class MqttClientIntegrationTest : public IntegrationTest {
 
  protected:
   void waitForConnection();
-  supla_mqtt_client *getClient(void);
-  supla_mqtt_client_datasource *getDS(void);
-  MqttClientLibraryAdapterMock *getLibAdapter(void);
-  MqttClientSettingsMock *getSettings(void);
+  void waitForPublications(int expectedTopicCount);
+  void verify_published(const char *expectedData[], int count);
+  void print_expected(void);
+
+  virtual supla_mqtt_client *getClient(void);
+  virtual supla_mqtt_client_datasource *getDS(void);
+  virtual MqttClientLibraryAdapterMock *getLibAdapter(void);
+  virtual MqttClientSettingsMock *getSettings(void);
 
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,

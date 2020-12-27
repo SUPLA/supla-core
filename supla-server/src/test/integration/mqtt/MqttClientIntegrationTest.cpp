@@ -66,4 +66,87 @@ void MqttClientIntegrationTest::waitForConnection() {
 
   ASSERT_TRUE(false);
 }
+
+void MqttClientIntegrationTest::waitForPublications(int expectedTopicCount) {
+  for (int a = 0; a < 5000; a++) {
+    if (getLibAdapter()->published_count() == expectedTopicCount &&
+        !getDS()->is_context_open()) {
+      return;
+    }
+    usleep(1000);
+  }
+
+  EXPECT_EQ(getLibAdapter()->published_count(), expectedTopicCount);
+  EXPECT_TRUE(getDS()->is_context_open());
+  ASSERT_TRUE(false);
+}
+
+void MqttClientIntegrationTest::print_expected(void) {
+  printf("const char *expectedData[] = {\n");
+  bool first = true;
+  while (getLibAdapter()->published_count()) {
+    _mqtt_test_message_t m = getLibAdapter()->published_pop();
+    if (first) {
+      first = false;
+    } else {
+      printf(", ");
+    }
+    printf("%s%s%s, %s%s%s\n", m.topic_name ? "\"" : "",
+           m.topic_name ? m.topic_name : "NULL", m.topic_name ? "\"" : "",
+           m.message ? "\"" : "", m.message ? (char *)m.message : "NULL",
+           m.message ? "\"" : "");
+
+    if (m.topic_name) {
+      free(m.topic_name);
+    }
+    if (m.message) {
+      free(m.message);
+    }
+  }
+  printf("};\n");
+}
+
+void MqttClientIntegrationTest::verify_published(const char *expectedData[],
+                                                 int count) {
+  ASSERT_EQ(count / 2, getLibAdapter()->published_count());
+
+  int n = 0;
+  bool ok = true;
+  while (getLibAdapter()->published_count() && ok) {
+    _mqtt_test_message_t m = getLibAdapter()->published_pop();
+
+    if ((m.topic_name != NULL && expectedData[n] == NULL) ||
+        (m.topic_name == NULL && expectedData[n] != NULL) ||
+        (m.topic_name != NULL && strcmp(m.topic_name, expectedData[n]) != 0)) {
+      supla_log(LOG_DEBUG, "TOPIC n==%i|%s|%s", n,
+                m.topic_name ? m.topic_name : "NULL",
+                expectedData[n] ? expectedData[n] : "NULL");
+      EXPECT_TRUE(false);
+      ok = false;
+    }
+
+    size_t edlen = expectedData[n + 1] ? strlen(expectedData[n + 1]) : 0;
+
+    if (ok &&
+        ((m.message != NULL && expectedData[n + 1] == NULL) ||
+         (m.message == NULL && expectedData[n + 1] != NULL) ||
+         (m.message_size != edlen) ||
+         (m.message_size > 0 && strcmp(m.message, expectedData[n + 1]) != 0))) {
+      supla_log(LOG_DEBUG, "MESSAGE n==%i|%s|%s", n,
+                m.message ? m.message : "NULL",
+                expectedData[n + 1] ? expectedData[n + 1] : "NULL");
+      EXPECT_TRUE(false);
+      ok = false;
+    }
+
+    n += 2;
+    if (m.topic_name) {
+      free(m.topic_name);
+    }
+    if (m.message) {
+      free(m.message);
+    }
+  }
+}
+
 } /* namespace testing */

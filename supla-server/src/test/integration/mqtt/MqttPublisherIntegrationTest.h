@@ -25,9 +25,6 @@ namespace testing {
 
 class MqttPublisherIntegrationTest : public MqttClientIntegrationTest {
  protected:
-  void waitForData(int expectedTopicCount);
-  void verify(const char *expectedData[], int count);
-  void print(void);
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,
       supla_mqtt_client_settings *settings,
