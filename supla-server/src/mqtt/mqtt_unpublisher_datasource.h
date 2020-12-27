@@ -21,6 +21,7 @@
 
 #include <list>
 #include "mqtt_channelandstate_message_provider.h"
+#include "mqtt_channelandstate_removed_topics_provider.h"
 #include "mqtt_client_db_datasource.h"
 #include "mqtt_device_message_provider.h"
 #include "mqtt_unpublisher_user_topic_provider.h"
@@ -38,6 +39,12 @@ typedef struct {
   struct timeval event_time;
 } _unpub_device_item_t;
 
+typedef struct {
+  _mqtt_db_data_row_channel_t before;
+  _mqtt_db_data_row_channel_t after;
+  struct timeval event_time;
+} _unpub_channel_item_t;
+
 class supla_mqtt_unpublisher_datasource
     : public supla_mqtt_client_db_datasource {
  private:
@@ -46,13 +53,18 @@ class supla_mqtt_unpublisher_datasource
   _mqtt_db_data_row_user_t row;
 
   std::list<_unpub_device_item_t> deleted_devices;
-  _unpub_device_item_t current_device;
+  _unpub_device_item_t *current_device;
   supla_mqtt_device_message_provider *device_message_provider;
   supla_mqtt_channelandstate_message_provider *channel_message_provider;
   _mqtt_db_data_row_channel_t *current_channel_row;
 
+  std::list<_unpub_channel_item_t> modified_channels;
+  supla_mqtt_channelandstate_removed_topics_provider *removed_topics_provider;
+
   void remove_expired(void);
   bool fetch_deleted_device(char **topic_name);
+  bool load_channel_row(int UserID, int ChannelID,
+                        _mqtt_db_data_row_channel_t *row);
 
  protected:
   bool is_user_enabled(int user_id);
@@ -70,6 +82,7 @@ class supla_mqtt_unpublisher_datasource
   bool fetch_subscription(char **topic_name, bool *unsubscribe);
   virtual void on_userdata_changed(int user_id);
   virtual void before_channel_function_change(int UserID, int ChannelID);
+  virtual void on_channel_function_changed(int UserID, int ChannelID);
   virtual void before_device_delete(int UserID, int DeviceID);
   virtual void on_device_deleted(int UserID, int DeviceID);
 };

@@ -139,11 +139,95 @@ void supla_mqtt_unpublisher_datasource::remove_expired(void) {
       --it;
     }
   }
+
+  for (std::list<_unpub_channel_item_t>::iterator it =
+           modified_channels.begin();
+       it != modified_channels.end(); ++it) {
+    if (it->event_time.tv_sec + EXPIRE_TIME_SEC < now.tv_sec) {
+      it = modified_channels.erase(it);
+      --it;
+    }
+  }
   unlock();
 }
 
+bool supla_mqtt_unpublisher_datasource::load_channel_row(
+    int UserID, int ChannelID, _mqtt_db_data_row_channel_t *row) {
+  row->channel_id = 0;
+
+  supla_mqtt_db *mqtt_db = new supla_mqtt_db();
+  if (mqtt_db == NULL) {
+    return false;
+  }
+
+  if (mqtt_db->connect()) {
+    void *query = mqtt_db->open_channelquery(UserID, 0, ChannelID, row);
+    if (query) {
+      if (!mqtt_db->channelquery_fetch_row(query)) {
+        row->channel_id = 0;
+      }
+      mqtt_db->close_channelquery(query);
+    }
+  }
+
+  delete mqtt_db;
+  mqtt_db = NULL;
+
+  return row->channel_id;
+}
+
 void supla_mqtt_unpublisher_datasource::before_channel_function_change(
-    int UserID, int ChannelID) {}
+    int UserID, int ChannelID) {
+  remove_expired();
+
+  bool exists = false;
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  lock();
+  for (std::list<_unpub_channel_item_t>::iterator it =
+           modified_channels.begin();
+       it != modified_channels.end(); ++it) {
+    if (it->before.channel_id == ChannelID) {
+      exists = true;
+      it->event_time = now;
+      break;
+    }
+  }
+  unlock();
+
+  if (exists) {
+    return;
+  }
+
+  _unpub_channel_item_t channel;
+  channel.event_time.tv_sec = 0;
+  channel.event_time.tv_usec = 0;
+  channel.before.channel_id = 0;
+
+  if (load_channel_row(UserID, ChannelID, &channel.before)) {
+    lock();
+    modified_channels.push_back(channel);
+    unlock();
+  }
+}
+
+void supla_mqtt_unpublisher_datasource::on_channel_function_changed(
+    int UserID, int ChannelID) {
+  remove_expired();
+
+  lock();
+  for (std::list<_unpub_channel_item_t>::iterator it =
+           modified_channels.begin();
+       it != modified_channels.end(); ++it) {
+    if (it->before.channel_id == ChannelID) {
+      on_channelstate_changed(it->before.user_id, it->before.device_id,
+                              it->before.channel_id);
+      break;
+    }
+  }
+  unlock();
+}
 
 void supla_mqtt_unpublisher_datasource::before_device_delete(int UserID,
                                                              int DeviceID) {
@@ -171,6 +255,7 @@ void supla_mqtt_unpublisher_datasource::before_device_delete(int UserID,
   _unpub_device_item_t device;
   device.event_time.tv_sec = 0;
   device.event_time.tv_usec = 0;
+  device.device.device_id = 0;
 
   supla_mqtt_db *mqtt_db = new supla_mqtt_db();
   if (mqtt_db == NULL) {
@@ -248,7 +333,7 @@ bool supla_mqtt_unpublisher_datasource::fetch_deleted_device(
     return true;
   }
 
-  if (current_device.channels.size() == 0) {
+  if (current_device->channels.size() == 0) {
     return false;
   }
 
@@ -257,8 +342,8 @@ bool supla_mqtt_unpublisher_datasource::fetch_deleted_device(
         sizeof(_mqtt_db_data_row_channel_t));
   }
 
-  *current_channel_row = current_device.channels.front();
-  current_device.channels.pop_front();
+  *current_channel_row = current_device->channels.front();
+  current_device->channels.pop_front();
   channel_message_provider->set_data_row(current_channel_row);
 
   return channel_message_provider->fetch(get_settings()->getPrefix(),
@@ -275,12 +360,17 @@ bool supla_mqtt_unpublisher_datasource::_fetch(supla_mqtt_ds_context *context,
     return true;
   }
 
+  if (removed_topics_provider) {
+    return removed_topics_provider->fetch(NULL, topic_name, NULL, NULL);
+  }
+
   return false;
 }
 
 bool supla_mqtt_unpublisher_datasource::is_context_allowed(
     supla_mqtt_ds_context *context) {
-  return context->get_scope() == MQTTDS_SCOPE_DEVICE &&
+  return (context->get_scope() == MQTTDS_SCOPE_DEVICE ||
+          context->get_scope() == MQTTDS_SCOPE_CHANNEL_STATE) &&
          is_user_enabled(context->get_user_id());
 }
 
@@ -288,23 +378,62 @@ bool supla_mqtt_unpublisher_datasource::context_open(
     supla_mqtt_ds_context *context) {
   bool result = false;
   if (context->get_scope() == MQTTDS_SCOPE_DEVICE) {
+    if (current_device != NULL) {
+      delete current_device;
+      current_device = NULL;
+    }
+
     lock();
     for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
          it != deleted_devices.end(); ++it) {
       if (it->device.device_id == context->get_device_id()) {
-        current_device = *it;
+        current_device = new _unpub_device_item_t;
 
-        it = deleted_devices.erase(it);
-        --it;
-
-        if (device_message_provider == NULL) {
-          device_message_provider = new supla_mqtt_device_message_provider();
-        }
-        device_message_provider->set_data_row(&current_device.device);
-        result = true;
+        *current_device = *it;
+        deleted_devices.erase(it);
+        break;
       }
     }
     unlock();
+
+    if (current_device) {
+      if (device_message_provider == NULL) {
+        device_message_provider = new supla_mqtt_device_message_provider();
+      }
+      device_message_provider->set_data_row(&current_device->device);
+      result = true;
+    }
+
+  } else if (context->get_scope() == MQTTDS_SCOPE_CHANNEL_STATE) {
+    _unpub_channel_item_t *channel = NULL;
+
+    lock();
+    for (std::list<_unpub_channel_item_t>::iterator it =
+             modified_channels.begin();
+         it != modified_channels.end(); ++it) {
+      if (it->before.channel_id == context->get_channel_id()) {
+        channel = new _unpub_channel_item_t;
+        *channel = *it;
+
+        modified_channels.erase(it);
+        break;
+      }
+    }
+    unlock();
+
+    if (channel) {
+      if (removed_topics_provider == NULL) {
+        removed_topics_provider =
+            new supla_mqtt_channelandstate_removed_topics_provider();
+      }
+      if (removed_topics_provider) {
+        removed_topics_provider->set_data(get_settings()->getPrefix(),
+                                          &channel->before, &channel->after);
+        result = true;
+      }
+
+      delete channel;
+    }
   }
   return result;
 }
@@ -321,9 +450,19 @@ void supla_mqtt_unpublisher_datasource::context_close(
     channel_message_provider = NULL;
   }
 
+  if (current_device) {
+    delete current_device;
+    current_device = NULL;
+  }
+
   if (current_channel_row) {
     free(current_channel_row);
     current_channel_row = NULL;
+  }
+
+  if (removed_topics_provider) {
+    delete removed_topics_provider;
+    removed_topics_provider = NULL;
   }
 }
 

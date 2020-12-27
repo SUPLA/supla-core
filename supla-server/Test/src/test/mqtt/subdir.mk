@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.cpp \
 ../src/test/mqtt/MqttChannelMessageProviderTest.cpp \
 ../src/test/mqtt/MqttDataSourceMock.cpp \
 ../src/test/mqtt/MqttDataSourceTest.cpp \
@@ -17,6 +18,7 @@ CPP_SRCS += \
 ../src/test/mqtt/MqttUserMessageProviderTest.cpp 
 
 OBJS += \
+./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.o \
 ./src/test/mqtt/MqttChannelMessageProviderTest.o \
 ./src/test/mqtt/MqttDataSourceMock.o \
 ./src/test/mqtt/MqttDataSourceTest.o \
@@ -30,6 +32,7 @@ OBJS += \
 ./src/test/mqtt/MqttUserMessageProviderTest.o 
 
 CPP_DEPS += \
+./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.d \
 ./src/test/mqtt/MqttChannelMessageProviderTest.d \
 ./src/test/mqtt/MqttDataSourceMock.d \
 ./src/test/mqtt/MqttDataSourceTest.d \
