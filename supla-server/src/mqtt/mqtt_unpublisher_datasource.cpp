@@ -361,7 +361,7 @@ bool supla_mqtt_unpublisher_datasource::_fetch(supla_mqtt_ds_context *context,
                                                size_t *message_size) {
   remove_expired();
 
-   if (fetch_deleted_device(topic_name)) {
+  if (fetch_deleted_device(topic_name)) {
     return true;
   }
 
