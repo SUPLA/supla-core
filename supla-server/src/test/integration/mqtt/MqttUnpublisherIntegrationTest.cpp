@@ -532,4 +532,176 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
 }
+
+TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunctionWithTimeout) {
+  waitForConnection();
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  getDS()->before_channel_function_change(743, 966);
+  runSqlScript("SetFunctionToNoneForChannel966.sql");
+  sleep(25);
+  getDS()->on_channel_function_changed(743, 966);
+  sleep(2);
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+}
+
+TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
+  waitForConnection();
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->published_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+
+  getDS()->before_channel_function_change(743, 966);
+  runSqlScript("SetFunctionToNoneForChannel966.sql");
+  sleep(5);
+  getDS()->on_channel_function_changed(743, 966);
+
+  waitForPublications(48);
+
+  const char *expectedData[] = {
+      "supla/743test@supla.org/devices/506/channels/966/type",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/function",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/caption",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/hidden",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/connected",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/total_cost",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_cost_balanced",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/price_per_unit",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/currency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/support",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_forward_active_energy_balanced",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_reverse_active_energy_balanced",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_reverse_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_forward_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "total_reverse_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "frequency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/voltage",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/current",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_active",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_reactive",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_apparent",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "power_factor",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
+      "phase_angle",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_reverse_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_forward_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "total_reverse_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "frequency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/voltage",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/current",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_active",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_reactive",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_apparent",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "power_factor",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
+      "phase_angle",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_reverse_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_forward_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "total_reverse_reactive_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "frequency",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/voltage",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/current",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_active",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_reactive",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_apparent",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "power_factor",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
+      "phase_angle",
+      NULL};
+
+  // print_expected();
+
+  verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
+
+  ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
+  ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
+}
+
 } /* namespace testing */

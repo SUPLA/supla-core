@@ -30,6 +30,8 @@ supla_mqtt_unpublisher_datasource::supla_mqtt_unpublisher_datasource(
   device_message_provider = NULL;
   channel_message_provider = NULL;
   current_channel_row = NULL;
+  current_device = NULL;
+  removed_topics_provider = NULL;
 }
 
 supla_mqtt_unpublisher_datasource::~supla_mqtt_unpublisher_datasource(void) {
@@ -201,12 +203,11 @@ void supla_mqtt_unpublisher_datasource::before_channel_function_change(
   }
 
   _unpub_channel_item_t channel;
-  channel.event_time.tv_sec = 0;
-  channel.event_time.tv_usec = 0;
-  channel.before.channel_id = 0;
+  memset(&channel, 0, sizeof(_unpub_channel_item_t));
 
   if (load_channel_row(UserID, ChannelID, &channel.before)) {
     lock();
+    channel.event_time = now;
     modified_channels.push_back(channel);
     unlock();
   }
@@ -313,6 +314,10 @@ void supla_mqtt_unpublisher_datasource::on_device_deleted(int UserID,
 
 bool supla_mqtt_unpublisher_datasource::fetch_deleted_device(
     char **topic_name) {
+  if (!current_device) {
+    return false;
+  }
+
   if (device_message_provider &&
       device_message_provider->fetch(get_settings()->getPrefix(), topic_name,
                                      NULL, NULL)) {
@@ -356,7 +361,7 @@ bool supla_mqtt_unpublisher_datasource::_fetch(supla_mqtt_ds_context *context,
                                                size_t *message_size) {
   remove_expired();
 
-  if (fetch_deleted_device(topic_name)) {
+   if (fetch_deleted_device(topic_name)) {
     return true;
   }
 
@@ -406,7 +411,6 @@ bool supla_mqtt_unpublisher_datasource::context_open(
 
   } else if (context->get_scope() == MQTTDS_SCOPE_CHANNEL_STATE) {
     _unpub_channel_item_t *channel = NULL;
-
     lock();
     for (std::list<_unpub_channel_item_t>::iterator it =
              modified_channels.begin();
