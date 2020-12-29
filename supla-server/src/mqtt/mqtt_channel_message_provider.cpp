@@ -691,7 +691,7 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
     ha_json_set_string_param(root, "device_class", device_class);
   }
 
-  return ha_get_message(root, "binry_sensor", 0, false, topic_name, message,
+  return ha_get_message(root, "binary_sensor", 0, false, topic_name, message,
                         message_size);
 }
 
