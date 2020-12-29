@@ -51,8 +51,9 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
 
   cJSON *ha_json_create_root(const char *topic_prefix, int sub_id = 0,
                              bool set_sub_id = false);
-  bool ha_powerswitch(unsigned short index, const char *topic_prefix,
-                      char **topic_name, void **message, size_t *message_size);
+  bool ha_light_or_powerswitch(unsigned short index, bool light,
+                               const char *topic_prefix, char **topic_name,
+                               void **message, size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);

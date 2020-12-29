@@ -641,9 +641,9 @@ bool supla_mqtt_channel_message_provider::ha_get_message(
   return false;
 }
 
-bool supla_mqtt_channel_message_provider::ha_powerswitch(
-    unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
+    unsigned short index, bool light, const char *topic_prefix,
+    char **topic_name, void **message, size_t *message_size) {
   // https://www.home-assistant.io/integrations/switch.mqtt/
 
   if (index != 0) {
@@ -657,14 +657,16 @@ bool supla_mqtt_channel_message_provider::ha_powerswitch(
 
   ha_json_set_short_topic(root, "stat_t", "state/on");
   ha_json_set_short_topic(root, "cmd_t", "set/on");
-  ha_json_set_string_param(root, "stat_on", "true");
-  ha_json_set_string_param(root, "stat_off", "false");
+  if (!light) {
+    ha_json_set_string_param(root, "stat_on", "true");
+    ha_json_set_string_param(root, "stat_off", "false");
+  }
   ha_json_set_string_param(root, "pl_on", "true");
   ha_json_set_string_param(root, "pl_off", "false");
   ha_json_set_availability(root, topic_prefix, "true", "false");
 
-  return ha_get_message(root, "switch", 0, false, topic_name, message,
-                        message_size);
+  return ha_get_message(root, light ? "light" : "switch", 0, false, topic_name,
+                        message, message_size);
 }
 
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
@@ -709,10 +711,11 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       break;
     case SUPLA_CHANNELFNC_POWERSWITCH:
-      return ha_powerswitch(index, topic_prefix, topic_name, message,
-                            message_size);
+      return ha_light_or_powerswitch(index, false, topic_prefix, topic_name,
+                                     message, message_size);
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      break;
+      return ha_light_or_powerswitch(index, true, topic_prefix, topic_name,
+                                     message, message_size);
     case SUPLA_CHANNELFNC_RING:
       break;
     case SUPLA_CHANNELFNC_ALARM:
