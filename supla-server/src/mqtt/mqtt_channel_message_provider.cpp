@@ -699,11 +699,11 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     return false;
   }
 
-  ha_json_set_short_topic(root, "unit_of_meas", unit);
+  ha_json_set_string_param(root, "unit_of_meas", unit);
   ha_json_set_short_topic(root, "stat_t", state_topic);
 
   char tpl[50];
-  printf(tpl, sizeof(tpl), "{{ value | round(%i) }}", precision);
+  snprintf(tpl, sizeof(tpl), "{{ value | round(%i) }}", precision);
 
   ha_json_set_string_param(root, "val_tpl", tpl);
 
