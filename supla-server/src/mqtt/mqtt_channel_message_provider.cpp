@@ -482,9 +482,9 @@ void supla_mqtt_channel_message_provider::ha_json_set_uniq_id(cJSON *root,
                                                               bool set_sub_id) {
   char uniq_id[50];
   if (set_sub_id) {
-    snprintf(uniq_id, sizeof(uniq_id), "supla-%i-%i", row->channel_id, sub_id);
+    snprintf(uniq_id, sizeof(uniq_id), "supla_%i_%i", row->channel_id, sub_id);
   } else {
-    snprintf(uniq_id, sizeof(uniq_id), "supla-%i", row->channel_id);
+    snprintf(uniq_id, sizeof(uniq_id), "supla_%i", row->channel_id);
   }
 
   cJSON_AddStringToObject(root, "uniq_id", uniq_id);
@@ -607,7 +607,7 @@ bool supla_mqtt_channel_message_provider::ha_get_message(
   if (node_id) {
     char object_id[50];
     if (set_sub_id) {
-      snprintf(object_id, sizeof(object_id), "%i-%i", row->channel_id, sub_id);
+      snprintf(object_id, sizeof(object_id), "%i_%i", row->channel_id, sub_id);
     } else {
       snprintf(object_id, sizeof(object_id), "%i", row->channel_id);
     }
