@@ -504,7 +504,7 @@ void supla_mqtt_channel_message_provider::ha_json_set_topic_base(
   }
 }
 
-void supla_mqtt_channel_message_provider::ha_json_set_topic(
+void supla_mqtt_channel_message_provider::ha_json_set_short_topic(
     cJSON *root, const char *param_name, const char *topic_suffix) {
   char *topic_name = NULL;
 
@@ -523,6 +523,20 @@ void supla_mqtt_channel_message_provider::ha_json_set_topic(
   }
 }
 
+void supla_mqtt_channel_message_provider::ha_json_set_full_topic(
+    cJSON *root, const char *param_name, const char *topic_prefix,
+    const char *topic_suffix) {
+  char *topic_name = NULL;
+
+  create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
+                 false, "devices/%i/channels/%i/%s", row->device_id,
+                 row->channel_id, topic_suffix);
+
+  if (topic_name) {
+    cJSON_AddStringToObject(root, param_name, topic_name);
+    free(topic_name);
+  }
+}
 void supla_mqtt_channel_message_provider::ha_json_set_qos(cJSON *root,
                                                           int qos) {
   cJSON_AddNumberToObject(root, "qos", qos);
@@ -544,13 +558,14 @@ void supla_mqtt_channel_message_provider::ha_json_set_string_param(
 }
 
 void supla_mqtt_channel_message_provider::ha_json_set_availability(
-    cJSON *root, const char *avil, const char *notavil) {
+    cJSON *root, const char *topic_prefix, const char *avil,
+    const char *notavil) {
   cJSON *avty = cJSON_CreateObject();
   if (avty) {
-    ha_json_set_topic(avty, "t", "state/connected");
+    ha_json_set_full_topic(avty, "topic", topic_prefix, "state/connected");
 
-    cJSON_AddStringToObject(avty, "pl_avail", avil);
-    cJSON_AddStringToObject(avty, "pl_not_avail", notavil);
+    cJSON_AddStringToObject(avty, "payload_available", avil);
+    cJSON_AddStringToObject(avty, "payload_not_available", notavil);
     cJSON_AddItemToObject(root, "avty", avty);
   }
 }
@@ -640,11 +655,13 @@ bool supla_mqtt_channel_message_provider::ha_powerswitch(
     return false;
   }
 
-  ha_json_set_topic(root, "stat_t", "state/on");
-  ha_json_set_topic(root, "cmd_t", "set/on");
+  ha_json_set_short_topic(root, "stat_t", "state/on");
+  ha_json_set_short_topic(root, "cmd_t", "set/on");
   ha_json_set_string_param(root, "stat_on", "true");
   ha_json_set_string_param(root, "stat_off", "false");
-  ha_json_set_availability(root, "true", "false");
+  ha_json_set_string_param(root, "pl_on", "true");
+  ha_json_set_string_param(root, "pl_off", "false");
+  ha_json_set_availability(root, topic_prefix, "true", "false");
 
   return ha_get_message(root, "switch", 0, false, topic_name, message,
                         message_size);
