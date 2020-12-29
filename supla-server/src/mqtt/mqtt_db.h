@@ -52,6 +52,11 @@ typedef struct {
   char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
   int device_id;
   bool device_enabled;
+
+  int device_mfr_id;
+  char device_name[SUPLA_DEVICE_NAME_MAXSIZE];
+  char device_softver[SUPLA_SOFTVER_MAXSIZE];
+
   int channel_id;
   int channel_type;
   int channel_func;

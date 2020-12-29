@@ -110,6 +110,51 @@ bool supla_mqtt_message_provider::create_message(
   return false;
 }
 
+void supla_mqtt_message_provider::get_mfr_name(int mfr_id, char *buf,
+                                               size_t buf_size) {
+  switch (mfr_id) {
+    case SUPLA_MFR_ACSOFTWARE:
+      snprintf(buf, buf_size, "AC SOFTWARE");
+      break;
+    case SUPLA_MFR_TRANSCOM:
+      snprintf(buf, buf_size, "TransCom");
+      break;
+    case SUPLA_MFR_LOGI:
+      snprintf(buf, buf_size, "Logi");
+      break;
+    case SUPLA_MFR_ZAMEL:
+      snprintf(buf, buf_size, "Zamel");
+      break;
+    case SUPLA_MFR_NICE:
+      snprintf(buf, buf_size, "Nice");
+      break;
+    case SUPLA_MFR_ITEAD:
+      snprintf(buf, buf_size, "Itead");
+      break;
+    case SUPLA_MFR_DOYLETRATT:
+      snprintf(buf, buf_size, "Doyle & Tratt");
+      break;
+    case SUPLA_MFR_HEATPOL:
+      snprintf(buf, buf_size, "Heatpol");
+      break;
+    case SUPLA_MFR_FAKRO:
+      snprintf(buf, buf_size, "Fakro");
+      break;
+    case SUPLA_MFR_PEVEKO:
+      snprintf(buf, buf_size, "Peveko");
+      break;
+    case SUPLA_MFR_WEKTA:
+      snprintf(buf, buf_size, "Wekta");
+      break;
+    case SUPLA_MFR_STA_SYSTEM:
+      snprintf(buf, buf_size, "STA-System");
+      break;
+    default:
+      buf[0] = 0;
+      break;
+  }
+}
+
 void supla_mqtt_message_provider::reset_index(void) { index = 0; }
 
 bool supla_mqtt_message_provider::fetch(const char *topic_prefix,

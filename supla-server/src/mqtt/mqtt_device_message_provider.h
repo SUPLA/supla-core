@@ -26,9 +26,6 @@ class supla_mqtt_device_message_provider : public supla_mqtt_message_provider {
  private:
   _mqtt_db_data_row_device_t *row;
 
- protected:
-  void get_mfr_name(int mfr_id, char *buf, size_t buf_size);
-
  public:
   supla_mqtt_device_message_provider(void);
   virtual ~supla_mqtt_device_message_provider(void);

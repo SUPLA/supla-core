@@ -44,6 +44,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                                 const char *value);
   void ha_json_set_availability(cJSON *root, const char *topic_prefix,
                                 const char *avil, const char *notavil);
+  void ha_json_set_device_info(cJSON *root);
 
   bool ha_get_message(cJSON *root, const char *component, int sub_id,
                       bool set_sub_id, char **topic_name, void **message,

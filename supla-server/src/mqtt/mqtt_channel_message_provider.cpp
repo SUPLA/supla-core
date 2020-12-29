@@ -570,6 +570,20 @@ void supla_mqtt_channel_message_provider::ha_json_set_availability(
   }
 }
 
+void supla_mqtt_channel_message_provider::ha_json_set_device_info(cJSON *root) {
+  cJSON *device = cJSON_CreateObject();
+  if (device) {
+    char mfr_name[20];
+    get_mfr_name(row->device_mfr_id, mfr_name, sizeof(mfr_name));
+
+    cJSON_AddStringToObject(device, "mf", mfr_name);
+    cJSON_AddStringToObject(device, "name", row->device_name);
+    cJSON_AddStringToObject(device, "sw", row->device_softver);
+
+    cJSON_AddItemToObject(root, "device", device);
+  }
+}
+
 cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
     const char *topic_prefix, int sub_id, bool set_sub_id) {
   cJSON *root = cJSON_CreateObject();
@@ -578,6 +592,7 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
   }
 
   ha_json_set_topic_base(root, topic_prefix);
+  ha_json_set_device_info(root);
   ha_json_set_name(root);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
