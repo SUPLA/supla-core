@@ -49,7 +49,7 @@ void MqttChannelMessageProviderTest::fillChannelData(
   row_channel->channel_hidden = false;
 }
 
-TEST_F(MqttChannelMessageProviderTest, fetchAll) {
+TEST_F(MqttChannelMessageProviderTest, powerSwitch) {
   _mqtt_db_data_row_channel_t row_channel;
   fillChannelData(&row_channel);
   provider->set_data_row(&row_channel);
@@ -73,6 +73,18 @@ TEST_F(MqttChannelMessageProviderTest, fetchAll) {
       fetchAndCompare(provider, NULL, "false", false,
                       "supla/user@supla.org/devices/%i/channels/%i/hidden",
                       row_channel.device_id, row_channel.channel_id));
+
+  const char haConfig[] =
+      "{\"uniq_id\":\"supla-754\",\"qos\":0,\"ret\":false,\"opt\":false,\"pow_"
+      "stat_t\":\"supla/user@supla.org/devices/555/channels/754/state/"
+      "on\",\"cmd_t\":\"supla/user@supla.org/devices/555/channels/754/set/"
+      "on\",\"pl_on\":\"true\",\"pl_off\":\"false\",\"avty\":{\"t\":\"supla/"
+      "user@supla.org/devices/555/channels/754/state/"
+      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}}";
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, haConfig, false,
+                      "homeassistant/switch/user_supla_org/754/config"));
 
   ASSERT_FALSE(dataExists(provider));
 }

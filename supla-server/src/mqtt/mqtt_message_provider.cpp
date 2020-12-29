@@ -27,6 +27,24 @@ supla_mqtt_message_provider::supla_mqtt_message_provider(void) {
 
 supla_mqtt_message_provider::~supla_mqtt_message_provider(void) {}
 
+char *supla_mqtt_message_provider::homeassistant_get_node_id(
+    const char *_email) {
+  char *email = strndup(_email, SUPLA_EMAIL_MAXSIZE);
+  if (email) {
+    int email_len = strnlen(_email, SUPLA_EMAIL_MAXSIZE);
+    for (int a = 0; a < email_len; a++) {
+      char c = email[a];
+      if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') &&
+          (c < '0' || c > '9') && c != '_' && c != '-') {
+        email[a] = '_';
+      }
+    }
+    return email;
+  }
+
+  return NULL;
+}
+
 bool supla_mqtt_message_provider::create_message(
     const char *topic_prefix, const char *email, char **topic_name_out,
     void **message, size_t *message_size, const char *message_string_in,

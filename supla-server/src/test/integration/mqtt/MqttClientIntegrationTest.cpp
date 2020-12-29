@@ -91,10 +91,25 @@ void MqttClientIntegrationTest::print_expected(void) {
     } else {
       printf(", ");
     }
-    printf("%s%s%s, %s%s%s\n", m.topic_name ? "\"" : "",
-           m.topic_name ? m.topic_name : "NULL", m.topic_name ? "\"" : "",
-           m.message ? "\"" : "", m.message ? (char *)m.message : "NULL",
-           m.message ? "\"" : "");
+    printf("%s%s%s, ", m.topic_name ? "\"" : "",
+           m.topic_name ? m.topic_name : "NULL", m.topic_name ? "\"" : "");
+
+    if (m.message) {
+      printf("\"");
+
+      for (size_t a = 0; a < m.message_size; a++) {
+        if (m.message[a] == '"') {
+          printf("\\");
+        }
+        printf("%c", m.message[a]);
+      }
+
+      printf("\"");
+    } else {
+      printf("NULL");
+    }
+
+    printf("\n");
 
     if (m.topic_name) {
       free(m.topic_name);

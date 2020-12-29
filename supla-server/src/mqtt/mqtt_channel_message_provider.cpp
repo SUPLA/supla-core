@@ -17,6 +17,8 @@
  */
 
 #include <mqtt_channel_message_provider.h>
+#include <stdlib.h>
+#include <string.h>
 #include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
@@ -302,9 +304,438 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
   }
 }
 
+void supla_mqtt_channel_message_provider::get_not_empty_caption(
+    int func, const char *caption_in, char *caption_out) {
+  if (!caption_out) {
+    return;
+  }
+
+  if (caption_in && caption_in[0] != 0) {
+    memcpy(caption_out, caption_in, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  }
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Gateway");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Gate");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Garage door");
+      break;
+    case SUPLA_CHANNELFNC_THERMOMETER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermometer");
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Humidity");
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Temperature and Humidity");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Gateway opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Gate opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Garage door opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "No liquid sensor");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Door lock operation");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Door opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roller shutter operation");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roof window operation");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roller shutter opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Roof window opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "On/Off switch");
+      break;
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Light switch");
+      break;
+    case SUPLA_CHANNELFNC_RING:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Ring");
+      break;
+    case SUPLA_CHANNELFNC_ALARM:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Alarm");
+      break;
+    case SUPLA_CHANNELFNC_NOTIFICATION:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Notification");
+      break;
+    case SUPLA_CHANNELFNC_DIMMER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Dimmer");
+      break;
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "RGB lighting");
+      break;
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Dimmer and RGB lighting");
+      break;
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Depth sensor");
+      break;
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Distance sensor");
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Window opening sensor");
+      break;
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Mail sensor");
+      break;
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Wind sensor");
+      break;
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Pressure sensor");
+      break;
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Rain sensor");
+      break;
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Weight sensor");
+      break;
+    case SUPLA_CHANNELFNC_WEATHER_STATION:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Weather sensor");
+      break;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Staircase timer");
+      break;
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Electricity meter");
+      break;
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Gas meter");
+      break;
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Water meter");
+      break;
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Heat meter");
+      break;
+    case SUPLA_CHANNELFNC_THERMOSTAT:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Thermostat");
+      break;
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Home+ Heater");
+      break;
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Valve");
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "General purpose measurement");
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+               "Engine speed controller");
+      break;
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Action trigger");
+      break;
+    case SUPLA_CHANNELFNC_DIGIGLASS:
+      snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Digiglass");
+      break;
+      caption_out[0] = 0;
+      break;
+  }
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_name(cJSON *root) {
+  char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+  get_not_empty_caption(row->channel_func, row->channel_caption, caption);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_uniq_id(cJSON *root,
+                                                              int sub_id,
+                                                              bool set_sub_id) {
+  char uniq_id[50];
+  if (set_sub_id) {
+    snprintf(uniq_id, sizeof(uniq_id), "supla-%i-%i", row->channel_id, sub_id);
+  } else {
+    snprintf(uniq_id, sizeof(uniq_id), "supla-%i", row->channel_id);
+  }
+
+  cJSON_AddStringToObject(root, "uniq_id", uniq_id);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_topic(
+    cJSON *root, const char *param_name, const char *topic_prefix,
+    const char *topic_suffix) {
+  char *topic_name = NULL;
+
+  create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
+                 false, "devices/%i/channels/%i/%s", row->device_id,
+                 row->channel_id, topic_suffix);
+
+  if (topic_name) {
+    cJSON_AddStringToObject(root, param_name, topic_name);
+    free(topic_name);
+  }
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_qos(cJSON *root,
+                                                          int qos) {
+  cJSON_AddNumberToObject(root, "qos", qos);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_retain(cJSON *root,
+                                                             bool retain) {
+  cJSON_AddBoolToObject(root, "ret", retain);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_optimistic(
+    cJSON *root, bool optimistic) {
+  cJSON_AddBoolToObject(root, "opt", optimistic);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_string_param(
+    cJSON *root, const char *param_name, const char *value) {
+  cJSON_AddStringToObject(root, param_name, value);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_availability(
+    cJSON *root, const char *topic_prefix, const char *avil,
+    const char *notavil) {
+  cJSON *avty = cJSON_CreateObject();
+  if (avty) {
+    ha_json_set_topic(avty, "t", topic_prefix, "state/connected");
+
+    cJSON_AddStringToObject(avty, "pl_avail", avil);
+    cJSON_AddStringToObject(avty, "pl_not_avail", notavil);
+    cJSON_AddItemToObject(root, "avty", avty);
+  }
+}
+
+cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
+    int sub_id, bool set_sub_id) {
+  cJSON *root = cJSON_CreateObject();
+  if (!root) {
+    return NULL;
+  }
+
+  ha_json_set_name(root);
+  ha_json_set_uniq_id(root, sub_id, set_sub_id);
+  ha_json_set_qos(root);
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  return root;
+}
+
+bool supla_mqtt_channel_message_provider::ha_get_message(
+    cJSON *root, const char *component, int sub_id, bool set_sub_id,
+    char **topic_name, void **message, size_t *message_size) {
+  if (message) {
+    *message = cJSON_PrintUnformatted(root);
+
+    if (*message == NULL) {
+      return false;
+    }
+
+    if (message_size) {
+      *message_size = strnlen((const char *)*message, MQTT_MAX_MESSAGE_SIZE);
+    }
+  }
+
+  cJSON_Delete(root);
+
+  char *node_id = homeassistant_get_node_id(row->user_email);
+  if (node_id) {
+    char object_id[50];
+    if (set_sub_id) {
+      snprintf(object_id, sizeof(object_id), "%i-%i", row->channel_id, sub_id);
+    } else {
+      snprintf(object_id, sizeof(object_id), "%i", row->channel_id);
+    }
+
+    const char fmt[] = "homeassistant/%s/%s/%s/config";
+    int len = snprintf(NULL, 0, fmt, component, node_id, object_id);
+
+    if (len) {
+      len++;
+      *topic_name = (char *)malloc(len);
+      if (*topic_name) {
+        snprintf(*topic_name, len, fmt, component, node_id, object_id);
+        free(node_id);
+        return true;
+      }
+    }
+  }
+
+  free(node_id);
+
+  if (message && *message) {
+    free(*message);
+    message = NULL;
+  }
+
+  if (message_size) {
+    *message_size = 0;
+  }
+
+  return false;
+}
+
+bool supla_mqtt_channel_message_provider::ha_powerswitch(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  // https://www.home-assistant.io/integrations/switch.mqtt/
+
+  if (index != 0) {
+    return false;
+  }
+
+  cJSON *root = ha_json_create_root();
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_topic(root, "pow_stat_t", topic_prefix, "state/on");
+  ha_json_set_topic(root, "cmd_t", topic_prefix, "set/on");
+  ha_json_set_string_param(root, "pl_on", "true");
+  ha_json_set_string_param(root, "pl_off", "false");
+  ha_json_set_availability(root, topic_prefix, "true", "false");
+
+  return ha_get_message(root, "switch", 0, false, topic_name, message,
+                        message_size);
+}
+
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  if (!row->device_enabled || row->channel_hidden || topic_name == NULL) {
+    return false;
+  }
+
+  switch (row->channel_func) {
+    default:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      break;
+    case SUPLA_CHANNELFNC_THERMOMETER:
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITY:
+      break;
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+      break;
+    case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+      return ha_powerswitch(index, topic_prefix, topic_name, message,
+                            message_size);
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      break;
+    case SUPLA_CHANNELFNC_RING:
+      break;
+    case SUPLA_CHANNELFNC_ALARM:
+      break;
+    case SUPLA_CHANNELFNC_NOTIFICATION:
+      break;
+    case SUPLA_CHANNELFNC_DIMMER:
+      break;
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+      break;
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      break;
+    case SUPLA_CHANNELFNC_DEPTHSENSOR:
+      break;
+    case SUPLA_CHANNELFNC_DISTANCESENSOR:
+      break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+      break;
+    case SUPLA_CHANNELFNC_MAILSENSOR:
+      break;
+    case SUPLA_CHANNELFNC_WINDSENSOR:
+      break;
+    case SUPLA_CHANNELFNC_PRESSURESENSOR:
+      break;
+    case SUPLA_CHANNELFNC_RAINSENSOR:
+      break;
+    case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+      break;
+    case SUPLA_CHANNELFNC_WEATHER_STATION:
+      break;
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      break;
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+      break;
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+      break;
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+      break;
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+      break;
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+      break;
+    case SUPLA_CHANNELFNC_THERMOSTAT:
+      break;
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      break;
+    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+      break;
+    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+      break;
+    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
+      break;
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      break;
+    case SUPLA_CHANNELFNC_DIGIGLASS:
+      break;
+  }
   return false;
 }
 
@@ -327,7 +758,6 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
         char channel_func[35];
         channel_function_to_string(row->channel_func, channel_func,
                                    sizeof(channel_func));
-
         return create_message(topic_prefix, row->user_email, topic_name,
                               message, message_size, channel_func, false,
                               "devices/%i/channels/%i/function", row->device_id,
@@ -338,20 +768,18 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
                               message, message_size, row->channel_caption,
                               false, "devices/%i/channels/%i/caption",
                               row->device_id, row->channel_id);
-
       case 3:
         return create_message(
             topic_prefix, row->user_email, topic_name, message, message_size,
             row->channel_hidden ? "true" : "false", false,
             "devices/%i/channels/%i/hidden", row->device_id, row->channel_id);
     }
-  }
 
-  if (index > 3) {
-    return get_home_assistant_cfgitem(index - 4, topic_prefix, topic_name,
-                                      message, message_size);
+    if (index > 3) {
+      return get_home_assistant_cfgitem(index - 4, topic_prefix, topic_name,
+                                        message, message_size);
+    }
   }
-
   return false;
 }
 

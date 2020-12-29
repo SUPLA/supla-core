@@ -49,7 +49,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(535);
+  waitForPublications(536);
   // print_expected();
 
   const char *expectedData[] = {
@@ -683,6 +683,13 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       NULL,
       "supla/121test@supla.org/devices/40/channels/56/hidden",
       "false",
+      "homeassistant/switch/121test_supla_org/56/config",
+      "{\"uniq_id\":\"supla-56\",\"qos\":0,\"ret\":false,\"opt\":false,\"pow_"
+      "stat_t\":\"supla/121test@supla.org/devices/40/channels/56/state/"
+      "on\",\"cmd_t\":\"supla/121test@supla.org/devices/40/channels/56/set/"
+      "on\",\"pl_on\":\"true\",\"pl_off\":\"false\",\"avty\":{\"t\":\"supla/"
+      "121test@supla.org/devices/40/channels/56/state/"
+      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}}",
       "supla/121test@supla.org/devices/40/channels/56/state/connected",
       "false",
       "supla/121test@supla.org/devices/40/channels/56/state/on",
@@ -1172,7 +1179,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
 
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
-  waitForPublications(535);
+  waitForPublications(536);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
@@ -1232,7 +1239,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
 
 TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForConnection();
-  waitForPublications(535);
+  waitForPublications(536);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);

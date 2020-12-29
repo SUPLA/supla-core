@@ -19,6 +19,7 @@
 #ifndef MQTT_CHANNEL_MESSAGE_PROVIDER_H_
 #define MQTT_CHANNEL_MESSAGE_PROVIDER_H_
 
+#include "json/cJSON.h"
 #include "mqtt_db.h"
 #include "mqtt_message_provider.h"
 
@@ -27,6 +28,26 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   _mqtt_db_data_row_channel_t *row;
 
  protected:
+  void ha_json_set_name(cJSON *root);
+  void ha_json_set_uniq_id(cJSON *root, int sub_id = 0,
+                           bool set_sub_id = false);
+  void ha_json_set_qos(cJSON *root, int qos = 0);
+  void ha_json_set_retain(cJSON *root, bool retain = false);
+  void ha_json_set_optimistic(cJSON *root, bool optimistic = false);
+  void ha_json_set_topic(cJSON *root, const char *param_name,
+                         const char *topic_prefix, const char *topic_suffix);
+  void ha_json_set_string_param(cJSON *root, const char *param_name,
+                                const char *value);
+  void ha_json_set_availability(cJSON *root, const char *topic_prefix,
+                                const char *avil, const char *notavil);
+
+  bool ha_get_message(cJSON *root, const char *component, int sub_id,
+                      bool set_sub_id, char **topic_name, void **message,
+                      size_t *message_size);
+
+  cJSON *ha_json_create_root(int sub_id = 0, bool set_sub_id = false);
+  bool ha_powerswitch(unsigned short index, const char *topic_prefix,
+                      char **topic_name, void **message, size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
@@ -34,6 +55,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
  public:
   supla_mqtt_channel_message_provider(void);
   virtual ~supla_mqtt_channel_message_provider(void);
+  void get_not_empty_caption(int func, const char *caption_in,
+                             char *caption_out);
   void channel_type_to_string(int type, char *buf, size_t buf_size);
   void channel_function_to_string(int func, char *buf, size_t buf_size);
   virtual bool get_message_at_index(unsigned short index,

@@ -120,7 +120,17 @@ bool MqttMessageProviderTest::fetchAndCompare(
 
     if (message_size != _message_size ||
         (_message_size > 0 && memcmp(message, _message, _message_size))) {
-      printf("MSG: %s\n", message);
+      printf("Expected message:\n %s\n", message);
+      printf("Recetived message (with escape):\n");
+
+      for (size_t a = 0; a < _message_size; a++) {
+        if (((char *)_message)[a] == '"') {
+          printf("\\");
+        }
+        printf("%c", ((char *)_message)[a]);
+      }
+      printf("\n");
+
       EXPECT_TRUE(false);
     }
   }
