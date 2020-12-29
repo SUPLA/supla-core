@@ -694,7 +694,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     void **message, size_t *message_size) {
   // https://www.home-assistant.io/integrations/sensor.mqtt
 
-  cJSON *root = ha_json_create_root(topic_prefix);
+  cJSON *root = ha_json_create_root(topic_prefix, sub_id, set_sub_id);
   if (!root) {
     return false;
   }
