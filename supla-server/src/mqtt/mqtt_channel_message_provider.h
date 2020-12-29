@@ -28,7 +28,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   _mqtt_db_data_row_channel_t *row;
 
  protected:
-  void ha_json_set_name(cJSON *root);
+  void ha_json_set_name(cJSON *root, const char *name_second_segment);
   void ha_json_set_uniq_id(cJSON *root, int sub_id = 0,
                            bool set_sub_id = false);
   void ha_json_set_qos(cJSON *root, int qos = 0);
@@ -50,8 +50,9 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                       bool set_sub_id, char **topic_name, void **message,
                       size_t *message_size);
 
-  cJSON *ha_json_create_root(const char *topic_prefix, int sub_id = 0,
-                             bool set_sub_id = false);
+  cJSON *ha_json_create_root(const char *topic_prefix,
+                             const char *name_second_segment = NULL,
+                             int sub_id = 0, bool set_sub_id = false);
   bool ha_light_or_powerswitch(bool light, const char *topic_prefix,
                                char **topic_name, void **message,
                                size_t *message_size);
@@ -68,6 +69,12 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_sensor_humidity(int sub_id, bool set_sub_id, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size);
+  bool ha_impulse_counter(unsigned short index, const char *topic_prefix,
+                          char **topic_name, void **message,
+                          size_t *message_size);
+  bool ha_electricity_meter(unsigned short index, const char *topic_prefix,
+                            char **topic_name, void **message,
+                            size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);

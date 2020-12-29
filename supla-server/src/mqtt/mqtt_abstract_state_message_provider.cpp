@@ -428,7 +428,8 @@ bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
     case 2:
       return create_message(
           topic_prefix, user_email, topic_name, message, message_size,
-          cvalue && cvalue->valve_value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED
+          cvalue &&
+                  (cvalue->valve_value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
               ? "true"
               : "false",
           false, "devices/%i/channels/%i/state/manually_closed",
@@ -436,7 +437,7 @@ bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
     case 3:
       return create_message(
           topic_prefix, user_email, topic_name, message, message_size,
-          cvalue && cvalue->valve_value.flags & SUPLA_VALVE_FLAG_FLOODING
+          cvalue && (cvalue->valve_value.flags & SUPLA_VALVE_FLAG_FLOODING)
               ? "true"
               : "false",
           false, "devices/%i/channels/%i/state/flooding", get_device_id(),

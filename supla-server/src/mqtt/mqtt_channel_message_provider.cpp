@@ -471,9 +471,18 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
   }
 }
 
-void supla_mqtt_channel_message_provider::ha_json_set_name(cJSON *root) {
+void supla_mqtt_channel_message_provider::ha_json_set_name(
+    cJSON *root, const char *name_second_segment) {
   char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   get_not_empty_caption(row->channel_func, row->channel_caption, caption);
+  if (name_second_segment && name_second_segment[0] != 0) {
+    char *copy = strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+    if (copy) {
+      snprintf(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s - %s", copy,
+               name_second_segment);
+      free(copy);
+    }
+  }
   cJSON_AddStringToObject(root, "name", caption);
 }
 
@@ -589,7 +598,8 @@ void supla_mqtt_channel_message_provider::ha_json_set_device_info(cJSON *root) {
 }
 
 cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
-    const char *topic_prefix, int sub_id, bool set_sub_id) {
+    const char *topic_prefix, const char *name_second_segment, int sub_id,
+    bool set_sub_id) {
   cJSON *root = cJSON_CreateObject();
   if (!root) {
     return NULL;
@@ -597,7 +607,7 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
 
   ha_json_set_topic_base(root, topic_prefix);
   ha_json_set_device_info(root);
-  ha_json_set_name(root);
+  ha_json_set_name(root, name_second_segment);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
   ha_json_set_availability(root, topic_prefix, "true", "false");
@@ -713,7 +723,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     void **message, size_t *message_size) {
   // https://www.home-assistant.io/integrations/sensor.mqtt
 
-  cJSON *root = ha_json_create_root(topic_prefix, sub_id, set_sub_id);
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, sub_id, set_sub_id);
   if (!root) {
     return false;
   }
@@ -743,6 +753,10 @@ bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
   return ha_sensor("%", 1, sub_id, set_sub_id, "state/humidity", topic_prefix,
                    topic_name, message, message_size);
 }
+
+bool supla_mqtt_channel_message_provider::ha_impulse_counter(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {}
 
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
@@ -826,47 +840,44 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       break;
     case SUPLA_CHANNELFNC_DEPTHSENSOR:
-      break;
+      return ha_sensor("m", 2, 0, false, "state/depth", topic_prefix,
+                       topic_name, message, message_size);
     case SUPLA_CHANNELFNC_DISTANCESENSOR:
-      break;
+      return ha_sensor("m", 2, 0, false, "state/distance", topic_prefix,
+                       topic_name, message, message_size);
     case SUPLA_CHANNELFNC_WINDSENSOR:
-      break;
+      return ha_sensor("m/s", 1, 0, false, "state/value", topic_prefix,
+                       topic_name, message, message_size);
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
-      break;
+      return ha_sensor("hPa", 0, 0, false, "state/value", topic_prefix,
+                       topic_name, message, message_size);
     case SUPLA_CHANNELFNC_RAINSENSOR:
-      break;
+      return ha_sensor("l/m", 2, 0, false, "state/value", topic_prefix,
+                       topic_name, message, message_size);
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-      break;
-    case SUPLA_CHANNELFNC_WEATHER_STATION:
-      break;
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      break;
+      return ha_sensor("g", 0, 0, false, "state/value", topic_prefix,
+                       topic_name, message, message_size);
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#ifdef SERVER_VERSION_23
+      if (row->channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+        return ha_electicity_meter(index, topic_prefix, topic_name, message,
+                                   message_size);
+      } else if (row->channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+        return ha_impulse_counter(index, topic_prefix, topic_name, message,
+                                  message_size);
+      }
       break;
+#else
+      return ha_electicity_meter(index, topic_prefix, topic_name, message,
+                                 message_size);
+#endif /*SERVER_VERSION_23*/
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
       break;
     case SUPLA_CHANNELFNC_IC_GAS_METER:
-      break;
     case SUPLA_CHANNELFNC_IC_WATER_METER:
-      break;
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
-      break;
-    case SUPLA_CHANNELFNC_THERMOSTAT:
-      break;
-    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      break;
-    case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
-      break;
-    case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
-      break;
-    case SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT:
-      break;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED:
-      break;
-    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
-      break;
-    case SUPLA_CHANNELFNC_DIGIGLASS:
-      break;
+      return ha_impulse_counter(index, topic_prefix, topic_name, message,
+                                message_size);
   }
   return false;
 }
