@@ -509,8 +509,8 @@ void supla_mqtt_channel_message_provider::ha_json_set_topic(
     const char *topic_suffix) {
   char *topic_name = NULL;
 
-  create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
-                 false, "~/%s", topic_suffix);
+  create_message(NULL, row->user_email, &topic_name, NULL, NULL, NULL, false,
+                 "~/%s", topic_suffix);
 
   if (topic_name) {
     cJSON_AddStringToObject(root, param_name, topic_name);
