@@ -474,6 +474,7 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
 void supla_mqtt_channel_message_provider::ha_json_set_name(cJSON *root) {
   char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   get_not_empty_caption(row->channel_func, row->channel_caption, caption);
+  cJSON_AddStringToObject(root, "name", caption);
 }
 
 void supla_mqtt_channel_message_provider::ha_json_set_uniq_id(cJSON *root,
@@ -489,14 +490,27 @@ void supla_mqtt_channel_message_provider::ha_json_set_uniq_id(cJSON *root,
   cJSON_AddStringToObject(root, "uniq_id", uniq_id);
 }
 
+void supla_mqtt_channel_message_provider::ha_json_set_topic_base(
+    cJSON *root, const char *topic_prefix) {
+  char *topic_name = NULL;
+
+  create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
+                 false, "devices/%i/channels/%i", row->device_id,
+                 row->channel_id);
+
+  if (topic_name) {
+    cJSON_AddStringToObject(root, "~", topic_name);
+    free(topic_name);
+  }
+}
+
 void supla_mqtt_channel_message_provider::ha_json_set_topic(
     cJSON *root, const char *param_name, const char *topic_prefix,
     const char *topic_suffix) {
   char *topic_name = NULL;
 
   create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
-                 false, "devices/%i/channels/%i/%s", row->device_id,
-                 row->channel_id, topic_suffix);
+                 false, "~/%s", topic_suffix);
 
   if (topic_name) {
     cJSON_AddStringToObject(root, param_name, topic_name);
@@ -538,12 +552,13 @@ void supla_mqtt_channel_message_provider::ha_json_set_availability(
 }
 
 cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
-    int sub_id, bool set_sub_id) {
+    const char *topic_prefix, int sub_id, bool set_sub_id) {
   cJSON *root = cJSON_CreateObject();
   if (!root) {
     return NULL;
   }
 
+  ha_json_set_topic_base(root, topic_prefix);
   ha_json_set_name(root);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
@@ -616,7 +631,7 @@ bool supla_mqtt_channel_message_provider::ha_powerswitch(
     return false;
   }
 
-  cJSON *root = ha_json_create_root();
+  cJSON *root = ha_json_create_root(topic_prefix);
   if (!root) {
     return false;
   }

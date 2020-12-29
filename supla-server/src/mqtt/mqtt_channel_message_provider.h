@@ -34,6 +34,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   void ha_json_set_qos(cJSON *root, int qos = 0);
   void ha_json_set_retain(cJSON *root, bool retain = false);
   void ha_json_set_optimistic(cJSON *root, bool optimistic = false);
+  void ha_json_set_topic_base(cJSON *root, const char *topic_prefix);
   void ha_json_set_topic(cJSON *root, const char *param_name,
                          const char *topic_prefix, const char *topic_suffix);
   void ha_json_set_string_param(cJSON *root, const char *param_name,
@@ -45,7 +46,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                       bool set_sub_id, char **topic_name, void **message,
                       size_t *message_size);
 
-  cJSON *ha_json_create_root(int sub_id = 0, bool set_sub_id = false);
+  cJSON *ha_json_create_root(const char *topic_prefix, int sub_id = 0,
+                             bool set_sub_id = false);
   bool ha_powerswitch(unsigned short index, const char *topic_prefix,
                       char **topic_name, void **message, size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
