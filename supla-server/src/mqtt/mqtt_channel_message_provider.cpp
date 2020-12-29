@@ -576,6 +576,10 @@ void supla_mqtt_channel_message_provider::ha_json_set_device_info(cJSON *root) {
     char mfr_name[20];
     get_mfr_name(row->device_mfr_id, mfr_name, sizeof(mfr_name));
 
+    char id[30];
+    snprintf(id, sizeof(id), "supla-iodevice-%i", row->device_id);
+
+    cJSON_AddStringToObject(device, "ids", id);
     cJSON_AddStringToObject(device, "mf", mfr_name);
     cJSON_AddStringToObject(device, "name", row->device_name);
     cJSON_AddStringToObject(device, "sw", row->device_softver);
