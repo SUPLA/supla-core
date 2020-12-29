@@ -640,10 +640,10 @@ bool supla_mqtt_channel_message_provider::ha_powerswitch(
     return false;
   }
 
-  ha_json_set_topic(root, "pow_stat_t", "state/on");
+  ha_json_set_topic(root, "stat_t", "state/on");
   ha_json_set_topic(root, "cmd_t", "set/on");
-  ha_json_set_string_param(root, "pl_on", "true");
-  ha_json_set_string_param(root, "pl_off", "false");
+  ha_json_set_string_param(root, "stat_on", "true");
+  ha_json_set_string_param(root, "stat_off", "false");
   ha_json_set_availability(root, "true", "false");
 
   return ha_get_message(root, "switch", 0, false, topic_name, message,
