@@ -581,8 +581,6 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
   ha_json_set_name(root);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
-  ha_json_set_retain(root);
-  ha_json_set_optimistic(root);
   ha_json_set_availability(root, topic_prefix, "true", "false");
 
   return root;
@@ -655,6 +653,9 @@ bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
   if (!root) {
     return false;
   }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
 
   ha_json_set_short_topic(root, "stat_t", "state/on");
   ha_json_set_short_topic(root, "cmd_t", "set/on");
