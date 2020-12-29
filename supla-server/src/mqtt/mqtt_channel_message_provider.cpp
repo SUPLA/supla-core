@@ -641,13 +641,9 @@ bool supla_mqtt_channel_message_provider::ha_get_message(
 }
 
 bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
-    unsigned short index, bool light, const char *topic_prefix,
-    char **topic_name, void **message, size_t *message_size) {
+    bool light, const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
   // https://www.home-assistant.io/integrations/switch.mqtt
-
-  if (index != 0) {
-    return false;
-  }
 
   cJSON *root = ha_json_create_root(topic_prefix);
   if (!root) {
@@ -672,13 +668,9 @@ bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
 }
 
 bool supla_mqtt_channel_message_provider::ha_binary_sensor(
-    unsigned short index, const char *device_class, const char *topic_prefix,
-    char **topic_name, void **message, size_t *message_size) {
+    const char *device_class, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
   // https://www.home-assistant.io/integrations/binary_sensor
-
-  if (index != 0) {
-    return false;
-  }
 
   cJSON *root = ha_json_create_root(topic_prefix);
   if (!root) {
@@ -686,14 +678,51 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
   }
 
   ha_json_set_short_topic(root, "stat_t", "state/hi");
-  ha_json_set_string_param(root, "pl_on", "true");
-  ha_json_set_string_param(root, "pl_off", "false");
+  ha_json_set_string_param(root, "pl_on", "false");
+  ha_json_set_string_param(root, "pl_off", "true");
   if (device_class) {
     ha_json_set_string_param(root, "device_class", device_class);
   }
 
   return ha_get_message(root, "binary_sensor", 0, false, topic_name, message,
                         message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_sensor(
+    const char *unit, int precision, int sub_id, bool set_sub_id,
+    const char *state_topic, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  // https://www.home-assistant.io/integrations/sensor.mqtt
+
+  cJSON *root = ha_json_create_root(topic_prefix);
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_short_topic(root, "unit_of_meas", unit);
+  ha_json_set_short_topic(root, "stat_t", state_topic);
+
+  char tpl[50];
+  printf(tpl, sizeof(tpl), "{{ value | round(%i) }}", precision);
+
+  ha_json_set_string_param(root, "val_tpl", tpl);
+
+  return ha_get_message(root, "sensor", sub_id, set_sub_id, topic_name, message,
+                        message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_sensor_temperature(
+    int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  return ha_sensor("°C", 1, sub_id, set_sub_id, "state/temperature",
+                   topic_prefix, topic_name, message, message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
+    int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  return ha_sensor("%", 1, sub_id, set_sub_id, "state/humidity", topic_prefix,
+                   topic_name, message, message_size);
 }
 
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
@@ -704,7 +733,18 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
   }
 
   switch (row->channel_func) {
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      if (index > 1) {
+        return false;
+      }
+      break;
     default:
+      if (index != 0) {
+        return false;
+      }
+  }
+
+  switch (row->channel_func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -718,36 +758,48 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       break;
     case SUPLA_CHANNELFNC_THERMOMETER:
-      break;
+      return ha_sensor_temperature(0, false, topic_prefix, topic_name, message,
+                                   message_size);
+
     case SUPLA_CHANNELFNC_HUMIDITY:
+      return ha_sensor_humidity(0, true, topic_prefix, topic_name, message,
+                                message_size);
       break;
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+      switch (index) {
+        case 0:
+          return ha_sensor_humidity(0, true, topic_prefix, topic_name, message,
+                                    message_size);
+        case 1:
+          return ha_sensor_temperature(1, true, topic_prefix, topic_name,
+                                       message, message_size);
+      }
       break;
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_MAILSENSOR:
-      return ha_binary_sensor(index, NULL, topic_prefix, topic_name, message,
+      return ha_binary_sensor(NULL, topic_prefix, topic_name, message,
                               message_size);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      return ha_binary_sensor(index, "opening", topic_prefix, topic_name,
-                              message, message_size);
+      return ha_binary_sensor("opening", topic_prefix, topic_name, message,
+                              message_size);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-      return ha_binary_sensor(index, "garage_door", topic_prefix, topic_name,
-                              message, message_size);
+      return ha_binary_sensor("garage_door", topic_prefix, topic_name, message,
+                              message_size);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-      return ha_binary_sensor(index, "door", topic_prefix, topic_name, message,
+      return ha_binary_sensor("door", topic_prefix, topic_name, message,
                               message_size);
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-      return ha_binary_sensor(index, "window", topic_prefix, topic_name,
-                              message, message_size);
+      return ha_binary_sensor("window", topic_prefix, topic_name, message,
+                              message_size);
     case SUPLA_CHANNELFNC_POWERSWITCH:
-      return ha_light_or_powerswitch(index, false, topic_prefix, topic_name,
-                                     message, message_size);
+      return ha_light_or_powerswitch(false, topic_prefix, topic_name, message,
+                                     message_size);
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      return ha_light_or_powerswitch(index, true, topic_prefix, topic_name,
-                                     message, message_size);
+      return ha_light_or_powerswitch(true, topic_prefix, topic_name, message,
+                                     message_size);
     case SUPLA_CHANNELFNC_DIMMER:
       break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
