@@ -1864,7 +1864,7 @@ bool supla_device_channels::get_channel_complex_value(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-    value->online = true;
+    value->online = !channel->isOffline();
     value->hidden_channel = channel->getHidden();
     value->function = channel->getFunc();
 
