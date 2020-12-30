@@ -305,13 +305,22 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
 }
 
 void supla_mqtt_channel_message_provider::get_not_empty_caption(
-    int func, const char *caption_in, char *caption_out) {
+    int func, const char *caption_in, const char *caption_if_empty,
+    char *caption_out) {
   if (!caption_out) {
     return;
   }
 
   if (caption_in && caption_in[0] != 0) {
-    memcpy(caption_out, caption_in, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+    snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s", caption_in);
+    return;
+  }
+
+  if (caption_if_empty && caption_if_empty[0] != 0) {
+    snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s",
+             caption_if_empty);
+
+    return;
   }
 
   switch (func) {
@@ -472,9 +481,10 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
 }
 
 void supla_mqtt_channel_message_provider::ha_json_set_name(
-    cJSON *root, const char *name_second_segment) {
+    cJSON *root, const char *name_if_empty, const char *name_second_segment) {
   char caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
-  get_not_empty_caption(row->channel_func, row->channel_caption, caption);
+  get_not_empty_caption(row->channel_func, row->channel_caption, name_if_empty,
+                        caption);
   if (name_second_segment && name_second_segment[0] != 0) {
     char *copy = strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
     if (copy) {
@@ -598,8 +608,8 @@ void supla_mqtt_channel_message_provider::ha_json_set_device_info(cJSON *root) {
 }
 
 cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
-    const char *topic_prefix, const char *name_second_segment, int sub_id,
-    bool set_sub_id) {
+    const char *topic_prefix, const char *name_if_empty,
+    const char *name_second_segment, int sub_id, bool set_sub_id) {
   cJSON *root = cJSON_CreateObject();
   if (!root) {
     return NULL;
@@ -607,7 +617,7 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
 
   ha_json_set_topic_base(root, topic_prefix);
   ha_json_set_device_info(root);
-  ha_json_set_name(root, name_second_segment);
+  ha_json_set_name(root, name_if_empty, name_second_segment);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
   ha_json_set_availability(root, topic_prefix, "true", "false");
@@ -719,11 +729,13 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
 
 bool supla_mqtt_channel_message_provider::ha_sensor(
     const char *unit, int precision, int sub_id, bool set_sub_id,
-    const char *state_topic, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    const char *state_topic, const char *name_if_empty,
+    const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
   // https://www.home-assistant.io/integrations/sensor.mqtt
 
-  cJSON *root = ha_json_create_root(topic_prefix, NULL, sub_id, set_sub_id);
+  cJSON *root = ha_json_create_root(topic_prefix, name_if_empty, NULL, sub_id,
+                                    set_sub_id);
   if (!root) {
     return false;
   }
@@ -744,17 +756,22 @@ bool supla_mqtt_channel_message_provider::ha_sensor_temperature(
     int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   return ha_sensor("°C", 1, sub_id, set_sub_id, "state/temperature",
-                   topic_prefix, topic_name, message, message_size);
+                   "Temperature", topic_prefix, topic_name, message,
+                   message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
     int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
-  return ha_sensor("%", 1, sub_id, set_sub_id, "state/humidity", topic_prefix,
-                   topic_name, message, message_size);
+  return ha_sensor("%", 1, sub_id, set_sub_id, "state/humidity", "Humidity",
+                   topic_prefix, topic_name, message, message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_impulse_counter(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {}
+
+bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {}
 
@@ -840,36 +857,36 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
       break;
     case SUPLA_CHANNELFNC_DEPTHSENSOR:
-      return ha_sensor("m", 2, 0, false, "state/depth", topic_prefix,
+      return ha_sensor("m", 2, 0, false, "state/depth", NULL, topic_prefix,
                        topic_name, message, message_size);
     case SUPLA_CHANNELFNC_DISTANCESENSOR:
-      return ha_sensor("m", 2, 0, false, "state/distance", topic_prefix,
+      return ha_sensor("m", 2, 0, false, "state/distance", NULL, topic_prefix,
                        topic_name, message, message_size);
     case SUPLA_CHANNELFNC_WINDSENSOR:
-      return ha_sensor("m/s", 1, 0, false, "state/value", topic_prefix,
+      return ha_sensor("m/s", 1, 0, false, "state/value", NULL, topic_prefix,
                        topic_name, message, message_size);
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
-      return ha_sensor("hPa", 0, 0, false, "state/value", topic_prefix,
+      return ha_sensor("hPa", 0, 0, false, "state/value", NULL, topic_prefix,
                        topic_name, message, message_size);
     case SUPLA_CHANNELFNC_RAINSENSOR:
-      return ha_sensor("l/m", 2, 0, false, "state/value", topic_prefix,
+      return ha_sensor("l/m", 2, 0, false, "state/value", NULL, topic_prefix,
                        topic_name, message, message_size);
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-      return ha_sensor("g", 0, 0, false, "state/value", topic_prefix,
+      return ha_sensor("g", 0, 0, false, "state/value", NULL, topic_prefix,
                        topic_name, message, message_size);
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
 #ifdef SERVER_VERSION_23
       if (row->channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-        return ha_electicity_meter(index, topic_prefix, topic_name, message,
-                                   message_size);
+        return ha_electricity_meter(index, topic_prefix, topic_name, message,
+                                    message_size);
       } else if (row->channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
         return ha_impulse_counter(index, topic_prefix, topic_name, message,
                                   message_size);
       }
       break;
 #else
-      return ha_electicity_meter(index, topic_prefix, topic_name, message,
-                                 message_size);
+      return ha_electricity_meter(index, topic_prefix, topic_name, message,
+                                  message_size);
 #endif /*SERVER_VERSION_23*/
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
       break;

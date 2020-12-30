@@ -28,7 +28,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   _mqtt_db_data_row_channel_t *row;
 
  protected:
-  void ha_json_set_name(cJSON *root, const char *name_second_segment);
+  void ha_json_set_name(cJSON *root, const char *name_if_empty,
+                        const char *name_second_segment);
   void ha_json_set_uniq_id(cJSON *root, int sub_id = 0,
                            bool set_sub_id = false);
   void ha_json_set_qos(cJSON *root, int qos = 0);
@@ -51,6 +52,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                       size_t *message_size);
 
   cJSON *ha_json_create_root(const char *topic_prefix,
+                             const char *name_if_empty = NULL,
                              const char *name_second_segment = NULL,
                              int sub_id = 0, bool set_sub_id = false);
   bool ha_light_or_powerswitch(bool light, const char *topic_prefix,
@@ -61,8 +63,9 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                         size_t *message_size);
 
   bool ha_sensor(const char *unit, int precision, int sub_id, bool set_sub_id,
-                 const char *state_topic, const char *topic_prefix,
-                 char **topic_name, void **message, size_t *message_size);
+                 const char *state_topic, const char *name_if_empty,
+                 const char *topic_prefix, char **topic_name, void **message,
+                 size_t *message_size);
   bool ha_sensor_temperature(int sub_id, bool set_sub_id,
                              const char *topic_prefix, char **topic_name,
                              void **message, size_t *message_size);
@@ -83,7 +86,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   supla_mqtt_channel_message_provider(void);
   virtual ~supla_mqtt_channel_message_provider(void);
   void get_not_empty_caption(int func, const char *caption_in,
-                             char *caption_out);
+                             const char *caption_if_empty, char *caption_out);
   void channel_type_to_string(int type, char *buf, size_t buf_size);
   void channel_function_to_string(int func, char *buf, size_t buf_size);
   virtual bool get_message_at_index(unsigned short index,
