@@ -739,7 +739,7 @@ bool supla_mqtt_channel_message_provider::ha_dimmer(int sub_id, bool set_sub_id,
       root, "stat_val_tpl",
       "{% if value == \"true\" %}TURN_ON{% else %}TURN_OFF{% endif %}");
 
-  ha_json_set_string_param(root, "on_cmd_type", "brightness");
+  ha_json_set_string_param(root, "on_cmd_type", "last");
 
   ha_json_set_short_topic(root, "bri_cmd_t", "set/brightness");
   ha_json_set_int_param(root, "bri_scl", 100);
