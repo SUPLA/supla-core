@@ -488,7 +488,7 @@ void supla_mqtt_channel_message_provider::ha_json_set_name(
   if (name_second_segment && name_second_segment[0] != 0) {
     char *copy = strndup(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
     if (copy) {
-      snprintf(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s - %s", copy,
+      snprintf(caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "%s (%s)", copy,
                name_second_segment);
       free(copy);
     }
@@ -574,6 +574,11 @@ void supla_mqtt_channel_message_provider::ha_json_set_optimistic(
 void supla_mqtt_channel_message_provider::ha_json_set_string_param(
     cJSON *root, const char *param_name, const char *value) {
   cJSON_AddStringToObject(root, param_name, value);
+}
+
+void supla_mqtt_channel_message_provider::ha_json_set_int_param(
+    cJSON *root, const char *param_name, int value) {
+  cJSON_AddNumberToObject(root, param_name, value);
 }
 
 void supla_mqtt_channel_message_provider::ha_json_set_availability(
@@ -740,7 +745,8 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     return false;
   }
 
-  ha_json_set_string_param(root, "unit_of_meas", unit);
+  ha_json_set_string_param(root, "unit_of_meas",
+                           !unit || unit[0] == 0 ? "-" : unit);
   ha_json_set_short_topic(root, "stat_t", state_topic);
 
   char tpl[50];
@@ -765,6 +771,34 @@ bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
     void **message, size_t *message_size) {
   return ha_sensor("%", 1, sub_id, set_sub_id, "state/humidity", "Humidity",
                    topic_prefix, topic_name, message, message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_roller_shutter(
+    const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
+  // https://www.home-assistant.io/integrations/cover.mqtt
+
+  cJSON *root = ha_json_create_root(topic_prefix);
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  ha_json_set_short_topic(root, "cmd_t", "execute_action");
+  ha_json_set_string_param(root, "pl_open", "SHUT");
+  ha_json_set_string_param(root, "pl_close", "REVEAL");
+  ha_json_set_string_param(root, "pl_stop", "STOP");
+
+  ha_json_set_short_topic(root, "set_pos_t", "set/closing_percentage");
+  ha_json_set_int_param(root, "pos_open", 0);
+  ha_json_set_int_param(root, "pos_clsd", 100);
+
+  ha_json_set_availability(root, topic_prefix, "true", "false");
+
+  return ha_get_message(root, "cover", 0, false, topic_name, message,
+                        message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_impulse_counter(
@@ -808,9 +842,8 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      break;
+      return ha_roller_shutter(topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_THERMOMETER:
       return ha_sensor_temperature(0, false, topic_prefix, topic_name, message,
                                    message_size);
