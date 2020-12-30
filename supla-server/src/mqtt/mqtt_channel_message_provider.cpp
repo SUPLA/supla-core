@@ -719,17 +719,8 @@ bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
                         message, message_size);
 }
 
-bool supla_mqtt_channel_message_provider::ha_dimmer(int sub_id, bool set_sub_id,
-                                                    const char *topic_prefix,
-                                                    char **topic_name,
-                                                    void **message,
-                                                    size_t *message_size) {
-  // https://www.home-assistant.io/integrations/light.mqtt
-  cJSON *root = ha_json_create_root(topic_prefix, "Dimmer");
-  if (!root) {
-    return false;
-  }
-
+bool supla_mqtt_channel_message_provider::ha_json_set_brightness(
+    cJSON *root, const char *bri_cmd_t, const char *bti_stat_t) {
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
   ha_json_set_string_param(root, "pl_on", "TURN_ON");
   ha_json_set_string_param(root, "pl_off", "TURN_OFF");
@@ -741,9 +732,23 @@ bool supla_mqtt_channel_message_provider::ha_dimmer(int sub_id, bool set_sub_id,
 
   ha_json_set_string_param(root, "on_cmd_type", "last");
 
-  ha_json_set_short_topic(root, "bri_cmd_t", "set/brightness");
+  ha_json_set_short_topic(root, "bri_cmd_t", bri_cmd_t);
   ha_json_set_int_param(root, "bri_scl", 100);
-  ha_json_set_short_topic(root, "bri_stat_t", "state/brightness");
+  ha_json_set_short_topic(root, "bri_stat_t", bti_stat_t);
+}
+
+bool supla_mqtt_channel_message_provider::ha_dimmer(int sub_id, bool set_sub_id,
+                                                    const char *topic_prefix,
+                                                    char **topic_name,
+                                                    void **message,
+                                                    size_t *message_size) {
+  // https://www.home-assistant.io/integrations/light.mqtt
+  cJSON *root = ha_json_create_root(topic_prefix, "Dimmer");
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_brightness(root, "set/_brightness", "state/brightness");
 
   return ha_get_message(root, "light", sub_id, set_sub_id, topic_name, message,
                         message_size);
@@ -755,7 +760,20 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
                                                  void **message,
                                                  size_t *message_size) {
   // https://www.home-assistant.io/integrations/light.mqtt
-  return false;
+  cJSON *root = ha_json_create_root(topic_prefix, "RGB Lighting");
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_brightness(root, "set/color_brightness",
+                         "state/color_brightness");
+  ha_json_set_short_topic(root, "rgb_stat_t", "state/color");
+  ha_json_set_short_topic(root, "rgb_cmd_t", "set/color");
+
+  ha_json_set_short_topic(root, "rgb_val_tpl", "{{ value | join(',') }}");
+
+  return ha_get_message(root, "light", sub_id, set_sub_id, topic_name, message,
+                        message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_binary_sensor(
