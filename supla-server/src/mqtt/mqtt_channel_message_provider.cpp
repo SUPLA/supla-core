@@ -769,11 +769,15 @@ bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
 
 bool supla_mqtt_channel_message_provider::ha_impulse_counter(
     unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {}
+    void **message, size_t *message_size) {
+  return false;
+}
 
 bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {}
+    void **message, size_t *message_size) {
+  return false;
+}
 
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     unsigned short index, const char *topic_prefix, char **topic_name,
