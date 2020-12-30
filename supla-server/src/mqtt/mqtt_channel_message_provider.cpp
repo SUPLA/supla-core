@@ -719,7 +719,7 @@ bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
                         message, message_size);
 }
 
-bool supla_mqtt_channel_message_provider::ha_json_set_brightness(
+void supla_mqtt_channel_message_provider::ha_json_set_brightness(
     cJSON *root, const char *bri_cmd_t, const char *bti_stat_t) {
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
   ha_json_set_string_param(root, "pl_on", "TURN_ON");
