@@ -970,8 +970,12 @@ void supla_user::on_channels_added(int DeviceID,
                                    event_source_type eventSourceType) {
   supla_http_request_queue::getInstance()->onChannelsAddedEvent(
       this, DeviceID, eventSourceType);
-  supla_mqtt_client_suite::globalInstance()->onChannelsAdded(getUserID(),
-                                                             DeviceID);
+}
+
+void supla_user::on_device_registered(int DeviceID,
+                                      event_source_type eventSourceType) {
+  supla_mqtt_client_suite::globalInstance()->onDeviceRegistered(getUserID(),
+                                                                DeviceID);
 }
 
 bool supla_user::set_device_channel_value(

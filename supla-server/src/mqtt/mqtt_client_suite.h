@@ -56,7 +56,7 @@ class supla_mqtt_client_suite {
   void start(void);
   void stop(void);
   void onUserSettingsChanged(int UserID);
-  void onChannelsAdded(int UserID, int DeviceID);
+  void onDeviceRegistered(int UserID, int DeviceID);
   void onChannelStateChanged(int UserID, int DeviceID, int ChannelID);
   void beforeChannelFunctionChange(int UserID, int ChannelID);
   void beforeDeviceDelete(int UserID, int DeviceID);
