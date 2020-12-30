@@ -741,7 +741,8 @@ bool supla_mqtt_channel_message_provider::ha_dimmer(int sub_id, bool set_sub_id,
   ha_json_set_int_param(root, "bri_scl", 100);
   ha_json_set_short_topic(root, "bri_stat_t", "state/brightness");
 
-  return false;
+  return ha_get_message(root, "light", sub_id, set_sub_id, topic_name, message,
+                        message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
