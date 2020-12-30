@@ -43,8 +43,7 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                                const char *topic_suffix);
   void ha_json_set_string_param(cJSON *root, const char *param_name,
                                 const char *value);
-  void ha_json_set_int_param(cJSON *root, const char *param_name,
-                                int value);
+  void ha_json_set_int_param(cJSON *root, const char *param_name, int value);
   void ha_json_set_availability(cJSON *root, const char *topic_prefix,
                                 const char *avil, const char *notavil);
   void ha_json_set_device_info(cJSON *root);
@@ -56,10 +55,15 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   cJSON *ha_json_create_root(const char *topic_prefix,
                              const char *name_if_empty = NULL,
                              const char *name_second_segment = NULL,
-                             int sub_id = 0, bool set_sub_id = false);
+                             bool avil_topic = true, int sub_id = 0,
+                             bool set_sub_id = false);
   bool ha_light_or_powerswitch(bool light, const char *topic_prefix,
                                char **topic_name, void **message,
                                size_t *message_size);
+  bool ha_dimmer(int sub_id, bool set_sub_id, const char *topic_prefix,
+                 char **topic_name, void **message, size_t *message_size);
+  bool ha_rgb(int sub_id, bool set_sub_id, const char *topic_prefix,
+              char **topic_name, void **message, size_t *message_size);
   bool ha_binary_sensor(const char *device_class, const char *topic_prefix,
                         char **topic_name, void **message,
                         size_t *message_size);
