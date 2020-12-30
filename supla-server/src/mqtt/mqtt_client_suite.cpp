@@ -175,7 +175,7 @@ void supla_mqtt_client_suite::onUserSettingsChanged(int UserID) {
   }
 }
 
-void supla_mqtt_client_suite::onChannelsAdded(int UserID, int DeviceID) {
+void supla_mqtt_client_suite::onDeviceRegistered(int UserID, int DeviceID) {
   if (publisher && st_app_terminate == 0) {
     publisher->on_devicedata_changed(UserID, DeviceID);
   }

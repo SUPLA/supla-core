@@ -145,6 +145,7 @@ class supla_user {
                  bool allClients);
 
   void on_channels_added(int DeviceID, event_source_type eventSourceType);
+  void on_device_registered(int DeviceID, event_source_type eventSourceType);
 
   void setUniqueId(const char shortID[], const char longID[]);
 
