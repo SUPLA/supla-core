@@ -588,8 +588,14 @@ void supla_mqtt_channel_message_provider::ha_json_set_availability(
   if (avty) {
     ha_json_set_full_topic(avty, "topic", topic_prefix, "state/connected");
 
-    cJSON_AddStringToObject(avty, "payload_available", avil);
-    cJSON_AddStringToObject(avty, "payload_not_available", notavil);
+    if (avil) {
+      cJSON_AddStringToObject(avty, "payload_available", avil);
+    }
+
+    if (notavil) {
+      cJSON_AddStringToObject(avty, "payload_not_available", notavil);
+    }
+
     cJSON_AddItemToObject(root, "avty", avty);
   }
 }
@@ -796,7 +802,10 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
   ha_json_set_int_param(root, "pos_open", 0);
   ha_json_set_int_param(root, "pos_clsd", 100);
 
-  ha_json_set_availability(root, topic_prefix, "true", "false");
+  ha_json_set_availability(root, topic_prefix, NULL, NULL);
+
+  ha_json_set_string_param(root, "pl_avail", "true");
+  ha_json_set_string_param(root, "pl_not_avail", "false");
 
   return ha_get_message(root, "cover", 0, false, topic_name, message,
                         message_size);
