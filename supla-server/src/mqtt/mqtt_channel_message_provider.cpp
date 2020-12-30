@@ -809,7 +809,7 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
 
   ha_json_set_string_param(
       root, "value_template",
-      "{% if value is defined %}{% if value < 0 %}0{% elseif value > 100 "
+      "{% if value is defined %}{% if value < 0 %}0{% elif value > 100 "
       "%}100{% else %}{{value}}{% endif %}{% else %}0{% endif %}");
 
   return ha_get_message(root, "cover", 0, false, topic_name, message,
