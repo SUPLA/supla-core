@@ -848,14 +848,6 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
   }
 
   switch (row->channel_func) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      break;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-      break;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-      break;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-      break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       return ha_roller_shutter(topic_prefix, topic_name, message, message_size);
