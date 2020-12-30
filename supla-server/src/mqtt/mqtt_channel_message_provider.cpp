@@ -128,7 +128,7 @@ void supla_mqtt_channel_message_provider::channel_type_to_string(
       snprintf(buf, buf_size, "VALVEPERCENTAGE");
       break;
     case SUPLA_CHANNELTYPE_BRIDGE:
-      snprintf(buf, buf_size, "VALVEBRIDGE");
+      snprintf(buf, buf_size, "BRIDGE");
       break;
     case SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT:
       snprintf(buf, buf_size, "GENERAL_PURPOSE_MEASUREMENT");
