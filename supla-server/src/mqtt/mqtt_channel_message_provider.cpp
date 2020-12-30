@@ -631,7 +631,6 @@ cJSON *supla_mqtt_channel_message_provider::ha_json_create_root(
   ha_json_set_name(root, name_if_empty, name_second_segment);
   ha_json_set_uniq_id(root, sub_id, set_sub_id);
   ha_json_set_qos(root);
-  ha_json_set_availability(root, topic_prefix, "true", "false");
 
   return root;
 }
@@ -700,6 +699,7 @@ bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
     return false;
   }
 
+  ha_json_set_availability(root, topic_prefix, "true", "false");
   ha_json_set_retain(root);
   ha_json_set_optimistic(root);
 
@@ -711,7 +711,6 @@ bool supla_mqtt_channel_message_provider::ha_light_or_powerswitch(
   }
   ha_json_set_string_param(root, "pl_on", "true");
   ha_json_set_string_param(root, "pl_off", "false");
-  ha_json_set_availability(root, topic_prefix, "true", "false");
 
   return ha_get_message(root, light ? "light" : "switch", 0, false, topic_name,
                         message, message_size);
@@ -727,6 +726,7 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
     return false;
   }
 
+  ha_json_set_availability(root, topic_prefix, "true", "false");
   ha_json_set_short_topic(root, "stat_t", "state/hi");
   ha_json_set_string_param(root, "pl_on", "false");
   ha_json_set_string_param(root, "pl_off", "true");
@@ -751,6 +751,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     return false;
   }
 
+  ha_json_set_availability(root, topic_prefix, "true", "false");
   ha_json_set_string_param(root, "unit_of_meas",
                            !unit || unit[0] == 0 ? "-" : unit);
   ha_json_set_short_topic(root, "stat_t", state_topic);
@@ -802,8 +803,7 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
   ha_json_set_int_param(root, "pos_open", 0);
   ha_json_set_int_param(root, "pos_clsd", 100);
 
-  ha_json_set_availability(root, topic_prefix, NULL, NULL);
-
+  ha_json_set_short_topic(root, "avty_t", "state/connected");
   ha_json_set_string_param(root, "pl_avail", "true");
   ha_json_set_string_param(root, "pl_not_avail", "false");
 
