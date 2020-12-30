@@ -793,8 +793,8 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
   ha_json_set_optimistic(root);
 
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
-  ha_json_set_string_param(root, "pl_open", "SHUT");
-  ha_json_set_string_param(root, "pl_cls", "REVEAL");
+  ha_json_set_string_param(root, "pl_open", "REVEAL");
+  ha_json_set_string_param(root, "pl_cls", "SHUT");
   ha_json_set_string_param(root, "pl_stop", "STOP");
 
   ha_json_set_short_topic(root, "set_pos_t", "set/closing_percentage");
