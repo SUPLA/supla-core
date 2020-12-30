@@ -744,7 +744,7 @@ bool supla_mqtt_channel_message_provider::ha_dimmer(int sub_id, bool set_sub_id,
                                                     void **message,
                                                     size_t *message_size) {
   // https://www.home-assistant.io/integrations/light.mqtt
-  cJSON *root = ha_json_create_root(topic_prefix, "Dimmer", NULL, false, sub_id,
+  cJSON *root = ha_json_create_root(topic_prefix, "Dimmer", NULL, true, sub_id,
                                     set_sub_id);
   if (!root) {
     return false;
@@ -762,7 +762,7 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
                                                  void **message,
                                                  size_t *message_size) {
   // https://www.home-assistant.io/integrations/light.mqtt
-  cJSON *root = ha_json_create_root(topic_prefix, "RGB Lighting", NULL, false,
+  cJSON *root = ha_json_create_root(topic_prefix, "RGB Lighting", NULL, true,
                                     sub_id, set_sub_id);
   if (!root) {
     return false;
