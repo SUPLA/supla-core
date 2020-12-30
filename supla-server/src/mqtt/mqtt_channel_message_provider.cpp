@@ -730,7 +730,8 @@ void supla_mqtt_channel_message_provider::ha_json_set_brightness(
       root, "stat_val_tpl",
       "{% if value == \"true\" %}TURN_ON{% else %}TURN_OFF{% endif %}");
 
-  ha_json_set_string_param(root, "on_cmd_type", "last");
+  // With "last", there were problems with RGB. Changed to "first".
+  ha_json_set_string_param(root, "on_cmd_type", "first");
 
   ha_json_set_short_topic(root, "bri_cmd_t", bri_cmd_t);
   ha_json_set_int_param(root, "bri_scl", 100);
@@ -769,7 +770,7 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
 
   ha_json_set_brightness(root, "set/color_brightness",
                          "state/color_brightness");
-  ha_json_set_short_topic(root, "rgb_stat_t", "state/color");
+  ha_json_set_short_topic(root, "rgb_stat_t", "state/normalized_rgb");
   ha_json_set_short_topic(root, "rgb_cmd_t", "set/color");
 
   return ha_get_message(root, "light", sub_id, set_sub_id, topic_name, message,
