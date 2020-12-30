@@ -155,6 +155,15 @@ void supla_mqtt_abstract_state_message_provider::get_color(char *buf,
   }
 }
 
+void supla_mqtt_abstract_state_message_provider::get_rgb(char *buf,
+                                                         size_t buf_size) {
+  if (cvalue) {
+    snprintf(buf, buf_size, "%i,%i,%i", ((unsigned char *)&cvalue->color)[2],
+             ((unsigned char *)&cvalue->color)[1],
+             ((unsigned char *)&cvalue->color)[0]);
+  }
+}
+
 void supla_mqtt_abstract_state_message_provider::get_valve_closed(
     char *buf, size_t buf_size) {
   if (cvalue) {
@@ -410,6 +419,19 @@ bool supla_mqtt_abstract_state_message_provider::get_color_message(
   return create_message(
       topic_prefix, user_email, topic_name, message, message_size, value, false,
       "devices/%i/channels/%i/state/color", get_device_id(), get_channel_id());
+}
+
+bool supla_mqtt_abstract_state_message_provider::get_normalized_rgb_message(
+    const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
+  char value[50];
+  value[0] = 0;
+
+  get_rgb(value, sizeof(value));
+  return create_message(topic_prefix, user_email, topic_name, message,
+                        message_size, value, false,
+                        "devices/%i/channels/%i/state/normalized_rgb",
+                        get_device_id(), get_channel_id());
 }
 
 bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
@@ -892,7 +914,12 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
         case 2:
           return get_color_message(topic_prefix, topic_name, message,
                                    message_size);
+
         case 3:
+          return get_normalized_rgb_message(topic_prefix, topic_name, message,
+                                            message_size);
+
+        case 4:
           return get_color_brightness_message(topic_prefix, topic_name, message,
                                               message_size);
       }

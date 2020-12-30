@@ -772,8 +772,6 @@ bool supla_mqtt_channel_message_provider::ha_rgb(int sub_id, bool set_sub_id,
   ha_json_set_short_topic(root, "rgb_stat_t", "state/color");
   ha_json_set_short_topic(root, "rgb_cmd_t", "set/color");
 
-  ha_json_set_short_topic(root, "rgb_val_tpl", "{{ value | join(',') }}");
-
   return ha_get_message(root, "light", sub_id, set_sub_id, topic_name, message,
                         message_size);
 }

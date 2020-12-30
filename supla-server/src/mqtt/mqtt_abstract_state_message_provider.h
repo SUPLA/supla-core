@@ -59,6 +59,7 @@ class supla_mqtt_abstract_state_message_provider
   void get_humidity(char *buf, size_t buf_size);
   void get_brightness(char *brightness, char *buf, size_t buf_size);
   void get_color(char *buf, size_t buf_size);
+  void get_rgb(char *buf, size_t buf_size);
   void get_valve_closed(char *buf, size_t buf_size);
 
   bool get_rs_message_at_index(unsigned short index, const char *topic_prefix,
@@ -115,6 +116,9 @@ class supla_mqtt_abstract_state_message_provider
 
   bool get_color_message(const char *topic_prefix, char **topic_name,
                          void **message, size_t *message_size);
+
+  bool get_normalized_rgb_message(const char *topic_prefix, char **topic_name,
+                                  void **message, size_t *message_size);
 
   bool get_valve_message_at_index(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
