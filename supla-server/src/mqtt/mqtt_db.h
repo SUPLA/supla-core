@@ -64,13 +64,13 @@ typedef struct {
   char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   bool channel_hidden;
 
-  int param1;
-  int param2;
-  int param3;
+  int channel_param1;
+  int channel_param2;
+  int channel_param3;
 
-  char textParam1[256];
-  char textParam2[256];
-  char textParam3[256];
+  char channel_text_param1[256];
+  char channel_text_param2[256];
+  char channel_text_param3[256];
 
 } _mqtt_db_data_row_channel_t;
 

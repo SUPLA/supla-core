@@ -80,12 +80,12 @@ typedef struct {
   my_bool channel_caption_is_null;
   int channel_hidden;
 
-  unsigned long text_param1_len;
-  my_bool text_param1_is_null;
-  unsigned long text_param2_len;
-  my_bool text_param2_is_null;
-  unsigned long text_param3_len;
-  my_bool text_param3_is_null;
+  unsigned long channel_text_param1_len;
+  my_bool channel_text_param1_is_null;
+  unsigned long channel_text_param2_len;
+  my_bool channel_text_param2_is_null;
+  unsigned long channel_text_param3_len;
+  my_bool channel_text_param3_is_null;
 
 } _mqtt_db_channelquery_t;
 
@@ -516,34 +516,34 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
     rbind[13].buffer_length = sizeof(int);
 
     rbind[14].buffer_type = MYSQL_TYPE_LONG;
-    rbind[14].buffer = (char *)&query->row->param1;
-    rbind[14].buffer_length = sizeof(query->row->param1);
+    rbind[14].buffer = (char *)&query->row->channel_param1;
+    rbind[14].buffer_length = sizeof(query->row->channel_param1);
 
     rbind[15].buffer_type = MYSQL_TYPE_LONG;
-    rbind[15].buffer = (char *)&query->row->param2;
-    rbind[15].buffer_length = sizeof(query->row->param2);
+    rbind[15].buffer = (char *)&query->row->channel_param2;
+    rbind[15].buffer_length = sizeof(query->row->channel_param2);
 
     rbind[15].buffer_type = MYSQL_TYPE_LONG;
-    rbind[16].buffer = (char *)&query->row->param3;
-    rbind[16].buffer_length = sizeof(query->row->param3);
+    rbind[16].buffer = (char *)&query->row->channel_param3;
+    rbind[16].buffer_length = sizeof(query->row->channel_param3);
 
     rbind[17].buffer_type = MYSQL_TYPE_STRING;
-    rbind[17].buffer = query->row->textParam1;
-    rbind[17].buffer_length = sizeof(query->row->textParam1);
-    rbind[17].length = &query->text_param1_len;
-    rbind[17].is_null = &query->text_param1_is_null;
+    rbind[17].buffer = query->row->channel_text_param1;
+    rbind[17].buffer_length = sizeof(query->row->channel_text_param1);
+    rbind[17].length = &query->channel_text_param1_len;
+    rbind[17].is_null = &query->channel_text_param1_is_null;
 
     rbind[18].buffer_type = MYSQL_TYPE_STRING;
-    rbind[18].buffer = query->row->textParam2;
-    rbind[18].buffer_length = sizeof(query->row->textParam2);
-    rbind[18].length = &query->text_param2_len;
-    rbind[18].is_null = &query->text_param2_is_null;
+    rbind[18].buffer = query->row->channel_text_param2;
+    rbind[18].buffer_length = sizeof(query->row->channel_text_param2);
+    rbind[18].length = &query->channel_text_param2_len;
+    rbind[18].is_null = &query->channel_text_param2_is_null;
 
     rbind[19].buffer_type = MYSQL_TYPE_STRING;
-    rbind[19].buffer = query->row->textParam3;
-    rbind[19].buffer_length = sizeof(query->row->textParam3);
-    rbind[19].length = &query->text_param3_len;
-    rbind[19].is_null = &query->text_param3_is_null;
+    rbind[19].buffer = query->row->channel_text_param3;
+    rbind[19].buffer_length = sizeof(query->row->channel_text_param3);
+    rbind[19].length = &query->channel_text_param3_len;
+    rbind[19].is_null = &query->channel_text_param3_is_null;
 
     if (mysql_stmt_bind_result(query->stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
