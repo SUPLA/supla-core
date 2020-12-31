@@ -880,29 +880,32 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   bool result = false;
-  TDS_ImpulseCounter_Value v;
-  memset(&v, 0, sizeof(TDS_ImpulseCounter_Value));
-  supla_channel_ic_measurement *ic = new supla_channel_ic_measurement(
-      row->channel_id, row->channel_func, &v, row->channel_text_param1,
-      row->channel_text_param2, row->channel_param2, row->channel_param3);
+  if (index <= 1) {
+    TDS_ImpulseCounter_Value v;
+    memset(&v, 0, sizeof(TDS_ImpulseCounter_Value));
+    supla_channel_ic_measurement *ic = new supla_channel_ic_measurement(
+        row->channel_id, row->channel_func, &v, row->channel_text_param1,
+        row->channel_text_param2, row->channel_param2, row->channel_param3);
 
-  if (ic == NULL) {
-    return false;
+    if (ic == NULL) {
+      return false;
+    }
+
+    switch (index) {
+      case 0:
+        result = ha_sensor(ic->getCustomUnit(), 3, 0, true,
+                           "state/calculated_value", NULL, "Value",
+                           topic_prefix, topic_name, message, message_size);
+        break;
+      case 1:
+        result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
+                           NULL, "Total cost", topic_prefix, topic_name,
+                           message, message_size);
+        break;
+    }
+
+    delete ic;
   }
-
-  switch (index) {
-    case 0:
-      result = ha_sensor(ic->getCustomUnit(), 3, 0, true,
-                         "state/calculated_value", NULL, "Value", topic_prefix,
-                         topic_name, message, message_size);
-      break;
-    case 1:
-      result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
-                         NULL, "Total cost", topic_prefix, topic_name, message,
-                         message_size);
-  }
-
-  delete ic;
 
   return result;
 }
@@ -921,11 +924,14 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
   }
 
   switch (row->channel_func) {
-    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
+      break;
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       if (index > 1) {
         return false;
       }
