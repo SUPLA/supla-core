@@ -1867,6 +1867,8 @@ bool supla_device_channels::get_channel_complex_value(
     value->online = !channel->isOffline();
     value->hidden_channel = channel->getHidden();
     value->function = channel->getFunc();
+    value->channel_type = channel->getType();
+    value->channel_flags = channel->getFlags();
 
     switch (value->function) {
       case SUPLA_CHANNELFNC_THERMOMETER:

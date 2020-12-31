@@ -43,6 +43,7 @@ typedef struct {
   bool hidden_channel;
   int function;
   int channel_type;
+  int channel_flags;
   bool hi;
   char brightness;
   char color_brightness;
