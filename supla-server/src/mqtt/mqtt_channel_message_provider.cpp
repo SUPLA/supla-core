@@ -813,7 +813,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
   }
 
   ha_json_set_string_param(root, "unit_of_meas",
-                           !unit || unit[0] == 0 ? "-" : unit);
+                           !unit || unit[0] == 0 ? "" : unit);
   ha_json_set_short_topic(root, "stat_t", state_topic);
 
   char tpl[50];
