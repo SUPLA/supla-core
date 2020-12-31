@@ -63,6 +63,15 @@ typedef struct {
   char channel_location[SUPLA_LOCATION_CAPTION_MAXSIZE];
   char channel_caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
   bool channel_hidden;
+
+  int param1;
+  int param2;
+  int param3;
+
+  char textParam1[256];
+  char textParam2[256];
+  char textParam3[256];
+
 } _mqtt_db_data_row_channel_t;
 
 class supla_mqtt_db : public svrdb {

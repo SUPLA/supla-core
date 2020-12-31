@@ -79,6 +79,14 @@ typedef struct {
   unsigned long channel_caption_len;
   my_bool channel_caption_is_null;
   int channel_hidden;
+
+  unsigned long text_param1_len;
+  my_bool text_param1_is_null;
+  unsigned long text_param2_len;
+  my_bool text_param2_is_null;
+  unsigned long text_param3_len;
+  my_bool text_param3_is_null;
+
 } _mqtt_db_channelquery_t;
 
 supla_mqtt_db::supla_mqtt_db(void) : svrdb() {
@@ -405,9 +413,10 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   const char sql[] =
       "SELECT u.`id`, u.`email`, u.`short_unique_id`, d.`id`, d.`enabled`, "
       "d.`manufacturer_id`, d.`name`, d.`software_version`, c.`id`, c.`type`, "
-      "c.`func`, IFNULL(l.`caption`, dl.`caption`), c.`caption`, c.`hidden` "
-      "FROM `supla_dev_channel` c LEFT JOIN `supla_iodevice` d ON d.`id` = "
-      "c.`iodevice_id` LEFT JOIN `supla_location` l ON l.`id` = "
+      "c.`func`, IFNULL(l.`caption`, dl.`caption`), c.`caption`, c.`hidden`, "
+      "c.`param1`, c.`param2`, c.`param3`, c.`text_param1`, c.`text_param2`, "
+      "c.`text_param3` FROM `supla_dev_channel` c LEFT JOIN `supla_iodevice` d "
+      "ON d.`id` = c.`iodevice_id` LEFT JOIN `supla_location` l ON l.`id` = "
       "c.`location_id` LEFT JOIN `supla_location` dl ON dl.`id` = "
       "d.`location_id` LEFT JOIN `supla_user` u ON u.id = c.`user_id` WHERE "
       "u.`mqtt_broker_enabled` = 1 AND (? = 0 OR u.`id` = ?) AND (? = 0 OR "
@@ -435,7 +444,7 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   pbind[5].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&query->stmt, sql, pbind, 6, true)) {
-    MYSQL_BIND rbind[14];
+    MYSQL_BIND rbind[20];
     memset(rbind, 0, sizeof(rbind));
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -505,6 +514,36 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
     rbind[13].buffer_type = MYSQL_TYPE_LONG;
     rbind[13].buffer = (char *)&query->channel_hidden;
     rbind[13].buffer_length = sizeof(int);
+
+    rbind[14].buffer_type = MYSQL_TYPE_LONG;
+    rbind[14].buffer = (char *)&query->row->param1;
+    rbind[14].buffer_length = sizeof(query->row->param1);
+
+    rbind[15].buffer_type = MYSQL_TYPE_LONG;
+    rbind[15].buffer = (char *)&query->row->param2;
+    rbind[15].buffer_length = sizeof(query->row->param2);
+
+    rbind[15].buffer_type = MYSQL_TYPE_LONG;
+    rbind[16].buffer = (char *)&query->row->param3;
+    rbind[16].buffer_length = sizeof(query->row->param3);
+
+    rbind[17].buffer_type = MYSQL_TYPE_STRING;
+    rbind[17].buffer = query->row->textParam1;
+    rbind[17].buffer_length = sizeof(query->row->textParam1);
+    rbind[17].length = &query->text_param1_len;
+    rbind[17].is_null = &query->text_param1_is_null;
+
+    rbind[18].buffer_type = MYSQL_TYPE_STRING;
+    rbind[18].buffer = query->row->textParam2;
+    rbind[18].buffer_length = sizeof(query->row->textParam2);
+    rbind[18].length = &query->text_param2_len;
+    rbind[18].is_null = &query->text_param2_is_null;
+
+    rbind[19].buffer_type = MYSQL_TYPE_STRING;
+    rbind[19].buffer = query->row->textParam3;
+    rbind[19].buffer_length = sizeof(query->row->textParam3);
+    rbind[19].length = &query->text_param3_len;
+    rbind[19].is_null = &query->text_param3_is_null;
 
     if (mysql_stmt_bind_result(query->stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
