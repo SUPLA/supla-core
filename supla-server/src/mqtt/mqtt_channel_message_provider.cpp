@@ -897,7 +897,7 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
                          topic_name, message, message_size);
       break;
     case 1:
-      result = ha_sensor(ic->getCurrency(), 2, 0, true, "state/total_cost",
+      result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
                          NULL, "Total cost", topic_prefix, topic_name, message,
                          message_size);
   }
