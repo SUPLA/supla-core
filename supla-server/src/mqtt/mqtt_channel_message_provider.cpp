@@ -973,7 +973,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     index += 12;
   }
 
-  short phase = (index - 6) / 12;
+  short phase = (index - 6) / 12 + 1;
 
   switch (index) {
     case 0:
