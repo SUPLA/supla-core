@@ -108,11 +108,11 @@ bool supla_mqtt_publisher_datasource::context_open(
 void *supla_mqtt_publisher_datasource::datarow_malloc(int datatype) {
   switch (datatype) {
     case MPD_DATATYPE_USER:
-      return malloc(sizeof(_mqtt_db_data_row_user_t));
+      return calloc(1, sizeof(_mqtt_db_data_row_user_t));
     case MPD_DATATYPE_DEVICE:
-      return malloc(sizeof(_mqtt_db_data_row_device_t));
+      return calloc(1, sizeof(_mqtt_db_data_row_device_t));
     case MPD_DATATYPE_CHANNEL:
-      return malloc(sizeof(_mqtt_db_data_row_channel_t));
+      return calloc(1, sizeof(_mqtt_db_data_row_channel_t));
   }
 
   return NULL;
