@@ -1249,7 +1249,6 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
                                   message_size);
 #endif /*SERVER_VERSION_23*/
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-      break;
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
