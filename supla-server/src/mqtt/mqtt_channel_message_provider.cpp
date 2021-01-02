@@ -943,7 +943,7 @@ bool supla_mqtt_channel_message_provider::ha_phase_sensor(
   }
 
   snprintf(_state_topic, st_len, state_topic, phase);
-  snprintf(_name_second_segment, nss_len, name_second_segment, phase);
+  snprintf(_name_second_segment, nss_len, name_second_segment, phase + 1);
 
   bool result = ha_sensor(unit, precision, index, true, _state_topic, NULL,
                           _name_second_segment, topic_prefix, topic_name,
