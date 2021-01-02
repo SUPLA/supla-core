@@ -558,6 +558,10 @@ bool supla_mqtt_abstract_state_message_provider::
                                           const char *topic_prefix,
                                           char **topic_name, void **message,
                                           size_t *message_size) {
+  if (index > 45) {
+    return false;
+  }
+
   get_electricity_measurement();
 
   TElectricityMeter_ExtendedValue_V2 em_ev;
@@ -591,7 +595,7 @@ bool supla_mqtt_abstract_state_message_provider::
   char value[50];
   value[0] = 0;
 
-  short phase = (index - 8) / 12;
+  short phase = (index - 10) / 12;
 
   switch (index) {
     case 1:
