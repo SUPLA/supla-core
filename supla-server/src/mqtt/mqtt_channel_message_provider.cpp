@@ -1000,6 +1000,8 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
                           topic_name, message, message_size);
             break;
         }
+
+        delete em;
       }
       return result;
     }
