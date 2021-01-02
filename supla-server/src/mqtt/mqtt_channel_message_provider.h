@@ -85,6 +85,11 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_impulse_counter(unsigned short index, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size);
+  bool ha_phase_sensor(unsigned short index, unsigned short phase,
+                       const char *unit, int precision, const char *state_topic,
+                       const char *name_second_segment,
+                       const char *topic_prefix, char **topic_name,
+                       void **message, size_t *message_size);
   bool ha_electricity_meter(unsigned short index, const char *topic_prefix,
                             char **topic_name, void **message,
                             size_t *message_size);

@@ -910,9 +910,221 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
   return result;
 }
 
+bool ha_sensor();
+
+bool supla_mqtt_channel_message_provider::ha_phase_sensor(
+    unsigned short index, unsigned short phase, const char *unit, int precision,
+    const char *state_topic, const char *name_second_segment,
+    const char *topic_prefix, char **topic_name, void **message,
+    size_t *message_size) {
+  int st_len = snprintf(NULL, 0, state_topic, phase);
+  if (st_len == 0) {
+    return false;
+  }
+
+  st_len++;
+
+  int nss_len = snprintf(NULL, 0, name_second_segment, phase);
+  if (nss_len == 0) {
+    return false;
+  }
+
+  nss_len++;
+
+  char *_state_topic = (char *)malloc(st_len);
+  if (_state_topic == NULL) {
+    return false;
+  }
+
+  char *_name_second_segment = (char *)malloc(nss_len);
+  if (_name_second_segment == NULL) {
+    free(_state_topic);
+    return false;
+  }
+
+  snprintf(_state_topic, st_len, state_topic, phase);
+  snprintf(_name_second_segment, nss_len, name_second_segment, phase);
+
+  bool result = ha_sensor(unit, precision, index, true, _state_topic, NULL,
+                          _name_second_segment, topic_prefix, topic_name,
+                          message, message_size);
+
+  free(_state_topic);
+  free(_name_second_segment);
+
+  return result;
+}
+
 bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
+  if (index >= 6 &&
+      (row->channel_flags & SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED)) {
+    index += 12;
+  }
+
+  if (index >= 18 &&
+      (row->channel_flags & SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED)) {
+    index += 12;
+  }
+
+  if (index >= 30 &&
+      (row->channel_flags & SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED)) {
+    index += 12;
+  }
+
+  short phase = (index - 6) / 12;
+
+  switch (index) {
+    case 0:
+    case 1: {
+      bool result = false;
+      supla_channel_electricity_measurement *em =
+          new supla_channel_electricity_measurement(
+              row->channel_id, (TElectricityMeter_ExtendedValue_V2 *)NULL,
+              row->channel_param2, row->channel_text_param1);
+      if (em) {
+        char currency[4];
+        em->getCurrency(currency);
+
+        switch (index) {
+          case 0:
+            result = ha_sensor(currency, 2, index, true, "state/total_cost",
+                               NULL, "Total cost", topic_prefix, topic_name,
+                               message, message_size);
+            break;
+          case 1:
+            result =
+                ha_sensor(currency, 2, index, true, "state/total_cost_balanced",
+                          NULL, "Total cost - balanced", topic_prefix,
+                          topic_name, message, message_size);
+            break;
+        }
+      }
+      return result;
+    }
+    case 2:
+      return ha_sensor("kWh", 5, index, true,
+                       "state/total_forward_active_energy", NULL,
+                       "Total forward active energy", topic_prefix, topic_name,
+                       message, message_size);
+    case 3:
+      return ha_sensor("kWh", 5, index, true,
+                       "state/total_reverse_active_energy", NULL,
+                       "Total reverse active energy", topic_prefix, topic_name,
+                       message, message_size);
+    case 4:
+      return ha_sensor("kWh", 5, index, true,
+                       "state/total_forward_active_energy_balanced", NULL,
+                       "Total forward active energy - balanced", topic_prefix,
+                       topic_name, message, message_size);
+    case 5:
+      return ha_sensor("kWh", 5, index, true,
+                       "state/total_reverse_active_energy_balanced", NULL,
+                       "Total reverse active energy - balanced", topic_prefix,
+                       topic_name, message, message_size);
+
+    case 6:
+    case 18:
+    case 30:
+      return ha_phase_sensor(
+          index, phase, "kWh", 5,
+          "state/state/phases/%i/total_forward_active_energy",
+          "Total forward active energy - Phase %i", topic_prefix, topic_name,
+          message, message_size);
+
+    case 7:
+    case 19:
+    case 31:
+      return ha_phase_sensor(
+          index, phase, "kWh", 5,
+          "state/state/phases/%i/total_reverse_active_energy",
+          "Total reverse active energy - Phase %i", topic_prefix, topic_name,
+          message, message_size);
+
+    case 8:
+    case 20:
+    case 32:
+      return ha_phase_sensor(
+          index, phase, "kvarh", 5,
+          "state/state/phases/%i/total_forward_reactive_energy",
+          "Total forward reactive energy - Phase %i", topic_prefix, topic_name,
+          message, message_size);
+
+    case 9:
+    case 21:
+    case 33:
+      return ha_phase_sensor(
+          index, phase, "kvarh", 5,
+          "state/state/phases/%i/total_reverse_reactive_energy",
+          "Total reverse reactive energy - Phase %i", topic_prefix, topic_name,
+          message, message_size);
+
+    case 10:
+    case 22:
+    case 34:
+      return ha_phase_sensor(index, phase, "Hz", 2,
+                             "state/state/phases/%i/frequency",
+                             "Frequency - Phase %i", topic_prefix, topic_name,
+                             message, message_size);
+
+    case 11:
+    case 23:
+    case 35:
+      return ha_phase_sensor(index, phase, "V", 2,
+                             "state/state/phases/%i/voltage",
+                             "Voltage - Phase %i", topic_prefix, topic_name,
+                             message, message_size);
+
+    case 12:
+    case 24:
+    case 36:
+      return ha_phase_sensor(index, phase, "A", 3,
+                             "state/state/phases/%i/current",
+                             "Current - Phase %i", topic_prefix, topic_name,
+                             message, message_size);
+
+    case 13:
+    case 25:
+    case 37:
+      return ha_phase_sensor(index, phase, "kW", 5,
+                             "state/state/phases/%i/power_active",
+                             "Power active - Phase %i", topic_prefix,
+                             topic_name, message, message_size);
+
+    case 14:
+    case 26:
+    case 38:
+      return ha_phase_sensor(index, phase, "kvar", 5,
+                             "state/state/phases/%i/power_reactive",
+                             "Power reactive - Phase %i", topic_prefix,
+                             topic_name, message, message_size);
+
+    case 15:
+    case 27:
+    case 39:
+      return ha_phase_sensor(index, phase, "kVA", 5,
+                             "state/state/phases/%i/power_apparent",
+                             "Power apparent - Phase %i", topic_prefix,
+                             topic_name, message, message_size);
+
+    case 16:
+    case 28:
+    case 40:
+      return ha_phase_sensor(index, phase, "", 3,
+                             "state/state/phases/%i/power_factor",
+                             "Power factor - Phase %i", topic_prefix,
+                             topic_name, message, message_size);
+
+    case 17:
+    case 29:
+    case 41:
+      return ha_phase_sensor(index, phase, "°", 1,
+                             "state/state/phases/%i/phase_angle",
+                             "Phase angle - Phase %i", topic_prefix, topic_name,
+                             message, message_size);
+  }
+
   return false;
 }
 
