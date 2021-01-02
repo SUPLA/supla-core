@@ -1082,7 +1082,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 13:
     case 25:
     case 37:
-      return ha_phase_sensor(index, phase, "kW", 5,
+      return ha_phase_sensor(index, phase, "W", 5,
                              "state/phases/%i/power_active",
                              "Power active - Phase %i", topic_prefix,
                              topic_name, message, message_size);
@@ -1090,7 +1090,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 14:
     case 26:
     case 38:
-      return ha_phase_sensor(index, phase, "kvar", 5,
+      return ha_phase_sensor(index, phase, "var", 5,
                              "state/phases/%i/power_reactive",
                              "Power reactive - Phase %i", topic_prefix,
                              topic_name, message, message_size);
@@ -1098,7 +1098,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 15:
     case 27:
     case 39:
-      return ha_phase_sensor(index, phase, "kVA", 5,
+      return ha_phase_sensor(index, phase, "VA", 5,
                              "state/phases/%i/power_apparent",
                              "Power apparent - Phase %i", topic_prefix,
                              topic_name, message, message_size);
