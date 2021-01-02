@@ -413,14 +413,15 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
   const char sql[] =
       "SELECT u.`id`, u.`email`, u.`short_unique_id`, d.`id`, d.`enabled`, "
       "d.`manufacturer_id`, d.`name`, d.`software_version`, c.`id`, c.`type`, "
-      "c.`func`, IFNULL(l.`caption`, dl.`caption`), c.`caption`, c.`hidden`, "
-      "c.`param1`, c.`param2`, c.`param3`, c.`text_param1`, c.`text_param2`, "
-      "c.`text_param3` FROM `supla_dev_channel` c LEFT JOIN `supla_iodevice` d "
-      "ON d.`id` = c.`iodevice_id` LEFT JOIN `supla_location` l ON l.`id` = "
-      "c.`location_id` LEFT JOIN `supla_location` dl ON dl.`id` = "
-      "d.`location_id` LEFT JOIN `supla_user` u ON u.id = c.`user_id` WHERE "
-      "u.`mqtt_broker_enabled` = 1 AND (? = 0 OR u.`id` = ?) AND (? = 0 OR "
-      "d.`id` = ?) AND (? = 0 OR c.`id` = ?) ORDER BY u.`id`, d.`id`, c.`id`";
+      "c.`func`, c.`flags`, IFNULL(l.`caption`, dl.`caption`), c.`caption`, "
+      "c.`hidden`, c.`param1`, c.`param2`, c.`param3`, c.`text_param1`, "
+      "c.`text_param2`, c.`text_param3` FROM `supla_dev_channel` c LEFT JOIN "
+      "`supla_iodevice` d ON d.`id` = c.`iodevice_id` LEFT JOIN "
+      "`supla_location` l ON l.`id` = c.`location_id` LEFT JOIN "
+      "`supla_location` dl ON dl.`id` = d.`location_id` LEFT JOIN `supla_user` "
+      "u ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 OR "
+      "u.`id` = ?) AND (? = 0 OR d.`id` = ?) AND (? = 0 OR c.`id` = ?) ORDER "
+      "BY u.`id`, d.`id`, c.`id`";
 
   MYSQL_BIND pbind[9];
   memset(pbind, 0, sizeof(pbind));
