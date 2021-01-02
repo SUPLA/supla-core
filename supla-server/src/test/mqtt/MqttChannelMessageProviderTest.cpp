@@ -36,8 +36,14 @@ void MqttChannelMessageProviderTest::fillChannelData(
 
   snprintf(row_channel->user_email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
   snprintf(row_channel->user_shortuniqueid, SHORT_UNIQUEID_MAXSIZE,
-           "7720767494dd87196e1896c7cbab707c");
+           "7720767494dd87196e1896c7"
+           "cbab707c");
   row_channel->device_id = 555;
+
+  row_channel->device_mfr_id = SUPLA_MFR_ACSOFTWARE;
+  snprintf(row_channel->device_name, SUPLA_DEVICE_NAME_MAXSIZE, "SMART SWITCH");
+  snprintf(row_channel->device_softver, SUPLA_SOFTVER_MAXSIZE, "1.0");
+
   row_channel->device_enabled = true;
   row_channel->channel_id = 754;
   row_channel->channel_type = SUPLA_CHANNELTYPE_RELAY;
@@ -75,12 +81,17 @@ TEST_F(MqttChannelMessageProviderTest, powerSwitch) {
                       row_channel.device_id, row_channel.channel_id));
 
   const char haConfig[] =
-      "{\"uniq_id\":\"supla-754\",\"qos\":0,\"ret\":false,\"opt\":false,\"pow_"
-      "stat_t\":\"supla/user@supla.org/devices/555/channels/754/state/"
-      "on\",\"cmd_t\":\"supla/user@supla.org/devices/555/channels/754/set/"
-      "on\",\"pl_on\":\"true\",\"pl_off\":\"false\",\"avty\":{\"t\":\"supla/"
-      "user@supla.org/devices/555/channels/754/state/"
-      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}}";
+      "{\"avty\":{\"topic\":\"supla/user@supla.org/devices/555/channels/754/"
+      "state/"
+      "connected\",\"payload_available\":\"true\",\"payload_not_available\":"
+      "\"false\"},\"~\":\"supla/user@supla.org/devices/555/channels/"
+      "754\",\"device\":{\"ids\":\"supla-iodevice-555\",\"mf\":\"AC "
+      "SOFTWARE\",\"name\":\"SMART "
+      "SWITCH\",\"sw\":\"1.0\"},\"name\":\"Socket\",\"uniq_id\":\"supla_754\","
+      "\"qos\":0,\"ret\":false,\"opt\":false,\"stat_t\":\"~/state/"
+      "on\",\"cmd_t\":\"~/set/"
+      "on\",\"stat_on\":\"true\",\"stat_off\":\"false\",\"pl_on\":\"true\","
+      "\"pl_off\":\"false\"}";
 
   ASSERT_TRUE(
       fetchAndCompare(provider, NULL, haConfig, false,

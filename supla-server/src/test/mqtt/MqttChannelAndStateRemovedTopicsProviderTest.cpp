@@ -51,13 +51,17 @@ TEST_F(MqttChannelAndStateRemovedTopicsProviderTest, setFunctionToNone) {
   before.channel_func = SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
   snprintf(before.channel_location, SUPLA_LOCATION_CAPTION_MAXSIZE,
            "Second floor");
-  snprintf(before.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Socket");
+  snprintf(before.channel_caption, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Roller Shutter 1");
   before.channel_hidden = false;
 
   memcpy(&after, &before, sizeof(_mqtt_db_data_row_channel_t));
   after.channel_func = SUPLA_CHANNELFNC_NONE;
 
   removed_topics_provider->set_data(NULL, &before, &after);
+
+  ASSERT_TRUE(fetchAndCompare(
+      removed_topics_provider, NULL, NULL, false,
+      "homeassistant/cover/user_supla_org/754/config"));
 
   ASSERT_TRUE(fetchAndCompare(
       removed_topics_provider, NULL, NULL, false,

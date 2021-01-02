@@ -102,7 +102,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
       0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
+                "homeassistant/+/2645test_supla_org/+/config"),
             0);
 
   sleep(22);
@@ -117,7 +117,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
       0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
+                "homeassistant/+/2645test_supla_org/+/config"),
             0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
@@ -150,7 +150,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
       0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
+                "homeassistant/+/2645test_supla_org/+/config"),
             0);
 
   runSqlScript("EnableMqttForUser2645.sql");
@@ -168,7 +168,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
       0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
+                "homeassistant/+/2645test_supla_org/+/config"),
             0);
 }
 
@@ -195,7 +195,7 @@ TEST_F(MqttUnpublisherIntegrationTest, disableEnabled) {
       0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+                "homeassistant/+/48test_supla_org/+/config"),
             0);
 
   getLibAdapter()->on_message_received("supla/48test@supla.org/1", "123");
@@ -222,7 +222,7 @@ TEST_F(MqttUnpublisherIntegrationTest, disableEnabled) {
       getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
       0);
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+                "homeassistant/+/48test_supla_org/+/config"),
             0);
 }
 
@@ -249,7 +249,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
       0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+                "homeassistant/+/48test_supla_org/+/config"),
             0);
 
   sleep(5);
@@ -269,7 +269,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
       0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+                "homeassistant/+/48test_supla_org/+/config"),
             0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
@@ -292,7 +292,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
       0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+                "homeassistant/+/48test_supla_org/+/config"),
             0);
 
   sleep(22);
@@ -307,7 +307,7 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
       0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+                "homeassistant/+/48test_supla_org/+/config"),
             0);
 }
 
@@ -340,7 +340,7 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
   sleep(2);
   getDS()->on_device_deleted(117, 36);
   getDS()->on_device_deleted(743, 506);
-  waitForPublications(74);
+  waitForPublications(120);
 
   // print_expected();
 
@@ -367,6 +367,8 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       NULL,
       "supla/117test@supla.org/devices/36/channels/50/hidden",
       NULL,
+      "homeassistant/light/117test_supla_org/50/config",
+      NULL,
       "supla/117test@supla.org/devices/36/channels/50/state/connected",
       NULL,
       "supla/117test@supla.org/devices/36/channels/50/state/on",
@@ -378,6 +380,8 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       "supla/117test@supla.org/devices/36/channels/51/caption",
       NULL,
       "supla/117test@supla.org/devices/36/channels/51/hidden",
+      NULL,
+      "homeassistant/light/117test_supla_org/51/config",
       NULL,
       "supla/117test@supla.org/devices/36/channels/51/state/connected",
       NULL,
@@ -405,6 +409,90 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/hidden",
       NULL,
+      "homeassistant/sensor/743test_supla_org/966_0/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_1/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_2/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_3/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_4/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_5/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_6/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_7/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_8/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_9/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_10/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_11/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_12/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_13/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_14/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_15/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_16/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_17/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_18/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_19/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_20/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_21/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_22/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_23/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_24/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_25/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_26/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_27/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_28/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_29/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_30/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_31/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_32/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_33/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_34/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_35/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_36/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_37/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_38/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_39/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_40/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_41/config",
+      NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/connected",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/total_cost",
@@ -417,6 +505,12 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       "supla/743test@supla.org/devices/506/channels/966/state/currency",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/support",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_reverse_active_energy",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/"
       "total_forward_active_energy_balanced",
@@ -563,7 +657,9 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
   sleep(5);
   getDS()->on_channel_function_changed(743, 966);
 
-  waitForPublications(48);
+  waitForPublications(92);
+
+  // print_expected();
 
   const char *expectedData[] = {
       "supla/743test@supla.org/devices/506/channels/966/type",
@@ -573,6 +669,90 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
       "supla/743test@supla.org/devices/506/channels/966/caption",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/hidden",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_0/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_1/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_2/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_3/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_4/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_5/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_6/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_7/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_8/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_9/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_10/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_11/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_12/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_13/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_14/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_15/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_16/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_17/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_18/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_19/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_20/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_21/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_22/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_23/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_24/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_25/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_26/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_27/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_28/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_29/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_30/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_31/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_32/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_33/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_34/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_35/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_36/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_37/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_38/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_39/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_40/config",
+      NULL,
+      "homeassistant/sensor/743test_supla_org/966_41/config",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/connected",
       NULL,
@@ -586,6 +766,12 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
       "supla/743test@supla.org/devices/506/channels/966/state/currency",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/support",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_forward_active_energy",
+      NULL,
+      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "total_reverse_active_energy",
       NULL,
       "supla/743test@supla.org/devices/506/channels/966/state/"
       "total_forward_active_energy_balanced",
@@ -695,8 +881,6 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
       "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
       "phase_angle",
       NULL};
-
-  // print_expected();
 
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 

@@ -63,8 +63,11 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   delete mp_before;
   delete mp_after;
 
-  ASSERT_EQ(removed.size(), (long unsigned int)3);
+  ASSERT_EQ(removed.size(), (long unsigned int)4);
   std::list<std::string>::iterator rit = removed.begin();
+
+  ASSERT_EQ(rit->compare("homeassistant/cover/user_supla_org/754/config"), 0);
+  rit++;
 
   ASSERT_EQ(
       rit->compare("supla/user@supla.org/devices/555/channels/754/state/hi"),

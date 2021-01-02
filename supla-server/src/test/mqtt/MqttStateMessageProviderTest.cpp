@@ -434,6 +434,12 @@ TEST_F(MqttStateMessageProviderTest, rgb) {
   ASSERT_TRUE(fetchAndCompare(
       provider, NULL, "0xAABBCC", false,
       "supla/user@supla.org/devices/456/channels/%i/state/color", 789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "170,187,204", false,
+      "supla/user@supla.org/devices/456/channels/%i/state/normalized_rgb",
+      789));
+
   ASSERT_TRUE(fetchAndCompare(
       provider, NULL, "40", false,
       "supla/user@supla.org/devices/456/channels/%i/state/color_brightness",
@@ -632,6 +638,18 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
   ASSERT_TRUE(fetchAndCompare(
       provider, NULL, "65535", false,
       "supla/user@supla.org/devices/456/channels/%i/state/support", 789));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "66.90000", false,
+                      "supla/user@supla.org/devices/456/channels/%i/state/"
+                      "total_forward_active_energy",
+                      789));
+
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "96.90000", false,
+                      "supla/user@supla.org/devices/456/channels/%i/state/"
+                      "total_reverse_active_energy",
+                      789));
 
   ASSERT_TRUE(
       fetchAndCompare(provider, NULL, "69.90000", false,
