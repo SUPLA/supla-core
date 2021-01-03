@@ -100,26 +100,25 @@ void MqttClientIntegrationTest::print_expected(void) {
       for (size_t a = 0; a < m.message_size; a++) {
         if (m.message[a] == '"' || m.message[a] == '\\') {
           printf("\\");
+        }
+        printf("%c", m.message[a]);
       }
-      printf("%c", m.message[a]);
+
+      printf("\"");
+    } else {
+      printf("NULL");
     }
 
-    printf("\"");
-  }
-  else {
-    printf("NULL");
-  }
+    printf("\n");
 
-  printf("\n");
-
-  if (m.topic_name) {
-    free(m.topic_name);
+    if (m.topic_name) {
+      free(m.topic_name);
+    }
+    if (m.message) {
+      free(m.message);
+    }
   }
-  if (m.message) {
-    free(m.message);
-  }
-}
-printf("};\n");
+  printf("};\n");
 }  // namespace testing
 
 void MqttClientIntegrationTest::verify_published(const char *expectedData[],

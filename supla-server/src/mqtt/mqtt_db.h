@@ -72,7 +72,6 @@ typedef struct {
   char channel_text_param1[256];
   char channel_text_param2[256];
   char channel_text_param3[256];
-
 } _mqtt_db_data_row_channel_t;
 
 class supla_mqtt_db : public svrdb {

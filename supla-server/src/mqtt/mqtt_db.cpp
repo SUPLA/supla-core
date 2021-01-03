@@ -86,7 +86,6 @@ typedef struct {
   my_bool channel_text_param2_is_null;
   unsigned long channel_text_param3_len;
   my_bool channel_text_param3_is_null;
-
 } _mqtt_db_channelquery_t;
 
 supla_mqtt_db::supla_mqtt_db(void) : svrdb() {
