@@ -30,6 +30,7 @@ class MqttChannelMessageProviderTest : public MqttMessageProviderTest {
  protected:
   supla_mqtt_channel_message_provider *provider;
   void fillChannelData(_mqtt_db_data_row_channel_t *row_channel);
+  void electricityMeterTest(int channel_flags);
 
  public:
   virtual void SetUp();
