@@ -69,6 +69,9 @@ const char cmd_user_mqtt_settings_changed[] = "USER-MQTT-SETTINGS-CHANGED:";
 
 const char cmd_user_before_device_delete[] = "USER-BEFORE-DEVICE-DELETE:";
 
+const char cmd_user_on_device_settings_changed[] =
+    "USER-ON-DEVICE-SETTINGS-CHANGED:";
+
 const char cmd_user_before_channel_function_change[] =
     "USER-BEFORE-CHANNEL-FUNCTION-CHANGE:";
 
@@ -588,6 +591,20 @@ void svr_ipcctrl::on_device_deleted(const char *cmd) {
   }
 }
 
+void svr_ipcctrl::on_device_settings_changed(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_on_device_settings_changed, IPC_BUFFER_SIZE)],
+         "%i,%i", &UserID, &DeviceID);
+  if (UserID && DeviceID) {
+    supla_user::on_device_settings_changed(UserID, DeviceID, EST_IPC);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
 void svr_ipcctrl::execute(void *sthread) {
   if (sfd == -1) return;
 
@@ -722,6 +739,9 @@ void svr_ipcctrl::execute(void *sthread) {
                                  len)) {
           before_channel_function_change(
               cmd_user_before_channel_function_change);
+
+        } else if (match_command(cmd_user_on_device_settings_changed, len)) {
+          on_device_settings_changed(cmd_user_on_device_settings_changed);
 
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);

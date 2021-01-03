@@ -165,8 +165,10 @@ class database : public svrdb {
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
   bool set_channel_function(int UserID, int ChannelID, int Func);
-  bool get_channel_type_and_funclist(int UserID, int ChannelID, int *Type,
-                                     unsigned int *FuncList);
+  bool get_channel_type_funclist_and_device_id(int UserID, int ChannelID,
+                                               int *Type,
+                                               unsigned int *FuncList,
+                                               int *DeviceID);
   bool set_channel_caption(int UserID, int ChannelID, char *Caption);
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);

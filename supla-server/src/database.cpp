@@ -2531,10 +2531,11 @@ bool database::set_channel_function(int UserID, int ChannelID, int Func) {
   return query(sql, true) == 0;
 }
 
-bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
-                                             int *Type,
-                                             unsigned int *FuncList) {
-  if (Type == NULL || FuncList == NULL) {
+bool database::get_channel_type_funclist_and_device_id(int UserID,
+                                                       int ChannelID, int *Type,
+                                                       unsigned int *FuncList,
+                                                       int *DeviceID) {
+  if (Type == NULL || FuncList == NULL || DeviceID == NULL) {
     return false;
   }
 
@@ -2543,8 +2544,8 @@ bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
 
   bool result = false;
   char sql[] =
-      "SELECT type, flist FROM `supla_dev_channel` WHERE user_id = ? AND id = "
-      "?";
+      "SELECT type, flist, iodevice_id FROM `supla_dev_channel` WHERE user_id "
+      "= ? AND id = ?";
 
   MYSQL_STMT *stmt = NULL;
   MYSQL_BIND pbind[2];
@@ -2557,7 +2558,7 @@ bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
   pbind[1].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
-    MYSQL_BIND rbind[2];
+    MYSQL_BIND rbind[3];
     memset(rbind, 0, sizeof(rbind));
 
     my_bool flist_is_null = true;
@@ -2568,6 +2569,9 @@ bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
     rbind[1].buffer = (char *)FuncList;
     rbind[1].is_null = &flist_is_null;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)DeviceID;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",

@@ -181,6 +181,21 @@ void supla_mqtt_client_suite::onDeviceRegistered(int UserID, int DeviceID) {
   }
 }
 
+void supla_mqtt_client_suite::onDeviceSettingsChanged(int UserID,
+                                                      int DeviceID) {
+  if (st_app_terminate) {
+    return;
+  }
+
+  if (unpublisher) {
+    unpublisher->on_devicedata_changed(UserID, DeviceID);
+  }
+
+  if (publisher) {
+    publisher->on_devicedata_changed(UserID, DeviceID);
+  }
+}
+
 void supla_mqtt_client_suite::onChannelStateChanged(int UserID, int DeviceID,
                                                     int ChannelID) {
   if (publisher && st_app_terminate == 0) {

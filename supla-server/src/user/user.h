@@ -137,6 +137,8 @@ class supla_user {
   static void before_device_delete(int UserID, int DeviceID);
   static void on_device_deleted(int UserID, int DeviceID,
                                 event_source_type eventSourceType);
+  static void on_device_settings_changed(int UserID, int DeviceID,
+                                         event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
   static void log_metrics(int min_interval_sec);
 

@@ -637,7 +637,7 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunctionWithTimeout) {
   getDS()->before_channel_function_change(743, 966);
   runSqlScript("SetFunctionToNoneForChannel966.sql");
   sleep(25);
-  getDS()->on_channel_function_changed(743, 966);
+  getDS()->on_devicedata_changed(743, 506);
   sleep(2);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
@@ -655,7 +655,7 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
   getDS()->before_channel_function_change(743, 966);
   runSqlScript("SetFunctionToNoneForChannel966.sql");
   sleep(5);
-  getDS()->on_channel_function_changed(743, 966);
+  getDS()->on_devicedata_changed(743, 506);
 
   waitForPublications(92);
 

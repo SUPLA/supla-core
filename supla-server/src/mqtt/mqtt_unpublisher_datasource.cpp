@@ -213,18 +213,17 @@ void supla_mqtt_unpublisher_datasource::before_channel_function_change(
   }
 }
 
-void supla_mqtt_unpublisher_datasource::on_channel_function_changed(
-    int UserID, int ChannelID) {
+void supla_mqtt_unpublisher_datasource::on_devicedata_changed(int UserID,
+                                                              int DeviceID) {
   remove_expired();
 
   lock();
   for (std::list<_unpub_channel_item_t>::iterator it =
            modified_channels.begin();
        it != modified_channels.end(); ++it) {
-    if (it->before.channel_id == ChannelID) {
+    if (it->before.device_id == DeviceID) {
       on_channelstate_changed(it->before.user_id, it->before.device_id,
                               it->before.channel_id);
-      break;
     }
   }
   unlock();
@@ -305,7 +304,7 @@ void supla_mqtt_unpublisher_datasource::on_device_deleted(int UserID,
   for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
        it != deleted_devices.end(); ++it) {
     if (it->device.device_id == DeviceID) {
-      on_devicedata_changed(UserID, DeviceID);
+      supla_mqtt_client_db_datasource::on_devicedata_changed(UserID, DeviceID);
       break;
     }
   }

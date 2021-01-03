@@ -110,17 +110,6 @@ void supla_mqtt_unpublisher::before_channel_function_change(int UserID,
   }
 }
 
-void supla_mqtt_unpublisher::on_channel_function_changed(int UserID,
-                                                         int ChannelID) {
-  supla_mqtt_unpublisher_datasource *ds =
-      static_cast<supla_mqtt_unpublisher_datasource *>(datasource);
-
-  if (ds != NULL) {
-    ds->on_channel_function_changed(UserID, ChannelID);
-    library_adapter->raise_event();
-  }
-}
-
 void supla_mqtt_unpublisher::before_device_delete(int UserID, int DeviceID) {
   supla_mqtt_unpublisher_datasource *ds =
       static_cast<supla_mqtt_unpublisher_datasource *>(datasource);
