@@ -133,7 +133,8 @@ class supla_user {
   static void on_google_home_credentials_changed(int UserID);
   static void on_state_webhook_changed(int UserID);
   static void on_mqtt_settings_changed(int UserID);
-  static void before_channel_function_change(int UserID, int ChannelID);
+  static void before_channel_function_change(int UserID, int ChannelID,
+                                             event_source_type eventSourceType);
   static void before_device_delete(int UserID, int DeviceID,
                                    event_source_type eventSourceType);
   static void on_device_deleted(int UserID, int DeviceID,

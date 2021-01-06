@@ -845,7 +845,8 @@ void supla_user::on_mqtt_settings_changed(int UserID) {
 }
 
 // static
-void supla_user::before_channel_function_change(int UserID, int ChannelID) {
+void supla_user::before_channel_function_change(
+    int UserID, int ChannelID, event_source_type eventSourceType) {
   supla_mqtt_client_suite::globalInstance()->beforeChannelFunctionChange(
       UserID, ChannelID);
 }
@@ -1489,8 +1490,8 @@ void supla_user::set_channel_function(supla_client *sender,
              !supla_device::funclist_contains_function(FuncList, func->Func))) {
           result.ResultCode = SUPLA_RESULTCODE_NOT_ALLOWED;
         } else {
-          supla_mqtt_client_suite::globalInstance()
-              ->beforeChannelFunctionChange(getUserID(), func->ChannelID);
+          before_channel_function_change(getUserID(), func->ChannelID,
+                                         EST_CLIENT);
           if (db->set_channel_function(getUserID(), func->ChannelID,
                                        func->Func)) {
             result.ResultCode = SUPLA_RESULTCODE_TRUE;

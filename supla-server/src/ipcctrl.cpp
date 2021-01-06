@@ -556,7 +556,7 @@ void svr_ipcctrl::before_channel_function_change(const char *cmd) {
                          IPC_BUFFER_SIZE)],
          "%i,%i", &UserID, &ChannelID);
   if (UserID && ChannelID) {
-    supla_user::before_channel_function_change(UserID, EST_IPC);
+    supla_user::before_channel_function_change(UserID, ChannelID, EST_IPC);
     send_result("OK:", UserID);
   } else {
     send_result("USER_UNKNOWN");
