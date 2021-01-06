@@ -570,7 +570,7 @@ void svr_ipcctrl::before_device_delete(const char *cmd) {
   sscanf(&buffer[strnlen(cmd_user_before_device_delete, IPC_BUFFER_SIZE)],
          "%i,%i", &UserID, &DeviceID);
   if (UserID && DeviceID) {
-    supla_user::before_device_delete(UserID, EST_IPC);
+    supla_user::before_device_delete(UserID, DeviceID, EST_IPC);
     send_result("OK:", UserID);
   } else {
     send_result("USER_UNKNOWN");

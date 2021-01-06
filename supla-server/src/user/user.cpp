@@ -851,7 +851,8 @@ void supla_user::before_channel_function_change(int UserID, int ChannelID) {
 }
 
 // static
-void supla_user::before_device_delete(int UserID, int DeviceID) {
+void supla_user::before_device_delete(int UserID, int DeviceID,
+                                      event_source_type eventSourceType) {
   supla_mqtt_client_suite::globalInstance()->beforeDeviceDelete(UserID,
                                                                 DeviceID);
 }
