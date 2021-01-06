@@ -309,6 +309,7 @@ class supla_device_channels {
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
+  bool is_channel_online(int ChannelID);
   void load(int UserID, int DeviceID);
 
   void get_temp_and_humidity(void *tarr);

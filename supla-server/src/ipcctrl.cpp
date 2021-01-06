@@ -35,6 +35,7 @@
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_client_connected[] = "IS-CLIENT-CONNECTED:";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
+const char cmd_is_channel_connected[] = "IS-CHANNEL-CONNECTED:";
 const char cmd_is_channel_online[] = "IS-CHANNEL-ONLINE:";
 const char cmd_user_reconnect[] = "USER-RECONNECT:";
 const char cmd_client_reconnect[] = "CLIENT-RECONNECT:";
@@ -647,6 +648,19 @@ void svr_ipcctrl::execute(void *sthread) {
             send_result("CONNECTED:", DeviceID);
           } else {
             send_result("DISCONNECTED:", DeviceID);
+          }
+        } else if (match_command(cmd_is_channel_connected, len)) {
+          int UserID = 0;
+          int DeviceID = 0;
+          int ChannelID = 0;
+          sscanf(&buffer[strnlen(cmd_is_channel_connected, IPC_BUFFER_SIZE)],
+                 "%i,%i", &UserID, &DeviceID, &ChannelID);
+
+          if (UserID && DeviceID && ChannelID &&
+              supla_user::is_channel_online(UserID, DeviceID, ChannelID)) {
+            send_result("CONNECTED:", ChannelID);
+          } else {
+            send_result("DISCONNECTED:", ChannelID);
           }
         } else if (match_command(cmd_user_reconnect, len)) {
           int UserID = 0;

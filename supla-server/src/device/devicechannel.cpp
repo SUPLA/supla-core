@@ -1484,6 +1484,22 @@ bool supla_device_channels::channel_exists(int ChannelID) {
   return result;
 }
 
+bool supla_device_channels::is_channel_online(int ChannelID) {
+  bool result = false;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) {
+    result = !channel->isOffline();
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
 void supla_device_channels::set_channels_value(
     TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_C *schannel_c,
     int count) {

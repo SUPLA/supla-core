@@ -722,6 +722,10 @@ bool supla_device::get_channel_complex_value(channel_complex_value *value,
   return channels->get_channel_complex_value(value, getID(), ChannelID);
 }
 
+bool supla_device::is_cannel_online(int ChannelID) {
+  return channels->is_channel_online(ChannelID);
+}
+
 void supla_device::set_channel_function(int ChannelId, int Func) {
   channels->set_channel_function(ChannelId, Func);
 }

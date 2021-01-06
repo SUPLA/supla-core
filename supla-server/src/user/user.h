@@ -94,6 +94,7 @@ class supla_user {
   static bool device_reconnect(int UserID, int DeviceID);
   static bool is_client_online(int UserID, int ClientID);
   static bool is_device_online(int UserID, int DeviceID);
+  static bool is_channel_online(int UserID, int DeviceID, int ChannelID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value);
   static bool get_channel_temperature_value(int UserID, int DeviceID,
@@ -180,6 +181,7 @@ class supla_user {
 
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
+  bool is_channel_online(int DeviceID, int ChannelID);
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
                          char *online,
                          unsigned _supla_int_t *validity_time_sec);

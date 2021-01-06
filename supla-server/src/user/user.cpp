@@ -394,6 +394,15 @@ bool supla_user::is_device_online(int DeviceID) {
   return false;
 }
 
+bool supla_user::is_channel_online(int DeviceID, int ChannelID) {
+  supla_device *device = device_container->findByID(DeviceID);
+  if (device) {
+    device->releasePtr();
+    return true;
+  }
+  return false;
+}
+
 // static
 bool supla_user::is_client_online(int UserID, int ClientID) {
   bool result = false;
@@ -418,6 +427,21 @@ bool supla_user::is_device_online(int UserID, int DeviceID) {
   safe_array_unlock(supla_user::user_arr);
 
   if (user && user->is_device_online(DeviceID) == true) result = true;
+
+  return result;
+}
+
+// static
+bool supla_user::is_channel_online(int UserID, int DeviceID, int ChannelID) {
+  bool result = false;
+
+  safe_array_lock(supla_user::user_arr);
+  supla_user *user =
+      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
+  safe_array_unlock(supla_user::user_arr);
+
+  if (user && user->is_channel_online(DeviceID, ChannelID) == true)
+    result = true;
 
   return result;
 }
