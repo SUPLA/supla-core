@@ -395,12 +395,13 @@ bool supla_user::is_device_online(int DeviceID) {
 }
 
 bool supla_user::is_channel_online(int DeviceID, int ChannelID) {
+  bool result = false;
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
     device->releasePtr();
-    return true;
+    result = device->is_channel_online(ChannelID);
   }
-  return false;
+  return result;
 }
 
 // static
