@@ -654,7 +654,7 @@ void svr_ipcctrl::execute(void *sthread) {
           int DeviceID = 0;
           int ChannelID = 0;
           sscanf(&buffer[strnlen(cmd_is_channel_connected, IPC_BUFFER_SIZE)],
-                 "%i,%i", &UserID, &DeviceID, &ChannelID);
+                 "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
 
           if (UserID && DeviceID && ChannelID &&
               supla_user::is_channel_online(UserID, DeviceID, ChannelID)) {
