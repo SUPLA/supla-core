@@ -97,8 +97,10 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
           1000;
 
       if (time_diff >= WARNING_TIME_MSEC) {
-        supla_log(LOG_WARNING, "MQTT context open delay: %llu msec.",
-                  time_diff);
+        supla_log(
+            LOG_WARNING,
+            "MQTT context open delay: %llu msec. ChannelID: %i, Queue size %i",
+            time_diff, id.channel_id, channel_queue.size());
       }
 
       result = true;
