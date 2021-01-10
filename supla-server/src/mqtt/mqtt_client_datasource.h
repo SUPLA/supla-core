@@ -35,6 +35,7 @@ typedef struct {
   int user_id;
   int device_id;
   int channel_id;
+  struct timeval time;
 } _mqtt_ds_channel_id_t;
 
 class supla_mqtt_client_datasource {

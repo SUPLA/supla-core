@@ -19,6 +19,9 @@
 #include <mqtt_client_datasource.h>
 #include <string.h>
 #include "lck.h"
+#include "log.h"
+
+#define WARNING_TIME_MSEC 5000
 
 supla_mqtt_client_datasource::supla_mqtt_client_datasource(
     supla_mqtt_client_settings *settings) {
@@ -84,6 +87,20 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
 
       context = supla_mqtt_ds_context(MQTTDS_SCOPE_CHANNEL_STATE, id.user_id,
                                       id.device_id, id.channel_id);
+
+      struct timeval now;
+      gettimeofday(&now, NULL);
+
+      unsigned long long time_diff =
+          ((now.tv_sec * 1000000 + now.tv_usec) -
+           (id.time.tv_sec * 1000000 + id.time.tv_usec)) /
+          1000;
+
+      if (time_diff >= WARNING_TIME_MSEC) {
+        supla_log(LOG_WARNING, "MQTT context open delay: %llu msec.",
+                  time_diff);
+      }
+
       result = true;
     }
   }
@@ -242,8 +259,13 @@ void supla_mqtt_client_datasource::on_channelstate_changed(int user_id,
   lck_lock(lck);
   if (!all_data_expected && !is_user_queued(user_id) &&
       !is_device_queued(device_id) && !is_channel_queued(channel_id)) {
-    _mqtt_ds_channel_id_t id = {
-        .user_id = user_id, .device_id = device_id, .channel_id = channel_id};
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    _mqtt_ds_channel_id_t id = {.user_id = user_id,
+                                .device_id = device_id,
+                                .channel_id = channel_id,
+                                .time = now};
     channel_queue.push_back(id);
   }
   lck_unlock(lck);
