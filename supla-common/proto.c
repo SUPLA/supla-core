@@ -24,7 +24,6 @@
 
 #if defined(ESP8266) || defined(ESP32)
 
-#include <mem.h>
 #if !defined(ARDUINO_ARCH_ESP32)
 #include <osapi.h>
 #endif
@@ -102,11 +101,10 @@ void sproto_free(void *spd_ptr) {
   }
 }
 
-unsigned char sproto_buffer_append(void *spd_ptr, char **buffer,
-                                   unsigned _supla_int_t *buffer_size,
-                                   unsigned _supla_int_t *buffer_data_size,
-                                   char *data,
-                                   unsigned _supla_int_t data_size) {
+unsigned char PROTO_ICACHE_FLASH sproto_buffer_append(
+    void *spd_ptr, char **buffer, unsigned _supla_int_t *buffer_size,
+    unsigned _supla_int_t *buffer_data_size, char *data,
+    unsigned _supla_int_t data_size) {
   unsigned _supla_int_t size = *buffer_size;
 
   if (size < BUFFER_MIN_SIZE) {
@@ -145,15 +143,16 @@ unsigned char sproto_buffer_append(void *spd_ptr, char **buffer,
   return (SUPLA_RESULT_TRUE);
 }
 
-char sproto_in_buffer_append(void *spd_ptr, char *data,
-                             unsigned _supla_int_t data_size) {
+char PROTO_ICACHE_FLASH sproto_in_buffer_append(
+    void *spd_ptr, char *data, unsigned _supla_int_t data_size) {
   TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
   return sproto_buffer_append(spd_ptr, &spd->in.buffer, &spd->in.size,
                               &spd->in.data_size, data, data_size);
 }
 
 #ifndef SPROTO_WITHOUT_OUT_BUFFER
-char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp) {
+char PROTO_ICACHE_FLASH sproto_out_buffer_append(void *spd_ptr,
+                                                 TSuplaDataPacket *sdp) {
   TSuplaProtoData *spd = (TSuplaProtoData *)spd_ptr;
   unsigned _supla_int_t sdp_size = sizeof(TSuplaDataPacket);
   unsigned _supla_int_t packet_size =
@@ -172,8 +171,8 @@ char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp) {
   return (SUPLA_RESULT_FALSE);
 }
 
-unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
-                                          unsigned _supla_int_t buffer_size) {
+unsigned _supla_int_t PROTO_ICACHE_FLASH sproto_pop_out_data(
+    void *spd_ptr, char *buffer, unsigned _supla_int_t buffer_size) {
   unsigned _supla_int_t a;
   unsigned _supla_int_t b;
 
@@ -215,7 +214,7 @@ unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
 }
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
-char sproto_out_dataexists(void *spd_ptr) {
+char PROTO_ICACHE_FLASH sproto_out_dataexists(void *spd_ptr) {
 #ifdef SPROTO_WITHOUT_OUT_BUFFER
   return SUPLA_RESULT_FALSE;
 #else
@@ -224,13 +223,13 @@ char sproto_out_dataexists(void *spd_ptr) {
 #endif
 }
 
-char sproto_in_dataexists(void *spd_ptr) {
+char PROTO_ICACHE_FLASH sproto_in_dataexists(void *spd_ptr) {
   return ((TSuplaProtoData *)spd_ptr)->in.data_size > 0 ? SUPLA_RESULT_TRUE
                                                         : SUPLA_RESULT_FALSE;
 }
 
-void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in,
-                             unsigned _supla_int_t size) {
+void PROTO_ICACHE_FLASH sproto_shrink_in_buffer(TSuplaProtoInBuffer *in,
+                                                unsigned _supla_int_t size) {
   unsigned _supla_int_t old_size = in->size;
   _supla_int_t a, b;
 
@@ -264,7 +263,8 @@ void sproto_shrink_in_buffer(TSuplaProtoInBuffer *in,
   }
 }
 
-char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
+char PROTO_ICACHE_FLASH sproto_pop_in_sdp(void *spd_ptr,
+                                          TSuplaDataPacket *sdp) {
   unsigned _supla_int_t header_size;
   TSuplaDataPacket *_sdp;
 
@@ -319,7 +319,8 @@ char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp) {
   return (SUPLA_RESULT_FALSE);
 }
 
-void sproto_set_version(void *spd_ptr, unsigned char version) {
+void PROTO_ICACHE_FLASH sproto_set_version(void *spd_ptr,
+                                           unsigned char version) {
   if (version >= SUPLA_PROTO_VERSION_MIN && version <= SUPLA_PROTO_VERSION) {
     ((TSuplaProtoData *)spd_ptr)->version = version;
   } else {
@@ -327,7 +328,7 @@ void sproto_set_version(void *spd_ptr, unsigned char version) {
   }
 }
 
-unsigned char sproto_get_version(void *spd_ptr) {
+unsigned char PROTO_ICACHE_FLASH sproto_get_version(void *spd_ptr) {
   return ((TSuplaProtoData *)spd_ptr)->version;
 }
 
@@ -345,7 +346,7 @@ void sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp) {
   sdp->version = spd->version;
 }
 
-TSuplaDataPacket *sproto_sdp_malloc(void *spd_ptr) {
+TSuplaDataPacket *PROTO_ICACHE_FLASH sproto_sdp_malloc(void *spd_ptr) {
   TSuplaDataPacket *result = malloc(sizeof(TSuplaDataPacket));
 
   if (result) sproto_sdp_init(spd_ptr, result);
@@ -353,11 +354,11 @@ TSuplaDataPacket *sproto_sdp_malloc(void *spd_ptr) {
   return result;
 }
 
-void sproto_sdp_free(TSuplaDataPacket *sdp) { free(sdp); }
+void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp) { free(sdp); }
 
-char sproto_set_data(TSuplaDataPacket *sdp, char *data,
-                     unsigned _supla_int_t data_size,
-                     unsigned _supla_int_t call_type) {
+char PROTO_ICACHE_FLASH sproto_set_data(TSuplaDataPacket *sdp, char *data,
+                                        unsigned _supla_int_t data_size,
+                                        unsigned _supla_int_t call_type) {
   if (data_size > SUPLA_MAX_DATA_SIZE || (data_size > 0 && data == 0))
     return SUPLA_RESULT_FALSE;
 
@@ -368,7 +369,7 @@ char sproto_set_data(TSuplaDataPacket *sdp, char *data,
   return SUPLA_RESULT_TRUE;
 }
 
-void sproto_log_summary(void *spd_ptr) {
+void PROTO_ICACHE_FLASH sproto_log_summary(void *spd_ptr) {
   if (spd_ptr == NULL) {
     supla_log(LOG_DEBUG, "SPROTO - Not initialized!");
     return;
@@ -387,7 +388,7 @@ void sproto_log_summary(void *spd_ptr) {
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 }
 
-void sproto_buffer_dump(void *spd_ptr, unsigned char in) {
+void PROTO_ICACHE_FLASH sproto_buffer_dump(void *spd_ptr, unsigned char in) {
   _supla_int_t a;
   char *buffer = NULL;
   _supla_int_t size = 0;

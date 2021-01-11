@@ -43,6 +43,8 @@ struct _supla_timeval {
 #define _supla_int64_t long long
 
 #elif defined(ESP8266) || defined(ESP32)
+#include <mem.h>
+#define PROTO_ICACHE_FLASH ICACHE_FLASH_ATTR
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #define SPROTO_WITHOUT_OUT_BUFFER
@@ -75,6 +77,10 @@ struct _supla_timeval {
 #define _supla_int64_t long long
 #define _supla_timeval timeval
 #endif
+
+#ifndef PROTO_ICACHE_FLASH
+#define PROTO_ICACHE_FLASH
+#endif /*PROTO_ICACHE_FLASH*/
 
 #ifdef __cplusplus
 extern "C" {
@@ -1633,32 +1639,34 @@ typedef struct {
 
 #pragma pack(pop)
 
-void *sproto_init(void);
-void sproto_free(void *spd_ptr);
+void *PROTO_ICACHE_FLASH sproto_init(void);
+void PROTO_ICACHE_FLASH sproto_free(void *spd_ptr);
 
 #ifndef SPROTO_WITHOUT_OUT_BUFFER
-char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_out_buffer_append(void *spd_ptr,
+                                                 TSuplaDataPacket *sdp);
 unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
                                           unsigned _supla_int_t buffer_size);
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
-char sproto_out_dataexists(void *spd_ptr);
-char sproto_in_buffer_append(void *spd_ptr, char *data,
-                             unsigned _supla_int_t data_size);
+char PROTO_ICACHE_FLASH sproto_out_dataexists(void *spd_ptr);
+char PROTO_ICACHE_FLASH sproto_in_buffer_append(
+    void *spd_ptr, char *data, unsigned _supla_int_t data_size);
 
-char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
-char sproto_in_dataexists(void *spd_ptr);
+char PROTO_ICACHE_FLASH sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_in_dataexists(void *spd_ptr);
 
-unsigned char sproto_get_version(void *spd_ptr);
-void sproto_set_version(void *spd_ptr, unsigned char version);
-void sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
-char sproto_set_data(TSuplaDataPacket *sdp, char *data,
-                     unsigned _supla_int_t data_size,
-                     unsigned _supla_int_t call_type);
-TSuplaDataPacket *sproto_sdp_malloc(void *spd_ptr);
-void sproto_sdp_free(TSuplaDataPacket *sdp);
+unsigned char PROTO_ICACHE_FLASH sproto_get_version(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_set_version(void *spd_ptr,
+                                           unsigned char version);
+void PROTO_ICACHE_FLASH sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_set_data(TSuplaDataPacket *sdp, char *data,
+                                        unsigned _supla_int_t data_size,
+                                        unsigned _supla_int_t call_type);
+TSuplaDataPacket *PROTO_ICACHE_FLASH sproto_sdp_malloc(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp);
 
-void sproto_log_summary(void *spd_ptr);
-void sproto_buffer_dump(void *spd_ptr, unsigned char in);
+void PROTO_ICACHE_FLASH sproto_log_summary(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_buffer_dump(void *spd_ptr, unsigned char in);
 
 #ifdef __cplusplus
 }
