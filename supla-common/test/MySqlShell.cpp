@@ -52,5 +52,7 @@ void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
 void MySqlShell::initTestDatabase(const char *sql_dir, const char *db_host,
                                   const char *db_user, const char *db_name) {
   MySqlShell::runSqlScript(sql_dir, db_host, db_user, db_name,
+	                           "RecreateTestDatabase.sql");
+  MySqlShell::runSqlScript(sql_dir, db_host, db_user, db_name,
                            "TestDatabaseStructureAndData.sql");
 }

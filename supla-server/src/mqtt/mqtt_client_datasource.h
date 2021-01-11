@@ -58,6 +58,8 @@ class supla_mqtt_client_datasource {
   bool context_should_be_opened(void);
   void context_open(void);
   void context_close(void);
+  bool __fetch(char **topic_name, void **message, size_t *message_size,
+               bool *closed);
 
  protected:
   void lock(void);

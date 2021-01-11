@@ -111,8 +111,8 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
   return result;
 }
 
-bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
-                                         size_t *message_size) {
+bool supla_mqtt_client_datasource::__fetch(char **topic_name, void **message,
+                                           size_t *message_size, bool *closed) {
   if (context_should_be_opened()) {
     bool _context__open = context_open(&context);
     lck_lock(lck);
@@ -133,10 +133,25 @@ bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
       lck_lock(lck);
       context__open = false;
       lck_unlock(lck);
+      *closed = true;
     }
   }
 
   return result;
+}
+
+bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
+                                         size_t *message_size) {
+  bool closed = false;
+  if (__fetch(topic_name, message, message_size, &closed)) {
+    return true;
+  }
+
+  if (closed) {
+    return __fetch(topic_name, message, message_size, &closed);
+  }
+
+  return false;
 }
 
 bool supla_mqtt_client_datasource::fetch(char **topic_name) {

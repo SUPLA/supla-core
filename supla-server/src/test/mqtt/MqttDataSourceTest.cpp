@@ -182,12 +182,10 @@ TEST_F(MqttDataSourceTest, onUserDataChanged) {
 
   ds->on_userdata_changed(52);
 
-  ASSERT_FALSE(dataExists());
-
   ds->on_userdata_changed(52);
 
   ASSERT_EQ(ds->openCount(), 1);
-  ASSERT_EQ(ds->closeCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("SCOPE_USER", 52, 0, 0, 0));
 
@@ -229,10 +227,8 @@ TEST_F(MqttDataSourceTest, onDeviceDataChanged) {
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 1, 0, 1));
 
-  ASSERT_FALSE(dataExists());
-
   ASSERT_EQ(ds->openCount(), 1);
-  ASSERT_EQ(ds->closeCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("SCOPE_DEVICE", 55, 2, 0, 0));
 
@@ -267,10 +263,8 @@ TEST_F(MqttDataSourceTest, onChannelValueChanged) {
 
   ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 124, 1));
 
-  ASSERT_FALSE(dataExists());
-
   ASSERT_EQ(ds->openCount(), 1);
-  ASSERT_EQ(ds->closeCount(), 1);
+  ASSERT_EQ(ds->closeCount(), 0);
 
   ASSERT_TRUE(popMessage("CHANNEL_STATE", 55, 15, 125, 0));
 
