@@ -176,6 +176,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+    case SUPLA_CHANNELFNC_DIGIGLASS:
       return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
