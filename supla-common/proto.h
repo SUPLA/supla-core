@@ -1334,7 +1334,7 @@ typedef struct {
 typedef struct {
   unsigned char sectionCount;  // 1 - 16
   unsigned char flags;
-  unsigned short opaqueSections;
+  unsigned short transparentSections;
 } TDigiglass_Value;
 
 typedef struct {
