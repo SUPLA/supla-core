@@ -1482,3 +1482,31 @@ char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
 
   return supla_client_device_calcfg_request(_suplaclient, &request);
 }
+
+char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
+                                       unsigned short mask,
+                                       unsigned short active_bits) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  if (supla_client_registered(_suplaclient) == 1) {
+    if (srpc_get_proto_version(suplaclient->srpc) >= 14) {
+      TCS_SuplaNewValue value;
+      memset(&value, 0, sizeof(TCS_SuplaNewValue));
+
+      ((TCSD_Digiglass_NewValue *)value.value)->mask = mask;
+      ((TCSD_Digiglass_NewValue *)value.value)->mask = active_bits;
+
+      value.Id = channelID;
+      value.Target = SUPLA_TARGET_CHANNEL;
+      result = srpc_cs_async_set_value(suplaclient->srpc, &value) ==
+                       SUPLA_RESULT_FALSE
+                   ? 0
+                   : 1;
+    }
+  }
+  lck_unlock(suplaclient->lck);
+
+  return result;
+}

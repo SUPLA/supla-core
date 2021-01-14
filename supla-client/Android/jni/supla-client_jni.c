@@ -2189,3 +2189,21 @@ Java_org_supla_android_lib_SuplaClient_scSetLightsourceLifespan(
 
   return JNI_FALSE;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSetDfgTransparency(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jshort mask,
+    jshort active_bits) {
+  void *supla_client = supla_client_ptr(_asc);
+  if (supla_client) {
+    TCSD_Digiglass_NewValue new_value;
+    memset(&new_value, 0, sizeof(TCSD_Digiglass_NewValue));
+
+    return supla_client_set_dgf_transparency(supla_client, channel_id, mask,
+                                             active_bits)
+               ? JNI_TRUE
+               : JNI_FALSE;
+  }
+
+  return JNI_FALSE;
+}
