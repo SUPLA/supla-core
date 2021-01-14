@@ -96,7 +96,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 13
+#define SUPLA_PROTO_VERSION 14
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -369,8 +369,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
-#define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 800           // ver. >= 12
-#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 810         // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 800           // ver. >= 14
+#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 810         // ver. >= 14
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -1331,18 +1331,19 @@ typedef struct {
 } TRGBW_Value;  // v. >= 10
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
+#define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
 
 typedef struct {
   unsigned char flags;
   unsigned char sectionCount;  // 1 - 16 Filled by server
   unsigned short mask;         // bit mask. 0 - opaque, 1 - transparent
-} TDigiglass_Value;            // v. >= 13
+} TDigiglass_Value;            // v. >= 14
 
 typedef struct {
   unsigned short mask;  // Bit mask. 0 - opaque, 1 - transparent
   unsigned short
       active_bits;          // Specifies which bits of the mask are not skipped
-} TCSD_Digiglass_NewValue;  // v. >= 13
+} TCSD_Digiglass_NewValue;  // v. >= 14
 
 typedef struct {
   unsigned char sec;        // 0-59
