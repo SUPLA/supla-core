@@ -1330,11 +1330,19 @@ typedef struct {
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
+#define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
+
 typedef struct {
   unsigned char flags;
-  unsigned char sectionCount;  // 1 - 16
-  unsigned short transparentSections;
-} TDigiglass_Value;
+  unsigned char sectionCount;  // 1 - 16 Filled by server
+  unsigned short mask;         // bit mask. 0 - opaque, 1 - transparent
+} TDigiglass_Value;            // v. >= 13
+
+typedef struct {
+  unsigned short mask;  // Bit mask. 0 - opaque, 1 - transparent
+  unsigned short
+      active_bits;          // Specifies which bits of the mask are not skipped
+} TCSD_Digiglass_NewValue;  // v. >= 13
 
 typedef struct {
   unsigned char sec;        // 0-59
