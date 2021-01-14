@@ -296,8 +296,11 @@ void supla_mqtt_channel_message_provider::channel_function_to_string(
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       snprintf(buf, buf_size, "ACTION_TRIGGER");
       break;
-    case SUPLA_CHANNELFNC_DIGIGLASS:
-      snprintf(buf, buf_size, "DIGIGLASS");
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+      snprintf(buf, buf_size, "DIGIGLASS_HORIZONTAL");
+      break;
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
+      snprintf(buf, buf_size, "DIGIGLASS_VERTICAL");
       break;
       buf[0] = 0;
       break;
@@ -472,7 +475,8 @@ void supla_mqtt_channel_message_provider::get_not_empty_caption(
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Action trigger");
       break;
-    case SUPLA_CHANNELFNC_DIGIGLASS:
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       snprintf(caption_out, SUPLA_CHANNEL_CAPTION_MAXSIZE, "Digiglass");
       break;
       caption_out[0] = 0;
