@@ -1496,7 +1496,7 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
       memset(&value, 0, sizeof(TCS_SuplaNewValue));
 
       ((TCSD_Digiglass_NewValue *)value.value)->mask = mask;
-      ((TCSD_Digiglass_NewValue *)value.value)->mask = active_bits;
+      ((TCSD_Digiglass_NewValue *)value.value)->active_bits = active_bits;
 
       value.Id = channelID;
       value.Target = SUPLA_TARGET_CHANNEL;
