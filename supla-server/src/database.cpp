@@ -680,9 +680,9 @@ int database::get_device_channel(int DeviceID, int ChannelNumber, int *Type) {
 }
 
 int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
-                                 int Func, int FList, int Flags, int UserID,
-                                 bool *new_channel) {
-  MYSQL_BIND pbind[7];
+                                 int Func, int Param1, int Param2, int FList,
+                                 int Flags, int UserID, bool *new_channel) {
+  MYSQL_BIND pbind[9];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -692,22 +692,28 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   pbind[1].buffer = (char *)&Func;
 
   pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&UserID;
+  pbind[2].buffer = (char *)&Param1;
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&ChannelNumber;
+  pbind[3].buffer = (char *)&Param2;
 
   pbind[4].buffer_type = MYSQL_TYPE_LONG;
-  pbind[4].buffer = (char *)&DeviceID;
+  pbind[4].buffer = (char *)&UserID;
 
   pbind[5].buffer_type = MYSQL_TYPE_LONG;
-  pbind[5].buffer = (char *)&FList;
+  pbind[5].buffer = (char *)&ChannelNumber;
 
   pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&Flags;
+  pbind[6].buffer = (char *)&DeviceID;
+
+  pbind[7].buffer_type = MYSQL_TYPE_LONG;
+  pbind[7].buffer = (char *)&FList;
+
+  pbind[8].buffer_type = MYSQL_TYPE_LONG;
+  pbind[8].buffer = (char *)&Flags;
 
   {
-    const char sql[] = "CALL`supla_add_channel`(?,?,0,0,0,?,?,?,?,?)";
+    const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt = NULL;
     if (!stmt_execute((void **)&stmt, sql, pbind, 7, true)) {

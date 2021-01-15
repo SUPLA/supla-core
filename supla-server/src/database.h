@@ -73,7 +73,8 @@ class database : public svrdb {
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
   int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
-                         int FList, int Flags, int UserID, bool *new_channel);
+                         int Param1, int Param2, int FList, int Flags,
+                         int UserID, bool *new_channel);
 
   int get_device_limit_left(int UserID);
   int get_device_count(int UserID);

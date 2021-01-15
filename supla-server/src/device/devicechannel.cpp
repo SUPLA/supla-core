@@ -524,6 +524,18 @@ supla_device_channel::~supla_device_channel() {
   }
 }
 
+// static
+void supla_device_channel::getDefaults(int Type, int Func, int *Param1,
+                                       int *Param2) {
+  *Param1 = 0;
+  *Param2 = 0;
+
+  if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
+    *Param1 = 7;
+    *Param2 = 1;  // 1:00
+  }
+}
+
 int supla_device_channel::getId(void) { return Id; }
 
 int supla_device_channel::getNumber(void) { return Number; }
@@ -724,7 +736,11 @@ bool supla_device_channel::setValue(
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 && Param3 > 0) {
+  if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
+    TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
+    dgf_val->sectionCount = Param1;
+  } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 &&
+             Param3 > 0) {
     TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
     ic_val->counter +=
         (unsigned _supla_int64_t)Param1 * (unsigned _supla_int64_t)Param3 / 100;

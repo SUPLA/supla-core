@@ -244,19 +244,19 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               unsigned char Number = 0;
               _supla_int_t Type = 0;
               _supla_int_t FuncList = 0;
-              _supla_int_t Default = 0;
+              _supla_int_t DefaultFunc = 0;
               _supla_int_t ChannelFlags = 0;
 
               if (dev_channels_b != NULL) {
                 Number = dev_channels_b[a].Number;
                 Type = dev_channels_b[a].Type;
                 FuncList = dev_channels_b[a].FuncList;
-                Default = dev_channels_b[a].Default;
+                DefaultFunc = dev_channels_b[a].Default;
               } else {
                 Number = dev_channels_c[a].Number;
                 Type = dev_channels_c[a].Type;
                 FuncList = dev_channels_c[a].FuncList;
-                Default = dev_channels_c[a].Default;
+                DefaultFunc = dev_channels_c[a].Default;
                 ChannelFlags = dev_channels_c[a].Flags;
               }
 
@@ -269,17 +269,23 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               }
 #ifndef SERVER_VERSION_23
               if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-                  Default == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+                  DefaultFunc == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
                 // Issue #115
-                Default = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+                DefaultFunc = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
               }
 #endif /*SERVER_VERSION_23*/
 
               if (ChannelType == 0) {
                 bool new_channel = false;
+
+                int Param1 = 0;
+                int Param2 = 0;
+                supla_device_channel::getDefaults(Type, DefaultFunc, &Param1,
+                                                  &Param2);
+
                 int ChannelID = db->add_device_channel(
-                    DeviceID, Number, Type, Default, FuncList, ChannelFlags,
-                    UserID, &new_channel);
+                    DeviceID, Number, Type, DefaultFunc, Param1, Param2,
+                    FuncList, ChannelFlags, UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;

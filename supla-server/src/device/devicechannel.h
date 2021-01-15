@@ -186,6 +186,7 @@ class supla_device_channel {
                        unsigned _supla_int_t validity_time_sec);
   virtual ~supla_device_channel();
 
+  static void getDefaults(int Type, int Func, int *Param1, int *Param2);
   int getId(void);
   int getNumber(void);
   int getUserID(void);
