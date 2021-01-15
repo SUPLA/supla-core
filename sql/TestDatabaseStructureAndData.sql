@@ -1890,26 +1890,6 @@ DELIMITER ;;
 CREATE DEFINER=`supla`@`localhost` PROCEDURE `supla_update_state_webhook`(IN `_access_token` VARCHAR(255) CHARSET utf8, IN `_refresh_token` VARCHAR(255) CHARSET utf8, IN `_expires_in` INT, IN `_user_id` INT)
     NO SQL
 BEGIN UPDATE supla_state_webhooks SET `access_token` = _access_token, `refresh_token` = _refresh_token, `expires_at` = DATE_ADD(UTC_TIMESTAMP(), INTERVAL _expires_in second) WHERE `user_id` = _user_id; END ;;
-
-DROP
-PROCEDURE IF EXISTS `supla_change_channel_time_settings`;;
-CREATE PROCEDURE `supla_change_channel_time_settings`(
-    IN `_user_id` INT,
-    IN `_channel_id` INT,
-    IN `_opening_time` INT,
-    IN `_closing_time` INT
-) NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER
-UPDATE
-    supla_dev_channel
-SET
-    param1 = _opening_time,
-    param1 = _closing_time
-WHERE
-    id = _channel_id AND user_id = _user_id AND(
-        func = 110 -- CONTROLLINGTHEROLLERSHUTTER
-        OR TYPE = 115 -- CONTROLLINGTHEROOFWINDOW
-    )
-;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
