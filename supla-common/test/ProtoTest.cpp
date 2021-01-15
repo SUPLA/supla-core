@@ -180,6 +180,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
   ASSERT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
+  ASSERT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
 }
 
 TEST_F(ProtoTest, init) {

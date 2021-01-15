@@ -149,6 +149,9 @@ void supla_mqtt_message_provider::get_mfr_name(int mfr_id, char *buf,
     case SUPLA_MFR_STA_SYSTEM:
       snprintf(buf, buf_size, "STA-System");
       break;
+    case SUPLA_MFR_DGF:
+      snprintf(buf, buf_size, "DGF");
+      break;
     default:
       buf[0] = 0;
       break;

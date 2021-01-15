@@ -947,6 +947,19 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TSD_ChannelFunctions *)malloc(sizeof(TSD_ChannelFunctions));
         }
         break;
+      case SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS:
+        if (srpc->sdp.data_size == sizeof(TDS_GetChannelIntParamsRequest)) {
+          rd->data.ds_get_channel_int_params_request =
+              (TDS_GetChannelIntParamsRequest *)malloc(
+                  sizeof(TDS_GetChannelIntParamsRequest));
+        }
+        break;
+      case SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSD_ChannelIntParams)) {
+          rd->data.sd_channel_int_params =
+              (TSD_ChannelIntParams *)malloc(sizeof(TSD_ChannelIntParams));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -1411,6 +1424,9 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
       return 12;
     case SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE:
       return 13;
+    case SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS:
+    case SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT:
+      return 14;
   }
 
   return 255;
@@ -1827,6 +1843,31 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_functions_result(
 
   return srpc_async_call(_srpc, SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
                          (char *)result, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_int_params(
+    void *_srpc, unsigned char channel_number) {
+  TDS_GetChannelIntParamsRequest request;
+  memset(&request, 0, sizeof(TDS_GetChannelIntParamsRequest));
+  request.ChannelNumber = channel_number;
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS,
+                         (char *)&request,
+                         sizeof(TDS_GetChannelIntParamsRequest));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_int_params_result(
+    void *_srpc, unsigned char channel_number, _supla_int_t param1,
+    _supla_int_t param2, _supla_int_t param3) {
+  TSD_ChannelIntParams result;
+  memset(&result, 0, sizeof(TSD_ChannelIntParams));
+  result.ChannelNumber = channel_number;
+  result.Param1 = param1;
+  result.Param2 = param2;
+  result.Param3 = param3;
+
+  return srpc_async_call(_srpc, SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT,
+                         (char *)&result, sizeof(TSD_ChannelIntParams));
 }
 
 #endif /*SRPC_EXCLUDE_DEVICE*/

@@ -407,6 +407,12 @@ TEST_F(SrpcTest, call_allowed_v13) {
   srpcCallAllowed(13, calls);
 }
 
+TEST_F(SrpcTest, call_allowed_v14) {
+  int calls[] = {SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS,
+                 SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT, 0};
+  srpcCallAllowed(14, calls);
+}
+
 TEST_F(SrpcTest, call_not_allowed) {
   ASSERT_TRUE(all_calls != NULL);
   ASSERT_GT(all_calls_size, 0);
