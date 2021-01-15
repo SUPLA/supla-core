@@ -716,7 +716,7 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
     const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt = NULL;
-    if (!stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+    if (!stmt_execute((void **)&stmt, sql, pbind, 9, true)) {
       if (stmt != NULL) mysql_stmt_close(stmt);
       return 0;
     } else if (new_channel) {
