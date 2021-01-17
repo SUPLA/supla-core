@@ -204,10 +204,9 @@ void *supla_google_home_client::getHeader(const char requestId[]) {
       cJSON_AddStringToObject(header, name, reqId);
     }
 
-    char *longUniqueId = getCredentials()->getUser()->getLongUniqueID();
+    const char *longUniqueId = getCredentials()->getUser()->getLongUniqueID();
     if (longUniqueId) {
       cJSON_AddStringToObject(header, "agentUserId", longUniqueId);
-      free(longUniqueId);
     }
 
     return header;

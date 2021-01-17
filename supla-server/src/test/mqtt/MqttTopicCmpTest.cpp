@@ -36,8 +36,7 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   _mqtt_db_data_row_channel_t channel_before;
   memset(&channel_before, 0, sizeof(_mqtt_db_data_row_channel_t));
 
-  snprintf(channel_before.user_email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
-  snprintf(channel_before.user_shortuniqueid, SHORT_UNIQUEID_MAXSIZE,
+  snprintf(channel_before.user_suid, SHORT_UNIQUEID_MAXSIZE,
            "7720767494dd87196e1896c7cbab707c");
   channel_before.device_id = 555;
   channel_before.device_enabled = true;
@@ -66,21 +65,23 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   ASSERT_EQ(removed.size(), (long unsigned int)4);
   std::list<std::string>::iterator rit = removed.begin();
 
-  ASSERT_EQ(rit->compare("homeassistant/cover/user_supla_org/754/config"), 0);
-  rit++;
-
-  ASSERT_EQ(
-      rit->compare("supla/user@supla.org/devices/555/channels/754/state/hi"),
-      0);
-  rit++;
   ASSERT_EQ(
       rit->compare(
-          "supla/user@supla.org/devices/555/channels/754/state/is_calibrating"),
+          "homeassistant/cover/7720767494dd87196e1896c7cbab707c/754/config"),
       0);
   rit++;
-  ASSERT_EQ(
-      rit->compare("supla/user@supla.org/devices/555/channels/754/state/shut"),
-      0);
+
+  ASSERT_EQ(rit->compare("supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+                         "channels/754/state/hi"),
+            0);
+  rit++;
+  ASSERT_EQ(rit->compare("supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+                         "channels/754/state/is_calibrating"),
+            0);
+  rit++;
+  ASSERT_EQ(rit->compare("supla/7720767494dd87196e1896c7cbab707c/devices/555/"
+                         "channels/754/state/shut"),
+            0);
 }
 
 } /* namespace testing */

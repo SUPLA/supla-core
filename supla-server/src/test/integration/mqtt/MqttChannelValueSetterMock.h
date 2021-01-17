@@ -75,7 +75,7 @@ class MqttChannelValueSetterMock
   char getBrightness(void);
   char getColorBrightness(void);
 
-  bool emailEqualTo(const char *email);
+  bool suidEqualTo(const char *suid);
   bool deviceEqualTo(int device_id);
   bool channelEqualTo(int channel_id);
 };

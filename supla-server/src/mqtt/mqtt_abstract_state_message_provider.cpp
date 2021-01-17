@@ -31,7 +31,7 @@ supla_mqtt_abstract_state_message_provider::
   this->channel_type = 0;
   this->channel_flags = 0;
   this->cvalue = NULL;
-  this->user_email = NULL;
+  this->user_suid = NULL;
   this->em = NULL;
   this->icm = NULL;
 }
@@ -94,13 +94,13 @@ void supla_mqtt_abstract_state_message_provider::
   this->channel_flags = channel_flags;
 }
 
-void supla_mqtt_abstract_state_message_provider::set_user_email(
-    char *user_email) {
-  this->user_email = user_email;
+void supla_mqtt_abstract_state_message_provider::set_user_suid(
+    char *user_suid) {
+  this->user_suid = user_suid;
 }
 
-void supla_mqtt_abstract_state_message_provider::set_user_email(void) {
-  user_email = (char *)_get_user_email();
+void supla_mqtt_abstract_state_message_provider::set_user_suid(void) {
+  user_suid = (char *)_get_user_suid();
 }
 
 void supla_mqtt_abstract_state_message_provider::get_complex_value(void) {
@@ -189,12 +189,12 @@ bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
   switch (index) {
     case 1:
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size,
+          topic_prefix, user_suid, topic_name, message, message_size,
           cvalue && cvalue->hi ? "true" : "false", false,
           "devices/%i/channels/%i/state/hi", get_device_id(), get_channel_id());
     case 2:
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size,
+          topic_prefix, user_suid, topic_name, message, message_size,
           cvalue && cvalue->shut == -1 ? "true" : "false", false,
           "devices/%i/channels/%i/state/is_calibrating", get_device_id(),
           get_channel_id());
@@ -206,7 +206,7 @@ bool supla_mqtt_abstract_state_message_provider::get_rs_message_at_index(
         shut = 100;
       }
       snprintf(value, sizeof(value), "%i", shut);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/shut",
                             get_device_id(), get_channel_id());
@@ -220,7 +220,7 @@ bool supla_mqtt_abstract_state_message_provider::get_lck_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, cvalue && cvalue->hi ? "true" : "false",
                           false, "devices/%i/channels/%i/state/hi",
                           get_device_id(), get_channel_id());
@@ -235,12 +235,12 @@ bool supla_mqtt_abstract_state_message_provider::get_gate_message_at_index(
   switch (index) {
     case 1:
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size,
+          topic_prefix, user_suid, topic_name, message, message_size,
           cvalue && cvalue->hi ? "true" : "false", false,
           "devices/%i/channels/%i/state/hi", get_device_id(), get_channel_id());
     case 2:
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size,
+          topic_prefix, user_suid, topic_name, message, message_size,
           cvalue && cvalue->partially_closed ? "true" : "false", false,
           "devices/%i/channels/%i/state/partial_hi", get_device_id(),
           get_channel_id());
@@ -253,7 +253,7 @@ bool supla_mqtt_abstract_state_message_provider::get_onoff_message_at_index(
     bool on, unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, on ? "true" : "false", false,
                           "devices/%i/channels/%i/state/on", get_device_id(),
                           get_channel_id());
@@ -272,7 +272,7 @@ bool supla_mqtt_abstract_state_message_provider::get_depth_message_at_index(
     if (cvalue) {
       snprintf(value, sizeof(value), "%f", cvalue->depth);
     }
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
                           "devices/%i/channels/%i/state/depth", get_device_id(),
                           get_channel_id());
@@ -291,7 +291,7 @@ bool supla_mqtt_abstract_state_message_provider::get_distance_message_at_index(
     if (cvalue) {
       snprintf(value, sizeof(value), "%f", cvalue->distance);
     }
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
                           "devices/%i/channels/%i/state/distance",
                           get_device_id(), get_channel_id());
@@ -326,7 +326,7 @@ bool supla_mqtt_abstract_state_message_provider::
       }
     }
 
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
                           "devices/%i/channels/%i/state/value", get_device_id(),
                           get_channel_id());
@@ -339,7 +339,7 @@ bool supla_mqtt_abstract_state_message_provider::get_sensor_message_at_index(
     unsigned short index, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   if (index == 1) {
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, cvalue && cvalue->hi ? "true" : "false",
                           false, "devices/%i/channels/%i/state/hi",
                           get_device_id(), get_channel_id());
@@ -359,7 +359,7 @@ bool supla_mqtt_abstract_state_message_provider::
     value[0] = 0;
 
     get_temperature(value, sizeof(value));
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
                           "devices/%i/channels/%i/state/temperature",
                           get_device_id(), get_channel_id());
@@ -377,7 +377,7 @@ bool supla_mqtt_abstract_state_message_provider::get_humidity_message_at_index(
     value[0] = 0;
 
     get_humidity(value, sizeof(value));
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, value, false,
                           "devices/%i/channels/%i/state/humidity",
                           get_device_id(), get_channel_id());
@@ -393,7 +393,7 @@ bool supla_mqtt_abstract_state_message_provider::get_brightness_message(
   value[0] = 0;
 
   get_brightness(cvalue ? &cvalue->brightness : NULL, value, sizeof(value));
-  return create_message(topic_prefix, user_email, topic_name, message,
+  return create_message(topic_prefix, user_suid, topic_name, message,
                         message_size, value, false,
                         "devices/%i/channels/%i/state/brightness",
                         get_device_id(), get_channel_id());
@@ -407,7 +407,7 @@ bool supla_mqtt_abstract_state_message_provider::get_color_brightness_message(
 
   get_brightness(cvalue ? &cvalue->color_brightness : NULL, value,
                  sizeof(value));
-  return create_message(topic_prefix, user_email, topic_name, message,
+  return create_message(topic_prefix, user_suid, topic_name, message,
                         message_size, value, false,
                         "devices/%i/channels/%i/state/color_brightness",
                         get_device_id(), get_channel_id());
@@ -421,7 +421,7 @@ bool supla_mqtt_abstract_state_message_provider::get_color_message(
 
   get_color(value, sizeof(value));
   return create_message(
-      topic_prefix, user_email, topic_name, message, message_size, value, false,
+      topic_prefix, user_suid, topic_name, message, message_size, value, false,
       "devices/%i/channels/%i/state/color", get_device_id(), get_channel_id());
 }
 
@@ -432,7 +432,7 @@ bool supla_mqtt_abstract_state_message_provider::get_normalized_rgb_message(
   value[0] = 0;
 
   get_rgb(value, sizeof(value));
-  return create_message(topic_prefix, user_email, topic_name, message,
+  return create_message(topic_prefix, user_suid, topic_name, message,
                         message_size, value, false,
                         "devices/%i/channels/%i/state/normalized_rgb",
                         get_device_id(), get_channel_id());
@@ -447,13 +447,13 @@ bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
   switch (index) {
     case 1:
       get_valve_closed(value, sizeof(value));
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/closed",
                             get_device_id(), get_channel_id());
     case 2:
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size,
+          topic_prefix, user_suid, topic_name, message, message_size,
           cvalue &&
                   (cvalue->valve_value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)
               ? "true"
@@ -462,7 +462,7 @@ bool supla_mqtt_abstract_state_message_provider::get_valve_message_at_index(
           get_device_id(), get_channel_id());
     case 3:
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size,
+          topic_prefix, user_suid, topic_name, message, message_size,
           cvalue && (cvalue->valve_value.flags & SUPLA_VALVE_FLAG_FLOODING)
               ? "true"
               : "false",
@@ -495,43 +495,43 @@ bool supla_mqtt_abstract_state_message_provider::
     case 1:
       snprintf(value, sizeof(value), "%.2f",
                icm ? (icm->getTotalCost() * 0.01) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/total_cost",
                             get_device_id(), get_channel_id());
     case 2:
       snprintf(value, sizeof(value), "%.4f",
                icm ? (icm->getPricePerUnit() * 0.0001) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/price_per_unit",
                             get_device_id(), get_channel_id());
     case 3:
       snprintf(value, sizeof(value), "%i", icm ? icm->getImpulsesPerUnit() : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/impulses_per_unit",
                             get_device_id(), get_channel_id());
     case 4:
       snprintf(value, sizeof(value), "%llu", icm ? icm->getCounter() : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/counter",
                             get_device_id(), get_channel_id());
     case 5:
       snprintf(value, sizeof(value), "%.3f",
                icm ? (icm->getCalculatedValue() * 0.001) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/calculated_value",
                             get_device_id(), get_channel_id());
     case 6:
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, icm ? icm->getCurrency() : "", false,
                             "devices/%i/channels/%i/state/currency",
                             get_device_id(), get_channel_id());
     case 7:
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, icm ? icm->getCustomUnit() : "",
                             false, "devices/%i/channels/%i/state/unit",
                             get_device_id(), get_channel_id());
@@ -601,14 +601,14 @@ bool supla_mqtt_abstract_state_message_provider::
     case 1:
       snprintf(value, sizeof(value), "%.2f",
                em ? (em_ev.total_cost * 0.01) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/total_cost",
                             get_device_id(), get_channel_id());
     case 2:
       snprintf(value, sizeof(value), "%.2f",
                em ? (em_ev.total_cost_balanced * 0.01) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/total_cost_balanced",
                             get_device_id(), get_channel_id());
@@ -616,7 +616,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 3:
       snprintf(value, sizeof(value), "%.4f",
                em ? (em_ev.price_per_unit * 0.0001) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/price_per_unit",
                             get_device_id(), get_channel_id());
@@ -625,7 +625,7 @@ bool supla_mqtt_abstract_state_message_provider::
       if (em) {
         em->getCurrency(value);
       }
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/currency",
                             get_device_id(), get_channel_id());
@@ -634,7 +634,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%u", em ? em_ev.measured_values : 0);
       // This topic should be called "measured_values" but for compatibility
       // with the rest API it has been changed to "support"
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/support",
                             get_device_id(), get_channel_id());
@@ -649,7 +649,7 @@ bool supla_mqtt_abstract_state_message_provider::
                      0.00001)
                   : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/total_forward_active_energy",
           get_device_id(), get_channel_id());
 
@@ -663,7 +663,7 @@ bool supla_mqtt_abstract_state_message_provider::
                      0.00001)
                   : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/total_reverse_active_energy",
           get_device_id(), get_channel_id());
 
@@ -673,7 +673,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_forward_active_energy_balanced * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
           "devices/%i/channels/%i/state/total_forward_active_energy_balanced",
           get_device_id(), get_channel_id());
@@ -684,7 +684,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_reverse_active_energy_balanced * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
           "devices/%i/channels/%i/state/total_reverse_active_energy_balanced",
           get_device_id(), get_channel_id());
@@ -697,7 +697,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_forward_active_energy[phase] * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
           "devices/%i/channels/%i/state/phases/%i/total_forward_active_energy",
           get_device_id(), get_channel_id(), phase + 1);
@@ -710,7 +710,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_reverse_active_energy[phase] * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false,
           "devices/%i/channels/%i/state/phases/%i/total_reverse_active_energy",
           get_device_id(), get_channel_id(), phase + 1);
@@ -722,7 +722,7 @@ bool supla_mqtt_abstract_state_message_provider::
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_forward_reactive_energy[phase] * 0.00001) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/"
                             "total_forward_reactive_energy",
@@ -735,7 +735,7 @@ bool supla_mqtt_abstract_state_message_provider::
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_reverse_reactive_energy[phase] * 0.00001) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/"
                             "total_reverse_reactive_energy",
@@ -746,7 +746,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 38:
       verify_flag(em_ev.measured_values, EM_VAR_FREQ, 0, message, message_size);
       snprintf(value, sizeof(value), "%.2f", em ? (em_ev.m[0].freq * 0.01) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/frequency",
                             get_device_id(), get_channel_id(), phase + 1);
@@ -758,7 +758,7 @@ bool supla_mqtt_abstract_state_message_provider::
                   message_size);
       snprintf(value, sizeof(value), "%.2f",
                em ? (em_ev.m[0].voltage[phase] * 0.01) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/voltage",
                             get_device_id(), get_channel_id(), phase + 1);
@@ -776,7 +776,7 @@ bool supla_mqtt_abstract_state_message_provider::
       }
 
       snprintf(value, sizeof(value), "%.3f", em ? (current * 0.001) : 0);
-      return create_message(topic_prefix, user_email, topic_name, message,
+      return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
                             "devices/%i/channels/%i/state/phases/%i/current",
                             get_device_id(), get_channel_id(), phase + 1);
@@ -789,7 +789,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_active",
           get_device_id(), get_channel_id(), phase + 1);
     case 18:
@@ -800,7 +800,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_reactive",
           get_device_id(), get_channel_id(), phase + 1);
     case 19:
@@ -811,7 +811,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_apparent",
           get_device_id(), get_channel_id(), phase + 1);
     case 20:
@@ -822,7 +822,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.3f",
                em ? (em_ev.m[0].power_factor[phase] * 0.001) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_factor",
           get_device_id(), get_channel_id(), phase + 1);
     case 21:
@@ -833,7 +833,7 @@ bool supla_mqtt_abstract_state_message_provider::
       snprintf(value, sizeof(value), "%.1f",
                em ? (em_ev.m[0].phase_angle[phase] * 0.1) : 0);
       return create_message(
-          topic_prefix, user_email, topic_name, message, message_size, value,
+          topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/phase_angle",
           get_device_id(), get_channel_id(), phase + 1);
   }
@@ -851,7 +851,7 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
   get_complex_value();
 
   if (index == 0) {
-    return create_message(topic_prefix, user_email, topic_name, message,
+    return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size,
                           cvalue && cvalue->online ? "true" : "false", false,
                           "devices/%i/channels/%i/state/connected",

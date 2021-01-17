@@ -96,13 +96,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
 
-  ASSERT_EQ(
-      getLibAdapter()->subscribed_pop().compare("supla/2645test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "supla/6527881802ebd8c4ff2b3955bc326704/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/2645test_supla_org/+/config"),
+                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
             0);
 
   sleep(22);
@@ -111,13 +111,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
 
-  ASSERT_EQ(
-      getLibAdapter()->unsubscribed_pop().compare("supla/2645test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "supla/6527881802ebd8c4ff2b3955bc326704/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/2645test_supla_org/+/config"),
+                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
             0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
@@ -144,13 +144,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
 
-  ASSERT_EQ(
-      getLibAdapter()->subscribed_pop().compare("supla/2645test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "supla/6527881802ebd8c4ff2b3955bc326704/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/2645test_supla_org/+/config"),
+                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
             0);
 
   runSqlScript("EnableMqttForUser2645.sql");
@@ -162,13 +162,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDisabledAndDisableAgain) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
 
-  ASSERT_EQ(
-      getLibAdapter()->unsubscribed_pop().compare("supla/2645test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "supla/6527881802ebd8c4ff2b3955bc326704/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/2645test_supla_org/+/config"),
+                "homeassistant/+/6527881802ebd8c4ff2b3955bc326704/+/config"),
             0);
 }
 
@@ -189,20 +189,25 @@ TEST_F(MqttUnpublisherIntegrationTest, disableEnabled) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
 
-  ASSERT_EQ(
-      getLibAdapter()->subscribed_pop().compare("supla/48test@supla.org/#"),
-
-      0);
-
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/48test_supla_org/+/config"),
+                "supla/8ce92cb8c9f6db6b65703d2703691700/#"),
+
             0);
 
-  getLibAdapter()->on_message_received("supla/48test@supla.org/1", "123");
-  getLibAdapter()->on_message_received("supla/48test@supla.org/2", "123");
-  getLibAdapter()->on_message_received("supla/48test@supla.org/3", "123");
-  getLibAdapter()->on_message_received("supla/48test@supla.org/4", "123");
-  getLibAdapter()->on_message_received("supla/48test@supla.org/5", "123");
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
+            0);
+
+  getLibAdapter()->on_message_received(
+      "supla/8ce92cb8c9f6db6b65703d2703691700/1", "123");
+  getLibAdapter()->on_message_received(
+      "supla/8ce92cb8c9f6db6b65703d2703691700/2", "123");
+  getLibAdapter()->on_message_received(
+      "supla/8ce92cb8c9f6db6b65703d2703691700/3", "123");
+  getLibAdapter()->on_message_received(
+      "supla/8ce92cb8c9f6db6b65703d2703691700/4", "123");
+  getLibAdapter()->on_message_received(
+      "supla/8ce92cb8c9f6db6b65703d2703691700/5", "123");
 
   sleep(22);
 
@@ -212,17 +217,19 @@ TEST_F(MqttUnpublisherIntegrationTest, disableEnabled) {
   // print_expected();
 
   const char *expectedData[] = {
-      "supla/48test@supla.org/1", NULL, "supla/48test@supla.org/2", NULL,
-      "supla/48test@supla.org/3", NULL, "supla/48test@supla.org/4", NULL,
-      "supla/48test@supla.org/5", NULL};
+      "supla/8ce92cb8c9f6db6b65703d2703691700/1", NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/2", NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/3", NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/4", NULL,
+      "supla/8ce92cb8c9f6db6b65703d2703691700/5", NULL};
 
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 
-  ASSERT_EQ(
-      getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
-      0);
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/48test_supla_org/+/config"),
+                "supla/8ce92cb8c9f6db6b65703d2703691700/#"),
+            0);
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 }
 
@@ -243,13 +250,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
 
-  ASSERT_EQ(
-      getLibAdapter()->subscribed_pop().compare("supla/48test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "supla/8ce92cb8c9f6db6b65703d2703691700/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/48test_supla_org/+/config"),
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 
   sleep(5);
@@ -263,13 +270,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
 
-  ASSERT_EQ(
-      getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "supla/8ce92cb8c9f6db6b65703d2703691700/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/48test_supla_org/+/config"),
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_count(), 0);
@@ -286,13 +293,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 2);
 
-  ASSERT_EQ(
-      getLibAdapter()->subscribed_pop().compare("supla/48test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
+                "supla/8ce92cb8c9f6db6b65703d2703691700/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
-                "homeassistant/+/48test_supla_org/+/config"),
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 
   sleep(22);
@@ -301,13 +308,13 @@ TEST_F(MqttUnpublisherIntegrationTest, enableDuringDisabling) {
   ASSERT_EQ(getLibAdapter()->published_count(), 0);
   ASSERT_EQ(getLibAdapter()->subscribed_count(), 0);
 
-  ASSERT_EQ(
-      getLibAdapter()->unsubscribed_pop().compare("supla/48test@supla.org/#"),
+  ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
+                "supla/8ce92cb8c9f6db6b65703d2703691700/#"),
 
-      0);
+            0);
 
   ASSERT_EQ(getLibAdapter()->unsubscribed_pop().compare(
-                "homeassistant/+/48test_supla_org/+/config"),
+                "homeassistant/+/8ce92cb8c9f6db6b65703d2703691700/+/config"),
             0);
 }
 
@@ -345,280 +352,294 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
   // print_expected();
 
   const char *expectedData[] = {
-      "supla/117test@supla.org/devices/36/enabled",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/enabled",
       NULL,
-      "supla/117test@supla.org/devices/36/last_connected",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/last_connected",
       NULL,
-      "supla/117test@supla.org/devices/36/last_ipv4",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/last_ipv4",
       NULL,
-      "supla/117test@supla.org/devices/36/manufacturer",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/manufacturer",
       NULL,
-      "supla/117test@supla.org/devices/36/name",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/name",
       NULL,
-      "supla/117test@supla.org/devices/36/proto_ver",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/proto_ver",
       NULL,
-      "supla/117test@supla.org/devices/36/soft_ver",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/soft_ver",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/50/type",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/type",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/50/function",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/function",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/50/caption",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/caption",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/50/hidden",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/hidden",
       NULL,
-      "homeassistant/light/117test_supla_org/50/config",
+      "homeassistant/light/5b15b00055c044220196eb41965b3627/50/config",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/50/state/connected",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/state/"
+      "connected",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/50/state/on",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/state/on",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/51/type",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/type",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/51/function",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/function",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/51/caption",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/caption",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/51/hidden",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/hidden",
       NULL,
-      "homeassistant/light/117test_supla_org/51/config",
+      "homeassistant/light/5b15b00055c044220196eb41965b3627/51/config",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/51/state/connected",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/state/"
+      "connected",
       NULL,
-      "supla/117test@supla.org/devices/36/channels/51/state/on",
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/state/on",
       NULL,
-      "supla/743test@supla.org/devices/506/enabled",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/enabled",
       NULL,
-      "supla/743test@supla.org/devices/506/last_connected",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/last_connected",
       NULL,
-      "supla/743test@supla.org/devices/506/last_ipv4",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/last_ipv4",
       NULL,
-      "supla/743test@supla.org/devices/506/manufacturer",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/manufacturer",
       NULL,
-      "supla/743test@supla.org/devices/506/name",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/name",
       NULL,
-      "supla/743test@supla.org/devices/506/proto_ver",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/proto_ver",
       NULL,
-      "supla/743test@supla.org/devices/506/soft_ver",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/soft_ver",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/type",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/type",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/function",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/"
+      "function",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/caption",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/caption",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/hidden",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/hidden",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_0/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_0/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_1/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_1/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_2/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_2/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_3/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_3/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_4/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_4/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_5/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_5/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_6/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_6/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_7/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_7/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_8/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_8/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_9/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_9/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_10/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_10/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_11/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_11/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_12/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_12/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_13/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_13/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_14/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_14/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_15/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_15/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_16/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_16/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_17/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_17/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_18/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_18/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_19/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_19/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_20/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_20/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_21/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_21/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_22/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_22/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_23/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_23/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_24/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_24/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_25/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_25/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_26/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_26/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_27/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_27/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_28/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_28/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_29/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_29/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_30/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_30/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_31/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_31/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_32/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_32/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_33/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_33/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_34/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_34/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_35/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_35/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_36/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_36/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_37/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_37/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_38/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_38/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_39/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_39/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_40/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_40/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_41/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_41/config",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/connected",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "connected",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/total_cost",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "total_cost",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_cost_balanced",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/price_per_unit",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "price_per_unit",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/currency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "currency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/support",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "support",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_forward_active_energy_balanced",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_reverse_active_energy_balanced",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_forward_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_reverse_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_forward_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_forward_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_reverse_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_reverse_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "frequency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/frequency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/voltage",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/voltage",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/current",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/current",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_active",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_active",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_reactive",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_reactive",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_apparent",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_apparent",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_factor",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_factor",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "phase_angle",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/phase_angle",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_forward_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_reverse_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_forward_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_forward_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_reverse_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_reverse_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "frequency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/frequency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/voltage",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/voltage",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/current",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/current",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_active",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_active",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_reactive",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_reactive",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_apparent",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_apparent",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_factor",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_factor",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "phase_angle",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/phase_angle",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_forward_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_reverse_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_forward_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_forward_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_reverse_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_reverse_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "frequency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/frequency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/voltage",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/voltage",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/current",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/current",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_active",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_active",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_reactive",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_reactive",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_apparent",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_apparent",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_factor",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_factor",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "phase_angle",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/phase_angle",
       NULL};
 
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
@@ -662,224 +683,236 @@ TEST_F(MqttUnpublisherIntegrationTest, changeChannelFunction) {
   // print_expected();
 
   const char *expectedData[] = {
-      "supla/743test@supla.org/devices/506/channels/966/type",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/type",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/function",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/"
+      "function",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/caption",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/caption",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/hidden",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/hidden",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_0/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_0/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_1/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_1/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_2/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_2/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_3/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_3/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_4/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_4/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_5/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_5/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_6/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_6/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_7/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_7/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_8/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_8/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_9/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_9/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_10/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_10/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_11/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_11/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_12/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_12/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_13/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_13/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_14/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_14/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_15/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_15/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_16/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_16/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_17/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_17/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_18/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_18/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_19/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_19/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_20/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_20/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_21/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_21/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_22/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_22/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_23/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_23/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_24/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_24/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_25/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_25/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_26/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_26/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_27/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_27/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_28/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_28/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_29/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_29/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_30/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_30/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_31/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_31/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_32/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_32/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_33/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_33/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_34/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_34/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_35/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_35/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_36/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_36/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_37/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_37/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_38/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_38/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_39/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_39/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_40/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_40/config",
       NULL,
-      "homeassistant/sensor/743test_supla_org/966_41/config",
+      "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_41/config",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/connected",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "connected",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/total_cost",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "total_cost",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_cost_balanced",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/price_per_unit",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "price_per_unit",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/currency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "currency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/support",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "support",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_forward_active_energy_balanced",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/"
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
       "total_reverse_active_energy_balanced",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_forward_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_reverse_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_forward_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_forward_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "total_reverse_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/total_reverse_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "frequency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/frequency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/voltage",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/voltage",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/current",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/current",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_active",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_active",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_reactive",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_reactive",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_apparent",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_apparent",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "power_factor",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/power_factor",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/1/"
-      "phase_angle",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/1/phase_angle",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_forward_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_reverse_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_forward_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_forward_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "total_reverse_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/total_reverse_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "frequency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/frequency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/voltage",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/voltage",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/current",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/current",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_active",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_active",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_reactive",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_reactive",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_apparent",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_apparent",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "power_factor",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/power_factor",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/2/"
-      "phase_angle",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/2/phase_angle",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_forward_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_forward_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_reverse_active_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_reverse_active_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_forward_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_forward_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "total_reverse_reactive_energy",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/total_reverse_reactive_energy",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "frequency",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/frequency",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/voltage",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/voltage",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/current",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/current",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_active",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_active",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_reactive",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_reactive",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_apparent",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_apparent",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "power_factor",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/power_factor",
       NULL,
-      "supla/743test@supla.org/devices/506/channels/966/state/phases/3/"
-      "phase_angle",
+      "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/channels/966/state/"
+      "phases/3/phase_angle",
       NULL};
 
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));

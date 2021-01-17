@@ -133,13 +133,11 @@ char *database::get_user_email(int UserID) {
   return result;
 }
 
-bool database::get_user_uniqueid(int UserID,
-                                 char shortID[SHORT_UNIQUEID_MAXSIZE],
-                                 char longID[LONG_UNIQUEID_MAXSIZE]) {
+bool database::get_user_uniqueid(int UserID, char *id, bool longid) {
   bool result = false;
-  char sql[] =
-      "SELECT `short_unique_id`, `long_unique_id` FROM `supla_user` WHERE id = "
-      "?";
+  char sqls[] = "SELECT `short_unique_id` FROM `supla_user` WHERE id = ?";
+
+  char sqll[] = "SELECT `long_unique_id` FROM `supla_user` WHERE id = ?";
 
   MYSQL_STMT *stmt = NULL;
 
@@ -149,37 +147,28 @@ bool database::get_user_uniqueid(int UserID,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[2];
-    memset(rbind, 0, sizeof(rbind));
+  if (stmt_execute((void **)&stmt, longid ? sqll : sqls, pbind, 1, true)) {
+    MYSQL_BIND rbind;
+    memset(&rbind, 0, sizeof(rbind));
 
-    unsigned long short_size = 0;
-    my_bool short_is_null = true;
+    unsigned long size = 0;
+    my_bool is_null = true;
 
-    unsigned long long_size = 0;
-    my_bool long_is_null = true;
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = id;
+    rbind.buffer_length =
+        (longid ? LONG_UNIQUEID_MAXSIZE : SHORT_UNIQUEID_MAXSIZE) - 1;
+    rbind.length = &size;
+    rbind.is_null = &is_null;
 
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = shortID;
-    rbind[0].buffer_length = SHORT_UNIQUEID_MAXSIZE - 1;
-    rbind[0].length = &short_size;
-    rbind[0].is_null = &short_is_null;
-
-    rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = longID;
-    rbind[1].buffer_length = LONG_UNIQUEID_MAXSIZE - 1;
-    rbind[1].length = &long_size;
-    rbind[1].is_null = &long_is_null;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
     } else {
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        shortID[short_is_null ? 0 : short_size] = 0;
-        longID[long_is_null ? 0 : long_size] = 0;
+        id[is_null ? 0 : size] = 0;
         result = true;
       }
     }

@@ -517,7 +517,7 @@ void supla_mqtt_channel_message_provider::ha_json_set_topic_base(
     cJSON *root, const char *topic_prefix) {
   char *topic_name = NULL;
 
-  create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
+  create_message(topic_prefix, row->user_suid, &topic_name, NULL, NULL, NULL,
                  false, "devices/%i/channels/%i", row->device_id,
                  row->channel_id);
 
@@ -551,7 +551,7 @@ void supla_mqtt_channel_message_provider::ha_json_set_full_topic(
     const char *topic_suffix) {
   char *topic_name = NULL;
 
-  create_message(topic_prefix, row->user_email, &topic_name, NULL, NULL, NULL,
+  create_message(topic_prefix, row->user_suid, &topic_name, NULL, NULL, NULL,
                  false, "devices/%i/channels/%i/%s", row->device_id,
                  row->channel_id, topic_suffix);
 
@@ -660,30 +660,24 @@ bool supla_mqtt_channel_message_provider::ha_get_message(
 
   cJSON_Delete(root);
 
-  char *node_id = homeassistant_get_node_id(row->user_email);
-  if (node_id) {
-    char object_id[50];
-    if (set_sub_id) {
-      snprintf(object_id, sizeof(object_id), "%i_%i", row->channel_id, sub_id);
-    } else {
-      snprintf(object_id, sizeof(object_id), "%i", row->channel_id);
-    }
-
-    const char fmt[] = "homeassistant/%s/%s/%s/config";
-    int len = snprintf(NULL, 0, fmt, component, node_id, object_id);
-
-    if (len) {
-      len++;
-      *topic_name = (char *)malloc(len);
-      if (*topic_name) {
-        snprintf(*topic_name, len, fmt, component, node_id, object_id);
-        free(node_id);
-        return true;
-      }
-    }
+  char object_id[50];
+  if (set_sub_id) {
+    snprintf(object_id, sizeof(object_id), "%i_%i", row->channel_id, sub_id);
+  } else {
+    snprintf(object_id, sizeof(object_id), "%i", row->channel_id);
   }
 
-  free(node_id);
+  const char fmt[] = "homeassistant/%s/%s/%s/config";
+  int len = snprintf(NULL, 0, fmt, component, row->user_suid, object_id);
+
+  if (len) {
+    len++;
+    *topic_name = (char *)malloc(len);
+    if (*topic_name) {
+      snprintf(*topic_name, len, fmt, component, row->user_suid, object_id);
+      return true;
+    }
+  }
 
   if (message && *message) {
     free(*message);
@@ -1267,8 +1261,8 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
         channel_type_to_string(row->channel_type, channel_type,
                                sizeof(channel_type));
 
-        return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size, channel_type, false,
+        return create_message(topic_prefix, row->user_suid, topic_name, message,
+                              message_size, channel_type, false,
                               "devices/%i/channels/%i/type", row->device_id,
                               row->channel_id);
       }
@@ -1276,19 +1270,19 @@ bool supla_mqtt_channel_message_provider::get_message_at_index(
         char channel_func[35];
         channel_function_to_string(row->channel_func, channel_func,
                                    sizeof(channel_func));
-        return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size, channel_func, false,
+        return create_message(topic_prefix, row->user_suid, topic_name, message,
+                              message_size, channel_func, false,
                               "devices/%i/channels/%i/function", row->device_id,
                               row->channel_id);
       }
       case 2:
-        return create_message(topic_prefix, row->user_email, topic_name,
-                              message, message_size, row->channel_caption,
-                              false, "devices/%i/channels/%i/caption",
-                              row->device_id, row->channel_id);
+        return create_message(topic_prefix, row->user_suid, topic_name, message,
+                              message_size, row->channel_caption, false,
+                              "devices/%i/channels/%i/caption", row->device_id,
+                              row->channel_id);
       case 3:
         return create_message(
-            topic_prefix, row->user_email, topic_name, message, message_size,
+            topic_prefix, row->user_suid, topic_name, message, message_size,
             row->channel_hidden ? "true" : "false", false,
             "devices/%i/channels/%i/hidden", row->device_id, row->channel_id);
     }

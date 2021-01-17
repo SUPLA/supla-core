@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <string.h>
 #include "proto.h"
+#include "user.h"
 
 MqttChannelValueSetterMock::MqttChannelValueSetterMock(
     supla_mqtt_client_settings *settings)
@@ -137,13 +138,13 @@ char MqttChannelValueSetterMock::getColorBrightness(void) {
   return color_brightness;
 }
 
-bool MqttChannelValueSetterMock::emailEqualTo(const char *email) {
-  if (email == NULL && get_email() == NULL) {
+bool MqttChannelValueSetterMock::suidEqualTo(const char *suid) {
+  if (suid == NULL && get_suid() == NULL) {
     return true;
   }
 
-  if (email != NULL && get_email() != NULL) {
-    return strncmp(email, get_email(), SUPLA_EMAIL_MAXSIZE) == 0;
+  if (suid != NULL && get_suid() != NULL) {
+    return strncmp(suid, get_suid(), SHORT_UNIQUEID_MAXSIZE) == 0;
   }
 
   return false;

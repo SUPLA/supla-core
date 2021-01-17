@@ -30,9 +30,9 @@ class supla_mqtt_abstract_channel_value_setter {
   size_t message_size;
   int device_id;
   int channel_id;
-  char *email_ptr;
-  size_t email_len;
-  char *email;
+  char *suid_ptr;
+  size_t suid_len;
+  char *suid;
 
   supla_mqtt_client_settings *settings;
   bool lc_equal(const char *str);
@@ -44,13 +44,13 @@ class supla_mqtt_abstract_channel_value_setter {
   bool parse_color(void);
   int str2int(const char *str, size_t len, bool *err);
   unsigned int hex2int(const char *str, size_t len, bool *err);
-  void email_free(void);
+  void suid_free(void);
   int parse_int_with_prefix(const char *prefix, size_t prefix_len,
                             char **topic_name, size_t *topic_name_size,
                             bool *err);
 
  protected:
-  const char *get_email(void);
+  const char *get_suid(void);
   int get_device_id(void);
   int get_channel_id(void);
 

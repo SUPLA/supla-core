@@ -26,8 +26,7 @@ namespace testing {
 AlexaClientTest::AlexaClientTest() {}
 
 void AlexaClientTest::SetUp() {
-  user = new supla_user(1001);
-  user->setUniqueId("qwerty", "zxcvbnm");
+  user = new supla_user(1001, "qwerty", "zxcvbnm");
 
   user->amazonAlexaCredentials()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600,
                                       "eu");

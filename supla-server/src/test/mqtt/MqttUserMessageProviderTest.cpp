@@ -37,7 +37,7 @@ void MqttUserMessageProviderTest::fillUserData(
 
   snprintf(row_user->user_email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
   snprintf(row_user->user_timezone, SUPLA_TIMEZONE_MAXSIZE, "Europe/Warsaw");
-  snprintf(row_user->user_shortuniqueid, SHORT_UNIQUEID_MAXSIZE,
+  snprintf(row_user->user_suid, SHORT_UNIQUEID_MAXSIZE,
            "7720767494dd87196e1896c7cbab707c");
 }
 
@@ -66,12 +66,13 @@ TEST_F(MqttUserMessageProviderTest, fetchAllWithoutPrefix) {
 
   provider->set_data_row(&row_user);
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "Europe/Warsaw", false,
-                              "supla/user@supla.org/account/timezone"));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "Europe/Warsaw", false,
+      "supla/7720767494dd87196e1896c7cbab707c/account/timezone"));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL,
-                              "7720767494dd87196e1896c7cbab707c", false,
-                              "supla/user@supla.org/account/shortuniqueid"));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "user@supla.org", false,
+                      "supla/7720767494dd87196e1896c7cbab707c/account/email"));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -82,12 +83,13 @@ TEST_F(MqttUserMessageProviderTest, fetchAllWithEmptyPrefix) {
 
   provider->set_data_row(&row_user);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "", "Europe/Warsaw", false,
-                              "supla/user@supla.org/account/timezone"));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "", "Europe/Warsaw", false,
+      "supla/7720767494dd87196e1896c7cbab707c/account/timezone"));
 
-  ASSERT_TRUE(fetchAndCompare(provider, "", "7720767494dd87196e1896c7cbab707c",
-                              false,
-                              "supla/user@supla.org/account/shortuniqueid"));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, "", "user@supla.org", false,
+                      "supla/7720767494dd87196e1896c7cbab707c/account/email"));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -98,12 +100,13 @@ TEST_F(MqttUserMessageProviderTest, prefixSlashTest) {
 
   provider->set_data_row(&row_user);
 
-  ASSERT_TRUE(fetchAndCompare(provider, "abcd/", "Europe/Warsaw", false,
-                              "abcd//supla/user@supla.org/account/timezone"));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "abcd/", "Europe/Warsaw", false,
+      "abcd//supla/7720767494dd87196e1896c7cbab707c/account/timezone"));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, "abcd/", "7720767494dd87196e1896c7cbab707c", false,
-      "abcd//supla/user@supla.org/account/shortuniqueid"));
+      provider, "abcd/", "user@supla.org", false,
+      "abcd//supla/7720767494dd87196e1896c7cbab707c/account/email"));
 
   ASSERT_FALSE(dataExists(provider));
 }
@@ -114,13 +117,13 @@ TEST_F(MqttUserMessageProviderTest, fetchAllWithCorrectPrefix) {
 
   provider->set_data_row(&row_user);
 
-  ASSERT_TRUE(
-      fetchAndCompare(provider, "abcd/xyz", "Europe/Warsaw", false,
-                      "abcd/xyz/supla/user@supla.org/account/timezone"));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, "abcd/xyz", "Europe/Warsaw", false,
+      "abcd/xyz/supla/7720767494dd87196e1896c7cbab707c/account/timezone"));
 
   ASSERT_TRUE(fetchAndCompare(
-      provider, "abcd/xyz", "7720767494dd87196e1896c7cbab707c", false,
-      "abcd/xyz/supla/user@supla.org/account/shortuniqueid"));
+      provider, "abcd/xyz", "user@supla.org", false,
+      "abcd/xyz/supla/7720767494dd87196e1896c7cbab707c/account/email"));
 
   ASSERT_FALSE(dataExists(provider));
 }

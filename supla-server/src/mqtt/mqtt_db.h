@@ -28,13 +28,13 @@
 
 typedef struct {
   int user_id;
+  char user_suid[SHORT_UNIQUEID_MAXSIZE];
   char user_email[SUPLA_EMAIL_MAXSIZE];
   char user_timezone[SUPLA_TIMEZONE_MAXSIZE];
-  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
 } _mqtt_db_data_row_user_t;
 
 typedef struct {
-  char user_email[SUPLA_EMAIL_MAXSIZE];
+  char user_suid[SHORT_UNIQUEID_MAXSIZE];
   int device_id;
   bool device_enabled;
   char device_location[SUPLA_LOCATION_CAPTION_MAXSIZE];
@@ -48,8 +48,7 @@ typedef struct {
 
 typedef struct {
   int user_id;
-  char user_email[SUPLA_EMAIL_MAXSIZE];
-  char user_shortuniqueid[SHORT_UNIQUEID_MAXSIZE];
+  char user_suid[SHORT_UNIQUEID_MAXSIZE];
   int device_id;
   bool device_enabled;
 

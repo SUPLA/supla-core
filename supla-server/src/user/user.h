@@ -39,7 +39,6 @@ class supla_channel_ic_measurement;
 
 class supla_user {
  private:
-  char *email;
   char *short_unique_id;
   char *long_unique_id;
   void *lck;
@@ -49,6 +48,10 @@ class supla_user {
   static unsigned int client_max_metric;
   static unsigned int device_add_metric;
   static unsigned int device_max_metric;
+
+  char *getUniqueID(char **id, bool longid);
+  void user_init(int UserID, const char *short_unique_id,
+                 const char *long_unique_id);
 
  protected:
   static void *user_arr;
@@ -72,7 +75,7 @@ class supla_user {
                                           int Function, bool channel_is_hidden);
 
   static char find_user_by_id(void *ptr, void *UserID);
-  static char find_user_by_email(void *ptr, void *email);
+  static char find_user_by_suid(void *ptr, void *suid);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
@@ -88,7 +91,7 @@ class supla_user {
   static supla_user *add_device(supla_device *device, int UserID);
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
-  static supla_user *find_by_email(const char *email);
+  static supla_user *find_by_suid(const char *suid);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool device_reconnect(int UserID, int DeviceID);
@@ -152,16 +155,13 @@ class supla_user {
   void on_channels_added(int DeviceID, event_source_type eventSourceType);
   void on_device_registered(int DeviceID, event_source_type eventSourceType);
 
-  void setUniqueId(const char shortID[], const char longID[]);
-
   void moveDeviceToTrash(supla_device *device);
   void moveClientToTrash(supla_client *client);
   void emptyTrash(void);
 
   int getUserID(void);
-  const char *getUserEmail(void);
-  char *getShortUniqueID(void);
-  char *getLongUniqueID(void);
+  const char *getShortUniqueID(void);
+  const char *getLongUniqueID(void);
   bool getClientName(int ClientID, char *buffer, int size);
   bool isSuperUserAuthorized(int ClientID);
 
@@ -239,6 +239,8 @@ class supla_user {
   supla_state_webhook_credentials *stateWebhookCredentials(void);
 
   explicit supla_user(int UserID);
+  supla_user(int UserID, const char *short_unique_id,
+             const char *long_unique_id);
   virtual ~supla_user();
 };
 

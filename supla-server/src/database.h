@@ -50,8 +50,7 @@ class database : public svrdb {
 
   char *get_user_email(int UserID);
 
-  bool get_user_uniqueid(int UserID, char shortID[SHORT_UNIQUEID_MAXSIZE],
-                         char longID[LONG_UNIQUEID_MAXSIZE]);
+  bool get_user_uniqueid(int UserID, char *id, bool longid);
 
   int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
 

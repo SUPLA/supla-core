@@ -34,7 +34,8 @@ void MqttDeviceMessageProviderTest::fillDeviceData(
     _mqtt_db_data_row_device_t *row_device) {
   memset(row_device, 0, sizeof(_mqtt_db_data_row_device_t));
 
-  snprintf(row_device->user_email, SUPLA_EMAIL_MAXSIZE, "user@supla.org");
+  snprintf(row_device->user_suid, SHORT_UNIQUEID_MAXSIZE,
+           "8820767494dd87196e1896c7cbab707c");
   row_device->device_id = 555;
   row_device->device_enabled = true;
   snprintf(row_device->device_location, SUPLA_LOCATION_CAPTION_MAXSIZE,
@@ -55,33 +56,40 @@ TEST_F(MqttDeviceMessageProviderTest, fetchAll) {
   fillDeviceData(&row_device);
   provider->set_data_row(&row_device);
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
-                              "supla/user@supla.org/devices/%i/enabled",
-                              row_device.device_id));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "true", false,
+      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/enabled",
+      row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "2020-11-21T21:30:42Z", false,
-                              "supla/user@supla.org/devices/%i/last_connected",
-                              row_device.device_id));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "2020-11-21T21:30:42Z", false,
+      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/last_connected",
+      row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "179.110.192.238", false,
-                              "supla/user@supla.org/devices/%i/last_ipv4",
-                              row_device.device_id));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "179.110.192.238", false,
+      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/last_ipv4",
+      row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "AC SOFTWARE", false,
-                              "supla/user@supla.org/devices/%i/manufacturer",
-                              row_device.device_id));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "AC SOFTWARE", false,
+      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/manufacturer",
+      row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "GATE CONTROLLER", false,
-                              "supla/user@supla.org/devices/%i/name",
-                              row_device.device_id));
+  ASSERT_TRUE(
+      fetchAndCompare(provider, NULL, "GATE CONTROLLER", false,
+                      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/name",
+                      row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "12", false,
-                              "supla/user@supla.org/devices/%i/proto_ver",
-                              row_device.device_id));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "12", false,
+      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/proto_ver",
+      row_device.device_id));
 
-  ASSERT_TRUE(fetchAndCompare(provider, NULL, "2.7.23", false,
-                              "supla/user@supla.org/devices/%i/soft_ver",
-                              row_device.device_id));
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "2.7.23", false,
+      "supla/8820767494dd87196e1896c7cbab707c/devices/%i/soft_ver",
+      row_device.device_id));
 
   ASSERT_FALSE(dataExists(provider));
 }

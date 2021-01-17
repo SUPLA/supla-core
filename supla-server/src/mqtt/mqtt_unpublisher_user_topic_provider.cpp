@@ -37,24 +37,20 @@ bool supla_mqtt_unpublisher_user_topic_provider::get_message_at_index(
     switch (index) {
       case 0:
 
-        return create_message(topic_prefix, row->user_email, topic_name, NULL,
+        return create_message(topic_prefix, row->user_suid, topic_name, NULL,
                               NULL, NULL, false, "#");
         break;
       case 1:
         if (topic_name) {
-          char *node_id = homeassistant_get_node_id(row->user_email);
-          if (node_id) {
-            const char format[] = "homeassistant/+/%s/+/config";
-            size_t len = snprintf(NULL, 0, format, node_id);
-            if (len) {
-              len++;
-              *topic_name = (char *)malloc(len);
-              snprintf(*topic_name, len, format, node_id);
-            }
-
-            free(node_id);
-            return *topic_name != NULL;
+          const char format[] = "homeassistant/+/%s/+/config";
+          size_t len = snprintf(NULL, 0, format, row->user_suid);
+          if (len) {
+            len++;
+            *topic_name = (char *)malloc(len);
+            snprintf(*topic_name, len, format, row->user_suid);
           }
+
+          return *topic_name != NULL;
         }
     }
   }

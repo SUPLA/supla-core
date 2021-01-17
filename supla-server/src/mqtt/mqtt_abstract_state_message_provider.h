@@ -26,7 +26,7 @@
 class supla_mqtt_abstract_state_message_provider
     : public supla_mqtt_message_provider {
  private:
-  char *user_email;
+  char *user_suid;
   int user_id;
   int device_id;
   int channel_id;
@@ -50,7 +50,7 @@ class supla_mqtt_abstract_state_message_provider
       void) = 0;
   virtual supla_channel_ic_measurement *_get_impulse_counter_measurement(
       void) = 0;
-  virtual const char *_get_user_email(void) = 0;
+  virtual const char *_get_user_suid(void) = 0;
 
   void get_complex_value(void);
   void get_electricity_measurement(void);
@@ -148,8 +148,8 @@ class supla_mqtt_abstract_state_message_provider
   void set_channel_type_function_and_flags(int channel_type,
                                            int channel_function,
                                            int channel_flags);
-  void set_user_email(char *user_email);
-  void set_user_email(void);
+  void set_user_suid(char *user_suid);
+  void set_user_suid(void);
 };
 
 #endif /*MQTT_ABSTRACT_STATE_MESSAGE_PROVIDER_H_*/

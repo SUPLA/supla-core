@@ -93,7 +93,7 @@ void supla_mqtt_channelandstate_message_provider::set_data_row(
                                     row->channel_id);
     state_message_provider->set_channel_type_function_and_flags(
         row->channel_type, row->channel_func, row->channel_flags);
-    state_message_provider->set_user_email(row->user_email);
+    state_message_provider->set_user_suid(row->user_suid);
   } else {
     state_message_provider->set_ids(0, 0, 0);
   }

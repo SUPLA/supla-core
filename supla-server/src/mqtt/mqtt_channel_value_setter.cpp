@@ -30,7 +30,7 @@ supla_user *supla_mqtt_channel_value_setter::get_user(void) {
   if (st_app_terminate) {
     return NULL;
   }
-  return supla_user::find_by_email(get_email());
+  return supla_user::find_by_suid(get_suid());
 }
 
 supla_device *supla_mqtt_channel_value_setter::get_device(void) {

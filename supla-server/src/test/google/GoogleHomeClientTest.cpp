@@ -26,8 +26,7 @@ namespace testing {
 GoogleHomeClientTest::GoogleHomeClientTest() {}
 
 void GoogleHomeClientTest::SetUp() {
-  user = new supla_user(1001);
-  user->setUniqueId("qwerty", "zxcvbnm");
+  user = new supla_user(1001, "qwerty", "zxcvbnm");
 
   user->googleHomeCredentials()->set("ACCESS-TOKEN");
   client = new supla_google_home_client(user->googleHomeCredentials());

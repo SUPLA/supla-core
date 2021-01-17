@@ -48,18 +48,18 @@ char supla_user::find_user_by_id(void *ptr, void *UserID) {
 }
 
 // static
-char supla_user::find_user_by_email(void *ptr, void *email) {
-  const char *_email = ((supla_user *)ptr)->getUserEmail();
-  if (_email == NULL) {
+char supla_user::find_user_by_suid(void *ptr, void *suid) {
+  const char *_suid = ((supla_user *)ptr)->getShortUniqueID();
+  if (_suid == NULL) {
     return 0;
   }
 
-  return strncmp((char *)email, _email, SUPLA_EMAIL_MAXSIZE) == 0 ? 1 : 0;
+  return strncmp((char *)suid, _suid, SHORT_UNIQUEID_MAXSIZE) == 0 ? 1 : 0;
 }
 
-supla_user::supla_user(int UserID) {
+void supla_user::user_init(int UserID, const char *short_unique_id,
+                           const char *long_unique_id) {
   this->UserID = UserID;
-  this->email = NULL;
 
   this->device_container = new supla_user_device_container();
   this->client_container = new supla_user_client_container();
@@ -69,21 +69,23 @@ supla_user::supla_user(int UserID) {
   this->google_home_credentials = new supla_google_home_credentials(this);
   this->state_webhook_credentials = new supla_state_webhook_credentials(this);
   this->connections_allowed = true;
-  this->short_unique_id = NULL;
-  this->long_unique_id = NULL;
+  this->short_unique_id =
+      short_unique_id ? strndup(short_unique_id, SHORT_UNIQUEID_MAXSIZE) : NULL;
+  this->long_unique_id =
+      long_unique_id ? strndup(long_unique_id, LONG_UNIQUEID_MAXSIZE) : NULL;
   this->lck = lck_init();
   this->amazon_alexa_credentials->load();
   this->google_home_credentials->load();
   this->state_webhook_credentials->load();
 
-  getUserEmail();
-
-  if (email == NULL || email[0] == 0) {
-    supla_log(LOG_ERR, "Failed to load the email address for user ID %i.",
-              UserID);
-  }
-
   safe_array_add(supla_user::user_arr, this);
+}
+
+supla_user::supla_user(int UserID) { user_init(UserID, NULL, NULL); }  // NOLINT
+
+supla_user::supla_user(int UserID, const char *short_unique_id,
+                       const char *long_unique_id) {
+  user_init(UserID, short_unique_id, long_unique_id);
 }
 
 supla_user::~supla_user() {
@@ -97,11 +99,6 @@ supla_user::~supla_user() {
   if (long_unique_id) {
     free(long_unique_id);
     long_unique_id = NULL;
-  }
-
-  if (email) {
-    free(email);
-    email = NULL;
   }
 
   lck_free(lck);
@@ -141,95 +138,40 @@ void supla_user::user_free(void) {
 
 int supla_user::getUserID(void) { return UserID; }
 
-void supla_user::setUniqueId(const char shortID[], const char longID[]) {
-  lck_lock(lck);
-
-  if (!short_unique_id) {
-    free(short_unique_id);
-  }
-  if (!long_unique_id) {
-    free(long_unique_id);
-  }
-
-  short_unique_id = strndup(shortID, SHORT_UNIQUEID_MAXSIZE);
-  long_unique_id = strndup(longID, LONG_UNIQUEID_MAXSIZE);
-  lck_unlock(lck);
-}
-
-void supla_user::loadUniqueIDs(void) {
-  char shortID[SHORT_UNIQUEID_MAXSIZE];
-  char longID[LONG_UNIQUEID_MAXSIZE];
-
-  shortID[0] = 0;
-  longID[0] = 0;
-
-  bool loaded = false;
-  database *db = new database();
-
-  if (db->connect()) {
-    loaded = db->get_user_uniqueid(getUserID(), shortID, longID);
-  }
-
-  delete db;
-
-  if (loaded) {
-    shortID[SHORT_UNIQUEID_MAXSIZE - 1] = 0;
-    longID[LONG_UNIQUEID_MAXSIZE - 1] = 0;
-    setUniqueId(shortID, longID);
-  }
-}
-
-const char *supla_user::getUserEmail(void) {
+char *supla_user::getUniqueID(char **id, bool longid) {
   char *result = NULL;
 
   lck_lock(lck);
-  if (email == NULL) {
-    database *db = new database();
 
-    if (db->connect()) {
-      email = db->get_user_email(getUserID());
+  if (!(*id)) {
+    *id = (char *)calloc(
+        longid ? LONG_UNIQUEID_MAXSIZE : SHORT_UNIQUEID_MAXSIZE, sizeof(char));
+
+    if (*id) {
+      database *db = new database();
+
+      if (!db->connect() || !db->get_user_uniqueid(getUserID(), *id, longid)) {
+        free(*id);
+        *id = NULL;
+      }
+
+      delete db;
     }
-
-    delete db;
   }
-  result = email;
+
+  result = *id;
+
   lck_unlock(lck);
 
   return result;
 }
 
-char *supla_user::getShortUniqueID(void) {
-  char *result = NULL;
-
-  lck_lock(lck);
-
-  if (!short_unique_id) {
-    loadUniqueIDs();
-  }
-
-  if (short_unique_id) {
-    result = strdup(short_unique_id);
-  }
-  lck_unlock(lck);
-
-  return result;
+const char *supla_user::getShortUniqueID(void) {
+  return getUniqueID(&short_unique_id, false);
 }
 
-char *supla_user::getLongUniqueID(void) {
-  char *result = NULL;
-
-  lck_lock(lck);
-
-  if (!long_unique_id) {
-    loadUniqueIDs();
-  }
-
-  if (long_unique_id) {
-    result = strdup(long_unique_id);
-  }
-  lck_unlock(lck);
-
-  return result;
+const char *supla_user::getLongUniqueID(void) {
+  return getUniqueID(&long_unique_id, true);
 }
 
 // static
@@ -298,15 +240,15 @@ supla_user *supla_user::find(int UserID, bool create) {
 }
 
 // static
-supla_user *supla_user::find_by_email(const char *email) {
-  if (email == NULL || email[0] == 0) {
+supla_user *supla_user::find_by_suid(const char *suid) {
+  if (suid == NULL || suid[0] == 0) {
     return NULL;
   }
 
   safe_array_lock(supla_user::user_arr);
 
   supla_user *user = (supla_user *)safe_array_findcnd(
-      user_arr, find_user_by_email, (void *)email);
+      user_arr, find_user_by_suid, (void *)suid);
 
   safe_array_unlock(supla_user::user_arr);
 

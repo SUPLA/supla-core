@@ -26,8 +26,7 @@ namespace testing {
 StateWebhookClientTest::StateWebhookClientTest() {}
 
 void StateWebhookClientTest::SetUp() {
-  user = new supla_user(1001);
-  user->setUniqueId("dc85740d-cb27-405b-9da3-e8be5c71ae5b", "");
+  user = new supla_user(1001, "dc85740d-cb27-405b-9da3-e8be5c71ae5b", NULL);
 
   user->stateWebhookCredentials()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600,
                                        "https://localhost", "130,140");

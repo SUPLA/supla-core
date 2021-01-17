@@ -27,33 +27,15 @@ supla_mqtt_message_provider::supla_mqtt_message_provider(void) {
 
 supla_mqtt_message_provider::~supla_mqtt_message_provider(void) {}
 
-char *supla_mqtt_message_provider::homeassistant_get_node_id(
-    const char *_email) {
-  char *email = strndup(_email, SUPLA_EMAIL_MAXSIZE);
-  if (email) {
-    int email_len = strnlen(_email, SUPLA_EMAIL_MAXSIZE);
-    for (int a = 0; a < email_len; a++) {
-      char c = email[a];
-      if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') &&
-          (c < '0' || c > '9') && c != '_' && c != '-') {
-        email[a] = '_';
-      }
-    }
-    return email;
-  }
-
-  return NULL;
-}
-
 bool supla_mqtt_message_provider::create_message(
-    const char *topic_prefix, const char *email, char **topic_name_out,
+    const char *topic_prefix, const char *suid, char **topic_name_out,
     void **message, size_t *message_size, const char *message_string_in,
     bool include_null_byte, const char *topic_name_in, ...) {
-  size_t email_len = 0;
+  size_t suid_len = 0;
   size_t prefix_len = 0;
 
-  if (topic_name_in == NULL || topic_name_out == NULL || email == NULL ||
-      (email_len = strnlen(email, SUPLA_EMAIL_MAXSIZE)) == 0) {
+  if (topic_name_in == NULL || topic_name_out == NULL || suid == NULL ||
+      (suid_len = strnlen(suid, SHORT_UNIQUEID_MAXSIZE)) == 0) {
     return false;
   }
 
@@ -73,16 +55,16 @@ bool supla_mqtt_message_provider::create_message(
   if (prefix_len > 0) {
     prefix_len++;
   }
-  tn_size += prefix_len + email_len + 8;
+  tn_size += prefix_len + suid_len + 8;
 
   *topic_name_out = (char *)malloc(tn_size);
 
   if (*topic_name_out) {
     snprintf(*topic_name_out, tn_size, "%s%ssupla/%s/",
              prefix_len > 0 ? topic_prefix : "", prefix_len > 0 ? "/" : "",
-             email);
+             suid);
 
-    size_t offset = prefix_len + email_len + 7;
+    size_t offset = prefix_len + suid_len + 7;
 
     va_start(args, topic_name_in);
     vsnprintf(&(*topic_name_out)[offset], tn_size - offset, topic_name_in,

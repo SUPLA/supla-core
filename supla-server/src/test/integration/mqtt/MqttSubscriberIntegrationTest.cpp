@@ -91,25 +91,29 @@ TEST_F(MqttSubscriberIntegrationTest, deviceAndChannelId) {
   ASSERT_TRUE(getValueSetter()->channelEqualTo(0));
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/5/channels/1/set/on", "1");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/5/channels/1/set/on",
+      "1");
 
   ASSERT_TRUE(getValueSetter()->deviceEqualTo(5));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1));
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/56/channels/12/set/on", "12");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/56/channels/12/set/on",
+      "12");
 
   ASSERT_TRUE(getValueSetter()->deviceEqualTo(56));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(12));
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/143/channels/123/set/on", "123");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/143/channels/123/set/on",
+      "123");
 
   ASSERT_TRUE(getValueSetter()->deviceEqualTo(143));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(123));
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/560/channels/-1/set/on", "1");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/560/channels/-1/set/on",
+      "1");
 
   ASSERT_TRUE(getValueSetter()->deviceEqualTo(560));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(-1));
@@ -119,32 +123,19 @@ TEST_F(MqttSubscriberIntegrationTest, email) {
   waitForConnection();
   waitForData(2);
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo(NULL));
+  ASSERT_TRUE(getValueSetter()->suidEqualTo(NULL));
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1/set/on", "1");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1/set/on",
+      "1");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
 
-  getLibAdapter()->on_message_received("supla/a@b/devices/10/channels/1/set/on",
+  getLibAdapter()->on_message_received("supla/77/devices/10/channels/1/set/on",
                                        "1");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("a@b"));
-
-  getLibAdapter()->on_message_received(
-      "supla/abcd/devices/10/channels/1/set/on", "1");
-
-  ASSERT_TRUE(getValueSetter()->emailEqualTo(NULL));
-
-  getLibAdapter()->on_message_received("supla/a@b/devices/0/channels/1/set/on",
-                                       "1");
-
-  ASSERT_TRUE(getValueSetter()->emailEqualTo(NULL));
-
-  getLibAdapter()->on_message_received("supla/a@b/devices/10/channels/0/set/on",
-                                       "1");
-
-  ASSERT_TRUE(getValueSetter()->emailEqualTo(NULL));
+  ASSERT_TRUE(getValueSetter()->suidEqualTo("77"));
 }
 
 TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
@@ -154,27 +145,32 @@ TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/on", "1");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/on",
+      "1");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/9/channels/1234/set/on", "YeS");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/9/channels/1234/set/on",
+      "YeS");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 2);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/on", "tRuE");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/on",
+      "tRuE");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 3);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/100/channels/1234/set/on", "tRuE!");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/100/channels/1234/set/on",
+      "tRuE!");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 3);
@@ -190,9 +186,12 @@ TEST_F(MqttSubscriberIntegrationTest, setOnWithPrefix) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "prefix/123/supla/user@supla.org/devices/10/channels/1234/set/on", "1");
+      "prefix/123/supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/"
+      "1234/set/on",
+      "1");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
@@ -205,27 +204,33 @@ TEST_F(MqttSubscriberIntegrationTest, setOff) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/500/channels/1234/set/on", "0");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/500/channels/1234/set/on",
+      "0");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/100000/channels/1234/set/on", "nO");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/100000/channels/1234/set/"
+      "on",
+      "nO");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 2);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/on", "FaLsE");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/on",
+      "FaLsE");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 3);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/on", "F!LsE");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/on",
+      "F!LsE");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 3);
@@ -238,10 +243,12 @@ TEST_F(MqttSubscriberIntegrationTest, turnOn) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
       "TuRn_On");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOnCounter(), 1);
@@ -254,10 +261,12 @@ TEST_F(MqttSubscriberIntegrationTest, turnOff) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action",
+      "supla/7720767494dd87196e1896c7cbab707D/devices/10/channels/1234/"
+      "execute_action",
       "TuRn_OfF");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707D"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOffCounter(), 1);
@@ -270,9 +279,9 @@ TEST_F(MqttSubscriberIntegrationTest, toggle) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action", "tOgGle");
+      "supla/7720/devices/10/channels/1234/execute_action", "tOgGle");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(getValueSetter()->suidEqualTo("7720"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getToggleCounter(), 1);
@@ -285,9 +294,12 @@ TEST_F(MqttSubscriberIntegrationTest, shut) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action", "sHuT");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "sHuT");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
@@ -300,9 +312,12 @@ TEST_F(MqttSubscriberIntegrationTest, reveal) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action", "rEvEal");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "rEvEal");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getRevealCounter(), 1);
@@ -315,9 +330,12 @@ TEST_F(MqttSubscriberIntegrationTest, stop) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action", "StOp");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "StOp");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getStopCounter(), 1);
@@ -330,9 +348,12 @@ TEST_F(MqttSubscriberIntegrationTest, open) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action", "oPeN");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "oPeN");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOpenCounter(), 1);
@@ -345,10 +366,12 @@ TEST_F(MqttSubscriberIntegrationTest, openClose) {
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/execute_action",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
       "oPeN_cLoSe");
 
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getOpenCloseCounter(), 1);
@@ -362,11 +385,13 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/closing_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "closing_percentage",
       "34.56");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), 34);
@@ -374,13 +399,15 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   getValueSetter()->clear();
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/closing_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "closing_percentage",
       "-10");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/closing_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "closing_percentage",
       "0");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
@@ -388,7 +415,8 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/closing_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "closing_percentage",
       "33");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
@@ -396,7 +424,8 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), 33);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/closing_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "closing_percentage",
       "100");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
@@ -406,7 +435,8 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   getValueSetter()->clear();
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/closing_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "closing_percentage",
       "110");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
@@ -422,11 +452,13 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/opening_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "opening_percentage",
       "45.6789");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), 55);
@@ -434,13 +466,15 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   getValueSetter()->clear();
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/opening_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "opening_percentage",
       "-10");
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/opening_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "opening_percentage",
       "0");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 1);
@@ -448,7 +482,8 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), 100);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/opening_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "opening_percentage",
       "33");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 2);
@@ -456,7 +491,8 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), 67);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/opening_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "opening_percentage",
       "100");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 3);
@@ -466,7 +502,8 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   getValueSetter()->clear();
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/opening_percentage",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "opening_percentage",
       "110");
 
   ASSERT_EQ(getValueSetter()->getShutCounter(), 0);
@@ -482,41 +519,55 @@ TEST_F(MqttSubscriberIntegrationTest, setBrightness) {
   ASSERT_EQ(getValueSetter()->getBrightness(), -1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "brightness",
       "33.33abcd");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/brightness", "-1");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "brightness",
+      "-1");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/brightness", "110");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "brightness",
+      "110");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/brightness", "12.34");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "brightness",
+      "12.34");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getBrightnessCounter(), 1);
   ASSERT_EQ(getValueSetter()->getBrightness(), 12);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/brightness", "0");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "brightness",
+      "0");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getBrightnessCounter(), 2);
   ASSERT_EQ(getValueSetter()->getBrightness(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/brightness", "100");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "brightness",
+      "100");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getBrightnessCounter(), 3);
   ASSERT_EQ(getValueSetter()->getBrightness(), 100);
@@ -530,46 +581,55 @@ TEST_F(MqttSubscriberIntegrationTest, setColorBrightness) {
   ASSERT_EQ(getValueSetter()->getColorBrightness(), -1);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color_brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color_brightness",
       "33,33");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color_brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color_brightness",
       "-1");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color_brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color_brightness",
       "101");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color_brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color_brightness",
       "12.34");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorBrightnessCounter(), 1);
   ASSERT_EQ(getValueSetter()->getColorBrightness(), 12);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color_brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color_brightness",
       "0");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorBrightnessCounter(), 2);
   ASSERT_EQ(getValueSetter()->getColorBrightness(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color_brightness",
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color_brightness",
       "100");
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
-  ASSERT_TRUE(getValueSetter()->emailEqualTo("user@supla.org"));
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorBrightnessCounter(), 3);
   ASSERT_EQ(getValueSetter()->getColorBrightness(), 100);
@@ -583,83 +643,113 @@ TEST_F(MqttSubscriberIntegrationTest, setColor) {
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0x01FFFFFF);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0xFF00FFa");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0xFF00FFa");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "#FF00FFa");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "#FF00FFa");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0xFF00FG");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0xFF00FG");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "#FF00FG");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "#FF00FG");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "#FFFFFF");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "#FFFFFF");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 1);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xFFFFFF);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "#000000");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "#000000");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 2);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "#AABBCC");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "#AABBCC");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 3);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAABBCC);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0xFFFFFF");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0xFFFFFF");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 4);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xFFFFFF);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0x000000");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0x000000");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 5);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0xAABBCC");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0xAABBCC");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 6);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAABBCC);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0xAA05CC");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0xAA05CC");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 7);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAA05CC);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "255,255,255");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "255,255,255");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 8);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xFFFFFF);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "0,0,0");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "0,0,0");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 9);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0x000000);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "170,187,204");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "170,187,204");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 10);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAABBCC);
 
   getLibAdapter()->on_message_received(
-      "supla/user@supla.org/devices/10/channels/1234/set/color", "170,5,204");
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/set/"
+      "color",
+      "170,5,204");
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getColorCounter(), 11);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0xAA05CC);

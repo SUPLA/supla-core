@@ -32,14 +32,14 @@ supla_mqtt_abstract_channel_value_setter::
   this->message_size = 0;
   this->device_id = 0;
   this->channel_id = 0;
-  this->email_ptr = NULL;
-  this->email_len = 0;
-  this->email = NULL;
+  this->suid_ptr = NULL;
+  this->suid_len = 0;
+  this->suid = NULL;
 }
 
 supla_mqtt_abstract_channel_value_setter::
     ~supla_mqtt_abstract_channel_value_setter(void) {
-  email_free();
+  suid_free();
 }
 
 bool supla_mqtt_abstract_channel_value_setter::lc_equal(const char *str) {
@@ -285,21 +285,21 @@ unsigned int supla_mqtt_abstract_channel_value_setter::hex2int(const char *str,
   return result;
 }
 
-void supla_mqtt_abstract_channel_value_setter::email_free(void) {
-  if (email) {
-    free(email);
-    email = NULL;
+void supla_mqtt_abstract_channel_value_setter::suid_free(void) {
+  if (suid) {
+    free(suid);
+    suid = NULL;
   }
 }
 
-const char *supla_mqtt_abstract_channel_value_setter::get_email(void) {
-  if (email == NULL && email_len && email_ptr) {
-    email = (char *)malloc(email_len + 1);
-    memcpy(email, email_ptr, email_len);
-    email[email_len] = 0;
+const char *supla_mqtt_abstract_channel_value_setter::get_suid(void) {
+  if (suid == NULL && suid_len && suid_ptr) {
+    suid = (char *)malloc(suid_len + 1);
+    memcpy(suid, suid_ptr, suid_len);
+    suid[suid_len] = 0;
   }
 
-  return email;
+  return suid;
 }
 
 int supla_mqtt_abstract_channel_value_setter::get_device_id(void) {
@@ -355,7 +355,7 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
                                                          size_t topic_name_size,
                                                          char *message,
                                                          size_t message_size) {
-  email_free();
+  suid_free();
 
   if (topic_name == NULL || topic_name_size == 0 || message == NULL ||
       message_size == 0) {
@@ -392,28 +392,21 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
   topic_name += 6;
   topic_name_size -= 6;
 
-  email_len = 0;
-  email_ptr = NULL;
+  suid_len = 0;
+  suid_ptr = NULL;
 
-  bool at = false;
   size_t a = 0;
 
   for (a = 0; a < topic_name_size; a++) {
-    if (!at && topic_name[a] == '@') {
-      at = true;
-    } else if (topic_name[a] == '/') {
-      if (at) {
-        email_len = a;
-        email_ptr = (char *)topic_name;
-        break;
-      } else {
-        return;
-      }
+    if (topic_name[a] == '/') {
+      suid_len = a;
+      suid_ptr = (char *)topic_name;
+      break;
     }
   }
 
-  topic_name += email_len + 1;
-  topic_name_size -= email_len + 1;
+  topic_name += suid_len + 1;
+  topic_name_size -= suid_len + 1;
 
   device_id = 0;
   channel_id = 0;
@@ -424,8 +417,8 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
       parse_int_with_prefix("devices/", 8, &topic_name, &topic_name_size, &err);
 
   if (err || device_id == 0) {
-    email_len = 0;
-    email_ptr = NULL;
+    suid_len = 0;
+    suid_ptr = NULL;
     return;
   }
 
@@ -433,8 +426,8 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
                                      &topic_name_size, &err);
 
   if (err || channel_id == 0) {
-    email_len = 0;
-    email_ptr = NULL;
+    suid_len = 0;
+    suid_ptr = NULL;
     return;
   }
 
@@ -463,5 +456,5 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
     return;
   }
 
-  email_free();
+  suid_free();
 }
