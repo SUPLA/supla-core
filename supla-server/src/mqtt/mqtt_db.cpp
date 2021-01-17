@@ -109,7 +109,8 @@ void supla_mqtt_db::close_query(void *_query) {
 
 bool supla_mqtt_db::mqtt_enabled(int UserID) {
   const char sql[] =
-      "SELECT id FROM `supla_user` WHERE id = ? AND mqtt_broker_enabled = 1";
+      "SELECT id FROM `supla_user` WHERE id = ? AND mqtt_broker_enabled = 1 "
+      "AND email NOT LIKE '%#%' AND email NOT LIKE '%+%'";
   return get_int(UserID, 0, sql) > 0;
 }
 
@@ -124,7 +125,8 @@ void *supla_mqtt_db::open_mqttenabledquery(void) {
   memset(query, 0, sizeof(_mqtt_db_mqttenabledquery_t));
 
   const char sql[] =
-      "SELECT `id` FROM `supla_user` WHERE `mqtt_broker_enabled` = 1";
+      "SELECT `id` FROM `supla_user` WHERE `mqtt_broker_enabled` = 1 AND email "
+      "NOT LIKE '%#%' AND email NOT LIKE '%+%'";
 
   if (stmt_execute((void **)&query->stmt, sql, NULL, 0, true)) {
     MYSQL_BIND rbind;
@@ -177,8 +179,9 @@ void *supla_mqtt_db::open_userquery(int UserID, bool OnlyEnabled,
 
   const char sql[] =
       "SELECT u.`id`, u.`email`, u.`timezone`, u.`short_unique_id` FROM "
-      "`supla_user` u WHERE (? = 0 OR u.`mqtt_broker_enabled` = 1) AND (? = 0 "
-      "OR u.`id` = ?) ORDER BY u.`id`";
+      "`supla_user` u WHERE (? = 0 OR u.`mqtt_broker_enabled` = 1) AND email "
+      "NOT LIKE '%#%' AND email NOT LIKE '%+%' AND (? = 0 OR u.`id` = ?) ORDER "
+      "BY u.`id`";
 
   MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
@@ -274,8 +277,9 @@ void *supla_mqtt_db::open_devicequery(int UserID, int DeviceID,
       "INET_NTOA(d.`last_ipv4`), d.`manufacturer_id`, d.`name`, "
       "d.`protocol_version`, d.`software_version` FROM `supla_iodevice` d LEFT "
       "JOIN `supla_user` u ON u.id = d.`user_id` LEFT JOIN `supla_location` l "
-      "ON l.id = d.`location_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = "
-      "0 OR u.`id` = ?) AND (? = 0 OR d.`id` = ?) ORDER BY u.`id`, d.`id`";
+      "ON l.id = d.`location_id` WHERE u.`mqtt_broker_enabled` = 1 AND email "
+      "NOT LIKE '%#%' AND email NOT LIKE '%+%' AND (? = 0 OR u.`id` = ?) AND "
+      "(? = 0 OR d.`id` = ?) ORDER BY u.`id`, d.`id`";
 
   MYSQL_BIND pbind[4];
   memset(pbind, 0, sizeof(pbind));
@@ -418,9 +422,10 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
       "`supla_iodevice` d ON d.`id` = c.`iodevice_id` LEFT JOIN "
       "`supla_location` l ON l.`id` = c.`location_id` LEFT JOIN "
       "`supla_location` dl ON dl.`id` = d.`location_id` LEFT JOIN `supla_user` "
-      "u ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 OR "
-      "u.`id` = ?) AND (? = 0 OR d.`id` = ?) AND (? = 0 OR c.`id` = ?) ORDER "
-      "BY u.`id`, d.`id`, c.`id`";
+      "u ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = 1 AND email NOT "
+      "LIKE '%#%' AND email NOT LIKE '%+%' AND (? = 0 OR u.`id` = ?) AND (? = "
+      "0 OR d.`id` = ?) AND (? = 0 OR c.`id` = ?) ORDER BY u.`id`, d.`id`, "
+      "c.`id`";
 
   MYSQL_BIND pbind[9];
   memset(pbind, 0, sizeof(pbind));
