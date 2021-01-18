@@ -110,6 +110,7 @@ class supla_device : public cdbase {
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
   void get_channel_functions_request(void *srpc);
+  void get_channel_int_params_request(TDS_GetChannelIntParamsRequest *request);
   bool is_channel_online(int ChannelID);
 };
 

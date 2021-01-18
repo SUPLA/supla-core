@@ -739,3 +739,8 @@ void supla_device::set_channel_function(int ChannelId, int Func) {
 void supla_device::get_channel_functions_request(void *srpc) {
   channels->get_functions_request(srpc);
 }
+
+void supla_device::get_channel_int_params_request(
+    TDS_GetChannelIntParamsRequest *request) {
+  channels->get_int_params_request(getSvrConn()->srpc(), request);
+}

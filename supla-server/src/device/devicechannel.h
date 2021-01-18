@@ -194,6 +194,8 @@ class supla_device_channel {
   void setFunc(int Func);
   int getType(void);
   int getParam1(void);
+  int getParam2(void);
+  int getParam3(void);
   bool getHidden(void);
   unsigned int getFlags();
   bool isOffline(void);
@@ -332,6 +334,8 @@ class supla_device_channels {
                                  int ChannelID);
   void set_channel_function(int ChannelId, int Func);
   void get_functions_request(void *srpc);
+  void get_int_params_request(void *srpc,
+                              TDS_GetChannelIntParamsRequest *request);
 
   bool set_on(void *srpc, int SenderID, int ChannelID, int GroupID,
               unsigned char EOL, bool on);

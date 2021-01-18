@@ -702,6 +702,11 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           device->get_channel_functions_request(_srpc);
           break;
 
+        case SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS:
+          device->get_channel_int_params_request(
+              rd.data.ds_get_channel_int_params_request);
+          break;
+
         default:
           catch_incorrect_call(call_type);
       }
