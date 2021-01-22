@@ -532,7 +532,7 @@ void supla_device_channel::getDefaults(int Type, int Func, int *Param1,
 
   if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
     *Param1 = 7;
-    *Param2 = 1;  // 1:00
+    *Param2 = 60;  // 1:00
   }
 }
 
