@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1364,6 +1365,28 @@ bool supla_device_channels::get_channel_valve_value(int ChannelID,
   return result;
 }
 
+bool supla_device_channels::get_dgf_transparency(int ChannelID,
+                                                 unsigned short *mask) {
+  bool result = false;
+
+  if (mask && ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel &&
+        (channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL ||
+         channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL)) {
+      char value[SUPLA_CHANNELVALUE_SIZE];
+      channel->getValue(value);
+      *mask = ((TDigiglass_Value *)value)->mask;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
 bool supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
     bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
@@ -2165,6 +2188,33 @@ bool supla_device_channels::set_brightness(void *srpc, int SenderID,
                                            unsigned char EOL, char brightness) {
   return set_rgbw(srpc, SenderID, ChannelID, GroupID, EOL, NULL, NULL,
                   &brightness, NULL);
+}
+
+bool supla_device_channels::set_dgf_transparency(void *srpc, int SenderID,
+                                                 int ChannelID,
+                                                 unsigned short activeBits,
+                                                 unsigned short mask) {
+  safe_array_lock(arr);
+
+  bool result = false;
+  supla_device_channel *channel = find_channel(ChannelID);
+  if (channel && (channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL ||
+                  channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL)) {
+    unsigned short scope = (unsigned short)(pow(2, channel->getParam1()) - 1);
+    activeBits &= scope;
+    mask &= scope;
+
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+    TCSD_Digiglass_NewValue *new_value = (TCSD_Digiglass_NewValue *)value;
+    new_value->active_bits = activeBits;
+    new_value->mask = mask;
+    async_set_channel_value(srpc, channel, SenderID, 0, 0, value);
+  }
+
+  safe_array_unlock(arr);
+  return result;
 }
 
 bool supla_device_channels::action_toggle(void *srpc, int SenderID,

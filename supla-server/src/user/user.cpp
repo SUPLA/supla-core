@@ -389,6 +389,16 @@ bool supla_user::is_channel_online(int UserID, int DeviceID, int ChannelID) {
   return result;
 }
 
+// static
+supla_device *supla_user::get_device(int UserID, int DeviceID) {
+  supla_user *user = find(UserID, false);
+  if (user) {
+    return user->get_device(DeviceID);
+  }
+
+  return NULL;
+}
+
 supla_device *supla_user::get_device(int DeviceID) {
   return device_container->findByID(DeviceID);
 }

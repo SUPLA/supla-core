@@ -68,6 +68,8 @@ class supla_device : public cdbase {
                       unsigned char EOL, unsigned int brightness);
   bool set_color_brightness(int SenderID, int ChannelID, int GroupID,
                             unsigned char EOL, unsigned int brightness);
+  bool set_dgf_transparency(int SenderID, int ChannelID,
+                            unsigned short activeBits, unsigned short mask);
   bool action_toggle(int SenderID, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_shut(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
@@ -101,6 +103,7 @@ class supla_device : public cdbase {
   bool get_channel_rgbw_value(int ChannelID, int *color, char *color_brightness,
                               char *brightness, char *on_off);
   bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
+  bool get_dgf_transparency(int ChannelID, unsigned short *mask);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
   bool calcfg_request(int SenderID, int ChannelID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);

@@ -306,6 +306,7 @@ class supla_device_channels {
                                      char color_brightness, char brightness,
                                      char on_off);
   bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
+  bool get_dgf_transparency(int ChannelID, unsigned short *mask);
 
   std::list<int> master_channel(int ChannelID);
   std::list<int> related_channel(int ChannelID);
@@ -348,6 +349,8 @@ class supla_device_channels {
                             int GroupID, unsigned char EOL, char brightness);
   bool set_brightness(void *srpc, int SenderID, int ChannelID, int GroupID,
                       unsigned char EOL, char brightness);
+  bool set_dgf_transparency(void *srpc, int SenderID, int ChannelID,
+                            unsigned short activeBits, unsigned short mask);
   bool action_toggle(void *srpc, int SenderID, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_shut(void *srpc, int SenderID, int ChannelID, int GroupID,

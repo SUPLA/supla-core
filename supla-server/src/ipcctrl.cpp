@@ -56,6 +56,9 @@ const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
 const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
+const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
+const char cmd_get_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
+
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
 
@@ -328,6 +331,34 @@ void svr_ipcctrl::get_valve_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
+void svr_ipcctrl::get_digiglass_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool result = false;
+    unsigned short Mask = 0;
+
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+    if (device) {
+      result = device->get_dgf_transparency(ChannelID, &Mask);
+      device->releasePtr();
+    }
+
+    if (result) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i", Mask);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
 void svr_ipcctrl::free_correlation_token() {
   if (AlexaCorrelationToken) {
     free(AlexaCorrelationToken);
@@ -493,6 +524,36 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   }
 
   send_result("UNKNOWN:", CGID);
+}
+
+void svr_ipcctrl::set_digiglass_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  int ActiveBits = 0;
+  int Mask = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
+         &DeviceID, &ChannelID, &ActiveBits, &Mask);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool result = false;
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+    if (device) {
+      result = device->set_dgf_transparency(0, ChannelID, ActiveBits & 0xFFFF,
+                                            Mask & 0xFFFF);
+      device->releasePtr();
+    }
+
+    if (result) {
+      send_result("OK:", ChannelID);
+    } else {
+      send_result("FAIL:", ChannelID);
+    }
+    return;
+  }
+
+  send_result("UNKNOWN:", ChannelID);
 }
 
 void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
@@ -711,6 +772,9 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_get_valve_value, len)) {
           get_valve_value(cmd_get_valve_value);
 
+        } else if (match_command(cmd_get_digiglass_value, len)) {
+          get_digiglass_value(cmd_get_digiglass_value);
+
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);
 
@@ -757,6 +821,8 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_user_on_device_settings_changed, len)) {
           on_device_settings_changed(cmd_user_on_device_settings_changed);
 
+        } else if (match_command(cmd_set_digiglass_value, len)) {
+          set_digiglass_value(cmd_set_digiglass_value);
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
           send_result("COMMAND_UNKNOWN");

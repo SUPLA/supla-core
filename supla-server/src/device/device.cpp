@@ -563,6 +563,13 @@ bool supla_device::set_color_brightness(int SenderID, int ChannelID,
                                         ChannelID, GroupID, EOL, brightness);
 }
 
+bool supla_device::set_dgf_transparency(int SenderID, int ChannelID,
+                                        unsigned short activeBits,
+                                        unsigned short mask) {
+  return channels->set_dgf_transparency(getSvrConn()->srpc(), SenderID,
+                                        ChannelID, activeBits, mask);
+}
+
 bool supla_device::action_toggle(int SenderID, int ChannelID, int GroupID,
                                  unsigned char EOL) {
   return channels->action_toggle(getSvrConn()->srpc(), SenderID, ChannelID,
@@ -662,6 +669,10 @@ bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
 
 bool supla_device::get_channel_valve_value(int ChannelID, TValve_Value *Value) {
   return channels->get_channel_valve_value(ChannelID, Value);
+}
+
+bool supla_device::get_dgf_transparency(int ChannelID, unsigned short *mask) {
+  return channels->get_dgf_transparency(ChannelID, mask);
 }
 
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
