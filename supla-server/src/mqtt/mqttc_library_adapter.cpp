@@ -166,7 +166,11 @@ void supla_mqttc_library_adapter::iterate(void) {
     mqtt_mq_clean(&client.mq);
   }
 
-  eh_wait(eh, 1000000);
+  if (eh == NULL) {
+    usleep(500000);
+  } else {
+    eh_wait(eh, 1000000);
+  }
 }
 
 void supla_mqttc_library_adapter::disconnect(void) {
