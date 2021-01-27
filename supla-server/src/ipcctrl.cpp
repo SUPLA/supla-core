@@ -57,7 +57,7 @@ const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
 const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
 const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
-const char cmd_get_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
+const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE:";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
