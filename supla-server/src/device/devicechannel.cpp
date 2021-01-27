@@ -2212,6 +2212,7 @@ bool supla_device_channels::set_dgf_transparency(void *srpc, int SenderID,
     new_value->active_bits = activeBits;
     new_value->mask = mask;
     async_set_channel_value(srpc, channel, SenderID, 0, 0, value);
+    result = true;
   }
 
   safe_array_unlock(arr);
