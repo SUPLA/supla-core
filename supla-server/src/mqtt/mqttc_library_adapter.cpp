@@ -442,7 +442,8 @@ ssize_t supla_mqttc_library_adapter::mqtt_pal_recvall(char *buf, size_t bufsz,
         /* successfully read bytes from the socket */
         buf += rv;
         bufsz -= rv;
-      } else if (rv < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+      } else if (rv == 0 ||
+                 (rv < 0 && errno != EAGAIN && errno != EWOULDBLOCK)) {
         /* an error occurred that wasn't "nothing to read". */
         return MQTT_ERROR_SOCKET_ERROR;
       }
