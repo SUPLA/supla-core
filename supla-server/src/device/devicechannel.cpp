@@ -1379,6 +1379,7 @@ bool supla_device_channels::get_dgf_transparency(int ChannelID,
       char value[SUPLA_CHANNELVALUE_SIZE];
       channel->getValue(value);
       *mask = ((TDigiglass_Value *)value)->mask;
+      return = true;
     }
 
     safe_array_unlock(arr);
