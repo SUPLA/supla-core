@@ -72,7 +72,8 @@ TEST_F(ActionTest, parsePercentage) {
 
     p = 0;
     worker->set_action_param("{\"perCentaGe\":80}");
-    EXPECT_FALSE(action->parse_percentage(&p));
+    EXPECT_TRUE(action->parse_percentage(&p));
+    EXPECT_EQ(p, 80);
 
     worker->set_action_param("{\"percentage\":110}");
     EXPECT_FALSE(action->parse_percentage(&p));

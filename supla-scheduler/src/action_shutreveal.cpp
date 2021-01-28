@@ -19,6 +19,7 @@
 #include "action_shutreveal.h"
 #include <stdlib.h>
 #include <string.h>
+#include "json/cJSON.h"
 #include "log.h"
 
 s_worker_action_shutreveal::s_worker_action_shutreveal(
@@ -50,34 +51,25 @@ int s_worker_action_shutreveal::waiting_time_to_retry(void) { return 120; }
 int s_worker_action_shutreveal::waiting_time_to_check(void) { return 90; }
 
 bool s_worker_action_shutreveal::parse_percentage(char *percent) {
-  jsmn_parser p;
-  jsmntok_t t[10];
-  int a;
-  int value = 0;
-
   if (worker->get_action_param() == NULL || percent == NULL) {
     return false;
   }
 
-  jsmn_init(&p);
-  int r = jsmn_parse(&p, worker->get_action_param(),
-                     strnlen(worker->get_action_param(), 255), t,
-                     sizeof(t) / sizeof(t[0]));
+  bool result = false;
 
-  if (r < 1 || t[0].type != JSMN_OBJECT) {
-    return false;
-  }
+  cJSON *root = cJSON_Parse(worker->get_action_param());
+  if (root) {
+    cJSON *item = cJSON_GetObjectItem(root, "percentage");
 
-  for (a = 1; a < r - 1; a++) {
-    if (jsoneq(worker->get_action_param(), &t[a], "percentage") == 0) {
-      if (json_get_int(&t[a + 1], &value) && value >= 0 && value <= 100) {
-        *percent = value;
-        return true;
-      }
+    if (item && cJSON_IsNumber(item) && item->valuedouble >= 0 &&
+        item->valuedouble <= 100) {
+      *percent = item->valuedouble;
+      result = true;
     }
+    cJSON_free(root);
   }
 
-  return false;
+  return result;
 }
 
 bool s_worker_action_shutreveal::result_success(int *fail_result_code) {

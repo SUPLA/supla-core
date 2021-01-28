@@ -121,33 +121,6 @@ int s_worker_action::get_max_time(void) {
   return try_limit() * waiting_time_to_retry();
 }
 
-int s_worker_action::jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-  if (tok->type == JSMN_STRING &&
-      (int)strnlen(s, 255) == tok->end - tok->start &&
-      strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
-    return 0;
-  }
-  return -1;
-}
-
-char s_worker_action::json_get_int(jsmntok_t *token, int *value) {
-  char buffer[12];
-  memset(buffer, 0, sizeof(buffer));
-
-  if (value == NULL || token->type != JSMN_PRIMITIVE ||
-      (unsigned int)(token->end - token->start) >= sizeof(buffer) ||
-      token->end <= token->start)
-    return 0;
-
-  const char *action_param = worker->get_action_param();
-
-  memcpy(buffer, &action_param[token->start], token->end - token->start);
-
-  *value = atoi(buffer);
-
-  return 1;
-}
-
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------

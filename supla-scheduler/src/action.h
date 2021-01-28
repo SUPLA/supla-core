@@ -22,7 +22,6 @@
 #include <list>
 #include <string>
 #include "abstract_worker.h"
-#include "jsmn.h"
 #include "proto.h"
 
 #define FUNCTION_LIST_SIZE 10
@@ -50,8 +49,6 @@ class s_worker_action {
   void execute(void);
 
   int get_max_time(void);
-  int jsoneq(const char *json, jsmntok_t *tok, const char *s);
-  char json_get_int(jsmntok_t *token, int *value);
 };
 
 class AbstractActionFactory {
