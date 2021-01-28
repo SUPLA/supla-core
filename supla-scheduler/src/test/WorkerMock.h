@@ -16,26 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_RGB_H_
-#define ACTION_RGB_H_
+#ifndef WORKERMOCK_TEST_H_
+#define WORKERMOCK_TEST_H_
 
-#include "action.h"
+#include "abstract_worker.h"
 
-class s_worker_action_rgb : public s_worker_action {
+class WorkerMock : public s_abstract_worker {
  private:
-  char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
-                         bool *random);
-
- protected:
-  void get_function_list(int list[FUNCTION_LIST_SIZE]);
-  int try_limit(void);
-  int waiting_time_to_retry(void);
-  int waiting_time_to_check(void);
-  bool result_success(int *fail_result_code);
-  bool do_action();
+  char *action_param;
 
  public:
-  explicit s_worker_action_rgb(s_abstract_worker *worker);
+  explicit WorkerMock(queue *q);
+  virtual ~WorkerMock();
+  virtual const char *get_action_param(void);
 };
 
-#endif /*ACTION_RGB_*/
+#endif /*WORKERMOCK_TEST_H_*/

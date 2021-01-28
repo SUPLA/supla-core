@@ -16,6 +16,7 @@ C_SRCS += \
 ../src/tools.c 
 
 CPP_SRCS += \
+../src/abstract_worker.cpp \
 ../src/action.cpp \
 ../src/action_openclose.cpp \
 ../src/action_rgb.cpp \
@@ -29,6 +30,7 @@ CPP_SRCS += \
 ../src/worker.cpp 
 
 OBJS += \
+./src/abstract_worker.o \
 ./src/action.o \
 ./src/action_openclose.o \
 ./src/action_rgb.o \
@@ -64,6 +66,7 @@ C_DEPS += \
 ./src/tools.d 
 
 CPP_DEPS += \
+./src/abstract_worker.d \
 ./src/action.d \
 ./src/action_openclose.d \
 ./src/action_rgb.d \

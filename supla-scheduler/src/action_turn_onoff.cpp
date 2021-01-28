@@ -18,16 +18,16 @@
 
 #include "action_turn_onoff.h"
 
-s_worker_action_turn_onoff::s_worker_action_turn_onoff(s_worker *worker,
-                                                       bool setOn)
+s_worker_action_turn_onoff::s_worker_action_turn_onoff(
+    s_abstract_worker *worker, bool setOn)
     : s_worker_action(worker) {
   this->setOn = setOn;
 }
 
-s_worker_action_turn_on::s_worker_action_turn_on(s_worker *worker)
+s_worker_action_turn_on::s_worker_action_turn_on(s_abstract_worker *worker)
     : s_worker_action_turn_onoff(worker, true) {}
 
-s_worker_action_turn_off::s_worker_action_turn_off(s_worker *worker)
+s_worker_action_turn_off::s_worker_action_turn_off(s_abstract_worker *worker)
     : s_worker_action_turn_onoff(worker, false) {}
 
 void s_worker_action_turn_onoff::get_function_list(

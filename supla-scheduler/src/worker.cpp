@@ -30,57 +30,23 @@
 #include "tools.h"
 #include "worker.h"
 
-s_worker::s_worker(queue *q) {
-  db = new database();
-  ipcc = new ipc_client();
-  this->q = q;
+s_worker::s_worker(queue *q) : s_abstract_worker(q) {}
+
+s_worker::~s_worker(void) {}
+
+int s_worker::get_channel_func(void) { return get_exec()->channel_func; }
+
+int s_worker::get_id(void) { return get_exec()->id; }
+
+bool s_worker::channel_group(void) { return get_exec()->channel_group_id > 0; }
+
+int s_worker::get_retry_count(void) { return get_exec()->retry_count; }
+
+const char *s_worker::get_action_param(void) {
+  return get_exec()->action_param;
 }
 
-s_worker::~s_worker(void) {
-  delete db;
-  delete ipcc;
-}
-
-void s_worker::execute(void *sthread) {
-  if (!db->connect()) return;
-
-  s_exec = q->get_job();
-
-  while (s_exec.id && !sthread_isterminated(sthread)) {
-    if (db->set_fetched(s_exec.id)) q->mark_fetched();
-
-    s_worker_action *action =
-        AbstractActionFactory::createByActionType(s_exec.action, this);
-
-    if (action) {
-      action->execute();
-      delete action;
-    } else {
-      db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_CANCELLED);
-      supla_log(LOG_ERR, "Action %i is not supported!", s_exec.action);
-    }
-
-    if (s_exec.action_param != NULL) free(s_exec.action_param);
-
-    s_exec = q->get_job();
-  }
-
-  q->raise_loop_event();
-}
-
-database *s_worker::get_db(void) { return this->db; }
-
-int s_worker::get_channel_func(void) { return s_exec.channel_func; }
-
-int s_worker::get_id(void) { return s_exec.id; }
-
-bool s_worker::channel_group(void) { return s_exec.channel_group_id > 0; }
-
-int s_worker::get_retry_count(void) { return s_exec.retry_count; }
-
-const char *s_worker::get_action_param(void) { return s_exec.action_param; }
-
-bool s_worker::retry_when_fail(void) { return s_exec.retry_when_fail; }
+bool s_worker::retry_when_fail(void) { return get_exec()->retry_when_fail; }
 
 char s_worker::ipcc_get_opening_sensor_value() {
   char value = -1;
@@ -88,20 +54,22 @@ char s_worker::ipcc_get_opening_sensor_value() {
   supla_channel sensor_channel;
   memset(&sensor_channel, 0, sizeof(supla_channel));
 
-  sensor_channel.id = s_exec.channel_param2;
+  sensor_channel.id = get_exec()->channel_param2;
 
-  if (sensor_channel.id != 0 && db->get_channel(&sensor_channel) &&
-      sensor_channel.param1 == s_exec.channel_id &&
+  if (sensor_channel.id != 0 && get_db()->get_channel(&sensor_channel) &&
+      sensor_channel.param1 == get_exec()->channel_id &&
       (sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNO ||
        sensor_channel.type == SUPLA_CHANNELTYPE_SENSORNC) &&
-      ipcc->is_connected(s_exec.user_id, sensor_channel.iodevice_id) ==
+      get_ipcc()->is_connected(get_exec()->user_id,
+                               sensor_channel.iodevice_id) ==
           IPC_RESULT_CONNECTED) {
-    if (!ipcc->get_char_value(s_exec.user_id, sensor_channel.iodevice_id,
-                              sensor_channel.id, &value)) {
+    if (!get_ipcc()->get_char_value(get_exec()->user_id,
+                                    sensor_channel.iodevice_id,
+                                    sensor_channel.id, &value)) {
       value = -1;
     } else {
       value = !!value;
-      if (s_exec.channel_param3 == 1) {
+      if (get_exec()->channel_param3 == 1) {
         value = !value;
       }
     }
@@ -111,35 +79,37 @@ char s_worker::ipcc_get_opening_sensor_value() {
 }
 
 bool s_worker::ipcc_set_char_value(char value) {
-  return ipcc->set_char_value(s_exec.user_id, s_exec.iodevice_id,
-                              s_exec.channel_id, s_exec.channel_group_id,
-                              value);
+  return get_ipcc()->set_char_value(
+      get_exec()->user_id, get_exec()->iodevice_id, get_exec()->channel_id,
+      get_exec()->channel_group_id, value);
 }
 
 bool s_worker::ipcc_get_char_value(char *value) {
-  return ipcc->get_char_value(s_exec.user_id, s_exec.iodevice_id,
-                              s_exec.channel_id, value);
+  return get_ipcc()->get_char_value(get_exec()->user_id,
+                                    get_exec()->iodevice_id,
+                                    get_exec()->channel_id, value);
 }
 
 bool s_worker::ipcc_get_rgbw_value(int *color, char *color_brightness,
                                    char *brightness) {
-  return ipcc->get_rgbw_value(s_exec.user_id, s_exec.iodevice_id,
-                              s_exec.channel_id, color, color_brightness,
-                              brightness);
+  return get_ipcc()->get_rgbw_value(
+      get_exec()->user_id, get_exec()->iodevice_id, get_exec()->channel_id,
+      color, color_brightness, brightness);
 }
 
 bool s_worker::ipcc_set_rgbw_value(int color, char color_brightness,
                                    char brightness) {
-  return ipcc->set_rgbw_value(s_exec.user_id, s_exec.iodevice_id,
-                              s_exec.channel_id, s_exec.channel_group_id, color,
-                              color_brightness, brightness);
+  return get_ipcc()->set_rgbw_value(
+      get_exec()->user_id, get_exec()->iodevice_id, get_exec()->channel_id,
+      get_exec()->channel_group_id, color, color_brightness, brightness);
 }
 
 bool s_worker::ipcc_get_valve_value(TValve_Value *value) {
-  return ipcc->get_valve_value(s_exec.user_id, s_exec.iodevice_id,
-                               s_exec.channel_id, value);
+  return get_ipcc()->get_valve_value(get_exec()->user_id,
+                                     get_exec()->iodevice_id,
+                                     get_exec()->channel_id, value);
 }
 
 char s_worker::ipcc_is_connected(void) {
-  return ipcc->is_connected(s_exec.user_id, s_exec.iodevice_id);
+  return get_ipcc()->is_connected(get_exec()->user_id, get_exec()->iodevice_id);
 }

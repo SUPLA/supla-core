@@ -21,20 +21,20 @@
 #include <string.h>
 #include "log.h"
 
-s_worker_action_shutreveal::s_worker_action_shutreveal(s_worker *worker,
-                                                       RSActionKind kind)
+s_worker_action_shutreveal::s_worker_action_shutreveal(
+    s_abstract_worker *worker, RSActionKind kind)
     : s_worker_action(worker) {
   this->kind = kind;
 }
 
-s_worker_action_shut::s_worker_action_shut(s_worker *worker)
+s_worker_action_shut::s_worker_action_shut(s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_shut) {}
 
-s_worker_action_reveal::s_worker_action_reveal(s_worker *worker)
+s_worker_action_reveal::s_worker_action_reveal(s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_reveal) {}
 
 s_worker_action_reveal_partially::s_worker_action_reveal_partially(
-    s_worker *worker)
+    s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_reveal_partially) {}
 
 void s_worker_action_shutreveal::get_function_list(

@@ -23,7 +23,7 @@
 #include "log.h"
 #include "tools.h"
 
-s_worker_action_rgb::s_worker_action_rgb(s_worker *worker)
+s_worker_action_rgb::s_worker_action_rgb(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
 void s_worker_action_rgb::get_function_list(int list[FUNCTION_LIST_SIZE]) {

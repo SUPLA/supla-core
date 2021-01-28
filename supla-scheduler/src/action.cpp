@@ -22,7 +22,9 @@
 #include <string.h>
 #include "log.h"
 
-s_worker_action::s_worker_action(s_worker *worker) { this->worker = worker; }
+s_worker_action::s_worker_action(s_abstract_worker *worker) {
+  this->worker = worker;
+}
 
 s_worker_action::~s_worker_action() {}
 
@@ -211,8 +213,8 @@ AbstractActionFactory *AbstractActionFactory::factoryByActionType(
   return NULL;
 }
 
-s_worker_action *AbstractActionFactory::createByActionType(int action_type,
-                                                           s_worker *worker) {
+s_worker_action *AbstractActionFactory::createByActionType(
+    int action_type, s_abstract_worker *worker) {
   AbstractActionFactory *factory = NULL;
 
   if (NULL !=

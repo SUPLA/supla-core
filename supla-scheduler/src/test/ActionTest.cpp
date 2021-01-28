@@ -53,4 +53,6 @@ TEST_F(ActionTest, time) {
   delete worker;
 }
 
+TEST_F(ActionTest, parsePercentage) {}
+
 }  // namespace

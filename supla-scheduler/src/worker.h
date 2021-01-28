@@ -19,38 +19,30 @@
 #ifndef WORKER_H_
 #define WORKER_H_
 
-#include "database.h"
-#include "ipcclient.h"
+#include "abstract_worker.h"
 
 class queue;
-class s_worker {
- private:
-  s_exec_t s_exec;
-  database *db;
-  ipc_client *ipcc;
-  queue *q;
-
+class s_worker : public s_abstract_worker {
  public:
   explicit s_worker(queue *q);
-  ~s_worker();
-  void execute(void *sthread);
-  database *get_db(void);
+  virtual ~s_worker();
 
-  int get_channel_func(void);
-  int get_id(void);
-  int get_retry_count(void);
-  bool channel_group(void);
-  const char *get_action_param(void);
-  bool retry_when_fail(void);
+  virtual int get_channel_func(void);
+  virtual int get_id(void);
+  virtual int get_retry_count(void);
+  virtual bool channel_group(void);
+  virtual const char *get_action_param(void);
+  virtual bool retry_when_fail(void);
 
-  char ipcc_get_opening_sensor_value(void);
-  bool ipcc_set_char_value(char value);
-  bool ipcc_get_char_value(char *value);
-  bool ipcc_get_rgbw_value(int *color, char *color_brightness,
-                           char *brightness);
-  bool ipcc_set_rgbw_value(int color, char color_brightness, char brightness);
-  bool ipcc_get_valve_value(TValve_Value *value);
-  char ipcc_is_connected(void);
+  virtual char ipcc_get_opening_sensor_value(void);
+  virtual bool ipcc_set_char_value(char value);
+  virtual bool ipcc_get_char_value(char *value);
+  virtual bool ipcc_get_rgbw_value(int *color, char *color_brightness,
+                                   char *brightness);
+  virtual bool ipcc_set_rgbw_value(int color, char color_brightness,
+                                   char brightness);
+  virtual bool ipcc_get_valve_value(TValve_Value *value);
+  virtual char ipcc_is_connected(void);
 };
 
-#endif /* QUEUE_H_ */
+#endif /* WORKER_H_ */
