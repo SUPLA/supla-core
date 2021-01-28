@@ -18,8 +18,8 @@
 #include "ActionTest.h"
 #include <list>
 #include "WorkerMock.h"
-#include "action.h"  // NOLINT
 #include "action_rgb.h"
+#include "action_set.h"
 #include "action_shutreveal.h"
 #include "gtest/gtest.h"
 
@@ -208,6 +208,39 @@ TEST_F(ActionTest, parseRgb) {
   EXPECT_FALSE(random);
 
   if (action) {
+    delete action;
+  }
+
+  delete worker;
+}
+
+TEST_F(ActionTest, parseDigiglassParams) {
+  WorkerMock *worker = new WorkerMock(NULL);
+  ASSERT_FALSE(worker == NULL);
+
+  s_worker_action_set *action = new s_worker_action_set(worker);
+  EXPECT_FALSE(action == NULL);
+
+  if (action) {
+    int active_bits = 0;
+    int mask = 0;
+
+    worker->set_action_param(
+        "{\"mask\":1,\"activeBits\":73,\"transparent\":[0,3,6],\"opaque\":[]"
+        "}");
+    EXPECT_TRUE(action->get_digiglass_params(&active_bits, &mask));
+    EXPECT_EQ(active_bits, 73);
+    EXPECT_EQ(mask, 1);
+
+    EXPECT_FALSE(action->get_digiglass_params(NULL, &mask));
+    EXPECT_FALSE(action->get_digiglass_params(&active_bits, NULL));
+
+    worker->set_action_param(NULL);
+    EXPECT_FALSE(action->get_digiglass_params(&active_bits, &mask));
+
+    worker->set_action_param("");
+    EXPECT_FALSE(action->get_digiglass_params(&active_bits, &mask));
+
     delete action;
   }
 

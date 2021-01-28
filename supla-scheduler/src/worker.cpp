@@ -110,6 +110,18 @@ bool s_worker::ipcc_get_valve_value(TValve_Value *value) {
                                      get_exec()->channel_id, value);
 }
 
+bool s_worker::ipcc_set_digiglass_value(int active_bits, int mask) {
+  return get_ipcc()->set_digiglass_value(
+      get_exec()->user_id, get_exec()->iodevice_id, get_exec()->channel_id,
+      active_bits, mask);
+}
+
+bool s_worker::ipcc_get_digiglass_value(int *mask) {
+  return get_ipcc()->get_digiglass_value(get_exec()->user_id,
+                                         get_exec()->iodevice_id,
+                                         get_exec()->channel_id, mask);
+}
+
 char s_worker::ipcc_is_connected(void) {
   return get_ipcc()->is_connected(get_exec()->user_id, get_exec()->iodevice_id);
 }

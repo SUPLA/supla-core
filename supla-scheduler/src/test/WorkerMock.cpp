@@ -18,8 +18,8 @@
 
 #include "WorkerMock.h"
 #include <stdlib.h>
-#include <cstddef>
 #include <string.h>
+#include <cstddef>
 
 WorkerMock::WorkerMock(queue *q) : s_abstract_worker(q) { action_param = NULL; }
 
@@ -68,5 +68,11 @@ bool WorkerMock::ipcc_set_rgbw_value(int color, char color_brightness,
   return false;
 }
 bool WorkerMock::ipcc_get_valve_value(TValve_Value *value) { return false; }
+
+bool WorkerMock::ipcc_set_digiglass_value(int active_bits, int mask) {
+  return false;
+}
+
+bool WorkerMock::ipcc_get_digiglass_value(int *mask) { return false; }
 
 char WorkerMock::ipcc_is_connected(void) { return 0; }

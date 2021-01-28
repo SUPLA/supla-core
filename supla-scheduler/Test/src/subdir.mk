@@ -19,6 +19,7 @@ CPP_SRCS += \
 ../src/action.cpp \
 ../src/action_openclose.cpp \
 ../src/action_rgb.cpp \
+../src/action_set.cpp \
 ../src/action_shutreveal.cpp \
 ../src/action_turn_onoff.cpp \
 ../src/database.cpp \
@@ -32,6 +33,7 @@ OBJS += \
 ./src/action.o \
 ./src/action_openclose.o \
 ./src/action_rgb.o \
+./src/action_set.o \
 ./src/action_shutreveal.o \
 ./src/action_turn_onoff.o \
 ./src/cfg.o \
@@ -65,6 +67,7 @@ CPP_DEPS += \
 ./src/action.d \
 ./src/action_openclose.d \
 ./src/action_rgb.d \
+./src/action_set.d \
 ./src/action_shutreveal.d \
 ./src/action_turn_onoff.d \
 ./src/database.d \
