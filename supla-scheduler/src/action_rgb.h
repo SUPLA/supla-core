@@ -22,10 +22,6 @@
 #include "action.h"
 
 class s_worker_action_rgb : public s_worker_action {
- private:
-  char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
-                         bool *random);
-
  protected:
   void get_function_list(int list[FUNCTION_LIST_SIZE]);
   int try_limit(void);
@@ -36,6 +32,8 @@ class s_worker_action_rgb : public s_worker_action {
 
  public:
   explicit s_worker_action_rgb(s_abstract_worker *worker);
+  char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
+                         bool *random);
 };
 
 #endif /*ACTION_RGB_*/

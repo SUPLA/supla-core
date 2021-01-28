@@ -36,6 +36,7 @@ class s_worker_action_shutreveal : public s_worker_action {
   bool do_action();
 
  public:
+  bool parse_percentage(char *percent);
   s_worker_action_shutreveal(s_abstract_worker *worker, RSActionKind kind);
 };
 

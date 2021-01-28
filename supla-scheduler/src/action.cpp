@@ -117,37 +117,6 @@ void s_worker_action::execute(void) {
   }
 }
 
-bool s_worker_action::parse_percentage(char *percent) {
-  jsmn_parser p;
-  jsmntok_t t[10];
-  int a;
-  int value = 0;
-
-  if (worker->get_action_param() == NULL || percent == NULL) {
-    return false;
-  }
-
-  jsmn_init(&p);
-  int r = jsmn_parse(&p, worker->get_action_param(),
-                     strnlen(worker->get_action_param(), 255), t,
-                     sizeof(t) / sizeof(t[0]));
-
-  if (r < 1 || t[0].type != JSMN_OBJECT) {
-    return false;
-  }
-
-  for (a = 1; a < r - 1; a++) {
-    if (jsoneq(worker->get_action_param(), &t[a], "percentage") == 0) {
-      if (json_get_int(&t[a + 1], &value) && value >= 0 && value <= 100) {
-        *percent = value;
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 int s_worker_action::get_max_time(void) {
   return try_limit() * waiting_time_to_retry();
 }

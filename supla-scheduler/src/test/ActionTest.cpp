@@ -19,6 +19,7 @@
 #include <list>
 #include "WorkerMock.h"
 #include "action.h"  // NOLINT
+#include "action_rgb.h"
 #include "action_shutreveal.h"
 #include "gtest/gtest.h"
 
@@ -59,15 +60,153 @@ TEST_F(ActionTest, parsePercentage) {
   WorkerMock *worker = new WorkerMock(NULL);
   ASSERT_FALSE(worker == NULL);
 
-  worker->set_action_param("{\"percentage\":45}");
-
   s_worker_action_shut *action = new s_worker_action_shut(worker);
   EXPECT_FALSE(action == NULL);
 
   if (action) {
     char p = 0;
+
+    worker->set_action_param("{\"percentage\":45}");
     EXPECT_TRUE(action->parse_percentage(&p));
     EXPECT_EQ(p, 45);
+
+    p = 0;
+    worker->set_action_param("{\"perCentaGe\":80}");
+    EXPECT_FALSE(action->parse_percentage(&p));
+
+    worker->set_action_param("{\"percentage\":110}");
+    EXPECT_FALSE(action->parse_percentage(&p));
+
+    worker->set_action_param("{\"percentage\":-1}");
+    EXPECT_FALSE(action->parse_percentage(&p));
+
+    worker->set_action_param(NULL);
+    EXPECT_FALSE(action->parse_percentage(&p));
+
+    worker->set_action_param("");
+    EXPECT_FALSE(action->parse_percentage(&p));
+
+    delete action;
+  }
+
+  delete worker;
+}
+
+TEST_F(ActionTest, parseRgb) {
+  WorkerMock *worker = new WorkerMock(NULL);
+  ASSERT_FALSE(worker == NULL);
+
+  s_worker_action_rgb *action = new s_worker_action_rgb(worker);
+  EXPECT_FALSE(action == NULL);
+
+  worker->set_action_param(
+      "{\"brightness\":33,\"hue\":0,\"color_brightness\":28}");
+  int color = -1;
+  char color_brightness = -1;
+  char brightness = -1;
+  bool random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color, 0xFF0000);
+  EXPECT_EQ(color_brightness, 28);
+  EXPECT_EQ(brightness, 33);
+  EXPECT_FALSE(random);
+
+  worker->set_action_param(
+      "{\"brightness\":15,\"hue\":244,\"color_brightness\":48}");
+
+  color = -1;
+  color_brightness = -1;
+  brightness = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color, 0x1000FF);
+  EXPECT_EQ(color_brightness, 48);
+  EXPECT_EQ(brightness, 15);
+  EXPECT_FALSE(random);
+
+  worker->set_action_param(
+      "{\"brightness\":31,\"hue\":\"random\",\"color_brightness\":21}");
+
+  color = -1;
+  color_brightness = -1;
+  brightness = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color_brightness, 21);
+  EXPECT_EQ(brightness, 31);
+  EXPECT_TRUE(random);
+
+  worker->set_action_param(
+      "{\"brightness\":32,\"hue\":\"white\",\"color_brightness\":22}");
+
+  color = -1;
+  color_brightness = -1;
+  brightness = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color, 0xFFFFFF);
+  EXPECT_EQ(color_brightness, 22);
+  EXPECT_EQ(brightness, 32);
+  EXPECT_FALSE(random);
+
+  worker->set_action_param("{\"brightness\":32}");
+
+  color = -1;
+  color_brightness = -1;
+  brightness = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color, 0);
+  EXPECT_EQ(color_brightness, 0);
+  EXPECT_EQ(brightness, 32);
+  EXPECT_FALSE(random);
+
+  worker->set_action_param("{\"color_brightness\":32}");
+
+  color = -1;
+  color_brightness = -1;
+  brightness = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color, 0);
+  EXPECT_EQ(color_brightness, 32);
+  EXPECT_EQ(brightness, 0);
+  EXPECT_FALSE(random);
+
+  worker->set_action_param("{\"hue\":\"white\"}");
+
+  color = -1;
+  color_brightness = -1;
+  brightness = -1;
+  random = false;
+
+  EXPECT_TRUE(action->parse_rgbw_params(&color, &color_brightness, &brightness,
+                                        &random));
+
+  EXPECT_EQ(color, 0xFFFFFF);
+  EXPECT_EQ(color_brightness, 0);
+  EXPECT_EQ(brightness, 0);
+  EXPECT_FALSE(random);
+
+  if (action) {
     delete action;
   }
 
