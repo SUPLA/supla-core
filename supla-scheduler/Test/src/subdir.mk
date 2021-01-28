@@ -16,6 +16,7 @@ C_SRCS += \
 ../src/tools.c 
 
 CPP_SRCS += \
+../src/abstract_worker.cpp \
 ../src/action.cpp \
 ../src/action_openclose.cpp \
 ../src/action_rgb.cpp \
@@ -28,6 +29,7 @@ CPP_SRCS += \
 ../src/worker.cpp 
 
 OBJS += \
+./src/abstract_worker.o \
 ./src/action.o \
 ./src/action_openclose.o \
 ./src/action_rgb.o \
@@ -62,6 +64,7 @@ C_DEPS += \
 ./src/tools.d 
 
 CPP_DEPS += \
+./src/abstract_worker.d \
 ./src/action.d \
 ./src/action_openclose.d \
 ./src/action_rgb.d \
@@ -78,7 +81,7 @@ CPP_DEPS += \
 src/%.o: ../src/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -I$(INCMYSQL) -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -I$(INCMYSQL) -I../src -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

@@ -17,7 +17,9 @@
  */
 #include "ActionTest.h"
 #include <list>
-#include "../action.h"  // NOLINT
+#include "WorkerMock.h"
+#include "action.h"  // NOLINT
+#include "action_shutreveal.h"
 #include "gtest/gtest.h"
 
 #define MIN_RETRY_TIME 5
@@ -30,7 +32,7 @@ class ActionTest : public ::testing::Test {
 };
 
 TEST_F(ActionTest, time) {
-  s_worker *worker = new s_worker(NULL);
+  WorkerMock *worker = new WorkerMock(NULL);
   ASSERT_FALSE(worker == NULL);
 
   for (std::list<AbstractActionFactory *>::iterator it =
@@ -53,6 +55,23 @@ TEST_F(ActionTest, time) {
   delete worker;
 }
 
-TEST_F(ActionTest, parsePercentage) {}
+TEST_F(ActionTest, parsePercentage) {
+  WorkerMock *worker = new WorkerMock(NULL);
+  ASSERT_FALSE(worker == NULL);
+
+  worker->set_action_param("{\"percentage\":45}");
+
+  s_worker_action_shut *action = new s_worker_action_shut(worker);
+  EXPECT_FALSE(action == NULL);
+
+  if (action) {
+    char p = 0;
+    EXPECT_TRUE(action->parse_percentage(&p));
+    EXPECT_EQ(p, 45);
+    delete action;
+  }
+
+  delete worker;
+}
 
 }  // namespace

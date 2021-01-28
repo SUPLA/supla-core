@@ -28,7 +28,23 @@ class WorkerMock : public s_abstract_worker {
  public:
   explicit WorkerMock(queue *q);
   virtual ~WorkerMock();
+  virtual int get_channel_func(void);
+  virtual int get_id(void);
+  virtual int get_retry_count(void);
+  virtual bool channel_group(void);
   virtual const char *get_action_param(void);
+  void set_action_param(const char *action_param);
+  virtual bool retry_when_fail(void);
+
+  virtual char ipcc_get_opening_sensor_value(void);
+  virtual bool ipcc_set_char_value(char value);
+  virtual bool ipcc_get_char_value(char *value);
+  virtual bool ipcc_get_rgbw_value(int *color, char *color_brightness,
+                                   char *brightness);
+  virtual bool ipcc_set_rgbw_value(int color, char color_brightness,
+                                   char brightness);
+  virtual bool ipcc_get_valve_value(TValve_Value *value);
+  virtual char ipcc_is_connected(void);
 };
 
 #endif /*WORKERMOCK_TEST_H_*/
