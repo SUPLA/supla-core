@@ -20,9 +20,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "json/cJSON.h"
 #include "log.h"
 #include "tools.h"
-#include "json/cJSON.h"
 
 s_worker_action_rgb::s_worker_action_rgb(s_abstract_worker *worker)
     : s_worker_action(worker) {}
@@ -96,7 +96,7 @@ char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
       }
     }
 
-    cJSON_free(root);
+    cJSON_Delete(root);
   }
 
   return result;

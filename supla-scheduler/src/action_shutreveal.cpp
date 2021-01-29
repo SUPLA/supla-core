@@ -66,7 +66,7 @@ bool s_worker_action_shutreveal::parse_percentage(char *percent) {
       *percent = item->valuedouble;
       result = true;
     }
-    cJSON_free(root);
+    cJSON_Delete(root);
   }
 
   return result;

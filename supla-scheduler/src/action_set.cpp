@@ -59,7 +59,7 @@ bool s_worker_action_set::get_digiglass_params(int *active_bits, int *mask) {
       result++;
     }
 
-    cJSON_free(root);
+    cJSON_Delete(root);
   }
 
   return result == 2;
