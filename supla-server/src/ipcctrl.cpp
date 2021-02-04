@@ -32,6 +32,8 @@
 #include "tools.h"
 #include "user.h"
 
+// TODO(anyone): For setters, use the supla_action_executor class
+
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_client_connected[] = "IS-CLIENT-CONNECTED:";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";

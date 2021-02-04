@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/device/action_executor.cpp \
 ../src/device/device.cpp \
 ../src/device/devicechannel.cpp 
 
 OBJS += \
+./src/device/action_executor.o \
 ./src/device/device.o \
 ./src/device/devicechannel.o 
 
 CPP_DEPS += \
+./src/device/action_executor.d \
 ./src/device/device.d \
 ./src/device/devicechannel.d 
 

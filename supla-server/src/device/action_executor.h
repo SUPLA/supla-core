@@ -16,35 +16,34 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTT_CHANNEl_VALUE_SETTER_H_
-#define MQTT_CHANNEl_VALUE_SETTER_H_
+#ifndef ACTION_EXECUTOR_H_
+#define ACTION_EXECUTOR_H_
 
-#include <action_executor.h>
-#include "mqtt_abstract_channel_value_setter.h"
+#include "device.h"
 #include "user.h"
 
-class supla_mqtt_channel_value_setter
-    : public supla_mqtt_abstract_channel_value_setter {
+class supla_action_executor {
  private:
-  supla_action_executor *action_executor;
+  supla_user *user;
+  int device_id;
+  int channel_id;
 
  protected:
-  supla_action_executor *get_action_executor(void);
+  supla_device *get_device(void);
+ public:
+  supla_action_executor(supla_user *user, int device_id, int channel_id);
+  supla_action_executor(int user_id, int device_id, int channel_id);
+
   void set_on(bool on);
   void set_color(unsigned int color);
   void set_brightness(char brightness);
   void set_color_brightness(char brightness);
-  void action_toggle(void);
-  void action_shut(const char *closingPercentage);
-  void action_reveal(void);
-  void action_stop(void);
-  void action_open(void);
-  void action_open_close(void);
-
- public:
-  explicit supla_mqtt_channel_value_setter(
-      supla_mqtt_client_settings *settings);
-  virtual ~supla_mqtt_channel_value_setter(void);
+  void toggle(void);
+  void shut(const char *closingPercentage);
+  void reveal(void);
+  void stop(void);
+  void open(void);
+  void open_close(void);
 };
 
-#endif /*MQTT_CHANNEl_VALUE_SETTER_H_*/
+#endif /*ACTION_EXECUTOR_H_*/

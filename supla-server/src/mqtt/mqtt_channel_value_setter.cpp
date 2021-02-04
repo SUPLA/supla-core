@@ -22,103 +22,95 @@
 
 supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
     supla_mqtt_client_settings *settings)
-    : supla_mqtt_abstract_channel_value_setter(settings) {}
-
-supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {}
-
-supla_user *supla_mqtt_channel_value_setter::get_user(void) {
-  if (st_app_terminate) {
-    return NULL;
-  }
-  return supla_user::find_by_suid(get_suid());
+    : supla_mqtt_abstract_channel_value_setter(settings) {
+  action_executor = NULL;
 }
 
-supla_device *supla_mqtt_channel_value_setter::get_device(void) {
-  supla_user *user = get_user();
-  if (user) {
-    return user->get_device(get_device_id());
+supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {
+  if (action_executor) {
+    delete action_executor;
+    action_executor = NULL;
+  }
+}
+
+supla_action_executor *supla_mqtt_channel_value_setter::get_action_executor(
+    void) {
+  if (action_executor == NULL) {
+    action_executor =
+        new supla_action_executor(supla_user::find_by_suid(get_suid()),
+                                  get_device_id(), get_channel_id());
   }
 
-  return NULL;
+  return action_executor;
 }
 
 void supla_mqtt_channel_value_setter::set_on(bool on) {
-  supla_device *device = get_device();
-  if (device) {
-    device->set_on(0, get_channel_id(), 0, 0, on ? 1 : 0);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->set_on(on);
   }
 }
 
 void supla_mqtt_channel_value_setter::set_color(unsigned int color) {
-  supla_device *device = get_device();
-  if (device) {
-    device->set_color(0, get_channel_id(), 0, 0, color);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->set_color(color);
   }
 }
 
 void supla_mqtt_channel_value_setter::set_brightness(char brightness) {
-  supla_device *device = get_device();
-  if (device) {
-    device->set_brightness(0, get_channel_id(), 0, 0, brightness);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->set_brightness(brightness);
   }
 }
 
 void supla_mqtt_channel_value_setter::set_color_brightness(char brightness) {
-  supla_device *device = get_device();
-  if (device) {
-    device->set_color_brightness(0, get_channel_id(), 0, 0, brightness);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->set_color_brightness(brightness);
   }
 }
 
 void supla_mqtt_channel_value_setter::action_toggle(void) {
-  supla_device *device = get_device();
-  if (device) {
-    device->action_toggle(0, get_channel_id(), 0, 0);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->toggle();
   }
 }
 
 void supla_mqtt_channel_value_setter::action_shut(
     const char *closingPercentage) {
-  supla_device *device = get_device();
-  if (device) {
-    device->action_shut(0, get_channel_id(), 0, 0, closingPercentage);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->shut(closingPercentage);
   }
 }
 
 void supla_mqtt_channel_value_setter::action_reveal(void) {
-  supla_device *device = get_device();
-  if (device) {
-    device->action_reveal(0, get_channel_id(), 0, 0);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->reveal();
   }
 }
 
 void supla_mqtt_channel_value_setter::action_stop(void) {
-  supla_device *device = get_device();
-  if (device) {
-    device->action_stop(0, get_channel_id(), 0, 0);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->stop();
   }
 }
 
 void supla_mqtt_channel_value_setter::action_open(void) {
-  supla_device *device = get_device();
-  if (device) {
-    device->action_open(0, get_channel_id(), 0, 0);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->open();
   }
 }
 
 void supla_mqtt_channel_value_setter::action_open_close(void) {
-  supla_device *device = get_device();
-  if (device) {
-    device->action_open_close(0, get_channel_id(), 0, 0);
-    device->releasePtr();
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->open_close();
   }
 }
