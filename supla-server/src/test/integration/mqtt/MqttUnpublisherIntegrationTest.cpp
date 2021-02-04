@@ -17,7 +17,7 @@
  */
 
 #include "MqttUnpublisherIntegrationTest.h"
-#include "log.h"
+#include "log.h"  // NOLINT
 #include "mqtt_unpublisher.h"
 #include "mqtt_unpublisher_datasource.h"
 

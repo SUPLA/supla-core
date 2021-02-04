@@ -16,27 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "IntegrationTest.h"
-#include "MySqlShell.h"
-#include "log.h"  // NOLINT
-#include "svrcfg.h"
+#include "abstract_scheduled_task_action.h"
 
-namespace testing {
-
-IntegrationTest::IntegrationTest() {}
-
-IntegrationTest::~IntegrationTest() {}
-
-void IntegrationTest::runSqlScript(const char *script) {
-  MySqlShell::runSqlScript(cfg_sql_dir, scfg_string(CFG_MYSQL_HOST),
-                           scfg_string(CFG_MYSQL_USER),
-                           scfg_string(CFG_MYSQL_DB), script);
-}
-
-void IntegrationTest::initTestDatabase() {
-  MySqlShell::initTestDatabase(cfg_sql_dir, scfg_string(CFG_MYSQL_HOST),
-                               scfg_string(CFG_MYSQL_USER),
-                               scfg_string(CFG_MYSQL_DB));
-}
-
-} /* namespace testing */
+supla_abstract_scheduled_task_action::supla_abstract_scheduled_task_action(
+    void) {}

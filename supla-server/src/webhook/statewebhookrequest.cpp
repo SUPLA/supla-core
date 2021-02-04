@@ -18,6 +18,7 @@
 
 #include "webhook/statewebhookrequest.h"
 #include <assert.h>
+#include <list>
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
@@ -253,8 +254,8 @@ void supla_state_webhook_request::execute(void *sthread) {
                                                         value.hi, value.online);
       break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-      getClient()->sendRoofWindowOpeningSensorReport(getChannelId(),
-                                                        value.hi, value.online);
+      getClient()->sendRoofWindowOpeningSensorReport(getChannelId(), value.hi,
+                                                     value.online);
       break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       getClient()->sendWindowOpeningSensorReport(getChannelId(), value.hi,
@@ -269,7 +270,7 @@ void supla_state_webhook_request::execute(void *sthread) {
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       getClient()->sendRoofWindowReport(getChannelId(), value.shut,
-                                           value.online);
+                                        value.online);
       break;
     case SUPLA_CHANNELFNC_WINDSENSOR:
       getClient()->sendWindSensorReport(getChannelId(), value.wind,

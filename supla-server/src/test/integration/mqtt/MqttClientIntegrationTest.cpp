@@ -17,7 +17,7 @@
  */
 
 #include "MqttClientIntegrationTest.h"
-#include "log.h"
+#include "log.h" // NOLINT
 
 namespace testing {
 

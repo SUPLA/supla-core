@@ -17,7 +17,7 @@
  */
 
 #include "MySqlShell.h"
-#include <gtest/gtest.h>
+#include <gtest/gtest.h>  // NOLINT
 #include "log.h"
 #include "tools.h"
 

@@ -17,7 +17,7 @@
  */
 
 #include "MqttSubscriberIntegrationTest.h"
-#include "log.h"
+#include "log.h"  // NOLINT
 #include "mqtt_subscriber.h"
 #include "mqtt_subscriber_datasource.h"
 

@@ -32,6 +32,7 @@ src/google \
 src/http \
 src/json \
 src/mqtt \
+src/tasks \
 src/test \
 src/test/alexa \
 src/test/google \

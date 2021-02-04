@@ -17,7 +17,7 @@
  */
 
 #include "MqttPublisherIntegrationTest.h"
-#include "log.h"
+#include "log.h"  // NOLINT
 #include "mqtt_publisher.h"
 #include "mqtt_publisher_datasource.h"
 
