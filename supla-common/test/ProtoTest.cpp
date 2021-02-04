@@ -192,6 +192,12 @@ TEST_F(ProtoTest, init) {
   sproto_free(sproto);
 }
 
+TEST_F(ProtoTest, littleEndian) {
+  char i[] = {1, 2, 3, 4};
+  ASSERT_EQ((unsigned int)4, sizeof(int));
+  ASSERT_EQ(67305985, *(int *)i);
+}
+
 TEST_F(ProtoTest, set_version) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
