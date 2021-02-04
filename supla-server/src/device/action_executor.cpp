@@ -19,31 +19,17 @@
 #include <action_executor.h>
 
 supla_action_executor::supla_action_executor(supla_user *user, int device_id,
-                                             int channel_id) {
-  this->user = user;
-  this->device_id = device_id;
-  this->channel_id = channel_id;
-}
+                                             int channel_id)
+    : supla_abstract_action_executor(user, device_id, channel_id) {}
 
 supla_action_executor::supla_action_executor(int user_id, int device_id,
-                                             int channel_id) {
-  this->user = user_id ? supla_user::find(user_id, false) : NULL;
-  this->device_id = device_id;
-  this->channel_id = channel_id;
-}
-
-supla_device *supla_action_executor::get_device(void) {
-  if (user && device_id) {
-    return user->get_device(device_id);
-  }
-
-  return NULL;
-}
+                                             int channel_id)
+    : supla_abstract_action_executor(user_id, device_id, channel_id) {}
 
 void supla_action_executor::set_on(bool on) {
   supla_device *device = get_device();
   if (device) {
-    device->set_on(0, channel_id, 0, 0, on ? 1 : 0);
+    device->set_on(0, get_channel_id(), 0, 0, on ? 1 : 0);
     device->releasePtr();
   }
 }
@@ -51,7 +37,7 @@ void supla_action_executor::set_on(bool on) {
 void supla_action_executor::set_color(unsigned int color) {
   supla_device *device = get_device();
   if (device) {
-    device->set_color(0, channel_id, 0, 0, color);
+    device->set_color(0, get_channel_id(), 0, 0, color);
     device->releasePtr();
   }
 }
@@ -59,7 +45,7 @@ void supla_action_executor::set_color(unsigned int color) {
 void supla_action_executor::set_brightness(char brightness) {
   supla_device *device = get_device();
   if (device) {
-    device->set_brightness(0, channel_id, 0, 0, brightness);
+    device->set_brightness(0, get_channel_id(), 0, 0, brightness);
     device->releasePtr();
   }
 }
@@ -67,7 +53,7 @@ void supla_action_executor::set_brightness(char brightness) {
 void supla_action_executor::set_color_brightness(char brightness) {
   supla_device *device = get_device();
   if (device) {
-    device->set_color_brightness(0, channel_id, 0, 0, brightness);
+    device->set_color_brightness(0, get_channel_id(), 0, 0, brightness);
     device->releasePtr();
   }
 }
@@ -75,7 +61,7 @@ void supla_action_executor::set_color_brightness(char brightness) {
 void supla_action_executor::toggle(void) {
   supla_device *device = get_device();
   if (device) {
-    device->action_toggle(0, channel_id, 0, 0);
+    device->action_toggle(0, get_channel_id(), 0, 0);
     device->releasePtr();
   }
 }
@@ -83,7 +69,7 @@ void supla_action_executor::toggle(void) {
 void supla_action_executor::shut(const char *closingPercentage) {
   supla_device *device = get_device();
   if (device) {
-    device->action_shut(0, channel_id, 0, 0, closingPercentage);
+    device->action_shut(0, get_channel_id(), 0, 0, closingPercentage);
     device->releasePtr();
   }
 }
@@ -91,7 +77,7 @@ void supla_action_executor::shut(const char *closingPercentage) {
 void supla_action_executor::reveal(void) {
   supla_device *device = get_device();
   if (device) {
-    device->action_reveal(0, channel_id, 0, 0);
+    device->action_reveal(0, get_channel_id(), 0, 0);
     device->releasePtr();
   }
 }
@@ -99,7 +85,7 @@ void supla_action_executor::reveal(void) {
 void supla_action_executor::stop(void) {
   supla_device *device = get_device();
   if (device) {
-    device->action_stop(0, channel_id, 0, 0);
+    device->action_stop(0, get_channel_id(), 0, 0);
     device->releasePtr();
   }
 }
@@ -107,7 +93,7 @@ void supla_action_executor::stop(void) {
 void supla_action_executor::open(void) {
   supla_device *device = get_device();
   if (device) {
-    device->action_open(0, channel_id, 0, 0);
+    device->action_open(0, get_channel_id(), 0, 0);
     device->releasePtr();
   }
 }
@@ -115,7 +101,7 @@ void supla_action_executor::open(void) {
 void supla_action_executor::open_close(void) {
   supla_device *device = get_device();
   if (device) {
-    device->action_open_close(0, channel_id, 0, 0);
+    device->action_open_close(0, get_channel_id(), 0, 0);
     device->releasePtr();
   }
 }

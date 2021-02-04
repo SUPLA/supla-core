@@ -19,17 +19,9 @@
 #ifndef ACTION_EXECUTOR_H_
 #define ACTION_EXECUTOR_H_
 
-#include "device.h"
-#include "user.h"
+#include "abstract_action_executor.h"
 
-class supla_action_executor {
- private:
-  supla_user *user;
-  int device_id;
-  int channel_id;
-
- protected:
-  supla_device *get_device(void);
+class supla_action_executor : public supla_abstract_action_executor {
  public:
   supla_action_executor(supla_user *user, int device_id, int channel_id);
   supla_action_executor(int user_id, int device_id, int channel_id);
