@@ -16,30 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <list>
-#include "abstract_scheduled_task_action.h"
+#ifndef ABSTRACT_EXECUTION_CONDITION_H_
+#define ABSTRACT_EXECUTION_CONDITION_H_
 
-#ifndef ABSTRACT_SCHEDULED_TASK_H_
-#define ABSTRACT_SCHEDULED_TASK_H_
-
-class supla_abstract_scheduled_task {
- private:
-  void *lck;
-  std::list<supla_abstract_scheduled_task_action *> actions;
-  void cleanup(void);
-  bool action_exists(supla_abstract_scheduled_task_action *action);
-
- protected:
-  friend class supla_abstract_scheduled_task_action;
-
-  void lock(void);
-  void unlock(void);
-  void recalculate(void);
-
+class supla_abstract_execution_condition {
  public:
-  supla_abstract_scheduled_task(void);
-  virtual ~supla_abstract_scheduled_task(void);
-  void add_action(supla_abstract_scheduled_task_action *action);
+  supla_abstract_execution_condition(void);
+  virtual ~supla_abstract_execution_condition(void);
+  virtual bool is_ready_for_execution(void) = 0;
 };
 
-#endif /*ABSTRACT_SCHEDULED_TASK_H_*/
+#endif /*ABSTRACT_EXECUTION_CONDITION_H_*/

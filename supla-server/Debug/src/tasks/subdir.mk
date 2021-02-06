@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/tasks/abstract_execution_condition.cpp \
 ../src/tasks/abstract_scheduled_task.cpp \
 ../src/tasks/abstract_scheduled_task_action.cpp 
 
 OBJS += \
+./src/tasks/abstract_execution_condition.o \
 ./src/tasks/abstract_scheduled_task.o \
 ./src/tasks/abstract_scheduled_task_action.o 
 
 CPP_DEPS += \
+./src/tasks/abstract_execution_condition.d \
 ./src/tasks/abstract_scheduled_task.d \
 ./src/tasks/abstract_scheduled_task_action.d 
 

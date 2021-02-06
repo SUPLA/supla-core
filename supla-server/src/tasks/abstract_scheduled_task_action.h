@@ -19,11 +19,48 @@
 #ifndef ABSTRACT_SCHEDULED_TASK_ACTION_H_
 #define ABSTRACT_SCHEDULED_TASK_ACTION_H_
 
+#include <list>
+#include "abstract_execution_condition.h"
+
+enum scheduled_task_action_state {
+  STA_SATE_WAITING,
+  STA_SATE_EXECUTING,
+  STA_SATE_SUCCESS,
+  STA_SATE_FAILURE,
+};
+
+class supla_abstract_scheduled_task;
 class supla_abstract_scheduled_task_action {
  private:
+  void *lck;
+  supla_abstract_scheduled_task *task;
+  std::list<supla_abstract_execution_condition *> exec_conditions;
+  scheduled_task_action_state state;
+  long long delay_usec;
+  struct timeval conditions_met_at_time;
+  struct timeval exec_start_at_time;
+  bool conditions_met(struct timeval *now);
+  void recalculate(void);
+
  protected:
+  friend class supla_abstract_scheduled_task;
+
+  void lock(void);
+  void unlock(void);
+  void set_task(supla_abstract_scheduled_task *task);
+  virtual bool _execute(void) = 0;
+
  public:
   supla_abstract_scheduled_task_action(void);
+  virtual ~supla_abstract_scheduled_task_action(void);
+  supla_abstract_scheduled_task *get_task(void);
+  void add_execution_condition(supla_abstract_execution_condition *cnd);
+  long long time_to_start(void);
+  bool is_executed(void);
+  scheduled_task_action_state get_state(void);
+  void execute(void);
+  long long get_delay_usec(void);
+  void set_delay_usec(long long delay_usec);
 };
 
 #endif /*ABSTRACT_SCHEDULED_TASK_ACTION_H_*/
