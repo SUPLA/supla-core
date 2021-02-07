@@ -19,6 +19,7 @@
 #ifndef ABSTRACT_SCHEDULED_TASK_ACTION_H_
 #define ABSTRACT_SCHEDULED_TASK_ACTION_H_
 
+#include <sys/time.h>
 #include <list>
 #include "abstract_execution_condition.h"
 
@@ -39,8 +40,6 @@ class supla_abstract_scheduled_task_action {
   long long delay_usec;
   struct timeval conditions_met_at_time;
   struct timeval exec_start_at_time;
-  bool conditions_met(struct timeval *now);
-  void recalculate(void);
 
  protected:
   friend class supla_abstract_scheduled_task;
@@ -55,12 +54,15 @@ class supla_abstract_scheduled_task_action {
   virtual ~supla_abstract_scheduled_task_action(void);
   supla_abstract_scheduled_task *get_task(void);
   void add_execution_condition(supla_abstract_execution_condition *cnd);
-  long long time_to_start(void);
+  void verify_conditions(void);
+  bool is_execution_allowed(void);
+  long long time_left_to_execution(void);
   bool is_executed(void);
   scheduled_task_action_state get_state(void);
-  void execute(void);
+
   long long get_delay_usec(void);
   void set_delay_usec(long long delay_usec);
+  void execute(void);
 };
 
 #endif /*ABSTRACT_SCHEDULED_TASK_ACTION_H_*/

@@ -35,6 +35,9 @@ class supla_abstract_scheduled_task {
   void lock(void);
   void unlock(void);
   void recalculate(void);
+  void verify_conditions(supla_abstract_scheduled_task_action *sender);
+  void on_task_action_delay_changed(
+      supla_abstract_scheduled_task_action *sender);
 
  public:
   supla_abstract_scheduled_task(void);

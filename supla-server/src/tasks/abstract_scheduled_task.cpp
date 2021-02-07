@@ -73,4 +73,14 @@ void supla_abstract_scheduled_task::add_action(
   }
 }
 
+void supla_abstract_scheduled_task::on_task_action_delay_changed(
+    supla_abstract_scheduled_task_action *sender) {
+  recalculate();
+}
+
+void supla_abstract_scheduled_task::verify_conditions(
+    supla_abstract_scheduled_task_action *sender) {
+  recalculate();
+}
+
 void supla_abstract_scheduled_task::recalculate(void) {}

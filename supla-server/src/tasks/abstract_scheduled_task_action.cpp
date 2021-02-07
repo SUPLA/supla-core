@@ -63,34 +63,43 @@ void supla_abstract_scheduled_task_action::add_execution_condition(
   unlock();
 }
 
-bool supla_abstract_scheduled_task_action::conditions_met(struct timeval *now) {
+void supla_abstract_scheduled_task_action::verify_conditions(void) {
+  lock();
   if (!conditions_met_at_time.tv_sec && !conditions_met_at_time.tv_usec) {
     bool conditions_met = true;
     for (std::list<supla_abstract_execution_condition *>::iterator it =
              exec_conditions.begin();
          it != exec_conditions.end(); ++it) {
-      if (!(*it)->is_ready_for_execution()) {
+      if (!(*it)->is_execution_allowed()) {
         conditions_met = false;
         break;
       }
     }
 
     if (conditions_met) {
-      conditions_met_at_time = *now;
+      gettimeofday(&conditions_met_at_time, NULL);
     }
   }
-
-  return conditions_met_at_time.tv_sec || conditions_met_at_time.tv_usec;
+  unlock();
 }
 
-long long supla_abstract_scheduled_task_action::time_to_start(void) {
-  long long result = 0xD693A400;  // 1h
+bool supla_abstract_scheduled_task_action::is_execution_allowed(void) {
+  verify_conditions();
+
+  lock();
+  bool result = conditions_met_at_time.tv_sec || conditions_met_at_time.tv_usec;
+  unlock();
+
+  return result;
+}
+
+long long supla_abstract_scheduled_task_action::time_left_to_execution(void) {
+  long long result = 0x7FFFFFFFFFFFFFFF;
   lock();
 
-  struct timeval now;
-  gettimeofday(&now, NULL);
-
-  if (conditions_met(&now)) {
+  if (is_execution_allowed()) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
     long long diff = now.tv_sec * (long long)1000000 + now.tv_usec;
     diff -= conditions_met_at_time.tv_sec * (long long)1000000 +
             conditions_met_at_time.tv_usec;
@@ -108,41 +117,6 @@ bool supla_abstract_scheduled_task_action::is_executed(void) {
   unlock();
 
   return result;
-}
-
-void supla_abstract_scheduled_task_action::recalculate(void) {
-  supla_abstract_scheduled_task *task = get_task();
-  if (task) {
-    task->recalculate();
-  }
-}
-
-void supla_abstract_scheduled_task_action::execute(void) {
-  if (get_state() == STA_SATE_WAITING) {
-    lock();
-    struct timeval now;
-    gettimeofday(&now, NULL);
-
-    bool cnd_met = conditions_met(&now);
-    if (cnd_met) {
-      state = STA_SATE_EXECUTING;
-      exec_start_at_time = now;
-    }
-
-    unlock();
-
-    if (!cnd_met) {
-      return;
-    }
-
-    bool exec_result = _execute();
-
-    lock();
-    state = exec_result ? STA_SATE_SUCCESS : STA_SATE_FAILURE;
-    unlock();
-
-    recalculate();
-  }
 }
 
 scheduled_task_action_state supla_abstract_scheduled_task_action::get_state(
@@ -172,6 +146,34 @@ void supla_abstract_scheduled_task_action::set_delay_usec(
   unlock();
 
   if (changed) {
-    recalculate();
+    supla_abstract_scheduled_task *task = get_task();
+    if (task) {
+      task->on_task_action_delay_changed(this);
+    }
+  }
+}
+
+void supla_abstract_scheduled_task_action::execute(void) {
+  lock();
+  bool exec_allowed = state == STA_SATE_WAITING && is_execution_allowed();
+  if (exec_allowed) {
+    state = STA_SATE_EXECUTING;
+    gettimeofday(&exec_start_at_time, NULL);
+  }
+  unlock();
+
+  if (!exec_allowed) {
+    return;
+  }
+
+  bool exec_result = _execute();
+
+  lock();
+  state = exec_result ? STA_SATE_SUCCESS : STA_SATE_FAILURE;
+  unlock();
+
+  supla_abstract_scheduled_task *task = get_task();
+  if (task) {
+    task->verify_conditions(this);
   }
 }

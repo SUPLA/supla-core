@@ -23,7 +23,7 @@ class supla_abstract_execution_condition {
  public:
   supla_abstract_execution_condition(void);
   virtual ~supla_abstract_execution_condition(void);
-  virtual bool is_ready_for_execution(void) = 0;
+  virtual bool is_execution_allowed(void) = 0;
 };
 
 #endif /*ABSTRACT_EXECUTION_CONDITION_H_*/
