@@ -16,14 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_EXECUTION_CONDITION_H_
-#define ABSTRACT_EXECUTION_CONDITION_H_
+#ifndef ASYNCTASK_MOCK_H_
+#define ASYNCTASK_MOCK_H_
 
-class supla_abstract_execution_condition {
+#include "abstract_asynctask.h"
+
+class AsyncTaskMock : public supla_abstract_asynctask {
+ protected:
+  virtual bool _execute(bool *execute_again);
+
  public:
-  supla_abstract_execution_condition(void);
-  virtual ~supla_abstract_execution_condition(void);
-  virtual bool is_execution_allowed(void) = 0;
+  AsyncTaskMock(supla_asynctask_queue *queue,
+                supla_abstract_asynctask_thread_pool *pool, short priority);
+  virtual ~AsyncTaskMock(void);
 };
 
-#endif /*ABSTRACT_EXECUTION_CONDITION_H_*/
+#endif /*ASYNCTASK_MOCK_H_*/

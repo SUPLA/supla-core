@@ -10,7 +10,6 @@ RM := rm -rf
 -include sources.mk
 -include src/webhook/subdir.mk
 -include src/user/subdir.mk
--include src/tasks/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
 -include src/http/subdir.mk
@@ -18,6 +17,7 @@ RM := rm -rf
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/client/subdir.mk
+-include src/asynctask/subdir.mk
 -include src/amazon/subdir.mk
 -include src/subdir.mk
 -include subdir.mk

@@ -30,7 +30,7 @@
 #include "tools.h"
 #include "user/user.h"
 
-// TODO(anyone): Pass the http queue handling to supla_scheduled_tasks
+// TODO(anyone): Pass the http queue handling to supla_asynctasks
 
 typedef struct {
   supla_http_request *request;

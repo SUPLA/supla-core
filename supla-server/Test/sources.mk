@@ -25,6 +25,7 @@ CPP_DEPS :=
 SUBDIRS := \
 src \
 src/amazon \
+src/asynctask \
 src/client \
 src/crypt_blowfish \
 src/device \
@@ -32,12 +33,13 @@ src/google \
 src/http \
 src/json \
 src/mqtt \
-src/tasks \
 src/test \
 src/test/alexa \
+src/test/asynctask \
 src/test/google \
 src/test/gtest \
 src/test/integration \
+src/test/integration/asynctask \
 src/test/integration/mqtt \
 src/test/mqtt \
 src/test/webhook \

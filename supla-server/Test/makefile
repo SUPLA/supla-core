@@ -13,12 +13,13 @@ RM := rm -rf
 -include src/test/webhook/subdir.mk
 -include src/test/mqtt/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
+-include src/test/integration/asynctask/subdir.mk
 -include src/test/integration/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
+-include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk
 -include src/test/subdir.mk
--include src/tasks/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
 -include src/http/subdir.mk
@@ -26,6 +27,7 @@ RM := rm -rf
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/client/subdir.mk
+-include src/asynctask/subdir.mk
 -include src/amazon/subdir.mk
 -include src/subdir.mk
 -include subdir.mk

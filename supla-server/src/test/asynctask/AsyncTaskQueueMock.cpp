@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "abstract_execution_condition.h"
+#include "AsyncTaskQueueMock.h"
 
-supla_abstract_execution_condition::supla_abstract_execution_condition(void) {}
+AsyncTaskQueueMock::AsyncTaskQueueMock(void) : supla_asynctask_queue() {}
 
-supla_abstract_execution_condition::~supla_abstract_execution_condition(void) {}
+AsyncTaskQueueMock::~AsyncTaskQueueMock(void) {}
