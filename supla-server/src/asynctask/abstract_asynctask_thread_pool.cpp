@@ -19,17 +19,43 @@
 #include "abstract_asynctask_thread_pool.h"
 #include <assert.h>
 #include "asynctask_queue.h"
+#include "lck.h"
 
 supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
     supla_asynctask_queue *queue) {
   assert(queue);
+  this->lck = lck_init();
   this->queue = queue;
+  this->terminated = false;
   queue->register_pool(this);
 }
 
 supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
     void) {
   queue->unregister_pool(this);
+  lck_free(lck);
 }
 
-void supla_abstract_asynctask_thread_pool::execution_request(void) {}
+void supla_abstract_asynctask_thread_pool::execution_request(void) {
+  if (is_terminated()) {
+    return;
+  }
+}
+
+unsigned int supla_abstract_asynctask_thread_pool::thread_count(void) {
+  return 0;
+}
+
+void supla_abstract_asynctask_thread_pool::terminate(void) {
+  lck_lock(lck);
+  terminated = true;
+  lck_unlock(lck);
+}
+
+bool supla_abstract_asynctask_thread_pool::is_terminated(void) {
+  lck_lock(lck);
+  bool result = terminated;
+  lck_unlock(lck);
+
+  return result;
+}

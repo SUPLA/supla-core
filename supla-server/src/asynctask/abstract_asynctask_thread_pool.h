@@ -22,16 +22,21 @@
 class supla_asynctask_queue;
 class supla_abstract_asynctask_thread_pool {
  private:
+  void *lck;
   supla_asynctask_queue *queue;
+  bool terminated;
 
  protected:
   friend class supla_asynctask_queue;
   void execution_request(void);
-  virtual int thread_count_limit(void) = 0;
+  void terminate(void);
 
  public:
   explicit supla_abstract_asynctask_thread_pool(supla_asynctask_queue *queue);
   virtual ~supla_abstract_asynctask_thread_pool(void);
+  virtual int thread_count_limit(void) = 0;
+  unsigned int thread_count(void);
+  bool is_terminated(void);
 };
 
 #endif /*ASYNCTASK_THREAD_POOL_H_*/

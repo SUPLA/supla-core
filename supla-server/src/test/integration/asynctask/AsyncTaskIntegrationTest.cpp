@@ -17,3 +17,50 @@
  */
 
 #include "AsyncTaskIntegrationTest.h"
+
+namespace testing {
+
+AsyncTaskIntegrationTest::AsyncTaskIntegrationTest(void) {
+  queue = NULL;
+  pool = NULL;
+}
+AsyncTaskIntegrationTest::~AsyncTaskIntegrationTest(void) {}
+
+void AsyncTaskIntegrationTest::SetUp() {
+  queue = new supla_asynctask_queue();
+  ASSERT_TRUE(queue != NULL);
+
+  pool = new AsyncTaskThreadPoolMock(queue);
+  EXPECT_TRUE(queue != NULL);
+}
+
+void AsyncTaskIntegrationTest::TearDown() {
+  if (pool) {
+    delete pool;
+  }
+
+  if (queue) {
+    delete queue;
+  }
+}
+
+TEST_F(AsyncTaskIntegrationTest, releaseQueueContainingUninitializedTask) {
+  ASSERT_EQ(queue->total_count(), (unsigned int)0);
+  ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
+  ASSERT_FALSE(pool->is_terminated());
+
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0);
+  ASSERT_TRUE(task != NULL);
+
+  ASSERT_EQ(queue->total_count(), (unsigned int)1);
+  ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
+  ASSERT_FALSE(pool->is_terminated());
+  ASSERT_EQ(task->get_state(), STA_STATE_INIT);
+
+  delete queue;
+  queue = NULL;
+
+  ASSERT_TRUE(pool->is_terminated());
+}
+
+}  // namespace testing

@@ -31,6 +31,8 @@ class supla_asynctask_queue {
   std::vector<supla_abstract_asynctask_thread_pool *> pools;
   void sort_tasks(void);
   void iterate(void *q_sthread);
+  void release_tasks(void);
+  void terminate_pools(void);
 
  protected:
   friend class supla_abstract_asynctask;
@@ -48,6 +50,9 @@ class supla_asynctask_queue {
  public:
   supla_asynctask_queue(void);
   virtual ~supla_asynctask_queue(void);
+  unsigned int total_count(void);
+  unsigned int waiting_count(void);
+  unsigned int thread_count(void);
 };
 
 #endif /*ASYNCTASK_QUEUE_H_*/

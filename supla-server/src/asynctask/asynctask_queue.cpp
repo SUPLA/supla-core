@@ -18,8 +18,10 @@
 
 #include "asynctask_queue.h"
 #include <assert.h>
+#include <unistd.h>
 #include "abstract_asynctask_thread_pool.h"
 #include "lck.h"
+#include "log.h"
 
 supla_asynctask_queue::supla_asynctask_queue(void) {
   lck = lck_init();
@@ -27,8 +29,50 @@ supla_asynctask_queue::supla_asynctask_queue(void) {
 }
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {
+  terminate_pools();
+  release_tasks();
+
   lck_free(lck);
   eh_free(eh);
+}
+
+void supla_asynctask_queue::terminate_pools(void) {
+  lck_lock(lck);
+
+  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
+           pools.begin();
+       it != pools.end(); ++it) {
+    (*it)->terminate();
+  }
+  lck_unlock(lck);
+
+  int n = 0;
+  do {
+    if (thread_count() > 0) {
+      usleep(1000);
+      n++;
+      if (n >= 5000) {
+        supla_log(
+            LOG_ERR,
+            "Waiting for asynctask queue pool threads to stop timed out!");
+        break;
+      }
+    } else {
+      break;
+    }
+  } while (1);
+
+  unsigned int tc = 0;
+}
+
+void supla_asynctask_queue::release_tasks(void) {
+  do {
+    lck_lock(lck);
+    if (tasks.size()) {
+      delete tasks.front();
+    }
+    lck_unlock(lck);
+  } while (total_count());
 }
 
 void supla_asynctask_queue::sort_tasks(void) {
@@ -150,4 +194,39 @@ void supla_asynctask_queue::iterate(void *q_sthread) {
   }
 
   eh_wait(eh, wait_time);
+}
+
+unsigned int supla_asynctask_queue::total_count(void) {
+  lck_lock(lck);
+  unsigned int result = tasks.size();
+  lck_unlock(lck);
+
+  return result;
+}
+
+unsigned int supla_asynctask_queue::waiting_count(void) {
+  unsigned int result = 0;
+  lck_lock(lck);
+  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    if ((*it)->get_state() == STA_STATE_WAITING) {
+      result++;
+    }
+  }
+  lck_unlock(lck);
+
+  return result;
+}
+
+unsigned int supla_asynctask_queue::thread_count(void) {
+  unsigned int result = 0;
+  lck_lock(lck);
+  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
+           pools.begin();
+       it != pools.end(); ++it) {
+    result += (*it)->thread_count();
+  }
+  lck_unlock(lck);
+
+  return result;
 }

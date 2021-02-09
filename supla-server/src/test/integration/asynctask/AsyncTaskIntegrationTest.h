@@ -19,11 +19,18 @@
 #ifndef ASYNCTASK_INTEGRATION_TEST_H_
 #define ASYNCTASK_INTEGRATION_TEST_H_
 
+#include "asynctask/AsyncTaskThreadPoolMock.h"
+#include "asynctask/AsyncTaskMock.h"
+#include "asynctask_queue.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {
 
 class AsyncTaskIntegrationTest : public IntegrationTest {
+ protected:
+  supla_asynctask_queue *queue;
+  AsyncTaskThreadPoolMock *pool;
+
  public:
   virtual void SetUp();
   virtual void TearDown();
