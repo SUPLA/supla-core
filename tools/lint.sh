@@ -23,6 +23,7 @@ cpplint ./supla-server/src/test/alexa/*
 cpplint ./supla-server/src/test/google/* 
 cpplint ./supla-server/src/test/integration/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/mqtt/* 
+cpplint --filter=-build/include ./supla-server/src/test/integration/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 
 cpplint --filter=-build/include ./supla-server/src/test/webhook/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
