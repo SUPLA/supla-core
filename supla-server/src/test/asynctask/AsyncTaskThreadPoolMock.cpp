@@ -19,8 +19,18 @@
 #include "AsyncTaskThreadPoolMock.h"
 
 AsyncTaskThreadPoolMock::AsyncTaskThreadPoolMock(supla_asynctask_queue *queue)
-    : supla_abstract_asynctask_thread_pool(queue) {}
+    : supla_abstract_asynctask_thread_pool(queue) {
+  limit = 1;
+}
 
 AsyncTaskThreadPoolMock::~AsyncTaskThreadPoolMock(void) {}
 
-int AsyncTaskThreadPoolMock::thread_count_limit(void) { return 1; }
+unsigned int AsyncTaskThreadPoolMock::thread_count_limit(void) { return limit; }
+
+std::string AsyncTaskThreadPoolMock::pool_name(void) {
+  return std::string("TestPool");
+}
+
+void AsyncTaskThreadPoolMock::set_thread_count_limit(unsigned int limit) {
+  this->limit = limit;
+}

@@ -26,13 +26,15 @@
 class supla_asynctask_queue {
  private:
   void *lck;
+  void *thread;
   TEventHandler *eh;
   std::vector<supla_abstract_asynctask *> tasks;
   std::vector<supla_abstract_asynctask_thread_pool *> pools;
   void sort_tasks(void);
-  void iterate(void *q_sthread);
+  void iterate(void);
   void release_tasks(void);
-  void terminate_pools(void);
+  void release_pools(void);
+  static void loop(void *_queue, void *q_sthread);
 
  protected:
   friend class supla_abstract_asynctask;
@@ -53,6 +55,8 @@ class supla_asynctask_queue {
   unsigned int total_count(void);
   unsigned int waiting_count(void);
   unsigned int thread_count(void);
+  unsigned int pool_count(void);
+  void raise_event(void);
 };
 
 #endif /*ASYNCTASK_QUEUE_H_*/

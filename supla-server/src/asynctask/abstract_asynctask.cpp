@@ -23,7 +23,7 @@
 
 supla_abstract_asynctask::supla_abstract_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-    short priority) {
+    short priority, bool release_immediately) {
   assert(queue);
   assert(pool);
 
@@ -36,6 +36,7 @@ supla_abstract_asynctask::supla_abstract_asynctask(
   this->queue = queue;
   this->pool = pool;
   this->priority = priority;
+  this->release_immediately = release_immediately;
 
   queue->add_task(this);
 }
@@ -85,6 +86,7 @@ void supla_abstract_asynctask::set_delay_usec(long long delay_usec) {
   }
 
   unlock();
+  queue->raise_event();
 }
 
 void supla_abstract_asynctask::set_timeout(unsigned long long timeout_usec) {
@@ -124,6 +126,7 @@ void supla_abstract_asynctask::set_waiting(void) {
     state = STA_STATE_WAITING;
   }
   unlock();
+  queue->raise_event();
 }
 
 bool supla_abstract_asynctask::pick(void) {
@@ -200,5 +203,12 @@ bool supla_abstract_asynctask::is_finished(void) {
 
   unlock();
 
+  return result;
+}
+
+bool supla_abstract_asynctask::release_immediately_after_execution(void) {
+  lock();
+  bool result = release_immediately;
+  unlock();
   return result;
 }

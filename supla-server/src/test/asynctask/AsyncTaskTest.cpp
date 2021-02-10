@@ -17,6 +17,7 @@
  */
 
 #include "AsyncTaskTest.h"
+#include "log.h"
 
 namespace testing {
 
@@ -32,41 +33,29 @@ void AsyncTaskTest::SetUp() {
   ASSERT_TRUE(queue != NULL);
 
   pool = new AsyncTaskThreadPoolMock(queue);
-  EXPECT_TRUE(queue != NULL);
-
-  if (pool) {
-    task = new AsyncTaskMock(queue, pool, -123);
-  }
-}
-
-void AsyncTaskTest::TearDown() {
-  delete task;
-  delete pool;
-  delete queue;
-}
-
-TEST_F(AsyncTaskTest, initWithNulls) {
-  ASSERT_DEATH(new AsyncTaskMock(NULL, NULL, 0), "Assertion `queue' failed");
-
-  supla_asynctask_queue *queue = new supla_asynctask_queue();
-  ASSERT_TRUE(queue != NULL);
-
-  EXPECT_DEATH(new AsyncTaskMock(queue, NULL, 0), "Assertion `pool' failed");
-
-  AsyncTaskThreadPoolMock *pool = new AsyncTaskThreadPoolMock(queue);
   EXPECT_TRUE(pool != NULL);
 
   if (pool) {
-    AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0);
-    EXPECT_TRUE(task != NULL);
-    if (task) {
-      delete task;
-    }
-
-    delete pool;
+    task = new AsyncTaskMock(queue, pool, -123, true);
   }
+}
 
-  delete queue;
+void AsyncTaskTest::TearDown() { delete queue; }
+
+TEST_F(AsyncTaskTest, initWithNulls_1) {
+  ASSERT_DEATH(new AsyncTaskMock(NULL, NULL, 0, true),
+               "Assertion `queue' failed");
+}
+
+TEST_F(AsyncTaskTest, initWithNulls_2) {
+  EXPECT_DEATH(new AsyncTaskMock(queue, NULL, 0, true),
+               "Assertion `pool' failed");
+}
+
+TEST_F(AsyncTaskTest, correctInitialization) {
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, true);
+  ASSERT_TRUE(task != NULL);
+  delete task;
 }
 
 TEST_F(AsyncTaskTest, priorityCheck) { ASSERT_EQ(task->get_priority(), -123); }
@@ -78,6 +67,15 @@ TEST_F(AsyncTaskTest, poolGetter) { ASSERT_EQ(task->get_pool(), pool); }
 TEST_F(AsyncTaskTest, defaultState) {
   ASSERT_EQ(task->get_state(), STA_STATE_INIT);
 }
+
+TEST_F(AsyncTaskTest, releaseFlag) {
+  ASSERT_TRUE(task->release_immediately_after_execution());
+
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
+  ASSERT_TRUE(task != NULL);
+  ASSERT_FALSE(task->release_immediately_after_execution());
+  delete task;
+};
 
 TEST_F(AsyncTaskTest, delay) {
   ASSERT_EQ(task->get_delay_usec(), 0);
@@ -107,5 +105,4 @@ TEST_F(AsyncTaskTest, cancel) {
   ASSERT_EQ(task->get_state(), STA_STATE_CANCELED);
   ASSERT_TRUE(task->is_finished());
 }
-
 }  // namespace testing

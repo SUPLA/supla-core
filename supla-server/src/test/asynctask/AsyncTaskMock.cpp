@@ -17,12 +17,75 @@
  */
 
 #include "AsyncTaskMock.h"
+#include <unistd.h>
 
 AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
                              supla_abstract_asynctask_thread_pool *pool,
-                             short priority)
-    : supla_abstract_asynctask(queue, pool, priority) {}
+                             short priority, bool release_immediately)
+    : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
+  this->job_time_usec = 0;
+  this->job_count_left = 1;
+  this->_exec_count = 0;
+  this->_result = false;
+  this->exec_time.tv_sec = 0;
+  this->exec_time.tv_usec = 0;
+
+  gettimeofday(&this->init_time, NULL);
+}
 
 AsyncTaskMock::~AsyncTaskMock(void) {}
 
-bool AsyncTaskMock::_execute(bool *execute_again) { return false; }
+bool AsyncTaskMock::_execute(bool *execute_again) {
+  lock();
+  _exec_count++;
+  gettimeofday(&this->exec_time, NULL);
+  unsigned int time = job_time_usec;
+  bool result = _result;
+  job_count_left--;
+  if (job_count_left > 0) {
+    *execute_again = true;
+  }
+  unlock();
+
+  if (time) {
+    usleep(time);
+  }
+
+  return result;
+}
+
+void AsyncTaskMock::set_job_time_usec(unsigned int job_time_usec) {
+  lock();
+  this->job_time_usec = job_time_usec;
+  unlock();
+}
+
+void AsyncTaskMock::set_job_count_left(unsigned short job_count_left) {
+  if (job_count_left < 1) {
+    return;
+  }
+
+  lock();
+  this->job_count_left = job_count_left;
+  unlock();
+}
+
+void AsyncTaskMock::set_result(bool result) {
+  lock();
+  _result = result;
+  unlock();
+}
+
+void AsyncTaskMock::set_waiting(void) {
+  supla_abstract_asynctask::set_waiting();
+}
+
+long long AsyncTaskMock::exec_delay_usec(void) {
+  lock();
+  long long result =
+      (init_time.tv_sec * (long long)1000000 + init_time.tv_usec) -
+      (exec_time.tv_sec * (long long)1000000 + exec_time.tv_usec);
+  unlock();
+
+  return result;
+}

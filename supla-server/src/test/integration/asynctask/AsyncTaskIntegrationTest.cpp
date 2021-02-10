@@ -31,14 +31,10 @@ void AsyncTaskIntegrationTest::SetUp() {
   ASSERT_TRUE(queue != NULL);
 
   pool = new AsyncTaskThreadPoolMock(queue);
-  EXPECT_TRUE(queue != NULL);
+  EXPECT_TRUE(pool != NULL);
 }
 
 void AsyncTaskIntegrationTest::TearDown() {
-  if (pool) {
-    delete pool;
-  }
-
   if (queue) {
     delete queue;
   }
@@ -49,7 +45,7 @@ TEST_F(AsyncTaskIntegrationTest, releaseQueueContainingUninitializedTask) {
   ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
   ASSERT_FALSE(pool->is_terminated());
 
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0);
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
   ASSERT_TRUE(task != NULL);
 
   ASSERT_EQ(queue->total_count(), (unsigned int)1);
@@ -59,8 +55,20 @@ TEST_F(AsyncTaskIntegrationTest, releaseQueueContainingUninitializedTask) {
 
   delete queue;
   queue = NULL;
+}
 
-  ASSERT_TRUE(pool->is_terminated());
+TEST_F(AsyncTaskIntegrationTest, runTaskWithoutDelay) {
+  ASSERT_EQ(pool->thread_count(), (unsigned int)0);
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
+  ASSERT_TRUE(task != NULL);
+  task->set_job_time_usec(100000);
+  task->set_waiting();
+  usleep(1000);
+  EXPECT_EQ(pool->thread_count(), (unsigned int)1);
+  EXPECT_EQ(pool->exec_count(), (unsigned int)0);
+  EXPECT_EQ(task->get_state(), STA_STATE_EXECUTING);
+
+  delete task;
 }
 
 }  // namespace testing

@@ -22,47 +22,43 @@
 #include "abstract_asynctask_thread_pool.h"
 #include "lck.h"
 #include "log.h"
+#include "sthread.h"
 
 supla_asynctask_queue::supla_asynctask_queue(void) {
   lck = lck_init();
   eh = eh_init();
+  thread = sthread_simple_run(loop, this, 0);
 }
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {
-  terminate_pools();
+  sthread_twf(thread);
+  release_pools();
   release_tasks();
 
   lck_free(lck);
   eh_free(eh);
 }
 
-void supla_asynctask_queue::terminate_pools(void) {
-  lck_lock(lck);
-
-  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
-           pools.begin();
-       it != pools.end(); ++it) {
-    (*it)->terminate();
+// static
+void supla_asynctask_queue::loop(void *_queue, void *q_sthread) {
+  supla_asynctask_queue *queue = static_cast<supla_asynctask_queue *>(_queue);
+  if (!queue) {
+    return;
   }
-  lck_unlock(lck);
 
-  int n = 0;
+  while (sthread_isterminated(q_sthread) == 0) {
+    queue->iterate();
+  }
+}
+
+void supla_asynctask_queue::release_pools(void) {
   do {
-    if (thread_count() > 0) {
-      usleep(1000);
-      n++;
-      if (n >= 5000) {
-        supla_log(
-            LOG_ERR,
-            "Waiting for asynctask queue pool threads to stop timed out!");
-        break;
-      }
-    } else {
-      break;
+    lck_lock(lck);
+    if (pools.size()) {
+      delete pools.front();
     }
-  } while (1);
-
-  unsigned int tc = 0;
+    lck_unlock(lck);
+  } while (pool_count());
 }
 
 void supla_asynctask_queue::release_tasks(void) {
@@ -149,7 +145,18 @@ void supla_asynctask_queue::register_pool(
 }
 
 void supla_asynctask_queue::unregister_pool(
-    supla_abstract_asynctask_thread_pool *pool) {}
+    supla_abstract_asynctask_thread_pool *pool) {
+  lck_lock(lck);
+  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
+           pools.begin();
+       it != pools.end(); ++it) {
+    if (*it == pool) {
+      pools.erase(it);
+      break;
+    }
+  }
+  lck_unlock(lck);
+}
 
 supla_abstract_asynctask *supla_asynctask_queue::pick(
     supla_abstract_asynctask_thread_pool *pool) {
@@ -161,6 +168,7 @@ supla_abstract_asynctask *supla_asynctask_queue::pick(
     if ((*it)->get_state() == STA_STATE_WAITING && (*it)->get_pool() == pool &&
         (*it)->time_left_usec(NULL) <= 0) {
       result = *it;
+      result->pick();
       break;
     }
   }
@@ -169,7 +177,7 @@ supla_abstract_asynctask *supla_asynctask_queue::pick(
   return result;
 }
 
-void supla_asynctask_queue::iterate(void *q_sthread) {
+void supla_asynctask_queue::iterate(void) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
@@ -194,6 +202,14 @@ void supla_asynctask_queue::iterate(void *q_sthread) {
   }
 
   eh_wait(eh, wait_time);
+}
+
+unsigned int supla_asynctask_queue::pool_count(void) {
+  lck_lock(lck);
+  unsigned int result = pools.size();
+  lck_unlock(lck);
+
+  return result;
 }
 
 unsigned int supla_asynctask_queue::total_count(void) {
@@ -230,3 +246,5 @@ unsigned int supla_asynctask_queue::thread_count(void) {
 
   return result;
 }
+
+void supla_asynctask_queue::raise_event(void) { eh_raise_event(eh); }

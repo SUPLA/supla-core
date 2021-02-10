@@ -18,8 +18,16 @@
 
 #include "abstract_asynctask_thread_pool.h"
 #include <assert.h>
+#include <unistd.h>
+#include "abstract_asynctask.h"
 #include "asynctask_queue.h"
 #include "lck.h"
+#include "log.h"
+#include "sthread.h"
+
+#define WARNING_MIN_FREQ_SEC 5
+#define PICK_RETRY_LIMIT 3
+#define PICK_RETRY_DELAY_USEC 10000
 
 supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
     supla_asynctask_queue *queue) {
@@ -27,28 +35,158 @@ supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
   this->lck = lck_init();
   this->queue = queue;
   this->terminated = false;
+  this->_overload_count = 0;
+  this->_exec_count = 0;
+  this->warinig_time.tv_sec = 0;
+  this->warinig_time.tv_usec = 0;
+
   queue->register_pool(this);
 }
 
 supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
     void) {
+  terminate();
+
+  int n = 0;
+  while (thread_count()) {
+    usleep(10000);
+    n++;
+    if (n == 5000) {
+      supla_log(LOG_DEBUG,
+                "Elapsed time waiting for the threads in the pool to stop.");
+    }
+  }
+
   queue->unregister_pool(this);
   lck_free(lck);
 }
 
-void supla_abstract_asynctask_thread_pool::execution_request(void) {
+void supla_abstract_asynctask_thread_pool::execution_request(
+    supla_abstract_asynctask *task) {
   if (is_terminated()) {
     return;
   }
+
+  ... requests
+
+  bool overload_warning = false;
+
+  lck_lock(lck);
+  if (threads.size() < thread_count_limit()) {
+    Tsthread_params p;
+    p.user_data = this;
+    p.free_on_finish = 1;
+    p.execute = _execute;
+    p.finish = _on_thread_finish;
+    p.initialize = NULL;
+
+    void *thread = sthread_run(&p);
+    if (thread) {
+      threads.push_back(thread);
+    }
+  } else {
+    _overload_count++;
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    if (now.tv_sec - warinig_time.tv_sec >= WARNING_MIN_FREQ_SEC) {
+      warinig_time = now;
+      overload_warning = true;
+    }
+  }
+  lck_unlock(lck);
+
+  if (overload_warning) {
+    supla_log(LOG_DEBUG,
+              "The thread pool for asynchronous tasks is overloaded. Pool "
+              "Name: %s Limit: %li Counter: %li",
+              pool_name().c_str(), thread_count_limit(), overload_count());
+  }
+}
+
+// static
+void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
+                                                    void *sthread) {
+  static_cast<supla_abstract_asynctask_thread_pool *>(_pool)->execute(sthread);
+}
+
+void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
+  for (int a = 0; a < PICK_RETRY_LIMIT; a++) {
+    supla_abstract_asynctask *task = queue->pick(this);
+
+    if (task) {
+      task->execute();
+      lck_lock(lck);
+      _exec_count++;
+      lck_unlock(lck);
+
+      if (task->is_finished() && task->release_immediately_after_execution()) {
+        delete task;
+      }
+    }
+
+    if (sthread_isterminated(sthread)) {
+      break;
+    }
+
+    if (task == NULL) {
+      usleep(PICK_RETRY_DELAY_USEC);
+    }
+  }
+}
+
+// static
+void supla_abstract_asynctask_thread_pool::_on_thread_finish(void *_pool,
+                                                             void *sthread) {
+  static_cast<supla_abstract_asynctask_thread_pool *>(_pool)->on_thread_finish(
+      sthread);
+}
+
+void supla_abstract_asynctask_thread_pool::on_thread_finish(void *sthread) {
+  lck_lock(lck);
+  for (std::vector<void *>::iterator it = threads.begin(); it != threads.end();
+       ++it) {
+    if (*it == sthread) {
+      threads.erase(it);
+      break;
+    }
+  }
+  lck_unlock(lck);
 }
 
 unsigned int supla_abstract_asynctask_thread_pool::thread_count(void) {
-  return 0;
+  lck_lock(lck);
+  unsigned int result = threads.size();
+  lck_unlock(lck);
+
+  return result;
+}
+
+unsigned int supla_abstract_asynctask_thread_pool::overload_count(void) {
+  lck_lock(lck);
+  unsigned int result = _overload_count;
+  lck_unlock(lck);
+
+  return result;
+}
+
+unsigned int supla_abstract_asynctask_thread_pool::exec_count(void) {
+  lck_lock(lck);
+  unsigned int result = _exec_count;
+  lck_unlock(lck);
+
+  return result;
 }
 
 void supla_abstract_asynctask_thread_pool::terminate(void) {
   lck_lock(lck);
   terminated = true;
+
+  for (std::vector<void *>::iterator it = threads.begin(); it != threads.end();
+       ++it) {
+    sthread_terminate(*it);
+  }
+
   lck_unlock(lck);
 }
 

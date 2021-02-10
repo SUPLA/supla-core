@@ -19,23 +19,40 @@
 #ifndef ASYNCTASK_THREAD_POOL_H_
 #define ASYNCTASK_THREAD_POOL_H_
 
+#include <sys/time.h>
+#include <string>
+#include <vector>
+
 class supla_asynctask_queue;
+class supla_abstract_asynctask;
 class supla_abstract_asynctask_thread_pool {
  private:
   void *lck;
+  std::vector<void *> threads;
+  std::vector<supla_abstract_asynctask *> requests;
   supla_asynctask_queue *queue;
+  struct timeval warinig_time;
+  unsigned int _overload_count;
+  unsigned int _exec_count;
   bool terminated;
+  static void _execute(void *_pool, void *sthread);
+  static void _on_thread_finish(void *_pool, void *sthread);
+  void execute(void *sthread);
+  void on_thread_finish(void *sthread);
 
  protected:
   friend class supla_asynctask_queue;
-  void execution_request(void);
+  void execution_request(supla_abstract_asynctask *task);
   void terminate(void);
 
  public:
   explicit supla_abstract_asynctask_thread_pool(supla_asynctask_queue *queue);
   virtual ~supla_abstract_asynctask_thread_pool(void);
-  virtual int thread_count_limit(void) = 0;
+  virtual unsigned int thread_count_limit(void) = 0;
+  virtual std::string pool_name(void) = 0;
   unsigned int thread_count(void);
+  unsigned int overload_count(void);
+  unsigned int exec_count(void);
   bool is_terminated(void);
 };
 

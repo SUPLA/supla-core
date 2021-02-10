@@ -19,16 +19,32 @@
 #ifndef ASYNCTASK_MOCK_H_
 #define ASYNCTASK_MOCK_H_
 
+#include <sys/time.h>
 #include "abstract_asynctask.h"
 
 class AsyncTaskMock : public supla_abstract_asynctask {
+ private:
+  unsigned int job_time_usec;
+  unsigned short job_count_left;
+  unsigned int _exec_count;
+  bool _result;
+  struct timeval init_time;
+  struct timeval exec_time;
+
  protected:
   virtual bool _execute(bool *execute_again);
 
  public:
   AsyncTaskMock(supla_asynctask_queue *queue,
-                supla_abstract_asynctask_thread_pool *pool, short priority);
+                supla_abstract_asynctask_thread_pool *pool, short priority,
+                bool release_immediately);
   virtual ~AsyncTaskMock(void);
+  void set_job_time_usec(unsigned int job_time_usec);
+  void set_job_count_left(unsigned short job_count_left);
+  void set_result(bool result);
+  unsigned int exec_count(void);
+  void set_waiting(void);
+  long long exec_delay_usec(void);
 };
 
 #endif /*ASYNCTASK_MOCK_H_*/
