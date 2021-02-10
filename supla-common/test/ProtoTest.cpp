@@ -214,6 +214,7 @@ TEST_F(ProtoTest, set_version) {
   sproto_free(sproto);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 TEST_F(ProtoTest, out_dataexists) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
@@ -228,6 +229,7 @@ TEST_F(ProtoTest, out_dataexists) {
 
   sproto_free(sproto);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 TEST_F(ProtoTest, in_dataexists) {
   void *sproto = sproto_init();
@@ -434,6 +436,7 @@ TEST_F(ProtoTest, pop_in_sdp_test7) {
   sproto_free(sproto);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 TEST_F(ProtoTest, out_buffer_append_test1) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
@@ -503,5 +506,6 @@ TEST_F(ProtoTest, pop_out_data) {
 
   sproto_free(sproto);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 }  // namespace
