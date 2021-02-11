@@ -46,6 +46,9 @@ class supla_abstract_asynctask {
   supla_abstract_asynctask_thread_pool *pool;
   int priority;
   bool release_immediately;
+  void init(supla_asynctask_queue *queue,
+            supla_abstract_asynctask_thread_pool *pool, short priority,
+            bool release_immediately);
 
  protected:
   friend class supla_abstract_asynctask_thread_pool;
@@ -62,6 +65,8 @@ class supla_abstract_asynctask {
   supla_abstract_asynctask(supla_asynctask_queue *queue,
                            supla_abstract_asynctask_thread_pool *pool,
                            short priority, bool release_immediately);
+  supla_abstract_asynctask(supla_asynctask_queue *queue,
+                           supla_abstract_asynctask_thread_pool *pool);
   virtual ~supla_abstract_asynctask(void);
   supla_asynctask_queue *get_queue(void);
   supla_abstract_asynctask_thread_pool *get_pool(void);

@@ -31,6 +31,8 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   struct timeval init_time;
   struct timeval exec_time;
 
+  void mock_init(void);
+
  protected:
   virtual bool _execute(bool *execute_again);
 
@@ -38,6 +40,8 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   AsyncTaskMock(supla_asynctask_queue *queue,
                 supla_abstract_asynctask_thread_pool *pool, short priority,
                 bool release_immediately);
+  AsyncTaskMock(supla_asynctask_queue *queue,
+                supla_abstract_asynctask_thread_pool *pool);
   virtual ~AsyncTaskMock(void);
   void set_job_time_usec(unsigned int job_time_usec);
   void set_job_count_left(unsigned short job_count_left);

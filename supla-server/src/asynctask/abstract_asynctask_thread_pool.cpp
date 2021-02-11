@@ -37,6 +37,7 @@ supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
   this->terminated = false;
   this->_overload_count = 0;
   this->_exec_count = 0;
+  this->_highest_number_of_threads = 0;
   this->warinig_time.tv_sec = 0;
   this->warinig_time.tv_usec = 0;
 
@@ -51,7 +52,7 @@ supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
   while (thread_count()) {
     usleep(10000);
     n++;
-    if (n == 5000) {
+    if (n == 500) {
       supla_log(LOG_DEBUG,
                 "Elapsed time waiting for the threads in the pool to stop.");
     }
@@ -67,7 +68,28 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     return;
   }
 
-  ... requests
+  {
+    bool already_exists = false;
+
+    lck_lock(lck);
+    for (std::vector<supla_abstract_asynctask *>::iterator it =
+             requests.begin();
+         it != requests.end(); ++it) {
+      if (*it == task) {
+        already_exists = true;
+        break;
+      }
+    }
+
+    if (!already_exists) {
+      requests.push_back(task);
+    }
+    lck_unlock(lck);
+
+    if (already_exists) {
+      return;
+    }
+  }
 
   bool overload_warning = false;
 
@@ -83,6 +105,9 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     void *thread = sthread_run(&p);
     if (thread) {
       threads.push_back(thread);
+      if (threads.size() > _highest_number_of_threads) {
+        _highest_number_of_threads = threads.size();
+      }
     }
   } else {
     _overload_count++;
@@ -104,6 +129,19 @@ void supla_abstract_asynctask_thread_pool::execution_request(
   }
 }
 
+void supla_abstract_asynctask_thread_pool::remove_task(
+    supla_abstract_asynctask *task) {
+  lck_lock(lck);
+  for (std::vector<supla_abstract_asynctask *>::iterator it = requests.begin();
+       it != requests.end(); ++it) {
+    if (*it == task) {
+      requests.erase(it);
+      break;
+    }
+  }
+  lck_unlock(lck);
+}
+
 // static
 void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
                                                     void *sthread) {
@@ -111,7 +149,9 @@ void supla_abstract_asynctask_thread_pool::_execute(void *_pool,
 }
 
 void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
-  for (int a = 0; a < PICK_RETRY_LIMIT; a++) {
+  bool iterate = true;
+
+  do {
     supla_abstract_asynctask *task = queue->pick(this);
 
     if (task) {
@@ -125,14 +165,20 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
       }
     }
 
-    if (sthread_isterminated(sthread)) {
-      break;
+    if (task == NULL) {
+      if (!sthread_isterminated(sthread)) {
+        usleep(PICK_RETRY_DELAY_USEC);
+      }
+    } else {
+      remove_task(task);
     }
 
-    if (task == NULL) {
-      usleep(PICK_RETRY_DELAY_USEC);
-    }
-  }
+    lck_lock(lck);
+    iterate =
+        !sthread_isterminated(sthread) && threads.size() <= requests.size();
+    lck_unlock(lck);
+
+  } while (iterate);
 }
 
 // static
@@ -151,12 +197,26 @@ void supla_abstract_asynctask_thread_pool::on_thread_finish(void *sthread) {
       break;
     }
   }
+
+  if (threads.size() == 0) {
+    requests.clear();
+  }
+
   lck_unlock(lck);
 }
 
 unsigned int supla_abstract_asynctask_thread_pool::thread_count(void) {
   lck_lock(lck);
   unsigned int result = threads.size();
+  lck_unlock(lck);
+
+  return result;
+}
+
+unsigned int supla_abstract_asynctask_thread_pool::highest_number_of_threads(
+    void) {
+  lck_lock(lck);
+  unsigned int result = _highest_number_of_threads;
   lck_unlock(lck);
 
   return result;

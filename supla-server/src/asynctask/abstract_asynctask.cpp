@@ -18,12 +18,26 @@
 
 #include "abstract_asynctask.h"
 #include <assert.h>
+#include "abstract_asynctask_thread_pool.h"
 #include "asynctask_queue.h"
 #include "lck.h"
 
 supla_abstract_asynctask::supla_abstract_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     short priority, bool release_immediately) {
+  init(queue, pool, priority, release_immediately);
+  queue->add_task(this);
+}
+
+supla_abstract_asynctask::supla_abstract_asynctask(
+    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool) {
+  init(queue, pool, 0, true);
+  queue->add_task(this);
+}
+
+void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
+                                    supla_abstract_asynctask_thread_pool *pool,
+                                    short priority, bool release_immediately) {
   assert(queue);
   assert(pool);
 
@@ -37,8 +51,6 @@ supla_abstract_asynctask::supla_abstract_asynctask(
   this->pool = pool;
   this->priority = priority;
   this->release_immediately = release_immediately;
-
-  queue->add_task(this);
 }
 
 supla_abstract_asynctask::~supla_abstract_asynctask(void) {

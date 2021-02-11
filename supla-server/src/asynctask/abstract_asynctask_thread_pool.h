@@ -34,6 +34,7 @@ class supla_abstract_asynctask_thread_pool {
   struct timeval warinig_time;
   unsigned int _overload_count;
   unsigned int _exec_count;
+  unsigned int _highest_number_of_threads;
   bool terminated;
   static void _execute(void *_pool, void *sthread);
   static void _on_thread_finish(void *_pool, void *sthread);
@@ -42,7 +43,9 @@ class supla_abstract_asynctask_thread_pool {
 
  protected:
   friend class supla_asynctask_queue;
+
   void execution_request(supla_abstract_asynctask *task);
+  void remove_task(supla_abstract_asynctask *task);
   void terminate(void);
 
  public:
@@ -51,6 +54,7 @@ class supla_abstract_asynctask_thread_pool {
   virtual unsigned int thread_count_limit(void) = 0;
   virtual std::string pool_name(void) = 0;
   unsigned int thread_count(void);
+  unsigned int highest_number_of_threads(void);
   unsigned int overload_count(void);
   unsigned int exec_count(void);
   bool is_terminated(void);

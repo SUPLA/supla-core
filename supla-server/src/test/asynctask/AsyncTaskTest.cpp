@@ -52,9 +52,17 @@ TEST_F(AsyncTaskTest, initWithNulls_2) {
                "Assertion `pool' failed");
 }
 
-TEST_F(AsyncTaskTest, correctInitialization) {
+TEST_F(AsyncTaskTest, correctInitialization_1) {
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, true);
   ASSERT_TRUE(task != NULL);
+  delete task;
+}
+
+TEST_F(AsyncTaskTest, correctInitialization_2) {
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
+  ASSERT_TRUE(task != NULL);
+  EXPECT_EQ(task->get_priority(), 0);
+  EXPECT_TRUE(task->release_immediately_after_execution());
   delete task;
 }
 

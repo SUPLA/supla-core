@@ -23,6 +23,16 @@ AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
                              supla_abstract_asynctask_thread_pool *pool,
                              short priority, bool release_immediately)
     : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
+  mock_init();
+}
+
+AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
+                             supla_abstract_asynctask_thread_pool *pool)
+    : supla_abstract_asynctask(queue, pool) {
+  mock_init();
+}
+
+void AsyncTaskMock::mock_init(void) {
   this->job_time_usec = 0;
   this->job_count_left = 1;
   this->_exec_count = 0;

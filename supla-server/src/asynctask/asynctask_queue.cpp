@@ -73,6 +73,7 @@ void supla_asynctask_queue::release_tasks(void) {
 
 void supla_asynctask_queue::sort_tasks(void) {
   lck_lock(lck);
+
   lck_unlock(lck);
 }
 
@@ -189,7 +190,7 @@ void supla_asynctask_queue::iterate(void) {
     long long time_left = (*it)->time_left_usec(&now);
     if (time_left <= 0) {
       if ((*it)->get_state() == STA_STATE_WAITING) {
-        (*it)->get_pool()->execution_request();
+        (*it)->get_pool()->execution_request(*it);
       }
     } else if (time_left < wait_time) {
       wait_time = time_left;

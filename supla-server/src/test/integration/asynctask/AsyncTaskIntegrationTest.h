@@ -19,8 +19,8 @@
 #ifndef ASYNCTASK_INTEGRATION_TEST_H_
 #define ASYNCTASK_INTEGRATION_TEST_H_
 
-#include "asynctask/AsyncTaskThreadPoolMock.h"
 #include "asynctask/AsyncTaskMock.h"
+#include "asynctask/AsyncTaskThreadPoolMock.h"
 #include "asynctask_queue.h"
 #include "integration/IntegrationTest.h"
 
@@ -30,6 +30,8 @@ class AsyncTaskIntegrationTest : public IntegrationTest {
  protected:
   supla_asynctask_queue *queue;
   AsyncTaskThreadPoolMock *pool;
+  void WaitForState(AsyncTaskMock *task, async_task_state expected,
+                    unsigned int usec);
 
  public:
   virtual void SetUp();

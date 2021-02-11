@@ -17,6 +17,7 @@
  */
 
 #include "AsyncTaskIntegrationTest.h"
+#include "log.h"
 
 namespace testing {
 
@@ -40,6 +41,22 @@ void AsyncTaskIntegrationTest::TearDown() {
   }
 }
 
+void AsyncTaskIntegrationTest::WaitForState(AsyncTaskMock *task,
+                                            async_task_state expected,
+                                            unsigned int usec) {
+  async_task_state last;
+  unsigned int steps = usec / 100;
+  for (unsigned int a = 0; a < steps; a++) {
+    last = task->get_state();
+    if (last == expected) {
+      return;
+    }
+    usleep(100);
+  }
+
+  ASSERT_EQ(last, expected);
+}
+
 TEST_F(AsyncTaskIntegrationTest, releaseQueueContainingUninitializedTask) {
   ASSERT_EQ(queue->total_count(), (unsigned int)0);
   ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
@@ -58,17 +75,22 @@ TEST_F(AsyncTaskIntegrationTest, releaseQueueContainingUninitializedTask) {
 }
 
 TEST_F(AsyncTaskIntegrationTest, runTaskWithoutDelay) {
+  pool->set_thread_count_limit(10);
+
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
   ASSERT_TRUE(task != NULL);
-  task->set_job_time_usec(100000);
+  task->set_job_time_usec(500000);
+  task->set_result(true);
   task->set_waiting();
-  usleep(1000);
+  WaitForState(task, STA_STATE_EXECUTING, 1000000);
   EXPECT_EQ(pool->thread_count(), (unsigned int)1);
   EXPECT_EQ(pool->exec_count(), (unsigned int)0);
-  EXPECT_EQ(task->get_state(), STA_STATE_EXECUTING);
-
-  delete task;
+  WaitForState(task, STA_STATE_SUCCESS, 1000000);
+  usleep(1000);
+  EXPECT_EQ(pool->thread_count(), (unsigned int)0);
+  EXPECT_EQ(pool->exec_count(), (unsigned int)1);
+  EXPECT_EQ(pool->highest_number_of_threads(), (unsigned int)1);
 }
 
 }  // namespace testing
