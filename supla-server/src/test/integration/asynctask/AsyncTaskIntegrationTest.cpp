@@ -57,6 +57,20 @@ void AsyncTaskIntegrationTest::WaitForState(AsyncTaskMock *task,
   ASSERT_EQ(last, expected);
 }
 
+void AsyncTaskIntegrationTest::WaitForExec(AsyncTaskThreadPoolMock *pool,
+                                           unsigned int expected_count,
+                                           unsigned int usec) {
+  unsigned int steps = usec / 100;
+  for (unsigned int a = 0; a < steps; a++) {
+    if (pool->exec_count() == expected_count) {
+      return;
+    }
+    usleep(100);
+  }
+
+  ASSERT_EQ(pool->exec_count(), expected_count);
+}
+
 TEST_F(AsyncTaskIntegrationTest, releaseQueueContainingUninitializedTask) {
   ASSERT_EQ(queue->total_count(), (unsigned int)0);
   ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
@@ -104,6 +118,113 @@ TEST_F(AsyncTaskIntegrationTest, runTaskWithDelay) {
   WaitForState(task, STA_STATE_SUCCESS, 2000000);
   EXPECT_GT(task->exec_delay_usec(), 1200000);
   EXPECT_LT(task->exec_delay_usec(), 1500000);
+}
+
+TEST_F(AsyncTaskIntegrationTest, runMultipleTasks) {
+  pool->set_thread_count_limit(10);
+  for (int a = 0; a < 50; a++) {
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
+    task->set_job_time_usec(100);
+    task->set_result(true);
+    task->set_waiting();
+  }
+
+  WaitForExec(pool, 50, 5000000);
+  EXPECT_EQ(pool->highest_number_of_threads(), (unsigned int)10);
+}
+
+TEST_F(AsyncTaskIntegrationTest, runMultipleTasksWithTwoPools) {
+  AsyncTaskThreadPoolMock *pool2 = new AsyncTaskThreadPoolMock(queue);
+  EXPECT_TRUE(pool2 != NULL);
+
+  pool->set_thread_count_limit(10);
+  pool2->set_thread_count_limit(5);
+
+  for (int a = 0; a < 100; a++) {
+    AsyncTaskMock *task = new AsyncTaskMock(queue, a % 2 ? pool : pool2);
+    task->set_job_time_usec(100);
+    task->set_result(true);
+    task->set_waiting();
+  }
+
+  WaitForExec(pool, 50, 5000000);
+  EXPECT_EQ(pool->highest_number_of_threads(), (unsigned int)10);
+  EXPECT_EQ(pool2->highest_number_of_threads(), (unsigned int)5);
+
+  delete pool2;
+}
+
+TEST_F(AsyncTaskIntegrationTest, priorityTest) {
+  pool->set_thread_count_limit(1);
+  pool->hold();
+
+  std::vector<AsyncTaskMock *> tasks;
+  int a;
+
+  for (a = 0; a < 100; a++) {
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool, a, false);
+    task->set_job_time_usec(10000);
+    task->set_result(true);
+    task->set_waiting();
+
+    tasks.push_back(task);
+  }
+
+  pool->unhold();
+
+  WaitForExec(pool, 100, 10000000);
+
+  long long last_delay = 0;
+
+  for (std::vector<AsyncTaskMock *>::reverse_iterator it = tasks.rbegin();
+       it != tasks.rend(); ++it) {
+    EXPECT_TRUE(last_delay < (*it)->exec_delay_usec());
+    EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
+    last_delay = (*it)->exec_delay_usec();
+  }
+
+  tasks.clear();
+  pool->hold();
+
+  for (a = 0; a < 100; a++) {
+    AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
+    task->set_job_time_usec(10000);
+    task->set_result(true);
+    task->set_waiting();
+
+    tasks.push_back(task);
+  }
+
+  pool->unhold();
+
+  WaitForExec(pool, 200, 10000000);
+
+  last_delay = 0;
+
+  for (std::vector<AsyncTaskMock *>::iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
+    EXPECT_TRUE(last_delay <= (*it)->exec_delay_usec());
+    last_delay = (*it)->exec_delay_usec();
+  }
+}
+
+TEST_F(AsyncTaskIntegrationTest, taskWithSubTasks) {
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
+  ASSERT_TRUE(task != NULL);
+  task->set_job_time_usec(1000000);
+  task->set_delay_usec(500000);
+  task->set_job_count_left(3);
+  task->set_result(true);
+  task->set_waiting();
+
+  for (unsigned int a = 1; a <= 3; a++) {
+    supla_log(LOG_DEBUG, "SubTask: %i", a);
+    WaitForState(task, STA_STATE_EXECUTING, 2000000);
+    WaitForState(task, a == 3 ? STA_STATE_SUCCESS : STA_STATE_WAITING, 1500000);
+    EXPECT_EQ(task->exec_count(), a);
+    EXPECT_EQ(pool->exec_count(), a);
+  }
 }
 
 }  // namespace testing

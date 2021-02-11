@@ -45,10 +45,12 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   virtual ~AsyncTaskMock(void);
   void set_job_time_usec(unsigned int job_time_usec);
   void set_job_count_left(unsigned short job_count_left);
+  unsigned short get_job_count_left(void);
   void set_result(bool result);
   unsigned int exec_count(void);
   void set_waiting(void);
   long long exec_delay_usec(void);
+  void set_retry_left(int retry_left);
 };
 
 #endif /*ASYNCTASK_MOCK_H_*/

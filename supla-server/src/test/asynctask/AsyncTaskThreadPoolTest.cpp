@@ -41,4 +41,24 @@ TEST_F(AsyncTaskThreadPoolTest, initWithNulls) {
   delete queue;
 }
 
+TEST_F(AsyncTaskThreadPoolTest, hold) {
+  supla_asynctask_queue *queue = new supla_asynctask_queue();
+  ASSERT_TRUE(queue != NULL);
+
+  AsyncTaskThreadPoolMock *pool = new AsyncTaskThreadPoolMock(queue);
+  EXPECT_TRUE(pool != NULL);
+
+  EXPECT_FALSE(pool->is_holded());
+  pool->hold();
+  EXPECT_TRUE(pool->is_holded());
+  pool->unhold();
+  EXPECT_FALSE(pool->is_holded());
+
+  if (pool) {
+    delete pool;
+  }
+
+  delete queue;
+}
+
 }  // namespace testing

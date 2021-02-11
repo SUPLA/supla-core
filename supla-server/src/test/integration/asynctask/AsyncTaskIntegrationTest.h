@@ -32,6 +32,8 @@ class AsyncTaskIntegrationTest : public IntegrationTest {
   AsyncTaskThreadPoolMock *pool;
   void WaitForState(AsyncTaskMock *task, async_task_state expected,
                     unsigned int usec);
+  void WaitForExec(AsyncTaskThreadPoolMock *pool, unsigned int expected_count,
+                   unsigned int usec);
 
  public:
   virtual void SetUp();

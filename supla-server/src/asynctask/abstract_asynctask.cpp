@@ -98,7 +98,9 @@ void supla_abstract_asynctask::set_delay_usec(long long delay_usec) {
   }
 
   unlock();
-  queue->raise_event();
+  if (get_state() != STA_STATE_EXECUTING) {
+    queue->raise_event();
+  }
 }
 
 void supla_abstract_asynctask::set_timeout(unsigned long long timeout_usec) {
@@ -183,6 +185,7 @@ void supla_abstract_asynctask::execute(void) {
   if (state != STA_STATE_CANCELED) {
     if (exec_again) {
       state = STA_STATE_WAITING;
+      set_delay_usec(delay_usec);
     } else if (result) {
       state = STA_STATE_SUCCESS;
     } else {

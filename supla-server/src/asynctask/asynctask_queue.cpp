@@ -71,12 +71,6 @@ void supla_asynctask_queue::release_tasks(void) {
   } while (total_count());
 }
 
-void supla_asynctask_queue::sort_tasks(void) {
-  lck_lock(lck);
-
-  lck_unlock(lck);
-}
-
 bool supla_asynctask_queue::task_exists(supla_abstract_asynctask *task) {
   bool result = false;
   lck_lock(lck);
@@ -98,10 +92,20 @@ void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
   assert(pool_exists(task->get_pool()));
 
   lck_lock(lck);
-  tasks.push_back(task);
+  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    if ((*it)->get_priority() < task->get_priority()) {
+      tasks.insert(it, task);
+      task = NULL;
+      break;
+    }
+  }
+
+  if (task) {
+    tasks.push_back(task);
+  }
   lck_unlock(lck);
 
-  sort_tasks();
   eh_raise_event(eh);
 }
 

@@ -81,6 +81,12 @@ void AsyncTaskMock::set_job_count_left(unsigned short job_count_left) {
   unlock();
 }
 
+unsigned short AsyncTaskMock::get_job_count_left(void) {
+  lock();
+  this->job_count_left = job_count_left;
+  unlock();
+}
+
 void AsyncTaskMock::set_result(bool result) {
   lock();
   _result = result;
@@ -96,6 +102,14 @@ long long AsyncTaskMock::exec_delay_usec(void) {
   long long result =
       (exec_time.tv_sec * (long long)1000000 + exec_time.tv_usec) -
       (init_time.tv_sec * (long long)1000000 + init_time.tv_usec);
+  unlock();
+
+  return result;
+}
+
+unsigned int AsyncTaskMock::exec_count(void) {
+  lock();
+  unsigned int result = _exec_count;
   unlock();
 
   return result;

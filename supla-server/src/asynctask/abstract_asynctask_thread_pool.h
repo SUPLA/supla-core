@@ -35,6 +35,7 @@ class supla_abstract_asynctask_thread_pool {
   unsigned int _overload_count;
   unsigned int _exec_count;
   unsigned int _highest_number_of_threads;
+  bool holded;
   bool terminated;
   static void _execute(void *_pool, void *sthread);
   static void _on_thread_finish(void *_pool, void *sthread);
@@ -58,6 +59,9 @@ class supla_abstract_asynctask_thread_pool {
   unsigned int overload_count(void);
   unsigned int exec_count(void);
   bool is_terminated(void);
+  void hold(void);
+  bool is_holded(void);
+  void unhold(void);
 };
 
 #endif /*ASYNCTASK_THREAD_POOL_H_*/

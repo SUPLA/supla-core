@@ -28,9 +28,9 @@ class supla_asynctask_queue {
   void *lck;
   void *thread;
   TEventHandler *eh;
+
   std::vector<supla_abstract_asynctask *> tasks;
   std::vector<supla_abstract_asynctask_thread_pool *> pools;
-  void sort_tasks(void);
   void iterate(void);
   void release_tasks(void);
   void release_pools(void);

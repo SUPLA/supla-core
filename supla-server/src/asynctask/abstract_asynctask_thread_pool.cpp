@@ -40,6 +40,7 @@ supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
   this->_highest_number_of_threads = 0;
   this->warinig_time.tv_sec = 0;
   this->warinig_time.tv_usec = 0;
+  this->holded = false;
 
   queue->register_pool(this);
 }
@@ -64,7 +65,7 @@ supla_abstract_asynctask_thread_pool::~supla_abstract_asynctask_thread_pool(
 
 void supla_abstract_asynctask_thread_pool::execution_request(
     supla_abstract_asynctask *task) {
-  if (is_terminated()) {
+  if (is_terminated() || is_holded()) {
     return;
   }
 
@@ -177,7 +178,6 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
     iterate =
         !sthread_isterminated(sthread) && threads.size() <= requests.size();
     lck_unlock(lck);
-
   } while (iterate);
 }
 
@@ -256,4 +256,24 @@ bool supla_abstract_asynctask_thread_pool::is_terminated(void) {
   lck_unlock(lck);
 
   return result;
+}
+
+void supla_abstract_asynctask_thread_pool::hold(void) {
+  lck_lock(lck);
+  holded = true;
+  lck_unlock(lck);
+}
+
+bool supla_abstract_asynctask_thread_pool::is_holded(void) {
+  lck_lock(lck);
+  bool result = holded;
+  lck_unlock(lck);
+
+  return result;
+}
+
+void supla_abstract_asynctask_thread_pool::unhold(void) {
+  lck_lock(lck);
+  holded = false;
+  lck_unlock(lck);
 }

@@ -22,17 +22,17 @@
 #include "abstract_asynctask_thread_pool.h"
 
 class AsyncTaskThreadPoolMock : public supla_abstract_asynctask_thread_pool {
-private:
- unsigned int limit;
+ private:
+  unsigned int limit;
 
-protected:
- virtual unsigned int thread_count_limit(void);
+ protected:
+  virtual unsigned int thread_count_limit(void);
 
-public:
- explicit AsyncTaskThreadPoolMock(supla_asynctask_queue *queue);
- virtual ~AsyncTaskThreadPoolMock(void);
- virtual std::string pool_name(void);
- void set_thread_count_limit(unsigned int limit);
+ public:
+  explicit AsyncTaskThreadPoolMock(supla_asynctask_queue *queue);
+  virtual ~AsyncTaskThreadPoolMock(void);
+  virtual std::string pool_name(void);
+  void set_thread_count_limit(unsigned int limit);
 };
 
 #endif /*ASYNCTASK_THREAD_POOL_MOCK_H_*/

@@ -83,7 +83,7 @@ TEST_F(AsyncTaskTest, releaseFlag) {
   ASSERT_TRUE(task != NULL);
   ASSERT_FALSE(task->release_immediately_after_execution());
   delete task;
-};
+}
 
 TEST_F(AsyncTaskTest, delay) {
   ASSERT_EQ(task->get_delay_usec(), 0);
