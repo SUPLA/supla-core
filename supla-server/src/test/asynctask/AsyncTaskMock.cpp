@@ -18,6 +18,7 @@
 
 #include "AsyncTaskMock.h"
 #include <unistd.h>
+#include "log.h"
 
 AsyncTaskMock::AsyncTaskMock(supla_asynctask_queue *queue,
                              supla_abstract_asynctask_thread_pool *pool,
@@ -93,8 +94,8 @@ void AsyncTaskMock::set_waiting(void) {
 long long AsyncTaskMock::exec_delay_usec(void) {
   lock();
   long long result =
-      (init_time.tv_sec * (long long)1000000 + init_time.tv_usec) -
-      (exec_time.tv_sec * (long long)1000000 + exec_time.tv_usec);
+      (exec_time.tv_sec * (long long)1000000 + exec_time.tv_usec) -
+      (init_time.tv_sec * (long long)1000000 + init_time.tv_usec);
   unlock();
 
   return result;

@@ -87,10 +87,23 @@ TEST_F(AsyncTaskIntegrationTest, runTaskWithoutDelay) {
   EXPECT_EQ(pool->thread_count(), (unsigned int)1);
   EXPECT_EQ(pool->exec_count(), (unsigned int)0);
   WaitForState(task, STA_STATE_SUCCESS, 1000000);
+  EXPECT_LT(task->exec_delay_usec(), 200000);
   usleep(1000);
   EXPECT_EQ(pool->thread_count(), (unsigned int)0);
   EXPECT_EQ(pool->exec_count(), (unsigned int)1);
   EXPECT_EQ(pool->highest_number_of_threads(), (unsigned int)1);
+}
+
+TEST_F(AsyncTaskIntegrationTest, runTaskWithDelay) {
+  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
+  ASSERT_TRUE(task != NULL);
+  task->set_job_time_usec(100);
+  task->set_delay_usec(1200000);
+  task->set_result(true);
+  task->set_waiting();
+  WaitForState(task, STA_STATE_SUCCESS, 2000000);
+  EXPECT_GT(task->exec_delay_usec(), 1200000);
+  EXPECT_LT(task->exec_delay_usec(), 1500000);
 }
 
 }  // namespace testing

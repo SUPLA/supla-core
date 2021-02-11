@@ -123,7 +123,7 @@ long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
 
   lock();
   long long result = 0;
-  if (now->tv_sec <= start_time.tv_sec) {
+  if (start_time.tv_sec || start_time.tv_usec) {
     result = (start_time.tv_sec * (long long)1000000 + start_time.tv_usec) -
              (now->tv_sec * (long long)1000000 + now->tv_usec);
   }
