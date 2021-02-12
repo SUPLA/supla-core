@@ -4,13 +4,22 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/integration/asynctask/AsyncTaskIntegrationTest.cpp 
+../src/test/integration/asynctask/AsyncTaskIntegrationTest.cpp \
+../src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.cpp \
+../src/test/integration/asynctask/ChannelOrientedAsyncTaskMock.cpp \
+../src/test/integration/asynctask/ChannelSearchCondition.cpp 
 
 OBJS += \
-./src/test/integration/asynctask/AsyncTaskIntegrationTest.o 
+./src/test/integration/asynctask/AsyncTaskIntegrationTest.o \
+./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.o \
+./src/test/integration/asynctask/ChannelOrientedAsyncTaskMock.o \
+./src/test/integration/asynctask/ChannelSearchCondition.o 
 
 CPP_DEPS += \
-./src/test/integration/asynctask/AsyncTaskIntegrationTest.d 
+./src/test/integration/asynctask/AsyncTaskIntegrationTest.d \
+./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.d \
+./src/test/integration/asynctask/ChannelOrientedAsyncTaskMock.d \
+./src/test/integration/asynctask/ChannelSearchCondition.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

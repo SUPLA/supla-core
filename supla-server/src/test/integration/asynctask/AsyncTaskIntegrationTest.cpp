@@ -172,13 +172,13 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
 
   pool->unhold();
 
-  WaitForExec(pool, 100, 10000000);
+  WaitForExec(pool, 100, 20000000);
 
   long long last_delay = 0;
 
   for (std::vector<AsyncTaskMock *>::reverse_iterator it = tasks.rbegin();
        it != tasks.rend(); ++it) {
-    EXPECT_TRUE(last_delay < (*it)->exec_delay_usec());
+    EXPECT_TRUE(last_delay <= (*it)->exec_delay_usec());
     EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
     last_delay = (*it)->exec_delay_usec();
   }
@@ -197,7 +197,7 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
 
   pool->unhold();
 
-  WaitForExec(pool, 200, 10000000);
+  WaitForExec(pool, 200, 20000000);
 
   last_delay = 0;
 
@@ -221,7 +221,7 @@ TEST_F(AsyncTaskIntegrationTest, taskWithSubTasks) {
   for (unsigned int a = 1; a <= 3; a++) {
     supla_log(LOG_DEBUG, "SubTask: %i", a);
     WaitForState(task, STA_STATE_EXECUTING, 2000000);
-    WaitForState(task, a == 3 ? STA_STATE_SUCCESS : STA_STATE_WAITING, 1500000);
+    WaitForState(task, a == 3 ? STA_STATE_SUCCESS : STA_STATE_WAITING, 2000000);
     EXPECT_EQ(task->exec_count(), a);
     EXPECT_EQ(pool->exec_count(), a);
   }

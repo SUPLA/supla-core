@@ -202,7 +202,7 @@ void supla_asynctask_queue::iterate(void) {
   }
   lck_unlock(lck);
 
-  if (wait_time > 10000) {
+  if (wait_time < 10000) {
     wait_time = 10000;
   }
 
@@ -253,3 +253,62 @@ unsigned int supla_asynctask_queue::thread_count(void) {
 }
 
 void supla_asynctask_queue::raise_event(void) { eh_raise_event(eh); }
+
+supla_abstract_asynctask *supla_asynctask_queue::find_task(
+    supla_abstract_asynctask_search_condition *cnd) {
+  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    if (cnd->condition_met(*it)) {
+      return *it;
+    }
+  }
+  return NULL;
+}
+
+bool supla_asynctask_queue::get_task_state(
+    async_task_state *state, supla_abstract_asynctask_search_condition *cnd) {
+  if (!state) {
+    return false;
+  }
+
+  lck_lock(lck);
+  supla_abstract_asynctask *task = find_task(cnd);
+  if (task != NULL) {
+    *state = task->get_state();
+  }
+  lck_unlock(lck);
+
+  return task != NULL;
+}
+
+unsigned int supla_asynctask_queue::get_task_count(
+    supla_abstract_asynctask_search_condition *cnd) {
+  unsigned int result = 0;
+  lck_lock(lck);
+  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    if (cnd->condition_met(*it)) {
+      result++;
+    }
+  }
+  lck_unlock(lck);
+  return result;
+}
+
+void supla_asynctask_queue::cancel_task(
+    supla_abstract_asynctask_search_condition *cnd) {
+  lck_lock(lck);
+  supla_abstract_asynctask *task = find_task(cnd);
+  if (task != NULL) {
+    bool release = task->release_immediately_after_execution() &&
+                   (task->get_state() == STA_STATE_INIT ||
+                    task->get_state() == STA_STATE_WAITING);
+
+    task->cancel();
+
+    if (release) {
+      delete task;
+    }
+  }
+  lck_unlock(lck);
+}
