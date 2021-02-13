@@ -601,6 +601,8 @@ bool supla_device::action_open(int SenderID, int ChannelID, int GroupID,
                                GroupID, EOL);
 }
 
+bool supla_device::action_close(int ChannelID) { return false; }
+
 bool supla_device::action_open_close(int SenderID, int ChannelID, int GroupID,
                                      unsigned char EOL) {
   return channels->action_open_close(getSvrConn()->srpc(), SenderID, ChannelID,

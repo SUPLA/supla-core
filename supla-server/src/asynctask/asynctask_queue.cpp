@@ -92,6 +92,8 @@ void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
   assert(pool_exists(task->get_pool()));
 
   lck_lock(lck);
+  task->task_will_added();
+
   for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
        it != tasks.end(); ++it) {
     if ((*it)->get_priority() < task->get_priority()) {

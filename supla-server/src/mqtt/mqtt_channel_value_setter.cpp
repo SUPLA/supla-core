@@ -108,6 +108,13 @@ void supla_mqtt_channel_value_setter::action_open(void) {
   }
 }
 
+void supla_mqtt_channel_value_setter::action_close(void) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->close();
+  }
+}
+
 void supla_mqtt_channel_value_setter::action_open_close(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {

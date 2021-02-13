@@ -98,6 +98,14 @@ void supla_action_executor::open(void) {
   }
 }
 
+void supla_action_executor::close(void) {
+  supla_device *device = get_device();
+  if (device) {
+    device->action_close(get_channel_id());
+    device->releasePtr();
+  }
+}
+
 void supla_action_executor::open_close(void) {
   supla_device *device = get_device();
   if (device) {

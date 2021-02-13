@@ -227,3 +227,5 @@ bool supla_abstract_asynctask::release_immediately_after_execution(void) {
   unlock();
   return result;
 }
+
+void supla_abstract_asynctask::task_will_added(void) {}

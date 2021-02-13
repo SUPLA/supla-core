@@ -16,32 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ASYNCTASK_INTEGRATION_TEST_H_
-#define ASYNCTASK_INTEGRATION_TEST_H_
+#ifndef GATE_STATE_GETTER_MOCK_H_
+#define GATE_STATE_GETTER_MOCK_H_
 
-#include "asynctask/AsyncTaskMock.h"
-#include "asynctask/AsyncTaskThreadPoolMock.h"
-#include "asynctask_queue.h"
-#include "integration/IntegrationTest.h"
+#include "abstract_gate_state_getter.h"
 
 namespace testing {
 
-class AsyncTaskIntegrationTest : public IntegrationTest {
- protected:
-  supla_asynctask_queue *queue;
-  AsyncTaskThreadPoolMock *pool;
-  void WaitForState(supla_abstract_asynctask *task, async_task_state expected,
-                    unsigned int usec);
-  void WaitForExec(AsyncTaskThreadPoolMock *pool, unsigned int expected_count,
-                   unsigned int usec);
+class GateStateGetterMock : public supla_abstract_gate_state_getter {
+ private:
+  bool result;
+  bool is_closed;
 
+ protected:
  public:
-  virtual void SetUp();
-  virtual void TearDown();
-  AsyncTaskIntegrationTest();
-  virtual ~AsyncTaskIntegrationTest();
+  GateStateGetterMock();
+  virtual ~GateStateGetterMock();
+  virtual bool get_related_openingsensor_state(int user_id, int device_id,
+                                               int channel_id, bool *is_closed);
+  void set_result(bool result);
+  void set_closed(bool closed);
 };
 
 } /* namespace testing */
 
-#endif /* ASYNCTASK_INTEGRATION_TEST_H_ */
+#endif /* GATE_STATE_GETTER_MOCK_H_ */

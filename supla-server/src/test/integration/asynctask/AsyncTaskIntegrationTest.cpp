@@ -41,17 +41,18 @@ void AsyncTaskIntegrationTest::TearDown() {
   }
 }
 
-void AsyncTaskIntegrationTest::WaitForState(AsyncTaskMock *task,
+void AsyncTaskIntegrationTest::WaitForState(supla_abstract_asynctask *task,
                                             async_task_state expected,
                                             unsigned int usec) {
   async_task_state last;
-  unsigned int steps = usec / 100;
+  unsigned int steps = usec / 10000;
+
   for (unsigned int a = 0; a < steps; a++) {
     last = task->get_state();
     if (last == expected) {
       return;
     }
-    usleep(100);
+    usleep(10000);
   }
 
   ASSERT_EQ(last, expected);
@@ -60,12 +61,13 @@ void AsyncTaskIntegrationTest::WaitForState(AsyncTaskMock *task,
 void AsyncTaskIntegrationTest::WaitForExec(AsyncTaskThreadPoolMock *pool,
                                            unsigned int expected_count,
                                            unsigned int usec) {
-  unsigned int steps = usec / 100;
+  unsigned int steps = usec / 100000;
+
   for (unsigned int a = 0; a < steps; a++) {
     if (pool->exec_count() == expected_count) {
       return;
     }
-    usleep(100);
+    usleep(100000);
   }
 
   ASSERT_EQ(pool->exec_count(), expected_count);
@@ -163,7 +165,7 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
 
   for (a = 0; a < 100; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, pool, a, false);
-    task->set_job_time_usec(10000);
+    task->set_job_time_usec(100);
     task->set_result(true);
     task->set_waiting();
 
@@ -174,13 +176,16 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
 
   WaitForExec(pool, 100, 20000000);
 
-  long long last_delay = 0;
+  struct timeval now;
+  gettimeofday(&now, NULL);
 
-  for (std::vector<AsyncTaskMock *>::reverse_iterator it = tasks.rbegin();
+  long long time_usec = tasks.back()->exec_time_since(&now);
+
+  for (std::vector<AsyncTaskMock *>::reverse_iterator it = tasks.rbegin() + 1;
        it != tasks.rend(); ++it) {
-    EXPECT_TRUE(last_delay <= (*it)->exec_delay_usec());
+    EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
     EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
-    last_delay = (*it)->exec_delay_usec();
+    time_usec = (*it)->exec_time_since(&now);
   }
 
   tasks.clear();
@@ -188,7 +193,7 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
 
   for (a = 0; a < 100; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
-    task->set_job_time_usec(10000);
+    task->set_job_time_usec(100);
     task->set_result(true);
     task->set_waiting();
 
@@ -198,14 +203,15 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
   pool->unhold();
 
   WaitForExec(pool, 200, 20000000);
+  gettimeofday(&now, NULL);
 
-  last_delay = 0;
+  time_usec = tasks.front()->exec_time_since(&now);
 
-  for (std::vector<AsyncTaskMock *>::iterator it = tasks.begin();
+  for (std::vector<AsyncTaskMock *>::iterator it = tasks.begin() + 1;
        it != tasks.end(); ++it) {
     EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
-    EXPECT_TRUE(last_delay <= (*it)->exec_delay_usec());
-    last_delay = (*it)->exec_delay_usec();
+    EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
+    time_usec = (*it)->exec_time_since(&now);
   }
 }
 

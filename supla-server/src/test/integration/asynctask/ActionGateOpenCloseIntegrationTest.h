@@ -16,32 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ASYNCTASK_INTEGRATION_TEST_H_
-#define ASYNCTASK_INTEGRATION_TEST_H_
+#ifndef ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
+#define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
 
-#include "asynctask/AsyncTaskMock.h"
-#include "asynctask/AsyncTaskThreadPoolMock.h"
-#include "asynctask_queue.h"
-#include "integration/IntegrationTest.h"
+#include "ActionExecutorMock.h"
+#include "AsyncTaskIntegrationTest.h"
+#include "GateStateGetterMock.h"
 
 namespace testing {
 
-class AsyncTaskIntegrationTest : public IntegrationTest {
+class ActionGateOpenCloseIntegrationTest : public AsyncTaskIntegrationTest {
  protected:
-  supla_asynctask_queue *queue;
-  AsyncTaskThreadPoolMock *pool;
-  void WaitForState(supla_abstract_asynctask *task, async_task_state expected,
-                    unsigned int usec);
-  void WaitForExec(AsyncTaskThreadPoolMock *pool, unsigned int expected_count,
-                   unsigned int usec);
+  GateStateGetterMock *state_getter;
+  ActionExecutorMock *action_executor;
+  void noActionRequired(bool open);
+  void openClose(bool open, int attemptCount, bool success);
+  void WaitForOpenClose(int expected_count, unsigned int usec);
 
  public:
+  ActionGateOpenCloseIntegrationTest();
+  virtual ~ActionGateOpenCloseIntegrationTest();
   virtual void SetUp();
   virtual void TearDown();
-  AsyncTaskIntegrationTest();
-  virtual ~AsyncTaskIntegrationTest();
 };
 
 } /* namespace testing */
 
-#endif /* ASYNCTASK_INTEGRATION_TEST_H_ */
+#endif /* ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_ */

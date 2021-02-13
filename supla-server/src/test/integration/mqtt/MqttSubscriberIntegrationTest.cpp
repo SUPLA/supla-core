@@ -359,6 +359,24 @@ TEST_F(MqttSubscriberIntegrationTest, open) {
   ASSERT_EQ(getValueSetter()->getOpenCounter(), 1);
 }
 
+TEST_F(MqttSubscriberIntegrationTest, close) {
+  waitForConnection();
+  waitForData(2);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "ClOsE");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getCloseCounter(), 1);
+}
+
 TEST_F(MqttSubscriberIntegrationTest, openClose) {
   waitForConnection();
   waitForData(2);

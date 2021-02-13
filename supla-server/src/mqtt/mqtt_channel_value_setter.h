@@ -39,6 +39,7 @@ class supla_mqtt_channel_value_setter
   void action_reveal(void);
   void action_stop(void);
   void action_open(void);
+  void action_close(void);
   void action_open_close(void);
 
  public:

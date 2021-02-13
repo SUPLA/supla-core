@@ -78,6 +78,7 @@ class supla_device : public cdbase {
                      unsigned char EOL);
   bool action_stop(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
   bool action_open(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_close(int ChannelID);
   bool action_open_close(int SenderID, int ChannelID, int GroupID,
                          unsigned char EOL);
   bool channel_exists(int ChannelID);

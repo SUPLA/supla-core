@@ -18,23 +18,40 @@
 
 #include <abstract_action_executor.h>
 
+supla_abstract_action_executor::supla_abstract_action_executor(void) {
+  this->user = 0;
+  this->device_id = 0;
+  this->channel_id = 0;
+}
+
 supla_abstract_action_executor::supla_abstract_action_executor(supla_user *user,
                                                                int device_id,
                                                                int channel_id) {
-  this->user = user;
-  this->device_id = device_id;
-  this->channel_id = channel_id;
+  set_channel_id(user, device_id, channel_id);
 }
 
 supla_abstract_action_executor::supla_abstract_action_executor(int user_id,
                                                                int device_id,
                                                                int channel_id) {
-  this->user = user_id ? supla_user::find(user_id, false) : NULL;
+  set_channel_id(user_id, device_id, channel_id);
+}
+
+supla_abstract_action_executor::~supla_abstract_action_executor(void) {}
+
+void supla_abstract_action_executor::set_channel_id(supla_user *user,
+                                                    int device_id,
+                                                    int channel_id) {
+  this->user = user;
   this->device_id = device_id;
   this->channel_id = channel_id;
 }
 
-supla_abstract_action_executor::~supla_abstract_action_executor(void) {}
+void supla_abstract_action_executor::set_channel_id(int user_id, int device_id,
+                                                    int channel_id) {
+  this->user = user_id ? supla_user::find(user_id, false) : NULL;
+  this->device_id = device_id;
+  this->channel_id = channel_id;
+}
 
 supla_device *supla_abstract_action_executor::get_device(void) {
   if (user && device_id) {

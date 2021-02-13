@@ -33,10 +33,14 @@ class supla_abstract_action_executor {
   int get_channel_id(void);
 
  public:
+  supla_abstract_action_executor(void);
   supla_abstract_action_executor(supla_user *user, int device_id,
                                  int channel_id);
   supla_abstract_action_executor(int user_id, int device_id, int channel_id);
   virtual ~supla_abstract_action_executor(void);
+
+  void set_channel_id(supla_user *user, int device_id, int channel_id);
+  void set_channel_id(int user_id, int device_id, int channel_id);
 
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;
@@ -47,6 +51,7 @@ class supla_abstract_action_executor {
   virtual void reveal(void) = 0;
   virtual void stop(void) = 0;
   virtual void open(void) = 0;
+  virtual void close(void) = 0;
   virtual void open_close(void) = 0;
 };
 

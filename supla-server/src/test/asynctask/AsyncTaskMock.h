@@ -30,6 +30,7 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   bool _result;
   struct timeval init_time;
   struct timeval exec_time;
+  int tag;
 
   void mock_init(void);
 
@@ -50,7 +51,10 @@ class AsyncTaskMock : public supla_abstract_asynctask {
   unsigned int exec_count(void);
   void set_waiting(void);
   long long exec_delay_usec(void);
+  long long exec_time_since(struct timeval *time);
   void set_retry_left(int retry_left);
+  void set_tag(int tag);
+  int get_tag(void);
 };
 
 #endif /*ASYNCTASK_MOCK_H_*/

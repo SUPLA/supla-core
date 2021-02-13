@@ -16,9 +16,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-#include "MqttChannelValueSetterMock.h"
-#include <stdio.h> // NOLINT
+#include <stdio.h>  // NOLINT
 #include <string.h>
+#include "MqttChannelValueSetterMock.h"
 #include "proto.h"
 #include "user.h"
 
@@ -41,6 +41,7 @@ void MqttChannelValueSetterMock::clear(void) {
   this->reveal_counter = 0;
   this->stop_counter = 0;
   this->open_counter = 0;
+  this->close_counter = 0;
   this->open_close_counter = 0;
   this->color = 0x01FFFFFF;
   this->brightness = -1;
@@ -84,9 +85,9 @@ void MqttChannelValueSetterMock::action_reveal(void) { reveal_counter++; }
 
 void MqttChannelValueSetterMock::action_stop(void) { stop_counter++; }
 
-void MqttChannelValueSetterMock::action_open(void) {
-  open_counter++;
-}
+void MqttChannelValueSetterMock::action_open(void) { open_counter++; }
+
+void MqttChannelValueSetterMock::action_close(void) { close_counter++; }
 
 void MqttChannelValueSetterMock::action_open_close(void) {
   open_close_counter++;
@@ -118,9 +119,9 @@ int MqttChannelValueSetterMock::getRevealCounter(void) {
 
 int MqttChannelValueSetterMock::getStopCounter(void) { return stop_counter; }
 
-int MqttChannelValueSetterMock::getOpenCounter(void) {
-  return open_counter;
-}
+int MqttChannelValueSetterMock::getOpenCounter(void) { return open_counter; }
+
+int MqttChannelValueSetterMock::getCloseCounter(void) { return close_counter; }
 
 int MqttChannelValueSetterMock::getOpenCloseCounter(void) {
   return open_close_counter;
@@ -197,6 +198,10 @@ int MqttChannelValueSetterMock::counterSetCount(void) {
   }
 
   if (open_counter > 0) {
+    result++;
+  }
+
+  if (close_counter > 0) {
     result++;
   }
 

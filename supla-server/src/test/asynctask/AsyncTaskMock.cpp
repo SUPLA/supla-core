@@ -40,6 +40,7 @@ void AsyncTaskMock::mock_init(void) {
   this->_result = false;
   this->exec_time.tv_sec = 0;
   this->exec_time.tv_usec = 0;
+  this->tag = 0;
 
   gettimeofday(&this->init_time, NULL);
 }
@@ -83,8 +84,10 @@ void AsyncTaskMock::set_job_count_left(unsigned short job_count_left) {
 
 unsigned short AsyncTaskMock::get_job_count_left(void) {
   lock();
-  this->job_count_left = job_count_left;
+  unsigned short result = job_count_left;
   unlock();
+
+  return result;
 }
 
 void AsyncTaskMock::set_result(bool result) {
@@ -107,9 +110,34 @@ long long AsyncTaskMock::exec_delay_usec(void) {
   return result;
 }
 
+long long  AsyncTaskMock::exec_time_since(struct timeval *time) {
+  lock();
+  long long result =
+      (time->tv_sec * (long long)1000000 + time->tv_usec) -
+      (exec_time.tv_sec * (long long)1000000 + exec_time.tv_usec);
+
+  unlock();
+
+  return result;
+}
+
 unsigned int AsyncTaskMock::exec_count(void) {
   lock();
   unsigned int result = _exec_count;
+  unlock();
+
+  return result;
+}
+
+void AsyncTaskMock::set_tag(int tag) {
+  lock();
+  this->tag = tag;
+  unlock();
+}
+
+int AsyncTaskMock::get_tag(void) {
+  lock();
+  int result = tag;
   unlock();
 
   return result;
