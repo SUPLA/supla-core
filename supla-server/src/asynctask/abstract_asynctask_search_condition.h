@@ -22,6 +22,9 @@
 #include "abstract_asynctask.h"
 
 class supla_abstract_asynctask_search_condition {
+ private:
+  supla_abstract_asynctask *skip;
+
  public:
   supla_abstract_asynctask_search_condition(void);
   virtual ~supla_abstract_asynctask_search_condition(void);

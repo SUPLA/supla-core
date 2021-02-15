@@ -107,7 +107,7 @@ bool supla_action_gate_openclose::_execute(bool *execute_again) {
 
 void supla_action_gate_openclose::task_will_added(void) {
   supla_action_gate_openclose_search_condition cnd(
-      get_user_id(), get_device_id(), get_channel_id());
+      this, get_user_id(), get_device_id(), get_channel_id());
   get_queue()->cancel_task(&cnd);
 }
 
@@ -115,7 +115,7 @@ void supla_action_gate_openclose::task_will_added(void) {
 void supla_action_gate_openclose::cancel_task(int user_id, int device_id,
                                               int channel_id) {
   supla_action_gate_openclose_search_condition *cnd =
-      new supla_action_gate_openclose_search_condition(user_id, device_id,
+      new supla_action_gate_openclose_search_condition(NULL, user_id, device_id,
                                                        channel_id);
 
   supla_asynctask_queue::global_instance()->cancel_task(cnd);

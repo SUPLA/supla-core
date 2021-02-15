@@ -24,12 +24,14 @@
 class supla_action_gate_openclose_search_condition
     : public supla_abstract_asynctask_search_condition {
  private:
+  supla_abstract_asynctask *skip;
   int user_id;
   int device_id;
   int channel_id;
 
  public:
-  supla_action_gate_openclose_search_condition(int user_id, int device_id,
+  supla_action_gate_openclose_search_condition(supla_abstract_asynctask *skip,
+                                               int user_id, int device_id,
                                                int channel_id);
 
   virtual bool condition_met(supla_abstract_asynctask *task);

@@ -20,8 +20,10 @@
 #include "action_gate_openclose.h"
 
 supla_action_gate_openclose_search_condition::
-    supla_action_gate_openclose_search_condition(int user_id, int device_id,
+    supla_action_gate_openclose_search_condition(supla_abstract_asynctask *skip,
+                                                 int user_id, int device_id,
                                                  int channel_id) {
+  this->skip = skip;
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
@@ -29,6 +31,10 @@ supla_action_gate_openclose_search_condition::
 
 bool supla_action_gate_openclose_search_condition::condition_met(
     supla_abstract_asynctask *task) {
+  if (task == skip) {
+    return false;
+  }
+
   supla_action_gate_openclose *oc_task =
       dynamic_cast<supla_action_gate_openclose *>(task);
   return oc_task && oc_task->get_user_id() == user_id &&
