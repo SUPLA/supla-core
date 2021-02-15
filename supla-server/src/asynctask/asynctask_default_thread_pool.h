@@ -19,6 +19,7 @@
 #ifndef ASYNCTASK_DEFAULT_THREAD_POOL_H_
 #define ASYNCTASK_DEFAULT_THREAD_POOL_H_
 
+#include <string>
 #include "asynctask/abstract_asynctask_thread_pool.h"
 
 class supla_asynctask_default_thread_pool
