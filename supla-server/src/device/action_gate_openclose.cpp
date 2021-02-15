@@ -105,20 +105,14 @@ bool supla_action_gate_openclose::_execute(bool *execute_again) {
   return false;
 }
 
-void supla_action_gate_openclose::task_will_added(void) {
-  supla_action_gate_openclose_search_condition cnd(
-      this, get_user_id(), get_device_id(), get_channel_id());
-  get_queue()->cancel_task(&cnd);
-}
-
 // static
-void supla_action_gate_openclose::cancel_task(int user_id, int device_id,
+void supla_action_gate_openclose::cancel_tasks(int user_id, int device_id,
                                               int channel_id) {
   supla_action_gate_openclose_search_condition *cnd =
       new supla_action_gate_openclose_search_condition(NULL, user_id, device_id,
                                                        channel_id);
 
-  supla_asynctask_queue::global_instance()->cancel_task(cnd);
+  supla_asynctask_queue::global_instance()->cancel_tasks(cnd);
 
   delete cnd;
 }
@@ -126,6 +120,8 @@ void supla_action_gate_openclose::cancel_task(int user_id, int device_id,
 // static
 void supla_action_gate_openclose::open_close(int user_id, int device_id,
                                              int channel_id, bool open) {
+  cancel_tasks(user_id, device_id, channel_id);
+
   supla_action_executor *action_executor = new supla_action_executor();
   gate_state_getter *state_getter = new gate_state_getter();
 

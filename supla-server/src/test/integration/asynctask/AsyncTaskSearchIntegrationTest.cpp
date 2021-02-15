@@ -62,13 +62,17 @@ TEST_F(AsyncTaskSearchIntegrationTest,
   }
 
   ChannelOrientedAsyncTaskMock *ctask = NULL;
+  ChannelOrientedAsyncTaskMock *ctask_dup = NULL;
 
   for (a = 0; a < 10; a++) {
     ctask = new ChannelOrientedAsyncTaskMock(queue, pool, 0, false);
     ctask->set_channel_id(a + 1);
   }
 
-  EXPECT_EQ(queue->total_count(), (unsigned int)20);
+  ctask_dup = new ChannelOrientedAsyncTaskMock(queue, pool, 0, false);
+  ctask_dup->set_channel_id(ctask->get_channel_id());
+
+  EXPECT_EQ(queue->total_count(), (unsigned int)21);
 
   async_task_state state;
 
@@ -86,15 +90,18 @@ TEST_F(AsyncTaskSearchIntegrationTest,
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
   EXPECT_EQ(state, STA_STATE_WAITING);
 
-  queue->cancel_task(cnd);
+  EXPECT_EQ(ctask_dup->get_state(), STA_STATE_INIT);
+
+  queue->cancel_tasks(cnd);
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
   EXPECT_EQ(state, STA_STATE_CANCELED);
+  EXPECT_EQ(ctask_dup->get_state(), STA_STATE_CANCELED);
 
   EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)1);
   cnd->set_channels({1, 2, 3, 4, 5, 700});
   EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)5);
   cnd->set_any_id(true);
-  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)10);
+  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)11);
 }
 
 }  // namespace testing

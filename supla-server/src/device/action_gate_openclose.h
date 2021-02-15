@@ -40,7 +40,6 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
 
  protected:
   virtual bool _execute(bool *execute_again);
-  virtual void task_will_added(void);
 
  public:
   supla_action_gate_openclose(supla_asynctask_queue *queue,
@@ -63,7 +62,7 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   int get_device_id(void);
   int get_channel_id(void);
 
-  static void cancel_task(int user_id, int device_id, int channel_id);
+  static void cancel_tasks(int user_id, int device_id, int channel_id);
   static void open_close(int user_id, int device_id, int channel_id, bool open);
 };
 

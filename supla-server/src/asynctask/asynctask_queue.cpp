@@ -112,7 +112,6 @@ void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
   assert(pool_exists(task->get_pool()));
 
   lck_lock(lck);
-  task->task_will_added();
 
   for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
        it != tasks.end(); ++it) {
@@ -317,19 +316,29 @@ unsigned int supla_asynctask_queue::get_task_count(
   return result;
 }
 
-void supla_asynctask_queue::cancel_task(
+void supla_asynctask_queue::cancel_tasks(
     supla_abstract_asynctask_search_condition *cnd) {
   lck_lock(lck);
-  supla_abstract_asynctask *task = find_task(cnd);
-  if (task != NULL) {
-    bool release = task->release_immediately_after_execution() &&
-                   (task->get_state() == STA_STATE_INIT ||
-                    task->get_state() == STA_STATE_WAITING);
 
-    task->cancel();
+  std::vector<supla_abstract_asynctask *> found;
+
+  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
+       it != tasks.end(); ++it) {
+    if (cnd->condition_met(*it)) {
+      found.push_back(*it);
+    }
+  }
+
+  for (std::vector<supla_abstract_asynctask *>::iterator it = found.begin();
+       it != found.end(); ++it) {
+    bool release = (*it)->release_immediately_after_execution() &&
+                   ((*it)->get_state() == STA_STATE_INIT ||
+                    (*it)->get_state() == STA_STATE_WAITING);
+
+    (*it)->cancel();
 
     if (release) {
-      delete task;
+      delete (*it);
     }
   }
   lck_unlock(lck);

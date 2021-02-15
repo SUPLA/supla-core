@@ -60,7 +60,6 @@ class supla_abstract_asynctask {
   bool pick(void);
   virtual bool _execute(bool *execute_again) = 0;
   void execute(void);
-  virtual void task_will_added(void);
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,

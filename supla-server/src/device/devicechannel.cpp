@@ -1611,7 +1611,7 @@ void supla_device_channels::async_set_channel_value(
     switch (channel->getFunc()) {
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-        supla_action_gate_openclose::cancel_task(
+        supla_action_gate_openclose::cancel_tasks(
             device->getUserID(), device->getID(), channel->getId());
         break;
     }
