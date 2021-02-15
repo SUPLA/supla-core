@@ -566,8 +566,8 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   int DeviceID = 0;
   int ChannelID = 0;
 
-  sscanf(&buffer[strnlen(cmd_user_before_device_delete, IPC_BUFFER_SIZE)],
-         "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
   if (UserID && DeviceID && ChannelID) {
     bool result = false;
     supla_device *device = supla_user::get_device(UserID, DeviceID);
