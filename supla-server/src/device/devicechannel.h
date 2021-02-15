@@ -265,7 +265,7 @@ class supla_device_channels {
                          bool cancelTasks = true);
 
  public:
-  supla_device_channels(supla_device *device);
+  explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int UserID, int Type, int Func,
                    int Param1, int Param2, int Param3, char *TextParam1,
