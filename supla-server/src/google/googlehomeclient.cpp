@@ -179,18 +179,23 @@ bool supla_google_home_client::addColorState(int channelId, int color,
   return false;
 }
 
-bool supla_google_home_client::addRollerShutterState(int channelId,
-                                                     short shutPercentage,
-                                                     bool online) {
+bool supla_google_home_client::addOpenPercentState(int channelId,
+                                                   short openPercent,
+                                                   bool online) {
   cJSON *state = (cJSON *)getStateSkeleton(channelId, 0, online);
   if (state) {
-    short openPercent = 100 - (online ? shutPercentage : 0);
-    cJSON_AddBoolToObject(state, "on", online);
     cJSON_AddNumberToObject(state, "openPercent", openPercent);
     return true;
   }
 
   return false;
+}
+
+bool supla_google_home_client::addRollerShutterState(int channelId,
+                                                     short shutPercentage,
+                                                     bool online) {
+  return addOpenPercentState(channelId, 100 - (online ? shutPercentage : 0),
+                             online);
 }
 
 void *supla_google_home_client::getHeader(const char requestId[]) {

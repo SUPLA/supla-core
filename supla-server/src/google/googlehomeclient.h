@@ -41,6 +41,7 @@ class supla_google_home_client : public supla_voice_assistant_client {
                           short subChannel);
   bool addColorState(int channelId, int color, short colorBrightness,
                      bool online, short subChannel);
+  bool addOpenPercentState(int channelId, short openPercent, bool online);
   bool addRollerShutterState(int channelId, short shutPercentage, bool online);
   bool sendReportState(const char requestId[], int *resultCode = NULL);
   bool requestSync(int *resultCode = NULL);
