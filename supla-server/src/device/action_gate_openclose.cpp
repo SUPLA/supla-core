@@ -128,8 +128,6 @@ void supla_action_gate_openclose::cancel_task(int user_id, int device_id,
 // static
 void supla_action_gate_openclose::open_close(int user_id, int device_id,
                                              int channel_id, bool open) {
-  cancel_task(user_id, device_id, channel_id);
-
   supla_action_executor *action_executor = new supla_action_executor();
   gate_state_getter *state_getter = new gate_state_getter();
 
