@@ -10,7 +10,8 @@ CPP_SRCS += \
 ../src/device/action_gate_openclose.cpp \
 ../src/device/action_gate_openclose_search_condition.cpp \
 ../src/device/device.cpp \
-../src/device/devicechannel.cpp 
+../src/device/devicechannel.cpp \
+../src/device/gate_state_getter.cpp 
 
 OBJS += \
 ./src/device/abstract_action_executor.o \
@@ -19,7 +20,8 @@ OBJS += \
 ./src/device/action_gate_openclose.o \
 ./src/device/action_gate_openclose_search_condition.o \
 ./src/device/device.o \
-./src/device/devicechannel.o 
+./src/device/devicechannel.o \
+./src/device/gate_state_getter.o 
 
 CPP_DEPS += \
 ./src/device/abstract_action_executor.d \
@@ -28,7 +30,8 @@ CPP_DEPS += \
 ./src/device/action_gate_openclose.d \
 ./src/device/action_gate_openclose_search_condition.d \
 ./src/device/device.d \
-./src/device/devicechannel.d 
+./src/device/devicechannel.d \
+./src/device/gate_state_getter.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
