@@ -52,6 +52,7 @@ class svr_ipcctrl {
   void set_char(const char *cmd, bool group);
   void set_rgbw(const char *cmd, bool group, bool random);
   void set_digiglass_value(const char *cmd);
+  void action_open_close(const char *cmd, bool open);
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);
   void state_webhook_changed(const char *cmd);

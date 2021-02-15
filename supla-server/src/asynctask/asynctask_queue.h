@@ -26,6 +26,7 @@
 
 class supla_asynctask_queue {
  private:
+  static supla_asynctask_queue *_global_instance;
   void *lck;
   void *thread;
   TEventHandler *eh;
@@ -55,6 +56,9 @@ class supla_asynctask_queue {
  public:
   supla_asynctask_queue(void);
   virtual ~supla_asynctask_queue(void);
+  static supla_asynctask_queue *global_instance(void);
+  static void global_instance_release(void);
+
   unsigned int total_count(void);
   unsigned int waiting_count(void);
   unsigned int thread_count(void);

@@ -168,6 +168,7 @@ class supla_user {
   // Remember to call device->releasePtr()
   static supla_device *get_device(int UserID, int DeviceID);
   supla_device *get_device(int DeviceID);
+  supla_device *device_by_channelid(int ChannelID);
   // ----
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);

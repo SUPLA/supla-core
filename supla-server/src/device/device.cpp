@@ -32,7 +32,7 @@
 #include "user.h"
 
 supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
-  this->channels = new supla_device_channels();
+  this->channels = new supla_device_channels(this);
 }
 
 supla_device::~supla_device() {
@@ -501,181 +501,7 @@ void supla_device::on_channel_set_value_result(
   }
 }
 
-bool supla_device::get_channel_value(int ChannelID,
-                                     char value[SUPLA_CHANNELVALUE_SIZE],
-                                     char *online,
-                                     unsigned _supla_int_t *validity_time_sec) {
-  return channels->get_channel_value(ChannelID, value, online,
-                                     validity_time_sec);
-}
-
-bool supla_device::get_channel_extendedvalue(
-    int ChannelID, TSuplaChannelExtendedValue *value) {
-  return channels->get_channel_extendedvalue(ChannelID, value);
-}
-
-void supla_device::set_device_channel_value(
-    int SenderID, int ChannelID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  channels->set_device_channel_value(getSvrConn()->srpc(), SenderID, ChannelID,
-                                     GroupID, EOL, value);
-}
-
-bool supla_device::set_device_channel_char_value(int SenderID, int ChannelID,
-                                                 int GroupID, unsigned char EOL,
-                                                 const char value) {
-  return channels->set_device_channel_char_value(
-      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, value);
-}
-
-bool supla_device::set_device_channel_rgbw_value(int SenderID, int ChannelID,
-                                                 int GroupID, unsigned char EOL,
-                                                 int color,
-                                                 char color_brightness,
-                                                 char brightness, char on_off) {
-  return channels->set_device_channel_rgbw_value(
-      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, color,
-      color_brightness, brightness, on_off);
-}
-
-bool supla_device::set_on(int SenderID, int ChannelID, int GroupID,
-                          unsigned char EOL, bool on) {
-  return channels->set_on(getSvrConn()->srpc(), SenderID, ChannelID, GroupID,
-                          EOL, on);
-}
-
-bool supla_device::set_color(int SenderID, int ChannelID, int GroupID,
-                             unsigned char EOL, unsigned int color) {
-  return channels->set_color(getSvrConn()->srpc(), SenderID, ChannelID, GroupID,
-                             EOL, color);
-}
-
-bool supla_device::set_brightness(int SenderID, int ChannelID, int GroupID,
-                                  unsigned char EOL, unsigned int brightness) {
-  return channels->set_brightness(getSvrConn()->srpc(), SenderID, ChannelID,
-                                  GroupID, EOL, brightness);
-}
-
-bool supla_device::set_color_brightness(int SenderID, int ChannelID,
-                                        int GroupID, unsigned char EOL,
-                                        unsigned int brightness) {
-  return channels->set_color_brightness(getSvrConn()->srpc(), SenderID,
-                                        ChannelID, GroupID, EOL, brightness);
-}
-
-bool supla_device::set_dgf_transparency(int SenderID, int ChannelID,
-                                        unsigned short activeBits,
-                                        unsigned short mask) {
-  return channels->set_dgf_transparency(getSvrConn()->srpc(), SenderID,
-                                        ChannelID, activeBits, mask);
-}
-
-bool supla_device::action_toggle(int SenderID, int ChannelID, int GroupID,
-                                 unsigned char EOL) {
-  return channels->action_toggle(getSvrConn()->srpc(), SenderID, ChannelID,
-                                 GroupID, EOL);
-}
-
-bool supla_device::action_shut(int SenderID, int ChannelID, int GroupID,
-                               unsigned char EOL,
-                               const char *closingPercentage) {
-  return channels->action_shut(getSvrConn()->srpc(), SenderID, ChannelID,
-                               GroupID, EOL, closingPercentage);
-}
-
-bool supla_device::action_reveal(int SenderID, int ChannelID, int GroupID,
-                                 unsigned char EOL) {
-  return channels->action_reveal(getSvrConn()->srpc(), SenderID, ChannelID,
-                                 GroupID, EOL);
-}
-
-bool supla_device::action_stop(int SenderID, int ChannelID, int GroupID,
-                               unsigned char EOL) {
-  return channels->action_stop(getSvrConn()->srpc(), SenderID, ChannelID,
-                               GroupID, EOL);
-}
-
-bool supla_device::action_open(int SenderID, int ChannelID, int GroupID,
-                               unsigned char EOL) {
-  return channels->action_open(getSvrConn()->srpc(), SenderID, ChannelID,
-                               GroupID, EOL);
-}
-
-bool supla_device::action_close(int ChannelID) { return false; }
-
-bool supla_device::action_open_close(int SenderID, int ChannelID, int GroupID,
-                                     unsigned char EOL) {
-  return channels->action_open_close(getSvrConn()->srpc(), SenderID, ChannelID,
-                                     GroupID, EOL);
-}
-
-bool supla_device::channel_exists(int ChannelID) {
-  return channels->channel_exists(ChannelID);
-}
-
-std::list<int> supla_device::master_channel(int ChannelID) {
-  return channels->master_channel(ChannelID);
-}
-
-std::list<int> supla_device::related_channel(int ChannelID) {
-  return channels->related_channel(ChannelID);
-}
-
-bool supla_device::get_channel_double_value(int ChannelID, double *Value) {
-  return channels->get_channel_double_value(ChannelID, Value);
-}
-
-bool supla_device::get_channel_temperature_value(int ChannelID, double *Value) {
-  return channels->get_channel_temperature_value(ChannelID, Value);
-}
-
-bool supla_device::get_channel_humidity_value(int ChannelID, double *Value) {
-  return channels->get_channel_humidity_value(ChannelID, Value);
-}
-
-void supla_device::get_temp_and_humidity(void *tarr) {
-  channels->get_temp_and_humidity(tarr);
-}
-
-void supla_device::get_electricity_measurements(void *emarr) {
-  channels->get_electricity_measurements(emarr);
-}
-
-supla_channel_electricity_measurement *
-supla_device::get_electricity_measurement(int ChannelID) {
-  return channels->get_electricity_measurement(ChannelID);
-}
-
-void supla_device::get_ic_measurements(void *icarr) {
-  channels->get_ic_measurements(icarr);
-}
-
-supla_channel_ic_measurement *supla_device::get_ic_measurement(int ChannelID) {
-  return channels->get_ic_measurement(ChannelID);
-}
-
-void supla_device::get_thermostat_measurements(void *tharr) {
-  channels->get_thermostat_measurements(tharr);
-}
-
-bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
-  return channels->get_channel_char_value(ChannelID, Value);
-}
-
-bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
-                                          char *color_brightness,
-                                          char *brightness, char *on_off) {
-  return channels->get_channel_rgbw_value(ChannelID, color, color_brightness,
-                                          brightness, on_off);
-}
-
-bool supla_device::get_channel_valve_value(int ChannelID, TValve_Value *Value) {
-  return channels->get_channel_valve_value(ChannelID, Value);
-}
-
-bool supla_device::get_dgf_transparency(int ChannelID, unsigned short *mask) {
-  return channels->get_dgf_transparency(ChannelID, mask);
-}
+supla_device_channels *supla_device::get_channels(void) { return channels; }
 
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   TSD_FirmwareUpdate_UrlResult result;
@@ -689,13 +515,6 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   delete db;
 
   srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
-}
-
-bool supla_device::calcfg_request(int SenderID, int ChannelID,
-                                  bool SuperUserAuthorized,
-                                  TCS_DeviceCalCfgRequest_B *request) {
-  return channels->calcfg_request(getSvrConn()->srpc(), SenderID, ChannelID,
-                                  SuperUserAuthorized, request);
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
@@ -729,31 +548,4 @@ void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
     getUser()->on_device_channel_state_result(ChannelID, state);
   }
-}
-
-bool supla_device::get_channel_state(int SenderID,
-                                     TCSD_ChannelStateRequest *request) {
-  return channels->get_channel_state(getSvrConn()->srpc(), SenderID, request);
-}
-
-bool supla_device::get_channel_complex_value(channel_complex_value *value,
-                                             int ChannelID) {
-  return channels->get_channel_complex_value(value, getID(), ChannelID);
-}
-
-bool supla_device::is_channel_online(int ChannelID) {
-  return channels->is_channel_online(ChannelID);
-}
-
-void supla_device::set_channel_function(int ChannelId, int Func) {
-  channels->set_channel_function(ChannelId, Func);
-}
-
-void supla_device::get_channel_functions_request(void *srpc) {
-  channels->get_functions_request(srpc);
-}
-
-void supla_device::get_channel_int_params_request(
-    TDS_GetChannelIntParamsRequest *request) {
-  channels->get_int_params_request(getSvrConn()->srpc(), request);
 }

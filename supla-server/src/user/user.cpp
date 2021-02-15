@@ -341,7 +341,7 @@ bool supla_user::is_channel_online(int DeviceID, int ChannelID) {
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
     device->releasePtr();
-    result = device->is_channel_online(ChannelID);
+    result = device->get_channels()->is_channel_online(ChannelID);
   }
   return result;
 }
@@ -409,15 +409,16 @@ bool supla_user::get_channel_double_value(int DeviceID, int ChannelID,
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device != NULL) {
+    supla_device_channels *channels = device->get_channels();
     switch (Type) {
       case 0:
-        result = device->get_channel_double_value(ChannelID, Value) == 1;
+        result = channels->get_channel_double_value(ChannelID, Value) == 1;
         break;
       case 1:
-        result = device->get_channel_temperature_value(ChannelID, Value) == 1;
+        result = channels->get_channel_temperature_value(ChannelID, Value) == 1;
         break;
       case 2:
-        result = device->get_channel_humidity_value(ChannelID, Value) == 1;
+        result = channels->get_channel_humidity_value(ChannelID, Value) == 1;
         break;
     }
     device->releasePtr();
@@ -448,7 +449,8 @@ bool supla_user::get_channel_char_value(int DeviceID, int ChannelID,
   supla_device *device = device_container->findByID(DeviceID);
 
   if (device != NULL) {
-    result = device->get_channel_char_value(ChannelID, Value) == 1;
+    result =
+        device->get_channels()->get_channel_char_value(ChannelID, Value) == 1;
     device->releasePtr();
   }
 
@@ -462,8 +464,8 @@ bool supla_user::get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device != NULL) {
-    result = device->get_channel_rgbw_value(ChannelID, color, color_brightness,
-                                            brightness, on_off) == 1;
+    result = device->get_channels()->get_channel_rgbw_value(
+                 ChannelID, color, color_brightness, brightness, on_off) == 1;
     device->releasePtr();
   }
 
@@ -477,7 +479,8 @@ bool supla_user::get_channel_valve_value(int DeviceID, int ChannelID,
   supla_device *device = device_container->findByID(DeviceID);
 
   if (device != NULL) {
-    result = device->get_channel_valve_value(ChannelID, Value) == 1;
+    result =
+        device->get_channels()->get_channel_valve_value(ChannelID, Value) == 1;
     device->releasePtr();
   }
 
@@ -621,6 +624,10 @@ bool supla_user::get_channel_valve_value(int UserID, int DeviceID,
   return result;
 }
 
+supla_device *supla_user::device_by_channelid(int ChannelID) {
+  return device_container->findByChannelID(ChannelID);
+}
+
 bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                                    TSuplaChannelValue *value, char *online,
                                    unsigned _supla_int_t *validity_time_sec) {
@@ -633,18 +640,20 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   supla_device *related_device = NULL;
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->get_channel_value(ChannelID, value->value, online,
-                                       validity_time_sec);
+    result = device->get_channels()->get_channel_value(
+        ChannelID, value->value, online, validity_time_sec);
 
     if (result) {
-      std::list<int> related_list = device->related_channel(ChannelID);
+      std::list<int> related_list =
+          device->get_channels()->related_channel(ChannelID);
 
       std::list<int>::iterator it = related_list.begin();
 
       if (related_list.size() == 1 && *it > 0) {
         related_device = device_container->findByChannelID(*it);
         if (related_device) {
-          related_device->get_channel_value(*it, value->sub_value, NULL, NULL);
+          related_device->get_channels()->get_channel_value(
+              *it, value->sub_value, NULL, NULL);
           related_device->releasePtr();
           related_device = NULL;
         }
@@ -659,7 +668,8 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
           if (*it > 0) {
             related_device = device_container->findByChannelID(*it);
             if (related_device) {
-              related_device->get_channel_value(*it, sub_value, NULL, NULL);
+              related_device->get_channels()->get_channel_value(*it, sub_value,
+                                                                NULL, NULL);
               value->sub_value[n] = sub_value[0];
               related_device->releasePtr();
               related_device = NULL;
@@ -684,7 +694,8 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->get_channel_extendedvalue(ChannelID, value);
+    result =
+        device->get_channels()->get_channel_extendedvalue(ChannelID, value);
     device->releasePtr();
   }
 
@@ -954,7 +965,8 @@ bool supla_user::set_device_channel_value(
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceID, ChannelID, eventSourceType);
 
-    device->set_device_channel_value(SenderID, ChannelID, GroupID, EOL, value);
+    device->get_channels()->set_device_channel_value(SenderID, ChannelID,
+                                                     GroupID, EOL, value);
     device->releasePtr();
   }
 
@@ -969,8 +981,8 @@ bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->set_device_channel_char_value(SenderID, ChannelID, GroupID,
-                                                   EOL, value);
+    result = device->get_channels()->set_device_channel_char_value(
+        SenderID, ChannelID, GroupID, EOL, value);
     device->releasePtr();
   }
 
@@ -986,9 +998,9 @@ bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->set_device_channel_rgbw_value(SenderID, ChannelID, GroupID,
-                                                   EOL, color, color_brightness,
-                                                   brightness, on_off);
+    result = device->get_channels()->set_device_channel_rgbw_value(
+        SenderID, ChannelID, GroupID, EOL, color, color_brightness, brightness,
+        on_off);
     device->releasePtr();
   }
 
@@ -1048,7 +1060,8 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
 
   supla_device *device = device_container->findByID(DeviceId);
   if (device) {
-    std::list<int> master_list = device->master_channel(ChannelId);
+    std::list<int> master_list =
+        device->get_channels()->master_channel(ChannelId);
 
     device->releasePtr();
     device = NULL;
@@ -1104,7 +1117,7 @@ void supla_user::get_temp_and_humidity(void *tarr) {
 
   for (a = 0; a < device_container->count(); a++) {
     if (NULL != (device = device_container->get(a))) {
-      device->get_temp_and_humidity(tarr);
+      device->get_channels()->get_temp_and_humidity(tarr);
       device->releasePtr();
     }
   }
@@ -1124,7 +1137,7 @@ void supla_user::get_electricity_measurements(void *emarr) {
 
   for (a = 0; a < device_container->count(); a++) {
     if (NULL != (device = device_container->get(a))) {
-      device->get_electricity_measurements(emarr);
+      device->get_channels()->get_electricity_measurements(emarr);
       device->releasePtr();
     }
   }
@@ -1136,7 +1149,7 @@ supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device != NULL) {
-    result = device->get_electricity_measurement(ChannelID);
+    result = device->get_channels()->get_electricity_measurement(ChannelID);
     device->releasePtr();
   }
 
@@ -1149,7 +1162,7 @@ void supla_user::get_ic_measurements(void *icarr) {
 
   for (a = 0; a < device_container->count(); a++) {
     if (NULL != (device = device_container->get(a))) {
-      device->get_ic_measurements(icarr);
+      device->get_channels()->get_ic_measurements(icarr);
       device->releasePtr();
     }
   }
@@ -1161,7 +1174,7 @@ supla_channel_ic_measurement *supla_user::get_ic_measurement(int DeviceID,
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device != NULL) {
-    result = device->get_ic_measurement(ChannelID);
+    result = device->get_channels()->get_ic_measurement(ChannelID);
     device->releasePtr();
   }
 
@@ -1174,7 +1187,7 @@ void supla_user::get_thermostat_measurements(void *tharr) {
 
   for (a = 0; a < device_container->count(); a++) {
     if (NULL != (device = device_container->get(a))) {
-      device->get_thermostat_measurements(tharr);
+      device->get_channels()->get_thermostat_measurements(tharr);
       device->releasePtr();
     }
   }
@@ -1187,7 +1200,7 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
 
   supla_device *device = device_container->findByID(DeviceId);
   if (device) {
-    result = device->calcfg_request(
+    result = device->get_channels()->calcfg_request(
         SenderID, ChannelId,
         SenderID > 0 ? isSuperUserAuthorized(SenderID) : false, request);
     device->releasePtr();
@@ -1226,7 +1239,7 @@ bool supla_user::device_get_channel_state(int SenderID, int DeviceId,
 
   supla_device *device = device_container->findByID(DeviceId);
   if (device) {
-    result = device->get_channel_state(SenderID, request);
+    result = device->get_channels()->get_channel_state(SenderID, request);
     device->releasePtr();
   }
 
@@ -1417,7 +1430,7 @@ channel_complex_value supla_user::get_channel_complex_value(int ChannelID) {
     value.channel_type = f.channel_type;
     value.hidden_channel = f.channel_is_hidden;
   } else {
-    device->get_channel_complex_value(&value, ChannelID);
+    device->get_channels()->get_channel_complex_value(&value, ChannelID);
     if (value.function) {
       compex_value_cache_update_function(device->getID(), ChannelID,
                                          value.channel_type, value.function,
@@ -1488,7 +1501,7 @@ void supla_user::set_channel_function(supla_client *sender,
   if (result.ResultCode == SUPLA_RESULTCODE_TRUE) {
     supla_device *device = device_container->findByChannelID(func->ChannelID);
     if (device != NULL) {
-      device->set_channel_function(func->ChannelID, func->Func);
+      device->get_channels()->set_channel_function(func->ChannelID, func->Func);
       device->releasePtr();
     }
 

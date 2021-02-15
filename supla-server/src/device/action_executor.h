@@ -23,6 +23,7 @@
 
 class supla_action_executor : public supla_abstract_action_executor {
  public:
+  supla_action_executor(void);
   supla_action_executor(supla_user *user, int device_id, int channel_id);
   supla_action_executor(int user_id, int device_id, int channel_id);
 
@@ -36,7 +37,8 @@ class supla_action_executor : public supla_abstract_action_executor {
   void stop(void);
   void open(void);
   void close(void);
-  void open_close(void);
+  void open_close();
+  void open_close_without_canceling_tasks();
 };
 
 #endif /*ACTION_EXECUTOR_H_*/

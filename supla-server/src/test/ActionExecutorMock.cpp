@@ -39,6 +39,7 @@ void ActionExecutorMock::clear(void) {
   this->open_counter = 0;
   this->close_counter = 0;
   this->open_close_counter = 0;
+  this->open_close_wct_counter = 0;
   this->color = 0x01FFFFFF;
   this->brightness = -1;
   this->color_brightness = -1;
@@ -82,6 +83,10 @@ void ActionExecutorMock::close(void) { close_counter++; }
 
 void ActionExecutorMock::open_close(void) { open_close_counter++; }
 
+void ActionExecutorMock::open_close_without_canceling_tasks(void) {
+  open_close_wct_counter++;
+}
+
 int ActionExecutorMock::getOnCounter(void) { return on_counter; }
 
 int ActionExecutorMock::getOffCounter(void) { return off_counter; }
@@ -109,6 +114,10 @@ int ActionExecutorMock::getOpenCounter(void) { return open_counter; }
 int ActionExecutorMock::getCloseCounter(void) { return close_counter; }
 
 int ActionExecutorMock::getOpenCloseCounter(void) { return open_close_counter; }
+
+int ActionExecutorMock::getOpenCloseWctCounter(void) {
+  return open_close_wct_counter;
+}
 
 char ActionExecutorMock::getClosingPercentage(void) {
   return closing_percentage;
@@ -167,6 +176,10 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (open_close_counter > 0) {
+    result++;
+  }
+
+  if (open_close_wct_counter > 0) {
     result++;
   }
 

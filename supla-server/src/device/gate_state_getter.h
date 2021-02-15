@@ -16,24 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
-#define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
+#ifndef GATE_STATE_GETTER_H_
+#define GATE_STATE_GETTER_H_
 
-#include "AsyncTaskIntegrationTest.h"
+#include "abstract_gate_state_getter.h"
+#include "user.h"
 
-namespace testing {
-
-class ActionGateOpenCloseIntegrationTest : public AsyncTaskIntegrationTest {
- protected:
-  void noActionRequired(bool open);
-  void openClose(bool open, int attemptCount, bool success);
-  void WaitForOpenClose(int expected_count, unsigned int usec);
+class gate_state_getter : public supla_abstract_gate_state_getter {
+ private:
+  bool get_openingsensor_state(supla_user *user, int channel_id,
+                               bool *is_closed);
 
  public:
-  ActionGateOpenCloseIntegrationTest();
-  virtual ~ActionGateOpenCloseIntegrationTest();
+  gate_state_getter(void);
+  virtual ~gate_state_getter(void);
+  virtual bool get_related_openingsensor_state(int user_id,
+                                               int master_device_id,
+                                               int master_channel_id,
+                                               bool *is_closed);
 };
 
-} /* namespace testing */
-
-#endif /* ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_ */
+#endif /*GATE_STATE_GETTER_H_*/

@@ -40,6 +40,26 @@ supla_asynctask_queue::~supla_asynctask_queue(void) {
 }
 
 // static
+supla_asynctask_queue *supla_asynctask_queue::_global_instance = NULL;
+
+// static
+supla_asynctask_queue *supla_asynctask_queue::global_instance(void) {
+  if (_global_instance == NULL) {
+    _global_instance = new supla_asynctask_queue();
+  }
+
+  return _global_instance;
+}
+
+// static
+void supla_asynctask_queue::global_instance_release(void) {
+  if (_global_instance) {
+    delete _global_instance;
+    _global_instance = NULL;
+  }
+}
+
+// static
 void supla_asynctask_queue::loop(void *_queue, void *q_sthread) {
   supla_asynctask_queue *queue = static_cast<supla_asynctask_queue *>(_queue);
   if (!queue) {

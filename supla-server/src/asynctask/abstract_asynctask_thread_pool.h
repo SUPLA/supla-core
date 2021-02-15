@@ -52,6 +52,7 @@ class supla_abstract_asynctask_thread_pool {
  public:
   explicit supla_abstract_asynctask_thread_pool(supla_asynctask_queue *queue);
   virtual ~supla_abstract_asynctask_thread_pool(void);
+
   virtual unsigned int thread_count_limit(void) = 0;
   virtual std::string pool_name(void) = 0;
   unsigned int thread_count(void);

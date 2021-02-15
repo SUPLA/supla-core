@@ -53,6 +53,7 @@ class supla_abstract_action_executor {
   virtual void open(void) = 0;
   virtual void close(void) = 0;
   virtual void open_close(void) = 0;
+  virtual void open_close_without_canceling_tasks(void) = 0;
 };
 
 #endif /*ABSTRACT_ACTION_EXECUTOR_H_*/

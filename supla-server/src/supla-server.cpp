@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <sys/resource.h>
 #include "accept_loop.h"
+#include "asynctask/asynctask_default_thread_pool.h"
+#include "asynctask/asynctask_queue.h"
 #include "database.h"
 #include "datalogger.h"
 #include "http/httprequestqueue.h"
@@ -142,6 +144,10 @@ int main(int argc, char *argv[]) {
   http_request_queue_loop_thread =
       sthread_simple_run(http_request_queue_loop, NULL, 0);
 
+  // ASYNCTASK QUEUE
+  supla_asynctask_queue::global_instance();
+  supla_asynctask_default_thread_pool::global_instance();
+
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();
 
@@ -185,12 +191,16 @@ int main(int argc, char *argv[]) {
   sthread_twf(datalogger_loop_thread);
   sthread_twf(http_request_queue_loop_thread);
 
-  serverconnection::serverconnection_free();
-  supla_http_request_queue::queueFree();  // ! after serverconnection_free() and
-                                          // before user_free()
-  supla_mqtt_client_suite::globalInstanceRelease();  // ! after
+  supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
-                                                     // and before user_free()
+
+  serverconnection::serverconnection_free();
+
+  // ! after serverconnection_free() and before user_free()
+  supla_http_request_queue::queueFree();
+  supla_mqtt_client_suite::globalInstanceRelease();
+  // -----------------------------------------------
+
   supla_user::user_free();
   database::mainthread_end();
   sslcrypto_free();

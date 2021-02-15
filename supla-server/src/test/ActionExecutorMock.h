@@ -37,6 +37,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int open_counter;
   int close_counter;
   int open_close_counter;
+  int open_close_wct_counter;
 
   unsigned int color;
   char brightness;
@@ -58,6 +59,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void open(void);
   virtual void close(void);
   virtual void open_close(void);
+  virtual void open_close_without_canceling_tasks(void);
 
   void clear(void);
   int counterSetCount(void);
@@ -73,6 +75,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getOpenCounter(void);
   int getCloseCounter(void);
   int getOpenCloseCounter(void);
+  int getOpenCloseWctCounter(void);
   char getClosingPercentage(void);
   unsigned int getColor(void);
   char getBrightness(void);

@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "ActionExecutorMock.h"
 #include "ActionGateOpenCloseIntegrationTest.h"
+#include "GateStateGetterMock.h"
 #include "action_gate_openclose.h"
 #include "log.h"
 
@@ -26,26 +28,6 @@ ActionGateOpenCloseIntegrationTest::ActionGateOpenCloseIntegrationTest()
     : AsyncTaskIntegrationTest() {}
 
 ActionGateOpenCloseIntegrationTest::~ActionGateOpenCloseIntegrationTest() {}
-
-void ActionGateOpenCloseIntegrationTest::SetUp() {
-  AsyncTaskIntegrationTest::SetUp();
-  state_getter = new GateStateGetterMock();
-  EXPECT_TRUE(state_getter != NULL);
-
-  action_executor = new ActionExecutorMock();
-  EXPECT_TRUE(action_executor != NULL);
-}
-
-void ActionGateOpenCloseIntegrationTest::TearDown() {
-  AsyncTaskIntegrationTest::TearDown();
-  if (state_getter) {
-    delete state_getter;
-  }
-
-  if (action_executor != NULL) {
-    delete action_executor;
-  }
-}
 
 void ActionGateOpenCloseIntegrationTest::WaitForOpenClose(int expected_count,
                                                           unsigned int usec) {
@@ -67,6 +49,12 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
   state_getter->set_result(true);
   state_getter->set_closed(!open);
+
+  state_getter = new GateStateGetterMock();
+  EXPECT_TRUE(state_getter != NULL);
+
+  action_executor = new ActionExecutorMock();
+  EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task =
       new supla_action_gate_openclose(queue, pool, 0, false, action_executor,
@@ -91,6 +79,12 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
   state_getter->set_result(true);
   state_getter->set_closed(open);
+
+  state_getter = new GateStateGetterMock();
+  EXPECT_TRUE(state_getter != NULL);
+
+  action_executor = new ActionExecutorMock();
+  EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task =
       new supla_action_gate_openclose(queue, pool, 0, false, action_executor,
@@ -126,6 +120,12 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   pool->set_thread_count_limit(10);
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
+
+  state_getter = new GateStateGetterMock();
+  EXPECT_TRUE(state_getter != NULL);
+
+  action_executor = new ActionExecutorMock();
+  EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task =
       new supla_action_gate_openclose(queue, pool, 0, false, action_executor,

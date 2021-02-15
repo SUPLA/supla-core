@@ -18,8 +18,13 @@
 
 #include "action_gate_openclose.h"
 #include <assert.h>
+#include "action_executor.h"
 #include "action_gate_openclose_search_condition.h"
+#include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
+#include "gate_state_getter.h"
+
+#define VERIFICATION_DELAY_US 60000000
 
 supla_action_gate_openclose::supla_action_gate_openclose(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
@@ -60,6 +65,16 @@ void supla_action_gate_openclose::action_init(
   set_waiting();
 }
 
+supla_action_gate_openclose::~supla_action_gate_openclose(void) {
+  if (state_getter) {
+    delete state_getter;
+  }
+
+  if (action_executor) {
+    delete action_executor;
+  }
+}
+
 int supla_action_gate_openclose::get_user_id(void) { return user_id; }
 
 int supla_action_gate_openclose::get_device_id(void) { return device_id; }
@@ -67,6 +82,10 @@ int supla_action_gate_openclose::get_device_id(void) { return device_id; }
 int supla_action_gate_openclose::get_channel_id(void) { return channel_id; }
 
 bool supla_action_gate_openclose::_execute(bool *execute_again) {
+  if (!state_getter || !action_executor) {
+    return false;
+  }
+
   bool is_closed = open;
   attempt_count_left--;
 
@@ -79,7 +98,7 @@ bool supla_action_gate_openclose::_execute(bool *execute_again) {
     return open != is_closed;
   }
 
-  action_executor->open_close();
+  action_executor->open_close_without_canceling_tasks();
   *execute_again = true;
   set_delay_usec(verification_delay_us);
 
@@ -90,4 +109,33 @@ void supla_action_gate_openclose::task_will_added(void) {
   supla_action_gate_openclose_search_condition cnd(
       get_user_id(), get_device_id(), get_channel_id());
   get_queue()->cancel_task(&cnd);
+}
+
+// static
+void supla_action_gate_openclose::cancel_task(int user_id, int device_id,
+                                              int channel_id) {
+  supla_action_gate_openclose_search_condition *cnd =
+      new supla_action_gate_openclose_search_condition(user_id, device_id,
+                                                       channel_id);
+
+  supla_asynctask_queue::global_instance()->cancel_task(cnd);
+
+  delete cnd;
+}
+
+
+
+// static
+void supla_action_gate_openclose::open_close(int user_id, int device_id,
+                                             int channel_id, bool open) {
+  cancel_task(user_id, device_id, channel_id);
+
+  supla_action_executor *action_executor = new supla_action_executor();
+  gate_state_getter *state_getter = new gate_state_getter();
+
+  new supla_action_gate_openclose(
+      supla_asynctask_queue::global_instance(),
+      supla_asynctask_default_thread_pool::global_instance(), action_executor,
+      state_getter, user_id, device_id, channel_id, VERIFICATION_DELAY_US,
+      open);
 }

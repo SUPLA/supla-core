@@ -16,24 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
-#define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
+#ifndef ASYNCTASK_DEFAULT_THREAD_POOL_H_
+#define ASYNCTASK_DEFAULT_THREAD_POOL_H_
 
-#include "AsyncTaskIntegrationTest.h"
+#include "asynctask/abstract_asynctask_thread_pool.h"
 
-namespace testing {
-
-class ActionGateOpenCloseIntegrationTest : public AsyncTaskIntegrationTest {
- protected:
-  void noActionRequired(bool open);
-  void openClose(bool open, int attemptCount, bool success);
-  void WaitForOpenClose(int expected_count, unsigned int usec);
+class supla_asynctask_default_thread_pool
+    : public supla_abstract_asynctask_thread_pool {
+ private:
+  static supla_asynctask_default_thread_pool *_global_instance;
 
  public:
-  ActionGateOpenCloseIntegrationTest();
-  virtual ~ActionGateOpenCloseIntegrationTest();
+  explicit supla_asynctask_default_thread_pool(supla_asynctask_queue *queue);
+  virtual ~supla_asynctask_default_thread_pool(void);
+  static supla_asynctask_default_thread_pool *global_instance(void);
+  virtual unsigned int thread_count_limit(void);
+  virtual std::string pool_name(void);
 };
 
-} /* namespace testing */
-
-#endif /* ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_ */
+#endif /*ASYNCTASK_DEFAULT_THREAD_POOL_H_*/
