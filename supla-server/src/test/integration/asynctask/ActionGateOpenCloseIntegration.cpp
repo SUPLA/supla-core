@@ -149,7 +149,7 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openAlreadyOpened) {
   noActionRequired(true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, openAtTheFirstTime) {
+TEST_F(ActionGateOpenCloseIntegrationTest, open_oneVerification) {
   openClose(true, 1, true);
 }
 
@@ -157,24 +157,28 @@ TEST_F(ActionGateOpenCloseIntegrationTest, closeAlreadyClosed) {
   noActionRequired(false);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, closeAtTheFirstTime) {
+TEST_F(ActionGateOpenCloseIntegrationTest, close_oneVerification) {
   openClose(false, 1, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, closeAtTheSecondTime) {
+TEST_F(ActionGateOpenCloseIntegrationTest, close_twoVerifications) {
   openClose(false, 2, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, closeAtTheThirdTime) {
+TEST_F(ActionGateOpenCloseIntegrationTest, close_threVerifications) {
   openClose(false, 3, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, closeAtTheFourthTime) {
+TEST_F(ActionGateOpenCloseIntegrationTest, close_fourVerifications) {
   openClose(false, 4, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, fourAttemptsToCloseWithoutSuccess) {
-  openClose(false, 4, false);
+TEST_F(ActionGateOpenCloseIntegrationTest, close_fiveVerifications) {
+  openClose(false, 5, true);
+}
+
+TEST_F(ActionGateOpenCloseIntegrationTest, fiveAttemptsToCloseWithoutSuccess) {
+  openClose(false, 5, false);
 }
 
 }  // namespace testing

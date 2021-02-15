@@ -57,7 +57,7 @@ void supla_action_gate_openclose::action_init(
   this->device_id = device_id;
   this->channel_id = channel_id;
   this->open = open;
-  this->attempt_count_left = 4;
+  this->attempt_count_left = 5;
   this->state_getter = state_getter;
   this->verification_delay_us = verification_delay_us;
 
@@ -122,8 +122,6 @@ void supla_action_gate_openclose::cancel_task(int user_id, int device_id,
 
   delete cnd;
 }
-
-
 
 // static
 void supla_action_gate_openclose::open_close(int user_id, int device_id,
