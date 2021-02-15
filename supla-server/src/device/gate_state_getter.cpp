@@ -17,6 +17,7 @@
  */
 
 #include "gate_state_getter.h"
+#include <list>
 #include "device.h"
 
 gate_state_getter::gate_state_getter(void)
