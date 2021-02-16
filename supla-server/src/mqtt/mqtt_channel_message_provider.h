@@ -80,6 +80,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_sensor_humidity(int sub_id, bool set_sub_id, const char *topic_prefix,
                           char **topic_name, void **message,
                           size_t *message_size);
+  bool ha_garagedoor(const char *topic_prefix, char **topic_name,
+                     void **message, size_t *message_size);
   bool ha_roller_shutter(const char *topic_prefix, char **topic_name,
                          void **message, size_t *message_size);
   bool ha_impulse_counter(unsigned short index, const char *topic_prefix,
