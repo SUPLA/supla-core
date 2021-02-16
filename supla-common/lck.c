@@ -93,15 +93,15 @@ void *LCK_ICACHE_FLASH lck_init(void) {
   if (lck != NULL) {
 
 #ifdef __LCK_DEBUG
-  memset(lck, 0, sizeof(TLckData));
-  int a;
-  int n = sizeof(ptrs) / sizeof(void *);
-  for (a = 0; a < n; a++) {
-    if (ptrs[a] == 0) {
-      ptrs[a] = lck;
-      break;
+    memset(lck, 0, sizeof(TLckData));
+    int a;
+    int n = sizeof(ptrs) / sizeof(void *);
+    for (a = 0; a < n; a++) {
+      if (ptrs[a] == 0) {
+        ptrs[a] = lck;
+        break;
+      }
     }
-  }
 #endif /*__LCK_DEBUG*/
 
 #ifdef _WIN32
