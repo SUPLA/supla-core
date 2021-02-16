@@ -144,12 +144,12 @@ TEST_F(AsyncTaskIntegrationTest, runMultipleTasksWithTwoPools) {
 
   for (int a = 0; a < 100; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, a % 2 ? pool : pool2);
-    task->set_job_time_usec(100);
+    task->set_job_time_usec(1000);
     task->set_result(true);
     task->set_waiting();
   }
 
-  WaitForExec(pool, 50, 5000000);
+  WaitForExec(pool, 50, 10000000);
   EXPECT_EQ(pool->highest_number_of_threads(), (unsigned int)10);
   EXPECT_EQ(pool2->highest_number_of_threads(), (unsigned int)5);
 

@@ -2028,7 +2028,11 @@ bool supla_device_channels::get_channel_complex_value(
         // spaghetti code
         value->hi = false;
         value->partially_closed = false;
-        supla_user *user = supla_user::find(channel->getUserID(), false);
+
+        safe_array_unlock(arr);  // Unlock the array to avoid thread deadlock.
+                                 // Do not refer to the channel from here.
+
+        supla_user *user = supla_user::find(device->getUserID(), false);
         if (user) {
           TSuplaChannelValue cv;
           memset(&cv, 0, sizeof(TSuplaChannelValue));
@@ -2043,7 +2047,8 @@ bool supla_device_channels::get_channel_complex_value(
             }
           }
         }
-      } break;
+      }
+        return true;
       case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
       case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
         channel->getValveValue(&value->valve_value);

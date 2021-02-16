@@ -91,6 +91,18 @@ void *LCK_ICACHE_FLASH lck_init(void) {
   TLckData *lck = malloc(sizeof(TLckData));
 
   if (lck != NULL) {
+#ifdef __LCK_DEBUG
+    memset(lck, 0, sizeof(TLckData));
+    int a;
+    int n = sizeof(ptrs) / sizeof(void *);
+    for (a = 0; a < n; a++) {
+      if (ptrs[a] == 0) {
+        ptrs[a] = lck;
+        break;
+      }
+    }
+#endif /*__LCK_DEBUG*/
+
 #ifdef _WIN32
     InitializeCriticalSectionEx(&lck->critSec, 4000,
                                 CRITICAL_SECTION_NO_DEBUG_INFO);
@@ -103,18 +115,6 @@ void *LCK_ICACHE_FLASH lck_init(void) {
 
 #endif /*_WIN32*/
   }
-
-#ifdef __LCK_DEBUG
-  memset(lck, 0, sizeof(TLckData));
-  int a;
-  int n = sizeof(ptrs) / sizeof(void *);
-  for (a = 0; a < n; a++) {
-    if (ptrs[a] == 0) {
-      ptrs[a] = lck;
-      break;
-    }
-  }
-#endif /*__LCK_DEBUG*/
 
   return lck;
 #endif /*__SINGLE_THREAD*/
