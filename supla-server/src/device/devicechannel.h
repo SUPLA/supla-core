@@ -115,7 +115,7 @@ class supla_channel_ic_measurement {
   int getChannelId(void);
   _supla_int_t getTotalCost(void);
   _supla_int_t getPricePerUnit(void);
-  const char *getCurrncy(void);
+  const char *getCurrency(void);
   const char *getCustomUnit(void);
   _supla_int_t getImpulsesPerUnit(void);
   unsigned _supla_int64_t getCounter(void);
@@ -186,24 +186,29 @@ class supla_device_channel {
                        unsigned _supla_int_t validity_time_sec);
   virtual ~supla_device_channel();
 
+  static void getDefaults(int Type, int Func, int *Param1, int *Param2);
   int getId(void);
   int getNumber(void);
+  int getUserID(void);
   int getFunc(void);
   void setFunc(int Func);
   int getType(void);
   int getParam1(void);
+  int getParam2(void);
+  int getParam3(void);
   bool getHidden(void);
   unsigned int getFlags();
   bool isOffline(void);
-  void setOffline(bool Offline);
+  bool setOffline(bool Offline);
   bool isValueWritable(void);
   bool isCharValueWritable(void);
   bool isRgbwValueWritable(void);
   unsigned int getValueDuration(void);
   unsigned _supla_int_t getValueValidityTimeSec(void);
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  void setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
-                const unsigned _supla_int_t *validity_time_sec);
+  bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
+                const unsigned _supla_int_t *validity_time_sec,
+                bool *significantChange);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
@@ -224,26 +229,43 @@ class supla_device_channel {
   bool converValueToExtended(void);
 };
 
+class supla_device;
 class supla_device_channels {
  private:
   void *arr;
+  supla_device *device;
 
   static char arr_findcmp(void *ptr, void *id);
   static char arr_findncmp(void *ptr, void *n);
   static char arr_delcnd(void *ptr);
   void arr_clean(void);
 
+  void *get_srpc(void);
+
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
-  void async_set_channel_value(void *srpc, supla_device_channel *channel,
-                               int SenderID, int GroupID, unsigned char EOL,
-                               const char value[SUPLA_CHANNELVALUE_SIZE]);
+  void async_set_channel_value(supla_device_channel *channel, int SenderID,
+                               int GroupID, unsigned char EOL,
+                               const char value[SUPLA_CHANNELVALUE_SIZE],
+                               bool cancelTasks = true);
+  bool set_device_channel_char_value(int SenderID,
+                                     supla_device_channel *channel, int GroupID,
+                                     unsigned char EOL, const char value,
+                                     bool cancelTasks = true);
+  bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+              bool on, bool toggle);
+  bool action_shut_reveal(int SenderID, int ChannelID, int GroupID,
+                          unsigned char EOL, bool shut,
+                          const char *closingPercentage, bool stop);
+  bool action_open_close(int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL, bool unknown, bool open,
+                         bool cancelTasks = true);
 
  public:
-  supla_device_channels();
+  explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int UserID, int Type, int Func,
                    int Param1, int Param2, int Param3, char *TextParam1,
@@ -267,10 +289,11 @@ class supla_device_channels {
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
   int get_channel_type(int ChannelID);
-  void set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+  bool set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          bool *converted2extended,
-                         const unsigned _supla_int_t *validity_time_sec);
-  void set_channel_offline(int ChannelID, bool Offline);
+                         const unsigned _supla_int_t *validity_time_sec,
+                         bool *significantChange);
+  bool set_channel_offline(int ChannelID, bool Offline);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
   void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
                           TDS_SuplaDeviceChannel_C *schannel_c, int count);
@@ -279,23 +302,24 @@ class supla_device_channels {
                             TDS_SuplaDeviceChannel_B *schannel_b,
                             TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
-  void set_device_channel_value(void *srpc, int SenderID, int ChannelID,
-                                int GroupID, unsigned char EOL,
+  void set_device_channel_value(int SenderID, int ChannelID, int GroupID,
+                                unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
-  bool set_device_channel_char_value(void *srpc, int SenderID, int ChannelID,
-                                     int GroupID, unsigned char EOL,
-                                     const char value);
-  bool set_device_channel_rgbw_value(void *srpc, int SenderID, int ChannelID,
-                                     int GroupID, unsigned char EOL, int color,
+  bool set_device_channel_char_value(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL, const char value);
+  bool set_device_channel_rgbw_value(int SenderID, int ChannelID, int GroupID,
+                                     unsigned char EOL, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
   bool get_channel_valve_value(int ChannelID, TValve_Value *Value);
+  bool get_dgf_transparency(int ChannelID, unsigned short *mask);
 
   std::list<int> master_channel(int ChannelID);
   std::list<int> related_channel(int ChannelID);
   std::list<int> get_channel_ids(void);
   int get_channel_id(unsigned char ChannelNumber);
   bool channel_exists(int ChannelID);
+  bool is_channel_online(int ChannelID);
   void load(int UserID, int DeviceID);
 
   void get_temp_and_humidity(void *tarr);
@@ -306,16 +330,43 @@ class supla_device_channels {
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
   void get_thermostat_measurements(void *tharr);
 
-  bool calcfg_request(void *srpc, int SenderID, int ChannelID,
-                      bool SuperUserAuthorized,
+  bool calcfg_request(int SenderID, int ChannelID, bool SuperUserAuthorized,
                       TCS_DeviceCalCfgRequest_B *request);
 
-  bool get_channel_state(void *srpc, int SenderID,
-                         TCSD_ChannelStateRequest *request);
+  bool get_channel_state(int SenderID, TCSD_ChannelStateRequest *request);
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
-  void get_functions_request(void *srpc);
+  void get_functions_request(void);
+  void get_int_params_request(TDS_GetChannelIntParamsRequest *request);
+
+  bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+              bool on);
+  bool set_rgbw(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                unsigned int *color, char *color_brightness, char *brightness,
+                char *on_off);
+  bool set_color(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                 unsigned int color);
+  bool set_color_brightness(int SenderID, int ChannelID, int GroupID,
+                            unsigned char EOL, char brightness);
+  bool set_brightness(int SenderID, int ChannelID, int GroupID,
+                      unsigned char EOL, char brightness);
+  bool set_dgf_transparency(int SenderID, int ChannelID,
+                            unsigned short activeBits, unsigned short mask);
+  bool action_toggle(int SenderID, int ChannelID, int GroupID,
+                     unsigned char EOL);
+  bool action_shut(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                   const char *closingPercentage);
+  bool action_reveal(int SenderID, int ChannelID, int GroupID,
+                     unsigned char EOL);
+  bool action_stop(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_open(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_close(int ChannelID);
+  bool action_open_close(int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL);
+  bool action_open_close_without_canceling_tasks(int SenderID, int ChannelID,
+                                                 int GroupID,
+                                                 unsigned char EOL);
 };
 
 #endif /* DEVICECHANNEL_H_ */

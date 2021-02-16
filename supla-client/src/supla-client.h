@@ -252,6 +252,9 @@ char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
                                            unsigned char resetCounter,
                                            unsigned char setTime,
                                            unsigned short lightSourceLifespan);
+char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
+                                       unsigned short mask,
+                                       unsigned short active_bits);
 
 #ifdef __cplusplus
 }

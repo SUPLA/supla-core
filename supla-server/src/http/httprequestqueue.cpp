@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "http/httprequest.h"
+#include "http/httprequestqueue.h"
 #include <unistd.h>  // NOLINT
 #include <cstddef>   // NOLINT
 #include <list>      // NOLINT
 #include "database.h"
-#include "http/httprequestqueue.h"
+#include "http/httprequest.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -29,6 +29,8 @@
 #include "svrcfg.h"
 #include "tools.h"
 #include "user/user.h"
+
+// TODO(anyone): Pass the http queue handling to supla_asynctasks
 
 typedef struct {
   supla_http_request *request;
@@ -38,26 +40,11 @@ typedef struct {
 
 supla_http_request_queue *supla_http_request_queue::instance = NULL;
 
-char supla_http_request_queue_arr_userspace_arr_queue_clean(void *_request) {
+char supla_http_request_queue_arr_queue_clean(void *_request) {
   supla_http_request *request = static_cast<supla_http_request *>(_request);
   if (request) {
     delete request;
     return 1;
-  }
-
-  return 0;
-}
-
-char supla_http_request_queue_arr_userspace_clean(void *_user_space) {
-  _heq_user_space_t *user_space = static_cast<_heq_user_space_t *>(_user_space);
-  if (user_space) {
-    if (user_space->arr_queue) {
-      safe_array_clean(user_space->arr_queue,
-                       supla_http_request_queue_arr_userspace_arr_queue_clean);
-      safe_array_free(user_space->arr_queue);
-      delete user_space;
-      return 1;
-    }
   }
 
   return 0;
@@ -102,10 +89,16 @@ supla_http_request_queue *supla_http_request_queue::getInstance(void) {
 
 supla_http_request_queue::supla_http_request_queue() {
   this->main_eh = eh_init();
-  this->arr_user_space = safe_array_init();
+  this->lck = lck_init();
+  this->arr_queue = safe_array_init();
   this->arr_thread = safe_array_init();
   this->thread_count_limit = scfg_int(CFG_HTTP_THREAD_COUNT_LIMIT);
-  this->last_user_offset = -1;
+  this->queue_offset = 0;
+  this->last_user_id = 0;
+  this->last_iterate_time_sec = 0;
+  this->time_of_the_next_iteration_usec = 0;
+  this->request_total_count = 0;
+  this->last_metric_log_time_sec = 0;
 }
 
 void supla_http_request_queue::terminateAllThreads(void) {
@@ -123,10 +116,10 @@ void supla_http_request_queue::terminateAllThreads(void) {
 supla_http_request_queue::~supla_http_request_queue() {
   safe_array_free(arr_thread);
 
-  safe_array_clean(arr_user_space,
-                   supla_http_request_queue_arr_userspace_clean);
-  safe_array_free(arr_user_space);
+  safe_array_clean(arr_queue, supla_http_request_queue_arr_queue_clean);
+  safe_array_free(arr_queue);
 
+  lck_free(lck);
   eh_free(main_eh);
 }
 
@@ -135,125 +128,91 @@ void supla_http_request_queue::runThread(supla_http_request *request) {
     return;
   }
 
-  safe_array_lock(arr_thread);
   _request_thread_ptr_t *ptr = new _request_thread_ptr_t();
-  safe_array_add(arr_thread, ptr);
+  if (ptr) {
+    safe_array_lock(arr_thread);
+    safe_array_add(arr_thread, ptr);
 
-  Tsthread_params stp;
+    Tsthread_params stp;
 
-  stp.execute = supla_http_request_thread_execute;
-  stp.finish = supla_http_request_thread_finish;
-  stp.user_data = ptr;
-  stp.free_on_finish = true;
-  stp.initialize = NULL;
+    stp.execute = supla_http_request_thread_execute;
+    stp.finish = supla_http_request_thread_finish;
+    stp.user_data = ptr;
+    stp.free_on_finish = true;
+    stp.initialize = NULL;
 
-  ptr->arr_thread = arr_thread;
-  ptr->request = request;
+    ptr->arr_thread = arr_thread;
+    ptr->request = request;
 
-  ptr->sthread = sthread_run(&stp);
+    ptr->sthread = sthread_run(&stp);
+    safe_array_unlock(arr_thread);
 
-  safe_array_unlock(arr_thread);
-}
-
-int supla_http_request_queue::queueSize(void) {
-  int size = 0;
-
-  safe_array_lock(arr_user_space);
-  for (int a = 0; a < safe_array_count(arr_user_space); a++) {
-    _heq_user_space_t *user_space =
-        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
-    size += safe_array_count(user_space->arr_queue);
+    lck_lock(lck);
+    request_total_count++;
+    lck_unlock(lck);
   }
-  safe_array_unlock(arr_user_space);
-
-  return size;
 }
 
-supla_http_request *supla_http_request_queue::queuePop(void *q_sthread) {
+supla_http_request *supla_http_request_queue::queuePop(void *q_sthread,
+                                                       struct timeval *now) {
   supla_http_request *result = NULL;
 
-  struct timeval now;
-  gettimeofday(&now, NULL);
+  safe_array_lock(arr_queue);
 
-  safe_array_lock(arr_user_space);
-  last_user_offset++;
-
-  if (last_user_offset >= safe_array_count(arr_user_space)) {
-    last_user_offset = 0;
+  if (queue_offset >= safe_array_count(arr_queue)) {
+    queue_offset = 0;
+    last_user_id = 0;
   }
-  for (int a = last_user_offset; a < safe_array_count(arr_user_space); a++) {
-    _heq_user_space_t *user_space =
-        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
 
-    safe_array_unlock(arr_user_space);
-    safe_array_lock(user_space->arr_queue);
-    for (int b = 0; b < safe_array_count(user_space->arr_queue); b++) {
-      supla_http_request *request = static_cast<supla_http_request *>(
-          safe_array_get(user_space->arr_queue, b));
+  while (queue_offset < safe_array_count(arr_queue)) {
+    supla_http_request *request = static_cast<supla_http_request *>(
+        safe_array_get(arr_queue, queue_offset));
 
-      if (request && !request->isWaiting(&now)) {
-        if (request->isCancelled(q_sthread)) {
-          delete request;
-        } else if (request->timeout(NULL)) {
-          supla_log(LOG_WARNING,
-                    "HTTP request execution timeout! IODevice: %i Channel: %i "
-                    "EventSourceType: %i (%i/%i/%i)",
-                    request->getDeviceId(), request->getChannelId(),
-                    request->getEventSourceType(), request->getTimeout(),
-                    request->getStartTime(), now.tv_sec);
+    if (request && request->getUserID() != last_user_id &&
+        !request->isWaiting(now)) {
+      if (request->isCancelled(q_sthread)) {
+        delete request;
+        request = NULL;
+      } else if (request->timeout(NULL)) {
+        supla_log(LOG_WARNING,
+                  "HTTP request execution timeout! UserID: %i, IODevice: %i "
+                  "Channel: %i QS: %i, TC: %i,"
+                  "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu/%lu/%i)",
+                  request->getUserID(), request->getDeviceId(),
+                  request->getChannelId(), queueSize(), threadCount(),
+                  request->getEventSourceType(), request->getTimeout(),
+                  request->getStartTime(), now->tv_sec,
+                  request->getTouchTimeSec(), request->getTouchCount(),
+                  last_iterate_time_sec, queue_offset);
 
-          delete request;
-        } else {
-          result = request;
-        }
-
-        safe_array_delete(user_space->arr_queue, b);
-        break;
+        delete request;
+        request = NULL;
+      } else {
+        result = request;
       }
+
+      safe_array_delete(arr_queue, queue_offset);
+      break;
     }
-    safe_array_unlock(user_space->arr_queue);
-    safe_array_lock(arr_user_space);
+
+    if (request) {
+      request->touch(now);
+    }
+
+    queue_offset++;
 
     if (result) {
+      last_user_id = result->getUserID();
       break;
     }
   }
-  safe_array_unlock(arr_user_space);
+  safe_array_unlock(arr_queue);
 
   return result;
 }
 
-int supla_http_request_queue::getNextTimeOfDelayedExecution(int time) {
-  struct timeval now;
-  gettimeofday(&now, NULL);
-
-  safe_array_lock(arr_user_space);
-
-  for (int a = 0; a < safe_array_count(arr_user_space) && time > 1000; a++) {
-    _heq_user_space_t *user_space =
-        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
-
-    safe_array_unlock(arr_user_space);
-    safe_array_lock(user_space->arr_queue);
-
-    for (int b = 0; b < safe_array_count(user_space->arr_queue) && time > 1000;
-         b++) {
-      supla_http_request *request = static_cast<supla_http_request *>(
-          safe_array_get(user_space->arr_queue, b));
-
-      if (request) {
-        int timeLeft = request->timeLeft(&now);
-        if (timeLeft < time) {
-          time = timeLeft;
-        }
-      }
-    }
-    safe_array_unlock(user_space->arr_queue);
-    safe_array_lock(arr_user_space);
-  }
-  safe_array_unlock(arr_user_space);
-
-  return time;
+int supla_http_request_queue::queueSize(void) {
+  return safe_array_count(arr_queue);
 }
 
 int supla_http_request_queue::threadCount(void) {
@@ -264,44 +223,66 @@ int supla_http_request_queue::threadCountLimit(void) {
   return thread_count_limit;
 }
 
+unsigned long long supla_http_request_queue::requestTotalCount(void) {
+  unsigned long long result = 0;
+  lck_lock(lck);
+  result = request_total_count;
+  lck_unlock(lck);
+  return result;
+}
+
 void supla_http_request_queue::raiseEvent(void) { eh_raise_event(main_eh); }
 
 void supla_http_request_queue::iterate(void *q_sthread) {
   bool warn_msg = false;
   while (sthread_isterminated(q_sthread) == 0) {
-    int wait_time = 10000000;
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    if (last_iterate_time_sec > 0 && now.tv_sec - last_iterate_time_sec >= 5) {
+      supla_log(LOG_WARNING, "Http request - long iteration time (%i)",
+                now.tv_sec - last_iterate_time_sec);
+    }
+
+    lck_lock(lck);
+    last_iterate_time_sec = now.tv_sec;
+    lck_unlock(lck);
+
     if (queueSize() > 0) {
       supla_http_request *request = NULL;
 
       if (threadCount() < threadCountLimit()) {
-        request = queuePop(q_sthread);
+        warn_msg = false;
+        request = queuePop(q_sthread, &now);
         if (request) {
           runThread(request);
-          wait_time = 0;
-        } else {
-          wait_time = getNextTimeOfDelayedExecution(wait_time);
+          recalculateTime(&now);
         }
       } else if (!warn_msg) {
         supla_log(LOG_WARNING,
                   "Http request - thread count limit exceeded (%i)",
                   threadCountLimit());
         warn_msg = true;
+      } else {
+        eh_wait(main_eh, 10000);
       }
+    } else {
+      recalculateTime(&now);
     }
 
-    wait_time += 1000;
+    long long wait_time = 0;
 
-    if (wait_time < 1000) {
-      wait_time = 1000;
-    } else if (wait_time > 10000000) {
-      wait_time = 10000000;
+    lck_lock(lck);
+    wait_time =
+        time_of_the_next_iteration_usec - (now.tv_sec * 1000000 + now.tv_usec);
+    lck_unlock(lck);
+
+    if (wait_time > 0) {
+      if (wait_time > 2000000) {
+        wait_time = 2000000;
+      }
+      eh_wait(main_eh, wait_time);
     }
-
-    if (wait_time > 1000000 && queueSize() > 0) {
-      wait_time = 1000000;
-    }
-
-    eh_wait(main_eh, wait_time);
   }
 
   terminateAllThreads();
@@ -316,51 +297,75 @@ void supla_http_request_queue::iterate(void *q_sthread) {
   }
 }
 
-_heq_user_space_t *supla_http_request_queue::getUserSpace(supla_user *user) {
-  _heq_user_space_t *result = NULL;
+void supla_http_request_queue::logStuckWarning(void) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
 
-  if (user == NULL) {
-    return NULL;
+  lck_lock(lck);
+  int time = now.tv_sec - last_iterate_time_sec;
+  lck_unlock(lck);
+
+  if (time > 10) {
+    supla_log(LOG_WARNING, "Queue iteration is stuck!");
   }
-
-  safe_array_lock(arr_user_space);
-  for (int a = 0; a < safe_array_count(arr_user_space); a++) {
-    _heq_user_space_t *user_space =
-        static_cast<_heq_user_space_t *>(safe_array_get(arr_user_space, a));
-    if (user_space && user_space->user == user) {
-      result = user_space;
-      break;
-    }
-  }
-
-  if (result == NULL) {
-    result = new _heq_user_space_t();
-    result->user = user;
-    result->arr_queue = safe_array_init();
-    if (result->arr_queue == NULL) {
-      delete result;
-    } else {
-      safe_array_add(arr_user_space, result);
-    }
-  }
-
-  safe_array_unlock(arr_user_space);
-
-  return result;
 }
 
-void supla_http_request_queue::addRequest(_heq_user_space_t *user_space,
-                                          supla_http_request *request) {
-  safe_array_add(user_space->arr_queue, request);
+void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
+  if (min_interval_sec > 0) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    if (last_metric_log_time_sec == 0) {
+      last_metric_log_time_sec = now.tv_sec;
+    }
+    if (now.tv_sec - last_metric_log_time_sec < min_interval_sec) {
+      return;
+    }
+    last_metric_log_time_sec = now.tv_sec;
+  }
+
+  supla_log(LOG_INFO,
+            "HTTP QUEUE METRICS: CURRENT[Thread Count: %i, Queue Size: %i] "
+            "TOTAL[Request Count: %lu]",
+            threadCount(), queueSize(), requestTotalCount());
+}
+
+void supla_http_request_queue::recalculateTime(struct timeval *now) {
+  unsigned long long now_usec = now->tv_sec * 1000000 + now->tv_usec;
+  long long time = 2000000;
+
+  safe_array_lock(arr_queue);
+
+  for (int b = 0; b < safe_array_count(arr_queue) && time > 0; b++) {
+    supla_http_request *request =
+        static_cast<supla_http_request *>(safe_array_get(arr_queue, b));
+
+    if (request) {
+      long long timeLeft = request->timeLeft(now);
+      if (timeLeft < time) {
+        time = timeLeft;
+      }
+    }
+  }
+  safe_array_unlock(arr_queue);
+
+  lck_lock(lck);
+  time_of_the_next_iteration_usec = now_usec + (time > 0 ? time : 0);
+  lck_unlock(lck);
+
+  if (queueSize() > 0) {
+    raiseEvent();
+  }
+}
+
+void supla_http_request_queue::recalculateTime(void) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  recalculateTime(&now);
 }
 
 void supla_http_request_queue::addRequest(supla_http_request *request) {
-  supla_user *user = NULL;
-  _heq_user_space_t *user_space = NULL;
-  if (request && (user = request->getUser()) != NULL &&
-      (user_space = getUserSpace(user)) != NULL) {
-    addRequest(user_space, request);
-  }
+  safe_array_add(arr_queue, request);
+  recalculateTime();
 }
 
 void supla_http_request_queue::createByChannelEventSourceType(
@@ -368,11 +373,6 @@ void supla_http_request_queue::createByChannelEventSourceType(
     event_source_type eventSourceType, const char correlationToken[],
     const char googleRequestId[]) {
   if (st_app_terminate != 0) {
-    return;
-  }
-
-  _heq_user_space_t *user_space = getUserSpace(user);
-  if (user_space == NULL) {
     return;
   }
 
@@ -384,13 +384,13 @@ void supla_http_request_queue::createByChannelEventSourceType(
        it != requests.end(); it++) {
     supla_http_request *request = *it;
 
-    safe_array_lock(user_space->arr_queue);
+    safe_array_lock(arr_queue);
 
     int ClassID = request->getClassID();
 
-    for (int a = 0; a < safe_array_count(user_space->arr_queue); a++) {
-      supla_http_request *existing = static_cast<supla_http_request *>(
-          safe_array_get(user_space->arr_queue, a));
+    for (int a = 0; a < safe_array_count(arr_queue); a++) {
+      supla_http_request *existing =
+          static_cast<supla_http_request *>(safe_array_get(arr_queue, a));
       if (existing && existing->getClassID() == ClassID &&
           existing->isDeviceIdEqual(deviceId) &&
           existing->isChannelIdEqual(channelId) &&
@@ -399,7 +399,7 @@ void supla_http_request_queue::createByChannelEventSourceType(
       }
     }
 
-    safe_array_unlock(user_space->arr_queue);
+    safe_array_unlock(arr_queue);
 
     if (request) {
       if (!request->isEventSourceTypeAccepted(eventSourceType, false) ||
@@ -412,13 +412,9 @@ void supla_http_request_queue::createByChannelEventSourceType(
         request->setCorrelationToken(correlationToken);
         request->setGoogleRequestId(googleRequestId);
         request->requestWillBeAdded();
-        addRequest(user_space, request);
+        addRequest(request);
       }
     }
-  }
-
-  if (requests.size()) {
-    raiseEvent();
   }
 }
 
@@ -431,10 +427,10 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                                  correlationToken, googleRequestId);
 }
 
-void supla_http_request_queue::onDeviceAddedEvent(
+void supla_http_request_queue::onChannelsAddedEvent(
     supla_user *user, int deviceId, event_source_type eventSourceType,
     const char correlationToken[], const char googleRequestId[]) {
-  createByChannelEventSourceType(user, deviceId, 0, ET_DEVICE_ADDED,
+  createByChannelEventSourceType(user, deviceId, 0, ET_CHANNELS_ADDED,
                                  eventSourceType, correlationToken,
                                  googleRequestId);
 }

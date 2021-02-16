@@ -20,19 +20,13 @@
 #define DATABASE_H_
 
 #include "client.h"
-#include "db.h"
 #include "device.h"
 #include "proto.h"
+#include "svrdb.h"
 #include "user.h"
 
-class database : public dbcommon {
+class database : public svrdb {
  private:
-  virtual char *cfg_get_host(void);
-  virtual char *cfg_get_user(void);
-  virtual char *cfg_get_password(void);
-  virtual char *cfg_get_database(void);
-  virtual int cfg_get_port(void);
-
   bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
             bool *is_enabled);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
@@ -43,7 +37,8 @@ class database : public dbcommon {
   bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                         bool *is_null, const char *sql);
 
-  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind);
+  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                       bool *not_null_flag);
   int get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
                            bool client);
 
@@ -53,8 +48,9 @@ class database : public dbcommon {
   bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
                      bool *is_enabled);
 
-  bool get_user_uniqueid(int UserID, char shortID[SHORT_UNIQUEID_MAXSIZE],
-                         char longID[LONG_UNIQUEID_MAXSIZE]);
+  char *get_user_email(int UserID);
+
+  bool get_user_uniqueid(int UserID, char *id, bool longid);
 
   int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
 
@@ -76,7 +72,8 @@ class database : public dbcommon {
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
   int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
-                         int FList, int Flags, int UserID, bool *new_channel);
+                         int Param1, int Param2, int FList, int Flags,
+                         int UserID, bool *new_channel);
 
   int get_device_limit_left(int UserID);
   int get_device_count(int UserID);
@@ -168,8 +165,10 @@ class database : public dbcommon {
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
   bool set_channel_function(int UserID, int ChannelID, int Func);
-  bool get_channel_type_and_funclist(int UserID, int ChannelID, int *Type,
-                                     unsigned int *FuncList);
+  bool get_channel_type_funclist_and_device_id(int UserID, int ChannelID,
+                                               int *Type,
+                                               unsigned int *FuncList,
+                                               int *DeviceID);
   bool set_channel_caption(int UserID, int ChannelID, char *Caption);
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);

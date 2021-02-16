@@ -40,15 +40,6 @@
 #include "tools.h"
 #include "userchannelgroups.h"
 
-char *database::cfg_get_host(void) { return scfg_string(CFG_MYSQL_HOST); }
-
-char *database::cfg_get_user(void) { return scfg_string(CFG_MYSQL_USER); }
-char *database::cfg_get_password(void) {
-  return scfg_string(CFG_MYSQL_PASSWORD);
-}
-char *database::cfg_get_database(void) { return scfg_string(CFG_MYSQL_DB); }
-int database::cfg_get_port(void) { return scfg_int(CFG_MYSQL_PORT); }
-
 bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
                     int *UserID, bool *is_enabled) {
   if (_mysql == NULL || ID == 0 || strnlen(PWD, PWD_MAXSIZE) < 1) return false;
@@ -98,13 +89,55 @@ bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
       AccessID, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, UserID, is_enabled);
 }
 
-bool database::get_user_uniqueid(int UserID,
-                                 char shortID[SHORT_UNIQUEID_MAXSIZE],
-                                 char longID[LONG_UNIQUEID_MAXSIZE]) {
+char *database::get_user_email(int UserID) {
+  char *result = NULL;
+
+  char sql[] = "SELECT `email` FROM `supla_user` WHERE id = ?";
+
+  MYSQL_STMT *stmt = NULL;
+
+  MYSQL_BIND pbind;
+  memset(&pbind, 0, sizeof(pbind));
+
+  pbind.buffer_type = MYSQL_TYPE_LONG;
+  pbind.buffer = (char *)&UserID;
+
+  if (stmt_execute((void **)&stmt, sql, &pbind, 1, true)) {
+    char email[SUPLA_EMAIL_MAXSIZE];
+    unsigned long size = 0;
+    my_bool is_null = true;
+
+    MYSQL_BIND rbind;
+    memset(&rbind, 0, sizeof(rbind));
+
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = email;
+    rbind.buffer_length = SUPLA_EMAIL_MAXSIZE;
+    rbind.length = &size;
+    rbind.is_null = &is_null;
+
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
+        set_terminating_byte(email, sizeof(email), size, is_null);
+        result = strndup(email, SUPLA_EMAIL_MAXSIZE);
+      }
+    }
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
+}
+
+bool database::get_user_uniqueid(int UserID, char *id, bool longid) {
   bool result = false;
-  char sql[] =
-      "SELECT `short_unique_id`, `long_unique_id` FROM `supla_user` WHERE id = "
-      "?";
+  char sqls[] = "SELECT `short_unique_id` FROM `supla_user` WHERE id = ?";
+
+  char sqll[] = "SELECT `long_unique_id` FROM `supla_user` WHERE id = ?";
 
   MYSQL_STMT *stmt = NULL;
 
@@ -114,37 +147,28 @@ bool database::get_user_uniqueid(int UserID,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&UserID;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    MYSQL_BIND rbind[2];
-    memset(rbind, 0, sizeof(rbind));
+  if (stmt_execute((void **)&stmt, longid ? sqll : sqls, pbind, 1, true)) {
+    MYSQL_BIND rbind;
+    memset(&rbind, 0, sizeof(rbind));
 
-    unsigned long short_size = 0;
-    my_bool short_is_null = true;
+    unsigned long size = 0;
+    my_bool is_null = true;
 
-    unsigned long long_size = 0;
-    my_bool long_is_null = true;
+    rbind.buffer_type = MYSQL_TYPE_STRING;
+    rbind.buffer = id;
+    rbind.buffer_length =
+        (longid ? LONG_UNIQUEID_MAXSIZE : SHORT_UNIQUEID_MAXSIZE) - 1;
+    rbind.length = &size;
+    rbind.is_null = &is_null;
 
-    rbind[0].buffer_type = MYSQL_TYPE_STRING;
-    rbind[0].buffer = shortID;
-    rbind[0].buffer_length = SHORT_UNIQUEID_MAXSIZE - 1;
-    rbind[0].length = &short_size;
-    rbind[0].is_null = &short_is_null;
-
-    rbind[1].buffer_type = MYSQL_TYPE_STRING;
-    rbind[1].buffer = longID;
-    rbind[1].buffer_length = LONG_UNIQUEID_MAXSIZE - 1;
-    rbind[1].length = &long_size;
-    rbind[1].is_null = &long_is_null;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
+    if (mysql_stmt_bind_result(stmt, &rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
     } else {
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        shortID[short_is_null ? 0 : short_size] = 0;
-        longID[long_is_null ? 0 : long_size] = 0;
+        id[is_null ? 0 : size] = 0;
         result = true;
       }
     }
@@ -645,9 +669,9 @@ int database::get_device_channel(int DeviceID, int ChannelNumber, int *Type) {
 }
 
 int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
-                                 int Func, int FList, int Flags, int UserID,
-                                 bool *new_channel) {
-  MYSQL_BIND pbind[7];
+                                 int Func, int Param1, int Param2, int FList,
+                                 int Flags, int UserID, bool *new_channel) {
+  MYSQL_BIND pbind[9];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -657,25 +681,31 @@ int database::add_device_channel(int DeviceID, int ChannelNumber, int Type,
   pbind[1].buffer = (char *)&Func;
 
   pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&UserID;
+  pbind[2].buffer = (char *)&Param1;
 
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&ChannelNumber;
+  pbind[3].buffer = (char *)&Param2;
 
   pbind[4].buffer_type = MYSQL_TYPE_LONG;
-  pbind[4].buffer = (char *)&DeviceID;
+  pbind[4].buffer = (char *)&UserID;
 
   pbind[5].buffer_type = MYSQL_TYPE_LONG;
-  pbind[5].buffer = (char *)&FList;
+  pbind[5].buffer = (char *)&ChannelNumber;
 
   pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&Flags;
+  pbind[6].buffer = (char *)&DeviceID;
+
+  pbind[7].buffer_type = MYSQL_TYPE_LONG;
+  pbind[7].buffer = (char *)&FList;
+
+  pbind[8].buffer_type = MYSQL_TYPE_LONG;
+  pbind[8].buffer = (char *)&Flags;
 
   {
-    const char sql[] = "CALL`supla_add_channel`(?,?,0,0,0,?,?,?,?,?)";
+    const char sql[] = "CALL`supla_add_channel`(?,?,?,?,0,?,?,?,?,?)";
 
     MYSQL_STMT *stmt = NULL;
-    if (!stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+    if (!stmt_execute((void **)&stmt, sql, pbind, 9, true)) {
       if (stmt != NULL) mysql_stmt_close(stmt);
       return 0;
     } else if (new_channel) {
@@ -1561,12 +1591,16 @@ void database::add_temperature_and_humidity(int ChannelID, double temperature,
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
-void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind) {
+void database::em_set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                               bool *not_null_flag) {
   if (*v == 0) {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_NULL;
   } else {
     ((MYSQL_BIND *)pbind)->buffer_type = MYSQL_TYPE_LONGLONG;
     ((MYSQL_BIND *)pbind)->buffer = (char *)v;
+    if (not_null_flag) {
+      *not_null_flag = true;
+    }
   }
 }
 
@@ -1583,17 +1617,28 @@ void database::add_electricity_measurement(
   pbind[0].buffer = (char *)&ChannelID;
 
   int n = 0;
+  bool not_null = false;
   for (int a = 0; a < 3; a++) {
-    em_set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n]);
-    em_set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n]);
-    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n]);
-    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n]);
+    em_set_longlong(&em_ev.total_forward_active_energy[a], &pbind[1 + n],
+                    &not_null);
+    em_set_longlong(&em_ev.total_reverse_active_energy[a], &pbind[2 + n],
+                    &not_null);
+    em_set_longlong(&em_ev.total_forward_reactive_energy[a], &pbind[3 + n],
+                    &not_null);
+    em_set_longlong(&em_ev.total_reverse_reactive_energy[a], &pbind[4 + n],
+                    &not_null);
 
     n += 4;
   }
 
-  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[13]);
-  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[14]);
+  em_set_longlong(&em_ev.total_forward_active_energy_balanced, &pbind[13],
+                  &not_null);
+  em_set_longlong(&em_ev.total_reverse_active_energy_balanced, &pbind[14],
+                  &not_null);
+
+  if (!not_null) {
+    return;
+  }
 
   const char sql[] =
       "CALL `supla_add_em_log_item`(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -2481,10 +2526,11 @@ bool database::set_channel_function(int UserID, int ChannelID, int Func) {
   return query(sql, true) == 0;
 }
 
-bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
-                                             int *Type,
-                                             unsigned int *FuncList) {
-  if (Type == NULL || FuncList == NULL) {
+bool database::get_channel_type_funclist_and_device_id(int UserID,
+                                                       int ChannelID, int *Type,
+                                                       unsigned int *FuncList,
+                                                       int *DeviceID) {
+  if (Type == NULL || FuncList == NULL || DeviceID == NULL) {
     return false;
   }
 
@@ -2493,8 +2539,8 @@ bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
 
   bool result = false;
   char sql[] =
-      "SELECT type, flist FROM `supla_dev_channel` WHERE user_id = ? AND id = "
-      "?";
+      "SELECT type, flist, iodevice_id FROM `supla_dev_channel` WHERE user_id "
+      "= ? AND id = ?";
 
   MYSQL_STMT *stmt = NULL;
   MYSQL_BIND pbind[2];
@@ -2507,7 +2553,7 @@ bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
   pbind[1].buffer = (char *)&ChannelID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
-    MYSQL_BIND rbind[2];
+    MYSQL_BIND rbind[3];
     memset(rbind, 0, sizeof(rbind));
 
     my_bool flist_is_null = true;
@@ -2518,6 +2564,9 @@ bool database::get_channel_type_and_funclist(int UserID, int ChannelID,
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
     rbind[1].buffer = (char *)FuncList;
     rbind[1].is_null = &flist_is_null;
+
+    rbind[2].buffer_type = MYSQL_TYPE_LONG;
+    rbind[2].buffer = (char *)DeviceID;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",

@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/test/integration/GetChannelBasicCfgIntegrationTest.cpp \
 ../src/test/integration/GetVersionIntegrationTest.cpp \
 ../src/test/integration/IntegrationTest.cpp \
+../src/test/integration/MySqlShell.cpp \
 ../src/test/integration/OAuthIntegrationTest.cpp \
 ../src/test/integration/ProperlyRegistered.cpp \
 ../src/test/integration/RegistrationIntegrationTest.cpp \
@@ -24,6 +25,7 @@ OBJS += \
 ./src/test/integration/GetChannelBasicCfgIntegrationTest.o \
 ./src/test/integration/GetVersionIntegrationTest.o \
 ./src/test/integration/IntegrationTest.o \
+./src/test/integration/MySqlShell.o \
 ./src/test/integration/OAuthIntegrationTest.o \
 ./src/test/integration/ProperlyRegistered.o \
 ./src/test/integration/RegistrationIntegrationTest.o \
@@ -39,6 +41,7 @@ CPP_DEPS += \
 ./src/test/integration/GetChannelBasicCfgIntegrationTest.d \
 ./src/test/integration/GetVersionIntegrationTest.d \
 ./src/test/integration/IntegrationTest.d \
+./src/test/integration/MySqlShell.d \
 ./src/test/integration/OAuthIntegrationTest.d \
 ./src/test/integration/ProperlyRegistered.d \
 ./src/test/integration/RegistrationIntegrationTest.d \

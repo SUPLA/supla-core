@@ -33,7 +33,7 @@ class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
   void url_free();
 
  public:
-  supla_state_webhook_credentials(supla_user *user);
+  explicit supla_state_webhook_credentials(supla_user *user);
   ~supla_state_webhook_credentials(void);
   virtual int get_token_maxsize(void);
   void set(const char *access_token, const char *refresh_token, int expires_in,

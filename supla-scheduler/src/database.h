@@ -19,7 +19,7 @@
 #ifndef DATABASE_H_
 #define DATABASE_H_
 
-#include "db.h"
+#include "dbcommon.h"
 #include "supla-scheduler.h"
 
 class database : public dbcommon {

@@ -28,7 +28,7 @@ extern "C" {
 #define CFG_OAUTH_URL_MAXSIZE 96
 #define CFG_OAUTH_TOKEN_SIZE 86
 
-#define SERVER_VERSION "2.3.27"
+#define SERVER_VERSION "2.3.28"
 
 #ifdef SERVER_VERSION_23
 #warning \
@@ -67,6 +67,16 @@ extern "C" {
 
 #define CFG_LIMIT_CONCURRENT_REGISTRATIONS 22
 #define CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE 23
+
+#define CFG_MQTT_ENABLED 24
+#define CFG_MQTT_HOST 25
+#define CFG_MQTT_PORT 26
+#define CFG_MQTT_USERNAME 27
+#define CFG_MQTT_PASSWORD 28
+#define CFG_MQTT_PREFIX 29
+#define CFG_MQTT_SSL 30
+#define CFG_MQTT_CLIENTID 31
+#define CFG_MQTT_KEEP_ALIVE_SEC 32
 
 extern char* svrcfg_oauth_url_base64;
 extern int svrcfg_oauth_url_base64_len;

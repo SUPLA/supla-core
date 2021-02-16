@@ -49,6 +49,10 @@ class supla_user {
   static unsigned int device_add_metric;
   static unsigned int device_max_metric;
 
+  char *getUniqueID(char **id, bool longid);
+  void user_init(int UserID, const char *short_unique_id,
+                 const char *long_unique_id);
+
  protected:
   static void *user_arr;
 
@@ -70,7 +74,8 @@ class supla_user {
   void compex_value_cache_update_function(int DeviceId, int ChannelID, int Type,
                                           int Function, bool channel_is_hidden);
 
-  static char find_user_byid(void *ptr, void *UserID);
+  static char find_user_by_id(void *ptr, void *UserID);
+  static char find_user_by_suid(void *ptr, void *suid);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value, char Type);
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value,
@@ -86,11 +91,13 @@ class supla_user {
   static supla_user *add_device(supla_device *device, int UserID);
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
+  static supla_user *find_by_suid(const char *suid);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool device_reconnect(int UserID, int DeviceID);
   static bool is_client_online(int UserID, int ClientID);
   static bool is_device_online(int UserID, int DeviceID);
+  static bool is_channel_online(int UserID, int DeviceID, int ChannelID);
   static bool get_channel_double_value(int UserID, int DeviceID, int ChannelID,
                                        double *Value);
   static bool get_channel_temperature_value(int UserID, int DeviceID,
@@ -129,27 +136,40 @@ class supla_user {
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
   static void on_state_webhook_changed(int UserID);
-  static void on_device_deleted(int UserID, event_source_type eventSourceType);
+  static void on_mqtt_settings_changed(int UserID);
+  static void before_channel_function_change(int UserID, int ChannelID,
+                                             event_source_type eventSourceType);
+  static void before_device_delete(int UserID, int DeviceID,
+                                   event_source_type eventSourceType);
+  static void on_device_deleted(int UserID, int DeviceID,
+                                event_source_type eventSourceType);
+  static void on_device_settings_changed(int UserID, int DeviceID,
+                                         event_source_type eventSourceType);
   static unsigned int total_cd_count(bool client);
-  static void print_metrics(int min_interval_sec);
+  static void log_metrics(int min_interval_sec);
 
   void reconnect(event_source_type eventSourceType);
   void reconnect(event_source_type eventSourceType, bool allDevices,
                  bool allClients);
 
-  void on_device_added(int DeviceID, event_source_type eventSourceType);
-
-  void setUniqueId(const char shortID[], const char longID[]);
+  void on_channels_added(int DeviceID, event_source_type eventSourceType);
+  void on_device_registered(int DeviceID, event_source_type eventSourceType);
 
   void moveDeviceToTrash(supla_device *device);
   void moveClientToTrash(supla_client *client);
   void emptyTrash(void);
 
   int getUserID(void);
-  char *getShortUniqueID(void);
-  char *getLongUniqueID(void);
+  const char *getShortUniqueID(void);
+  const char *getLongUniqueID(void);
   bool getClientName(int ClientID, char *buffer, int size);
   bool isSuperUserAuthorized(int ClientID);
+
+  // Remember to call device->releasePtr()
+  static supla_device *get_device(int UserID, int DeviceID);
+  supla_device *get_device(int DeviceID);
+  supla_device *device_by_channelid(int ChannelID);
+  // ----
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
@@ -164,6 +184,7 @@ class supla_user {
 
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
+  bool is_channel_online(int DeviceID, int ChannelID);
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
                          char *online,
                          unsigned _supla_int_t *validity_time_sec);
@@ -189,7 +210,8 @@ class supla_user {
 
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,
-                                int ChannelId = 0, bool Extended = false);
+                                int ChannelId = 0, bool Extended = false,
+                                bool SignificantChange = true);
   void on_channel_become_online(int DeviceId, int ChannelId);
 
   void call_event(TSC_SuplaEvent *event);
@@ -220,6 +242,8 @@ class supla_user {
   supla_state_webhook_credentials *stateWebhookCredentials(void);
 
   explicit supla_user(int UserID);
+  supla_user(int UserID, const char *short_unique_id,
+             const char *long_unique_id);
   virtual ~supla_user();
 };
 

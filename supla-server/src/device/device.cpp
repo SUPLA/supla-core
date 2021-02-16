@@ -32,7 +32,7 @@
 #include "user.h"
 
 supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
-  this->channels = new supla_device_channels();
+  this->channels = new supla_device_channels(this);
 }
 
 supla_device::~supla_device() {
@@ -59,6 +59,8 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW) > 0;
     case SUPLA_CHANNELFNC_POWERSWITCH:
       return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -145,6 +147,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
       int _LocationID = 0;
       int _OriginalLocationID = 0;
       bool new_device = false;
+      bool channels_added = false;
 
       if (register_device_c != NULL &&
           db->location_auth(LocationID, register_device_c->LocationPWD, &UserID,
@@ -241,19 +244,19 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               unsigned char Number = 0;
               _supla_int_t Type = 0;
               _supla_int_t FuncList = 0;
-              _supla_int_t Default = 0;
+              _supla_int_t DefaultFunc = 0;
               _supla_int_t ChannelFlags = 0;
 
               if (dev_channels_b != NULL) {
                 Number = dev_channels_b[a].Number;
                 Type = dev_channels_b[a].Type;
                 FuncList = dev_channels_b[a].FuncList;
-                Default = dev_channels_b[a].Default;
+                DefaultFunc = dev_channels_b[a].Default;
               } else {
                 Number = dev_channels_c[a].Number;
                 Type = dev_channels_c[a].Type;
                 FuncList = dev_channels_c[a].FuncList;
-                Default = dev_channels_c[a].Default;
+                DefaultFunc = dev_channels_c[a].Default;
                 ChannelFlags = dev_channels_c[a].Flags;
               }
 
@@ -266,22 +269,29 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               }
 #ifndef SERVER_VERSION_23
               if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
-                  Default == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+                  DefaultFunc == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
                 // Issue #115
-                Default = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
+                DefaultFunc = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
               }
 #endif /*SERVER_VERSION_23*/
 
               if (ChannelType == 0) {
                 bool new_channel = false;
+
+                int Param1 = 0;
+                int Param2 = 0;
+                supla_device_channel::getDefaults(Type, DefaultFunc, &Param1,
+                                                  &Param2);
+
                 int ChannelID = db->add_device_channel(
-                    DeviceID, Number, Type, Default, FuncList, ChannelFlags,
-                    UserID, &new_channel);
+                    DeviceID, Number, Type, DefaultFunc, Param1, Param2,
+                    FuncList, ChannelFlags, UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
                   break;
                 } else if (new_channel) {
+                  channels_added = true;
                   db->on_channeladded(DeviceID, ChannelID);
                 }
 
@@ -330,9 +340,11 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                                              dev_channels_b, dev_channels_c,
                                              channel_count);
 
-              if (new_device) {
-                getUser()->on_device_added(DeviceID, EST_DEVICE);
+              if (channels_added) {
+                getUser()->on_channels_added(DeviceID, EST_DEVICE);
               }
+
+              getUser()->on_device_registered(DeviceID, EST_DEVICE);
             }
           }
         }
@@ -391,16 +403,24 @@ void supla_device::on_device_channel_value_changed(
   int ChannelId = channels->get_channel_id(ChannelNumber);
 
   if (ChannelId != 0) {
-    bool converted2extended;
-    channels->set_channel_value(ChannelId, value_value, &converted2extended,
-                                value_c ? &value_c->ValidityTimeSec : NULL);
-    if (value_b || value_c) {
-      channels->set_channel_offline(ChannelId, offline);
-    }
-    getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId);
+    bool converted2extended = false;
+    bool differ = false;
+    bool significantChange = false;
 
-    if (converted2extended) {
-      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, true);
+    differ = channels->set_channel_value(
+        ChannelId, value_value, &converted2extended,
+        value_c ? &value_c->ValidityTimeSec : NULL, &significantChange);
+    if (channels->set_channel_offline(ChannelId, offline)) {
+      differ = true;
+    }
+    if (differ) {
+      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, false,
+                                          significantChange);
+
+      if (converted2extended) {
+        getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId,
+                                            true);
+      }
     }
   }
 }
@@ -459,6 +479,9 @@ void supla_device::on_channel_set_value_result(
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
           event.Event = SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER;
           break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+          event.Event = SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW;
+          break;
         case SUPLA_CHANNELFNC_POWERSWITCH:
           event.Event = SUPLA_EVENT_POWERONOFF;
           break;
@@ -478,106 +501,7 @@ void supla_device::on_channel_set_value_result(
   }
 }
 
-bool supla_device::get_channel_value(int ChannelID,
-                                     char value[SUPLA_CHANNELVALUE_SIZE],
-                                     char *online,
-                                     unsigned _supla_int_t *validity_time_sec) {
-  return channels->get_channel_value(ChannelID, value, online,
-                                     validity_time_sec);
-}
-
-bool supla_device::get_channel_extendedvalue(
-    int ChannelID, TSuplaChannelExtendedValue *value) {
-  return channels->get_channel_extendedvalue(ChannelID, value);
-}
-
-void supla_device::set_device_channel_value(
-    int SenderID, int ChannelID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE]) {
-  channels->set_device_channel_value(getSvrConn()->srpc(), SenderID, ChannelID,
-                                     GroupID, EOL, value);
-}
-
-bool supla_device::set_device_channel_char_value(int SenderID, int ChannelID,
-                                                 int GroupID, unsigned char EOL,
-                                                 const char value) {
-  return channels->set_device_channel_char_value(
-      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, value);
-}
-
-bool supla_device::set_device_channel_rgbw_value(int SenderID, int ChannelID,
-                                                 int GroupID, unsigned char EOL,
-                                                 int color,
-                                                 char color_brightness,
-                                                 char brightness, char on_off) {
-  return channels->set_device_channel_rgbw_value(
-      getSvrConn()->srpc(), SenderID, ChannelID, GroupID, EOL, color,
-      color_brightness, brightness, on_off);
-}
-
-bool supla_device::channel_exists(int ChannelID) {
-  return channels->channel_exists(ChannelID);
-}
-
-std::list<int> supla_device::master_channel(int ChannelID) {
-  return channels->master_channel(ChannelID);
-}
-
-std::list<int> supla_device::related_channel(int ChannelID) {
-  return channels->related_channel(ChannelID);
-}
-
-bool supla_device::get_channel_double_value(int ChannelID, double *Value) {
-  return channels->get_channel_double_value(ChannelID, Value);
-}
-
-bool supla_device::get_channel_temperature_value(int ChannelID, double *Value) {
-  return channels->get_channel_temperature_value(ChannelID, Value);
-}
-
-bool supla_device::get_channel_humidity_value(int ChannelID, double *Value) {
-  return channels->get_channel_humidity_value(ChannelID, Value);
-}
-
-void supla_device::get_temp_and_humidity(void *tarr) {
-  channels->get_temp_and_humidity(tarr);
-}
-
-void supla_device::get_electricity_measurements(void *emarr) {
-  channels->get_electricity_measurements(emarr);
-}
-
-supla_channel_electricity_measurement *
-supla_device::get_electricity_measurement(int ChannelID) {
-  return channels->get_electricity_measurement(ChannelID);
-}
-
-void supla_device::get_ic_measurements(void *icarr) {
-  channels->get_ic_measurements(icarr);
-}
-
-supla_channel_ic_measurement *supla_device::get_ic_measurement(int ChannelID) {
-  return channels->get_ic_measurement(ChannelID);
-}
-
-void supla_device::get_thermostat_measurements(void *tharr) {
-  channels->get_thermostat_measurements(tharr);
-}
-
-bool supla_device::get_channel_char_value(int ChannelID, char *Value) {
-  return channels->get_channel_char_value(ChannelID, Value);
-}
-
-bool supla_device::get_channel_rgbw_value(int ChannelID, int *color,
-                                          char *color_brightness,
-                                          char *brightness, char *on_off) {
-  return channels->get_channel_rgbw_value(ChannelID, color, color_brightness,
-                                          brightness, on_off);
-}
-
-bool supla_device::get_channel_valve_value(int ChannelID, TValve_Value *Value) {
-  return channels->get_channel_valve_value(ChannelID, Value);
-}
+supla_device_channels *supla_device::get_channels(void) { return channels; }
 
 void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   TSD_FirmwareUpdate_UrlResult result;
@@ -591,13 +515,6 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   delete db;
 
   srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
-}
-
-bool supla_device::calcfg_request(int SenderID, int ChannelID,
-                                  bool SuperUserAuthorized,
-                                  TCS_DeviceCalCfgRequest_B *request) {
-  return channels->calcfg_request(getSvrConn()->srpc(), SenderID, ChannelID,
-                                  SuperUserAuthorized, request);
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
@@ -631,22 +548,4 @@ void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
     getUser()->on_device_channel_state_result(ChannelID, state);
   }
-}
-
-bool supla_device::get_channel_state(int SenderID,
-                                     TCSD_ChannelStateRequest *request) {
-  return channels->get_channel_state(getSvrConn()->srpc(), SenderID, request);
-}
-
-bool supla_device::get_channel_complex_value(channel_complex_value *value,
-                                             int ChannelID) {
-  return channels->get_channel_complex_value(value, ChannelID);
-}
-
-void supla_device::set_channel_function(int ChannelId, int Func) {
-  channels->set_channel_function(ChannelId, Func);
-}
-
-void supla_device::get_channel_functions_request(void *srpc) {
-  channels->get_functions_request(srpc);
 }

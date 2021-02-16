@@ -17,6 +17,7 @@
  */
 
 #include "IntegrationTest.h"
+#include "MySqlShell.h"
 #include "log.h"
 #include "tools.h"
 
@@ -109,25 +110,25 @@ void IntegrationTest::Init(int argc, char **argv) {
       "\n"
       "Arguments:\n"
       "   -h         Print this help\n"
-      "   -dbname    Database name\n (default: supla_test)\n"
-      "   -dbhost    Database server hostname\n (default: db)\n"
-      "   -dbuser    Database server username\n (default: supla)\n"
-      "   -sqldir    Specifies the path of the sql script directory\n\n";
+      "   --dbname    Database name\n (default: supla_test)\n"
+      "   --dbhost    Database server hostname\n (default: db)\n"
+      "   --dbuser    Database server username\n (default: supla)\n"
+      "   --sqldir    Specifies the path of the sql script directory\n\n";
 
   for (int a = 1; a < argc; a++) {
-    if (strcmp("-sqldir", argv[a]) == 0 && a < argc - 1 &&
+    if (strcmp("--sqldir", argv[a]) == 0 && a < argc - 1 &&
         strlen(argv[a + 1]) > 0) {
       IntegrationTest::sqlDir = argv[a + 1];
 
-    } else if (strcmp("-dbname", argv[a]) == 0 && a < argc - 1 &&
+    } else if (strcmp("--dbname", argv[a]) == 0 && a < argc - 1 &&
                strlen(argv[a + 1]) > 0) {
       IntegrationTest::dbName = argv[a + 1];
 
-    } else if (strcmp("-dbuser", argv[a]) == 0 && a < argc - 1 &&
+    } else if (strcmp("--dbuser", argv[a]) == 0 && a < argc - 1 &&
                strlen(argv[a + 1]) > 0) {
       IntegrationTest::dbUser = argv[a + 1];
 
-    } else if (strcmp("-dbhost", argv[a]) == 0 && a < argc - 1 &&
+    } else if (strcmp("--dbhost", argv[a]) == 0 && a < argc - 1 &&
                strlen(argv[a + 1]) > 0) {
       IntegrationTest::dbHost = argv[a + 1];
 
@@ -252,32 +253,15 @@ void IntegrationTest::iterateUntilDefaultTimeout() {
 }
 
 void IntegrationTest::runSqlScript(const char *script) {
-  ASSERT_FALSE(script == NULL);
-  ASSERT_GT(strlen(script), (unsigned long)0);
-  char path[500];
-
-  if (IntegrationTest::sqlDir == NULL) {
-    snprintf(path, sizeof(path), "./%s", script);
-  } else {
-    snprintf(path, sizeof(path), "%s/%s", IntegrationTest::sqlDir, script);
-  }
-
-  if (st_file_exists(path) == 0) {
-    supla_log(LOG_ERR, "File %s not exists!", path);
-    ASSERT_TRUE(false);
-  }
-
-  char command[1000];
-  snprintf(command, sizeof(command), "mysql -u %s -h %s %s < %s",
-           IntegrationTest::dbUser, IntegrationTest::dbHost,
-           IntegrationTest::dbName, path);
-  supla_log(LOG_DEBUG, "%s", command);
-
-  ASSERT_EQ(system(command), 0);
+  MySqlShell::runSqlScript(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                           IntegrationTest::dbUser, IntegrationTest::dbName,
+                           script);
 }
 
 void IntegrationTest::initTestDatabase() {
-  runSqlScript("TestDatabaseStructureAndData.sql");
+  MySqlShell::initTestDatabase(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                               IntegrationTest::dbUser,
+                               IntegrationTest::dbName);
 }
 
 void IntegrationTest::cancelIteration(void) { iterationCancelled = true; }

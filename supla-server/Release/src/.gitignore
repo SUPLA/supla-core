@@ -2,3 +2,6 @@
 /client/
 /device/
 /webhook/
+/mqtt/
+/tasks/
+/asynctask/

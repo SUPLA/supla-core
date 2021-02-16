@@ -42,7 +42,6 @@ bool supla_alexa_changereport_request::verifyExisting(
     supla_http_request *existing) {
   duplicateExists = true;
   existing->setDelay(1000000);
-  supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 }
 

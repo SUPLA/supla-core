@@ -18,6 +18,7 @@
 
 #include "webhook/statewebhookrequest.h"
 #include <assert.h>
+#include <list>
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
@@ -112,9 +113,11 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
               case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
               case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
               case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
               case SUPLA_CHANNELFNC_MAILSENSOR:
               case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+              case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
                 return true;
               default:
                 return false;
@@ -250,6 +253,10 @@ void supla_state_webhook_request::execute(void *sthread) {
       getClient()->sendRollerShutterOpeningSensorReport(getChannelId(),
                                                         value.hi, value.online);
       break;
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+      getClient()->sendRoofWindowOpeningSensorReport(getChannelId(), value.hi,
+                                                     value.online);
+      break;
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       getClient()->sendWindowOpeningSensorReport(getChannelId(), value.hi,
                                                  value.online);
@@ -260,6 +267,10 @@ void supla_state_webhook_request::execute(void *sthread) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       getClient()->sendRollerShutterReport(getChannelId(), value.shut,
                                            value.online);
+      break;
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      getClient()->sendRoofWindowReport(getChannelId(), value.shut,
+                                        value.online);
       break;
     case SUPLA_CHANNELFNC_WINDSENSOR:
       getClient()->sendWindSensorReport(getChannelId(), value.wind,

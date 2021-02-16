@@ -699,7 +699,12 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
 
         case SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS:
-          device->get_channel_functions_request(_srpc);
+          device->get_channels()->get_functions_request();
+          break;
+
+        case SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS:
+          device->get_channels()->get_int_params_request(
+              rd.data.ds_get_channel_int_params_request);
           break;
 
         default:

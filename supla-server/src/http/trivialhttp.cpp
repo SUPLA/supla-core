@@ -163,6 +163,9 @@ void supla_trivial_http::write_read(void *ptr, const char *out, char **in) {
            _should_retry(ptr)) {
       if (read_len > 0 && size + read_len < INDATA_MAXSIZE) {
         *in = (char *)realloc((void *)*in, size + read_len + 1);
+        if (*in == NULL) {
+          break;
+        }
         memcpy(&((*in)[size]), in_buff, read_len);
         size += read_len;
       }
@@ -190,6 +193,7 @@ bool supla_trivial_http::send_recv(const char *out, char **in) {
   if (sfd >= 0 &&
       connect(sfd, ai->ai_addr, (unsigned int)ai->ai_addrlen) == 0) {
     write_read(&sfd, out, in);
+    result = true;
   }
 
   if (sfd != -1) {
@@ -410,7 +414,11 @@ bool supla_trivial_http::request(const char *method, const char *header,
   // supla_log(LOG_DEBUG, "OUT %i [%s]", size, out_buffer);
 
   char *in = NULL;
-  send_recv(out_buffer, &in);
+  if (!send_recv(out_buffer, &in)) {
+    supla_log(LOG_ERR,
+              "Http request - send_recv failed. Method: %s, resource: %s",
+              method, resource);
+  }
 
   free(out_buffer);
   out_buffer = NULL;

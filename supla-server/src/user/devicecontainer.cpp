@@ -26,7 +26,8 @@ char supla_user_device_container::find_device_byid(void *ptr, void *ID) {
 // static
 char supla_user_device_container::find_device_by_channelid(void *ptr,
                                                            void *ID) {
-  return ((supla_device *)ptr)->channel_exists(*(int *)ID) ? 1 : 0;
+  return ((supla_device *)ptr)->get_channels()->channel_exists(*(int *)ID) ? 1
+                                                                           : 0;
 }
 
 // static

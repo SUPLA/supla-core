@@ -20,7 +20,7 @@
 #include <string.h>
 #include "log.h"
 
-s_worker_action_openclose::s_worker_action_openclose(s_worker *worker,
+s_worker_action_openclose::s_worker_action_openclose(s_abstract_worker *worker,
                                                      bool doOpen)
     : s_worker_action(worker) {
   this->doOpen = doOpen;
@@ -53,7 +53,7 @@ bool s_worker_action_openclose::check_before_start(void) {
   return garage_func();
 }
 
-s_worker_action_open::s_worker_action_open(s_worker *worker)
+s_worker_action_open::s_worker_action_open(s_abstract_worker *worker)
     : s_worker_action_openclose(worker, true) {}
 
 void s_worker_action_open::get_function_list(int list[FUNCTION_LIST_SIZE]) {
@@ -62,7 +62,7 @@ void s_worker_action_open::get_function_list(int list[FUNCTION_LIST_SIZE]) {
   list[4] = SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK;
 }
 
-s_worker_action_close::s_worker_action_close(s_worker *worker)
+s_worker_action_close::s_worker_action_close(s_abstract_worker *worker)
     : s_worker_action_openclose(worker, false) {}
 
 int s_worker_action_openclose::try_limit(void) {
@@ -94,8 +94,8 @@ bool s_worker_action_openclose::result_success(int *fail_result_code) {
     }
 
     if (fail_result_code && doOpen &&
-        (value.flags & SUPLA_VALVE_FLAG_FLOODING ||
-         value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)) {
+        ((value.flags & SUPLA_VALVE_FLAG_FLOODING) ||
+         (value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED))) {
       *fail_result_code =
           ACTION_EXECUTION_RESULT_VALVE_CLOSED_MANUALLY_OR_FLOODING;
     }
@@ -122,8 +122,8 @@ bool s_worker_action_openclose::do_action() {
     if (doOpen) {
       TValve_Value value;
       if (!worker->ipcc_get_valve_value(&value) ||
-          (value.flags & SUPLA_VALVE_FLAG_FLOODING ||
-           value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED)) {
+          ((value.flags & SUPLA_VALVE_FLAG_FLOODING) ||
+           (value.flags & SUPLA_VALVE_FLAG_MANUALLY_CLOSED))) {
         return false;
       }
     }
