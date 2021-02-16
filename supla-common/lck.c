@@ -91,7 +91,6 @@ void *LCK_ICACHE_FLASH lck_init(void) {
   TLckData *lck = malloc(sizeof(TLckData));
 
   if (lck != NULL) {
-
 #ifdef __LCK_DEBUG
     memset(lck, 0, sizeof(TLckData));
     int a;
