@@ -49,7 +49,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(609);
+  waitForPublications(610);
   // print_expected();
 
   const char *expectedData[] = {
@@ -889,6 +889,16 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       NULL,
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/hidden",
       "false",
+      "homeassistant/cover/3281677315ff159f91471b34828f603b/1055/config",
+      "{\"~\":\"supla/3281677315ff159f91471b34828f603b/devices/563/channels/"
+      "1055\",\"device\":{\"ids\":\"supla-iodevice-563\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL SBW-01\",\"sw\":\"2.7.0\"},\"name\":\"Garage "
+      "door\",\"uniq_id\":\"supla_1055\",\"qos\":0,\"ret\":false,\"opt\":false,"
+      "\"cmd_t\":\"~/"
+      "execute_action\",\"pl_open\":\"OPEN\",\"pl_stop\":\"\",\"pl_cls\":"
+      "\"CLOSE\",\"state_topic\":\"~/state/"
+      "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
+      "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/state/"
       "connected",
       "false",
@@ -2197,13 +2207,12 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/channels/8453/state/"
       "hi",
       NULL};
-
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 }
 
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
-  waitForPublications(609);
+  waitForPublications(610);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
@@ -2295,7 +2304,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
 
 TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForConnection();
-  waitForPublications(609);
+  waitForPublications(610);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
