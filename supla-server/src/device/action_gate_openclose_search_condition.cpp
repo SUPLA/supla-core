@@ -22,11 +22,15 @@
 supla_action_gate_openclose_search_condition::
     supla_action_gate_openclose_search_condition(supla_abstract_asynctask *skip,
                                                  int user_id, int device_id,
-                                                 int channel_id) {
+                                                 int channel_id,
+                                                 bool check_action,
+                                                 bool action_open) {
   this->skip = skip;
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
+  this->check_action = check_action;
+  this->action_open = action_open;
 }
 
 bool supla_action_gate_openclose_search_condition::condition_met(
@@ -39,5 +43,6 @@ bool supla_action_gate_openclose_search_condition::condition_met(
       dynamic_cast<supla_action_gate_openclose *>(task);
   return oc_task && oc_task->get_user_id() == user_id &&
          oc_task->get_device_id() == device_id &&
-         oc_task->get_channel_id() == channel_id;
+         oc_task->get_channel_id() == channel_id &&
+         (!check_action || oc_task->action_open() == action_open);
 }

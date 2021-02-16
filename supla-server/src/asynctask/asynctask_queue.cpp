@@ -316,6 +316,15 @@ unsigned int supla_asynctask_queue::get_task_count(
   return result;
 }
 
+bool supla_asynctask_queue::task_exists(
+    supla_abstract_asynctask_search_condition *cnd) {
+  lck_lock(lck);
+  bool result = find_task(cnd) != NULL;
+  lck_unlock(lck);
+
+  return result;
+}
+
 void supla_asynctask_queue::cancel_tasks(
     supla_abstract_asynctask_search_condition *cnd) {
   lck_lock(lck);

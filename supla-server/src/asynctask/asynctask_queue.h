@@ -67,6 +67,7 @@ class supla_asynctask_queue {
   bool get_task_state(async_task_state *state,
                       supla_abstract_asynctask_search_condition *cnd);
   unsigned int get_task_count(supla_abstract_asynctask_search_condition *cnd);
+  bool task_exists(supla_abstract_asynctask_search_condition *cnd);
   void cancel_tasks(supla_abstract_asynctask_search_condition *cnd);
 };
 

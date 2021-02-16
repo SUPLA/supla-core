@@ -28,11 +28,15 @@ class supla_action_gate_openclose_search_condition
   int user_id;
   int device_id;
   int channel_id;
+  bool check_action;
+  bool action_open;
 
  public:
   supla_action_gate_openclose_search_condition(supla_abstract_asynctask *skip,
                                                int user_id, int device_id,
-                                               int channel_id);
+                                               int channel_id,
+                                               bool check_action,
+                                               bool action_open);
 
   virtual bool condition_met(supla_abstract_asynctask *task);
 };

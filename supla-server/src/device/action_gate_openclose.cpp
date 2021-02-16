@@ -81,6 +81,8 @@ int supla_action_gate_openclose::get_device_id(void) { return device_id; }
 
 int supla_action_gate_openclose::get_channel_id(void) { return channel_id; }
 
+bool supla_action_gate_openclose::action_open(void) { return open; }
+
 bool supla_action_gate_openclose::_execute(bool *execute_again) {
   if (!state_getter || !action_executor) {
     return false;
@@ -107,19 +109,25 @@ bool supla_action_gate_openclose::_execute(bool *execute_again) {
 
 // static
 void supla_action_gate_openclose::cancel_tasks(int user_id, int device_id,
-                                              int channel_id) {
-  supla_action_gate_openclose_search_condition *cnd =
-      new supla_action_gate_openclose_search_condition(NULL, user_id, device_id,
-                                                       channel_id);
+                                               int channel_id) {
+  supla_action_gate_openclose_search_condition cnd(NULL, user_id, device_id,
+                                                   channel_id, false, false);
 
-  supla_asynctask_queue::global_instance()->cancel_tasks(cnd);
-
-  delete cnd;
+  supla_asynctask_queue::global_instance()->cancel_tasks(&cnd);
 }
 
 // static
 void supla_action_gate_openclose::open_close(int user_id, int device_id,
                                              int channel_id, bool open) {
+  {
+    supla_action_gate_openclose_search_condition cnd(NULL, user_id, device_id,
+                                                     channel_id, true, open);
+
+    if (supla_asynctask_queue::global_instance()->task_exists(&cnd)) {
+      return;
+    }
+  }
+
   cancel_tasks(user_id, device_id, channel_id);
 
   supla_action_executor *action_executor = new supla_action_executor();
