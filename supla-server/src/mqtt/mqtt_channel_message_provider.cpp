@@ -849,7 +849,9 @@ bool supla_mqtt_channel_message_provider::ha_garagedoor(
   ha_json_set_retain(root);
   ha_json_set_optimistic(root);
 
+  ha_json_set_short_topic(root, "cmd_t", "execute_action");
   ha_json_set_string_param(root, "pl_open", "OPEN");
+  ha_json_set_string_param(root, "pl_stop", "");
   ha_json_set_string_param(root, "pl_cls", "CLOSE");
 
   ha_json_set_short_topic(root, "state_topic", "state/hi");
