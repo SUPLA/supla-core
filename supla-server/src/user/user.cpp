@@ -1034,15 +1034,6 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           int DeviceId, int ChannelId,
                                           bool Extended,
                                           bool SignificantChange) {
-  if (SignificantChange && !Extended && DeviceId && ChannelId &&
-      eventSourceType != EST_UNKNOWN) {
-    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-        this, DeviceId, ChannelId, eventSourceType);
-  }
-
-  supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
-      getUserID(), DeviceId, ChannelId);
-
   std::list<channel_address> ca_list;
 
   if (Extended) {
@@ -1092,6 +1083,18 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
       }
       client->releasePtr();
     }
+
+  for (std::list<channel_address>::iterator it = ca_list.begin();
+       it != ca_list.end(); it++) {
+    if (SignificantChange && !Extended && DeviceId && ChannelId &&
+        eventSourceType != EST_UNKNOWN) {
+      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+          this, it->getDeviceId(), it->getChannelId(), eventSourceType);
+    }
+
+    supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
+        getUserID(), it->getDeviceId(), it->getChannelId());
+  }
 }
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
