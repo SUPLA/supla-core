@@ -97,7 +97,7 @@ TEST_F(AsyncTaskSearchIntegrationTest,
   EXPECT_EQ(state, STA_STATE_CANCELED);
   EXPECT_EQ(ctask_dup->get_state(), STA_STATE_CANCELED);
 
-  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)1);
+  EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)2);
   cnd->set_channels({1, 2, 3, 4, 5, 700});
   EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)5);
   cnd->set_any_id(true);
