@@ -427,6 +427,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_WEKTA 11
 #define SUPLA_MFR_STA_SYSTEM 12
 #define SUPLA_MFR_DGF 13
+#define SUPLA_MFR_COMELIT 14
 
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
