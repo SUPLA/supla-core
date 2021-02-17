@@ -233,13 +233,14 @@ char SRPC_ICACHE_FLASH srpc_out_queue_push(Tsrpc *srpc, TSuplaDataPacket *sdp) {
     data_size -= SUPLA_MAX_DATA_SIZE - sdp->data_size;
   }
 #ifndef PACKET_INTEGRITY_BUFFER_DISABLED
-  char *buff = malloc(data_size+SUPLA_TAG_SIZE);
+  char *buff = malloc(data_size + SUPLA_TAG_SIZE);
   if (buff) {
-	  memcpy(buff, sdp, data_size);
-	  memcpy(&buff[data_size], sproto_tag, SUPLA_TAG_SIZE);
+    memcpy(buff, sdp, data_size);
+    memcpy(&buff[data_size], sproto_tag, SUPLA_TAG_SIZE);
 
-	  srpc->params.data_write(buff, data_size+SUPLA_TAG_SIZE, srpc->params.user_params);
-	  free(buff);
+    srpc->params.data_write(buff, data_size + SUPLA_TAG_SIZE,
+                            srpc->params.user_params);
+    free(buff);
   }
 #else
   srpc->params.data_write((char *)sdp, data_size, srpc->params.user_params);
@@ -379,11 +380,10 @@ char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc) {
   }
 #endif /*__EH_DISABLED*/
 
-
 #else /*SRPC_WITHOUT_OUT_QUEUE*/
 #ifndef __EH_DISABLED
   if (srpc->params.eh != 0 && raise_event) {
-	  eh_raise_event(srpc->params.eh);
+    eh_raise_event(srpc->params.eh);
   }
 #endif /*__EH_DISABLED*/
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
