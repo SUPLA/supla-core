@@ -113,7 +113,7 @@ TEST_F(AsyncTaskIntegrationTest, runTaskWithoutDelay) {
 TEST_F(AsyncTaskIntegrationTest, runTaskWithDelay) {
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
   ASSERT_TRUE(task != NULL);
-  task->set_job_time_usec(100);
+  task->set_job_time_usec(10000);
   task->set_delay_usec(1200000);
   task->set_result(true);
   task->set_waiting();
@@ -142,9 +142,9 @@ TEST_F(AsyncTaskIntegrationTest, runMultipleTasksWithTwoPools) {
   pool->set_thread_count_limit(10);
   pool2->set_thread_count_limit(5);
 
-  for (int a = 0; a < 200; a++) {
+  for (int a = 0; a < 100; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, a % 2 ? pool : pool2);
-    task->set_job_time_usec(1000);
+    task->set_job_time_usec(10000);
     task->set_result(true);
     task->set_waiting();
   }
