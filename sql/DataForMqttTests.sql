@@ -295,7 +295,7 @@ INSERT INTO `supla_dev_channel` (`id`, `type`, `func`, `param1`, `param2`, `capt
 (404, 1000, 70, 403, 0, NULL, 0, NULL, NULL, NULL, 390, 2, 205, 0, 0, 0, NULL, 0, NULL),
 (821, 4000, 180, 0, 0, NULL, 0, NULL, NULL, NULL, 676, 0, 411, 0, 0, 0, NULL, 0, NULL),
 (966, 5000, 310, 0, 6500, NULL, 0, 'PLN', NULL, NULL, 743, 0, 506, 0, 0, 0, NULL, 0, NULL),
-(1055, 2900, 30, 500, 0, NULL, 0, NULL, NULL, NULL, 632, 0, 563, 15, 0, 0, NULL, 0, NULL),
+(1055, 2900, 30, 500, 0, 'Long caption test ABCDEGFH', 0, NULL, NULL, NULL, 632, 0, 563, 15, 0, 0, NULL, 0, NULL),
 (1835, 2900, 90, 4000, 0, NULL, 0, NULL, NULL, NULL, 239, 0, 983, 239, 0, 0, NULL, 0, NULL),
 (1852, 4010, 190, 0, 0, NULL, 0, NULL, NULL, NULL, 1009, 0, 989, 0, 0, 0, NULL, 0, NULL),
 (2009, 2900, 10, 1000, 0, 'Gateway II', 0, NULL, NULL, NULL, 1495, 0, 1068, 15, 0, 0, NULL, 0, NULL),
