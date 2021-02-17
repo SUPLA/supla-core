@@ -886,15 +886,16 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "CONTROLLINGTHEGARAGEDOOR",
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/"
       "caption",
-      NULL,
+      "Long caption test ABCDEGFH",
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/hidden",
       "false",
       "homeassistant/cover/3281677315ff159f91471b34828f603b/1055/config",
       "{\"~\":\"supla/3281677315ff159f91471b34828f603b/devices/563/channels/"
       "1055\",\"device\":{\"ids\":\"supla-iodevice-563\",\"mf\":\"Zamel\","
-      "\"name\":\"ZAMEL SBW-01\",\"sw\":\"2.7.0\"},\"name\":\"Garage "
-      "door\",\"uniq_id\":\"supla_1055\",\"qos\":0,\"ret\":false,\"opt\":false,"
-      "\"cmd_t\":\"~/"
+      "\"name\":\"ZAMEL SBW-01\",\"sw\":\"2.7.0\"},\"name\":\"Long caption "
+      "test "
+      "ABCDEGFH\",\"uniq_id\":\"supla_1055\",\"qos\":0,\"ret\":false,\"opt\":"
+      "false,\"cmd_t\":\"~/"
       "execute_action\",\"pl_open\":\"OPEN\",\"pl_stop\":\"\",\"pl_cls\":"
       "\"CLOSE\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"

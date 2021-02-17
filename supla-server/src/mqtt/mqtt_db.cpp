@@ -236,9 +236,8 @@ void *supla_mqtt_db::open_userquery(int UserID, bool OnlyEnabled,
 bool supla_mqtt_db::userquery_fetch_row(void *_query) {
   _mqtt_db_userquery_t *query = static_cast<_mqtt_db_userquery_t *>(_query);
   if (query && !mysql_stmt_fetch(query->stmt)) {
-    set_terminating_byte(query->row->user_email,
-                         sizeof(query->row->user_email), query->user_email_len,
-                         query->user_email_is_null);
+    set_terminating_byte(query->row->user_email, sizeof(query->row->user_email),
+                         query->user_email_len, query->user_email_is_null);
     set_terminating_byte(
         query->row->user_timezone, sizeof(query->row->user_timezone),
         query->user_timezone_len, query->user_timezone_is_null);
@@ -564,12 +563,15 @@ bool supla_mqtt_db::channelquery_fetch_row(void *_query) {
   if (query && !mysql_stmt_fetch(query->stmt)) {
     set_terminating_byte(query->row->user_suid, sizeof(query->row->user_suid),
                          query->user_suid_len, query->user_suid_is_null);
+
     set_terminating_byte(
-        query->row->channel_caption, sizeof(query->row->channel_location),
+        query->row->channel_location, sizeof(query->row->channel_location),
         query->channel_location_len, query->channel_location_is_null);
+
     set_terminating_byte(
         query->row->channel_caption, sizeof(query->row->channel_caption),
         query->channel_caption_len, query->channel_caption_is_null);
+
     set_terminating_byte(query->row->device_name,
                          sizeof(query->row->device_name),
                          query->device_name_len, query->device_name_is_null);
