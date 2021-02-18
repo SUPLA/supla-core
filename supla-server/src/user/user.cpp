@@ -1046,7 +1046,6 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
           client->releasePtr();
         }
     }
-    return;
   }
 
   supla_device *device = device_container->findByID(DeviceId);
@@ -1075,16 +1074,19 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
     source_added = true;
   }
 
-  supla_client *client;
+  if (!Extended) {
+    supla_client *client;
 
-  for (int a = 0; a < client_container->count(); a++)
-    if (NULL != (client = client_container->get(a))) {
-      for (std::list<channel_address>::iterator it = ca_list.begin();
-           it != ca_list.end(); it++) {
-        client->on_channel_value_changed(it->getDeviceId(), it->getChannelId());
+    for (int a = 0; a < client_container->count(); a++)
+      if (NULL != (client = client_container->get(a))) {
+        for (std::list<channel_address>::iterator it = ca_list.begin();
+             it != ca_list.end(); it++) {
+          client->on_channel_value_changed(it->getDeviceId(),
+                                           it->getChannelId());
+        }
+        client->releasePtr();
       }
-      client->releasePtr();
-    }
+  }
 
   if (!source_added) {
     ca_list.push_back(channel_address(DeviceId, ChannelId));
