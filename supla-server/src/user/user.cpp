@@ -1069,8 +1069,10 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
     }
   }
 
+  bool source_added = false;
   if (ca_list.empty()) {
     ca_list.push_back(channel_address(DeviceId, ChannelId));
+    source_added = true;
   }
 
   supla_client *client;
@@ -1083,6 +1085,10 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
       }
       client->releasePtr();
     }
+
+  if (!source_added) {
+    ca_list.push_back(channel_address(DeviceId, ChannelId));
+  }
 
   for (std::list<channel_address>::iterator it = ca_list.begin();
        it != ca_list.end(); it++) {
