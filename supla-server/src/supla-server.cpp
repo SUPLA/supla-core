@@ -157,6 +157,7 @@ int main(int argc, char *argv[]) {
     supla_user::log_metrics(3600);
     supla_http_request_queue::getInstance()->logMetrics(3600);
     supla_http_request_queue::getInstance()->logStuckWarning();
+    supla_asynctask_queue::global_instance()->log_stuck_warning();
   }
 
   supla_log(LOG_INFO, "Shutting down...");

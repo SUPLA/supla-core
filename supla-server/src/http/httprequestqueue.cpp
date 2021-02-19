@@ -306,7 +306,7 @@ void supla_http_request_queue::logStuckWarning(void) {
   lck_unlock(lck);
 
   if (time > 10) {
-    supla_log(LOG_WARNING, "Queue iteration is stuck!");
+    supla_log(LOG_WARNING, "HTTP Queue iteration is stuck!");
   }
 }
 

@@ -61,7 +61,7 @@ bool gate_state_getter::get_related_openingsensor_state(int user_id,
     return false;
   }
 
-  static supla_user *user = supla_user::find(user_id, false);
+  supla_user *user = supla_user::find(user_id, false);
   if (!user) {
     return false;
   }

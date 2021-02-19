@@ -40,7 +40,7 @@ supla_user_device_container::supla_user_device_container() : cdcontainer() {}
 supla_user_device_container::~supla_user_device_container() {}
 
 void supla_user_device_container::cd_delete(cdbase *base) {
-  supla_device *device = static_cast<supla_device *>(base);
+  supla_device *device = dynamic_cast<supla_device *>(base);
   if (device) {
     delete device;
   }
@@ -48,7 +48,7 @@ void supla_user_device_container::cd_delete(cdbase *base) {
 
 supla_device *supla_user_device_container::baseToDevice(cdbase *base) {
   supla_device *device = NULL;
-  if (base && (device = static_cast<supla_device *>(base)) == NULL) {
+  if (base && (device = dynamic_cast<supla_device *>(base)) == NULL) {
     base->releasePtr();
   }
   return device;
@@ -73,5 +73,5 @@ supla_device *supla_user_device_container::findByGUID(const char *GUID) {
 }
 
 supla_device *supla_user_device_container::get(int idx) {
-  return static_cast<supla_device *>(cdcontainer::get(idx));
+  return dynamic_cast<supla_device *>(cdcontainer::get(idx));
 }

@@ -25,9 +25,10 @@
 #include "sthread.h"
 
 supla_asynctask_queue::supla_asynctask_queue(void) {
-  lck = lck_init();
-  eh = eh_init();
-  thread = sthread_simple_run(loop, this, 0);
+  this->lck = lck_init();
+  this->eh = eh_init();
+  this->last_iterate_time_sec = 0;
+  this->thread = sthread_simple_run(loop, this, 0);
 }
 
 supla_asynctask_queue::~supla_asynctask_queue(void) {
@@ -207,6 +208,10 @@ void supla_asynctask_queue::iterate(void) {
   struct timeval now;
   gettimeofday(&now, NULL);
 
+  lck_lock(lck);
+  last_iterate_time_sec = now.tv_sec;
+  lck_unlock(lck);
+
   long long wait_time = 1000000;
 
   lck_lock(lck);
@@ -351,4 +356,17 @@ void supla_asynctask_queue::cancel_tasks(
     }
   }
   lck_unlock(lck);
+}
+
+void supla_asynctask_queue::log_stuck_warning(void) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  lck_lock(lck);
+  int time = now.tv_sec - last_iterate_time_sec;
+  lck_unlock(lck);
+
+  if (time > 10) {
+    supla_log(LOG_WARNING, "AsyncTask Queue iteration is stuck!");
+  }
 }
