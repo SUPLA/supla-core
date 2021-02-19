@@ -30,6 +30,7 @@ class supla_asynctask_queue {
   void *lck;
   void *thread;
   TEventHandler *eh;
+  unsigned long long last_iterate_time_sec;
 
   std::vector<supla_abstract_asynctask *> tasks;
   std::vector<supla_abstract_asynctask_thread_pool *> pools;
@@ -69,6 +70,7 @@ class supla_asynctask_queue {
   unsigned int get_task_count(supla_abstract_asynctask_search_condition *cnd);
   bool task_exists(supla_abstract_asynctask_search_condition *cnd);
   void cancel_tasks(supla_abstract_asynctask_search_condition *cnd);
+  void log_stuck_warning(void);
 };
 
 #endif /*ASYNCTASK_QUEUE_H_*/
