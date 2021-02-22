@@ -5,7 +5,6 @@ steps:
 - name: compilation
   image: mariadb
   commands:
-    - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat
     - test/all-tests.sh
   environment:
