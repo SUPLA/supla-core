@@ -177,9 +177,9 @@ supla_channel_electricity_measurement::supla_channel_electricity_measurement(
 void supla_channel_electricity_measurement::assign(
     int Param2, char *TextParam1, TElectricityMeter_ExtendedValue_V2 *em_ev) {
   if (em_ev == NULL) {
-    memset(&this->em_ev, 0, sizeof(TElectricityMeter_ExtendedValue));
+    memset(&this->em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
   } else {
-    memcpy(&this->em_ev, em_ev, sizeof(TElectricityMeter_ExtendedValue));
+    memcpy(&this->em_ev, em_ev, sizeof(TElectricityMeter_ExtendedValue_V2));
 
     if (this->em_ev.m_count == 0) {
       memset(this->em_ev.m, 0, sizeof(TElectricityMeter_Measurement));

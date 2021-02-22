@@ -941,4 +941,582 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
   ASSERT_FALSE(dataExists(provider));
 }
 
+TEST_F(MqttStateMessageProviderTest, electricityMeterWithoutPhaseValues) {
+  provider->set_ids(123, 456, 789);
+  provider->set_user_suid();
+
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+  cvalue.online = true;
+  cvalue.channel_type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+  cvalue.function = SUPLA_CHANNELFNC_ELECTRICITY_METER;
+  provider->setComplexValue(&cvalue);
+  provider->setMeasuredValues(0);
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "66.90", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/total_cost",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/total_cost_balanced",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "1.0000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/price_per_unit",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "EUR", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/currency",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/support",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "0.00000", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_forward_active_energy",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "0.00000", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_reverse_active_energy",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "0.00000", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_forward_active_energy_balanced",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "0.00000", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_reverse_active_energy_balanced",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.0", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 1));
+
+  //------------
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.0", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 2));
+
+  //------------
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.00000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "0.0", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 3));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, electricityMeterWithoutMeasurements) {
+  provider->set_ids(123, 456, 789);
+  provider->set_user_suid();
+
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+  cvalue.online = true;
+  cvalue.channel_type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+  cvalue.function = SUPLA_CHANNELFNC_ELECTRICITY_METER;
+  provider->setComplexValue(&cvalue);
+  provider->setMeasurementCount(0);
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/total_cost",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/total_cost_balanced",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/price_per_unit",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/currency",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/support",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, NULL, false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_forward_active_energy",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, NULL, false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_reverse_active_energy",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, NULL, false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_forward_active_energy_balanced",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, NULL, false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/"
+      "total_reverse_active_energy_balanced",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 1));
+
+  //------------
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 2));
+
+  //------------
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_forward_active_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/"
+                              "%i/total_reverse_active_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_forward_reactive_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "total_reverse_reactive_energy",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "frequency",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "voltage",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "current",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_factor",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, NULL, false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "phase_angle",
+                              789, 3));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
 } /* namespace testing */

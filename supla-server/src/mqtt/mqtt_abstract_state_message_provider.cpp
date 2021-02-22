@@ -541,9 +541,10 @@ bool supla_mqtt_abstract_state_message_provider::
 }
 
 void supla_mqtt_abstract_state_message_provider::verify_flag(
-    int flags, int flag1, int flag2, void **message, size_t *message_size) {
+    supla_channel_electricity_measurement **em, int flags, int flag1, int flag2,
+    void **message, size_t *message_size) {
   if ((flags & flag1) == 0 && (flags & flag2) == 0) {
-    em = NULL;
+    *em = NULL;
     if (message) {
       *message = NULL;
     }
@@ -563,6 +564,8 @@ bool supla_mqtt_abstract_state_message_provider::
   }
 
   get_electricity_measurement();
+
+  supla_channel_electricity_measurement *em = this->em;
 
   TElectricityMeter_ExtendedValue_V2 em_ev;
   memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
@@ -640,7 +643,7 @@ bool supla_mqtt_abstract_state_message_provider::
                             get_device_id(), get_channel_id());
 
     case 6:
-      verify_flag(em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? ((em_ev.total_forward_active_energy[0] +
@@ -654,7 +657,7 @@ bool supla_mqtt_abstract_state_message_provider::
           get_device_id(), get_channel_id());
 
     case 7:
-      verify_flag(em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? ((em_ev.total_reverse_active_energy[0] +
@@ -668,8 +671,9 @@ bool supla_mqtt_abstract_state_message_provider::
           get_device_id(), get_channel_id());
 
     case 8:
-      verify_flag(em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED,
-                  0, message, message_size);
+      verify_flag(&em, em_ev.measured_values,
+                  EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, message,
+                  message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_forward_active_energy_balanced * 0.00001) : 0);
       return create_message(
@@ -679,8 +683,9 @@ bool supla_mqtt_abstract_state_message_provider::
           get_device_id(), get_channel_id());
 
     case 9:
-      verify_flag(em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED,
-                  0, message, message_size);
+      verify_flag(&em, em_ev.measured_values,
+                  EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, message,
+                  message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_reverse_active_energy_balanced * 0.00001) : 0);
       return create_message(
@@ -692,7 +697,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 10:
     case 22:
     case 34:
-      verify_flag(em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_forward_active_energy[phase] * 0.00001) : 0);
@@ -705,7 +710,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 11:
     case 23:
     case 35:
-      verify_flag(em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_ACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_reverse_active_energy[phase] * 0.00001) : 0);
@@ -718,7 +723,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 12:
     case 24:
     case 36:
-      verify_flag(em_ev.measured_values, EM_VAR_FORWARD_REACTIVE_ENERGY, 0,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FORWARD_REACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_forward_reactive_energy[phase] * 0.00001) : 0);
@@ -731,7 +736,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 13:
     case 25:
     case 37:
-      verify_flag(em_ev.measured_values, EM_VAR_REVERSE_REACTIVE_ENERGY, 0,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_REVERSE_REACTIVE_ENERGY, 0,
                   message, message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.total_reverse_reactive_energy[phase] * 0.00001) : 0);
@@ -744,7 +749,8 @@ bool supla_mqtt_abstract_state_message_provider::
     case 14:
     case 26:
     case 38:
-      verify_flag(em_ev.measured_values, EM_VAR_FREQ, 0, message, message_size);
+      verify_flag(&em, em_ev.measured_values, EM_VAR_FREQ, 0, message,
+                  message_size);
       snprintf(value, sizeof(value), "%.2f", em ? (em_ev.m[0].freq * 0.01) : 0);
       return create_message(topic_prefix, user_suid, topic_name, message,
                             message_size, value, false,
@@ -754,7 +760,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 15:
     case 27:
     case 39:
-      verify_flag(em_ev.measured_values, EM_VAR_VOLTAGE, 0, message,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_VOLTAGE, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.2f",
                em ? (em_ev.m[0].voltage[phase] * 0.01) : 0);
@@ -766,7 +772,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 16:
     case 28:
     case 40: {
-      verify_flag(em_ev.measured_values, EM_VAR_CURRENT,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_CURRENT,
                   EM_VAR_CURRENT_OVER_65A, message, message_size);
       unsigned int current = em_ev.m[0].current[phase];
 
@@ -784,7 +790,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 17:
     case 29:
     case 41:
-      verify_flag(em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0);
@@ -795,7 +801,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 18:
     case 30:
     case 42:
-      verify_flag(em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0, message,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0);
@@ -806,7 +812,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 19:
     case 31:
     case 43:
-      verify_flag(em_ev.measured_values, EM_VAR_POWER_APPARENT, 0, message,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_APPARENT, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.5f",
                em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0);
@@ -817,7 +823,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 20:
     case 32:
     case 44:
-      verify_flag(em_ev.measured_values, EM_VAR_POWER_FACTOR, 0, message,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_FACTOR, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.3f",
                em ? (em_ev.m[0].power_factor[phase] * 0.001) : 0);
@@ -828,7 +834,7 @@ bool supla_mqtt_abstract_state_message_provider::
     case 21:
     case 33:
     case 45:
-      verify_flag(em_ev.measured_values, EM_VAR_PHASE_ANGLE, 0, message,
+      verify_flag(&em, em_ev.measured_values, EM_VAR_PHASE_ANGLE, 0, message,
                   message_size);
       snprintf(value, sizeof(value), "%.1f",
                em ? (em_ev.m[0].phase_angle[phase] * 0.1) : 0);
