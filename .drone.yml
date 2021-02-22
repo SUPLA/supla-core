@@ -2,23 +2,30 @@ kind: pipeline
 name: default
 
 steps:
-- name: prepare_env
+- name: supla-server-test
   image: mariadb
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
-#   - test/all-tests.sh
+    - test/all-tests.sh
   environment:
     DBHOST: db
 
-
-- name: supla-server-tests
+- name: supla-scheduler-tests
   image: mariadb
   commands:
-    - ./test/supla-server-test.sh
+    - apt-get update -y
+    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
+    - ./test/supla-scheduler-test.sh
   environment:
     DBHOST: db
 
+- name: joining
+  image: mariadb
+  depends_on: [supla-server-test, supla-scheduler-test]
+  commands:
+    - echo "test"
+      
     #- name: test
     # image: mariadb
   #  commands:
