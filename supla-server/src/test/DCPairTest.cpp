@@ -17,7 +17,7 @@
  */
 
 #include "DCPairTest.h"
-#include <list>
+#include <list>  // NOLINT
 
 namespace testing {
 

@@ -19,6 +19,15 @@
 #ifndef LCK_H_
 #define LCK_H_
 
+#if defined(ESP8266) || defined(ESP32)
+#include <mem.h>
+#define LCK_ICACHE_FLASH ICACHE_FLASH_ATTR
+#endif
+
+#ifndef LCK_ICACHE_FLASH
+#define LCK_ICACHE_FLASH
+#endif /*LCK_ICACHE_FLASH*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,19 +38,19 @@ extern "C" {
 
 #ifdef __LCK_DEBUG
 #define lck_lock(ptr) __lck_lock(ptr, __FILE__, __LINE__)
-void _lck_lock(void *lck);
-void __lck_lock(void *lck, const char *file, int line);
-void lck_debug_init(void);
-void lck_debug_dump(void);
+void LCK_ICACHE_FLASH _lck_lock(void *lck);
+void LCK_ICACHE_FLASH __lck_lock(void *lck, const char *file, int line);
+void LCK_ICACHE_FLASH lck_debug_init(void);
+void LCK_ICACHE_FLASH lck_debug_dump(void);
 #else
-void lck_lock(void *lck);
+void LCK_ICACHE_FLASH lck_lock(void *lck);
 #endif /*__LCK_DEBUG*/
 
-char lck_lock_with_timeout(void *lck, int timeout_sec);
-void lck_unlock(void *lck);
-int lck_unlock_r(void *lck, int result);
-void *lck_init(void);
-void lck_free(void *lck);
+char LCK_ICACHE_FLASH lck_lock_with_timeout(void *lck, int timeout_sec);
+void LCK_ICACHE_FLASH lck_unlock(void *lck);
+int LCK_ICACHE_FLASH lck_unlock_r(void *lck, int result);
+void *LCK_ICACHE_FLASH lck_init(void);
+void LCK_ICACHE_FLASH lck_free(void *lck);
 
 #ifdef __cplusplus
 }

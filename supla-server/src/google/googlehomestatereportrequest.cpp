@@ -72,7 +72,6 @@ bool supla_google_home_statereport_request::verifyExisting(
 
   existing->setDelay(existing->getGoogleRequestIdPtr() ? 3000000 : 1000000);
 
-  supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 }
 
@@ -154,6 +153,12 @@ void supla_google_home_statereport_request::execute(void *sthread) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
           getClient()->addRollerShutterState(ChannelId, value.shut,
                                              value.online);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          getClient()->addOpenPercentState(ChannelId, value.hi ? 0 : 100,
+                                           value.online);
           content_exists = true;
           break;
       }

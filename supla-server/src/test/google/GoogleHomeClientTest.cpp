@@ -26,9 +26,7 @@ namespace testing {
 GoogleHomeClientTest::GoogleHomeClientTest() {}
 
 void GoogleHomeClientTest::SetUp() {
-  supla_user::init();
-  user = new supla_user(1001);
-  user->setUniqueId("qwerty", "zxcvbnm");
+  user = new supla_user(1001, "qwerty", "zxcvbnm");
 
   user->googleHomeCredentials()->set("ACCESS-TOKEN");
   client = new supla_google_home_client(user->googleHomeCredentials());
@@ -39,8 +37,6 @@ void GoogleHomeClientTest::TearDown() {
   delete client->getHttpConnectionFactory();
   delete client;
   delete user;
-
-  supla_user::user_free();
 }
 TEST_F(GoogleHomeClientTest, requestSync) {
   const char expectedRequest[] =
@@ -170,11 +166,11 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
   const char expectedRequest1[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 169\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 158\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
       "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
-      "\"qwerty-10\":{\"online\":false,\"on\":false,\"openPercent\":100}}}}}";
+      "\"qwerty-10\":{\"online\":false,\"openPercent\":100}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 55, false));
   ASSERT_TRUE(client->sendReportState(NULL));
@@ -183,11 +179,11 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 135\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 125\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
-      "\"on\":true,\"openPercent\":45}}}}}";
+      "\"openPercent\":45}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 55, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
@@ -196,11 +192,11 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 135\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 125\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
-      "\"on\":true,\"openPercent\":20}}}}}";
+      "\"openPercent\":20}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 80, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
@@ -209,11 +205,11 @@ TEST_F(GoogleHomeClientTest, rollerShutterState) {
   const char expectedRequest4[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 167\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 157\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
       "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
-      "\"qwerty-10\":{\"online\":true,\"on\":true,\"openPercent\":100}}}}}";
+      "\"qwerty-10\":{\"online\":true,\"openPercent\":100}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 0, true));
   ASSERT_TRUE(client->sendReportState(NULL));
@@ -224,7 +220,7 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
   const char expectedRequest[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 453\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 487\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-1\":{\"online\":true,"
@@ -233,7 +229,8 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
       "true,\"color\":{\"spectrumRGB\":12320512},\"on\":true,\"brightness\":80}"
       ",\"qwerty-4\":{\"online\":true,\"on\":true,\"brightness\":55},\"qwerty-"
       "5-2\":{\"online\":true,\"on\":true,\"brightness\":30},\"qwerty-6\":{"
-      "\"online\":true,\"on\":true,\"openPercent\":70}}}}}";
+      "\"online\":true,\"openPercent\":70},\"qwerty-7\":{\"online\":true,"
+      "\"openPercent\":70}}}}}";
 
   ASSERT_TRUE(client->addOnOffState(1, true, true));
   ASSERT_FALSE(client->addOnOffState(1, true, true));
@@ -247,6 +244,8 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
   ASSERT_FALSE(client->addBrightnessState(5, 30, true, 2));
   ASSERT_TRUE(client->addRollerShutterState(6, 30, true));
   ASSERT_FALSE(client->addRollerShutterState(6, 45, true));
+  ASSERT_TRUE(client->addOpenPercentState(7, 70, true));
+  ASSERT_FALSE(client->addOpenPercentState(7, 55, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest));
 }

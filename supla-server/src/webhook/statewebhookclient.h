@@ -19,10 +19,10 @@
 #ifndef WEBHOOK_STATEWEBHOOKCLIENT_H_
 #define WEBHOOK_STATEWEBHOOKCLIENT_H_
 
+#include "device/devicechannel.h"
 #include "json/cJSON.h"
 #include "webhook/statewebhookcredentials.h"
 #include "webhook/webhookbasicclient.h"
-#include "device/devicechannel.h"
 
 class supla_state_webhook_client : public supla_webhook_basic_client {
  private:
@@ -52,8 +52,12 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
                                            supla_channel_ic_measurement *icm,
                                            bool connected);
 
+  bool sendShutReport(const char *function, int channelId, char shut,
+                      bool connected);
+
  public:
-  supla_state_webhook_client(supla_webhook_basic_credentials *credentials);
+  explicit supla_state_webhook_client(
+      supla_webhook_basic_credentials *credentials);
   bool sendLightSwitchReport(int channelId, bool on, bool connected);
   bool sendPowerSwitchReport(int channelId, bool on, bool connected);
 
@@ -69,9 +73,12 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
   bool sendDoorOpeningSensorReport(int channelId, bool hi, bool connected);
   bool sendRollerShutterOpeningSensorReport(int channelId, bool hi,
                                             bool connected);
+  bool sendRoofWindowOpeningSensorReport(int channelId, bool hi,
+                                         bool connected);
   bool sendWindowOpeningSensorReport(int channelId, bool hi, bool connected);
   bool sendMailSensorReport(int channelId, bool hi, bool connected);
   bool sendRollerShutterReport(int channelId, char shut, bool connected);
+  bool sendRoofWindowReport(int channelId, char shut, bool connected);
   bool sendWindSensorReport(int channelId, double value, bool connected);
   bool sendPressureSensorReport(int channelId, double value, bool connected);
   bool sendRainSensorReport(int channelId, double value, bool connected);

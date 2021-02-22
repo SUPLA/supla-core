@@ -163,7 +163,7 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
   free(hostname);
 
   if (res != 1) {
-    supla_log(LOG_DEBUG, "Can't set hostname!");
+    supla_log(LOG_ERR, "Can't set hostname!");
     vars_free();
     return false;
   }
@@ -173,7 +173,7 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
   res = SSL_set_tlsext_host_name(vars->ssl, host);
 
   if (res != 1) {
-    supla_log(LOG_DEBUG, "Can't set the server name for ClientHello!");
+    supla_log(LOG_ERR, "Can't set the server name for ClientHello!");
     vars_free();
     return false;
   }
@@ -183,7 +183,7 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
   res = BIO_do_connect(vars->web);
 
   if (res != 1) {
-    supla_log(LOG_DEBUG, "BIO connect failed!");
+    supla_log(LOG_ERR, "BIO connect failed!");
     vars_free();
     return false;
   }
@@ -191,7 +191,7 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
   res = BIO_do_handshake(vars->web);
 
   if (res != 1) {
-    supla_log(LOG_DEBUG, "BIO handshake failed!");
+    supla_log(LOG_ERR, "BIO handshake failed!");
     vars_free();
     return false;
   }
@@ -200,25 +200,34 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
   if (cert) {
     X509_free(cert);
   } else {
-    supla_log(LOG_DEBUG, "Can't get server certificate!");
+    supla_log(LOG_ERR, "Can't get server certificate!");
     vars_free();
     return false;
   }
 
   res = SSL_get_verify_result(vars->ssl);
   if (X509_V_OK != res) {
-    supla_log(LOG_DEBUG, "Can't verify server certificate! Code: %i", res);
+    supla_log(LOG_ERR, "Can't verify server certificate! Code: %i", res);
     vars_free();
     return false;
   }
 
+  bool result = false;
+
   sfd = SSL_get_fd(vars->ssl);
-  write_read(vars, out, in);
+  if (sfd >= 0) {
+    write_read(vars, out, in);
+    result = true;
+  } else {
+    supla_log(LOG_ERR,
+              "Failed to retrieve the file descriptor associated with the SSL "
+              "object!");
+  }
 
   vars_free();
   sfd = -1;
 
-  return false;
+  return result;
 }
 
 #endif /* NOSSL */

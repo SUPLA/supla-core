@@ -64,9 +64,9 @@ typedef struct {
 #ifdef __LCK_DEBUG
 void *ptrs[500];
 
-void lck_debug_init(void) { memset(ptrs, 0, sizeof(ptrs)); }
+void LCK_ICACHE_FLASH lck_debug_init(void) { memset(ptrs, 0, sizeof(ptrs)); }
 
-void lck_debug_dump(void) {
+void LCK_ICACHE_FLASH lck_debug_dump(void) {
   printf("LCK DEBUG DUMP\n");
   int a;
   int n = sizeof(ptrs) / sizeof(void *);
@@ -84,13 +84,25 @@ void lck_debug_dump(void) {
 
 #endif /*__LCK_DEBUG*/
 
-void *lck_init(void) {
+void *LCK_ICACHE_FLASH lck_init(void) {
 #ifdef __SINGLE_THREAD
   return NULL;
 #else
   TLckData *lck = malloc(sizeof(TLckData));
 
   if (lck != NULL) {
+#ifdef __LCK_DEBUG
+    memset(lck, 0, sizeof(TLckData));
+    int a;
+    int n = sizeof(ptrs) / sizeof(void *);
+    for (a = 0; a < n; a++) {
+      if (ptrs[a] == 0) {
+        ptrs[a] = lck;
+        break;
+      }
+    }
+#endif /*__LCK_DEBUG*/
+
 #ifdef _WIN32
     InitializeCriticalSectionEx(&lck->critSec, 4000,
                                 CRITICAL_SECTION_NO_DEBUG_INFO);
@@ -104,25 +116,13 @@ void *lck_init(void) {
 #endif /*_WIN32*/
   }
 
-#ifdef __LCK_DEBUG
-  memset(lck, 0, sizeof(TLckData));
-  int a;
-  int n = sizeof(ptrs) / sizeof(void *);
-  for (a = 0; a < n; a++) {
-    if (ptrs[a] == 0) {
-      ptrs[a] = lck;
-      break;
-    }
-  }
-#endif /*__LCK_DEBUG*/
-
   return lck;
 #endif /*__SINGLE_THREAD*/
 }
 
 #ifdef __LCK_DEBUG
 
-void __lck_lock(void *lck, const char *file, int line) {
+void LCK_ICACHE_FLASH __lck_lock(void *lck, const char *file, int line) {
   _lck_lock(lck);
 
   ((TLckData *)lck)->thread = pthread_self();
@@ -134,7 +134,7 @@ void __lck_lock(void *lck, const char *file, int line) {
   }
 }
 
-void _lck_lock(void *lck) {
+void LCK_ICACHE_FLASH _lck_lock(void *lck) {
 #else
 void lck_lock(void *lck) {
 #endif /*__LCK_DEBUG*/
@@ -150,7 +150,7 @@ void lck_lock(void *lck) {
 #endif /*__SINGLE_THREAD*/
 }
 
-void lck_unlock(void *lck) {
+void LCK_ICACHE_FLASH lck_unlock(void *lck) {
 #ifdef __LCK_DEBUG
   ((TLckData *)lck)->count--;
 #endif /*__LCK_DEBUG*/
@@ -166,14 +166,14 @@ void lck_unlock(void *lck) {
 #endif /*__SINGLE_THREAD*/
 }
 
-int lck_unlock_r(void *lck, int result) {
+int LCK_ICACHE_FLASH lck_unlock_r(void *lck, int result) {
 #ifndef __SINGLE_THREAD
   lck_unlock(lck);
 #endif /*__SINGLE_THREAD*/
   return result;
 }
 
-void lck_free(void *lck) {
+void LCK_ICACHE_FLASH lck_free(void *lck) {
 #ifdef __LCK_DEBUG
   int a;
   int n = sizeof(ptrs) / sizeof(void *);

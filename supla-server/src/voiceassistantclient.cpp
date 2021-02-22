@@ -30,7 +30,7 @@ supla_voice_assistant_client::supla_voice_assistant_client(
 char *supla_voice_assistant_client::getEndpointId(int channelId,
                                                   short subChannel) {
   char *result = NULL;
-  char *uuid = getCredentials()->getUser()->getShortUniqueID();
+  const char *uuid = getCredentials()->getUser()->getShortUniqueID();
   if (!uuid) {
     return NULL;
   }
@@ -50,6 +50,5 @@ char *supla_voice_assistant_client::getEndpointId(int channelId,
     result = endpointId;
   }
 
-  free(uuid);
   return result;
 }

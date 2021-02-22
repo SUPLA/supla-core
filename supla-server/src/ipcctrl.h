@@ -33,10 +33,6 @@ class svr_ipcctrl {
   int sfd;
   TEventHandler *eh;
 
-  char auth_level;
-  int auth_expires_at;
-  int user_id;
-  int oauth_user_id;
   char *AlexaCorrelationToken = NULL;
   char *GoogleRequestId = NULL;
 
@@ -52,12 +48,19 @@ class svr_ipcctrl {
   void get_impulsecounter_value(const char *cmd);
   void get_electricitymeter_value(const char *cmd);
   void get_valve_value(const char *cmd);
+  void get_digiglass_value(const char *cmd);
   void set_char(const char *cmd, bool group);
   void set_rgbw(const char *cmd, bool group, bool random);
+  void set_digiglass_value(const char *cmd);
+  void action_open_close(const char *cmd, bool open);
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);
   void state_webhook_changed(const char *cmd);
+  void mqtt_settings_changed(const char *cmd);
+  void before_channel_function_change(const char *cmd);
+  void before_device_delete(const char *cmd);
   void on_device_deleted(const char *cmd);
+  void on_device_settings_changed(const char *cmd);
 
   void send_result(const char *result);
   void send_result(const char *result, int i);

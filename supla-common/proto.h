@@ -43,6 +43,8 @@ struct _supla_timeval {
 #define _supla_int64_t long long
 
 #elif defined(ESP8266) || defined(ESP32)
+#include <mem.h>
+#define PROTO_ICACHE_FLASH ICACHE_FLASH_ATTR
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #define SPROTO_WITHOUT_OUT_BUFFER
@@ -76,6 +78,10 @@ struct _supla_timeval {
 #define _supla_timeval timeval
 #endif
 
+#ifndef PROTO_ICACHE_FLASH
+#define PROTO_ICACHE_FLASH
+#endif /*PROTO_ICACHE_FLASH*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,7 +96,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 13
+#define SUPLA_PROTO_VERSION 14
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -211,6 +217,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT 630        // ver. >= 12
 #define SUPLA_CS_CALL_SET_CHANNEL_CAPTION 640                 // ver. >= 12
 #define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650          // ver. >= 12
+#define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
+#define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -368,7 +376,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
-#define SUPLA_CHANNELFNC_DIGIGLASS 800                    // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800         // ver. >= 14
+#define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810           // ver. >= 14
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -422,6 +431,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_PEVEKO 10
 #define SUPLA_MFR_WEKTA 11
 #define SUPLA_MFR_STA_SYSTEM 12
+#define SUPLA_MFR_DGF 13
+#define SUPLA_MFR_COMELIT 14
 
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
@@ -1332,13 +1343,21 @@ typedef struct {
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
-#define DIGIGLASS_FLAG_HORIZONATAL 0x1
+#define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
+#define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
+#define DIGIGLASS_REGENERATION_AFTER_20H_IN_PROGRESS 0x4
 
 typedef struct {
-  unsigned char sectionCount;  // 1 - 16
   unsigned char flags;
-  unsigned short opaqueSections;
-} TDigiglass_Value;
+  unsigned char sectionCount;  // 1 - 16 Filled by server
+  unsigned short mask;         // bit mask. 0 - opaque, 1 - transparent
+} TDigiglass_Value;            // v. >= 14
+
+typedef struct {
+  unsigned short mask;  // Bit mask. 0 - opaque, 1 - transparent
+  unsigned short
+      active_bits;          // Specifies which bits of the mask are not skipped
+} TCSD_Digiglass_NewValue;  // v. >= 14
 
 typedef struct {
   unsigned char sec;        // 0-59
@@ -1628,6 +1647,17 @@ typedef struct {
   // Functions[ChannelNumber]
 } TSD_ChannelFunctions;  // ver. >= 12
 
+typedef struct {
+  unsigned char ChannelNumber;
+} TDS_GetChannelIntParamsRequest;
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t Param1;
+  _supla_int_t Param2;
+  _supla_int_t Param3;
+} TSD_ChannelIntParams;
+
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
 
@@ -1642,32 +1672,34 @@ typedef struct {
 
 #pragma pack(pop)
 
-void *sproto_init(void);
-void sproto_free(void *spd_ptr);
+void *PROTO_ICACHE_FLASH sproto_init(void);
+void PROTO_ICACHE_FLASH sproto_free(void *spd_ptr);
 
 #ifndef SPROTO_WITHOUT_OUT_BUFFER
-char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_out_buffer_append(void *spd_ptr,
+                                                 TSuplaDataPacket *sdp);
 unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
                                           unsigned _supla_int_t buffer_size);
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
-char sproto_out_dataexists(void *spd_ptr);
-char sproto_in_buffer_append(void *spd_ptr, char *data,
-                             unsigned _supla_int_t data_size);
+char PROTO_ICACHE_FLASH sproto_out_dataexists(void *spd_ptr);
+char PROTO_ICACHE_FLASH sproto_in_buffer_append(
+    void *spd_ptr, char *data, unsigned _supla_int_t data_size);
 
-char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
-char sproto_in_dataexists(void *spd_ptr);
+char PROTO_ICACHE_FLASH sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_in_dataexists(void *spd_ptr);
 
-unsigned char sproto_get_version(void *spd_ptr);
-void sproto_set_version(void *spd_ptr, unsigned char version);
-void sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
-char sproto_set_data(TSuplaDataPacket *sdp, char *data,
-                     unsigned _supla_int_t data_size,
-                     unsigned _supla_int_t call_type);
-TSuplaDataPacket *sproto_sdp_malloc(void *spd_ptr);
-void sproto_sdp_free(TSuplaDataPacket *sdp);
+unsigned char PROTO_ICACHE_FLASH sproto_get_version(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_set_version(void *spd_ptr,
+                                           unsigned char version);
+void PROTO_ICACHE_FLASH sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_set_data(TSuplaDataPacket *sdp, char *data,
+                                        unsigned _supla_int_t data_size,
+                                        unsigned _supla_int_t call_type);
+TSuplaDataPacket *PROTO_ICACHE_FLASH sproto_sdp_malloc(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp);
 
-void sproto_log_summary(void *spd_ptr);
-void sproto_buffer_dump(void *spd_ptr, unsigned char in);
+void PROTO_ICACHE_FLASH sproto_log_summary(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_buffer_dump(void *spd_ptr, unsigned char in);
 
 #ifdef __cplusplus
 }

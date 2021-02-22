@@ -168,7 +168,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_LightSourceLifespan),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 
-  ASSERT_EQ((unsigned int)4, sizeof(TDigiglass_Value));
+  ASSERT_LE(sizeof(TDigiglass_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+
+  ASSERT_LE(sizeof(TCSD_Digiglass_NewValue),
+            (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   ASSERT_EQ((unsigned int)12, sizeof(TCalCfg_ZWave_WakeupSettingsReport));
   ASSERT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsReport),
@@ -177,6 +180,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
   ASSERT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
+  ASSERT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
 }
 
 TEST_F(ProtoTest, init) {
@@ -184,6 +190,12 @@ TEST_F(ProtoTest, init) {
   ASSERT_FALSE(sproto == NULL);
   ASSERT_EQ(SUPLA_PROTO_VERSION, sproto_get_version(sproto));
   sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, littleEndian) {
+  char i[] = {1, 2, 3, 4};
+  ASSERT_EQ((unsigned int)4, sizeof(int));
+  ASSERT_EQ(67305985, *(int *)i);
 }
 
 TEST_F(ProtoTest, set_version) {
@@ -202,6 +214,7 @@ TEST_F(ProtoTest, set_version) {
   sproto_free(sproto);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 TEST_F(ProtoTest, out_dataexists) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
@@ -216,6 +229,7 @@ TEST_F(ProtoTest, out_dataexists) {
 
   sproto_free(sproto);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 TEST_F(ProtoTest, in_dataexists) {
   void *sproto = sproto_init();
@@ -422,6 +436,7 @@ TEST_F(ProtoTest, pop_in_sdp_test7) {
   sproto_free(sproto);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 TEST_F(ProtoTest, out_buffer_append_test1) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
@@ -491,5 +506,6 @@ TEST_F(ProtoTest, pop_out_data) {
 
   sproto_free(sproto);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 }  // namespace
