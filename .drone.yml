@@ -29,12 +29,12 @@ steps:
   environment:
     DBHOST: db
 
-- name: supla-consol-test
+- name: supla-console-client-test
   image: mariadb
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
-    - ./test/supla-consol-test.sh
+    - ./test/supla-console-client-test.sh
   environment:
     DBHOST: db
 
