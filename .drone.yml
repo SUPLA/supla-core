@@ -2,17 +2,25 @@ kind: pipeline
 name: default
 
 steps:
-- name: compilation
+- name: prepare_env
   image: mariadb
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
-    - test/all-tests.sh
+#   - test/all-tests.sh
   environment:
     DBHOST: db
 
-- name: test
+
+- name: supla-server-tests
   image: mariadb
+  commands:
+    - ./test/supla-server-test.sh
+  environment:
+    DBHOST: db
+
+    #- name: test
+    # image: mariadb
   #  commands:
   # - ./supladevicetests --gtest_repeat=50 --gtest_shuffle
 
