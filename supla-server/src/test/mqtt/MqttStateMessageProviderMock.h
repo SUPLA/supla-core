@@ -28,6 +28,8 @@ class MqttStateMessageProviderMock
  private:
   channel_complex_value *cvalue_mock;
   char suid[SHORT_UNIQUEID_MAXSIZE];
+  _supla_int_t measured_values;
+  _supla_int_t m_count;
 
  protected:
   virtual const char *_get_user_suid(void);
@@ -41,6 +43,8 @@ class MqttStateMessageProviderMock
   MqttStateMessageProviderMock();
   virtual ~MqttStateMessageProviderMock();
   void setComplexValue(channel_complex_value *cvalue);
+  void setMeasuredValues(_supla_int_t measured_values);
+  void setMeasurementCount(_supla_int_t m_count);
 };
 
 #endif /* MQTTSTATEMESSAGEPROVIDERMOCK_H_ */

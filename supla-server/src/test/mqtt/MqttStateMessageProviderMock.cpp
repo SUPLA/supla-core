@@ -21,14 +21,14 @@
 MqttStateMessageProviderMock::MqttStateMessageProviderMock(void)
     : supla_mqtt_abstract_state_message_provider() {
   cvalue_mock = NULL;
+  m_count = 1;
+  measured_values = EM_VAR_ALL;
   snprintf(suid, SHORT_UNIQUEID_MAXSIZE, "9920767494dd87196e1896c7cbab707c");
 }
 
 MqttStateMessageProviderMock::~MqttStateMessageProviderMock(void) {}
 
-const char *MqttStateMessageProviderMock::_get_user_suid(void) {
-  return suid;
-}
+const char *MqttStateMessageProviderMock::_get_user_suid(void) { return suid; }
 
 channel_complex_value *MqttStateMessageProviderMock::_get_complex_value(
     int user_id, int device_id, int channel_id) {
@@ -70,9 +70,9 @@ MqttStateMessageProviderMock::_get_electricity_measurement(void) {
         em_ev.total_reverse_active_energy[a] + 100000;
   }
 
-  em_ev.measured_values = EM_VAR_ALL;
+  em_ev.measured_values = measured_values;
   em_ev.period = 1;
-  em_ev.m_count = 1;
+  em_ev.m_count = m_count;
 
   char currency[] = "EUR";
   return new supla_channel_electricity_measurement(123, &em_ev, 10000,
@@ -95,4 +95,13 @@ MqttStateMessageProviderMock::_get_impulse_counter_measurement(void) {
 void MqttStateMessageProviderMock::setComplexValue(
     channel_complex_value *cvalue) {
   cvalue_mock = cvalue;
+}
+
+void MqttStateMessageProviderMock::setMeasuredValues(
+    _supla_int_t measured_values) {
+  this->measured_values = measured_values;
+}
+
+void MqttStateMessageProviderMock::setMeasurementCount(_supla_int_t m_count) {
+  this->m_count = m_count;
 }
