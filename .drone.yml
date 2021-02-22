@@ -11,7 +11,7 @@ steps:
   environment:
     DBHOST: db
 
-- name: supla-scheduler-tests
+- name: supla-scheduler-test
   image: mariadb
   commands:
     - apt-get update -y
