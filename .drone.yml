@@ -5,8 +5,9 @@ steps:
 - name: compilation
   image: ubuntu:latest
   commands:
-    - sudo apt-get -y install valgrind libmariadbclient-dev-compat
-    - sudo test/all-tests.sh
+    - apt-get update -y
+    - apt-get -y install valgrind libmariadbclient-dev-compat
+    - test/all-tests.sh
   environment:
     DBHOST: db
 
