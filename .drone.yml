@@ -1,0 +1,47 @@
+kind: pipeline
+name: default
+
+steps:
+- name: compilation
+  image: rikorose/gcc-cmake
+  commands:
+    - sudo apt-get -y install valgrind libmariadbclient-dev-compat
+    - sudo test/all-tests.sh
+  environment:
+    DBHOST: db
+
+- name: test
+  image: rikorose/gcc-cmake
+  #  commands:
+  # - ./supladevicetests --gtest_repeat=50 --gtest_shuffle
+
+- name: slack
+  image: plugins/slack
+  settings:
+    webhook: 
+      from_secret: slack_webhook 
+    channel: github
+    username: drone
+
+    # here's the template :)
+    # notice that the repo endpoint is hardcoded to `https://github.com/`. 
+    # you may adjust it accordingly.
+    template: >
+      {{#if build.pull }}
+        *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}*: <https://github.com/{{ repo.owner }}/{{ repo.name }}/pull/{{ build.pull }}|Pull Request #{{ build.pull }}>
+      {{else}}
+        *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}: Build #{{ build.number }}* (type: `{{ build.event }}`)
+      {{/if}}
+
+      Commit: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ truncate build.commit 8 }}> at: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commits/{{ build.branch }}|{{repo.owner}}/{{repo.name}}/{{ build.branch }}> by: {{ build.author }}
+
+      <{{ build.link }}|Visit build page ↗>
+  when:
+    status: [success, failure]
+
+services:
+- name: db
+  image: mariadb
+  environment:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    MYSQL_DATABASE: test
