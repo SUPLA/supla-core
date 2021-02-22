@@ -7,7 +7,7 @@ steps:
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
-    - test/all-tests.sh
+    - test/supla-server-test.sh
   environment:
     DBHOST: db
 
@@ -20,9 +20,27 @@ steps:
   environment:
     DBHOST: db
 
+- name: supla-dev-test
+  image: mariadb
+  commands:
+    - apt-get update -y
+    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
+    - ./test/supla-dev-test.sh
+  environment:
+    DBHOST: db
+
+- name: supla-consol-test
+  image: mariadb
+  commands:
+    - apt-get update -y
+    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
+    - ./test/supla-consol-test.sh
+  environment:
+    DBHOST: db
+
 - name: joining
   image: mariadb
-  depends_on: [supla-server-test, supla-scheduler-test]
+  depends_on: [supla-server-test, supla-scheduler-test, supla-dev-test, supla-console-client-test]
   commands:
     - echo "test"
       
