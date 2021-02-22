@@ -6,7 +6,7 @@ steps:
   image: mariadb
   commands:
     - apt-get update -y
-    - apt-get -y install valgrind libmariadbclient-dev-compat make
+    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
     - test/all-tests.sh
   environment:
     DBHOST: db
