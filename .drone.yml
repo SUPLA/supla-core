@@ -3,7 +3,7 @@ name: default
 
 steps:
 - name: compilation
-  image: groovy
+  image: eoan
   commands:
     - sudo apt-get -y install valgrind libmariadbclient-dev-compat
     - sudo test/all-tests.sh
@@ -11,7 +11,7 @@ steps:
     DBHOST: db
 
 - name: test
-  image: groovy
+  image: eoan
   #  commands:
   # - ./supladevicetests --gtest_repeat=50 --gtest_shuffle
 
