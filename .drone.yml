@@ -3,7 +3,7 @@ name: default
 
 steps:
 - name: compilation
-  image: ubuntu:latest
+  image: mariadb
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat
@@ -12,7 +12,7 @@ steps:
     DBHOST: db
 
 - name: test
-  image: ubuntu:latest
+  image: mariadb
   #  commands:
   # - ./supladevicetests --gtest_repeat=50 --gtest_shuffle
 
