@@ -5,8 +5,8 @@ steps:
 - name: compilation
   image: groovy
   commands:
-    - sudo apt-get -y install valgrind libmariadbclient-dev-compat
-    - sudo test/all-tests.sh
+    - apt-get -y install valgrind libmariadbclient-dev-compat
+    - test/all-tests.sh
   environment:
     DBHOST: db
 
