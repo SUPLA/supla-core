@@ -24,6 +24,8 @@ steps:
   image: devel/supla-core
   pull: never
   depends_on: [supla-server-test]
+  when:
+    status: [success, failure]
   commands:
     #    - sleep 10
     - test/supla-console-client-test.sh
