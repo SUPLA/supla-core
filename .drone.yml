@@ -3,7 +3,7 @@ name: default
 
 steps:
 - name: supla-server-test
-  image: devel/supla-core:latest
+  image: https://github.com/SUPLA/supla-docker/tree/supla-core-devel:latest
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
@@ -13,7 +13,7 @@ steps:
     DBHOST: db
 
 - name: supla-scheduler-test
-  image: devel/supla-core:latest
+  image: https://github.com/SUPLA/supla-docker/tree/supla-core-devel:latest
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
@@ -22,7 +22,7 @@ steps:
     DBHOST: db
 
 - name: supla-dev-test
-  image: devel/supla-core:latest
+  image: https://github.com/SUPLA/supla-docker/tree/supla-core-devel:latest
   commands:
     - apt-get update -y
     - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
@@ -31,7 +31,7 @@ steps:
     DBHOST: db
 
 - name: joining
-  image: devel/supla-core:latest
+  image: https://github.com/SUPLA/supla-docker/tree/supla-core-devel:latest
   depends_on: [supla-server-test, supla-scheduler-test, supla-dev-test]
   commands:
     - echo "test"
