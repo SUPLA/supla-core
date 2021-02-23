@@ -62,7 +62,7 @@ steps:
 
 
 - name: cpplint
-  image: devel/supla-code
+  image: devel/supla-core
   pull: never
   commands:
     - ./tools/lint.sh
