@@ -60,10 +60,17 @@ steps:
   commands:
     - ./test/supla-console-client-compilation-check.sh
 
+
+- name: cpplint
+  image: devel/supla-code
+  pull: never
+  commands:
+    - ./tools/lint.sh
+
 - name: joining
   image: devel/supla-core
   pull: never
-  depends_on: [supla-server-test, supla-scheduler-test, supla-console-client-test, supla-dev-compilation-check, supla-server-compilation-check, supla-scheduler-compilation-check, supla-console-client-compilation-check]
+  depends_on: [supla-server-test, supla-scheduler-test, supla-console-client-test, supla-dev-compilation-check, supla-server-compilation-check, supla-scheduler-compilation-check, supla-console-client-compilation-check, cpplint]
   commands:
     - echo "test"
       
