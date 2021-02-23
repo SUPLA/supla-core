@@ -13,7 +13,9 @@ mkdir -p /etc/supla-server
 cd supla-server/Test 
 make clean && make -j8 all 
 
+cd ../../
 db_init
+cd supla-server/Test
 
 cat > /etc/supla-server/supla-test.cfg <<- ENDOFCFG
 [NET]
