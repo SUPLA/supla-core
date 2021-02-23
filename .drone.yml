@@ -12,28 +12,50 @@ steps:
   environment:
     DBHOST: db
 
+- name: supla-console-client-test
+  image: devel/supla-core
+  pull: never
+  depends_on: [supla-server-test]
+  commands:
+    - sleep 10
+    - test/supla-console-client-test.sh
+  environment:
+    DBHOST: db
+
 - name: supla-scheduler-test
   image: devel/supla-core
   pull: never
   commands:
-    - sleep 10
     - ./test/supla-scheduler-test.sh
-  environment:
-    DBHOST: db
 
-- name: supla-dev-test
+- name: supla-dev-compilation-check
   image: devel/supla-core
   pull: never
   commands:
-    - sleep 10
-    - ./test/supla-dev-test.sh
-  environment:
-    DBHOST: db
+    - ./test/supla-dev-compilation-check.sh
+
+- name: supla-server-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-server-compilation-check.sh
+
+- name: supla-scheduler-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-scheduler-compilation-check.sh
+
+- name: supla-console-client-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-console-client-compilation-check.sh
 
 - name: joining
   image: devel/supla-core
   pull: never
-  depends_on: [supla-server-test, supla-scheduler-test, supla-dev-test]
+  depends_on: [supla-server-test, supla-scheduler-test, supla-console-client-test, supla-dev-compilation-check, supla-server-compilation-check, supla-scheduler-compilation-check, supla-console-client-compilation-check]
   commands:
     - echo "test"
       

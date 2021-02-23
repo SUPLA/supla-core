@@ -3,12 +3,11 @@
 set -e
 
 [ -d ../test ] && cd ../
-. ./test/common
 
 cd supla-dev/Release 
-make clean && make 
+make clean && make -j8
 cd ../Debug 
-make clean && make 
+make clean && make -j8
 
 echo OK 
 exit 0
