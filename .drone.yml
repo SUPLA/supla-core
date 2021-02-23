@@ -2,9 +2,17 @@ kind: pipeline
 name: default
 
 steps:
+- name: db
+  image: mariadb
+  detach: true
+  environment:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    MYSQL_DATABASE: test
+
 - name: supla-server-test
   image: devel/supla-core
   pull: never
+  depends_on: [db]
   commands:
     - sleep 10
     - test/supla-server-test.sh
@@ -88,9 +96,3 @@ steps:
 #  when:
 #    status: [success, failure]
 
-services:
-- name: db
-  image: mariadb
-  environment:
-    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-    MYSQL_DATABASE: test
