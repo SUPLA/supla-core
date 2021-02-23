@@ -6,8 +6,7 @@ steps:
   image: devel/supla-core
   pull: never
   commands:
-    - apt-get update -y
-    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
+    - sleep 10
     - test/supla-server-test.sh
     - test/supla-console-client-test.sh
   environment:
@@ -17,8 +16,7 @@ steps:
   image: devel/supla-core
   pull: never
   commands:
-    - apt-get update -y
-    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
+    - sleep 10
     - ./test/supla-scheduler-test.sh
   environment:
     DBHOST: db
@@ -27,8 +25,7 @@ steps:
   image: devel/supla-core
   pull: never
   commands:
-    - apt-get update -y
-    - apt-get -y install valgrind libmariadbclient-dev-compat make build-essential
+    - sleep 10
     - ./test/supla-dev-test.sh
   environment:
     DBHOST: db
