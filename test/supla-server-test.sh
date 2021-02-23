@@ -7,12 +7,13 @@ set -e
 
 DBHOST=db
 
-db_init
 
 mkdir -p /etc/supla-server
 
 cd supla-server/Test 
 make clean && make -j8 all 
+
+db_init
 
 cat > /etc/supla-server/supla-test.cfg <<- ENDOFCFG
 [NET]
