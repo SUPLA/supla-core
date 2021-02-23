@@ -14,9 +14,8 @@ steps:
   pull: never
   depends_on: [db]
   commands:
-    - sleep 10
+    #    - sleep 10
     - test/supla-server-test.sh
-    - test/supla-console-client-test.sh
   environment:
     DBHOST: db
 
@@ -25,7 +24,7 @@ steps:
   pull: never
   depends_on: [supla-server-test]
   commands:
-    - sleep 10
+    #    - sleep 10
     - test/supla-console-client-test.sh
   environment:
     DBHOST: db
