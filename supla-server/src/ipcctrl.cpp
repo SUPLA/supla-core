@@ -589,12 +589,27 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   int DeviceID = 0;
   int ChannelID = 0;
 
+  cut_correlation_token(cmd);
+  cut_google_requestid(cmd);
+
   sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
          &ChannelID);
-  if (UserID && DeviceID && ChannelID) {
+
+  supla_user *user = NULL;
+  if (UserID && DeviceID && ChannelID &&
+      (user = supla_user::find(UserID, false)) != NULL) {
     bool result = false;
-    supla_device *device = supla_user::get_device(UserID, DeviceID);
+    supla_device *device = user->get_device(DeviceID);
     if (device) {
+      // onChannelValueChangeEvent must be called before
+      // set_device_channel_char_value for the potential report to contain
+      // AlexaCorrelationToken / GoogleRequestId
+      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+          user, DeviceID, ChannelID,
+          AlexaCorrelationToken ? EST_AMAZON_ALEXA
+                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+          AlexaCorrelationToken, GoogleRequestId);
+
       if (open) {
         result = device->get_channels()->action_open(0, ChannelID, 0, 0);
       } else {
@@ -613,6 +628,9 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   } else {
     send_result("USER_UNKNOWN");
   }
+
+  free_correlation_token();
+  free_google_requestid();
 }
 
 void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
