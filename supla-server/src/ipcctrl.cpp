@@ -430,19 +430,31 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
            &DeviceID, &CGID, &Value);
   }
 
-  if (UserID && CGID) {
+  supla_user *user = NULL;
+  if (UserID && CGID && (user = supla_user::find(UserID, false)) != NULL) {
     if (Value < 0 || Value > IPC_BUFFER_SIZE) send_result("VALUE OUT OF RANGE");
 
     bool result = false;
 
     if (group) {
-      result = supla_user::set_channelgroup_char_value(UserID, CGID, Value);
+      result = user->set_channelgroup_char_value(CGID, Value);
     } else if (!group && DeviceID) {
-      result = supla_user::set_device_channel_char_value(
-          UserID, 0, DeviceID, CGID, 0, false, Value,
-          AlexaCorrelationToken ? EST_AMAZON_ALEXA
-                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-          AlexaCorrelationToken, GoogleRequestId);
+      supla_device *device = user->get_device(DeviceID);
+      if (device) {
+        // onChannelValueChangeEvent must be called before
+        // set_device_channel_char_value for the potential report to contain
+        // AlexaCorrelationToken / GoogleRequestId
+        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+            user, DeviceID, CGID,
+            AlexaCorrelationToken
+                ? EST_AMAZON_ALEXA
+                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+            AlexaCorrelationToken, GoogleRequestId);
+
+        result = device->get_channels()->set_device_channel_char_value(
+            0, CGID, 0, false, Value);
+        device->releasePtr();
+      }
     }
 
     free_correlation_token();
@@ -497,7 +509,8 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     }
   }
 
-  if (UserID && CGID) {
+  supla_user *user = NULL;
+  if (UserID && CGID && (user = supla_user::find(UserID, false)) != NULL) {
     if (ColorBrightness < 0 || ColorBrightness > 100 || Brightness < 0 ||
         Brightness > 100)
       send_result("VALUE OUT OF RANGE");
@@ -505,15 +518,25 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     bool result = false;
 
     if (group) {
-      result = supla_user::set_channelgroup_rgbw_value(
-          UserID, CGID, Color, ColorBrightness, Brightness, TurnOnOff);
+      result = user->set_channelgroup_rgbw_value(CGID, Color, ColorBrightness,
+                                                 Brightness, TurnOnOff);
     } else if (!group && DeviceID) {
-      result = supla_user::set_device_channel_rgbw_value(
-          UserID, 0, DeviceID, CGID, 0, false, Color, ColorBrightness,
-          Brightness, TurnOnOff,
-          AlexaCorrelationToken ? EST_AMAZON_ALEXA
-                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-          AlexaCorrelationToken, GoogleRequestId);
+      supla_device *device = user->get_device(DeviceID);
+      if (device) {
+        // onChannelValueChangeEvent must be called before
+        // set_device_channel_char_value for the potential report to contain
+        // AlexaCorrelationToken / GoogleRequestId
+        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+            user, DeviceID, CGID,
+            AlexaCorrelationToken
+                ? EST_AMAZON_ALEXA
+                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+            AlexaCorrelationToken, GoogleRequestId);
+
+        result = device->get_channels()->set_device_channel_rgbw_value(
+            0, CGID, 0, false, Color, ColorBrightness, Brightness, TurnOnOff);
+        device->releasePtr();
+      }
     }
 
     free_correlation_token();

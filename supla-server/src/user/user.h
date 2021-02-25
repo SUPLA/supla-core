@@ -119,20 +119,7 @@ class supla_user {
 
   static int user_count(void);
   static supla_user *get_user(int idx);
-  static bool set_device_channel_char_value(
-      int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
-      unsigned char EOL, const char value, event_source_type eventSourceType,
-      char *AlexaCorrelationToken, char *GoogleRequestId);
-  static bool set_device_channel_rgbw_value(
-      int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
-      unsigned char EOL, int color, char color_brightness, char brightness,
-      char on_off, event_source_type eventSourceType,
-      char *AlexaCorrelationToken, char *GoogleRequestId);
-  static bool set_channelgroup_char_value(int UserID, int GroupID,
-                                          const char value);
-  static bool set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
-                                          char color_brightness,
-                                          char brightness, char on_off);
+
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
   static void on_state_webhook_changed(int UserID);
@@ -195,14 +182,16 @@ class supla_user {
                                 int DeviceID, int ChannelID, int GroupID,
                                 unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
+  /*
   bool set_device_channel_char_value(int SenderID, int DeviceID, int ChannelID,
                                      int GroupID, unsigned char EOL,
                                      const char value);
+
   bool set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID,
                                      int GroupID, unsigned char EOL, int color,
                                      char color_brightness, char brightness,
                                      char on_off);
-
+                                     */
   bool set_channelgroup_char_value(int GroupID, const char value);
   bool set_channelgroup_rgbw_value(int GroupID, int color,
                                    char color_brightness, char brightness,

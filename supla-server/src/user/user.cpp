@@ -703,95 +703,6 @@ bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
 }
 
 // static
-bool supla_user::set_device_channel_char_value(
-    int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
-    unsigned char EOL, const char value, event_source_type eventSourceType,
-    char *AlexaCorrelationToken, char *GoogleRequestId) {
-  bool result = false;
-
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
-
-  if (user) {
-    if (eventSourceType > 0) {
-      // TODO(anyone): Check it out. I think there should be "will change"
-      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-          user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
-          GoogleRequestId);
-    }
-
-    result = user->set_device_channel_char_value(SenderID, DeviceID, ChannelID,
-                                                 GroupID, EOL, value) == true;
-  }
-
-  return result;
-}
-
-// static
-bool supla_user::set_device_channel_rgbw_value(
-    int UserID, int SenderID, int DeviceID, int ChannelID, int GroupID,
-    unsigned char EOL, int color, char color_brightness, char brightness,
-    char on_off, event_source_type eventSourceType, char *AlexaCorrelationToken,
-    char *GoogleRequestId) {
-  bool result = false;
-
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
-
-  if (user) {
-    if (eventSourceType > 0) {
-      // TODO(anyone): Check it out. I think there should be "will change"
-      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-          user, DeviceID, ChannelID, eventSourceType, AlexaCorrelationToken,
-          GoogleRequestId);
-    }
-
-    result = user->set_device_channel_rgbw_value(
-                 SenderID, DeviceID, ChannelID, GroupID, EOL, color,
-                 color_brightness, brightness, on_off) == true;
-  }
-
-  return result;
-}
-
-// static
-bool supla_user::set_channelgroup_char_value(int UserID, int GroupID,
-                                             const char value) {
-  bool result = false;
-
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
-
-  if (user) result = user->set_channelgroup_char_value(GroupID, value) == true;
-
-  return result;
-}
-
-// static
-bool supla_user::set_channelgroup_rgbw_value(int UserID, int GroupID, int color,
-                                             char color_brightness,
-                                             char brightness, char on_off) {
-  bool result = false;
-
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
-
-  if (user)
-    result = user->set_channelgroup_rgbw_value(GroupID, color, color_brightness,
-                                               brightness, on_off) == true;
-
-  return result;
-}
-
-// static
 void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
   safe_array_lock(supla_user::user_arr);
   supla_user *user =
@@ -972,7 +883,7 @@ bool supla_user::set_device_channel_value(
 
   return result;
 }
-
+/*
 bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
                                                int ChannelID, int GroupID,
                                                unsigned char EOL,
@@ -988,6 +899,7 @@ bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
 
   return result;
 }
+
 
 bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
                                                int ChannelID, int GroupID,
@@ -1006,7 +918,7 @@ bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
 
   return result;
 }
-
+*/
 bool supla_user::set_channelgroup_char_value(int GroupID, const char value) {
   return cgroups->set_char_value(GroupID, value);
 }
