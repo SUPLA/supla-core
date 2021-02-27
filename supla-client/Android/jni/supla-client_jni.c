@@ -1636,6 +1636,9 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, cfg, jcs, "Email", sclient_cfg.Email, SUPLA_EMAIL_MAXSIZE);
 
     supla_android_client_stringobj2buffer(
+         env, cfg, jcs, "Password", sclient_cfg.Password, SUPLA_EMAIL_MAXSIZE);
+
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "Name", sclient_cfg.Name, SUPLA_CLIENT_NAME_MAXSIZE);
 
     supla_android_client_bytearrobj2buffer(
