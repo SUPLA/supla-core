@@ -161,11 +161,12 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
         if (_accessid_enabled) accessid_enabled = true;
 
+        pwd_is_set =
+            register_client_d != NULL &&
+            strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
+
         if (ClientID == 0) {
           do_update = false;
-          pwd_is_set =
-              register_client_d != NULL &&
-              strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
 
           if (pwd_is_set) {
             superuser_authorize(UserID, register_client_d->Email,
@@ -230,6 +231,21 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
           } else {
             if (do_update) {
+              if (AccessID == 0 && pwd_is_set) {
+                if (!is_superuser_authorized()) {
+                  superuser_authorize(UserID, register_client_d->Email,
+                                      register_client_d->Password, NULL);
+                }
+
+                if (is_superuser_authorized()) {
+                  AccessID = db->get_access_id(UserID, true);
+
+                  if (AccessID) {
+                    accessid_enabled = true;
+                  }
+                }
+              }
+
               if (false == db->update_client(ClientID, AccessID, AuthKey, Name,
                                              getSvrConn()->getClientIpv4(),
                                              SoftVer, proto_version)) {
