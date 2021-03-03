@@ -132,10 +132,6 @@ TEST_F(SetLocationCaptionIntegrationTest, SetFewViarintsOfCaption) {
 
   iterateUntilDefaultTimeout();
 
-  ASSERT_EQ(dbGetCaption(expectedLocationID)
-                .compare("caption\nCaption with emoji 🤓\n"),
-            0);
-
   // FullSize -----------------
   // Database field is limited to 100 characters
 
