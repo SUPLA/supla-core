@@ -17,7 +17,9 @@
  */
 
 #include "SrpcTest.h"
+#include <vector>
 #include "gtest/gtest.h"  // NOLINT
+#include "log.h"
 
 namespace {
 
@@ -113,9 +115,6 @@ namespace {
       spc_function, structure_name, call_id, expected_data_size1, \
       expected_data_size2, rd_data_variable, max_size, Caption, CaptionSize)
 
-int *all_calls = NULL;  // Possible memory leak
-int all_calls_size = 0;
-
 static char sproto_tag[SUPLA_TAG_SIZE] = {'S', 'U', 'P', 'L', 'A'};
 
 class SrpcTest : public ::testing::Test {
@@ -130,7 +129,7 @@ class SrpcTest : public ::testing::Test {
   char *data_write;
   _supla_int_t data_write_size;
   void *srpcInit(void);
-  void srpcCallAllowed(int min_version, int *calls);
+  void srpcCallAllowed(int min_version, std::vector<int> call_ids);
 
   unsigned _supla_int_t cr_rr_id;
   unsigned _supla_int_t cr_call_type;
@@ -138,6 +137,7 @@ class SrpcTest : public ::testing::Test {
   TsrpcReceivedData cr_rd;
 
   void set_random(void *ptr, unsigned int size);
+  std::vector<int> get_call_ids(int version);
 
  public:
   virtual void SetUp();
@@ -237,20 +237,18 @@ TEST_F(SrpcTest, set_proto) {
   srpc = NULL;
 }
 
-void SrpcTest::srpcCallAllowed(int min_version, int *calls) {
+void SrpcTest::srpcCallAllowed(int min_version, std::vector<int> call_ids) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
+  ASSERT_NE(call_ids.size(), (const long unsigned int)0);
   srpc_set_proto_version(srpc, min_version);
 
   int n = 0;
-  while (calls[n] != 0) {
-    ASSERT_TRUE(calls[n] <= MAX_CALL_ID);
-    ASSERT_EQ(srpc_call_allowed(srpc, calls[n]), 1);
+  for (std::vector<int>::iterator it = call_ids.begin(); it != call_ids.end();
+       it++) {
+    ASSERT_TRUE(*it <= MAX_CALL_ID);
+    ASSERT_EQ(srpc_call_allowed(srpc, *it), 1);
 
-    all_calls = (int *)realloc(all_calls, sizeof(int) * (all_calls_size + 1));
-    ASSERT_TRUE(all_calls != NULL);
-    all_calls[all_calls_size] = calls[n];
-    all_calls_size++;
     n++;
     ASSERT_TRUE(n <= MAX_CALL_ID);
   }
@@ -265,174 +263,167 @@ void SrpcTest::set_random(void *ptr, unsigned int size) {
   }
 }
 
+std::vector<int> SrpcTest::get_call_ids(int version) {
+  switch (version) {
+    case 1:
+      return {SUPLA_DCS_CALL_GETVERSION,
+              SUPLA_SDC_CALL_GETVERSION_RESULT,
+              SUPLA_SDC_CALL_VERSIONERROR,
+              SUPLA_DCS_CALL_PING_SERVER,
+              SUPLA_SDC_CALL_PING_SERVER_RESULT,
+              SUPLA_DS_CALL_REGISTER_DEVICE,
+              SUPLA_SD_CALL_REGISTER_DEVICE_RESULT,
+              SUPLA_CS_CALL_REGISTER_CLIENT,
+              SUPLA_SC_CALL_REGISTER_CLIENT_RESULT,
+              SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED,
+              SUPLA_SD_CALL_CHANNEL_SET_VALUE,
+              SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
+              SUPLA_SC_CALL_LOCATION_UPDATE,
+              SUPLA_SC_CALL_LOCATIONPACK_UPDATE,
+              SUPLA_SC_CALL_CHANNEL_UPDATE,
+              SUPLA_SC_CALL_CHANNELPACK_UPDATE,
+              SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE,
+              SUPLA_CS_CALL_GET_NEXT,
+              SUPLA_SC_CALL_EVENT,
+              SUPLA_CS_CALL_CHANNEL_SET_VALUE};
+    case 2:
+      return {SUPLA_DS_CALL_REGISTER_DEVICE_B,
+              SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT,
+              SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT};
+    case 3:
+      return {SUPLA_CS_CALL_CHANNEL_SET_VALUE_B};
+    case 5:
+      return {SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL,
+              SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT};
+    case 6:
+      return {SUPLA_DS_CALL_REGISTER_DEVICE_C, SUPLA_CS_CALL_REGISTER_CLIENT_B};
+
+    case 7:
+      return {SUPLA_CS_CALL_REGISTER_CLIENT_C, SUPLA_DS_CALL_REGISTER_DEVICE_D,
+              SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED,
+              SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT};
+    case 8:
+      return {SUPLA_SC_CALL_CHANNELPACK_UPDATE_B,
+              SUPLA_SC_CALL_CHANNEL_UPDATE_B};
+    case 9:
+      return {SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
+              SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE,
+              SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE,
+              SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE, SUPLA_CS_CALL_SET_VALUE};
+    case 10:
+      return {SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED,
+              SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE,
+              SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST,
+              SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT,
+              SUPLA_DS_CALL_REGISTER_DEVICE_E,
+              SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
+              SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
+              SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST,
+              SUPLA_SC_CALL_DEVICE_CALCFG_RESULT,
+              SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST,
+              SUPLA_DS_CALL_DEVICE_CALCFG_RESULT,
+              SUPLA_SC_CALL_CHANNELPACK_UPDATE_C,
+              SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B,
+              SUPLA_SC_CALL_CHANNEL_UPDATE_C};
+    case 11:
+      return {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
+              SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
+              SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B};
+    case 12:
+      return {SUPLA_CS_CALL_REGISTER_CLIENT_D,
+              SUPLA_CSD_CALL_GET_CHANNEL_STATE,
+              SUPLA_DSC_CALL_CHANNEL_STATE_RESULT,
+              SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
+              SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
+              SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
+              SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
+              SUPLA_CS_CALL_SET_CHANNEL_CAPTION,
+              SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT,
+              SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
+              SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
+              SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
+              SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
+              SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
+              SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
+              SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
+              SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C,
+              SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
+              SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
+              SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT};
+    case 13:
+      return {SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE};
+    case 14:
+      return {SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS,
+              SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT,
+              SUPLA_CS_CALL_SET_LOCATION_CAPTION,
+              SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT};
+  }
+
+  return {};
+}
+
+/*
 //---------------------------------------------------------
 // CALL ALLOWED
 //---------------------------------------------------------
-TEST_F(SrpcTest, call_allowed_v1) {
-  int calls[] = {SUPLA_DCS_CALL_GETVERSION,
-                 SUPLA_SDC_CALL_GETVERSION_RESULT,
-                 SUPLA_SDC_CALL_VERSIONERROR,
-                 SUPLA_DCS_CALL_PING_SERVER,
-                 SUPLA_SDC_CALL_PING_SERVER_RESULT,
-                 SUPLA_DS_CALL_REGISTER_DEVICE,
-                 SUPLA_SD_CALL_REGISTER_DEVICE_RESULT,
-                 SUPLA_CS_CALL_REGISTER_CLIENT,
-                 SUPLA_SC_CALL_REGISTER_CLIENT_RESULT,
-                 SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED,
-                 SUPLA_SD_CALL_CHANNEL_SET_VALUE,
-                 SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT,
-                 SUPLA_SC_CALL_LOCATION_UPDATE,
-                 SUPLA_SC_CALL_LOCATIONPACK_UPDATE,
-                 SUPLA_SC_CALL_CHANNEL_UPDATE,
-                 SUPLA_SC_CALL_CHANNELPACK_UPDATE,
-                 SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE,
-                 SUPLA_CS_CALL_GET_NEXT,
-                 SUPLA_SC_CALL_EVENT,
-                 SUPLA_CS_CALL_CHANNEL_SET_VALUE,
-                 0};
-  srpcCallAllowed(1, calls);
-}
+*/
 
-TEST_F(SrpcTest, call_allowed_v2) {
-  int calls[] = {SUPLA_DS_CALL_REGISTER_DEVICE_B,
-                 SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT,
-                 SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT, 0};
+TEST_F(SrpcTest, call_allowed_v1) { srpcCallAllowed(1, get_call_ids(1)); }
 
-  srpcCallAllowed(2, calls);
-}
+TEST_F(SrpcTest, call_allowed_v2) { srpcCallAllowed(2, get_call_ids(2)); }
 
-TEST_F(SrpcTest, call_allowed_v3) {
-  int calls[] = {SUPLA_CS_CALL_CHANNEL_SET_VALUE_B, 0};
+TEST_F(SrpcTest, call_allowed_v3) { srpcCallAllowed(3, get_call_ids(3)); }
 
-  srpcCallAllowed(3, calls);
-}
+TEST_F(SrpcTest, call_allowed_v5) { srpcCallAllowed(5, get_call_ids(5)); }
 
-TEST_F(SrpcTest, call_allowed_v5) {
-  int calls[] = {SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL,
-                 SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT, 0};
+TEST_F(SrpcTest, call_allowed_v6) { srpcCallAllowed(6, get_call_ids(6)); }
 
-  srpcCallAllowed(5, calls);
-}
+TEST_F(SrpcTest, call_allowed_v7) { srpcCallAllowed(7, get_call_ids(7)); }
 
-TEST_F(SrpcTest, call_allowed_v6) {
-  int calls[] = {SUPLA_DS_CALL_REGISTER_DEVICE_C,
-                 SUPLA_CS_CALL_REGISTER_CLIENT_B, 0};
+TEST_F(SrpcTest, call_allowed_v8) { srpcCallAllowed(8, get_call_ids(8)); }
 
-  srpcCallAllowed(6, calls);
-}
+TEST_F(SrpcTest, call_allowed_v9) { srpcCallAllowed(9, get_call_ids(9)); }
 
-TEST_F(SrpcTest, call_allowed_v7) {
-  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_C,
-                 SUPLA_DS_CALL_REGISTER_DEVICE_D,
-                 SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED,
-                 SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT, 0};
+TEST_F(SrpcTest, call_allowed_v10) { srpcCallAllowed(10, get_call_ids(10)); }
 
-  srpcCallAllowed(7, calls);
-}
+TEST_F(SrpcTest, call_allowed_v11) { srpcCallAllowed(11, get_call_ids(11)); }
 
-TEST_F(SrpcTest, call_allowed_v8) {
-  int calls[] = {SUPLA_SC_CALL_CHANNELPACK_UPDATE_B,
-                 SUPLA_SC_CALL_CHANNEL_UPDATE_B, 0};
+TEST_F(SrpcTest, call_allowed_v12) { srpcCallAllowed(12, get_call_ids(12)); }
 
-  srpcCallAllowed(8, calls);
-}
+TEST_F(SrpcTest, call_allowed_v13) { srpcCallAllowed(13, get_call_ids(13)); }
 
-TEST_F(SrpcTest, call_allowed_v9) {
-  int calls[] = {SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
-                 SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE,
-                 SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE,
-                 SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE,
-                 SUPLA_CS_CALL_SET_VALUE,
-                 0};
-
-  srpcCallAllowed(9, calls);
-}
-
-TEST_F(SrpcTest, call_allowed_v10) {
-  int calls[] = {SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED,
-                 SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE,
-                 SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST,
-                 SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT,
-                 SUPLA_DS_CALL_REGISTER_DEVICE_E,
-                 SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST,
-                 SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT,
-                 SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST,
-                 SUPLA_SC_CALL_DEVICE_CALCFG_RESULT,
-                 SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST,
-                 SUPLA_DS_CALL_DEVICE_CALCFG_RESULT,
-                 SUPLA_SC_CALL_CHANNELPACK_UPDATE_C,
-                 SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B,
-                 SUPLA_SC_CALL_CHANNEL_UPDATE_C,
-                 0};
-
-  srpcCallAllowed(10, calls);
-}
-
-TEST_F(SrpcTest, call_allowed_v11) {
-  int calls[] = {SUPLA_DCS_CALL_GET_USER_LOCALTIME,
-                 SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT,
-                 SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B, 0};
-
-  srpcCallAllowed(11, calls);
-}
-
-TEST_F(SrpcTest, call_allowed_v12) {
-  int calls[] = {SUPLA_CS_CALL_REGISTER_CLIENT_D,
-                 SUPLA_CSD_CALL_GET_CHANNEL_STATE,
-                 SUPLA_DSC_CALL_CHANNEL_STATE_RESULT,
-                 SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG,
-                 SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT,
-                 SUPLA_CS_CALL_SET_CHANNEL_FUNCTION,
-                 SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT,
-                 SUPLA_CS_CALL_SET_CHANNEL_CAPTION,
-                 SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT,
-                 SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST,
-                 SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT,
-                 SUPLA_CS_CALL_SET_REGISTRATION_ENABLED,
-                 SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT,
-                 SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST,
-                 SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
-                 SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B,
-                 SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C,
-                 SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS,
-                 SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT,
-                 SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT,
-                 0};
-
-  srpcCallAllowed(12, calls);
-}
-
-TEST_F(SrpcTest, call_allowed_v13) {
-  int calls[] = {SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE, 0};
-  srpcCallAllowed(13, calls);
-}
-
-TEST_F(SrpcTest, call_allowed_v14) {
-  int calls[] = {SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS,
-                 SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT, 0};
-  srpcCallAllowed(14, calls);
-}
+TEST_F(SrpcTest, call_allowed_v14) { srpcCallAllowed(14, get_call_ids(14)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
-  ASSERT_TRUE(all_calls != NULL);
-  ASSERT_GT(all_calls_size, 0);
+  std::vector<int> all_calls;
+
+  for (int a = 1; a <= SUPLA_PROTO_VERSION; a++) {
+    std::vector<int> calls = get_call_ids(a);
+    all_calls.insert(all_calls.end(), std::make_move_iterator(calls.begin()),
+                     std::make_move_iterator(calls.end()));
+  }
+
+  ASSERT_GT(all_calls.size(), (const long unsigned int)0);
 
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
+  supla_log(LOG_DEBUG, "Size=%i", all_calls.size());
+
   for (int a = 0; a <= MAX_CALL_ID; a++) {
-    int b = 0;
-    for (b = 0; b < all_calls_size; b++) {
-      if (all_calls[b] == a) break;
+    bool exists = false;
+    for (std::vector<int>::iterator it = all_calls.begin();
+         it != all_calls.end(); it++) {
+      if (*it == a) {
+        exists = true;
+        break;
+      }
     }
 
-    if (b >= all_calls_size) {
+    if (!exists) {
       ASSERT_EQ(srpc_call_allowed(srpc, a), 0);
     }
   }
-
-  free(all_calls);
-  all_calls = NULL;
 
   srpc_free(srpc);
   srpc = NULL;
@@ -3486,16 +3477,32 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_set_channel_function_result,
 //---------------------------------------------------------
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_channel_caption,
-                                  TCS_SetChannelCaption,
+                                  TCS_SetCaption,
                                   SUPLA_CS_CALL_SET_CHANNEL_CAPTION, 31, 432,
-                                  cs_set_channel_caption,
+                                  cs_set_caption,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
 SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_channel_caption_result,
-                                  TSC_SetChannelCaptionResult,
+                                  TSC_SetCaptionResult,
                                   SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT, 32,
-                                  433, sc_set_channel_caption_result,
+                                  433, sc_set_caption_result,
                                   SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+//---------------------------------------------------------
+// SET LOCATION CAPTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_cs_async_set_location_caption,
+                                  TCS_SetCaption,
+                                  SUPLA_CS_CALL_SET_LOCATION_CAPTION, 31, 432,
+                                  cs_set_caption,
+                                  SUPLA_LOCATION_CAPTION_MAXSIZE);
+
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_set_location_caption_result,
+                                  TSC_SetCaptionResult,
+                                  SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT, 32,
+                                  433, sc_set_caption_result,
+                                  SUPLA_LOCATION_CAPTION_MAXSIZE);
 
 //---------------------------------------------------------
 // CLIENTS RECONNECT REQUEST

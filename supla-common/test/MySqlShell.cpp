@@ -21,6 +21,8 @@
 #include "log.h"
 #include "tools.h"
 
+namespace testing {
+
 // static
 void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
                               const char *db_user, const char *db_name,
@@ -49,6 +51,31 @@ void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
 }
 
 // static
+void MySqlShell::sqlQuery(const char *sql_dir, const char *db_host,
+                          const char *db_user, const char *db_name,
+                          const char *query, std::string *result) {
+  ASSERT_FALSE(query == NULL);
+  ASSERT_GT(strlen(query), (unsigned long)0);
+
+  char command[1000];
+  snprintf(command, sizeof(command), "echo \"%s\" | mysql -u %s -h %s %s",
+           query, db_user, db_host, db_name);
+  supla_log(LOG_DEBUG, "%s", command);
+
+  char buff[1024];
+  buff[0] = 0;
+
+  FILE *command_fp = popen(command, "r");
+  ASSERT_TRUE(command_fp != NULL);
+
+  while (fgets(buff, sizeof(buff), command_fp) != NULL) {
+    result->append(buff);
+  }
+
+  ASSERT_EQ(pclose(command_fp), 0);
+}
+
+// static
 void MySqlShell::initTestDatabase(const char *sql_dir, const char *db_host,
                                   const char *db_user, const char *db_name) {
   MySqlShell::runSqlScript(sql_dir, db_host, db_user, db_name,
@@ -56,3 +83,5 @@ void MySqlShell::initTestDatabase(const char *sql_dir, const char *db_host,
   MySqlShell::runSqlScript(sql_dir, db_host, db_user, db_name,
                            "TestDatabaseStructureAndData.sql");
 }
+
+}  // namespace testing

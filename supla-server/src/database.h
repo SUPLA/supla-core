@@ -169,7 +169,7 @@ class database : public svrdb {
                                                int *Type,
                                                unsigned int *FuncList,
                                                int *DeviceID);
-  bool set_channel_caption(int UserID, int ChannelID, char *Caption);
+  bool set_caption(int UserID, int ID, char *Caption, bool Channel);
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);

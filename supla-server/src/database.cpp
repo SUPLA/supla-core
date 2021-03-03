@@ -2588,7 +2588,7 @@ bool database::get_channel_type_funclist_and_device_id(int UserID,
   return result;
 }
 
-bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
+bool database::set_caption(int UserID, int ID, char *Caption, bool Channel) {
   MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
 
@@ -2598,12 +2598,12 @@ bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
   pbind[0].buffer = (char *)&UserID;
 
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&ChannelID;
+  pbind[1].buffer = (char *)&ID;
 
   pbind[2].is_null = &caption_is_null;
   pbind[2].buffer_type = MYSQL_TYPE_STRING;
   pbind[2].buffer_length =
-      Caption == NULL ? 0 : strnlen(Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+      Caption == NULL ? 0 : strnlen(Caption, SUPLA_CAPTION_MAXSIZE);
 
   if (pbind[2].buffer_length > 0) {
     pbind[2].buffer = Caption;
@@ -2613,8 +2613,10 @@ bool database::set_channel_caption(int UserID, int ChannelID, char *Caption) {
   bool result = false;
   MYSQL_STMT *stmt = NULL;
 
-  if (stmt_execute((void **)&stmt, "CALL `supla_set_channel_caption`(?,?,?)",
-                   pbind, 3, true)) {
+  char sql_c[] = "CALL `supla_set_channel_caption`(?,?,?)";
+  char sql_l[] = "CALL `supla_set_location_caption`(?,?,?)";
+
+  if (stmt_execute((void **)&stmt, Channel ? sql_c : sql_l, pbind, 3, true)) {
     result = true;
   }
 

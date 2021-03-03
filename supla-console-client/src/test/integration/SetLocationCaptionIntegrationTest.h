@@ -16,31 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SETCHANNELCAPTIONINTEGRATIONTEST_H_
-#define SETCHANNELCAPTIONINTEGRATIONTEST_H_
+#ifndef SETLOCATIONCAPTIONINTEGRATIONTEST_H_
+#define SETLOCATIONCAPTIONINTEGRATIONTEST_H_
 
-#include "GetChannelBasicCfg.h"
+#include "SuperuserAuthorization.h"
 
 namespace testing {
 
-class SetChannelCaptionIntegrationTest : public GetChannelBasicCfg {
+class SetLocationCaptionIntegrationTest : public SuperuserAuthorization {
  private:
   unsigned char match;
-  void channelMatch(TSC_SetCaptionResult *result, TSC_SuplaChannel_C *channel);
+  void locationMatch(TSC_SetCaptionResult *result, TSC_SuplaLocation *location);
 
  protected:
   unsigned char expectedResultCode;
-  int expectedChannelID;
-  char expectedCaption[SUPLA_CHANNEL_CAPTION_MAXSIZE];
+  int expectedLocationID;
+  char expectedCaption[SUPLA_LOCATION_CAPTION_MAXSIZE];
   void reconnect();
+  std::string dbGetCaption(int locationId);
 
  public:
-  SetChannelCaptionIntegrationTest();
-  virtual ~SetChannelCaptionIntegrationTest();
-  virtual void onChannelCaptionSetResult(TSC_SetCaptionResult *result);
-  virtual void channelUpdate(TSC_SuplaChannel_C *channel);
+  SetLocationCaptionIntegrationTest();
+  virtual ~SetLocationCaptionIntegrationTest();
+  virtual void onLocationCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void locationUpdate(TSC_SuplaLocation *location);
 };
 
 } /* namespace testing */
 
-#endif /* SETCHANNELCAPTIONINTEGRATIONTEST_H_ */
+#endif /* SETLOCATIONCAPTIONINTEGRATIONTEST_H_ */

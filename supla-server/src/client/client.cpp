@@ -525,16 +525,21 @@ void supla_client::set_channel_caption(int ChannelId, char *Caption) {
   channels->set_channel_caption(getSvrConn()->srpc(), ChannelId, Caption);
 }
 
-void supla_client::set_channel_caption_request(TCS_SetChannelCaption *caption) {
-  getUser()->set_channel_caption(this, caption);
+void supla_client::set_location_caption(int LocationId, char *Caption) {
+  locations->set_caption(LocationId, Caption);
+  locations->remote_update(getSvrConn()->srpc());
 }
 
-void supla_client::set_channel_caption_result(
-    TSC_SetChannelCaptionResult *result) {
+void supla_client::set_caption_result(TSC_SetCaptionResult *result,
+                                      bool channel) {
   if (result == NULL) {
     return;
   }
-  srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
+  if (channel) {
+    srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
+  } else {
+    srpc_sc_async_set_location_caption_result(getSvrConn()->srpc(), result);
+  }
 }
 
 void supla_client::iterate() { channels->update_expired(getSvrConn()->srpc()); }

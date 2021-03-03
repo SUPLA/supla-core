@@ -197,6 +197,7 @@ typedef struct {
   jmethodID j_mid_on_channel_basic_cfg;
   jmethodID j_mid_on_channel_function_set_result;
   jmethodID j_mid_on_channel_caption_set_result;
+  jmethodID j_mid_on_location_caption_set_result;
   jmethodID j_mid_on_clients_reconnect_result;
   jmethodID j_mid_on_set_registration_enabled_result;
   jmethodID j_mid_on_zwave_reset_and_clear_result;
@@ -1249,7 +1250,7 @@ void supla_android_client_cb_on_channel_function_set_result(
 }
 
 void supla_android_client_cb_on_channel_caption_set_result(
-    void *_suplaclient, void *user_data, TSC_SetChannelCaptionResult *result) {
+    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
@@ -1258,9 +1259,22 @@ void supla_android_client_cb_on_channel_caption_set_result(
   }
 
   (*env)->CallVoidMethod(
-      env, asc->j_obj, asc->j_mid_on_channel_caption_set_result,
-      result->ChannelID, new_string_utf(env, result->Caption),
-      result->ResultCode);
+      env, asc->j_obj, asc->j_mid_on_channel_caption_set_result, result->ID,
+      new_string_utf(env, result->Caption), result->ResultCode);
+}
+
+void supla_android_client_cb_on_location_caption_set_result(
+    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_location_caption_set_result == NULL || result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_location_caption_set_result, result->ID,
+      new_string_utf(env, result->Caption), result->ResultCode);
 }
 
 void supla_android_client_cb_on_clients_reconnect_result(
@@ -1636,7 +1650,7 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, cfg, jcs, "Email", sclient_cfg.Email, SUPLA_EMAIL_MAXSIZE);
 
     supla_android_client_stringobj2buffer(
-         env, cfg, jcs, "Password", sclient_cfg.Password, SUPLA_EMAIL_MAXSIZE);
+        env, cfg, jcs, "Password", sclient_cfg.Password, SUPLA_EMAIL_MAXSIZE);
 
     supla_android_client_stringobj2buffer(
         env, cfg, jcs, "Name", sclient_cfg.Name, SUPLA_CLIENT_NAME_MAXSIZE);
@@ -1722,6 +1736,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         env, oclass, "onChannelFunctionSetResult", "(III)V");
     _asc->j_mid_on_channel_caption_set_result = supla_client_GetMethodID(
         env, oclass, "onChannelCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_location_caption_set_result = supla_client_GetMethodID(
+        env, oclass, "onLocationCaptionSetResult", "(ILjava/lang/String;I)V");
     _asc->j_mid_on_clients_reconnect_result = supla_client_GetMethodID(
         env, oclass, "onClientsReconnectResult", "(I)V");
     _asc->j_mid_on_set_registration_enabled_result = supla_client_GetMethodID(
@@ -1787,6 +1803,8 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_channel_function_set_result;
     sclient_cfg.cb_on_channel_caption_set_result =
         supla_android_client_cb_on_channel_caption_set_result;
+    sclient_cfg.cb_on_location_caption_set_result =
+        supla_android_client_cb_on_location_caption_set_result;
     sclient_cfg.cb_on_clients_reconnect_request_result =
         supla_android_client_cb_on_clients_reconnect_result;
     sclient_cfg.cb_on_set_registration_enabled_result =
@@ -2122,6 +2140,8 @@ JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
 JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
 
 JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
+
+JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
 
 JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
 

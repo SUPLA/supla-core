@@ -223,8 +223,7 @@ class supla_user {
   channel_complex_value get_channel_complex_value(int ChannelID);
 
   void set_channel_function(supla_client *sender, TCS_SetChannelFunction *func);
-  void set_channel_caption(supla_client *sender,
-                           TCS_SetChannelCaption *caption);
+  void set_caption(supla_client *sender, TCS_SetCaption *caption, bool channel);
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);
