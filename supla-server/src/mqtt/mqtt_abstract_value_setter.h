@@ -22,7 +22,7 @@
 #include "mqtt_client_settings.h"
 #include "stddef.h"
 
-class supla_mqtt_abstract_channel_value_setter {
+class supla_mqtt_abstract_value_setter {
  private:
   char *topic_name;
   size_t topic_name_size;
@@ -65,11 +65,12 @@ class supla_mqtt_abstract_channel_value_setter {
   virtual void action_open(void) = 0;
   virtual void action_close(void) = 0;
   virtual void action_open_close(void) = 0;
+  virtual void refresh_all_existing(void) = 0;
 
  public:
-  supla_mqtt_abstract_channel_value_setter(
+  supla_mqtt_abstract_value_setter(
       supla_mqtt_client_settings *settings);
-  virtual ~supla_mqtt_abstract_channel_value_setter(void);
+  virtual ~supla_mqtt_abstract_value_setter(void);
 
   void set_value(char *topic_name, size_t topic_name_size, char *message,
                  size_t message_size);

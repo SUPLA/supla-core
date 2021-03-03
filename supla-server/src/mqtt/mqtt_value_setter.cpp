@@ -16,25 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "mqtt_channel_value_setter.h"
+#include "mqtt_value_setter.h"
 #include "device.h"
+#include "mqtt_client_suite.h"
 #include "tools.h"
 
-supla_mqtt_channel_value_setter::supla_mqtt_channel_value_setter(
+supla_mqtt_value_setter::supla_mqtt_value_setter(
     supla_mqtt_client_settings *settings)
-    : supla_mqtt_abstract_channel_value_setter(settings) {
+    : supla_mqtt_abstract_value_setter(settings) {
   action_executor = NULL;
 }
 
-supla_mqtt_channel_value_setter::~supla_mqtt_channel_value_setter(void) {
+supla_mqtt_value_setter::~supla_mqtt_value_setter(void) {
   if (action_executor) {
     delete action_executor;
     action_executor = NULL;
   }
 }
 
-supla_action_executor *supla_mqtt_channel_value_setter::get_action_executor(
-    void) {
+supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
   if (action_executor == NULL) {
     action_executor = new supla_action_executor();
   }
@@ -47,80 +47,87 @@ supla_action_executor *supla_mqtt_channel_value_setter::get_action_executor(
   return action_executor;
 }
 
-void supla_mqtt_channel_value_setter::set_on(bool on) {
+void supla_mqtt_value_setter::set_on(bool on) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->set_on(on);
   }
 }
 
-void supla_mqtt_channel_value_setter::set_color(unsigned int color) {
+void supla_mqtt_value_setter::set_color(unsigned int color) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->set_color(color);
   }
 }
 
-void supla_mqtt_channel_value_setter::set_brightness(char brightness) {
+void supla_mqtt_value_setter::set_brightness(char brightness) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->set_brightness(brightness);
   }
 }
 
-void supla_mqtt_channel_value_setter::set_color_brightness(char brightness) {
+void supla_mqtt_value_setter::set_color_brightness(char brightness) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->set_color_brightness(brightness);
   }
 }
 
-void supla_mqtt_channel_value_setter::action_toggle(void) {
+void supla_mqtt_value_setter::action_toggle(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->toggle();
   }
 }
 
-void supla_mqtt_channel_value_setter::action_shut(
-    const char *closingPercentage) {
+void supla_mqtt_value_setter::action_shut(const char *closingPercentage) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->shut(closingPercentage);
   }
 }
 
-void supla_mqtt_channel_value_setter::action_reveal(void) {
+void supla_mqtt_value_setter::action_reveal(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->reveal();
   }
 }
 
-void supla_mqtt_channel_value_setter::action_stop(void) {
+void supla_mqtt_value_setter::action_stop(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->stop();
   }
 }
 
-void supla_mqtt_channel_value_setter::action_open(void) {
+void supla_mqtt_value_setter::action_open(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->open();
   }
 }
 
-void supla_mqtt_channel_value_setter::action_close(void) {
+void supla_mqtt_value_setter::action_close(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->close();
   }
 }
 
-void supla_mqtt_channel_value_setter::action_open_close(void) {
+void supla_mqtt_value_setter::action_open_close(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->open_close();
+  }
+}
+
+void supla_mqtt_value_setter::refresh_all_existing(void) {
+  supla_user *user = supla_user::find_by_suid(get_suid());
+  if (user) {
+    supla_mqtt_client_suite::globalInstance()->onUserDataChanged(
+        user->getUserID());
   }
 }

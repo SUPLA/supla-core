@@ -19,12 +19,12 @@
 #ifndef MQTT_SUBSCRIBER_H_
 #define MQTT_SUBSCRIBER_H_
 
-#include "mqtt_abstract_channel_value_setter.h"
+#include "mqtt_abstract_value_setter.h"
 #include "mqtt_client.h"
 
 class supla_mqtt_subscriber : public supla_mqtt_client {
  private:
-  supla_mqtt_abstract_channel_value_setter *setter;
+  supla_mqtt_abstract_value_setter *setter;
 
  protected:
   virtual ssize_t get_send_buffer_size(void);
@@ -37,7 +37,7 @@ class supla_mqtt_subscriber : public supla_mqtt_client {
   supla_mqtt_subscriber(supla_mqtt_client_library_adapter *library_adapter,
                         supla_mqtt_client_settings *settings,
                         supla_mqtt_client_datasource *datasource,
-                        supla_mqtt_abstract_channel_value_setter *setter);
+                        supla_mqtt_abstract_value_setter *setter);
 };
 
 #endif /*MQTT_SUBSCRIBER_H_*/

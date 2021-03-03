@@ -19,10 +19,9 @@
 #ifndef MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 #define MQTT_CHANNEL_VALUE_SETTER_MOCK_H_
 
-#include "mqtt_abstract_channel_value_setter.h"
+#include "mqtt_abstract_value_setter.h"
 
-class MqttChannelValueSetterMock
-    : public supla_mqtt_abstract_channel_value_setter {
+class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
  protected:
   int on_counter;
   int color_counter;
@@ -36,6 +35,7 @@ class MqttChannelValueSetterMock
   int open_counter;
   int close_counter;
   int open_close_counter;
+  int refresh_all_existing_counter;
 
   unsigned int color;
   char brightness;
@@ -54,10 +54,11 @@ class MqttChannelValueSetterMock
   void action_open(void);
   void action_close(void);
   void action_open_close(void);
+  void refresh_all_existing(void);
 
  public:
-  explicit MqttChannelValueSetterMock(supla_mqtt_client_settings *settings);
-  ~MqttChannelValueSetterMock(void);
+  explicit MqttValueSetterMock(supla_mqtt_client_settings *settings);
+  ~MqttValueSetterMock(void);
   void clear(void);
   int counterSetCount(void);
 
@@ -73,6 +74,7 @@ class MqttChannelValueSetterMock
   int getOpenCounter(void);
   int getCloseCounter(void);
   int getOpenCloseCounter(void);
+  int getRefreshAllExistingCounter(void);
   char getClosingPercentage(void);
   unsigned int getColor(void);
   char getBrightness(void);

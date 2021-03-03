@@ -740,7 +740,7 @@ void supla_user::on_state_webhook_changed(int UserID) {
 
 // static
 void supla_user::on_mqtt_settings_changed(int UserID) {
-  supla_mqtt_client_suite::globalInstance()->onUserSettingsChanged(UserID);
+  supla_mqtt_client_suite::globalInstance()->onUserDataChanged(UserID);
 }
 
 // static

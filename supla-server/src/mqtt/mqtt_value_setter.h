@@ -20,11 +20,10 @@
 #define MQTT_CHANNEl_VALUE_SETTER_H_
 
 #include <action_executor.h>
-#include "mqtt_abstract_channel_value_setter.h"
+#include "mqtt_abstract_value_setter.h"
 #include "user.h"
 
-class supla_mqtt_channel_value_setter
-    : public supla_mqtt_abstract_channel_value_setter {
+class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
  private:
   supla_action_executor *action_executor;
 
@@ -41,11 +40,11 @@ class supla_mqtt_channel_value_setter
   void action_open(void);
   void action_close(void);
   void action_open_close(void);
+  void refresh_all_existing(void);
 
  public:
-  explicit supla_mqtt_channel_value_setter(
-      supla_mqtt_client_settings *settings);
-  virtual ~supla_mqtt_channel_value_setter(void);
+  explicit supla_mqtt_value_setter(supla_mqtt_client_settings *settings);
+  virtual ~supla_mqtt_value_setter(void);
 };
 
 #endif /*MQTT_CHANNEl_VALUE_SETTER_H_*/
