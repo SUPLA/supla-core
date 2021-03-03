@@ -506,7 +506,7 @@ void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {
-  channels->set_channel_function(ChannelId, Func);
+  channels->set_channel_function(getSvrConn()->srpc(), ChannelId, Func);
 }
 
 void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
@@ -522,7 +522,7 @@ void supla_client::set_channel_function_result(
 }
 
 void supla_client::set_channel_caption(int ChannelId, char *Caption) {
-  channels->set_channel_caption(ChannelId, Caption);
+  channels->set_channel_caption(getSvrConn()->srpc(), ChannelId, Caption);
 }
 
 void supla_client::set_channel_caption_request(TCS_SetChannelCaption *caption) {
