@@ -92,6 +92,7 @@ class supla_user {
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
   static supla_user *find_by_suid(const char *suid);
+  static int suid_to_user_id(const char *suid, bool use_database);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool device_reconnect(int UserID, int DeviceID);
@@ -223,8 +224,7 @@ class supla_user {
   channel_complex_value get_channel_complex_value(int ChannelID);
 
   void set_channel_function(supla_client *sender, TCS_SetChannelFunction *func);
-  void set_channel_caption(supla_client *sender,
-                           TCS_SetChannelCaption *caption);
+  void set_caption(supla_client *sender, TCS_SetCaption *caption, bool channel);
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);

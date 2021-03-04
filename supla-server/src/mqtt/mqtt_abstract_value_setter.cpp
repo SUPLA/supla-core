@@ -16,16 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "mqtt_abstract_channel_value_setter.h"
+#include "mqtt_abstract_value_setter.h"
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "log.h"
 
-supla_mqtt_abstract_channel_value_setter::
-    supla_mqtt_abstract_channel_value_setter(
-        supla_mqtt_client_settings *settings) {
+supla_mqtt_abstract_value_setter::supla_mqtt_abstract_value_setter(
+    supla_mqtt_client_settings *settings) {
   this->settings = settings;
   this->topic_name = NULL;
   this->topic_name_size = 0L;
@@ -38,12 +38,11 @@ supla_mqtt_abstract_channel_value_setter::
   this->suid = NULL;
 }
 
-supla_mqtt_abstract_channel_value_setter::
-    ~supla_mqtt_abstract_channel_value_setter(void) {
+supla_mqtt_abstract_value_setter::~supla_mqtt_abstract_value_setter(void) {
   suid_free();
 }
 
-bool supla_mqtt_abstract_channel_value_setter::lc_equal(const char *str) {
+bool supla_mqtt_abstract_value_setter::lc_equal(const char *str) {
   for (size_t a = 0; a < message_size; a++) {
     if (tolower(str[a]) != tolower(message[a])) {
       return false;
@@ -53,7 +52,7 @@ bool supla_mqtt_abstract_channel_value_setter::lc_equal(const char *str) {
   return true;
 }
 
-bool supla_mqtt_abstract_channel_value_setter::parse_on(void) {
+bool supla_mqtt_abstract_value_setter::parse_on(void) {
   if (topic_name_size == 6 &&
       memcmp(topic_name, "set/on", topic_name_size) == 0) {
     if ((message_size == 1 && message[0] == '1') ||
@@ -72,7 +71,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_on(void) {
   return false;
 }
 
-bool supla_mqtt_abstract_channel_value_setter::parse_perecntage(void) {
+bool supla_mqtt_abstract_value_setter::parse_perecntage(void) {
   bool closing_percentage = false;
 
   if (topic_name_size == 22 &&
@@ -97,7 +96,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_perecntage(void) {
   return true;
 }
 
-bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
+bool supla_mqtt_abstract_value_setter::parse_action(void) {
   if (topic_name_size == 14 &&
       memcmp(topic_name, "execute_action", topic_name_size) == 0) {
     if (message_size == 7 && lc_equal("turn_on")) {
@@ -124,7 +123,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_action(void) {
   return false;
 }
 
-bool supla_mqtt_abstract_channel_value_setter::parse_brightness(void) {
+bool supla_mqtt_abstract_value_setter::parse_brightness(void) {
   bool color = false;
 
   if (topic_name_size == 20 &&
@@ -148,7 +147,7 @@ bool supla_mqtt_abstract_channel_value_setter::parse_brightness(void) {
   return true;
 }
 
-bool supla_mqtt_abstract_channel_value_setter::parse_color(void) {
+bool supla_mqtt_abstract_value_setter::parse_color(void) {
   if (topic_name_size == 9 &&
       memcmp(topic_name, "set/color", topic_name_size) == 0) {
     bool err = false;
@@ -213,8 +212,8 @@ bool supla_mqtt_abstract_channel_value_setter::parse_color(void) {
   return false;
 }
 
-int supla_mqtt_abstract_channel_value_setter::str2int(const char *str,
-                                                      size_t len, bool *err) {
+int supla_mqtt_abstract_value_setter::str2int(const char *str, size_t len,
+                                              bool *err) {
   int result = 0;
   bool minus = false;
   bool dot = false;
@@ -252,9 +251,8 @@ int supla_mqtt_abstract_channel_value_setter::str2int(const char *str,
   return result;
 }
 
-unsigned int supla_mqtt_abstract_channel_value_setter::hex2int(const char *str,
-                                                               size_t len,
-                                                               bool *err) {
+unsigned int supla_mqtt_abstract_value_setter::hex2int(const char *str,
+                                                       size_t len, bool *err) {
   unsigned int result = 0;
   if (len > 8) {
     if (err) {
@@ -288,14 +286,14 @@ unsigned int supla_mqtt_abstract_channel_value_setter::hex2int(const char *str,
   return result;
 }
 
-void supla_mqtt_abstract_channel_value_setter::suid_free(void) {
+void supla_mqtt_abstract_value_setter::suid_free(void) {
   if (suid) {
     free(suid);
     suid = NULL;
   }
 }
 
-const char *supla_mqtt_abstract_channel_value_setter::get_suid(void) {
+const char *supla_mqtt_abstract_value_setter::get_suid(void) {
   if (suid == NULL && suid_len && suid_ptr) {
     suid = (char *)malloc(suid_len + 1);
     memcpy(suid, suid_ptr, suid_len);
@@ -305,15 +303,13 @@ const char *supla_mqtt_abstract_channel_value_setter::get_suid(void) {
   return suid;
 }
 
-int supla_mqtt_abstract_channel_value_setter::get_device_id(void) {
-  return device_id;
-}
+int supla_mqtt_abstract_value_setter::get_device_id(void) { return device_id; }
 
-int supla_mqtt_abstract_channel_value_setter::get_channel_id(void) {
+int supla_mqtt_abstract_value_setter::get_channel_id(void) {
   return channel_id;
 }
 
-int supla_mqtt_abstract_channel_value_setter::parse_int_with_prefix(
+int supla_mqtt_abstract_value_setter::parse_int_with_prefix(
     const char *prefix, size_t prefix_len, char **topic_name,
     size_t *topic_name_size, bool *err) {
   if (err) {
@@ -354,10 +350,10 @@ int supla_mqtt_abstract_channel_value_setter::parse_int_with_prefix(
   return 0;
 }
 
-void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
-                                                         size_t topic_name_size,
-                                                         char *message,
-                                                         size_t message_size) {
+void supla_mqtt_abstract_value_setter::set_value(char *topic_name,
+                                                 size_t topic_name_size,
+                                                 char *message,
+                                                 size_t message_size) {
   suid_free();
 
   if (topic_name == NULL || topic_name_size == 0 || message == NULL ||
@@ -415,6 +411,14 @@ void supla_mqtt_abstract_channel_value_setter::set_value(char *topic_name,
   channel_id = 0;
 
   bool err = false;
+
+  if (topic_name_size == 15 &&
+      memcmp(topic_name, "refresh_request", topic_name_size) == 0) {
+    if (message_size == 12 && lc_equal("all_existing")) {
+      refresh_all_existing();
+    }
+    return;
+  }
 
   device_id =
       parse_int_with_prefix("devices/", 8, &topic_name, &topic_name_size, &err);

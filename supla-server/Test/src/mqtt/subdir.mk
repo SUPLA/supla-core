@@ -7,10 +7,9 @@ C_SRCS += \
 ../src/mqtt/mqtt.c 
 
 CPP_SRCS += \
-../src/mqtt/mqtt_abstract_channel_value_setter.cpp \
 ../src/mqtt/mqtt_abstract_state_message_provider.cpp \
+../src/mqtt/mqtt_abstract_value_setter.cpp \
 ../src/mqtt/mqtt_channel_message_provider.cpp \
-../src/mqtt/mqtt_channel_value_setter.cpp \
 ../src/mqtt/mqtt_channelandstate_message_provider.cpp \
 ../src/mqtt/mqtt_channelandstate_removed_topics_provider.cpp \
 ../src/mqtt/mqtt_client.cpp \
@@ -36,14 +35,14 @@ CPP_SRCS += \
 ../src/mqtt/mqtt_unpublisher_datasource.cpp \
 ../src/mqtt/mqtt_unpublisher_user_topic_provider.cpp \
 ../src/mqtt/mqtt_user_message_provider.cpp \
+../src/mqtt/mqtt_value_setter.cpp \
 ../src/mqtt/mqttc_library_adapter.cpp 
 
 OBJS += \
 ./src/mqtt/mqtt.o \
-./src/mqtt/mqtt_abstract_channel_value_setter.o \
 ./src/mqtt/mqtt_abstract_state_message_provider.o \
+./src/mqtt/mqtt_abstract_value_setter.o \
 ./src/mqtt/mqtt_channel_message_provider.o \
-./src/mqtt/mqtt_channel_value_setter.o \
 ./src/mqtt/mqtt_channelandstate_message_provider.o \
 ./src/mqtt/mqtt_channelandstate_removed_topics_provider.o \
 ./src/mqtt/mqtt_client.o \
@@ -69,16 +68,16 @@ OBJS += \
 ./src/mqtt/mqtt_unpublisher_datasource.o \
 ./src/mqtt/mqtt_unpublisher_user_topic_provider.o \
 ./src/mqtt/mqtt_user_message_provider.o \
+./src/mqtt/mqtt_value_setter.o \
 ./src/mqtt/mqttc_library_adapter.o 
 
 C_DEPS += \
 ./src/mqtt/mqtt.d 
 
 CPP_DEPS += \
-./src/mqtt/mqtt_abstract_channel_value_setter.d \
 ./src/mqtt/mqtt_abstract_state_message_provider.d \
+./src/mqtt/mqtt_abstract_value_setter.d \
 ./src/mqtt/mqtt_channel_message_provider.d \
-./src/mqtt/mqtt_channel_value_setter.d \
 ./src/mqtt/mqtt_channelandstate_message_provider.d \
 ./src/mqtt/mqtt_channelandstate_removed_topics_provider.d \
 ./src/mqtt/mqtt_client.d \
@@ -104,6 +103,7 @@ CPP_DEPS += \
 ./src/mqtt/mqtt_unpublisher_datasource.d \
 ./src/mqtt/mqtt_unpublisher_user_topic_provider.d \
 ./src/mqtt/mqtt_user_message_provider.d \
+./src/mqtt/mqtt_value_setter.d \
 ./src/mqtt/mqttc_library_adapter.d 
 
 

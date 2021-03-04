@@ -19,7 +19,6 @@
 #ifndef MQTT_CLIENT_SUITE_H_
 #define MQTT_CLIENT_SUITE_H_
 
-#include "mqtt_channel_value_setter.h"
 #include "mqtt_client_ini_settings.h"
 #include "mqtt_publisher.h"
 #include "mqtt_publisher_datasource.h"
@@ -27,6 +26,7 @@
 #include "mqtt_subscriber_datasource.h"
 #include "mqtt_unpublisher.h"
 #include "mqtt_unpublisher_datasource.h"
+#include "mqtt_value_setter.h"
 #include "mqttc_library_adapter.h"
 
 class supla_mqtt_client_suite {
@@ -34,7 +34,7 @@ class supla_mqtt_client_suite {
   static supla_mqtt_client_suite *_globalInstance;
 
   supla_mqtt_client_ini_settings *ini_settings;
-  supla_mqtt_channel_value_setter *value_setter;
+  supla_mqtt_value_setter *value_setter;
 
   supla_mqttc_library_adapter *library_adapter_pub;
   supla_mqttc_library_adapter *library_adapter_unpub;
@@ -55,7 +55,7 @@ class supla_mqtt_client_suite {
   virtual ~supla_mqtt_client_suite(void);
   void start(void);
   void stop(void);
-  void onUserSettingsChanged(int UserID);
+  void onUserDataChanged(int UserID);
   void onDeviceRegistered(int UserID, int DeviceID);
   void onDeviceSettingsChanged(int UserID, int DeviceID);
   void onChannelStateChanged(int UserID, int DeviceID, int ChannelID);

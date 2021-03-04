@@ -51,6 +51,7 @@ class IntegrationTest : public Test {
   void fillArrayWithOrdinalNumbers(char *arr, int arr_size, char start);
   virtual void beforeClientInit(TSuplaClientCfg *scc);
   void runSqlScript(const char *script);
+  std::string sqlQuery(const char *query);
   void initTestDatabase();
 
  public:
@@ -64,9 +65,11 @@ class IntegrationTest : public Test {
   virtual void onRegistrationError(int code);
   virtual void onSuperuserAuthorizationResult(bool authorized, int code);
   virtual void onChannelFunctionSetResult(TSC_SetChannelFunctionResult *result);
-  virtual void onChannelCaptionSetResult(TSC_SetChannelCaptionResult *result);
+  virtual void onChannelCaptionSetResult(TSC_SetCaptionResult *result);
+  virtual void onLocationCaptionSetResult(TSC_SetCaptionResult *result);
   virtual void onChannelBasicCfg(TSC_ChannelBasicCfg *cfg);
   virtual void channelUpdate(TSC_SuplaChannel_C *channel);
+  virtual void locationUpdate(TSC_SuplaLocation *location);
   virtual void onRegistrationEnabled(TSDC_RegistrationEnabled *reg_enabled);
   virtual void onSetRegistrationEnabledResult(
       TSC_SetRegistrationEnabledResult *result);

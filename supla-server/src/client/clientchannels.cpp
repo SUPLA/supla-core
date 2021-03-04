@@ -366,16 +366,24 @@ void supla_client_channels::get_channel_basic_cfg(
   }
 }
 
-void supla_client_channels::set_channel_function(int ChannelId, int Func) {
+void supla_client_channels::set_channel_function(void *srpc, int ChannelId,
+                                                 int Func) {
   supla_client_channel *channel = find_channel(ChannelId);
 
-  if (channel != NULL) channel->setFunc(Func);
+  if (channel != NULL) {
+    channel->setFunc(Func);
+    remote_update(srpc);
+  }
 }
 
-void supla_client_channels::set_channel_caption(int ChannelId, char *Caption) {
+void supla_client_channels::set_channel_caption(void *srpc, int ChannelId,
+                                                char *Caption) {
   supla_client_channel *channel = find_channel(ChannelId);
 
-  if (channel != NULL) channel->setCaption(Caption);
+  if (channel != NULL) {
+    channel->setCaption(Caption);
+    remote_update(srpc);
+  }
 }
 
 unsigned _supla_int64_t supla_client_channels::value_validity_time_usec(void) {

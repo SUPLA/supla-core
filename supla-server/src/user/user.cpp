@@ -255,6 +255,28 @@ supla_user *supla_user::find_by_suid(const char *suid) {
   return user;
 }
 
+// static
+int supla_user::suid_to_user_id(const char *suid, bool use_database) {
+  supla_user *user = find_by_suid(suid);
+  if (user) {
+    return user->getUserID();
+  }
+
+  int result = 0;
+
+  if (use_database) {
+    database *db = new database();
+
+    if (db->connect() == true) {
+      result = db->get_user_id_by_suid(suid);
+    }
+
+    delete db;
+  }
+
+  return result;
+}
+
 supla_user *supla_user::add_device(supla_device *device, int UserID) {
   supla_user *user = find(UserID, true);
 
@@ -740,7 +762,7 @@ void supla_user::on_state_webhook_changed(int UserID) {
 
 // static
 void supla_user::on_mqtt_settings_changed(int UserID) {
-  supla_mqtt_client_suite::globalInstance()->onUserSettingsChanged(UserID);
+  supla_mqtt_client_suite::globalInstance()->onUserDataChanged(UserID);
 }
 
 // static
@@ -1440,15 +1462,15 @@ void supla_user::set_channel_function(supla_client *sender,
   sender->set_channel_function_result(&result);
 }
 
-void supla_user::set_channel_caption(supla_client *sender,
-                                     TCS_SetChannelCaption *caption) {
+void supla_user::set_caption(supla_client *sender, TCS_SetCaption *caption,
+                             bool channel) {
   if (sender == NULL || caption == NULL) {
     return;
   }
 
-  TSC_SetChannelCaptionResult result;
-  memset(&result, 0, sizeof(TSC_SetChannelCaptionResult));
-  result.ChannelID = caption->ChannelID;
+  TSC_SetCaptionResult result;
+  memset(&result, 0, sizeof(TSC_SetCaptionResult));
+  result.ID = caption->ID;
   memcpy(result.Caption, caption->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
   result.CaptionSize = caption->CaptionSize;
   if (result.CaptionSize > SUPLA_CHANNEL_CAPTION_MAXSIZE) {
@@ -1462,8 +1484,8 @@ void supla_user::set_channel_caption(supla_client *sender,
     database *db = new database();
 
     if (db->connect()) {
-      if (db->set_channel_caption(getUserID(), caption->ChannelID,
-                                  caption->Caption)) {
+      if (db->set_caption(getUserID(), caption->ID, caption->Caption,
+                          channel)) {
         result.ResultCode = SUPLA_RESULTCODE_TRUE;
       } else {
         result.ResultCode = SUPLA_RESULTCODE_UNKNOWN_ERROR;
@@ -1479,12 +1501,17 @@ void supla_user::set_channel_caption(supla_client *sender,
 
     for (int a = 0; a < client_container->count(); a++)
       if (NULL != (client = client_container->get(a))) {
-        client->set_channel_caption(caption->ChannelID, caption->Caption);
+        if (channel) {
+          client->set_channel_caption(caption->ID, caption->Caption);
+        } else {
+          client->set_location_caption(caption->ID, caption->Caption);
+        }
+
         client->releasePtr();
       }
   }
 
-  sender->set_channel_caption_result(&result);
+  sender->set_caption_result(&result, channel);
 }
 
 supla_amazon_alexa_credentials *supla_user::amazonAlexaCredentials(void) {

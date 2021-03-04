@@ -54,6 +54,8 @@ class database : public svrdb {
 
   int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
 
+  int get_user_id_by_suid(const char *suid);
+
   bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                            const char Email[SUPLA_EMAIL_MAXSIZE],
                            const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);
@@ -169,7 +171,7 @@ class database : public svrdb {
                                                int *Type,
                                                unsigned int *FuncList,
                                                int *DeviceID);
-  bool set_channel_caption(int UserID, int ChannelID, char *Caption);
+  bool set_caption(int UserID, int ID, char *Caption, bool Channel);
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);

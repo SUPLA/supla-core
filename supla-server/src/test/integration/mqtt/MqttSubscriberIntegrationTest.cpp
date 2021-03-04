@@ -48,7 +48,7 @@ supla_mqtt_client *MqttSubscriberIntegrationTest::clientInit(
     supla_mqtt_client_library_adapter *library_adapter,
     supla_mqtt_client_settings *settings,
     supla_mqtt_client_datasource *datasource) {
-  value_setter = new MqttChannelValueSetterMock(settings);
+  value_setter = new MqttValueSetterMock(settings);
   return new supla_mqtt_subscriber(library_adapter, settings, datasource,
                                    value_setter);
 }
@@ -62,8 +62,7 @@ void MqttSubscriberIntegrationTest::TearDown() {
   MqttClientIntegrationTest::TearDown();
 }
 
-MqttChannelValueSetterMock *MqttSubscriberIntegrationTest::getValueSetter(
-    void) {
+MqttValueSetterMock *MqttSubscriberIntegrationTest::getValueSetter(void) {
   return value_setter;
 }
 
@@ -74,7 +73,7 @@ supla_mqtt_client_datasource *MqttSubscriberIntegrationTest::dsInit(
 
 TEST_F(MqttSubscriberIntegrationTest, fullScope) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
                 "supla/+/devices/+/channels/+/set/+"),
@@ -82,11 +81,30 @@ TEST_F(MqttSubscriberIntegrationTest, fullScope) {
   ASSERT_EQ(getLibAdapter()->subscribed_pop().compare(
                 "supla/+/devices/+/channels/+/execute_action"),
             0);
+
+  ASSERT_EQ(
+      getLibAdapter()->subscribed_pop().compare("supla/+/refresh_request"), 0);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, refreshRequest) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/refresh_request", "AlL_ExISTiNG");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(0));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getRefreshAllExistingCounter(), 1);
 }
 
 TEST_F(MqttSubscriberIntegrationTest, deviceAndChannelId) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_TRUE(getValueSetter()->channelEqualTo(0));
 
@@ -121,7 +139,7 @@ TEST_F(MqttSubscriberIntegrationTest, deviceAndChannelId) {
 
 TEST_F(MqttSubscriberIntegrationTest, email) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_TRUE(getValueSetter()->suidEqualTo(NULL));
 
@@ -140,7 +158,7 @@ TEST_F(MqttSubscriberIntegrationTest, email) {
 
 TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -178,7 +196,7 @@ TEST_F(MqttSubscriberIntegrationTest, setOnWithoutPrefix) {
 
 TEST_F(MqttSubscriberIntegrationTest, setOnWithPrefix) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   char prefix[] = "prefix/123";
   getSettings()->setPrefixPtr(prefix);
@@ -199,7 +217,7 @@ TEST_F(MqttSubscriberIntegrationTest, setOnWithPrefix) {
 
 TEST_F(MqttSubscriberIntegrationTest, setOff) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -238,7 +256,7 @@ TEST_F(MqttSubscriberIntegrationTest, setOff) {
 
 TEST_F(MqttSubscriberIntegrationTest, turnOn) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -256,7 +274,7 @@ TEST_F(MqttSubscriberIntegrationTest, turnOn) {
 
 TEST_F(MqttSubscriberIntegrationTest, turnOff) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -274,7 +292,7 @@ TEST_F(MqttSubscriberIntegrationTest, turnOff) {
 
 TEST_F(MqttSubscriberIntegrationTest, toggle) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -289,7 +307,7 @@ TEST_F(MqttSubscriberIntegrationTest, toggle) {
 
 TEST_F(MqttSubscriberIntegrationTest, shut) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -307,7 +325,7 @@ TEST_F(MqttSubscriberIntegrationTest, shut) {
 
 TEST_F(MqttSubscriberIntegrationTest, reveal) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -325,7 +343,7 @@ TEST_F(MqttSubscriberIntegrationTest, reveal) {
 
 TEST_F(MqttSubscriberIntegrationTest, stop) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -343,7 +361,7 @@ TEST_F(MqttSubscriberIntegrationTest, stop) {
 
 TEST_F(MqttSubscriberIntegrationTest, open) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -361,7 +379,7 @@ TEST_F(MqttSubscriberIntegrationTest, open) {
 
 TEST_F(MqttSubscriberIntegrationTest, close) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -379,7 +397,7 @@ TEST_F(MqttSubscriberIntegrationTest, close) {
 
 TEST_F(MqttSubscriberIntegrationTest, openClose) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
 
@@ -397,7 +415,7 @@ TEST_F(MqttSubscriberIntegrationTest, openClose) {
 
 TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
@@ -464,7 +482,7 @@ TEST_F(MqttSubscriberIntegrationTest, setClosingPercentage) {
 
 TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
   ASSERT_EQ(getValueSetter()->getClosingPercentage(), -1);
@@ -531,7 +549,7 @@ TEST_F(MqttSubscriberIntegrationTest, setOpeningPercentage) {
 
 TEST_F(MqttSubscriberIntegrationTest, setBrightness) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
   ASSERT_EQ(getValueSetter()->getBrightness(), -1);
@@ -593,7 +611,7 @@ TEST_F(MqttSubscriberIntegrationTest, setBrightness) {
 
 TEST_F(MqttSubscriberIntegrationTest, setColorBrightness) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
   ASSERT_EQ(getValueSetter()->getColorBrightness(), -1);
@@ -655,7 +673,7 @@ TEST_F(MqttSubscriberIntegrationTest, setColorBrightness) {
 
 TEST_F(MqttSubscriberIntegrationTest, setColor) {
   waitForConnection();
-  waitForData(2);
+  waitForData(3);
 
   ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
   ASSERT_EQ(getValueSetter()->getColor(), (unsigned int)0x01FFFFFF);

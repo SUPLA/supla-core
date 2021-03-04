@@ -57,7 +57,7 @@ supla_mqtt_client_suite::supla_mqtt_client_suite(void) {
     unpublisher = new supla_mqtt_unpublisher(library_adapter_unpub,
                                              ini_settings, unpublisher_ds);
 
-    value_setter = new supla_mqtt_channel_value_setter(ini_settings);
+    value_setter = new supla_mqtt_value_setter(ini_settings);
     subscriber_ds = new supla_mqtt_subscriber_datasource(ini_settings);
     subscriber = new supla_mqtt_subscriber(library_adapter_sub, ini_settings,
                                            subscriber_ds, value_setter);
@@ -163,7 +163,7 @@ void supla_mqtt_client_suite::stop(void) {
   }
 }
 
-void supla_mqtt_client_suite::onUserSettingsChanged(int UserID) {
+void supla_mqtt_client_suite::onUserDataChanged(int UserID) {
   if (st_app_terminate == 0) {
     if (publisher) {
       publisher->on_userdata_changed(UserID);

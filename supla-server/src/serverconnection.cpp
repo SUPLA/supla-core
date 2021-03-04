@@ -204,23 +204,22 @@ void serverconnection::on_set_channel_function_request(
   }
 }
 
-void serverconnection::on_set_channel_caption_request(
-    TCS_SetChannelCaption *cs_set_channel_caption) {
-  if (cs_set_channel_caption != NULL) {
-    if (cs_set_channel_caption->CaptionSize > 0) {
+void serverconnection::on_set_caption_request(TCS_SetCaption *cs_set_caption,
+                                              bool channel) {
+  if (cs_set_caption != NULL) {
+    if (cs_set_caption->CaptionSize > 0) {
       // ! The field in the database is limited to 100 characters !
 
-      if (cs_set_channel_caption->CaptionSize > 101) {
-        cs_set_channel_caption->CaptionSize = 101;
+      if (cs_set_caption->CaptionSize > 101) {
+        cs_set_caption->CaptionSize = 101;
       }
     } else {
-      cs_set_channel_caption->CaptionSize = 1;
+      cs_set_caption->CaptionSize = 1;
     }
 
-    cs_set_channel_caption->Caption[cs_set_channel_caption->CaptionSize - 1] =
-        0;
+    cs_set_caption->Caption[cs_set_caption->CaptionSize - 1] = 0;
 
-    client->set_channel_caption_request(cs_set_channel_caption);
+    client->getUser()->set_caption(client, cs_set_caption, channel);
   }
 }
 
@@ -827,7 +826,10 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           on_set_channel_function_request(rd.data.cs_set_channel_function);
           break;
         case SUPLA_CS_CALL_SET_CHANNEL_CAPTION:
-          on_set_channel_caption_request(rd.data.cs_set_channel_caption);
+          on_set_caption_request(rd.data.cs_set_caption, true);
+          break;
+        case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
+          on_set_caption_request(rd.data.cs_set_caption, false);
           break;
         case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
           if (client->is_superuser_authorized()) {

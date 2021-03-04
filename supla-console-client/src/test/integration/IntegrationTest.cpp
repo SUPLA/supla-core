@@ -73,8 +73,13 @@ void integration_test_on_channel_function_set_result(
 }
 
 void integration_test_on_channel_caption_set_result(
-    void *_suplaclient, void *instance, TSC_SetChannelCaptionResult *result) {
+    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
   static_cast<IntegrationTest *>(instance)->onChannelCaptionSetResult(result);
+}
+
+void integration_test_on_location_caption_set_result(
+    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
+  static_cast<IntegrationTest *>(instance)->onLocationCaptionSetResult(result);
 }
 
 void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
@@ -85,6 +90,11 @@ void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
 void integration_test_channel_update(void *_suplaclient, void *instance,
                                      TSC_SuplaChannel_C *channel) {
   static_cast<IntegrationTest *>(instance)->channelUpdate(channel);
+}
+
+void integration_test_location_update(void *_suplaclient, void *instance,
+                                      TSC_SuplaLocation *location) {
+  static_cast<IntegrationTest *>(instance)->locationUpdate(location);
 }
 
 void integration_test_on_registration_enabled(
@@ -180,8 +190,11 @@ void IntegrationTest::clientInit() {
       &integration_test_on_channel_function_set_result;
   scc.cb_on_channel_caption_set_result =
       &integration_test_on_channel_caption_set_result;
+  scc.cb_on_location_caption_set_result =
+      &integration_test_on_location_caption_set_result;
   scc.cb_on_channel_basic_cfg = &integration_test_on_channel_basic_cfg;
   scc.cb_channel_update = &integration_test_channel_update;
+  scc.cb_location_update = &integration_test_location_update;
   scc.cb_on_registration_enabled = &integration_test_on_registration_enabled;
   scc.cb_on_set_registration_enabled_result =
       &integration_test_on_set_registration_enabled_result;
@@ -258,6 +271,15 @@ void IntegrationTest::runSqlScript(const char *script) {
                            script);
 }
 
+std::string IntegrationTest::sqlQuery(const char *query) {
+  std::string result;
+  MySqlShell::sqlQuery(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                       IntegrationTest::dbUser, IntegrationTest::dbName, query,
+                       &result);
+
+  return result;
+}
+
 void IntegrationTest::initTestDatabase() {
   MySqlShell::initTestDatabase(IntegrationTest::sqlDir, IntegrationTest::dbHost,
                                IntegrationTest::dbUser,
@@ -287,12 +309,16 @@ void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
 void IntegrationTest::onChannelFunctionSetResult(
     TSC_SetChannelFunctionResult *result) {}
 
-void IntegrationTest::onChannelCaptionSetResult(
-    TSC_SetChannelCaptionResult *result) {}
+void IntegrationTest::onChannelCaptionSetResult(TSC_SetCaptionResult *result) {}
+
+void IntegrationTest::onLocationCaptionSetResult(TSC_SetCaptionResult *result) {
+}
 
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 
 void IntegrationTest::channelUpdate(TSC_SuplaChannel_C *channel) {}
+
+void IntegrationTest::locationUpdate(TSC_SuplaLocation *location) {}
 
 void IntegrationTest::onRegistrationEnabled(
     TSDC_RegistrationEnabled *reg_enabled) {}

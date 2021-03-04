@@ -148,8 +148,8 @@ union TsrpcDataPacketData {
   TSC_ChannelBasicCfg *sc_channel_basic_cfg;
   TCS_SetChannelFunction *cs_set_channel_function;
   TSC_SetChannelFunctionResult *sc_set_channel_function_result;
-  TCS_SetChannelCaption *cs_set_channel_caption;
-  TSC_SetChannelCaptionResult *sc_set_channel_caption_result;
+  TCS_SetCaption *cs_set_caption;
+  TSC_SetCaptionResult *sc_set_caption_result;
   TSC_ClientsReconnectRequestResult *sc_clients_reconnect_result;
   TCS_SetRegistrationEnabled *cs_set_registration_enabled;
   TSC_SetRegistrationEnabledResult *sc_set_registration_enabled_result;
@@ -260,10 +260,9 @@ srpc_ds_async_device_calcfg_result(void *_srpc, TDS_DeviceCalCfgResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_functions(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_functions_result(
     void *_srpc, TSD_ChannelFunctions *result);
-_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_int_params(
-    void *_srpc, unsigned char channel_number);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_sd_async_get_channel_int_params_result(
+srpc_ds_async_get_channel_int_params(void *_srpc, unsigned char channel_number);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_int_params_result(
     void *_srpc, unsigned char channel_number, _supla_int_t param1,
     _supla_int_t param2, _supla_int_t param3);
 #endif /*SRPC_EXCLUDE_DEVICE*/
@@ -346,9 +345,13 @@ srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
     void *_srpc, TSC_SetChannelFunctionResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_cs_async_set_channel_caption(void *_srpc, TCS_SetChannelCaption *caption);
+srpc_cs_async_set_channel_caption(void *_srpc, TCS_SetCaption *caption);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_caption_result(
-    void *_srpc, TSC_SetChannelCaptionResult *caption);
+    void *_srpc, TSC_SetCaptionResult *caption);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_location_caption(void *_srpc, TCS_SetCaption *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
+    void *_srpc, TSC_SetCaptionResult *caption);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_clients_reconnect_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(

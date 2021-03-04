@@ -111,13 +111,15 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RC_MAX_DEV_COUNT 50
 #define SUPLA_SOFTVER_MAXSIZE 21
 
+#define SUPLA_CAPTION_MAXSIZE 401
+
 #define SUPLA_GUID_SIZE 16
 #define SUPLA_GUID_HEXSIZE 33
 #define SUPLA_LOCATION_PWD_MAXSIZE 33
 #define SUPLA_ACCESSID_PWD_MAXSIZE 33
-#define SUPLA_LOCATION_CAPTION_MAXSIZE 401
+#define SUPLA_LOCATION_CAPTION_MAXSIZE SUPLA_CAPTION_MAXSIZE
 #define SUPLA_LOCATIONPACK_MAXCOUNT 20
-#define SUPLA_CHANNEL_CAPTION_MAXSIZE 401
+#define SUPLA_CHANNEL_CAPTION_MAXSIZE SUPLA_CAPTION_MAXSIZE
 #define SUPLA_CHANNELPACK_MAXCOUNT 20
 #define SUPLA_URL_HOST_MAXSIZE 101
 #define SUPLA_URL_PATH_MAXSIZE 101
@@ -217,6 +219,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT 630        // ver. >= 12
 #define SUPLA_CS_CALL_SET_CHANNEL_CAPTION 640                 // ver. >= 12
 #define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650          // ver. >= 12
+#define SUPLA_CS_CALL_SET_LOCATION_CAPTION 645                // ver. >= 14
+#define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
 #define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
 #define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
 
@@ -1592,19 +1596,19 @@ typedef struct {
 } TSC_SetChannelFunctionResult;  // v. >= 12
 
 typedef struct {
-  _supla_int_t ChannelID;
+  _supla_int_t ID;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
-  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TCS_SetChannelCaption;                        // v. >= 12
+  char Caption[SUPLA_CAPTION_MAXSIZE];  // Last variable in struct!
+} TCS_SetCaption;                       // v. >= 12
 
 typedef struct {
-  _supla_int_t ChannelID;
+  _supla_int_t ID;
   unsigned char ResultCode;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
-  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_SetChannelCaptionResult;                  // v. >= 12
+  char Caption[SUPLA_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SetCaptionResult;                 // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;

@@ -34,6 +34,9 @@ bool supla_mqtt_subscription_topic_provider::get_message_at_index(
   } else if (index == 1) {
     return create_message(topic_prefix, "+", topic_name, NULL, NULL, NULL,
                           false, "devices/+/channels/+/execute_action");
+  } else if (index == 2) {
+    return create_message(topic_prefix, "+", topic_name, NULL, NULL, NULL,
+                          false, "refresh_request");
   }
 
   return false;
