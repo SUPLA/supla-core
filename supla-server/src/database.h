@@ -54,6 +54,8 @@ class database : public svrdb {
 
   int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
 
+  int get_user_id_by_suid(const char *suid);
+
   bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                            const char Email[SUPLA_EMAIL_MAXSIZE],
                            const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID);

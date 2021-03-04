@@ -125,9 +125,8 @@ void supla_mqtt_value_setter::action_open_close(void) {
 }
 
 void supla_mqtt_value_setter::refresh_all_existing(void) {
-  supla_user *user = supla_user::find_by_suid(get_suid());
-  if (user) {
-    supla_mqtt_client_suite::globalInstance()->onUserDataChanged(
-        user->getUserID());
+  int user_id = supla_user::suid_to_user_id(get_suid(), true);
+  if (user_id) {
+    supla_mqtt_client_suite::globalInstance()->onUserDataChanged(user_id);
   }
 }

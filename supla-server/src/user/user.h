@@ -92,6 +92,7 @@ class supla_user {
   static supla_user *add_client(supla_client *client, int UserID);
   static supla_user *find(int UserID, bool create);
   static supla_user *find_by_suid(const char *suid);
+  static int suid_to_user_id(const char *suid, bool use_database);
   static bool reconnect(int UserID, event_source_type eventSourceType);
   static bool client_reconnect(int UserID, int ClientID);
   static bool device_reconnect(int UserID, int DeviceID);

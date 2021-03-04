@@ -255,6 +255,28 @@ supla_user *supla_user::find_by_suid(const char *suid) {
   return user;
 }
 
+// static
+int supla_user::suid_to_user_id(const char *suid, bool use_database) {
+  supla_user *user = find_by_suid(suid);
+  if (user) {
+    return user->getUserID();
+  }
+
+  int result = 0;
+
+  if (use_database) {
+    database *db = new database();
+
+    if (db->connect() == true) {
+      result = db->get_user_id_by_suid(suid);
+    }
+
+    delete db;
+  }
+
+  return result;
+}
+
 supla_user *supla_user::add_device(supla_device *device, int UserID) {
   supla_user *user = find(UserID, true);
 

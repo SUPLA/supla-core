@@ -199,6 +199,28 @@ int database::get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]) {
   return 0;
 }
 
+int database::get_user_id_by_suid(const char *suid) {
+  if (_mysql == NULL || suid == NULL || suid[0] == 0) return 0;
+
+  MYSQL_BIND pbind[1];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_STRING;
+  pbind[0].buffer = (char *)suid;
+  pbind[0].buffer_length = strnlen(suid, SHORT_UNIQUEID_MAXSIZE);
+
+  int UserID = 0;
+  MYSQL_STMT *stmt = NULL;
+
+  if (stmt_get_int((void **)&stmt, &UserID, NULL, NULL, NULL,
+                   "SELECT id FROM supla_user WHERE short_unique_id = ?", pbind,
+                   1)) {
+    return UserID;
+  }
+
+  return 0;
+}
+
 bool database::get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                                 bool *is_null, const char *sql) {
   MYSQL_STMT *stmt = NULL;
