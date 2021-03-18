@@ -838,9 +838,11 @@ bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
                    NULL, topic_prefix, topic_name, message, message_size);
 }
 
-bool supla_mqtt_channel_message_provider::ha_garagedoor(
-    const char *topic_prefix, char **topic_name, void **message,
-    size_t *message_size) {
+bool supla_mqtt_channel_message_provider::ha_gate(const char *topic_prefix,
+                                                  char **topic_name,
+                                                  void **message,
+                                                  size_t *message_size,
+                                                  const char *device_class) {
   cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
   if (!root) {
     return false;
@@ -850,9 +852,40 @@ bool supla_mqtt_channel_message_provider::ha_garagedoor(
   ha_json_set_optimistic(root);
 
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
+  ha_json_set_string_param(root, "dev_cla", device_class);
   ha_json_set_string_param(root, "pl_open", "OPEN");
   ha_json_set_string_param(root, "pl_stop", "");
   ha_json_set_string_param(root, "pl_cls", "CLOSE");
+
+  ha_json_set_short_topic(root, "state_topic", "state/hi");
+  ha_json_set_string_param(root, "state_open", "false");
+  ha_json_set_string_param(root, "state_closed", "true");
+
+  ha_json_set_short_topic(root, "avty_t", "state/connected");
+  ha_json_set_string_param(root, "pl_avail", "true");
+  ha_json_set_string_param(root, "pl_not_avail", "false");
+
+  return ha_get_message(root, "cover", 0, false, topic_name, message,
+                        message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
+                                                  char **topic_name,
+                                                  void **message,
+                                                  size_t *message_size) {
+  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
+  if (!root) {
+    return false;
+  }
+
+  ha_json_set_retain(root);
+  ha_json_set_optimistic(root);
+
+  ha_json_set_short_topic(root, "cmd_t", "execute_action");
+  ha_json_set_string_param(root, "dev_cla", "door");
+  ha_json_set_string_param(root, "pl_open", "OPEN");
+  ha_json_set_string_param(root, "pl_stop", "");
+  ha_json_set_string_param(root, "pl_cls", "OPEN");
 
   ha_json_set_short_topic(root, "state_topic", "state/hi");
   ha_json_set_string_param(root, "state_open", "false");
@@ -880,6 +913,7 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
   ha_json_set_optimistic(root);
 
   ha_json_set_short_topic(root, "cmd_t", "execute_action");
+  ha_json_set_string_param(root, "dev_cla", "shutter");
   ha_json_set_string_param(root, "pl_open", "REVEAL");
   ha_json_set_string_param(root, "pl_cls", "SHUT");
   ha_json_set_string_param(root, "pl_stop", "STOP");
@@ -1176,8 +1210,12 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
   }
 
   switch (row->channel_func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      return ha_gate(topic_prefix, topic_name, message, message_size, "gate");
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-      return ha_garagedoor(topic_prefix, topic_name, message, message_size);
+      return ha_gate(topic_prefix, topic_name, message, message_size, "garage");
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return ha_door(topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
       return ha_roller_shutter(topic_prefix, topic_name, message, message_size);

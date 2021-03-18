@@ -49,7 +49,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(610);
+  waitForPublications(612);
   // print_expected();
 
   const char *expectedData[] = {
@@ -585,8 +585,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"name\":\"ZAMEL SRW-01\",\"sw\":\"2.7.2\"},\"name\":\"Roller shutter "
       "operation\",\"uniq_id\":\"supla_20\",\"qos\":0,\"ret\":false,\"opt\":"
       "false,\"cmd_t\":\"~/"
-      "execute_action\",\"pl_open\":\"REVEAL\",\"pl_cls\":\"SHUT\",\"pl_stop\":"
-      "\"STOP\",\"set_pos_t\":\"~/set/closing_percentage\",\"pos_t\":\"~/state/"
+      "execute_action\",\"dev_cla\":\"shutter\",\"pl_open\":\"REVEAL\",\"pl_"
+      "cls\":\"SHUT\",\"pl_stop\":\"STOP\",\"set_pos_t\":\"~/set/"
+      "closing_percentage\",\"pos_t\":\"~/state/"
       "shut\",\"pos_open\":0,\"pos_clsd\":100,\"avty_t\":\"~/state/"
       "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"value_"
       "template\":\"{% if value is defined %}{% if value | int < 0 %}0{% elif "
@@ -801,6 +802,16 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       NULL,
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/channels/286/hidden",
       "false",
+      "homeassistant/cover/0c6beb47b1c2b14191e2bbb49e9d41c2/286/config",
+      "{\"~\":\"supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/channels/"
+      "286\",\"device\":{\"ids\":\"supla-iodevice-157\",\"mf\":\"Zamel\","
+      "\"name\":\"ZAMEL "
+      "SBW-01\",\"sw\":\"2.7.0\"},\"name\":\"Gate\",\"uniq_id\":\"supla_286\","
+      "\"qos\":0,\"ret\":false,\"opt\":false,\"cmd_t\":\"~/"
+      "execute_action\",\"dev_cla\":\"gate\",\"pl_open\":\"OPEN\",\"pl_stop\":"
+      "\"\",\"pl_cls\":\"CLOSE\",\"state_topic\":\"~/state/"
+      "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
+      "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/channels/286/state/"
       "connected",
       "false",
@@ -820,6 +831,16 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       NULL,
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/1835/hidden",
       "false",
+      "homeassistant/cover/4d3e49b9f3b202b1092fbfdc48d8d04f/1835/config",
+      "{\"~\":\"supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/"
+      "1835\",\"device\":{\"ids\":\"supla-iodevice-983\",\"mf\":\"\",\"name\":"
+      "\"*Yunshan\",\"sw\":\"2.7.2\"},\"name\":\"Door lock "
+      "operation\",\"uniq_id\":\"supla_1835\",\"qos\":0,\"ret\":false,\"opt\":"
+      "false,\"cmd_t\":\"~/"
+      "execute_action\",\"dev_cla\":\"door\",\"pl_open\":\"OPEN\",\"pl_"
+      "stop\":\"\",\"pl_cls\":\"OPEN\",\"state_topic\":\"~/state/"
+      "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
+      "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/1835/state/"
       "connected",
       "false",
@@ -896,8 +917,8 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "test "
       "ABCDEGFH\",\"uniq_id\":\"supla_1055\",\"qos\":0,\"ret\":false,\"opt\":"
       "false,\"cmd_t\":\"~/"
-      "execute_action\",\"pl_open\":\"OPEN\",\"pl_stop\":\"\",\"pl_cls\":"
-      "\"CLOSE\",\"state_topic\":\"~/state/"
+      "execute_action\",\"dev_cla\":\"garage\",\"pl_open\":\"OPEN\",\"pl_"
+      "stop\":\"\",\"pl_cls\":\"CLOSE\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
       "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/state/"
@@ -2208,12 +2229,13 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/channels/8453/state/"
       "hi",
       NULL};
+
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 }
 
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
-  waitForPublications(610);
+  waitForPublications(612);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
@@ -2305,7 +2327,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
 
 TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForConnection();
-  waitForPublications(610);
+  waitForPublications(612);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
