@@ -838,7 +838,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "operation\",\"uniq_id\":\"supla_1835\",\"qos\":0,\"ret\":false,\"opt\":"
       "false,\"cmd_t\":\"~/"
       "execute_action\",\"dev_cla\":\"door\",\"pl_open\":\"OPEN_CLOSE\",\"pl_"
-      "stop\":\"\",\"pl_cls\":\"\",\"state_topic\":\"~/state/"
+      "stop\":\"\",\"pl_cls\":\"OPEN_CLOSE\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
       "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/1835/state/"

@@ -885,7 +885,7 @@ bool supla_mqtt_channel_message_provider::ha_door(const char *topic_prefix,
   ha_json_set_string_param(root, "dev_cla", "door");
   ha_json_set_string_param(root, "pl_open", "OPEN_CLOSE");
   ha_json_set_string_param(root, "pl_stop", "");
-  ha_json_set_string_param(root, "pl_cls", "");
+  ha_json_set_string_param(root, "pl_cls", "OPEN_CLOSE");
 
   ha_json_set_short_topic(root, "state_topic", "state/hi");
   ha_json_set_string_param(root, "state_open", "false");
