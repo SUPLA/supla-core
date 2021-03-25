@@ -2041,7 +2041,10 @@ bool supla_device_channels::get_channel_complex_value(
                                       NULL)) {
             if (cv.sub_value[0] > 0) {
               value->hi = true;
-            } else if (value->function == SUPLA_CHANNELFNC_CONTROLLINGTHEGATE &&
+            } else if ((value->function ==
+                            SUPLA_CHANNELFNC_CONTROLLINGTHEGATE ||
+                        value->function ==
+                            SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR) &&
                        cv.sub_value[1] > 0 && cv.sub_value[0] == 0) {
               value->partially_closed = true;
             }

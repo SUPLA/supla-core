@@ -880,12 +880,12 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
                                      message_size);
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       return get_gate_message_at_index(index, topic_prefix, topic_name, message,
                                        message_size);
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       return get_lck_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
 
