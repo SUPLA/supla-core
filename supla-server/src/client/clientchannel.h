@@ -34,6 +34,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   int Param1;
   int Param2;
   int Param3;
+  int Param4;
   char *TextParam1;
   char *TextParam2;
   char *TextParam3;
@@ -60,7 +61,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
  public:
   supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
                        int LocationID, int Type, int Func, int Param1,
-                       int Param2, int Param3, char *TextParam1,
+                       int Param2, int Param3, int Param4, char *TextParam1,
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
                        short ProductID, unsigned char ProtocolVersion,

@@ -31,9 +31,9 @@
 
 supla_client_channel::supla_client_channel(
     supla_client_channels *Container, int Id, int DeviceId, int LocationID,
-    int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
-    char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
-    int UserIcon, short ManufacturerID, short ProductID,
+    int Type, int Func, int Param1, int Param2, int Param3, int Param4,
+    char *TextParam1, char *TextParam2, char *TextParam3, const char *Caption,
+    int AltIcon, int UserIcon, short ManufacturerID, short ProductID,
     unsigned char ProtocolVersion, int Flags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec)
@@ -45,6 +45,7 @@ supla_client_channel::supla_client_channel(
   this->Param1 = Param1;
   this->Param2 = Param2;
   this->Param3 = Param3;
+  this->Param4 = Param4;
   this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
   this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
@@ -192,9 +193,9 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
 
-      //if (Param4 == 0) {
+      if (Param4 == 0) {
         return true;
-      //}
+      }
       break;
   }
 
