@@ -96,7 +96,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 14
+#define SUPLA_PROTO_VERSION 15
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -185,8 +185,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT 350          // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360                // ver. >= 8
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361                // ver. >= 10
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_D 363                // ver. >= 15
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                    // ver. >= 8
 #define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                    // ver. >= 10
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_D 373                    // ver. >= 15
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380            // ver. >= 9
 #define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381          // ver. >= 10
 #define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390   // ver. >= 9
@@ -866,6 +868,44 @@ typedef struct {
   TSC_SuplaChannel_C
       items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack_C;                 // ver. >= 10
+
+typedef struct {
+  // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t DeviceID;
+  _supla_int_t LocationID;
+  _supla_int_t Type;
+  _supla_int_t Func;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon;
+  _supla_int16_t ManufacturerID;
+  _supla_int16_t ProductID;
+
+  _supla_int_t SubChannelId;
+  _supla_int_t SubChannelType;
+  _supla_int_t SubChannelFunc;
+
+  unsigned _supla_int_t Flags;
+  unsigned char ProtocolVersion;
+  char online;
+
+  TSuplaChannelValue value;
+
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaChannel_D;                           // ver. >= 15
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannel_D
+      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelPack_D;                 // ver. >= 15
 
 typedef struct {
   // server -> client
