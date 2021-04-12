@@ -361,6 +361,14 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               getID(), getSvrConn()->getClientSD(),
               getSvrConn()->getProtocolVersion(), syscall(__NR_gettid));
   } else {
+    if (resultcode == SUPLA_RESULTCODE_BAD_CREDENTIALS) {
+      supla_log(LOG_INFO,
+                "Bad device credentials. ClientSD: %i Protocol Version: %i "
+                "ThreadID: %i GUID: %02X%02X%02X%02X",
+                getSvrConn()->getClientSD(), getSvrConn()->getProtocolVersion(),
+                syscall(__NR_gettid), GUID[0], GUID[1], GUID[2], GUID[3]);
+    }
+
     usleep(2000000);
   }
 
