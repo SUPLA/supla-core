@@ -180,7 +180,7 @@ class supla_device_channel {
 
  public:
   supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
-                       int Param1, int Param2, int Param3, , int Param4,
+                       int Param1, int Param2, int Param3, int Param4,
                        char *TextParam1, char *TextParam2, char *TextParam3,
                        bool Hidden, unsigned int Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
