@@ -478,8 +478,9 @@ void supla_channel_thermostat_measurement::free(void *tharr) {
 
 supla_device_channel::supla_device_channel(
     int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
-    int Param3, char *TextParam1, char *TextParam2, char *TextParam3,
-    bool Hidden, unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    int Param3, int Param4, char *TextParam1, char *TextParam2,
+    char *TextParam3, bool Hidden, unsigned int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec) {
   this->Id = Id;
   this->Number = Number;
@@ -489,6 +490,7 @@ supla_device_channel::supla_device_channel(
   this->Param1 = Param1;
   this->Param2 = Param2;
   this->Param3 = Param3;
+  this->Param4 = Param4;
   this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
   this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
@@ -555,6 +557,8 @@ int supla_device_channel::getParam1(void) { return Param1; }
 int supla_device_channel::getParam2(void) { return Param2; }
 
 int supla_device_channel::getParam3(void) { return Param3; }
+
+int supla_device_channel::getParam4(void) { return Param4; }
 
 bool supla_device_channel::getHidden(void) { return Hidden; }
 
@@ -951,6 +955,10 @@ unsigned int supla_device_channel::getValueDuration(void) {
 std::list<int> supla_device_channel::related_channel(void) {
   std::list<int> result;
 
+  // Only channels associated with NO / NC sensors can return more than one
+  // channel!!!
+  // See supla_user::get_channel_value
+
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -968,6 +976,14 @@ std::list<int> supla_device_channel::related_channel(void) {
 
       if (Param3) {
         result.push_back(Param3);
+      }
+
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+
+      if (Param1) {
+        result.push_back(Param1);
       }
 
       break;
@@ -993,6 +1009,17 @@ std::list<int> supla_device_channel::master_channel(void) {
 
       if (Param2) {
         result.push_back(Param2);
+      }
+
+      break;
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+
+      if (Param4) {
+        result.push_back(Param4);
       }
 
       break;
@@ -1195,15 +1222,17 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 
 void supla_device_channels::add_channel(
     int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
-    int Param3, char *TextParam1, char *TextParam2, char *TextParam3,
-    bool Hidden, unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    int Param3, int Param4, char *TextParam1, char *TextParam2,
+    char *TextParam3, bool Hidden, unsigned int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec) {
   safe_array_lock(arr);
 
   if (find_channel(Id) == 0) {
     supla_device_channel *c = new supla_device_channel(
-        Id, Number, UserID, Type, Func, Param1, Param2, Param3, TextParam1,
-        TextParam2, TextParam3, Hidden, Flags, value, validity_time_sec);
+        Id, Number, UserID, Type, Func, Param1, Param2, Param3, Param4,
+        TextParam1, TextParam2, TextParam3, Hidden, Flags, value,
+        validity_time_sec);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;

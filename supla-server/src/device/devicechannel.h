@@ -166,6 +166,7 @@ class supla_device_channel {
   int Param1;
   int Param2;
   int Param3;
+  int Param4;
   char *TextParam1;
   char *TextParam2;
   char *TextParam3;
@@ -179,9 +180,9 @@ class supla_device_channel {
 
  public:
   supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
-                       int Param1, int Param2, int Param3, char *TextParam1,
-                       char *TextParam2, char *TextParam3, bool Hidden,
-                       unsigned int Flags,
+                       int Param1, int Param2, int Param3, , int Param4,
+                       char *TextParam1, char *TextParam2, char *TextParam3,
+                       bool Hidden, unsigned int Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec);
   virtual ~supla_device_channel();
@@ -196,6 +197,7 @@ class supla_device_channel {
   int getParam1(void);
   int getParam2(void);
   int getParam3(void);
+  int getParam4(void);
   bool getHidden(void);
   unsigned int getFlags();
   bool isOffline(void);
@@ -268,9 +270,9 @@ class supla_device_channels {
   explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int UserID, int Type, int Func,
-                   int Param1, int Param2, int Param3, char *TextParam1,
-                   char *TextParam2, char *TextParam3, bool Hidden,
-                   unsigned int Flags,
+                   int Param1, int Param2, int Param3, int Param4,
+                   char *TextParam1, char *TextParam2, char *TextParam3,
+                   bool Hidden, unsigned int Flags,
                    const char value[SUPLA_CHANNELVALUE_SIZE],
                    unsigned _supla_int_t validity_time_sec);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],

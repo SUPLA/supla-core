@@ -745,8 +745,8 @@ void database::get_device_channels(int UserID, int DeviceID,
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
       "SELECT c.`type`, c.`func`, c.`param1`, c.`param2`, c.`param3`, "
-      "c.`text_param1`, c.`text_param2`, c.`text_param3`, c.`channel_number`, "
-      "c.`id`, c.`hidden`, c.`flags`, v.`value`, "
+      "c.`param4`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
+      "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, "
       "TIME_TO_SEC(TIMEDIFF(v.`valid_to`, UTC_TIMESTAMP())) + 2 FROM "
       "`supla_dev_channel` c  LEFT JOIN `supla_dev_channel_value` v ON "
       "v.channel_id = c.id AND v.valid_to >= UTC_TIMESTAMP() WHERE "
@@ -759,9 +759,9 @@ void database::get_device_channels(int UserID, int DeviceID,
   pbind[0].buffer = (char *)&DeviceID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    my_bool is_null[8];
+    my_bool is_null[9];
 
-    MYSQL_BIND rbind[14];
+    MYSQL_BIND rbind[15];
     memset(rbind, 0, sizeof(rbind));
 
     int type = 0;
@@ -769,6 +769,7 @@ void database::get_device_channels(int UserID, int DeviceID,
     int param1 = 0;
     int param2 = 0;
     int param3 = 0;
+    int param4 = 0;
     int number = 0;
     int id = 0;
     int hidden = 0;
@@ -809,45 +810,49 @@ void database::get_device_channels(int UserID, int DeviceID,
     rbind[4].buffer = (char *)&param3;
     rbind[4].is_null = &is_null[4];
 
-    rbind[5].buffer_type = MYSQL_TYPE_STRING;
-    rbind[5].buffer = text_param1;
+    rbind[5].buffer_type = MYSQL_TYPE_LONG;
+    rbind[5].buffer = (char *)&param4;
     rbind[5].is_null = &is_null[5];
-    rbind[5].buffer_length = sizeof(text_param1) - 1;
-    rbind[5].length = &text_param1_size;
 
     rbind[6].buffer_type = MYSQL_TYPE_STRING;
-    rbind[6].buffer = text_param2;
+    rbind[6].buffer = text_param1;
     rbind[6].is_null = &is_null[6];
-    rbind[6].buffer_length = sizeof(text_param2) - 1;
-    rbind[6].length = &text_param2_size;
+    rbind[6].buffer_length = sizeof(text_param1) - 1;
+    rbind[6].length = &text_param1_size;
 
     rbind[7].buffer_type = MYSQL_TYPE_STRING;
-    rbind[7].buffer = text_param3;
+    rbind[7].buffer = text_param2;
     rbind[7].is_null = &is_null[7];
-    rbind[7].buffer_length = sizeof(text_param3) - 1;
-    rbind[7].length = &text_param3_size;
+    rbind[7].buffer_length = sizeof(text_param2) - 1;
+    rbind[7].length = &text_param2_size;
 
-    rbind[8].buffer_type = MYSQL_TYPE_LONG;
-    rbind[8].buffer = (char *)&number;
+    rbind[8].buffer_type = MYSQL_TYPE_STRING;
+    rbind[8].buffer = text_param3;
+    rbind[8].is_null = &is_null[8];
+    rbind[8].buffer_length = sizeof(text_param3) - 1;
+    rbind[8].length = &text_param3_size;
 
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&id;
+    rbind[9].buffer = (char *)&number;
 
     rbind[10].buffer_type = MYSQL_TYPE_LONG;
-    rbind[10].buffer = (char *)&hidden;
+    rbind[10].buffer = (char *)&id;
 
     rbind[11].buffer_type = MYSQL_TYPE_LONG;
-    rbind[11].buffer = (char *)&flags;
+    rbind[11].buffer = (char *)&hidden;
 
-    rbind[12].buffer_type = MYSQL_TYPE_BLOB;
-    rbind[12].buffer = value;
-    rbind[12].buffer_length = SUPLA_CHANNELVALUE_SIZE;
-    rbind[12].is_null = &value_is_null;
+    rbind[12].buffer_type = MYSQL_TYPE_LONG;
+    rbind[12].buffer = (char *)&flags;
 
-    rbind[13].buffer_type = MYSQL_TYPE_LONG;
-    rbind[13].buffer = (char *)&validity_time_sec;
-    rbind[13].buffer_length = sizeof(unsigned _supla_int_t);
-    rbind[13].is_null = &validity_time_is_null;
+    rbind[13].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[13].buffer = value;
+    rbind[13].buffer_length = SUPLA_CHANNELVALUE_SIZE;
+    rbind[13].is_null = &value_is_null;
+
+    rbind[14].buffer_type = MYSQL_TYPE_LONG;
+    rbind[14].buffer = (char *)&validity_time_sec;
+    rbind[14].buffer_length = sizeof(unsigned _supla_int_t);
+    rbind[14].is_null = &validity_time_is_null;
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -862,9 +867,10 @@ void database::get_device_channels(int UserID, int DeviceID,
           if (is_null[2] == true) param1 = 0;
           if (is_null[3] == true) param2 = 0;
           if (is_null[4] == true) param3 = 0;
-          if (is_null[5] == true) text_param1_size = 0;
-          if (is_null[6] == true) text_param2_size = 0;
-          if (is_null[7] == true) text_param3_size = 0;
+          if (is_null[5] == true) param4 = 0;
+          if (is_null[6] == true) text_param1_size = 0;
+          if (is_null[7] == true) text_param2_size = 0;
+          if (is_null[8] == true) text_param3_size = 0;
 
           text_param1[text_param1_size] = 0;
           text_param2[text_param2_size] = 0;
@@ -879,8 +885,9 @@ void database::get_device_channels(int UserID, int DeviceID,
           }
 
           channels->add_channel(id, number, UserID, type, func, param1, param2,
-                                param3, text_param1, text_param2, text_param3,
-                                hidden > 0, flags, value, validity_time_sec);
+                                param3, param4, text_param1, text_param2,
+                                text_param3, hidden > 0, flags, value,
+                                validity_time_sec);
         }
       }
     }

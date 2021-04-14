@@ -709,21 +709,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   return result;
 }
 
-bool supla_user::get_channel_extendedvalue(int DeviceID, int ChannelID,
-                                           TSuplaChannelExtendedValue *value) {
-  bool result = false;
-  memset(value, 0, sizeof(TSuplaChannelExtendedValue));
-
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device) {
-    result =
-        device->get_channels()->get_channel_extendedvalue(ChannelID, value);
-    device->releasePtr();
-  }
-
-  return result;
-}
-
 // static
 void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
   safe_array_lock(supla_user::user_arr);
@@ -905,42 +890,7 @@ bool supla_user::set_device_channel_value(
 
   return result;
 }
-/*
-bool supla_user::set_device_channel_char_value(int SenderID, int DeviceID,
-                                               int ChannelID, int GroupID,
-                                               unsigned char EOL,
-                                               const char value) {
-  bool result = false;
 
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device) {
-    result = device->get_channels()->set_device_channel_char_value(
-        SenderID, ChannelID, GroupID, EOL, value);
-    device->releasePtr();
-  }
-
-  return result;
-}
-
-
-bool supla_user::set_device_channel_rgbw_value(int SenderID, int DeviceID,
-                                               int ChannelID, int GroupID,
-                                               unsigned char EOL, int color,
-                                               char color_brightness,
-                                               char brightness, char on_off) {
-  bool result = false;
-
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device) {
-    result = device->get_channels()->set_device_channel_rgbw_value(
-        SenderID, ChannelID, GroupID, EOL, color, color_brightness, brightness,
-        on_off);
-    device->releasePtr();
-  }
-
-  return result;
-}
-*/
 bool supla_user::set_channelgroup_char_value(int GroupID, const char value) {
   return cgroups->set_char_value(GroupID, value);
 }
@@ -969,18 +919,7 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
                                           bool Extended,
                                           bool SignificantChange) {
   std::list<channel_address> ca_list;
-
-  if (Extended) {
-    {
-      supla_client *client;
-
-      for (int a = 0; a < client_container->count(); a++)
-        if (NULL != (client = client_container->get(a))) {
-          client->on_channel_value_changed(DeviceId, ChannelId, true);
-          client->releasePtr();
-        }
-    }
-  }
+  ca_list.push_back(channel_address(DeviceId, ChannelId));
 
   supla_device *device = device_container->findByID(DeviceId);
   if (device) {
@@ -1002,28 +941,17 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
     }
   }
 
-  bool source_added = false;
-  if (ca_list.empty()) {
-    ca_list.push_back(channel_address(DeviceId, ChannelId));
-    source_added = true;
-  }
+  supla_client *client = NULL;
 
-  if (!Extended) {
-    supla_client *client;
-
-    for (int a = 0; a < client_container->count(); a++)
-      if (NULL != (client = client_container->get(a))) {
-        for (std::list<channel_address>::iterator it = ca_list.begin();
-             it != ca_list.end(); it++) {
-          client->on_channel_value_changed(it->getDeviceId(),
-                                           it->getChannelId());
-        }
-        client->releasePtr();
+  for (int a = 0; a < client_container->count(); a++) {
+    if (NULL != (client = client_container->get(a))) {
+      for (std::list<channel_address>::iterator it = ca_list.begin();
+           it != ca_list.end(); it++) {
+        client->on_channel_value_changed(it->getDeviceId(), it->getChannelId(),
+                                         Extended);
       }
-  }
-
-  if (!source_added) {
-    ca_list.push_back(channel_address(DeviceId, ChannelId));
+      client->releasePtr();
+    }
   }
 
   for (std::list<channel_address>::iterator it = ca_list.begin();

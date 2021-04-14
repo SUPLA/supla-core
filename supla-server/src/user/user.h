@@ -176,23 +176,12 @@ class supla_user {
   bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
                          char *online,
                          unsigned _supla_int_t *validity_time_sec);
-  bool get_channel_extendedvalue(int DeviceID, int ChannelID,
-                                 TSuplaChannelExtendedValue *value);
 
   bool set_device_channel_value(event_source_type eventSourceType, int SenderID,
                                 int DeviceID, int ChannelID, int GroupID,
                                 unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
-  /*
-  bool set_device_channel_char_value(int SenderID, int DeviceID, int ChannelID,
-                                     int GroupID, unsigned char EOL,
-                                     const char value);
 
-  bool set_device_channel_rgbw_value(int SenderID, int DeviceID, int ChannelID,
-                                     int GroupID, unsigned char EOL, int color,
-                                     char color_brightness, char brightness,
-                                     char on_off);
-                                     */
   bool set_channelgroup_char_value(int GroupID, const char value);
   bool set_channelgroup_rgbw_value(int GroupID, int color,
                                    char color_brightness, char brightness,

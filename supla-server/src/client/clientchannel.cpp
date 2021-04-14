@@ -320,23 +320,50 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
   }
 
   memset(cev, 0, sizeof(TSC_SuplaChannelExtendedValue));
-  cev->Id = getId();
 
-  if (client && client->getUser() &&
-      client->getUser()->get_channel_extendedvalue(DeviceId, getId(),
-                                                   &cev->value)) {
-    switch (cev->value.type) {
-      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
-      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
-        return supla_channel_electricity_measurement::update_cev(
-            cev, Param2, TextParam1, client->getProtocolVersion() < 12);
+  if (client && client->getUser()) {
+    bool cev_exists = false;
 
-      case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-        return supla_channel_ic_measurement::update_cev(
-            cev, Func, Param2, Param3, TextParam1, TextParam2);
+    int ChannelId = getId();
+
+    supla_device *device = NULL;
+
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        if (Param1) {
+          ChannelId = Param1;
+          device = client->getUser()->device_by_channelid(ChannelId);
+        }
+        break;
+
+      default:
+        device = client->getUser()->get_device(DeviceId);
+        break;
     }
 
-    return true;
+    if (device) {
+      cev_exists = device->get_channels()->get_channel_extendedvalue(
+          ChannelId, &cev->value);
+      device->releasePtr();
+    }
+
+    if (cev_exists) {
+      cev->Id = getId();
+
+      switch (cev->value.type) {
+        case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
+        case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
+          return supla_channel_electricity_measurement::update_cev(
+              cev, Param2, TextParam1, client->getProtocolVersion() < 12);
+
+        case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
+          return supla_channel_ic_measurement::update_cev(
+              cev, Func, Param2, Param3, TextParam1, TextParam2);
+      }
+
+      return true;
+    }
   }
 
   return false;
