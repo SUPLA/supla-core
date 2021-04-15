@@ -173,8 +173,10 @@ class supla_user {
   bool is_client_online(int DeviceID);
   bool is_device_online(int DeviceID);
   bool is_channel_online(int DeviceID, int ChannelID);
-  bool get_channel_value(int DeviceID, int ChannelID, TSuplaChannelValue *value,
-                         char *online,
+  bool get_channel_value(int DeviceID, int ChannelID,
+                         char value[SUPLA_CHANNELVALUE_SIZE],
+                         char sub_value[SUPLA_CHANNELVALUE_SIZE],
+                         char *sub_value_type, char *online,
                          unsigned _supla_int_t *validity_time_sec);
 
   bool set_device_channel_value(event_source_type eventSourceType, int SenderID,

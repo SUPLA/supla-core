@@ -2066,8 +2066,8 @@ bool supla_device_channels::get_channel_complex_value(
           TSuplaChannelValue cv;
           memset(&cv, 0, sizeof(TSuplaChannelValue));
 
-          if (user->get_channel_value(device->getID(), ChannelID, &cv, NULL,
-                                      NULL)) {
+          if (user->get_channel_value(device->getID(), ChannelID, cv.value,
+                                      cv.sub_value, NULL, NULL, NULL)) {
             if (cv.sub_value[0] > 0) {
               value->hi = true;
             } else if ((value->function ==

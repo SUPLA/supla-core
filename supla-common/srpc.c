@@ -558,6 +558,39 @@ void SRPC_ICACHE_FLASH srpc_getchannelpack_c(Tsrpc *srpc,
       &srpc_channelpack_get_item_caption_size_c);
 }
 
+void *SRPC_ICACHE_FLASH srpc_channelpack_get_item_ptr_d(void *pack,
+                                                        _supla_int_t idx) {
+  return &((TSC_SuplaChannelPack_D *)pack)->items[idx];  // NOLINT
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_channelpack_get_pack_count_d(void *pack) {
+  return ((TSC_SuplaChannelPack_D *)pack)->count;
+}
+
+void SRPC_ICACHE_FLASH srpc_channelpack_set_pack_count_d(
+    void *pack, _supla_int_t count, unsigned char increment) {
+  if (increment == 0) {
+    ((TSC_SuplaChannelPack_D *)pack)->count = count;
+  } else {
+    ((TSC_SuplaChannelPack_D *)pack)->count += count;
+  }
+}
+
+unsigned _supla_int_t SRPC_ICACHE_FLASH
+srpc_channelpack_get_item_caption_size_d(void *item) {
+  return ((TSC_SuplaChannel_D *)item)->CaptionSize;
+}
+
+void SRPC_ICACHE_FLASH srpc_getchannelpack_d(Tsrpc *srpc,
+                                             TsrpcReceivedData *rd) {
+  srpc_getpack(
+      srpc, rd, sizeof(TSC_SuplaChannelPack_D), sizeof(TSC_SuplaChannel_D),
+      SUPLA_CHANNELPACK_MAXCOUNT, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+      &srpc_channelpack_get_pack_count_d, &srpc_channelpack_set_pack_count_d,
+      &srpc_channelpack_get_item_ptr_d,
+      &srpc_channelpack_get_item_caption_size_d);
+}
+
 void *SRPC_ICACHE_FLASH srpc_channelgroup_pack_get_item_ptr(void *pack,
                                                             _supla_int_t idx) {
   return &((TSC_SuplaChannelGroupPack *)pack)->items[idx];  // NOLINT
@@ -1079,6 +1112,17 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_SC_CALL_CHANNEL_UPDATE_D:
+
+        if (srpc->sdp.data_size >=
+                (sizeof(TSC_SuplaChannel_D) - SUPLA_CHANNEL_CAPTION_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TSC_SuplaChannel_D)) {
+          rd->data.sc_channel_d =
+              (TSC_SuplaChannel_D *)malloc(sizeof(TSC_SuplaChannel_D));
+        }
+
+        break;
+
       case SUPLA_SC_CALL_CHANNELPACK_UPDATE:
         srpc_getchannelpack(srpc, rd);
         break;
@@ -1091,11 +1135,23 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         srpc_getchannelpack_c(srpc, rd);
         break;
 
+      case SUPLA_SC_CALL_CHANNELPACK_UPDATE_D:
+        srpc_getchannelpack_d(srpc, rd);
+        break;
+
       case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
 
         if (srpc->sdp.data_size == sizeof(TSC_SuplaChannelValue))
           rd->data.sc_channel_value =
               (TSC_SuplaChannelValue *)malloc(sizeof(TSC_SuplaChannelValue));
+
+        break;
+
+      case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B:
+
+        if (srpc->sdp.data_size == sizeof(TSC_SuplaChannelValue_B))
+          rd->data.sc_channel_value_b = (TSC_SuplaChannelValue_B *)malloc(
+              sizeof(TSC_SuplaChannelValue_B));
 
         break;
 
@@ -1126,6 +1182,17 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                                      SUPLA_CHANNELVALUE_PACK_MAXCOUNT))) {
           rd->data.sc_channelvalue_pack = (TSC_SuplaChannelValuePack *)malloc(
               sizeof(TSC_SuplaChannelValuePack));
+        }
+        break;
+
+      case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B:
+        if (srpc->sdp.data_size <= sizeof(TSC_SuplaChannelValuePack_B) &&
+            srpc->sdp.data_size >= (sizeof(TSC_SuplaChannelValuePack_B) -
+                                    (sizeof(TSC_SuplaChannelValue_B) *
+                                     SUPLA_CHANNELVALUE_PACK_MAXCOUNT))) {
+          rd->data.sc_channelvalue_pack_b =
+              (TSC_SuplaChannelValuePack_B *)malloc(
+                  sizeof(TSC_SuplaChannelValuePack_B));
         }
         break;
 
@@ -1448,6 +1515,11 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_SET_LOCATION_CAPTION:
     case SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT:
       return 14;
+    case SUPLA_SC_CALL_CHANNEL_UPDATE_D:
+    case SUPLA_SC_CALL_CHANNELPACK_UPDATE_D:
+    case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B:
+    case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B:
+      return 15;
   }
 
   return 255;
@@ -2046,6 +2118,17 @@ srpc_sc_async_channel_update_c(void *_srpc, TSC_SuplaChannel_C *channel_c) {
                          (char *)channel_c, size);
 }
 
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sc_async_channel_update_d(void *_srpc, TSC_SuplaChannel_D *channel_d) {
+  _supla_int_t size = sizeof(TSC_SuplaChannel_D) -
+                      SUPLA_CHANNEL_CAPTION_MAXSIZE + channel_d->CaptionSize;
+
+  if (size > sizeof(TSC_SuplaChannel_D)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_UPDATE_D,
+                         (char *)channel_d, size);
+}
+
 unsigned _supla_int_t srpc_channelpack_get_caption_size(void *pack,
                                                         _supla_int_t idx) {
   return ((TSC_SuplaChannelPack *)pack)->items[idx].CaptionSize;
@@ -2091,10 +2174,32 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_c(
       sizeof(TSC_SuplaChannel_C), SUPLA_SC_CALL_CHANNELPACK_UPDATE_C);
 }
 
+unsigned _supla_int_t srpc_channelpack_get_caption_size_d(void *pack,
+                                                          _supla_int_t idx) {
+  return ((TSC_SuplaChannelPack_D *)pack)->items[idx].CaptionSize;
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_d(
+    void *_srpc, TSC_SuplaChannelPack_D *channel_pack) {
+  return srpc_set_pack(
+      _srpc, channel_pack, channel_pack->count,
+      &srpc_channelpack_get_caption_size_d, &srpc_channelpack_get_item_ptr_d,
+      &srpc_channelpack_set_pack_count_d, sizeof(TSC_SuplaChannelPack_D),
+      SUPLA_CHANNELPACK_MAXCOUNT, SUPLA_CHANNEL_CAPTION_MAXSIZE,
+      sizeof(TSC_SuplaChannel_D), SUPLA_SC_CALL_CHANNELPACK_UPDATE_D);
+}
+
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_value) {
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE,
                          (char *)channel_value, sizeof(TSC_SuplaChannelValue));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update_b(
+    void *_srpc, TSC_SuplaChannelValue_B *channel_value) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B,
+                         (char *)channel_value,
+                         sizeof(TSC_SuplaChannelValue_B));
 }
 
 unsigned _supla_int_t
@@ -2160,6 +2265,21 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
       (sizeof(TSC_SuplaChannelValue) * channelvalue_pack->count);
 
   return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE,
+                         (char *)channelvalue_pack, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update_b(
+    void *_srpc, TSC_SuplaChannelValuePack_B *channelvalue_pack) {
+  if (channelvalue_pack->count < 1 ||
+      channelvalue_pack->count > SUPLA_CHANNELVALUE_PACK_MAXCOUNT) {
+    return 0;
+  }
+
+  unsigned _supla_int_t size =
+      sizeof(TSC_SuplaChannelValuePack_B) - sizeof(channelvalue_pack->items) +
+      (sizeof(TSC_SuplaChannelValue_B) * channelvalue_pack->count);
+
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B,
                          (char *)channelvalue_pack, size);
 }
 

@@ -651,10 +651,13 @@ supla_device *supla_user::device_by_channelid(int ChannelID) {
 }
 
 bool supla_user::get_channel_value(int DeviceID, int ChannelID,
-                                   TSuplaChannelValue *value, char *online,
+                                   char value[SUPLA_CHANNELVALUE_SIZE],
+                                   char sub_value[SUPLA_CHANNELVALUE_SIZE],
+                                   char *sub_value_type, char *online,
                                    unsigned _supla_int_t *validity_time_sec) {
   bool result = false;
-  memset(value, 0, sizeof(TSuplaChannelValue));
+  memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+  memset(sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
   if (online) {
     *online = 0;
   }
@@ -662,20 +665,27 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   supla_device *related_device = NULL;
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->get_channels()->get_channel_value(
-        ChannelID, value->value, online, validity_time_sec);
+    result = device->get_channels()->get_channel_value(ChannelID, value, online,
+                                                       validity_time_sec);
 
     if (result) {
       std::list<int> related_list =
           device->get_channels()->related_channel(ChannelID);
 
       std::list<int>::iterator it = related_list.begin();
+      bool sub_value_exists = false;
+      char sub_channel_online = 0;
 
       if (related_list.size() == 1 && *it > 0) {
         related_device = device_container->findByChannelID(*it);
         if (related_device) {
-          related_device->get_channels()->get_channel_value(
-              *it, value->sub_value, NULL, NULL);
+          if (related_device->get_channels()->get_channel_value(
+                  *it, sub_value, &sub_channel_online, NULL) &&
+              sub_channel_online) {
+            sub_value_exists = true;
+          } else {
+            memset(sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
+          }
           related_device->releasePtr();
           related_device = NULL;
         }
@@ -684,15 +694,20 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
         // copy only first byte of sub_value
         // At this version only SENSORNO/SENSORNC are supported.
         // See supla_device_channel::related_channel
-        char sub_value[SUPLA_CHANNELVALUE_SIZE];
+        char _sub_value[SUPLA_CHANNELVALUE_SIZE];
         int n = 0;
         do {
           if (*it > 0) {
             related_device = device_container->findByChannelID(*it);
             if (related_device) {
-              related_device->get_channels()->get_channel_value(*it, sub_value,
-                                                                NULL, NULL);
-              value->sub_value[n] = sub_value[0];
+              sub_channel_online = false;
+              if (related_device->get_channels()->get_channel_value(
+                      *it, _sub_value, &sub_channel_online, NULL) &&
+                  sub_channel_online) {
+                sub_value[n] = _sub_value[0];
+                sub_value_exists = true;
+              }
+
               related_device->releasePtr();
               related_device = NULL;
             }
@@ -700,6 +715,52 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
           n++;
           it++;
         } while (it != related_list.end() && n < SUPLA_CHANNELVALUE_SIZE);
+      }
+
+      if (sub_value_type) {
+        it = related_list.begin();
+        *sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
+
+        if (sub_value_exists && related_list.size() > 0 && *it > 0) {
+          related_device = device_container->findByChannelID(*it);
+          if (related_device) {
+            int rel_channel_func =
+                related_device->get_channels()->get_channel_func(*it);
+
+#ifdef SERVER_VERSION_23
+            int rel_channel_type =
+                related_device->get_channels()->get_channel_type(*it);
+#endif /*SERVER_VERSION_23*/
+
+            related_device->releasePtr();
+            related_device = NULL;
+
+            switch (rel_channel_func) {
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+              case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+                *sub_value_type = SUBV_TYPE_SENSOR;
+                break;
+              case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+                *sub_value_type = SUBV_TYPE_ELECTRICITY_MEASUREMENTS;
+#ifdef SERVER_VERSION_23
+                if (rel_channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+                  *sub_value_type = SUBV_TYPE_IC_MEASUREMENTS;
+                }
+#endif /*SERVER_VERSION_23*/
+                break;
+              case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+              case SUPLA_CHANNELFNC_IC_GAS_METER:
+              case SUPLA_CHANNELFNC_IC_WATER_METER:
+              case SUPLA_CHANNELFNC_IC_HEAT_METER:
+                *sub_value_type = SUBV_TYPE_IC_MEASUREMENTS;
+                break;
+            }
+          }
+        }
       }
     }
 

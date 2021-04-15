@@ -526,7 +526,7 @@ void supla_android_client_cb_location_update(void *_suplaclient,
 }
 
 jobject supla_android_client_channelvalue_to_jobject(
-    void *_suplaclient, void *user_data, TSuplaChannelValue *channel_value) {
+    void *_suplaclient, void *user_data, TSuplaChannelValue_B *channel_value) {
   ASC_VAR_DECLARATION(NULL);
   ENV_VAR_DECLARATION(NULL);
   jfieldID fid;
@@ -552,11 +552,14 @@ jobject supla_android_client_channelvalue_to_jobject(
   fid = supla_client_GetFieldID(env, cval, "SubValue", "[B");
   (*env)->SetObjectField(env, val, fid, arr);
 
+  fid = supla_client_GetFieldID(env, cval, "SubValueType", "S");
+  (*env)->SetShortField(env, val, fid, channel_value->sub_value_type);
+
   return val;
 }
 
 void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
-                                            TSC_SuplaChannel_C *channel) {
+                                            TSC_SuplaChannel_D *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -628,7 +631,8 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
 }
 
 void supla_android_client_cb_channel_value_update(
-    void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value) {
+    void *_suplaclient, void *user_data,
+    TSC_SuplaChannelValue_B *channel_value) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
   jfieldID fid;

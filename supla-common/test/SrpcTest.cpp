@@ -182,6 +182,65 @@ namespace {
     srpc = NULL;                                                           \
   }
 
+#define SRPC_CALL_CHANNEL_VALUEPACK_UPDATE_TEST_WITH_SIZE_PARAM(      \
+    spc_function, structure_name1, structure_name2, call_id,          \
+    expected_data_size1, expected_data_size2, rd_data_variable)       \
+  TEST_F(SrpcTest, spc_function##_with_over_size) {                   \
+    data_read_result = -1;                                            \
+    srpc = srpcInit();                                                \
+    ASSERT_FALSE(srpc == NULL);                                       \
+    DECLARE_WITH_RANDOM(structure_name1, pack);                       \
+    pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;                \
+    ASSERT_EQ(spc_function(srpc, &pack), 0);                          \
+    srpc_free(srpc);                                                  \
+    srpc = NULL;                                                      \
+  }                                                                   \
+                                                                      \
+  TEST_F(SrpcTest, spc_function##_with_zero_size) {                   \
+    data_read_result = -1;                                            \
+    srpc = srpcInit();                                                \
+    ASSERT_FALSE(srpc == NULL);                                       \
+    DECLARE_WITH_RANDOM(structure_name1, pack);                       \
+    pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;                \
+    ASSERT_EQ(spc_function(srpc, &pack), 0);                          \
+    srpc_free(srpc);                                                  \
+    srpc = NULL;                                                      \
+  }                                                                   \
+                                                                      \
+  TEST_F(SrpcTest, spc_function##_with_full_size) {                   \
+    data_read_result = -1;                                            \
+    srpc = srpcInit();                                                \
+    ASSERT_FALSE(srpc == NULL);                                       \
+    DECLARE_WITH_RANDOM(structure_name1, pack);                       \
+    pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT;                    \
+    ASSERT_GT(spc_function(srpc, &pack), 0);                          \
+    SendAndReceive(call_id, expected_data_size1);                     \
+    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);                \
+    ASSERT_EQ(0, memcmp(cr_rd.data.rd_data_variable, &pack,           \
+                        sizeof(structure_name1)));                    \
+    free(cr_rd.data.rd_data_variable);                                \
+    srpc_free(srpc);                                                  \
+    srpc = NULL;                                                      \
+  }                                                                   \
+                                                                      \
+  TEST_F(SrpcTest, spc_function##_with_minimum_size) {                \
+    data_read_result = -1;                                            \
+    srpc = srpcInit();                                                \
+    ASSERT_FALSE(srpc == NULL);                                       \
+    DECLARE_WITH_RANDOM(structure_name1, pack);                       \
+    pack.count = 1;                                                   \
+    ASSERT_GT(spc_function(srpc, &pack), 0);                          \
+    SendAndReceive(call_id, expected_data_size2);                     \
+    ASSERT_FALSE(cr_rd.data.rd_data_variable == NULL);                \
+    ASSERT_EQ(0, memcmp(cr_rd.data.rd_data_variable, &pack,           \
+                        sizeof(structure_name1) -                     \
+                            ((SUPLA_CHANNELVALUE_PACK_MAXCOUNT - 1) * \
+                             sizeof(structure_name2))));              \
+    free(cr_rd.data.rd_data_variable);                                \
+    srpc_free(srpc);                                                  \
+    srpc = NULL;                                                      \
+  }
+
 #define SRPC_CALL_BASIC_TEST_WITH_CAPTION(                        \
     spc_function, structure_name, call_id, expected_data_size1,   \
     expected_data_size2, rd_data_variable, max_size)              \
@@ -431,6 +490,11 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT,
               SUPLA_CS_CALL_SET_LOCATION_CAPTION,
               SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT};
+    case 15:
+      return {SUPLA_SC_CALL_CHANNEL_UPDATE_D,
+              SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
+              SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B,
+              SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B};
   }
 
   return {};
@@ -467,6 +531,8 @@ TEST_F(SrpcTest, call_allowed_v12) { srpcCallAllowed(12, get_call_ids(12)); }
 TEST_F(SrpcTest, call_allowed_v13) { srpcCallAllowed(13, get_call_ids(13)); }
 
 TEST_F(SrpcTest, call_allowed_v14) { srpcCallAllowed(14, get_call_ids(14)); }
+
+TEST_F(SrpcTest, call_allowed_v15) { srpcCallAllowed(15, get_call_ids(15)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   std::vector<int> all_calls;
@@ -2097,6 +2163,11 @@ SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_c,
                                   SUPLA_SC_CALL_CHANNEL_UPDATE_C, 82, 483,
                                   sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
+SRPC_CALL_BASIC_TEST_WITH_CAPTION(srpc_sc_async_channel_update_d,
+                                  TSC_SuplaChannel_D,
+                                  SUPLA_SC_CALL_CHANNEL_UPDATE_D, 83, 484,
+                                  sc_channel, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
 //---------------------------------------------------------
 // CHANNEL PACK UPDATE
 //---------------------------------------------------------
@@ -2114,6 +2185,11 @@ SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
     srpc_sc_async_channelpack_update_c, TSC_SuplaChannelPack_C,
     TSC_SuplaChannel_C, SUPLA_SC_CALL_CHANNELPACK_UPDATE_C, 8771, 9231,
     sc_channel_pack_c);
+
+SRPC_CALL_CHANNEL_PACK_UPDATE_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channelpack_update_d, TSC_SuplaChannelPack_D,
+    TSC_SuplaChannel_D, SUPLA_SC_CALL_CHANNELPACK_UPDATE_D, 8790, 9251,
+    sc_channel_pack_d);
 
 //---------------------------------------------------------
 // CHANNEL VALUE UPDATE
@@ -2135,6 +2211,26 @@ TEST_F(SrpcTest, call_channel_value_update) {
                       sizeof(TSC_SuplaChannelValue)));
 
   free(cr_rd.data.sc_channel_value);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_channel_value_update_b) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaChannelValue_B, value);
+
+  ASSERT_GT(srpc_sc_async_channel_value_update_b(srpc, &value), 0);
+  SendAndReceive(SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B, 46);
+
+  ASSERT_FALSE(cr_rd.data.sc_channel_value_b == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channel_value_b, &value,
+                      sizeof(TSC_SuplaChannelValue_B)));
+
+  free(cr_rd.data.sc_channel_value_b);
   srpc_free(srpc);
   srpc = NULL;
 }
@@ -2417,81 +2513,15 @@ TEST_F(SrpcTest, call_channelgroup_relation_pack_update_with_minimum_size) {
 // CHANNEL VALUE PACK
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_channelvalue_pack_update_with_over_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+SRPC_CALL_CHANNEL_VALUEPACK_UPDATE_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channelvalue_pack_update, TSC_SuplaChannelValuePack,
+    TSC_SuplaChannelValue, SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE, 471, 53,
+    sc_channelvalue_pack);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
-
-  pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;
-
-  ASSERT_EQ(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_channelvalue_pack_update_with_zero_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
-
-  pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT + 1;
-
-  ASSERT_EQ(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
-
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_channelvalue_pack_update_with_full_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
-
-  pack.count = SUPLA_CHANNELVALUE_PACK_MAXCOUNT;
-
-  ASSERT_GT(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
-  SendAndReceive(SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE, 471);
-
-  ASSERT_FALSE(cr_rd.data.sc_channelvalue_pack == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelvalue_pack, &pack,
-                      sizeof(TSC_SuplaChannelValuePack)));
-
-  free(cr_rd.data.sc_channelvalue_pack);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_channelvalue_pack_update_with_minimum_size) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaChannelValuePack, pack);
-
-  pack.count = 1;
-
-  ASSERT_GT(srpc_sc_async_channelvalue_pack_update(srpc, &pack), 0);
-  SendAndReceive(SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE, 53);
-
-  ASSERT_FALSE(cr_rd.data.sc_channelvalue_pack == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_channelvalue_pack, &pack,
-                      sizeof(TSC_SuplaChannelValuePack) -
-                          ((SUPLA_CHANNELVALUE_PACK_MAXCOUNT - 1) *
-                           sizeof(TSC_SuplaChannelValue))));
-
-  free(cr_rd.data.sc_channelvalue_pack);
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_CHANNEL_VALUEPACK_UPDATE_TEST_WITH_SIZE_PARAM(
+    srpc_sc_async_channelvalue_pack_update_b, TSC_SuplaChannelValuePack_B,
+    TSC_SuplaChannelValue_B, SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B, 491, 54,
+    sc_channelvalue_pack_b);
 
 //---------------------------------------------------------
 // CHANNEL EXTENDED VALUE PACK

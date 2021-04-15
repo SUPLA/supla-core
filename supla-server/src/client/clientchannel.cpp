@@ -204,14 +204,15 @@ bool supla_client_channel::remote_update_is_possible(void) {
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
 }
 
-void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
                                            char *online, supla_client *client) {
   bool result = false;
 
   if (client && client->getUser()) {
     unsigned _supla_int_t validity_time_sec = 0;
-    result = client->getUser()->get_channel_value(DeviceId, getId(), value,
-                                                  online, &validity_time_sec);
+    result = client->getUser()->get_channel_value(
+        DeviceId, getId(), value->value, value->sub_value,
+        &value->sub_value_type, online, &validity_time_sec);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
     }
@@ -254,6 +255,15 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
     }
 #endif /*SERVER_VERSION_23*/
   }
+}
+
+void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+                                           char *online, supla_client *client) {
+  TSuplaChannelValue_B value_b = {};
+  proto_get_value(&value_b, online, client);
+
+  memcpy(value->value, value_b.value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(value->sub_value, value_b.sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
@@ -306,9 +316,37 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
+void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
+                                     supla_client *client) {
+  memset(channel, 0, sizeof(TSC_SuplaChannel_D));
+
+  channel->Id = getId();
+  channel->DeviceID = getDeviceId();
+  channel->Type = this->Type;
+  channel->Func = Func;
+  channel->LocationID = this->LocationId;
+  channel->AltIcon = this->AltIcon;
+  channel->UserIcon = this->UserIcon;
+  channel->ManufacturerID = this->ManufacturerID;
+  channel->ProductID = this->ProductID;
+  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->Flags = this->Flags;
+
+  proto_get_value(&channel->value, &channel->online, client);
+  proto_get_caption(channel->Caption, &channel->CaptionSize,
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+}
+
 void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
+  channel_value->Id = getId();
+  proto_get_value(&channel_value->value, &channel_value->online, client);
+}
+
+void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
+                                     supla_client *client) {
+  memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = getId();
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }

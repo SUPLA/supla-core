@@ -42,6 +42,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)1, sizeof(TDCS_SuplaSetActivityTimeout));
   ASSERT_EQ((unsigned int)3, sizeof(TSDC_SuplaSetActivityTimeoutResult));
   ASSERT_EQ((unsigned int)16, sizeof(TSuplaChannelValue));
+  ASSERT_EQ((unsigned int)17, sizeof(TSuplaChannelValue_B));
   ASSERT_EQ((unsigned int)1029, sizeof(TSuplaChannelExtendedValue));
   ASSERT_EQ((unsigned int)410, sizeof(TSC_SuplaLocation));
   ASSERT_EQ((unsigned int)8208, sizeof(TSC_SuplaLocationPack));
@@ -62,8 +63,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelGroupNewValue));
   ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
   ASSERT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
+  ASSERT_EQ((unsigned int)23, sizeof(TSC_SuplaChannelValue_B));
   ASSERT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
   ASSERT_EQ((unsigned int)448, sizeof(TSC_SuplaChannelValuePack));
+  ASSERT_EQ((unsigned int)468, sizeof(TSC_SuplaChannelValuePack_B));
   ASSERT_EQ((unsigned int)10202, sizeof(TSC_SuplaChannelExtendedValuePack));
   ASSERT_EQ((unsigned int)435, sizeof(TSC_SuplaChannel));
   ASSERT_EQ((unsigned int)8708, sizeof(TSC_SuplaChannelPack));
@@ -71,6 +74,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
   ASSERT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
   ASSERT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
+  ASSERT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
   ASSERT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
   ASSERT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
   ASSERT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));
