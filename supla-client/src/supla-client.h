@@ -21,14 +21,6 @@
 
 #include "proto.h"
 
-typedef struct {
-  int Id;
-  int Function;
-  char Online;
-  TSuplaChannelValue value;
-  char *Caption;
-} TSuplaClientDeviceChannel;
-
 typedef void (*_suplaclient_cb_on_getversion_result)(
     void *_suplaclient, void *user_data, TSDC_SuplaGetVersionResult *result);
 typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
