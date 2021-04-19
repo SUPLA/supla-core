@@ -415,10 +415,9 @@ void *supla_mqtt_db::open_channelquery(int UserID, int DeviceID, int ChannelID,
       "`supla_iodevice` d ON d.`id` = c.`iodevice_id` LEFT JOIN "
       "`supla_location` l ON l.`id` = c.`location_id` LEFT JOIN "
       "`supla_location` dl ON dl.`id` = d.`location_id` LEFT JOIN `supla_user` "
-      "u ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = 1 AND email NOT "
-      "LIKE '%#%' AND email NOT LIKE '%+%' AND (? = 0 OR u.`id` = ?) AND (? = "
-      "0 OR d.`id` = ?) AND (? = 0 OR c.`id` = ?) ORDER BY u.`id`, d.`id`, "
-      "c.`id`";
+      "u ON u.id = c.`user_id` WHERE u.`mqtt_broker_enabled` = 1 AND (? = 0 OR "
+      "u.`id` = ?) AND (? = 0 OR d.`id` = ?) AND (? = 0 OR c.`id` = ?) ORDER "
+      "BY u.`id`, d.`id`, c.`id`";
 
   MYSQL_BIND pbind[9];
   memset(pbind, 0, sizeof(pbind));
