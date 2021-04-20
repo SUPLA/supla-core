@@ -1326,7 +1326,7 @@ bool supla_device_channels::get_channel_extendedvalue(
       if (result) {
         cev->Id = channel->getId();
 
-        switch (channel->getType()) {
+        switch (cev->value.type) {
           case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
           case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
             result = supla_channel_electricity_measurement::update_cev(
