@@ -45,7 +45,7 @@ void supla_client_channelgroup_value::proto_get(
 
   getContainer()->getClient()->getUser()->get_channel_value(
       DeviceId, getId(), channel_value->value.value,
-      channel_value->value.sub_value, NULL, &channel_value->online, NULL);
+      channel_value->value.sub_value, NULL, &channel_value->online, NULL, true);
 }
 
 void supla_client_channelgroup_value::proto_get(
@@ -56,5 +56,5 @@ void supla_client_channelgroup_value::proto_get(
   getContainer()->getClient()->getUser()->get_channel_value(
       DeviceId, getId(), channel_value->value.value,
       channel_value->value.sub_value, &channel_value->value.sub_value_type,
-      &channel_value->online, NULL);
+      &channel_value->online, NULL, true);
 }

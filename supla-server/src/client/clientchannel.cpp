@@ -212,7 +212,7 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
     unsigned _supla_int_t validity_time_sec = 0;
     result = client->getUser()->get_channel_value(
         DeviceId, getId(), value->value, value->sub_value,
-        &value->sub_value_type, online, &validity_time_sec);
+        &value->sub_value_type, online, &validity_time_sec, true);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
     }
@@ -225,35 +225,6 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
       *online = true;
     }
     memcpy(value->value, this->value, SUPLA_CHANNELVALUE_SIZE);
-  }
-
-  if (result) {
-#ifdef SERVER_VERSION_23
-    if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-#endif /*SERVER_VERSION_23*/
-      switch (Func) {
-#ifdef SERVER_VERSION_23
-        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-#endif /*SERVER_VERSION_23*/
-        case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-        case SUPLA_CHANNELFNC_IC_GAS_METER:
-        case SUPLA_CHANNELFNC_IC_WATER_METER:
-        case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-          TDS_ImpulseCounter_Value ds;
-          memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
-          memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-          TSC_ImpulseCounter_Value sc;
-          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
-              Param3, ds.counter);
-
-          memcpy(value->value, &sc, sizeof(TSC_ImpulseCounter_Value));
-          break;
-        }
-      }
-#ifdef SERVER_VERSION_23
-    }
-#endif /*SERVER_VERSION_23*/
   }
 }
 

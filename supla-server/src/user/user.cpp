@@ -654,7 +654,8 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                                    char value[SUPLA_CHANNELVALUE_SIZE],
                                    char sub_value[SUPLA_CHANNELVALUE_SIZE],
                                    char *sub_value_type, char *online,
-                                   unsigned _supla_int_t *validity_time_sec) {
+                                   unsigned _supla_int_t *validity_time_sec,
+                                   bool for_client) {
   bool result = false;
   memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
   memset(sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -665,8 +666,8 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
   supla_device *related_device = NULL;
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
-    result = device->get_channels()->get_channel_value(ChannelID, value, online,
-                                                       validity_time_sec);
+    result = device->get_channels()->get_channel_value(
+        ChannelID, value, online, validity_time_sec, for_client);
 
     if (result) {
       std::list<int> related_list =
@@ -680,7 +681,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
         related_device = device_container->findByChannelID(*it);
         if (related_device) {
           if (related_device->get_channels()->get_channel_value(
-                  *it, sub_value, &sub_channel_online, NULL) &&
+                  *it, sub_value, &sub_channel_online, NULL, for_client) &&
               sub_channel_online) {
             sub_value_exists = true;
           } else {
@@ -702,7 +703,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
             if (related_device) {
               sub_channel_online = false;
               if (related_device->get_channels()->get_channel_value(
-                      *it, _sub_value, &sub_channel_online, NULL) &&
+                      *it, _sub_value, &sub_channel_online, NULL, for_client) &&
                   sub_channel_online) {
                 sub_value[n] = _sub_value[0];
                 sub_value_exists = true;

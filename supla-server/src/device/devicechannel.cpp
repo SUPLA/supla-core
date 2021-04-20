@@ -1269,7 +1269,7 @@ void supla_device_channels::load(int UserID, int DeviceID) {
 
 bool supla_device_channels::get_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
-    unsigned _supla_int_t *validity_time_sec) {
+    unsigned _supla_int_t *validity_time_sec, bool for_client) {
   bool result = false;
 
   if (ChannelID) {
@@ -1284,6 +1284,36 @@ bool supla_device_channels::get_channel_value(
 
       if (validity_time_sec) {
         *validity_time_sec = channel->getValueValidityTimeSec();
+      }
+
+      if (for_client) {
+#ifdef SERVER_VERSION_23
+        if (channel->getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+#endif /*SERVER_VERSION_23*/
+          switch (channel->getFunc()) {
+#ifdef SERVER_VERSION_23
+            case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#endif /*SERVER_VERSION_23*/
+            case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+            case SUPLA_CHANNELFNC_IC_GAS_METER:
+            case SUPLA_CHANNELFNC_IC_WATER_METER:
+            case SUPLA_CHANNELFNC_IC_HEAT_METER: {
+              TDS_ImpulseCounter_Value ds;
+              memcpy(&ds, value, sizeof(TDS_ImpulseCounter_Value));
+              memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+              TSC_ImpulseCounter_Value sc;
+              sc.calculated_value =
+                  supla_channel_ic_measurement::get_calculated_i(
+                      channel->getParam3(), ds.counter);
+
+              memcpy(value, &sc, sizeof(TSC_ImpulseCounter_Value));
+              break;
+            }
+          }
+#ifdef SERVER_VERSION_23
+        }
+#endif /*SERVER_VERSION_23*/
       }
 
       result = true;
@@ -2112,7 +2142,7 @@ bool supla_device_channels::get_channel_complex_value(
           memset(&cv, 0, sizeof(TSuplaChannelValue));
 
           if (user->get_channel_value(device->getID(), ChannelID, cv.value,
-                                      cv.sub_value, NULL, NULL, NULL)) {
+                                      cv.sub_value, NULL, NULL, NULL, false)) {
             if (cv.sub_value[0] > 0) {
               value->hi = true;
             } else if ((value->function ==

@@ -177,7 +177,8 @@ class supla_user {
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          char sub_value[SUPLA_CHANNELVALUE_SIZE],
                          char *sub_value_type, char *online,
-                         unsigned _supla_int_t *validity_time_sec);
+                         unsigned _supla_int_t *validity_time_sec,
+                         bool for_client);
 
   bool set_device_channel_value(event_source_type eventSourceType, int SenderID,
                                 int DeviceID, int ChannelID, int GroupID,
