@@ -68,21 +68,21 @@ class supla_channel_electricity_measurement {
  private:
   TElectricityMeter_ExtendedValue_V2 em_ev;
   int ChannelId;
-  void assign(int Param2, char *TextParam1,
+  void assign(int Param2, const char *TextParam1,
               TElectricityMeter_ExtendedValue_V2 *em_ev);
 
-  static void set_costs(int Param2, char *TextParam1,
+  static void set_costs(int Param2, const char *TextParam1,
                         TElectricityMeter_ExtendedValue *em_ev);
-  static void set_costs(int Param2, char *TextParam1,
+  static void set_costs(int Param2, const char *TextParam1,
                         TElectricityMeter_ExtendedValue_V2 *em_ev);
 
  public:
   supla_channel_electricity_measurement(int ChannelId,
                                         TElectricityMeter_ExtendedValue *em_ev,
-                                        int Param2, char *TextParam1);
+                                        int Param2, const char *TextParam1);
   supla_channel_electricity_measurement(
       int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
-      char *TextParam1);
+      const char *TextParam1);
 
   int getChannelId(void);
   void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
@@ -90,7 +90,7 @@ class supla_channel_electricity_measurement {
   void getCurrency(char currency[4]);
 
   static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
-                         char *TextParam1, bool convert_to_v1);
+                         const char *TextParam1, bool convert_to_v1);
   static void free(void *emarr);
 };
 
@@ -109,8 +109,8 @@ class supla_channel_ic_measurement {
  public:
   supla_channel_ic_measurement(int ChannelId, int Func,
                                TDS_ImpulseCounter_Value *ic_val,
-                               char *TextParam1, char *TextParam2, int Param2,
-                               int Param3);
+                               const char *TextParam1, const char *TextParam2,
+                               int Param2, int Param3);
 
   int getChannelId(void);
   _supla_int_t getTotalCost(void);
@@ -123,14 +123,14 @@ class supla_channel_ic_measurement {
 
   static void set_default_unit(int Func, char unit[9]);
   static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Func,
-                         int Param2, int Param3, char *TextParam1,
-                         char *TextParam2);
+                         int Param2, int Param3, const char *TextParam1,
+                         const char *TextParam2);
 
   static double get_calculated_d(_supla_int_t impulses_per_unit,
                                  unsigned _supla_int64_t counter);
   static _supla_int64_t get_calculated_i(_supla_int_t impulses_per_unit,
                                          unsigned _supla_int64_t counter);
-  static void get_cost_and_currency(char *TextParam1, int Param2,
+  static void get_cost_and_currency(const char *TextParam1, int Param2,
                                     char currency[3], _supla_int_t *total_cost,
                                     _supla_int_t *price_per_unit, double count);
   static void free(void *icarr);
@@ -181,8 +181,8 @@ class supla_device_channel {
  public:
   supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
                        int Param1, int Param2, int Param3, int Param4,
-                       char *TextParam1, char *TextParam2, char *TextParam3,
-                       bool Hidden, unsigned int Flags,
+                       const char *TextParam1, const char *TextParam2,
+                       const char *TextParam3, bool Hidden, unsigned int Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
                        unsigned _supla_int_t validity_time_sec);
   virtual ~supla_device_channel();
@@ -198,6 +198,9 @@ class supla_device_channel {
   int getParam2(void);
   int getParam3(void);
   int getParam4(void);
+  const char *getTextParam1(void);
+  const char *getTextParam2(void);
+  const char *getTextParam3(void);
   bool getHidden(void);
   unsigned int getFlags();
   bool isOffline(void);
@@ -271,8 +274,8 @@ class supla_device_channels {
   virtual ~supla_device_channels();
   void add_channel(int Id, int Number, int UserID, int Type, int Func,
                    int Param1, int Param2, int Param3, int Param4,
-                   char *TextParam1, char *TextParam2, char *TextParam3,
-                   bool Hidden, unsigned int Flags,
+                   const char *TextParam1, const char *TextParam2,
+                   const char *TextParam3, bool Hidden, unsigned int Flags,
                    const char value[SUPLA_CHANNELVALUE_SIZE],
                    unsigned _supla_int_t validity_time_sec);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
@@ -280,6 +283,9 @@ class supla_device_channels {
                          unsigned _supla_int_t *validity_time_sec);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
+  bool get_channel_extendedvalue(int ChannelID,
+                                 TSC_SuplaChannelExtendedValue *cev,
+                                 bool convert_to_v1);
   bool get_channel_double_value(int ChannelID, double *Value);
   supla_channel_temphum *get_channel_temp_and_humidity_value(int ChannelID);
   bool get_channel_temperature_value(int ChannelID, double *Value);
