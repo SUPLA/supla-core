@@ -175,3 +175,23 @@ char w1_dht_read(const char *w1, double *temp, double *humidity,
   return 0;
 #endif
 }
+
+bool read_file_to_string(const std::string & p_name, std::string & p_content)
+{
+    // We create the file object, saying I want to read it
+    std::fstream file(p_name.c_str(), std::fstream::in) ;
+
+    // We verify if the file was successfully opened
+    if(file.is_open())
+    {
+        // We use the standard getline function to read the file into
+        // a std::string, stoping only at "\0"
+        std::getline(file, p_content, '\0') ;
+
+        // We return the success of the operation
+        return ! file.bad() ;
+    }
+
+    // The file was not successfully opened, so returning false
+    return false ;
+}
