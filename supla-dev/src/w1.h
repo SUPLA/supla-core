@@ -36,4 +36,6 @@ char file_read_ac_data(const char *filepath, int *mode, int *power,
 }
 #endif
 
+bool read_file_to_string(const std::string & p_name, std::string & p_content);
+
 #endif /* W1_H_ */
