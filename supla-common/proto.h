@@ -115,6 +115,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_GUID_SIZE 16
 #define SUPLA_GUID_HEXSIZE 33
+#define SUPLA_FINGERPRINT_SIZE 16
+#define SUPLA_FINGERPRINT_HEXSIZE 33
 #define SUPLA_LOCATION_PWD_MAXSIZE 33
 #define SUPLA_ACCESSID_PWD_MAXSIZE 33
 #define SUPLA_LOCATION_CAPTION_MAXSIZE SUPLA_CAPTION_MAXSIZE
@@ -153,6 +155,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_REGISTER_DEVICE_D 68  // ver. >= 7
 #define SUPLA_DS_CALL_REGISTER_DEVICE_E 69  // ver. >= 10
 #define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT 70
+#define SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B 75  // ver. >= 15
 #define SUPLA_CS_CALL_REGISTER_CLIENT 80
 #define SUPLA_CS_CALL_REGISTER_CLIENT_B 85  // ver. >= 6
 #define SUPLA_CS_CALL_REGISTER_CLIENT_C 86  // ver. >= 7
@@ -698,6 +701,16 @@ typedef struct {
   unsigned char version;
   unsigned char version_min;
 } TSD_SuplaRegisterDeviceResult;
+
+typedef struct {
+  // server -> device
+
+  _supla_int_t result_code;
+  unsigned char activity_timeout;
+  unsigned char version;
+  unsigned char version_min;
+  char server_fingerprint[SUPLA_FINGERPRINT_SIZE];
+} TSD_SuplaRegisterDeviceResult_B;  // ver. >= 15
 
 typedef struct {
   // device -> server

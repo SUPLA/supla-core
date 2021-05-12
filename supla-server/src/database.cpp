@@ -22,6 +22,7 @@
 #include <mysql.h>
 #include <stdio.h>
 #include <time.h>
+
 #include "safearray.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
@@ -368,7 +369,8 @@ int database::get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
 
 int database::get_device(int DeviceID, bool *device_enabled,
                          int *original_location_id, int *location_id,
-                         bool *location_enabled) {
+                         bool *location_enabled,
+                         char ServerFingerprint[SUPLA_FINGERPRINT_SIZE]) {
   if (_mysql == NULL || DeviceID == 0) return 0;
 
   MYSQL_STMT *stmt = NULL;
@@ -386,15 +388,19 @@ int database::get_device(int DeviceID, bool *device_enabled,
 
   bool result = false;
 
-  if (stmt_execute((void **)&stmt,
-                   "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
-                   "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, "
-                   "0), IFNULL(CAST(l.`enabled` AS unsigned integer), 0) "
-                   "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
-                   "l ON l.id = d.location_id WHERE d.id = ?",
-                   pbind, 1, true)) {
-    MYSQL_BIND rbind[4];
+  if (stmt_execute(
+          (void **)&stmt,
+          "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
+          "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, 0), "
+          "IFNULL(CAST(l.`enabled` AS unsigned integer), 0) `l_enabled`, "
+          "d.server_fingerprint FROM supla_iodevice d LEFT JOIN supla_location "
+          "l ON l.id = d.location_id WHERE d.id = ?",
+          pbind, 1, true)) {
+    MYSQL_BIND rbind[5];
     memset(rbind, 0, sizeof(rbind));
+
+    unsigned long fingerprint_size = 0;
+    my_bool fingerprint_is_null = true;
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&_device_enabled;
@@ -408,6 +414,12 @@ int database::get_device(int DeviceID, bool *device_enabled,
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
     rbind[3].buffer = (char *)&_location_enabled;
 
+    rbind[4].buffer_type = MYSQL_TYPE_BLOB;
+    rbind[4].buffer = ServerFingerprint;
+    rbind[4].buffer_length = SUPLA_FINGERPRINT_SIZE;
+    rbind[4].is_null = &fingerprint_is_null;
+    rbind[4].length = &fingerprint_size;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -419,6 +431,10 @@ int database::get_device(int DeviceID, bool *device_enabled,
         *original_location_id = _original_location_id;
         *location_id = _location_id;
         *location_enabled = _location_enabled == 1;
+
+        if (fingerprint_size != SUPLA_FINGERPRINT_SIZE || fingerprint_is_null) {
+          memset(ServerFingerprint, 0, SUPLA_FINGERPRINT_SIZE);
+        }
 
         result = true;
       }
@@ -500,16 +516,20 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
                          const char *AuthKey, const char *Name,
                          unsigned int ipv4, const char *softver,
                          int proto_version, short ManufacturerID,
-                         short ProductID, int Flags, int UserID) {
+                         short ProductID, int Flags, int UserID,
+                         char ServerFingerprint[SUPLA_FINGERPRINT_SIZE]) {
   int DeviceID = 0;
 
   char *AuthKeyHashHEX = NULL;
 
-  MYSQL_BIND pbind[12];
+  MYSQL_BIND pbind[13];
   memset(pbind, 0, sizeof(pbind));
 
   char GUIDHEX[SUPLA_GUID_HEXSIZE];
   st_guid2hex(GUIDHEX, GUID);
+
+  char ServerFingerprintHex[SUPLA_FINGERPRINT_HEXSIZE];
+  st_fingerprint2hex(ServerFingerprintHex, ServerFingerprint);
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&LocationID;
@@ -563,12 +583,16 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
   pbind[11].buffer_type = MYSQL_TYPE_LONG;
   pbind[11].buffer = (char *)&Flags;
 
+  pbind[12].buffer_type = MYSQL_TYPE_STRING;
+  pbind[12].buffer = (char *)ServerFingerprintHex;
+  pbind[12].buffer_length = SUPLA_FINGERPRINT_HEXSIZE - 1;
+
   const char sql[] =
       "CALL  "
-      "`supla_add_iodevice`(?,?,unhex(?),?,?,?,?,?,?,?,"
-      "unhex(?),?,@id)";
+      "`supla_add_iodevice`(?,?,unhex(?),?,?,?,?,?,?,?,unhex(?),?,unhex(?),@"
+      "id)";
 
-  DeviceID = add_by_proc_call(sql, pbind, 12);
+  DeviceID = add_by_proc_call(sql, pbind, 13);
 
   if (AuthKeyHashHEX) {
     free(AuthKeyHashHEX);
@@ -581,10 +605,14 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
 int database::update_device(int DeviceID, int OriginalLocationID,
                             const char *AuthKey, const char *Name,
                             unsigned int ipv4, const char *softver,
-                            int proto_version) {
+                            int proto_version,
+                            char ServerFingerprint[SUPLA_FINGERPRINT_SIZE]) {
   char *AuthKeyHashHEX = NULL;
 
-  MYSQL_BIND pbind[7];
+  char ServerFingerprintHex[SUPLA_FINGERPRINT_HEXSIZE];
+  st_fingerprint2hex(ServerFingerprintHex, ServerFingerprint);
+
+  MYSQL_BIND pbind[8];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_STRING;
@@ -622,15 +650,19 @@ int database::update_device(int DeviceID, int OriginalLocationID,
     pbind[5].buffer_length = strnlen(AuthKeyHashHEX, BCRYPT_HASH_MAXSIZE * 2);
   }
 
-  pbind[6].buffer_type = MYSQL_TYPE_LONG;
-  pbind[6].buffer = (char *)&DeviceID;
+  pbind[6].buffer_type = MYSQL_TYPE_STRING;
+  pbind[6].buffer = (char *)ServerFingerprintHex;
+  pbind[6].buffer_length = SUPLA_FINGERPRINT_HEXSIZE - 1;
+
+  pbind[7].buffer_type = MYSQL_TYPE_LONG;
+  pbind[7].buffer = (char *)&DeviceID;
 
   const char sql[] =
       "CALL "
-      "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?)";
+      "`supla_update_iodevice`(?,?,?,?,?,unhex(?),unhex(?),?)";
 
   MYSQL_STMT *stmt = NULL;
-  if (!stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+  if (!stmt_execute((void **)&stmt, sql, pbind, 8, true)) {
     DeviceID = 0;
   }
 

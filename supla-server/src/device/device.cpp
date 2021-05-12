@@ -16,19 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "device.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <unistd.h>
+
 #include "database.h"
-#include "device.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
+#include "tools.h"
 #include "user.h"
 
 supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
@@ -110,6 +112,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   int DeviceFlags = 0;
   short ManufacturerID = 0;
   short ProductID = 0;
+  char ServerFingerprint[SUPLA_FINGERPRINT_SIZE] = {};
 
   if (register_device_c != NULL) {
     GUID = register_device_c->GUID;
@@ -186,11 +189,16 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
         db->start_transaction();
 
-        int DeviceID = db->get_device(db->get_device_id(UserID, GUID),
-                                      &DeviceEnabled, &_OriginalLocationID,
-                                      &_LocationID, &LocationEnabled);
+        int DeviceID =
+            db->get_device(db->get_device_id(UserID, GUID), &DeviceEnabled,
+                           &_OriginalLocationID, &_LocationID, &LocationEnabled,
+                           ServerFingerprint);
 
         if (LocationID == 0) LocationID = _LocationID;
+
+        if (DeviceID == 0 || !st_valid_fingerprint(ServerFingerprint)) {
+          st_fingerprint_gen(ServerFingerprint);
+        }
 
         if (DeviceID == 0) {
           if (false == db->get_device_reg_enabled(UserID)) {
@@ -221,10 +229,11 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               _LocationID = LocationID;
 
-              DeviceID = db->add_device(LocationID, GUID, AuthKey, Name,
-                                        getSvrConn()->getClientIpv4(), SoftVer,
-                                        proto_version, ManufacturerID,
-                                        ProductID, DeviceFlags, UserID);
+              DeviceID =
+                  db->add_device(LocationID, GUID, AuthKey, Name,
+                                 getSvrConn()->getClientIpv4(), SoftVer,
+                                 proto_version, ManufacturerID, ProductID,
+                                 DeviceFlags, UserID, ServerFingerprint);
             }
           }
         }
@@ -333,9 +342,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                 if (LocationID == _LocationID) _OriginalLocationID = LocationID;
               }
 
-              DeviceID = db->update_device(
-                  DeviceID, _OriginalLocationID, AuthKey, Name,
-                  getSvrConn()->getClientIpv4(), SoftVer, proto_version);
+              DeviceID =
+                  db->update_device(DeviceID, _OriginalLocationID, AuthKey,
+                                    Name, getSvrConn()->getClientIpv4(),
+                                    SoftVer, proto_version, ServerFingerprint);
             }
 
             if (DeviceID != 0) {
@@ -383,12 +393,22 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     usleep(2000000);
   }
 
-  TSD_SuplaRegisterDeviceResult srdr;
-  srdr.result_code = resultcode;
-  srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
-  srdr.version_min = SUPLA_PROTO_VERSION_MIN;
-  srdr.version = SUPLA_PROTO_VERSION;
-  srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);
+  if (getSvrConn()->getProtocolVersion() >= 15) {
+    TSD_SuplaRegisterDeviceResult_B srdr;
+    srdr.result_code = resultcode;
+    srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srdr.version_min = SUPLA_PROTO_VERSION_MIN;
+    srdr.version = SUPLA_PROTO_VERSION;
+    memcpy(srdr.server_fingerprint, ServerFingerprint, SUPLA_FINGERPRINT_SIZE);
+    srpc_sd_async_registerdevice_result_b(getSvrConn()->srpc(), &srdr);
+  } else {
+    TSD_SuplaRegisterDeviceResult srdr;
+    srdr.result_code = resultcode;
+    srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srdr.version_min = SUPLA_PROTO_VERSION_MIN;
+    srdr.version = SUPLA_PROTO_VERSION;
+    srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);
+  }
 
   return result;
 }

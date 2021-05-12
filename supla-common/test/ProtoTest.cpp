@@ -55,6 +55,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)3264, sizeof(TDS_SuplaRegisterDevice_D));
   ASSERT_EQ((unsigned int)3784, sizeof(TDS_SuplaRegisterDevice_E));
   ASSERT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
+  ASSERT_EQ((unsigned int)23, sizeof(TSD_SuplaRegisterDeviceResult_B));
   ASSERT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
   ASSERT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
   ASSERT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
