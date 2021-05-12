@@ -286,7 +286,7 @@ TEST_F(ToolsTest, st_fingerprint) {
   for (int a = 0; a < 1000000; a++) {
     char fingerprint[SUPLA_FINGERPRINT_SIZE] = {};
     st_fingerprint_gen(fingerprint);
-    ASSERT_TRUE(st_valid_fingerprint(fingerprint) == 1);
+    ASSERT_EQ(1, st_valid_fingerprint(fingerprint));
   }
 }
 
