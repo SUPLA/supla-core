@@ -656,8 +656,7 @@ void st_fingerprint_gen(char fingerprint[SUPLA_FINGERPRINT_SIZE]) {
   gettimeofday(&tv, NULL);
 
   for (a = 0; a < SUPLA_FINGERPRINT_SIZE; a++) {
-    fingerprint[a] =
-        (unsigned char)((rand() + tv.tv_usec) % 254) + 1;  // NOLINT
+    fingerprint[a] = (unsigned char)((rand() + tv.tv_usec) % 254) + 1;
   }
 #else
   unsigned int seed = tv.tv_sec + tv.tv_usec;
