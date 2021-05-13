@@ -224,8 +224,8 @@ void supla_client_locationpack_update(TSuplaClientData *scd,
   srpc_cs_async_get_next(scd->srpc);
 }
 
-void supla_client_channel_update_c(TSuplaClientData *scd,
-                                   TSC_SuplaChannel_C *channel, char gn) {
+void supla_client_channel_update_d(TSuplaClientData *scd,
+                                   TSC_SuplaChannel_D *channel, char gn) {
   supla_client_set_str(channel->Caption, &channel->CaptionSize,
                        SUPLA_CHANNEL_CAPTION_MAXSIZE);
 
@@ -301,15 +301,31 @@ void supla_client_channelgroup_relation_pack_update(
   srpc_cs_async_get_next(scd->srpc);
 }
 
-void supla_client_channel_value_update(TSuplaClientData *scd,
-                                       TSC_SuplaChannelValue *channel_value,
-                                       char gn) {
+void supla_client_channel_value_update_b(TSuplaClientData *scd,
+                                         TSC_SuplaChannelValue_B *channel_value,
+                                         char gn) {
   if (scd->cfg.cb_channel_value_update)
     scd->cfg.cb_channel_value_update(scd, scd->cfg.user_data, channel_value);
 
   if (gn == 1) {
     srpc_cs_async_get_next(scd->srpc);
   }
+}
+
+void supla_client_channel_value_update(TSuplaClientData *scd,
+                                       TSC_SuplaChannelValue *channel_value,
+                                       char gn) {
+  TSC_SuplaChannelValue_B value = {};
+
+  value.EOL = channel_value->EOL;
+  value.Id = channel_value->Id;
+  value.online = channel_value->online;
+  memcpy(value.value.value, channel_value->value.value,
+         SUPLA_CHANNELVALUE_SIZE);
+  memcpy(value.value.sub_value, channel_value->value.sub_value,
+         SUPLA_CHANNELVALUE_SIZE);
+
+  supla_client_channel_value_update_b(scd, &value, gn);
 }
 
 void supla_client_channel_extendedvalue_update(
@@ -327,6 +343,19 @@ void supla_client_channelvalue_pack_update(TSuplaClientData *scd,
   if (pack && pack->count <= SUPLA_CHANNELVALUE_PACK_MAXCOUNT) {
     for (a = 0; a < pack->count; a++) {
       supla_client_channel_value_update(scd, &pack->items[a], 0);
+    }
+  }
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelvalue_pack_update_b(
+    TSuplaClientData *scd, TSC_SuplaChannelValuePack_B *pack) {
+  int a;
+
+  if (pack && pack->count <= SUPLA_CHANNELVALUE_PACK_MAXCOUNT) {
+    for (a = 0; a < pack->count; a++) {
+      supla_client_channel_value_update_b(scd, &pack->items[a], 0);
     }
   }
 
@@ -395,6 +424,36 @@ void supla_client_channel_b2c(TSC_SuplaChannel_B *b, TSC_SuplaChannel_C *c) {
   memcpy(c->Caption, b->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
+void supla_client_channel_c2d(TSC_SuplaChannel_C *c, TSC_SuplaChannel_D *d) {
+  d->EOL = c->EOL;
+  d->Id = c->Id;
+  d->DeviceID = c->DeviceID;
+  d->LocationID = c->LocationID;
+  d->Func = c->Func;
+  d->AltIcon = c->AltIcon;
+  d->Type = c->Type;
+  d->Flags = c->Flags;
+  d->UserIcon = c->UserIcon;
+  d->ManufacturerID = c->ManufacturerID;
+  d->ProductID = c->ProductID;
+  d->ProtocolVersion = c->ProtocolVersion;
+  d->online = c->online;
+  d->CaptionSize = c->CaptionSize;
+  memcpy(d->Caption, c->Caption, SUPLA_CHANNEL_CAPTION_MAXSIZE);
+
+  d->value.sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
+  memcpy(d->value.value, c->value.value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(d->value.sub_value, c->value.sub_value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+void supla_client_channel_update_c(TSuplaClientData *scd,
+                                   TSC_SuplaChannel_C *channel_c, char gn) {
+  TSC_SuplaChannel_D channel_d = {};
+
+  supla_client_channel_c2d(channel_c, &channel_d);
+  supla_client_channel_update_d(scd, &channel_d, gn);
+}
+
 void supla_client_channel_update_b(TSuplaClientData *scd,
                                    TSC_SuplaChannel_B *channel_b, char gn) {
   TSC_SuplaChannel_C channel_c;
@@ -439,6 +498,16 @@ void supla_client_channelpack_update_c(TSuplaClientData *scd,
 
   for (a = 0; a < pack->count; a++)
     supla_client_channel_update_c(scd, &pack->items[a], 0);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_channelpack_update_d(TSuplaClientData *scd,
+                                       TSC_SuplaChannelPack_D *pack) {
+  int a;
+
+  for (a = 0; a < pack->count; a++)
+    supla_client_channel_update_d(scd, &pack->items[a], 0);
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -669,6 +738,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           supla_client_channel_update_c(scd, rd.data.sc_channel_c, 1);
         }
         break;
+      case SUPLA_SC_CALL_CHANNEL_UPDATE_D:
+        if (rd.data.sc_channel_d) {
+          supla_client_channel_update_d(scd, rd.data.sc_channel_d, 1);
+        }
+        break;
       case SUPLA_SC_CALL_CHANNELPACK_UPDATE:
         if (rd.data.sc_channel_pack) {
           supla_client_channelpack_update(scd, rd.data.sc_channel_pack);
@@ -682,6 +756,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
       case SUPLA_SC_CALL_CHANNELPACK_UPDATE_C:
         if (rd.data.sc_channel_pack_c) {
           supla_client_channelpack_update_c(scd, rd.data.sc_channel_pack_c);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNELPACK_UPDATE_D:
+        if (rd.data.sc_channel_pack_d) {
+          supla_client_channelpack_update_d(scd, rd.data.sc_channel_pack_d);
         }
         break;
       case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE:
@@ -711,6 +790,12 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         if (rd.data.sc_channelvalue_pack) {
           supla_client_channelvalue_pack_update(scd,
                                                 rd.data.sc_channelvalue_pack);
+        }
+        break;
+      case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B:
+        if (rd.data.sc_channelvalue_pack_b) {
+          supla_client_channelvalue_pack_update_b(
+              scd, rd.data.sc_channelvalue_pack_b);
         }
         break;
       case SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE:

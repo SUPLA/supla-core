@@ -34,6 +34,7 @@ class supla_client_channel : public supla_client_objcontainer_item {
   int Param1;
   int Param2;
   int Param3;
+  int Param4;
   char *TextParam1;
   char *TextParam2;
   char *TextParam3;
@@ -54,13 +55,15 @@ class supla_client_channel : public supla_client_objcontainer_item {
   _supla_int64_t get_calculated_value(_supla_int_t impulses_per_unit,
                                       unsigned _supla_int64_t counter);
 
+  void proto_get_value(TSuplaChannelValue_B *value, char *online,
+                       supla_client *client);
   void proto_get_value(TSuplaChannelValue *value, char *online,
                        supla_client *client);
 
  public:
   supla_client_channel(supla_client_channels *Container, int Id, int DeviceId,
                        int LocationID, int Type, int Func, int Param1,
-                       int Param2, int Param3, char *TextParam1,
+                       int Param2, int Param3, int Param4, char *TextParam1,
                        char *TextParam2, char *TextParam3, const char *Caption,
                        int AltIcon, int UserIcon, short ManufacturerID,
                        short ProductID, unsigned char ProtocolVersion,
@@ -72,7 +75,9 @@ class supla_client_channel : public supla_client_objcontainer_item {
   void proto_get(TSC_SuplaChannel *channel, supla_client *client);
   void proto_get(TSC_SuplaChannel_B *channel, supla_client *client);
   void proto_get(TSC_SuplaChannel_C *channel, supla_client *client);
+  void proto_get(TSC_SuplaChannel_D *channel, supla_client *client);
   void proto_get(TSC_SuplaChannelValue *channel_value, supla_client *client);
+  void proto_get(TSC_SuplaChannelValue_B *channel_value, supla_client *client);
   bool proto_get(TSC_SuplaChannelExtendedValue *cev, supla_client *client);
   bool get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg);
   int getType();

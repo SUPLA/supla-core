@@ -49,7 +49,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(612);
+  waitForPublications(613);
   // print_expected();
 
   const char *expectedData[] = {
@@ -837,8 +837,8 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"*Yunshan\",\"sw\":\"2.7.2\"},\"name\":\"Door lock "
       "operation\",\"uniq_id\":\"supla_1835\",\"qos\":0,\"ret\":false,\"opt\":"
       "false,\"cmd_t\":\"~/"
-      "execute_action\",\"dev_cla\":\"door\",\"pl_open\":\"OPEN\",\"pl_"
-      "stop\":\"\",\"pl_cls\":\"OPEN\",\"state_topic\":\"~/state/"
+      "execute_action\",\"dev_cla\":\"door\",\"pl_open\":\"OPEN\",\"pl_stop\":"
+      "\"\",\"pl_cls\":\"OPEN\",\"state_topic\":\"~/state/"
       "hi\",\"state_open\":\"false\",\"state_closed\":\"true\",\"avty_t\":\"~/"
       "state/connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\"}",
       "supla/4d3e49b9f3b202b1092fbfdc48d8d04f/devices/983/channels/1835/state/"
@@ -926,6 +926,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "false",
       "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/state/"
       "hi",
+      NULL,
+      "supla/3281677315ff159f91471b34828f603b/devices/563/channels/1055/state/"
+      "partial_hi",
       NULL,
       "supla/46948d474db1b5e3cccf2c89281414c2/devices/411/channels/821/type",
       "DIMMER",
@@ -2235,7 +2238,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
 
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
-  waitForPublications(612);
+  waitForPublications(613);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
@@ -2327,7 +2330,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
 
 TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForConnection();
-  waitForPublications(612);
+  waitForPublications(613);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);

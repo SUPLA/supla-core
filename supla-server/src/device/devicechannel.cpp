@@ -156,7 +156,7 @@ char supla_channel_tharr_clean(void *ptr) {
 
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     int ChannelId, TElectricityMeter_ExtendedValue *em_ev, int Param2,
-    char *TextParam1) {
+    const char *TextParam1) {
   this->ChannelId = ChannelId;
   if (em_ev == NULL) {
     assign(Param2, TextParam1, NULL);
@@ -169,13 +169,14 @@ supla_channel_electricity_measurement::supla_channel_electricity_measurement(
 
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
-    char *TextParam1) {
+    const char *TextParam1) {
   this->ChannelId = ChannelId;
   assign(Param2, TextParam1, em_ev);
 }
 
 void supla_channel_electricity_measurement::assign(
-    int Param2, char *TextParam1, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+    int Param2, const char *TextParam1,
+    TElectricityMeter_ExtendedValue_V2 *em_ev) {
   if (em_ev == NULL) {
     memset(&this->em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
   } else {
@@ -215,7 +216,8 @@ void supla_channel_electricity_measurement::getCurrency(char currency[4]) {
 
 // static
 void supla_channel_electricity_measurement::set_costs(
-    int Param2, char *TextParam1, TElectricityMeter_ExtendedValue *em_ev) {
+    int Param2, const char *TextParam1,
+    TElectricityMeter_ExtendedValue *em_ev) {
   double sum = em_ev->total_forward_active_energy[0] * 0.00001;
   sum += em_ev->total_forward_active_energy[1] * 0.00001;
   sum += em_ev->total_forward_active_energy[2] * 0.00001;
@@ -227,7 +229,8 @@ void supla_channel_electricity_measurement::set_costs(
 
 // static
 void supla_channel_electricity_measurement::set_costs(
-    int Param2, char *TextParam1, TElectricityMeter_ExtendedValue_V2 *em_ev) {
+    int Param2, const char *TextParam1,
+    TElectricityMeter_ExtendedValue_V2 *em_ev) {
   double sum = em_ev->total_forward_active_energy[0] * 0.00001;
   sum += em_ev->total_forward_active_energy[1] * 0.00001;
   sum += em_ev->total_forward_active_energy[2] * 0.00001;
@@ -248,7 +251,7 @@ void supla_channel_electricity_measurement::set_costs(
 
 // static
 bool supla_channel_electricity_measurement::update_cev(
-    TSC_SuplaChannelExtendedValue *cev, int Param2, char *TextParam1,
+    TSC_SuplaChannelExtendedValue *cev, int Param2, const char *TextParam1,
     bool convert_to_v1) {
   if (cev->value.type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
     TElectricityMeter_ExtendedValue em_ev;
@@ -287,8 +290,8 @@ void supla_channel_electricity_measurement::free(void *emarr) {
 //-----------------------------------------------------
 
 supla_channel_ic_measurement::supla_channel_ic_measurement(
-    int ChannelId, int Func, TDS_ImpulseCounter_Value *ic_val, char *TextParam1,
-    char *TextParam2, int Param2, int Param3) {
+    int ChannelId, int Func, TDS_ImpulseCounter_Value *ic_val,
+    const char *TextParam1, const char *TextParam2, int Param2, int Param3) {
   this->ChannelId = ChannelId;
   this->totalCost = 0;
   this->pricePerUnit = 0;
@@ -371,7 +374,7 @@ void supla_channel_ic_measurement::set_default_unit(int Func, char unit[9]) {
 // static
 bool supla_channel_ic_measurement::update_cev(
     TSC_SuplaChannelExtendedValue *cev, int Func, int Param2, int Param3,
-    char *TextParam1, char *TextParam2) {
+    const char *TextParam1, const char *TextParam2) {
   TSC_ImpulseCounter_ExtendedValue ic_ev;
   if (srpc_evtool_v1_extended2icextended(&cev->value, &ic_ev)) {
     ic_ev.calculated_value = 0;
@@ -420,8 +423,8 @@ _supla_int64_t supla_channel_ic_measurement::get_calculated_i(
 
 // static
 void supla_channel_ic_measurement::get_cost_and_currency(
-    char *TextParam1, int Param2, char currency[3], _supla_int_t *total_cost,
-    _supla_int_t *price_per_unit, double count) {
+    const char *TextParam1, int Param2, char currency[3],
+    _supla_int_t *total_cost, _supla_int_t *price_per_unit, double count) {
   currency[0] = 0;
   *total_cost = 0;
   *price_per_unit = 0;
@@ -478,8 +481,9 @@ void supla_channel_thermostat_measurement::free(void *tharr) {
 
 supla_device_channel::supla_device_channel(
     int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
-    int Param3, char *TextParam1, char *TextParam2, char *TextParam3,
-    bool Hidden, unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    int Param3, int Param4, const char *TextParam1, const char *TextParam2,
+    const char *TextParam3, bool Hidden, unsigned int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec) {
   this->Id = Id;
   this->Number = Number;
@@ -489,6 +493,7 @@ supla_device_channel::supla_device_channel(
   this->Param1 = Param1;
   this->Param2 = Param2;
   this->Param3 = Param3;
+  this->Param4 = Param4;
   this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
   this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
@@ -556,9 +561,17 @@ int supla_device_channel::getParam2(void) { return Param2; }
 
 int supla_device_channel::getParam3(void) { return Param3; }
 
+int supla_device_channel::getParam4(void) { return Param4; }
+
 bool supla_device_channel::getHidden(void) { return Hidden; }
 
 unsigned int supla_device_channel::getFlags() { return Flags; }
+
+const char *supla_device_channel::getTextParam1(void) { return TextParam1; }
+
+const char *supla_device_channel::getTextParam2(void) { return TextParam2; }
+
+const char *supla_device_channel::getTextParam3(void) { return TextParam3; }
 
 bool supla_device_channel::isOffline(void) {
   if (Offline && (value_valid_to.tv_sec > 0 || value_valid_to.tv_usec)) {
@@ -951,6 +964,10 @@ unsigned int supla_device_channel::getValueDuration(void) {
 std::list<int> supla_device_channel::related_channel(void) {
   std::list<int> result;
 
+  // Only channels associated with NO / NC sensors can return more than one
+  // channel!!!
+  // See supla_user::get_channel_value
+
   switch (Func) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -968,6 +985,14 @@ std::list<int> supla_device_channel::related_channel(void) {
 
       if (Param3) {
         result.push_back(Param3);
+      }
+
+      break;
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+
+      if (Param1) {
+        result.push_back(Param1);
       }
 
       break;
@@ -993,6 +1018,17 @@ std::list<int> supla_device_channel::master_channel(void) {
 
       if (Param2) {
         result.push_back(Param2);
+      }
+
+      break;
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+
+      if (Param4) {
+        result.push_back(Param4);
       }
 
       break;
@@ -1195,15 +1231,17 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 
 void supla_device_channels::add_channel(
     int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
-    int Param3, char *TextParam1, char *TextParam2, char *TextParam3,
-    bool Hidden, unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
+    int Param3, int Param4, const char *TextParam1, const char *TextParam2,
+    const char *TextParam3, bool Hidden, unsigned int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec) {
   safe_array_lock(arr);
 
   if (find_channel(Id) == 0) {
     supla_device_channel *c = new supla_device_channel(
-        Id, Number, UserID, Type, Func, Param1, Param2, Param3, TextParam1,
-        TextParam2, TextParam3, Hidden, Flags, value, validity_time_sec);
+        Id, Number, UserID, Type, Func, Param1, Param2, Param3, Param4,
+        TextParam1, TextParam2, TextParam3, Hidden, Flags, value,
+        validity_time_sec);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -1231,7 +1269,7 @@ void supla_device_channels::load(int UserID, int DeviceID) {
 
 bool supla_device_channels::get_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE], char *online,
-    unsigned _supla_int_t *validity_time_sec) {
+    unsigned _supla_int_t *validity_time_sec, bool for_client) {
   bool result = false;
 
   if (ChannelID) {
@@ -1246,6 +1284,36 @@ bool supla_device_channels::get_channel_value(
 
       if (validity_time_sec) {
         *validity_time_sec = channel->getValueValidityTimeSec();
+      }
+
+      if (for_client) {
+#ifdef SERVER_VERSION_23
+        if (channel->getType() == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+#endif /*SERVER_VERSION_23*/
+          switch (channel->getFunc()) {
+#ifdef SERVER_VERSION_23
+            case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+#endif /*SERVER_VERSION_23*/
+            case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+            case SUPLA_CHANNELFNC_IC_GAS_METER:
+            case SUPLA_CHANNELFNC_IC_WATER_METER:
+            case SUPLA_CHANNELFNC_IC_HEAT_METER: {
+              TDS_ImpulseCounter_Value ds;
+              memcpy(&ds, value, sizeof(TDS_ImpulseCounter_Value));
+              memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+
+              TSC_ImpulseCounter_Value sc;
+              sc.calculated_value =
+                  supla_channel_ic_measurement::get_calculated_i(
+                      channel->getParam3(), ds.counter);
+
+              memcpy(value, &sc, sizeof(TSC_ImpulseCounter_Value));
+              break;
+            }
+          }
+#ifdef SERVER_VERSION_23
+        }
+#endif /*SERVER_VERSION_23*/
       }
 
       result = true;
@@ -1267,6 +1335,42 @@ bool supla_device_channels::get_channel_extendedvalue(
 
     if (channel) {
       result = channel->getExtendedValue(value);
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
+bool supla_device_channels::get_channel_extendedvalue(
+    int ChannelID, TSC_SuplaChannelExtendedValue *cev, bool convert_to_v1) {
+  bool result = false;
+
+  if (ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel) {
+      result = channel->getExtendedValue(&cev->value);
+      if (result) {
+        cev->Id = channel->getId();
+
+        switch (cev->value.type) {
+          case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
+          case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
+            result = supla_channel_electricity_measurement::update_cev(
+                cev, channel->getParam2(), channel->getTextParam1(),
+                convert_to_v1);
+            break;
+          case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
+            result = supla_channel_ic_measurement::update_cev(
+                cev, channel->getFunc(), channel->getParam2(),
+                channel->getParam3(), channel->getTextParam1(),
+                channel->getTextParam2());
+            break;
+        }
+      }
     }
 
     safe_array_unlock(arr);
@@ -2037,11 +2141,14 @@ bool supla_device_channels::get_channel_complex_value(
           TSuplaChannelValue cv;
           memset(&cv, 0, sizeof(TSuplaChannelValue));
 
-          if (user->get_channel_value(device->getID(), ChannelID, &cv, NULL,
-                                      NULL)) {
+          if (user->get_channel_value(device->getID(), ChannelID, cv.value,
+                                      cv.sub_value, NULL, NULL, NULL, false)) {
             if (cv.sub_value[0] > 0) {
               value->hi = true;
-            } else if (value->function == SUPLA_CHANNELFNC_CONTROLLINGTHEGATE &&
+            } else if ((value->function ==
+                            SUPLA_CHANNELFNC_CONTROLLINGTHEGATE ||
+                        value->function ==
+                            SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR) &&
                        cv.sub_value[1] > 0 && cv.sub_value[0] == 0) {
               value->partially_closed = true;
             }

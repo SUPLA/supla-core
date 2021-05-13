@@ -138,6 +138,15 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
 
   } else {
+    supla_log(LOG_INFO,
+              "Device registration started. ClientSD: %i "
+              "Protocol Version: %i "
+              "ThreadID: %i GUID: %02X%02X%02X%02X",
+              getSvrConn()->getClientSD(), getSvrConn()->getProtocolVersion(),
+              syscall(__NR_gettid), (unsigned char)GUID[0],
+              (unsigned char)GUID[1], (unsigned char)GUID[2],
+              (unsigned char)GUID[3]);
+
     database *db = new database();
 
     if (db->connect() == true) {
@@ -159,9 +168,17 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                                        &UserID, db)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
+        supla_log(LOG_INFO,
+                  "(AUTHKEY_AUTH) Bad device credentials. ClientSD: %i "
+                  "Protocol Version: %i "
+                  "ThreadID: %i GUID: %02X%02X%02X%02X",
+                  getSvrConn()->getClientSD(),
+                  getSvrConn()->getProtocolVersion(), syscall(__NR_gettid),
+                  (unsigned char)GUID[0], (unsigned char)GUID[1],
+                  (unsigned char)GUID[2], (unsigned char)GUID[3]);
+
       } else if (UserID == 0) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
-
       } else {
         if (strnlen(Name, SUPLA_DEVICE_NAME_MAXSIZE - 1) < 1) {
           snprintf(Name, SUPLA_DEVICE_NAME_MAXSIZE, "unknown");
@@ -357,9 +374,11 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
-              "ThreadID: %i",
+              "ThreadID: %i GUID: %02X%02X%02X%02X",
               getID(), getSvrConn()->getClientSD(),
-              getSvrConn()->getProtocolVersion(), syscall(__NR_gettid));
+              getSvrConn()->getProtocolVersion(), syscall(__NR_gettid),
+              (unsigned char)GUID[0], (unsigned char)GUID[1],
+              (unsigned char)GUID[2], (unsigned char)GUID[3]);
   } else {
     usleep(2000000);
   }
