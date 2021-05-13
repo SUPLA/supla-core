@@ -16,8 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "tools.h"
-
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -28,6 +26,7 @@
 
 #include "eh.h"
 #include "log.h"
+#include "tools.h"
 
 #ifdef __OPENSSL_TOOLS
 #include <openssl/bio.h>
@@ -186,11 +185,6 @@ void st_guid2hex(char GUIDHEX[SUPLA_GUID_HEXSIZE],
 void st_authkey2hex(char AuthKeyHEX[SUPLA_AUTHKEY_HEXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   st_bin2hex(AuthKeyHEX, AuthKey, SUPLA_AUTHKEY_SIZE);
-}
-
-void st_fingerprint2hex(char FingerprintHEX[SUPLA_FINGERPRINT_HEXSIZE],
-                        const char Fingerprint[SUPLA_FINGERPRINT_SIZE]) {
-  st_bin2hex(FingerprintHEX, Fingerprint, SUPLA_FINGERPRINT_SIZE);
 }
 
 char *st_str2hex(char *buffer, const char *str, size_t maxlen) {
@@ -634,37 +628,6 @@ char *st_openssl_base64_decode(char *src, int src_len, int *dst_len) {
   }
 
   return buffer;
-}
-
-unsigned char st_valid_fingerprint(char fingerprint[SUPLA_FINGERPRINT_SIZE]) {
-  for (int a = 0; a < SUPLA_FINGERPRINT_SIZE; a++) {
-    if (fingerprint[a] == 0) {
-      return 0;
-    }
-  }
-
-  return 1;
-}
-
-void st_fingerprint_gen(char fingerprint[SUPLA_FINGERPRINT_SIZE]) {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  int a = 0;
-
-#ifdef __ANDROID__
-  srand48(tv.tv_usec);
-  gettimeofday(&tv, NULL);
-
-  for (a = 0; a < SUPLA_FINGERPRINT_SIZE; a++) {
-    fingerprint[a] = (unsigned char)((rand() + tv.tv_usec) % 254) + 1;
-  }
-#else
-  unsigned int seed = tv.tv_sec + tv.tv_usec;
-
-  for (a = 0; a < SUPLA_FINGERPRINT_SIZE; a++) {
-    fingerprint[a] = (unsigned char)((rand_r(&seed) + tv.tv_usec) % 254) + 1;
-  }
-#endif
 }
 
 #endif /*__OPENSSL_TOOLS*/

@@ -17,10 +17,8 @@
  */
 
 #include "srpc.h"
-
 #include <stdlib.h>
 #include <string.h>
-
 #include "lck.h"
 #include "log.h"
 #include "proto.h"
@@ -39,7 +37,6 @@
 #define __EH_DISABLED
 #else
 #include <user_interface.h>
-
 #include "espmissingincludes.h"
 #endif
 
@@ -884,14 +881,6 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSD_SuplaRegisterDeviceResult));
         break;
 
-      case SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B:
-
-        if (srpc->sdp.data_size == sizeof(TSD_SuplaRegisterDeviceResult_B))
-          rd->data.sd_register_device_result_b =
-              (TSD_SuplaRegisterDeviceResult_B *)malloc(
-                  sizeof(TSD_SuplaRegisterDeviceResult_B));
-        break;
-
       case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
 
         if (srpc->sdp.data_size == sizeof(TDS_SuplaDeviceChannelValue))
@@ -1530,7 +1519,6 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_CHANNELPACK_UPDATE_D:
     case SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B:
     case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B:
-    case SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B:
       return 15;
   }
 
@@ -1815,13 +1803,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
   return srpc_async_call(_srpc, SUPLA_SD_CALL_REGISTER_DEVICE_RESULT,
                          (char *)registerdevice_result,
                          sizeof(TSD_SuplaRegisterDeviceResult));
-}
-
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result_b(
-    void *_srpc, TSD_SuplaRegisterDeviceResult_B *registerdevice_result) {
-  return srpc_async_call(_srpc, SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B,
-                         (char *)registerdevice_result,
-                         sizeof(TSD_SuplaRegisterDeviceResult_B));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH

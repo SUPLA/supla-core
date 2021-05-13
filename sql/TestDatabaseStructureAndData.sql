@@ -99,7 +99,7 @@ CREATE TABLE `migration_versions` (
 
 LOCK TABLES `migration_versions` WRITE;
 /*!40000 ALTER TABLE `migration_versions` DISABLE KEYS */;
-INSERT INTO `migration_versions` VALUES ('20170101000000'),('20170414101854'),('20170612204116'),('20170818114139'),('20171013140904'),('20171208222022'),('20171210105120'),('20180108224520'),('20180113234138'),('20180116184415'),('20180203231115'),('20180208145738'),('20180224184251'),('20180324222844'),('20180326134725'),('20180403175932'),('20180403203101'),('20180403211558'),('20180411202101'),('20180411203913'),('20180416201401'),('20180423121539'),('20180507095139'),('20180518131234'),('20180707221458'),('20180717094843'),('20180723132652'),('20180807083217'),('20180812205513'),('20180814155501'),('20180914222230'),('20181001221229'),('20181007112610'),('20181019115859'),('20181024164957'),('20181025171850'),('20181026171557'),('20181105144611'),('20181126225634'),('20181129170610'),('20181129195431'),('20181129231132'),('20181204174603'),('20181205092324'),('20181222001450'),('20190105130410'),('20190117075805'),('20190219184847'),('20190325215115'),('20190401151822'),('20190720215803'),('20190813232026'),('20190815154016'),('20191226160845'),('20200108201101'),('20200122200601'),('20200123235701'),('20200124084227'),('20200204170901'),('20200210145902'),('20200229122103'),('20200322123636'),('20200412183701'),('20200414213205'),('20200416225304'),('20200419190150'),('20200423130550'),('20200430113342'),('20200514132030'),('20200515102311'),('20200518171230'),('20200724155001'),('20200807131101'),('20200811141801'),('20200813113801'),('20200813133501'),('20200911231401'),('20210105164727'),('20210118124714'),('20210228201414'),('20210323095216'),('20210419201821'),('20210512223722');
+INSERT INTO `migration_versions` VALUES ('20170101000000'),('20170414101854'),('20170612204116'),('20170818114139'),('20171013140904'),('20171208222022'),('20171210105120'),('20180108224520'),('20180113234138'),('20180116184415'),('20180203231115'),('20180208145738'),('20180224184251'),('20180324222844'),('20180326134725'),('20180403175932'),('20180403203101'),('20180403211558'),('20180411202101'),('20180411203913'),('20180416201401'),('20180423121539'),('20180507095139'),('20180518131234'),('20180707221458'),('20180717094843'),('20180723132652'),('20180807083217'),('20180812205513'),('20180814155501'),('20180914222230'),('20181001221229'),('20181007112610'),('20181019115859'),('20181024164957'),('20181025171850'),('20181026171557'),('20181105144611'),('20181126225634'),('20181129170610'),('20181129195431'),('20181129231132'),('20181204174603'),('20181205092324'),('20181222001450'),('20190105130410'),('20190117075805'),('20190219184847'),('20190325215115'),('20190401151822'),('20190720215803'),('20190813232026'),('20190815154016'),('20191226160845'),('20200108201101'),('20200122200601'),('20200123235701'),('20200124084227'),('20200204170901'),('20200210145902'),('20200229122103'),('20200322123636'),('20200412183701'),('20200414213205'),('20200416225304'),('20200419190150'),('20200423130550'),('20200430113342'),('20200514132030'),('20200515102311'),('20200518171230'),('20200724155001'),('20200807131101'),('20200811141801'),('20200813113801'),('20200813133501'),('20200911231401'),('20210105164727'),('20210118124714'),('20210228201414'),('20210323095216'),('20210419201821');
 /*!40000 ALTER TABLE `migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2065,38 +2065,3 @@ ALTER TABLE supla_user ADD mqtt_broker_enabled TINYINT(1) DEFAULT '0' NOT NULL, 
 
 ALTER TABLE supla_dev_channel ADD param4 INT DEFAULT 0 NOT NULL;
 ALTER ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `supla_v_client_channel` AS select `c`.`id` AS `id`,`c`.`type` AS `type`,`c`.`func` AS `func`,ifnull(`c`.`param1`,0) AS `param1`,ifnull(`c`.`param2`,0) AS `param2`,`c`.`caption` AS `caption`,ifnull(`c`.`param3`,0) AS `param3`,ifnull(`c`.`param4`,0) AS `param4`,`c`.`text_param1` AS `text_param1`,`c`.`text_param2` AS `text_param2`,`c`.`text_param3` AS `text_param3`,ifnull(`d`.`manufacturer_id`,0) AS `manufacturer_id`,ifnull(`d`.`product_id`,0) AS `product_id`,ifnull(`c`.`user_icon_id`,0) AS `user_icon_id`,`c`.`user_id` AS `user_id`,`c`.`channel_number` AS `channel_number`,`c`.`iodevice_id` AS `iodevice_id`,`cl`.`id` AS `client_id`,case ifnull(`c`.`location_id`,0) when 0 then `d`.`location_id` else `c`.`location_id` end AS `location_id`,ifnull(`c`.`alt_icon`,0) AS `alt_icon`,`d`.`protocol_version` AS `protocol_version`,ifnull(`c`.`flags`,0) AS `flags`,`v`.`value` AS `value`,time_to_sec(timediff(`v`.`valid_to`,utc_timestamp())) AS `validity_time_sec` from ((((((`supla_dev_channel` `c` join `supla_iodevice` `d` on(`d`.`id` = `c`.`iodevice_id`)) join `supla_location` `l` on(`l`.`id` = (case ifnull(`c`.`location_id`,0) when 0 then `d`.`location_id` else `c`.`location_id` end))) join `supla_rel_aidloc` `r` on(`r`.`location_id` = `l`.`id`)) join `supla_accessid` `a` on(`a`.`id` = `r`.`access_id`)) join `supla_client` `cl` on(`cl`.`access_id` = `r`.`access_id`)) left join `supla_dev_channel_value` `v` on(`c`.`id` = `v`.`channel_id` and `v`.`valid_to` >= utc_timestamp())) where (`c`.`func` is not null and `c`.`func` <> 0 or `c`.`type` = 8000) and ifnull(`c`.`hidden`,0) = 0 and `d`.`enabled` = 1 and `l`.`enabled` = 1 and `a`.`enabled` = 1;
-
-ALTER TABLE supla_iodevice ADD server_fingerprint VARBINARY(16) DEFAULT NULL;
-DROP PROCEDURE IF EXISTS `supla_add_iodevice`;
-DROP PROCEDURE IF EXISTS `supla_update_iodevice`;
-DELIMITER ||
-CREATE PROCEDURE `supla_add_iodevice` (IN `_location_id` INT(11), IN `_user_id` INT(11), IN `_guid` VARBINARY(16), IN `_name` VARCHAR(100) CHARSET utf8mb4, IN `_reg_ipv4` INT(10) UNSIGNED, IN `_software_version` VARCHAR(20), IN `_protocol_version` INT(11), IN `_product_id` SMALLINT, IN `_manufacturer_id` SMALLINT, IN `_original_location_id` INT(11), IN `_auth_key` VARCHAR(64), IN `_flags` INT(11), IN `_server_fingerprint` VARBINARY(16), OUT `_id` INT(11))  NO SQL
-BEGIN
-SET @mfr_id = _manufacturer_id;
-IF _manufacturer_id = 0 THEN
-  IF _name LIKE '%sonoff%' THEN SELECT 6 INTO @mfr_id; END IF;
-  IF _name LIKE 'NICE %' THEN SELECT  5 INTO @mfr_id; END IF;
-  IF _name LIKE 'ZAMEL %' THEN SELECT 4 INTO @mfr_id; END IF;
-END IF;
-INSERT INTO `supla_iodevice`(`location_id`, `user_id`, `guid`, `name`, `enabled`, `reg_date`, `reg_ipv4`, `last_connected`, `last_ipv4`,
-`software_version`, `protocol_version`, `manufacturer_id`, `product_id`, `original_location_id`, `auth_key`, `flags`, `server_fingerprint`)
-VALUES (_location_id, _user_id, _guid, _name, 1, UTC_TIMESTAMP(), _reg_ipv4, UTC_TIMESTAMP(), _reg_ipv4, _software_version,
-    _protocol_version, @mfr_id, _product_id, _original_location_id, _auth_key, _flags, _server_fingerprint);
-SELECT LAST_INSERT_ID() INTO _id;
-END||
-CREATE PROCEDURE `supla_update_iodevice` (IN `_name` VARCHAR(100) CHARSET utf8mb4, IN `_last_ipv4` INT(10) UNSIGNED, IN `_software_version` VARCHAR(20) CHARSET utf8, IN `_protocol_version` INT(11), IN `_original_location_id` INT(11), IN `_auth_key` VARCHAR(64) CHARSET utf8, IN `_server_fingerprint` VARBINARY(16), IN `_id` INT(11))  NO SQL
-BEGIN
-UPDATE `supla_iodevice`
-SET
-`name` = _name,
-`last_connected` = UTC_TIMESTAMP(),
-`last_ipv4` = _last_ipv4,
-`software_version` = _software_version,
-`protocol_version` = _protocol_version,
-original_location_id = _original_location_id,
- `server_fingerprint` = _server_fingerprint WHERE `id` = _id;
-IF _auth_key IS NOT NULL THEN
-  UPDATE `supla_iodevice`
-  SET `auth_key` = _auth_key WHERE `id` = _id AND `auth_key` IS NULL;
-END IF;
-END||

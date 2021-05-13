@@ -20,7 +20,6 @@
 
 #include <stddef.h>
 #include <stdio.h>
-
 #include "eh.h"
 #include "proto.h"
 #if defined(ESP32)
@@ -100,7 +99,6 @@ union TsrpcDataPacketData {
   TDS_SuplaRegisterDevice_D *ds_register_device_d;
   TDS_SuplaRegisterDevice_E *ds_register_device_e;
   TSD_SuplaRegisterDeviceResult *sd_register_device_result;
-  TSD_SuplaRegisterDeviceResult_B *sd_register_device_result_b;
   TCS_SuplaRegisterClient *cs_register_client;
   TCS_SuplaRegisterClient_B *cs_register_client_b;
   TCS_SuplaRegisterClient_C *cs_register_client_c;
@@ -237,9 +235,6 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_registerdevice_e(
     void *_srpc, TDS_SuplaRegisterDevice_E *registerdevice);  // ver. >= 10
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
     void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result_b(
-    void *_srpc,
-    TSD_SuplaRegisterDeviceResult_B *registerdevice_result);  // ver. >= 15
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
     void *_srpc, unsigned char channel_number, char *value);
 _supla_int_t SRPC_ICACHE_FLASH

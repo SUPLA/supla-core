@@ -17,9 +17,7 @@
  */
 
 #include "SrpcTest.h"
-
 #include <vector>
-
 #include "gtest/gtest.h"  // NOLINT
 #include "log.h"
 
@@ -496,8 +494,7 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_SC_CALL_CHANNEL_UPDATE_D,
               SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
               SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B,
-              SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B,
-              SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B};
+              SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B};
   }
 
   return {};
@@ -1467,30 +1464,6 @@ TEST_F(SrpcTest, call_registerdevice_result) {
             cr_rd.data.sd_register_device_result->version_min);
 
   free(cr_rd.data.sd_register_device_result);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_registerdevice_result_b) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSD_SuplaRegisterDeviceResult_B, result);
-
-  result.result_code = 1;
-  result.activity_timeout = 60;
-  result.version = SUPLA_PROTO_VERSION;
-  result.version_min = SUPLA_PROTO_VERSION_MIN;
-
-  ASSERT_GT(srpc_sd_async_registerdevice_result_b(srpc, &result), 0);
-  SendAndReceive(SUPLA_SD_CALL_REGISTER_DEVICE_RESULT_B, 46);
-
-  ASSERT_FALSE(cr_rd.data.sd_register_device_result_b == NULL);
-  ASSERT_EQ(0, memcmp(cr_rd.data.sd_register_device_result_b, &result,
-                      sizeof(TSD_SuplaRegisterDeviceResult_B)));
-
-  free(cr_rd.data.sd_register_device_result_b);
   srpc_free(srpc);
   srpc = NULL;
 }

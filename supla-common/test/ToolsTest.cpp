@@ -17,7 +17,6 @@
  */
 
 #include "ToolsTest.h"
-
 #include "gtest/gtest.h"  // NOLINT
 #include "tools.h"        // NOLINT
 
@@ -97,21 +96,6 @@ TEST_F(ToolsTest, st_authkey2hex) {
 
   char result[SUPLA_AUTHKEY_HEXSIZE];
   st_authkey2hex(result, guid);
-
-  ASSERT_STREQ("FFFFFFFF00000000FFFFFFFF00000000", result);
-}
-
-TEST_F(ToolsTest, st_fingerprint2hex) {
-  ASSERT_EQ(16, SUPLA_FINGERPRINT_SIZE);
-  ASSERT_EQ(33, SUPLA_FINGERPRINT_HEXSIZE);
-
-  const char fingerprint[SUPLA_FINGERPRINT_SIZE] = {
-      (char)255, (char)255, (char)255, (char)255, (char)0,   (char)0,
-      (char)0,   (char)0,   (char)255, (char)255, (char)255, (char)255,
-      (char)0,   (char)0,   (char)0,   (char)0};
-
-  char result[SUPLA_FINGERPRINT_HEXSIZE];
-  st_fingerprint2hex(result, fingerprint);
 
   ASSERT_STREQ("FFFFFFFF00000000FFFFFFFF00000000", result);
 }
@@ -280,14 +264,6 @@ TEST_F(ToolsTest, st_rgb2hsv) {
   ASSERT_EQ(270, (int)hsv.h);
   ASSERT_EQ(50, (int)(hsv.s * 100));
   ASSERT_EQ(49, (int)(hsv.v * 100));
-}
-
-TEST_F(ToolsTest, st_fingerprint) {
-  for (int a = 0; a < 1000000; a++) {
-    char fingerprint[SUPLA_FINGERPRINT_SIZE] = {};
-    st_fingerprint_gen(fingerprint);
-    ASSERT_TRUE(st_valid_fingerprint(fingerprint) == 1);
-  }
 }
 
 }  // namespace
