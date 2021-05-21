@@ -9,11 +9,13 @@ CPP_SRCS += \
 ../src/test/integration/GetChannelBasicCfgIntegrationTest.cpp \
 ../src/test/integration/GetVersionIntegrationTest.cpp \
 ../src/test/integration/IntegrationTest.cpp \
+../src/test/integration/MySqlShell.cpp \
 ../src/test/integration/OAuthIntegrationTest.cpp \
 ../src/test/integration/ProperlyRegistered.cpp \
 ../src/test/integration/RegistrationIntegrationTest.cpp \
 ../src/test/integration/SetChannelCaptionIntegrationTest.cpp \
 ../src/test/integration/SetChannelFunctionIntegrationTest.cpp \
+../src/test/integration/SetLocationCaptionIntegrationTest.cpp \
 ../src/test/integration/SetRegistrationEnabledIntegrationTest.cpp \
 ../src/test/integration/SuperuserAuthorization.cpp \
 ../src/test/integration/SuperuserAuthorizationIntegrationTest.cpp 
@@ -24,11 +26,13 @@ OBJS += \
 ./src/test/integration/GetChannelBasicCfgIntegrationTest.o \
 ./src/test/integration/GetVersionIntegrationTest.o \
 ./src/test/integration/IntegrationTest.o \
+./src/test/integration/MySqlShell.o \
 ./src/test/integration/OAuthIntegrationTest.o \
 ./src/test/integration/ProperlyRegistered.o \
 ./src/test/integration/RegistrationIntegrationTest.o \
 ./src/test/integration/SetChannelCaptionIntegrationTest.o \
 ./src/test/integration/SetChannelFunctionIntegrationTest.o \
+./src/test/integration/SetLocationCaptionIntegrationTest.o \
 ./src/test/integration/SetRegistrationEnabledIntegrationTest.o \
 ./src/test/integration/SuperuserAuthorization.o \
 ./src/test/integration/SuperuserAuthorizationIntegrationTest.o 
@@ -39,11 +43,13 @@ CPP_DEPS += \
 ./src/test/integration/GetChannelBasicCfgIntegrationTest.d \
 ./src/test/integration/GetVersionIntegrationTest.d \
 ./src/test/integration/IntegrationTest.d \
+./src/test/integration/MySqlShell.d \
 ./src/test/integration/OAuthIntegrationTest.d \
 ./src/test/integration/ProperlyRegistered.d \
 ./src/test/integration/RegistrationIntegrationTest.d \
 ./src/test/integration/SetChannelCaptionIntegrationTest.d \
 ./src/test/integration/SetChannelFunctionIntegrationTest.d \
+./src/test/integration/SetLocationCaptionIntegrationTest.d \
 ./src/test/integration/SetRegistrationEnabledIntegrationTest.d \
 ./src/test/integration/SuperuserAuthorization.d \
 ./src/test/integration/SuperuserAuthorizationIntegrationTest.d 

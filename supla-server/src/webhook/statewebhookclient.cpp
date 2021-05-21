@@ -96,9 +96,9 @@ void supla_state_webhook_client::refreshToken(void) {
         if (rtoken_len != 0) {
           cJSON *root = cJSON_CreateObject();
           cJSON_AddStringToObject(root, "refreshToken", refresh_token);
-          char *shortUniqueId = getCredentials()->getUser()->getShortUniqueID();
+          const char *shortUniqueId =
+              getCredentials()->getUser()->getShortUniqueID();
           cJSON_AddStringToObject(root, "userShortUniqueId", shortUniqueId);
-          free(shortUniqueId);
           char *str = cJSON_PrintUnformatted(root);
           cJSON_Delete(root);
 
@@ -203,9 +203,8 @@ cJSON *supla_state_webhook_client::getHeader(const char *function,
                                              int channelId) {
   cJSON *header = cJSON_CreateObject();
   if (header) {
-    char *shortUniqueId = getCredentials()->getUser()->getShortUniqueID();
+    const char *shortUniqueId = getCredentials()->getUser()->getShortUniqueID();
     cJSON_AddStringToObject(header, "userShortUniqueId", shortUniqueId);
-    free(shortUniqueId);
 
     cJSON_AddNumberToObject(header, "channelId", channelId);
 
@@ -666,10 +665,10 @@ bool supla_state_webhook_client::sendImpulseCounterMeasurementReport(
         cJSON_AddNumberToObject(state, "counter", icm->getCounter());
         cJSON_AddNumberToObject(state, "calculatedValue",
                                 icm->getCalculatedValue() * 0.001);
-        if (strnlen(icm->getCurrncy(), 4) == 0) {
+        if (strnlen(icm->getCurrency(), 4) == 0) {
           cJSON_AddNullToObject(state, "currency");
         } else {
-          cJSON_AddStringToObject(state, "currency", icm->getCurrncy());
+          cJSON_AddStringToObject(state, "currency", icm->getCurrency());
         }
 
         if (strnlen(icm->getCustomUnit(), 9) == 0) {

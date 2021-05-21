@@ -337,6 +337,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="$(INCMYSQL)"/>
                                     									
+                                    <listOptionValue builtIn="false" value="../src"/>
+                                    									
                                     <listOptionValue builtIn="false" value="../src/test"/>
                                     								
                                 </option>

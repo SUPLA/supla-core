@@ -19,22 +19,23 @@
 #include "action_shutreveal.h"
 #include <stdlib.h>
 #include <string.h>
+#include "json/cJSON.h"
 #include "log.h"
 
-s_worker_action_shutreveal::s_worker_action_shutreveal(s_worker *worker,
-                                                       RSActionKind kind)
+s_worker_action_shutreveal::s_worker_action_shutreveal(
+    s_abstract_worker *worker, RSActionKind kind)
     : s_worker_action(worker) {
   this->kind = kind;
 }
 
-s_worker_action_shut::s_worker_action_shut(s_worker *worker)
+s_worker_action_shut::s_worker_action_shut(s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_shut) {}
 
-s_worker_action_reveal::s_worker_action_reveal(s_worker *worker)
+s_worker_action_reveal::s_worker_action_reveal(s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_reveal) {}
 
 s_worker_action_reveal_partially::s_worker_action_reveal_partially(
-    s_worker *worker)
+    s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_reveal_partially) {}
 
 void s_worker_action_shutreveal::get_function_list(
@@ -48,6 +49,28 @@ int s_worker_action_shutreveal::try_limit(void) { return 2; }
 int s_worker_action_shutreveal::waiting_time_to_retry(void) { return 120; }
 
 int s_worker_action_shutreveal::waiting_time_to_check(void) { return 90; }
+
+bool s_worker_action_shutreveal::parse_percentage(char *percent) {
+  if (worker->get_action_param() == NULL || percent == NULL) {
+    return false;
+  }
+
+  bool result = false;
+
+  cJSON *root = cJSON_Parse(worker->get_action_param());
+  if (root) {
+    cJSON *item = cJSON_GetObjectItem(root, "percentage");
+
+    if (item && cJSON_IsNumber(item) && item->valuedouble >= 0 &&
+        item->valuedouble <= 100) {
+      *percent = item->valuedouble;
+      result = true;
+    }
+    cJSON_Delete(root);
+  }
+
+  return result;
+}
 
 bool s_worker_action_shutreveal::result_success(int *fail_result_code) {
   char value = 0;  // percent of shut

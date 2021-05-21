@@ -51,6 +51,7 @@ void ssocket_supla_socket_free(void *_supla_socket);
 int ssocket_supla_socket_getsfd(void *_supla_socket);
 void ssocket_close(void *ssd);
 void ssocket_free(void *ssd);
+void ssocket_ssl_error_log(void);
 
 #ifdef __cplusplus
 }

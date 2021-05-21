@@ -64,10 +64,14 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
 
   for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
-    if (user->set_device_channel_char_value(
-            0, it->getDeviceId(), it->getChannelId(), GroupID,
-            dcpair::last_one(&pairs, it), value)) {
-      result = true;
+    supla_device *device = user->get_device(it->getDeviceId());
+    if (device) {
+      if (device->get_channels()->set_device_channel_char_value(
+              0, it->getChannelId(), GroupID, dcpair::last_one(&pairs, it),
+              value)) {
+        result = true;
+      }
+      device->releasePtr();
     }
   }
 
@@ -85,11 +89,14 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
 
   for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
-    if (user->set_device_channel_rgbw_value(
-            0, it->getDeviceId(), it->getChannelId(), GroupID,
-            dcpair::last_one(&pairs, it), color, color_brightness, brightness,
-            on_off)) {
-      result = true;
+    supla_device *device = user->get_device(it->getDeviceId());
+    if (device) {
+      if (device->get_channels()->set_device_channel_rgbw_value(
+              0, it->getChannelId(), GroupID, dcpair::last_one(&pairs, it),
+              color, color_brightness, brightness, on_off)) {
+        result = true;
+      }
+      device->releasePtr();
     }
   }
 

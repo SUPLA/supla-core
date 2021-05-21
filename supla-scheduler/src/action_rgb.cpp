@@ -20,10 +20,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "json/cJSON.h"
 #include "log.h"
 #include "tools.h"
 
-s_worker_action_rgb::s_worker_action_rgb(s_worker *worker)
+s_worker_action_rgb::s_worker_action_rgb(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
 void s_worker_action_rgb::get_function_list(int list[FUNCTION_LIST_SIZE]) {
@@ -40,11 +41,7 @@ int s_worker_action_rgb::waiting_time_to_check(void) { return 5; }
 
 char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
                                             char *brightness, bool *random) {
-  jsmn_parser p;
-  jsmntok_t t[10];
-  int a;
   int result = 0;
-  int value = 0;
 
   if (color) *color = 0;
 
@@ -56,62 +53,50 @@ char s_worker_action_rgb::parse_rgbw_params(int *color, char *color_brightness,
     return 0;
   }
 
-  jsmn_init(&p);
-  int r = jsmn_parse(&p, worker->get_action_param(),
-                     strnlen(worker->get_action_param(), 255), t,
-                     sizeof(t) / sizeof(t[0]));
+  cJSON *root = cJSON_Parse(worker->get_action_param());
+  if (root) {
+    cJSON *item = NULL;
 
-  if (r < 1 || t[0].type != JSMN_OBJECT) {
-    return 0;
-  }
-
-  for (a = 1; a < r - 1; a++) {
-    if (jsoneq(worker->get_action_param(), &t[a], "hue") == 0) {
-      if (jsoneq(worker->get_action_param(), &t[a + 1], "random") == 0) {
-        if (color) {
-          unsigned int seed = time(NULL);
-          *color = st_hue2rgb(rand_r(&seed) % 360);
-
-          if (random) {
-            *random = true;
-          }
-        }
-
-        result++;
-      }
-      if (jsoneq(worker->get_action_param(), &t[a + 1], "white") == 0) {
-        if (color) {
-          *color = 0xFFFFFF;
-        }
-
-        result++;
-
-      } else if (json_get_int(&t[a + 1], &value)) {
-        if (color) {
-          *color = st_hue2rgb(value);
-        }
-
-        result++;
-      }
-
-    } else if (jsoneq(worker->get_action_param(), &t[a], "color_brightness") ==
-               0) {
-      if (json_get_int(&t[a + 1], &value) && value >= 0 && value <= 100) {
-        if (color_brightness) {
-          *color_brightness = value;
-        }
-
-        result++;
-      }
-    } else if (jsoneq(worker->get_action_param(), &t[a], "brightness") == 0) {
-      if (json_get_int(&t[a + 1], &value) && value >= 0 && value <= 100) {
-        if (brightness) {
-          *brightness = value;
-        }
-
+    if (brightness) {
+      item = cJSON_GetObjectItem(root, "brightness");
+      if (item && cJSON_IsNumber(item) && item->valuedouble >= 0 &&
+          item->valuedouble <= 100) {
+        *brightness = item->valuedouble;
         result++;
       }
     }
+
+    if (color_brightness) {
+      item = cJSON_GetObjectItem(root, "color_brightness");
+      if (item && cJSON_IsNumber(item) && item->valuedouble >= 0 &&
+          item->valuedouble <= 100) {
+        *color_brightness = item->valuedouble;
+        result++;
+      }
+    }
+    if (color) {
+      item = cJSON_GetObjectItem(root, "hue");
+      if (item) {
+        if (cJSON_IsNumber(item)) {
+          *color = st_hue2rgb(item->valuedouble);
+        } else if (cJSON_IsString(item)) {
+          if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
+            unsigned int seed = time(NULL);
+            *color = st_hue2rgb(rand_r(&seed) % 360);
+            if (random) {
+              *random = true;
+            }
+            result++;
+          } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) ==
+                     0) {
+            *color = 0xFFFFFF;
+            result++;
+          }
+        }
+      }
+    }
+
+    cJSON_Delete(root);
   }
 
   return result;

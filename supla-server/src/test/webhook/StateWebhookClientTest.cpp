@@ -26,9 +26,7 @@ namespace testing {
 StateWebhookClientTest::StateWebhookClientTest() {}
 
 void StateWebhookClientTest::SetUp() {
-  supla_user::init();
-  user = new supla_user(1001);
-  user->setUniqueId("dc85740d-cb27-405b-9da3-e8be5c71ae5b", "");
+  user = new supla_user(1001, "dc85740d-cb27-405b-9da3-e8be5c71ae5b", NULL);
 
   user->stateWebhookCredentials()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600,
                                        "https://localhost", "130,140");
@@ -40,8 +38,6 @@ void StateWebhookClientTest::TearDown() {
   delete client->getHttpConnectionFactory();
   delete client;
   delete user;
-
-  supla_user::user_free();
 }
 
 TEST_F(StateWebhookClientTest, sendLightSwitchReport) {
@@ -500,7 +496,7 @@ TEST_F(StateWebhookClientTest, sendRollerShutterReport) {
 TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
   const char expectedRequest1[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 205\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 202\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
@@ -513,7 +509,7 @@ TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
 
   const char expectedRequest2[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 204\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
@@ -526,7 +522,7 @@ TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
 
   const char expectedRequest3[] =
       "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 207\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 204\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
       "application/"
       "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
@@ -534,7 +530,7 @@ TEST_F(StateWebhookClientTest, sendRoofWindowReport) {
       "\"CONTROLLINGTHEROOFWINDOW\",\"timestamp\":1600097258,\"state\":{"
       "\"shut\":5,\"connected\":false,\"is_calibrating\":false}}";
 
-  ASSERT_TRUE(client->senRoofWindowReport(123, 5, false));
+  ASSERT_TRUE(client->sendRoofWindowReport(123, 5, false));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 

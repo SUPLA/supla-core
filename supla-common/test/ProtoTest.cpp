@@ -42,6 +42,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)1, sizeof(TDCS_SuplaSetActivityTimeout));
   ASSERT_EQ((unsigned int)3, sizeof(TSDC_SuplaSetActivityTimeoutResult));
   ASSERT_EQ((unsigned int)16, sizeof(TSuplaChannelValue));
+  ASSERT_EQ((unsigned int)17, sizeof(TSuplaChannelValue_B));
   ASSERT_EQ((unsigned int)1029, sizeof(TSuplaChannelExtendedValue));
   ASSERT_EQ((unsigned int)410, sizeof(TSC_SuplaLocation));
   ASSERT_EQ((unsigned int)8208, sizeof(TSC_SuplaLocationPack));
@@ -62,8 +63,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelGroupNewValue));
   ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
   ASSERT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
+  ASSERT_EQ((unsigned int)23, sizeof(TSC_SuplaChannelValue_B));
   ASSERT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
   ASSERT_EQ((unsigned int)448, sizeof(TSC_SuplaChannelValuePack));
+  ASSERT_EQ((unsigned int)468, sizeof(TSC_SuplaChannelValuePack_B));
   ASSERT_EQ((unsigned int)10202, sizeof(TSC_SuplaChannelExtendedValuePack));
   ASSERT_EQ((unsigned int)435, sizeof(TSC_SuplaChannel));
   ASSERT_EQ((unsigned int)8708, sizeof(TSC_SuplaChannelPack));
@@ -71,6 +74,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
   ASSERT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
   ASSERT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
+  ASSERT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
   ASSERT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
   ASSERT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
   ASSERT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));
@@ -146,8 +150,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
   ASSERT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
   ASSERT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
-  ASSERT_EQ((unsigned int)409, sizeof(TCS_SetChannelCaption));
-  ASSERT_EQ((unsigned int)410, sizeof(TSC_SetChannelCaptionResult));
+  ASSERT_EQ((unsigned int)409, sizeof(TCS_SetCaption));
+  ASSERT_EQ((unsigned int)410, sizeof(TSC_SetCaptionResult));
   ASSERT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
   ASSERT_EQ((unsigned int)58, sizeof(TCalCfg_ZWave_Node));
   ASSERT_LE(sizeof(TCalCfg_ZWave_Node),
@@ -168,7 +172,10 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_LightSourceLifespan),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 
-  ASSERT_EQ((unsigned int)4, sizeof(TDigiglass_Value));
+  ASSERT_LE(sizeof(TDigiglass_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+
+  ASSERT_LE(sizeof(TCSD_Digiglass_NewValue),
+            (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   ASSERT_EQ((unsigned int)12, sizeof(TCalCfg_ZWave_WakeupSettingsReport));
   ASSERT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsReport),
@@ -177,6 +184,9 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
   ASSERT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  ASSERT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
+  ASSERT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
 }
 
 TEST_F(ProtoTest, init) {
@@ -184,6 +194,12 @@ TEST_F(ProtoTest, init) {
   ASSERT_FALSE(sproto == NULL);
   ASSERT_EQ(SUPLA_PROTO_VERSION, sproto_get_version(sproto));
   sproto_free(sproto);
+}
+
+TEST_F(ProtoTest, littleEndian) {
+  char i[] = {1, 2, 3, 4};
+  ASSERT_EQ((unsigned int)4, sizeof(int));
+  ASSERT_EQ(67305985, *(int *)i);
 }
 
 TEST_F(ProtoTest, set_version) {
@@ -202,6 +218,7 @@ TEST_F(ProtoTest, set_version) {
   sproto_free(sproto);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 TEST_F(ProtoTest, out_dataexists) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
@@ -216,6 +233,7 @@ TEST_F(ProtoTest, out_dataexists) {
 
   sproto_free(sproto);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 TEST_F(ProtoTest, in_dataexists) {
   void *sproto = sproto_init();
@@ -422,6 +440,7 @@ TEST_F(ProtoTest, pop_in_sdp_test7) {
   sproto_free(sproto);
 }
 
+#ifndef SPROTO_WITHOUT_OUT_BUFFER
 TEST_F(ProtoTest, out_buffer_append_test1) {
   void *sproto = sproto_init();
   ASSERT_FALSE(sproto == NULL);
@@ -491,5 +510,6 @@ TEST_F(ProtoTest, pop_out_data) {
 
   sproto_free(sproto);
 }
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 }  // namespace

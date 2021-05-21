@@ -66,7 +66,7 @@ class supla_http_request_queue {
   void recalculateTime(void);
   void raiseEvent(void);
   void logStuckWarning(void);
-  void logMetrics(int min_interval_sec);
+  void logMetrics(unsigned int min_interval_sec);
 
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
@@ -75,7 +75,7 @@ class supla_http_request_queue {
                                  const char correlationToken[] = NULL,
                                  const char googleRequestId[] = NULL);
 
-  void onDeviceAddedEvent(supla_user *user, int deviceId,
+  void onChannelsAddedEvent(supla_user *user, int deviceId,
                           event_source_type eventSourceType,
                           const char correlationToken[] = NULL,
                           const char googleRequestId[] = NULL);

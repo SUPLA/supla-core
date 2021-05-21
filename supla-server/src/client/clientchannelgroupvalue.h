@@ -39,6 +39,7 @@ class supla_client_channelgroup_value : public supla_client_objcontainer_item {
   int getDeviceId(void);
   virtual int getExtraId();
   void proto_get(TSC_SuplaChannelValue *channel_value);
+  void proto_get(TSC_SuplaChannelValue_B *channel_value);
 };
 
 #endif /* CLIENT_CLIENTCHANNELGROUPVALUE_H_ */

@@ -90,8 +90,8 @@ class supla_client : public cdbase {
   void set_channel_function_request(TCS_SetChannelFunction *func);
   void set_channel_function_result(TSC_SetChannelFunctionResult *result);
   void set_channel_caption(int ChannelId, char *Caption);
-  void set_channel_caption_request(TCS_SetChannelCaption *caption);
-  void set_channel_caption_result(TSC_SetChannelCaptionResult *result);
+  void set_location_caption(int LocationId, char *Caption);
+  void set_caption_result(TSC_SetCaptionResult *result, bool channel);
 
   virtual ~supla_client();
 };

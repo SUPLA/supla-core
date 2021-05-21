@@ -55,11 +55,11 @@ char queue_loop_worker_thread_cnd(void *worker_sthread) {
 
 void queue_loop_worker_execute(void *worker, void *sthread) {
   database::thread_init();
-  ((s_worker *)worker)->execute(sthread);
+  ((s_abstract_worker *)worker)->execute(sthread);
 }
 
 void queue_loop_worker_finish(void *worker, void *sthread) {
-  delete (s_worker *)worker;
+  delete (s_abstract_worker *)worker;
   database::thread_end();
 }
 

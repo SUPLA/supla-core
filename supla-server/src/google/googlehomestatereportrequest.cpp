@@ -82,9 +82,12 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       return !value.hidden_channel;
     default:
       return false;
@@ -153,6 +156,12 @@ void supla_google_home_statereport_request::execute(void *sthread) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
           getClient()->addRollerShutterState(ChannelId, value.shut,
                                              value.online);
+          content_exists = true;
+          break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          getClient()->addOpenPercentState(ChannelId, value.hi ? 0 : 100,
+                                           value.online);
           content_exists = true;
           break;
       }

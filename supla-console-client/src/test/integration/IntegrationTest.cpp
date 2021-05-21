@@ -17,6 +17,7 @@
  */
 
 #include "IntegrationTest.h"
+#include "MySqlShell.h"
 #include "log.h"
 #include "tools.h"
 
@@ -72,8 +73,13 @@ void integration_test_on_channel_function_set_result(
 }
 
 void integration_test_on_channel_caption_set_result(
-    void *_suplaclient, void *instance, TSC_SetChannelCaptionResult *result) {
+    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
   static_cast<IntegrationTest *>(instance)->onChannelCaptionSetResult(result);
+}
+
+void integration_test_on_location_caption_set_result(
+    void *_suplaclient, void *instance, TSC_SetCaptionResult *result) {
+  static_cast<IntegrationTest *>(instance)->onLocationCaptionSetResult(result);
 }
 
 void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
@@ -82,8 +88,13 @@ void integration_test_on_channel_basic_cfg(void *_suplaclient, void *instance,
 }
 
 void integration_test_channel_update(void *_suplaclient, void *instance,
-                                     TSC_SuplaChannel_C *channel) {
+                                     TSC_SuplaChannel_D *channel) {
   static_cast<IntegrationTest *>(instance)->channelUpdate(channel);
+}
+
+void integration_test_location_update(void *_suplaclient, void *instance,
+                                      TSC_SuplaLocation *location) {
+  static_cast<IntegrationTest *>(instance)->locationUpdate(location);
 }
 
 void integration_test_on_registration_enabled(
@@ -109,25 +120,25 @@ void IntegrationTest::Init(int argc, char **argv) {
       "\n"
       "Arguments:\n"
       "   -h         Print this help\n"
-      "   -dbname    Database name\n (default: supla_test)\n"
-      "   -dbhost    Database server hostname\n (default: db)\n"
-      "   -dbuser    Database server username\n (default: supla)\n"
-      "   -sqldir    Specifies the path of the sql script directory\n\n";
+      "   --dbname    Database name\n (default: supla_test)\n"
+      "   --dbhost    Database server hostname\n (default: db)\n"
+      "   --dbuser    Database server username\n (default: supla)\n"
+      "   --sqldir    Specifies the path of the sql script directory\n\n";
 
   for (int a = 1; a < argc; a++) {
-    if (strcmp("-sqldir", argv[a]) == 0 && a < argc - 1 &&
+    if (strcmp("--sqldir", argv[a]) == 0 && a < argc - 1 &&
         strlen(argv[a + 1]) > 0) {
       IntegrationTest::sqlDir = argv[a + 1];
 
-    } else if (strcmp("-dbname", argv[a]) == 0 && a < argc - 1 &&
+    } else if (strcmp("--dbname", argv[a]) == 0 && a < argc - 1 &&
                strlen(argv[a + 1]) > 0) {
       IntegrationTest::dbName = argv[a + 1];
 
-    } else if (strcmp("-dbuser", argv[a]) == 0 && a < argc - 1 &&
+    } else if (strcmp("--dbuser", argv[a]) == 0 && a < argc - 1 &&
                strlen(argv[a + 1]) > 0) {
       IntegrationTest::dbUser = argv[a + 1];
 
-    } else if (strcmp("-dbhost", argv[a]) == 0 && a < argc - 1 &&
+    } else if (strcmp("--dbhost", argv[a]) == 0 && a < argc - 1 &&
                strlen(argv[a + 1]) > 0) {
       IntegrationTest::dbHost = argv[a + 1];
 
@@ -179,8 +190,11 @@ void IntegrationTest::clientInit() {
       &integration_test_on_channel_function_set_result;
   scc.cb_on_channel_caption_set_result =
       &integration_test_on_channel_caption_set_result;
+  scc.cb_on_location_caption_set_result =
+      &integration_test_on_location_caption_set_result;
   scc.cb_on_channel_basic_cfg = &integration_test_on_channel_basic_cfg;
   scc.cb_channel_update = &integration_test_channel_update;
+  scc.cb_location_update = &integration_test_location_update;
   scc.cb_on_registration_enabled = &integration_test_on_registration_enabled;
   scc.cb_on_set_registration_enabled_result =
       &integration_test_on_set_registration_enabled_result;
@@ -252,32 +266,24 @@ void IntegrationTest::iterateUntilDefaultTimeout() {
 }
 
 void IntegrationTest::runSqlScript(const char *script) {
-  ASSERT_FALSE(script == NULL);
-  ASSERT_GT(strlen(script), (unsigned long)0);
-  char path[500];
+  MySqlShell::runSqlScript(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                           IntegrationTest::dbUser, IntegrationTest::dbName,
+                           script);
+}
 
-  if (IntegrationTest::sqlDir == NULL) {
-    snprintf(path, sizeof(path), "./%s", script);
-  } else {
-    snprintf(path, sizeof(path), "%s/%s", IntegrationTest::sqlDir, script);
-  }
+std::string IntegrationTest::sqlQuery(const char *query) {
+  std::string result;
+  MySqlShell::sqlQuery(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                       IntegrationTest::dbUser, IntegrationTest::dbName, query,
+                       &result);
 
-  if (st_file_exists(path) == 0) {
-    supla_log(LOG_ERR, "File %s not exists!", path);
-    ASSERT_TRUE(false);
-  }
-
-  char command[1000];
-  snprintf(command, sizeof(command), "mysql -u %s -h %s %s < %s",
-           IntegrationTest::dbUser, IntegrationTest::dbHost,
-           IntegrationTest::dbName, path);
-  supla_log(LOG_DEBUG, "%s", command);
-
-  ASSERT_EQ(system(command), 0);
+  return result;
 }
 
 void IntegrationTest::initTestDatabase() {
-  runSqlScript("TestDatabaseStructureAndData.sql");
+  MySqlShell::initTestDatabase(IntegrationTest::sqlDir, IntegrationTest::dbHost,
+                               IntegrationTest::dbUser,
+                               IntegrationTest::dbName);
 }
 
 void IntegrationTest::cancelIteration(void) { iterationCancelled = true; }
@@ -303,12 +309,16 @@ void IntegrationTest::onSuperuserAuthorizationResult(bool authorized,
 void IntegrationTest::onChannelFunctionSetResult(
     TSC_SetChannelFunctionResult *result) {}
 
-void IntegrationTest::onChannelCaptionSetResult(
-    TSC_SetChannelCaptionResult *result) {}
+void IntegrationTest::onChannelCaptionSetResult(TSC_SetCaptionResult *result) {}
+
+void IntegrationTest::onLocationCaptionSetResult(TSC_SetCaptionResult *result) {
+}
 
 void IntegrationTest::onChannelBasicCfg(TSC_ChannelBasicCfg *cfg) {}
 
-void IntegrationTest::channelUpdate(TSC_SuplaChannel_C *channel) {}
+void IntegrationTest::channelUpdate(TSC_SuplaChannel_D *channel) {}
+
+void IntegrationTest::locationUpdate(TSC_SuplaLocation *location) {}
 
 void IntegrationTest::onRegistrationEnabled(
     TSDC_RegistrationEnabled *reg_enabled) {}

@@ -41,6 +41,17 @@ supla_client_location::~supla_client_location() {
   }
 }
 
+void supla_client_location::setCaption(const char *Caption) {
+  if (this->Caption) {
+    free(this->Caption);
+    this->Caption = NULL;
+  }
+
+  if (Caption) {
+    this->Caption = strndup(Caption, SUPLA_LOCATION_CAPTION_MAXSIZE);
+  }
+}
+
 void supla_client_location::proto_get_location(TSC_SuplaLocation *location) {
   memset(location, 0, sizeof(TSC_SuplaLocation));
   location->Id = Id;
@@ -59,8 +70,7 @@ int supla_client_location::getId(void) { return Id; }
 // ------------------------------------------------------------
 
 char supla_client_locations::arr_findcmp(void *ptr, void *id) {
-  return ((supla_client_location *)ptr)->getId() == *((int *)id) ? 1
-                                                                 : 0;
+  return ((supla_client_location *)ptr)->getId() == *((int *)id) ? 1 : 0;
 }
 
 char supla_client_locations::arr_delcnd(void *ptr) {
@@ -72,25 +82,12 @@ supla_client_locations::supla_client_locations() {
   this->arr = safe_array_init();
 
   this->lck = lck_init();
-  ids = NULL;
-  ids_count = 0;
 }
 
 supla_client_locations::~supla_client_locations() {
-  ids_clean();
   arr_clean();
   safe_array_free(arr);
   lck_free(this->lck);
-}
-
-void supla_client_locations::ids_clean(void) {
-  lck_lock(lck);
-
-  if (ids) free(ids);
-
-  ids_count = 0;
-
-  lck_unlock(lck);
 }
 
 void supla_client_locations::arr_clean(void) {
@@ -103,13 +100,14 @@ int supla_client_locations::count() {
   int result = 0;
 
   lck_lock(lck);
-  result = ids_count;
+  result = ids.size();
   lck_unlock(lck);
 
   return result;
 }
 
-void supla_client_locations::add_location(int Id, const char *Caption) {
+bool supla_client_locations::add_location(int Id, const char *Caption) {
+  bool result = false;
   safe_array_lock(arr);
 
   if (safe_array_findcnd(arr, arr_findcmp, &Id) == 0) {
@@ -118,44 +116,28 @@ void supla_client_locations::add_location(int Id, const char *Caption) {
     if (l != NULL && safe_array_add(arr, l) == -1) {
       delete l;
       l = NULL;
+    } else {
+      lck_lock(lck);
+      if (!location_exists(Id)) {
+        ids.push_back(Id);
+      }
+      lck_unlock(lck);
+      result = true;
     }
   }
 
   safe_array_unlock(arr);
+
+  return result;
 }
 
 void supla_client_locations::load(int ClientID) {
   database *db = new database();
-  int a, n;
 
   if (db->connect() == true) {
     safe_array_lock(arr);
     arr_clean();
-
     db->get_client_locations(ClientID, this);
-
-    lck_lock(lck);
-    ids_clean();
-
-    n = safe_array_count(arr);
-
-    if (n > 0) {
-      ids = (int *)malloc(sizeof(int) * n);
-    }
-
-    if (ids) {
-      for (a = 0; a < n; a++) {
-        supla_client_location *loc =
-            (supla_client_location *)safe_array_get(arr, a);
-        if (loc != NULL) {
-          ids[ids_count] = loc->getId();
-          ids_count++;
-        }
-      }
-    }
-
-    lck_unlock(lck);
-
     safe_array_unlock(arr);
   }
 
@@ -193,7 +175,6 @@ bool supla_client_locations::remote_update(void *srpc) {
 
   if (location_pack.count > 0) {
     location_pack.items[location_pack.count - 1].EOL = 1;
-
     srpc_sc_async_locationpack_update(srpc, &location_pack);
     return true;
   }
@@ -205,12 +186,28 @@ bool supla_client_locations::location_exists(int Id) {
   bool result = false;
 
   lck_lock(lck);
-  for (int a = 0; a < ids_count; a++)
-    if (ids[a] == Id) {
+  for (std::vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
+    if (*it == Id) {
       result = true;
       break;
     }
+  }
+
   lck_unlock(lck);
 
   return result;
+}
+
+void supla_client_locations::set_caption(int Id, const char *Caption) {
+  if (!add_location(Id, Caption)) {
+    safe_array_lock(arr);
+
+    supla_client_location *l = static_cast<supla_client_location *>(
+        safe_array_findcnd(arr, arr_findcmp, &Id));
+    if (l) {
+      l->setCaption(Caption);
+    }
+
+    safe_array_unlock(arr);
+  }
 }

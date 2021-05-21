@@ -161,11 +161,12 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
         if (_accessid_enabled) accessid_enabled = true;
 
+        pwd_is_set =
+            register_client_d != NULL &&
+            strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
+
         if (ClientID == 0) {
           do_update = false;
-          pwd_is_set =
-              register_client_d != NULL &&
-              strnlen(register_client_d->Password, SUPLA_PASSWORD_MAXSIZE) > 0;
 
           if (pwd_is_set) {
             superuser_authorize(UserID, register_client_d->Email,
@@ -230,6 +231,21 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
           } else {
             if (do_update) {
+              if (AccessID == 0 && pwd_is_set) {
+                if (!is_superuser_authorized()) {
+                  superuser_authorize(UserID, register_client_d->Email,
+                                      register_client_d->Password, NULL);
+                }
+
+                if (is_superuser_authorized()) {
+                  AccessID = db->get_access_id(UserID, true);
+
+                  if (AccessID) {
+                    accessid_enabled = true;
+                  }
+                }
+              }
+
               if (false == db->update_client(ClientID, AccessID, AuthKey, Name,
                                              getSvrConn()->getClientIpv4(),
                                              SoftVer, proto_version)) {
@@ -490,7 +506,7 @@ void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {
-  channels->set_channel_function(ChannelId, Func);
+  channels->set_channel_function(getSvrConn()->srpc(), ChannelId, Func);
 }
 
 void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
@@ -506,19 +522,24 @@ void supla_client::set_channel_function_result(
 }
 
 void supla_client::set_channel_caption(int ChannelId, char *Caption) {
-  channels->set_channel_caption(ChannelId, Caption);
+  channels->set_channel_caption(getSvrConn()->srpc(), ChannelId, Caption);
 }
 
-void supla_client::set_channel_caption_request(TCS_SetChannelCaption *caption) {
-  getUser()->set_channel_caption(this, caption);
+void supla_client::set_location_caption(int LocationId, char *Caption) {
+  locations->set_caption(LocationId, Caption);
+  locations->remote_update(getSvrConn()->srpc());
 }
 
-void supla_client::set_channel_caption_result(
-    TSC_SetChannelCaptionResult *result) {
+void supla_client::set_caption_result(TSC_SetCaptionResult *result,
+                                      bool channel) {
   if (result == NULL) {
     return;
   }
-  srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
+  if (channel) {
+    srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
+  } else {
+    srpc_sc_async_set_location_caption_result(getSvrConn()->srpc(), result);
+  }
 }
 
 void supla_client::iterate() { channels->update_expired(getSvrConn()->srpc()); }

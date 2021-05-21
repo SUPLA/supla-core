@@ -30,6 +30,8 @@
 #include "tools.h"
 #include "user/user.h"
 
+// TODO(anyone): Pass the http queue handling to supla_asynctasks
+
 typedef struct {
   supla_http_request *request;
   void *sthread;
@@ -261,6 +263,8 @@ void supla_http_request_queue::iterate(void *q_sthread) {
                   "Http request - thread count limit exceeded (%i)",
                   threadCountLimit());
         warn_msg = true;
+      } else {
+        eh_wait(main_eh, 10000);
       }
     } else {
       recalculateTime(&now);
@@ -302,11 +306,11 @@ void supla_http_request_queue::logStuckWarning(void) {
   lck_unlock(lck);
 
   if (time > 10) {
-    supla_log(LOG_WARNING, "Queue iteration is stuck!");
+    supla_log(LOG_WARNING, "HTTP Queue iteration is stuck!");
   }
 }
 
-void supla_http_request_queue::logMetrics(int min_interval_sec) {
+void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
   if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -348,7 +352,9 @@ void supla_http_request_queue::recalculateTime(struct timeval *now) {
   time_of_the_next_iteration_usec = now_usec + (time > 0 ? time : 0);
   lck_unlock(lck);
 
-  raiseEvent();
+  if (queueSize() > 0) {
+    raiseEvent();
+  }
 }
 
 void supla_http_request_queue::recalculateTime(void) {
@@ -421,10 +427,10 @@ void supla_http_request_queue::onChannelValueChangeEvent(
                                  correlationToken, googleRequestId);
 }
 
-void supla_http_request_queue::onDeviceAddedEvent(
+void supla_http_request_queue::onChannelsAddedEvent(
     supla_user *user, int deviceId, event_source_type eventSourceType,
     const char correlationToken[], const char googleRequestId[]) {
-  createByChannelEventSourceType(user, deviceId, 0, ET_DEVICE_ADDED,
+  createByChannelEventSourceType(user, deviceId, 0, ET_CHANNELS_ADDED,
                                  eventSourceType, correlationToken,
                                  googleRequestId);
 }

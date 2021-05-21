@@ -56,7 +56,8 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
                       bool connected);
 
  public:
-  supla_state_webhook_client(supla_webhook_basic_credentials *credentials);
+  explicit supla_state_webhook_client(
+      supla_webhook_basic_credentials *credentials);
   bool sendLightSwitchReport(int channelId, bool on, bool connected);
   bool sendPowerSwitchReport(int channelId, bool on, bool connected);
 

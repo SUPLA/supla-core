@@ -31,9 +31,9 @@
 
 supla_client_channel::supla_client_channel(
     supla_client_channels *Container, int Id, int DeviceId, int LocationID,
-    int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
-    char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
-    int UserIcon, short ManufacturerID, short ProductID,
+    int Type, int Func, int Param1, int Param2, int Param3, int Param4,
+    char *TextParam1, char *TextParam2, char *TextParam3, const char *Caption,
+    int AltIcon, int UserIcon, short ManufacturerID, short ProductID,
     unsigned char ProtocolVersion, int Flags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec)
@@ -45,6 +45,7 @@ supla_client_channel::supla_client_channel(
   this->Param1 = Param1;
   this->Param2 = Param2;
   this->Param3 = Param3;
+  this->Param4 = Param4;
   this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
   this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
@@ -167,15 +168,12 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
     case SUPLA_CHANNELFNC_WEATHER_STATION:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
-    case SUPLA_CHANNELFNC_IC_HEAT_METER:
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -189,21 +187,32 @@ bool supla_client_channel::remote_update_is_possible(void) {
       if (Param1 == 0 && Param2 == 0) {
         return true;
       }
+      break;
 
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+
+      if (Param4 == 0) {
+        return true;
+      }
       break;
   }
 
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
 }
 
-void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
                                            char *online, supla_client *client) {
   bool result = false;
 
   if (client && client->getUser()) {
     unsigned _supla_int_t validity_time_sec = 0;
-    result = client->getUser()->get_channel_value(DeviceId, getId(), value,
-                                                  online, &validity_time_sec);
+    result = client->getUser()->get_channel_value(
+        DeviceId, getId(), value->value, value->sub_value,
+        &value->sub_value_type, online, &validity_time_sec, true);
     if (result) {
       setValueValidityTimeSec(validity_time_sec);
     }
@@ -217,35 +226,15 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
     }
     memcpy(value->value, this->value, SUPLA_CHANNELVALUE_SIZE);
   }
+}
 
-  if (result) {
-#ifdef SERVER_VERSION_23
-    if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-#endif /*SERVER_VERSION_23*/
-      switch (Func) {
-#ifdef SERVER_VERSION_23
-        case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-#endif /*SERVER_VERSION_23*/
-        case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-        case SUPLA_CHANNELFNC_IC_GAS_METER:
-        case SUPLA_CHANNELFNC_IC_WATER_METER:
-        case SUPLA_CHANNELFNC_IC_HEAT_METER: {
-          TDS_ImpulseCounter_Value ds;
-          memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
-          memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
+void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+                                           char *online, supla_client *client) {
+  TSuplaChannelValue_B value_b = {};
+  proto_get_value(&value_b, online, client);
 
-          TSC_ImpulseCounter_Value sc;
-          sc.calculated_value = supla_channel_ic_measurement::get_calculated_i(
-              Param3, ds.counter);
-
-          memcpy(value->value, &sc, sizeof(TSC_ImpulseCounter_Value));
-          break;
-        }
-      }
-#ifdef SERVER_VERSION_23
-    }
-#endif /*SERVER_VERSION_23*/
-  }
+  memcpy(value->value, value_b.value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(value->sub_value, value_b.sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
@@ -298,9 +287,37 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
+void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
+                                     supla_client *client) {
+  memset(channel, 0, sizeof(TSC_SuplaChannel_D));
+
+  channel->Id = getId();
+  channel->DeviceID = getDeviceId();
+  channel->Type = this->Type;
+  channel->Func = Func;
+  channel->LocationID = this->LocationId;
+  channel->AltIcon = this->AltIcon;
+  channel->UserIcon = this->UserIcon;
+  channel->ManufacturerID = this->ManufacturerID;
+  channel->ProductID = this->ProductID;
+  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->Flags = this->Flags;
+
+  proto_get_value(&channel->value, &channel->online, client);
+  proto_get_caption(channel->Caption, &channel->CaptionSize,
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+}
+
 void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
+  channel_value->Id = getId();
+  proto_get_value(&channel_value->value, &channel_value->online, client);
+}
+
+void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
+                                     supla_client *client) {
+  memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = getId();
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }
@@ -312,23 +329,38 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
   }
 
   memset(cev, 0, sizeof(TSC_SuplaChannelExtendedValue));
-  cev->Id = getId();
 
-  if (client && client->getUser() &&
-      client->getUser()->get_channel_extendedvalue(DeviceId, getId(),
-                                                   &cev->value)) {
-    switch (cev->value.type) {
-      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
-      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2:
-        return supla_channel_electricity_measurement::update_cev(
-            cev, Param2, TextParam1, client->getProtocolVersion() < 12);
+  if (client && client->getUser()) {
+    bool cev_exists = false;
 
-      case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-        return supla_channel_ic_measurement::update_cev(
-            cev, Func, Param2, Param3, TextParam1, TextParam2);
+    int ChannelId = getId();
+
+    supla_device *device = NULL;
+
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        if (Param1) {
+          ChannelId = Param1;
+          device = client->getUser()->device_by_channelid(ChannelId);
+        }
+        break;
+
+      default:
+        device = client->getUser()->get_device(DeviceId);
+        break;
     }
 
-    return true;
+    if (device) {
+      cev_exists = device->get_channels()->get_channel_extendedvalue(
+          ChannelId, cev, client->getProtocolVersion() < 12);
+      device->releasePtr();
+    }
+
+    if (cev_exists) {
+      cev->Id = getId();
+      return true;
+    }
   }
 
   return false;

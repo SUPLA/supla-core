@@ -39,11 +39,12 @@ class serverconnection {
       void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request);
   void on_set_channel_function_request(
       TCS_SetChannelFunction *cs_set_channel_function);
-  void on_set_channel_caption_request(
-      TCS_SetChannelCaption *cs_set_channel_caption);
+  void on_set_caption_request(TCS_SetCaption *cs_set_caption, bool channel);
   void on_register_device_request(void *_srpc, unsigned int call_type,
                                   unsigned char proto_version,
                                   TsrpcReceivedData *rd);
+  void trim_caption_to100chars(char *Caption,
+                               unsigned _supla_int_t *CaptionSize);
 
  protected:
   unsigned int client_ipv4;

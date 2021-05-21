@@ -21,14 +21,6 @@
 
 #include "proto.h"
 
-typedef struct {
-  int Id;
-  int Function;
-  char Online;
-  TSuplaChannelValue value;
-  char *Caption;
-} TSuplaClientDeviceChannel;
-
 typedef void (*_suplaclient_cb_on_getversion_result)(
     void *_suplaclient, void *user_data, TSDC_SuplaGetVersionResult *result);
 typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
@@ -46,7 +38,7 @@ typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
                                                 TSC_SuplaLocation *location);
 typedef void (*_suplaclient_cb_channel_update)(void *_suplaclient,
                                                void *user_data,
-                                               TSC_SuplaChannel_C *channel);
+                                               TSC_SuplaChannel_D *channel);
 typedef void (*_suplaclient_cb_channelgroup_update)(
     void *_suplaclient, void *user_data,
     TSC_SuplaChannelGroup_B *channel_group);
@@ -54,7 +46,8 @@ typedef void (*_suplaclient_cb_channelgroup_relation_update)(
     void *_suplaclient, void *user_data,
     TSC_SuplaChannelGroupRelation *channelgroup_relation);
 typedef void (*_suplaclient_cb_channel_value_update)(
-    void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value);
+    void *_suplaclient, void *user_data,
+    TSC_SuplaChannelValue_B *channel_value);
 typedef void (*_suplaclient_cb_channel_extendedvalue_update)(
     void *_suplaclient, void *user_data,
     TSC_SuplaChannelExtendedValue *channel_extendedvalue);
@@ -79,8 +72,8 @@ typedef void (*_suplaclient_cb_on_channel_basic_cfg)(void *_suplaclient,
                                                      TSC_ChannelBasicCfg *cfg);
 typedef void (*_suplaclient_cb_on_channel_function_set_result)(
     void *_suplaclient, void *user_data, TSC_SetChannelFunctionResult *result);
-typedef void (*_suplaclient_cb_on_channel_caption_set_result)(
-    void *_suplaclient, void *user_data, TSC_SetChannelCaptionResult *result);
+typedef void (*_suplaclient_cb_on_caption_set_result)(
+    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result);
 typedef void (*_suplaclient_cb_on_clients_reconnect_request_result)(
     void *_suplaclient, void *user_data,
     TSC_ClientsReconnectRequestResult *result);
@@ -162,8 +155,8 @@ typedef struct {
   _suplaclient_cb_on_channel_basic_cfg cb_on_channel_basic_cfg;
   _suplaclient_cb_on_channel_function_set_result
       cb_on_channel_function_set_result;
-  _suplaclient_cb_on_channel_caption_set_result
-      cb_on_channel_caption_set_result;
+  _suplaclient_cb_on_caption_set_result cb_on_channel_caption_set_result;
+  _suplaclient_cb_on_caption_set_result cb_on_location_caption_set_result;
   _suplaclient_cb_on_clients_reconnect_request_result
       cb_on_clients_reconnect_request_result;
   _suplaclient_cb_on_set_registration_enabled_result
@@ -232,6 +225,8 @@ char supla_client_set_channel_function(void *_suplaclient, int ChannelID,
                                        int Function);
 char supla_client_set_channel_caption(void *_suplaclient, int ChannelID,
                                       const char *Caption);
+char supla_client_set_location_caption(void *_suplaclient, int LocationID,
+                                       const char *Caption);
 char supla_client_reconnect_all_clients(void *_suplaclient);
 char supla_client_set_registration_enabled(void *_suplaclient,
                                            int ioDeviceRegTimeSec,
@@ -252,6 +247,9 @@ char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
                                            unsigned char resetCounter,
                                            unsigned char setTime,
                                            unsigned short lightSourceLifespan);
+char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
+                                       unsigned short mask,
+                                       unsigned short active_bits);
 
 #ifdef __cplusplus
 }
