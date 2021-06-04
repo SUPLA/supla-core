@@ -589,8 +589,8 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "cls\":\"SHUT\",\"pl_stop\":\"STOP\",\"set_pos_t\":\"~/set/"
       "closing_percentage\",\"pos_t\":\"~/state/"
       "shut\",\"pos_open\":0,\"pos_clsd\":100,\"avty_t\":\"~/state/"
-      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"value_"
-      "template\":\"{% if value is defined %}{% if value | int < 0 %}0{% elif "
+      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"pos_"
+      "tpl\":\"{% if value is defined %}{% if value | int < 0 %}0{% elif "
       "value | int > 100 %}100{% else %}{{value | int}}{% endif %}{% else "
       "%}0{% endif %}\"}",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/state/"
