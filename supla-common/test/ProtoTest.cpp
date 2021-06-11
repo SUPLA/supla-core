@@ -17,6 +17,7 @@
  */
 
 #include "ProtoTest.h"
+
 #include "gtest/gtest.h"  // NOLINT
 #include "proto.h"
 
@@ -187,6 +188,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   ASSERT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
   ASSERT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
+  ASSERT_EQ((unsigned int)3, sizeof(TRelayChannel_Value));
+  ASSERT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 }
 
 TEST_F(ProtoTest, init) {
