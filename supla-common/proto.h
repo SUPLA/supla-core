@@ -286,7 +286,12 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #endif
 
 #define SUPLA_CHANNELVALUE_SIZE 8
+
+#ifdef __AVR__
+#define SUPLA_CHANNELEXTENDEDVALUE_SIZE 256
+#else
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
+#endif
 
 #define SUPLA_CHANNELTYPE_SENSORNO 1000
 #define SUPLA_CHANNELTYPE_SENSORNC 1010        // DEPRECATED
@@ -1181,7 +1186,11 @@ typedef struct {
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
 #define EM_VAR_ALL 0xFFFF
 
+#ifdef __AVR__
+#define EM_MEASUREMENT_COUNT 1
+#else
 #define EM_MEASUREMENT_COUNT 5
+#endif
 
 #ifdef USE_DEPRECATED_EMEV_V1
 // [IODevice->Server->Client]
