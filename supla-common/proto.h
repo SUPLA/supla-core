@@ -1408,6 +1408,13 @@ typedef struct {
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
+#define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
+
+typedef struct {
+  char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
+  unsigned short flags;  // SUPLA_RELAY_FLAG_*
+} TRelayChannel_Value;
+
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
 #define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
 #define DIGIGLASS_REGENERATION_AFTER_20H_IN_PROGRESS 0x4
