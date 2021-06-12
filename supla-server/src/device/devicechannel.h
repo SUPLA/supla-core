@@ -20,6 +20,7 @@
 #define DEVICECHANNEL_H_
 
 #include <list>
+
 #include "commontypes.h"
 #include "proto.h"
 
@@ -361,6 +362,7 @@ class supla_device_channels {
                       unsigned char EOL, char brightness);
   bool set_dgf_transparency(int SenderID, int ChannelID,
                             unsigned short activeBits, unsigned short mask);
+  bool get_relay_value(int ChannelID, TRelayChannel_Value *relay_value);
   bool action_toggle(int SenderID, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_shut(int SenderID, int ChannelID, int GroupID, unsigned char EOL,

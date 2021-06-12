@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "ipcctrl.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -25,7 +27,6 @@
 
 #include "database.h"
 #include "http/httprequestqueue.h"
-#include "ipcctrl.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "sthread.h"
@@ -49,6 +50,7 @@ const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 const char cmd_get_em_value[] = "GET-EM-VALUE:";
 const char cmd_get_ic_value[] = "GET-IC-VALUE:";
 const char cmd_get_valve_value[] = "GET-VALVE-VALUE:";
+const char cmd_get_relay_value[] = "GET-RELAY-VALUE:";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
@@ -356,6 +358,35 @@ void svr_ipcctrl::get_digiglass_value(const char *cmd) {
 
     if (result) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i", Mask);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_relay_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+
+    TRelayChannel_Value value = {};
+    bool result = false;
+
+    if (device) {
+      result = device->get_channels()->get_relay_value(ChannelID, &value);
+      device->releasePtr();
+    }
+
+    if (result) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i", value.hi, value.flags);
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
       return;
     }
@@ -904,6 +935,8 @@ void svr_ipcctrl::execute(void *sthread) {
           action_open_close(cmd_action_open, true);
         } else if (match_command(cmd_action_close, len)) {
           action_open_close(cmd_action_close, false);
+        } else if (match_command(cmd_get_relay_value, len)) {
+          get_relay_value(cmd_get_relay_value);
 
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
