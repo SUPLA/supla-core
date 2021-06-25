@@ -1162,9 +1162,9 @@ typedef struct {
   unsigned _supla_int16_t voltage[3];  // * 0.01 V
   unsigned _supla_int16_t
       current[3];  // * 0.001 A (0.01A FOR EM_VAR_CURRENT_OVER_65A)
-  _supla_int_t power_active[3];    // * 0.00001 W
-  _supla_int_t power_reactive[3];  // * 0.00001 var
-  _supla_int_t power_apparent[3];  // * 0.00001 VA
+  _supla_int_t power_active[3];    // * 0.00001 W or kW
+  _supla_int_t power_reactive[3];  // * 0.00001 var or kvar
+  _supla_int_t power_apparent[3];  // * 0.00001 VA or kVA
   _supla_int16_t power_factor[3];  // * 0.001
   _supla_int16_t phase_angle[3];   // * 0.1 degree
 } TElectricityMeter_Measurement;   // v. >= 10
@@ -1185,6 +1185,10 @@ typedef struct {
 #define EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED 0x2000
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
 #define EM_VAR_ALL 0xFFFF
+
+#define EM_VAR_POWER_ACTIVE_KWH 0x10000
+#define EM_VAR_POWER_REACTIVE_KVAR 0x20000
+#define EM_VAR_POWER_APPARENT_KVA 0x40000
 
 #ifdef __AVR__
 #define EM_MEASUREMENT_COUNT 1
