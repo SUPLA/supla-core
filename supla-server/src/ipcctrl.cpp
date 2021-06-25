@@ -276,20 +276,49 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
         current3 *= 10;
       }
 
+      _supla_int64_t power_active1 = em_ev.m[0].power_active[0];
+      _supla_int64_t power_active2 = em_ev.m[0].power_active[1];
+      _supla_int64_t power_active3 = em_ev.m[0].power_active[2];
+
+      if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+        power_active1 *= 1000;
+        power_active2 *= 1000;
+        power_active3 *= 1000;
+      }
+
+      _supla_int64_t power_reactive1 = em_ev.m[0].power_reactive[0];
+      _supla_int64_t power_reactive2 = em_ev.m[0].power_reactive[1];
+      _supla_int64_t power_reactive3 = em_ev.m[0].power_reactive[2];
+
+      if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
+        power_reactive1 *= 1000;
+        power_reactive2 *= 1000;
+        power_reactive3 *= 1000;
+      }
+
+      _supla_int64_t power_apparent1 = em_ev.m[0].power_apparent[0];
+      _supla_int64_t power_apparent2 = em_ev.m[0].power_apparent[1];
+      _supla_int64_t power_apparent3 = em_ev.m[0].power_apparent[2];
+
+      if (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA) {
+        power_apparent1 *= 1000;
+        power_apparent2 *= 1000;
+        power_apparent3 *= 1000;
+      }
+
       snprintf(buffer, sizeof(buffer),
-               "VALUE:%i,%i,%i,%i,%i,%u,%u,%u,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
-               "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
-               "llu,%llu,%llu,%i,%i,%s\n",
+               "VALUE:%i,%i,%i,%i,%i,%u,%u,%u,%lld,%lld,%lld,%lld,%lld,%lld,%"
+               "lld,%lld,%lld,%i,%i,%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%"
+               "llu,%llu,%llu,%llu,%llu,%llu,%i,%i,%s\n",
                em_ev.measured_values, em_ev.m[0].freq, em_ev.m[0].voltage[0],
                em_ev.m[0].voltage[1], em_ev.m[0].voltage[2], current1, current2,
-               current3, em_ev.m[0].power_active[0], em_ev.m[0].power_active[1],
-               em_ev.m[0].power_active[2], em_ev.m[0].power_reactive[0],
-               em_ev.m[0].power_reactive[1], em_ev.m[0].power_reactive[2],
-               em_ev.m[0].power_apparent[0], em_ev.m[0].power_apparent[1],
-               em_ev.m[0].power_apparent[2], em_ev.m[0].power_factor[0],
-               em_ev.m[0].power_factor[1], em_ev.m[0].power_factor[2],
-               em_ev.m[0].phase_angle[0], em_ev.m[0].phase_angle[1],
-               em_ev.m[0].phase_angle[2], em_ev.total_forward_active_energy[0],
+               current3, power_active1, power_active2, power_active3,
+               power_reactive1, power_reactive2, power_reactive3,
+               power_apparent1, power_apparent2, power_apparent3,
+               em_ev.m[0].power_factor[0], em_ev.m[0].power_factor[1],
+               em_ev.m[0].power_factor[2], em_ev.m[0].phase_angle[0],
+               em_ev.m[0].phase_angle[1], em_ev.m[0].phase_angle[2],
+               em_ev.total_forward_active_energy[0],
                em_ev.total_forward_active_energy[1],
                em_ev.total_forward_active_energy[2],
                em_ev.total_reverse_active_energy[0],
