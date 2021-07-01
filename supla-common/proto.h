@@ -286,7 +286,12 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #endif
 
 #define SUPLA_CHANNELVALUE_SIZE 8
+
+#ifdef __AVR__
+#define SUPLA_CHANNELEXTENDEDVALUE_SIZE 256
+#else
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
+#endif
 
 #define SUPLA_CHANNELTYPE_SENSORNO 1000
 #define SUPLA_CHANNELTYPE_SENSORNC 1010        // DEPRECATED
@@ -1157,9 +1162,9 @@ typedef struct {
   unsigned _supla_int16_t voltage[3];  // * 0.01 V
   unsigned _supla_int16_t
       current[3];  // * 0.001 A (0.01A FOR EM_VAR_CURRENT_OVER_65A)
-  _supla_int_t power_active[3];    // * 0.00001 kW
-  _supla_int_t power_reactive[3];  // * 0.00001 kvar
-  _supla_int_t power_apparent[3];  // * 0.00001 kVA
+  _supla_int_t power_active[3];    // * 0.00001 W or kW
+  _supla_int_t power_reactive[3];  // * 0.00001 var or kvar
+  _supla_int_t power_apparent[3];  // * 0.00001 VA or kVA
   _supla_int16_t power_factor[3];  // * 0.001
   _supla_int16_t phase_angle[3];   // * 0.1 degree
 } TElectricityMeter_Measurement;   // v. >= 10
@@ -1181,7 +1186,15 @@ typedef struct {
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
 #define EM_VAR_ALL 0xFFFF
 
+#define EM_VAR_POWER_ACTIVE_KWH 0x100000
+#define EM_VAR_POWER_REACTIVE_KVAR 0x200000
+#define EM_VAR_POWER_APPARENT_KVA 0x400000
+
+#ifdef __AVR__
+#define EM_MEASUREMENT_COUNT 1
+#else
 #define EM_MEASUREMENT_COUNT 5
+#endif
 
 #ifdef USE_DEPRECATED_EMEV_V1
 // [IODevice->Server->Client]
@@ -1407,6 +1420,13 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
+
+#define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
+
+typedef struct {
+  char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
+  unsigned short flags;  // SUPLA_RELAY_FLAG_*
+} TRelayChannel_Value;
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
 #define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2

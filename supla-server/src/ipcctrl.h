@@ -24,6 +24,8 @@
 #define IPC_AUTH_LEVEL_OAUTH_USER 1
 #define IPC_AUTH_LEVEL_SUPERUSER 2
 
+#include <stddef.h>
+
 #include "eh.h"
 
 #define IPC_BUFFER_SIZE 4096
@@ -52,6 +54,7 @@ class svr_ipcctrl {
   void set_char(const char *cmd, bool group);
   void set_rgbw(const char *cmd, bool group, bool random);
   void set_digiglass_value(const char *cmd);
+  void get_relay_value(const char *cmd);
   void action_open_close(const char *cmd, bool open);
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);

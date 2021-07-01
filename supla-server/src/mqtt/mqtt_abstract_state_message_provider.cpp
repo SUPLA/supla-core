@@ -19,6 +19,7 @@
 #include <mqtt_abstract_state_message_provider.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 supla_mqtt_abstract_state_message_provider::
@@ -792,8 +793,13 @@ bool supla_mqtt_abstract_state_message_provider::
     case 41:
       verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0);
+      {
+        double power = em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0;
+        if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+          power *= 1000;
+        }
+        snprintf(value, sizeof(value), "%.5f", power);
+      }
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_active",
@@ -803,8 +809,13 @@ bool supla_mqtt_abstract_state_message_provider::
     case 42:
       verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0);
+      {
+        double power = em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0;
+        if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
+          power *= 1000;
+        }
+        snprintf(value, sizeof(value), "%.5f", power);
+      }
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_reactive",
@@ -814,8 +825,13 @@ bool supla_mqtt_abstract_state_message_provider::
     case 43:
       verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_APPARENT, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0);
+      {
+        double power = em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0;
+        if (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA) {
+          power *= 1000;
+        }
+        snprintf(value, sizeof(value), "%.5f", power);
+      }
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_apparent",

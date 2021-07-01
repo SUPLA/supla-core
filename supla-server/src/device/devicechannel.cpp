@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "devicechannel.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -23,7 +25,6 @@
 
 #include "action_gate_openclose.h"
 #include "database.h"
-#include "devicechannel.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
@@ -1495,6 +1496,28 @@ bool supla_device_channels::get_dgf_transparency(int ChannelID,
       char value[SUPLA_CHANNELVALUE_SIZE];
       channel->getValue(value);
       *mask = ((TDigiglass_Value *)value)->mask;
+      result = true;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
+bool supla_device_channels::get_relay_value(int ChannelID,
+                                            TRelayChannel_Value *relay_value) {
+  bool result = false;
+
+  if (relay_value && ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel && (channel->getFunc() == SUPLA_CHANNELFNC_POWERSWITCH ||
+                    channel->getFunc() == SUPLA_CHANNELFNC_LIGHTSWITCH)) {
+      char value[SUPLA_CHANNELVALUE_SIZE];
+      channel->getValue(value);
+      memcpy(relay_value, value, sizeof(TRelayChannel_Value));
       result = true;
     }
 
