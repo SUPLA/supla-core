@@ -729,7 +729,8 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
 
 bool supla_device_channel::setValue(
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t *validity_time_sec, bool *significantChange) {
+    const unsigned _supla_int_t *validity_time_sec, bool *significantChange,
+    unsigned char proto_version) {
   if (validity_time_sec == NULL &&
       (value_valid_to.tv_usec || value_valid_to.tv_sec)) {
     struct timeval now;
@@ -756,7 +757,14 @@ bool supla_device_channel::setValue(
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
+  if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
+       Func == SUPLA_CHANNELFNC_LIGHTSWITCH) &&
+      proto_version < 15) {
+    // https://forum.supla.org/viewtopic.php?f=6&t=8861
+    for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
+      this->value[a] = 0;
+    }
+  } else if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
     TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
     dgf_val->sectionCount = Param1;
   } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 &&
@@ -1538,12 +1546,15 @@ bool supla_device_channels::set_channel_value(
     *converted2extended = false;
   }
 
+  unsigned char proto_version = srpc_get_proto_version(get_srpc());
+
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-    result = channel->setValue(value, validity_time_sec, significantChange);
+    result = channel->setValue(value, validity_time_sec, significantChange,
+                               proto_version);
 
     if (channel->converValueToExtended()) {
       if (converted2extended) {
