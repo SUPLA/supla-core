@@ -214,7 +214,7 @@ class supla_device_channel {
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
                 const unsigned _supla_int_t *validity_time_sec,
-                bool *significantChange);
+                bool *significantChange, unsigned char proto_version);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
