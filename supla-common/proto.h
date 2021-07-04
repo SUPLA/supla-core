@@ -1426,7 +1426,7 @@ typedef struct {
 typedef struct {
   char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
   unsigned short flags;  // SUPLA_RELAY_FLAG_*
-} TRelayChannel_Value;
+} TRelayChannel_Value;   // v. >= 15
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
 #define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
