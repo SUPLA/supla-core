@@ -16,19 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include "serverconnection.h"
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <linux/if_link.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "client/client.h"
 #include "database.h"
 #include "device/device.h"
 #include "log.h"
 #include "safearray.h"
-#include "serverconnection.h"
 #include "srpc.h"
 #include "sthread.h"
 #include "supla-socket.h"
@@ -48,6 +49,8 @@
 
 void *serverconnection::reg_pending_arr = NULL;
 unsigned int serverconnection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
+struct timeval serverconnection::reg_limit_exceeded_alert_time = {0, 0};
+struct timeval serverconnection::reg_limit_exceeded_time = {0, 0};
 
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
@@ -71,6 +74,66 @@ void supla_connection_on_version_error(void *_srpc,
   srpc_sdc_async_versionerror(_srpc, remote_version);
 
   for (a = 0; a < 20; a++) srpc_iterate(_srpc);
+}
+
+// static
+void serverconnection::before_connection_accept(void) {
+  int concurrent_registrations_limit =
+      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  if (concurrent_registrations_limit > 0 &&
+      serverconnection::registration_pending_count() >=
+          concurrent_registrations_limit) {
+    if (serverconnection::reg_limit_exceeded_alert_time.tv_sec == 0) {
+      supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
+                concurrent_registrations_limit);
+      serverconnection::reg_limit_exceeded_alert_time = now;
+    } else if (now.tv_sec -
+                   serverconnection::reg_limit_exceeded_alert_time.tv_sec >=
+               600) {
+      supla_log(
+          LOG_ALERT,
+          "Exceeded number of concurrent registrations takes too long! (%i)",
+          concurrent_registrations_limit);
+      serverconnection::reg_limit_exceeded_alert_time = now;
+    }
+
+    serverconnection::reg_limit_exceeded_time = now;
+
+  } else if (serverconnection::reg_limit_exceeded_time.tv_sec &&
+             now.tv_sec - serverconnection::reg_limit_exceeded_time.tv_sec >=
+                 10) {
+    serverconnection::reg_limit_exceeded_time = {0, 0};
+    serverconnection::reg_limit_exceeded_alert_time = {0, 0};
+    supla_log(LOG_INFO,
+              "The number of concurrent registrations returned below the "
+              "limit");
+  }
+}
+
+// static
+bool serverconnection::is_connection_allowed(unsigned int ipv4) {
+  int concurrent_registrations_limit =
+      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
+
+  if (concurrent_registrations_limit > 0 &&
+      serverconnection::registration_pending_count() >=
+          concurrent_registrations_limit) {
+    for (int a = 0; a < LOCAL_IPV4_ARRAY_SIZE; a++) {
+      if (serverconnection::local_ipv4[a] == 0) {  // end of list
+        break;
+      } else if (serverconnection::local_ipv4[a] == ipv4) {
+        return 1;
+      }
+    }
+
+    return 0;
+  }
+
+  return 1;
 }
 
 // static
@@ -119,6 +182,8 @@ int serverconnection::registration_pending_count() {
 
 serverconnection::serverconnection(void *ssd, void *supla_socket,
                                    unsigned int client_ipv4) {
+  safe_array_add(serverconnection::reg_pending_arr, this);
+
   gettimeofday(&this->init_time, NULL);
   this->client_ipv4 = client_ipv4;
   this->sthread = NULL;
@@ -886,43 +951,6 @@ end:
 
 void serverconnection::execute(void *sthread) {
   this->sthread = sthread;
-
-  int concurrent_registrations_limit =
-      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
-
-  if (concurrent_registrations_limit > 0) {
-    safe_array_lock(serverconnection::reg_pending_arr);
-
-    if (serverconnection::registration_pending_count() <
-        concurrent_registrations_limit) {
-      safe_array_add(serverconnection::reg_pending_arr, this);
-      concurrent_registrations_limit = 0;
-    }
-
-    safe_array_unlock(serverconnection::reg_pending_arr);
-  }
-
-  if (concurrent_registrations_limit > 0) {
-    for (int a = 0; a < LOCAL_IPV4_ARRAY_SIZE; a++) {
-      if (serverconnection::local_ipv4[a] == 0) {
-        break;
-      } else if (serverconnection::local_ipv4[a] == getClientIpv4()) {
-        concurrent_registrations_limit = 0;
-        break;
-      }
-    }
-  }
-
-  if (concurrent_registrations_limit > 0) {
-    supla_log(LOG_DEBUG, "Connection Dropped");
-    sthread_terminate(sthread);
-    return;
-  }
-
-  if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
-    sthread_terminate(sthread);
-    return;
-  }
 
   supla_log(LOG_DEBUG, "Connection Started %i, secure=%i", sthread,
             ssocket_is_secure(ssd));
