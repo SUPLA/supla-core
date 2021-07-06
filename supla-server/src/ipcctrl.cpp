@@ -260,7 +260,7 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
         supla_user::get_electricity_measurement(UserID, DeviceID, ChannelID);
 
     if (em != NULL) {
-      TElectricityMeter_ExtendedValue em_ev;
+      TElectricityMeter_ExtendedValue em_ev = {};
       char currency[4];
       em->getMeasurement(&em_ev);
       em->getCurrency(currency);
