@@ -74,7 +74,7 @@ class serverconnection {
   void catch_incorrect_call(unsigned int call_type);
 
  public:
-  static void before_connection_accept(void);
+  static void log_limits(void);
   static bool is_connection_allowed(unsigned int ipv4);
 
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);

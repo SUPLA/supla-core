@@ -66,8 +66,6 @@ void accept_loop(void *ssd, void *al_sthread) {
   while (sthread_isterminated(al_sthread) == 0 && st_app_terminate == 0) {
     safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_cnd);
 
-    serverconnection::before_connection_accept();
-
     unsigned int ipv4;
     void *supla_socket = NULL;
 

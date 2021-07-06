@@ -77,7 +77,7 @@ void supla_connection_on_version_error(void *_srpc,
 }
 
 // static
-void serverconnection::before_connection_accept(void) {
+void serverconnection::log_limits(void) {
   int concurrent_registrations_limit =
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
