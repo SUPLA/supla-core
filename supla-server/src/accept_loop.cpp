@@ -61,7 +61,6 @@ char accept_loop_srvconn_thread_twt(void *svrconn_sthread) {
 }
 
 void accept_loop(void *ssd, void *al_sthread) {
-  void *supla_socket = NULL;
   void *svrconn_thread_arr = safe_array_init();
 
   while (sthread_isterminated(al_sthread) == 0 && st_app_terminate == 0) {
@@ -70,6 +69,7 @@ void accept_loop(void *ssd, void *al_sthread) {
     serverconnection::before_connection_accept();
 
     unsigned int ipv4;
+    void *supla_socket = NULL;
 
     if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0 &&
         supla_socket != NULL) {
@@ -84,7 +84,7 @@ void accept_loop(void *ssd, void *al_sthread) {
 
         safe_array_add(svrconn_thread_arr, sthread_run(&stp));
       } else {
-        ssocket_supla_socket_free(&supla_socket);
+        ssocket_supla_socket_free(supla_socket);
         supla_log(LOG_DEBUG, "Connection Dropped");
       }
     }
