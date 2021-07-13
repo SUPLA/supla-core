@@ -1535,6 +1535,30 @@ bool supla_device_channels::get_relay_value(int ChannelID,
   return result;
 }
 
+bool supla_device_channels::reset_counters(int ChannelID) {
+  bool result = false;
+
+  if (ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel && (channel->getFlags() & SUPLA_CALCFG_CMD_RESET_COUNTERS)) {
+      TSD_DeviceCalCfgRequest request = {};
+
+      request.ChannelNumber = channel->getNumber();
+      request.Command = SUPLA_CALCFG_CMD_RESET_COUNTERS;
+      request.SuperUserAuthorized = true;
+
+      srpc_sd_async_device_calcfg_request(get_srpc(), &request);
+      result = true;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
 bool supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
     bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,

@@ -377,6 +377,7 @@ class supla_device_channels {
   bool action_open_close_without_canceling_tasks(int SenderID, int ChannelID,
                                                  int GroupID,
                                                  unsigned char EOL);
+  bool reset_counters(int ChannelID);
 };
 
 #endif /* DEVICECHANNEL_H_ */
