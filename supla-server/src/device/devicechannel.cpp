@@ -2106,6 +2106,9 @@ bool supla_device_channels::get_channel_state(
 bool supla_device_channels::get_channel_complex_value(
     channel_complex_value *value, int ChannelID) {
   bool result = false;
+
+  memset(value, 0, sizeof(supla_device_channel));
+
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
@@ -2150,12 +2153,20 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       case SUPLA_CHANNELFNC_MAILSENSOR:
       case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER: {
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         value->hi = cv[0] > 0;
+      } break;
+
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+        TRelayChannel_Value relay_value = {};
+        if (get_relay_value(ChannelID, &relay_value)) {
+          value->hi = relay_value.hi > 0;
+          value->overcurrent_relay_off =
+              relay_value.flags & SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+        }
       } break;
 
       case SUPLA_CHANNELFNC_DIMMER:
