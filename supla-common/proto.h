@@ -227,6 +227,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
 #define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
 #define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
+#define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
+#define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -449,13 +451,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION1 0x0080                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION2 0x0100                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION3 0x0200                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION4 0x0400                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION5 0x0800                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000             // ver. >= 15
-#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000           // ver. >= 15
+// Free bits for future use:  0x0080, 0x0100, 0x0200, 0x0400, 0x0800
+#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
 // Free bits for future use: 0x4000, 0x8000
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
@@ -1744,6 +1742,71 @@ typedef struct {
   _supla_int_t Param2;
   _supla_int_t Param3;
 } TSD_ChannelIntParams;
+
+#define SUPLA_CHANNEL_CONFIG_MAXSIZE 128
+#define SUPLA_CONFIG_TYPE_DEFAULT 0
+
+typedef struct {
+  unsigned char ChannelNumber;
+  unsigned char ConfigType;
+  unsigned _supla_int_t Flags;
+} TDS_GetChannelConfigRequest;  // v. >= 16
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t Func;
+  unsigned short ConfigSize;
+  char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct! v. >=
+                                              // 16. TSD_DeviceChannelConfig_*
+} TSD_ChannelConfig;
+
+typedef struct {
+  _supla_int_t TimeMS;
+} TSD_ChannelConfig_StaircaseTimer;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ClosingTimeMS;
+  _supla_int_t OpeningTimeMS;
+} TSD_ChannelConfig_Rollershutter;  // v. >= 16
+
+typedef struct {
+  unsigned _supla_int_t ActiveActions;
+} TSD_ChannelConfig_ActionTrigger;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ChannelID;
+  unsigned _supla_int_t DurationMS;
+  unsigned char On;
+} TCS_TimerArmRequest;  // v. >= 16
+
+#define SUPLA_ACTION_MAXCOUNT 10
+
+#define SUPLA_ACTION_CAP_BTN_HOLD_1SEC 1
+#define SUPLA_ACTION_CAP_BTN_HOLD_2SEC 2
+#define SUPLA_ACTION_CAP_BTN_HOLD_3SEC 3
+#define SUPLA_ACTION_CAP_BTN_HOLD_4SEC 4
+#define SUPLA_ACTION_CAP_BTN_HOLD_5SEC 5
+#define SUPLA_ACTION_CAP_BTN_HOLD_6SEC 6
+#define SUPLA_ACTION_CAP_BTN_HOLD_7SEC 7
+#define SUPLA_ACTION_CAP_BTN_HOLD_8SEC 8
+#define SUPLA_ACTION_CAP_BTN_HOLD_9SEC 9
+#define SUPLA_ACTION_CAP_BTN_HOLD_10SEC 10
+#define SUPLA_ACTION_CAP_BTN_PRESS_1TIME 101
+#define SUPLA_ACTION_CAP_BTN_PRESS_2TIMES 102
+#define SUPLA_ACTION_CAP_BTN_PRESS_3TIMES 103
+#define SUPLA_ACTION_CAP_BTN_PRESS_4TIMES 104
+#define SUPLA_ACTION_CAP_BTN_PRESS_5TIMES 105
+#define SUPLA_ACTION_CAP_BTN_PRESS_6TIMES 106
+#define SUPLA_ACTION_CAP_BTN_PRESS_7TIMES 107
+#define SUPLA_ACTION_CAP_BTN_PRESS_8TIMES 108
+#define SUPLA_ACTION_CAP_BTN_PRESS_9TIMES 109
+#define SUPLA_ACTION_CAP_BTN_PRESS_10TIMES 110
+#define SUPLA_ACTION_CAP_BTN_UNPRESS 200
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t ActionCap[SUPLA_ACTION_MAXCOUNT];
+} TDS_SuplaRegisterAction;  // v. >= 16
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
