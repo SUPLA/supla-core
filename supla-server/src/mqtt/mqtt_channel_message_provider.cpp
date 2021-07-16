@@ -928,7 +928,7 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
   ha_json_set_string_param(root, "pl_not_avail", "false");
 
   ha_json_set_string_param(
-      root, "value_template",
+      root, "pos_tpl",
       "{% if value is defined %}{% if value | int < 0 %}0{% elif value | int > "
       "100 %}100{% else %}{{value | int}}{% endif %}{% else %}0{% endif %}");
 

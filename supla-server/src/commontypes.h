@@ -59,6 +59,7 @@ typedef struct {
   double depth;
   char shut;
   bool partially_closed;
+  bool overcurrent_relay_off;
   TValve_Value valve_value;
 } channel_complex_value;
 

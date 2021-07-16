@@ -17,12 +17,15 @@
  */
 
 #include "user.h"
+
 #include <amazon/alexacredentials.h>
 #include <google/googlehomecredentials.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include <list>
+
 #include "client.h"
 #include "clientcontainer.h"
 #include "database.h"
@@ -1133,7 +1136,34 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
                                        TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
 
-  supla_device *device = device_container->findByID(DeviceId);
+  if (!request) {
+    return false;
+  }
+
+  supla_device *device = NULL;
+
+  if (request->Command == SUPLA_CALCFG_CMD_RESET_COUNTERS) {
+    device = device_container->findByID(DeviceId);
+    if (device) {
+      switch (device->get_channels()->get_channel_func(ChannelId)) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+          std::list<int> related =
+              device->get_channels()->related_channel(ChannelId);
+          if (related.size() == 1) {
+            DeviceId = 0;
+            ChannelId = related.front();
+            device = device_by_channelid(ChannelId);
+          }
+        } break;
+      }
+    }
+  }
+
+  if (!device && DeviceId) {
+    device = device_container->findByID(DeviceId);
+  }
+
   if (device) {
     result = device->get_channels()->calcfg_request(
         SenderID, ChannelId,

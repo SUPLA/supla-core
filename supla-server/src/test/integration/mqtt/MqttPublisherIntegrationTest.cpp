@@ -17,6 +17,7 @@
  */
 
 #include "MqttPublisherIntegrationTest.h"
+
 #include "log.h"  // NOLINT
 #include "mqtt_publisher.h"
 #include "mqtt_publisher_datasource.h"
@@ -49,7 +50,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(613);
+  waitForPublications(616);
   // print_expected();
 
   const char *expectedData[] = {
@@ -589,10 +590,10 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "cls\":\"SHUT\",\"pl_stop\":\"STOP\",\"set_pos_t\":\"~/set/"
       "closing_percentage\",\"pos_t\":\"~/state/"
       "shut\",\"pos_open\":0,\"pos_clsd\":100,\"avty_t\":\"~/state/"
-      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"value_"
-      "template\":\"{% if value is defined %}{% if value | int < 0 %}0{% elif "
-      "value | int > 100 %}100{% else %}{{value | int}}{% endif %}{% else "
-      "%}0{% endif %}\"}",
+      "connected\",\"pl_avail\":\"true\",\"pl_not_avail\":\"false\",\"pos_"
+      "tpl\":\"{% if value is defined %}{% if value | int < 0 %}0{% elif value "
+      "| int > 100 %}100{% else %}{{value | int}}{% endif %}{% else %}0{% "
+      "endif %}\"}",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/state/"
       "connected",
       "false",
@@ -744,6 +745,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "false",
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/state/on",
       NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/state/"
+      "overcurrent_relay_off",
+      NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/type",
       "RELAY",
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/function",
@@ -767,6 +771,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "connected",
       "false",
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/state/on",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/state/"
+      "overcurrent_relay_off",
       NULL,
       "supla/45004b208185b207175522c7471f8526/devices/40/channels/56/type",
       "RELAY",
@@ -792,6 +799,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "connected",
       "false",
       "supla/45004b208185b207175522c7471f8526/devices/40/channels/56/state/on",
+      NULL,
+      "supla/45004b208185b207175522c7471f8526/devices/40/channels/56/state/"
+      "overcurrent_relay_off",
       NULL,
       "supla/0c6beb47b1c2b14191e2bbb49e9d41c2/devices/157/channels/286/type",
       "RELAY",
@@ -2238,7 +2248,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
 
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
-  waitForPublications(613);
+  waitForPublications(616);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
@@ -2330,7 +2340,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
 
 TEST_F(MqttPublisherIntegrationTest, stateScope) {
   waitForConnection();
-  waitForPublications(613);
+  waitForPublications(616);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);

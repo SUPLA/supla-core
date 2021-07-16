@@ -20,6 +20,7 @@
 #define DEVICECHANNEL_H_
 
 #include <list>
+
 #include "commontypes.h"
 #include "proto.h"
 
@@ -213,7 +214,7 @@ class supla_device_channel {
   void getValue(char value[SUPLA_CHANNELVALUE_SIZE]);
   bool setValue(const char value[SUPLA_CHANNELVALUE_SIZE],
                 const unsigned _supla_int_t *validity_time_sec,
-                bool *significantChange);
+                bool *significantChange, unsigned char proto_version);
   bool getExtendedValue(TSuplaChannelExtendedValue *ev);
   void setExtendedValue(TSuplaChannelExtendedValue *ev);
   void assignRgbwValue(char value[SUPLA_CHANNELVALUE_SIZE], int color,
@@ -361,6 +362,7 @@ class supla_device_channels {
                       unsigned char EOL, char brightness);
   bool set_dgf_transparency(int SenderID, int ChannelID,
                             unsigned short activeBits, unsigned short mask);
+  bool get_relay_value(int ChannelID, TRelayChannel_Value *relay_value);
   bool action_toggle(int SenderID, int ChannelID, int GroupID,
                      unsigned char EOL);
   bool action_shut(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
@@ -375,6 +377,7 @@ class supla_device_channels {
   bool action_open_close_without_canceling_tasks(int SenderID, int ChannelID,
                                                  int GroupID,
                                                  unsigned char EOL);
+  bool reset_counters(int ChannelID);
 };
 
 #endif /* DEVICECHANNEL_H_ */

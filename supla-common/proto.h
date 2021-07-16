@@ -227,6 +227,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
 #define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
 #define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
+#define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
+#define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -286,7 +288,12 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #endif
 
 #define SUPLA_CHANNELVALUE_SIZE 8
+
+#ifdef __AVR__
+#define SUPLA_CHANNELEXTENDEDVALUE_SIZE 256
+#else
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
+#endif
 
 #define SUPLA_CHANNELTYPE_SENSORNO 1000
 #define SUPLA_CHANNELTYPE_SENSORNC 1010        // DEPRECATED
@@ -444,12 +451,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION1 0x0080                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION2 0x0100                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION3 0x0200                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION4 0x0400                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION5 0x0800                     // ver. >= 12
-// Free bits for future use: 0x1000, 0x2000, 0x4000, 0x8000
+// Free bits for future use:  0x0080, 0x0100, 0x0200, 0x0400, 0x0800
+#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
+// Free bits for future use: 0x4000, 0x8000
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000           // ver. >= 12
@@ -681,7 +686,7 @@ typedef struct {
 
   char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
 
-  _supla_int_t Flags;
+  _supla_int_t Flags;  // SUPLA_DEVICE_FLAG_*
   _supla_int16_t ManufacturerID;
   _supla_int16_t ProductID;
 
@@ -1156,9 +1161,9 @@ typedef struct {
   unsigned _supla_int16_t voltage[3];  // * 0.01 V
   unsigned _supla_int16_t
       current[3];  // * 0.001 A (0.01A FOR EM_VAR_CURRENT_OVER_65A)
-  _supla_int_t power_active[3];    // * 0.00001 kW
-  _supla_int_t power_reactive[3];  // * 0.00001 kvar
-  _supla_int_t power_apparent[3];  // * 0.00001 kVA
+  _supla_int_t power_active[3];    // * 0.00001 W or kW
+  _supla_int_t power_reactive[3];  // * 0.00001 var or kvar
+  _supla_int_t power_apparent[3];  // * 0.00001 VA or kVA
   _supla_int16_t power_factor[3];  // * 0.001
   _supla_int16_t phase_angle[3];   // * 0.1 degree
 } TElectricityMeter_Measurement;   // v. >= 10
@@ -1180,7 +1185,15 @@ typedef struct {
 #define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
 #define EM_VAR_ALL 0xFFFF
 
+#define EM_VAR_POWER_ACTIVE_KWH 0x100000
+#define EM_VAR_POWER_REACTIVE_KVAR 0x200000
+#define EM_VAR_POWER_APPARENT_KVA 0x400000
+
+#ifdef __AVR__
+#define EM_MEASUREMENT_COUNT 1
+#else
 #define EM_MEASUREMENT_COUNT 5
+#endif
 
 #ifdef USE_DEPRECATED_EMEV_V1
 // [IODevice->Server->Client]
@@ -1301,6 +1314,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_DEBUG_STRING 5000                // v. >= 12
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
+#define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1406,6 +1420,13 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
+
+#define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
+
+typedef struct {
+  char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
+  unsigned short flags;  // SUPLA_RELAY_FLAG_*
+} TRelayChannel_Value;   // v. >= 15
 
 #define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
 #define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
@@ -1721,6 +1742,71 @@ typedef struct {
   _supla_int_t Param2;
   _supla_int_t Param3;
 } TSD_ChannelIntParams;
+
+#define SUPLA_CHANNEL_CONFIG_MAXSIZE 128
+#define SUPLA_CONFIG_TYPE_DEFAULT 0
+
+typedef struct {
+  unsigned char ChannelNumber;
+  unsigned char ConfigType;
+  unsigned _supla_int_t Flags;
+} TDS_GetChannelConfigRequest;  // v. >= 16
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t Func;
+  unsigned short ConfigSize;
+  char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct! v. >=
+                                              // 16. TSD_DeviceChannelConfig_*
+} TSD_ChannelConfig;
+
+typedef struct {
+  _supla_int_t TimeMS;
+} TSD_ChannelConfig_StaircaseTimer;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ClosingTimeMS;
+  _supla_int_t OpeningTimeMS;
+} TSD_ChannelConfig_Rollershutter;  // v. >= 16
+
+typedef struct {
+  unsigned _supla_int_t ActiveActions;
+} TSD_ChannelConfig_ActionTrigger;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ChannelID;
+  unsigned _supla_int_t DurationMS;
+  unsigned char On;
+} TCS_TimerArmRequest;  // v. >= 16
+
+#define SUPLA_ACTION_MAXCOUNT 10
+
+#define SUPLA_ACTION_CAP_BTN_HOLD_1SEC 1
+#define SUPLA_ACTION_CAP_BTN_HOLD_2SEC 2
+#define SUPLA_ACTION_CAP_BTN_HOLD_3SEC 3
+#define SUPLA_ACTION_CAP_BTN_HOLD_4SEC 4
+#define SUPLA_ACTION_CAP_BTN_HOLD_5SEC 5
+#define SUPLA_ACTION_CAP_BTN_HOLD_6SEC 6
+#define SUPLA_ACTION_CAP_BTN_HOLD_7SEC 7
+#define SUPLA_ACTION_CAP_BTN_HOLD_8SEC 8
+#define SUPLA_ACTION_CAP_BTN_HOLD_9SEC 9
+#define SUPLA_ACTION_CAP_BTN_HOLD_10SEC 10
+#define SUPLA_ACTION_CAP_BTN_PRESS_1TIME 101
+#define SUPLA_ACTION_CAP_BTN_PRESS_2TIMES 102
+#define SUPLA_ACTION_CAP_BTN_PRESS_3TIMES 103
+#define SUPLA_ACTION_CAP_BTN_PRESS_4TIMES 104
+#define SUPLA_ACTION_CAP_BTN_PRESS_5TIMES 105
+#define SUPLA_ACTION_CAP_BTN_PRESS_6TIMES 106
+#define SUPLA_ACTION_CAP_BTN_PRESS_7TIMES 107
+#define SUPLA_ACTION_CAP_BTN_PRESS_8TIMES 108
+#define SUPLA_ACTION_CAP_BTN_PRESS_9TIMES 109
+#define SUPLA_ACTION_CAP_BTN_PRESS_10TIMES 110
+#define SUPLA_ACTION_CAP_BTN_UNPRESS 200
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t ActionCap[SUPLA_ACTION_MAXCOUNT];
+} TDS_SuplaRegisterAction;  // v. >= 16
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2

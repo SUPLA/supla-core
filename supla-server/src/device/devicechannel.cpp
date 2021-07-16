@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "devicechannel.h"
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
@@ -23,7 +25,6 @@
 
 #include "action_gate_openclose.h"
 #include "database.h"
-#include "devicechannel.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
@@ -728,7 +729,8 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
 
 bool supla_device_channel::setValue(
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    const unsigned _supla_int_t *validity_time_sec, bool *significantChange) {
+    const unsigned _supla_int_t *validity_time_sec, bool *significantChange,
+    unsigned char proto_version) {
   if (validity_time_sec == NULL &&
       (value_valid_to.tv_usec || value_valid_to.tv_sec)) {
     struct timeval now;
@@ -755,7 +757,14 @@ bool supla_device_channel::setValue(
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
+  if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
+       Func == SUPLA_CHANNELFNC_LIGHTSWITCH) &&
+      proto_version < 15) {
+    // https://forum.supla.org/viewtopic.php?f=6&t=8861
+    for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
+      this->value[a] = 0;
+    }
+  } else if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
     TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
     dgf_val->sectionCount = Param1;
   } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 &&
@@ -1504,6 +1513,52 @@ bool supla_device_channels::get_dgf_transparency(int ChannelID,
   return result;
 }
 
+bool supla_device_channels::get_relay_value(int ChannelID,
+                                            TRelayChannel_Value *relay_value) {
+  bool result = false;
+
+  if (relay_value && ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel && (channel->getFunc() == SUPLA_CHANNELFNC_POWERSWITCH ||
+                    channel->getFunc() == SUPLA_CHANNELFNC_LIGHTSWITCH)) {
+      char value[SUPLA_CHANNELVALUE_SIZE];
+      channel->getValue(value);
+      memcpy(relay_value, value, sizeof(TRelayChannel_Value));
+      result = true;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
+bool supla_device_channels::reset_counters(int ChannelID) {
+  bool result = false;
+
+  if (ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel && (channel->getFlags() & SUPLA_CALCFG_CMD_RESET_COUNTERS)) {
+      TSD_DeviceCalCfgRequest request = {};
+
+      request.ChannelNumber = channel->getNumber();
+      request.Command = SUPLA_CALCFG_CMD_RESET_COUNTERS;
+      request.SuperUserAuthorized = true;
+
+      srpc_sd_async_device_calcfg_request(get_srpc(), &request);
+      result = true;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
 bool supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
     bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
@@ -1515,12 +1570,15 @@ bool supla_device_channels::set_channel_value(
     *converted2extended = false;
   }
 
+  unsigned char proto_version = srpc_get_proto_version(get_srpc());
+
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel) {
-    result = channel->setValue(value, validity_time_sec, significantChange);
+    result = channel->setValue(value, validity_time_sec, significantChange,
+                               proto_version);
 
     if (channel->converValueToExtended()) {
       if (converted2extended) {
@@ -2048,6 +2106,9 @@ bool supla_device_channels::get_channel_state(
 bool supla_device_channels::get_channel_complex_value(
     channel_complex_value *value, int ChannelID) {
   bool result = false;
+
+  memset(value, 0, sizeof(supla_device_channel));
+
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
@@ -2092,12 +2153,20 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       case SUPLA_CHANNELFNC_MAILSENSOR:
       case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER: {
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         value->hi = cv[0] > 0;
+      } break;
+
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+        TRelayChannel_Value relay_value = {};
+        if (get_relay_value(ChannelID, &relay_value)) {
+          value->hi = relay_value.hi > 0;
+          value->overcurrent_relay_off =
+              relay_value.flags & SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF;
+        }
       } break;
 
       case SUPLA_CHANNELFNC_DIMMER:

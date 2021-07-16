@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "accept_loop.h"
+
 #include <stdio.h>
 #include <unistd.h>
 
-#include "accept_loop.h"
 #include "client.h"
 #include "database.h"
 #include "device.h"
@@ -60,60 +61,30 @@ char accept_loop_srvconn_thread_twt(void *svrconn_sthread) {
 }
 
 void accept_loop(void *ssd, void *al_sthread) {
-  void *supla_socket = NULL;
   void *svrconn_thread_arr = safe_array_init();
-
-  int concurrent_registrations_limit =
-      scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
-
-  struct timeval reg_limit_exceeded_alert_time = {0, 0};
-  struct timeval reg_limit_exceeded_time = {0, 0};
-  struct timeval now;
 
   while (sthread_isterminated(al_sthread) == 0 && st_app_terminate == 0) {
     safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_cnd);
 
-    gettimeofday(&now, NULL);
-
-    if (concurrent_registrations_limit > 0 &&
-        serverconnection::registration_pending_count() >=
-            concurrent_registrations_limit) {
-      if (reg_limit_exceeded_alert_time.tv_sec == 0) {
-        supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
-                  concurrent_registrations_limit);
-        reg_limit_exceeded_alert_time = now;
-      } else if (now.tv_sec - reg_limit_exceeded_alert_time.tv_sec >= 600) {
-        supla_log(
-            LOG_ALERT,
-            "Exceeded number of concurrent registrations takes too long! (%i)",
-            concurrent_registrations_limit);
-        reg_limit_exceeded_alert_time = now;
-      }
-
-      reg_limit_exceeded_time = now;
-
-    } else if (reg_limit_exceeded_time.tv_sec &&
-               now.tv_sec - reg_limit_exceeded_time.tv_sec >= 10) {
-      reg_limit_exceeded_time = {0, 0};
-      reg_limit_exceeded_alert_time = {0, 0};
-      supla_log(LOG_INFO,
-                "The number of concurrent registrations returned below the "
-                "limit");
-    }
-
     unsigned int ipv4;
+    void *supla_socket = NULL;
 
     if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0 &&
         supla_socket != NULL) {
-      Tsthread_params stp;
+      if (serverconnection::is_connection_allowed(ipv4)) {
+        Tsthread_params stp;
 
-      stp.execute = accept_loop_srvconn_execute;
-      stp.finish = accept_loop_srvconn_finish;
-      stp.user_data = new serverconnection(ssd, supla_socket, ipv4);
-      stp.free_on_finish = 0;
-      stp.initialize = NULL;
+        stp.execute = accept_loop_srvconn_execute;
+        stp.finish = accept_loop_srvconn_finish;
+        stp.user_data = new serverconnection(ssd, supla_socket, ipv4);
+        stp.free_on_finish = 0;
+        stp.initialize = NULL;
 
-      safe_array_add(svrconn_thread_arr, sthread_run(&stp));
+        safe_array_add(svrconn_thread_arr, sthread_run(&stp));
+      } else {
+        ssocket_supla_socket_free(supla_socket);
+        supla_log(LOG_DEBUG, "Connection Dropped");
+      }
     }
   }
 

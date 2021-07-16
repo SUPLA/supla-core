@@ -19,6 +19,7 @@
 #include <mqtt_abstract_state_message_provider.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 supla_mqtt_abstract_state_message_provider::
@@ -251,15 +252,28 @@ bool supla_mqtt_abstract_state_message_provider::get_gate_message_at_index(
 
 bool supla_mqtt_abstract_state_message_provider::get_onoff_message_at_index(
     bool on, unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    void **message, size_t *message_size, bool *overcurrent_relay_off) {
   if (index == 1) {
     return create_message(topic_prefix, user_suid, topic_name, message,
                           message_size, on ? "true" : "false", false,
                           "devices/%i/channels/%i/state/on", get_device_id(),
                           get_channel_id());
+  } else if (index == 2 && overcurrent_relay_off) {
+    return create_message(topic_prefix, user_suid, topic_name, message,
+                          message_size,
+                          *overcurrent_relay_off ? "true" : "false", false,
+                          "devices/%i/channels/%i/state/overcurrent_relay_off",
+                          get_device_id(), get_channel_id());
   }
 
   return false;
+}
+
+bool supla_mqtt_abstract_state_message_provider::get_onoff_message_at_index(
+    bool on, unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  return get_onoff_message_at_index(on, index, topic_prefix, topic_name,
+                                    message, message_size, NULL);
 }
 
 bool supla_mqtt_abstract_state_message_provider::get_depth_message_at_index(
@@ -792,8 +806,13 @@ bool supla_mqtt_abstract_state_message_provider::
     case 41:
       verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_ACTIVE, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0);
+      {
+        double power = em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0;
+        if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+          power *= 1000;
+        }
+        snprintf(value, sizeof(value), "%.5f", power);
+      }
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_active",
@@ -803,8 +822,13 @@ bool supla_mqtt_abstract_state_message_provider::
     case 42:
       verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_REACTIVE, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0);
+      {
+        double power = em ? (em_ev.m[0].power_reactive[phase] * 0.00001) : 0;
+        if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
+          power *= 1000;
+        }
+        snprintf(value, sizeof(value), "%.5f", power);
+      }
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_reactive",
@@ -814,8 +838,13 @@ bool supla_mqtt_abstract_state_message_provider::
     case 43:
       verify_flag(&em, em_ev.measured_values, EM_VAR_POWER_APPARENT, 0, message,
                   message_size);
-      snprintf(value, sizeof(value), "%.5f",
-               em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0);
+      {
+        double power = em ? (em_ev.m[0].power_apparent[phase] * 0.00001) : 0;
+        if (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA) {
+          power *= 1000;
+        }
+        snprintf(value, sizeof(value), "%.5f", power);
+      }
       return create_message(
           topic_prefix, user_suid, topic_name, message, message_size, value,
           false, "devices/%i/channels/%i/state/phases/%i/power_apparent",
@@ -889,14 +918,20 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       return get_lck_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
 
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return get_onoff_message_at_index(cvalue && cvalue->hi > 0, index,
                                         topic_prefix, topic_name, message,
                                         message_size);
+
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+      bool overcurrent_relay_off = cvalue && cvalue->overcurrent_relay_off;
+      return get_onoff_message_at_index(cvalue && cvalue->hi > 0, index,
+                                        topic_prefix, topic_name, message,
+                                        message_size, &overcurrent_relay_off);
+    }
 
     case SUPLA_CHANNELFNC_DEPTHSENSOR:
       return get_depth_message_at_index(index, topic_prefix, topic_name,

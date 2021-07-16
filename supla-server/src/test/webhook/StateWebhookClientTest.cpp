@@ -17,6 +17,7 @@
  */
 
 #include "StateWebhookClientTest.h"
+
 #include "TrivialHttpFactoryMock.h"
 #include "TrivialHttpMock.h"
 #include "webhook/statewebhookcredentials.h"
@@ -1007,6 +1008,71 @@ TEST_F(StateWebhookClientTest, sendImpulseCounterElectricityMeasurementReport) {
   ASSERT_TRUE(
       client->sendImpulseCounterElectricityMeasurementReport(123, &icm, false));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(StateWebhookClientTest, measurementUnitChangeTest) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 1109\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":123,\"channelFunction\":"
+      "\"ELECTRICITYMETER\",\"timestamp\":1600097258,\"state\":{\"support\":"
+      "7405567,\"currency\":\"PLN\",\"pricePerUnit\":1,\"totalCost\":3,"
+      "\"phases\":[{\"number\":1,\"frequency\":60.01,\"voltage\":240,"
+      "\"current\":50,\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":"
+      "1,\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1},{\"number\":2,\"frequency\":60.01,"
+      "\"voltage\":240,\"current\":50,\"powerActive\":1,\"powerReactive\":-1,"
+      "\"powerApparent\":1,\"powerFactor\":1,\"phaseAngle\":-180,"
+      "\"totalForwardActiveEnergy\":1,\"totalReverseActiveEnergy\":1,"
+      "\"totalForwardReactiveEnergy\":1,\"totalReverseReactiveEnergy\":1},{"
+      "\"number\":3,\"frequency\":60.01,\"voltage\":240,\"current\":50,"
+      "\"powerActive\":1,\"powerReactive\":-1,\"powerApparent\":1,"
+      "\"powerFactor\":1,\"phaseAngle\":-180,\"totalForwardActiveEnergy\":1,"
+      "\"totalReverseActiveEnergy\":1,\"totalForwardReactiveEnergy\":1,"
+      "\"totalReverseReactiveEnergy\":1}],\"totalForwardActiveEnergyBalanced\":"
+      "1,\"totalReverseActiveEnergyBalanced\":1,\"connected\":true}}";
+
+  TElectricityMeter_ExtendedValue_V2 em_ev;
+  memset(&em_ev, 0, sizeof(TElectricityMeter_ExtendedValue_V2));
+
+  em_ev.m[0].freq = 6001;
+
+  for (int p = 0; p < 3; p++) {
+    em_ev.total_forward_active_energy[p] = 100000;
+    em_ev.total_reverse_active_energy[p] = 100000;
+    em_ev.total_forward_reactive_energy[p] = 100000;
+    em_ev.total_reverse_reactive_energy[p] = 100000;
+
+    em_ev.m[0].voltage[p] = 24000;
+    em_ev.m[0].current[p] = 50000;
+
+    em_ev.m[0].power_active[p] = 100;
+    em_ev.m[0].power_reactive[p] = -100;
+    em_ev.m[0].power_apparent[p] = 100;
+    em_ev.m[0].power_factor[p] = 1000;
+    em_ev.m[0].phase_angle[p] = -1800;
+  }
+
+  em_ev.total_forward_active_energy_balanced = 100000;
+  em_ev.total_reverse_active_energy_balanced = 100000;
+
+  em_ev.measured_values = EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KWH |
+                          EM_VAR_POWER_REACTIVE_KVAR |
+                          EM_VAR_POWER_APPARENT_KVA;
+  em_ev.period = 1;
+  em_ev.m_count = 1;
+
+  char currency[] = "PLN";
+  {
+    supla_channel_electricity_measurement em(123, &em_ev, 10000, currency);
+
+    ASSERT_TRUE(client->sendElectricityMeasurementReport(123, &em, true));
+    ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+  }
 }
 
 TEST_F(StateWebhookClientTest, sendElectricityMeasurementReport) {

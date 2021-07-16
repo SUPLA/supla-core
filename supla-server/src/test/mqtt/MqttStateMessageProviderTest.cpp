@@ -200,6 +200,42 @@ TEST_F(MqttStateMessageProviderTest, onOff) {
       "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/on",
       789));
 
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/overcurrent_relay_off",
+                              789));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, overcurrentRelayOff) {
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+
+  cvalue.online = true;
+  cvalue.function = SUPLA_CHANNELFNC_POWERSWITCH;
+  cvalue.hi = false;
+  cvalue.overcurrent_relay_off = true;
+
+  provider->setComplexValue(&cvalue);
+  provider->set_ids(123, 456, 789);
+  provider->set_user_suid();
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/on",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/overcurrent_relay_off",
+                              789));
+
   ASSERT_FALSE(dataExists(provider));
 }
 
@@ -939,6 +975,89 @@ TEST_F(MqttStateMessageProviderTest, electricityMeter) {
                               789, 3));
 
   ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, measurementUnitChangeTest) {
+  short a = 0;
+  provider->set_ids(123, 456, 789);
+  provider->set_user_suid();
+
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+  cvalue.online = true;
+  cvalue.channel_type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
+  cvalue.function = SUPLA_CHANNELFNC_ELECTRICITY_METER;
+  provider->setMeasuredValues(EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KWH |
+                              EM_VAR_POWER_REACTIVE_KVAR |
+                              EM_VAR_POWER_APPARENT_KVA);
+  provider->setComplexValue(&cvalue);
+
+  for (a = 0; a < 17; a++) {
+    ASSERT_TRUE(dataExists(provider));
+  }
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "1112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "2112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 1));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "3112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 1));
+  for (a = 0; a < 9; a++) {
+    ASSERT_TRUE(dataExists(provider));
+  }
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "2112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "3112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 2));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "4112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 2));
+
+  for (a = 0; a < 9; a++) {
+    ASSERT_TRUE(dataExists(provider));
+  }
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "3112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_active",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "4112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_reactive",
+                              789, 3));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "5112.23000", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/phases/%i/"
+                              "power_apparent",
+                              789, 3));
+
+  ASSERT_TRUE(dataExists(provider));
 }
 
 TEST_F(MqttStateMessageProviderTest, electricityMeterWithoutPhaseValues) {

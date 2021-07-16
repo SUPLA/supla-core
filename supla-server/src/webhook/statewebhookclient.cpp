@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <webhook/statewebhookclient.h>
+
 #include "tools.h"
 #include "user/user.h"
 
@@ -569,20 +570,27 @@ bool supla_state_webhook_client::sendElectricityMeasurementReport(
                 }
 
                 if (em_ev.measured_values & EM_VAR_POWER_ACTIVE) {
-                  cJSON_AddNumberToObject(phase, "powerActive",
-                                          em_ev.m[0].power_active[p] * 0.00001);
+                  double value = em_ev.m[0].power_active[p] * 0.00001;
+                  if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+                    value *= 1000;
+                  }
+                  cJSON_AddNumberToObject(phase, "powerActive", value);
                 }
 
                 if (em_ev.measured_values & EM_VAR_POWER_REACTIVE) {
-                  cJSON_AddNumberToObject(
-                      phase, "powerReactive",
-                      em_ev.m[0].power_reactive[p] * 0.00001);
+                  double value = em_ev.m[0].power_reactive[p] * 0.00001;
+                  if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
+                    value *= 1000;
+                  }
+                  cJSON_AddNumberToObject(phase, "powerReactive", value);
                 }
 
                 if (em_ev.measured_values & EM_VAR_POWER_APPARENT) {
-                  cJSON_AddNumberToObject(
-                      phase, "powerApparent",
-                      em_ev.m[0].power_apparent[p] * 0.00001);
+                  double value = em_ev.m[0].power_apparent[p] * 0.00001;
+                  if (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA) {
+                    value *= 1000;
+                  }
+                  cJSON_AddNumberToObject(phase, "powerApparent", value);
                 }
 
                 if (em_ev.measured_values & EM_VAR_POWER_FACTOR) {

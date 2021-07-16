@@ -17,6 +17,7 @@
  */
 
 #include "ProtoTest.h"
+
 #include "gtest/gtest.h"  // NOLINT
 #include "proto.h"
 
@@ -187,6 +188,20 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
 
   ASSERT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
   ASSERT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
+  ASSERT_EQ((unsigned int)3, sizeof(TRelayChannel_Value));
+  ASSERT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+
+  ASSERT_EQ((unsigned int)6, sizeof(TSD_GetChannelConfigRequest));
+  ASSERT_EQ((unsigned int)135, sizeof(TSD_ChannelConfig));
+  ASSERT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+  ASSERT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+  ASSERT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  TSD_ChannelConfig_ActionTrigger acfg = {};
+  ASSERT_LE(SUPLA_ACTION_MAXCOUNT, sizeof(acfg.ActiveActions) * 8);
 }
 
 TEST_F(ProtoTest, init) {
