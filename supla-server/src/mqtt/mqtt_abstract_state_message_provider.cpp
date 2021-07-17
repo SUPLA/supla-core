@@ -1035,26 +1035,15 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
                                         message, message_size);
 
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-#ifdef SERVER_VERSION_23
-      if (channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-        return get_electricitymeter_message_at_index(
-            index, topic_prefix, topic_name, message, message_size);
-      } else if (channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-        return get_impulsecounter_message_at_index(
-            index, topic_prefix, topic_name, message, message_size);
-      }
-#else
       return get_electricitymeter_message_at_index(
           index, topic_prefix, topic_name, message, message_size);
-#endif /*SERVER_VERSION_23*/
-      break;
+
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       return get_impulsecounter_message_at_index(
           index, topic_prefix, topic_name, message, message_size);
-      break;
   }
 
   return false;

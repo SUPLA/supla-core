@@ -731,10 +731,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
             int rel_channel_func =
                 related_device->get_channels()->get_channel_func(*it);
 
-#ifdef SERVER_VERSION_23
-            int rel_channel_type =
-                related_device->get_channels()->get_channel_type(*it);
-#endif /*SERVER_VERSION_23*/
 
             related_device->releasePtr();
             related_device = NULL;
@@ -750,11 +746,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                 break;
               case SUPLA_CHANNELFNC_ELECTRICITY_METER:
                 *sub_value_type = SUBV_TYPE_ELECTRICITY_MEASUREMENTS;
-#ifdef SERVER_VERSION_23
-                if (rel_channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-                  *sub_value_type = SUBV_TYPE_IC_MEASUREMENTS;
-                }
-#endif /*SERVER_VERSION_23*/
                 break;
               case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
               case SUPLA_CHANNELFNC_IC_GAS_METER:
