@@ -19,6 +19,7 @@
 #include <mqtt_channel_message_provider.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
@@ -1296,19 +1297,9 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       return ha_sensor("g", 0, 0, false, "state/value", NULL, NULL,
                        topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-#ifdef SERVER_VERSION_23
-      if (row->channel_type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
-        return ha_electricity_meter(index, topic_prefix, topic_name, message,
-                                    message_size);
-      } else if (row->channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-        return ha_impulse_counter(index, topic_prefix, topic_name, message,
-                                  message_size);
-      }
-      break;
-#else
       return ha_electricity_meter(index, topic_prefix, topic_name, message,
                                   message_size);
-#endif /*SERVER_VERSION_23*/
+
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:

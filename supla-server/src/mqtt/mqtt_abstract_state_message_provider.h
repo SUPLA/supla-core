@@ -77,6 +77,11 @@ class supla_mqtt_abstract_state_message_provider
 
   bool get_onoff_message_at_index(bool on, unsigned short index,
                                   const char *topic_prefix, char **topic_name,
+                                  void **message, size_t *message_size,
+                                  bool *overcurrent_relay_off);
+
+  bool get_onoff_message_at_index(bool on, unsigned short index,
+                                  const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
 
   bool get_depth_message_at_index(unsigned short index,

@@ -17,12 +17,15 @@
  */
 
 #include "user.h"
+
 #include <amazon/alexacredentials.h>
 #include <google/googlehomecredentials.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include <list>
+
 #include "client.h"
 #include "clientcontainer.h"
 #include "database.h"
@@ -728,10 +731,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
             int rel_channel_func =
                 related_device->get_channels()->get_channel_func(*it);
 
-#ifdef SERVER_VERSION_23
-            int rel_channel_type =
-                related_device->get_channels()->get_channel_type(*it);
-#endif /*SERVER_VERSION_23*/
 
             related_device->releasePtr();
             related_device = NULL;
@@ -747,11 +746,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                 break;
               case SUPLA_CHANNELFNC_ELECTRICITY_METER:
                 *sub_value_type = SUBV_TYPE_ELECTRICITY_MEASUREMENTS;
-#ifdef SERVER_VERSION_23
-                if (rel_channel_type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
-                  *sub_value_type = SUBV_TYPE_IC_MEASUREMENTS;
-                }
-#endif /*SERVER_VERSION_23*/
                 break;
               case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
               case SUPLA_CHANNELFNC_IC_GAS_METER:
@@ -1133,7 +1127,34 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
                                        TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
 
-  supla_device *device = device_container->findByID(DeviceId);
+  if (!request) {
+    return false;
+  }
+
+  supla_device *device = NULL;
+
+  if (request->Command == SUPLA_CALCFG_CMD_RESET_COUNTERS) {
+    device = device_container->findByID(DeviceId);
+    if (device) {
+      switch (device->get_channels()->get_channel_func(ChannelId)) {
+        case SUPLA_CHANNELFNC_POWERSWITCH:
+        case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+          std::list<int> related =
+              device->get_channels()->related_channel(ChannelId);
+          if (related.size() == 1) {
+            DeviceId = 0;
+            ChannelId = related.front();
+            device = device_by_channelid(ChannelId);
+          }
+        } break;
+      }
+    }
+  }
+
+  if (!device && DeviceId) {
+    device = device_container->findByID(DeviceId);
+  }
+
   if (device) {
     result = device->get_channels()->calcfg_request(
         SenderID, ChannelId,

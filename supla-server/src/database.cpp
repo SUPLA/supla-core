@@ -22,6 +22,7 @@
 #include <mysql.h>
 #include <stdio.h>
 #include <time.h>
+
 #include "safearray.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
@@ -2670,13 +2671,9 @@ bool database::channel_has_schedule(int channel_id) {
 }
 
 bool database::channel_is_associated_with_scene(int channel_id) {
-#ifdef SERVER_VERSION_23
-  return false;
-#else
   const char sql[] =
       "SELECT id FROM supla_scene_operation WHERE channel_id = ? LIMIT 1";
   return get_int(channel_id, 0, sql) > 0;
-#endif /*SERVER_VERSION_23*/
 }
 
 void database::update_channel_value(int channel_id, int user_id,

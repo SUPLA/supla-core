@@ -284,13 +284,12 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               if (db->get_device_channel(DeviceID, Number, &ChannelType) == 0) {
                 ChannelType = 0;
               }
-#ifndef SERVER_VERSION_23
+
               if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER &&
                   DefaultFunc == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
                 // Issue #115
                 DefaultFunc = SUPLA_CHANNELFNC_IC_ELECTRICITY_METER;
               }
-#endif /*SERVER_VERSION_23*/
 
               if (ChannelType == 0) {
                 bool new_channel = false;

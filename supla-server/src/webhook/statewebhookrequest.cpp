@@ -17,8 +17,11 @@
  */
 
 #include "webhook/statewebhookrequest.h"
+
 #include <assert.h>
+
 #include <list>
+
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
@@ -177,9 +180,6 @@ void supla_state_webhook_request::impulseCounterChannelType(
       getUser()->get_ic_measurement(getDeviceId(), getChannelId());
 
   switch (value->function) {
-#ifdef SERVER_VERSION_23
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-#endif /*SERVER_VERSION_23*/
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
       getClient()->sendImpulseCounterElectricityMeasurementReport(
           getChannelId(), icm, value->online);

@@ -200,6 +200,42 @@ TEST_F(MqttStateMessageProviderTest, onOff) {
       "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/on",
       789));
 
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "false", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/overcurrent_relay_off",
+                              789));
+
+  ASSERT_FALSE(dataExists(provider));
+}
+
+TEST_F(MqttStateMessageProviderTest, overcurrentRelayOff) {
+  channel_complex_value cvalue;
+  memset(&cvalue, 0, sizeof(channel_complex_value));
+
+  cvalue.online = true;
+  cvalue.function = SUPLA_CHANNELFNC_POWERSWITCH;
+  cvalue.hi = false;
+  cvalue.overcurrent_relay_off = true;
+
+  provider->setComplexValue(&cvalue);
+  provider->set_ids(123, 456, 789);
+  provider->set_user_suid();
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/connected",
+                              789));
+
+  ASSERT_TRUE(fetchAndCompare(
+      provider, NULL, "false", false,
+      "supla/9920767494dd87196e1896c7cbab707c/devices/456/channels/%i/state/on",
+      789));
+
+  ASSERT_TRUE(fetchAndCompare(provider, NULL, "true", false,
+                              "supla/9920767494dd87196e1896c7cbab707c/devices/"
+                              "456/channels/%i/state/overcurrent_relay_off",
+                              789));
+
   ASSERT_FALSE(dataExists(provider));
 }
 

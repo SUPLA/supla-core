@@ -17,6 +17,7 @@
  */
 
 #include "MqttUnpublisherIntegrationTest.h"
+
 #include "log.h"  // NOLINT
 #include "mqtt_unpublisher.h"
 #include "mqtt_unpublisher_datasource.h"
@@ -347,7 +348,7 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
   sleep(2);
   getDS()->on_device_deleted(117, 36);
   getDS()->on_device_deleted(743, 506);
-  waitForPublications(120);
+  waitForPublications(122);
 
   // print_expected();
 
@@ -381,6 +382,9 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/state/on",
       NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/50/state/"
+      "overcurrent_relay_off",
+      NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/type",
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/function",
@@ -395,6 +399,9 @@ TEST_F(MqttUnpublisherIntegrationTest, onDeviceDeleted) {
       "connected",
       NULL,
       "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/state/on",
+      NULL,
+      "supla/5b15b00055c044220196eb41965b3627/devices/36/channels/51/state/"
+      "overcurrent_relay_off",
       NULL,
       "supla/0df527b1786040fe57d6d9f43b632fbb/devices/506/enabled",
       NULL,

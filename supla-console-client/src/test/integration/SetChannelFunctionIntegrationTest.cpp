@@ -184,7 +184,6 @@ TEST_F(SetChannelFunctionIntegrationTest,
   iterateUntilDefaultTimeout();
 }
 
-#ifndef SERVER_VERSION_23
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithSchedule) {
   runSqlScript("CreateSceneForChannelId303.sql");
@@ -201,9 +200,5 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
   iterateUntilDefaultTimeout();
 }
-#else
-#warning \
-    "Delete the SERVER_VERSION_23 def. in v2.4 together with the ref. code."
-#endif /*SERVER_VERSION_23*/
 
 } /* namespace testing */
