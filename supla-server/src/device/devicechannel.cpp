@@ -2107,7 +2107,7 @@ bool supla_device_channels::get_channel_complex_value(
     channel_complex_value *value, int ChannelID) {
   bool result = false;
 
-  memset(value, 0, sizeof(supla_device_channel));
+  memset(value, 0, sizeof(channel_complex_value));
 
   safe_array_lock(arr);
 
