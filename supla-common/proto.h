@@ -452,11 +452,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 12
 // Free bits for future use:  0x0080, 0x0100, 0x0200, 0x0400, 0x0800
-#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000  // ver. >= 15
-// The SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION flag may be hidden for client
-// devices if the user has disabled auto-calibration on the server.
+#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
-// Free bits for future use: 0x4000, 0x8000
+// Free bits for future use: 0x8000
+#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000               // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000           // ver. >= 12
