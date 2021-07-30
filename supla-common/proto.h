@@ -1316,6 +1316,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
+#define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
 
