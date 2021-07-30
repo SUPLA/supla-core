@@ -1413,8 +1413,8 @@ typedef struct {
 } TDS_DeviceCalCfgResult;                // v. >= 10
 
 typedef struct {
-  _supla_int16_t FullOpeningTimeMS;
-  _supla_int16_t FullClosingTimeMS;
+  _supla_int_t FullOpeningTimeMS;
+  _supla_int_t FullClosingTimeMS;
 
 } TCalCfg_RollerShutterSettings;
 
