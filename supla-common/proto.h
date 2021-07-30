@@ -1317,6 +1317,8 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
 
+#define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
+
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
 #define CALCFG_ZWAVE_SCREENTYPE_BINARY 2
@@ -1409,6 +1411,12 @@ typedef struct {
   unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
 } TDS_DeviceCalCfgResult;                // v. >= 10
+
+typedef struct {
+  _supla_int16_t FullOpeningTimeMS;
+  _supla_int16_t FullClosingTimeMS;
+
+} TCalCfg_RollerShutterSettings;
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
