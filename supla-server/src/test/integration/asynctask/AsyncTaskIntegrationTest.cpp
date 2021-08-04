@@ -126,7 +126,7 @@ TEST_F(AsyncTaskIntegrationTest, runMultipleTasks) {
   pool->set_thread_count_limit(10);
   for (int a = 0; a < 50; a++) {
     AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
-    task->set_job_time_usec(100);
+    task->set_job_time_usec(10000);
     task->set_result(true);
     task->set_waiting();
   }
