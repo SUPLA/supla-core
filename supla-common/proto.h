@@ -1416,7 +1416,6 @@ typedef struct {
 typedef struct {
   _supla_int_t FullOpeningTimeMS;
   _supla_int_t FullClosingTimeMS;
-
 } TCalCfg_RollerShutterSettings;
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
