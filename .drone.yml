@@ -1,0 +1,107 @@
+kind: pipeline
+name: default
+
+services:
+- name: db
+  image: mariadb
+  environment:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    MYSQL_DATABASE: test
+
+
+steps:
+- name: supla-server-test
+  image: devel/supla-core
+  pull: never
+  depends_on: [db]
+  commands:
+    #    - sleep 10
+    - test/supla-server-test.sh
+  environment:
+    DBHOST: db
+
+- name: supla-console-client-test
+  image: devel/supla-core
+  pull: never
+  depends_on: [supla-server-test]
+  when:
+    status: [success, failure]
+  commands:
+    #    - sleep 10
+    - test/supla-console-client-test.sh
+  environment:
+    DBHOST: db
+
+- name: supla-scheduler-test
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-scheduler-test.sh
+
+- name: supla-dev-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-dev-compilation-check.sh
+
+- name: supla-server-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-server-compilation-check.sh
+
+- name: supla-scheduler-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-scheduler-compilation-check.sh
+
+- name: supla-console-client-compilation-check
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./test/supla-console-client-compilation-check.sh
+
+
+- name: cpplint
+  image: devel/supla-core
+  pull: never
+  commands:
+    - ./tools/lint.sh
+
+- name: joining
+  image: devel/supla-core
+  pull: never
+  depends_on: [supla-server-test, supla-scheduler-test, supla-console-client-test, supla-dev-compilation-check, supla-server-compilation-check, supla-scheduler-compilation-check, supla-console-client-compilation-check, cpplint]
+  commands:
+    - echo "test"
+      
+    #- name: test
+    # image: mariadb
+  #  commands:
+  # - ./supladevicetests --gtest_repeat=50 --gtest_shuffle
+
+#- name: slack
+#  image: plugins/slack
+#  settings:
+#    webhook: 
+#      from_secret: slack_webhook 
+#    channel: github
+#    username: drone
+#
+#    # here's the template :)
+#    # notice that the repo endpoint is hardcoded to `https://github.com/`. 
+#    # you may adjust it accordingly.
+#    template: >
+#      {{#if build.pull }}
+#        *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}*: <https://github.com/{{ repo.owner }}/{{ repo.name }}/pull/{{ build.pull }}|Pull Request #{{ build.pull }}>
+#      {{else}}
+#        *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}: Build #{{ build.number }}* (type: `{{ build.event }}`)
+#      {{/if}}
+#
+#      Commit: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ truncate build.commit 8 }}> at: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commits/{{ build.branch }}|{{repo.owner}}/{{repo.name}}/{{ build.branch }}> by: {{ build.author }}
+#
+#      <{{ build.link }}|Visit build page ↗>
+#  when:
+#    status: [success, failure]
+

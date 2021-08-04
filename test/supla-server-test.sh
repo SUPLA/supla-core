@@ -7,12 +7,15 @@ set -e
 
 DBHOST=db
 
-db_init
 
 mkdir -p /etc/supla-server
 
 cd supla-server/Test 
-make clean && make all 
+make clean && make -j8 all 
+
+cd ../../
+db_init
+cd supla-server/Test
 
 cat > /etc/supla-server/supla-test.cfg <<- ENDOFCFG
 [NET]
@@ -36,11 +39,6 @@ client_id=NunYnx
 ENDOFCFG
 
 vg_verify "./supla-server --sqldir ../../sql"
-
-cd ../Release 
-make clean && make all 
-cd ../Debug 
-make clean && make all 
 
 echo OK 
 exit 0
