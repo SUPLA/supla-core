@@ -83,7 +83,7 @@ steps:
 
 - name: slack
   image: plugins/slack
-  depends_on: [run_tests, boards_compilation_check]
+  depends_on: [joining]
   settings:
     webhook: 
       from_secret: slack_webhook 
