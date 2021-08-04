@@ -1855,7 +1855,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "IMPULSECOUNTER",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
       "function",
-      "ELECTRICITYMETER",
+      "IC_ELECTRICITYMETER",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
       "caption",
       NULL,
@@ -2279,7 +2279,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
       "IMPULSECOUNTER",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
       "function",
-      "ELECTRICITYMETER",
+      "IC_ELECTRICITYMETER",
       "supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/9717/channels/16166/"
       "caption",
       NULL,
