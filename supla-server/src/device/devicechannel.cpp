@@ -1527,6 +1527,40 @@ bool supla_device_channels::reset_counters(int ChannelID) {
   return result;
 }
 
+bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
+                                        bool SuperUserAuthorized) {
+  bool result = false;
+
+  if (ChannelID) {
+    safe_array_lock(arr);
+    supla_device_channel *channel = find_channel(ChannelID);
+
+    if (channel && (channel->getFlags() & SUPLA_CALCFG_CMD_RECALIBRATE)) {
+      TSD_DeviceCalCfgRequest request = {};
+
+      request.ChannelNumber = channel->getNumber();
+      request.Command = SUPLA_CALCFG_CMD_RECALIBRATE;
+      request.SenderID = SenderID;
+      request.SuperUserAuthorized = SuperUserAuthorized;
+
+      TCalCfg_RollerShutterSettings *settings =
+          (TCalCfg_RollerShutterSettings *)request.Data;
+      request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
+      request.DataSize = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
+
+      settings->FullOpeningTimeMS = channel->getParam1();
+      settings->FullClosingTimeMS = channel->getParam3();
+
+      srpc_sd_async_device_calcfg_request(get_srpc(), &request);
+      result = true;
+    }
+
+    safe_array_unlock(arr);
+  }
+
+  return result;
+}
+
 bool supla_device_channels::set_channel_value(
     int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
     bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
@@ -2016,6 +2050,14 @@ supla_channel_ic_measurement *supla_device_channels::get_ic_measurement(
 bool supla_device_channels::calcfg_request(int SenderID, int ChannelID,
                                            bool SuperUserAuthorized,
                                            TCS_DeviceCalCfgRequest_B *request) {
+  if (request == NULL) {
+    return false;
+  }
+
+  if (request->Command == SUPLA_CALCFG_CMD_RECALIBRATE) {
+    return recalibrate(ChannelID, SenderID, SuperUserAuthorized);
+  }
+
   bool result = false;
   safe_array_lock(arr);
 

@@ -67,6 +67,7 @@ const char cmd_action_open[] = "ACTION-OPEN:";
 const char cmd_action_close[] = "ACTION-CLOSE:";
 
 const char cmd_reset_counters[] = "RESET-COUNTERS";
+const char cmd_recalibrate[] = "RECALIBRATE";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
@@ -441,6 +442,33 @@ void svr_ipcctrl::reset_counters(const char *cmd) {
 
     if (device) {
       result = device->get_channels()->reset_counters(ChannelID);
+      device->releasePtr();
+    }
+
+    if (result) {
+      send_result("OK:", ChannelID);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::recalibrate(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+
+    bool result = false;
+
+    if (device) {
+      result = device->get_channels()->recalibrate(ChannelID, 0, true);
       device->releasePtr();
     }
 
@@ -997,6 +1025,8 @@ void svr_ipcctrl::execute(void *sthread) {
           get_relay_value(cmd_get_relay_value);
         } else if (match_command(cmd_reset_counters, len)) {
           reset_counters(cmd_reset_counters);
+        } else if (match_command(cmd_recalibrate, len)) {
+          recalibrate(cmd_recalibrate);
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
           send_result("COMMAND_UNKNOWN");

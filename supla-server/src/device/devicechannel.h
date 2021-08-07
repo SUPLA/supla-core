@@ -378,6 +378,8 @@ class supla_device_channels {
                                                  int GroupID,
                                                  unsigned char EOL);
   bool reset_counters(int ChannelID);
+  bool recalibrate(int ChannelID, _supla_int_t SenderID,
+                   bool SuperUserAuthorized);
 };
 
 #endif /* DEVICECHANNEL_H_ */
