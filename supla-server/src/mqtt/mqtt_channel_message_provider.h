@@ -72,8 +72,10 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
 
   bool ha_sensor(const char *unit, int precision, int sub_id, bool set_sub_id,
                  const char *state_topic, const char *name_if_empty,
-                 const char *name_second_segment, const char *topic_prefix,
-                 char **topic_name, void **message, size_t *message_size);
+                 const char *name_second_segment, const char *value_tmpl,
+                 const char *device_class, bool last_reset,
+                 const char *topic_prefix, char **topic_name, void **message,
+                 size_t *message_size);
   bool ha_sensor_temperature(int sub_id, bool set_sub_id,
                              const char *topic_prefix, char **topic_name,
                              void **message, size_t *message_size);
@@ -91,7 +93,8 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
                           size_t *message_size);
   bool ha_phase_sensor(unsigned short index, unsigned short phase,
                        const char *unit, int precision, const char *state_topic,
-                       const char *name_second_segment,
+                       const char *name_second_segment, const char *value_tmpl,
+                       const char *device_class, bool last_reset,
                        const char *topic_prefix, char **topic_name,
                        void **message, size_t *message_size);
   bool ha_electricity_meter(unsigned short index, const char *topic_prefix,

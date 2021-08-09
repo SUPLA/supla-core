@@ -800,7 +800,8 @@ bool supla_mqtt_channel_message_provider::ha_binary_sensor(
 bool supla_mqtt_channel_message_provider::ha_sensor(
     const char *unit, int precision, int sub_id, bool set_sub_id,
     const char *state_topic, const char *name_if_empty,
-    const char *name_second_segment, const char *topic_prefix,
+    const char *name_second_segment, const char *value_tmpl,
+    const char *device_class, bool last_reset, const char *topic_prefix,
     char **topic_name, void **message, size_t *message_size) {
   // https://www.home-assistant.io/integrations/sensor.mqtt
 
@@ -815,10 +816,28 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
                            !unit || unit[0] == 0 ? "" : unit);
   ha_json_set_short_topic(root, "stat_t", state_topic);
 
-  char tpl[50];
-  snprintf(tpl, sizeof(tpl), "{{ value | round(%i) }}", precision);
+  if (value_tmpl) {
+    ha_json_set_string_param(root, "val_tpl", value_tmpl);
+  } else {
+    char tpl[50];
+    snprintf(tpl, sizeof(tpl), "{{ value | round(%i) }}", precision);
 
-  ha_json_set_string_param(root, "val_tpl", tpl);
+    ha_json_set_string_param(root, "val_tpl", tpl);
+  }
+
+  if (device_class) {
+    ha_json_set_string_param(root, "dev_cla", device_class);
+  }
+
+  ha_json_set_string_param(root, "state_class", "measurement");
+
+  if (last_reset) {
+    // ~/state/support in last_reset_topic was used only to keep the topic
+    // active.
+    ha_json_set_short_topic(root, "last_reset_topic", "state/support");
+    ha_json_set_string_param(root, "last_reset_value_template",
+                             "1970-01-01T00:00:00Z");
+  }
 
   return ha_get_message(root, "sensor", sub_id, set_sub_id, topic_name, message,
                         message_size);
@@ -828,15 +847,16 @@ bool supla_mqtt_channel_message_provider::ha_sensor_temperature(
     int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   return ha_sensor("°C", 1, sub_id, set_sub_id, "state/temperature",
-                   "Temperature", NULL, topic_prefix, topic_name, message,
-                   message_size);
+                   "Temperature", NULL, NULL, NULL, false, topic_prefix,
+                   topic_name, message, message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_sensor_humidity(
     int sub_id, bool set_sub_id, const char *topic_prefix, char **topic_name,
     void **message, size_t *message_size) {
   return ha_sensor("%", 1, sub_id, set_sub_id, "state/humidity", "Humidity",
-                   NULL, topic_prefix, topic_name, message, message_size);
+                   NULL, NULL, NULL, false, topic_prefix, topic_name, message,
+                   message_size);
 }
 
 bool supla_mqtt_channel_message_provider::ha_gate(const char *topic_prefix,
@@ -953,15 +973,17 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
     }
 
     switch (index) {
-      case 0:
-        result = ha_sensor(ic->getCustomUnit(), 3, 0, true,
-                           "state/calculated_value", NULL, "Value",
-                           topic_prefix, topic_name, message, message_size);
-        break;
+      case 0: {
+        bool kwh = strncmp(ic->getCustomUnit(), "kWh", 5) == 0;
+        result =
+            ha_sensor(ic->getCustomUnit(), 3, 0, true, "state/calculated_value",
+                      NULL, "Value", NULL, kwh ? "energy" : NULL, kwh,
+                      topic_prefix, topic_name, message, message_size);
+      } break;
       case 1:
         result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
-                           NULL, "Total cost", topic_prefix, topic_name,
-                           message, message_size);
+                           NULL, "Total cost", NULL, "monetary", false,
+                           topic_prefix, topic_name, message, message_size);
         break;
     }
 
@@ -971,11 +993,10 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
   return result;
 }
 
-bool ha_sensor();
-
 bool supla_mqtt_channel_message_provider::ha_phase_sensor(
     unsigned short index, unsigned short phase, const char *unit, int precision,
     const char *state_topic, const char *name_second_segment,
+    const char *value_tmpl, const char *device_class, bool last_reset,
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
   int st_len = snprintf(NULL, 0, state_topic, phase);
@@ -1006,9 +1027,10 @@ bool supla_mqtt_channel_message_provider::ha_phase_sensor(
   snprintf(_state_topic, st_len, state_topic, phase);
   snprintf(_name_second_segment, nss_len, name_second_segment, phase);
 
-  bool result = ha_sensor(unit, precision, index, true, _state_topic, NULL,
-                          _name_second_segment, topic_prefix, topic_name,
-                          message, message_size);
+  bool result =
+      ha_sensor(unit, precision, index, true, _state_topic, NULL,
+                _name_second_segment, value_tmpl, device_class, last_reset,
+                topic_prefix, topic_name, message, message_size);
 
   free(_state_topic);
   free(_name_second_segment);
@@ -1051,14 +1073,14 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
         switch (index) {
           case 0:
             result = ha_sensor(currency, 2, index, true, "state/total_cost",
-                               NULL, "Total cost", topic_prefix, topic_name,
-                               message, message_size);
+                               NULL, "Total cost", NULL, "monetary", false,
+                               topic_prefix, topic_name, message, message_size);
             break;
           case 1:
-            result =
-                ha_sensor(currency, 2, index, true, "state/total_cost_balanced",
-                          NULL, "Total cost - balanced", topic_prefix,
-                          topic_name, message, message_size);
+            result = ha_sensor(currency, 2, index, true,
+                               "state/total_cost_balanced", NULL,
+                               "Total cost - balanced", NULL, "monetary", false,
+                               topic_prefix, topic_name, message, message_size);
             break;
         }
 
@@ -1069,116 +1091,118 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 2:
       return ha_sensor("kWh", 5, index, true,
                        "state/total_forward_active_energy", NULL,
-                       "Total forward active energy", topic_prefix, topic_name,
-                       message, message_size);
+                       "Total forward active energy", NULL, "energy", true,
+                       topic_prefix, topic_name, message, message_size);
     case 3:
       return ha_sensor("kWh", 5, index, true,
                        "state/total_reverse_active_energy", NULL,
-                       "Total reverse active energy", topic_prefix, topic_name,
-                       message, message_size);
+                       "Total reverse active energy", NULL, "energy", true,
+                       topic_prefix, topic_name, message, message_size);
     case 4:
       return ha_sensor("kWh", 5, index, true,
                        "state/total_forward_active_energy_balanced", NULL,
-                       "Total forward active energy - balanced", topic_prefix,
-                       topic_name, message, message_size);
+                       "Total forward active energy - balanced", NULL, "energy",
+                       true, topic_prefix, topic_name, message, message_size);
     case 5:
       return ha_sensor("kWh", 5, index, true,
                        "state/total_reverse_active_energy_balanced", NULL,
-                       "Total reverse active energy - balanced", topic_prefix,
-                       topic_name, message, message_size);
+                       "Total reverse active energy - balanced", NULL, "energy",
+                       true, topic_prefix, topic_name, message, message_size);
 
     case 6:
     case 18:
     case 30:
-      return ha_phase_sensor(index, phase, "kWh", 5,
-                             "state/phases/%i/total_forward_active_energy",
-                             "Total forward active energy - Phase %i",
-                             topic_prefix, topic_name, message, message_size);
+      return ha_phase_sensor(
+          index, phase, "kWh", 5, "state/phases/%i/total_forward_active_energy",
+          "Total forward active energy - Phase %i", NULL, "energy", true,
+          topic_prefix, topic_name, message, message_size);
 
     case 7:
     case 19:
     case 31:
-      return ha_phase_sensor(index, phase, "kWh", 5,
-                             "state/phases/%i/total_reverse_active_energy",
-                             "Total reverse active energy - Phase %i",
-                             topic_prefix, topic_name, message, message_size);
+      return ha_phase_sensor(
+          index, phase, "kWh", 5, "state/phases/%i/total_reverse_active_energy",
+          "Total reverse active energy - Phase %i", NULL, "energy", true,
+          topic_prefix, topic_name, message, message_size);
 
     case 8:
     case 20:
     case 32:
       return ha_phase_sensor(index, phase, "kvarh", 5,
                              "state/phases/%i/total_forward_reactive_energy",
-                             "Total forward reactive energy - Phase %i",
-                             topic_prefix, topic_name, message, message_size);
+                             "Total forward reactive energy - Phase %i", NULL,
+                             NULL, false, topic_prefix, topic_name, message,
+                             message_size);
 
     case 9:
     case 21:
     case 33:
       return ha_phase_sensor(index, phase, "kvarh", 5,
                              "state/phases/%i/total_reverse_reactive_energy",
-                             "Total reverse reactive energy - Phase %i",
-                             topic_prefix, topic_name, message, message_size);
+                             "Total reverse reactive energy - Phase %i", NULL,
+                             NULL, false, topic_prefix, topic_name, message,
+                             message_size);
 
     case 10:
     case 22:
     case 34:
       return ha_phase_sensor(index, phase, "Hz", 2, "state/phases/%i/frequency",
-                             "Frequency - Phase %i", topic_prefix, topic_name,
-                             message, message_size);
+                             "Frequency - Phase %i", NULL, NULL, false,
+                             topic_prefix, topic_name, message, message_size);
 
     case 11:
     case 23:
     case 35:
       return ha_phase_sensor(index, phase, "V", 2, "state/phases/%i/voltage",
-                             "Voltage - Phase %i", topic_prefix, topic_name,
-                             message, message_size);
+                             "Voltage - Phase %i", NULL, "voltage", false,
+                             topic_prefix, topic_name, message, message_size);
 
     case 12:
     case 24:
     case 36:
       return ha_phase_sensor(index, phase, "A", 3, "state/phases/%i/current",
-                             "Current - Phase %i", topic_prefix, topic_name,
-                             message, message_size);
+                             "Current - Phase %i", NULL, "current", false,
+                             topic_prefix, topic_name, message, message_size);
 
     case 13:
     case 25:
     case 37:
       return ha_phase_sensor(index, phase, "W", 5,
                              "state/phases/%i/power_active",
-                             "Power active - Phase %i", topic_prefix,
-                             topic_name, message, message_size);
+                             "Power active - Phase %i", NULL, "power", false,
+                             topic_prefix, topic_name, message, message_size);
 
     case 14:
     case 26:
     case 38:
       return ha_phase_sensor(index, phase, "var", 5,
                              "state/phases/%i/power_reactive",
-                             "Power reactive - Phase %i", topic_prefix,
-                             topic_name, message, message_size);
+                             "Power reactive - Phase %i", NULL, NULL, false,
+                             topic_prefix, topic_name, message, message_size);
 
     case 15:
     case 27:
     case 39:
       return ha_phase_sensor(index, phase, "VA", 5,
                              "state/phases/%i/power_apparent",
-                             "Power apparent - Phase %i", topic_prefix,
-                             topic_name, message, message_size);
+                             "Power apparent - Phase %i", NULL, NULL, false,
+                             topic_prefix, topic_name, message, message_size);
 
     case 16:
     case 28:
     case 40:
-      return ha_phase_sensor(index, phase, "", 3,
-                             "state/phases/%i/power_factor",
-                             "Power factor - Phase %i", topic_prefix,
-                             topic_name, message, message_size);
+      return ha_phase_sensor(
+          index, phase, "%", 3, "state/phases/%i/power_factor",
+          "Power factor - Phase %i", "(float(value) * 100.0)", "power_factor",
+          false, topic_prefix, topic_name, message, message_size);
 
     case 17:
     case 29:
     case 41:
       return ha_phase_sensor(index, phase, "°", 1,
                              "state/phases/%i/phase_angle",
-                             "Phase angle - Phase %i", topic_prefix, topic_name,
-                             message, message_size);
+                             "Phase angle - Phase %i", NULL, NULL, false,
+                             topic_prefix, topic_name, message, message_size);
   }
 
   return false;
@@ -1279,23 +1303,27 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
       }
       break;
     case SUPLA_CHANNELFNC_DEPTHSENSOR:
-      return ha_sensor("m", 2, 0, false, "state/depth", NULL, NULL,
-                       topic_prefix, topic_name, message, message_size);
+      return ha_sensor("m", 2, 0, false, "state/depth", NULL, NULL, NULL, NULL,
+                       false, topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_DISTANCESENSOR:
-      return ha_sensor("m", 2, 0, false, "state/distance", NULL, NULL,
-                       topic_prefix, topic_name, message, message_size);
+      return ha_sensor("m", 2, 0, false, "state/distance", NULL, NULL, NULL,
+                       NULL, false, topic_prefix, topic_name, message,
+                       message_size);
     case SUPLA_CHANNELFNC_WINDSENSOR:
-      return ha_sensor("m/s", 1, 0, false, "state/value", NULL, NULL,
-                       topic_prefix, topic_name, message, message_size);
+      return ha_sensor("m/s", 1, 0, false, "state/value", NULL, NULL, NULL,
+                       NULL, false, topic_prefix, topic_name, message,
+                       message_size);
     case SUPLA_CHANNELFNC_PRESSURESENSOR:
-      return ha_sensor("hPa", 0, 0, false, "state/value", NULL, NULL,
-                       topic_prefix, topic_name, message, message_size);
+      return ha_sensor("hPa", 0, 0, false, "state/value", NULL, NULL, NULL,
+                       NULL, false, topic_prefix, topic_name, message,
+                       message_size);
     case SUPLA_CHANNELFNC_RAINSENSOR:
-      return ha_sensor("l/m", 2, 0, false, "state/value", NULL, NULL,
-                       topic_prefix, topic_name, message, message_size);
+      return ha_sensor("l/m", 2, 0, false, "state/value", NULL, NULL, NULL,
+                       NULL, false, topic_prefix, topic_name, message,
+                       message_size);
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-      return ha_sensor("g", 0, 0, false, "state/value", NULL, NULL,
-                       topic_prefix, topic_name, message, message_size);
+      return ha_sensor("g", 0, 0, false, "state/value", NULL, NULL, NULL, NULL,
+                       false, topic_prefix, topic_name, message, message_size);
     case SUPLA_CHANNELFNC_ELECTRICITY_METER:
       return ha_electricity_meter(index, topic_prefix, topic_name, message,
                                   message_size);
