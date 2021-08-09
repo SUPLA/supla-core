@@ -205,7 +205,8 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   TSD_ChannelConfig_ActionTrigger acfg = {};
-  ASSERT_LE(SUPLA_ACTION_MAXCOUNT, sizeof(acfg.ActiveActions) * 8);
+  ASSERT_LE((unsigned int)SUPLA_ACTION_MAXCOUNT,
+            sizeof(acfg.ActiveActions) * 8);
 }
 
 TEST_F(ProtoTest, init) {
