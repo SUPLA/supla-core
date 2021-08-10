@@ -1551,7 +1551,7 @@ bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
       TCalCfg_RollerShutterSettings *settings =
           (TCalCfg_RollerShutterSettings *)request.Data;
       request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
-      request.DataSize = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
+      request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
 
       settings->FullOpeningTimeMS = channel->getParam1();
       settings->FullClosingTimeMS = channel->getParam3();
