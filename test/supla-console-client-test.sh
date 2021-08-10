@@ -28,7 +28,7 @@ ENDOFCFG
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ./supla-server/Debug
   if ! [ -e ./supla-server ]; then
-     make clean && make all
+     make clean && make -j8 all
   fi
   ./supla-server -c /etc/supla-server/supla-test.cfg -d
   cd ../../
@@ -44,14 +44,9 @@ exit 1
 fi
 
 cd supla-console-client/Test
-make clean && make all
+make clean && make -j8 all
 
 vg_verify "./supla-console-client --sqldir ../../sql"
-
-cd ../Debug 
-make clean && make 
-cd ../Release
-make clean && make 
 
 echo OK 
 exit 0

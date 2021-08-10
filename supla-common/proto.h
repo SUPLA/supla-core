@@ -454,7 +454,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // Free bits for future use:  0x0080, 0x0100, 0x0200, 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
-// Free bits for future use: 0x4000, 0x8000
+// Free bits for future use: 0x8000
+#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000               // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000           // ver. >= 12
@@ -1274,6 +1275,18 @@ typedef struct {
   unsigned _supla_int64_t counter;
 } TDS_ImpulseCounter_Value;
 
+#define RS_VALUE_FLAG_TILT_IS_SET 0x1
+#define RS_VALUE_FLAG_CALIBRATION_FAILED 0x2
+#define RS_VALUE_FLAG_CALIBRATION_LOST 0x4
+#define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
+
+typedef struct {
+  char position;  // -1 == calibration. -1 - 100%
+  char tilt;
+  char windowsill_pp;  // Percentage points to the windowsill
+  _supla_int16_t flags;
+} TRollerShutterValue;
+
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
 } TSC_ImpulseCounter_Value;                  // v. >= 10
@@ -1315,6 +1328,9 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
+#define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
+
+#define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1408,6 +1424,11 @@ typedef struct {
   unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
 } TDS_DeviceCalCfgResult;                // v. >= 10
+
+typedef struct {
+  _supla_int_t FullOpeningTimeMS;
+  _supla_int_t FullClosingTimeMS;
+} TCalCfg_RollerShutterSettings;
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
