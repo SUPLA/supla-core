@@ -1281,7 +1281,7 @@ typedef struct {
 #define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
 
 typedef struct {
-  char position;  //-1 == calibration. -1 - 100%
+  char position;  // -1 == calibration. -1 - 100%
   char tilt;
   char windowsill_pp;  // Percentage points to the windowsill
   _supla_int16_t flags;
