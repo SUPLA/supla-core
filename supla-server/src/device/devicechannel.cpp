@@ -757,9 +757,13 @@ bool supla_device_channel::setValue(
   memcpy(old_value, this->value, SUPLA_CHANNELVALUE_SIZE);
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 
-  if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
-       Func == SUPLA_CHANNELFNC_LIGHTSWITCH) &&
-      proto_version < 15) {
+  if (Func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
+      Func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
+    TRollerShutterValue *rs_val = (TRollerShutterValue *)this->value;
+    rs_val->windowsill_pp = Param4;
+  } else if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
+              Func == SUPLA_CHANNELFNC_LIGHTSWITCH) &&
+             proto_version < 15) {
     // https://forum.supla.org/viewtopic.php?f=6&t=8861
     for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
       this->value[a] = 0;
