@@ -1539,7 +1539,8 @@ bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
     safe_array_lock(arr);
     supla_device_channel *channel = find_channel(ChannelID);
 
-    if (channel && (channel->getFlags() & SUPLA_CALCFG_CMD_RECALIBRATE)) {
+    if (channel &&
+        (channel->getFlags() & SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE)) {
       TSD_DeviceCalCfgRequest request = {};
 
       request.ChannelNumber = channel->getNumber();
