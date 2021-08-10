@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "ipcctrl.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -25,16 +27,19 @@
 
 #include "database.h"
 #include "http/httprequestqueue.h"
-#include "ipcctrl.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "sthread.h"
 #include "tools.h"
 #include "user.h"
 
+// TODO(anyone): For setters, use the supla_action_executor class
+
 const char hello[] = "SUPLA SERVER CTRL\n";
 const char cmd_is_client_connected[] = "IS-CLIENT-CONNECTED:";
 const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
+const char cmd_is_channel_connected[] = "IS-CHANNEL-CONNECTED:";
+const char cmd_is_channel_online[] = "IS-CHANNEL-ONLINE:";
 const char cmd_user_reconnect[] = "USER-RECONNECT:";
 const char cmd_client_reconnect[] = "CLIENT-RECONNECT:";
 const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
@@ -44,6 +49,8 @@ const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
 const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
 const char cmd_get_em_value[] = "GET-EM-VALUE:";
 const char cmd_get_ic_value[] = "GET-IC-VALUE:";
+const char cmd_get_valve_value[] = "GET-VALVE-VALUE:";
+const char cmd_get_relay_value[] = "GET-RELAY-VALUE:";
 
 const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
 const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
@@ -53,13 +60,34 @@ const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
 const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
 
+const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
+const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE:";
+
+const char cmd_action_open[] = "ACTION-OPEN:";
+const char cmd_action_close[] = "ACTION-CLOSE:";
+
+const char cmd_reset_counters[] = "RESET-COUNTERS";
+const char cmd_recalibrate[] = "RECALIBRATE";
+
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
 
 const char cmd_user_google_home_credentials_changed[] =
     "USER-GOOGLE-HOME-CREDENTIALS-CHANGED:";
 
+const char cmd_user_state_webhook_changed[] = "USER-STATE-WEBHOOK-CHANGED:";
+
 const char cmd_user_on_device_deleted[] = "USER-ON-DEVICE-DELETED:";
+
+const char cmd_user_mqtt_settings_changed[] = "USER-MQTT-SETTINGS-CHANGED:";
+
+const char cmd_user_before_device_delete[] = "USER-BEFORE-DEVICE-DELETE:";
+
+const char cmd_user_on_device_settings_changed[] =
+    "USER-ON-DEVICE-SETTINGS-CHANGED:";
+
+const char cmd_user_before_channel_function_change[] =
+    "USER-BEFORE-CHANNEL-FUNCTION-CHANGE:";
 
 char ACT_VAR[] = ",ALEXA-CORRELATION-TOKEN=";
 char GRI_VAR[] = ",GOOGLE-REQUEST-ID=";
@@ -204,7 +232,7 @@ void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i,%i,%llu,%lld,%s,%s\n",
                icm->getTotalCost(), icm->getPricePerUnit(),
                icm->getImpulsesPerUnit(), icm->getCounter(),
-               icm->getCalculatedValue(), icm->getCurrncy(),
+               icm->getCalculatedValue(), icm->getCurrency(),
                unit_b64 ? unit_b64 : "");
 
       if (unit_b64) {
@@ -235,7 +263,7 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
         supla_user::get_electricity_measurement(UserID, DeviceID, ChannelID);
 
     if (em != NULL) {
-      TElectricityMeter_ExtendedValue em_ev;
+      TElectricityMeter_ExtendedValue em_ev = {};
       char currency[4];
       em->getMeasurement(&em_ev);
       em->getCurrency(currency);
@@ -251,20 +279,49 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
         current3 *= 10;
       }
 
+      _supla_int64_t power_active1 = em_ev.m[0].power_active[0];
+      _supla_int64_t power_active2 = em_ev.m[0].power_active[1];
+      _supla_int64_t power_active3 = em_ev.m[0].power_active[2];
+
+      if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+        power_active1 *= 1000;
+        power_active2 *= 1000;
+        power_active3 *= 1000;
+      }
+
+      _supla_int64_t power_reactive1 = em_ev.m[0].power_reactive[0];
+      _supla_int64_t power_reactive2 = em_ev.m[0].power_reactive[1];
+      _supla_int64_t power_reactive3 = em_ev.m[0].power_reactive[2];
+
+      if (em_ev.measured_values & EM_VAR_POWER_REACTIVE_KVAR) {
+        power_reactive1 *= 1000;
+        power_reactive2 *= 1000;
+        power_reactive3 *= 1000;
+      }
+
+      _supla_int64_t power_apparent1 = em_ev.m[0].power_apparent[0];
+      _supla_int64_t power_apparent2 = em_ev.m[0].power_apparent[1];
+      _supla_int64_t power_apparent3 = em_ev.m[0].power_apparent[2];
+
+      if (em_ev.measured_values & EM_VAR_POWER_APPARENT_KVA) {
+        power_apparent1 *= 1000;
+        power_apparent2 *= 1000;
+        power_apparent3 *= 1000;
+      }
+
       snprintf(buffer, sizeof(buffer),
-               "VALUE:%i,%i,%i,%i,%i,%u,%u,%u,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i,"
-               "%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%llu,%"
-               "llu,%llu,%llu,%i,%i,%s\n",
+               "VALUE:%i,%i,%i,%i,%i,%u,%u,%u,%lld,%lld,%lld,%lld,%lld,%lld,%"
+               "lld,%lld,%lld,%i,%i,%i,%i,%i,%i,%llu,%llu,%llu,%llu,%llu,%llu,%"
+               "llu,%llu,%llu,%llu,%llu,%llu,%i,%i,%s\n",
                em_ev.measured_values, em_ev.m[0].freq, em_ev.m[0].voltage[0],
                em_ev.m[0].voltage[1], em_ev.m[0].voltage[2], current1, current2,
-               current3, em_ev.m[0].power_active[0], em_ev.m[0].power_active[1],
-               em_ev.m[0].power_active[2], em_ev.m[0].power_reactive[0],
-               em_ev.m[0].power_reactive[1], em_ev.m[0].power_reactive[2],
-               em_ev.m[0].power_apparent[0], em_ev.m[0].power_apparent[1],
-               em_ev.m[0].power_apparent[2], em_ev.m[0].power_factor[0],
-               em_ev.m[0].power_factor[1], em_ev.m[0].power_factor[2],
-               em_ev.m[0].phase_angle[0], em_ev.m[0].phase_angle[1],
-               em_ev.m[0].phase_angle[2], em_ev.total_forward_active_energy[0],
+               current3, power_active1, power_active2, power_active3,
+               power_reactive1, power_reactive2, power_reactive3,
+               power_apparent1, power_apparent2, power_apparent3,
+               em_ev.m[0].power_factor[0], em_ev.m[0].power_factor[1],
+               em_ev.m[0].power_factor[2], em_ev.m[0].phase_angle[0],
+               em_ev.m[0].phase_angle[1], em_ev.m[0].phase_angle[2],
+               em_ev.total_forward_active_energy[0],
                em_ev.total_forward_active_energy[1],
                em_ev.total_forward_active_energy[2],
                em_ev.total_reverse_active_energy[0],
@@ -281,6 +338,142 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
       send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 
       delete em;
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_valve_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  TValve_Value Value;
+  memset(&Value, 0, sizeof(TValve_Value));
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool r = supla_user::get_channel_valve_value(UserID, DeviceID, ChannelID,
+                                                 &Value);
+
+    if (r) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i", Value.closed,
+               Value.flags);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_digiglass_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool result = false;
+    unsigned short Mask = 0;
+
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+    if (device) {
+      result = device->get_channels()->get_dgf_transparency(ChannelID, &Mask);
+      device->releasePtr();
+    }
+
+    if (result) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i", Mask);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_relay_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+
+    TRelayChannel_Value value = {};
+    bool result = false;
+
+    if (device) {
+      result = device->get_channels()->get_relay_value(ChannelID, &value);
+      device->releasePtr();
+    }
+
+    if (result) {
+      snprintf(buffer, sizeof(buffer), "VALUE:%i,%i", value.hi, value.flags);
+      send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::reset_counters(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+
+    bool result = false;
+
+    if (device) {
+      result = device->get_channels()->reset_counters(ChannelID);
+      device->releasePtr();
+    }
+
+    if (result) {
+      send_result("OK:", ChannelID);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::recalibrate(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+
+    bool result = false;
+
+    if (device) {
+      result = device->get_channels()->recalibrate(ChannelID, 0, true);
+      device->releasePtr();
+    }
+
+    if (result) {
+      send_result("OK:", ChannelID);
       return;
     }
   }
@@ -354,19 +547,31 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
            &DeviceID, &CGID, &Value);
   }
 
-  if (UserID && CGID) {
+  supla_user *user = NULL;
+  if (UserID && CGID && (user = supla_user::find(UserID, false)) != NULL) {
     if (Value < 0 || Value > IPC_BUFFER_SIZE) send_result("VALUE OUT OF RANGE");
 
     bool result = false;
 
     if (group) {
-      result = supla_user::set_channelgroup_char_value(UserID, CGID, Value);
+      result = user->set_channelgroup_char_value(CGID, Value);
     } else if (!group && DeviceID) {
-      result = supla_user::set_device_channel_char_value(
-          UserID, 0, DeviceID, CGID, Value,
-          AlexaCorrelationToken ? EST_AMAZON_ALEXA
-                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-          AlexaCorrelationToken, GoogleRequestId);
+      supla_device *device = user->get_device(DeviceID);
+      if (device) {
+        // onChannelValueChangeEvent must be called before
+        // set_device_channel_char_value for the potential report to contain
+        // AlexaCorrelationToken / GoogleRequestId
+        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+            user, DeviceID, CGID,
+            AlexaCorrelationToken
+                ? EST_AMAZON_ALEXA
+                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+            AlexaCorrelationToken, GoogleRequestId);
+
+        result = device->get_channels()->set_device_channel_char_value(
+            0, CGID, 0, false, Value);
+        device->releasePtr();
+      }
     }
 
     free_correlation_token();
@@ -391,6 +596,7 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   int Color = 0;
   int ColorBrightness = 0;
   int Brightness = 0;
+  int TurnOnOff = 0;
 
   if (random) {
     if (group) {
@@ -407,19 +613,21 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
 
   } else {
     if (group) {
-      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
-             &CGID, &Color, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
+             &UserID, &CGID, &Color, &ColorBrightness, &Brightness, &TurnOnOff);
 
     } else {
       cut_correlation_token(cmd);
       cut_google_requestid(cmd);
 
-      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",
-             &UserID, &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness);
+      sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i,%i",
+             &UserID, &DeviceID, &CGID, &Color, &ColorBrightness, &Brightness,
+             &TurnOnOff);
     }
   }
 
-  if (UserID && CGID) {
+  supla_user *user = NULL;
+  if (UserID && CGID && (user = supla_user::find(UserID, false)) != NULL) {
     if (ColorBrightness < 0 || ColorBrightness > 100 || Brightness < 0 ||
         Brightness > 100)
       send_result("VALUE OUT OF RANGE");
@@ -427,14 +635,25 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     bool result = false;
 
     if (group) {
-      result = supla_user::set_channelgroup_rgbw_value(
-          UserID, CGID, Color, ColorBrightness, Brightness, 0);
+      result = user->set_channelgroup_rgbw_value(CGID, Color, ColorBrightness,
+                                                 Brightness, TurnOnOff);
     } else if (!group && DeviceID) {
-      result = supla_user::set_device_channel_rgbw_value(
-          UserID, 0, DeviceID, CGID, Color, ColorBrightness, Brightness, 0,
-          AlexaCorrelationToken ? EST_AMAZON_ALEXA
-                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-          AlexaCorrelationToken, GoogleRequestId);
+      supla_device *device = user->get_device(DeviceID);
+      if (device) {
+        // onChannelValueChangeEvent must be called before
+        // set_device_channel_char_value for the potential report to contain
+        // AlexaCorrelationToken / GoogleRequestId
+        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+            user, DeviceID, CGID,
+            AlexaCorrelationToken
+                ? EST_AMAZON_ALEXA
+                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+            AlexaCorrelationToken, GoogleRequestId);
+
+        result = device->get_channels()->set_device_channel_rgbw_value(
+            0, CGID, 0, false, Color, ColorBrightness, Brightness, TurnOnOff);
+        device->releasePtr();
+      }
     }
 
     free_correlation_token();
@@ -450,6 +669,85 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   }
 
   send_result("UNKNOWN:", CGID);
+}
+
+void svr_ipcctrl::set_digiglass_value(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  int ActiveBits = 0;
+  int Mask = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
+         &DeviceID, &ChannelID, &ActiveBits, &Mask);
+
+  if (UserID && DeviceID && ChannelID) {
+    bool result = false;
+    supla_device *device = supla_user::get_device(UserID, DeviceID);
+    if (device) {
+      result = device->get_channels()->set_dgf_transparency(
+          0, ChannelID, ActiveBits & 0xFFFF, Mask & 0xFFFF);
+      device->releasePtr();
+    }
+
+    if (result) {
+      send_result("OK:", ChannelID);
+    } else {
+      send_result("FAIL:", ChannelID);
+    }
+    return;
+  }
+
+  send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+
+  cut_correlation_token(cmd);
+  cut_google_requestid(cmd);
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  supla_user *user = NULL;
+  if (UserID && DeviceID && ChannelID &&
+      (user = supla_user::find(UserID, false)) != NULL) {
+    bool result = false;
+    supla_device *device = user->get_device(DeviceID);
+    if (device) {
+      // onChannelValueChangeEvent must be called before
+      // set_device_channel_char_value for the potential report to contain
+      // AlexaCorrelationToken / GoogleRequestId
+      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+          user, DeviceID, ChannelID,
+          AlexaCorrelationToken ? EST_AMAZON_ALEXA
+                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+          AlexaCorrelationToken, GoogleRequestId);
+
+      if (open) {
+        result = device->get_channels()->action_open(0, ChannelID, 0, 0);
+      } else {
+        result = device->get_channels()->action_close(ChannelID);
+      }
+
+      device->releasePtr();
+    }
+
+    if (result) {
+      send_result("OK:", ChannelID);
+    } else {
+      send_result("FAIL:", ChannelID);
+    }
+
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+
+  free_correlation_token();
+  free_google_requestid();
 }
 
 void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
@@ -480,13 +778,83 @@ void svr_ipcctrl::google_home_credentials_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::on_device_deleted(const char *cmd) {
+void svr_ipcctrl::state_webhook_changed(const char *cmd) {
   int UserID = 0;
 
-  sscanf(&buffer[strnlen(cmd_user_on_device_deleted, IPC_BUFFER_SIZE)], "%i",
-         &UserID);
+  sscanf(&buffer[strnlen(cmd_user_state_webhook_changed, IPC_BUFFER_SIZE)],
+         "%i", &UserID);
   if (UserID) {
-    supla_user::on_device_deleted(UserID, EST_IPC);
+    supla_user::on_state_webhook_changed(UserID);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
+void svr_ipcctrl::mqtt_settings_changed(const char *cmd) {
+  int UserID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_mqtt_settings_changed, IPC_BUFFER_SIZE)],
+         "%i", &UserID);
+  if (UserID) {
+    supla_user::on_mqtt_settings_changed(UserID);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
+void svr_ipcctrl::before_channel_function_change(const char *cmd) {
+  int UserID = 0;
+  int ChannelID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_before_channel_function_change,
+                         IPC_BUFFER_SIZE)],
+         "%i,%i", &UserID, &ChannelID);
+  if (UserID && ChannelID) {
+    supla_user::before_channel_function_change(UserID, ChannelID, EST_IPC);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
+void svr_ipcctrl::before_device_delete(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_before_device_delete, IPC_BUFFER_SIZE)],
+         "%i,%i", &UserID, &DeviceID);
+  if (UserID && DeviceID) {
+    supla_user::before_device_delete(UserID, DeviceID, EST_IPC);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
+void svr_ipcctrl::on_device_deleted(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_on_device_deleted, IPC_BUFFER_SIZE)], "%i,%i",
+         &UserID, &DeviceID);
+  if (UserID && DeviceID) {
+    supla_user::on_device_deleted(UserID, DeviceID, EST_IPC);
+    send_result("OK:", UserID);
+  } else {
+    send_result("USER_UNKNOWN");
+  }
+}
+
+void svr_ipcctrl::on_device_settings_changed(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+
+  sscanf(&buffer[strnlen(cmd_user_on_device_settings_changed, IPC_BUFFER_SIZE)],
+         "%i,%i", &UserID, &DeviceID);
+  if (UserID && DeviceID) {
+    supla_user::on_device_settings_changed(UserID, DeviceID, EST_IPC);
     send_result("OK:", UserID);
   } else {
     send_result("USER_UNKNOWN");
@@ -536,6 +904,19 @@ void svr_ipcctrl::execute(void *sthread) {
           } else {
             send_result("DISCONNECTED:", DeviceID);
           }
+        } else if (match_command(cmd_is_channel_connected, len)) {
+          int UserID = 0;
+          int DeviceID = 0;
+          int ChannelID = 0;
+          sscanf(&buffer[strnlen(cmd_is_channel_connected, IPC_BUFFER_SIZE)],
+                 "%i,%i,%i", &UserID, &DeviceID, &ChannelID);
+
+          if (UserID && DeviceID && ChannelID &&
+              supla_user::is_channel_online(UserID, DeviceID, ChannelID)) {
+            send_result("CONNECTED:", ChannelID);
+          } else {
+            send_result("DISCONNECTED:", ChannelID);
+          }
         } else if (match_command(cmd_user_reconnect, len)) {
           int UserID = 0;
           sscanf(&buffer[strnlen(cmd_user_reconnect, IPC_BUFFER_SIZE)], "%i",
@@ -582,6 +963,12 @@ void svr_ipcctrl::execute(void *sthread) {
         } else if (match_command(cmd_get_ic_value, len)) {
           get_impulsecounter_value(cmd_get_ic_value);
 
+        } else if (match_command(cmd_get_valve_value, len)) {
+          get_valve_value(cmd_get_valve_value);
+
+        } else if (match_command(cmd_get_digiglass_value, len)) {
+          get_digiglass_value(cmd_get_digiglass_value);
+
         } else if (match_command(cmd_set_char_value, len)) {
           set_char(cmd_set_char_value, false);
 
@@ -608,10 +995,40 @@ void svr_ipcctrl::execute(void *sthread) {
           google_home_credentials_changed(
               cmd_user_google_home_credentials_changed);
 
+        } else if (match_command(cmd_user_state_webhook_changed, len)) {
+          state_webhook_changed(cmd_user_state_webhook_changed);
+
+        } else if (match_command(cmd_user_mqtt_settings_changed, len)) {
+          mqtt_settings_changed(cmd_user_mqtt_settings_changed);
+
         } else if (match_command(cmd_user_on_device_deleted, len)) {
           on_device_deleted(cmd_user_on_device_deleted);
 
+        } else if (match_command(cmd_user_before_device_delete, len)) {
+          before_device_delete(cmd_user_before_device_delete);
+
+        } else if (match_command(cmd_user_before_channel_function_change,
+                                 len)) {
+          before_channel_function_change(
+              cmd_user_before_channel_function_change);
+
+        } else if (match_command(cmd_user_on_device_settings_changed, len)) {
+          on_device_settings_changed(cmd_user_on_device_settings_changed);
+
+        } else if (match_command(cmd_set_digiglass_value, len)) {
+          set_digiglass_value(cmd_set_digiglass_value);
+        } else if (match_command(cmd_action_open, len)) {
+          action_open_close(cmd_action_open, true);
+        } else if (match_command(cmd_action_close, len)) {
+          action_open_close(cmd_action_close, false);
+        } else if (match_command(cmd_get_relay_value, len)) {
+          get_relay_value(cmd_get_relay_value);
+        } else if (match_command(cmd_reset_counters, len)) {
+          reset_counters(cmd_reset_counters);
+        } else if (match_command(cmd_recalibrate, len)) {
+          recalibrate(cmd_recalibrate);
         } else {
+          supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
           send_result("COMMAND_UNKNOWN");
         }
 

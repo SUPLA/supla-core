@@ -16,6 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+/*
+https://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/types.html
+
+Type Signature | Java Type
+Z | boolean
+B | byte
+C | char
+S | short
+I | int
+J | long
+F | float
+D | double
+ */
+
 #include <android/log.h>
 #include <jni.h>
 #include <string.h>
@@ -23,6 +37,49 @@
 #include "proto.h"
 #include "srpc.h"
 #include "supla-client.h"
+
+static int android_api_level = 0;
+static char log_tag[] = "LibSuplaClient";
+//  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
+
+jstring new_string_utf(JNIEnv *env, char *string) {
+  if (android_api_level >= 19) {
+    return (*env)->NewStringUTF(env, string);
+  } else {
+    // For API level <19, emoticons will crash the application
+    jobject bb =
+        (*env)->NewDirectByteBuffer(env, (void *)string, strlen(string));
+
+    jclass cls_charset = (*env)->FindClass(env, "java/nio/charset/Charset");
+
+    jmethodID mid_for_name = (*env)->GetStaticMethodID(
+        env, cls_charset, "forName",
+        "(Ljava/lang/String;)Ljava/nio/charset/Charset;");
+
+    jobject charset = (*env)->CallStaticObjectMethod(
+        env, cls_charset, mid_for_name, (*env)->NewStringUTF(env, "UTF-8"));
+
+    jmethodID mid_decode =
+        (*env)->GetMethodID(env, cls_charset, "decode",
+                            "(Ljava/nio/ByteBuffer;)Ljava/nio/CharBuffer;");
+
+    jobject cb = (*env)->CallObjectMethod(env, charset, mid_decode, bb);
+
+    (*env)->DeleteLocalRef(env, bb);
+    (*env)->DeleteLocalRef(env, charset);
+
+    jclass cls_char_buffer = (*env)->FindClass(env, "java/nio/CharBuffer");
+
+    jmethodID mid_to_string = (*env)->GetMethodID(
+        env, cls_char_buffer, "toString", "()Ljava/lang/String;");
+
+    jstring result = (*env)->CallObjectMethod(env, cb, mid_to_string);
+
+    (*env)->DeleteLocalRef(env, cb);
+
+    return result;
+  }
+}
 
 #define ASC_VAR_DECLARATION(...)                               \
   TAndroidSuplaClient *asc = (TAndroidSuplaClient *)user_data; \
@@ -36,8 +93,79 @@
     return __VA_ARGS__;                    \
   }
 
-static char log_tag[] = "LibSuplaClient";
-//  __android_log_write(ANDROID_LOG_DEBUG, log_tag, "XXXX");
+#define JNI_FUNCTION_V(jni_function_suffix, supla_client_function)       \
+  JNIEXPORT jboolean JNICALL                                             \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(      \
+          JNIEnv *env, jobject thiz, jlong _asc) {                       \
+    void *supla_client = supla_client_ptr(_asc);                         \
+    if (supla_client) {                                                  \
+      return supla_client_function(supla_client) ? JNI_TRUE : JNI_FALSE; \
+    }                                                                    \
+    return JNI_FALSE;                                                    \
+  }
+
+#define JNI_FUNCTION_I(jni_function_suffix, supla_client_function)           \
+  JNIEXPORT jboolean JNICALL                                                 \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(          \
+          JNIEnv *env, jobject thiz, jlong _asc, jint i1) {                  \
+    void *supla_client = supla_client_ptr(_asc);                             \
+    if (supla_client) {                                                      \
+      return supla_client_function(supla_client, i1) ? JNI_TRUE : JNI_FALSE; \
+    }                                                                        \
+    return JNI_FALSE;                                                        \
+  }
+
+#define JNI_FUNCTION_II(jni_function_suffix, supla_client_function)   \
+  JNIEXPORT jboolean JNICALL                                          \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(   \
+          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jint i2) {  \
+    void *supla_client = supla_client_ptr(_asc);                      \
+    if (supla_client) {                                               \
+      return supla_client_function(supla_client, i1, i2) ? JNI_TRUE   \
+                                                         : JNI_FALSE; \
+    }                                                                 \
+    return JNI_FALSE;                                                 \
+  }
+
+#define JNI_FUNCTION_IString(jni_function_suffix, supla_client_function)   \
+  JNIEXPORT jboolean JNICALL                                               \
+      Java_org_supla_android_lib_SuplaClient_##jni_function_suffix(        \
+          JNIEnv *env, jobject thiz, jlong _asc, jint i1, jstring s1) {    \
+    jboolean result = JNI_FALSE;                                           \
+    const char *str = (*env)->GetStringUTFChars(env, s1, 0);               \
+    if (str) {                                                             \
+      void *supla_client = supla_client_ptr(_asc);                         \
+      if (supla_client) {                                                  \
+        result = supla_client_function(supla_client, i1, str) ? JNI_TRUE   \
+                                                              : JNI_FALSE; \
+      }                                                                    \
+      (*env)->ReleaseStringUTFChars(env, s1, str);                         \
+    }                                                                      \
+    return result;                                                         \
+  }
+
+#define JNI_CALLBACK_I(jni_function_cb)                                        \
+  void supla_android_client_cb_##jni_function_cb(                              \
+      void *_suplaclient, void *user_data, _supla_int_t i1) {                  \
+    ASC_VAR_DECLARATION();                                                     \
+    ENV_VAR_DECLARATION();                                                     \
+    if (asc->j_mid_##jni_function_cb == NULL) {                                \
+      return;                                                                  \
+    }                                                                          \
+    (*env)->CallVoidMethod(env, asc->j_obj, asc->j_mid_##jni_function_cb, i1); \
+  }
+
+#define JNI_CALLBACK_STRING(jni_function_cb)                                   \
+  void supla_android_client_cb_##jni_function_cb(void *_suplaclient,           \
+                                                 void *user_data, char *str) { \
+    ASC_VAR_DECLARATION();                                                     \
+    ENV_VAR_DECLARATION();                                                     \
+    if (asc->j_mid_##jni_function_cb == NULL) {                                \
+      return;                                                                  \
+    }                                                                          \
+    (*env)->CallVoidMethod(env, asc->j_obj, asc->j_mid_##jni_function_cb,      \
+                           str ? new_string_utf(env, str) : NULL);             \
+  }
 
 typedef struct {
   void *_supla_client;
@@ -62,12 +190,25 @@ typedef struct {
   jmethodID j_mid_channelgroup_relation_update;
   jmethodID j_mid_on_oauth_token_request_result;
   jmethodID j_mid_on_superuser_authorization_result;
-  jmethodID j_mid_cb_on_device_calcfg_result;
-  jmethodID j_mid_cb_on_channel_state;
-  jmethodID j_mid_cb_on_channel_basic_cfg;
-  jmethodID j_mid_cb_on_channel_function_set_result;
-  jmethodID j_mid_cb_on_clients_reconnect_result;
-  jmethodID j_mid_cb_on_set_registration_enabled_result;
+  jmethodID j_mid_on_device_calcfg_result;
+  jmethodID j_mid_on_device_calcfg_debug_string;
+  jmethodID j_mid_on_device_calcfg_progress_report;
+  jmethodID j_mid_on_channel_state;
+  jmethodID j_mid_on_channel_basic_cfg;
+  jmethodID j_mid_on_channel_function_set_result;
+  jmethodID j_mid_on_channel_caption_set_result;
+  jmethodID j_mid_on_location_caption_set_result;
+  jmethodID j_mid_on_clients_reconnect_result;
+  jmethodID j_mid_on_set_registration_enabled_result;
+  jmethodID j_mid_on_zwave_reset_and_clear_result;
+  jmethodID j_mid_on_zwave_add_node_result;
+  jmethodID j_mid_on_zwave_remove_node_result;
+  jmethodID j_mid_on_zwave_get_node_list_result;
+  jmethodID j_mid_on_zwave_get_assigned_node_id_result;
+  jmethodID j_mid_on_zwave_wake_up_settings_report;
+  jmethodID j_mid_on_zwave_assign_node_id_result;
+  jmethodID j_mid_on_zwave_set_wake_up_time_result;
+
 } TAndroidSuplaClient;
 
 static JavaVM *java_vm;
@@ -79,6 +220,15 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
   if ((*vm)->GetEnv(vm, (void **)&env, JNI_VERSION_1_6) != JNI_OK) {
     __android_log_write(ANDROID_LOG_DEBUG, log_tag, "GetEnv failed.");
     return -1;
+  }
+
+  jclass cls_version = (*env)->FindClass(env, "android/os/Build$VERSION");
+  if (NULL != cls_version) {
+    jfieldID fid_sdk =
+        (*env)->GetStaticFieldID(env, cls_version, "SDK_INT", "I");
+    if (fid_sdk != NULL) {
+      android_api_level = (*env)->GetStaticIntField(env, cls_version, fid_sdk);
+    }
   }
 
   return JNI_VERSION_1_6;
@@ -136,6 +286,75 @@ void supla_android_client(TAndroidSuplaClient *asc, jmethodID mid,
   } else {
     (*env)->CallVoidMethod(env, asc->j_obj, mid);
   }
+}
+
+void supla_android_client_stringobj2buffer(JNIEnv *env, jobject cfg, jclass jcs,
+                                           const char *name, char *buff,
+                                           int size) {
+  jfieldID fid = supla_client_GetFieldID(env, jcs, name, "Ljava/lang/String;");
+  jstring js_str = (*env)->GetObjectField(env, cfg, fid);
+  const char *str = (*env)->GetStringUTFChars(env, js_str, 0);
+
+  if (str) {
+    memcpy(buff, str, strlen(str) >= size ? size - 1 : strlen(str));
+    (*env)->ReleaseStringUTFChars(env, js_str, str);
+  }
+}
+
+void supla_android_client_bytearrobj2buffer(JNIEnv *env, jobject cfg,
+                                            jclass jcs, const char *name,
+                                            char *buff, int size) {
+  jfieldID fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
+  jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
+
+  if (size == (*env)->GetArrayLength(env, barr)) {
+    jbyte *data = (jbyte *)(*env)->GetByteArrayElements(env, barr, NULL);
+    if (data) {
+      memcpy(buff, data, size);
+      (*env)->ReleaseByteArrayElements(env, barr, data, 0);
+    }
+  }
+}
+
+unsigned char supla_android_client_shortobj2jshort(JNIEnv *env, jobject in,
+                                                   jshort *out) {
+  if (env == NULL || in == NULL || out == NULL) {
+    return 0;
+  }
+
+  jclass in_cls = (*env)->GetObjectClass(env, in);
+
+  jmethodID m_get_short_val =
+      (*env)->GetMethodID(env, in_cls, "shortValue", "()S");
+  if (m_get_short_val == NULL) {
+    return 0;
+  }
+
+  *out = (*env)->CallShortMethod(env, in, m_get_short_val);
+
+  return 1;
+}
+
+jobject supla_android_client_jshort2shortobj(JNIEnv *env, jshort in) {
+  jclass cls = (*env)->FindClass(env, "java/lang/Short");
+
+  jmethodID m_init = (*env)->GetMethodID(env, cls, "<init>", "(S)V");
+  if (NULL == m_init) {
+    return NULL;
+  };
+
+  return (*env)->NewObject(env, cls, m_init, in);
+}
+
+jobject supla_android_client_jint2integerobj(JNIEnv *env, jint in) {
+  jclass cls = (*env)->FindClass(env, "java/lang/Integer");
+
+  jmethodID m_init = (*env)->GetMethodID(env, cls, "<init>", "(I)V");
+  if (NULL == m_init) {
+    return NULL;
+  };
+
+  return (*env)->NewObject(env, cls, m_init, in);
 }
 
 void supla_android_client_cb_on_versionerror(void *_suplaclient,
@@ -300,14 +519,14 @@ void supla_android_client_cb_location_update(void *_suplaclient,
 
     fid = supla_client_GetFieldID(env, cloc, "Caption", "Ljava/lang/String;");
     (*env)->SetObjectField(env, loc, fid,
-                           (*env)->NewStringUTF(env, location->Caption));
+                           new_string_utf(env, location->Caption));
 
     supla_android_client(asc, asc->j_mid_location_update, loc);
   }
 }
 
 jobject supla_android_client_channelvalue_to_jobject(
-    void *_suplaclient, void *user_data, TSuplaChannelValue *channel_value) {
+    void *_suplaclient, void *user_data, TSuplaChannelValue_B *channel_value) {
   ASC_VAR_DECLARATION(NULL);
   ENV_VAR_DECLARATION(NULL);
   jfieldID fid;
@@ -333,11 +552,14 @@ jobject supla_android_client_channelvalue_to_jobject(
   fid = supla_client_GetFieldID(env, cval, "SubValue", "[B");
   (*env)->SetObjectField(env, val, fid, arr);
 
+  fid = supla_client_GetFieldID(env, cval, "SubValueType", "S");
+  (*env)->SetShortField(env, val, fid, channel_value->sub_value_type);
+
   return val;
 }
 
 void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
-                                            TSC_SuplaChannel_C *channel) {
+                                            TSC_SuplaChannel_D *channel) {
   // int a;
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
@@ -390,8 +612,7 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
     (*env)->SetObjectField(env, ch, fid, chv);
 
     fid = supla_client_GetFieldID(env, cch, "Caption", "Ljava/lang/String;");
-    (*env)->SetObjectField(env, ch, fid,
-                           (*env)->NewStringUTF(env, channel->Caption));
+    (*env)->SetObjectField(env, ch, fid, new_string_utf(env, channel->Caption));
 
     fid = supla_client_GetFieldID(env, cch, "AltIcon", "I");
     (*env)->SetIntField(env, ch, fid, channel->AltIcon);
@@ -410,7 +631,8 @@ void supla_android_client_cb_channel_update(void *_suplaclient, void *user_data,
 }
 
 void supla_android_client_cb_channel_value_update(
-    void *_suplaclient, void *user_data, TSC_SuplaChannelValue *channel_value) {
+    void *_suplaclient, void *user_data,
+    TSC_SuplaChannelValue_B *channel_value) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
   jfieldID fid;
@@ -446,7 +668,7 @@ void supla_android_client_cb_channel_value_update(
 
 void supla_android_client_channel_em_addsummary(
     TAndroidSuplaClient *asc, JNIEnv *env, jobject parent, jclass parent_cls,
-    TElectricityMeter_ExtendedValue *em_ev, jint phase) {
+    TElectricityMeter_ExtendedValue_V2 *em_ev, jint phase) {
   jclass cls = (*env)->FindClass(
       env, "org/supla/android/lib/SuplaChannelElectricityMeterValue$Summary");
   jmethodID methodID = supla_client_GetMethodID(
@@ -469,7 +691,7 @@ void supla_android_client_channel_em_addsummary(
 
 void supla_android_client_channel_em_addmeasurement(
     TAndroidSuplaClient *asc, JNIEnv *env, jobject parent, jclass parent_cls,
-    TElectricityMeter_ExtendedValue *em_ev, jint phase, int midx) {
+    TElectricityMeter_ExtendedValue_V2 *em_ev, jint phase, int midx) {
   jclass cls = (*env)->FindClass(
       env,
       "org/supla/android/lib/SuplaChannelElectricityMeterValue$Measurement");
@@ -494,7 +716,7 @@ void supla_android_client_channel_em_addmeasurement(
 
 jobject supla_android_client_channelelectricitymetervalue_to_jobject(
     TAndroidSuplaClient *asc, JNIEnv *env,
-    TElectricityMeter_ExtendedValue *em_ev) {
+    TElectricityMeter_ExtendedValue_V2 *em_ev) {
   int a = 0;
   int b = 0;
 
@@ -504,12 +726,13 @@ jobject supla_android_client_channelelectricitymetervalue_to_jobject(
 
   jclass cls = (*env)->FindClass(
       env, "org/supla/android/lib/SuplaChannelElectricityMeterValue");
-  jmethodID methodID =
-      supla_client_GetMethodID(env, cls, "<init>", "(IIIILjava/lang/String;)V");
-  jobject val =
-      (*env)->NewObject(env, cls, methodID, em_ev->measured_values,
-                        em_ev->period, em_ev->total_cost, em_ev->price_per_unit,
-                        (*env)->NewStringUTF(env, currency));
+  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>",
+                                                "(IIIILjava/lang/String;JJ)V");
+  jobject val = (*env)->NewObject(
+      env, cls, methodID, em_ev->measured_values, em_ev->period,
+      em_ev->total_cost, em_ev->price_per_unit, new_string_utf(env, currency),
+      em_ev->total_forward_active_energy_balanced,
+      em_ev->total_reverse_active_energy_balanced);
   jclass cval = (*env)->GetObjectClass(env, val);
 
   for (a = 0; a < 3; a++) {
@@ -537,11 +760,10 @@ jobject supla_android_client_impulsecountervalue_to_jobject(
 
   ic_ev->custom_unit[sizeof(ic_ev->custom_unit) - 1] = 0;
 
-  return (*env)->NewObject(env, cls, methodID, ic_ev->impulses_per_unit,
-                           ic_ev->counter, ic_ev->calculated_value,
-                           ic_ev->total_cost, ic_ev->price_per_unit,
-                           (*env)->NewStringUTF(env, currency),
-                           (*env)->NewStringUTF(env, ic_ev->custom_unit));
+  return (*env)->NewObject(
+      env, cls, methodID, ic_ev->impulses_per_unit, ic_ev->counter,
+      ic_ev->calculated_value, ic_ev->total_cost, ic_ev->price_per_unit,
+      new_string_utf(env, currency), new_string_utf(env, ic_ev->custom_unit));
 }
 
 jobject supla_android_client_thermostatvalue_to_jobject(
@@ -600,9 +822,9 @@ jobject supla_android_client_thermostatvalue_to_jobject(
         (*env)->GetMethodID(env, cls, "setTime", "(BBBB)V");
 
     for (a = 0; a < sizeof(th_ev->Values) / sizeof(_supla_int16_t); a++) {
-      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, a, th_ev->Time.sec,
-                             th_ev->Time.min, th_ev->Time.hour,
-                             th_ev->Time.dayOfWeek);
+      (*env)->CallVoidMethod(env, m_obj, set_time_m_mid, (jbyte)th_ev->Time.sec,
+                             (jbyte)th_ev->Time.min, (jbyte)th_ev->Time.hour,
+                             (jbyte)th_ev->Time.dayOfWeek);
     }
   }
 
@@ -618,13 +840,57 @@ jobject supla_android_client_thermostatvalue_to_jobject(
 
     for (a = 0; a < 7; a++) {
       for (int b = 0; b < 24; b++) {
-        (*env)->CallVoidMethod(env, m_obj, set_schedule_value_m_mid, a, b,
-                               th_ev->Schedule.HourValue[a][b]);
+        (*env)->CallVoidMethod(env, m_obj, set_schedule_value_m_mid, (jbyte)a,
+                               (jbyte)b,
+                               (jbyte)th_ev->Schedule.HourValue[a][b]);
       }
     }
   }
 
   return m_obj;
+}
+
+jobject supla_android_client_channelstate_to_jobject(TAndroidSuplaClient *asc,
+                                                     JNIEnv *env,
+                                                     TDSC_ChannelState *state) {
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(IIII[BBBBBBBIIBBII)V");
+
+  jbyteArray mac = (*env)->NewByteArray(env, 6);
+  (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
+
+  return (*env)->NewObject(
+      env, cls, methodID, (jint)state->ChannelID, (jint)state->Fields,
+      (jint)state->defaultIconField, (jint)state->IPv4, mac,
+      (jbyte)state->BatteryLevel, (jbyte)state->BatteryPowered,
+      (jbyte)state->WiFiRSSI, (jbyte)state->WiFiSignalStrength,
+      (jbyte)state->BridgeNodeOnline, (jbyte)state->BridgeNodeSignalStrength,
+      (jint)state->Uptime, (jint)state->ConnectionUptime,
+      (jbyte)state->BatteryHealth, (jbyte)state->LastConnectionResetCause,
+      (jint)state->LightSourceLifespan,
+      state->Fields & SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME
+          ? (jint)state->LightSourceOperatingTime
+          : (jshort)state->LightSourceLifespanLeft);
+}
+
+jobject supla_android_client_timerstate_to_jobject(
+    TAndroidSuplaClient *asc, JNIEnv *env, TTimerState_ExtendedValue *state) {
+  jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaTimerState");
+  jmethodID methodID =
+      supla_client_GetMethodID(env, cls, "<init>", "(J[BILjava/lang/String;)V");
+
+  supla_client_set_str(state->SenderName, &state->SenderNameSize,
+                       SUPLA_SENDER_NAME_MAXSIZE);
+
+  jbyteArray arr = (*env)->NewByteArray(env, SUPLA_CHANNELVALUE_SIZE);
+  (*env)->SetByteArrayRegion(env, arr, 0, SUPLA_CHANNELVALUE_SIZE,
+                             (const jbyte *)state->TargetValue);
+
+  return (*env)->NewObject(env, cls, methodID, (jlong)state->RemainingTimeTs,
+                           arr, state->SenderID,
+                           new_string_utf(env, state->SenderName));
 }
 
 jobject supla_android_client_channelextendedvalue_to_jobject(
@@ -644,18 +910,34 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
   fid = supla_client_GetFieldID(env, cval, "Type", "I");
   (*env)->SetIntField(env, val, fid, channel_extendedvalue->type);
 
-  if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
-    TElectricityMeter_ExtendedValue em_ev;
-    if (srpc_evtool_v1_extended2emextended(channel_extendedvalue, &em_ev) ==
-        1) {
-      fid = supla_client_GetFieldID(
-          env, cval, "ElectricityMeterValue",
-          "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
-      jobject chv =
-          supla_android_client_channelelectricitymetervalue_to_jobject(asc, env,
-                                                                       &em_ev);
-      (*env)->SetObjectField(env, val, fid, chv);
+  TChannelState_ExtendedValue *channel_state = NULL;
+  TTimerState_ExtendedValue *timer_state = NULL;
+
+  if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 ||
+      channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+    TElectricityMeter_ExtendedValue_V2 em_ev;
+
+    if (channel_extendedvalue->type ==
+        EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+      TElectricityMeter_ExtendedValue em_ev_v1;
+      if (srpc_evtool_v1_extended2emextended(channel_extendedvalue,
+                                             &em_ev_v1) == 0 ||
+          srpc_evtool_emev_v1to2(&em_ev_v1, &em_ev) == 0) {
+        return val;
+      }
+    } else if (channel_extendedvalue->type ==
+                   EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 &&
+               srpc_evtool_v2_extended2emextended(channel_extendedvalue,
+                                                  &em_ev) == 0) {
+      return val;
     }
+    fid = supla_client_GetFieldID(
+        env, cval, "ElectricityMeterValue",
+        "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
+    jobject chv = supla_android_client_channelelectricitymetervalue_to_jobject(
+        asc, env, &em_ev);
+    (*env)->SetObjectField(env, val, fid, chv);
+
   } else if (channel_extendedvalue->type ==
              EV_TYPE_IMPULSE_COUNTER_DETAILS_V1) {
     TSC_ImpulseCounter_ExtendedValue ic_ev;
@@ -681,6 +963,31 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
       (*env)->SetObjectField(env, val, fid, chv);
     }
+  } else if (channel_extendedvalue->type == EV_TYPE_CHANNEL_STATE_V1 &&
+             channel_extendedvalue->size ==
+                 sizeof(TChannelState_ExtendedValue)) {
+    channel_state = (TChannelState_ExtendedValue *)channel_extendedvalue->value;
+
+  } else if (channel_extendedvalue->type == EV_TYPE_TIMER_STATE_V1 &&
+             channel_extendedvalue->size <= sizeof(TTimerState_ExtendedValue) &&
+             channel_extendedvalue->size >= sizeof(TTimerState_ExtendedValue) -
+                                                SUPLA_SENDER_NAME_MAXSIZE) {
+    timer_state = (TTimerState_ExtendedValue *)channel_extendedvalue->value;
+
+  } else if (channel_extendedvalue->type ==
+                 EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 &&
+             channel_extendedvalue->size <=
+                 sizeof(TChannelAndTimerState_ExtendedValue) &&
+             channel_extendedvalue->size >=
+                 sizeof(TChannelAndTimerState_ExtendedValue) -
+                     SUPLA_SENDER_NAME_MAXSIZE) {
+    channel_state =
+        &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
+             ->Channel;
+    timer_state =
+        &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
+             ->Timer;
+
   } else if (channel_extendedvalue->size > 0) {
     jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
     (*env)->SetByteArrayRegion(env, arr, 0, channel_extendedvalue->size,
@@ -688,6 +995,27 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
 
     fid = supla_client_GetFieldID(env, cval, "Value", "[B");
     (*env)->SetObjectField(env, val, fid, arr);
+  }
+
+  if (channel_state) {
+    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
+                                  "Lorg/supla/android/lib/SuplaChannelState;");
+
+    // TChannelState_ExtendedValue is equal to TDSC_ChannelState
+    jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
+        asc, env, (TDSC_ChannelState *)channel_state);
+
+    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+  }
+
+  if (timer_state) {
+    fid = supla_client_GetFieldID(env, cval, "TimerStateValue",
+                                  "Lorg/supla/android/lib/SuplaTimerState;");
+
+    jobject timer_state_obj = supla_android_client_timerstate_to_jobject(
+        asc, env, (TTimerState_ExtendedValue *)timer_state);
+
+    (*env)->SetObjectField(env, val, fid, timer_state_obj);
   }
 
   return val;
@@ -761,7 +1089,7 @@ void supla_android_client_cb_channelgroup_update(
 
     fid = supla_client_GetFieldID(env, cchg, "Caption", "Ljava/lang/String;");
     (*env)->SetObjectField(env, chg, fid,
-                           (*env)->NewStringUTF(env, channel_group->Caption));
+                           new_string_utf(env, channel_group->Caption));
 
     supla_android_client(asc, asc->j_mid_channelgroup_update, chg);
   }
@@ -809,7 +1137,7 @@ void supla_android_client_cb_on_oauth_token_request_result(
         supla_client_GetMethodID(env, cls, "<init>", "(IILjava/lang/String;)V");
     jobject token_obj = (*env)->NewObject(
         env, cls, methodID, result->ResultCode, result->Token.ExpiresIn,
-        (*env)->NewStringUTF(env, result->Token.Token));
+        new_string_utf(env, result->Token.Token));
 
     supla_android_client(asc, asc->j_mid_on_oauth_token_request_result,
                          token_obj);
@@ -834,7 +1162,7 @@ void supla_android_client_cb_on_device_calcfg_result(
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_device_calcfg_result) {
+  if (asc->j_mid_on_device_calcfg_result) {
     jbyteArray data = NULL;
 
     if (result->DataSize > 0) {
@@ -845,11 +1173,28 @@ void supla_android_client_cb_on_device_calcfg_result(
       data = (*env)->NewGlobalRef(env, NULL);
     }
 
-    (*env)->CallVoidMethod(
-        env, asc->j_obj, asc->j_mid_cb_on_device_calcfg_result,
-        result->ChannelID, result->Command, result->Result, data);
+    (*env)->CallVoidMethod(env, asc->j_obj, asc->j_mid_on_device_calcfg_result,
+                           result->ChannelID, result->Command, result->Result,
+                           data);
   }
 }
+
+void supla_android_client_cb_on_device_calcfg_progress_report(
+    void *_suplaclient, void *user_data, int ChannelID,
+    TCalCfg_ProgressReport *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_device_calcfg_progress_report) {
+    jbyteArray data = NULL;
+
+    (*env)->CallVoidMethod(env, asc->j_obj,
+                           asc->j_mid_on_device_calcfg_progress_report,
+                           ChannelID, result->Command, result->Progress);
+  }
+}
+
+JNI_CALLBACK_STRING(on_device_calcfg_debug_string);
 
 void supla_android_client_cb_on_channel_state(void *_suplaclient,
                                               void *user_data,
@@ -857,25 +1202,14 @@ void supla_android_client_cb_on_channel_state(void *_suplaclient,
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_channel_state == NULL || state == NULL) {
+  if (asc->j_mid_on_channel_state == NULL || state == NULL) {
     return;
   }
 
-  jclass cls =
-      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelState");
-  jmethodID methodID =
-      supla_client_GetMethodID(env, cls, "<init>", "(III[BBBBBBII)V");
+  jobject channel_state_obj =
+      supla_android_client_channelstate_to_jobject(asc, env, state);
 
-  jbyteArray mac = (*env)->NewByteArray(env, 6);
-  (*env)->SetByteArrayRegion(env, mac, 0, 6, (const jbyte *)state->MAC);
-
-  jobject channel_state_obj = (*env)->NewObject(
-      env, cls, methodID, state->ChannelID, state->Fields, state->IPv4, mac,
-      state->BatteryLevel, state->BatteryPowered, state->WiFiRSSI,
-      state->WiFiSignalStrength, state->BridgeSignalStrength, state->Uptime,
-      state->ConnectionUptime);
-
-  supla_android_client(asc, asc->j_mid_cb_on_channel_state, channel_state_obj);
+  supla_android_client(asc, asc->j_mid_on_channel_state, channel_state_obj);
 }
 
 void supla_android_client_cb_on_channel_basic_cfg(void *_suplaclient,
@@ -884,7 +1218,7 @@ void supla_android_client_cb_on_channel_basic_cfg(void *_suplaclient,
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_channel_basic_cfg == NULL || cfg == NULL) {
+  if (asc->j_mid_on_channel_basic_cfg == NULL || cfg == NULL) {
     return;
   }
 
@@ -895,13 +1229,13 @@ void supla_android_client_cb_on_channel_basic_cfg(void *_suplaclient,
       "(Ljava/lang/String;Ljava/lang/String;IIIIIIIIIILjava/lang/String;)V");
 
   jobject channel_basic_cfg_obj = (*env)->NewObject(
-      env, cls, methodID, (*env)->NewStringUTF(env, cfg->DeviceName),
-      (*env)->NewStringUTF(env, cfg->DeviceSoftVer), cfg->DeviceID,
-      cfg->DeviceFlags, cfg->ManufacturerID, cfg->ProductID, cfg->ID,
-      cfg->Number, cfg->Type, cfg->Func, cfg->FuncList, cfg->ChannelFlags,
-      (*env)->NewStringUTF(env, cfg->Caption));
+      env, cls, methodID, new_string_utf(env, cfg->DeviceName),
+      new_string_utf(env, cfg->DeviceSoftVer), cfg->DeviceID, cfg->DeviceFlags,
+      cfg->ManufacturerID, cfg->ProductID, cfg->ID, cfg->Number, cfg->Type,
+      cfg->Func, cfg->FuncList, cfg->ChannelFlags,
+      new_string_utf(env, cfg->Caption));
 
-  supla_android_client(asc, asc->j_mid_cb_on_channel_basic_cfg,
+  supla_android_client(asc, asc->j_mid_on_channel_basic_cfg,
                        channel_basic_cfg_obj);
 }
 
@@ -910,13 +1244,41 @@ void supla_android_client_cb_on_channel_function_set_result(
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_channel_function_set_result == NULL || result == NULL) {
+  if (asc->j_mid_on_channel_function_set_result == NULL || result == NULL) {
     return;
   }
 
   (*env)->CallVoidMethod(env, asc->j_obj,
-                         asc->j_mid_cb_on_channel_function_set_result,
-                         result->ChannelID, result->ResultCode);
+                         asc->j_mid_on_channel_function_set_result,
+                         result->ChannelID, result->Func, result->ResultCode);
+}
+
+void supla_android_client_cb_on_channel_caption_set_result(
+    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_channel_caption_set_result == NULL || result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_channel_caption_set_result, result->ID,
+      new_string_utf(env, result->Caption), result->ResultCode);
+}
+
+void supla_android_client_cb_on_location_caption_set_result(
+    void *_suplaclient, void *user_data, TSC_SetCaptionResult *result) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_location_caption_set_result == NULL || result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_location_caption_set_result, result->ID,
+      new_string_utf(env, result->Caption), result->ResultCode);
 }
 
 void supla_android_client_cb_on_clients_reconnect_result(
@@ -925,12 +1287,12 @@ void supla_android_client_cb_on_clients_reconnect_result(
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_clients_reconnect_result == NULL || result == NULL) {
+  if (asc->j_mid_on_clients_reconnect_result == NULL || result == NULL) {
     return;
   }
 
   (*env)->CallVoidMethod(env, asc->j_obj,
-                         asc->j_mid_cb_on_clients_reconnect_result,
+                         asc->j_mid_on_clients_reconnect_result,
                          result->ResultCode);
 }
 
@@ -940,13 +1302,12 @@ void supla_android_client_cb_on_set_registration_enabled_result(
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
 
-  if (asc->j_mid_cb_on_set_registration_enabled_result == NULL ||
-      result == NULL) {
+  if (asc->j_mid_on_set_registration_enabled_result == NULL || result == NULL) {
     return;
   }
 
   (*env)->CallVoidMethod(env, asc->j_obj,
-                         asc->j_mid_cb_on_set_registration_enabled_result,
+                         asc->j_mid_on_set_registration_enabled_result,
                          result->ResultCode);
 }
 
@@ -977,7 +1338,7 @@ void supla_android_client_cb_on_event(void *_suplaclient, void *user_data,
 
     fid = supla_client_GetFieldID(env, cev, "SenderName", "Ljava/lang/String;");
     (*env)->SetObjectField(env, ev, fid,
-                           (*env)->NewStringUTF(env, event->SenderName));
+                           new_string_utf(env, event->SenderName));
 
     supla_android_client(asc, asc->j_mid_on_event, ev);
   }
@@ -1033,32 +1394,137 @@ void supla_android_client_cb_on_min_version_required(
   }
 }
 
-void supla_android_client_jstring_to_buffer(JNIEnv *env, jobject cfg,
-                                            jclass jcs, const char *name,
-                                            char *buff, int size) {
-  jfieldID fid = supla_client_GetFieldID(env, jcs, name, "Ljava/lang/String;");
-  jstring js_str = (*env)->GetObjectField(env, cfg, fid);
-  const char *str = (*env)->GetStringUTFChars(env, js_str, 0);
+JNI_CALLBACK_I(on_zwave_reset_and_clear_result);
+JNI_CALLBACK_I(on_zwave_set_wake_up_time_result);
 
-  if (str) {
-    memcpy(buff, str, strlen(str) >= size ? size - 1 : strlen(str));
-    (*env)->ReleaseStringUTFChars(env, js_str, str);
+void supla_android_client_cb_on_zwave_remove_node_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char node_id) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_remove_node_result == NULL) {
+    return;
   }
+
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_remove_node_result, result,
+                         (jshort)node_id);
 }
 
-void supla_android_client_barr_to_buffer(JNIEnv *env, jobject cfg, jclass jcs,
-                                         const char *name, char *buff,
-                                         int size) {
-  jfieldID fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
-  jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
+jobject supla_android_client_zwave_node_to_jobject(TAndroidSuplaClient *asc,
+                                                   JNIEnv *env,
+                                                   TCalCfg_ZWave_Node *node) {
+  jclass cls = (*env)->FindClass(env, "org/supla/android/lib/ZWaveNode");
+  jmethodID methodID = supla_client_GetMethodID(
+      env, cls, "<init>", "(SSILjava/lang/Integer;Ljava/lang/String;)V");
 
-  if (size == (*env)->GetArrayLength(env, barr)) {
-    jbyte *data = (jbyte *)(*env)->GetByteArrayElements(env, barr, NULL);
-    if (data) {
-      memcpy(buff, data, size);
-      (*env)->ReleaseByteArrayElements(env, barr, data, 0);
-    }
+  jobject channelID =
+      node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED
+          ? supla_android_client_jint2integerobj(env, node->ChannelID)
+          : 0;
+
+  return (*env)->NewObject(env, cls, methodID, (jshort)node->Id,
+                           (jshort)node->ScreenType, (jint)node->Flags,
+                           channelID, new_string_utf(env, node->Name));
+}
+
+jobject supla_android_client_zwave_wake_up_settings_report_to_jobject(
+    TAndroidSuplaClient *asc, JNIEnv *env,
+    TCalCfg_ZWave_WakeupSettingsReport *report) {
+  if (report == NULL) {
+    return NULL;
   }
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/ZWaveWakeUpSettings");
+  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "(IIII)V");
+
+  return (*env)->NewObject(env, cls, methodID, (jint)report->MinimumSec,
+                           (jint)report->MaximumSec, (jint)report->ValueSec,
+                           (jint)report->IntervalStepSec);
+}
+
+void supla_android_client_cb_on_zwave_add_node_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_Node *node) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_add_node_result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_zwave_add_node_result, result,
+      node == NULL
+          ? NULL
+          : supla_android_client_zwave_node_to_jobject(asc, env, node));
+}
+
+void supla_android_client_cb_on_zwave_get_node_list_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_Node *node) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_get_node_list_result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(
+      env, asc->j_obj, asc->j_mid_on_zwave_get_node_list_result, result,
+      node == NULL
+          ? NULL
+          : supla_android_client_zwave_node_to_jobject(asc, env, node));
+}
+
+void supla_android_client_cb_on_zwave_get_assigned_node_id_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char node_id) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_get_assigned_node_id_result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_get_assigned_node_id_result,
+                         result, (jshort)node_id);
+}
+
+void supla_android_client_cb_on_zwave_wake_up_settings_report(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    TCalCfg_ZWave_WakeupSettingsReport *report) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_wake_up_settings_report == NULL) {
+    return;
+  }
+
+  jobject settings =
+      supla_android_client_zwave_wake_up_settings_report_to_jobject(asc, env,
+                                                                    report);
+
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_wake_up_settings_report, result,
+                         settings);
+}
+
+void supla_android_client_cb_on_zwave_assign_node_id_result(
+    void *_suplaclient, void *user_data, _supla_int_t result,
+    unsigned char node_id) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_on_zwave_assign_node_id_result == NULL) {
+    return;
+  }
+
+  (*env)->CallVoidMethod(env, asc->j_obj,
+                         asc->j_mid_on_zwave_assign_node_id_result, result,
+                         (jshort)node_id);
 }
 
 void *supla_client_ptr(jlong _asc) {
@@ -1097,16 +1563,16 @@ JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_cfgInit(
 
     fid = supla_client_GetFieldID(env, jcs, "Host", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.host));
+                           new_string_utf(env, sclient_cfg.host));
 
     fid = supla_client_GetFieldID(env, jcs, "SoftVer", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.SoftVer));
+                           new_string_utf(env, sclient_cfg.SoftVer));
 
     fid =
         supla_client_GetFieldID(env, jcs, "AccessIDpwd", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.AccessIDpwd));
+                           new_string_utf(env, sclient_cfg.AccessIDpwd));
 
     fid = supla_client_GetFieldID(env, jcs, "AccessID", "I");
     (*env)->SetIntField(env, cfg, fid, sclient_cfg.AccessID);
@@ -1116,15 +1582,15 @@ JNIEXPORT void JNICALL Java_org_supla_android_lib_SuplaClient_cfgInit(
 
     fid = supla_client_GetFieldID(env, jcs, "Email", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.Email));
+                           new_string_utf(env, sclient_cfg.Email));
 
     fid = supla_client_GetFieldID(env, jcs, "Password", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.Password));
+                           new_string_utf(env, sclient_cfg.Password));
 
     fid = supla_client_GetFieldID(env, jcs, "Name", "Ljava/lang/String;");
     (*env)->SetObjectField(env, cfg, fid,
-                           (*env)->NewStringUTF(env, sclient_cfg.Name));
+                           new_string_utf(env, sclient_cfg.Name));
 
     jbyteArray arr = (*env)->NewByteArray(env, SUPLA_GUID_SIZE);
     (*env)->SetByteArrayRegion(env, arr, 0, SUPLA_GUID_SIZE,
@@ -1166,12 +1632,12 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
     jstring js_host = (*env)->GetObjectField(env, cfg, fid);
     sclient_cfg.host = (char *)(*env)->GetStringUTFChars(env, js_host, 0);
 
-    supla_android_client_jstring_to_buffer(
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "SoftVer", sclient_cfg.SoftVer, SUPLA_SOFTVER_MAXSIZE);
 
-    supla_android_client_jstring_to_buffer(env, cfg, jcs, "AccessIDpwd",
-                                           sclient_cfg.AccessIDpwd,
-                                           SUPLA_ACCESSID_PWD_MAXSIZE);
+    supla_android_client_stringobj2buffer(env, cfg, jcs, "AccessIDpwd",
+                                          sclient_cfg.AccessIDpwd,
+                                          SUPLA_ACCESSID_PWD_MAXSIZE);
 
     fid = supla_client_GetFieldID(env, jcs, "AccessID", "I");
     sclient_cfg.AccessID = (*env)->GetIntField(env, cfg, fid);
@@ -1184,20 +1650,20 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
       sclient_cfg.protocol_version = SUPLA_PROTO_VERSION;
     }
 
-    supla_android_client_jstring_to_buffer(
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "Email", sclient_cfg.Email, SUPLA_EMAIL_MAXSIZE);
 
-    supla_android_client_jstring_to_buffer(
+    supla_android_client_stringobj2buffer(
+        env, cfg, jcs, "Password", sclient_cfg.Password, SUPLA_EMAIL_MAXSIZE);
+
+    supla_android_client_stringobj2buffer(
         env, cfg, jcs, "Name", sclient_cfg.Name, SUPLA_CLIENT_NAME_MAXSIZE);
 
-    supla_android_client_barr_to_buffer(
+    supla_android_client_bytearrobj2buffer(
         env, cfg, jcs, "clientGUID", sclient_cfg.clientGUID, SUPLA_GUID_SIZE);
 
-    supla_android_client_barr_to_buffer(
+    supla_android_client_bytearrobj2buffer(
         env, cfg, jcs, "AuthKey", sclient_cfg.AuthKey, SUPLA_AUTHKEY_SIZE);
-
-    fid = supla_client_GetFieldID(env, jcs, "registration_flags", "I");
-    sclient_cfg.registration_flags = (*env)->GetIntField(env, cfg, fid);
 
     fid = supla_client_GetFieldID(env, jcs, "clientGUID", "[B");
     jbyteArray barr = (*env)->GetObjectField(env, cfg, fid);
@@ -1258,21 +1724,47 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
                                  "(Lorg/supla/android/lib/SuplaOAuthToken;)V");
     _asc->j_mid_on_superuser_authorization_result = supla_client_GetMethodID(
         env, oclass, "onSuperUserAuthorizationResult", "(ZI)V");
-    _asc->j_mid_cb_on_device_calcfg_result = supla_client_GetMethodID(
+    _asc->j_mid_on_device_calcfg_result = supla_client_GetMethodID(
         env, oclass, "onDeviceCalCfgResult", "(III[B)V");
-    _asc->j_mid_cb_on_channel_state = supla_client_GetMethodID(
+    _asc->j_mid_on_device_calcfg_progress_report = supla_client_GetMethodID(
+        env, oclass, "onDeviceCalCfgProgressReport", "(IIS)V");
+    _asc->j_mid_on_device_calcfg_debug_string = supla_client_GetMethodID(
+        env, oclass, "onDeviceCalCfgDebugString", "(Ljava/lang/String;)V");
+    _asc->j_mid_on_channel_state = supla_client_GetMethodID(
         env, oclass, "onChannelState",
         "(Lorg/supla/android/lib/SuplaChannelState;)V");
-    _asc->j_mid_cb_on_channel_basic_cfg = supla_client_GetMethodID(
+    _asc->j_mid_on_channel_basic_cfg = supla_client_GetMethodID(
         env, oclass, "onChannelBasicCfg",
         "(Lorg/supla/android/lib/SuplaChannelBasicCfg;)V");
-    _asc->j_mid_cb_on_channel_function_set_result = supla_client_GetMethodID(
-        env, oclass, "onChannelFunctionSetResult", "(II)V");
-    _asc->j_mid_cb_on_clients_reconnect_result = supla_client_GetMethodID(
+    _asc->j_mid_on_channel_function_set_result = supla_client_GetMethodID(
+        env, oclass, "onChannelFunctionSetResult", "(III)V");
+    _asc->j_mid_on_channel_caption_set_result = supla_client_GetMethodID(
+        env, oclass, "onChannelCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_location_caption_set_result = supla_client_GetMethodID(
+        env, oclass, "onLocationCaptionSetResult", "(ILjava/lang/String;I)V");
+    _asc->j_mid_on_clients_reconnect_result = supla_client_GetMethodID(
         env, oclass, "onClientsReconnectResult", "(I)V");
-    _asc->j_mid_cb_on_set_registration_enabled_result =
-        supla_client_GetMethodID(env, oclass, "onSetRegistrationEnabledResult",
-                                 "(I)V");
+    _asc->j_mid_on_set_registration_enabled_result = supla_client_GetMethodID(
+        env, oclass, "onSetRegistrationEnabledResult", "(I)V");
+    _asc->j_mid_on_zwave_reset_and_clear_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveResetAndClearResult", "(I)V");
+    _asc->j_mid_on_zwave_add_node_result =
+        supla_client_GetMethodID(env, oclass, "onZWaveAddNodeResult",
+                                 "(ILorg/supla/android/lib/ZWaveNode;)V");
+    _asc->j_mid_on_zwave_remove_node_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveRemoveNodeResult", "(IS)V");
+    _asc->j_mid_on_zwave_get_node_list_result =
+        supla_client_GetMethodID(env, oclass, "onZWaveGetNodeListResult",
+                                 "(ILorg/supla/android/lib/ZWaveNode;)V");
+    _asc->j_mid_on_zwave_get_assigned_node_id_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveGetAssignedNodeIdResult", "(IS)V");
+    _asc->j_mid_on_zwave_wake_up_settings_report = supla_client_GetMethodID(
+        env, oclass, "onZWaveWakeUpSettingsReport",
+        "(ILorg/supla/android/lib/ZWaveWakeUpSettings;)V");
+    _asc->j_mid_on_zwave_assign_node_id_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveAssignNodeIdResult", "(IS)V");
+    _asc->j_mid_on_zwave_set_wake_up_time_result = supla_client_GetMethodID(
+        env, oclass, "onZWaveSetWakeUpTimeResult", "(I)V");
 
     sclient_cfg.user_data = _asc;
     sclient_cfg.cb_on_versionerror = supla_android_client_cb_on_versionerror;
@@ -1303,17 +1795,40 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_on_superuser_authorization_result;
     sclient_cfg.cb_on_device_calcfg_result =
         supla_android_client_cb_on_device_calcfg_result;
+    sclient_cfg.cb_on_device_calcfg_progress_report =
+        supla_android_client_cb_on_device_calcfg_progress_report;
+    sclient_cfg.cb_on_device_calcfg_debug_string =
+        supla_android_client_cb_on_device_calcfg_debug_string;
     sclient_cfg.cb_on_device_channel_state =
         supla_android_client_cb_on_channel_state;
     sclient_cfg.cb_on_channel_basic_cfg =
         supla_android_client_cb_on_channel_basic_cfg;
     sclient_cfg.cb_on_channel_function_set_result =
         supla_android_client_cb_on_channel_function_set_result;
+    sclient_cfg.cb_on_channel_caption_set_result =
+        supla_android_client_cb_on_channel_caption_set_result;
+    sclient_cfg.cb_on_location_caption_set_result =
+        supla_android_client_cb_on_location_caption_set_result;
     sclient_cfg.cb_on_clients_reconnect_request_result =
         supla_android_client_cb_on_clients_reconnect_result;
     sclient_cfg.cb_on_set_registration_enabled_result =
         supla_android_client_cb_on_set_registration_enabled_result;
-
+    sclient_cfg.cb_on_zwave_reset_and_clear_result =
+        supla_android_client_cb_on_zwave_reset_and_clear_result;
+    sclient_cfg.cb_on_zwave_add_node_result =
+        supla_android_client_cb_on_zwave_add_node_result;
+    sclient_cfg.cb_on_zwave_remove_node_result =
+        supla_android_client_cb_on_zwave_remove_node_result;
+    sclient_cfg.cb_on_zwave_get_node_list_result =
+        supla_android_client_cb_on_zwave_get_node_list_result;
+    sclient_cfg.cb_on_zwave_get_assigned_node_id_result =
+        supla_android_client_cb_on_zwave_get_assigned_node_id_result;
+    sclient_cfg.cb_on_zwave_assign_node_id_result =
+        supla_android_client_cb_on_zwave_assign_node_id_result;
+    sclient_cfg.cb_on_zwave_wake_up_settings_report =
+        supla_android_client_cb_on_zwave_wake_up_settings_report;
+    sclient_cfg.cb_on_zwave_set_wake_up_time_result =
+        supla_android_client_cb_on_zwave_set_wake_up_time_result;
     _asc->_supla_client = supla_client_init(&sclient_cfg);
 
     if (sclient_cfg.host) {
@@ -1617,35 +2132,84 @@ Java_org_supla_android_lib_SuplaClient_scSuperUserAuthorizationRequest(
   }
 
   return result;
-
-  char supla_client_superuser_authorization_request(
-      void *_suplaclient, char *email, char *password);
 }
 
+JNI_FUNCTION_V(scGetSuperUserAuthorizationResult,
+               supla_client_get_superuser_authorization_result);
+
+JNI_FUNCTION_I(scGetChannelState, supla_client_get_channel_state);
+
+JNI_FUNCTION_I(scGetChannelBasicCfg, supla_client_get_channel_basic_cfg);
+
+JNI_FUNCTION_II(scSetChannelFunction, supla_client_set_channel_function);
+
+JNI_FUNCTION_IString(scSetChannelCaption, supla_client_set_channel_caption);
+
+JNI_FUNCTION_IString(scSetLocationCaption, supla_client_set_location_caption);
+
+JNI_FUNCTION_V(scReconnectAllClients, supla_client_reconnect_all_clients);
+
+JNI_FUNCTION_II(scSetRegistrationEnabled,
+                supla_client_set_registration_enabled);
+
+JNI_FUNCTION_I(scReconnectDevice, supla_client_reconnect_device);
+
+JNI_FUNCTION_I(scZWaveConfigModeActive, supla_client_zwave_config_mode_active);
+
+JNI_FUNCTION_I(scZWaveResetAndClear, supla_client_zwave_reset_and_clear);
+
+JNI_FUNCTION_I(scZWaveAddNode, supla_client_zwave_add_node);
+
+JNI_FUNCTION_I(scZWaveRemoveNode, supla_client_zwave_remove_node);
+
+JNI_FUNCTION_I(scZWaveGetNodeList, supla_client_zwave_get_node_list);
+
+JNI_FUNCTION_I(scZWaveGetAssignedNodeId,
+               supla_client_zwave_get_assigned_node_id);
+
 JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scGetChannelState(JNIEnv *env,
-                                                         jobject thiz,
-                                                         jlong _asc,
-                                                         jint channelId) {
+Java_org_supla_android_lib_SuplaClient_scZWaveAssignNodeId(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jshort node_id) {
   void *supla_client = supla_client_ptr(_asc);
-
   if (supla_client) {
-    return supla_client_get_channel_state(supla_client, channelId) ? JNI_TRUE
-                                                                   : JNI_FALSE;
-  }
+    unsigned char id = 0;
 
+    if (node_id < 0) {
+      node_id = 0;
+    } else if (node_id > 255) {
+      node_id = 255;
+    }
+    id = node_id;
+
+    return supla_client_zwave_assign_node_id(supla_client, channel_id, id)
+               ? JNI_TRUE
+               : JNI_FALSE;
+  }
   return JNI_FALSE;
 }
 
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scGetChannelBasicCfg(JNIEnv *env,
-                                                            jobject thiz,
-                                                            jlong _asc,
-                                                            jint channelId) {
-  void *supla_client = supla_client_ptr(_asc);
+JNI_FUNCTION_I(scZWaveGetWakeUpSettings,
+               supla_client_zwave_get_wake_up_settings);
 
+JNI_FUNCTION_II(scZWaveSetWakeUpTime, supla_client_zwave_set_wake_up_time);
+
+JNI_FUNCTION_I(scDeviceCalCfgCancelAllCommands,
+               supla_client_device_calcfg_cancel_all_commands);
+
+JNIEXPORT jboolean JNICALL
+Java_org_supla_android_lib_SuplaClient_scSetLightsourceLifespan(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id,
+    jboolean reset_counter, jboolean set_time, jint lifespan) {
+  void *supla_client = supla_client_ptr(_asc);
   if (supla_client) {
-    return supla_client_get_channel_basic_cfg(supla_client, channelId)
+    if (lifespan < 0) {
+      lifespan = 0;
+    } else if (lifespan > 65535) {
+      lifespan = 65535;
+    }
+
+    return supla_client_set_lightsource_lifespan(
+               supla_client, channel_id, reset_counter, set_time, lifespan)
                ? JNI_TRUE
                : JNI_FALSE;
   }
@@ -1654,42 +2218,16 @@ Java_org_supla_android_lib_SuplaClient_scGetChannelBasicCfg(JNIEnv *env,
 }
 
 JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scSetChannelFunction(
-    JNIEnv *env, jobject thiz, jlong _asc, jint channelId, jint function) {
+Java_org_supla_android_lib_SuplaClient_scSetDfgTransparency(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channel_id, jshort mask,
+    jshort active_bits) {
   void *supla_client = supla_client_ptr(_asc);
-
   if (supla_client) {
-    return supla_client_set_channel_function(supla_client, channelId, function)
-               ? JNI_TRUE
-               : JNI_FALSE;
-  }
+    TCSD_Digiglass_NewValue new_value;
+    memset(&new_value, 0, sizeof(TCSD_Digiglass_NewValue));
 
-  return JNI_FALSE;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scReconnectAllClients(JNIEnv *env,
-                                                             jobject thiz,
-                                                             jlong _asc) {
-  void *supla_client = supla_client_ptr(_asc);
-
-  if (supla_client) {
-    return supla_client_reconnect_all_clients(supla_client) ? JNI_TRUE
-                                                            : JNI_FALSE;
-  }
-
-  return JNI_FALSE;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_supla_android_lib_SuplaClient_scSetRegistrationEnabled(
-    JNIEnv *env, jobject thiz, jlong _asc, jint iodevice_reg_timesec,
-    jint client_reg_timesec) {
-  void *supla_client = supla_client_ptr(_asc);
-
-  if (supla_client) {
-    return supla_client_set_registration_enabled(
-               supla_client, iodevice_reg_timesec, client_reg_timesec)
+    return supla_client_set_dgf_transparency(supla_client, channel_id, mask,
+                                             active_bits)
                ? JNI_TRUE
                : JNI_FALSE;
   }

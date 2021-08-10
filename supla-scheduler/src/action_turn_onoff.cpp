@@ -18,16 +18,16 @@
 
 #include "action_turn_onoff.h"
 
-s_worker_action_turn_onoff::s_worker_action_turn_onoff(s_worker *worker,
-                                                       bool setOn)
+s_worker_action_turn_onoff::s_worker_action_turn_onoff(
+    s_abstract_worker *worker, bool setOn)
     : s_worker_action(worker) {
   this->setOn = setOn;
 }
 
-s_worker_action_turn_on::s_worker_action_turn_on(s_worker *worker)
+s_worker_action_turn_on::s_worker_action_turn_on(s_abstract_worker *worker)
     : s_worker_action_turn_onoff(worker, true) {}
 
-s_worker_action_turn_off::s_worker_action_turn_off(s_worker *worker)
+s_worker_action_turn_off::s_worker_action_turn_off(s_abstract_worker *worker)
     : s_worker_action_turn_onoff(worker, false) {}
 
 void s_worker_action_turn_onoff::get_function_list(
@@ -38,6 +38,7 @@ void s_worker_action_turn_onoff::get_function_list(
   list[3] = SUPLA_CHANNELFNC_RGBLIGHTING;
   list[4] = SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
   list[5] = SUPLA_CHANNELFNC_STAIRCASETIMER;
+  list[6] = SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
 }
 
 int s_worker_action_turn_onoff::try_limit(void) { return 2; }
@@ -46,7 +47,7 @@ int s_worker_action_turn_onoff::waiting_time_to_retry(void) { return 30; }
 
 int s_worker_action_turn_onoff::waiting_time_to_check(void) { return 5; }
 
-bool s_worker_action_turn_onoff::check_result() {
+bool s_worker_action_turn_onoff::result_success(int *fail_result_code) {
   char value = 0;
   worker->ipcc_get_char_value(&value);
 

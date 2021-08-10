@@ -1,0 +1,28 @@
+#!/bin/bash
+
+vg_verify() {
+   valgrind --version
+   ../../tools/valgrind-full.sh "$1" 2> vg-test.log 
+   cat ./vg-test.log
+   if ! grep "All heap blocks were freed -- no leaks are possible" ./vg-test.log; then
+     rm ./vg-test.log
+     echo "Memory leak error!"
+     exit 1
+   fi
+   
+   rm -f ./vg-test.log
+}
+
+db_init() {
+   if ! (echo "" | mysql -u supla -h $DBHOST) 2> /dev/null; then
+      if ! mysql -u root -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+         if ! mysql -u root -proot -h $DBHOST < sql/CreateSqlUsersForTestPurposes.sql 2> /dev/null; then
+         echo "Enter mariadb root password.";
+         mysql -u root -h $DBHOST -p < sql/CreateSqlUsersForTestPurposes.sql
+         fi
+      fi
+   fi
+
+   mysql -u supla -h $DBHOST < sql/RecreateTestDatabase.sql
+   mysql -u supla -h $DBHOST supla_test < sql/TestDatabaseStructureAndData.sql
+}

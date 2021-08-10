@@ -21,11 +21,6 @@
 
 #include "objcontaineritem.h"
 
-typedef struct {
-  int DeviceId;
-  int ChannelId;
-} t_dc_pair;
-
 enum e_objc_scope { master = 0, detail1 = 1, detail2 = 2 };
 
 #define OBJC_SCOPE_COUNT 3
@@ -34,6 +29,7 @@ typedef struct {
   int id;
   int extra_id;
   bool use_both;
+  bool extra_id_instead_id;
 } _t_objc_search_fields;
 
 class database;
@@ -51,7 +47,8 @@ class supla_objcontainer {
   void *getArr(e_objc_scope scope);
   void *getArr(void);
   supla_objcontainer_item *find(_t_objc_search_fields *f, e_objc_scope scope);
-  supla_objcontainer_item *find(int id, e_objc_scope scope);
+  supla_objcontainer_item *find(int id, e_objc_scope scope,
+                                bool extra_id = false);
 
   virtual void _load(database *db, e_objc_scope scope) = 0;
   virtual int available_data_types_for_remote(e_objc_scope scope) = 0;

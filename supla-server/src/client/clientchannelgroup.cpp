@@ -78,6 +78,7 @@ bool supla_client_channelgroup::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
@@ -121,8 +122,8 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
                     SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
 
-std::list<t_dc_pair> supla_client_channelgroup::get_channel_list(void) {
-  std::list<t_dc_pair> result;
+std::list<dcpair> supla_client_channelgroup::get_channel_list(void) {
+  std::list<dcpair> result;
 
   supla_client_channelgroup_relation *rel = NULL;
   safe_array_lock(relarr);
@@ -131,9 +132,7 @@ std::list<t_dc_pair> supla_client_channelgroup::get_channel_list(void) {
     rel = static_cast<supla_client_channelgroup_relation *>(
         safe_array_get(relarr, a));
     if (rel) {
-      t_dc_pair p;
-      p.DeviceId = rel->getDeviceId();
-      p.ChannelId = rel->getChannelId();
+      dcpair p(rel->getDeviceId(), rel->getChannelId());
       result.push_back(p);
     }
   }

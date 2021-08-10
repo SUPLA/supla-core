@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "dbcommon.h"
 #include <mysql.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "db.h"
 #include "log.h"
 #include "tools.h"
 
@@ -61,18 +61,20 @@ bool dbcommon::connect(int connection_timeout_sec) {
       supla_log(LOG_ERR, "MySQL initialization error");
       break;
     } else {
-      if (mysql_real_connect(mysql, cfg_get_host(), cfg_get_user(),
+      if (mysql_real_connect((MYSQL *)_mysql, cfg_get_host(), cfg_get_user(),
                              cfg_get_password(), cfg_get_database(),
                              cfg_get_port(), NULL, 0) == NULL) {
+        supla_log(LOG_ERR, "Failed to connect to database: Error: %s",
+                  mysql_error((MYSQL *)_mysql));
         disconnect();
       } else {
-        if (mysql_set_character_set(mysql, "utf8")) {
+        if (mysql_set_character_set((MYSQL *)_mysql, "utf8mb4")) {
           supla_log(LOG_ERR,
                     "Can't set utf8 character set. Current character set is %s",
-                    mysql_character_set_name(mysql));
+                    mysql_character_set_name((MYSQL *)_mysql));
         }
 
-        mysql_options(mysql, MYSQL_SET_CHARSET_NAME, "utf8");
+        mysql_options((MYSQL *)_mysql, MYSQL_SET_CHARSET_NAME, "utf8mb4");
         connected = true;
       }
     }
@@ -105,17 +107,17 @@ bool dbcommon::connect(void) { return connect(0); }
 
 void dbcommon::disconnect(void) {
   if (_mysql != NULL) {
-    mysql_close(mysql);
+    mysql_close((MYSQL *)_mysql);
     _mysql = NULL;
   }
 }
 
 int dbcommon::query(const char *stmt_str, bool log_err) {
-  int result = mysql_query(mysql, stmt_str);
+  int result = mysql_query((MYSQL *)_mysql, stmt_str);
 
   if (result != 0 && log_err)
-    supla_log(LOG_ERR, "MySQL - Query error %i: %s", mysql_errno(mysql),
-              mysql_error(mysql));
+    supla_log(LOG_ERR, "MySQL - Query error %i: %s",
+              mysql_errno((MYSQL *)_mysql), mysql_error((MYSQL *)_mysql));
 
   return result;
 }
@@ -133,7 +135,7 @@ void dbcommon::stmt_close(void *_stmt) {
 bool dbcommon::stmt_execute(void **_stmt, const char *stmt_str, void *bind,
                             int bind_size, bool exec_errors) {
   *_stmt = NULL;
-  MYSQL_STMT *stmt = mysql_stmt_init(mysql);
+  MYSQL_STMT *stmt = mysql_stmt_init((MYSQL *)_mysql);
 
   if (stmt == NULL) {
     supla_log(LOG_ERR, "MySQL - mysql_stmt_init(), out of memory");
@@ -242,7 +244,7 @@ bool dbcommon::stmt_get_int(void **_stmt, int *value1, int *value2, int *value3,
 }
 
 int dbcommon::get_int(int ID, int default_value, const char *sql) {
-  MYSQL_STMT *stmt;
+  MYSQL_STMT *stmt = NULL;
   int Result = default_value;
 
   MYSQL_BIND pbind[1];
@@ -300,7 +302,7 @@ int dbcommon::add_by_proc_call(const char *stmt_str, void *bind,
 }
 
 int dbcommon::get_last_insert_id(void) {
-  MYSQL_STMT *stmt;
+  MYSQL_STMT *stmt = NULL;
   int Result = 0;
 
   if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
@@ -367,7 +369,8 @@ bool dbcommon::check_db_version(const char *expected_version,
     if (strncmp(version, expected_version, 14) == 0) {
       return true;
     } else {
-      supla_log(LOG_ERR, "Incorrect database version!");
+      supla_log(LOG_ERR, "Incorrect database version! Expected: %s",
+                expected_version);
     }
   }
 

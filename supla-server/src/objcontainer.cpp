@@ -33,6 +33,10 @@ char supla_objcontainer::arr_findcmp(void *ptr, void *_f) {
   supla_objcontainer_item *item = static_cast<supla_objcontainer_item *>(ptr);
   _t_objc_search_fields *f = static_cast<_t_objc_search_fields *>(_f);
 
+  if (f->extra_id_instead_id) {
+    return f->id == item->getExtraId();
+  }
+
   return (f->id == item->getId() &&
           (!f->use_both || (f->use_both && f->extra_id == item->getExtraId())))
              ? 1
@@ -51,11 +55,13 @@ supla_objcontainer_item *supla_objcontainer::find(_t_objc_search_fields *f,
       safe_array_findcnd(getArr(scope), arr_findcmp, f));
 }
 
-supla_objcontainer_item *supla_objcontainer::find(int id, e_objc_scope scope) {
+supla_objcontainer_item *supla_objcontainer::find(int id, e_objc_scope scope,
+                                                  bool extra_id) {
   _t_objc_search_fields f;
   f.id = id;
   f.extra_id = 0;
   f.use_both = false;
+  f.extra_id_instead_id = extra_id;
   return supla_objcontainer::find(&f, scope);
 }
 
@@ -114,6 +120,7 @@ bool supla_objcontainer::add(supla_objcontainer_item *obj, e_objc_scope scope) {
   f.id = obj->getId();
   f.extra_id = obj->getExtraId();
   f.use_both = id_cmp_use_both[scope];
+  f.extra_id_instead_id = false;
 
   if (find(&f, scope) == NULL && safe_array_add(getArr(scope), obj) != -1) {
     result = true;

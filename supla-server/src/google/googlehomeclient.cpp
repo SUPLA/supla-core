@@ -45,8 +45,8 @@
 #endif /*ONLY_LOG_REQUESTS*/
 
 supla_google_home_client::supla_google_home_client(
-    supla_google_home *google_home)
-    : supla_voice_assistant_client(google_home) {
+    supla_google_home_credentials *google_home_credentials)
+    : supla_voice_assistant_client(google_home_credentials) {
   jsonStates = cJSON_CreateObject();
 }
 
@@ -68,8 +68,8 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
   char host[] = "2rxqysinpg.execute-api.eu-west-1.amazonaws.com";
   char resource[] = "/default/googleHomeGraphBridge";
 
-  getHttps()->setHost(host);
-  getHttps()->setResource(resource);
+  getHttpConnection()->setHost(host);
+  getHttpConnection()->setResource(resource);
 
 #ifdef ONLY_LOG_REQUESTS
   char *data = cJSON_Print((cJSON *)json_data);
@@ -84,25 +84,26 @@ bool supla_google_home_client::post(void *json_data, int *resultCode) {
 #ifdef ONLY_LOG_REQUESTS
     supla_log(LOG_DEBUG, "%s", data);
 #else
-    getHttps()->setToken(getVoiceAssistant()->getAccessToken(), false);
-    result =
-        getHttps()->http_post(NULL, data) && getHttps()->getResultCode() == 200;
+    getHttpConnection()->setToken(getCredentials()->getAccessToken(), false);
+    result = getHttpConnection()->http_post(NULL, data) &&
+             getHttpConnection()->getResultCode() == 200;
 
     if (resultCode) {
-      *resultCode = getHttps()->getResultCode();
+      *resultCode = getHttpConnection()->getResultCode();
     }
 
     if (!result) {
       supla_log(LOG_ERR,
                 "GoogleHomeGraph client error userId: %i, code=%i, message=%s",
-                getVoiceAssistant()->getUserID(), getHttps()->getResultCode(),
-                getHttps()->getBody());
+                getCredentials()->getUserID(),
+                getHttpConnection()->getResultCode(),
+                getHttpConnection()->getBody());
     }
 #endif /*ONLY_LOG_REQUESTS*/
     free(data);
   }
 
-  httpsFree();
+  httpConnectionFree();
 
 #endif /*NOSSL*/
 
@@ -178,18 +179,23 @@ bool supla_google_home_client::addColorState(int channelId, int color,
   return false;
 }
 
-bool supla_google_home_client::addRollerShutterState(int channelId,
-                                                     short shutPercentage,
-                                                     bool online) {
+bool supla_google_home_client::addOpenPercentState(int channelId,
+                                                   short openPercent,
+                                                   bool online) {
   cJSON *state = (cJSON *)getStateSkeleton(channelId, 0, online);
   if (state) {
-    short openPercent = 100 - (online ? shutPercentage : 0);
-    cJSON_AddBoolToObject(state, "on", online);
     cJSON_AddNumberToObject(state, "openPercent", openPercent);
     return true;
   }
 
   return false;
+}
+
+bool supla_google_home_client::addRollerShutterState(int channelId,
+                                                     short shutPercentage,
+                                                     bool online) {
+  return addOpenPercentState(channelId, 100 - (online ? shutPercentage : 0),
+                             online);
 }
 
 void *supla_google_home_client::getHeader(const char requestId[]) {
@@ -203,10 +209,9 @@ void *supla_google_home_client::getHeader(const char requestId[]) {
       cJSON_AddStringToObject(header, name, reqId);
     }
 
-    char *longUniqueId = getVoiceAssistant()->getUser()->getLongUniqueID();
+    const char *longUniqueId = getCredentials()->getUser()->getLongUniqueID();
     if (longUniqueId) {
       cJSON_AddStringToObject(header, "agentUserId", longUniqueId);
-      free(longUniqueId);
     }
 
     return header;

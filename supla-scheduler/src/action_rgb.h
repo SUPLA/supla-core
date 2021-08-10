@@ -22,20 +22,18 @@
 #include "action.h"
 
 class s_worker_action_rgb : public s_worker_action {
- private:
-  char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
-                         bool *random);
-
  protected:
   void get_function_list(int list[FUNCTION_LIST_SIZE]);
   int try_limit(void);
   int waiting_time_to_retry(void);
   int waiting_time_to_check(void);
-  bool check_result();
+  bool result_success(int *fail_result_code);
   bool do_action();
 
  public:
-  explicit s_worker_action_rgb(s_worker *worker);
+  explicit s_worker_action_rgb(s_abstract_worker *worker);
+  char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
+                         bool *random);
 };
 
 #endif /*ACTION_RGB_*/

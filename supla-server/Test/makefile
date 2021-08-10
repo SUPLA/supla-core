@@ -8,17 +8,26 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
+-include src/webhook/subdir.mk
 -include src/user/subdir.mk
+-include src/test/webhook/subdir.mk
+-include src/test/mqtt/subdir.mk
+-include src/test/integration/mqtt/subdir.mk
+-include src/test/integration/asynctask/subdir.mk
+-include src/test/integration/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
+-include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk
 -include src/test/subdir.mk
+-include src/mqtt/subdir.mk
 -include src/json/subdir.mk
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/client/subdir.mk
+-include src/asynctask/subdir.mk
 -include src/amazon/subdir.mk
 -include src/subdir.mk
 -include subdir.mk
@@ -47,13 +56,24 @@ endif
 
 -include ../makefile.defs
 
+OPTIONAL_TOOL_DEPS := \
+$(wildcard ../makefile.defs) \
+$(wildcard ../makefile.init) \
+$(wildcard ../makefile.targets) \
+
+
+BUILD_ARTIFACT_NAME := supla-server
+BUILD_ARTIFACT_EXTENSION :=
+BUILD_ARTIFACT_PREFIX :=
+BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
+
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
 all: supla-server
 
 # Tool invocations
-supla-server: $(OBJS) $(USER_OBJS)
+supla-server: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
 	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS)

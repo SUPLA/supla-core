@@ -1,0 +1,29 @@
+notifications:
+  slack:
+    rooms:
+      - supla:dauFpwhgEGeyy9ERzqOYeJyY#github
+
+matrix:
+  include:
+    - language: python
+      python: 2.7
+      install:
+        - pip install cpplint
+
+      script:
+        - ./tools/lint.sh
+
+    - language: cpp
+      sudo: false
+      os: linux
+      dist: eoan
+      compiler: gcc
+      install:
+        - sudo apt-get -y install valgrind libmariadbclient-dev-compat
+      addons:
+        mariadb: '10.3'
+        hosts:
+          - db
+      script:
+        - sudo ./test/all-tests.sh
+

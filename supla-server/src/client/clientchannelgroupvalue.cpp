@@ -18,9 +18,9 @@
 
 #include "clientchannelgroupvalue.h"
 #include <string.h>
-#include "user.h"
 #include "client.h"
 #include "clientchannelgroups.h"
+#include "user.h"
 
 supla_client_channelgroup_value::supla_client_channelgroup_value(
     supla_client_channelgroups *Container, int ChannelId, int DeviceId)
@@ -44,5 +44,17 @@ void supla_client_channelgroup_value::proto_get(
   channel_value->Id = getId();
 
   getContainer()->getClient()->getUser()->get_channel_value(
-      DeviceId, getId(), &channel_value->value, &channel_value->online);
+      DeviceId, getId(), channel_value->value.value,
+      channel_value->value.sub_value, NULL, &channel_value->online, NULL, true);
+}
+
+void supla_client_channelgroup_value::proto_get(
+    TSC_SuplaChannelValue_B *channel_value) {
+  memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
+  channel_value->Id = getId();
+
+  getContainer()->getClient()->getUser()->get_channel_value(
+      DeviceId, getId(), channel_value->value.value,
+      channel_value->value.sub_value, &channel_value->value.sub_value_type,
+      &channel_value->online, NULL, true);
 }

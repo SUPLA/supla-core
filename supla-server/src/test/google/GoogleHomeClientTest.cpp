@@ -17,27 +17,27 @@
  */
 
 #include "GoogleHomeClientTest.h"
-#include "google/googlehomeclient.h"
+#include "TrivialHttpFactoryMock.h"
+#include "TrivialHttpMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
-namespace {
+namespace testing {
 
-class GoogleHomeClientTest : public STTrivialHttp {
- protected:
-  supla_google_home_client *client;
+GoogleHomeClientTest::GoogleHomeClientTest() {}
 
- public:
-  void SetUp() override {
-    getUser()->googleHome()->set("ACCESS-TOKEN");
-    client = new supla_google_home_client(getUser()->googleHome());
-  }
+void GoogleHomeClientTest::SetUp() {
+  user = new supla_user(1001, "qwerty", "zxcvbnm");
 
-  void TearDown() override {
-    delete client;
-    client = NULL;
-  }
-};
+  user->googleHomeCredentials()->set("ACCESS-TOKEN");
+  client = new supla_google_home_client(user->googleHomeCredentials());
 
+  client->setHttpConnectionFactory(new TrivialHttpFactoryMock());
+}
+void GoogleHomeClientTest::TearDown() {
+  delete client->getHttpConnectionFactory();
+  delete client;
+  delete user;
+}
 TEST_F(GoogleHomeClientTest, requestSync) {
   const char expectedRequest[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -48,7 +48,7 @@ TEST_F(GoogleHomeClientTest, requestSync) {
       "\"agentUserId\":\"zxcvbnm\",\"intent\":\"action.devices.SYNC\"}";
 
   ASSERT_TRUE(client->requestSync());
-  ASSERT_TRUE(outputEqualTo(expectedRequest));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest));
 }
 
 TEST_F(GoogleHomeClientTest, onOffRepoerState) {
@@ -63,7 +63,7 @@ TEST_F(GoogleHomeClientTest, onOffRepoerState) {
 
   ASSERT_TRUE(client->addOnOffState(10, true, false));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -76,7 +76,7 @@ TEST_F(GoogleHomeClientTest, onOffRepoerState) {
 
   ASSERT_TRUE(client->addOnOffState(10, true, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
 TEST_F(GoogleHomeClientTest, brightnessState) {
@@ -91,7 +91,7 @@ TEST_F(GoogleHomeClientTest, brightnessState) {
 
   ASSERT_TRUE(client->addBrightnessState(10, 55, false, 0));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -104,7 +104,7 @@ TEST_F(GoogleHomeClientTest, brightnessState) {
 
   ASSERT_TRUE(client->addBrightnessState(10, 55, true, 0));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -117,7 +117,7 @@ TEST_F(GoogleHomeClientTest, brightnessState) {
 
   ASSERT_TRUE(client->addBrightnessState(10, 80, true, 1));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(GoogleHomeClientTest, colorState) {
@@ -133,7 +133,7 @@ TEST_F(GoogleHomeClientTest, colorState) {
 
   ASSERT_TRUE(client->addColorState(10, 0xFF00BB, 55, false, 0));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -146,7 +146,7 @@ TEST_F(GoogleHomeClientTest, colorState) {
 
   ASSERT_TRUE(client->addColorState(10, 0x447722, 55, true, 0));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
@@ -159,69 +159,68 @@ TEST_F(GoogleHomeClientTest, colorState) {
 
   ASSERT_TRUE(client->addColorState(10, 0xFFFF00, 80, true, 1));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 }
 
 TEST_F(GoogleHomeClientTest, rollerShutterState) {
   const char expectedRequest1[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 169\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 158\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
       "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
-      "\"qwerty-10\":{\"online\":false,\"on\":false,\"openPercent\":100}}}}}";
+      "\"qwerty-10\":{\"online\":false,\"openPercent\":100}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 55, false));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest1));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
 
   const char expectedRequest2[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 135\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 125\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
-      "\"on\":true,\"openPercent\":45}}}}}";
+      "\"openPercent\":45}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 55, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest2));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 
   const char expectedRequest3[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 135\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 125\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-10\":{\"online\":true,"
-      "\"on\":true,\"openPercent\":20}}}}}";
+      "\"openPercent\":20}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 80, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
 
   const char expectedRequest4[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 167\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 157\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"e2de5bc6-65a8-48e5-b919-8a48e86ad64a\","
       "\"agentUserId\":\"zxcvbnm\",\"payload\":{\"devices\":{\"states\":{"
-      "\"qwerty-10\":{\"online\":true,\"on\":true,\"openPercent\":100}}}}}";
+      "\"qwerty-10\":{\"online\":true,\"openPercent\":100}}}}}";
 
   ASSERT_TRUE(client->addRollerShutterState(10, 0, true));
   ASSERT_TRUE(client->sendReportState(NULL));
-  ASSERT_TRUE(outputEqualTo(expectedRequest4));
-
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest4));
 }
 
 TEST_F(GoogleHomeClientTest, sendFullReportState) {
   const char expectedRequest[] =
       "POST /default/googleHomeGraphBridge HTTP/1.1\r\nHost: "
       "2rxqysinpg.execute-api.eu-west-1.amazonaws.com\r\nUser-Agent: "
-      "supla-server\r\nContent-Length: 453\r\nAuthorization: Bearer "
+      "supla-server\r\nContent-Length: 487\r\nAuthorization: Bearer "
       "ACCESS-TOKEN\r\nConnection: "
       "close\r\n\r\n{\"requestId\":\"REQID\",\"agentUserId\":\"zxcvbnm\","
       "\"payload\":{\"devices\":{\"states\":{\"qwerty-1\":{\"online\":true,"
@@ -230,7 +229,8 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
       "true,\"color\":{\"spectrumRGB\":12320512},\"on\":true,\"brightness\":80}"
       ",\"qwerty-4\":{\"online\":true,\"on\":true,\"brightness\":55},\"qwerty-"
       "5-2\":{\"online\":true,\"on\":true,\"brightness\":30},\"qwerty-6\":{"
-      "\"online\":true,\"on\":true,\"openPercent\":70}}}}}";
+      "\"online\":true,\"openPercent\":70},\"qwerty-7\":{\"online\":true,"
+      "\"openPercent\":70}}}}}";
 
   ASSERT_TRUE(client->addOnOffState(1, true, true));
   ASSERT_FALSE(client->addOnOffState(1, true, true));
@@ -244,8 +244,10 @@ TEST_F(GoogleHomeClientTest, sendFullReportState) {
   ASSERT_FALSE(client->addBrightnessState(5, 30, true, 2));
   ASSERT_TRUE(client->addRollerShutterState(6, 30, true));
   ASSERT_FALSE(client->addRollerShutterState(6, 45, true));
+  ASSERT_TRUE(client->addOpenPercentState(7, 70, true));
+  ASSERT_FALSE(client->addOpenPercentState(7, 55, true));
   ASSERT_TRUE(client->sendReportState("REQID"));
-  ASSERT_TRUE(outputEqualTo(expectedRequest));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest));
 }
 
-}  // namespace
+} /* namespace testing */

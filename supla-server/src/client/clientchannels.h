@@ -26,6 +26,7 @@ class supla_client_channel;
 class supla_client_channels : public supla_client_objcontainer {
  private:
   supla_client_channel *find_channel(int Id);
+  supla_client_channel *any_channel_with_deviceid(int DeviceId);
   template <typename TSuplaDataPack, class TObjClass>
   bool get_datapack_for_remote(supla_client_objcontainer_item *obj, void **data,
                                int max_count);
@@ -58,7 +59,10 @@ class supla_client_channels : public supla_client_objcontainer {
   bool device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
   bool device_get_channel_state(TCSD_ChannelStateRequest *request);
   void get_channel_basic_cfg(void *srpc, TCS_ChannelBasicCfgRequest *request);
-  void set_channel_function(void *srpc, TCS_SetChannelFunction *func);
+  void set_channel_function(void *srpc, int ChannelId, int Func);
+  void set_channel_caption(void *srpc, int ChannelId, char *Caption);
+  unsigned _supla_int64_t value_validity_time_usec(void);
+  void update_expired(void *srpc);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

@@ -19,6 +19,8 @@
 #ifndef COMMONTYPES_H_
 #define COMMONTYPES_H_
 
+#include "proto.h"
+
 enum event_source_type {
   EST_UNKNOWN,
   EST_DEVICE,
@@ -31,7 +33,7 @@ enum event_source_type {
 enum event_type {
   ET_CHANNEL_VALUE_CHANGED,
   ET_DEVICE_DELETED,
-  ET_DEVICE_ADDED,
+  ET_CHANNELS_ADDED,
   ET_USER_RECONNECT,
   ET_GOOGLE_HOME_SYNC_NEEDED,
 };
@@ -40,6 +42,8 @@ typedef struct {
   bool online;
   bool hidden_channel;
   int function;
+  int channel_type;
+  int channel_flags;
   bool hi;
   char brightness;
   char color_brightness;
@@ -54,12 +58,16 @@ typedef struct {
   double distance;
   double depth;
   char shut;
+  bool partially_closed;
+  bool overcurrent_relay_off;
+  TValve_Value valve_value;
 } channel_complex_value;
 
 typedef struct {
   int deviceId;
   int channelId;
   bool channel_is_hidden;
+  int channel_type;
   int function;
 } channel_function_t;
 

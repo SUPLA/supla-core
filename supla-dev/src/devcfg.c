@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -58,6 +59,8 @@ static int decode_channel_type(const char *type) {
     return SUPLA_CHANNELTYPE_RGBLEDCONTROLLER;
   } else if (strcasecmp(type, "DIMMERANDRGBLED") == 0) {
     return SUPLA_CHANNELTYPE_DIMMERANDRGBLED;
+  } else if (strcasecmp(type, "HUMIDITYSENSOR") == 0) {
+    return SUPLA_CHANNELTYPE_HUMIDITYSENSOR;
   }
 
   return atoi(type);

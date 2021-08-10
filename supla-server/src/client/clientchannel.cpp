@@ -31,10 +31,12 @@
 
 supla_client_channel::supla_client_channel(
     supla_client_channels *Container, int Id, int DeviceId, int LocationID,
-    int Type, int Func, int Param1, int Param2, int Param3, char *TextParam1,
-    char *TextParam2, char *TextParam3, const char *Caption, int AltIcon,
-    int UserIcon, short ManufacturerID, short ProductID,
-    unsigned char ProtocolVersion, int Flags)
+    int Type, int Func, int Param1, int Param2, int Param3, int Param4,
+    char *TextParam1, char *TextParam2, char *TextParam3, const char *Caption,
+    int AltIcon, int UserIcon, short ManufacturerID, short ProductID,
+    unsigned char ProtocolVersion, int Flags,
+    const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned _supla_int_t validity_time_sec)
     : supla_client_objcontainer_item(Container, Id, Caption) {
   this->DeviceId = DeviceId;
   this->LocationId = LocationID;
@@ -43,6 +45,7 @@ supla_client_channel::supla_client_channel(
   this->Param1 = Param1;
   this->Param2 = Param2;
   this->Param3 = Param3;
+  this->Param4 = Param4;
   this->TextParam1 = TextParam1 ? strndup(TextParam1, 255) : NULL;
   this->TextParam2 = TextParam2 ? strndup(TextParam2, 255) : NULL;
   this->TextParam3 = TextParam3 ? strndup(TextParam3, 255) : NULL;
@@ -52,6 +55,9 @@ supla_client_channel::supla_client_channel(
   this->ProductID = ProductID;
   this->ProtocolVersion = ProtocolVersion;
   this->Flags = Flags;
+  setValueValidityTimeSec(validity_time_sec);
+
+  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 supla_client_channel::~supla_client_channel(void) {
@@ -79,11 +85,62 @@ int supla_client_channel::getType() { return Type; }
 
 int supla_client_channel::getFunc() { return Func; }
 
+void supla_client_channel::setFunc(int Func) {
+  if (Func != this->Func) {
+    this->Func = Func;
+    mark_for_remote_update(OI_REMOTEUPDATE_DATA1);
+  }
+}
+
+void supla_client_channel::setCaption(const char *Caption) {
+  if ((Caption == NULL && getCaption() != NULL) ||
+      (Caption != NULL && getCaption() == NULL) ||
+      strncmp(Caption, getCaption(), SUPLA_CHANNEL_CAPTION_MAXSIZE) != 0) {
+    supla_client_objcontainer_item::setCaption(Caption);
+    mark_for_remote_update(OI_REMOTEUPDATE_DATA1);
+  }
+}
+
 short supla_client_channel::getManufacturerID() { return ManufacturerID; }
 
 short supla_client_channel::getProductID() { return ProductID; }
 
 int supla_client_channel::getFlags() { return Flags; }
+
+void supla_client_channel::setValueValidityTimeSec(
+    unsigned _supla_int_t validity_time_sec) {
+  resetValueValidityTime();
+
+  if (validity_time_sec > 0) {
+    gettimeofday(&value_valid_to, NULL);
+    value_valid_to.tv_sec += validity_time_sec;
+  }
+}
+
+bool supla_client_channel::isValueValidityTimeSet() {
+  return value_valid_to.tv_sec || value_valid_to.tv_usec;
+}
+
+unsigned _supla_int64_t supla_client_channel::getValueValidityTimeUSec(void) {
+  if (isValueValidityTimeSet()) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    _supla_int64_t result =
+        (value_valid_to.tv_sec * 1000000 + value_valid_to.tv_usec) -
+        (now.tv_sec * 1000000 + now.tv_usec);
+    if (result > 0) {
+      return result;
+    }
+  }
+
+  return 0;
+}
+
+void supla_client_channel::resetValueValidityTime(void) {
+  value_valid_to.tv_sec = 0;
+  value_valid_to.tv_usec = 0;
+}
 
 bool supla_client_channel::remote_update_is_possible(void) {
   switch (Func) {
@@ -96,6 +153,7 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
     case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
     case SUPLA_CHANNELFNC_DIMMER:
@@ -110,14 +168,12 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_WEIGHTSENSOR:
     case SUPLA_CHANNELFNC_WEATHER_STATION:
     case SUPLA_CHANNELFNC_STAIRCASETIMER:
-    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-    case SUPLA_CHANNELFNC_IC_GAS_METER:
-    case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
     case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
     case SUPLA_CHANNELFNC_VALVE_PERCENTAGE:
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
       return true;
 
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -125,40 +181,60 @@ bool supla_client_channel::remote_update_is_possible(void) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
     case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
 
       if (Param1 == 0 && Param2 == 0) {
         return true;
       }
+      break;
 
+    case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+    case SUPLA_CHANNELFNC_IC_GAS_METER:
+    case SUPLA_CHANNELFNC_IC_WATER_METER:
+    case SUPLA_CHANNELFNC_IC_HEAT_METER:
+
+      if (Param4 == 0) {
+        return true;
+      }
       break;
   }
 
   return Type == SUPLA_CHANNELTYPE_BRIDGE && Func == 0;
 }
 
-void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
                                            char *online, supla_client *client) {
+  bool result = false;
+
   if (client && client->getUser()) {
-    client->getUser()->get_channel_value(DeviceId, getId(), value, online);
-
-    switch (Func) {
-      case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-      case SUPLA_CHANNELFNC_IC_GAS_METER:
-      case SUPLA_CHANNELFNC_IC_WATER_METER: {
-        TDS_ImpulseCounter_Value ds;
-        memcpy(&ds, value->value, sizeof(TDS_ImpulseCounter_Value));
-        memset(value->value, 0, SUPLA_CHANNELVALUE_SIZE);
-
-        TSC_ImpulseCounter_Value sc;
-        sc.calculated_value =
-            supla_channel_ic_measurement::get_calculated_i(Param3, ds.counter);
-
-        memcpy(value->value, &sc, sizeof(TSC_ImpulseCounter_Value));
-        break;
-      }
+    unsigned _supla_int_t validity_time_sec = 0;
+    result = client->getUser()->get_channel_value(
+        DeviceId, getId(), value->value, value->sub_value,
+        &value->sub_value_type, online, &validity_time_sec, true);
+    if (result) {
+      setValueValidityTimeSec(validity_time_sec);
     }
   }
+
+  if ((!result || (online && !(*online))) && isValueValidityTimeSet() &&
+      getValueValidityTimeUSec() > 0) {
+    result = true;
+    if (online) {
+      *online = true;
+    }
+    memcpy(value->value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  }
+}
+
+void supla_client_channel::proto_get_value(TSuplaChannelValue *value,
+                                           char *online, supla_client *client) {
+  TSuplaChannelValue_B value_b = {};
+  proto_get_value(&value_b, online, client);
+
+  memcpy(value->value, value_b.value, SUPLA_CHANNELVALUE_SIZE);
+  memcpy(value->sub_value, value_b.sub_value, SUPLA_CHANNELVALUE_SIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
@@ -211,9 +287,37 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
                     SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
+void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
+                                     supla_client *client) {
+  memset(channel, 0, sizeof(TSC_SuplaChannel_D));
+
+  channel->Id = getId();
+  channel->DeviceID = getDeviceId();
+  channel->Type = this->Type;
+  channel->Func = Func;
+  channel->LocationID = this->LocationId;
+  channel->AltIcon = this->AltIcon;
+  channel->UserIcon = this->UserIcon;
+  channel->ManufacturerID = this->ManufacturerID;
+  channel->ProductID = this->ProductID;
+  channel->ProtocolVersion = this->ProtocolVersion;
+  channel->Flags = this->Flags;
+
+  proto_get_value(&channel->value, &channel->online, client);
+  proto_get_caption(channel->Caption, &channel->CaptionSize,
+                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+}
+
 void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,
                                      supla_client *client) {
   memset(channel_value, 0, sizeof(TSC_SuplaChannelValue));
+  channel_value->Id = getId();
+  proto_get_value(&channel_value->value, &channel_value->online, client);
+}
+
+void supla_client_channel::proto_get(TSC_SuplaChannelValue_B *channel_value,
+                                     supla_client *client) {
+  memset(channel_value, 0, sizeof(TSC_SuplaChannelValue_B));
   channel_value->Id = getId();
   proto_get_value(&channel_value->value, &channel_value->online, client);
 }
@@ -225,22 +329,38 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
   }
 
   memset(cev, 0, sizeof(TSC_SuplaChannelExtendedValue));
-  cev->Id = getId();
 
-  if (client && client->getUser() &&
-      client->getUser()->get_channel_extendedvalue(DeviceId, getId(),
-                                                   &cev->value)) {
-    switch (cev->value.type) {
-      case EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1:
-        return supla_channel_electricity_measurement::update_cev(cev, Param2,
-                                                                 TextParam1);
+  if (client && client->getUser()) {
+    bool cev_exists = false;
 
-      case EV_TYPE_IMPULSE_COUNTER_DETAILS_V1:
-        return supla_channel_ic_measurement::update_cev(
-            cev, Func, Param2, Param3, TextParam1, TextParam2);
+    int ChannelId = getId();
+
+    supla_device *device = NULL;
+
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        if (Param1) {
+          ChannelId = Param1;
+          device = client->getUser()->device_by_channelid(ChannelId);
+        }
+        break;
+
+      default:
+        device = client->getUser()->get_device(DeviceId);
+        break;
     }
 
-    return true;
+    if (device) {
+      cev_exists = device->get_channels()->get_channel_extendedvalue(
+          ChannelId, cev, client->getProtocolVersion() < 12);
+      device->releasePtr();
+    }
+
+    if (cev_exists) {
+      cev->Id = getId();
+      return true;
+    }
   }
 
   return false;
@@ -260,60 +380,6 @@ bool supla_client_channel::get_basic_cfg(TSC_ChannelBasicCfg *basic_cfg) {
   bool result = false;
   database *db = new database();
   result = db->connect() && db->get_channel_basic_cfg(getId(), basic_cfg);
-  delete db;
-
-  return result;
-}
-
-bool supla_client_channel::funclist_contains_function(int funcList, int func) {
-  switch (func) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK) > 0;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGATE) > 0;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR) > 0;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
-      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK) > 0;
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      return (funcList & SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER) > 0;
-    case SUPLA_CHANNELFNC_POWERSWITCH:
-      return (funcList & SUPLA_BIT_FUNC_POWERSWITCH) > 0;
-    case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      return (funcList & SUPLA_BIT_FUNC_LIGHTSWITCH) > 0;
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
-      return (funcList & SUPLA_BIT_FUNC_STAIRCASETIMER) > 0;
-  }
-
-  return false;
-}
-
-bool supla_client_channel::set_function(int new_function, bool *not_allowed) {
-  if (getType() != SUPLA_CHANNELTYPE_BRIDGE) {
-    if (not_allowed) {
-      *not_allowed = true;
-    }
-    return false;
-  }
-
-  bool result = false;
-  database *db = new database();
-
-  if (db->connect() == true) {
-    TSC_ChannelBasicCfg basic_cfg;
-    memset(&basic_cfg, 0, sizeof(TSC_ChannelBasicCfg));
-
-    if (db->get_channel_basic_cfg(getId(), &basic_cfg)) {
-      if ((new_function == 0 ||
-           funclist_contains_function(basic_cfg.FuncList, new_function)) &&
-          db->set_channel_function(getDeviceId(), getId(), new_function)) {
-        result = true;
-
-      } else if (not_allowed) {
-        *not_allowed = true;
-      }
-    }
-  }
   delete db;
 
   return result;

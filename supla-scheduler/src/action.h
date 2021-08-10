@@ -21,9 +21,8 @@
 
 #include <list>
 #include <string>
-#include "jsmn.h"
+#include "abstract_worker.h"
 #include "proto.h"
-#include "worker.h"
 
 #define FUNCTION_LIST_SIZE 10
 
@@ -32,28 +31,24 @@ class s_worker_action {
   bool is_function_allowed(void);
 
  protected:
-  s_worker *worker;
+  s_abstract_worker *worker;
 
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]) = 0;
   virtual int try_limit(void) = 0;
   virtual bool do_action(void) = 0;
-  virtual bool check_result(void) = 0;
+  virtual bool result_success(int *fail_result_code) = 0;
 
   virtual bool check_before_start(void);
-  virtual bool no_sensor(void);
   virtual bool retry_when_fail(void);
 
  public:
   virtual int waiting_time_to_retry(void) = 0;  // return seconds
   virtual int waiting_time_to_check(void) = 0;  // return seconds
-  explicit s_worker_action(s_worker *worker);
+  explicit s_worker_action(s_abstract_worker *worker);
   virtual ~s_worker_action();
   void execute(void);
 
   int get_max_time(void);
-  bool parse_percentage(char *percent);
-  int jsoneq(const char *json, jsmntok_t *tok, const char *s);
-  char json_get_int(jsmntok_t *token, int *value);
 };
 
 class AbstractActionFactory {
@@ -65,25 +60,26 @@ class AbstractActionFactory {
   explicit AbstractActionFactory(int action_type, std::string classname);
   std::string getActionClassName(void);
   int getActionType(void);
-  virtual s_worker_action *create(s_worker *worker) = 0;
+  virtual s_worker_action *create(s_abstract_worker *worker) = 0;
   virtual ~AbstractActionFactory(void);
 
   static AbstractActionFactory *factoryByActionType(int action_type);
-  static s_worker_action *createByActionType(int action_type, s_worker *worker);
+  static s_worker_action *createByActionType(int action_type,
+                                             s_abstract_worker *worker);
   static std::list<AbstractActionFactory *> factories;
 };
 
-#define REGISTER_ACTION(actionclass, actiontype)                    \
-  class actionclass##Factory : public AbstractActionFactory {       \
-   public:                                                          \
-    actionclass##Factory();                                         \
-    s_worker_action *create(s_worker *worker);                      \
-  };                                                                \
-  actionclass##Factory::actionclass##Factory()                      \
-      : AbstractActionFactory(actiontype, #actionclass) {}          \
-  s_worker_action *actionclass##Factory::create(s_worker *worker) { \
-    return new actionclass(worker);                                 \
-  }                                                                 \
+#define REGISTER_ACTION(actionclass, actiontype)                             \
+  class actionclass##Factory : public AbstractActionFactory {                \
+   public:                                                                   \
+    actionclass##Factory();                                                  \
+    s_worker_action *create(s_abstract_worker *worker);                      \
+  };                                                                         \
+  actionclass##Factory::actionclass##Factory()                               \
+      : AbstractActionFactory(actiontype, #actionclass) {}                   \
+  s_worker_action *actionclass##Factory::create(s_abstract_worker *worker) { \
+    return new actionclass(worker);                                          \
+  }                                                                          \
   static actionclass##Factory global_##actionclass##Factory;
 
 #endif /*ACTION_H_*/

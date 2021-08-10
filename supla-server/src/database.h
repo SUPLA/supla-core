@@ -20,23 +20,15 @@
 #define DATABASE_H_
 
 #include "client.h"
-#include "db.h"
 #include "device.h"
 #include "proto.h"
+#include "svrdb.h"
 #include "user.h"
 
-class supla_amazon_alexa;
-
-class database : public dbcommon {
+class database : public svrdb {
  private:
-  virtual char *cfg_get_host(void);
-  virtual char *cfg_get_user(void);
-  virtual char *cfg_get_password(void);
-  virtual char *cfg_get_database(void);
-  virtual int cfg_get_port(void);
-
-  bool auth(const char *query, int ID, char *_PWD, int _PWD_HEXSIZE,
-            int *UserID, bool *is_enabled);
+  bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
+            bool *is_enabled);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
@@ -45,7 +37,10 @@ class database : public dbcommon {
   bool get_authkey_hash(int ID, char *buffer, unsigned int buffer_size,
                         bool *is_null, const char *sql);
 
-  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind);
+  void em_set_longlong(unsigned _supla_int64_t *v, void *pbind,
+                       bool *not_null_flag);
+  int get_device_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE],
+                           bool client);
 
  public:
   bool location_auth(int LocationID, char *LocationPWD, int *UserID,
@@ -53,10 +48,13 @@ class database : public dbcommon {
   bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
                      bool *is_enabled);
 
-  bool get_user_uniqueid(int UserID, char shortID[SHORT_UNIQUEID_MAXSIZE],
-                         char longID[LONG_UNIQUEID_MAXSIZE]);
+  char *get_user_email(int UserID);
+
+  bool get_user_uniqueid(int UserID, char *id, bool longid);
 
   int get_user_id_by_email(const char Email[SUPLA_EMAIL_MAXSIZE]);
+
+  int get_user_id_by_suid(const char *suid);
 
   bool client_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                            const char Email[SUPLA_EMAIL_MAXSIZE],
@@ -76,7 +74,8 @@ class database : public dbcommon {
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
   int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
-                         int FList, int Flags, int UserID, bool *new_channel);
+                         int Param1, int Param2, int FList, int Flags,
+                         int UserID, bool *new_channel);
 
   int get_device_limit_left(int UserID);
   int get_device_count(int UserID);
@@ -84,15 +83,15 @@ class database : public dbcommon {
   int get_location_id(int UserID, bool enabled);
 
   bool get_device_reg_enabled(int UserID);
-  int get_device_id_and_user(const char GUID[SUPLA_GUID_SIZE], int *UserID);
-  int get_device_id(const char GUID[SUPLA_GUID_SIZE]);
+  int get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
   int get_device(int DeviceID, bool *device_enabled, int *original_location_id,
-                 int *location_id, bool *location_enabled, int *UserID);
+                 int *location_id, bool *location_enabled);
 
   int get_device_channel(int DeviceID, int ChannelNumber, int *Type);
   int get_device_channel_count(int DeviceID);
   int get_device_channel_type(int DeviceID, int ChannelNumber);
-  void get_device_channels(int DeviceID, supla_device_channels *channels);
+  void get_device_channels(int UserID, int DeviceID,
+                           supla_device_channels *channels);
 
   bool get_device_firmware_update_url(int DeviceID,
                                       TDS_FirmwareUpdateParams *params,
@@ -153,16 +152,36 @@ class database : public dbcommon {
                                const char email[SUPLA_EMAIL_MAXSIZE],
                                const char password[SUPLA_PASSWORD_MAXSIZE]);
 
-  bool amazon_alexa_load_token(supla_amazon_alexa *alexa);
-  void amazon_alexa_remove_token(supla_amazon_alexa *alexa);
-  void amazon_alexa_update_token(supla_amazon_alexa *alexa, const char *token,
-                                 const char *refresh_token, int expires_in);
+  bool amazon_alexa_load_credentials(supla_amazon_alexa_credentials *alexa);
+  void amazon_alexa_remove_token(supla_amazon_alexa_credentials *alexa);
+  void amazon_alexa_update_token(supla_amazon_alexa_credentials *alexa,
+                                 const char *token, const char *refresh_token,
+                                 int expires_in);
 
-  bool google_home_load_token(supla_google_home *google_home);
+  bool google_home_load_credentials(supla_google_home_credentials *google_home);
+  bool state_webhook_load_credentials(supla_state_webhook_credentials *webhook);
+  void state_webhook_update_token(int UserID, const char *token,
+                                  const char *refresh_token, int expires_in);
+  void state_webhook_remove_token(int UserID);
 
   bool get_user_localtime(int UserID, TSDC_UserLocalTimeResult *time);
   bool get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg);
-  bool set_channel_function(int DeviceID, int ChannelID, int Func);
+  bool set_channel_function(int UserID, int ChannelID, int Func);
+  bool get_channel_type_funclist_and_device_id(int UserID, int ChannelID,
+                                               int *Type,
+                                               unsigned int *FuncList,
+                                               int *DeviceID);
+  bool set_caption(int UserID, int ID, char *Caption, bool Channel);
+  bool channel_belong_to_group(int channel_id);
+  bool channel_has_schedule(int channel_id);
+  bool channel_is_associated_with_scene(int channel_id);
+  void update_channel_value(int channel_id, int user_id,
+                            const char value[SUPLA_CHANNELVALUE_SIZE],
+                            unsigned _supla_int_t validity_time_sec);
+  bool get_channel_value(int channel_id, int user_id,
+                         char value[SUPLA_CHANNELVALUE_SIZE],
+                         unsigned _supla_int_t *validity_time_sec);
+  void load_temperatures_and_humidity(int UserID, void *tarr);
 };
 
 #endif /* DATABASE_H_ */

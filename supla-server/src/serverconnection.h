@@ -21,7 +21,9 @@
 
 #include <stddef.h>
 #include <sys/time.h>
+
 #include "eh.h"
+#include "srpc.h"
 
 #define LOCAL_IPV4_ARRAY_SIZE 5
 
@@ -32,8 +34,22 @@ class cdbase;
 class serverconnection {
  private:
   static void *reg_pending_arr;
+  static struct timeval reg_limit_exceeded_alert_time;
+  static struct timeval reg_limit_exceeded_time;
+  static unsigned int local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
+
   static void read_local_ipv4_addresses(void);
   void set_registered(char registered);
+  void on_device_reconnect_request(
+      void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request);
+  void on_set_channel_function_request(
+      TCS_SetChannelFunction *cs_set_channel_function);
+  void on_set_caption_request(TCS_SetCaption *cs_set_caption, bool channel);
+  void on_register_device_request(void *_srpc, unsigned int call_type,
+                                  unsigned char proto_version,
+                                  TsrpcReceivedData *rd);
+  void trim_caption_to100chars(char *Caption,
+                               unsigned _supla_int_t *CaptionSize);
 
  protected:
   unsigned int client_ipv4;
@@ -58,7 +74,9 @@ class serverconnection {
   void catch_incorrect_call(unsigned int call_type);
 
  public:
-  static unsigned int local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
+  static void log_limits(void);
+  static bool is_connection_allowed(unsigned int ipv4);
+
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
   static void init(void);
   static void serverconnection_free(void);

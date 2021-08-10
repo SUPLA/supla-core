@@ -106,18 +106,24 @@ union TsrpcDataPacketData {
   TSC_SuplaRegisterClientResult *sc_register_client_result;
   TSC_SuplaRegisterClientResult_B *sc_register_client_result_b;
   TDS_SuplaDeviceChannelValue *ds_device_channel_value;
+  TDS_SuplaDeviceChannelValue_B *ds_device_channel_value_b;
+  TDS_SuplaDeviceChannelValue_C *ds_device_channel_value_c;
   TDS_SuplaDeviceChannelExtendedValue *ds_device_channel_extendedvalue;
   TSC_SuplaLocation *sc_location;
   TSC_SuplaLocationPack *sc_location_pack;
   TSC_SuplaChannel *sc_channel;
   TSC_SuplaChannel_B *sc_channel_b;
   TSC_SuplaChannel_C *sc_channel_c;
+  TSC_SuplaChannel_D *sc_channel_d;
   TSC_SuplaChannelPack *sc_channel_pack;
   TSC_SuplaChannelPack_B *sc_channel_pack_b;
   TSC_SuplaChannelPack_C *sc_channel_pack_c;
+  TSC_SuplaChannelPack_D *sc_channel_pack_d;
   TSC_SuplaChannelValue *sc_channel_value;
+  TSC_SuplaChannelValue_B *sc_channel_value_b;
   TSC_SuplaEvent *sc_event;
   TSD_SuplaChannelNewValue *sd_channel_new_value;
+  TSD_SuplaChannelGroupNewValue *sd_channelgroup_new_value;
   TDS_SuplaChannelNewValueResult *ds_channel_new_value_result;
   TCS_SuplaChannelNewValue *cs_channel_new_value;
   TCS_SuplaChannelNewValue_B *cs_channel_new_value_b;
@@ -128,6 +134,7 @@ union TsrpcDataPacketData {
   TSC_SuplaChannelGroupPack_B *sc_channelgroup_pack_b;
   TSC_SuplaChannelGroupRelationPack *sc_channelgroup_relation_pack;
   TSC_SuplaChannelValuePack *sc_channelvalue_pack;
+  TSC_SuplaChannelValuePack_B *sc_channelvalue_pack_b;
   TSC_SuplaChannelExtendedValuePack *sc_channelextendedvalue_pack;
   TCS_SuplaNewValue *cs_new_value;
   TSC_OAuthTokenRequestResult *sc_oauth_tokenrequest_result;
@@ -145,9 +152,16 @@ union TsrpcDataPacketData {
   TSC_ChannelBasicCfg *sc_channel_basic_cfg;
   TCS_SetChannelFunction *cs_set_channel_function;
   TSC_SetChannelFunctionResult *sc_set_channel_function_result;
+  TCS_SetCaption *cs_set_caption;
+  TSC_SetCaptionResult *sc_set_caption_result;
   TSC_ClientsReconnectRequestResult *sc_clients_reconnect_result;
   TCS_SetRegistrationEnabled *cs_set_registration_enabled;
   TSC_SetRegistrationEnabledResult *sc_set_registration_enabled_result;
+  TCS_DeviceReconnectRequest *cs_device_reconnect_request;
+  TSC_DeviceReconnectRequestResult *sc_device_reconnect_request_result;
+  TSD_ChannelFunctions *sd_channel_functions;
+  TDS_GetChannelIntParamsRequest *ds_get_channel_int_params_request;
+  TSD_ChannelIntParams *sd_channel_int_params;
 };
 
 typedef struct {
@@ -163,6 +177,8 @@ void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params);
 void SRPC_ICACHE_FLASH srpc_free(void *_srpc);
 
 char SRPC_ICACHE_FLASH srpc_input_dataexists(void *_srpc);
+char SRPC_ICACHE_FLASH srpc_output_dataexists(void *_srpc);
+unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc);
 
 char SRPC_ICACHE_FLASH srpc_iterate(void *_srpc);
 
@@ -221,11 +237,19 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_registerdevice_result(
     void *_srpc, TSD_SuplaRegisterDeviceResult *registerdevice_result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed(
     void *_srpc, unsigned char channel_number, char *value);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_channel_value_changed_b(void *_srpc, unsigned char channel_number,
+                                      char *value, unsigned char offline);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_value_changed_c(
+    void *_srpc, unsigned char channel_number, char *value,
+    unsigned char offline, unsigned _supla_int_t validity_time_sec);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_channel_extendedvalue_changed(
     void *_srpc, unsigned char channel_number,
     TSuplaChannelExtendedValue *value);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_set_channel_value(void *_srpc, TSD_SuplaChannelNewValue *value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_set_channelgroup_value(
+    void *_srpc, TSD_SuplaChannelGroupNewValue *value);  // ver. >= 13
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_set_channel_result(void *_srpc, unsigned char ChannelNumber,
                                  _supla_int_t SenderID, char Success);
@@ -235,11 +259,16 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_firmware_update_url_result(
     void *_srpc, TSD_FirmwareUpdate_UrlResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request(
     void *_srpc, TSD_DeviceCalCfgRequest *request);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_device_calcfg_request_b(
-    void *_srpc, TSD_DeviceCalCfgRequest_B *request_b);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_ds_async_device_calcfg_result(void *_srpc, TDS_DeviceCalCfgResult *result);
-
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_functions(void *_srpc);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_functions_result(
+    void *_srpc, TSD_ChannelFunctions *result);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_get_channel_int_params(void *_srpc, unsigned char channel_number);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_int_params_result(
+    void *_srpc, unsigned char channel_number, _supla_int_t param1,
+    _supla_int_t param2, _supla_int_t param3);
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -267,14 +296,20 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_b(
     void *_srpc, TSC_SuplaChannel_B *channel);  // ver. >= 8
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_c(
     void *_srpc, TSC_SuplaChannel_C *channel);  // ver. >= 10
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_update_d(
+    void *_srpc, TSC_SuplaChannel_D *channel);  // ver. >= 15
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update(
     void *_srpc, TSC_SuplaChannelPack *channel_pack);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_b(
     void *_srpc, TSC_SuplaChannelPack_B *channel_pack);  // ver. >= 8
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_c(
     void *_srpc, TSC_SuplaChannelPack_C *channel_pack);  // ver. >= 10
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelpack_update_d(
+    void *_srpc, TSC_SuplaChannelPack_D *channel_pack);  // ver. >= 15
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update(
     void *_srpc, TSC_SuplaChannelValue *channel_item_value);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channel_value_update_b(
+    void *_srpc, TSC_SuplaChannelValue_B *channel_item_value);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update(
     void *_srpc, TSC_SuplaChannelGroupPack *channelgroup_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_pack_update_b(
@@ -284,6 +319,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelgroup_relation_pack_update(
                      *channelgroup_relation_pack);  // ver. >= 9
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update(
     void *_srpc, TSC_SuplaChannelValuePack *channelvalue_pack);  // ver. >= 9
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelvalue_pack_update_b(
+    void *_srpc, TSC_SuplaChannelValuePack_B *channelvalue_pack);  // ver. >= 15
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_channelextendedvalue_pack_update(
     void *_srpc,
     TSC_SuplaChannelExtendedValuePack *extendedvalue_pack);  // ver. >= 10
@@ -301,6 +338,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_oauth_token_request_result(
     void *_srpc, TSC_OAuthTokenRequestResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_superuser_authorization_request(
     void *_srpc, TCS_SuperUserAuthorizationRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_get_superuser_authorization_result(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_superuser_authorization_result(
     void *_srpc, TSC_SuperUserAuthorizationResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_calcfg_request(
@@ -318,6 +357,14 @@ srpc_cs_async_set_channel_function(void *_srpc, TCS_SetChannelFunction *func);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_function_result(
     void *_srpc, TSC_SetChannelFunctionResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_channel_caption(void *_srpc, TCS_SetCaption *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_channel_caption_result(
+    void *_srpc, TSC_SetCaptionResult *caption);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_set_location_caption(void *_srpc, TCS_SetCaption *caption);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_location_caption_result(
+    void *_srpc, TSC_SetCaptionResult *caption);
+_supla_int_t SRPC_ICACHE_FLASH
 srpc_cs_async_clients_reconnect_request(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_clients_reconnect_request_result(
     void *_srpc, TSC_ClientsReconnectRequestResult *result);
@@ -325,13 +372,32 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_set_registration_enabled(
     void *_srpc, TCS_SetRegistrationEnabled *reg_enabled);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_set_registration_enabled_result(
     void *_srpc, TSC_SetRegistrationEnabledResult *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_reconnect_request(
+    void *_srpc, TCS_DeviceReconnectRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
+    void *_srpc, TSC_DeviceReconnectRequestResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
+#ifdef USE_DEPRECATED_EMEV_V1
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_emextended2extended(
     TElectricityMeter_ExtendedValue *em_ev, TSuplaChannelExtendedValue *ev);
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2emextended(
     TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue *em_ev);
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_emev_v1to2(TElectricityMeter_ExtendedValue *v1,
+                       TElectricityMeter_ExtendedValue_V2 *v2);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_emev_v2to1(TElectricityMeter_ExtendedValue_V2 *v2,
+                       TElectricityMeter_ExtendedValue *v1);
+
+#endif /*USE_DEPRECATED_EMEV_V1*/
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_emextended2extended(
+    TElectricityMeter_ExtendedValue_V2 *em_ev, TSuplaChannelExtendedValue *ev);
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v2_extended2emextended(
+    TSuplaChannelExtendedValue *ev, TElectricityMeter_ExtendedValue_V2 *em_ev);
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2thermostatextended(
     TSuplaChannelExtendedValue *ev, TThermostat_ExtendedValue *th_ev);

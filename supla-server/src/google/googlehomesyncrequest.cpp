@@ -38,7 +38,6 @@ bool supla_google_home_sync_request::verifyExisting(
     supla_http_request *existing) {
   duplicateExists = true;
   existing->setDelay(5000000);
-  supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 }
 
@@ -52,14 +51,14 @@ void supla_google_home_sync_request::execute(void *sthread) {
   getClient()->requestSync(&resultCode);
 
   if (resultCode == 403 || resultCode == 404) {
-    getUser()->googleHome()->on_sync_40x_error();
+    getUser()->googleHomeCredentials()->on_sync_40x_error();
   }
 }
 
 bool supla_google_home_sync_request::isEventTypeAccepted(event_type eventType,
                                                          bool verification) {
   switch (eventType) {
-    case ET_DEVICE_ADDED:
+    case ET_CHANNELS_ADDED:
     case ET_DEVICE_DELETED:
     case ET_USER_RECONNECT:
     case ET_GOOGLE_HOME_SYNC_NEEDED:

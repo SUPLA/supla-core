@@ -64,12 +64,13 @@
 #ifdef __LOG_CALLBACK
 _supla_log_callback __supla_log_callback = NULL;
 
-void supla_log_set_callback(_supla_log_callback callback) {
+void LOG_ICACHE_FLASH supla_log_set_callback(_supla_log_callback callback) {
   __supla_log_callback = callback;
 }
 #endif /*__LOG_CALLBACK*/
 
-char supla_log_string(char **buffer, int *size, va_list va, const char *__fmt) {
+char LOG_ICACHE_FLASH supla_log_string(char **buffer, int *size, va_list va,
+                                       const char *__fmt) {
   char *nb;
   int n;
 
@@ -125,7 +126,7 @@ void supla_vlog(int __pri, const char *message) {
 }
 
 #elif defined(ESP8266) || defined(__AVR__)
-void supla_vlog(int __pri, const char *message) {
+void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
 #if defined(ESP8266) && !defined(ARDUINO_ARCH_ESP8266)
 #ifndef ESP8266_LOG_DISABLED
   os_printf("%s\r\n", message);
@@ -135,7 +136,7 @@ void supla_vlog(int __pri, const char *message) {
 #endif
 }
 #else
-void supla_vlog(int __pri, const char *message) {
+void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
 #ifdef __ANDROID__
   switch (__pri) {
     case LOG_CRIT:
@@ -221,7 +222,7 @@ void supla_vlog(int __pri, const char *message) {
 }
 #endif
 
-void supla_log(int __pri, const char *__fmt, ...) {
+void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...) {
   va_list ap;
   char *buffer = NULL;
   int size = 0;
@@ -249,8 +250,8 @@ void supla_log(int __pri, const char *__fmt, ...) {
   free(buffer);
 }
 
-void supla_write_state_file(const char *file, int __pri, const char *__fmt,
-                            ...) {
+void LOG_ICACHE_FLASH supla_write_state_file(const char *file, int __pri,
+                                             const char *__fmt, ...) {
   char *buffer = NULL;
   int size = 0;
 

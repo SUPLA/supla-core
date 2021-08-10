@@ -19,8 +19,8 @@
 #ifndef GOOGLEHOMECLIENT_H_
 #define GOOGLEHOMECLIENT_H_
 
+#include <google/googlehomecredentials.h>
 #include <cstddef>
-#include "google/googlehome.h"
 #include "voiceassistantclient.h"
 
 class supla_google_home_client : public supla_voice_assistant_client {
@@ -32,7 +32,8 @@ class supla_google_home_client : public supla_voice_assistant_client {
   bool post(void *json_data, int *resultCode);
 
  public:
-  explicit supla_google_home_client(supla_google_home *google_home);
+  explicit supla_google_home_client(
+      supla_google_home_credentials *google_home_credentils);
   virtual ~supla_google_home_client(void);
   void clearStateReport(void);
   bool addOnOffState(int channelId, bool on, bool online);
@@ -40,6 +41,7 @@ class supla_google_home_client : public supla_voice_assistant_client {
                           short subChannel);
   bool addColorState(int channelId, int color, short colorBrightness,
                      bool online, short subChannel);
+  bool addOpenPercentState(int channelId, short openPercent, bool online);
   bool addRollerShutterState(int channelId, short shutPercentage, bool online);
   bool sendReportState(const char requestId[], int *resultCode = NULL);
   bool requestSync(int *resultCode = NULL);

@@ -16,7 +16,6 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <my_global.h>
 #include <mysql.h>
 #include <string.h>
 
@@ -71,7 +70,7 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
           "`channel_id`, IFNULL(s.`channel_group_id`, 0) `channel_group_id`, "
           "IFNULL(c.`func`, IFNULL(g.`func`, 0)) `func`, IFNULL(c.`param1`, 0) "
           "`param1`, IFNULL(c.`param2`, 0) `param2`, IFNULL(c.`param3`, 0) "
-          "`param3`, s.`action`, s.`action_param`, "
+          "`param3`, e.`action`, e.`action_param`, "
           "UNIX_TIMESTAMP(e.`planned_timestamp`), "
           "UNIX_TIMESTAMP(e.`retry_timestamp`), e.`retry_count`, s.`retry` "
           "FROM `supla_scheduled_executions` AS e, `supla_schedule` AS s LEFT "

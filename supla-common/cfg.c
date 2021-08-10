@@ -53,6 +53,10 @@ TSuplaCfg *scfg = NULL;
 char *pidfile_path = NULL;
 unsigned run_as_daemon = 0;
 
+#ifdef __TEST
+char *cfg_sql_dir = NULL;
+#endif /*__TEST*/
+
 #ifdef __DEBUG
 char debug_mode = 1;
 #else
@@ -187,6 +191,9 @@ void scfg_print_help(const char *app_name) {
   printf("The application supports the following options:\n");
   printf("    -c <config file>\n");
   printf("    -p <pid file>\n");
+#ifdef __TEST
+  printf("    --sqldir    Specifies the path of the sql script directory\n");
+#endif /**/
   printf("    -d                  run in daemon mode\n");
 #ifdef __DEBUG
   printf("    --debug-off         run in normal mode\n");
@@ -211,6 +218,10 @@ unsigned char scfg_load(int argc, char *argv[], char default_file[]) {
       a++;
     } else if (strcmp("-d", argv[a]) == 0) {
       run_as_daemon = 1;
+#ifdef __TEST
+    } else if (strcmp("--sqldir", argv[a]) == 0 && a < argc - 1) {
+      cfg_sql_dir = strdup(argv[a + 1]);
+#endif /*__TEST*/
 #ifdef __DEBUG
     } else if (strcmp("--debug-off", argv[a]) == 0) {
       debug_mode = 0;
@@ -274,6 +285,13 @@ void scfg_free(void) {
     free(pidfile_path);
     pidfile_path = NULL;
   }
+
+#ifdef __TEST
+  if (cfg_sql_dir) {
+    free(cfg_sql_dir);
+    cfg_sql_dir = NULL;
+  }
+#endif /*__TEST*/
 }
 
 char *scfg_string(unsigned char param_id) {

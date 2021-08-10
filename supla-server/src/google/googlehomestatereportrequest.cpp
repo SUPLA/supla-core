@@ -72,20 +72,22 @@ bool supla_google_home_statereport_request::verifyExisting(
 
   existing->setDelay(existing->getGoogleRequestIdPtr() ? 3000000 : 1000000);
 
-  supla_http_request_queue::getInstance()->raiseEvent();
   return true;
 }
 
 bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   channel_complex_value value =
-      getUser()->get_channel_complex_value(getDeviceId(), getChannelId());
+      getUser()->get_channel_complex_value(getChannelId());
 
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_DIMMER:
     case SUPLA_CHANNELFNC_RGBLIGHTING:
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
       return !value.hidden_channel;
     default:
       return false;
@@ -125,7 +127,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
     int ChannelId = (long long)safe_array_get(channel_arr, a);
 
     channel_complex_value value =
-        getUser()->get_channel_complex_value(getDeviceId(), ChannelId);
+        getUser()->get_channel_complex_value(ChannelId);
 
     if (!value.hidden_channel) {
       switch (value.function) {
@@ -156,6 +158,12 @@ void supla_google_home_statereport_request::execute(void *sthread) {
                                              value.online);
           content_exists = true;
           break;
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+          getClient()->addOpenPercentState(ChannelId, value.hi ? 0 : 100,
+                                           value.online);
+          content_exists = true;
+          break;
       }
     }
   }
@@ -167,7 +175,7 @@ void supla_google_home_statereport_request::execute(void *sthread) {
     getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
 
     if (resultCode == 404) {
-      getUser()->googleHome()->on_reportstate_404_error();
+      getUser()->googleHomeCredentials()->on_reportstate_404_error();
     }
   }
 }

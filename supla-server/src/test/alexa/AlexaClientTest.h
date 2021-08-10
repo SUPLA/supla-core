@@ -19,12 +19,22 @@
 #ifndef H_ALEXACLIENT_TEST_H_
 #define H_ALEXACLIENT_TEST_H_
 
-#include "STTrivialHttp.h"
+#include "amazon/alexaclient.h"
+#include "gtest/gtest.h"  // NOLINT
+#include "user/user.h"
 
-class AlexaClientTest : STTrivialHttp {
+namespace testing {
+
+class AlexaClientTest : public Test {
  public:
-  virtual ~AlexaClientTest();
+  supla_user *user;
+  supla_alexa_client *client;
+
+  virtual void SetUp();
+  virtual void TearDown();
   AlexaClientTest();
 };
+
+} /* namespace testing */
 
 #endif /*H_ALEXACLIENT_TEST_H_*/

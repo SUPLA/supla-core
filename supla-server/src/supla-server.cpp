@@ -16,18 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <http/httprequestqueue.h>
-#include <http/trivialhttps.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
 #include "accept_loop.h"
+#include "asynctask/asynctask_default_thread_pool.h"
+#include "asynctask/asynctask_queue.h"
 #include "database.h"
 #include "datalogger.h"
+#include "http/httprequestqueue.h"
+#include "http/trivialhttps.h"
 #include "ipcsocket.h"
 #include "lck.h"
 #include "log.h"
+#include "mqtt_client_suite.h"
 #include "proto.h"
 #include "srpc.h"
 #include "sslcrypto.h"
@@ -52,8 +55,8 @@ int main(int argc, char *argv[]) {
   supla_log(LOG_DEBUG, "!!! LCK DEBUG ENABED !!!");
 #endif /*__LCK_DEBUG*/
 
-      // INIT BLOCK
-      if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
+  // INIT BLOCK
+  if (svrcfg_init(argc, argv) == 0) return EXIT_FAILURE;
 
 #if defined(__DEBUG) && __SSOCKET_WRITE_TO_FILE == 1
   unlink("ssocket_read.raw");
@@ -73,21 +76,13 @@ int main(int argc, char *argv[]) {
     goto exit_fail;
   }
 
-  {
-    struct rlimit limit;
-
-    limit.rlim_cur = 10240;
-    limit.rlim_max = 10240;
-    setrlimit(RLIMIT_NOFILE, &limit);
-  }
-
   if (database::mainthread_init() == false) {
     goto exit_fail;
   }
 
   {
     database *db = new database();
-    if (!db->check_db_version("20200123235701", 60)) {
+    if (!db->check_db_version(DB_VERSION, 60)) {
       delete db;
       database::mainthread_end();
       goto exit_fail;
@@ -149,10 +144,21 @@ int main(int argc, char *argv[]) {
   http_request_queue_loop_thread =
       sthread_simple_run(http_request_queue_loop, NULL, 0);
 
+  // ASYNCTASK QUEUE
+  supla_asynctask_queue::global_instance();
+  supla_asynctask_default_thread_pool::global_instance();
+
+  // MQTT
+  supla_mqtt_client_suite::globalInstance()->start();
+
   // MAIN LOOP
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
-    supla_user::print_metrics(3600);
+    serverconnection::log_limits();
+    supla_user::log_metrics(3600);
+    supla_http_request_queue::getInstance()->logMetrics(3600);
+    supla_http_request_queue::getInstance()->logStuckWarning();
+    supla_asynctask_queue::global_instance()->log_stuck_warning();
   }
 
   supla_log(LOG_INFO, "Shutting down...");
@@ -187,15 +193,22 @@ int main(int argc, char *argv[]) {
   sthread_twf(datalogger_loop_thread);
   sthread_twf(http_request_queue_loop_thread);
 
-  st_mainloop_free();
-  st_delpidfile(pidfile_path);
+  supla_asynctask_queue::global_instance_release();  // before
+                                                     // serverconnection_free()
 
-  supla_http_request_queue::queueFree();  // ! before user_free()
   serverconnection::serverconnection_free();
+
+  // ! after serverconnection_free() and before user_free()
+  supla_http_request_queue::queueFree();
+  supla_mqtt_client_suite::globalInstanceRelease();
+  // -----------------------------------------------
+
   supla_user::user_free();
   database::mainthread_end();
   sslcrypto_free();
 
+  st_mainloop_free();  // Almost at the end
+  st_delpidfile(pidfile_path);
   svrcfg_free();
 
   {

@@ -19,6 +19,7 @@
 #ifndef CLIENTLOCATION_H_
 #define CLIENTLOCATION_H_
 
+#include <vector>
 #include "proto.h"
 
 class supla_client_location {
@@ -30,6 +31,7 @@ class supla_client_location {
   supla_client_location(int Id, const char *Caption);
   virtual ~supla_client_location();
   int getId(void);
+  void setCaption(const char *Caption);
   void proto_get_location(TSC_SuplaLocation *location);
 };
 
@@ -39,10 +41,8 @@ class supla_client_locations {
   // -------------
 
   void *lck;
-  int *ids;
-  int ids_count;
+  std::vector<int> ids;
 
-  void ids_clean();
   void arr_clean(void);
   static char arr_findcmp(void *ptr, void *id);
   static char arr_delcnd(void *ptr);
@@ -52,7 +52,8 @@ class supla_client_locations {
   virtual ~supla_client_locations();
   void load(int ClientID);
   int count();
-  void add_location(int Id, const char *Caption);
+  bool add_location(int Id, const char *Caption);
+  void set_caption(int Id, const char *Caption);
   bool remote_update(void *srpc);
   bool location_exists(int Id);
 };

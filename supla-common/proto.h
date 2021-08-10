@@ -43,6 +43,8 @@ struct _supla_timeval {
 #define _supla_int64_t long long
 
 #elif defined(ESP8266) || defined(ESP32)
+#include <mem.h>
+#define PROTO_ICACHE_FLASH ICACHE_FLASH_ATTR
 
 #if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
 #define SPROTO_WITHOUT_OUT_BUFFER
@@ -76,6 +78,10 @@ struct _supla_timeval {
 #define _supla_timeval timeval
 #endif
 
+#ifndef PROTO_ICACHE_FLASH
+#define PROTO_ICACHE_FLASH
+#endif /*PROTO_ICACHE_FLASH*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,7 +96,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 12
+#define SUPLA_PROTO_VERSION 15
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -104,25 +110,22 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #endif
 #define SUPLA_RC_MAX_DEV_COUNT 50
 #define SUPLA_SOFTVER_MAXSIZE 21
-#define SUPLA_SOFTVERHEX_MAXSIZE 43
+
+#define SUPLA_CAPTION_MAXSIZE 401
 
 #define SUPLA_GUID_SIZE 16
 #define SUPLA_GUID_HEXSIZE 33
-#define SUPLA_LOCATION_PWDHEX_MAXSIZE 65
 #define SUPLA_LOCATION_PWD_MAXSIZE 33
-#define SUPLA_ACCESSID_PWDHEX_MAXSIZE 65
 #define SUPLA_ACCESSID_PWD_MAXSIZE 33
-#define SUPLA_LOCATION_CAPTION_MAXSIZE 401
+#define SUPLA_LOCATION_CAPTION_MAXSIZE SUPLA_CAPTION_MAXSIZE
 #define SUPLA_LOCATIONPACK_MAXCOUNT 20
-#define SUPLA_CHANNEL_CAPTION_MAXSIZE 401
+#define SUPLA_CHANNEL_CAPTION_MAXSIZE SUPLA_CAPTION_MAXSIZE
 #define SUPLA_CHANNELPACK_MAXCOUNT 20
 #define SUPLA_URL_HOST_MAXSIZE 101
 #define SUPLA_URL_PATH_MAXSIZE 101
 #define SUPLA_SERVER_NAME_MAXSIZE 65
 #define SUPLA_EMAIL_MAXSIZE 256                     // ver. >= 7
-#define SUPLA_EMAILHEX_MAXSIZE 513                  // ver. >= 7
 #define SUPLA_PASSWORD_MAXSIZE 64                   // ver. >= 10
-#define SUPLA_PASSWORDHEX_MAXSIZE 129               // ver. >= 10
 #define SUPLA_AUTHKEY_SIZE 16                       // ver. >= 7
 #define SUPLA_AUTHKEY_HEXSIZE 33                    // ver. >= 7
 #define SUPLA_OAUTH_TOKEN_MAXSIZE 256               // ver. >= 10
@@ -157,55 +160,75 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
+#define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B 102        // ver. >= 12
+#define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED 105  // ver. >= 10
 #define SUPLA_SD_CALL_CHANNEL_SET_VALUE 110
+#define SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE 115  // ver. >= 13
 #define SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT 120
 #define SUPLA_SC_CALL_LOCATION_UPDATE 130
 #define SUPLA_SC_CALL_LOCATIONPACK_UPDATE 140
 #define SUPLA_SC_CALL_CHANNEL_UPDATE 150
 #define SUPLA_SC_CALL_CHANNELPACK_UPDATE 160
 #define SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE 170
+#define SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B 171
 #define SUPLA_CS_CALL_GET_NEXT 180
 #define SUPLA_SC_CALL_EVENT 190
 #define SUPLA_CS_CALL_CHANNEL_SET_VALUE 200
-#define SUPLA_CS_CALL_CHANNEL_SET_VALUE_B 205                // ver. >= 3
-#define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT 210              // ver. >= 2
-#define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT 220       // ver. >= 2
-#define SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL 300            // ver. >= 5
-#define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT 310     // ver. >= 5
-#define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED 320          // ver. >= 7
-#define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT 330   // ver. >= 7
-#define SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST 340                // ver. >= 10
-#define SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT 350         // ver. >= 10
-#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360               // ver. >= 8
-#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361               // ver. >= 10
-#define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                   // ver. >= 8
-#define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                   // ver. >= 10
-#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380           // ver. >= 9
-#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381         // ver. >= 10
-#define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390  // ver. >= 9
-#define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400           // ver. >= 9
-#define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405   // ver. >= 10
-#define SUPLA_CS_CALL_SET_VALUE 410                          // ver. >= 9
-#define SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST 420    // ver. >= 10
-#define SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT 430     // ver. >= 10
-#define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST 440              // ver. >= 10
-#define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B 445            // ver. >= 11
-#define SUPLA_SC_CALL_DEVICE_CALCFG_RESULT 450               // ver. >= 10
-#define SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST 460              // ver. >= 10
-#define SUPLA_DS_CALL_DEVICE_CALCFG_RESULT 470               // ver. >= 10
-#define SUPLA_DCS_CALL_GET_USER_LOCALTIME 480                // ver. >= 11
-#define SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT 490         // ver. >= 11
-#define SUPLA_CSD_CALL_GET_CHANNEL_STATE 500                 // ver. >= 12
-#define SUPLA_DSC_CALL_CHANNEL_STATE_RESULT 510              // ver. >= 12
-#define SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG 520              // ver. >= 12
-#define SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT 530           // ver. >= 12
-#define SUPLA_CS_CALL_SET_CHANNEL_FUNCTION 540               // ver. >= 12
-#define SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT 550        // ver. >= 12
-#define SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST 560          // ver. >= 12
-#define SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT 570   // ver. >= 12
-#define SUPLA_CS_CALL_SET_REGISTRATION_ENABLED 580           // ver. >= 12
-#define SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT 590    // ver. >= 12
+#define SUPLA_CS_CALL_CHANNEL_SET_VALUE_B 205                 // ver. >= 3
+#define SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT 210               // ver. >= 2
+#define SUPLA_SDC_CALL_SET_ACTIVITY_TIMEOUT_RESULT 220        // ver. >= 2
+#define SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL 300             // ver. >= 5
+#define SUPLA_SD_CALL_GET_FIRMWARE_UPDATE_URL_RESULT 310      // ver. >= 5
+#define SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED 320           // ver. >= 7
+#define SUPLA_SDC_CALL_GET_REGISTRATION_ENABLED_RESULT 330    // ver. >= 7
+#define SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST 340                 // ver. >= 10
+#define SUPLA_SC_CALL_OAUTH_TOKEN_REQUEST_RESULT 350          // ver. >= 10
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_B 360                // ver. >= 8
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_C 361                // ver. >= 10
+#define SUPLA_SC_CALL_CHANNELPACK_UPDATE_D 362                // ver. >= 15
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_B 370                    // ver. >= 8
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_C 371                    // ver. >= 10
+#define SUPLA_SC_CALL_CHANNEL_UPDATE_D 372                    // ver. >= 15
+#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE 380            // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELGROUP_PACK_UPDATE_B 381          // ver. >= 10
+#define SUPLA_SC_CALL_CHANNELGROUP_RELATION_PACK_UPDATE 390   // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE 400            // ver. >= 9
+#define SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B 401          // ver. >= 15
+#define SUPLA_SC_CALL_CHANNELEXTENDEDVALUE_PACK_UPDATE 405    // ver. >= 10
+#define SUPLA_CS_CALL_SET_VALUE 410                           // ver. >= 9
+#define SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST 420     // ver. >= 10
+#define SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT 425  // ver. >= 12
+#define SUPLA_SC_CALL_SUPERUSER_AUTHORIZATION_RESULT 430      // ver. >= 10
+#define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST 440               // ver. >= 10
+#define SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B 445             // ver. >= 11
+#define SUPLA_SC_CALL_DEVICE_CALCFG_RESULT 450                // ver. >= 10
+#define SUPLA_SD_CALL_DEVICE_CALCFG_REQUEST 460               // ver. >= 10
+#define SUPLA_DS_CALL_DEVICE_CALCFG_RESULT 470                // ver. >= 10
+#define SUPLA_DCS_CALL_GET_USER_LOCALTIME 480                 // ver. >= 11
+#define SUPLA_DCS_CALL_GET_USER_LOCALTIME_RESULT 490          // ver. >= 11
+#define SUPLA_CSD_CALL_GET_CHANNEL_STATE 500                  // ver. >= 12
+#define SUPLA_DSC_CALL_CHANNEL_STATE_RESULT 510               // ver. >= 12
+#define SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG 520               // ver. >= 12
+#define SUPLA_SC_CALL_CHANNEL_BASIC_CFG_RESULT 530            // ver. >= 12
+#define SUPLA_CS_CALL_SET_CHANNEL_FUNCTION 540                // ver. >= 12
+#define SUPLA_SC_CALL_SET_CHANNEL_FUNCTION_RESULT 550         // ver. >= 12
+#define SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST 560           // ver. >= 12
+#define SUPLA_SC_CALL_CLIENTS_RECONNECT_REQUEST_RESULT 570    // ver. >= 12
+#define SUPLA_CS_CALL_SET_REGISTRATION_ENABLED 580            // ver. >= 12
+#define SUPLA_SC_CALL_SET_REGISTRATION_ENABLED_RESULT 590     // ver. >= 12
+#define SUPLA_CS_CALL_DEVICE_RECONNECT_REQUEST 600            // ver. >= 12
+#define SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT 610     // ver. >= 12
+#define SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS 620               // ver. >= 12
+#define SUPLA_SD_CALL_GET_CHANNEL_FUNCTIONS_RESULT 630        // ver. >= 12
+#define SUPLA_CS_CALL_SET_CHANNEL_CAPTION 640                 // ver. >= 12
+#define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650          // ver. >= 12
+#define SUPLA_CS_CALL_SET_LOCATION_CAPTION 645                // ver. >= 14
+#define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
+#define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
+#define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
+#define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
+#define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -230,27 +253,28 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_CLIENT_LIMITEXCEEDED 12
 #define SUPLA_RESULTCODE_DEVICE_LIMITEXCEEDED 13
 #define SUPLA_RESULTCODE_GUID_ERROR 14
-#define SUPLA_RESULTCODE_HOSTNOTFOUND 15           // ver. >= 5
-#define SUPLA_RESULTCODE_CANTCONNECTTOHOST 16      // ver. >= 5
-#define SUPLA_RESULTCODE_REGISTRATION_DISABLED 17  // ver. >= 7
-#define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED 18  // ver. >= 7
-#define SUPLA_RESULTCODE_AUTHKEY_ERROR 19          // ver. >= 7
-#define SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE 20  // ver. >= 7
-#define SUPLA_RESULTCODE_USER_CONFLICT 21          // ver. >= 7
-#define SUPLA_RESULTCODE_UNAUTHORIZED 22           // ver. >= 10
-#define SUPLA_RESULTCODE_AUTHORIZED 23             // ver. >= 10
-#define SUPLA_RESULTCODE_NOT_ALLOWED 24            // ver. >= 12
-#define SUPLA_RESULTCODE_CHANNELNOTFOUND 25        // ver. >= 12
-#define SUPLA_RESULTCODE_UNKNOWN_ERROR 26          // ver. >= 12
+#define SUPLA_RESULTCODE_HOSTNOTFOUND 15                           // ver. >= 5
+#define SUPLA_RESULTCODE_CANTCONNECTTOHOST 16                      // ver. >= 5
+#define SUPLA_RESULTCODE_REGISTRATION_DISABLED 17                  // ver. >= 7
+#define SUPLA_RESULTCODE_ACCESSID_NOT_ASSIGNED 18                  // ver. >= 7
+#define SUPLA_RESULTCODE_AUTHKEY_ERROR 19                          // ver. >= 7
+#define SUPLA_RESULTCODE_NO_LOCATION_AVAILABLE 20                  // ver. >= 7
+#define SUPLA_RESULTCODE_USER_CONFLICT 21                          // Deprecated
+#define SUPLA_RESULTCODE_UNAUTHORIZED 22                           // ver. >= 10
+#define SUPLA_RESULTCODE_AUTHORIZED 23                             // ver. >= 10
+#define SUPLA_RESULTCODE_NOT_ALLOWED 24                            // ver. >= 12
+#define SUPLA_RESULTCODE_CHANNELNOTFOUND 25                        // ver. >= 12
+#define SUPLA_RESULTCODE_UNKNOWN_ERROR 26                          // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_BELONG_TO_GROUP 27           // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE 28              // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
 #define SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE 2  // ver. >= 10
 
 #define SUPLA_DEVICE_NAME_MAXSIZE 201
-#define SUPLA_DEVICE_NAMEHEX_MAXSIZE 401
 #define SUPLA_CLIENT_NAME_MAXSIZE 201
-#define SUPLA_CLIENT_NAMEHEX_MAXSIZE 401
 #define SUPLA_SENDER_NAME_MAXSIZE 201
 
 #ifdef __AVR__
@@ -264,10 +288,15 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #endif
 
 #define SUPLA_CHANNELVALUE_SIZE 8
+
+#ifdef __AVR__
+#define SUPLA_CHANNELEXTENDEDVALUE_SIZE 256
+#else
 #define SUPLA_CHANNELEXTENDEDVALUE_SIZE 1024
+#endif
 
 #define SUPLA_CHANNELTYPE_SENSORNO 1000
-#define SUPLA_CHANNELTYPE_SENSORNC 1010        // ver. >= 4
+#define SUPLA_CHANNELTYPE_SENSORNC 1010        // DEPRECATED
 #define SUPLA_CHANNELTYPE_DISTANCESENSOR 1020  // ver. >= 5
 #define SUPLA_CHANNELTYPE_CALLBUTTON 1500      // ver. >= 4
 #define SUPLA_CHANNELTYPE_RELAYHFD4 2000
@@ -306,6 +335,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
 #define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
+#define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
 
@@ -323,7 +353,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK 90
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR 100
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER 110
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW 115  // ver. >= 13
 #define SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER 120
+#define SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW 125  // ver. >= 13
 #define SUPLA_CHANNELFNC_POWERSWITCH 130
 #define SUPLA_CHANNELFNC_LIGHTSWITCH 140
 #define SUPLA_CHANNELFNC_RING 150
@@ -346,6 +378,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_IC_ELECTRICITY_METER 315         // ver. >= 12
 #define SUPLA_CHANNELFNC_IC_GAS_METER 320                 // ver. >= 10
 #define SUPLA_CHANNELFNC_IC_WATER_METER 330               // ver. >= 10
+#define SUPLA_CHANNELFNC_IC_HEAT_METER 340                // ver. >= 10
 #define SUPLA_CHANNELFNC_THERMOSTAT 400                   // ver. >= 11
 #define SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS 410  // ver. >= 11
 #define SUPLA_CHANNELFNC_VALVE_OPENCLOSE 500              // ver. >= 12
@@ -353,25 +386,37 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
+#define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800         // ver. >= 14
+#define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810           // ver. >= 14
 
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x0001
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x0002
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR 0x0004
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK 0x0008
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER 0x0010
-#define SUPLA_BIT_FUNC_POWERSWITCH 0x0020
-#define SUPLA_BIT_FUNC_LIGHTSWITCH 0x0040
-#define SUPLA_BIT_FUNC_STAIRCASETIMER 0x0080  // ver. >= 8
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEGARAGEDOOR 0x00000004
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEDOORLOCK 0x00000008
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEROLLERSHUTTER 0x00000010
+#define SUPLA_BIT_FUNC_POWERSWITCH 0x00000020
+#define SUPLA_BIT_FUNC_LIGHTSWITCH 0x00000040
+#define SUPLA_BIT_FUNC_STAIRCASETIMER 0x00000080            // ver. >= 8
+#define SUPLA_BIT_FUNC_THERMOMETER 0x00000100               // ver. >= 12
+#define SUPLA_BIT_FUNC_HUMIDITYANDTEMPERATURE 0x00000200    // ver. >= 12
+#define SUPLA_BIT_FUNC_HUMIDITY 0x00000400                  // ver. >= 12
+#define SUPLA_BIT_FUNC_WINDSENSOR 0x00000800                // ver. >= 12
+#define SUPLA_BIT_FUNC_PRESSURESENSOR 0x00001000            // ver. >= 12
+#define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000                // ver. >= 12
+#define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000              // ver. >= 12
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000  // ver. >= 13
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
 #define SUPLA_EVENT_CONTROLLINGTHEGARAGEDOOR 30
 #define SUPLA_EVENT_CONTROLLINGTHEDOORLOCK 40
 #define SUPLA_EVENT_CONTROLLINGTHEROLLERSHUTTER 50
+#define SUPLA_EVENT_CONTROLLINGTHEROOFWINDOW 55
 #define SUPLA_EVENT_POWERONOFF 60
 #define SUPLA_EVENT_LIGHTONOFF 70
-#define SUPLA_EVENT_STAIRCASETIMERONOFF 80  // ver. >= 9
-#define SUPLA_EVENT_VALVEOPENCLOSE 90       // ver. >= 12
+#define SUPLA_EVENT_STAIRCASETIMERONOFF 80       // ver. >= 9
+#define SUPLA_EVENT_VALVEOPENCLOSE 90            // ver. >= 12
+#define SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED 100  // ver. >= 12
 
 #define SUPLA_URL_PROTO_HTTP 0x01
 #define SUPLA_URL_PROTO_HTTPS 0x02
@@ -381,6 +426,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 
 #define SUPLA_TARGET_CHANNEL 0
 #define SUPLA_TARGET_GROUP 1
+#define SUPLA_TARGET_IODEVICE 2
 
 #define SUPLA_MFR_UNKNOWN 0
 #define SUPLA_MFR_ACSOFTWARE 1
@@ -393,25 +439,35 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_HEATPOL 8
 #define SUPLA_MFR_FAKRO 9
 #define SUPLA_MFR_PEVEKO 10
+#define SUPLA_MFR_WEKTA 11
+#define SUPLA_MFR_STA_SYSTEM 12
+#define SUPLA_MFR_DGF 13
+#define SUPLA_MFR_COMELIT 14
 
-#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001                    // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002                       // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004                       // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_DETAILED_STATUS 0x0008                 // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12
+// Free bit for future use: 0x0008
 #define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION1 0x0080                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION2 0x0100                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION3 0x0200                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION4 0x0400                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CAP_ACTION5 0x0800                     // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000          // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000          // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED 0x00080000          // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_RS_AUTOCALIBRATION 0x00100000          // ver. >= 12
-#define SUPLA_CHANNEL_FLAG_RSA_ENCRYPTED_PIN_REQUIRED 0x00200000  // ver. >= 12
+// Free bits for future use:  0x0080, 0x0100, 0x0200, 0x0400, 0x0800
+#define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
+// Free bits for future use: 0x8000
+#define SUPLA_CHANNEL_FLAG_CALCFG_RECALIBRATE 0x4000               // ver. >= 15
+#define SUPLA_CHANNEL_FLAG_CHANNELSTATE 0x00010000                 // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED 0x00020000           // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED 0x00040000           // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED 0x00080000           // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_TIME_SETTING_NOT_AVAILABLE 0x00100000   // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_RSA_ENCRYPTED_PIN_REQUIRED 0x00200000   // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_OFFLINE_DURING_REGISTRATION 0x00400000  // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_ZIGBEE_BRIDGE 0x00800000                // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_COUNTDOWN_TIMER_SUPPORTED 0x01000000    // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_LIGHTSOURCELIFESPAN_SETTABLE \
+  0x02000000                                               // ver. >= 12
+#define SUPLA_CHANNEL_FLAG_POSSIBLE_SLEEP_MODE 0x04000000  // ver. >= 12
 
 #pragma pack(push, 1)
 
@@ -475,10 +531,26 @@ typedef struct {
   char sub_value[SUPLA_CHANNELVALUE_SIZE];  // For example sensor value
 } TSuplaChannelValue;
 
+typedef struct {
+  char value[SUPLA_CHANNELVALUE_SIZE];
+  char sub_value[SUPLA_CHANNELVALUE_SIZE];  // For example sensor value
+  char sub_value_type;                      // SUBV_TYPE_
+} TSuplaChannelValue_B;
+
+#define SUBV_TYPE_NOT_SET_OR_OFFLINE 0
+#define SUBV_TYPE_SENSOR 1
+#define SUBV_TYPE_ELECTRICITY_MEASUREMENTS 2
+#define SUBV_TYPE_IC_MEASUREMENTS 3
+
+#ifdef USE_DEPRECATED_EMEV_V1
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
+#endif /*USE_DEPRECATED_EMEV_V1*/
+#define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 12
 #define EV_TYPE_IMPULSE_COUNTER_DETAILS_V1 20
 #define EV_TYPE_THERMOSTAT_DETAILS_V1 30
-#define EV_TYPE_CHANNEL_STATE 40
+#define EV_TYPE_CHANNEL_STATE_V1 40
+#define EV_TYPE_TIMER_STATE_V1 50
+#define EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 60
 
 #define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
@@ -615,7 +687,7 @@ typedef struct {
 
   char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
 
-  _supla_int_t Flags;
+  _supla_int_t Flags;  // SUPLA_DEVICE_FLAG_*
   _supla_int16_t ManufacturerID;
   _supla_int16_t ProductID;
 
@@ -644,6 +716,23 @@ typedef struct {
   // device -> server
 
   unsigned char ChannelNumber;
+  unsigned char Offline;
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TDS_SuplaDeviceChannelValue_B;  // v. >= 12
+
+typedef struct {
+  // device -> server
+
+  unsigned char ChannelNumber;
+  unsigned char Offline;
+  unsigned _supla_int_t ValidityTimeSec;
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TDS_SuplaDeviceChannelValue_C;  // v. >= 12
+
+typedef struct {
+  // device -> server
+
+  unsigned char ChannelNumber;
   TSuplaChannelExtendedValue value;     // Last variable in struct!
 } TDS_SuplaDeviceChannelExtendedValue;  // v. >= 10
 
@@ -655,6 +744,17 @@ typedef struct {
 
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TSD_SuplaChannelNewValue;
+
+typedef struct {
+  // server -> device
+  _supla_int_t SenderID;
+  _supla_int_t GroupID;
+  unsigned char EOL;  // End Of List
+  unsigned char ChannelNumber;
+  unsigned _supla_int_t DurationMS;
+
+  char value[SUPLA_CHANNELVALUE_SIZE];
+} TSD_SuplaChannelGroupNewValue;  // v. >= 13
 
 typedef struct {
   // device -> server
@@ -675,6 +775,16 @@ typedef struct {
 
 typedef struct {
   // server -> client
+
+  char EOL;  // End Of List
+  _supla_int_t Id;
+  char online;
+
+  TSuplaChannelValue_B value;
+} TSC_SuplaChannelValue_B;  //  ver. >= 15
+
+typedef struct {
+  // server -> client
   _supla_int_t Id;
 
   TSuplaChannelExtendedValue value;  // Last variable in struct!
@@ -689,6 +799,16 @@ typedef struct {
   TSC_SuplaChannelValue
       items[SUPLA_CHANNELVALUE_PACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelValuePack;                    // ver. >= 9
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+
+  TSC_SuplaChannelValue_B
+      items[SUPLA_CHANNELVALUE_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelValuePack_B;                  // ver. >= 15
 
 typedef struct {
   // server -> client
@@ -781,12 +901,46 @@ typedef struct {
 
 typedef struct {
   // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t DeviceID;
+  _supla_int_t LocationID;
+  _supla_int_t Type;
+  _supla_int_t Func;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon;
+  _supla_int16_t ManufacturerID;
+  _supla_int16_t ProductID;
+
+  unsigned _supla_int_t Flags;
+  unsigned char ProtocolVersion;
+  char online;
+
+  TSuplaChannelValue_B value;
+
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaChannel_D;                           // ver. >= 15
+
+typedef struct {
+  // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
   TSC_SuplaChannel_C
       items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
 } TSC_SuplaChannelPack_C;                 // ver. >= 10
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaChannel_D
+      items[SUPLA_CHANNELPACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaChannelPack_D;                 // ver. >= 15
 
 typedef struct {
   // server -> client
@@ -904,8 +1058,6 @@ typedef struct {
   char SoftVer[SUPLA_SOFTVER_MAXSIZE];
 
   char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
-
-  unsigned _supla_int_t RegistrationFlags;
 } TCS_SuplaRegisterClient_D;  // ver. >= 12
 
 typedef struct {
@@ -949,7 +1101,7 @@ typedef struct {
 typedef struct {
   // client -> server
   _supla_int_t Id;
-  char Target;  // SUPLA_NEW_VALUE_TARGET_
+  char Target;  // SUPLA_TARGET_
   char value[SUPLA_CHANNELVALUE_SIZE];
 } TCS_SuplaNewValue;  // ver. >= 9
 
@@ -1010,9 +1162,9 @@ typedef struct {
   unsigned _supla_int16_t voltage[3];  // * 0.01 V
   unsigned _supla_int16_t
       current[3];  // * 0.001 A (0.01A FOR EM_VAR_CURRENT_OVER_65A)
-  _supla_int_t power_active[3];    // * 0.00001 kW
-  _supla_int_t power_reactive[3];  // * 0.00001 kvar
-  _supla_int_t power_apparent[3];  // * 0.00001 kVA
+  _supla_int_t power_active[3];    // * 0.00001 W or kW
+  _supla_int_t power_reactive[3];  // * 0.00001 var or kvar
+  _supla_int_t power_apparent[3];  // * 0.00001 VA or kVA
   _supla_int16_t power_factor[3];  // * 0.001
   _supla_int16_t phase_angle[3];   // * 0.1 degree
 } TElectricityMeter_Measurement;   // v. >= 10
@@ -1030,10 +1182,21 @@ typedef struct {
 #define EM_VAR_FORWARD_REACTIVE_ENERGY 0x0400
 #define EM_VAR_REVERSE_REACTIVE_ENERGY 0x0800
 #define EM_VAR_CURRENT_OVER_65A 0x1000
+#define EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED 0x2000
+#define EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED 0x4000
 #define EM_VAR_ALL 0xFFFF
 
-#define EM_MEASUREMENT_COUNT 5
+#define EM_VAR_POWER_ACTIVE_KWH 0x100000
+#define EM_VAR_POWER_REACTIVE_KVAR 0x200000
+#define EM_VAR_POWER_APPARENT_KVA 0x400000
 
+#ifdef __AVR__
+#define EM_MEASUREMENT_COUNT 1
+#else
+#define EM_MEASUREMENT_COUNT 5
+#endif
+
+#ifdef USE_DEPRECATED_EMEV_V1
 // [IODevice->Server->Client]
 typedef struct {
   unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
@@ -1054,6 +1217,35 @@ typedef struct {
   TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
                                                           // struct!
 } TElectricityMeter_ExtendedValue;                        // v. >= 10
+#endif /*USE_DEPRECATED_EMEV_V1*/
+
+// [IODevice->Server->Client]
+typedef struct {
+  unsigned _supla_int64_t total_forward_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_reverse_active_energy[3];    // * 0.00001 kWh
+  unsigned _supla_int64_t total_forward_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t total_reverse_reactive_energy[3];  // * 0.00001 kvarh
+  unsigned _supla_int64_t
+      total_forward_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
+  unsigned _supla_int64_t
+      total_reverse_active_energy_balanced;  // * 0.00001 kWh
+                                             // Vector phase-to-phase balancing
+
+  // The price per unit, total cost and currency is overwritten by the server
+  // total_cost == SUM(total_forward_active_energy[n] * price_per_unit
+  _supla_int_t total_cost;           // * 0.01
+  _supla_int_t total_cost_balanced;  // * 0.01
+  _supla_int_t price_per_unit;       // * 0.0001
+  // Currency Code A https://www.nationsonline.org/oneworld/currencies.htm
+  char currency[3];
+
+  _supla_int_t measured_values;
+  _supla_int_t period;  // Approximate period between measurements in seconds
+  _supla_int_t m_count;
+  TElectricityMeter_Measurement m[EM_MEASUREMENT_COUNT];  // Last variable in
+                                                          // struct!
+} TElectricityMeter_ExtendedValue_V2;                     // v. >= 12
 
 #define EM_VALUE_FLAG_PHASE1_ON 0x01
 #define EM_VALUE_FLAG_PHASE2_ON 0x02
@@ -1096,7 +1288,84 @@ typedef struct {
   _supla_int_t Result;
 } TSC_SuperUserAuthorizationResult;  // v. >= 10
 
-#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000  // v. >= 11
+#define SUPLA_CALCFG_RESULT_FALSE 0                          // ver. >= 12
+#define SUPLA_CALCFG_RESULT_TRUE 1                           // ver. >= 12
+#define SUPLA_CALCFG_RESULT_DONE 2                           // ver. >= 12
+#define SUPLA_CALCFG_RESULT_IN_PROGRESS 3                    // ver. >= 12
+#define SUPLA_CALCFG_RESULT_NODE_FOUND 4                     // ver. >= 12
+#define SUPLA_CALCFG_RESULT_SENDER_CONFLICT 100              // ver. >= 12
+#define SUPLA_CALCFG_RESULT_TIMEOUT 101                      // ver. >= 12
+#define SUPLA_CALCFG_RESULT_NOT_SUPPORTED 102                // ver. >= 12
+#define SUPLA_CALCFG_RESULT_ID_NOT_EXISTS 103                // ver. >= 12
+#define SUPLA_CALCFG_RESULT_UNAUTHORIZED 104                 // ver. >= 12
+#define SUPLA_CALCFG_RESULT_DEBUG 105                        // ver. >= 12
+#define SUPLA_CALCFG_RESULT_NOT_SUPPORTED_IN_SLAVE_MODE 106  // ver. >= 12
+
+#define SUPLA_CALCFG_CMD_GET_CHANNEL_FUNCLIST 1000        // v. >= 11
+#define SUPLA_CALCFG_CMD_CANCEL_ALL_CLIENT_COMMANDS 1010  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_RESET_AND_CLEAR 2000       // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE 2010              // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_REMOVE_NODE 2020           // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST 2030         // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_GET_ASSIGNED_NODE_ID 2040  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_ASSIGN_NODE_ID 2050        // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_GET_WAKE_UP_SETTINGS 2060  // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_SET_WAKE_UP_TIME 2070      // v. >= 12
+#define SUPLA_CALCFG_CMD_ZWAVE_CONFIG_MODE_ACTIVE 4000    // v. >= 12
+#define SUPLA_CALCFG_CMD_DEBUG_STRING 5000                // v. >= 12
+#define SUPLA_CALCFG_CMD_PROGRESS_REPORT 5001             // v. >= 12
+#define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
+#define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
+#define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
+
+#define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
+
+#define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
+#define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
+#define CALCFG_ZWAVE_SCREENTYPE_BINARY 2
+#define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL_AUTOSHADE 3
+#define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL_COLOR_CONTROL 4
+#define CALCFG_ZWAVE_SCREENTYPE_BINARY_COLOR_CONTROL 5
+#define CALCFG_ZWAVE_SCREENTYPE_SENSOR 6
+
+#define ZWAVE_NODE_NAME_MAXSIZE 50
+
+#define ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED 0x1
+#define ZWAVE_NODE_FLAG_WAKEUP_TIME_SETTABLE 0x2
+
+typedef struct {
+  unsigned char Id;
+  unsigned char Flags;
+  union {
+    unsigned char ChannelNumber;
+    _supla_int_t ChannelID;
+  };
+  unsigned char ScreenType;
+  unsigned char NameSize;  // including the terminating null byte ('\0')
+  char Name[ZWAVE_NODE_NAME_MAXSIZE];  // UTF8. Last variable in struct!
+} TCalCfg_ZWave_Node;                  // v. >= 12
+
+typedef struct {
+  unsigned _supla_int_t MinimumSec : 24;
+  unsigned _supla_int_t MaximumSec : 24;
+  unsigned _supla_int_t ValueSec : 24;
+  unsigned _supla_int_t IntervalStepSec : 24;
+} TCalCfg_ZWave_WakeupSettingsReport;
+
+typedef struct {
+  unsigned _supla_int_t TimeSec : 24;
+} TCalCfg_ZWave_WakeUpTime;
+
+typedef struct {
+  _supla_int_t Command;
+  unsigned char Progress;  // 0 - 100%
+} TCalCfg_ProgressReport;
+
+typedef struct {
+  unsigned char ResetCounter;          // 0 - NO, 1 - YES
+  unsigned char SetTime;               // 0 - NO, 1 - YES
+  unsigned short LightSourceLifespan;  // 0 - 65535 hours
+} TCalCfg_LightSourceLifespan;
 
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
@@ -1110,7 +1379,7 @@ typedef struct {
 // CALCFG == CALIBRATION / CONFIG
 typedef struct {
   _supla_int_t Id;
-  char Target;  // SUPLA_NEW_VALUE_TARGET_
+  char Target;  // SUPLA_TARGET_
   _supla_int_t Command;
   _supla_int_t DataType;
   unsigned _supla_int_t DataSize;
@@ -1136,16 +1405,6 @@ typedef struct {
 } TSD_DeviceCalCfgRequest;               // v. >= 10
 
 typedef struct {
-  _supla_int_t SenderID;
-  _supla_int_t ChannelNumber;
-  _supla_int_t Command;
-  char SuperUserAuthorized;
-  _supla_int_t DataType;
-  unsigned _supla_int_t DataSize;
-  char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
-} TSD_DeviceCalCfgRequest_B;             // v. >= 11
-
-typedef struct {
   _supla_int_t ReceiverID;
   _supla_int_t ChannelNumber;
   _supla_int_t Command;
@@ -1153,6 +1412,11 @@ typedef struct {
   unsigned _supla_int_t DataSize;
   char Data[SUPLA_CALCFG_DATA_MAXSIZE];  // Last variable in struct!
 } TDS_DeviceCalCfgResult;                // v. >= 10
+
+typedef struct {
+  _supla_int_t FullOpeningTimeMS;
+  _supla_int_t FullClosingTimeMS;
+} TCalCfg_RollerShutterSettings;
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
@@ -1165,6 +1429,29 @@ typedef struct {
   char B;
   char onOff;
 } TRGBW_Value;  // v. >= 10
+
+#define SUPLA_RELAY_FLAG_OVERCURRENT_RELAY_OFF 0x1
+
+typedef struct {
+  char hi;  // actual state of relay  - 0 turned off, >= 1 - turned on
+  unsigned short flags;  // SUPLA_RELAY_FLAG_*
+} TRelayChannel_Value;   // v. >= 15
+
+#define DIGIGLASS_TOO_LONG_OPERATION_WARNING 0x1
+#define DIGIGLASS_PLANNED_REGENERATION_IN_PROGRESS 0x2
+#define DIGIGLASS_REGENERATION_AFTER_20H_IN_PROGRESS 0x4
+
+typedef struct {
+  unsigned char flags;
+  unsigned char sectionCount;  // 1 - 16 Filled by server
+  unsigned short mask;         // bit mask. 0 - opaque, 1 - transparent
+} TDigiglass_Value;            // v. >= 14
+
+typedef struct {
+  unsigned short mask;  // Bit mask. 0 - opaque, 1 - transparent
+  unsigned short
+      active_bits;          // Specifies which bits of the mask are not skipped
+} TCSD_Digiglass_NewValue;  // v. >= 14
 
 typedef struct {
   unsigned char sec;        // 0-59
@@ -1292,18 +1579,10 @@ typedef struct {
 } TSDC_UserLocalTimeResult;
 
 typedef struct {
-  _supla_int_t SenderID;  // Filled by server
-  union {
-    _supla_int_t ChannelID;       // Server -> Client
-    unsigned char ChannelNumber;  // Device -> Server
-  };
-} TCS_ChannelStateRequest;  // v. >= 12
-
-typedef struct {
   _supla_int_t SenderID;
   union {
-    _supla_int_t ChannelID;       // Server -> Client
-    unsigned char ChannelNumber;  // Device -> Server
+    _supla_int_t ChannelID;       // Client -> Server
+    unsigned char ChannelNumber;  // Server -> Device
   };
 } TCSD_ChannelStateRequest;  // v. >= 12 Client -> Server -> Device
 
@@ -1313,36 +1592,76 @@ typedef struct {
 #define SUPLA_CHANNELSTATE_FIELD_BATTERYPOWERED 0x0008
 #define SUPLA_CHANNELSTATE_FIELD_WIFIRSSI 0x0010
 #define SUPLA_CHANNELSTATE_FIELD_WIFISIGNALSTRENGTH 0x0020
-#define SUPLA_CHANNELSTATE_FIELD_BRIDGESIGNALSTRENGTH 0x0040
+#define SUPLA_CHANNELSTATE_FIELD_BRIDGENODESIGNALSTRENGTH 0x0040
 #define SUPLA_CHANNELSTATE_FIELD_UPTIME 0x0080
 #define SUPLA_CHANNELSTATE_FIELD_CONNECTIONUPTIME 0x0100
+#define SUPLA_CHANNELSTATE_FIELD_BATTERYHEALTH 0x0200
+#define SUPLA_CHANNELSTATE_FIELD_BRIDGENODEONLINE 0x0400
+#define SUPLA_CHANNELSTATE_FIELD_LASTCONNECTIONRESETCAUSE 0x0800
+#define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCELIFESPAN 0x1000
+#define SUPLA_CHANNELSTATE_FIELD_LIGHTSOURCEOPERATINGTIME 0x2000
+
+#define SUPLA_LASTCONNECTIONRESETCAUSE_UNKNOWN 0
+#define SUPLA_LASTCONNECTIONRESETCAUSE_ACTIVITY_TIMEOUT 1
+#define SUPLA_LASTCONNECTIONRESETCAUSE_WIFI_CONNECTION_LOST 2
+#define SUPLA_LASTCONNECTIONRESETCAUSE_SERVER_CONNECTION_LOST 3
 
 typedef struct {
-  _supla_int_t ReceiverID;
+  _supla_int_t ReceiverID;  // Not used in extended values
   union {
+    // Not used in extended values
     _supla_int_t ChannelID;       // Server -> Client
     unsigned char ChannelNumber;  // Device -> Server
   };
   _supla_int_t Fields;
+  _supla_int_t defaultIconField;  // SUPLA_CHANNELSTATE_FIELD_*
   unsigned _supla_int_t IPv4;
   unsigned char MAC[6];
   unsigned char BatteryLevel;    // 0 - 100%
   unsigned char BatteryPowered;  // true(1)/false(0)
   char WiFiRSSI;
   unsigned char WiFiSignalStrength;        // 0 - 100%
-  unsigned char BridgeSignalStrength;      // 0 - 100%
+  unsigned char BridgeNodeOnline;          // 0/1
+  unsigned char BridgeNodeSignalStrength;  // 0 - 100%
   unsigned _supla_int_t Uptime;            // sec.
   unsigned _supla_int_t ConnectionUptime;  // sec.
-} TDSC_ChannelState;  // v. >= 12 Device -> Server -> Client
+  unsigned char BatteryHealth;
+  unsigned char LastConnectionResetCause;  // SUPLA_LASTCONNECTIONRESETCAUSE_*
+  unsigned short LightSourceLifespan;      // 0 - 65535 hours
+  union {
+    short LightSourceLifespanLeft;  // -327,67 - 100.00% LightSourceLifespan *
+                                    // 0.01
+    _supla_int_t LightSourceOperatingTime;  // -3932100sec. - 3932100sec.
+  };
+  char EmptySpace[2];  // Empty space for future use
+} TDSC_ChannelState;   // v. >= 12 Device -> Server -> Client
 
-typedef struct {
-  _supla_int_t IconBasedOnTheField;  // SUPLA_CHANNELSTATE_FIELD_*
-  TDSC_ChannelState State;
-} TChannelState_ExtendedValue;  // v. >= 12
+#define TChannelState_ExtendedValue TDSC_ChannelState
 
 typedef struct {
   _supla_int_t ChannelID;
-} TCS_ChannelBasicCfgRequest;
+} TCS_ChannelBasicCfgRequest;  // v. >= 12
+
+typedef struct {
+  union {
+    // Remaining time to turn off
+    unsigned _supla_int_t RemainingTimeMs;
+    unsigned _supla_int_t RemainingTimeTs;  // Unix timestamp - Filled by server
+  };
+
+  unsigned char TargetValue[SUPLA_CHANNELVALUE_SIZE];
+
+  _supla_int_t SenderID;
+  unsigned _supla_int_t
+      SenderNameSize;  // including the terminating null byte ('\0')
+  char SenderName[SUPLA_SENDER_NAME_MAXSIZE];  // Last variable in struct!
+                                               // UTF8 | Filled by server
+} TTimerState_ExtendedValue;
+
+typedef struct {
+  TChannelState_ExtendedValue Channel;
+  TTimerState_ExtendedValue Timer;  // Last variable in struct!
+} TChannelAndTimerState_ExtendedValue;
 
 typedef struct {
   char DeviceName[SUPLA_DEVICE_NAME_MAXSIZE];  // UTF8
@@ -1357,72 +1676,189 @@ typedef struct {
   _supla_int_t Type;
   _supla_int_t Func;
   _supla_int_t FuncList;
-  unsigned _supla_int_t ChannelFlags;
 
+  unsigned _supla_int_t ChannelFlags;
   unsigned _supla_int_t
       CaptionSize;  // including the terminating null byte ('\0')
   char Caption[SUPLA_CHANNEL_CAPTION_MAXSIZE];  // Last variable in struct!
-} TSC_ChannelBasicCfg;
+} TSC_ChannelBasicCfg;                          // v. >= 12
 
 typedef struct {
   _supla_int_t ChannelID;
   _supla_int_t Func;
-} TCS_SetChannelFunction;
+} TCS_SetChannelFunction;  // v. >= 12
 
 typedef struct {
   _supla_int_t ChannelID;
+  _supla_int_t Func;
   unsigned char ResultCode;
-} TSC_SetChannelFunctionResult;
+} TSC_SetChannelFunctionResult;  // v. >= 12
+
+typedef struct {
+  _supla_int_t ID;
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CAPTION_MAXSIZE];  // Last variable in struct!
+} TCS_SetCaption;                       // v. >= 12
+
+typedef struct {
+  _supla_int_t ID;
+  unsigned char ResultCode;
+  unsigned _supla_int_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SetCaptionResult;                 // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;
-} TSC_ClientsReconnectRequestResult;
+} TSC_ClientsReconnectRequestResult;  // v. >= 12
 
 typedef struct {
   // Disabled: 0
   // Ignore: <0
   _supla_int_t IODeviceRegistrationTimeSec;
   _supla_int_t ClientRegistrationTimeSec;
-} TCS_SetRegistrationEnabled;
+} TCS_SetRegistrationEnabled;  // v. >= 12
 
 typedef struct {
   unsigned char ResultCode;
-} TSC_SetRegistrationEnabledResult;
+} TSC_SetRegistrationEnabledResult;  // v. >= 12
 
 typedef struct {
-  unsigned char closed;
+  int DeviceID;
+} TCS_DeviceReconnectRequest;  // v. >= 12
+
+typedef struct {
+  int DeviceID;
+  unsigned char ResultCode;
+} TSC_DeviceReconnectRequestResult;  // v. >= 12
+
+typedef struct {
+  // server -> device
+
+  unsigned char ChannelCount;
+  _supla_int_t Functions[SUPLA_CHANNELMAXCOUNT];  // Last variable in struct!
+  // Functions[ChannelNumber]
+} TSD_ChannelFunctions;  // ver. >= 12
+
+typedef struct {
+  unsigned char ChannelNumber;
+} TDS_GetChannelIntParamsRequest;
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t Param1;
+  _supla_int_t Param2;
+  _supla_int_t Param3;
+} TSD_ChannelIntParams;
+
+#define SUPLA_CHANNEL_CONFIG_MAXSIZE 128
+#define SUPLA_CONFIG_TYPE_DEFAULT 0
+
+typedef struct {
+  unsigned char ChannelNumber;
+  unsigned char ConfigType;
+  unsigned _supla_int_t Flags;
+} TDS_GetChannelConfigRequest;  // v. >= 16
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t Func;
+  unsigned short ConfigSize;
+  char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct! v. >=
+                                              // 16. TSD_DeviceChannelConfig_*
+} TSD_ChannelConfig;
+
+typedef struct {
+  _supla_int_t TimeMS;
+} TSD_ChannelConfig_StaircaseTimer;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ClosingTimeMS;
+  _supla_int_t OpeningTimeMS;
+} TSD_ChannelConfig_Rollershutter;  // v. >= 16
+
+typedef struct {
+  unsigned _supla_int_t ActiveActions;
+} TSD_ChannelConfig_ActionTrigger;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ChannelID;
+  unsigned _supla_int_t DurationMS;
+  unsigned char On;
+} TCS_TimerArmRequest;  // v. >= 16
+
+#define SUPLA_ACTION_MAXCOUNT 10
+
+#define SUPLA_ACTION_CAP_BTN_HOLD_1SEC 1
+#define SUPLA_ACTION_CAP_BTN_HOLD_2SEC 2
+#define SUPLA_ACTION_CAP_BTN_HOLD_3SEC 3
+#define SUPLA_ACTION_CAP_BTN_HOLD_4SEC 4
+#define SUPLA_ACTION_CAP_BTN_HOLD_5SEC 5
+#define SUPLA_ACTION_CAP_BTN_HOLD_6SEC 6
+#define SUPLA_ACTION_CAP_BTN_HOLD_7SEC 7
+#define SUPLA_ACTION_CAP_BTN_HOLD_8SEC 8
+#define SUPLA_ACTION_CAP_BTN_HOLD_9SEC 9
+#define SUPLA_ACTION_CAP_BTN_HOLD_10SEC 10
+#define SUPLA_ACTION_CAP_BTN_PRESS_1TIME 101
+#define SUPLA_ACTION_CAP_BTN_PRESS_2TIMES 102
+#define SUPLA_ACTION_CAP_BTN_PRESS_3TIMES 103
+#define SUPLA_ACTION_CAP_BTN_PRESS_4TIMES 104
+#define SUPLA_ACTION_CAP_BTN_PRESS_5TIMES 105
+#define SUPLA_ACTION_CAP_BTN_PRESS_6TIMES 106
+#define SUPLA_ACTION_CAP_BTN_PRESS_7TIMES 107
+#define SUPLA_ACTION_CAP_BTN_PRESS_8TIMES 108
+#define SUPLA_ACTION_CAP_BTN_PRESS_9TIMES 109
+#define SUPLA_ACTION_CAP_BTN_PRESS_10TIMES 110
+#define SUPLA_ACTION_CAP_BTN_UNPRESS 200
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t ActionCap[SUPLA_ACTION_MAXCOUNT];
+} TDS_SuplaRegisterAction;  // v. >= 16
+
+#define SUPLA_VALVE_FLAG_FLOODING 0x1
+#define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
+
+typedef struct {
+  union {
+    unsigned char closed;
+    unsigned char closed_percent;
+  };
+
   unsigned char flags;
 } TValve_Value;
 
 #pragma pack(pop)
 
-void *sproto_init(void);
-void sproto_free(void *spd_ptr);
+void *PROTO_ICACHE_FLASH sproto_init(void);
+void PROTO_ICACHE_FLASH sproto_free(void *spd_ptr);
 
 #ifndef SPROTO_WITHOUT_OUT_BUFFER
-char sproto_out_buffer_append(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_out_buffer_append(void *spd_ptr,
+                                                 TSuplaDataPacket *sdp);
 unsigned _supla_int_t sproto_pop_out_data(void *spd_ptr, char *buffer,
                                           unsigned _supla_int_t buffer_size);
-char sproto_out_dataexists(void *spd_ptr);
-#endif
+#endif /*SPROTO_WITHOUT_OUT_BUFFER*/
+char PROTO_ICACHE_FLASH sproto_out_dataexists(void *spd_ptr);
+char PROTO_ICACHE_FLASH sproto_in_buffer_append(
+    void *spd_ptr, char *data, unsigned _supla_int_t data_size);
 
-char sproto_in_buffer_append(void *spd_ptr, char *data,
-                             unsigned _supla_int_t data_size);
+char PROTO_ICACHE_FLASH sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_in_dataexists(void *spd_ptr);
 
-char sproto_pop_in_sdp(void *spd_ptr, TSuplaDataPacket *sdp);
-char sproto_in_dataexists(void *spd_ptr);
+unsigned char PROTO_ICACHE_FLASH sproto_get_version(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_set_version(void *spd_ptr,
+                                           unsigned char version);
+void PROTO_ICACHE_FLASH sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
+char PROTO_ICACHE_FLASH sproto_set_data(TSuplaDataPacket *sdp, char *data,
+                                        unsigned _supla_int_t data_size,
+                                        unsigned _supla_int_t call_type);
+TSuplaDataPacket *PROTO_ICACHE_FLASH sproto_sdp_malloc(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp);
 
-unsigned char sproto_get_version(void *spd_ptr);
-void sproto_set_version(void *spd_ptr, unsigned char version);
-void sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
-char sproto_set_data(TSuplaDataPacket *sdp, char *data,
-                     unsigned _supla_int_t data_size,
-                     unsigned _supla_int_t call_type);
-TSuplaDataPacket *sproto_sdp_malloc(void *spd_ptr);
-void sproto_sdp_free(TSuplaDataPacket *sdp);
-
-void sproto_log_summary(void *spd_ptr);
-void sproto_buffer_dump(void *spd_ptr, unsigned char in);
+void PROTO_ICACHE_FLASH sproto_log_summary(void *spd_ptr);
+void PROTO_ICACHE_FLASH sproto_buffer_dump(void *spd_ptr, unsigned char in);
 
 #ifdef __cplusplus
 }

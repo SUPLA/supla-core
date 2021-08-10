@@ -44,7 +44,7 @@ all: supla-dev
 supla-dev: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/src/openssl/lib -pthread -lrt -o "supla-dev" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L$(SSLDIR)/lib -pthread -lrt -o "supla-dev" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

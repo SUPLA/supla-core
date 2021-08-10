@@ -46,7 +46,6 @@ class cdbase {
   void setUser(supla_user *user);
   // Thread safe end
 
-  serverconnection *getSvrConn(void);
   virtual bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                                const char Email[SUPLA_EMAIL_MAXSIZE],
                                const char AuthKey[SUPLA_AUTHKEY_SIZE],
@@ -63,6 +62,9 @@ class cdbase {
   static int getAuthKeyCacheSize(void);
   explicit cdbase(serverconnection *svrconn);
   virtual ~cdbase();
+  virtual void iterate();
+  virtual unsigned _supla_int64_t waitTimeUSec(void);
+  serverconnection *getSvrConn(void);
 
   // Thread safe start
   void terminate(void);

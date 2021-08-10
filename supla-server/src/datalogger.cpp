@@ -48,11 +48,14 @@ void supla_datalogger::log_temperature() {
     supla_channel_temphum *sct =
         (supla_channel_temphum *)safe_array_get(tarr, a);
 
-    if (sct->isTempAndHumidity() == 1)
-      db->add_temperature_and_humidity(
-          sct->getChannelId(), sct->getTemperature(), sct->getHumidity());
-    else
+    if (sct->isTempAndHumidity() == 1) {
+      if (sct->getTemperature() > -273 || sct->getHumidity() > -1) {
+        db->add_temperature_and_humidity(
+            sct->getChannelId(), sct->getTemperature(), sct->getHumidity());
+      }
+    } else if (sct->getTemperature() > -273) {
       db->add_temperature(sct->getChannelId(), sct->getTemperature());
+    }
   }
 
   supla_channel_temphum::free(tarr);
