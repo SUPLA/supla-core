@@ -218,8 +218,8 @@ TEST_F(AsyncTaskIntegrationTest, priorityTest) {
 TEST_F(AsyncTaskIntegrationTest, taskWithSubTasks) {
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, (unsigned int)0, false);
   ASSERT_TRUE(task != NULL);
-  task->set_job_time_usec(1000000);
-  task->set_delay_usec(500000);
+  task->set_job_time_usec(500000);
+  task->set_delay_usec(1000000);
   task->set_job_count_left(3);
   task->set_result(true);
   task->set_waiting();
