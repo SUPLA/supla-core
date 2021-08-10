@@ -1553,8 +1553,8 @@ bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
       request.DataSize = sizeof(TCalCfg_RollerShutterSettings);
       request.DataType = SUPLA_CALCFG_DATATYPE_RS_SETTINGS;
 
-      settings->FullOpeningTimeMS = channel->getParam1();
-      settings->FullClosingTimeMS = channel->getParam3();
+      settings->FullOpeningTimeMS = channel->getParam1() * 100;
+      settings->FullClosingTimeMS = channel->getParam3() * 100;
 
       srpc_sd_async_device_calcfg_request(get_srpc(), &request);
       result = true;
