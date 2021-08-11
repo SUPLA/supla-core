@@ -66,8 +66,8 @@ const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE:";
 const char cmd_action_open[] = "ACTION-OPEN:";
 const char cmd_action_close[] = "ACTION-CLOSE:";
 
-const char cmd_reset_counters[] = "RESET-COUNTERS";
-const char cmd_recalibrate[] = "RECALIBRATE";
+const char cmd_reset_counters[] = "RESET-COUNTERS:";
+const char cmd_recalibrate[] = "RECALIBRATE:";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
