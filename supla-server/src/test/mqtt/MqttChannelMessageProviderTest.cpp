@@ -489,8 +489,8 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "1)\",\"uniq_id\":\"supla_754_16\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/1/"
-          "power_factor\",\"val_tpl\":\"(float(value) * "
-          "100.0)\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{{ (float(value) * "
+          "100.0) | round(3) }}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(
@@ -750,8 +750,8 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "2)\",\"uniq_id\":\"supla_754_28\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/2/"
-          "power_factor\",\"val_tpl\":\"(float(value) * "
-          "100.0)\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{{ (float(value) * "
+          "100.0) | round(3) }}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(
@@ -1012,8 +1012,8 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "3)\",\"uniq_id\":\"supla_754_40\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/3/"
-          "power_factor\",\"val_tpl\":\"(float(value) * "
-          "100.0)\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{{ (float(value) * "
+          "100.0) | round(3) }}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(

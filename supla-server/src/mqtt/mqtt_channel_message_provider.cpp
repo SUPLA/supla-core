@@ -1193,8 +1193,9 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 40:
       return ha_phase_sensor(
           index, phase, "%", 3, "state/phases/%i/power_factor",
-          "Power factor - Phase %i", "(float(value) * 100.0)", "power_factor",
-          false, topic_prefix, topic_name, message, message_size);
+          "Power factor - Phase %i", "{{ (float(value) * 100.0) | round(3) }}",
+          "power_factor", false, topic_prefix, topic_name, message,
+          message_size);
 
     case 17:
     case 29:
