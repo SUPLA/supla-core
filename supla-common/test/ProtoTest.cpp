@@ -192,7 +192,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   ASSERT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
-  ASSERT_EQ((unsigned int)135, sizeof(TSD_ChannelConfig));
+  ASSERT_EQ((unsigned int)136, sizeof(TSD_ChannelConfig));
   ASSERT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
   ASSERT_LE(sizeof(TSD_ChannelConfig_Rollershutter),

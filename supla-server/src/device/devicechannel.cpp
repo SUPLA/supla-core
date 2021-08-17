@@ -727,6 +727,43 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
   return false;
 }
 
+bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
+                                     unsigned char configType,
+                                     unsigned _supla_int_t flags) {
+  if (configType != SUPLA_CONFIG_TYPE_DEFAULT || flags != 0) {
+    return false;
+  }
+
+  memset(config, 0, sizeof(TSD_ChannelConfig));
+  config->Func = getFunc();
+
+  switch (config->Func) {
+    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      config->ConfigSize = sizeof(TSD_ChannelConfig_StaircaseTimer);
+      TSD_ChannelConfig_StaircaseTimer *cfg =
+          (TSD_ChannelConfig_StaircaseTimer *)config->Config;
+      cfg->TimeMS = getParam1() * 100;
+    }
+      return true;
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
+      config->ConfigSize = sizeof(TSD_ChannelConfig_Rollershutter);
+      TSD_ChannelConfig_Rollershutter *cfg =
+          (TSD_ChannelConfig_Rollershutter *)config->Config;
+      cfg->OpeningTimeMS = getParam1() * 100;
+      cfg->ClosingTimeMS = getParam3() * 100;
+    }
+      return true;
+
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 bool supla_device_channel::setValue(
     const char value[SUPLA_CHANNELVALUE_SIZE],
     const unsigned _supla_int_t *validity_time_sec, bool *significantChange,
@@ -746,10 +783,10 @@ bool supla_device_channel::setValue(
     value_valid_to.tv_usec = 0;
   }
 
-  char
-      old_value[SUPLA_CHANNELVALUE_SIZE];  // Because of
-                                           // TempHum->toValue(this->value) and
-                                           // this->value[0] = this->value[0]...
+  char old_value[SUPLA_CHANNELVALUE_SIZE];  // Because of
+                                            // TempHum->toValue(this->value)
+                                            // and this->value[0] =
+                                            // this->value[0]...
 
   supla_channel_temphum *OldTempHum = getTempHum();
   supla_channel_temphum *TempHum = NULL;
@@ -779,7 +816,6 @@ bool supla_device_channel::setValue(
 
   } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
-
   } else {
     TempHum = getTempHum();
 
@@ -2297,6 +2333,27 @@ void supla_device_channels::get_functions_request(void) {
   safe_array_unlock(arr);
 
   srpc_sd_async_get_channel_functions_result(get_srpc(), &result);
+}
+
+void supla_device_channels::get_channel_config_request(
+    TDS_GetChannelConfigRequest *request) {
+  if (request == NULL) {
+    return;
+  }
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel =
+      find_channel_by_number(request->ChannelNumber);
+
+  if (channel) {
+    TSD_ChannelConfig config = {};
+    if (channel->getConfig(&config, request->ConfigType, request->Flags)) {
+      srpc_sd_async_get_channel_config_result(get_srpc(), &config);
+    }
+  }
+
+  safe_array_unlock(arr);
 }
 
 bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,

@@ -225,6 +225,8 @@ class supla_device_channel {
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
   bool getValveValue(TValve_Value *Value);
+  bool getConfig(TSD_ChannelConfig *config, unsigned char configType,
+                 unsigned _supla_int_t flags);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
@@ -347,6 +349,7 @@ class supla_device_channels {
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
   void get_functions_request(void);
+  void get_channel_config_request(TDS_GetChannelConfigRequest *request);
 
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on);
