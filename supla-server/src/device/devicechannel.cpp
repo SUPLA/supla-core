@@ -1514,7 +1514,8 @@ bool supla_device_channels::reset_counters(int ChannelID) {
     safe_array_lock(arr);
     supla_device_channel *channel = find_channel(ChannelID);
 
-    if (channel && (channel->getFlags() & SUPLA_CALCFG_CMD_RESET_COUNTERS)) {
+    if (channel &&
+        (channel->getFlags() & SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS)) {
       TSD_DeviceCalCfgRequest request = {};
 
       request.ChannelNumber = channel->getNumber();
