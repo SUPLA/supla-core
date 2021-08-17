@@ -347,7 +347,6 @@ class supla_device_channels {
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
   void get_functions_request(void);
-  void get_int_params_request(TDS_GetChannelIntParamsRequest *request);
 
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on);

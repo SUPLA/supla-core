@@ -17,7 +17,9 @@
  */
 
 #include "SrpcTest.h"
+
 #include <vector>
+
 #include "gtest/gtest.h"  // NOLINT
 #include "log.h"
 
@@ -486,9 +488,7 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
     case 13:
       return {SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE};
     case 14:
-      return {SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS,
-              SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT,
-              SUPLA_CS_CALL_SET_LOCATION_CAPTION,
+      return {SUPLA_CS_CALL_SET_LOCATION_CAPTION,
               SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT};
     case 15:
       return {SUPLA_SC_CALL_CHANNEL_UPDATE_D,

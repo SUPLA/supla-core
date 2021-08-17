@@ -225,8 +225,6 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650          // ver. >= 12
 #define SUPLA_CS_CALL_SET_LOCATION_CAPTION 645                // ver. >= 14
 #define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
-#define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
-#define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
 #define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
 #define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 

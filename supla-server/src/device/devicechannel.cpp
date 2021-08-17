@@ -2298,31 +2298,6 @@ void supla_device_channels::get_functions_request(void) {
   srpc_sd_async_get_channel_functions_result(get_srpc(), &result);
 }
 
-void supla_device_channels::get_int_params_request(
-    TDS_GetChannelIntParamsRequest *request) {
-  int Param1 = 0;
-  int Param2 = 0;
-  int Param3 = 0;
-
-  safe_array_lock(arr);
-
-  supla_device_channel *channel =
-      find_channel_by_number(request->ChannelNumber);
-
-  if (channel) {
-    Param1 = channel->getParam1();
-    Param2 = channel->getParam2();
-    Param3 = channel->getParam3();
-  }
-
-  safe_array_unlock(arr);
-
-  if (channel) {
-    srpc_sd_async_get_channel_int_params_result(
-        get_srpc(), request->ChannelNumber, Param1, Param2, Param3);
-  }
-}
-
 bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
                                    unsigned char EOL, bool on, bool toggle) {
   safe_array_lock(arr);
