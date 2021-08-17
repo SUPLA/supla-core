@@ -615,7 +615,11 @@ typedef struct {
   unsigned char Number;
   _supla_int_t Type;
 
-  _supla_int_t FuncList;
+  union {
+    _supla_int_t FuncList;
+    unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16
+  };
+
   _supla_int_t Default;
   _supla_int_t Flags;
 
@@ -1800,8 +1804,6 @@ typedef struct {
   unsigned char On;
 } TCS_TimerArmRequest;  // v. >= 16
 
-#define SUPLA_ACTION_MAXCOUNT 10
-
 #define SUPLA_ACTION_CAP_BTN_HOLD_1SEC 1
 #define SUPLA_ACTION_CAP_BTN_HOLD_2SEC 2
 #define SUPLA_ACTION_CAP_BTN_HOLD_3SEC 3
@@ -1823,11 +1825,6 @@ typedef struct {
 #define SUPLA_ACTION_CAP_BTN_PRESS_9TIMES 109
 #define SUPLA_ACTION_CAP_BTN_PRESS_10TIMES 110
 #define SUPLA_ACTION_CAP_BTN_UNPRESS 200
-
-typedef struct {
-  unsigned char ChannelNumber;
-  _supla_int_t ActionCap[SUPLA_ACTION_MAXCOUNT];
-} TDS_SuplaRegisterAction;  // v. >= 16
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2

@@ -204,10 +204,6 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_RollerShutterSettings),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  TSD_ChannelConfig_ActionTrigger acfg = {};
-  ASSERT_LE((unsigned int)SUPLA_ACTION_MAXCOUNT,
-            sizeof(acfg.ActiveActions) * 8);
-
   ASSERT_LE(sizeof(TRollerShutterValue), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 }
 
