@@ -736,6 +736,7 @@ bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
   config->Func = getFunc();
+  config->ChannelNumber = getNumber();
 
   switch (config->Func) {
     case SUPLA_CHANNELFNC_STAIRCASETIMER: {
