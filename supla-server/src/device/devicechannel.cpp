@@ -795,7 +795,8 @@ bool supla_device_channel::setValue(
     TRollerShutterValue *rs_val = (TRollerShutterValue *)this->value;
     rs_val->bottom_position = Param4;
   } else if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
-              Func == SUPLA_CHANNELFNC_LIGHTSWITCH) &&
+              Func == SUPLA_CHANNELFNC_LIGHTSWITCH ||
+              Func == SUPLA_CHANNELFNC_STAIRCASETIMER) &&
              proto_version < 15) {
     // https://forum.supla.org/viewtopic.php?f=6&t=8861
     for (short a = 1; a < SUPLA_CHANNELVALUE_SIZE; a++) {
@@ -1038,6 +1039,14 @@ std::list<int> supla_device_channel::related_channel(void) {
 
       if (Param1) {
         result.push_back(Param1);
+      }
+
+      break;
+
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+
+      if (Param2) {
+        result.push_back(Param2);
       }
 
       break;
@@ -1526,7 +1535,8 @@ bool supla_device_channels::get_relay_value(int ChannelID,
     supla_device_channel *channel = find_channel(ChannelID);
 
     if (channel && (channel->getFunc() == SUPLA_CHANNELFNC_POWERSWITCH ||
-                    channel->getFunc() == SUPLA_CHANNELFNC_LIGHTSWITCH)) {
+                    channel->getFunc() == SUPLA_CHANNELFNC_LIGHTSWITCH ||
+                    channel->getFunc() == SUPLA_CHANNELFNC_STAIRCASETIMER)) {
       char value[SUPLA_CHANNELVALUE_SIZE];
       channel->getValue(value);
       memcpy(relay_value, value, sizeof(TRelayChannel_Value));
@@ -2200,15 +2210,15 @@ bool supla_device_channels::get_channel_complex_value(
       case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
       case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
       case SUPLA_CHANNELFNC_MAILSENSOR:
-      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+      case SUPLA_CHANNELFNC_NOLIQUIDSENSOR: {
         char cv[SUPLA_CHANNELVALUE_SIZE];
         channel->getChar(cv);
         value->hi = cv[0] > 0;
       } break;
 
       case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
         TRelayChannel_Value relay_value = {};
         if (get_relay_value(ChannelID, &relay_value)) {
           value->hi = relay_value.hi > 0;
