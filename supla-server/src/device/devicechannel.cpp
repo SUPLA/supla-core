@@ -727,11 +727,11 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
   return false;
 }
 
-bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
+void supla_device_channel::getConfig(TSD_ChannelConfig *config,
                                      unsigned char configType,
                                      unsigned _supla_int_t flags) {
   if (configType != SUPLA_CONFIG_TYPE_DEFAULT || flags != 0) {
-    return false;
+    return;
   }
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
@@ -744,8 +744,7 @@ bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
       TSD_ChannelConfig_StaircaseTimer *cfg =
           (TSD_ChannelConfig_StaircaseTimer *)config->Config;
       cfg->TimeMS = getParam1() * 100;
-    }
-      return true;
+    } break;
 
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW: {
@@ -754,15 +753,11 @@ bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
           (TSD_ChannelConfig_Rollershutter *)config->Config;
       cfg->OpeningTimeMS = getParam1() * 100;
       cfg->ClosingTimeMS = getParam3() * 100;
-    }
-      return true;
+    } break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
-      return true;
-    }
+    } break;
   }
-
-  return false;
 }
 
 bool supla_device_channel::setValue(
@@ -2349,9 +2344,8 @@ void supla_device_channels::get_channel_config_request(
 
   if (channel) {
     TSD_ChannelConfig config = {};
-    if (channel->getConfig(&config, request->ConfigType, request->Flags)) {
-      srpc_sd_async_get_channel_config_result(get_srpc(), &config);
-    }
+    channel->getConfig(&config, request->ConfigType, request->Flags);
+    srpc_sd_async_get_channel_config_result(get_srpc(), &config);
   }
 
   safe_array_unlock(arr);
