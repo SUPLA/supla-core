@@ -37,6 +37,7 @@ class serverconnection {
   static struct timeval reg_limit_exceeded_alert_time;
   static struct timeval reg_limit_exceeded_time;
   static unsigned int local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
+  static bool reject_all_new_connections;
 
   static void read_local_ipv4_addresses(void);
   void set_registered(char registered);
@@ -76,6 +77,8 @@ class serverconnection {
  public:
   static void log_limits(void);
   static bool is_connection_allowed(unsigned int ipv4);
+  static bool conn_limit_exceeded_soft(void);
+  static bool conn_limit_exceeded_hard(void);
 
   serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
   static void init(void);
