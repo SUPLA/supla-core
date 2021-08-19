@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+
 #include "eh.h"
 #include "proto.h"
 #if defined(ESP32)
@@ -160,8 +161,8 @@ union TsrpcDataPacketData {
   TCS_DeviceReconnectRequest *cs_device_reconnect_request;
   TSC_DeviceReconnectRequestResult *sc_device_reconnect_request_result;
   TSD_ChannelFunctions *sd_channel_functions;
-  TDS_GetChannelIntParamsRequest *ds_get_channel_int_params_request;
-  TSD_ChannelIntParams *sd_channel_int_params;
+  TDS_GetChannelConfigRequest *ds_get_channel_config_request;
+  TSD_ChannelConfig *sd_channel_config;
 };
 
 typedef struct {
@@ -264,11 +265,10 @@ srpc_ds_async_device_calcfg_result(void *_srpc, TDS_DeviceCalCfgResult *result);
 _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_functions(void *_srpc);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_functions_result(
     void *_srpc, TSD_ChannelFunctions *result);
+_supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_config(
+    void *_srpc, TDS_GetChannelConfigRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_ds_async_get_channel_int_params(void *_srpc, unsigned char channel_number);
-_supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_int_params_result(
-    void *_srpc, unsigned char channel_number, _supla_int_t param1,
-    _supla_int_t param2, _supla_int_t param3);
+srpc_sd_async_get_channel_config_result(void *_srpc, TSD_ChannelConfig *config);
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT

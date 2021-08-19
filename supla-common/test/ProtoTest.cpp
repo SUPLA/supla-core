@@ -192,7 +192,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
   ASSERT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
-  ASSERT_EQ((unsigned int)135, sizeof(TSD_ChannelConfig));
+  ASSERT_EQ((unsigned int)136, sizeof(TSD_ChannelConfig));
   ASSERT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
   ASSERT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
@@ -203,10 +203,6 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
   ASSERT_LE(sizeof(TCalCfg_RollerShutterSettings),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-
-  TSD_ChannelConfig_ActionTrigger acfg = {};
-  ASSERT_LE((unsigned int)SUPLA_ACTION_MAXCOUNT,
-            sizeof(acfg.ActiveActions) * 8);
 
   ASSERT_LE(sizeof(TRollerShutterValue), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 }

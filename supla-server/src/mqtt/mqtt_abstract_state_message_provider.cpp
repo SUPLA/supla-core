@@ -918,7 +918,6 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
       return get_lck_message_at_index(index, topic_prefix, topic_name, message,
                                       message_size);
 
-    case SUPLA_CHANNELFNC_STAIRCASETIMER:
     case SUPLA_CHANNELFNC_THERMOSTAT:
     case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
       return get_onoff_message_at_index(cvalue && cvalue->hi > 0, index,
@@ -926,7 +925,8 @@ bool supla_mqtt_abstract_state_message_provider::get_message_at_index(
                                         message_size);
 
     case SUPLA_CHANNELFNC_POWERSWITCH:
-    case SUPLA_CHANNELFNC_LIGHTSWITCH: {
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER: {
       bool overcurrent_relay_off = cvalue && cvalue->overcurrent_relay_off;
       return get_onoff_message_at_index(cvalue && cvalue->hi > 0, index,
                                         topic_prefix, topic_name, message,

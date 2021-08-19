@@ -68,6 +68,7 @@ const char cmd_action_close[] = "ACTION-CLOSE:";
 
 const char cmd_reset_counters[] = "RESET-COUNTERS:";
 const char cmd_recalibrate[] = "RECALIBRATE:";
+const char cmd_get_status[] = "GET-STATUS";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
@@ -479,6 +480,14 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
   }
 
   send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::get_status(void) {
+  if (serverconnection::conn_limit_exceeded_hard()) {
+    send_result("CONN_LIMIT_EXCEEDED");
+  } else {
+    send_result("OK");
+  }
 }
 
 void svr_ipcctrl::free_correlation_token() {
@@ -1027,6 +1036,8 @@ void svr_ipcctrl::execute(void *sthread) {
           reset_counters(cmd_reset_counters);
         } else if (match_command(cmd_recalibrate, len)) {
           recalibrate(cmd_recalibrate);
+        } else if (match_command(cmd_get_status, len)) {
+          get_status();
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
           send_result("COMMAND_UNKNOWN");

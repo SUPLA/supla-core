@@ -51,6 +51,7 @@ void *serverconnection::reg_pending_arr = NULL;
 unsigned int serverconnection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
 struct timeval serverconnection::reg_limit_exceeded_alert_time = {0, 0};
 struct timeval serverconnection::reg_limit_exceeded_time = {0, 0};
+bool serverconnection::reject_all_new_connections = false;
 
 int supla_connection_socket_read(void *buf, int count, void *sc) {
   return ((serverconnection *)sc)->socket_read(buf, count);
@@ -99,6 +100,7 @@ void serverconnection::log_limits(void) {
           "Exceeded number of concurrent registrations takes too long! (%i)",
           concurrent_registrations_limit);
       serverconnection::reg_limit_exceeded_alert_time = now;
+      serverconnection::reject_all_new_connections = true;
     }
 
     serverconnection::reg_limit_exceeded_time = now;
@@ -108,6 +110,7 @@ void serverconnection::log_limits(void) {
                  10) {
     serverconnection::reg_limit_exceeded_time = {0, 0};
     serverconnection::reg_limit_exceeded_alert_time = {0, 0};
+    serverconnection::reject_all_new_connections = false;
     supla_log(LOG_INFO,
               "The number of concurrent registrations returned below the "
               "limit");
@@ -116,6 +119,11 @@ void serverconnection::log_limits(void) {
 
 // static
 bool serverconnection::is_connection_allowed(unsigned int ipv4) {
+  if (serverconnection::reject_all_new_connections) {
+    //  It also rejects local connections
+    return false;
+  }
+
   int concurrent_registrations_limit =
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
@@ -134,6 +142,16 @@ bool serverconnection::is_connection_allowed(unsigned int ipv4) {
   }
 
   return 1;
+}
+
+// static
+bool serverconnection::conn_limit_exceeded_hard(void) {
+  return serverconnection::reject_all_new_connections;
+}
+
+// static
+bool serverconnection::conn_limit_exceeded_soft(void) {
+  return serverconnection::reg_limit_exceeded_alert_time.tv_sec != 0;
 }
 
 // static
@@ -766,9 +784,9 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           device->get_channels()->get_functions_request();
           break;
 
-        case SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS:
-          device->get_channels()->get_int_params_request(
-              rd.data.ds_get_channel_int_params_request);
+        case SUPLA_DS_CALL_GET_CHANNEL_CONFIG:
+          device->get_channels()->get_channel_config_request(
+              rd.data.ds_get_channel_config_request);
           break;
 
         default:
