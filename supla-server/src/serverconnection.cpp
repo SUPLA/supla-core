@@ -135,14 +135,14 @@ bool serverconnection::is_connection_allowed(unsigned int ipv4) {
       if (serverconnection::local_ipv4[a] == 0) {  // end of list
         break;
       } else if (serverconnection::local_ipv4[a] == ipv4) {
-        return 1;
+        return true;
       }
     }
 
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 // static
