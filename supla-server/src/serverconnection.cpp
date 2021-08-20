@@ -121,6 +121,7 @@ void serverconnection::log_limits(void) {
 bool serverconnection::is_connection_allowed(unsigned int ipv4) {
   if (serverconnection::reject_all_new_connections) {
     //  It also rejects local connections
+    //  Monitoring will be able to detect the problem and restart the process
     return false;
   }
 
