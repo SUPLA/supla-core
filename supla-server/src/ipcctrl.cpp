@@ -30,6 +30,7 @@
 #include "ipcsocket.h"
 #include "log.h"
 #include "sthread.h"
+#include "supla-socket.h"
 #include "tools.h"
 #include "user.h"
 
@@ -483,11 +484,22 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
 }
 
 void svr_ipcctrl::get_status(void) {
+  long int time_sec = ssocket_get_last_accept_error_time_sec();
+  if (time_sec) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    if (now.tv_sec - time_sec < 300) {
+      send_result("CONN_ACCEPT_ERR:", ssocket_get_last_accept_errno());
+      return;
+    }
+  }
+
   if (serverconnection::conn_limit_exceeded_hard()) {
     send_result("CONN_LIMIT_EXCEEDED");
-  } else {
-    send_result("OK");
+    return;
   }
+
+  send_result("OK");
 }
 
 void svr_ipcctrl::free_correlation_token() {

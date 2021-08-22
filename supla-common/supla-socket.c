@@ -87,6 +87,9 @@ typedef struct {
 #ifndef NOSSL
 #ifndef _SERVER_EXCLUDED
 
+int ssocket_last_accept_errno = 0;
+struct timeval ssocket_last_accept_error_time = {};
+
 void ssocket_ssl_error_log(void) {
   char *errstr;
   int code;
@@ -142,6 +145,13 @@ unsigned char ssocket_loadcertificates(SSL_CTX *ctx, const char *CertFile,
 
   return 1;
 }
+
+int ssocket_get_last_accept_errno(void) { return ssocket_last_accept_errno; }
+
+long int ssocket_get_last_accept_error_time_sec(void) {
+  return ssocket_last_accept_error_time.tv_sec;
+}
+
 #endif /*ifndef _SERVER_EXCLUDED*/
 
 void ssocket_showcerts(SSL *ssl) {
@@ -336,8 +346,10 @@ char ssocket_accept(void *_ssd, unsigned int *ipv4, void **_supla_socket) {
     client_sd = accept(ssd->supla_socket.sfd, (struct sockaddr *)&addr, &len);
 
     if (client_sd == -1) {
-      supla_log(LOG_ERR, "Connection accept error %i", errno);
-
+      ssocket_last_accept_errno = errno;
+      gettimeofday(&ssocket_last_accept_error_time, NULL);
+      supla_log(LOG_ERR, "Connection accept error %i",
+                ssocket_last_accept_errno);
     } else {
       supla_log(LOG_INFO, "Connection accepted: %s:%d ClientSD: %i Secure: %i",
                 inet_ntoa(addr.sin_addr), ntohs(addr.sin_port), client_sd,
