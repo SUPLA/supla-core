@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <linux/if_link.h>
+#include <serverstatus.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -79,6 +80,8 @@ void supla_connection_on_version_error(void *_srpc,
 
 // static
 void serverconnection::log_limits(void) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+
   int concurrent_registrations_limit =
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
