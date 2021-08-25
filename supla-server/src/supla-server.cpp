@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
+
 #include "accept_loop.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
@@ -32,6 +33,7 @@
 #include "log.h"
 #include "mqtt_client_suite.h"
 #include "proto.h"
+#include "serverstatus.h"
 #include "srpc.h"
 #include "sslcrypto.h"
 #include "sthread.h"
@@ -118,6 +120,7 @@ int main(int argc, char *argv[]) {
     goto exit_fail;
   }
 
+  serverstatus::globalInstance();
   supla_user::init();
   serverconnection::init();
 
@@ -154,6 +157,7 @@ int main(int argc, char *argv[]) {
   // MAIN LOOP
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
+    serverstatus::globalInstance()->mainLoopHeartbeat();
     serverconnection::log_limits();
     supla_user::log_metrics(3600);
     supla_http_request_queue::getInstance()->logMetrics(3600);
@@ -208,6 +212,7 @@ int main(int argc, char *argv[]) {
   sslcrypto_free();
 
   st_mainloop_free();  // Almost at the end
+  serverstatus::globalInstanceRelease();
   st_delpidfile(pidfile_path);
   svrcfg_free();
 

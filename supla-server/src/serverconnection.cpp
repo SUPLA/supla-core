@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <linux/if_link.h>
+#include <serverstatus.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -79,6 +80,8 @@ void supla_connection_on_version_error(void *_srpc,
 
 // static
 void serverconnection::log_limits(void) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+
   int concurrent_registrations_limit =
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
@@ -121,6 +124,7 @@ void serverconnection::log_limits(void) {
 bool serverconnection::is_connection_allowed(unsigned int ipv4) {
   if (serverconnection::reject_all_new_connections) {
     //  It also rejects local connections
+    //  Monitoring will be able to detect the problem and restart the process
     return false;
   }
 
@@ -134,14 +138,14 @@ bool serverconnection::is_connection_allowed(unsigned int ipv4) {
       if (serverconnection::local_ipv4[a] == 0) {  // end of list
         break;
       } else if (serverconnection::local_ipv4[a] == ipv4) {
-        return 1;
+        return true;
       }
     }
 
-    return 0;
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
 // static

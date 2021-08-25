@@ -31,6 +31,7 @@ CPP_SRCS += \
 ../src/objcontainer.cpp \
 ../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
+../src/serverstatus.cpp \
 ../src/svrdb.cpp \
 ../src/voiceassistantclient.cpp 
 
@@ -54,6 +55,7 @@ OBJS += \
 ./src/proto.o \
 ./src/safearray.o \
 ./src/serverconnection.o \
+./src/serverstatus.o \
 ./src/srpc.o \
 ./src/sslcrypto.o \
 ./src/sthread.o \
@@ -91,6 +93,7 @@ CPP_DEPS += \
 ./src/objcontainer.d \
 ./src/objcontaineritem.d \
 ./src/serverconnection.d \
+./src/serverstatus.d \
 ./src/svrdb.d \
 ./src/voiceassistantclient.d 
 

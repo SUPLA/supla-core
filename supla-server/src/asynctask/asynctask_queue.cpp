@@ -17,12 +17,15 @@
  */
 
 #include "asynctask_queue.h"
+
 #include <assert.h>
 #include <unistd.h>
+
 #include "abstract_asynctask_thread_pool.h"
 #include "lck.h"
 #include "log.h"
 #include "sthread.h"
+#include "serverstatus.h"
 
 supla_asynctask_queue::supla_asynctask_queue(void) {
   this->lck = lck_init();
@@ -359,6 +362,7 @@ void supla_asynctask_queue::cancel_tasks(
 }
 
 void supla_asynctask_queue::log_stuck_warning(void) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
   struct timeval now;
   gettimeofday(&now, NULL);
 

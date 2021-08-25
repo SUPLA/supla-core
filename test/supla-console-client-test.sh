@@ -25,6 +25,8 @@ database=supla_test
 user=supla
 ENDOFCFG
 
+/etc/init.d/rsyslog start
+
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
   cd ./supla-server/Debug
   if ! [ -e ./supla-server ]; then
@@ -35,7 +37,7 @@ if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
 fi
 
 sleep 2
-[ -e /var/log/syslog ] && grep "Incorrect database version!" /var/log/syslog && exit 1
+grep "Incorrect database version!" /var/log/syslog && exit 1
 
 if ! ps ax|grep supla-server|grep -v grep > /dev/null; then
 grep supla-server /var/log/syslog

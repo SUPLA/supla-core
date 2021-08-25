@@ -29,6 +29,7 @@
 #include "http/httprequestqueue.h"
 #include "ipcsocket.h"
 #include "log.h"
+#include "serverstatus.h"
 #include "sthread.h"
 #include "tools.h"
 #include "user.h"
@@ -483,11 +484,8 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
 }
 
 void svr_ipcctrl::get_status(void) {
-  if (serverconnection::conn_limit_exceeded_hard()) {
-    send_result("CONN_LIMIT_EXCEEDED");
-  } else {
-    send_result("OK");
-  }
+  serverstatus::globalInstance()->getStatus(buffer, IPC_BUFFER_SIZE);
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
 void svr_ipcctrl::free_correlation_token() {

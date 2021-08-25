@@ -17,14 +17,18 @@
  */
 
 #include "http/httprequestqueue.h"
+
 #include <unistd.h>  // NOLINT
-#include <cstddef>   // NOLINT
-#include <list>      // NOLINT
+
+#include <cstddef>  // NOLINT
+#include <list>     // NOLINT
+
 #include "database.h"
 #include "http/httprequest.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
+#include "serverstatus.h"
 #include "sthread.h"
 #include "svrcfg.h"
 #include "tools.h"
@@ -298,6 +302,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
 }
 
 void supla_http_request_queue::logStuckWarning(void) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
   struct timeval now;
   gettimeofday(&now, NULL);
 
@@ -311,6 +316,8 @@ void supla_http_request_queue::logStuckWarning(void) {
 }
 
 void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+
   if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);
