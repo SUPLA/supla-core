@@ -118,6 +118,7 @@ void serverconnection::log_limits(void) {
               "The number of concurrent registrations returned below the "
               "limit");
   }
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 // static

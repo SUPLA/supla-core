@@ -914,6 +914,7 @@ void supla_user::log_metrics(int min_interval_sec) {
             supla_user::client_max_metric, client_count, client_trash,
             supla_user::device_add_metric, supla_user::device_max_metric,
             device_count, device_trash);
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 void supla_user::on_channels_added(int DeviceID,

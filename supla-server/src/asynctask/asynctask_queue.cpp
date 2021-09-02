@@ -373,4 +373,5 @@ void supla_asynctask_queue::log_stuck_warning(void) {
   if (time > 10) {
     supla_log(LOG_WARNING, "AsyncTask Queue iteration is stuck!");
   }
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
