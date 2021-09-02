@@ -1810,6 +1810,7 @@ typedef struct {
 #define SUPLA_ACTION_CAP_TOGGLE_x1 (1<<2)
 #define SUPLA_ACTION_CAP_TOGGLE_x2 (1<<3)
 #define SUPLA_ACTION_CAP_TOGGLE_x3 (1<<4)
+#define SUPLA_ACTION_CAP_TOGGLE_x4 (1<<5)
 
 // Recommended for monostable buttons
 #define SUPLA_ACTION_CAP_HOLD (1<<10)
