@@ -625,7 +625,8 @@ typedef struct {
 
   union {
     char value[SUPLA_CHANNELVALUE_SIZE];
-    unsigned char ActionTriggerRelatedChannelNumber;  // ver. >= 16
+    unsigned char
+        ActionTriggerRelatedChannelNumber;  // ChannelNumber + 1. ver. >= 16
   };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
