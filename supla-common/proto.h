@@ -623,7 +623,10 @@ typedef struct {
   _supla_int_t Default;
   _supla_int_t Flags;
 
-  char value[SUPLA_CHANNELVALUE_SIZE];
+  union {
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    unsigned char ActionTriggerRelatedChannelNumber;  // ver. >= 16
+  };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
 typedef struct {
@@ -1805,20 +1808,19 @@ typedef struct {
 } TCS_TimerArmRequest;  // v. >= 16
 
 // Recommended for bistable buttons
-#define SUPLA_ACTION_CAP_TURN_ON (1<<0)
-#define SUPLA_ACTION_CAP_TURN_OFF (1<<1)
-#define SUPLA_ACTION_CAP_TOGGLE_x1 (1<<2)
-#define SUPLA_ACTION_CAP_TOGGLE_x2 (1<<3)
-#define SUPLA_ACTION_CAP_TOGGLE_x3 (1<<4)
-#define SUPLA_ACTION_CAP_TOGGLE_x4 (1<<5)
+#define SUPLA_ACTION_CAP_TURN_ON (1 << 0)
+#define SUPLA_ACTION_CAP_TURN_OFF (1 << 1)
+#define SUPLA_ACTION_CAP_TOGGLE_x1 (1 << 2)
+#define SUPLA_ACTION_CAP_TOGGLE_x2 (1 << 3)
+#define SUPLA_ACTION_CAP_TOGGLE_x3 (1 << 4)
+#define SUPLA_ACTION_CAP_TOGGLE_x4 (1 << 5)
 
 // Recommended for monostable buttons
-#define SUPLA_ACTION_CAP_HOLD (1<<10)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x1 (1<<11)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x2 (1<<12)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x3 (1<<13)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x4 (1<<14)
-
+#define SUPLA_ACTION_CAP_HOLD (1 << 10)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x1 (1 << 11)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x2 (1 << 12)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x3 (1 << 13)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x4 (1 << 14)
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
