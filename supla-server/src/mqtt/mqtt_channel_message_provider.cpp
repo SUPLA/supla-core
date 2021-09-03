@@ -953,7 +953,7 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
 
 bool supla_mqtt_channel_message_provider::ha_impulse_counter(
     unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    void **message, size_t *message_size, int func) {
   bool result = false;
   if (index <= 1) {
     TDS_ImpulseCounter_Value v;
@@ -968,11 +968,24 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
 
     switch (index) {
       case 0: {
-        bool kwh = strncmp(ic->getCustomUnit(), "kWh", 5) == 0;
+        char *device_class = NULL;
+        char energy[] = "energy";
+        char gas[] = "gas";
+
+        if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
+            (strncmp(ic->getCustomUnit(), "kWh", 5) == 0 ||
+             strncmp(ic->getCustomUnit(), "Wh", 5) == 0)) {
+          device_class = energy;
+        } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
+                   (strncmp(ic->getCustomUnit(), "m³", 5) == 0 ||
+                    strncmp(ic->getCustomUnit(), "ft³", 5) == 0)) {
+          device_class = gas;
+        }
+
         result =
             ha_sensor(ic->getCustomUnit(), 3, 0, true, "state/calculated_value",
-                      NULL, "Value", NULL, kwh ? "energy" : NULL, kwh,
-                      topic_prefix, topic_name, message, message_size);
+                      NULL, "Value", NULL, device_class, true, topic_prefix,
+                      topic_name, message, message_size);
       } break;
       case 1:
         result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
@@ -1328,7 +1341,7 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       return ha_impulse_counter(index, topic_prefix, topic_name, message,
-                                message_size);
+                                message_size, row->channel_func);
   }
   return false;
 }

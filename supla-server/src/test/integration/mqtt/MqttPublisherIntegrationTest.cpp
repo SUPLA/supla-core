@@ -686,7 +686,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"Impulse counter RB-03\",\"sw\":\"2.7.9\"},\"name\":\"Gas meter "
       "(Value)\",\"uniq_id\":\"supla_9203_0\",\"qos\":0,\"unit_of_meas\":"
       "\"m³\",\"stat_t\":\"~/state/calculated_value\",\"val_tpl\":\"{{ value | "
-      "round(3) }}\",\"state_class\":\"measurement\"}",
+      "round(3) }}\",\"dev_cla\":\"gas\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/61b2f9bdb22d3bd6336bb235bcb1b77e/9203_1/config",
       "{\"avty\":{\"topic\":\"supla/61b2f9bdb22d3bd6336bb235bcb1b77e/devices/"
       "6688/channels/9203/state/"
