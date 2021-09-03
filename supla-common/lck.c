@@ -21,6 +21,8 @@
 #ifdef __LCK_DEBUG
 #include <stdio.h>
 #include <string.h>
+
+#include "log.h"
 #endif /*__LCK_DEBUG*/
 
 #if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
@@ -67,19 +69,19 @@ void *ptrs[500];
 void LCK_ICACHE_FLASH lck_debug_init(void) { memset(ptrs, 0, sizeof(ptrs)); }
 
 void LCK_ICACHE_FLASH lck_debug_dump(void) {
-  printf("LCK DEBUG DUMP\n");
+  supla_log(LOG_INFO, "LCK DEBUG DUMP\n");
   int a;
   int n = sizeof(ptrs) / sizeof(void *);
   TLckData *l = 0;
 
   for (a = 0; a < n; a++) {
     if ((l = (TLckData *)ptrs[a]) != 0 && l->count != 0) {
-      printf("%p:%p %s:%i count=%i\n", (void *)l, (void *)l->thread,
-             l->fileName, l->lineNumber, l->count);
+      supla_log(LOG_INFO, "%p:%p %s:%i count=%i\n", (void *)l,
+                (void *)l->thread, l->fileName, l->lineNumber, l->count);
     }
   }
 
-  printf("<<-----\n");
+  supla_log(LOG_INFO, "<<-----\n");
 }
 
 #endif /*__LCK_DEBUG*/
