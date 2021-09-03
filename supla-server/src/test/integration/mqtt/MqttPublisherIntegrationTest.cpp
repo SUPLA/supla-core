@@ -1021,9 +1021,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "energy)\",\"uniq_id\":\"supla_966_2\",\"qos\":0,\"unit_of_meas\":"
       "\"kWh\",\"stat_t\":\"~/state/"
       "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_3/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1036,9 +1034,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "energy)\",\"uniq_id\":\"supla_966_3\",\"qos\":0,\"unit_of_meas\":"
       "\"kWh\",\"stat_t\":\"~/state/"
       "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_4/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1052,9 +1048,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"kWh\",\"stat_t\":\"~/state/"
       "total_forward_active_energy_balanced\",\"val_tpl\":\"{{ value | "
       "round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_5/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1068,9 +1062,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "\"kWh\",\"stat_t\":\"~/state/"
       "total_reverse_active_energy_balanced\",\"val_tpl\":\"{{ value | "
       "round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_6/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1083,9 +1075,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "1)\",\"uniq_id\":\"supla_966_6\",\"qos\":0,\"unit_of_meas\":\"kWh\","
       "\"stat_t\":\"~/state/phases/1/"
       "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_7/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1098,9 +1088,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "1)\",\"uniq_id\":\"supla_966_7\",\"qos\":0,\"unit_of_meas\":\"kWh\","
       "\"stat_t\":\"~/state/phases/1/"
       "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_8/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1113,7 +1101,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "1)\",\"uniq_id\":\"supla_966_8\",\"qos\":0,\"unit_of_meas\":\"kvarh\","
       "\"stat_t\":\"~/state/phases/1/"
       "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_9/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1126,7 +1114,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "1)\",\"uniq_id\":\"supla_966_9\",\"qos\":0,\"unit_of_meas\":\"kvarh\","
       "\"stat_t\":\"~/state/phases/1/"
       "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_10/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1236,9 +1224,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "2)\",\"uniq_id\":\"supla_966_18\",\"qos\":0,\"unit_of_meas\":\"kWh\","
       "\"stat_t\":\"~/state/phases/2/"
       "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_19/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1251,9 +1237,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "2)\",\"uniq_id\":\"supla_966_19\",\"qos\":0,\"unit_of_meas\":\"kWh\","
       "\"stat_t\":\"~/state/phases/2/"
       "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_20/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1266,7 +1250,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "2)\",\"uniq_id\":\"supla_966_20\",\"qos\":0,\"unit_of_meas\":\"kvarh\","
       "\"stat_t\":\"~/state/phases/2/"
       "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_21/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1279,7 +1263,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "2)\",\"uniq_id\":\"supla_966_21\",\"qos\":0,\"unit_of_meas\":\"kvarh\","
       "\"stat_t\":\"~/state/phases/2/"
       "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_22/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1389,9 +1373,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "3)\",\"uniq_id\":\"supla_966_30\",\"qos\":0,\"unit_of_meas\":\"kWh\","
       "\"stat_t\":\"~/state/phases/3/"
       "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_31/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1404,9 +1386,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "3)\",\"uniq_id\":\"supla_966_31\",\"qos\":0,\"unit_of_meas\":\"kWh\","
       "\"stat_t\":\"~/state/phases/3/"
       "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_32/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1419,7 +1399,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "3)\",\"uniq_id\":\"supla_966_32\",\"qos\":0,\"unit_of_meas\":\"kvarh\","
       "\"stat_t\":\"~/state/phases/3/"
       "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_33/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1432,7 +1412,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "3)\",\"uniq_id\":\"supla_966_33\",\"qos\":0,\"unit_of_meas\":\"kvarh\","
       "\"stat_t\":\"~/state/phases/3/"
       "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-      "}}\",\"state_class\":\"measurement\"}",
+      "}}\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_34/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
       "506/channels/966/state/"
@@ -1919,9 +1899,7 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "(Value)\",\"uniq_id\":\"supla_16166_0\",\"qos\":0,\"unit_of_meas\":"
       "\"kWh\",\"stat_t\":\"~/state/calculated_value\",\"val_tpl\":\"{{ value "
       "| round(3) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/64d3d5bd59eb5fe2b67bf4fe4d222905/16166_1/config",
       "{\"avty\":{\"topic\":\"supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/"
       "9717/channels/16166/state/"
@@ -2349,9 +2327,7 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
       "(Value)\",\"uniq_id\":\"supla_16166_0\",\"qos\":0,\"unit_of_meas\":"
       "\"kWh\",\"stat_t\":\"~/state/calculated_value\",\"val_tpl\":\"{{ value "
       "| round(3) "
-      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-      "reset_topic\":\"~/state/"
-      "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}",
+      "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}",
       "homeassistant/sensor/64d3d5bd59eb5fe2b67bf4fe4d222905/16166_1/config",
       "{\"avty\":{\"topic\":\"supla/64d3d5bd59eb5fe2b67bf4fe4d222905/devices/"
       "9717/channels/16166/state/"
