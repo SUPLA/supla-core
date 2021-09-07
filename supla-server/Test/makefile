@@ -29,6 +29,7 @@ RM := rm -rf
 -include src/client/subdir.mk
 -include src/asynctask/subdir.mk
 -include src/amazon/subdir.mk
+-include src/actions/subdir.mk
 -include src/subdir.mk
 -include subdir.mk
 -include objects.mk

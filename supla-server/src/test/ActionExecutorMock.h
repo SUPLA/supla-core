@@ -19,7 +19,7 @@
 #ifndef ACTION_EXECUTOR_MOCK_H_
 #define ACTION_EXECUTOR_MOCK_H_
 
-#include "abstract_action_executor.h"
+#include "actions/abstract_action_executor.h"
 
 namespace testing {
 

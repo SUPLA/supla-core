@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "action_gate_openclose.h"
+#include "actions/action_gate_openclose.h"
 #include "database.h"
 #include "log.h"
 #include "safearray.h"

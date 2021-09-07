@@ -19,7 +19,7 @@
 #ifndef GATE_STATE_GETTER_MOCK_H_
 #define GATE_STATE_GETTER_MOCK_H_
 
-#include "abstract_gate_state_getter.h"
+#include "actions/abstract_gate_state_getter.h"
 
 namespace testing {
 
