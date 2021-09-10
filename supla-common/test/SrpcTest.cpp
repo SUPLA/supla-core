@@ -498,7 +498,8 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
 
     case 16:
       return {SUPLA_DS_CALL_GET_CHANNEL_CONFIG,
-              SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT};
+              SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
+              SUPLA_DS_CALL_ACTIONTRIGGER};
   }
 
   return {};
@@ -3416,5 +3417,12 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
                                      31, 159, sd_channel_config,
                                      SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
                                      ConfigSize);
+
+//---------------------------------------------------------
+// ACTION TRIGGER
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_action_trigger, TDS_ActionTrigger,
+                     SUPLA_DS_CALL_ACTIONTRIGGER, 38, ds_action_trigger);
 
 }  // namespace

@@ -1016,6 +1016,12 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TSD_ChannelConfig *)malloc(sizeof(TSD_ChannelConfig));
         }
         break;
+      case SUPLA_DS_CALL_ACTIONTRIGGER:
+        if (srpc->sdp.data_size == sizeof(TDS_ActionTrigger)) {
+          rd->data.ds_action_trigger =
+              (TDS_ActionTrigger *)malloc(sizeof(TDS_ActionTrigger));
+        }
+        break;
 #endif /*#ifndef SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
@@ -1525,6 +1531,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
       return 15;
     case SUPLA_DS_CALL_GET_CHANNEL_CONFIG:
     case SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT:
+    case SUPLA_DS_CALL_ACTIONTRIGGER:
       return 16;
   }
 
@@ -1965,6 +1972,17 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sd_async_get_channel_config_result(
                          sizeof(TSD_ChannelConfig) -
                              SUPLA_CHANNEL_CONFIG_MAXSIZE + config->ConfigSize);
 }
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_action_trigger(void *_srpc, TDS_ActionTrigger *action_trigger) {
+  if (action_trigger == NULL) {
+    return 0;
+  }
+
+  return srpc_async_call(_srpc, SUPLA_DS_CALL_ACTIONTRIGGER,
+                         (char *)action_trigger, sizeof(TDS_ActionTrigger));
+}
+
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT
