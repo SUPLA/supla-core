@@ -16,25 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNELJSONCONFIG_H_
-#define CHANNELJSONCONFIG_H_
+#ifndef ACTIONTRIGGERCONFIG_H_
+#define ACTIONTRIGGERCONFIG_H_
 
-#include "json/cJSON.h"
+#include "channeljsonconfig.h"
 
-class channel_json_config {
+class action_trigger_config : public channel_json_config {
  private:
-  cJSON *json_root;
-  channel_json_config *root;
-
- protected:
-  cJSON *get_json_root(void);
+  bool equal_to_string(cJSON *item, const char *str);
 
  public:
-  channel_json_config(channel_json_config *root);
-  channel_json_config(void);
-  virtual ~channel_json_config(void);
-  void set_config(const char *config);
-  char *get_config(void);
+  action_trigger_config(channel_json_config *root);
+  action_trigger_config(void);
+
+  unsigned int get_capabilities(void);
+  bool set_capabilities(unsigned int caps);
 };
 
-#endif /* CHANNELJSONCONFIG_H_ */
+#endif /* ACTIONTRIGGERCONFIG_H_ */

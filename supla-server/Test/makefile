@@ -17,6 +17,7 @@ RM := rm -rf
 -include src/test/integration/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
+-include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk
 -include src/test/subdir.mk

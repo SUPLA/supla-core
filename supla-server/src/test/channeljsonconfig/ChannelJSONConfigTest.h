@@ -16,25 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNELJSONCONFIG_H_
-#define CHANNELJSONCONFIG_H_
+#ifndef CHANNELJSONCONFIGTEST_H_
+#define CHANNELJSONCONFIGTEST_H_
 
-#include "json/cJSON.h"
+#include "gtest/gtest.h"  // NOLINT
 
-class channel_json_config {
- private:
-  cJSON *json_root;
-  channel_json_config *root;
+namespace testing {
 
+class ChannelJSONConfigTest : public Test {
  protected:
-  cJSON *get_json_root(void);
-
  public:
-  channel_json_config(channel_json_config *root);
-  channel_json_config(void);
-  virtual ~channel_json_config(void);
-  void set_config(const char *config);
-  char *get_config(void);
+  ChannelJSONConfigTest(void);
+  virtual ~ChannelJSONConfigTest(void);
 };
 
-#endif /* CHANNELJSONCONFIG_H_ */
+} /* namespace testing */
+
+#endif /* CHANNELJSONCONFIGTEST_H_ */

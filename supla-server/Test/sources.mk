@@ -38,6 +38,7 @@ src/mqtt \
 src/test \
 src/test/alexa \
 src/test/asynctask \
+src/test/channeljsonconfig \
 src/test/google \
 src/test/gtest \
 src/test/integration \
