@@ -16,24 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGERCONFIG_H_
-#define ACTIONTRIGGERCONFIG_H_
+#ifndef ACTIONTRIGGERCONFIGTEST_H_
+#define ACTIONTRIGGERCONFIGTEST_H_
 
-#include "channeljsonconfig.h"
+#include "gtest/gtest.h"  // NOLINT
 
-class action_trigger_config : public channel_json_config {
- private:
-  bool equal_to_string(cJSON *item, const char *str);
-  void add_cap(unsigned int caps, unsigned int cap, const char *name,
-               cJSON *arr);
+namespace testing {
 
+class ActionTriggerConfigTest : public Test {
+ protected:
  public:
-  action_trigger_config(channel_json_config *root);
-  action_trigger_config(void);
-
-  unsigned int get_capabilities(void);
-  bool set_capabilities(unsigned int caps);
-  unsigned int get_active_actions(void);
+  ActionTriggerConfigTest(void);
+  virtual ~ActionTriggerConfigTest(void);
 };
 
-#endif /* ACTIONTRIGGERCONFIG_H_ */
+} /* namespace testing */
+
+#endif /* ACTIONTRIGGERCONFIGTEST_H_ */

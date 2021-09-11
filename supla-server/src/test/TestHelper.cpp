@@ -16,24 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGERCONFIG_H_
-#define ACTIONTRIGGERCONFIG_H_
+#include "TestHelper.h"
 
-#include "channeljsonconfig.h"
+#include <stdio.h>
+#include <string.h>
 
-class action_trigger_config : public channel_json_config {
- private:
-  bool equal_to_string(cJSON *item, const char *str);
-  void add_cap(unsigned int caps, unsigned int cap, const char *name,
-               cJSON *arr);
+namespace testing {
+// static
+void TestHelper::printEscaped(const char *str) {
+  size_t size = strlen(str);
 
- public:
-  action_trigger_config(channel_json_config *root);
-  action_trigger_config(void);
+  for (size_t a = 0; a < size; a++) {
+    if (str[a] == '"' || str[a] == '\\') {
+      printf("\\");
+    }
+    printf("%c", str[a]);
+  }
+}
 
-  unsigned int get_capabilities(void);
-  bool set_capabilities(unsigned int caps);
-  unsigned int get_active_actions(void);
-};
-
-#endif /* ACTIONTRIGGERCONFIG_H_ */
+}  // namespace testing

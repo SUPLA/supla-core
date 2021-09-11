@@ -24,6 +24,8 @@
 #include "proto.h"
 
 #define MAX_STR_LEN 20
+#define ARR_NAME "supportedTriggers"
+#define ACTIONS "actions"
 
 action_trigger_config::action_trigger_config(void) : channel_json_config() {}
 
@@ -63,7 +65,7 @@ unsigned int action_trigger_config::get_capabilities(void) {
     return result;
   }
 
-  cJSON *st = cJSON_GetObjectItem(json, "supportedTriggers");
+  cJSON *st = cJSON_GetObjectItem(json, ARR_NAME);
   if (!st || !cJSON_IsArray(st)) {
     return result;
   }
@@ -104,7 +106,22 @@ unsigned int action_trigger_config::get_capabilities(void) {
   return result;
 }
 
+void action_trigger_config::add_cap(unsigned int caps, unsigned int cap,
+                                    const char *name, cJSON *arr) {
+  if (caps & cap) {
+    cJSON *jstr = cJSON_CreateString(name);
+    if (jstr) {
+      cJSON_AddItemToArray(arr, jstr);
+    }
+  }
+}
+
 bool action_trigger_config::set_capabilities(unsigned int caps) {
+  cJSON *json = get_json_root();
+  if (!json) {
+    return false;
+  }
+
   unsigned int all_possible =
       SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF |
       SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_TOGGLE_x2 |
@@ -120,5 +137,105 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
     return false;
   }
 
-  return false;
+  cJSON *st = cJSON_GetObjectItem(json, ARR_NAME);
+  if (st) {
+    while (cJSON_GetArraySize(st)) {
+      cJSON_DeleteItemFromArray(st, 0);
+    }
+  }
+
+  if (!st) {
+    st = cJSON_CreateArray();
+    if (st) {
+      cJSON_AddItemToObject(json, ARR_NAME, st);
+    }
+  }
+
+  if (st) {
+    add_cap(caps, SUPLA_ACTION_CAP_TURN_ON, "TURN_ON", st);
+    add_cap(caps, SUPLA_ACTION_CAP_TURN_OFF, "TURN_OFF", st);
+    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x1, "TOGGLE_X1", st);
+    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x2, "TOGGLE_X2", st);
+    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x3, "TOGGLE_X3", st);
+    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x4, "TOGGLE_X4", st);
+    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x5, "TOGGLE_X5", st);
+    add_cap(caps, SUPLA_ACTION_CAP_HOLD, "HOLD", st);
+    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x1, "SHORT_PRESS_X1", st);
+    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x2, "SHORT_PRESS_X2", st);
+    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x3, "SHORT_PRESS_X3", st);
+    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x4, "SHORT_PRESS_X4", st);
+    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x5, "SHORT_PRESS_X5", st);
+  }
+
+  return true;
+}
+
+unsigned int action_trigger_config::get_active_actions(void) {
+  unsigned int result = 0;
+
+  cJSON *json = get_json_root();
+  if (!json) {
+    return result;
+  }
+
+  unsigned int caps = get_capabilities();
+  if (caps == 0) {
+    return result;
+  }
+
+  cJSON *actions = cJSON_GetObjectItem(json, ACTIONS);
+
+  if (cJSON_GetObjectItem(actions, "TURN_ON")) {
+    result |= SUPLA_ACTION_CAP_TURN_ON;
+  }
+
+  if (cJSON_GetObjectItem(actions, "TURN_OFF")) {
+    result |= SUPLA_ACTION_CAP_TURN_OFF;
+  }
+
+  if (cJSON_GetObjectItem(actions, "TOGGLE_X1")) {
+    result |= SUPLA_ACTION_CAP_TOGGLE_x1;
+  }
+
+  if (cJSON_GetObjectItem(actions, "TOGGLE_X2")) {
+    result |= SUPLA_ACTION_CAP_TOGGLE_x2;
+  }
+
+  if (cJSON_GetObjectItem(actions, "TOGGLE_X3")) {
+    result |= SUPLA_ACTION_CAP_TOGGLE_x3;
+  }
+
+  if (cJSON_GetObjectItem(actions, "TOGGLE_X4")) {
+    result |= SUPLA_ACTION_CAP_TOGGLE_x4;
+  }
+
+  if (cJSON_GetObjectItem(actions, "TOGGLE_X5")) {
+    result |= SUPLA_ACTION_CAP_TOGGLE_x5;
+  }
+
+  if (cJSON_GetObjectItem(actions, "HOLD")) {
+    result |= SUPLA_ACTION_CAP_HOLD;
+  }
+
+  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X1")) {
+    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+  }
+
+  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X2")) {
+    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+  }
+
+  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X3")) {
+    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x3;
+  }
+
+  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X4")) {
+    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+  }
+
+  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X5")) {
+    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+  }
+
+  return caps & result;
 }
