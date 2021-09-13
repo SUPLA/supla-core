@@ -17,14 +17,18 @@
  */
 
 #include "http/httprequestqueue.h"
+
 #include <unistd.h>  // NOLINT
-#include <cstddef>   // NOLINT
-#include <list>      // NOLINT
+
+#include <cstddef>  // NOLINT
+#include <list>     // NOLINT
+
 #include "database.h"
 #include "http/httprequest.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
+#include "serverstatus.h"
 #include "sthread.h"
 #include "svrcfg.h"
 #include "tools.h"
@@ -298,6 +302,7 @@ void supla_http_request_queue::iterate(void *q_sthread) {
 }
 
 void supla_http_request_queue::logStuckWarning(void) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
   struct timeval now;
   gettimeofday(&now, NULL);
 
@@ -308,9 +313,12 @@ void supla_http_request_queue::logStuckWarning(void) {
   if (time > 10) {
     supla_log(LOG_WARNING, "HTTP Queue iteration is stuck!");
   }
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+
   if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -327,6 +335,7 @@ void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
             "HTTP QUEUE METRICS: CURRENT[Thread Count: %i, Queue Size: %i] "
             "TOTAL[Request Count: %lu]",
             threadCount(), queueSize(), requestTotalCount());
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 void supla_http_request_queue::recalculateTime(struct timeval *now) {

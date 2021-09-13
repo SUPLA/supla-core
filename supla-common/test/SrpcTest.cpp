@@ -17,7 +17,9 @@
  */
 
 #include "SrpcTest.h"
+
 #include <vector>
+
 #include "gtest/gtest.h"  // NOLINT
 #include "log.h"
 
@@ -486,15 +488,18 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
     case 13:
       return {SUPLA_SD_CALL_CHANNELGROUP_SET_VALUE};
     case 14:
-      return {SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS,
-              SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT,
-              SUPLA_CS_CALL_SET_LOCATION_CAPTION,
+      return {SUPLA_CS_CALL_SET_LOCATION_CAPTION,
               SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT};
     case 15:
       return {SUPLA_SC_CALL_CHANNEL_UPDATE_D,
               SUPLA_SC_CALL_CHANNELPACK_UPDATE_D,
               SUPLA_SC_CALL_CHANNEL_VALUE_UPDATE_B,
               SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE_B};
+
+    case 16:
+      return {SUPLA_DS_CALL_GET_CHANNEL_CONFIG,
+              SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
+              SUPLA_DS_CALL_ACTIONTRIGGER};
   }
 
   return {};
@@ -533,6 +538,8 @@ TEST_F(SrpcTest, call_allowed_v13) { srpcCallAllowed(13, get_call_ids(13)); }
 TEST_F(SrpcTest, call_allowed_v14) { srpcCallAllowed(14, get_call_ids(14)); }
 
 TEST_F(SrpcTest, call_allowed_v15) { srpcCallAllowed(15, get_call_ids(15)); }
+
+TEST_F(SrpcTest, call_allowed_v16) { srpcCallAllowed(16, get_call_ids(16)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
   std::vector<int> all_calls;
@@ -3394,5 +3401,28 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_functions_result,
                                      24, 536, sd_channel_functions,
                                      SUPLA_CHANNELMAXCOUNT, Functions,
                                      ChannelCount);
+
+//---------------------------------------------------------
+// GET CHANNEL CONFIG
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_get_channel_config,
+                     TDS_GetChannelConfigRequest,
+                     SUPLA_DS_CALL_GET_CHANNEL_CONFIG, 29,
+                     ds_get_channel_config_request);
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
+                                     TSD_ChannelConfig,
+                                     SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
+                                     31, 159, sd_channel_config,
+                                     SUPLA_CHANNEL_CONFIG_MAXSIZE, Config,
+                                     ConfigSize);
+
+//---------------------------------------------------------
+// ACTION TRIGGER
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_ds_async_action_trigger, TDS_ActionTrigger,
+                     SUPLA_DS_CALL_ACTIONTRIGGER, 38, ds_action_trigger);
 
 }  // namespace

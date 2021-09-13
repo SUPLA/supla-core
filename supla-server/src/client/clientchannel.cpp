@@ -346,6 +346,13 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
         }
         break;
 
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        if (Param2) {
+          ChannelId = Param2;
+          device = client->getUser()->device_by_channelid(ChannelId);
+        }
+        break;
+
       default:
         device = client->getUser()->get_device(DeviceId);
         break;

@@ -801,7 +801,7 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     const char *unit, int precision, int sub_id, bool set_sub_id,
     const char *state_topic, const char *name_if_empty,
     const char *name_second_segment, const char *value_tmpl,
-    const char *device_class, bool last_reset, const char *topic_prefix,
+    const char *device_class, bool total_increasing, const char *topic_prefix,
     char **topic_name, void **message, size_t *message_size) {
   // https://www.home-assistant.io/integrations/sensor.mqtt
 
@@ -829,15 +829,9 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     ha_json_set_string_param(root, "dev_cla", device_class);
   }
 
-  ha_json_set_string_param(root, "state_class", "measurement");
-
-  if (last_reset) {
-    // ~/state/support in last_reset_topic was used only to keep the topic
-    // active.
-    ha_json_set_short_topic(root, "last_reset_topic", "state/support");
-    ha_json_set_string_param(root, "last_reset_value_template",
-                             "1970-01-01T00:00:00Z");
-  }
+  ha_json_set_string_param(
+      root, "state_class",
+      total_increasing ? "total_increasing" : "measurement");
 
   return ha_get_message(root, "sensor", sub_id, set_sub_id, topic_name, message,
                         message_size);
@@ -959,7 +953,7 @@ bool supla_mqtt_channel_message_provider::ha_roller_shutter(
 
 bool supla_mqtt_channel_message_provider::ha_impulse_counter(
     unsigned short index, const char *topic_prefix, char **topic_name,
-    void **message, size_t *message_size) {
+    void **message, size_t *message_size, int func) {
   bool result = false;
   if (index <= 1) {
     TDS_ImpulseCounter_Value v;
@@ -974,11 +968,24 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
 
     switch (index) {
       case 0: {
-        bool kwh = strncmp(ic->getCustomUnit(), "kWh", 5) == 0;
+        char *device_class = NULL;
+        char energy[] = "energy";
+        char gas[] = "gas";
+
+        if (func == SUPLA_CHANNELFNC_IC_ELECTRICITY_METER &&
+            (strncmp(ic->getCustomUnit(), "kWh", 5) == 0 ||
+             strncmp(ic->getCustomUnit(), "Wh", 5) == 0)) {
+          device_class = energy;
+        } else if (func == SUPLA_CHANNELFNC_IC_GAS_METER &&
+                   (strncmp(ic->getCustomUnit(), "m³", 5) == 0 ||
+                    strncmp(ic->getCustomUnit(), "ft³", 5) == 0)) {
+          device_class = gas;
+        }
+
         result =
             ha_sensor(ic->getCustomUnit(), 3, 0, true, "state/calculated_value",
-                      NULL, "Value", NULL, kwh ? "energy" : NULL, kwh,
-                      topic_prefix, topic_name, message, message_size);
+                      NULL, "Value", NULL, device_class, true, topic_prefix,
+                      topic_name, message, message_size);
       } break;
       case 1:
         result = ha_sensor(ic->getCurrency(), 2, 1, true, "state/total_cost",
@@ -996,7 +1003,7 @@ bool supla_mqtt_channel_message_provider::ha_impulse_counter(
 bool supla_mqtt_channel_message_provider::ha_phase_sensor(
     unsigned short index, unsigned short phase, const char *unit, int precision,
     const char *state_topic, const char *name_second_segment,
-    const char *value_tmpl, const char *device_class, bool last_reset,
+    const char *value_tmpl, const char *device_class, bool total_increasing,
     const char *topic_prefix, char **topic_name, void **message,
     size_t *message_size) {
   int st_len = snprintf(NULL, 0, state_topic, phase);
@@ -1027,10 +1034,10 @@ bool supla_mqtt_channel_message_provider::ha_phase_sensor(
   snprintf(_state_topic, st_len, state_topic, phase);
   snprintf(_name_second_segment, nss_len, name_second_segment, phase);
 
-  bool result =
-      ha_sensor(unit, precision, index, true, _state_topic, NULL,
-                _name_second_segment, value_tmpl, device_class, last_reset,
-                topic_prefix, topic_name, message, message_size);
+  bool result = ha_sensor(unit, precision, index, true, _state_topic, NULL,
+                          _name_second_segment, value_tmpl, device_class,
+                          total_increasing, topic_prefix, topic_name, message,
+                          message_size);
 
   free(_state_topic);
   free(_name_second_segment);
@@ -1131,7 +1138,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
       return ha_phase_sensor(index, phase, "kvarh", 5,
                              "state/phases/%i/total_forward_reactive_energy",
                              "Total forward reactive energy - Phase %i", NULL,
-                             NULL, false, topic_prefix, topic_name, message,
+                             NULL, true, topic_prefix, topic_name, message,
                              message_size);
 
     case 9:
@@ -1140,7 +1147,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
       return ha_phase_sensor(index, phase, "kvarh", 5,
                              "state/phases/%i/total_reverse_reactive_energy",
                              "Total reverse reactive energy - Phase %i", NULL,
-                             NULL, false, topic_prefix, topic_name, message,
+                             NULL, true, topic_prefix, topic_name, message,
                              message_size);
 
     case 10:
@@ -1193,8 +1200,9 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 40:
       return ha_phase_sensor(
           index, phase, "%", 3, "state/phases/%i/power_factor",
-          "Power factor - Phase %i", "(float(value) * 100.0)", "power_factor",
-          false, topic_prefix, topic_name, message, message_size);
+          "Power factor - Phase %i", "{{ (float(value) * 100.0) | round(3) }}",
+          "power_factor", false, topic_prefix, topic_name, message,
+          message_size);
 
     case 17:
     case 29:
@@ -1333,7 +1341,7 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       return ha_impulse_counter(index, topic_prefix, topic_name, message,
-                                message_size);
+                                message_size, row->channel_func);
   }
   return false;
 }

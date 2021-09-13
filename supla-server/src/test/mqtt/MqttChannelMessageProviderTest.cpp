@@ -186,9 +186,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "energy)\",\"uniq_id\":\"supla_754_2\",\"qos\":0,\"unit_of_meas\":"
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-        "reset_topic\":\"~/state/"
-        "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
         provider, NULL, haConfig, false,
@@ -207,9 +205,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "energy)\",\"uniq_id\":\"supla_754_3\",\"qos\":0,\"unit_of_meas\":"
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-        "reset_topic\":\"~/state/"
-        "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
         provider, NULL, haConfig, false,
@@ -229,9 +225,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_forward_active_energy_balanced\",\"val_tpl\":\"{{ value | "
         "round(5) "
-        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-        "reset_topic\":\"~/state/"
-        "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
         provider, NULL, haConfig, false,
@@ -251,9 +245,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
         "\"kWh\",\"stat_t\":\"~/state/"
         "total_reverse_active_energy_balanced\",\"val_tpl\":\"{{ value | "
         "round(5) "
-        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-        "reset_topic\":\"~/state/"
-        "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+        "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
     ASSERT_TRUE(fetchAndCompare(
         provider, NULL, haConfig, false,
@@ -275,9 +267,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_6\",\"qos\":0,\"unit_of_meas\":\"kWh\","
           "\"stat_t\":\"~/state/phases/1/"
           "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-          "reset_topic\":\"~/state/"
-          "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -299,9 +289,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_7\",\"qos\":0,\"unit_of_meas\":\"kWh\","
           "\"stat_t\":\"~/state/phases/1/"
           "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-          "reset_topic\":\"~/state/"
-          "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -323,7 +311,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_8\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/1/"
           "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"state_class\":\"measurement\"}";
+          "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -345,7 +333,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_9\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/1/"
           "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"state_class\":\"measurement\"}";
+          "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -489,8 +477,8 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "1)\",\"uniq_id\":\"supla_754_16\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/1/"
-          "power_factor\",\"val_tpl\":\"(float(value) * "
-          "100.0)\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{{ (float(value) * "
+          "100.0) | round(3) }}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(
@@ -536,9 +524,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_18\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/2/"
           "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-          "reset_topic\":\"~/state/"
-          "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -560,9 +546,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_19\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/2/"
           "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-          "reset_topic\":\"~/state/"
-          "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -584,7 +568,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_20\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/2/"
           "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"state_class\":\"measurement\"}";
+          "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -606,7 +590,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_21\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/2/"
           "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"state_class\":\"measurement\"}";
+          "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -750,8 +734,8 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "2)\",\"uniq_id\":\"supla_754_28\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/2/"
-          "power_factor\",\"val_tpl\":\"(float(value) * "
-          "100.0)\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{{ (float(value) * "
+          "100.0) | round(3) }}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(
@@ -798,9 +782,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_30\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/3/"
           "total_forward_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-          "reset_topic\":\"~/state/"
-          "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -822,9 +804,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_31\",\"qos\":0,\"unit_of_meas\":"
           "\"kWh\",\"stat_t\":\"~/state/phases/3/"
           "total_reverse_active_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"measurement\",\"last_"
-          "reset_topic\":\"~/state/"
-          "support\",\"last_reset_value_template\":\"1970-01-01T00:00:00Z\"}";
+          "}}\",\"dev_cla\":\"energy\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -846,7 +826,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_32\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/3/"
           "total_forward_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"state_class\":\"measurement\"}";
+          "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -868,7 +848,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_33\",\"qos\":0,\"unit_of_meas\":"
           "\"kvarh\",\"stat_t\":\"~/state/phases/3/"
           "total_reverse_reactive_energy\",\"val_tpl\":\"{{ value | round(5) "
-          "}}\",\"state_class\":\"measurement\"}";
+          "}}\",\"state_class\":\"total_increasing\"}";
 
       ASSERT_TRUE(
           fetchAndCompare(provider, NULL, haConfig, false,
@@ -1012,8 +992,8 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "3)\",\"uniq_id\":\"supla_754_40\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/3/"
-          "power_factor\",\"val_tpl\":\"(float(value) * "
-          "100.0)\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{{ (float(value) * "
+          "100.0) | round(3) }}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(

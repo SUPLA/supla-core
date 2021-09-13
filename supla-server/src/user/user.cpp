@@ -36,6 +36,7 @@
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "safearray.h"
+#include "serverstatus.h"
 #include "userchannelgroups.h"
 
 void *supla_user::user_arr = NULL;
@@ -731,7 +732,6 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
             int rel_channel_func =
                 related_device->get_channels()->get_channel_func(*it);
 
-
             related_device->releasePtr();
             related_device = NULL;
 
@@ -871,6 +871,7 @@ unsigned int supla_user::total_cd_count(bool client) {
 
 // static
 void supla_user::log_metrics(int min_interval_sec) {
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
   if (min_interval_sec > 0) {
     struct timeval now;
     gettimeofday(&now, NULL);
@@ -913,6 +914,7 @@ void supla_user::log_metrics(int min_interval_sec) {
             supla_user::client_max_metric, client_count, client_trash,
             supla_user::device_add_metric, supla_user::device_max_metric,
             device_count, device_trash);
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 void supla_user::on_channels_added(int DeviceID,

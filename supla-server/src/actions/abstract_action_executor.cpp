@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <abstract_action_executor.h>
+#include <actions/abstract_action_executor.h>
 
 supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->user = 0;

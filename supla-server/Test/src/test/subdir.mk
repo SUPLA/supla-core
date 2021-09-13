@@ -15,6 +15,7 @@ CPP_SRCS += \
 ../src/test/STCDContainer.cpp \
 ../src/test/SafeArrayTest.cpp \
 ../src/test/SrpcTest.cpp \
+../src/test/TestHelper.cpp \
 ../src/test/ToolsTest.cpp \
 ../src/test/TrivialHttpFactoryMock.cpp \
 ../src/test/TrivialHttpMock.cpp 
@@ -31,6 +32,7 @@ OBJS += \
 ./src/test/STCDContainer.o \
 ./src/test/SafeArrayTest.o \
 ./src/test/SrpcTest.o \
+./src/test/TestHelper.o \
 ./src/test/ToolsTest.o \
 ./src/test/TrivialHttpFactoryMock.o \
 ./src/test/TrivialHttpMock.o 
@@ -47,6 +49,7 @@ CPP_DEPS += \
 ./src/test/STCDContainer.d \
 ./src/test/SafeArrayTest.d \
 ./src/test/SrpcTest.d \
+./src/test/TestHelper.d \
 ./src/test/ToolsTest.d \
 ./src/test/TrivialHttpFactoryMock.d \
 ./src/test/TrivialHttpMock.d 

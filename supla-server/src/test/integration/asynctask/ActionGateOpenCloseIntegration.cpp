@@ -18,7 +18,7 @@
 
 #include "ActionGateOpenCloseIntegrationTest.h"
 #include "GateStateGetterMock.h"
-#include "action_gate_openclose.h"
+#include "actions/action_gate_openclose.h"
 #include "log.h"
 
 namespace testing {

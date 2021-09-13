@@ -96,7 +96,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 15
+#define SUPLA_PROTO_VERSION 16
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -225,10 +225,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT 650          // ver. >= 12
 #define SUPLA_CS_CALL_SET_LOCATION_CAPTION 645                // ver. >= 14
 #define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
-#define SUPLA_DS_CALL_GET_CHANNEL_INT_PARAMS 660              // ver. >= 14
-#define SUPLA_SD_CALL_GET_CHANNEL_INT_PARAMS_RESULT 670       // ver. >= 14
 #define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
 #define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
+#define SUPLA_DS_CALL_ACTIONTRIGGER 700                       // ver. >= 16
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -334,7 +333,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
-#define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
+#define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
@@ -385,7 +384,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510             // ver. >= 12
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
-#define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
+#define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800         // ver. >= 14
 #define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810           // ver. >= 14
 
@@ -617,11 +616,19 @@ typedef struct {
   unsigned char Number;
   _supla_int_t Type;
 
-  _supla_int_t FuncList;
+  union {
+    _supla_int_t FuncList;
+    unsigned _supla_int_t ActionTriggerCaps;  // ver. >= 16
+  };
+
   _supla_int_t Default;
   _supla_int_t Flags;
 
-  char value[SUPLA_CHANNELVALUE_SIZE];
+  union {
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    unsigned char
+        ActionTriggerRelatedChannelNumber;  // ChannelNumber + 1. ver. >= 16
+  };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
 typedef struct {
@@ -1279,11 +1286,12 @@ typedef struct {
 #define RS_VALUE_FLAG_CALIBRATION_FAILED 0x2
 #define RS_VALUE_FLAG_CALIBRATION_LOST 0x4
 #define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
+#define RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS 0x10
 
 typedef struct {
   char position;  // -1 == calibration. -1 - 100%
   char tilt;
-  char windowsill_pp;  // Percentage points to the windowsill
+  char bottom_position;  // Percentage points to the windowsill
   _supla_int16_t flags;
 } TRollerShutterValue;
 
@@ -1776,6 +1784,7 @@ typedef struct {
 typedef struct {
   unsigned char ChannelNumber;
   _supla_int_t Func;
+  unsigned char ConfigType;
   unsigned short ConfigSize;
   char Config[SUPLA_CHANNEL_CONFIG_MAXSIZE];  // Last variable in struct! v. >=
                                               // 16. TSD_DeviceChannelConfig_*
@@ -1800,34 +1809,22 @@ typedef struct {
   unsigned char On;
 } TCS_TimerArmRequest;  // v. >= 16
 
-#define SUPLA_ACTION_MAXCOUNT 10
+// Recommended for bistable buttons
+#define SUPLA_ACTION_CAP_TURN_ON (1 << 0)
+#define SUPLA_ACTION_CAP_TURN_OFF (1 << 1)
+#define SUPLA_ACTION_CAP_TOGGLE_x1 (1 << 2)
+#define SUPLA_ACTION_CAP_TOGGLE_x2 (1 << 3)
+#define SUPLA_ACTION_CAP_TOGGLE_x3 (1 << 4)
+#define SUPLA_ACTION_CAP_TOGGLE_x4 (1 << 5)
+#define SUPLA_ACTION_CAP_TOGGLE_x5 (1 << 6)
 
-#define SUPLA_ACTION_CAP_BTN_HOLD_1SEC 1
-#define SUPLA_ACTION_CAP_BTN_HOLD_2SEC 2
-#define SUPLA_ACTION_CAP_BTN_HOLD_3SEC 3
-#define SUPLA_ACTION_CAP_BTN_HOLD_4SEC 4
-#define SUPLA_ACTION_CAP_BTN_HOLD_5SEC 5
-#define SUPLA_ACTION_CAP_BTN_HOLD_6SEC 6
-#define SUPLA_ACTION_CAP_BTN_HOLD_7SEC 7
-#define SUPLA_ACTION_CAP_BTN_HOLD_8SEC 8
-#define SUPLA_ACTION_CAP_BTN_HOLD_9SEC 9
-#define SUPLA_ACTION_CAP_BTN_HOLD_10SEC 10
-#define SUPLA_ACTION_CAP_BTN_PRESS_1TIME 101
-#define SUPLA_ACTION_CAP_BTN_PRESS_2TIMES 102
-#define SUPLA_ACTION_CAP_BTN_PRESS_3TIMES 103
-#define SUPLA_ACTION_CAP_BTN_PRESS_4TIMES 104
-#define SUPLA_ACTION_CAP_BTN_PRESS_5TIMES 105
-#define SUPLA_ACTION_CAP_BTN_PRESS_6TIMES 106
-#define SUPLA_ACTION_CAP_BTN_PRESS_7TIMES 107
-#define SUPLA_ACTION_CAP_BTN_PRESS_8TIMES 108
-#define SUPLA_ACTION_CAP_BTN_PRESS_9TIMES 109
-#define SUPLA_ACTION_CAP_BTN_PRESS_10TIMES 110
-#define SUPLA_ACTION_CAP_BTN_UNPRESS 200
-
-typedef struct {
-  unsigned char ChannelNumber;
-  _supla_int_t ActionCap[SUPLA_ACTION_MAXCOUNT];
-} TDS_SuplaRegisterAction;  // v. >= 16
+// Recommended for monostable buttons
+#define SUPLA_ACTION_CAP_HOLD (1 << 10)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x1 (1 << 11)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x2 (1 << 12)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x3 (1 << 13)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x4 (1 << 14)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x5 (1 << 15)
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
@@ -1840,6 +1837,12 @@ typedef struct {
 
   unsigned char flags;
 } TValve_Value;
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t ActionTrigger;
+  unsigned char zero[10];  // Place for future variables
+} TDS_ActionTrigger;
 
 #pragma pack(pop)
 
