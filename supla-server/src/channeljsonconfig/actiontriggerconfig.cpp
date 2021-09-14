@@ -24,7 +24,7 @@
 #include "proto.h"
 
 #define MAX_STR_LEN 20
-#define ARR_NAME "supportedTriggers"
+#define ARR_NAME "actionTriggerCapabilities"
 #define ACTIONS "actions"
 
 action_trigger_config::action_trigger_config(void) : channel_json_config() {}
