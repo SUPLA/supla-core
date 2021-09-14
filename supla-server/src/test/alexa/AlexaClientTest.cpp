@@ -17,6 +17,7 @@
  */
 
 #include "AlexaClientTest.h"
+
 #include "TrivialHttpFactoryMock.h"
 #include "TrivialHttpMock.h"
 #include "gtest/gtest.h"  // NOLINT
@@ -543,6 +544,95 @@ TEST_F(AlexaClientTest, percentageControllerSendResponse) {
       "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{}}}";
   ASSERT_TRUE(client->percentageControllerSendResponse("correlationToken", 1,
                                                        60, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(AlexaClientTest, sendRangeAndPercentageChangeReport) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 470\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{},\"event\":{\"header\":{\"messageId\":"
+      "\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":\"Alexa\","
+      "\"name\":\"ChangeReport\",\"payloadVersion\":\"3\"},\"endpoint\":{"
+      "\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-TOKEN\"},"
+      "\"endpointId\":\"qwerty-1\"},\"payload\":{\"change\":{\"cause\":{"
+      "\"type\":\"RULE_TRIGGER\"},\"properties\":[{\"namespace\":\"Alexa."
+      "EndpointHealth\",\"name\":\"connectivity\",\"value\":{\"value\":"
+      "\"UNREACHABLE\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]}}}}";
+  ASSERT_TRUE(client->sendRangeAndPercentageChangeReport(CAUSE_RULE_TRIGGER, 1,
+                                                         50, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 1241\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "RangeController\",\"instance\":\"Blind.Lift\",\"name\":\"rangeValue\","
+      "\"value\":60,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PercentageController\",\"name\":\"percentage\",\"value\":60,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.EndpointHealth\",\"name\":\"connectivity\","
+      "\"value\":{\"value\":\"OK\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]},\"event\":{\"header\":{"
+      "\"messageId\":\"29012dd1-33c7-6519-6e18-c4ee71d00487\",\"namespace\":"
+      "\"Alexa\",\"name\":\"ChangeReport\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{\"change\":{"
+      "\"cause\":{\"type\":\"VOICE_INTERACTION\"},\"properties\":[{"
+      "\"namespace\":\"Alexa.RangeController\",\"instance\":\"Blind.Lift\","
+      "\"name\":\"rangeValue\",\"value\":60,\"timeOfSample\":\"2019-02-01T12:"
+      "09:33Z\",\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PercentageController\",\"name\":\"percentage\",\"value\":60,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50},{\"namespace\":\"Alexa.EndpointHealth\",\"name\":\"connectivity\","
+      "\"value\":{\"value\":\"OK\"},\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50}]}}}}";
+  ASSERT_TRUE(client->sendRangeAndPercentageChangeReport(
+      CAUSE_VOICE_INTERACTION, 1, 60, true));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+}
+
+TEST_F(AlexaClientTest, rangeAndpercentageControllerSendResponse) {
+  const char expectedRequest1[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 382\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-"
+      "6e18-c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"ErrorResponse\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{\"message\":\"Unable "
+      "to reach channel ID1 because it appears to be "
+      "offline.\",\"type\":\"ENDPOINT_UNREACHABLE\"}}}";
+  ASSERT_TRUE(client->rangeAndPercentageControllerSendResponse(
+      "correlationToken", 1, 50, false));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST /v3/events HTTP/1.1\r\nHost: api.eu.amazonalexa.com\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 606\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"context\":{\"properties\":[{\"namespace\":\"Alexa."
+      "RangeController\",\"instance\":\"Blind.Lift\",\"name\":\"rangeValue\","
+      "\"value\":60,\"timeOfSample\":\"2019-02-01T12:09:33Z\","
+      "\"uncertaintyInMilliseconds\":50},{\"namespace\":\"Alexa."
+      "PercentageController\",\"name\":\"percentage\",\"value\":60,"
+      "\"timeOfSample\":\"2019-02-01T12:09:33Z\",\"uncertaintyInMilliseconds\":"
+      "50}]},\"event\":{\"header\":{\"messageId\":\"29012dd1-33c7-6519-6e18-"
+      "c4ee71d00487\",\"namespace\":\"Alexa\",\"name\":\"Response\","
+      "\"correlationToken\":\"correlationToken\",\"payloadVersion\":\"3\"},"
+      "\"endpoint\":{\"scope\":{\"type\":\"BearerToken\",\"token\":\"ACCESS-"
+      "TOKEN\"},\"endpointId\":\"qwerty-1\"},\"payload\":{}}}";
+  ASSERT_TRUE(client->rangeAndPercentageControllerSendResponse(
+      "correlationToken", 1, 60, true));
   ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
 }
 
