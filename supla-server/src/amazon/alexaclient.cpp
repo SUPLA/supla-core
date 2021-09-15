@@ -17,11 +17,14 @@
  */
 
 #include "amazon/alexaclient.h"
+
 #include <amazon/alexacredentials.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include <map>
 #include <string>
+
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
 #include "lck.h"
@@ -365,6 +368,28 @@ void *supla_alexa_client::getPercentageControllerProperties(short percentage) {
                             "Alexa.PercentageController");
     cJSON_AddStringToObject(property, "name", "percentage");
     cJSON_AddNumberToObject(property, "value", percentage);
+    cJSON_AddStringToObject(property, "timeOfSample", now);
+    cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
+  }
+
+  return property;
+}
+
+void *supla_alexa_client::getRangeControllerProperties(short value) {
+  ZULU_TIME;
+
+  if (value > 100) {
+    value = 100;
+  } else if (value < 0) {
+    value = 0;
+  }
+
+  cJSON *property = cJSON_CreateObject();
+  if (property) {
+    cJSON_AddStringToObject(property, "namespace", "Alexa.RangeController");
+    cJSON_AddStringToObject(property, "instance", "Blind.Lift");
+    cJSON_AddStringToObject(property, "name", "rangeValue");
+    cJSON_AddNumberToObject(property, "value", value);
     cJSON_AddStringToObject(property, "timeOfSample", now);
     cJSON_AddNumberToObject(property, "uncertaintyInMilliseconds", 50);
   }
@@ -730,6 +755,31 @@ bool supla_alexa_client::sendPercentageChangeReport(int causeType,
                                                  0);
 }
 
+bool supla_alexa_client::sendRangeAndPercentageChangeReport(int causeType,
+                                                            int channelId,
+                                                            short percentage,
+                                                            bool online) {
+  void *context_props = NULL;
+  if (online) {
+    context_props =
+        addProps(context_props, getRangeControllerProperties(percentage));
+    context_props =
+        addProps(context_props, getPercentageControllerProperties(percentage));
+  }
+
+  void *change_props = NULL;
+  if (online) {
+    change_props =
+        addProps(change_props, getRangeControllerProperties(percentage));
+    change_props =
+        addProps(change_props, getPercentageControllerProperties(percentage));
+  }
+
+  return POST_RESULT_SUCCESS == sendChangeReport(causeType, channelId, online,
+                                                 context_props, change_props,
+                                                 0);
+}
+
 void *supla_alexa_client::getEndpointUnrechableErrorResponse(
     const char correlationToken[], int channelId, short subChannel) {
   cJSON *root = cJSON_CreateObject();
@@ -885,6 +935,19 @@ bool supla_alexa_client::percentageControllerSendResponse(
     bool online) {
   void *props = NULL;
   if (online) {
+    props = addProps(props, getPercentageControllerProperties(percentage));
+  }
+
+  return POST_RESULT_SUCCESS ==
+         sendResponse(correlationToken, channelId, online, props, 0);
+}
+
+bool supla_alexa_client::rangeAndPercentageControllerSendResponse(
+    const char correlationToken[], int channelId, short percentage,
+    bool online) {
+  void *props = NULL;
+  if (online) {
+    props = addProps(props, getRangeControllerProperties(percentage));
     props = addProps(props, getPercentageControllerProperties(percentage));
   }
 
