@@ -189,6 +189,8 @@ class supla_device_channel {
   virtual ~supla_device_channel();
 
   static void getDefaults(int Type, int Func, int *Param1, int *Param2);
+  static int funcListFilter(int FuncList, int Type);
+
   int getId(void);
   int getNumber(void);
   int getUserID(void);

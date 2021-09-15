@@ -544,6 +544,17 @@ void supla_device_channel::getDefaults(int Type, int Func, int *Param1,
   }
 }
 
+// static
+int supla_device_channel::funcListFilter(int FuncList, int Type) {
+  switch (Type) {
+    case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
+      FuncList = 0;
+      break;
+  }
+
+  return FuncList;
+}
+
 int supla_device_channel::getId(void) { return Id; }
 
 int supla_device_channel::getNumber(void) { return Number; }

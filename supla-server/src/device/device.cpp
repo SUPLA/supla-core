@@ -16,14 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "device.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <unistd.h>
+
 #include "database.h"
-#include "device.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -301,7 +302,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
                 int ChannelID = db->add_device_channel(
                     DeviceID, Number, Type, DefaultFunc, Param1, Param2,
-                    FuncList, ChannelFlags, UserID, &new_channel);
+                    supla_device_channel::funcListFilter(FuncList, Type),
+                    ChannelFlags, UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
