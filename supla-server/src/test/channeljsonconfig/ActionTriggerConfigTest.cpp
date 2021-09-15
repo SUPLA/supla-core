@@ -112,12 +112,13 @@ TEST_F(ActionTriggerConfigTest, allCaps) {
   if (str) {
     // TestHelper::printEscaped(str);
     EXPECT_EQ(
-        strncmp(str,
-                "{\"supportedTriggers\":[\"TURN_ON\",\"TURN_OFF\",\"TOGGLE_"
-                "X1\",\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\",\"TOGGLE_X5\","
-                "\"HOLD\",\"SHORT_PRESS_X1\",\"SHORT_PRESS_X2\",\"SHORT_PRESS_"
-                "X3\",\"SHORT_PRESS_X4\",\"SHORT_PRESS_X5\"]}",
-                1000),
+        strncmp(
+            str,
+            "{\"actionTriggerCapabilities\":[\"TURN_ON\",\"TURN_OFF\",\"TOGGLE_"
+            "X1\",\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\",\"TOGGLE_X5\","
+            "\"HOLD\",\"SHORT_PRESS_X1\",\"SHORT_PRESS_X2\",\"SHORT_PRESS_"
+            "X3\",\"SHORT_PRESS_X4\",\"SHORT_PRESS_X5\"]}",
+            1000),
         0);
     free(str);
     str = NULL;
@@ -141,15 +142,18 @@ TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
   if (str) {
     // TestHelper::printEscaped(str);
 
-    EXPECT_EQ(strncmp(str, "{\"a\":true,\"supportedTriggers\":[\"TOGGLE_X2\"]}",
-                      1000),
-              0);
+    EXPECT_EQ(
+        strncmp(str,
+                "{\"a\":true,\"actionTriggerCapabilities\":[\"TOGGLE_X2\"]}",
+                1000),
+        0);
 
     free(str);
     str = NULL;
   }
 
-  config->set_config("{\"supportedTriggers\":[\"TOGGLE_X3\"],\"a\":true}");
+  config->set_config(
+      "{\"actionTriggerCapabilities\":[\"TOGGLE_X3\"],\"a\":true}");
   EXPECT_EQ(config->get_capabilities(),
             (unsigned int)SUPLA_ACTION_CAP_TOGGLE_x3);
 
@@ -161,9 +165,11 @@ TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
   if (str) {
     // TestHelper::printEscaped(str);
 
-    EXPECT_EQ(strncmp(str, "{\"supportedTriggers\":[\"TOGGLE_X3\"],\"a\":true}",
-                      1000),
-              0);
+    EXPECT_EQ(
+        strncmp(str,
+                "{\"actionTriggerCapabilities\":[\"TOGGLE_X3\"],\"a\":true}",
+                1000),
+        0);
 
     free(str);
     str = NULL;
@@ -179,11 +185,12 @@ TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
   if (str) {
     // TestHelper::printEscaped(str);
 
-    EXPECT_EQ(strncmp(str,
-                      "{\"supportedTriggers\":[\"TOGGLE_X1\",\"TOGGLE_X3\","
-                      "\"TOGGLE_X4\"],\"a\":true}",
-                      1000),
-              0);
+    EXPECT_EQ(
+        strncmp(str,
+                "{\"actionTriggerCapabilities\":[\"TOGGLE_X1\",\"TOGGLE_X3\","
+                "\"TOGGLE_X4\"],\"a\":true}",
+                1000),
+        0);
 
     free(str);
     str = NULL;
@@ -208,7 +215,7 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
       "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":1,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":10,\"param\":[]}},\"HOLD\":{"
       "\"subjectId\":1,\"subjectType\":\"scene\",\"action\":{\"id\":3000,"
-      "\"param\":[]}}},\"supportedTriggers\":[\"HOLD\"]}");
+      "\"param\":[]}}},\"actionTriggerCapabilities\":[\"HOLD\"]}");
 
   EXPECT_EQ(config->get_active_actions(), (unsigned int)SUPLA_ACTION_CAP_HOLD);
 
@@ -216,7 +223,8 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
       "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":1,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":10,\"param\":[]}},\"HOLD\":{"
       "\"subjectId\":1,\"subjectType\":\"scene\",\"action\":{\"id\":3000,"
-      "\"param\":[]}}},\"supportedTriggers\":[\"HOLD\", \"SHORT_PRESS_X1\", "
+      "\"param\":[]}}},\"actionTriggerCapabilities\":[\"HOLD\", "
+      "\"SHORT_PRESS_X1\", "
       "\"SHORT_PRESS_X5\"]}");
 
   EXPECT_EQ(
