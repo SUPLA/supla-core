@@ -20,6 +20,7 @@ RM := rm -rf
 -include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk
+-include src/test/actions/subdir.mk
 -include src/test/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk

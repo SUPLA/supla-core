@@ -36,6 +36,7 @@ src/http \
 src/json \
 src/mqtt \
 src/test \
+src/test/actions \
 src/test/alexa \
 src/test/asynctask \
 src/test/channeljsonconfig \

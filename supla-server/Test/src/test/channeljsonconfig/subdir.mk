@@ -4,15 +4,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/channeljsonconfig/ActionTriggerConfigTest.cpp \
 ../src/test/channeljsonconfig/ChannelJSONConfigTest.cpp 
 
 OBJS += \
-./src/test/channeljsonconfig/ActionTriggerConfigTest.o \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.o 
 
 CPP_DEPS += \
-./src/test/channeljsonconfig/ActionTriggerConfigTest.d \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.d 
 
 

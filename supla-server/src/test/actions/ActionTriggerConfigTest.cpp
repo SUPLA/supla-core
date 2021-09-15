@@ -19,7 +19,7 @@
 #include "ActionTriggerConfigTest.h"
 
 #include "TestHelper.h"
-#include "channeljsonconfig/actiontriggerconfig.h"
+#include "actions/actiontriggerconfig.h"
 #include "proto.h"
 
 namespace testing {

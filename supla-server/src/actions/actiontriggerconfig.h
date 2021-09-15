@@ -19,7 +19,7 @@
 #ifndef ACTIONTRIGGERCONFIG_H_
 #define ACTIONTRIGGERCONFIG_H_
 
-#include "channeljsonconfig.h"
+#include "channeljsonconfig/channeljsonconfig.h"
 
 class action_trigger_config : public channel_json_config {
  private:
