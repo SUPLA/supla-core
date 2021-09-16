@@ -60,7 +60,7 @@ bool action_trigger_config::equal_to_string(cJSON *item, const char *str) {
 
 unsigned int action_trigger_config::get_capabilities(void) {
   unsigned int result = 0;
-  cJSON *json = get_json_root();
+  cJSON *json = get_properties_root();
   if (!json) {
     return result;
   }
@@ -117,7 +117,7 @@ void action_trigger_config::add_cap(unsigned int caps, unsigned int cap,
 }
 
 bool action_trigger_config::set_capabilities(unsigned int caps) {
-  cJSON *json = get_json_root();
+  cJSON *json = get_properties_root();
   if (!json) {
     return false;
   }
@@ -173,7 +173,7 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
 unsigned int action_trigger_config::get_active_actions(void) {
   unsigned int result = 0;
 
-  cJSON *json = get_json_root();
+  cJSON *json = get_user_root();
   if (!json) {
     return result;
   }

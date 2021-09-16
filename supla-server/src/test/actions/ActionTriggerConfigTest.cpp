@@ -43,7 +43,7 @@ TEST_F(ActionTriggerConfigTest, root) {
     }
   }
 
-  char *str1 = c1->get_config();
+  char *str1 = c1->get_properties();
   EXPECT_TRUE(str1 != NULL);
 
   if (str1) {
@@ -52,7 +52,7 @@ TEST_F(ActionTriggerConfigTest, root) {
     str1 = NULL;
   }
 
-  str1 = c2->get_config();
+  str1 = c2->get_properties();
   EXPECT_TRUE(str1 != NULL);
 
   if (str1) {
@@ -63,10 +63,10 @@ TEST_F(ActionTriggerConfigTest, root) {
 
   c2->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
-  str1 = c1->get_config();
+  str1 = c1->get_properties();
   EXPECT_TRUE(str1 != NULL);
 
-  char *str2 = c2->get_config();
+  char *str2 = c2->get_properties();
   EXPECT_TRUE(str2 != NULL);
 
   if (str1 && str2) {
@@ -82,6 +82,15 @@ TEST_F(ActionTriggerConfigTest, root) {
   if (str2) {
     free(str2);
     str2 = NULL;
+  }
+
+  str1 = c2->get_user_config();
+  EXPECT_TRUE(str1 != NULL);
+
+  if (str1) {
+    EXPECT_EQ(strncmp(str1, "{}", 5), 0);
+    free(str1);
+    str1 = NULL;
   }
 
   delete c1;
@@ -106,7 +115,7 @@ TEST_F(ActionTriggerConfigTest, allCaps) {
 
   EXPECT_EQ(config->get_capabilities(), all);
 
-  char *str = config->get_config();
+  char *str = config->get_properties();
   EXPECT_TRUE(str != NULL);
 
   if (str) {
@@ -131,12 +140,12 @@ TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);
 
-  config->set_config("{\"a\":true}");
+  config->set_properties("{\"a\":true}");
 
   EXPECT_TRUE(config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2));
   EXPECT_FALSE(config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2));
 
-  char *str = config->get_config();
+  char *str = config->get_properties();
   EXPECT_TRUE(str != NULL);
 
   if (str) {
@@ -152,14 +161,14 @@ TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
     str = NULL;
   }
 
-  config->set_config(
+  config->set_properties(
       "{\"actionTriggerCapabilities\":[\"TOGGLE_X3\"],\"a\":true}");
   EXPECT_EQ(config->get_capabilities(),
             (unsigned int)SUPLA_ACTION_CAP_TOGGLE_x3);
 
   EXPECT_FALSE(config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x3));
 
-  str = config->get_config();
+  str = config->get_properties();
   EXPECT_TRUE(str != NULL);
 
   if (str) {
@@ -179,7 +188,7 @@ TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
                                        SUPLA_ACTION_CAP_TOGGLE_x1 |
                                        SUPLA_ACTION_CAP_TOGGLE_x4));
 
-  str = config->get_config();
+  str = config->get_properties();
   EXPECT_TRUE(str != NULL);
 
   if (str) {
@@ -203,7 +212,7 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);
 
-  config->set_config(
+  config->set_user_config(
       "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":1,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":10,\"param\":[]}},\"HOLD\":{"
       "\"subjectId\":1,\"subjectType\":\"scene\",\"action\":{\"id\":3000,"
@@ -211,25 +220,28 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
 
   EXPECT_EQ(config->get_active_actions(), (unsigned int)0);
 
-  config->set_config(
-      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":1,\"subjectType\":"
-      "\"channel\",\"action\":{\"id\":10,\"param\":[]}},\"HOLD\":{"
-      "\"subjectId\":1,\"subjectType\":\"scene\",\"action\":{\"id\":3000,"
-      "\"param\":[]}}},\"actionTriggerCapabilities\":[\"HOLD\"]}");
+  config->set_properties("{\"actionTriggerCapabilities\":[\"HOLD\"]}");
 
   EXPECT_EQ(config->get_active_actions(), (unsigned int)SUPLA_ACTION_CAP_HOLD);
 
-  config->set_config(
-      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":1,\"subjectType\":"
-      "\"channel\",\"action\":{\"id\":10,\"param\":[]}},\"HOLD\":{"
-      "\"subjectId\":1,\"subjectType\":\"scene\",\"action\":{\"id\":3000,"
-      "\"param\":[]}}},\"actionTriggerCapabilities\":[\"HOLD\", "
-      "\"SHORT_PRESS_X1\", "
+  config->set_properties(
+      "{\"actionTriggerCapabilities\":[\"HOLD\", \"SHORT_PRESS_X1\", "
       "\"SHORT_PRESS_X5\"]}");
 
   EXPECT_EQ(
       config->get_active_actions(),
       (unsigned int)(SUPLA_ACTION_CAP_SHORT_PRESS_x5 | SUPLA_ACTION_CAP_HOLD));
+
+  config->set_user_config(
+      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":1,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":10,\"param\":[]}}}}");
+
+  EXPECT_EQ(config->get_active_actions(),
+            (unsigned int)(SUPLA_ACTION_CAP_SHORT_PRESS_x5));
+
+  config->set_user_config("{}");
+
+  EXPECT_EQ(config->get_active_actions(), (unsigned int)0);
 
   delete config;
 }

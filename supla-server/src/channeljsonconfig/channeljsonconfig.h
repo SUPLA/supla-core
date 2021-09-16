@@ -23,18 +23,23 @@
 
 class channel_json_config {
  private:
-  cJSON *json_root;
+  cJSON *user_root;
+  cJSON *properties_root;
+
   channel_json_config *root;
 
  protected:
-  cJSON *get_json_root(void);
+  cJSON *get_user_root(void);
+  cJSON *get_properties_root(void);
 
  public:
   channel_json_config(channel_json_config *root);
   channel_json_config(void);
   virtual ~channel_json_config(void);
-  void set_config(const char *config);
-  char *get_config(void);
+  void set_user_config(const char *config);
+  char *get_user_config(void);
+  void set_properties(const char *config);
+  char *get_properties(void);
 };
 
 #endif /* CHANNELJSONCONFIG_H_ */
