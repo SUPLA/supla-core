@@ -346,7 +346,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               load_config(UserID);
 
-              channels->set_channels_value(dev_channels_b, dev_channels_c,
+              channels->update_channels(dev_channels_b, dev_channels_c,
                                            channel_count);
 
               resultcode = SUPLA_RESULTCODE_TRUE;

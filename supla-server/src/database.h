@@ -182,6 +182,12 @@ class database : public svrdb {
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          unsigned _supla_int_t *validity_time_sec);
   void load_temperatures_and_humidity(int UserID, void *tarr);
+
+  void update_channel_properties(int channel_id, int user_id,
+                                 const char *properties);
+
+  void update_channel_params(int channel_id, int user_id, int param1,
+                             int param2, int param3, int param4);
 };
 
 #endif /* DATABASE_H_ */

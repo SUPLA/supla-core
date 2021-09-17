@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "actions/action_gate_openclose.h"
+#include "actions/actiontriggerconfig.h"
 #include "database.h"
 #include "log.h"
 #include "safearray.h"
@@ -485,7 +486,8 @@ supla_device_channel::supla_device_channel(
     int Param3, int Param4, const char *TextParam1, const char *TextParam2,
     const char *TextParam3, bool Hidden, unsigned int Flags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned _supla_int_t validity_time_sec) {
+    unsigned _supla_int_t validity_time_sec, const char *user_config,
+    const char *properties) {
   this->Id = Id;
   this->Number = Number;
   this->UserID = UserID;
@@ -504,6 +506,7 @@ supla_device_channel::supla_device_channel(
   this->extendedValue = NULL;
   this->value_valid_to.tv_sec = 0;
   this->value_valid_to.tv_usec = 0;
+  this->json_config = NULL;
 
   if (validity_time_sec > 0) {
     gettimeofday(&value_valid_to, NULL);
@@ -511,6 +514,16 @@ supla_device_channel::supla_device_channel(
   }
 
   memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
+
+  switch (Type) {
+    case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
+      json_config = new channel_json_config(NULL);
+      if (json_config) {
+        json_config->set_properties(properties);
+        json_config->set_user_config(user_config);
+      }
+      break;
+  }
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -529,6 +542,10 @@ supla_device_channel::~supla_device_channel() {
   if (this->TextParam3) {
     free(this->TextParam3);
     this->TextParam3 = NULL;
+  }
+
+  if (json_config) {
+    delete json_config;
   }
 }
 
@@ -767,7 +784,80 @@ void supla_device_channel::getConfig(TSD_ChannelConfig *config,
     } break;
 
     case SUPLA_CHANNELFNC_ACTIONTRIGGER: {
+      config->ConfigSize = sizeof(TSD_ChannelConfig_ActionTrigger);
+      TSD_ChannelConfig_ActionTrigger *cfg =
+          (TSD_ChannelConfig_ActionTrigger *)config->Config;
+      cfg->ActiveActions = 0;
+      action_trigger_config *at_config = new action_trigger_config(json_config);
+      if (at_config) {
+        cfg->ActiveActions = at_config->get_active_actions();
+        delete at_config;
+        at_config = NULL;
+      }
     } break;
+  }
+}
+
+void supla_device_channel::db_set_properties(channel_json_config *config) {
+  database *db = new database();
+
+  if (db) {
+    if (db->connect() == true) {
+      char *cfg_string = config->get_user_config();
+
+      db->update_channel_properties(getId(), UserID, cfg_string);
+
+      if (cfg_string) {
+        delete cfg_string;
+        cfg_string = NULL;
+      }
+    }
+    delete db;
+    db = NULL;
+  }
+}
+
+void supla_device_channel::db_set_params(int Param1, int Param2, int Param3,
+                                         int Param4) {
+  database *db = new database();
+
+  if (db) {
+    if (db->connect() == true) {
+      db->update_channel_params(getId(), UserID, Param1, Param2, Param3,
+                                Param4);
+    }
+    delete db;
+    db = NULL;
+  }
+}
+
+void supla_device_channel::setActionTriggerConfig(unsigned int capabilities,
+                                                  int relatedChannelId) {
+  if (Type != SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
+    return;
+  }
+
+  action_trigger_config *at_config = new action_trigger_config(json_config);
+  if (!at_config) {
+    return;
+  }
+
+  if (!json_config) {
+    json_config = at_config;
+  }
+
+  if (at_config->set_capabilities(capabilities)) {
+    db_set_properties(at_config);
+  }
+
+  if (relatedChannelId != Param1) {
+    Param1 = relatedChannelId;
+    db_set_params(Param1, Param2, Param3, Param4);
+  }
+
+  if (at_config != json_config) {
+    delete at_config;
+    at_config = NULL;
   }
 }
 
@@ -1276,14 +1366,15 @@ void supla_device_channels::add_channel(
     int Param3, int Param4, const char *TextParam1, const char *TextParam2,
     const char *TextParam3, bool Hidden, unsigned int Flags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
-    unsigned _supla_int_t validity_time_sec) {
+    unsigned _supla_int_t validity_time_sec, const char *user_config,
+    const char *properties) {
   safe_array_lock(arr);
 
   if (find_channel(Id) == 0) {
     supla_device_channel *c = new supla_device_channel(
         Id, Number, UserID, Type, Func, Param1, Param2, Param3, Param4,
         TextParam1, TextParam2, TextParam3, Hidden, Flags, value,
-        validity_time_sec);
+        validity_time_sec, user_config, properties);
 
     if (c != NULL && safe_array_add(arr, c) == -1) {
       delete c;
@@ -1621,10 +1712,10 @@ bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
 }
 
 bool supla_device_channels::set_channel_value(
-    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_device_channel *channel, char value[SUPLA_CHANNELVALUE_SIZE],
     bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
     bool *significantChange) {
-  if (ChannelID == 0) return false;
+  if (!channel) return false;
   bool result = false;
 
   if (converted2extended) {
@@ -1635,21 +1726,26 @@ bool supla_device_channels::set_channel_value(
 
   safe_array_lock(arr);
 
-  supla_device_channel *channel = find_channel(ChannelID);
+  result = channel->setValue(value, validity_time_sec, significantChange,
+                             proto_version);
 
-  if (channel) {
-    result = channel->setValue(value, validity_time_sec, significantChange,
-                               proto_version);
-
-    if (channel->converValueToExtended()) {
-      if (converted2extended) {
-        *converted2extended = true;
-      }
+  if (channel->converValueToExtended()) {
+    if (converted2extended) {
+      *converted2extended = true;
     }
   }
 
   safe_array_unlock(arr);
   return result;
+}
+
+bool supla_device_channels::set_channel_value(
+    int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
+    bool *converted2extended, const unsigned _supla_int_t *validity_time_sec,
+    bool *significantChange) {
+  return ChannelID &&
+         set_channel_value(find_channel(ChannelID), value, converted2extended,
+                           validity_time_sec, significantChange);
 }
 
 bool supla_device_channels::set_channel_offline(int ChannelID, bool Offline) {
@@ -1781,17 +1877,45 @@ bool supla_device_channels::is_channel_online(int ChannelID) {
   return result;
 }
 
-void supla_device_channels::set_channels_value(
+void supla_device_channels::update_channels(
     TDS_SuplaDeviceChannel_B *schannel_b, TDS_SuplaDeviceChannel_C *schannel_c,
     int count) {
-  if (schannel_b != NULL) {
-    for (int a = 0; a < count; a++)
-      set_channel_value(get_channel_id(schannel_b[a].Number),
-                        schannel_b[a].value, NULL, 0, NULL);
-  } else {
-    for (int a = 0; a < count; a++)
-      set_channel_value(get_channel_id(schannel_c[a].Number),
-                        schannel_c[a].value, NULL, 0, NULL);
+  for (int a = 0; a < count; a++) {
+    int type = 0;
+    char *value = NULL;
+    unsigned char number = 0;
+    unsigned int actionTriggerCaps = 0;
+    unsigned char actionTriggerRelatedChannelNumber = 0;
+
+    if (schannel_b != NULL) {
+      type = schannel_b[a].Type;
+      value = schannel_b[a].value;
+      number = schannel_b[a].Number;
+    } else {
+      type = schannel_c[a].Type;
+      value = schannel_c[a].value;
+      number = schannel_c[a].Number;
+      actionTriggerCaps = schannel_c[a].ActionTriggerCaps;
+      actionTriggerRelatedChannelNumber =
+          schannel_c[a].ActionTriggerRelatedChannelNumber;
+    }
+
+    int channelId = get_channel_id(number);
+
+    safe_array_lock(arr);
+
+    supla_device_channel *channel = find_channel(channelId);
+
+    if (channel) {
+      set_channel_value(channelId, value, NULL, 0, NULL);
+      if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
+        channel->setActionTriggerConfig(
+            actionTriggerCaps,
+            get_channel_id(actionTriggerRelatedChannelNumber));
+      }
+    }
+
+    safe_array_unlock(arr);
   }
 }
 
