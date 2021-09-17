@@ -69,6 +69,9 @@ void channel_json_config::set_user_config(const char *config) {
 
   if (config) {
     user_root = cJSON_Parse(config);
+  } else {
+    cJSON_Delete(user_root);
+    user_root = NULL;
   }
 }
 
@@ -107,6 +110,9 @@ void channel_json_config::set_properties(const char *properties) {
 
   if (properties) {
     properties_root = cJSON_Parse(properties);
+  } else {
+    cJSON_Delete(properties_root);
+    properties_root = NULL;
   }
 }
 

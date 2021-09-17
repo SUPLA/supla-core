@@ -48,6 +48,64 @@ TEST_F(ChannelJSONConfigTest, checkDefaults) {
   delete config;
 }
 
+TEST_F(ChannelJSONConfigTest, setUserConfigToNull) {
+  channel_json_config *config = new channel_json_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config("{\"c\":1}");
+
+  char *str = config->get_user_config();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"c\":1}", 10), 0);
+    free(str);
+    str = NULL;
+  }
+
+  config->set_user_config(NULL);
+
+  str = config->get_user_config();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{}", 10), 0);
+    free(str);
+    str = NULL;
+  }
+
+  delete config;
+}
+
+TEST_F(ChannelJSONConfigTest, setPropertiesToNull) {
+  channel_json_config *config = new channel_json_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_properties("{\"c\":1}");
+
+  char *str = config->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"c\":1}", 10), 0);
+    free(str);
+    str = NULL;
+  }
+
+  config->set_properties(NULL);
+
+  str = config->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{}", 10), 0);
+    free(str);
+    str = NULL;
+  }
+
+  delete config;
+}
+
 TEST_F(ChannelJSONConfigTest, userConfigFormatting) {
   channel_json_config *config = new channel_json_config();
   ASSERT_TRUE(config != NULL);
