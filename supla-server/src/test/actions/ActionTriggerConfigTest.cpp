@@ -19,7 +19,7 @@
 #include "ActionTriggerConfigTest.h"
 
 #include "TestHelper.h"
-#include "actions/actiontriggerconfig.h"
+#include "actions/action_trigger_config.h"
 #include "proto.h"
 
 namespace testing {
