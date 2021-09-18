@@ -28,7 +28,7 @@ class action_trigger_config : public channel_json_config {
                cJSON *arr);
 
  public:
-  action_trigger_config(channel_json_config *root);
+  explicit action_trigger_config(channel_json_config *root);
   action_trigger_config(void);
 
   unsigned int get_capabilities(void);

@@ -33,7 +33,7 @@ class channel_json_config {
   cJSON *get_properties_root(void);
 
  public:
-  channel_json_config(channel_json_config *root);
+  explicit channel_json_config(channel_json_config *root);
   channel_json_config(void);
   virtual ~channel_json_config(void);
   void set_user_config(const char *config);

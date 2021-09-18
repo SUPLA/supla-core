@@ -21,12 +21,14 @@
 supla_channel_action_executor::supla_channel_action_executor(void)
     : supla_abstract_channel_action_executor() {}
 
-supla_channel_action_executor::supla_channel_action_executor(supla_user *user, int device_id,
-                                             int channel_id)
+supla_channel_action_executor::supla_channel_action_executor(supla_user *user,
+                                                             int device_id,
+                                                             int channel_id)
     : supla_abstract_channel_action_executor(user, device_id, channel_id) {}
 
-supla_channel_action_executor::supla_channel_action_executor(int user_id, int device_id,
-                                             int channel_id)
+supla_channel_action_executor::supla_channel_action_executor(int user_id,
+                                                             int device_id,
+                                                             int channel_id)
     : supla_abstract_channel_action_executor(user_id, device_id, channel_id) {}
 
 void supla_channel_action_executor::set_on(bool on) {

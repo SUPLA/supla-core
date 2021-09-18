@@ -16,9 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/channel_action_executor.h>
 #include "action_gate_openclose.h"
+
+#include <actions/channel_action_executor.h>
 #include <assert.h>
+
 #include "action_gate_openclose_search_condition.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
@@ -130,7 +132,8 @@ void supla_action_gate_openclose::open_close(int user_id, int device_id,
 
   cancel_tasks(user_id, device_id, channel_id);
 
-  supla_channel_action_executor *action_executor = new supla_channel_action_executor();
+  supla_channel_action_executor *action_executor =
+      new supla_channel_action_executor();
   gate_state_getter *state_getter = new gate_state_getter();
 
   new supla_action_gate_openclose(

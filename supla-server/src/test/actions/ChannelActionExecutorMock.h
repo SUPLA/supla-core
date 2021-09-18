@@ -23,7 +23,8 @@
 
 namespace testing {
 
-class ChannelActionExecutorMock : public supla_abstract_channel_action_executor {
+class ChannelActionExecutorMock
+    : public supla_abstract_channel_action_executor {
  private:
   int on_counter;
   int color_counter;

@@ -17,6 +17,7 @@
  */
 
 #include "mqtt_value_setter.h"
+
 #include "device.h"
 #include "mqtt_client_suite.h"
 #include "tools.h"
@@ -34,7 +35,8 @@ supla_mqtt_value_setter::~supla_mqtt_value_setter(void) {
   }
 }
 
-supla_channel_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
+supla_channel_action_executor *supla_mqtt_value_setter::get_action_executor(
+    void) {
   if (action_executor == NULL) {
     action_executor = new supla_channel_action_executor();
   }

@@ -20,6 +20,7 @@
 #define ACTIONTRIGGER_H_
 
 #include <actions/abstract_channel_action_executor.h>
+
 #include "action_trigger_config.h"
 
 class supla_action_trigger {

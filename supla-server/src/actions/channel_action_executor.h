@@ -21,10 +21,12 @@
 
 #include <actions/abstract_channel_action_executor.h>
 
-class supla_channel_action_executor : public supla_abstract_channel_action_executor {
+class supla_channel_action_executor
+    : public supla_abstract_channel_action_executor {
  public:
   supla_channel_action_executor(void);
-  supla_channel_action_executor(supla_user *user, int device_id, int channel_id);
+  supla_channel_action_executor(supla_user *user, int device_id,
+                                int channel_id);
   supla_channel_action_executor(int user_id, int device_id, int channel_id);
 
   void set_on(bool on);

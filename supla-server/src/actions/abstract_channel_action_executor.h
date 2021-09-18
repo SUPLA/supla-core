@@ -35,8 +35,9 @@ class supla_abstract_channel_action_executor {
  public:
   supla_abstract_channel_action_executor(void);
   supla_abstract_channel_action_executor(supla_user *user, int device_id,
-                                 int channel_id);
-  supla_abstract_channel_action_executor(int user_id, int device_id, int channel_id);
+                                         int channel_id);
+  supla_abstract_channel_action_executor(int user_id, int device_id,
+                                         int channel_id);
   virtual ~supla_abstract_channel_action_executor(void);
 
   void set_channel_id(supla_user *user, int device_id, int channel_id);
