@@ -803,7 +803,7 @@ void supla_device_channel::db_set_properties(channel_json_config *config) {
 
   if (db) {
     if (db->connect() == true) {
-      char *cfg_string = config->get_user_config();
+      char *cfg_string = config->get_properties();
 
       db->update_channel_properties(getId(), UserID, cfg_string);
 
