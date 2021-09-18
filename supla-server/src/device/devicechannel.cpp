@@ -1908,10 +1908,15 @@ void supla_device_channels::update_channels(
 
     if (channel) {
       set_channel_value(channelId, value, NULL, 0, NULL);
+
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
-        channel->setActionTriggerConfig(
-            actionTriggerCaps,
-            get_channel_id(actionTriggerRelatedChannelNumber));
+        int actionTriggerRelatedChannelId = 0;
+        if (actionTriggerRelatedChannelNumber > 1) {
+          actionTriggerRelatedChannelId =
+              get_channel_id(actionTriggerRelatedChannelNumber - 1);
+        }
+        channel->setActionTriggerConfig(actionTriggerCaps,
+                                        actionTriggerRelatedChannelId);
       }
     }
 
