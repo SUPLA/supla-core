@@ -16,15 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/action_trigger_config.h>
 #include "devicechannel.h"
 
+#include <actions/action_trigger_config.h>
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "actions/action_executor.h"
 #include "actions/action_gate_openclose.h"
+#include "actions/action_trigger.h"
 #include "database.h"
 #include "log.h"
 #include "safearray.h"
@@ -1311,6 +1313,22 @@ bool supla_device_channel::converValueToExtended(void) {
   return result;
 }
 
+void supla_device_channel::action_trigger(int actions) {
+  supla_action_executor *executor = new supla_action_executor();
+  if (executor) {
+    action_trigger_config *at_config = new action_trigger_config(json_config);
+    if (at_config) {
+      supla_action_trigger *trigger = new supla_action_trigger();
+      if (trigger) {
+        trigger->execute_actions(executor, at_config, actions);
+        delete trigger;
+      }
+      delete at_config;
+    }
+    delete executor;
+  }
+}
+
 // ---------------------------------------------
 // ---------------------------------------------
 // ---------------------------------------------
@@ -2496,6 +2514,21 @@ void supla_device_channels::get_channel_config_request(
     TSD_ChannelConfig config = {};
     channel->getConfig(&config, request->ConfigType, request->Flags);
     srpc_sd_async_get_channel_config_result(get_srpc(), &config);
+  }
+
+  safe_array_unlock(arr);
+}
+
+void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
+  if (!at) {
+    return;
+  }
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel_by_number(at->ChannelNumber);
+  if (channel) {
+    channel->action_trigger(at->ActionTrigger);
   }
 
   safe_array_unlock(arr);

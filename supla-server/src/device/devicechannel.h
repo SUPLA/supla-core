@@ -244,6 +244,7 @@ class supla_device_channel {
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
   supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   bool converValueToExtended(void);
+  void action_trigger(int actions);
 };
 
 class supla_device;
@@ -365,6 +366,7 @@ class supla_device_channels {
   void set_channel_function(int ChannelId, int Func);
   void get_functions_request(void);
   void get_channel_config_request(TDS_GetChannelConfigRequest *request);
+  void action_trigger(TDS_ActionTrigger *at);
 
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on);
