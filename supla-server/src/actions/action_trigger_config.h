@@ -23,18 +23,47 @@
 
 #include "channeljsonconfig/channeljsonconfig.h"
 
+#define ACTION_OPEN 10
+#define ACTION_CLOSE 20
+#define ACTION_SHUT 30
+#define ACTION_REVEAL 40
+#define ACTION_REVEAL_PARTIALLY 50
+#define ACTION_TURN_ON 60
+#define ACTION_TURN_OFF 70
+//#define ACTION_SET_RGBW_PARAMETERS 80
+#define ACTION_OPEN_CLOSE 90
+#define ACTION_STOP 100
+#define ACTION_TOGGLE 110
+
 typedef struct {
   int cap;
   std::string str;
 } _atc_map_t;
 
+typedef struct {
+  int actionId;
+  bool channelGroup;
+  int subjectId;
+} _at_config_action_t;
+
+typedef struct {
+  int actionId;
+  bool channelGroup;
+  int subjectId;
+} _at_config_rgbw_t;
+
 class action_trigger_config : public channel_json_config {
  private:
-  static _atc_map_t map[];
+  static const _atc_map_t map[];
+  static const char caps_key[];
+  static const char action_key[];
+  static const char actions_key[];
   bool equal(const char *str1, const char *str2);
+  bool equal(cJSON *item, const char *str);
   int to_cap(cJSON *item);
   const char *to_string(int cap);
   int to_cap(const char *str);
+  cJSON *get_cap_user_config(int cap);
 
  public:
   explicit action_trigger_config(channel_json_config *root);
@@ -43,6 +72,8 @@ class action_trigger_config : public channel_json_config {
   unsigned int get_capabilities(void);
   bool set_capabilities(unsigned int caps);
   unsigned int get_active_actions(void);
+  _at_config_action_t get_action_assigned_to_capability(int cap);
+  char get_percentage(int cap);
 };
 
 #endif /* ACTIONTRIGGERCONFIG_H_ */

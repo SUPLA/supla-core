@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/action_trigger_config.h>
+#include "actions/action_trigger_config.h"
+
 #include <ctype.h>
 #include <string.h>
 
 #include "proto.h"
 
 #define MAX_STR_LEN 20
-#define ARR_NAME "actionTriggerCapabilities"
-#define ACTIONS "actions"
 
-_atc_map_t action_trigger_config::map[] = {
+// static
+const _atc_map_t action_trigger_config::map[] = {
     {.cap = SUPLA_ACTION_CAP_TURN_ON, .str = "TURN_ON"},
     {.cap = SUPLA_ACTION_CAP_TURN_OFF, .str = "TURN_OFF"},
     {.cap = SUPLA_ACTION_CAP_TOGGLE_x1, .str = "TOGGLE_X1"},
@@ -40,6 +40,15 @@ _atc_map_t action_trigger_config::map[] = {
     {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x3, .str = "SHORT_PRESS_X3"},
     {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x4, .str = "SHORT_PRESS_X4"},
     {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x5, .str = "SHORT_PRESS_X5"}};
+
+// static
+const char action_trigger_config::caps_key[] = "actionTriggerCapabilities";
+
+// static
+const char action_trigger_config::action_key[] = "action";
+
+// static
+const char action_trigger_config::actions_key[] = "actions";
 
 action_trigger_config::action_trigger_config(void) : channel_json_config() {}
 
@@ -64,6 +73,10 @@ bool action_trigger_config::equal(const char *str1, const char *str2) {
   }
 
   return true;
+}
+
+bool action_trigger_config::equal(cJSON *item, const char *str) {
+  return item && equal(cJSON_GetStringValue(item), str);
 }
 
 const char *action_trigger_config::to_string(int cap) {
@@ -105,7 +118,7 @@ unsigned int action_trigger_config::get_capabilities(void) {
     return result;
   }
 
-  cJSON *st = cJSON_GetObjectItem(json, ARR_NAME);
+  cJSON *st = cJSON_GetObjectItem(json, caps_key);
   if (!st || !cJSON_IsArray(st)) {
     return result;
   }
@@ -139,7 +152,7 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
     return false;
   }
 
-  cJSON *st = cJSON_GetObjectItem(json, ARR_NAME);
+  cJSON *st = cJSON_GetObjectItem(json, caps_key);
   if (st) {
     while (cJSON_GetArraySize(st)) {
       cJSON_DeleteItemFromArray(st, 0);
@@ -149,7 +162,7 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
   if (!st) {
     st = cJSON_CreateArray();
     if (st) {
-      cJSON_AddItemToObject(json, ARR_NAME, st);
+      cJSON_AddItemToObject(json, caps_key, st);
     }
   }
 
@@ -180,7 +193,7 @@ unsigned int action_trigger_config::get_active_actions(void) {
     return result;
   }
 
-  cJSON *actions = cJSON_GetObjectItem(json, ACTIONS);
+  cJSON *actions = cJSON_GetObjectItem(json, actions_key);
 
   int size = sizeof(map) / sizeof(_atc_map_t);
 
@@ -191,4 +204,85 @@ unsigned int action_trigger_config::get_active_actions(void) {
   }
 
   return caps & result;
+}
+
+cJSON *action_trigger_config::get_cap_user_config(int cap) {
+  if (!(get_capabilities() & cap)) {
+    return NULL;
+  }
+
+  cJSON *root = get_user_root();
+  if (!root) {
+    return NULL;
+  }
+
+  cJSON *actions = cJSON_GetObjectItem(root, actions_key);
+
+  if (!actions) {
+    return NULL;
+  }
+
+  const char *cap_str = to_string(cap);
+
+  if (!cap_str) {
+    return NULL;
+  }
+
+  return cJSON_GetObjectItem(actions, cap_str);
+  ;
+}
+
+_at_config_action_t action_trigger_config::get_action_assigned_to_capability(
+    int cap) {
+  _at_config_action_t result = {};
+
+  cJSON *cap_cfg = get_cap_user_config(cap);
+
+  if (!cap_cfg) {
+    return result;
+  }
+
+  cJSON *subjectId = cJSON_GetObjectItem(cap_cfg, "subjectId");
+  if (subjectId && cJSON_IsNumber(subjectId)) {
+    result.subjectId = subjectId->valueint;
+  }
+
+  cJSON *subjectType = cJSON_GetObjectItem(cap_cfg, "subjectType");
+  result.channelGroup = equal(subjectType, "channelGroup");
+
+  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+
+  if (action) {
+    cJSON *id = cJSON_GetObjectItem(action, "id");
+    if (id && cJSON_IsNumber(id)) {
+      result.actionId = id->valueint;
+    }
+  }
+
+  return result;
+}
+
+char action_trigger_config::get_percentage(int cap) {
+  char result = -1;
+
+  cJSON *cap_cfg = get_cap_user_config(cap);
+
+  if (!cap_cfg) {
+    return result;
+  }
+
+  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+
+  if (action) {
+    cJSON *param = cJSON_GetObjectItem(action, "param");
+    if (param) {
+      cJSON *percentage = cJSON_GetObjectItem(param, "percentage");
+      if (percentage && cJSON_IsNumber(percentage) &&
+          percentage->valueint >= 0 && percentage->valueint <= 100) {
+        result = percentage->valueint;
+      }
+    }
+  }
+
+  return result;
 }

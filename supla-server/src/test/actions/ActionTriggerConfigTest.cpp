@@ -246,4 +246,126 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, actionShutRevelal) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"HOLD\":{\"subjectId\":3611,\"subjectType\":\"channel\","
+      "\"action\":{\"id\":30,\"param\":[]}},\"SHORT_PRESS_X2\":{\"subjectId\":"
+      "3611,\"subjectType\":\"channel\",\"action\":{\"id\":40,\"param\":[]}}}"
+      "}");
+
+  _at_config_action_t action =
+      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_HOLD);
+  EXPECT_EQ(action.actionId, 0);
+
+  action = config->get_action_assigned_to_capability(
+      SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+  EXPECT_EQ(action.actionId, 0);
+
+  config->set_capabilities(SUPLA_ACTION_CAP_HOLD |
+                           SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+
+  action = config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_HOLD);
+  EXPECT_EQ(action.actionId, ACTION_SHUT);
+  EXPECT_EQ(action.subjectId, 3611);
+  EXPECT_FALSE(action.channelGroup);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getPercentage) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":98}}}}}");
+
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), -1);
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 98);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":110}}}}}");
+
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), -1);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":0}}}}}");
+
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentag\":10}}}}}");
+
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), -1);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":65}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  _at_config_action_t action =
+      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(action.actionId, ACTION_REVEAL_PARTIALLY);
+  EXPECT_EQ(action.subjectId, 3611);
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 65);
+  EXPECT_FALSE(action.channelGroup);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, actionTurnOn) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":3329,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":60,\"param\":[]}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+
+  _at_config_action_t action = config->get_action_assigned_to_capability(
+      SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+  EXPECT_EQ(action.actionId, ACTION_TURN_ON);
+  EXPECT_EQ(action.subjectId, 3329);
+  EXPECT_FALSE(action.channelGroup);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, actionTurnOnTheGroup) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":3329,\"subjectType\":"
+      "\"channelGroup\",\"action\":{\"id\":60,\"param\":[]}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+
+  _at_config_action_t action = config->get_action_assigned_to_capability(
+      SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+  EXPECT_EQ(action.actionId, ACTION_TURN_ON);
+  EXPECT_EQ(action.subjectId, 3329);
+  EXPECT_TRUE(action.channelGroup);
+
+  delete config;
+}
+
 } /* namespace testing */
