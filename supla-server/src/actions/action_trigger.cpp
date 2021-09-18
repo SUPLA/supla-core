@@ -23,6 +23,6 @@ supla_action_trigger::supla_action_trigger(void) {}
 supla_action_trigger::~supla_action_trigger(void) {}
 
 void supla_action_trigger::execute_actions(
-    supla_abstract_action_executor *execuror, action_trigger_config *config,
+    supla_abstract_channel_action_executor *execuror, action_trigger_config *config,
     unsigned int actions) {}
 

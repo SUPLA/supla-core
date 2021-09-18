@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_executor.h"
+#include <actions/channel_action_executor.h>
 
-supla_action_executor::supla_action_executor(void)
-    : supla_abstract_action_executor() {}
+supla_channel_action_executor::supla_channel_action_executor(void)
+    : supla_abstract_channel_action_executor() {}
 
-supla_action_executor::supla_action_executor(supla_user *user, int device_id,
+supla_channel_action_executor::supla_channel_action_executor(supla_user *user, int device_id,
                                              int channel_id)
-    : supla_abstract_action_executor(user, device_id, channel_id) {}
+    : supla_abstract_channel_action_executor(user, device_id, channel_id) {}
 
-supla_action_executor::supla_action_executor(int user_id, int device_id,
+supla_channel_action_executor::supla_channel_action_executor(int user_id, int device_id,
                                              int channel_id)
-    : supla_abstract_action_executor(user_id, device_id, channel_id) {}
+    : supla_abstract_channel_action_executor(user_id, device_id, channel_id) {}
 
-void supla_action_executor::set_on(bool on) {
+void supla_channel_action_executor::set_on(bool on) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->set_on(0, get_channel_id(), 0, 0, on ? 1 : 0);
@@ -37,7 +37,7 @@ void supla_action_executor::set_on(bool on) {
   }
 }
 
-void supla_action_executor::set_color(unsigned int color) {
+void supla_channel_action_executor::set_color(unsigned int color) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->set_color(0, get_channel_id(), 0, 0, color);
@@ -45,7 +45,7 @@ void supla_action_executor::set_color(unsigned int color) {
   }
 }
 
-void supla_action_executor::set_brightness(char brightness) {
+void supla_channel_action_executor::set_brightness(char brightness) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->set_brightness(0, get_channel_id(), 0, 0,
@@ -54,7 +54,7 @@ void supla_action_executor::set_brightness(char brightness) {
   }
 }
 
-void supla_action_executor::set_color_brightness(char brightness) {
+void supla_channel_action_executor::set_color_brightness(char brightness) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->set_color_brightness(0, get_channel_id(), 0, 0,
@@ -63,7 +63,7 @@ void supla_action_executor::set_color_brightness(char brightness) {
   }
 }
 
-void supla_action_executor::toggle(void) {
+void supla_channel_action_executor::toggle(void) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_toggle(0, get_channel_id(), 0, 0);
@@ -71,7 +71,7 @@ void supla_action_executor::toggle(void) {
   }
 }
 
-void supla_action_executor::shut(const char *closingPercentage) {
+void supla_channel_action_executor::shut(const char *closingPercentage) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_shut(0, get_channel_id(), 0, 0,
@@ -80,7 +80,7 @@ void supla_action_executor::shut(const char *closingPercentage) {
   }
 }
 
-void supla_action_executor::reveal(void) {
+void supla_channel_action_executor::reveal(void) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_reveal(0, get_channel_id(), 0, 0);
@@ -88,7 +88,7 @@ void supla_action_executor::reveal(void) {
   }
 }
 
-void supla_action_executor::stop(void) {
+void supla_channel_action_executor::stop(void) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_stop(0, get_channel_id(), 0, 0);
@@ -96,7 +96,7 @@ void supla_action_executor::stop(void) {
   }
 }
 
-void supla_action_executor::open(void) {
+void supla_channel_action_executor::open(void) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_open(0, get_channel_id(), 0, 0);
@@ -104,7 +104,7 @@ void supla_action_executor::open(void) {
   }
 }
 
-void supla_action_executor::close(void) {
+void supla_channel_action_executor::close(void) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_close(get_channel_id());
@@ -112,7 +112,7 @@ void supla_action_executor::close(void) {
   }
 }
 
-void supla_action_executor::open_close(void) {
+void supla_channel_action_executor::open_close(void) {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_open_close(0, get_channel_id(), 0, 0);
@@ -120,7 +120,7 @@ void supla_action_executor::open_close(void) {
   }
 }
 
-void supla_action_executor::open_close_without_canceling_tasks() {
+void supla_channel_action_executor::open_close_without_canceling_tasks() {
   supla_device *device = get_device();
   if (device) {
     device->get_channels()->action_open_close_without_canceling_tasks(

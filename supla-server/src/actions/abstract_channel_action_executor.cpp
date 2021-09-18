@@ -16,29 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/abstract_action_executor.h>
+#include <actions/abstract_channel_action_executor.h>
 
-supla_abstract_action_executor::supla_abstract_action_executor(void) {
+supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(void) {
   this->user = 0;
   this->device_id = 0;
   this->channel_id = 0;
 }
 
-supla_abstract_action_executor::supla_abstract_action_executor(supla_user *user,
+supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(supla_user *user,
                                                                int device_id,
                                                                int channel_id) {
   set_channel_id(user, device_id, channel_id);
 }
 
-supla_abstract_action_executor::supla_abstract_action_executor(int user_id,
+supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(int user_id,
                                                                int device_id,
                                                                int channel_id) {
   set_channel_id(user_id, device_id, channel_id);
 }
 
-supla_abstract_action_executor::~supla_abstract_action_executor(void) {}
+supla_abstract_channel_action_executor::~supla_abstract_channel_action_executor(void) {}
 
-void supla_abstract_action_executor::set_channel_id(supla_user *user,
+void supla_abstract_channel_action_executor::set_channel_id(supla_user *user,
                                                     int device_id,
                                                     int channel_id) {
   this->user = user;
@@ -46,14 +46,14 @@ void supla_abstract_action_executor::set_channel_id(supla_user *user,
   this->channel_id = channel_id;
 }
 
-void supla_abstract_action_executor::set_channel_id(int user_id, int device_id,
+void supla_abstract_channel_action_executor::set_channel_id(int user_id, int device_id,
                                                     int channel_id) {
   this->user = user_id ? supla_user::find(user_id, false) : NULL;
   this->device_id = device_id;
   this->channel_id = channel_id;
 }
 
-supla_device *supla_abstract_action_executor::get_device(void) {
+supla_device *supla_abstract_channel_action_executor::get_device(void) {
   if (user && device_id) {
     return user->get_device(device_id);
   }
@@ -61,4 +61,4 @@ supla_device *supla_abstract_action_executor::get_device(void) {
   return NULL;
 }
 
-int supla_abstract_action_executor::get_channel_id(void) { return channel_id; }
+int supla_abstract_channel_action_executor::get_channel_id(void) { return channel_id; }

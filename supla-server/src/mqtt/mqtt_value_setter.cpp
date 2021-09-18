@@ -34,9 +34,9 @@ supla_mqtt_value_setter::~supla_mqtt_value_setter(void) {
   }
 }
 
-supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
+supla_channel_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
   if (action_executor == NULL) {
-    action_executor = new supla_action_executor();
+    action_executor = new supla_channel_action_executor();
   }
 
   if (action_executor) {
@@ -48,77 +48,77 @@ supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
 }
 
 void supla_mqtt_value_setter::set_on(bool on) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->set_on(on);
   }
 }
 
 void supla_mqtt_value_setter::set_color(unsigned int color) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->set_color(color);
   }
 }
 
 void supla_mqtt_value_setter::set_brightness(char brightness) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->set_brightness(brightness);
   }
 }
 
 void supla_mqtt_value_setter::set_color_brightness(char brightness) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->set_color_brightness(brightness);
   }
 }
 
 void supla_mqtt_value_setter::action_toggle(void) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->toggle();
   }
 }
 
 void supla_mqtt_value_setter::action_shut(const char *closingPercentage) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->shut(closingPercentage);
   }
 }
 
 void supla_mqtt_value_setter::action_reveal(void) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->reveal();
   }
 }
 
 void supla_mqtt_value_setter::action_stop(void) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->stop();
   }
 }
 
 void supla_mqtt_value_setter::action_open(void) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->open();
   }
 }
 
 void supla_mqtt_value_setter::action_close(void) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->close();
   }
 }
 
 void supla_mqtt_value_setter::action_open_close(void) {
-  supla_action_executor *action = get_action_executor();
+  supla_channel_action_executor *action = get_action_executor();
   if (action) {
     action->open_close();
   }

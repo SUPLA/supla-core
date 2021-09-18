@@ -19,13 +19,13 @@
 #ifndef ACTION_EXECUTOR_H_
 #define ACTION_EXECUTOR_H_
 
-#include "abstract_action_executor.h"
+#include <actions/abstract_channel_action_executor.h>
 
-class supla_action_executor : public supla_abstract_action_executor {
+class supla_channel_action_executor : public supla_abstract_channel_action_executor {
  public:
-  supla_action_executor(void);
-  supla_action_executor(supla_user *user, int device_id, int channel_id);
-  supla_action_executor(int user_id, int device_id, int channel_id);
+  supla_channel_action_executor(void);
+  supla_channel_action_executor(supla_user *user, int device_id, int channel_id);
+  supla_channel_action_executor(int user_id, int device_id, int channel_id);
 
   void set_on(bool on);
   void set_color(unsigned int color);

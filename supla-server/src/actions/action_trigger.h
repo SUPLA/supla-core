@@ -19,7 +19,7 @@
 #ifndef ACTIONTRIGGER_H_
 #define ACTIONTRIGGER_H_
 
-#include "abstract_action_executor.h"
+#include <actions/abstract_channel_action_executor.h>
 #include "action_trigger_config.h"
 
 class supla_action_trigger {
@@ -28,7 +28,7 @@ class supla_action_trigger {
   supla_action_trigger(void);
   ~supla_action_trigger(void);
 
-  void execute_actions(supla_abstract_action_executor *execuror,
+  void execute_actions(supla_abstract_channel_action_executor *execuror,
                        action_trigger_config *config, unsigned int actions);
 };
 

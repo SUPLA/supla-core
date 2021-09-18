@@ -19,12 +19,12 @@
 #include "devicechannel.h"
 
 #include <actions/action_trigger_config.h>
+#include <actions/channel_action_executor.h>
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "actions/action_executor.h"
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
 #include "database.h"
@@ -1314,7 +1314,7 @@ bool supla_device_channel::converValueToExtended(void) {
 }
 
 void supla_device_channel::action_trigger(int actions) {
-  supla_action_executor *executor = new supla_action_executor();
+  supla_channel_action_executor *executor = new supla_channel_action_executor();
   if (executor) {
     action_trigger_config *at_config = new action_trigger_config(json_config);
     if (at_config) {

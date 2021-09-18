@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <actions/channel_action_executor.h>
 #include "action_gate_openclose.h"
 #include <assert.h>
-#include "action_executor.h"
 #include "action_gate_openclose_search_condition.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
@@ -28,7 +28,7 @@
 
 supla_action_gate_openclose::supla_action_gate_openclose(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-    supla_abstract_action_executor *action_executor,
+    supla_abstract_channel_action_executor *action_executor,
     supla_abstract_gate_state_getter *state_getter, int user_id, int device_id,
     int channel_id, unsigned int verification_delay_us, bool open)
     : supla_abstract_asynctask(queue, pool) {
@@ -39,7 +39,7 @@ supla_action_gate_openclose::supla_action_gate_openclose(
 supla_action_gate_openclose::supla_action_gate_openclose(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     short priority, bool release_immediately,
-    supla_abstract_action_executor *action_executor,
+    supla_abstract_channel_action_executor *action_executor,
     supla_abstract_gate_state_getter *state_getter, int user_id, int device_id,
     int channel_id, unsigned int verification_delay_us, bool open)
     : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
@@ -48,7 +48,7 @@ supla_action_gate_openclose::supla_action_gate_openclose(
 }
 
 void supla_action_gate_openclose::action_init(
-    supla_abstract_action_executor *action_executor,
+    supla_abstract_channel_action_executor *action_executor,
     supla_abstract_gate_state_getter *state_getter, int user_id, int device_id,
     int channel_id, unsigned int verification_delay_us, bool open) {
   assert(action_executor);
@@ -130,7 +130,7 @@ void supla_action_gate_openclose::open_close(int user_id, int device_id,
 
   cancel_tasks(user_id, device_id, channel_id);
 
-  supla_action_executor *action_executor = new supla_action_executor();
+  supla_channel_action_executor *action_executor = new supla_channel_action_executor();
   gate_state_getter *state_getter = new gate_state_getter();
 
   new supla_action_gate_openclose(

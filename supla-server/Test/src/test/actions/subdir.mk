@@ -4,16 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/actions/ActionExecutorMock.cpp \
-../src/test/actions/ActionTriggerConfigTest.cpp 
+../src/test/actions/ActionTriggerConfigTest.cpp \
+../src/test/actions/ChannelActionExecutorMock.cpp 
 
 OBJS += \
-./src/test/actions/ActionExecutorMock.o \
-./src/test/actions/ActionTriggerConfigTest.o 
+./src/test/actions/ActionTriggerConfigTest.o \
+./src/test/actions/ChannelActionExecutorMock.o 
 
 CPP_DEPS += \
-./src/test/actions/ActionExecutorMock.d \
-./src/test/actions/ActionTriggerConfigTest.d 
+./src/test/actions/ActionTriggerConfigTest.d \
+./src/test/actions/ChannelActionExecutorMock.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

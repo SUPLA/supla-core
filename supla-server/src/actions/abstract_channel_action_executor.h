@@ -22,7 +22,7 @@
 #include "device.h"
 #include "user.h"
 
-class supla_abstract_action_executor {
+class supla_abstract_channel_action_executor {
  private:
   supla_user *user;
   int device_id;
@@ -33,11 +33,11 @@ class supla_abstract_action_executor {
   int get_channel_id(void);
 
  public:
-  supla_abstract_action_executor(void);
-  supla_abstract_action_executor(supla_user *user, int device_id,
+  supla_abstract_channel_action_executor(void);
+  supla_abstract_channel_action_executor(supla_user *user, int device_id,
                                  int channel_id);
-  supla_abstract_action_executor(int user_id, int device_id, int channel_id);
-  virtual ~supla_abstract_action_executor(void);
+  supla_abstract_channel_action_executor(int user_id, int device_id, int channel_id);
+  virtual ~supla_abstract_channel_action_executor(void);
 
   void set_channel_id(supla_user *user, int device_id, int channel_id);
   void set_channel_id(int user_id, int device_id, int channel_id);
