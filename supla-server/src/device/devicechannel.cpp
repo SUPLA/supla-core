@@ -1314,18 +1314,26 @@ bool supla_device_channel::converValueToExtended(void) {
 }
 
 void supla_device_channel::action_trigger(int actions) {
-  supla_channel_action_executor *executor = new supla_channel_action_executor();
-  if (executor) {
-    action_trigger_config *at_config = new action_trigger_config(json_config);
-    if (at_config) {
-      supla_action_trigger *trigger = new supla_action_trigger();
-      if (trigger) {
-        trigger->execute_actions(executor, at_config, actions);
-        delete trigger;
-      }
-      delete at_config;
+  supla_channel_action_executor *ca_exec = new supla_channel_action_executor();
+  action_trigger_config *at_config = new action_trigger_config(json_config);
+
+  if (ca_exec && at_config) {
+    supla_action_trigger *trigger =
+        new supla_action_trigger(ca_exec, at_config);
+    if (trigger) {
+      trigger->execute_actions(actions);
+      delete trigger;
     }
-    delete executor;
+  }
+
+  if (ca_exec) {
+    delete ca_exec;
+    ca_exec = NULL;
+  }
+
+  if (at_config) {
+    delete at_config;
+    at_config = NULL;
   }
 }
 

@@ -18,10 +18,13 @@
 
 #include "action_trigger.h"
 
-supla_action_trigger::supla_action_trigger(void) {}
+supla_action_trigger::supla_action_trigger(
+    supla_abstract_channel_action_executor *ca_exec,
+    action_trigger_config *config) {
+  this->ca_exec = ca_exec;
+  this->config = config;
+}
 
 supla_action_trigger::~supla_action_trigger(void) {}
 
-void supla_action_trigger::execute_actions(
-    supla_abstract_channel_action_executor *execuror,
-    action_trigger_config *config, unsigned int actions) {}
+void supla_action_trigger::execute_actions(unsigned int actions) {}

@@ -25,12 +25,15 @@
 
 class supla_action_trigger {
  private:
+  action_trigger_config *config;
+  supla_abstract_channel_action_executor *ca_exec;
+
  public:
-  supla_action_trigger(void);
+  supla_action_trigger(supla_abstract_channel_action_executor *ca_exec,
+                       action_trigger_config *config);
   ~supla_action_trigger(void);
 
-  void execute_actions(supla_abstract_channel_action_executor *execuror,
-                       action_trigger_config *config, unsigned int actions);
+  void execute_actions(unsigned int actions);
 };
 
 #endif /* ACTIONTRIGGER_H_ */
