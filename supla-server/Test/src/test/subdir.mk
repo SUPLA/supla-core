@@ -4,7 +4,6 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/ActionExecutorMock.cpp \
 ../src/test/AllTests.cpp \
 ../src/test/CDBaseMock.cpp \
 ../src/test/CDBaseTest.cpp \
@@ -21,7 +20,6 @@ CPP_SRCS += \
 ../src/test/TrivialHttpMock.cpp 
 
 OBJS += \
-./src/test/ActionExecutorMock.o \
 ./src/test/AllTests.o \
 ./src/test/CDBaseMock.o \
 ./src/test/CDBaseTest.o \
@@ -38,7 +36,6 @@ OBJS += \
 ./src/test/TrivialHttpMock.o 
 
 CPP_DEPS += \
-./src/test/ActionExecutorMock.d \
 ./src/test/AllTests.d \
 ./src/test/CDBaseMock.d \
 ./src/test/CDBaseTest.d \

@@ -19,8 +19,8 @@
 #ifndef ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
 #define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
 
-#include "ActionExecutorMock.h"
 #include "AsyncTaskIntegrationTest.h"
+#include "actions/ActionExecutorMock.h"
 
 namespace testing {
 

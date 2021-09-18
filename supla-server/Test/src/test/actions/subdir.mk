@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/actions/ActionExecutorMock.cpp \
 ../src/test/actions/ActionTriggerConfigTest.cpp 
 
 OBJS += \
+./src/test/actions/ActionExecutorMock.o \
 ./src/test/actions/ActionTriggerConfigTest.o 
 
 CPP_DEPS += \
+./src/test/actions/ActionExecutorMock.d \
 ./src/test/actions/ActionTriggerConfigTest.d 
 
 
