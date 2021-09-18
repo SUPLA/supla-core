@@ -26,35 +26,76 @@
 #define ARR_NAME "actionTriggerCapabilities"
 #define ACTIONS "actions"
 
+_atc_map_t action_trigger_config::map[] = {
+    {.cap = SUPLA_ACTION_CAP_TURN_ON, .str = "TURN_ON"},
+    {.cap = SUPLA_ACTION_CAP_TURN_OFF, .str = "TURN_OFF"},
+    {.cap = SUPLA_ACTION_CAP_TOGGLE_x1, .str = "TOGGLE_X1"},
+    {.cap = SUPLA_ACTION_CAP_TOGGLE_x2, .str = "TOGGLE_X2"},
+    {.cap = SUPLA_ACTION_CAP_TOGGLE_x3, .str = "TOGGLE_X3"},
+    {.cap = SUPLA_ACTION_CAP_TOGGLE_x4, .str = "TOGGLE_X4"},
+    {.cap = SUPLA_ACTION_CAP_TOGGLE_x5, .str = "TOGGLE_X5"},
+    {.cap = SUPLA_ACTION_CAP_HOLD, .str = "HOLD"},
+    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x1, .str = "SHORT_PRESS_X1"},
+    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x2, .str = "SHORT_PRESS_X2"},
+    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x3, .str = "SHORT_PRESS_X3"},
+    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x4, .str = "SHORT_PRESS_X4"},
+    {.cap = SUPLA_ACTION_CAP_SHORT_PRESS_x5, .str = "SHORT_PRESS_X5"}};
+
 action_trigger_config::action_trigger_config(void) : channel_json_config() {}
 
 action_trigger_config::action_trigger_config(channel_json_config *root)
     : channel_json_config(root) {}
 
-bool action_trigger_config::equal_to_string(cJSON *item, const char *str) {
-  if (!item || !str) {
+bool action_trigger_config::equal(const char *str1, const char *str2) {
+  if (!str1 || !str2) {
     return false;
   }
 
-  char *istr = cJSON_GetStringValue(item);
+  size_t str_len = strnlen(str1, MAX_STR_LEN);
 
-  if (!istr) {
-    return false;
-  }
-
-  size_t str_len = strnlen(str, MAX_STR_LEN);
-
-  if (str_len != strnlen(istr, MAX_STR_LEN)) {
+  if (str_len != strnlen(str2, MAX_STR_LEN)) {
     return false;
   }
 
   for (size_t a = 0; a < str_len; a++) {
-    if (tolower(str[a]) != tolower(istr[a])) {
+    if (tolower(str1[a]) != tolower(str2[a])) {
       return false;
     }
   }
 
   return true;
+}
+
+const char *action_trigger_config::to_string(int cap) {
+  int size = sizeof(map) / sizeof(_atc_map_t);
+
+  for (int a = 0; a < size; a++) {
+    if (map[a].cap == cap) {
+      return map[a].str.c_str();
+    }
+  }
+
+  return NULL;
+}
+
+int action_trigger_config::to_cap(const char *str) {
+  int size = sizeof(map) / sizeof(_atc_map_t);
+
+  for (int a = 0; a < size; a++) {
+    if (equal(map[a].str.c_str(), str)) {
+      return map[a].cap;
+    }
+  }
+
+  return 0;
+}
+
+int action_trigger_config::to_cap(cJSON *item) {
+  if (item) {
+    return to_cap(cJSON_GetStringValue(item));
+  }
+
+  return 0;
 }
 
 unsigned int action_trigger_config::get_capabilities(void) {
@@ -72,47 +113,10 @@ unsigned int action_trigger_config::get_capabilities(void) {
   int st_size = cJSON_GetArraySize(st);
 
   for (short a = 0; a < st_size; a++) {
-    cJSON *item = cJSON_GetArrayItem(st, a);
-    if (equal_to_string(item, "TURN_ON")) {
-      result |= SUPLA_ACTION_CAP_TURN_ON;
-    } else if (equal_to_string(item, "TURN_OFF")) {
-      result |= SUPLA_ACTION_CAP_TURN_OFF;
-    } else if (equal_to_string(item, "TOGGLE_X1")) {
-      result |= SUPLA_ACTION_CAP_TOGGLE_x1;
-    } else if (equal_to_string(item, "TOGGLE_X2")) {
-      result |= SUPLA_ACTION_CAP_TOGGLE_x2;
-    } else if (equal_to_string(item, "TOGGLE_X3")) {
-      result |= SUPLA_ACTION_CAP_TOGGLE_x3;
-    } else if (equal_to_string(item, "TOGGLE_X4")) {
-      result |= SUPLA_ACTION_CAP_TOGGLE_x4;
-    } else if (equal_to_string(item, "TOGGLE_X5")) {
-      result |= SUPLA_ACTION_CAP_TOGGLE_x5;
-    } else if (equal_to_string(item, "HOLD")) {
-      result |= SUPLA_ACTION_CAP_HOLD;
-    } else if (equal_to_string(item, "SHORT_PRESS_X1")) {
-      result |= SUPLA_ACTION_CAP_SHORT_PRESS_x1;
-    } else if (equal_to_string(item, "SHORT_PRESS_X2")) {
-      result |= SUPLA_ACTION_CAP_SHORT_PRESS_x2;
-    } else if (equal_to_string(item, "SHORT_PRESS_X3")) {
-      result |= SUPLA_ACTION_CAP_SHORT_PRESS_x3;
-    } else if (equal_to_string(item, "SHORT_PRESS_X4")) {
-      result |= SUPLA_ACTION_CAP_SHORT_PRESS_x4;
-    } else if (equal_to_string(item, "SHORT_PRESS_X5")) {
-      result |= SUPLA_ACTION_CAP_SHORT_PRESS_x5;
-    }
+    result |= to_cap(cJSON_GetArrayItem(st, a));
   }
 
   return result;
-}
-
-void action_trigger_config::add_cap(unsigned int caps, unsigned int cap,
-                                    const char *name, cJSON *arr) {
-  if (caps & cap) {
-    cJSON *jstr = cJSON_CreateString(name);
-    if (jstr) {
-      cJSON_AddItemToArray(arr, jstr);
-    }
-  }
 }
 
 bool action_trigger_config::set_capabilities(unsigned int caps) {
@@ -121,14 +125,13 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
     return false;
   }
 
-  unsigned int all_possible =
-      SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF |
-      SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_TOGGLE_x2 |
-      SUPLA_ACTION_CAP_TOGGLE_x3 | SUPLA_ACTION_CAP_TOGGLE_x4 |
-      SUPLA_ACTION_CAP_TOGGLE_x5 | SUPLA_ACTION_CAP_HOLD |
-      SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
-      SUPLA_ACTION_CAP_SHORT_PRESS_x3 | SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
-      SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+  int map_size = sizeof(map) / sizeof(_atc_map_t);
+
+  unsigned int all_possible = 0;
+
+  for (int a = 0; a < map_size; a++) {
+    all_possible |= map[a].cap;
+  }
 
   caps = all_possible & caps;
 
@@ -151,19 +154,14 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
   }
 
   if (st) {
-    add_cap(caps, SUPLA_ACTION_CAP_TURN_ON, "TURN_ON", st);
-    add_cap(caps, SUPLA_ACTION_CAP_TURN_OFF, "TURN_OFF", st);
-    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x1, "TOGGLE_X1", st);
-    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x2, "TOGGLE_X2", st);
-    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x3, "TOGGLE_X3", st);
-    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x4, "TOGGLE_X4", st);
-    add_cap(caps, SUPLA_ACTION_CAP_TOGGLE_x5, "TOGGLE_X5", st);
-    add_cap(caps, SUPLA_ACTION_CAP_HOLD, "HOLD", st);
-    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x1, "SHORT_PRESS_X1", st);
-    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x2, "SHORT_PRESS_X2", st);
-    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x3, "SHORT_PRESS_X3", st);
-    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x4, "SHORT_PRESS_X4", st);
-    add_cap(caps, SUPLA_ACTION_CAP_SHORT_PRESS_x5, "SHORT_PRESS_X5", st);
+    for (int a = 0; a < map_size; a++) {
+      if (caps & map[a].cap) {
+        cJSON *jstr = cJSON_CreateString(map[a].str.c_str());
+        if (jstr) {
+          cJSON_AddItemToArray(st, jstr);
+        }
+      }
+    }
   }
 
   return true;
@@ -184,56 +182,12 @@ unsigned int action_trigger_config::get_active_actions(void) {
 
   cJSON *actions = cJSON_GetObjectItem(json, ACTIONS);
 
-  if (cJSON_GetObjectItem(actions, "TURN_ON")) {
-    result |= SUPLA_ACTION_CAP_TURN_ON;
-  }
+  int size = sizeof(map) / sizeof(_atc_map_t);
 
-  if (cJSON_GetObjectItem(actions, "TURN_OFF")) {
-    result |= SUPLA_ACTION_CAP_TURN_OFF;
-  }
-
-  if (cJSON_GetObjectItem(actions, "TOGGLE_X1")) {
-    result |= SUPLA_ACTION_CAP_TOGGLE_x1;
-  }
-
-  if (cJSON_GetObjectItem(actions, "TOGGLE_X2")) {
-    result |= SUPLA_ACTION_CAP_TOGGLE_x2;
-  }
-
-  if (cJSON_GetObjectItem(actions, "TOGGLE_X3")) {
-    result |= SUPLA_ACTION_CAP_TOGGLE_x3;
-  }
-
-  if (cJSON_GetObjectItem(actions, "TOGGLE_X4")) {
-    result |= SUPLA_ACTION_CAP_TOGGLE_x4;
-  }
-
-  if (cJSON_GetObjectItem(actions, "TOGGLE_X5")) {
-    result |= SUPLA_ACTION_CAP_TOGGLE_x5;
-  }
-
-  if (cJSON_GetObjectItem(actions, "HOLD")) {
-    result |= SUPLA_ACTION_CAP_HOLD;
-  }
-
-  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X1")) {
-    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x1;
-  }
-
-  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X2")) {
-    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x2;
-  }
-
-  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X3")) {
-    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x3;
-  }
-
-  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X4")) {
-    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x4;
-  }
-
-  if (cJSON_GetObjectItem(actions, "SHORT_PRESS_X5")) {
-    result |= SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+  for (int a = 0; a < size; a++) {
+    if (cJSON_GetObjectItem(actions, map[a].str.c_str())) {
+      result |= map[a].cap;
+    }
   }
 
   return caps & result;

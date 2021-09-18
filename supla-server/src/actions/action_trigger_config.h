@@ -19,13 +19,22 @@
 #ifndef ACTIONTRIGGERCONFIG_H_
 #define ACTIONTRIGGERCONFIG_H_
 
+#include <string>
+
 #include "channeljsonconfig/channeljsonconfig.h"
+
+typedef struct {
+  int cap;
+  std::string str;
+} _atc_map_t;
 
 class action_trigger_config : public channel_json_config {
  private:
-  bool equal_to_string(cJSON *item, const char *str);
-  void add_cap(unsigned int caps, unsigned int cap, const char *name,
-               cJSON *arr);
+  static _atc_map_t map[];
+  bool equal(const char *str1, const char *str2);
+  int to_cap(cJSON *item);
+  const char *to_string(int cap);
+  int to_cap(const char *str);
 
  public:
   explicit action_trigger_config(channel_json_config *root);
