@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "proto.h"
+#include "tools.h"
 
 #define MAX_STR_LEN 20
 
@@ -280,6 +281,50 @@ char action_trigger_config::get_percentage(int cap) {
       if (percentage && cJSON_IsNumber(percentage) &&
           percentage->valueint >= 0 && percentage->valueint <= 100) {
         result = percentage->valueint;
+      }
+    }
+  }
+
+  return result;
+}
+
+_at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
+  _at_config_rgbw_t result = {.brightness = -1,
+                              .color_brightness = -1,
+                              .color = 0,
+                              .color_random = false};
+  cJSON *cap_cfg = get_cap_user_config(cap);
+
+  if (!cap_cfg) {
+    return result;
+  }
+
+  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+
+  if (action) {
+    cJSON *param = cJSON_GetObjectItem(action, "param");
+    if (param) {
+      cJSON *item = cJSON_GetObjectItem(param, "brightness");
+      if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
+          item->valueint <= 100) {
+        result.brightness = item->valueint;
+      }
+
+      item = cJSON_GetObjectItem(param, "color_brightness");
+      if (item && cJSON_IsNumber(item) && item->valueint >= 0 &&
+          item->valueint <= 100) {
+        result.color_brightness = item->valueint;
+      }
+
+      item = cJSON_GetObjectItem(param, "hue");
+      if (item) {
+        if (cJSON_IsNumber(item)) {
+          result.color_brightness = st_hue2rgb(item->valuedouble);
+        } else if (equal(item, "white")) {
+          result.color = 0xFFFFFF;
+        } else if (equal(item, "random")) {
+          result.color_random = true;
+        }
       }
     }
   }

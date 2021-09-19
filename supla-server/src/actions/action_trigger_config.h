@@ -47,9 +47,10 @@ typedef struct {
 } _at_config_action_t;
 
 typedef struct {
-  int actionId;
-  bool channelGroup;
-  int subjectId;
+  char brightness;
+  char color_brightness;
+  unsigned int color;
+  bool color_random;
 } _at_config_rgbw_t;
 
 class action_trigger_config : public channel_json_config {
@@ -74,6 +75,7 @@ class action_trigger_config : public channel_json_config {
   unsigned int get_active_actions(void);
   _at_config_action_t get_action_assigned_to_capability(int cap);
   char get_percentage(int cap);
+  _at_config_rgbw_t get_rgbw(int cap);
 };
 
 #endif /* ACTIONTRIGGERCONFIG_H_ */
