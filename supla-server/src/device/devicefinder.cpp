@@ -16,27 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGER_H_
-#define ACTIONTRIGGER_H_
+#include "device/devicefinder.h"
 
-#include <actions/abstract_channel_action_executor.h>
+#include "device/device.h"
+#include "user.h"
 
-#include "action_trigger_config.h"
-#include "device/abstractdevicefinder.h"
+supla_device_finder::supla_device_finder(void)
+    : supla_abstract_device_finder() {}
+supla_device_finder::~supla_device_finder(void) {}
 
-class supla_action_trigger {
- private:
-  action_trigger_config *config;
-  supla_abstract_channel_action_executor *ca_exec;
-  supla_abstract_device_finder *dev_finder;
+int supla_device_finder::find_device_id(int userId, int channelId) {
+  supla_user *user = supla_user::find(userId, false);
+  int result = 0;
+  if (user) {
+    supla_device *device = user->device_by_channelid(channelId);
+    if (device) {
+      result = device->getID();
+      device->releasePtr();
+    }
+  }
 
- public:
-  supla_action_trigger(supla_abstract_channel_action_executor *ca_exec,
-                       action_trigger_config *config,
-                       supla_abstract_device_finder *dev_finder);
-  ~supla_action_trigger(void);
-
-  void execute_actions(int user_id, unsigned int caps);
-};
-
-#endif /* ACTIONTRIGGER_H_ */
+  return result;
+}

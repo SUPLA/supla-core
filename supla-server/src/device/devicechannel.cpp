@@ -28,6 +28,7 @@
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
 #include "database.h"
+#include "devicefinder.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
@@ -1316,14 +1317,20 @@ bool supla_device_channel::converValueToExtended(void) {
 void supla_device_channel::action_trigger(int actions) {
   supla_channel_action_executor *ca_exec = new supla_channel_action_executor();
   action_trigger_config *at_config = new action_trigger_config(json_config);
+  supla_device_finder *dev_finder = new supla_device_finder();
 
   if (ca_exec && at_config) {
     supla_action_trigger *trigger =
-        new supla_action_trigger(ca_exec, at_config);
+        new supla_action_trigger(ca_exec, at_config, dev_finder);
     if (trigger) {
-      trigger->execute_actions(actions);
+      trigger->execute_actions(UserID, actions);
       delete trigger;
     }
+  }
+
+  if (dev_finder) {
+    delete dev_finder;
+    dev_finder = NULL;
   }
 
   if (ca_exec) {

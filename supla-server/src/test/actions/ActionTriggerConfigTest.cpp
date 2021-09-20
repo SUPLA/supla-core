@@ -408,8 +408,14 @@ TEST_F(ActionTriggerConfigTest, getColor) {
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"random\"}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
-            (unsigned int)0);
+  unsigned int color = config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color;
+  int a = 0;
+  for (a = 0; a < 10; a++) {
+    if (color != config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color) {
+      break;
+    }
+  }
+  EXPECT_NE(a, 10);
 
   EXPECT_TRUE(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_random);
 
@@ -442,7 +448,7 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
   EXPECT_FALSE(action.channelGroup);
 
   _at_config_rgbw_t rgbw = config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x5);
-  EXPECT_EQ(rgbw.brightness, (char)0);
+  EXPECT_EQ(rgbw.brightness, (char)-1);
   EXPECT_EQ(rgbw.color_brightness, (char)44);
   EXPECT_EQ(rgbw.color, (unsigned int)0xFF002A);
   EXPECT_FALSE(rgbw.color_random);

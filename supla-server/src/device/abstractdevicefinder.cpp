@@ -16,27 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGER_H_
-#define ACTIONTRIGGER_H_
-
-#include <actions/abstract_channel_action_executor.h>
-
-#include "action_trigger_config.h"
 #include "device/abstractdevicefinder.h"
 
-class supla_action_trigger {
- private:
-  action_trigger_config *config;
-  supla_abstract_channel_action_executor *ca_exec;
-  supla_abstract_device_finder *dev_finder;
-
- public:
-  supla_action_trigger(supla_abstract_channel_action_executor *ca_exec,
-                       action_trigger_config *config,
-                       supla_abstract_device_finder *dev_finder);
-  ~supla_action_trigger(void);
-
-  void execute_actions(int user_id, unsigned int caps);
-};
-
-#endif /* ACTIONTRIGGER_H_ */
+supla_abstract_device_finder::supla_abstract_device_finder(void) {}
+supla_abstract_device_finder::~supla_abstract_device_finder(void) {}

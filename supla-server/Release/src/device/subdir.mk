@@ -4,16 +4,22 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/device/abstractdevicefinder.cpp \
 ../src/device/device.cpp \
-../src/device/devicechannel.cpp 
+../src/device/devicechannel.cpp \
+../src/device/devicefinder.cpp 
 
 OBJS += \
+./src/device/abstractdevicefinder.o \
 ./src/device/device.o \
-./src/device/devicechannel.o 
+./src/device/devicechannel.o \
+./src/device/devicefinder.o 
 
 CPP_DEPS += \
+./src/device/abstractdevicefinder.d \
 ./src/device/device.d \
-./src/device/devicechannel.d 
+./src/device/devicechannel.d \
+./src/device/devicefinder.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

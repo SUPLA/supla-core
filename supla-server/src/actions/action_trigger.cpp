@@ -18,13 +18,97 @@
 
 #include "action_trigger.h"
 
+#include "user.h"
+
 supla_action_trigger::supla_action_trigger(
     supla_abstract_channel_action_executor *ca_exec,
-    action_trigger_config *config) {
+    action_trigger_config *config, supla_abstract_device_finder *dev_finder) {
   this->ca_exec = ca_exec;
   this->config = config;
+  this->dev_finder = dev_finder;
 }
 
 supla_action_trigger::~supla_action_trigger(void) {}
 
-void supla_action_trigger::execute_actions(unsigned int actions) {}
+void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
+  if (!ca_exec || !config) {
+    return;
+  }
+
+  caps = config->get_active_actions() & caps;
+  unsigned char count = sizeof(caps) * 8;
+  for (short a = 0; a < count; a++) {
+    unsigned int cap = caps & (1 << a);
+    if (!cap) {
+      continue;
+    }
+
+    _at_config_action_t action = config->get_action_assigned_to_capability(cap);
+
+    if (!action.actionId || !action.subjectId) {
+      continue;
+    }
+
+    if (action.channelGroup) {
+    } else {
+      int device_id =
+          dev_finder ? dev_finder->find_device_id(user_id, action.subjectId)
+                     : 0;
+
+      if (!device_id) {
+        continue;
+      }
+
+      ca_exec->set_channel_id(user_id, device_id, action.subjectId);
+
+      switch (action.actionId) {
+        case ACTION_OPEN:
+          ca_exec->open();
+          break;
+        case ACTION_CLOSE:
+          ca_exec->close();
+          break;
+        case ACTION_SHUT:
+          ca_exec->shut(NULL);
+          break;
+        case ACTION_REVEAL:
+          ca_exec->reveal();
+          break;
+        case ACTION_REVEAL_PARTIALLY: {
+          char percentage = config->get_percentage(cap);
+          if (percentage > -1) {
+            percentage = 100 - percentage;
+            ca_exec->shut(&percentage);
+          }
+        } break;
+        case ACTION_TURN_ON:
+          ca_exec->set_on(true);
+          break;
+        case ACTION_TURN_OFF:
+          ca_exec->set_on(false);
+          break;
+        case ACTION_SET_RGBW_PARAMETERS: {
+          _at_config_rgbw_t rgbw = config->get_rgbw(cap);
+          if (rgbw.brightness > -1) {
+            ca_exec->set_brightness(rgbw.brightness);
+          }
+          if (rgbw.color_brightness > -1) {
+            ca_exec->set_color_brightness(rgbw.color_brightness);
+          }
+          if (rgbw.color) {
+            ca_exec->set_color(rgbw.color);
+          }
+        } break;
+        case ACTION_OPEN_CLOSE:
+          ca_exec->open_close();
+          break;
+        case ACTION_STOP:
+          ca_exec->stop();
+          break;
+        case ACTION_TOGGLE:
+          ca_exec->toggle();
+          break;
+      }
+    }
+  }
+}

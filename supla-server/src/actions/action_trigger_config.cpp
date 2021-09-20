@@ -237,6 +237,10 @@ _at_config_action_t action_trigger_config::get_action_assigned_to_capability(
     int cap) {
   _at_config_action_t result = {};
 
+  if (!cap) {
+    return result;
+  }
+
   cJSON *cap_cfg = get_cap_user_config(cap);
 
   if (!cap_cfg) {
@@ -323,6 +327,13 @@ _at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
         } else if (equal(item, "white")) {
           result.color = 0xFFFFFF;
         } else if (equal(item, "random")) {
+          while (!result.color) {
+            struct timeval time;
+            gettimeofday(&time, NULL);
+            unsigned int seed = time.tv_sec + time.tv_usec;
+            result.color = st_hue2rgb(rand_r(&seed) % 360);
+          }
+
           result.color_random = true;
         }
       }
