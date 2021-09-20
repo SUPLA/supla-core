@@ -230,7 +230,6 @@ cJSON *action_trigger_config::get_cap_user_config(int cap) {
   }
 
   return cJSON_GetObjectItem(actions, cap_str);
-  ;
 }
 
 _at_config_action_t action_trigger_config::get_action_assigned_to_capability(
