@@ -17,6 +17,7 @@
  */
 
 #include "userchannelgroups.h"
+
 #include "database.h"
 #include "safearray.h"
 
@@ -55,7 +56,8 @@ int supla_user_channelgroups::available_data_types_for_remote(
   return 0;
 }
 
-bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
+bool supla_user_channelgroups::for_each_device(
+    int GroupID, std::function<bool(supla_device *, int, char)> f) {
   bool result = false;
 
   std::list<dcpair> pairs = find_channels(GroupID);
@@ -66,9 +68,7 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
        it++) {
     supla_device *device = user->get_device(it->getDeviceId());
     if (device) {
-      if (device->get_channels()->set_device_channel_char_value(
-              0, it->getChannelId(), GroupID, dcpair::last_one(&pairs, it),
-              value)) {
+      if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
         result = true;
       }
       device->releasePtr();
@@ -78,27 +78,24 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
   return result;
 }
 
+bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
+  return for_each_device(
+      GroupID,
+      [GroupID, value](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->set_device_channel_char_value(
+            0, channelId, GroupID, EOL, value);
+      });
+}
+
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
                                               char color_brightness,
                                               char brightness, char on_off) {
-  bool result = false;
-
-  std::list<dcpair> pairs = find_channels(GroupID);
-
-  dcpair::sort_by_device_id(&pairs);
-
-  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
-       it++) {
-    supla_device *device = user->get_device(it->getDeviceId());
-    if (device) {
-      if (device->get_channels()->set_device_channel_rgbw_value(
-              0, it->getChannelId(), GroupID, dcpair::last_one(&pairs, it),
-              color, color_brightness, brightness, on_off)) {
-        result = true;
-      }
-      device->releasePtr();
-    }
-  }
-
-  return result;
+  return for_each_device(
+      GroupID,
+      [GroupID, color, color_brightness, brightness, on_off](
+          supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->set_device_channel_rgbw_value(
+            0, channelId, GroupID, EOL, color, color_brightness, brightness,
+            on_off);
+      });
 }

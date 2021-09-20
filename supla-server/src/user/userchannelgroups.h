@@ -19,16 +19,21 @@
 #ifndef USERCHANNELGROUPS_H_
 #define USERCHANNELGROUPS_H_
 
+#include <functional>
 #include <list>
+
+#include "dcpair.h"
+#include "device/device.h"
 #include "objcontainer.h"
 #include "user.h"
 #include "userchannelgroup.h"
-#include "dcpair.h"
 
 class supla_user;
 class supla_user_channelgroups : public supla_objcontainer {
  private:
   supla_user *user;
+  bool for_each_device(int GroupID,
+                       std::function<bool(supla_device *, int, char)> f);
 
  protected:
   void _load(database *db, e_objc_scope scope);
