@@ -29,18 +29,20 @@ class supla_channel_action_executor
                                 int channel_id);
   supla_channel_action_executor(int user_id, int device_id, int channel_id);
 
-  void set_on(bool on);
-  void set_color(unsigned int color);
-  void set_brightness(char brightness);
-  void set_color_brightness(char brightness);
-  void toggle(void);
-  void shut(const char *closingPercentage);
-  void reveal(void);
-  void stop(void);
-  void open(void);
-  void close(void);
-  void open_close();
-  void open_close_without_canceling_tasks();
+  virtual void set_on(bool on);
+  virtual void set_color(unsigned int color);
+  virtual void set_brightness(char brightness);
+  virtual void set_color_brightness(char brightness);
+  virtual void set_rgbw(unsigned int *color, char *color_brightness,
+                        char *brightness);
+  virtual void toggle(void);
+  virtual void shut(const char *closingPercentage);
+  virtual void reveal(void);
+  virtual void stop(void);
+  virtual void open(void);
+  virtual void close(void);
+  virtual void open_close();
+  virtual void open_close_without_canceling_tasks();
 };
 
 #endif /*ACTION_EXECUTOR_H_*/

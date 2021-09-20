@@ -65,6 +65,17 @@ void supla_channel_action_executor::set_color_brightness(char brightness) {
   }
 }
 
+void supla_channel_action_executor::set_rgbw(unsigned int *color,
+                                             char *color_brightness,
+                                             char *brightness) {
+  supla_device *device = get_device();
+  if (device) {
+    device->get_channels()->set_rgbw(0, get_channel_id(), 0, 0, color,
+                                     color_brightness, brightness, NULL);
+    device->releasePtr();
+  }
+}
+
 void supla_channel_action_executor::toggle(void) {
   supla_device *device = get_device();
   if (device) {

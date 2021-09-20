@@ -39,6 +39,7 @@ class ChannelActionExecutorMock
   int close_counter;
   int open_close_counter;
   int open_close_wct_counter;
+  int rgbw_counter;
 
   unsigned int color;
   char brightness;
@@ -53,6 +54,8 @@ class ChannelActionExecutorMock
   virtual void set_color(unsigned int color);
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
+  virtual void set_rgbw(unsigned int *color, char *color_brightness,
+                        char *brightness);
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
@@ -69,6 +72,7 @@ class ChannelActionExecutorMock
   int getColorCounter(void);
   int getBrightnessCounter(void);
   int getColorBrightnessCounter(void);
+  int getRGBWCounter(void);
   int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);

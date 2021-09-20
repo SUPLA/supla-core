@@ -20,7 +20,7 @@
 
 supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(
     void) {
-  this->user = 0;
+  this->user = NULL;
   this->device_id = 0;
   this->channel_id = 0;
 }
@@ -60,6 +60,14 @@ supla_device *supla_abstract_channel_action_executor::get_device(void) {
   }
 
   return NULL;
+}
+
+int supla_abstract_channel_action_executor::get_user_id(void) {
+  return user ? user->getUserID() : 0;
+}
+
+int supla_abstract_channel_action_executor::get_device_id(void) {
+  return device_id;
 }
 
 int supla_abstract_channel_action_executor::get_channel_id(void) {

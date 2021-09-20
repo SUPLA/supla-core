@@ -45,6 +45,7 @@ void ChannelActionExecutorMock::clear(void) {
   this->brightness = -1;
   this->color_brightness = -1;
   this->closing_percentage = -1;
+  this->rgbw_counter = 0;
 }
 
 void ChannelActionExecutorMock::set_on(bool on) {
@@ -56,15 +57,35 @@ void ChannelActionExecutorMock::set_on(bool on) {
 }
 
 void ChannelActionExecutorMock::set_color(unsigned int color) {
+  color_counter++;
   this->color = color;
 }
 
 void ChannelActionExecutorMock::set_brightness(char brightness) {
+  brightness_counter++;
   this->brightness = brightness;
 }
 
 void ChannelActionExecutorMock::set_color_brightness(char brightness) {
+  color_brightness_counter++;
   this->color_brightness = color_brightness;
+}
+
+void ChannelActionExecutorMock::set_rgbw(unsigned int *color,
+                                         char *color_brightness,
+                                         char *brightness) {
+  rgbw_counter++;
+  if (color) {
+    this->color = *color;
+  }
+
+  if (color_brightness) {
+    this->color_brightness = *color_brightness;
+  }
+
+  if (brightness) {
+    this->brightness = *brightness;
+  }
 }
 
 void ChannelActionExecutorMock::toggle(void) { toggle_counter++; }
@@ -103,6 +124,8 @@ int ChannelActionExecutorMock::getBrightnessCounter(void) {
 int ChannelActionExecutorMock::getColorBrightnessCounter(void) {
   return color_brightness_counter;
 }
+
+int ChannelActionExecutorMock::getRGBWCounter(void) { return rgbw_counter; }
 
 int ChannelActionExecutorMock::getToggleCounter(void) { return toggle_counter; }
 
@@ -187,6 +210,10 @@ int ChannelActionExecutorMock::counterSetCount(void) {
   }
 
   if (open_close_wct_counter > 0) {
+    result++;
+  }
+
+  if (rgbw_counter > 0) {
     result++;
   }
 

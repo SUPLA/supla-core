@@ -30,7 +30,6 @@ class supla_abstract_channel_action_executor {
 
  protected:
   supla_device *get_device(void);
-  int get_channel_id(void);
 
  public:
   supla_abstract_channel_action_executor(void);
@@ -42,11 +41,16 @@ class supla_abstract_channel_action_executor {
 
   void set_channel_id(supla_user *user, int device_id, int channel_id);
   void set_channel_id(int user_id, int device_id, int channel_id);
+  int get_user_id(void);
+  int get_device_id(void);
+  int get_channel_id(void);
 
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
+  virtual void set_rgbw(unsigned int *color, char *color_brightness,
+                        char *brightness) = 0;
   virtual void toggle(void) = 0;
   virtual void shut(const char *closingPercentage) = 0;
   virtual void reveal(void) = 0;

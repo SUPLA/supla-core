@@ -89,14 +89,12 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
           break;
         case ACTION_SET_RGBW_PARAMETERS: {
           _at_config_rgbw_t rgbw = config->get_rgbw(cap);
-          if (rgbw.brightness > -1) {
-            ca_exec->set_brightness(rgbw.brightness);
-          }
-          if (rgbw.color_brightness > -1) {
-            ca_exec->set_color_brightness(rgbw.color_brightness);
-          }
-          if (rgbw.color) {
-            ca_exec->set_color(rgbw.color);
+          if (rgbw.brightness > -1 || rgbw.color_brightness > -1 ||
+              rgbw.color) {
+            ca_exec->set_rgbw(
+                rgbw.color ? &rgbw.color : NULL,
+                rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
+                rgbw.brightness > -1 ? &rgbw.brightness : NULL);
           }
         } break;
         case ACTION_OPEN_CLOSE:
