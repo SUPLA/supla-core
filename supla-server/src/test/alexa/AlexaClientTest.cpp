@@ -18,13 +18,16 @@
 
 #include "AlexaClientTest.h"
 
-#include "TrivialHttpFactoryMock.h"
-#include "TrivialHttpMock.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "doubles/TrivialHttpFactoryMock.h"
+#include "doubles/TrivialHttpMock.h"
+#include "gtest/gtest.h"
 
 namespace testing {
 
-AlexaClientTest::AlexaClientTest() {}
+AlexaClientTest::AlexaClientTest() {
+  user = NULL;
+  client = NULL;
+}
 
 void AlexaClientTest::SetUp() {
   user = new supla_user(1001, "qwerty", "zxcvbnm");

@@ -19,7 +19,7 @@
 #ifndef CHANNEL_ORIENTED_ASYNCTASK_MOCK_H_
 #define CHANNEL_ORIENTED_ASYNCTASK_MOCK_H_
 
-#include "asynctask/AsyncTaskMock.h"
+#include "doubles/asynctask/AsyncTaskMock.h"
 
 class ChannelOrientedAsyncTaskMock : public AsyncTaskMock {
  private:

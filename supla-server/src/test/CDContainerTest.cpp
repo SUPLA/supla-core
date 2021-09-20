@@ -17,8 +17,9 @@
  */
 
 #include "CDContainerTest.h"
-#include "CDBaseMock.h"
+
 #include "STCDContainer.h"
+#include "doubles/CDBaseMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {

@@ -20,8 +20,8 @@
 #define ASYNCTASK_SEARCH_INTEGRATION_TEST_H_
 
 #include "ChannelSearchCondition.h"
-#include "asynctask/AsyncTaskThreadPoolMock.h"
 #include "asynctask_queue.h"
+#include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {

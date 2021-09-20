@@ -20,7 +20,7 @@
 #define MQTTSTATEMESSAGEPROVIDERTEST_H_
 
 #include "MqttMessageProviderTest.h"
-#include "MqttStateMessageProviderMock.h"
+#include "doubles/mqtt/MqttStateMessageProviderMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
