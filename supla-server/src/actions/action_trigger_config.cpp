@@ -319,7 +319,7 @@ _at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
       item = cJSON_GetObjectItem(param, "hue");
       if (item) {
         if (cJSON_IsNumber(item)) {
-          result.color_brightness = st_hue2rgb(item->valuedouble);
+          result.color = st_hue2rgb(item->valuedouble);
         } else if (equal(item, "white")) {
           result.color = 0xFFFFFF;
         } else if (equal(item, "random")) {

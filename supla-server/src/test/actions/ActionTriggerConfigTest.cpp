@@ -310,6 +310,120 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, getBrightness) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":15}}}}}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, -1);
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, 15);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":110}}}}}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, -1);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":0}}}}}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightnes\":15}}}}}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, -1);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getColorBrightness) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":15}}}}"
+      "}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, -1);
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, 15);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":110}}}"
+      "}}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, -1);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":0}}}}"
+      "}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, 0);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightnes\":15}}}}"
+      "}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, -1);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, getColor) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":35}}}}"
+      "}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
+            (unsigned int)0);
+
+  EXPECT_FALSE(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_random);
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
+            (unsigned int)0xFF9400);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"random\"}}}}"
+      "}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
+            (unsigned int)0);
+
+  EXPECT_TRUE(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_random);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"white\"}}}}"
+      "}");
+
+  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
+            (unsigned int)0xFFFFFF);
+
+  delete config;
+}
+
 TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);
