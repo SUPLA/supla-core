@@ -424,6 +424,32 @@ TEST_F(ActionTriggerConfigTest, getColor) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X5\":{\"subjectId\":1551,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":350,\"color_"
+      "brightness\":44}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
+
+  _at_config_action_t action =
+      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x5);
+  EXPECT_EQ(action.actionId, ACTION_SET_RGBW_PARAMETERS);
+  EXPECT_EQ(action.subjectId, 1551);
+  EXPECT_FALSE(action.channelGroup);
+
+  _at_config_rgbw_t rgbw = config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x5);
+  EXPECT_EQ(rgbw.brightness, (char)0);
+  EXPECT_EQ(rgbw.color_brightness, (char)44);
+  EXPECT_EQ(rgbw.color, (unsigned int)0xFF002A);
+  EXPECT_FALSE(rgbw.color_random);
+
+  delete config;
+}
+
 TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);
