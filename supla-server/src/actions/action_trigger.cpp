@@ -21,9 +21,9 @@
 #include "user.h"
 
 supla_action_trigger::supla_action_trigger(
-    supla_abstract_channel_action_executor *ca_exec,
-    action_trigger_config *config, supla_abstract_device_finder *dev_finder) {
-  this->ca_exec = ca_exec;
+    supla_abstract_action_executor *aexec, action_trigger_config *config,
+    supla_abstract_device_finder *dev_finder) {
+  this->aexec = aexec;
   this->config = config;
   this->dev_finder = dev_finder;
 }
@@ -31,7 +31,7 @@ supla_action_trigger::supla_action_trigger(
 supla_action_trigger::~supla_action_trigger(void) {}
 
 void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
-  if (!ca_exec || !config) {
+  if (!aexec || !config) {
     return;
   }
 
@@ -50,7 +50,7 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
     }
 
     if (action.channelGroup) {
-      ca_exec->set_group_id(user_id, action.subjectId);
+      aexec->set_group_id(user_id, action.subjectId);
     } else {
       int device_id =
           dev_finder ? dev_finder->find_device_id(user_id, action.subjectId)
@@ -60,52 +60,52 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
         continue;
       }
 
-      ca_exec->set_channel_id(user_id, device_id, action.subjectId);
+      aexec->set_channel_id(user_id, device_id, action.subjectId);
     }
 
     switch (action.actionId) {
       case ACTION_OPEN:
-        ca_exec->open();
+        aexec->open();
         break;
       case ACTION_CLOSE:
-        ca_exec->close();
+        aexec->close();
         break;
       case ACTION_SHUT:
-        ca_exec->shut(NULL);
+        aexec->shut(NULL);
         break;
       case ACTION_REVEAL:
-        ca_exec->reveal();
+        aexec->reveal();
         break;
       case ACTION_REVEAL_PARTIALLY: {
         char percentage = config->get_percentage(cap);
         if (percentage > -1) {
           percentage = 100 - percentage;
-          ca_exec->shut(&percentage);
+          aexec->shut(&percentage);
         }
       } break;
       case ACTION_TURN_ON:
-        ca_exec->set_on(true);
+        aexec->set_on(true);
         break;
       case ACTION_TURN_OFF:
-        ca_exec->set_on(false);
+        aexec->set_on(false);
         break;
       case ACTION_SET_RGBW_PARAMETERS: {
         _at_config_rgbw_t rgbw = config->get_rgbw(cap);
         if (rgbw.brightness > -1 || rgbw.color_brightness > -1 || rgbw.color) {
-          ca_exec->set_rgbw(
+          aexec->set_rgbw(
               rgbw.color ? &rgbw.color : NULL,
               rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
               rgbw.brightness > -1 ? &rgbw.brightness : NULL);
         }
       } break;
       case ACTION_OPEN_CLOSE:
-        ca_exec->open_close();
+        aexec->open_close();
         break;
       case ACTION_STOP:
-        ca_exec->stop();
+        aexec->stop();
         break;
       case ACTION_TOGGLE:
-        ca_exec->toggle();
+        aexec->toggle();
         break;
     }
   }

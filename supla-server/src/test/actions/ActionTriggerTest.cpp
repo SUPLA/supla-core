@@ -25,7 +25,7 @@ namespace testing {
 ActionTriggerTest::ActionTriggerTest(void) {
   at = NULL;
   at_config = NULL;
-  ca_exec = NULL;
+  aexec = NULL;
   dev_finder = NULL;
 }
 ActionTriggerTest::~ActionTriggerTest(void) {}
@@ -34,13 +34,13 @@ void ActionTriggerTest::SetUp() {
   at_config = new action_trigger_config(NULL);
   EXPECT_TRUE(at_config != NULL);
 
-  ca_exec = new ChannelActionExecutorMock();
-  EXPECT_TRUE(ca_exec != NULL);
+  aexec = new ActionExecutorMock();
+  EXPECT_TRUE(aexec != NULL);
 
   dev_finder = new DeviceFinderStub();
   EXPECT_TRUE(dev_finder != NULL);
 
-  at = new supla_action_trigger(ca_exec, at_config, dev_finder);
+  at = new supla_action_trigger(aexec, at_config, dev_finder);
   EXPECT_TRUE(at != NULL);
 }
 
@@ -50,9 +50,9 @@ void ActionTriggerTest::TearDown() {
     at_config = NULL;
   }
 
-  if (ca_exec) {
-    delete ca_exec;
-    ca_exec = NULL;
+  if (aexec) {
+    delete aexec;
+    aexec = NULL;
   }
 
   if (dev_finder) {
@@ -73,17 +73,17 @@ TEST_F(ActionTriggerTest, open) {
 
   dev_finder->setResult(123);
   at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
-  EXPECT_EQ(ca_exec->counterSetCount(), 0);
+  EXPECT_EQ(aexec->counterSetCount(), 0);
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
   at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getOpenCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 123);
-  EXPECT_EQ(ca_exec->get_channel_id(), 3611);
-  EXPECT_EQ(ca_exec->get_group_id(), 0);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getOpenCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 123);
+  EXPECT_EQ(aexec->get_channel_id(), 3611);
+  EXPECT_EQ(aexec->get_group_id(), 0);
 }
 
 TEST_F(ActionTriggerTest, openGroup) {
@@ -94,17 +94,17 @@ TEST_F(ActionTriggerTest, openGroup) {
 
   dev_finder->setResult(123);
   at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
-  EXPECT_EQ(ca_exec->counterSetCount(), 0);
+  EXPECT_EQ(aexec->counterSetCount(), 0);
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
   at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getOpenCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 0);
-  EXPECT_EQ(ca_exec->get_channel_id(), 0);
-  EXPECT_EQ(ca_exec->get_group_id(), 3611);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getOpenCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 0);
+  EXPECT_EQ(aexec->get_channel_id(), 0);
+  EXPECT_EQ(aexec->get_group_id(), 3611);
 }
 
 TEST_F(ActionTriggerTest, close) {
@@ -117,11 +117,11 @@ TEST_F(ActionTriggerTest, close) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
   at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getCloseCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 2);
-  EXPECT_EQ(ca_exec->get_channel_id(), 4611);
-  EXPECT_EQ(ca_exec->get_group_id(), 0);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getCloseCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 2);
+  EXPECT_EQ(aexec->get_channel_id(), 4611);
+  EXPECT_EQ(aexec->get_group_id(), 0);
 }
 
 TEST_F(ActionTriggerTest, shut) {
@@ -134,11 +134,11 @@ TEST_F(ActionTriggerTest, shut) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
   at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getShutCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 3);
-  EXPECT_EQ(ca_exec->get_channel_id(), 461);
-  EXPECT_EQ(ca_exec->get_group_id(), 0);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getShutCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 3);
+  EXPECT_EQ(aexec->get_channel_id(), 461);
+  EXPECT_EQ(aexec->get_group_id(), 0);
 }
 
 TEST_F(ActionTriggerTest, reveal) {
@@ -151,10 +151,10 @@ TEST_F(ActionTriggerTest, reveal) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x3);
   at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x3);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getRevealCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 44);
-  EXPECT_EQ(ca_exec->get_channel_id(), 4);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getRevealCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 44);
+  EXPECT_EQ(aexec->get_channel_id(), 4);
 }
 
 TEST_F(ActionTriggerTest, revealPartially) {
@@ -167,11 +167,11 @@ TEST_F(ActionTriggerTest, revealPartially) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x4);
   at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x4);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getShutCounter(), 1);
-  EXPECT_EQ(ca_exec->getClosingPercentage(), 89);
-  EXPECT_EQ(ca_exec->get_device_id(), 44);
-  EXPECT_EQ(ca_exec->get_channel_id(), 4);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getShutCounter(), 1);
+  EXPECT_EQ(aexec->getClosingPercentage(), 89);
+  EXPECT_EQ(aexec->get_device_id(), 44);
+  EXPECT_EQ(aexec->get_channel_id(), 4);
 }
 
 TEST_F(ActionTriggerTest, turnOn) {
@@ -184,10 +184,10 @@ TEST_F(ActionTriggerTest, turnOn) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x4);
   at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x4);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getOnCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 45);
-  EXPECT_EQ(ca_exec->get_channel_id(), 5);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getOnCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 45);
+  EXPECT_EQ(aexec->get_channel_id(), 5);
 }
 
 TEST_F(ActionTriggerTest, turnOff) {
@@ -200,10 +200,10 @@ TEST_F(ActionTriggerTest, turnOff) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
   at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x5);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getOffCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 499);
-  EXPECT_EQ(ca_exec->get_channel_id(), 6);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getOffCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 499);
+  EXPECT_EQ(aexec->get_channel_id(), 6);
 }
 
 TEST_F(ActionTriggerTest, setRGBWParameters) {
@@ -217,10 +217,10 @@ TEST_F(ActionTriggerTest, setRGBWParameters) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x1);
   at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x1);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getRGBWCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 4999);
-  EXPECT_EQ(ca_exec->get_channel_id(), 6789);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getRGBWCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 4999);
+  EXPECT_EQ(aexec->get_channel_id(), 6789);
 }
 
 TEST_F(ActionTriggerTest, openClose) {
@@ -233,10 +233,10 @@ TEST_F(ActionTriggerTest, openClose) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x2);
   at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getOpenCloseCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 4999);
-  EXPECT_EQ(ca_exec->get_channel_id(), 6789);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getOpenCloseCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 4999);
+  EXPECT_EQ(aexec->get_channel_id(), 6789);
 }
 
 TEST_F(ActionTriggerTest, stop) {
@@ -249,10 +249,10 @@ TEST_F(ActionTriggerTest, stop) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x3);
   at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getStopCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 4999);
-  EXPECT_EQ(ca_exec->get_channel_id(), 6789);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getStopCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 4999);
+  EXPECT_EQ(aexec->get_channel_id(), 6789);
 }
 
 TEST_F(ActionTriggerTest, toggle) {
@@ -265,10 +265,10 @@ TEST_F(ActionTriggerTest, toggle) {
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x4);
   at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x4);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 1);
-  EXPECT_EQ(ca_exec->getToggleCounter(), 1);
-  EXPECT_EQ(ca_exec->get_device_id(), 4999);
-  EXPECT_EQ(ca_exec->get_channel_id(), 6789);
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getToggleCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 4999);
+  EXPECT_EQ(aexec->get_channel_id(), 6789);
 }
 
 TEST_F(ActionTriggerTest, multiAction) {
@@ -285,9 +285,9 @@ TEST_F(ActionTriggerTest, multiAction) {
   at->execute_actions(1,
                       SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_HOLD);
 
-  EXPECT_EQ(ca_exec->counterSetCount(), 2);
-  EXPECT_EQ(ca_exec->getOpenCounter(), 1);
-  EXPECT_EQ(ca_exec->getRGBWCounter(), 1);
+  EXPECT_EQ(aexec->counterSetCount(), 2);
+  EXPECT_EQ(aexec->getOpenCounter(), 1);
+  EXPECT_EQ(aexec->getRGBWCounter(), 1);
 }
 
 } /* namespace testing */

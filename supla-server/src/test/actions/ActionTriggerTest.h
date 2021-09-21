@@ -19,9 +19,10 @@
 #ifndef ACTIONTRIGGERTEST_H_
 #define ACTIONTRIGGERTEST_H_
 
+#include <doubles/actions/ActionExecutorMock.h>
+
 #include "actions/action_trigger.h"
 #include "actions/action_trigger_config.h"
-#include "doubles/actions/ChannelActionExecutorMock.h"
 #include "doubles/device/DeviceFinderStub.h"
 #include "gtest/gtest.h"  // NOLINT
 
@@ -31,7 +32,7 @@ class ActionTriggerTest : public Test {
  protected:
   supla_action_trigger *at;
   action_trigger_config *at_config;
-  ChannelActionExecutorMock *ca_exec;
+  ActionExecutorMock *aexec;
   DeviceFinderStub *dev_finder;
 
  public:

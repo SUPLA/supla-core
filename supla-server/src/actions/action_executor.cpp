@@ -16,24 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "actions/channel_action_executor.h"
-
+#include <actions/action_executor.h>
 #include "userchannelgroups.h"
 
-supla_channel_action_executor::supla_channel_action_executor(void)
-    : supla_abstract_channel_action_executor() {}
+supla_action_executor::supla_action_executor(void)
+    : supla_abstract_action_executor() {}
 
-supla_channel_action_executor::supla_channel_action_executor(supla_user *user,
+supla_action_executor::supla_action_executor(supla_user *user,
                                                              int device_id,
                                                              int channel_id)
-    : supla_abstract_channel_action_executor(user, device_id, channel_id) {}
+    : supla_abstract_action_executor(user, device_id, channel_id) {}
 
-supla_channel_action_executor::supla_channel_action_executor(int user_id,
+supla_action_executor::supla_action_executor(int user_id,
                                                              int device_id,
                                                              int channel_id)
-    : supla_abstract_channel_action_executor(user_id, device_id, channel_id) {}
+    : supla_abstract_action_executor(user_id, device_id, channel_id) {}
 
-void supla_channel_action_executor::set_on(bool on) {
+void supla_action_executor::set_on(bool on) {
   if (get_channel_groups()) {
     get_channel_groups()->set_on(get_group_id(), on);
   } else {
@@ -45,7 +44,7 @@ void supla_channel_action_executor::set_on(bool on) {
   }
 }
 
-void supla_channel_action_executor::set_color(unsigned int color) {
+void supla_action_executor::set_color(unsigned int color) {
   if (get_channel_groups()) {
     get_channel_groups()->set_color(get_group_id(), color);
   } else {
@@ -57,7 +56,7 @@ void supla_channel_action_executor::set_color(unsigned int color) {
   }
 }
 
-void supla_channel_action_executor::set_brightness(char brightness) {
+void supla_action_executor::set_brightness(char brightness) {
   if (get_channel_groups()) {
     get_channel_groups()->set_brightness(get_group_id(), brightness);
   } else {
@@ -70,7 +69,7 @@ void supla_channel_action_executor::set_brightness(char brightness) {
   }
 }
 
-void supla_channel_action_executor::set_color_brightness(
+void supla_action_executor::set_color_brightness(
     char color_brightness) {
   if (get_channel_groups()) {
     get_channel_groups()->set_color_brightness(get_group_id(),
@@ -85,7 +84,7 @@ void supla_channel_action_executor::set_color_brightness(
   }
 }
 
-void supla_channel_action_executor::set_rgbw(unsigned int *color,
+void supla_action_executor::set_rgbw(unsigned int *color,
                                              char *color_brightness,
                                              char *brightness) {
   if (get_channel_groups()) {
@@ -101,7 +100,7 @@ void supla_channel_action_executor::set_rgbw(unsigned int *color,
   }
 }
 
-void supla_channel_action_executor::toggle(void) {
+void supla_action_executor::toggle(void) {
   if (get_channel_groups()) {
     get_channel_groups()->action_toggle(get_group_id());
   } else {
@@ -113,7 +112,7 @@ void supla_channel_action_executor::toggle(void) {
   }
 }
 
-void supla_channel_action_executor::shut(const char *closingPercentage) {
+void supla_action_executor::shut(const char *closingPercentage) {
   if (get_channel_groups()) {
     get_channel_groups()->action_shut(get_group_id(), closingPercentage);
   } else {
@@ -126,7 +125,7 @@ void supla_channel_action_executor::shut(const char *closingPercentage) {
   }
 }
 
-void supla_channel_action_executor::reveal(void) {
+void supla_action_executor::reveal(void) {
   if (get_channel_groups()) {
     get_channel_groups()->action_reveal(get_group_id());
   } else {
@@ -138,7 +137,7 @@ void supla_channel_action_executor::reveal(void) {
   }
 }
 
-void supla_channel_action_executor::stop(void) {
+void supla_action_executor::stop(void) {
   if (get_channel_groups()) {
     get_channel_groups()->action_stop(get_group_id());
   } else {
@@ -150,7 +149,7 @@ void supla_channel_action_executor::stop(void) {
   }
 }
 
-void supla_channel_action_executor::open(void) {
+void supla_action_executor::open(void) {
   if (get_channel_groups()) {
     get_channel_groups()->action_open(get_group_id());
   } else {
@@ -162,7 +161,7 @@ void supla_channel_action_executor::open(void) {
   }
 }
 
-void supla_channel_action_executor::close(void) {
+void supla_action_executor::close(void) {
   if (get_channel_groups()) {
     get_channel_groups()->action_close(get_group_id());
   } else {
@@ -174,7 +173,7 @@ void supla_channel_action_executor::close(void) {
   }
 }
 
-void supla_channel_action_executor::open_close(void) {
+void supla_action_executor::open_close(void) {
   if (get_channel_groups()) {
     get_channel_groups()->action_open_close(get_group_id());
   } else {
@@ -186,7 +185,7 @@ void supla_channel_action_executor::open_close(void) {
   }
 }
 
-void supla_channel_action_executor::open_close_without_canceling_tasks() {
+void supla_action_executor::open_close_without_canceling_tasks() {
   if (get_channel_groups()) {
   } else {
     supla_device *device = get_device();

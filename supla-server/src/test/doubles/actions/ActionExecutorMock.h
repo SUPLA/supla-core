@@ -19,12 +19,12 @@
 #ifndef ACTION_EXECUTOR_MOCK_H_
 #define ACTION_EXECUTOR_MOCK_H_
 
-#include "actions/abstract_channel_action_executor.h"
+#include <actions/abstract_action_executor.h>
 
 namespace testing {
 
-class ChannelActionExecutorMock
-    : public supla_abstract_channel_action_executor {
+class ActionExecutorMock
+    : public supla_abstract_action_executor {
  private:
   int on_counter;
   int color_counter;
@@ -47,8 +47,8 @@ class ChannelActionExecutorMock
   char closing_percentage;
 
  public:
-  ChannelActionExecutorMock();
-  virtual ~ChannelActionExecutorMock();
+  ActionExecutorMock();
+  virtual ~ActionExecutorMock();
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);

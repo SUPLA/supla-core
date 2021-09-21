@@ -29,7 +29,7 @@ ActionGateOpenCloseIntegrationTest::ActionGateOpenCloseIntegrationTest()
 ActionGateOpenCloseIntegrationTest::~ActionGateOpenCloseIntegrationTest() {}
 
 void ActionGateOpenCloseIntegrationTest::WaitForOpenClose(
-    ChannelActionExecutorMock *action_executor, int expected_count,
+    ActionExecutorMock *action_executor, int expected_count,
     unsigned int usec) {
   unsigned int steps = usec / 100000;
 
@@ -54,7 +54,7 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   state_getter->set_result(true);
   state_getter->set_closed(!open);
 
-  ChannelActionExecutorMock *action_executor = new ChannelActionExecutorMock();
+  ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task =
@@ -85,7 +85,7 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   state_getter->set_result(true);
   state_getter->set_closed(open);
 
-  ChannelActionExecutorMock *action_executor = new ChannelActionExecutorMock();
+  ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task =
@@ -126,7 +126,7 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   GateStateGetterMock *state_getter = new GateStateGetterMock();
   EXPECT_TRUE(state_getter != NULL);
 
-  ChannelActionExecutorMock *action_executor = new ChannelActionExecutorMock();
+  ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task =

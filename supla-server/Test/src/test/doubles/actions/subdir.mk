@@ -4,13 +4,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/doubles/actions/ChannelActionExecutorMock.cpp 
+../src/test/doubles/actions/ActionExecutorMock.cpp 
 
 OBJS += \
-./src/test/doubles/actions/ChannelActionExecutorMock.o 
+./src/test/doubles/actions/ActionExecutorMock.o 
 
 CPP_DEPS += \
-./src/test/doubles/actions/ChannelActionExecutorMock.d 
+./src/test/doubles/actions/ActionExecutorMock.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

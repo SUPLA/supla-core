@@ -19,16 +19,16 @@
 #ifndef MQTT_CHANNEl_VALUE_SETTER_H_
 #define MQTT_CHANNEl_VALUE_SETTER_H_
 
-#include <actions/channel_action_executor.h>
+#include <actions/action_executor.h>
 #include "mqtt_abstract_value_setter.h"
 #include "user.h"
 
 class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
  private:
-  supla_channel_action_executor *action_executor;
+  supla_action_executor *action_executor;
 
  protected:
-  supla_channel_action_executor *get_action_executor(void);
+  supla_action_executor *get_action_executor(void);
   void set_on(bool on);
   void set_color(unsigned int color);
   void set_brightness(char brightness);

@@ -16,18 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ChannelActionExecutorMock.h"
+#include <doubles/actions/ActionExecutorMock.h>
 
 namespace testing {
 
-ChannelActionExecutorMock::ChannelActionExecutorMock()
-    : supla_abstract_channel_action_executor() {
+ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   clear();
 }
 
-ChannelActionExecutorMock::~ChannelActionExecutorMock() {}
+ActionExecutorMock::~ActionExecutorMock() {}
 
-void ChannelActionExecutorMock::clear(void) {
+void ActionExecutorMock::clear(void) {
   this->on_counter = 0;
   this->color_counter = 0;
   this->brightness_counter = 0;
@@ -48,7 +47,7 @@ void ChannelActionExecutorMock::clear(void) {
   this->rgbw_counter = 0;
 }
 
-void ChannelActionExecutorMock::set_on(bool on) {
+void ActionExecutorMock::set_on(bool on) {
   if (on) {
     on_counter++;
   } else {
@@ -56,24 +55,23 @@ void ChannelActionExecutorMock::set_on(bool on) {
   }
 }
 
-void ChannelActionExecutorMock::set_color(unsigned int color) {
+void ActionExecutorMock::set_color(unsigned int color) {
   color_counter++;
   this->color = color;
 }
 
-void ChannelActionExecutorMock::set_brightness(char brightness) {
+void ActionExecutorMock::set_brightness(char brightness) {
   brightness_counter++;
   this->brightness = brightness;
 }
 
-void ChannelActionExecutorMock::set_color_brightness(char brightness) {
+void ActionExecutorMock::set_color_brightness(char brightness) {
   color_brightness_counter++;
   this->color_brightness = color_brightness;
 }
 
-void ChannelActionExecutorMock::set_rgbw(unsigned int *color,
-                                         char *color_brightness,
-                                         char *brightness) {
+void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
+                                  char *brightness) {
   rgbw_counter++;
   if (color) {
     this->color = *color;
@@ -88,78 +86,74 @@ void ChannelActionExecutorMock::set_rgbw(unsigned int *color,
   }
 }
 
-void ChannelActionExecutorMock::toggle(void) { toggle_counter++; }
+void ActionExecutorMock::toggle(void) { toggle_counter++; }
 
-void ChannelActionExecutorMock::shut(const char *closingPercentage) {
+void ActionExecutorMock::shut(const char *closingPercentage) {
   shut_counter++;
   if (closingPercentage) {
     closing_percentage = *closingPercentage;
   }
 }
 
-void ChannelActionExecutorMock::reveal(void) { reveal_counter++; }
+void ActionExecutorMock::reveal(void) { reveal_counter++; }
 
-void ChannelActionExecutorMock::stop(void) { stop_counter++; }
+void ActionExecutorMock::stop(void) { stop_counter++; }
 
-void ChannelActionExecutorMock::open(void) { open_counter++; }
+void ActionExecutorMock::open(void) { open_counter++; }
 
-void ChannelActionExecutorMock::close(void) { close_counter++; }
+void ActionExecutorMock::close(void) { close_counter++; }
 
-void ChannelActionExecutorMock::open_close(void) { open_close_counter++; }
+void ActionExecutorMock::open_close(void) { open_close_counter++; }
 
-void ChannelActionExecutorMock::open_close_without_canceling_tasks(void) {
+void ActionExecutorMock::open_close_without_canceling_tasks(void) {
   open_close_wct_counter++;
 }
 
-int ChannelActionExecutorMock::getOnCounter(void) { return on_counter; }
+int ActionExecutorMock::getOnCounter(void) { return on_counter; }
 
-int ChannelActionExecutorMock::getOffCounter(void) { return off_counter; }
+int ActionExecutorMock::getOffCounter(void) { return off_counter; }
 
-int ChannelActionExecutorMock::getColorCounter(void) { return color_counter; }
+int ActionExecutorMock::getColorCounter(void) { return color_counter; }
 
-int ChannelActionExecutorMock::getBrightnessCounter(void) {
+int ActionExecutorMock::getBrightnessCounter(void) {
   return brightness_counter;
 }
 
-int ChannelActionExecutorMock::getColorBrightnessCounter(void) {
+int ActionExecutorMock::getColorBrightnessCounter(void) {
   return color_brightness_counter;
 }
 
-int ChannelActionExecutorMock::getRGBWCounter(void) { return rgbw_counter; }
+int ActionExecutorMock::getRGBWCounter(void) { return rgbw_counter; }
 
-int ChannelActionExecutorMock::getToggleCounter(void) { return toggle_counter; }
+int ActionExecutorMock::getToggleCounter(void) { return toggle_counter; }
 
-int ChannelActionExecutorMock::getShutCounter(void) { return shut_counter; }
+int ActionExecutorMock::getShutCounter(void) { return shut_counter; }
 
-int ChannelActionExecutorMock::getRevealCounter(void) { return reveal_counter; }
+int ActionExecutorMock::getRevealCounter(void) { return reveal_counter; }
 
-int ChannelActionExecutorMock::getStopCounter(void) { return stop_counter; }
+int ActionExecutorMock::getStopCounter(void) { return stop_counter; }
 
-int ChannelActionExecutorMock::getOpenCounter(void) { return open_counter; }
+int ActionExecutorMock::getOpenCounter(void) { return open_counter; }
 
-int ChannelActionExecutorMock::getCloseCounter(void) { return close_counter; }
+int ActionExecutorMock::getCloseCounter(void) { return close_counter; }
 
-int ChannelActionExecutorMock::getOpenCloseCounter(void) {
-  return open_close_counter;
-}
+int ActionExecutorMock::getOpenCloseCounter(void) { return open_close_counter; }
 
-int ChannelActionExecutorMock::getOpenCloseWctCounter(void) {
+int ActionExecutorMock::getOpenCloseWctCounter(void) {
   return open_close_wct_counter;
 }
 
-char ChannelActionExecutorMock::getClosingPercentage(void) {
+char ActionExecutorMock::getClosingPercentage(void) {
   return closing_percentage;
 }
 
-unsigned int ChannelActionExecutorMock::getColor(void) { return color; }
+unsigned int ActionExecutorMock::getColor(void) { return color; }
 
-char ChannelActionExecutorMock::getBrightness(void) { return brightness; }
+char ActionExecutorMock::getBrightness(void) { return brightness; }
 
-char ChannelActionExecutorMock::getColorBrightness(void) {
-  return color_brightness;
-}
+char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
 
-int ChannelActionExecutorMock::counterSetCount(void) {
+int ActionExecutorMock::counterSetCount(void) {
   int result = 0;
   if (on_counter > 0) {
     result++;
