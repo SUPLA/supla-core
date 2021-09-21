@@ -50,6 +50,7 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
     }
 
     if (action.channelGroup) {
+      ca_exec->set_group_id(user_id, action.subjectId);
     } else {
       int device_id =
           dev_finder ? dev_finder->find_device_id(user_id, action.subjectId)
@@ -60,53 +61,52 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
       }
 
       ca_exec->set_channel_id(user_id, device_id, action.subjectId);
+    }
 
-      switch (action.actionId) {
-        case ACTION_OPEN:
-          ca_exec->open();
-          break;
-        case ACTION_CLOSE:
-          ca_exec->close();
-          break;
-        case ACTION_SHUT:
-          ca_exec->shut(NULL);
-          break;
-        case ACTION_REVEAL:
-          ca_exec->reveal();
-          break;
-        case ACTION_REVEAL_PARTIALLY: {
-          char percentage = config->get_percentage(cap);
-          if (percentage > -1) {
-            percentage = 100 - percentage;
-            ca_exec->shut(&percentage);
-          }
-        } break;
-        case ACTION_TURN_ON:
-          ca_exec->set_on(true);
-          break;
-        case ACTION_TURN_OFF:
-          ca_exec->set_on(false);
-          break;
-        case ACTION_SET_RGBW_PARAMETERS: {
-          _at_config_rgbw_t rgbw = config->get_rgbw(cap);
-          if (rgbw.brightness > -1 || rgbw.color_brightness > -1 ||
-              rgbw.color) {
-            ca_exec->set_rgbw(
-                rgbw.color ? &rgbw.color : NULL,
-                rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
-                rgbw.brightness > -1 ? &rgbw.brightness : NULL);
-          }
-        } break;
-        case ACTION_OPEN_CLOSE:
-          ca_exec->open_close();
-          break;
-        case ACTION_STOP:
-          ca_exec->stop();
-          break;
-        case ACTION_TOGGLE:
-          ca_exec->toggle();
-          break;
-      }
+    switch (action.actionId) {
+      case ACTION_OPEN:
+        ca_exec->open();
+        break;
+      case ACTION_CLOSE:
+        ca_exec->close();
+        break;
+      case ACTION_SHUT:
+        ca_exec->shut(NULL);
+        break;
+      case ACTION_REVEAL:
+        ca_exec->reveal();
+        break;
+      case ACTION_REVEAL_PARTIALLY: {
+        char percentage = config->get_percentage(cap);
+        if (percentage > -1) {
+          percentage = 100 - percentage;
+          ca_exec->shut(&percentage);
+        }
+      } break;
+      case ACTION_TURN_ON:
+        ca_exec->set_on(true);
+        break;
+      case ACTION_TURN_OFF:
+        ca_exec->set_on(false);
+        break;
+      case ACTION_SET_RGBW_PARAMETERS: {
+        _at_config_rgbw_t rgbw = config->get_rgbw(cap);
+        if (rgbw.brightness > -1 || rgbw.color_brightness > -1 || rgbw.color) {
+          ca_exec->set_rgbw(
+              rgbw.color ? &rgbw.color : NULL,
+              rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
+              rgbw.brightness > -1 ? &rgbw.brightness : NULL);
+        }
+      } break;
+      case ACTION_OPEN_CLOSE:
+        ca_exec->open_close();
+        break;
+      case ACTION_STOP:
+        ca_exec->stop();
+        break;
+      case ACTION_TOGGLE:
+        ca_exec->toggle();
+        break;
     }
   }
 }

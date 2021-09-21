@@ -87,6 +87,40 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
       });
 }
 
+bool supla_user_channelgroups::set_on(int GroupID, bool on) {
+  return for_each_device(
+      GroupID,
+      [GroupID, on](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->set_on(0, channelId, GroupID, EOL, on);
+      });
+}
+
+bool supla_user_channelgroups::set_color(int GroupID, unsigned int color) {
+  return set_rgbw_value(GroupID, &color, NULL, NULL, NULL);
+}
+
+bool supla_user_channelgroups::set_color_brightness(int GroupID,
+                                                    char color_brightness) {
+  return set_rgbw_value(GroupID, NULL, &color_brightness, NULL, NULL);
+}
+
+bool supla_user_channelgroups::set_brightness(int GroupID, char brightness) {
+  return set_rgbw_value(GroupID, NULL, NULL, &brightness, NULL);
+}
+
+bool supla_user_channelgroups::set_rgbw_value(int GroupID, unsigned int *color,
+                                              char *color_brightness,
+                                              char *brightness, char *on_off) {
+  return for_each_device(
+      GroupID,
+      [GroupID, color, color_brightness, brightness, on_off](
+          supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->set_rgbw(0, channelId, GroupID, EOL,
+                                                color, color_brightness,
+                                                brightness, on_off);
+      });
+}
+
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
                                               char color_brightness,
                                               char brightness, char on_off) {
@@ -97,5 +131,67 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
         return device->get_channels()->set_device_channel_rgbw_value(
             0, channelId, GroupID, EOL, color, color_brightness, brightness,
             on_off);
+      });
+}
+
+bool supla_user_channelgroups::action_toggle(int GroupID) {
+  return for_each_device(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_toggle(0, channelId, GroupID,
+                                                     EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_shut(int GroupID,
+                                           const char *closing_percentage) {
+  return for_each_device(
+      GroupID,
+      [GroupID, closing_percentage](supla_device *device, int channelId,
+                                    char EOL) -> bool {
+        return device->get_channels()->action_shut(0, channelId, GroupID, EOL,
+                                                   closing_percentage);
+      });
+}
+
+bool supla_user_channelgroups::action_reveal(int GroupID) {
+  return for_each_device(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_reveal(0, channelId, GroupID,
+                                                     EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_stop(int GroupID) {
+  return for_each_device(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_stop(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_open(int GroupID) {
+  return for_each_device(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_open(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_close(int GroupID) {
+  return for_each_device(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_close(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_open_close(int GroupID) {
+  return for_each_device(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_open_close(0, channelId, GroupID,
+                                                         EOL);
       });
 }

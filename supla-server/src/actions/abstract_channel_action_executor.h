@@ -22,14 +22,18 @@
 #include "device.h"
 #include "user.h"
 
+class supla_user_channelgroups;
 class supla_abstract_channel_action_executor {
  private:
   supla_user *user;
   int device_id;
-  int channel_id;
+  int subject_id;
+  bool is_group;
 
  protected:
   supla_device *get_device(void);
+  supla_user *get_user(void);
+  supla_user_channelgroups *get_channel_groups(void);
 
  public:
   supla_abstract_channel_action_executor(void);
@@ -37,13 +41,19 @@ class supla_abstract_channel_action_executor {
                                          int channel_id);
   supla_abstract_channel_action_executor(int user_id, int device_id,
                                          int channel_id);
+  supla_abstract_channel_action_executor(supla_user *user, int group_id);
+  supla_abstract_channel_action_executor(int user_id, int group_id);
   virtual ~supla_abstract_channel_action_executor(void);
 
   void set_channel_id(supla_user *user, int device_id, int channel_id);
   void set_channel_id(int user_id, int device_id, int channel_id);
+  void set_group_id(supla_user *user, int group_id);
+  void set_group_id(int user_id, int group_id);
+
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
+  int get_group_id(void);
 
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;

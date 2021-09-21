@@ -83,6 +83,28 @@ TEST_F(ActionTriggerTest, open) {
   EXPECT_EQ(ca_exec->getOpenCounter(), 1);
   EXPECT_EQ(ca_exec->get_device_id(), 123);
   EXPECT_EQ(ca_exec->get_channel_id(), 3611);
+  EXPECT_EQ(ca_exec->get_group_id(), 0);
+}
+
+TEST_F(ActionTriggerTest, openGroup) {
+  at_config->set_user_config(
+      "{\"actions\":{\"HOLD\":{\"subjectId\":3611,\"subjectType\":"
+      "\"channelGroup\","
+      "\"action\":{\"id\":10,\"param\":[]}}}}");
+
+  dev_finder->setResult(123);
+  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  EXPECT_EQ(ca_exec->counterSetCount(), 0);
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
+
+  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+
+  EXPECT_EQ(ca_exec->counterSetCount(), 1);
+  EXPECT_EQ(ca_exec->getOpenCounter(), 1);
+  EXPECT_EQ(ca_exec->get_device_id(), 0);
+  EXPECT_EQ(ca_exec->get_channel_id(), 0);
+  EXPECT_EQ(ca_exec->get_group_id(), 3611);
 }
 
 TEST_F(ActionTriggerTest, close) {
@@ -99,6 +121,7 @@ TEST_F(ActionTriggerTest, close) {
   EXPECT_EQ(ca_exec->getCloseCounter(), 1);
   EXPECT_EQ(ca_exec->get_device_id(), 2);
   EXPECT_EQ(ca_exec->get_channel_id(), 4611);
+  EXPECT_EQ(ca_exec->get_group_id(), 0);
 }
 
 TEST_F(ActionTriggerTest, shut) {
@@ -115,6 +138,7 @@ TEST_F(ActionTriggerTest, shut) {
   EXPECT_EQ(ca_exec->getShutCounter(), 1);
   EXPECT_EQ(ca_exec->get_device_id(), 3);
   EXPECT_EQ(ca_exec->get_channel_id(), 461);
+  EXPECT_EQ(ca_exec->get_group_id(), 0);
 }
 
 TEST_F(ActionTriggerTest, reveal) {

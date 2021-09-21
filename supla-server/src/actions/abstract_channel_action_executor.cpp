@@ -22,7 +22,8 @@ supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(
     void) {
   this->user = NULL;
   this->device_id = 0;
-  this->channel_id = 0;
+  this->subject_id = 0;
+  this->is_group = false;
 }
 
 supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(
@@ -35,6 +36,16 @@ supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(
   set_channel_id(user_id, device_id, channel_id);
 }
 
+supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(
+    supla_user *user, int group_id) {
+  set_group_id(user, group_id);
+}
+
+supla_abstract_channel_action_executor::supla_abstract_channel_action_executor(
+    int user_id, int group_id) {
+  set_group_id(user_id, group_id);
+}
+
 supla_abstract_channel_action_executor::~supla_abstract_channel_action_executor(
     void) {}
 
@@ -43,7 +54,8 @@ void supla_abstract_channel_action_executor::set_channel_id(supla_user *user,
                                                             int channel_id) {
   this->user = user;
   this->device_id = device_id;
-  this->channel_id = channel_id;
+  this->subject_id = channel_id;
+  this->is_group = false;
 }
 
 void supla_abstract_channel_action_executor::set_channel_id(int user_id,
@@ -51,7 +63,24 @@ void supla_abstract_channel_action_executor::set_channel_id(int user_id,
                                                             int channel_id) {
   this->user = user_id ? supla_user::find(user_id, false) : NULL;
   this->device_id = device_id;
-  this->channel_id = channel_id;
+  this->subject_id = channel_id;
+  this->is_group = false;
+}
+
+void supla_abstract_channel_action_executor::set_group_id(supla_user *user,
+                                                          int group_id) {
+  this->user = user;
+  this->device_id = 0;
+  this->subject_id = group_id;
+  this->is_group = true;
+}
+
+void supla_abstract_channel_action_executor::set_group_id(int user_id,
+                                                          int group_id) {
+  this->user = user_id ? supla_user::find(user_id, false) : NULL;
+  this->device_id = 0;
+  this->subject_id = group_id;
+  this->is_group = true;
 }
 
 supla_device *supla_abstract_channel_action_executor::get_device(void) {
@@ -60,6 +89,15 @@ supla_device *supla_abstract_channel_action_executor::get_device(void) {
   }
 
   return NULL;
+}
+
+supla_user_channelgroups *
+supla_abstract_channel_action_executor::get_channel_groups(void) {
+  return is_group && user ? user->get_channel_groups() : NULL;
+}
+
+supla_user *supla_abstract_channel_action_executor::get_user(void) {
+  return user;
 }
 
 int supla_abstract_channel_action_executor::get_user_id(void) {
@@ -71,5 +109,9 @@ int supla_abstract_channel_action_executor::get_device_id(void) {
 }
 
 int supla_abstract_channel_action_executor::get_channel_id(void) {
-  return channel_id;
+  return is_group ? 0 : subject_id;
+}
+
+int supla_abstract_channel_action_executor::get_group_id(void) {
+  return is_group ? subject_id : 0;
 }

@@ -2760,6 +2760,11 @@ bool supla_device_channels::action_open(int SenderID, int ChannelID,
   return action_open_close(SenderID, ChannelID, GroupID, EOL, false, true);
 }
 
+bool supla_device_channels::action_close(int SenderID, int ChannelID,
+                                         int GroupID, unsigned char EOL) {
+  return action_open_close(SenderID, ChannelID, GroupID, EOL, false, false);
+}
+
 bool supla_device_channels::action_close(int ChannelID) {
   return action_open_close(0, ChannelID, 0, 0, false, false);
 }

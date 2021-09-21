@@ -23,26 +23,25 @@
 
 class supla_channel_action_executor
     : public supla_abstract_channel_action_executor {
- public:
-  supla_channel_action_executor(void);
-  supla_channel_action_executor(supla_user *user, int device_id,
-                                int channel_id);
-  supla_channel_action_executor(int user_id, int device_id, int channel_id);
+public:
+ supla_channel_action_executor(void);
+ supla_channel_action_executor(supla_user *user, int device_id, int channel_id);
+ supla_channel_action_executor(int user_id, int device_id, int channel_id);
 
-  virtual void set_on(bool on);
-  virtual void set_color(unsigned int color);
-  virtual void set_brightness(char brightness);
-  virtual void set_color_brightness(char brightness);
-  virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness);
-  virtual void toggle(void);
-  virtual void shut(const char *closingPercentage);
-  virtual void reveal(void);
-  virtual void stop(void);
-  virtual void open(void);
-  virtual void close(void);
-  virtual void open_close();
-  virtual void open_close_without_canceling_tasks();
+ virtual void set_on(bool on);
+ virtual void set_color(unsigned int color);
+ virtual void set_brightness(char brightness);
+ virtual void set_color_brightness(char brightness);
+ virtual void set_rgbw(unsigned int *color, char *color_brightness,
+                       char *brightness);
+ virtual void toggle(void);
+ virtual void shut(const char *closingPercentage);
+ virtual void reveal(void);
+ virtual void stop(void);
+ virtual void open(void);
+ virtual void close(void);
+ virtual void open_close();
+ virtual void open_close_without_canceling_tasks();
 };
 
 #endif /*ACTION_EXECUTOR_H_*/
