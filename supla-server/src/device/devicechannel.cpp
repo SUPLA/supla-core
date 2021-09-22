@@ -1944,7 +1944,7 @@ void supla_device_channels::update_channels(
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
         int actionTriggerRelatedChannelId = 0;
-        if (actionTriggerRelatedChannelNumber > 1) {
+        if (actionTriggerRelatedChannelNumber > 0) {
           actionTriggerRelatedChannelId =
               get_channel_id(actionTriggerRelatedChannelNumber - 1);
         }
