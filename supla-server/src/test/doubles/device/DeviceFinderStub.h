@@ -16,27 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CHANNEL_ORIENTED_ASYNCTASK_MOCK_H_
-#define CHANNEL_ORIENTED_ASYNCTASK_MOCK_H_
+#ifndef DEVICE_FINDER_STUB_H_
+#define DEVICE_FINDER_STUB_H_
 
-#include "asynctask/AsyncTaskMock.h"
+#include "device/abstractdevicefinder.h"
 
-class ChannelOrientedAsyncTaskMock : public AsyncTaskMock {
- private:
-  int channel_id;
+namespace testing {
 
+class DeviceFinderStub : public supla_abstract_device_finder {
  protected:
-  virtual bool _execute(bool *execute_again);
+  int result;
 
  public:
-  ChannelOrientedAsyncTaskMock(supla_asynctask_queue *queue,
-                               supla_abstract_asynctask_thread_pool *pool,
-                               short priority, bool release_immediately);
-  ChannelOrientedAsyncTaskMock(supla_asynctask_queue *queue,
-                               supla_abstract_asynctask_thread_pool *pool);
-
-  void set_channel_id(int channel_id);
-  int get_channel_id(void);
+  DeviceFinderStub(void);
+  virtual ~DeviceFinderStub(void);
+  void setResult(int result);
+  virtual int find_device_id(int userId, int channelId);
 };
 
-#endif /*CHANNEL_ORIENTED_ASYNCTASK_MOCK_H_*/
+} /* namespace testing */
+
+#endif /* DEVICE_FINDER_STUB_H_ */

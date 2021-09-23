@@ -227,6 +227,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT 655         // ver. >= 14
 #define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
 #define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
+#define SUPLA_DS_CALL_ACTIONTRIGGER 700                       // ver. >= 16
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -332,7 +333,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELTYPE_BRIDGE 8000                       // ver. >= 12
 #define SUPLA_CHANNELTYPE_GENERAL_PURPOSE_MEASUREMENT 9000  // ver. >= 12
 #define SUPLA_CHANNELTYPE_ENGINE 10000                      // ver. >= 12
-#define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 12
+#define SUPLA_CHANNELTYPE_ACTIONTRIGGER 11000               // ver. >= 16
 #define SUPLA_CHANNELTYPE_DIGIGLASS 12000                   // ver. >= 12
 
 #define SUPLA_CHANNELDRIVER_MCP23008 2
@@ -383,7 +384,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_VALVE_PERCENTAGE 510             // ver. >= 12
 #define SUPLA_CHANNELFNC_GENERAL_PURPOSE_MEASUREMENT 520  // ver. >= 12
 #define SUPLA_CHANNELFNC_CONTROLLINGTHEENGINESPEED 600    // ver. >= 12
-#define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 12
+#define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800         // ver. >= 14
 #define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810           // ver. >= 14
 
@@ -623,7 +624,11 @@ typedef struct {
   _supla_int_t Default;
   _supla_int_t Flags;
 
-  char value[SUPLA_CHANNELVALUE_SIZE];
+  union {
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    unsigned char
+        ActionTriggerRelatedChannelNumber;  // ChannelNumber + 1. ver. >= 16
+  };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
 typedef struct {
@@ -1805,19 +1810,21 @@ typedef struct {
 } TCS_TimerArmRequest;  // v. >= 16
 
 // Recommended for bistable buttons
-#define SUPLA_ACTION_CAP_TURN_ON (1<<0)
-#define SUPLA_ACTION_CAP_TURN_OFF (1<<1)
-#define SUPLA_ACTION_CAP_TOGGLE_x1 (1<<2)
-#define SUPLA_ACTION_CAP_TOGGLE_x2 (1<<3)
-#define SUPLA_ACTION_CAP_TOGGLE_x3 (1<<4)
+#define SUPLA_ACTION_CAP_TURN_ON (1 << 0)
+#define SUPLA_ACTION_CAP_TURN_OFF (1 << 1)
+#define SUPLA_ACTION_CAP_TOGGLE_x1 (1 << 2)
+#define SUPLA_ACTION_CAP_TOGGLE_x2 (1 << 3)
+#define SUPLA_ACTION_CAP_TOGGLE_x3 (1 << 4)
+#define SUPLA_ACTION_CAP_TOGGLE_x4 (1 << 5)
+#define SUPLA_ACTION_CAP_TOGGLE_x5 (1 << 6)
 
 // Recommended for monostable buttons
-#define SUPLA_ACTION_CAP_HOLD (1<<10)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x1 (1<<11)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x2 (1<<12)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x3 (1<<13)
-#define SUPLA_ACTION_CAP_SHORT_PRESS_x4 (1<<14)
-
+#define SUPLA_ACTION_CAP_HOLD (1 << 10)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x1 (1 << 11)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x2 (1 << 12)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x3 (1 << 13)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x4 (1 << 14)
+#define SUPLA_ACTION_CAP_SHORT_PRESS_x5 (1 << 15)
 
 #define SUPLA_VALVE_FLAG_FLOODING 0x1
 #define SUPLA_VALVE_FLAG_MANUALLY_CLOSED 0x2
@@ -1830,6 +1837,12 @@ typedef struct {
 
   unsigned char flags;
 } TValve_Value;
+
+typedef struct {
+  unsigned char ChannelNumber;
+  _supla_int_t ActionTrigger;
+  unsigned char zero[10];  // Place for future variables
+} TDS_ActionTrigger;
 
 #pragma pack(pop)
 

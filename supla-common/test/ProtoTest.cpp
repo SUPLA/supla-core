@@ -205,6 +205,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
   ASSERT_LE(sizeof(TRollerShutterValue), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_EQ((unsigned int)15, sizeof(TDS_ActionTrigger));
 }
 
 TEST_F(ProtoTest, init) {

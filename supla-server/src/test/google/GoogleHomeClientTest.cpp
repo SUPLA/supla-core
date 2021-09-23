@@ -17,8 +17,9 @@
  */
 
 #include "GoogleHomeClientTest.h"
-#include "TrivialHttpFactoryMock.h"
-#include "TrivialHttpMock.h"
+
+#include "doubles/TrivialHttpFactoryMock.h"
+#include "doubles/TrivialHttpMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {

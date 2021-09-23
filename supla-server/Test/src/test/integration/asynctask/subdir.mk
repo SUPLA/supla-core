@@ -7,25 +7,19 @@ CPP_SRCS += \
 ../src/test/integration/asynctask/ActionGateOpenCloseIntegration.cpp \
 ../src/test/integration/asynctask/AsyncTaskIntegrationTest.cpp \
 ../src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.cpp \
-../src/test/integration/asynctask/ChannelOrientedAsyncTaskMock.cpp \
-../src/test/integration/asynctask/ChannelSearchCondition.cpp \
-../src/test/integration/asynctask/GateStateGetterMock.cpp 
+../src/test/integration/asynctask/ChannelSearchCondition.cpp 
 
 OBJS += \
 ./src/test/integration/asynctask/ActionGateOpenCloseIntegration.o \
 ./src/test/integration/asynctask/AsyncTaskIntegrationTest.o \
 ./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.o \
-./src/test/integration/asynctask/ChannelOrientedAsyncTaskMock.o \
-./src/test/integration/asynctask/ChannelSearchCondition.o \
-./src/test/integration/asynctask/GateStateGetterMock.o 
+./src/test/integration/asynctask/ChannelSearchCondition.o 
 
 CPP_DEPS += \
 ./src/test/integration/asynctask/ActionGateOpenCloseIntegration.d \
 ./src/test/integration/asynctask/AsyncTaskIntegrationTest.d \
 ./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.d \
-./src/test/integration/asynctask/ChannelOrientedAsyncTaskMock.d \
-./src/test/integration/asynctask/ChannelSearchCondition.d \
-./src/test/integration/asynctask/GateStateGetterMock.d 
+./src/test/integration/asynctask/ChannelSearchCondition.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

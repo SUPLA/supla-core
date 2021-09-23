@@ -19,9 +19,9 @@
 #ifndef ASYNCTASK_TEST_H_
 #define ASYNCTASK_TEST_H_
 
-#include "AsyncTaskMock.h"
-#include "AsyncTaskThreadPoolMock.h"
 #include "asynctask_queue.h"
+#include "doubles/asynctask/AsyncTaskMock.h"
+#include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {

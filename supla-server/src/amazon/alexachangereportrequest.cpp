@@ -17,6 +17,7 @@
  */
 
 #include <amazon/alexachangereportrequest.h>
+
 #include "log.h"
 #include "sthread.h"
 #include "svrcfg.h"
@@ -122,8 +123,8 @@ void supla_alexa_changereport_request::execute(void *sthread) {
                                            value.hi, value.online);
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      getClient()->sendPercentageChangeReport(getCauseType(), getChannelId(),
-                                              value.shut, value.online);
+      getClient()->sendRangeAndPercentageChangeReport(
+          getCauseType(), getChannelId(), value.shut, value.online);
       break;
   }
 }

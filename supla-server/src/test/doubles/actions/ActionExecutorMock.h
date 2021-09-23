@@ -19,11 +19,12 @@
 #ifndef ACTION_EXECUTOR_MOCK_H_
 #define ACTION_EXECUTOR_MOCK_H_
 
-#include "abstract_action_executor.h"
+#include <actions/abstract_action_executor.h>
 
 namespace testing {
 
-class ActionExecutorMock : public supla_abstract_action_executor {
+class ActionExecutorMock
+    : public supla_abstract_action_executor {
  private:
   int on_counter;
   int color_counter;
@@ -38,6 +39,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int close_counter;
   int open_close_counter;
   int open_close_wct_counter;
+  int rgbw_counter;
 
   unsigned int color;
   char brightness;
@@ -52,6 +54,8 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void set_color(unsigned int color);
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
+  virtual void set_rgbw(unsigned int *color, char *color_brightness,
+                        char *brightness);
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
@@ -68,6 +72,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getColorCounter(void);
   int getBrightnessCounter(void);
   int getColorBrightnessCounter(void);
+  int getRGBWCounter(void);
   int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);

@@ -163,6 +163,7 @@ union TsrpcDataPacketData {
   TSD_ChannelFunctions *sd_channel_functions;
   TDS_GetChannelConfigRequest *ds_get_channel_config_request;
   TSD_ChannelConfig *sd_channel_config;
+  TDS_ActionTrigger *ds_action_trigger;
 };
 
 typedef struct {
@@ -269,6 +270,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_ds_async_get_channel_config(
     void *_srpc, TDS_GetChannelConfigRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sd_async_get_channel_config_result(void *_srpc, TSD_ChannelConfig *config);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_ds_async_action_trigger(void *_srpc, TDS_ActionTrigger *action_trigger);
 #endif /*SRPC_EXCLUDE_DEVICE*/
 
 #ifndef SRPC_EXCLUDE_CLIENT

@@ -25,6 +25,7 @@
 #include "proto.h"
 
 class supla_user;
+class channel_json_config;
 
 class channel_address {
  private:
@@ -178,6 +179,10 @@ class supla_device_channel {
   char value[SUPLA_CHANNELVALUE_SIZE];
   struct timeval value_valid_to;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
+  channel_json_config *json_config;
+
+  void db_set_properties(channel_json_config *config);
+  void db_set_params(int Param1, int Param2, int Param3, int Param4);
 
  public:
   supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
@@ -185,10 +190,13 @@ class supla_device_channel {
                        const char *TextParam1, const char *TextParam2,
                        const char *TextParam3, bool Hidden, unsigned int Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
-                       unsigned _supla_int_t validity_time_sec);
+                       unsigned _supla_int_t validity_time_sec,
+                       const char *user_config, const char *properties);
   virtual ~supla_device_channel();
 
   static void getDefaults(int Type, int Func, int *Param1, int *Param2);
+  static int funcListFilter(int FuncList, int Type);
+
   int getId(void);
   int getNumber(void);
   int getUserID(void);
@@ -227,6 +235,7 @@ class supla_device_channel {
   bool getValveValue(TValve_Value *Value);
   void getConfig(TSD_ChannelConfig *config, unsigned char configType,
                  unsigned _supla_int_t flags);
+  void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
@@ -235,6 +244,7 @@ class supla_device_channel {
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
   supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   bool converValueToExtended(void);
+  void action_trigger(int actions);
 };
 
 class supla_device;
@@ -280,7 +290,8 @@ class supla_device_channels {
                    const char *TextParam1, const char *TextParam2,
                    const char *TextParam3, bool Hidden, unsigned int Flags,
                    const char value[SUPLA_CHANNELVALUE_SIZE],
-                   unsigned _supla_int_t validity_time_sec);
+                   unsigned _supla_int_t validity_time_sec,
+                   const char *user_config, const char *properties);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,
                          bool for_client);
@@ -300,14 +311,19 @@ class supla_device_channels {
   unsigned int get_channel_value_duration(int ChannelID);
   int get_channel_func(int ChannelID);
   int get_channel_type(int ChannelID);
+  bool set_channel_value(supla_device_channel *channel,
+                         char value[SUPLA_CHANNELVALUE_SIZE],
+                         bool *converted2extended,
+                         const unsigned _supla_int_t *validity_time_sec,
+                         bool *significantChange);
   bool set_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          bool *converted2extended,
                          const unsigned _supla_int_t *validity_time_sec,
                          bool *significantChange);
   bool set_channel_offline(int ChannelID, bool Offline);
   void set_channel_extendedvalue(int ChannelID, TSuplaChannelExtendedValue *ev);
-  void set_channels_value(TDS_SuplaDeviceChannel_B *schannel_b,
-                          TDS_SuplaDeviceChannel_C *schannel_c, int count);
+  void update_channels(TDS_SuplaDeviceChannel_B *schannel_b,
+                       TDS_SuplaDeviceChannel_C *schannel_c, int count);
 
   void on_device_registered(supla_user *user, int DeviceId,
                             TDS_SuplaDeviceChannel_B *schannel_b,
@@ -350,6 +366,7 @@ class supla_device_channels {
   void set_channel_function(int ChannelId, int Func);
   void get_functions_request(void);
   void get_channel_config_request(TDS_GetChannelConfigRequest *request);
+  void action_trigger(TDS_ActionTrigger *at);
 
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on);
@@ -373,6 +390,8 @@ class supla_device_channels {
                      unsigned char EOL);
   bool action_stop(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
   bool action_open(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_close(int SenderID, int ChannelID, int GroupID,
+                    unsigned char EOL);
   bool action_close(int ChannelID);
   bool action_open_close(int SenderID, int ChannelID, int GroupID,
                          unsigned char EOL);

@@ -313,6 +313,7 @@ void supla_http_request_queue::logStuckWarning(void) {
   if (time > 10) {
     supla_log(LOG_WARNING, "HTTP Queue iteration is stuck!");
   }
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
@@ -334,6 +335,7 @@ void supla_http_request_queue::logMetrics(unsigned int min_interval_sec) {
             "HTTP QUEUE METRICS: CURRENT[Thread Count: %i, Queue Size: %i] "
             "TOTAL[Request Count: %lu]",
             threadCount(), queueSize(), requestTotalCount());
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
 void supla_http_request_queue::recalculateTime(struct timeval *now) {

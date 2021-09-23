@@ -24,8 +24,10 @@ CPP_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 src \
+src/actions \
 src/amazon \
 src/asynctask \
+src/channeljsonconfig \
 src/client \
 src/crypt_blowfish \
 src/device \

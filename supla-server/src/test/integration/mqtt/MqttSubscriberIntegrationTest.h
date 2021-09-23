@@ -20,7 +20,7 @@
 #define MqttSubscriberIntegrationTest_H_
 
 #include "MqttClientIntegrationTest.h"
-#include "MqttValueSetterMock.h"
+#include "doubles/integration/mqtt/MqttValueSetterMock.h"
 
 namespace testing {
 

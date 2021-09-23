@@ -20,8 +20,9 @@
 #define MQTTCLIENTINTEGRATIONTEST_H_
 
 #include <mqtt_publisher_datasource.h>
-#include "MqttClientLibraryAdapterMock.h"
-#include "MqttClientSettingsMock.h"
+
+#include "doubles/integration/mqtt/MqttClientLibraryAdapterMock.h"
+#include "doubles/integration/mqtt/MqttClientSettingsMock.h"
 #include "integration/IntegrationTest.h"
 #include "mqtt_publisher.h"
 

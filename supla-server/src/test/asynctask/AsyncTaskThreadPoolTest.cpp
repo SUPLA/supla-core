@@ -17,8 +17,9 @@
  */
 
 #include "AsyncTaskThreadPoolTest.h"
-#include "AsyncTaskThreadPoolMock.h"
+
 #include "asynctask_queue.h"
+#include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
 
 namespace testing {
 

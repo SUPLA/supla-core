@@ -56,6 +56,7 @@
 #define CAUSE_VOICE_INTERACTION 4
 
 #include <amazon/alexacredentials.h>
+
 #include "voiceassistantclient.h"
 
 class supla_alexa_client : public supla_voice_assistant_client {
@@ -74,6 +75,7 @@ class supla_alexa_client : public supla_voice_assistant_client {
   void *getColorControllerProperties(int color, short brightness);
   void *getContactSensorProperties(bool hi);
   void *getPercentageControllerProperties(short percentage);
+  void *getRangeControllerProperties(short value);
   void *getEndpointHealthProperties(bool ok);
   void *getHeader(const char name[], const char correlationToken[]);
   void *getChangeReportHeader(void);
@@ -109,6 +111,8 @@ class supla_alexa_client : public supla_voice_assistant_client {
                              short subChannel);
   bool sendPercentageChangeReport(int causeType, int channelId,
                                   short percentage, bool online);
+  bool sendRangeAndPercentageChangeReport(int causeType, int channelId,
+                                          short percentage, bool online);
   bool powerControllerSendResponse(const char correlationToken[], int channelId,
                                    bool hi, bool online);
   bool brightnessControllerSendResponse(const char correlationToken[],
@@ -120,6 +124,9 @@ class supla_alexa_client : public supla_voice_assistant_client {
   bool percentageControllerSendResponse(const char correlationToken[],
                                         int channelId, short percentage,
                                         bool online);
+  bool rangeAndPercentageControllerSendResponse(const char correlationToken[],
+                                                int channelId, short percentage,
+                                                bool online);
 };
 
 #endif /* AMAZON_ALEXACLIENT_H_ */

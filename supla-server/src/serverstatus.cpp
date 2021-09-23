@@ -95,12 +95,25 @@ void serverstatus::getStatus(char *buffer, size_t buffer_size) {
     return;
   }
 
+#ifdef __LCK_DEBUG
+  bool main_loop_stuck = false;
+#endif /*__LCK_DEBUG*/
+
   lck_lock(lck);
   if (now.tv_sec - last_mainloop_heartbeat.tv_sec > 30) {
     snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i\n",
              last_file ? last_file : "", last_line);
+#ifdef __LCK_DEBUG
+    main_loop_stuck = true;
+#endif /*__LCK_DEBUG*/
   } else {
     snprintf(buffer, buffer_size, "OK\n");
   }
   lck_unlock(lck);
+
+#ifdef __LCK_DEBUG
+  if (main_loop_stuck) {
+    lck_debug_dump();
+  }
+#endif /*__LCK_DEBUG*/
 }
