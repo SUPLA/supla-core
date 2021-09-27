@@ -17,6 +17,7 @@
  */
 
 #include "RegistrationIntegrationTest.h"
+
 #include "log.h"
 
 namespace testing {
@@ -32,6 +33,7 @@ RegistrationIntegrationTest::RegistrationIntegrationTest() {
   AccessID = 0;
   memset(AccessIDpwd, 0, SUPLA_ACCESSID_PWD_MAXSIZE);
   memset(Password, 0, Password[SUPLA_PASSWORD_MAXSIZE]);
+  serverUnixTimestamp = 0;
 }
 
 RegistrationIntegrationTest::~RegistrationIntegrationTest() {}
@@ -48,9 +50,11 @@ void RegistrationIntegrationTest::beforeClientInit(TSuplaClientCfg *scc) {
 }
 
 void RegistrationIntegrationTest::onRegistered(
-    TSC_SuplaRegisterClientResult_B *result) {
+    TSC_SuplaRegisterClientResult_C *result) {
   IntegrationTest::onRegistered(result);
   ASSERT_EQ(expectedRegistrationErrorCode, 0);
+
+  serverUnixTimestamp = result->serverUnixTimestamp;
   cancelIteration();
 }
 
@@ -148,22 +152,38 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_NoSSL) {
   iterateUntilDefaultTimeout();
 }
 
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion17) {
+  ProtocolVersion = 17;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+
+  ASSERT_GT(serverUnixTimestamp, (unsigned int)0);
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  ASSERT_LE(abs(now.tv_sec - serverUnixTimestamp), 1);
+  ASSERT_LE(abs(supla_client_get_time_diff(sclient)), 1);
+}
+
 TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion12) {
   ProtocolVersion = 12;
   initTestDatabase();
   iterateUntilDefaultTimeout();
+  ASSERT_EQ(serverUnixTimestamp, (unsigned int)0);
 }
 
 TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion11) {
   ProtocolVersion = 11;
   initTestDatabase();
   iterateUntilDefaultTimeout();
+  ASSERT_EQ(serverUnixTimestamp, (unsigned int)0);
 }
 
 TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion7) {
   ProtocolVersion = 7;
   initTestDatabase();
   iterateUntilDefaultTimeout();
+  ASSERT_EQ(serverUnixTimestamp, (unsigned int)0);
 }
 
 TEST_F(RegistrationIntegrationTest, RegistrationWithEmail_ProtocolVersion6) {
@@ -171,6 +191,7 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithEmail_ProtocolVersion6) {
   expectedRegistrationErrorCode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
   initTestDatabase();
   iterateUntilDefaultTimeout();
+  ASSERT_EQ(serverUnixTimestamp, (unsigned int)0);
 }
 
 TEST_F(RegistrationIntegrationTest, RegistrationUsingAccessID) {
@@ -189,6 +210,7 @@ TEST_F(RegistrationIntegrationTest,
   snprintf(AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, "3311dbb5");
   initTestDatabase();
   iterateUntilDefaultTimeout();
+  ASSERT_EQ(serverUnixTimestamp, (unsigned int)0);
 }
 
 TEST_F(RegistrationIntegrationTest, RegistrationWhenClientLimitIsExceeded) {

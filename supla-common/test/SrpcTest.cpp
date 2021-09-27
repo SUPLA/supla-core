@@ -500,6 +500,9 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_DS_CALL_GET_CHANNEL_CONFIG,
               SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
               SUPLA_DS_CALL_ACTIONTRIGGER};
+
+    case 17:
+      return {SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C};
   }
 
   return {};
@@ -1955,45 +1958,20 @@ TEST_F(SrpcTest, call_registerclient_d) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_registerclient_result) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result,
+                     TSC_SuplaRegisterClientResult,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT, 42,
+                     sc_register_client_result);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaRegisterClientResult, result);
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_b,
+                     TSC_SuplaRegisterClientResult_B,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B, 50,
+                     sc_register_client_result_b);
 
-  ASSERT_GT(srpc_sc_async_registerclient_result(srpc, &result), 0);
-  SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT, 42);
-
-  ASSERT_FALSE(cr_rd.data.sc_register_client_result == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result, &result,
-                      sizeof(TSC_SuplaRegisterClientResult)));
-
-  free(cr_rd.data.sc_register_client_result);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_registerclient_result_b) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaRegisterClientResult_B, result);
-
-  ASSERT_GT(srpc_sc_async_registerclient_result_b(srpc, &result), 0);
-  SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B, 50);
-
-  ASSERT_FALSE(cr_rd.data.sc_register_client_result_b == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result_b, &result,
-                      sizeof(TSC_SuplaRegisterClientResult_B)));
-
-  free(cr_rd.data.sc_register_client_result_b);
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_c,
+                     TSC_SuplaRegisterClientResult_C,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C, 54,
+                     sc_register_client_result_c);
 
 //---------------------------------------------------------
 // LOCATION UPDATE

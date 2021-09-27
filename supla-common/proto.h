@@ -96,7 +96,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 16
+#define SUPLA_PROTO_VERSION 17
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -159,6 +159,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_REGISTER_CLIENT_D 87  // ver. >= 12
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
+#define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C 94  // ver. >= 17
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B 102        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
@@ -1094,6 +1095,21 @@ typedef struct {
 } TSC_SuplaRegisterClientResult_B;  // ver. >= 9
 
 typedef struct {
+  // server -> client
+
+  _supla_int_t result_code;
+  _supla_int_t ClientID;
+  _supla_int_t LocationCount;
+  _supla_int_t ChannelCount;
+  _supla_int_t ChannelGroupCount;
+  _supla_int_t Flags;
+  unsigned char activity_timeout;
+  unsigned char version;
+  unsigned char version_min;
+  unsigned _supla_int_t serverUnixTimestamp;  // current server time
+} TSC_SuplaRegisterClientResult_C;            // ver. >= 17
+
+typedef struct {
   // client -> server
   unsigned char ChannelId;
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -1666,7 +1682,7 @@ typedef struct {
   union {
     // Remaining time to turn off
     unsigned _supla_int_t RemainingTimeMs;
-    unsigned _supla_int_t RemainingTimeTs;  // Unix timestamp - Filled by server
+    unsigned _supla_int_t CountdownEndsAt;  // Unix timestamp - Filled by server
   };
 
   unsigned char TargetValue[SUPLA_CHANNELVALUE_SIZE];

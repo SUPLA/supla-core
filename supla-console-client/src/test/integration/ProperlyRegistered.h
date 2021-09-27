@@ -28,7 +28,7 @@ class ProperlyRegistered : public IntegrationTest {
   ProperlyRegistered();
   virtual ~ProperlyRegistered();
   virtual void SetUp();
-  virtual void onRegistered(TSC_SuplaRegisterClientResult_B *result);
+  virtual void onRegistered(TSC_SuplaRegisterClientResult_C *result);
 };
 
 } /* namespace testing */

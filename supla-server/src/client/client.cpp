@@ -16,11 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "client.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "client.h"
 #include "clientlocation.h"
 #include "database.h"
 #include "lck.h"
@@ -288,8 +289,8 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
   revoke_superuser_authorization();
 
-  if (proto_version >= 9) {
-    TSC_SuplaRegisterClientResult_B srcr;
+  if (proto_version >= 17) {
+    TSC_SuplaRegisterClientResult_C srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
@@ -298,10 +299,25 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
     srcr.ChannelGroupCount = cgroups->count();
-    srcr.Flags = 0;
+
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    srcr.serverUnixTimestamp = now.tv_sec;
+
+    srpc_sc_async_registerclient_result_c(getSvrConn()->srpc(), &srcr);
+  } else if (proto_version >= 9) {
+    TSC_SuplaRegisterClientResult_B srcr = {};
+    srcr.result_code = resultcode;
+    srcr.ClientID = getID();
+    srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
+    srcr.version = SUPLA_PROTO_VERSION;
+    srcr.LocationCount = locations->count();
+    srcr.ChannelCount = channels->count();
+    srcr.ChannelGroupCount = cgroups->count();
     srpc_sc_async_registerclient_result_b(getSvrConn()->srpc(), &srcr);
   } else {
-    TSC_SuplaRegisterClientResult srcr;
+    TSC_SuplaRegisterClientResult srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
