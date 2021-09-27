@@ -165,6 +165,13 @@ TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion17) {
   ASSERT_LE(abs(supla_client_get_time_diff(sclient)), 1);
 }
 
+TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion16) {
+  ProtocolVersion = 16;
+  initTestDatabase();
+  iterateUntilDefaultTimeout();
+  ASSERT_EQ(serverUnixTimestamp, (unsigned int)0);
+}
+
 TEST_F(RegistrationIntegrationTest, RegistrationWithSuccess_ProtocolVersion12) {
   ProtocolVersion = 12;
   initTestDatabase();
