@@ -343,6 +343,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               db->commit();
 
               setID(DeviceID);
+              setUser(supla_user::find(UserID, true));
 
               load_config(UserID);
 
@@ -351,7 +352,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
-              setUser(supla_user::add_device(this, UserID));
+              supla_user::add_device(this, UserID);
               getUser()->update_client_device_channels(LocationID, getID());
 
               channels->on_device_registered(getUser(), DeviceID,

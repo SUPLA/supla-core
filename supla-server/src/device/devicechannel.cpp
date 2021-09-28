@@ -485,15 +485,15 @@ void supla_channel_thermostat_measurement::free(void *tharr) {
 //-----------------------------------------------------
 
 supla_device_channel::supla_device_channel(
-    int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
-    int Param3, int Param4, const char *TextParam1, const char *TextParam2,
-    const char *TextParam3, bool Hidden, unsigned int Flags,
-    const char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
+    int Param2, int Param3, int Param4, const char *TextParam1,
+    const char *TextParam2, const char *TextParam3, bool Hidden,
+    unsigned int Flags, const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
     const char *properties) {
   this->Id = Id;
   this->Number = Number;
-  this->UserID = UserID;
+  this->Device = Device;
   this->Type = Type;
   this->Func = Func;
   this->Param1 = Param1;
@@ -581,7 +581,20 @@ int supla_device_channel::getNumber(void) { return Number; }
 
 int supla_device_channel::getFunc(void) { return Func; }
 
-int supla_device_channel::getUserID(void) { return UserID; }
+supla_device *supla_device_channel::getDevice() { return Device; }
+
+supla_user *supla_device_channel::getUser(void) {
+  return Device ? Device->getUser() : NULL;
+}
+
+int supla_device_channel::getUserID(void) {
+  supla_user *User = getUser();
+  if (User) {
+    return User->getUserID();
+  }
+
+  return 0;
+}
 
 void supla_device_channel::setFunc(int Func) { this->Func = Func; }
 
@@ -808,7 +821,7 @@ void supla_device_channel::db_set_properties(channel_json_config *config) {
     if (db->connect() == true) {
       char *cfg_string = config->get_properties();
 
-      db->update_channel_properties(getId(), UserID, cfg_string);
+      db->update_channel_properties(getId(), getUserID(), cfg_string);
 
       if (cfg_string) {
         delete cfg_string;
@@ -826,7 +839,7 @@ void supla_device_channel::db_set_params(int Param1, int Param2, int Param3,
 
   if (db) {
     if (db->connect() == true) {
-      db->update_channel_params(getId(), UserID, Param1, Param2, Param3,
+      db->update_channel_params(getId(), getUserID(), Param1, Param2, Param3,
                                 Param4);
     }
     delete db;
@@ -948,7 +961,7 @@ bool supla_device_channel::setValue(
     database *db = new database();
 
     if (db->connect() == true) {
-      db->update_channel_value(getId(), UserID, value, *validity_time_sec);
+      db->update_channel_value(getId(), getUserID(), value, *validity_time_sec);
     }
 
     delete db;
@@ -1323,7 +1336,7 @@ void supla_device_channel::action_trigger(int actions) {
     supla_action_trigger *trigger =
         new supla_action_trigger(aexec, at_config, dev_finder);
     if (trigger) {
-      trigger->execute_actions(UserID, actions);
+      trigger->execute_actions(getUserID(), actions);
       delete trigger;
     }
   }
@@ -1395,8 +1408,8 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 }
 
 void supla_device_channels::add_channel(
-    int Id, int Number, int UserID, int Type, int Func, int Param1, int Param2,
-    int Param3, int Param4, const char *TextParam1, const char *TextParam2,
+    int Id, int Number, int Type, int Func, int Param1, int Param2, int Param3,
+    int Param4, const char *TextParam1, const char *TextParam2,
     const char *TextParam3, bool Hidden, unsigned int Flags,
     const char value[SUPLA_CHANNELVALUE_SIZE],
     unsigned _supla_int_t validity_time_sec, const char *user_config,
@@ -1405,7 +1418,7 @@ void supla_device_channels::add_channel(
 
   if (find_channel(Id) == 0) {
     supla_device_channel *c = new supla_device_channel(
-        Id, Number, UserID, Type, Func, Param1, Param2, Param3, Param4,
+        device, Id, Number, Type, Func, Param1, Param2, Param3, Param4,
         TextParam1, TextParam2, TextParam3, Hidden, Flags, value,
         validity_time_sec, user_config, properties);
 

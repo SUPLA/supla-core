@@ -25,6 +25,7 @@
 #include "proto.h"
 
 class supla_user;
+class supla_device;
 class channel_json_config;
 
 class channel_address {
@@ -160,9 +161,9 @@ class supla_channel_thermostat_measurement {
 
 class supla_device_channel {
  private:
+  supla_device *Device;
   int Id;
   unsigned char Number;
-  int UserID;
   int Type;
   int Func;
   int Param1;
@@ -185,8 +186,8 @@ class supla_device_channel {
   void db_set_params(int Param1, int Param2, int Param3, int Param4);
 
  public:
-  supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
-                       int Param1, int Param2, int Param3, int Param4,
+  supla_device_channel(supla_device *Device, int Id, int Number, int Type,
+                       int Func, int Param1, int Param2, int Param3, int Param4,
                        const char *TextParam1, const char *TextParam2,
                        const char *TextParam3, bool Hidden, unsigned int Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
@@ -200,6 +201,8 @@ class supla_device_channel {
   int getId(void);
   int getNumber(void);
   int getUserID(void);
+  supla_user *getUser();
+  supla_device *getDevice();
   int getFunc(void);
   void setFunc(int Func);
   int getType(void);
@@ -285,10 +288,10 @@ class supla_device_channels {
  public:
   explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
-  void add_channel(int Id, int Number, int UserID, int Type, int Func,
-                   int Param1, int Param2, int Param3, int Param4,
-                   const char *TextParam1, const char *TextParam2,
-                   const char *TextParam3, bool Hidden, unsigned int Flags,
+  void add_channel(int Id, int Number, int Type, int Func, int Param1,
+                   int Param2, int Param3, int Param4, const char *TextParam1,
+                   const char *TextParam2, const char *TextParam3, bool Hidden,
+                   unsigned int Flags,
                    const char value[SUPLA_CHANNELVALUE_SIZE],
                    unsigned _supla_int_t validity_time_sec,
                    const char *user_config, const char *properties);

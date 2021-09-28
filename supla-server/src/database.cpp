@@ -908,11 +908,11 @@ void database::get_device_channels(int UserID, int DeviceID,
             validity_time_sec = 0;
           }
 
-          channels->add_channel(
-              id, number, UserID, type, func, param1, param2, param3, param4,
-              text_param1, text_param2, text_param3, hidden > 0, flags, value,
-              validity_time_sec, user_config_size ? user_config : NULL,
-              properties_size ? properties : NULL);
+          channels->add_channel(id, number, type, func, param1, param2, param3,
+                                param4, text_param1, text_param2, text_param3,
+                                hidden > 0, flags, value, validity_time_sec,
+                                user_config_size ? user_config : NULL,
+                                properties_size ? properties : NULL);
         }
       }
     }
