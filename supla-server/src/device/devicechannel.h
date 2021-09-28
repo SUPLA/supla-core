@@ -184,6 +184,7 @@ class supla_device_channel {
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int Param1, int Param2, int Param3, int Param4);
+  void updateTimerState(TSuplaChannelExtendedValue *ev);
 
  public:
   supla_device_channel(supla_device *Device, int Id, int Number, int Type,

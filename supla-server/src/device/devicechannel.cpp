@@ -995,6 +995,47 @@ bool supla_device_channel::setValue(
   return differ;
 }
 
+void supla_device_channel::updateTimerState(TSuplaChannelExtendedValue *ev) {
+  TTimerState_ExtendedValue *ts_ev = NULL;
+
+  if (extendedValue->type == EV_TYPE_TIMER_STATE_V1) {
+    ts_ev = (TTimerState_ExtendedValue *)extendedValue->value;
+  } else if (extendedValue->type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1) {
+    ts_ev =
+        &((TChannelAndTimerState_ExtendedValue *)extendedValue->value)->Timer;
+  }
+
+  if (ts_ev == NULL) {
+    return;
+  }
+
+  if (ts_ev->SenderID) {
+    supla_user *user = getUser();
+    if (user && user->getClientName(ts_ev->SenderID, ts_ev->SenderName,
+                                    SUPLA_SENDER_NAME_MAXSIZE)) {
+      ts_ev->SenderNameSize =
+          strnlen(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE) + 1;
+    } else {
+      ts_ev->SenderID = 0;
+      ts_ev->SenderName[0] = 0;
+      ts_ev->SenderNameSize = 0;
+    }
+  }
+
+  if (ts_ev->RemainingTimeMs > 0) {
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    unsigned _supla_int64_t time =
+        now.tv_sec * (unsigned _supla_int64_t)1000000 + now.tv_usec;
+    time /= 1000;
+    time += ev->RemainingTimeMs;
+    time /= 1000;
+
+    ts_ev->CountdownEndsAt = time;
+  }
+}
+
 void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
   if (ev == NULL) {
     if (extendedValue != NULL) {
@@ -1006,6 +1047,7 @@ void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
       extendedValue = new TSuplaChannelExtendedValue;
     }
     memcpy(extendedValue, ev, sizeof(TSuplaChannelExtendedValue));
+    updateTimerState(extendedValue);
   }
 }
 
