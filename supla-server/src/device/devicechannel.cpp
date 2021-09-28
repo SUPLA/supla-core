@@ -1029,7 +1029,7 @@ void supla_device_channel::updateTimerState(TSuplaChannelExtendedValue *ev) {
     unsigned _supla_int64_t time =
         now.tv_sec * (unsigned _supla_int64_t)1000000 + now.tv_usec;
     time /= 1000;
-    time += ev->RemainingTimeMs;
+    time += ts_ev->RemainingTimeMs;
     time /= 1000;
 
     ts_ev->CountdownEndsAt = time;
