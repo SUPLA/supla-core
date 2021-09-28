@@ -1001,8 +1001,9 @@ void supla_device_channel::updateTimerState(TSuplaChannelExtendedValue *ev) {
   if (extendedValue->type == EV_TYPE_TIMER_STATE_V1) {
     ts_ev = (TTimerState_ExtendedValue *)extendedValue->value;
   } else if (extendedValue->type == EV_TYPE_CHANNEL_AND_TIMER_STATE_V1) {
-    ts_ev =
-        &((TChannelAndTimerState_ExtendedValue *)extendedValue->value)->Timer;
+    TChannelAndTimerState_ExtendedValue *cats =
+        (TChannelAndTimerState_ExtendedValue *)extendedValue->value;
+    ts_ev = &cats->Timer;
   }
 
   if (ts_ev == NULL) {
