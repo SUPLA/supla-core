@@ -612,6 +612,12 @@ typedef struct {
 } TDS_SuplaDeviceChannel_B;  // ver. >= 2
 
 typedef struct {
+  unsigned char relatedChannelNumber;  // ChannelNumber + 1.
+  unsigned _supla_int_t disablesLocalOperation;
+
+} TActionTriggerProperties;
+
+typedef struct {
   // device -> server
 
   unsigned char Number;
@@ -627,8 +633,7 @@ typedef struct {
 
   union {
     char value[SUPLA_CHANNELVALUE_SIZE];
-    unsigned char
-        ActionTriggerRelatedChannelNumber;  // ChannelNumber + 1. ver. >= 16
+    TActionTriggerProperties actionTriggerProperties;  // ver. >= 16
   };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 

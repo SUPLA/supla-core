@@ -239,7 +239,8 @@ class supla_device_channel {
   bool getValveValue(TValve_Value *Value);
   void getConfig(TSD_ChannelConfig *config, unsigned char configType,
                  unsigned _supla_int_t flags);
-  void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId);
+  void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId,
+                              unsigned int disablesLocalOperation);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);

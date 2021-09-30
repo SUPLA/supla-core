@@ -136,6 +136,45 @@ TEST_F(ActionTriggerConfigTest, allCaps) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, allCapabilitiesThatCanDisableLocalOperation) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  EXPECT_TRUE(config->set_caps_that_disables_local_operation(0xFFFFFFFF));
+  EXPECT_FALSE(config->set_caps_that_disables_local_operation(0xFFFFFFFF));
+
+  unsigned int all =
+      SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF |
+      SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_TOGGLE_x2 |
+      SUPLA_ACTION_CAP_TOGGLE_x3 | SUPLA_ACTION_CAP_TOGGLE_x4 |
+      SUPLA_ACTION_CAP_TOGGLE_x5 | SUPLA_ACTION_CAP_HOLD |
+      SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
+      SUPLA_ACTION_CAP_SHORT_PRESS_x3 | SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
+      SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+
+  EXPECT_EQ(config->get_caps_that_disables_local_operation(), all);
+
+  char *str = config->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    // TestHelper::printEscaped(str);
+    EXPECT_EQ(
+        strncmp(
+            str,
+            "{\"disablesLocalOperation\":[\"TURN_ON\",\"TURN_OFF\",\"TOGGLE_"
+            "X1\",\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\",\"TOGGLE_X5\","
+            "\"HOLD\",\"SHORT_PRESS_X1\",\"SHORT_PRESS_X2\",\"SHORT_PRESS_"
+            "X3\",\"SHORT_PRESS_X4\",\"SHORT_PRESS_X5\"]}",
+            1000),
+        0);
+    free(str);
+    str = NULL;
+  }
+
+  delete config;
+}
+
 TEST_F(ActionTriggerConfigTest, amodificationAmongOtherParameters) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);

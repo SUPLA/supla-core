@@ -46,6 +46,10 @@ const _atc_map_t action_trigger_config::map[] = {
 const char action_trigger_config::caps_key[] = "actionTriggerCapabilities";
 
 // static
+const char action_trigger_config::disables_local_operation_key[] =
+    "disablesLocalOperation";
+
+// static
 const char action_trigger_config::action_key[] = "action";
 
 // static
@@ -112,14 +116,14 @@ int action_trigger_config::to_cap(cJSON *item) {
   return 0;
 }
 
-unsigned int action_trigger_config::get_capabilities(void) {
+unsigned int action_trigger_config::get_capabilities(const char *key) {
   unsigned int result = 0;
   cJSON *json = get_properties_root();
   if (!json) {
     return result;
   }
 
-  cJSON *st = cJSON_GetObjectItem(json, caps_key);
+  cJSON *st = cJSON_GetObjectItem(json, key);
   if (!st || !cJSON_IsArray(st)) {
     return result;
   }
@@ -133,7 +137,9 @@ unsigned int action_trigger_config::get_capabilities(void) {
   return result;
 }
 
-bool action_trigger_config::set_capabilities(unsigned int caps) {
+bool action_trigger_config::set_capabilities(
+    const char *key, std::function<unsigned int()> get_caps,
+    unsigned int caps) {
   cJSON *json = get_properties_root();
   if (!json) {
     return false;
@@ -149,11 +155,11 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
 
   caps = all_possible & caps;
 
-  if (caps == get_capabilities()) {
+  if (caps == get_caps()) {
     return false;
   }
 
-  cJSON *st = cJSON_GetObjectItem(json, caps_key);
+  cJSON *st = cJSON_GetObjectItem(json, key);
   if (st) {
     while (cJSON_GetArraySize(st)) {
       cJSON_DeleteItemFromArray(st, 0);
@@ -163,7 +169,7 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
   if (!st) {
     st = cJSON_CreateArray();
     if (st) {
-      cJSON_AddItemToObject(json, caps_key, st);
+      cJSON_AddItemToObject(json, key, st);
     }
   }
 
@@ -179,6 +185,30 @@ bool action_trigger_config::set_capabilities(unsigned int caps) {
   }
 
   return true;
+}
+
+unsigned int action_trigger_config::get_capabilities(void) {
+  return get_capabilities(caps_key);
+}
+
+bool action_trigger_config::set_capabilities(unsigned int caps) {
+  return set_capabilities(
+      caps_key, [this]() -> unsigned int { return get_capabilities(); }, caps);
+}
+
+unsigned int action_trigger_config::get_caps_that_disables_local_operation(
+    void) {
+  return get_capabilities(disables_local_operation_key);
+}
+
+bool action_trigger_config::set_caps_that_disables_local_operation(
+    unsigned int caps) {
+  return set_capabilities(
+      disables_local_operation_key,
+      [this]() -> unsigned int {
+        return get_caps_that_disables_local_operation();
+      },
+      caps);
 }
 
 unsigned int action_trigger_config::get_active_actions(void) {

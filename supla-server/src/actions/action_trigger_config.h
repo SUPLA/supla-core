@@ -19,6 +19,7 @@
 #ifndef ACTIONTRIGGERCONFIG_H_
 #define ACTIONTRIGGERCONFIG_H_
 
+#include <functional>
 #include <string>
 
 #include "channeljsonconfig/channeljsonconfig.h"
@@ -57,6 +58,7 @@ class action_trigger_config : public channel_json_config {
  private:
   static const _atc_map_t map[];
   static const char caps_key[];
+  static const char disables_local_operation_key[];
   static const char action_key[];
   static const char actions_key[];
   bool equal(const char *str1, const char *str2);
@@ -65,6 +67,9 @@ class action_trigger_config : public channel_json_config {
   const char *to_string(int cap);
   int to_cap(const char *str);
   cJSON *get_cap_user_config(int cap);
+  unsigned int get_capabilities(const char *key);
+  bool set_capabilities(const char *key, std::function<unsigned int()> get_caps,
+                        unsigned int caps);
 
  public:
   explicit action_trigger_config(channel_json_config *root);
@@ -72,6 +77,8 @@ class action_trigger_config : public channel_json_config {
 
   unsigned int get_capabilities(void);
   bool set_capabilities(unsigned int caps);
+  unsigned int get_caps_that_disables_local_operation(void);
+  bool set_caps_that_disables_local_operation(unsigned int caps);
   unsigned int get_active_actions(void);
   _at_config_action_t get_action_assigned_to_capability(int cap);
   char get_percentage(int cap);

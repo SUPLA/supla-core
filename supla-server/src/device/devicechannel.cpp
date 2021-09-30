@@ -847,8 +847,9 @@ void supla_device_channel::db_set_params(int Param1, int Param2, int Param3,
   }
 }
 
-void supla_device_channel::setActionTriggerConfig(unsigned int capabilities,
-                                                  int relatedChannelId) {
+void supla_device_channel::setActionTriggerConfig(
+    unsigned int capabilities, int relatedChannelId,
+    unsigned int disablesLocalOperation) {
   if (Type != SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
     return;
   }
@@ -862,7 +863,9 @@ void supla_device_channel::setActionTriggerConfig(unsigned int capabilities,
     json_config = at_config;
   }
 
-  if (at_config->set_capabilities(capabilities)) {
+  if (at_config->set_capabilities(capabilities) ||
+      at_config->set_caps_that_disables_local_operation(
+          disablesLocalOperation)) {
     db_set_properties(at_config);
   }
 
@@ -1974,7 +1977,7 @@ void supla_device_channels::update_channels(
     char *value = NULL;
     unsigned char number = 0;
     unsigned int actionTriggerCaps = 0;
-    unsigned char actionTriggerRelatedChannelNumber = 0;
+    TActionTriggerProperties atProps = {};
 
     if (schannel_b != NULL) {
       type = schannel_b[a].Type;
@@ -1985,8 +1988,7 @@ void supla_device_channels::update_channels(
       value = schannel_c[a].value;
       number = schannel_c[a].Number;
       actionTriggerCaps = schannel_c[a].ActionTriggerCaps;
-      actionTriggerRelatedChannelNumber =
-          schannel_c[a].ActionTriggerRelatedChannelNumber;
+      atProps = schannel_c[a].actionTriggerProperties;
     }
 
     int channelId = get_channel_id(number);
@@ -2000,12 +2002,13 @@ void supla_device_channels::update_channels(
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
         int actionTriggerRelatedChannelId = 0;
-        if (actionTriggerRelatedChannelNumber > 0) {
+        if (atProps.relatedChannelNumber > 0) {
           actionTriggerRelatedChannelId =
-              get_channel_id(actionTriggerRelatedChannelNumber - 1);
+              get_channel_id(atProps.relatedChannelNumber - 1);
         }
         channel->setActionTriggerConfig(actionTriggerCaps,
-                                        actionTriggerRelatedChannelId);
+                                        actionTriggerRelatedChannelId,
+                                        atProps.disablesLocalOperation);
       }
     }
 
