@@ -614,7 +614,6 @@ typedef struct {
 typedef struct {
   unsigned char relatedChannelNumber;  // ChannelNumber + 1.
   unsigned _supla_int_t disablesLocalOperation;
-
 } TActionTriggerProperties;
 
 typedef struct {
