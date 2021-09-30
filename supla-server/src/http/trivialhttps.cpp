@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+
 #include "log.h"
 #include "tools.h"
 
@@ -207,7 +208,8 @@ bool supla_trivial_https::send_recv(const char *out, char **in) {
 
   res = SSL_get_verify_result(vars->ssl);
   if (X509_V_OK != res) {
-    supla_log(LOG_ERR, "Can't verify server certificate! Code: %i", res);
+    supla_log(LOG_ERR, "Can't verify server certificate! Code: %i: %s", res,
+              X509_verify_cert_error_string(res));
     vars_free();
     return false;
   }
