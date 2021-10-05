@@ -16,24 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGERCONFIG_H_
-#define ACTIONTRIGGERCONFIG_H_
+#ifndef DEVICE_FINDER_STUB_H_
+#define DEVICE_FINDER_STUB_H_
 
-#include "channeljsonconfig.h"
+#include "device/abstractdevicefinder.h"
 
-class action_trigger_config : public channel_json_config {
- private:
-  bool equal_to_string(cJSON *item, const char *str);
-  void add_cap(unsigned int caps, unsigned int cap, const char *name,
-               cJSON *arr);
+namespace testing {
+
+class DeviceFinderStub : public supla_abstract_device_finder {
+ protected:
+  int result;
 
  public:
-  action_trigger_config(channel_json_config *root);
-  action_trigger_config(void);
-
-  unsigned int get_capabilities(void);
-  bool set_capabilities(unsigned int caps);
-  unsigned int get_active_actions(void);
+  DeviceFinderStub(void);
+  virtual ~DeviceFinderStub(void);
+  void setResult(int result);
+  virtual int find_device_id(int userId, int channelId);
 };
 
-#endif /* ACTIONTRIGGERCONFIG_H_ */
+} /* namespace testing */
+
+#endif /* DEVICE_FINDER_STUB_H_ */

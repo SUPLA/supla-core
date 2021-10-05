@@ -4,24 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/asynctask/AsyncTaskMock.cpp \
-../src/test/asynctask/AsyncTaskQueueMock.cpp \
 ../src/test/asynctask/AsyncTaskTest.cpp \
-../src/test/asynctask/AsyncTaskThreadPoolMock.cpp \
 ../src/test/asynctask/AsyncTaskThreadPoolTest.cpp 
 
 OBJS += \
-./src/test/asynctask/AsyncTaskMock.o \
-./src/test/asynctask/AsyncTaskQueueMock.o \
 ./src/test/asynctask/AsyncTaskTest.o \
-./src/test/asynctask/AsyncTaskThreadPoolMock.o \
 ./src/test/asynctask/AsyncTaskThreadPoolTest.o 
 
 CPP_DEPS += \
-./src/test/asynctask/AsyncTaskMock.d \
-./src/test/asynctask/AsyncTaskQueueMock.d \
 ./src/test/asynctask/AsyncTaskTest.d \
-./src/test/asynctask/AsyncTaskThreadPoolMock.d \
 ./src/test/asynctask/AsyncTaskThreadPoolTest.d 
 
 

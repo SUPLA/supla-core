@@ -1538,3 +1538,7 @@ supla_google_home_credentials *supla_user::googleHomeCredentials(void) {
 supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
   return state_webhook_credentials;
 }
+
+supla_user_channelgroups *supla_user::get_channel_groups(void) {
+  return cgroups;
+}

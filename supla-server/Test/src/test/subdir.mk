@@ -4,9 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/ActionExecutorMock.cpp \
 ../src/test/AllTests.cpp \
-../src/test/CDBaseMock.cpp \
 ../src/test/CDBaseTest.cpp \
 ../src/test/CDContainerTest.cpp \
 ../src/test/DCPairTest.cpp \
@@ -16,14 +14,10 @@ CPP_SRCS += \
 ../src/test/SafeArrayTest.cpp \
 ../src/test/SrpcTest.cpp \
 ../src/test/TestHelper.cpp \
-../src/test/ToolsTest.cpp \
-../src/test/TrivialHttpFactoryMock.cpp \
-../src/test/TrivialHttpMock.cpp 
+../src/test/ToolsTest.cpp 
 
 OBJS += \
-./src/test/ActionExecutorMock.o \
 ./src/test/AllTests.o \
-./src/test/CDBaseMock.o \
 ./src/test/CDBaseTest.o \
 ./src/test/CDContainerTest.o \
 ./src/test/DCPairTest.o \
@@ -33,14 +27,10 @@ OBJS += \
 ./src/test/SafeArrayTest.o \
 ./src/test/SrpcTest.o \
 ./src/test/TestHelper.o \
-./src/test/ToolsTest.o \
-./src/test/TrivialHttpFactoryMock.o \
-./src/test/TrivialHttpMock.o 
+./src/test/ToolsTest.o 
 
 CPP_DEPS += \
-./src/test/ActionExecutorMock.d \
 ./src/test/AllTests.d \
-./src/test/CDBaseMock.d \
 ./src/test/CDBaseTest.d \
 ./src/test/CDContainerTest.d \
 ./src/test/DCPairTest.d \
@@ -50,9 +40,7 @@ CPP_DEPS += \
 ./src/test/SafeArrayTest.d \
 ./src/test/SrpcTest.d \
 ./src/test/TestHelper.d \
-./src/test/ToolsTest.d \
-./src/test/TrivialHttpFactoryMock.d \
-./src/test/TrivialHttpMock.d 
+./src/test/ToolsTest.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -17,9 +17,17 @@ RM := rm -rf
 -include src/test/integration/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
+-include src/test/doubles/mqtt/subdir.mk
+-include src/test/doubles/integration/mqtt/subdir.mk
+-include src/test/doubles/integration/asynctask/subdir.mk
+-include src/test/doubles/device/subdir.mk
+-include src/test/doubles/asynctask/subdir.mk
+-include src/test/doubles/actions/subdir.mk
+-include src/test/doubles/subdir.mk
 -include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk
+-include src/test/actions/subdir.mk
 -include src/test/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk

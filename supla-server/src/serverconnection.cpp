@@ -794,6 +794,10 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
               rd.data.ds_get_channel_config_request);
           break;
 
+        case SUPLA_DS_CALL_ACTIONTRIGGER:
+          device->get_channels()->action_trigger(rd.data.ds_action_trigger);
+          break;
+
         default:
           catch_incorrect_call(call_type);
       }

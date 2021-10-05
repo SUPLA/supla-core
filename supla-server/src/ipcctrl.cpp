@@ -615,9 +615,13 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
              &DeviceID, &CGID, &ColorBrightness, &Brightness);
     }
 
-    unsigned int seed = time(NULL);
-    Color = st_hue2rgb(rand_r(&seed) % 360);
+    while (!Color) {
+      struct timeval time;
+      gettimeofday(&time, NULL);
+      unsigned int seed = time.tv_sec + time.tv_usec;
 
+      Color = st_hue2rgb(rand_r(&seed) % 360);
+    }
   } else {
     if (group) {
       sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i,%i",

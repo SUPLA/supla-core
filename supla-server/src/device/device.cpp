@@ -16,14 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "device.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <unistd.h>
+
 #include "database.h"
-#include "device.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -301,7 +302,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
                 int ChannelID = db->add_device_channel(
                     DeviceID, Number, Type, DefaultFunc, Param1, Param2,
-                    FuncList, ChannelFlags, UserID, &new_channel);
+                    supla_device_channel::funcListFilter(FuncList, Type),
+                    ChannelFlags, UserID, &new_channel);
 
                 if (ChannelID == 0) {
                   ChannelCount = -1;
@@ -341,15 +343,16 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               db->commit();
 
               setID(DeviceID);
+              setUser(supla_user::find(UserID, true));
 
               load_config(UserID);
 
-              channels->set_channels_value(dev_channels_b, dev_channels_c,
+              channels->update_channels(dev_channels_b, dev_channels_c,
                                            channel_count);
 
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
-              setUser(supla_user::add_device(this, UserID));
+              supla_user::add_device(this, UserID);
               getUser()->update_client_device_channels(LocationID, getID());
 
               channels->on_device_registered(getUser(), DeviceID,

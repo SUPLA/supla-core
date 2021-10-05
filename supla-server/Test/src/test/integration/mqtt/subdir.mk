@@ -5,30 +5,21 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/integration/mqtt/MqttClientIntegrationTest.cpp \
-../src/test/integration/mqtt/MqttClientLibraryAdapterMock.cpp \
-../src/test/integration/mqtt/MqttClientSettingsMock.cpp \
 ../src/test/integration/mqtt/MqttPublisherIntegrationTest.cpp \
 ../src/test/integration/mqtt/MqttSubscriberIntegrationTest.cpp \
-../src/test/integration/mqtt/MqttUnpublisherIntegrationTest.cpp \
-../src/test/integration/mqtt/MqttValueSetterMock.cpp 
+../src/test/integration/mqtt/MqttUnpublisherIntegrationTest.cpp 
 
 OBJS += \
 ./src/test/integration/mqtt/MqttClientIntegrationTest.o \
-./src/test/integration/mqtt/MqttClientLibraryAdapterMock.o \
-./src/test/integration/mqtt/MqttClientSettingsMock.o \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.o \
 ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o \
-./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o \
-./src/test/integration/mqtt/MqttValueSetterMock.o 
+./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o 
 
 CPP_DEPS += \
 ./src/test/integration/mqtt/MqttClientIntegrationTest.d \
-./src/test/integration/mqtt/MqttClientLibraryAdapterMock.d \
-./src/test/integration/mqtt/MqttClientSettingsMock.d \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d \
 ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.d \
-./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d \
-./src/test/integration/mqtt/MqttValueSetterMock.d 
+./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

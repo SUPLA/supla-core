@@ -106,6 +106,7 @@ union TsrpcDataPacketData {
   TCS_SuplaRegisterClient_D *cs_register_client_d;
   TSC_SuplaRegisterClientResult *sc_register_client_result;
   TSC_SuplaRegisterClientResult_B *sc_register_client_result_b;
+  TSC_SuplaRegisterClientResult_C *sc_register_client_result_c;
   TDS_SuplaDeviceChannelValue *ds_device_channel_value;
   TDS_SuplaDeviceChannelValue_B *ds_device_channel_value_b;
   TDS_SuplaDeviceChannelValue_C *ds_device_channel_value_c;
@@ -289,6 +290,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
     void *_srpc,
     TSC_SuplaRegisterClientResult_B *registerclient_result);  // ver. >= 9
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_c(
+    void *_srpc,
+    TSC_SuplaRegisterClientResult_C *registerclient_result);  // ver. >= 17
 _supla_int_t SRPC_ICACHE_FLASH
 srpc_sc_async_location_update(void *_srpc, TSC_SuplaLocation *location);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_locationpack_update(

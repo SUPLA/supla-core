@@ -18,8 +18,8 @@
 
 #include "StateWebhookClientTest.h"
 
-#include "TrivialHttpFactoryMock.h"
-#include "TrivialHttpMock.h"
+#include "doubles/TrivialHttpFactoryMock.h"
+#include "doubles/TrivialHttpMock.h"
 #include "webhook/statewebhookcredentials.h"
 
 namespace testing {

@@ -46,7 +46,7 @@ void client_loop_location_update(void *_suplaclient, void *sthread,
 }
 
 void client_loop_channel_update(void *_suplaclient, void *sthread,
-                                TSC_SuplaChannel_C *channel) {
+                                TSC_SuplaChannel_D *channel) {
   double temp;
   if (channel->Func == 40) {
     memcpy(&temp, channel->value.value, sizeof(double));
@@ -87,7 +87,7 @@ void client_loop_on_event(void *_suplaclient, void *user_data,
 }
 
 void client_loop_channel_value_update(void *_suplaclient, void *sthread,
-                                      TSC_SuplaChannelValue *channel_value) {
+                                      TSC_SuplaChannelValue_B *channel_value) {
   double temp;
   if (channel_value->Id == 2944) {
     TElectricityMeter_Value v;

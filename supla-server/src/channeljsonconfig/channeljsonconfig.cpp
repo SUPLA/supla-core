@@ -19,52 +19,105 @@
 #include "channeljsonconfig.h"
 
 channel_json_config::channel_json_config(void) {
-  this->json_root = NULL;
+  this->properties_root = NULL;
+  this->user_root = NULL;
   this->root = NULL;
 }
 
 channel_json_config::channel_json_config(channel_json_config *root) {
-  this->json_root = NULL;
+  this->properties_root = NULL;
+  this->user_root = NULL;
   this->root = root;
 }
 
 channel_json_config::~channel_json_config(void) {
-  if (json_root) {
-    cJSON_Delete(json_root);
-    json_root = NULL;
+  if (properties_root) {
+    cJSON_Delete(properties_root);
+    properties_root = NULL;
+  }
+
+  if (user_root) {
+    cJSON_Delete(user_root);
+    user_root = NULL;
   }
 }
 
-cJSON *channel_json_config::get_json_root(void) {
+// User
+
+cJSON *channel_json_config::get_user_root(void) {
   if (root) {
-    return root->get_json_root();
+    return root->get_user_root();
   }
 
-  if (json_root == NULL) {
-    json_root = cJSON_CreateObject();
+  if (user_root == NULL) {
+    user_root = cJSON_CreateObject();
   }
 
-  return json_root;
+  return user_root;
 }
 
-void channel_json_config::set_config(const char *config) {
+void channel_json_config::set_user_config(const char *config) {
   if (root) {
-    root->set_config(config);
+    root->set_user_config(config);
     return;
   }
 
-  if (json_root != NULL) {
-    cJSON_Delete(json_root);
-    json_root = NULL;
+  if (user_root != NULL) {
+    cJSON_Delete(user_root);
+    user_root = NULL;
   }
 
   if (config) {
-    json_root = cJSON_Parse(config);
+    user_root = cJSON_Parse(config);
+  } else {
+    cJSON_Delete(user_root);
+    user_root = NULL;
   }
 }
 
-char *channel_json_config::get_config(void) {
-  cJSON *json = get_json_root();
+char *channel_json_config::get_user_config(void) {
+  cJSON *json = get_user_root();
+  if (json) {
+    return cJSON_PrintUnformatted(json);
+  }
+  return NULL;
+}
+
+// Properties
+
+cJSON *channel_json_config::get_properties_root(void) {
+  if (root) {
+    return root->get_properties_root();
+  }
+
+  if (properties_root == NULL) {
+    properties_root = cJSON_CreateObject();
+  }
+
+  return properties_root;
+}
+
+void channel_json_config::set_properties(const char *properties) {
+  if (root) {
+    root->set_properties(properties);
+    return;
+  }
+
+  if (properties_root != NULL) {
+    cJSON_Delete(properties_root);
+    properties_root = NULL;
+  }
+
+  if (properties) {
+    properties_root = cJSON_Parse(properties);
+  } else {
+    cJSON_Delete(properties_root);
+    properties_root = NULL;
+  }
+}
+
+char *channel_json_config::get_properties(void) {
+  cJSON *json = get_properties_root();
   if (json) {
     return cJSON_PrintUnformatted(json);
   }

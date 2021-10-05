@@ -19,9 +19,9 @@
 #ifndef ASYNCTASK_INTEGRATION_TEST_H_
 #define ASYNCTASK_INTEGRATION_TEST_H_
 
-#include "asynctask/AsyncTaskMock.h"
-#include "asynctask/AsyncTaskThreadPoolMock.h"
 #include "asynctask_queue.h"
+#include "doubles/asynctask/AsyncTaskMock.h"
+#include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
 #include "integration/IntegrationTest.h"
 
 namespace testing {

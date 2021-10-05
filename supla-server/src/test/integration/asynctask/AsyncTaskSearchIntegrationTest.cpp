@@ -17,8 +17,9 @@
  */
 
 #include "AsyncTaskSearchIntegrationTest.h"
-#include "ChannelOrientedAsyncTaskMock.h"
-#include "asynctask/AsyncTaskMock.h"
+
+#include "doubles/asynctask/AsyncTaskMock.h"
+#include "doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.h"
 #include "log.h"
 
 namespace testing {

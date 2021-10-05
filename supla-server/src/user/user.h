@@ -225,6 +225,7 @@ class supla_user {
   explicit supla_user(int UserID);
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);
+  supla_user_channelgroups *get_channel_groups(void);
   virtual ~supla_user();
 };
 

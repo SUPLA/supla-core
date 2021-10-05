@@ -19,7 +19,7 @@
 #ifndef MQTTDATASOURCETEST_H_
 #define MQTTDATASOURCETEST_H_
 
-#include "MqttDataSourceMock.h"
+#include "doubles/mqtt/MqttDataSourceMock.h"
 #include "gtest/gtest.h"  // NOLINT
 #include "mqtt_client_ini_settings.h"
 

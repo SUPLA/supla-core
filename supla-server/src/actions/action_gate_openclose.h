@@ -19,8 +19,9 @@
 #ifndef ACTION_OPENCLOSE_H_
 #define ACTION_OPENCLOSE_H_
 
+#include <actions/action_executor.h>
+
 #include "abstract_gate_state_getter.h"
-#include "action_executor.h"
 #include "asynctask/abstract_asynctask.h"
 
 class supla_action_gate_openclose : public supla_abstract_asynctask {

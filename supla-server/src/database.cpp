@@ -748,10 +748,10 @@ void database::get_device_channels(int UserID, int DeviceID,
       "SELECT c.`type`, c.`func`, c.`param1`, c.`param2`, c.`param3`, "
       "c.`param4`, c.`text_param1`, c.`text_param2`, c.`text_param3`, "
       "c.`channel_number`, c.`id`, c.`hidden`, c.`flags`, v.`value`, "
-      "TIME_TO_SEC(TIMEDIFF(v.`valid_to`, UTC_TIMESTAMP())) + 2 FROM "
-      "`supla_dev_channel` c  LEFT JOIN `supla_dev_channel_value` v ON "
-      "v.channel_id = c.id AND v.valid_to >= UTC_TIMESTAMP() WHERE "
-      "c.`iodevice_id` = ? ORDER BY c.`channel_number`";
+      "TIME_TO_SEC(TIMEDIFF(v.`valid_to`, UTC_TIMESTAMP())) + 2, "
+      "c.`user_config`, c.`properties` FROM `supla_dev_channel` c  LEFT JOIN "
+      "`supla_dev_channel_value` v ON v.channel_id = c.id AND v.valid_to >= "
+      "UTC_TIMESTAMP() WHERE c.`iodevice_id` = ? ORDER BY c.`channel_number`";
 
   MYSQL_BIND pbind[1];
   memset(pbind, 0, sizeof(pbind));
@@ -760,9 +760,9 @@ void database::get_device_channels(int UserID, int DeviceID,
   pbind[0].buffer = (char *)&DeviceID;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
-    my_bool is_null[9];
+    my_bool is_null[11] = {};
 
-    MYSQL_BIND rbind[15];
+    MYSQL_BIND rbind[17];
     memset(rbind, 0, sizeof(rbind));
 
     int type = 0;
@@ -776,13 +776,19 @@ void database::get_device_channels(int UserID, int DeviceID,
     int hidden = 0;
     int flags = 0;
 
-    char text_param1[256];
-    char text_param2[256];
-    char text_param3[256];
+    char text_param1[256] = {};
+    char text_param2[256] = {};
+    char text_param3[256] = {};
 
     unsigned long text_param1_size = 0;
     unsigned long text_param2_size = 0;
     unsigned long text_param3_size = 0;
+
+    char user_config[2049] = {};
+    char properties[2049] = {};
+
+    unsigned long user_config_size = 0;
+    unsigned long properties_size = 0;
 
     char value[SUPLA_CHANNELVALUE_SIZE];
     memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -855,6 +861,18 @@ void database::get_device_channels(int UserID, int DeviceID,
     rbind[14].buffer_length = sizeof(unsigned _supla_int_t);
     rbind[14].is_null = &validity_time_is_null;
 
+    rbind[15].buffer_type = MYSQL_TYPE_STRING;
+    rbind[15].buffer = user_config;
+    rbind[15].is_null = &is_null[9];
+    rbind[15].buffer_length = sizeof(user_config) - 1;
+    rbind[15].length = &user_config_size;
+
+    rbind[16].buffer_type = MYSQL_TYPE_STRING;
+    rbind[16].buffer = properties;
+    rbind[16].is_null = &is_null[10];
+    rbind[16].buffer_length = sizeof(properties) - 1;
+    rbind[16].length = &properties_size;
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -872,10 +890,15 @@ void database::get_device_channels(int UserID, int DeviceID,
           if (is_null[6] == true) text_param1_size = 0;
           if (is_null[7] == true) text_param2_size = 0;
           if (is_null[8] == true) text_param3_size = 0;
+          if (is_null[9] == true) user_config_size = 0;
+          if (is_null[10] == true) properties_size = 0;
 
           text_param1[text_param1_size] = 0;
           text_param2[text_param2_size] = 0;
           text_param3[text_param3_size] = 0;
+
+          user_config[user_config_size] = 0;
+          properties[properties_size] = 0;
 
           if (value_is_null) {
             memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
@@ -885,10 +908,11 @@ void database::get_device_channels(int UserID, int DeviceID,
             validity_time_sec = 0;
           }
 
-          channels->add_channel(id, number, UserID, type, func, param1, param2,
-                                param3, param4, text_param1, text_param2,
-                                text_param3, hidden > 0, flags, value,
-                                validity_time_sec);
+          channels->add_channel(id, number, type, func, param1, param2, param3,
+                                param4, text_param1, text_param2, text_param3,
+                                hidden > 0, flags, value, validity_time_sec,
+                                user_config_size ? user_config : NULL,
+                                properties_size ? properties : NULL);
         }
       }
     }
@@ -2756,6 +2780,60 @@ bool database::get_channel_value(int user_id, int channel_id,
   if (stmt != NULL) mysql_stmt_close(stmt);
 
   return result;
+}
+
+void database::update_channel_properties(int channel_id, int user_id,
+                                         const char *properties) {
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[3];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_STRING;
+  pbind[2].buffer = (char *)properties;
+  pbind[2].buffer_length = strnlen(properties, 2049);
+
+  const char sql[] = "CALL `supla_update_channel_properties`(?, ?, ?)";
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+}
+
+void database::update_channel_params(int channel_id, int user_id, int param1,
+                                     int param2, int param3, int param4) {
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[6];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&param1;
+
+  pbind[3].buffer_type = MYSQL_TYPE_LONG;
+  pbind[3].buffer = (char *)&param2;
+
+  pbind[4].buffer_type = MYSQL_TYPE_LONG;
+  pbind[4].buffer = (char *)&param3;
+
+  pbind[5].buffer_type = MYSQL_TYPE_LONG;
+  pbind[5].buffer = (char *)&param4;
+
+  const char sql[] = "CALL `supla_update_channel_params`(?, ?, ?, ?, ?, ?)";
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
 }
 
 void database::load_temperatures_and_humidity(int UserID, void *tarr) {

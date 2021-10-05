@@ -431,7 +431,7 @@ void supla_android_client_cb_on_registering(void *_suplaclient,
 
 void supla_android_client_cb_on_registered(
     void *_suplaclient, void *user_data,
-    TSC_SuplaRegisterClientResult_B *result) {
+    TSC_SuplaRegisterClientResult_C *result) {
   ASC_VAR_DECLARATION();
   ENV_VAR_DECLARATION();
   jfieldID fid;
@@ -888,7 +888,9 @@ jobject supla_android_client_timerstate_to_jobject(
   (*env)->SetByteArrayRegion(env, arr, 0, SUPLA_CHANNELVALUE_SIZE,
                              (const jbyte *)state->TargetValue);
 
-  return (*env)->NewObject(env, cls, methodID, (jlong)state->RemainingTimeTs,
+  return (*env)->NewObject(env, cls, methodID,
+                           (jlong)state->CountdownEndsAt +
+                               supla_client_get_time_diff(asc->_supla_client),
                            arr, state->SenderID,
                            new_string_utf(env, state->SenderName));
 }

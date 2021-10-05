@@ -1075,6 +1075,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
+
+        if (srpc->sdp.data_size == sizeof(TSC_SuplaRegisterClientResult_C))
+          rd->data.sc_register_client_result_c =
+              (TSC_SuplaRegisterClientResult_C *)malloc(
+                  sizeof(TSC_SuplaRegisterClientResult_C));
+
+        break;
+
       case SUPLA_SC_CALL_LOCATION_UPDATE:
 
         if (srpc->sdp.data_size >=
@@ -1533,6 +1542,8 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT:
     case SUPLA_DS_CALL_ACTIONTRIGGER:
       return 16;
+    case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
+      return 17;
   }
 
   return 255;
@@ -2026,6 +2037,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
                          (char *)registerclient_result,
                          sizeof(TSC_SuplaRegisterClientResult_B));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_c(
+    void *_srpc, TSC_SuplaRegisterClientResult_C *registerclient_result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C,
+                         (char *)registerclient_result,
+                         sizeof(TSC_SuplaRegisterClientResult_C));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
