@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "actions/action_trigger_config.h"
 #include "safearray.h"
 
 // https://bugs.mysql.com/bug.php?id=28184
@@ -2698,6 +2699,79 @@ bool database::channel_is_associated_with_scene(int channel_id) {
   const char sql[] =
       "SELECT id FROM supla_scene_operation WHERE channel_id = ? LIMIT 1";
   return get_int(channel_id, 0, sql) > 0;
+}
+
+bool database::channel_is_associated_with_action_trigger(int UserID,
+                                                         int ChannelID) {
+  bool result = false;
+
+  if (UserID == 0 || ChannelID == 0) {
+    return false;
+  }
+
+  MYSQL_STMT *stmt = NULL;
+  const char sql[] =
+      "SELECT user_config, properties FROM supla_dev_channel WHERE user_id = ? "
+      "AND func = ?";
+
+  int func = SUPLA_CHANNELFNC_ACTIONTRIGGER;
+
+  MYSQL_BIND pbind[4];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&UserID;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&func;
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+    MYSQL_BIND rbind[2] = {};
+
+    char properties[2049] = {};
+    char user_config[2049] = {};
+
+    unsigned long user_config_size = 0;
+    unsigned long properties_size = 0;
+
+    my_bool is_null[2] = {true, true};
+
+    rbind[0].buffer_type = MYSQL_TYPE_STRING;
+    rbind[0].buffer = user_config;
+    rbind[0].is_null = &is_null[0];
+    rbind[0].buffer_length = sizeof(user_config) - 1;
+    rbind[0].length = &user_config_size;
+
+    rbind[1].buffer_type = MYSQL_TYPE_STRING;
+    rbind[1].buffer = properties;
+    rbind[1].is_null = &is_null[1];
+    rbind[1].buffer_length = sizeof(properties) - 1;
+    rbind[1].length = &properties_size;
+
+    if (mysql_stmt_bind_result(stmt, rbind)) {
+      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
+                mysql_stmt_error(stmt));
+    } else {
+      mysql_stmt_store_result(stmt);
+
+      if (mysql_stmt_num_rows(stmt) > 0) {
+        action_trigger_config *config = new action_trigger_config();
+        while (!mysql_stmt_fetch(stmt)) {
+          config->set_user_config(is_null[0] ? NULL : user_config);
+          config->set_properties(is_null[1] ? NULL : properties);
+
+          if (config->channel_exists(ChannelID)) {
+            result = true;
+            break;
+          }
+        }
+      }
+    }
+
+    mysql_stmt_close(stmt);
+  }
+
+  return result;
 }
 
 void database::update_channel_value(int channel_id, int user_id,

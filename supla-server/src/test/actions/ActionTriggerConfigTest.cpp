@@ -553,4 +553,46 @@ TEST_F(ActionTriggerConfigTest, actionTurnOnTheGroup) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, checkingIfTheChannelIdExists) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":3329,\"subjectType\":"
+      "\"channelGroup\",\"action\":{\"id\":60,\"param\":[]}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+
+  EXPECT_FALSE(config->channel_exists(3329));
+
+  config->set_user_config(
+      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":3329,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":60,\"param\":[]}}}}");
+
+  EXPECT_TRUE(config->channel_exists(3329));
+
+  config->set_capabilities(0);
+
+  EXPECT_FALSE(config->channel_exists(3329));
+
+  config->set_user_config(
+      "{\"actions\":{\"SHORT_PRESS_X5\":{\"subjectId\":3329,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":60,\"param\":[]}},\"SHORT_PRESS_X4\":{"
+      "\"subjectId\":3,\"subjectType\":\"channel\",\"action\":{\"id\":60,"
+      "\"param\":[]}}}}");
+
+  EXPECT_FALSE(config->channel_exists(3));
+
+  config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+
+  EXPECT_FALSE(config->channel_exists(3));
+
+  config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5 |
+                           SUPLA_ACTION_CAP_SHORT_PRESS_x4);
+
+  EXPECT_TRUE(config->channel_exists(3));
+
+  delete config;
+}
+
 } /* namespace testing */

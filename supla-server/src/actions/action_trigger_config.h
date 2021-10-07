@@ -83,6 +83,7 @@ class action_trigger_config : public channel_json_config {
   _at_config_action_t get_action_assigned_to_capability(int cap);
   char get_percentage(int cap);
   _at_config_rgbw_t get_rgbw(int cap);
+  bool channel_exists(int channel_id);
 };
 
 #endif /* ACTIONTRIGGERCONFIG_H_ */
