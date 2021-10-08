@@ -1940,6 +1940,19 @@ JNIEXPORT jboolean JNICALL Java_org_supla_android_lib_SuplaClient_scOpen(
   return JNI_FALSE;
 };
 
+JNIEXPORT jboolean JNICALL Java_org_supla_android_lib_SuplaClient_scTimerArm(
+    JNIEnv *env, jobject thiz, jlong _asc, jint channelId, jint on,
+    jint durationMS) {
+  void *supla_client = supla_client_ptr(_asc);
+
+  if (supla_client)
+    return supla_client_timer_arm(supla_client, channelId, on, durationMS) == 1
+               ? JNI_TRUE
+               : JNI_FALSE;
+
+  return JNI_FALSE;
+};
+
 JNIEXPORT jboolean JNICALL Java_org_supla_android_lib_SuplaClient_scSetRGBW(
     JNIEnv *env, jobject thiz, jlong _asc, jint id, jint group, jint color,
     int color_brightness, int brightness, jint turn_onoff) {

@@ -229,6 +229,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
 #define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 #define SUPLA_DS_CALL_ACTIONTRIGGER 700                       // ver. >= 16
+#define SUPLA_CS_CALL_TIMER_ARM 800                           // ver. >= 17
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -1829,7 +1830,7 @@ typedef struct {
   _supla_int_t ChannelID;
   unsigned _supla_int_t DurationMS;
   unsigned char On;
-} TCS_TimerArmRequest;  // v. >= 16
+} TCS_TimerArmRequest;  // v. >= 17
 
 // Recommended for bistable buttons
 #define SUPLA_ACTION_CAP_TURN_ON (1 << 0)

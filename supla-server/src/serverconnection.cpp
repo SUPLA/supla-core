@@ -963,6 +963,13 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                                       rd.data.cs_device_reconnect_request);
 
           break;
+        case SUPLA_CS_CALL_TIMER_ARM:
+
+          if (rd.data.cs_timer_arm_request != NULL) {
+            client->timer_arm(rd.data.cs_timer_arm_request);
+          }
+
+          break;
         default:
           catch_incorrect_call(call_type);
       }

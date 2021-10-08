@@ -251,6 +251,8 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
                                        unsigned short mask,
                                        unsigned short active_bits);
 int supla_client_get_time_diff(void *_suplaclient);
+char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
+                            unsigned int durationMS);
 
 #ifdef __cplusplus
 }

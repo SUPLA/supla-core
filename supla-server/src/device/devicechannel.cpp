@@ -2050,7 +2050,8 @@ int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
 
 void supla_device_channels::async_set_channel_value(
     supla_device_channel *channel, int SenderID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE], bool cancelTasks) {
+    const char value[SUPLA_CHANNELVALUE_SIZE], unsigned int durationMS,
+    bool cancelTasks) {
   if (cancelTasks) {
     switch (channel->getFunc()) {
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -2066,7 +2067,7 @@ void supla_device_channels::async_set_channel_value(
     memset(&s, 0, sizeof(TSD_SuplaChannelGroupNewValue));
 
     s.ChannelNumber = channel->getNumber();
-    s.DurationMS = channel->getValueDuration();
+    s.DurationMS = durationMS;
     s.SenderID = SenderID;
     s.GroupID = GroupID;
     s.EOL = EOL;
@@ -2084,6 +2085,13 @@ void supla_device_channels::async_set_channel_value(
 
     srpc_sd_async_set_channel_value(get_srpc(), &s);
   }
+}
+
+void supla_device_channels::async_set_channel_value(
+    supla_device_channel *channel, int SenderID, int GroupID, unsigned char EOL,
+    const char value[SUPLA_CHANNELVALUE_SIZE], bool cancelTasks) {
+  async_set_channel_value(channel, SenderID, GroupID, EOL, value,
+                          channel->getValueDuration(), cancelTasks);
 }
 
 void supla_device_channels::set_device_channel_value(
@@ -2837,4 +2845,26 @@ bool supla_device_channels::action_open_close_without_canceling_tasks(
     int SenderID, int ChannelID, int GroupID, unsigned char EOL) {
   return action_open_close(SenderID, ChannelID, GroupID, EOL, true, false,
                            false);
+}
+
+void supla_device_channels::timer_arm(int SenderID, int ChannelID, int GroupID,
+                                      unsigned char EOL, unsigned char On,
+                                      unsigned int DurationMS) {
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+
+  if (channel) {
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER: {
+        char value[SUPLA_CHANNELVALUE_SIZE] = {};
+        async_set_channel_value(channel, SenderID, GroupID, EOL, value,
+                                DurationMS);
+      }
+    }
+  }
+
+  safe_array_unlock(arr);
 }

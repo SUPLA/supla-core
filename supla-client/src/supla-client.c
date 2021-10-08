@@ -1682,3 +1682,24 @@ int supla_client_get_time_diff(void *_suplaclient) {
   TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
   return suplaclient->server_time_diff;
 }
+
+char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
+                            unsigned int durationMS) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  if (supla_client_registered(_suplaclient) == 1) {
+    TCS_TimerArmRequest request = {};
+    request.ChannelID = channelID;
+    request.On = On;
+    request.DurationMS = durationMS;
+
+    result = srpc_sc_async_timer_arm(suplaclient->srpc, &request) ==
+                     SUPLA_RESULT_FALSE
+                 ? 0
+                 : 1;
+  }
+  lck_unlock(suplaclient->lck);
+  return result;
+}

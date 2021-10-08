@@ -1399,6 +1399,12 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSC_DeviceReconnectRequestResult));
         break;
 
+      case SUPLA_CS_CALL_TIMER_ARM:
+        if (srpc->sdp.data_size == sizeof(TCS_TimerArmRequest))
+          rd->data.cs_timer_arm_request =
+              (TCS_TimerArmRequest *)malloc(sizeof(TCS_TimerArmRequest));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1543,6 +1549,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_DS_CALL_ACTIONTRIGGER:
       return 16;
     case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
+    case SUPLA_CS_CALL_TIMER_ARM:
       return 17;
   }
 
@@ -2558,6 +2565,12 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_DEVICE_RECONNECT_REQUEST_RESULT,
                          (char *)result,
                          sizeof(TSC_DeviceReconnectRequestResult));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sc_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_TIMER_ARM, (char *)request,
+                         sizeof(TCS_TimerArmRequest));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

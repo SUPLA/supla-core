@@ -502,7 +502,7 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
               SUPLA_DS_CALL_ACTIONTRIGGER};
 
     case 17:
-      return {SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C};
+      return {SUPLA_CS_CALL_TIMER_ARM, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C};
   }
 
   return {};
@@ -3402,5 +3402,12 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
 
 SRPC_CALL_BASIC_TEST(srpc_ds_async_action_trigger, TDS_ActionTrigger,
                      SUPLA_DS_CALL_ACTIONTRIGGER, 38, ds_action_trigger);
+
+//---------------------------------------------------------
+// TIMER
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_timer_arm, TCS_TimerArmRequest,
+                     SUPLA_CS_CALL_TIMER_ARM, 32, cs_timer_arm_request);
 
 }  // namespace
