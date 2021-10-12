@@ -2860,6 +2860,7 @@ void supla_device_channels::timer_arm(int SenderID, int ChannelID, int GroupID,
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER: {
         char value[SUPLA_CHANNELVALUE_SIZE] = {};
+        value[0] = On ? 1 : 0;
         async_set_channel_value(channel, SenderID, GroupID, EOL, value,
                                 DurationMS);
       }
