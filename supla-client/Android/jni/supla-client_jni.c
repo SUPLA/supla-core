@@ -895,19 +895,14 @@ jobject supla_android_client_timerstate_to_jobject(
                            new_string_utf(env, state->SenderName));
 }
 
-jobject supla_android_client_channelextendedvalue_to_jobject(
+void supla_android_client_channelextendedvalue_set_object(
     void *_suplaclient, void *user_data,
-    TSuplaChannelExtendedValue *channel_extendedvalue) {
-  ASC_VAR_DECLARATION(NULL);
-  ENV_VAR_DECLARATION(NULL);
+    TSuplaChannelExtendedValue *channel_extendedvalue, jobject obj) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
   jfieldID fid;
-
-  jclass cls =
-      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelExtendedValue");
-
-  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "()V");
-  jobject val = (*env)->NewObject(env, cls, methodID);
-  jclass cval = (*env)->GetObjectClass(env, val);
+  jclass cls = (*env)->GetObjectClass(env, obj);
 
   TChannelState_ExtendedValue *channel_state = NULL;
   TTimerState_ExtendedValue *timer_state = NULL;
@@ -922,20 +917,18 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
       if (srpc_evtool_v1_extended2emextended(channel_extendedvalue,
                                              &em_ev_v1) == 0 ||
           srpc_evtool_emev_v1to2(&em_ev_v1, &em_ev) == 0) {
-        return val;
       }
     } else if (channel_extendedvalue->type ==
                    EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 &&
                srpc_evtool_v2_extended2emextended(channel_extendedvalue,
                                                   &em_ev) == 0) {
-      return val;
     }
     fid = supla_client_GetFieldID(
-        env, cval, "ElectricityMeterValue",
+        env, cls, "ElectricityMeterValue",
         "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
     jobject chv = supla_android_client_channelelectricitymetervalue_to_jobject(
         asc, env, &em_ev);
-    (*env)->SetObjectField(env, val, fid, chv);
+    (*env)->SetObjectField(env, obj, fid, chv);
 
   } else if (channel_extendedvalue->type ==
              EV_TYPE_IMPULSE_COUNTER_DETAILS_V1) {
@@ -943,24 +936,24 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
     if (srpc_evtool_v1_extended2icextended(channel_extendedvalue, &ic_ev) ==
         1) {
       fid = supla_client_GetFieldID(
-          env, cval, "ImpulseCounterValue",
+          env, cls, "ImpulseCounterValue",
           "Lorg/supla/android/lib/SuplaChannelImpulseCounterValue;");
       jobject chv =
           supla_android_client_impulsecountervalue_to_jobject(asc, env, &ic_ev);
-      (*env)->SetObjectField(env, val, fid, chv);
+      (*env)->SetObjectField(env, obj, fid, chv);
     }
   } else if (channel_extendedvalue->type == EV_TYPE_THERMOSTAT_DETAILS_V1) {
     TThermostat_ExtendedValue th_ev;
     if (srpc_evtool_v1_extended2thermostatextended(channel_extendedvalue,
                                                    &th_ev) == 1) {
       fid = supla_client_GetFieldID(
-          env, cval, "ThermostatValue",
+          env, cls, "ThermostatValue",
           "Lorg/supla/android/lib/SuplaChannelThermostatValue;");
 
       jobject chv =
           supla_android_client_thermostatvalue_to_jobject(asc, env, &th_ev);
 
-      (*env)->SetObjectField(env, val, fid, chv);
+      (*env)->SetObjectField(env, obj, fid, chv);
     }
   } else if (channel_extendedvalue->type == EV_TYPE_CHANNEL_STATE_V1 &&
              channel_extendedvalue->size ==
@@ -986,31 +979,52 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
     timer_state =
         &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
              ->Timer;
-
   }
 
   if (channel_state) {
-    fid = supla_client_GetFieldID(env, cval, "ChannelStateValue",
+    fid = supla_client_GetFieldID(env, cls, "ChannelStateValue",
                                   "Lorg/supla/android/lib/SuplaChannelState;");
 
     // TChannelState_ExtendedValue is equal to TDSC_ChannelState
     jobject channel_state_obj = supla_android_client_channelstate_to_jobject(
         asc, env, (TDSC_ChannelState *)channel_state);
 
-    (*env)->SetObjectField(env, val, fid, channel_state_obj);
+    (*env)->SetObjectField(env, obj, fid, channel_state_obj);
   }
 
   if (timer_state) {
-    fid = supla_client_GetFieldID(env, cval, "TimerStateValue",
+    fid = supla_client_GetFieldID(env, cls, "TimerStateValue",
                                   "Lorg/supla/android/lib/SuplaTimerState;");
 
     jobject timer_state_obj = supla_android_client_timerstate_to_jobject(
         asc, env, (TTimerState_ExtendedValue *)timer_state);
 
-    (*env)->SetObjectField(env, val, fid, timer_state_obj);
+    (*env)->SetObjectField(env, obj, fid, timer_state_obj);
+  }
+}
+
+jobject supla_android_client_channelextendedvalue_to_jobject(
+    void *_suplaclient, void *user_data,
+    TSuplaChannelExtendedValue *channel_extendedvalue) {
+  ASC_VAR_DECLARATION(NULL);
+  ENV_VAR_DECLARATION(NULL);
+
+  jclass cls =
+      (*env)->FindClass(env, "org/supla/android/lib/SuplaChannelExtendedValue");
+
+  jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>", "()V");
+  jobject obj = (*env)->NewObject(env, cls, methodID);
+
+  int index = 0;
+  TSuplaChannelExtendedValue ev = {};
+
+  while (srpc_evtool_value_get(channel_extendedvalue, index, &ev)) {
+    index++;
+    supla_android_client_channelextendedvalue_set_object(_suplaclient,
+                                                         user_data, &ev, obj);
   }
 
-  return val;
+  return obj;
 }
 
 void supla_android_client_cb_channel_extendedvalue_update(

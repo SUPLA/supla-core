@@ -419,6 +419,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
     TSC_ImpulseCounter_ExtendedValue *ic_ev, TSuplaChannelExtendedValue *ev);
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
     TSuplaChannelExtendedValue *ev, TSC_ImpulseCounter_ExtendedValue *ic_ev);
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_value_add(
+    TSuplaChannelExtendedValue *dest, TSuplaChannelExtendedValue *src);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_value_get(TSuplaChannelExtendedValue *ev, unsigned short index,
+                      TSuplaChannelExtendedValue *dest);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/
