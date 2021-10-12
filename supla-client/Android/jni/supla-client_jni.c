@@ -909,9 +909,6 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
   jobject val = (*env)->NewObject(env, cls, methodID);
   jclass cval = (*env)->GetObjectClass(env, val);
 
-  fid = supla_client_GetFieldID(env, cval, "Type", "I");
-  (*env)->SetIntField(env, val, fid, channel_extendedvalue->type);
-
   TChannelState_ExtendedValue *channel_state = NULL;
   TTimerState_ExtendedValue *timer_state = NULL;
 
@@ -990,13 +987,6 @@ jobject supla_android_client_channelextendedvalue_to_jobject(
         &((TChannelAndTimerState_ExtendedValue *)channel_extendedvalue->value)
              ->Timer;
 
-  } else if (channel_extendedvalue->size > 0) {
-    jbyteArray arr = (*env)->NewByteArray(env, channel_extendedvalue->size);
-    (*env)->SetByteArrayRegion(env, arr, 0, channel_extendedvalue->size,
-                               (const jbyte *)channel_extendedvalue->value);
-
-    fid = supla_client_GetFieldID(env, cval, "Value", "[B");
-    (*env)->SetObjectField(env, val, fid, arr);
   }
 
   if (channel_state) {
