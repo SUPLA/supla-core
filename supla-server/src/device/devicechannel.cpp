@@ -2079,7 +2079,7 @@ void supla_device_channels::async_set_channel_value(
     memset(&s, 0, sizeof(TSD_SuplaChannelNewValue));
 
     s.ChannelNumber = channel->getNumber();
-    s.DurationMS = channel->getValueDuration();
+    s.DurationMS = durationMS;
     s.SenderID = GroupID ? 0 : SenderID;
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
