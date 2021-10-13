@@ -367,6 +367,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
           srpc_evtool_value_add(&cev->value, &second_cev.value);
           cev_exists = true;
         }
+        device->releasePtr();
       }
     }
 
