@@ -2628,10 +2628,7 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
       case SUPLA_CHANNELFNC_LIGHTSWITCH:
       case SUPLA_CHANNELFNC_STAIRCASETIMER:
       case SUPLA_CHANNELFNC_THERMOSTAT:
-      case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
-      case SUPLA_CHANNELFNC_DIMMER:
-      case SUPLA_CHANNELFNC_RGBLIGHTING:
-      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+      case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
         char c = on ? 1 : 0;
         if (toggle) {
           channel->getChar(&c);
@@ -2639,6 +2636,27 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
         }
         result =
             set_device_channel_char_value(SenderID, channel, GroupID, EOL, c);
+        break;
+      }
+
+      case SUPLA_CHANNELFNC_DIMMER:
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+        int color = 0;
+        char color_brightness = 0;
+        char brightness = 0;
+        char on_off = 0;
+
+        if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
+          color_brightness = color_brightness ? 0 : 100;
+          brightness = brightness ? 0 : 100;
+
+          on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
+
+          result = set_device_channel_rgbw_value(
+              SenderID, channel->getId(), GroupID, EOL, color, color_brightness,
+              brightness, on_off);
+        }
         break;
       }
     }
