@@ -111,6 +111,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)144, sizeof(TSC_DeviceCalCfgResult));
   ASSERT_EQ((unsigned int)149, sizeof(TSD_DeviceCalCfgRequest));
   ASSERT_EQ((unsigned int)148, sizeof(TDS_DeviceCalCfgResult));
+  ASSERT_EQ((unsigned int)9, sizeof(TCS_TimerArmRequest));
 
   ASSERT_LE(sizeof(TDS_ImpulseCounter_Value),
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);

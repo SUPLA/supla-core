@@ -1432,6 +1432,10 @@ void supla_user::set_channel_function(supla_client *sender,
       } else if (db->channel_is_associated_with_scene(func->ChannelID)) {
         result.ResultCode =
             SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE;
+      } else if (db->channel_is_associated_with_action_trigger(
+                     getUserID(), func->ChannelID)) {
+        result.ResultCode =
+            SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER;
       } else {
         if (Type != SUPLA_CHANNELTYPE_BRIDGE ||
             (func->Func != SUPLA_CHANNELFNC_NONE &&

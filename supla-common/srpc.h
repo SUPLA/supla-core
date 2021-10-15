@@ -165,6 +165,7 @@ union TsrpcDataPacketData {
   TDS_GetChannelConfigRequest *ds_get_channel_config_request;
   TSD_ChannelConfig *sd_channel_config;
   TDS_ActionTrigger *ds_action_trigger;
+  TCS_TimerArmRequest *cs_timer_arm_request;
 };
 
 typedef struct {
@@ -383,6 +384,8 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_reconnect_request(
     void *_srpc, TCS_DeviceReconnectRequest *request);
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
     void *_srpc, TSC_DeviceReconnectRequestResult *result);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sc_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
@@ -416,6 +419,11 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_icextended2extended(
     TSC_ImpulseCounter_ExtendedValue *ic_ev, TSuplaChannelExtendedValue *ev);
 _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
     TSuplaChannelExtendedValue *ev, TSC_ImpulseCounter_ExtendedValue *ic_ev);
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_value_add(
+    TSuplaChannelExtendedValue *dest, TSuplaChannelExtendedValue *src);
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_value_get(TSuplaChannelExtendedValue *ev, unsigned short index,
+                      TSuplaChannelExtendedValue *dest);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/

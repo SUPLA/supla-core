@@ -273,6 +273,11 @@ class supla_device_channels {
   void async_set_channel_value(supla_device_channel *channel, int SenderID,
                                int GroupID, unsigned char EOL,
                                const char value[SUPLA_CHANNELVALUE_SIZE],
+                               unsigned int durationMS,
+                               bool cancelTasks = true);
+  void async_set_channel_value(supla_device_channel *channel, int SenderID,
+                               int GroupID, unsigned char EOL,
+                               const char value[SUPLA_CHANNELVALUE_SIZE],
                                bool cancelTasks = true);
   bool set_device_channel_char_value(int SenderID,
                                      supla_device_channel *channel, int GroupID,
@@ -406,6 +411,8 @@ class supla_device_channels {
   bool reset_counters(int ChannelID);
   bool recalibrate(int ChannelID, _supla_int_t SenderID,
                    bool SuperUserAuthorized);
+  void timer_arm(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                 unsigned char On, unsigned int DurationMS);
 };
 
 #endif /* DEVICECHANNEL_H_ */

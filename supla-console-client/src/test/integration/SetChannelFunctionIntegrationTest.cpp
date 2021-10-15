@@ -17,6 +17,7 @@
  */
 
 #include "SetChannelFunctionIntegrationTest.h"
+
 #include "log.h"
 
 namespace testing {
@@ -188,6 +189,24 @@ TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithSchedule) {
   runSqlScript("CreateSceneForChannelId303.sql");
   expectedResultCode = SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE;
+  expectedChannelID = 303;
+  expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
+  ASSERT_FALSE(sclient == NULL);
+
+  superuserAuthorize();
+
+  ASSERT_GT(supla_client_set_channel_function(sclient, expectedChannelID,
+                                              expectedFunction),
+            0);
+
+  iterateUntilDefaultTimeout();
+}
+
+TEST_F(SetChannelFunctionIntegrationTest,
+       SetTheFunctionForChannelAssociatedWithTheActionTrigger) {
+  runSqlScript("CreateActionTriggerForChannelId303.sql");
+  expectedResultCode =
+      SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER;
   expectedChannelID = 303;
   expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
   ASSERT_FALSE(sclient == NULL);

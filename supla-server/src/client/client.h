@@ -92,6 +92,7 @@ class supla_client : public cdbase {
   void set_channel_caption(int ChannelId, char *Caption);
   void set_location_caption(int LocationId, char *Caption);
   void set_caption_result(TSC_SetCaptionResult *result, bool channel);
+  void timer_arm(TCS_TimerArmRequest *request);
 
   virtual ~supla_client();
 };

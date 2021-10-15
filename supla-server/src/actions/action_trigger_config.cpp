@@ -371,3 +371,20 @@ _at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
 
   return result;
 }
+
+bool action_trigger_config::channel_exists(int channel_id) {
+  unsigned int caps = get_capabilities();
+  short size = sizeof(caps) * 8;
+  for (short n = 0; n < size; n++) {
+    if (caps & (1 << n)) {
+      _at_config_action_t action = get_action_assigned_to_capability(1 << n);
+
+      if (action.actionId && !action.channelGroup &&
+          action.subjectId == channel_id) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}

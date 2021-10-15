@@ -175,6 +175,7 @@ class database : public svrdb {
   bool channel_belong_to_group(int channel_id);
   bool channel_has_schedule(int channel_id);
   bool channel_is_associated_with_scene(int channel_id);
+  bool channel_is_associated_with_action_trigger(int UserID, int ChannelID);
   void update_channel_value(int channel_id, int user_id,
                             const char value[SUPLA_CHANNELVALUE_SIZE],
                             unsigned _supla_int_t validity_time_sec);

@@ -16,12 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "clientchannels.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "clientchannel.h"
-#include "clientchannels.h"
 #include "commontypes.h"
 #include "database.h"
 #include "log.h"
@@ -341,7 +342,7 @@ bool supla_client_channels::device_get_channel_state(
   if (channel_exists(request->ChannelID)) {
     safe_array_lock(getArr());
 
-    supla_client_channel *channel;
+    supla_client_channel *channel = NULL;
     int DeviceID = 0;
 
     if (NULL != (channel = find_channel(request->ChannelID))) {
@@ -442,4 +443,28 @@ void supla_client_channels::update_expired(void *srpc) {
     }
   }
   safe_array_unlock(arr);
+}
+
+void supla_client_channels::device_call(
+    int ChannelID, std::function<void(supla_device *)> method) {
+  safe_array_lock(getArr());
+
+  supla_client_channel *channel = NULL;
+  int DeviceID = 0;
+
+  if (NULL != (channel = find_channel(ChannelID))) {
+    DeviceID = channel->getDeviceId();
+  }
+
+  safe_array_unlock(getArr());
+
+  if (!DeviceID) {
+    return;
+  }
+
+  supla_device *device = getClient()->getUser()->get_device(DeviceID);
+  if (device) {
+    method(device);
+    device->releasePtr();
+  }
 }
