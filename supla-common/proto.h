@@ -1469,9 +1469,9 @@ typedef struct {
 typedef struct {
   char brightness;
   char colorBrightness;
-  char R;
-  char G;
   char B;
+  char G;
+  char R;
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
