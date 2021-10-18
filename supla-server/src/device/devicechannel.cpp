@@ -2648,8 +2648,13 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
         char on_off = 0;
 
         if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
-          color_brightness = color_brightness ? 0 : 100;
-          brightness = brightness ? 0 : 100;
+          if (toggle) {
+            color_brightness = color_brightness ? 0 : 100;
+            brightness = brightness ? 0 : 100;
+          } else {
+            color_brightness = on ? 100 : 0;
+            brightness = on ? 100 : 0;
+          }
 
           on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
 
