@@ -19,10 +19,10 @@
 #ifndef ACTIONTRIGGERCONFIG_H_
 #define ACTIONTRIGGERCONFIG_H_
 
+#include <channeljsonconfig/channel_json_config.h>
 #include <functional>
 #include <string>
 
-#include "channeljsonconfig/channeljsonconfig.h"
 
 #define ACTION_OPEN 10
 #define ACTION_CLOSE 20

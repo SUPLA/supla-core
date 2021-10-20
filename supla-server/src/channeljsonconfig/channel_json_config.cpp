@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channeljsonconfig.h"
+#include <channeljsonconfig/channel_json_config.h>
 
 channel_json_config::channel_json_config(void) {
   this->properties_root = NULL;

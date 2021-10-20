@@ -18,7 +18,7 @@
 
 #include "ChannelJSONConfigTest.h"
 
-#include "channeljsonconfig/channeljsonconfig.h"
+#include "channeljsonconfig/channel_json_config.h"
 
 namespace testing {
 

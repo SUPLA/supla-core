@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/channeljsonconfig/channeljsonconfig.cpp 
+../src/channeljsonconfig/channel_json_config.cpp \
+../src/channeljsonconfig/electicity_meter_config.cpp 
 
 OBJS += \
-./src/channeljsonconfig/channeljsonconfig.o 
+./src/channeljsonconfig/channel_json_config.o \
+./src/channeljsonconfig/electicity_meter_config.o 
 
 CPP_DEPS += \
-./src/channeljsonconfig/channeljsonconfig.d 
+./src/channeljsonconfig/channel_json_config.d \
+./src/channeljsonconfig/electicity_meter_config.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
