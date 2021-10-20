@@ -56,7 +56,7 @@ int supla_user_channelgroups::available_data_types_for_remote(
   return 0;
 }
 
-bool supla_user_channelgroups::for_each_device(
+bool supla_user_channelgroups::for_each_channel(
     int GroupID, std::function<bool(supla_device *, int, char)> f) {
   bool result = false;
 
@@ -79,7 +79,7 @@ bool supla_user_channelgroups::for_each_device(
 }
 
 bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, value](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->set_device_channel_char_value(
@@ -88,7 +88,7 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
 }
 
 bool supla_user_channelgroups::set_on(int GroupID, bool on) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, on](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->set_on(0, channelId, GroupID, EOL, on);
@@ -111,7 +111,7 @@ bool supla_user_channelgroups::set_brightness(int GroupID, char brightness) {
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, unsigned int *color,
                                               char *color_brightness,
                                               char *brightness, char *on_off) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, color, color_brightness, brightness, on_off](
           supla_device *device, int channelId, char EOL) -> bool {
@@ -124,7 +124,7 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, unsigned int *color,
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
                                               char color_brightness,
                                               char brightness, char on_off) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, color, color_brightness, brightness, on_off](
           supla_device *device, int channelId, char EOL) -> bool {
@@ -135,7 +135,7 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
 }
 
 bool supla_user_channelgroups::action_toggle(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_toggle(0, channelId, GroupID,
@@ -145,7 +145,7 @@ bool supla_user_channelgroups::action_toggle(int GroupID) {
 
 bool supla_user_channelgroups::action_shut(int GroupID,
                                            const char *closing_percentage) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, closing_percentage](supla_device *device, int channelId,
                                     char EOL) -> bool {
@@ -155,7 +155,7 @@ bool supla_user_channelgroups::action_shut(int GroupID,
 }
 
 bool supla_user_channelgroups::action_reveal(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_reveal(0, channelId, GroupID,
@@ -164,7 +164,7 @@ bool supla_user_channelgroups::action_reveal(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_stop(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_stop(0, channelId, GroupID, EOL);
@@ -172,7 +172,7 @@ bool supla_user_channelgroups::action_stop(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_open(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_open(0, channelId, GroupID, EOL);
@@ -180,7 +180,7 @@ bool supla_user_channelgroups::action_open(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_close(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_close(0, channelId, GroupID, EOL);
@@ -188,7 +188,7 @@ bool supla_user_channelgroups::action_close(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_open_close(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_open_close(0, channelId, GroupID,

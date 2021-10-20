@@ -32,8 +32,8 @@ class supla_user;
 class supla_user_channelgroups : public supla_objcontainer {
  private:
   supla_user *user;
-  bool for_each_device(int GroupID,
-                       std::function<bool(supla_device *, int, char)> f);
+  bool for_each_channel(int GroupID,
+                        std::function<bool(supla_device *, int, char)> f);
 
  protected:
   void _load(database *db, e_objc_scope scope);
