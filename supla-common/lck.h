@@ -26,7 +26,7 @@
 
 #if defined(ARDUINO)
 #undef LCK_ICACHE_FLASH
-#endif /*defined(ARDUINO)*/ 
+#endif /*defined(ARDUINO)*/
 
 #ifndef LCK_ICACHE_FLASH
 #define LCK_ICACHE_FLASH
