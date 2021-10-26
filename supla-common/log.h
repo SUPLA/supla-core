@@ -24,6 +24,10 @@
 #define LOG_ICACHE_FLASH ICACHE_FLASH_ATTR
 #endif
 
+#if defined(ARDUINO)
+#undef LOG_ICACHE_FLASH
+#endif /*defined(ARDUINO)*/
+
 #ifndef LOG_ICACHE_FLASH
 #define LOG_ICACHE_FLASH
 #endif /*LOG_ICACHE_FLASH*/
