@@ -78,6 +78,10 @@ struct _supla_timeval {
 #define _supla_timeval timeval
 #endif
 
+#if defined(ARDUINO)
+#undef PROTO_ICACHE_FLASH
+#endif /*defined(ARDUINO)*/
+
 #ifndef PROTO_ICACHE_FLASH
 #define PROTO_ICACHE_FLASH
 #endif /*PROTO_ICACHE_FLASH*/

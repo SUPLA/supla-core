@@ -24,6 +24,10 @@
 #define LCK_ICACHE_FLASH ICACHE_FLASH_ATTR
 #endif
 
+#if defined(ARDUINO)
+#undef LCK_ICACHE_FLASH
+#endif /*defined(ARDUINO)*/ 
+
 #ifndef LCK_ICACHE_FLASH
 #define LCK_ICACHE_FLASH
 #endif /*LCK_ICACHE_FLASH*/
