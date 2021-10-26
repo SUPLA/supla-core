@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "actions/action_trigger_config.h"
+#include "channeljsonconfig/action_trigger_config.h"
 #include "safearray.h"
 
 // https://bugs.mysql.com/bug.php?id=28184

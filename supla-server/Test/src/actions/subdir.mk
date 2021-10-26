@@ -10,7 +10,6 @@ CPP_SRCS += \
 ../src/actions/action_gate_openclose.cpp \
 ../src/actions/action_gate_openclose_search_condition.cpp \
 ../src/actions/action_trigger.cpp \
-../src/actions/action_trigger_config.cpp \
 ../src/actions/gate_state_getter.cpp 
 
 OBJS += \
@@ -20,7 +19,6 @@ OBJS += \
 ./src/actions/action_gate_openclose.o \
 ./src/actions/action_gate_openclose_search_condition.o \
 ./src/actions/action_trigger.o \
-./src/actions/action_trigger_config.o \
 ./src/actions/gate_state_getter.o 
 
 CPP_DEPS += \
@@ -30,7 +28,6 @@ CPP_DEPS += \
 ./src/actions/action_gate_openclose.d \
 ./src/actions/action_gate_openclose_search_condition.d \
 ./src/actions/action_trigger.d \
-./src/actions/action_trigger_config.d \
 ./src/actions/gate_state_getter.d 
 
 

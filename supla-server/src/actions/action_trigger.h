@@ -21,7 +21,7 @@
 
 #include <actions/abstract_action_executor.h>
 
-#include "action_trigger_config.h"
+#include "channeljsonconfig/action_trigger_config.h"
 #include "device/abstractdevicefinder.h"
 
 class supla_action_trigger {

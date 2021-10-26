@@ -22,7 +22,7 @@
 #include <doubles/actions/ActionExecutorMock.h>
 
 #include "actions/action_trigger.h"
-#include "actions/action_trigger_config.h"
+#include "channeljsonconfig/action_trigger_config.h"
 #include "doubles/device/DeviceFinderStub.h"
 #include "gtest/gtest.h"  // NOLINT
 

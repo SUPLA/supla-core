@@ -19,8 +19,8 @@
 #include "devicechannel.h"
 
 #include <actions/action_executor.h>
-#include <actions/action_trigger_config.h>
 #include <assert.h>
+#include <channeljsonconfig/action_trigger_config.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
