@@ -17,6 +17,10 @@
  */
 
 #include <channeljsonconfig/channel_json_config.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX_STR_LEN 100
 
 channel_json_config::channel_json_config(void) {
   this->properties_root = NULL;
@@ -122,4 +126,66 @@ char *channel_json_config::get_properties(void) {
     return cJSON_PrintUnformatted(json);
   }
   return NULL;
+}
+
+int channel_json_config::get_map_size(void) { return 0; }
+
+int channel_json_config::get_map_key(int index) { return 0; }
+
+const char *channel_json_config::get_map_str(int index) { return NULL; }
+
+const char *channel_json_config::string_with_key(int key) {
+  int size = get_map_size();
+
+  for (int a = 0; a < size; a++) {
+    if (get_map_key(a) == key) {
+      return get_map_str(key);
+    }
+  }
+
+  return NULL;
+}
+
+int channel_json_config::key_with_string(const char *str) {
+  int size = get_map_size();
+
+  for (int a = 0; a < size; a++) {
+    if (equal(get_map_str(a), str)) {
+      return get_map_key(a);
+    }
+  }
+
+  return 0;
+}
+
+int channel_json_config::json_to_key(cJSON *item) {
+  if (item) {
+    return key_with_string(cJSON_GetStringValue(item));
+  }
+
+  return 0;
+}
+
+bool channel_json_config::equal(const char *str1, const char *str2) {
+  if (!str1 || !str2) {
+    return false;
+  }
+
+  size_t str_len = strnlen(str1, MAX_STR_LEN);
+
+  if (str_len != strnlen(str2, MAX_STR_LEN)) {
+    return false;
+  }
+
+  for (size_t a = 0; a < str_len; a++) {
+    if (tolower(str1[a]) != tolower(str2[a])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool channel_json_config::equal(cJSON *item, const char *str) {
+  return item && equal(cJSON_GetStringValue(item), str);
 }

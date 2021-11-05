@@ -18,13 +18,8 @@
 
 #include "channeljsonconfig/action_trigger_config.h"
 
-#include <ctype.h>
-#include <string.h>
-
 #include "proto.h"
 #include "tools.h"
-
-#define MAX_STR_LEN 20
 
 // static
 const _atc_map_t action_trigger_config::map[] = {
@@ -60,60 +55,14 @@ action_trigger_config::action_trigger_config(void) : channel_json_config() {}
 action_trigger_config::action_trigger_config(channel_json_config *root)
     : channel_json_config(root) {}
 
-bool action_trigger_config::equal(const char *str1, const char *str2) {
-  if (!str1 || !str2) {
-    return false;
-  }
-
-  size_t str_len = strnlen(str1, MAX_STR_LEN);
-
-  if (str_len != strnlen(str2, MAX_STR_LEN)) {
-    return false;
-  }
-
-  for (size_t a = 0; a < str_len; a++) {
-    if (tolower(str1[a]) != tolower(str2[a])) {
-      return false;
-    }
-  }
-
-  return true;
+int action_trigger_config::get_map_size(void) {
+  return sizeof(map) / sizeof(_atc_map_t);
 }
 
-bool action_trigger_config::equal(cJSON *item, const char *str) {
-  return item && equal(cJSON_GetStringValue(item), str);
-}
+int action_trigger_config::get_map_key(int index) { return map[index].cap; }
 
-const char *action_trigger_config::to_string(int cap) {
-  int size = sizeof(map) / sizeof(_atc_map_t);
-
-  for (int a = 0; a < size; a++) {
-    if (map[a].cap == cap) {
-      return map[a].str.c_str();
-    }
-  }
-
-  return NULL;
-}
-
-int action_trigger_config::to_cap(const char *str) {
-  int size = sizeof(map) / sizeof(_atc_map_t);
-
-  for (int a = 0; a < size; a++) {
-    if (equal(map[a].str.c_str(), str)) {
-      return map[a].cap;
-    }
-  }
-
-  return 0;
-}
-
-int action_trigger_config::to_cap(cJSON *item) {
-  if (item) {
-    return to_cap(cJSON_GetStringValue(item));
-  }
-
-  return 0;
+const char *action_trigger_config::get_map_str(int index) {
+  return map[index].str.c_str();
 }
 
 unsigned int action_trigger_config::get_capabilities(const char *key) {
@@ -131,7 +80,7 @@ unsigned int action_trigger_config::get_capabilities(const char *key) {
   int st_size = cJSON_GetArraySize(st);
 
   for (short a = 0; a < st_size; a++) {
-    result |= to_cap(cJSON_GetArrayItem(st, a));
+    result |= json_to_key(cJSON_GetArrayItem(st, a));
   }
 
   return result;
@@ -253,7 +202,7 @@ cJSON *action_trigger_config::get_cap_user_config(int cap) {
     return NULL;
   }
 
-  const char *cap_str = to_string(cap);
+  const char *cap_str = string_with_key(cap);
 
   if (!cap_str) {
     return NULL;

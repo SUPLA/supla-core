@@ -31,6 +31,15 @@ class channel_json_config {
  protected:
   cJSON *get_user_root(void);
   cJSON *get_properties_root(void);
+  bool equal(const char *str1, const char *str2);
+  bool equal(cJSON *item, const char *str);
+  virtual int get_map_size(void);
+  virtual int get_map_key(int index);
+  virtual const char *get_map_str(int index);
+
+  const char *string_with_key(int key);
+  int key_with_string(const char *str);
+  int json_to_key(cJSON *item);
 
  public:
   explicit channel_json_config(channel_json_config *root);

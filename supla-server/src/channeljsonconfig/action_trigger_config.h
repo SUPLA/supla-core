@@ -20,9 +20,9 @@
 #define ACTIONTRIGGERCONFIG_H_
 
 #include <channeljsonconfig/channel_json_config.h>
+
 #include <functional>
 #include <string>
-
 
 #define ACTION_OPEN 10
 #define ACTION_CLOSE 20
@@ -61,8 +61,6 @@ class action_trigger_config : public channel_json_config {
   static const char disables_local_operation_key[];
   static const char action_key[];
   static const char actions_key[];
-  bool equal(const char *str1, const char *str2);
-  bool equal(cJSON *item, const char *str);
   int to_cap(cJSON *item);
   const char *to_string(int cap);
   int to_cap(const char *str);
@@ -70,6 +68,11 @@ class action_trigger_config : public channel_json_config {
   unsigned int get_capabilities(const char *key);
   bool set_capabilities(const char *key, std::function<unsigned int()> get_caps,
                         unsigned int caps);
+
+ protected:
+  virtual int get_map_size(void);
+  virtual int get_map_key(int index);
+  virtual const char *get_map_str(int index);
 
  public:
   explicit action_trigger_config(channel_json_config *root);

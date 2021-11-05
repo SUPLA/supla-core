@@ -4,15 +4,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/actions/ActionTriggerConfigTest.cpp \
 ../src/test/actions/ActionTriggerTest.cpp 
 
 OBJS += \
-./src/test/actions/ActionTriggerConfigTest.o \
 ./src/test/actions/ActionTriggerTest.o 
 
 CPP_DEPS += \
-./src/test/actions/ActionTriggerConfigTest.d \
 ./src/test/actions/ActionTriggerTest.d 
 
 
