@@ -77,4 +77,139 @@ TEST_F(ElectricityMeterConfigTest, setAllAvailableCounters) {
   delete config;
 }
 
+TEST_F(ElectricityMeterConfigTest, getInitialValue) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":0.00001,"
+      "\"reverseActiveEnergy\":456789,\"forwardReactiveEnergy\":123,"
+      "\"reverseReactiveEnergy\":876.12345,\"forwardActiveEnergyBalanced\":1."
+      "456,"
+      "\"reverseActiveEnergyBalanced\":123.678}}");
+
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED),
+            (unsigned)0);
+
+  EXPECT_TRUE(config->update_available_counters(EM_VAR_REVERSE_ACTIVE_ENERGY));
+
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
+            (unsigned long long)45678900000);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED),
+            (unsigned)0);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED),
+            (unsigned)0);
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
+            (unsigned)1);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
+            (unsigned long long)45678900000);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
+            (unsigned)12300000);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
+            (unsigned)87612345);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED),
+            (unsigned)145600);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED),
+            (unsigned)12367800);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":0.00001,"
+      "\"reverseActiveEnergy\":456789,\"forwardReactiveEnergy\":123,"
+      "\"reverseReactiveEnergy\":876.12345,\"forwardActiveEnergyBalanced\":"
+      "10000000}}");
+
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
+            (unsigned)1);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
+            (unsigned long long)45678900000);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
+            (unsigned)12300000);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
+            (unsigned)87612345);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED),
+            (unsigned long long)1000000000000);
+  EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED),
+            (unsigned)0);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, noPhases) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":0,"
+      "\"reverseActiveEnergy\":0,\"forwardReactiveEnergy\":0,"
+      "\"reverseReactiveEnergy\":0,\"forwardActiveEnergyBalanced\":1.456,"
+      "\"reverseActiveEnergyBalanced\":123.678}}");
+
+  unsigned _supla_int64_t v = 10;
+  config->add(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0, &v);
+
+  EXPECT_EQ(v, (unsigned)10);
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  config->add(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0, &v);
+  EXPECT_EQ(v, (unsigned)145610);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, onePhase) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":778}}");
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  unsigned _supla_int64_t v = 10;
+  config->add(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
+              SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                  SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
+              &v);
+
+  EXPECT_EQ(v, (unsigned)77800010);
+
+  v = 1234;
+  config->add(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
+              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+              &v);
+
+  EXPECT_EQ(v, (unsigned)1234);
+
+  v = 1235;
+  config->add(EM_VAR_FORWARD_ACTIVE_ENERGY, 3,
+              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+              &v);
+
+  EXPECT_EQ(v, (unsigned)77801234);
+
+  delete config;
+}
+
 } /* namespace testing */

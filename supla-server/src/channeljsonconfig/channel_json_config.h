@@ -37,6 +37,7 @@ class channel_json_config {
   virtual int get_map_key(int index);
   virtual const char *get_map_str(int index);
 
+  bool key_exists(int key);
   const char *string_with_key(int key);
   int key_with_string(const char *str);
   int json_to_key(cJSON *item);

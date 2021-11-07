@@ -134,12 +134,24 @@ int channel_json_config::get_map_key(int index) { return 0; }
 
 const char *channel_json_config::get_map_str(int index) { return NULL; }
 
+bool channel_json_config::key_exists(int key) {
+  int size = get_map_size();
+
+  for (int a = 0; a < size; a++) {
+    if (get_map_key(a) == key) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 const char *channel_json_config::string_with_key(int key) {
   int size = get_map_size();
 
   for (int a = 0; a < size; a++) {
     if (get_map_key(a) == key) {
-      return get_map_str(key);
+      return get_map_str(a);
     }
   }
 
