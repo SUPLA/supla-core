@@ -186,7 +186,7 @@ void electricity_meter_config::add(int var, unsigned char phase, int flags,
   *value += initial_value / phase_count;
 
   if (first_supported_phase == phase) {
-    *value += initial_value - (initial_value / phase_count * (phase_count - 1));
+    *value += initial_value - (initial_value / phase_count * phase_count);
   }
 }
 
