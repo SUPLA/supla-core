@@ -32,4 +32,13 @@ cp  libs/x86_64/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/x86_64/
 cp  libs/arm64-v8a/libsuplaclient.so $SUPLA_ANDROID/app/src/main/libs/arm64-v8a/
 
 cd obj/local
-zip -r ../../symbols.zip *
+rm -rf ../../symbols*
+mkdir -p ../../symbols
+cp -r * ../../symbols/
+cd ../../symbols
+find ./ -name *.a -exec rm -f {} \;
+find ./ -type d -name objs-debug -exec rm -rf {} \;
+rm -rf armeabi
+zip -r ../symbols.zip *
+cd ../
+rm -rf symbols
