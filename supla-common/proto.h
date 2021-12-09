@@ -1338,6 +1338,8 @@ typedef struct {
   char reserved4;
 } TDSC_RollerShutterValue;
 
+typedef TDSC_RollerShutterValue TRollerShutterValue;
+
 // Roller shutter channel value payload
 // Client -> Server -> Device
 typedef struct {
