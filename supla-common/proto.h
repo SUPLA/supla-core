@@ -413,7 +413,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000                // ver. >= 12
 #define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000              // ver. >= 12
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000  // ver. >= 13
-#define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x00010000 // ver. >= 17
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x00010000  // ver. >= 17
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
@@ -1326,17 +1326,58 @@ typedef struct {
 #define SUPLA_FACADEBLIND_TYPE_CHANGE_POSITION_DURING_TILTING 1
 #define SUPLA_FACADEBLINE_TYPE_TILTING_ONLY_AT_FULLY_CLOSED 2
 
+// Roller shutter channel value payload
+// Device -> Server -> Client
+typedef struct {
+  signed char position;  // -1 == calibration. -1 - 100%, DSC
+  char reserved1;
+  signed char bottom_position;  // Percentage points to the windowsill, SC
+  _supla_int16_t flags;  // DSC
+  char reserved2;
+  char reserved3;
+  char reserved4;
+} TDSC_RollerShutterValue;
+
+// Roller shutter channel value payload
+// Client -> Server -> Device
+typedef struct {
+  signed char position;  // 0 - STOP
+                         // 1 - DOWN
+                         // 2 - UP
+                         // 3 - DOWN_OR_STOP
+                         // 4 - UP_OR_STOP
+                         // 5 - STEP_BY_STEP
+                         // 10-110 - target position + 10
+  char reserved[7];
+} TCSD_RollerShutterValue;
+
+// Facade blind channel value payload
+// Device -> Server -> Client
 typedef struct {
   signed char position;  // -1 == calibration. -1 - 100%, DSC
   signed char tilt;      // -1 == not used/calibration, -1 - 100%, DSC
-  signed char bottom_position;  // Percentage points to the windowsill, SC
-  _supla_int16_t flags; // DSC
-  unsigned char tilt_0_angle; // SC
-  unsigned char tilt_100_angle; // SC
-  unsigned char facade_blind_type; // SUPLA_FACADEBLIND_TYPE_*
-} TRollerShutterValue;
+  char reserved;
+  _supla_int16_t flags;  // DSC
+  unsigned char tilt_0_angle;  // SC
+  unsigned char tilt_100_angle;  // SC
+  unsigned char facade_blind_type;  // DSC SUPLA_FACADEBLIND_TYPE_*
+} TDSC_FacadeBlindValue;
 
-typedef TRollerShutterValue TFacadeBlindValue;
+// Facade blind channel value payload
+// Client -> Server -> Device
+typedef struct {
+  signed char position;  // -1 - not set (actual behavior is device specific)
+                         // 0 - STOP
+                         // 1 - DOWN
+                         // 2 - UP
+                         // 3 - DOWN_OR_STOP
+                         // 4 - UP_OR_STOP
+                         // 5 - STEP_BY_STEP
+                         // 10-110 - target position + 10
+  signed char tilt;      // -1 - not set (actual behavior is device specific)
+                         // 10-110 - target position + 10
+  char reserved[6];
+} TCSD_FacadeBlindValue;
 
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
