@@ -206,7 +206,24 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_RollerShutterSettings),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  ASSERT_LE(sizeof(TRollerShutterValue), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_EQ(static_cast<size_t>(13), sizeof(TCalCfg_FacadeBlindSettings));
+  ASSERT_LE(sizeof(TCalCfg_FacadeBlindSettings),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  ASSERT_EQ(static_cast<size_t>(13), sizeof(TSD_ChannelConfig_FacadeBlind));
+  ASSERT_LE(sizeof(TSD_ChannelConfig_FacadeBlind),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  ASSERT_LE(sizeof(TDSC_RollerShutterValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  ASSERT_LE(sizeof(TCSD_RollerShutterValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
+  ASSERT_LE(sizeof(TDSC_FacadeBlindValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  ASSERT_LE(sizeof(TCSD_FacadeBlindValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
   ASSERT_EQ((unsigned int)15, sizeof(TDS_ActionTrigger));
 }
 

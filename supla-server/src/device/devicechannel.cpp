@@ -912,7 +912,7 @@ bool supla_device_channel::setValue(
 
   if (Func == SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER ||
       Func == SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW) {
-    TRollerShutterValue *rs_val = (TRollerShutterValue *)this->value;
+    TDSC_RollerShutterValue *rs_val = (TDSC_RollerShutterValue *)this->value;
     rs_val->bottom_position = Param4;
   } else if ((Func == SUPLA_CHANNELFNC_POWERSWITCH ||
               Func == SUPLA_CHANNELFNC_LIGHTSWITCH ||

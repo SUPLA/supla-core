@@ -395,6 +395,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800         // ver. >= 14
 #define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810           // ver. >= 14
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND 900    // ver. >= 17
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -412,6 +413,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000                // ver. >= 12
 #define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000              // ver. >= 12
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000  // ver. >= 13
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x0010000  // ver. >= 17
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
@@ -1320,12 +1322,62 @@ typedef struct {
 #define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
 #define RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS 0x10
 
+#define SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING 1
+#define SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING 2
+#define SUPLA_FACADEBLINE_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
+
+// Roller shutter channel value payload
+// Device -> Server -> Client
 typedef struct {
-  char position;  // -1 == calibration. -1 - 100%
-  char tilt;
-  char bottom_position;  // Percentage points to the windowsill
-  _supla_int16_t flags;
-} TRollerShutterValue;
+  signed char position;  // -1 == calibration. -1 - 100%, DSC
+  char reserved1;
+  signed char bottom_position;  // Percentage points to the windowsill, SC
+  _supla_int16_t flags;  // DSC
+  char reserved2;
+  char reserved3;
+  char reserved4;
+} TDSC_RollerShutterValue;
+
+// Roller shutter channel value payload
+// Client -> Server -> Device
+typedef struct {
+  signed char position;  // 0 - STOP
+                         // 1 - DOWN
+                         // 2 - UP
+                         // 3 - DOWN_OR_STOP
+                         // 4 - UP_OR_STOP
+                         // 5 - STEP_BY_STEP
+                         // 10-110 - target position + 10
+  char reserved[7];
+} TCSD_RollerShutterValue;
+
+// Facade blind channel value payload
+// Device -> Server -> Client
+typedef struct {
+  signed char position;  // -1 == calibration. -1 - 100%, DSC
+  signed char tilt;      // -1 == not used/calibration, -1 - 100%, DSC
+  char reserved;
+  _supla_int16_t flags;  // DSC
+  unsigned char tilt_0_angle;  // SC
+  unsigned char tilt_100_angle;  // SC
+  unsigned char facade_blind_type;  // DSC SUPLA_FACADEBLIND_TYPE_*
+} TDSC_FacadeBlindValue;
+
+// Facade blind channel value payload
+// Client -> Server -> Device
+typedef struct {
+  signed char position;  // -1 - not set (actual behavior is device specific)
+                         // 0 - STOP
+                         // 1 - DOWN
+                         // 2 - UP
+                         // 3 - DOWN_OR_STOP
+                         // 4 - UP_OR_STOP
+                         // 5 - STEP_BY_STEP
+                         // 10-110 - target position + 10
+  signed char tilt;      // -1 - not set (actual behavior is device specific)
+                         // 10-110 - target position + 10
+  char reserved[6];
+} TCSD_FacadeBlindValue;
 
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
@@ -1371,6 +1423,7 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
+#define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100            // v. >= 17
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1469,6 +1522,13 @@ typedef struct {
   _supla_int_t FullOpeningTimeMS;
   _supla_int_t FullClosingTimeMS;
 } TCalCfg_RollerShutterSettings;
+
+typedef struct {
+  _supla_int_t FullOpeningTimeMS;
+  _supla_int_t FullClosingTimeMS;
+  _supla_int_t TiltingTimeMS;
+  unsigned char FacadeBlindType;        // SUPLA_FACADEBLIND_TYPE_
+} TCalCfg_FacadeBlindSettings;          // v. >= 17
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
@@ -1830,6 +1890,13 @@ typedef struct {
   _supla_int_t ClosingTimeMS;
   _supla_int_t OpeningTimeMS;
 } TSD_ChannelConfig_Rollershutter;  // v. >= 16
+
+typedef struct {
+  _supla_int_t ClosingTimeMS;
+  _supla_int_t OpeningTimeMS;
+  _supla_int_t TiltingTimeMS;
+  unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
+} TSD_ChannelConfig_FacadeBlind;  // v. >= 17
 
 typedef struct {
   unsigned _supla_int_t ActiveActions;
