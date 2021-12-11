@@ -893,15 +893,21 @@ void supla_user::log_metrics(int min_interval_sec) {
   unsigned int device_trash = 0;
 
   safe_array_lock(supla_user::user_arr);
-
+  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
   user_count = safe_array_count(user_arr);
 
   for (unsigned int a = 0; a < user_count; a++) {
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
     if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
       client_count += user->client_container->count();
+      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
       client_trash += user->client_container->trashCount();
+      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
       device_count += user->device_container->count();
+      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
       device_trash += user->device_container->trashCount();
+      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
     }
   }
 

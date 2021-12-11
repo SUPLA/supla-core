@@ -484,7 +484,9 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
 }
 
 void svr_ipcctrl::get_status(void) {
-  serverstatus::globalInstance()->getStatus(buffer, IPC_BUFFER_SIZE);
+  if (!serverstatus::globalInstance()->getStatus(buffer, IPC_BUFFER_SIZE)) {
+    supla_log(LOG_ERR, "%s", buffer);
+  }
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 

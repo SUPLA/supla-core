@@ -77,7 +77,8 @@ void serverstatus::currentLine(const char *file, int line) {
   last_line = line;
 }
 
-void serverstatus::getStatus(char *buffer, size_t buffer_size) {
+bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
+  bool result = false;
   struct timeval now;
   gettimeofday(&now, NULL);
 
@@ -86,13 +87,13 @@ void serverstatus::getStatus(char *buffer, size_t buffer_size) {
     if (now.tv_sec - time_sec < 300) {
       snprintf(buffer, buffer_size, "CONN_ACCEPT_ERR:%i\n",
                ssocket_get_last_accept_errno());
-      return;
+      return false;
     }
   }
 
   if (serverconnection::conn_limit_exceeded_hard()) {
     snprintf(buffer, buffer_size, "CONN_LIMIT_EXCEEDED\n");
-    return;
+    return false;
   }
 
 #ifdef __LCK_DEBUG
@@ -108,6 +109,7 @@ void serverstatus::getStatus(char *buffer, size_t buffer_size) {
 #endif /*__LCK_DEBUG*/
   } else {
     snprintf(buffer, buffer_size, "OK\n");
+    return = true;
   }
   lck_unlock(lck);
 
@@ -116,4 +118,5 @@ void serverstatus::getStatus(char *buffer, size_t buffer_size) {
     lck_debug_dump();
   }
 #endif /*__LCK_DEBUG*/
+  return result;
 }

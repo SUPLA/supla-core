@@ -37,7 +37,7 @@ class serverstatus {
   virtual ~serverstatus(void);
   void mainLoopHeartbeat(void);
   void currentLine(const char *file, int line);
-  void getStatus(char *buffer, size_t buffer_size);
+  bool getStatus(char *buffer, size_t buffer_size);
 };
 
 #endif /*SERVERSTATUS_H_*/
