@@ -109,7 +109,7 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
 #endif /*__LCK_DEBUG*/
   } else {
     snprintf(buffer, buffer_size, "OK\n");
-    return = true;
+    result = true;
   }
   lck_unlock(lck);
 
