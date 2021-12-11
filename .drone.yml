@@ -85,12 +85,9 @@ steps:
   image: mike1pol/drone-rocket
   depends_on: [joining]
   settings:
-    url:
-      from_secret: rocket_url
-    user_id:
-      from_secret: rocket_user_id
-    token:
-      from_secret: rocket_token
+    url: { from_secret: rocket_url }
+    user_id: { from_secret: rocket_user }
+    token: { from_secret: rocket_token }
     channel: github
     avatar_url: "https://miro.medium.com/max/256/0*AqO_2lNemh_Fl9Gm.png"
   when:
