@@ -20,7 +20,7 @@
 
 #include "TestHelper.h"
 #include "channeljsonconfig/electricity_meter_config.h"
-#include "proto.h"
+#include "srpc.h"
 
 namespace testing {
 
@@ -434,6 +434,56 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V2) {
   delete config;
 }
 
+TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV_V2) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":100.1,"
+      "\"reverseActiveEnergy\":201.167,\"forwardReactiveEnergy\":1200.0001,"
+      "\"reverseReactiveEnergy\":30001.1234,\"forwardActiveEnergyBalanced\":0."
+      "00002,"
+      "\"reverseActiveEnergyBalanced\":123.678}}");
+
+  EXPECT_TRUE(config->update_available_counters(
+      EM_VAR_REVERSE_ACTIVE_ENERGY | EM_VAR_REVERSE_REACTIVE_ENERGY |
+      EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED));
+
+  TSuplaChannelExtendedValue ev = {};
+  {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    srpc_evtool_v2_emextended2extended(&em_ev, &ev);
+  }
+
+  config->add_initial_values(0, &ev);
+
+  {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+    srpc_evtool_v2_extended2emextended(&ev, &em_ev);
+
+    EXPECT_EQ(em_ev.total_forward_active_energy[0], (unsigned)0);
+    EXPECT_EQ(em_ev.total_forward_active_energy[1], (unsigned)0);
+    EXPECT_EQ(em_ev.total_forward_active_energy[2], (unsigned)0);
+
+    EXPECT_EQ(em_ev.total_reverse_active_energy[0], (unsigned)6705568);
+    EXPECT_EQ(em_ev.total_reverse_active_energy[1], (unsigned)6705566);
+    EXPECT_EQ(em_ev.total_reverse_active_energy[2], (unsigned)6705566);
+
+    EXPECT_EQ(em_ev.total_forward_reactive_energy[0], (unsigned)0);
+    EXPECT_EQ(em_ev.total_forward_reactive_energy[1], (unsigned)0);
+    EXPECT_EQ(em_ev.total_forward_reactive_energy[2], (unsigned)0);
+
+    EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned)1000037448);
+    EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)1000037446);
+    EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1000037446);
+
+    EXPECT_EQ(em_ev.total_forward_active_energy_balanced, (unsigned)0);
+    EXPECT_EQ(em_ev.total_reverse_active_energy_balanced, (unsigned)12367800);
+  }
+
+  delete config;
+}
+
 TEST_F(ElectricityMeterConfigTest, extendedValue_V1) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
@@ -466,6 +516,51 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V1) {
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned)1000037448);
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)1000037446);
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1000037446);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV_V1) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":100.1,"
+      "\"reverseActiveEnergy\":201.167,\"forwardReactiveEnergy\":1200.0001,"
+      "\"reverseReactiveEnergy\":30001.1234,\"forwardActiveEnergyBalanced\":0."
+      "00002,"
+      "\"reverseActiveEnergyBalanced\":123.678}}");
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  TSuplaChannelExtendedValue ev = {};
+  {
+    TElectricityMeter_ExtendedValue em_ev = {};
+    srpc_evtool_v1_emextended2extended(&em_ev, &ev);
+  }
+
+  config->add_initial_values(0, &ev);
+
+  {
+    TElectricityMeter_ExtendedValue em_ev = {};
+    srpc_evtool_v1_extended2emextended(&ev, &em_ev);
+
+    EXPECT_EQ(em_ev.total_forward_active_energy[0], (unsigned)3336668);
+    EXPECT_EQ(em_ev.total_forward_active_energy[1], (unsigned)3336666);
+    EXPECT_EQ(em_ev.total_forward_active_energy[2], (unsigned)3336666);
+
+    EXPECT_EQ(em_ev.total_reverse_active_energy[0], (unsigned)6705568);
+    EXPECT_EQ(em_ev.total_reverse_active_energy[1], (unsigned)6705566);
+    EXPECT_EQ(em_ev.total_reverse_active_energy[2], (unsigned)6705566);
+
+    EXPECT_EQ(em_ev.total_forward_reactive_energy[0], (unsigned)40000004);
+    EXPECT_EQ(em_ev.total_forward_reactive_energy[1], (unsigned)40000003);
+    EXPECT_EQ(em_ev.total_forward_reactive_energy[2], (unsigned)40000003);
+
+    EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned)1000037448);
+    EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)1000037446);
+    EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1000037446);
+  }
 
   delete config;
 }

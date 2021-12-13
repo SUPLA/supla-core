@@ -226,3 +226,26 @@ void electricity_meter_config::add_initial_values(
   add_initial_values(flags, &em_ev_v2);
   srpc_evtool_emev_v2to1(&em_ev_v2, em_ev);
 }
+
+void electricity_meter_config::add_initial_values(
+    int flags, TSuplaChannelExtendedValue *ev) {
+  if (ev == NULL) {
+    return;
+  }
+
+  if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+    TElectricityMeter_ExtendedValue em_ev = {};
+
+    if (srpc_evtool_v1_extended2emextended(ev, &em_ev) == 1) {
+      add_initial_values(flags, &em_ev);
+      srpc_evtool_v1_emextended2extended(&em_ev, ev);
+    }
+  } else if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+
+    if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
+      add_initial_values(flags, &em_ev);
+      srpc_evtool_v2_emextended2extended(&em_ev, ev);
+    }
+  }
+}
