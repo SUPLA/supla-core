@@ -179,15 +179,13 @@ void electricity_meter_config::add(int var, unsigned char phase, int flags,
     phase_count--;
   }
 
-  if (initial_value > left) {
-    initial_value = left;
-  }
-
-  *value += initial_value / phase_count;
+  unsigned _supla_int64_t addition = initial_value / phase_count;
 
   if (first_supported_phase == phase) {
-    *value += initial_value - (initial_value / phase_count * phase_count);
+    addition += initial_value - (initial_value / phase_count * phase_count);
   }
+
+  *value += addition > left ? left : addition;
 }
 
 void electricity_meter_config::add(int flags,

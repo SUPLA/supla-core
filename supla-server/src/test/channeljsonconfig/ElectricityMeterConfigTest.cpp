@@ -470,4 +470,27 @@ TEST_F(ElectricityMeterConfigTest, extendedValue_V1) {
   delete config;
 }
 
+TEST_F(ElectricityMeterConfigTest, overValue) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"reverseReactiveEnergy\":30001."
+      "1234}}");
+
+  EXPECT_TRUE(
+      config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+
+  em_ev.total_reverse_reactive_energy[0] = 0xFFFFFFFFFFFFFF00;
+
+  config->add(0, &em_ev);
+
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned long long)-1);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)1000037446);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1000037446);
+
+  delete config;
+}
 } /* namespace testing */
