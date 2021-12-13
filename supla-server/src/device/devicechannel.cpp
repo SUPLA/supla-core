@@ -20,13 +20,15 @@
 
 #include <actions/action_executor.h>
 #include <assert.h>
-#include <channeljsonconfig/action_trigger_config.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
+#include "channeljsonconfig/action_trigger_config.h"
+#include "channeljsonconfig/electricity_meter_config.h"
+#include "channeljsonconfig/impulse_counter_config.h"
 #include "database.h"
 #include "devicefinder.h"
 #include "log.h"
@@ -925,12 +927,10 @@ bool supla_device_channel::setValue(
   } else if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
     TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
     dgf_val->sectionCount = Param1;
-  } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER && Param1 > 0 &&
-             Param3 > 0) {
-    TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)this->value;
-    ic_val->counter +=
-        (unsigned _supla_int64_t)Param1 * (unsigned _supla_int64_t)Param3 / 100;
-
+  } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    impulse_counter_config *config = new impulse_counter_config(json_config);
+    config->add_initial_value((TDS_ImpulseCounter_Value *)this->value);
+    delete config;
   } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
   } else {
@@ -1051,6 +1051,14 @@ void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
       extendedValue = new TSuplaChannelExtendedValue;
     }
     memcpy(extendedValue, ev, sizeof(TSuplaChannelExtendedValue));
+
+    if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+      electricity_meter_config *config =
+          new electricity_meter_config(json_config);
+      config->add_initial_values(Flags, extendedValue);
+      delete config;
+    }
+
     updateTimerState(extendedValue);
   }
 }
