@@ -455,6 +455,7 @@ TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV_V2) {
     srpc_evtool_v2_emextended2extended(&em_ev, &ev);
   }
 
+  config->add_initial_values(0, (TSuplaChannelExtendedValue*)NULL);
   config->add_initial_values(0, &ev);
 
   {
