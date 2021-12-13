@@ -138,8 +138,8 @@ unsigned _supla_int64_t electricity_meter_config::get_initial_value(int var) {
   return 0;
 }
 
-void electricity_meter_config::add(int var, unsigned char phase, int flags,
-                                   unsigned _supla_int64_t *value) {
+void electricity_meter_config::add_initial_value(
+    int var, unsigned char phase, int flags, unsigned _supla_int64_t *value) {
   if (phase > 3) {
     return;
   }
@@ -188,41 +188,41 @@ void electricity_meter_config::add(int var, unsigned char phase, int flags,
   *value += addition > left ? left : addition;
 }
 
-void electricity_meter_config::add(int flags,
-                                   TElectricityMeter_ExtendedValue_V2 *em_ev) {
+void electricity_meter_config::add_initial_values(
+    int flags, TElectricityMeter_ExtendedValue_V2 *em_ev) {
   if (!em_ev) {
     return;
   }
 
   for (unsigned char phase = 1; phase <= 3; phase++) {
-    add(EM_VAR_FORWARD_ACTIVE_ENERGY, phase, flags,
-        &em_ev->total_forward_active_energy[phase - 1]);
+    add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, phase, flags,
+                      &em_ev->total_forward_active_energy[phase - 1]);
 
-    add(EM_VAR_REVERSE_ACTIVE_ENERGY, phase, flags,
-        &em_ev->total_reverse_active_energy[phase - 1]);
+    add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY, phase, flags,
+                      &em_ev->total_reverse_active_energy[phase - 1]);
 
-    add(EM_VAR_FORWARD_REACTIVE_ENERGY, phase, flags,
-        &em_ev->total_forward_reactive_energy[phase - 1]);
+    add_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY, phase, flags,
+                      &em_ev->total_forward_reactive_energy[phase - 1]);
 
-    add(EM_VAR_REVERSE_REACTIVE_ENERGY, phase, flags,
-        &em_ev->total_reverse_reactive_energy[phase - 1]);
+    add_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY, phase, flags,
+                      &em_ev->total_reverse_reactive_energy[phase - 1]);
   }
 
-  add(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0,
-      &em_ev->total_forward_active_energy_balanced);
+  add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0,
+                    &em_ev->total_forward_active_energy_balanced);
 
-  add(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, 0,
-      &em_ev->total_reverse_active_energy_balanced);
+  add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, 0,
+                    &em_ev->total_reverse_active_energy_balanced);
 }
 
-void electricity_meter_config::add(int flags,
-                                   TElectricityMeter_ExtendedValue *em_ev) {
+void electricity_meter_config::add_initial_values(
+    int flags, TElectricityMeter_ExtendedValue *em_ev) {
   if (!em_ev) {
     return;
   }
 
   TElectricityMeter_ExtendedValue_V2 em_ev_v2 = {};
   srpc_evtool_emev_v1to2(em_ev, &em_ev_v2);
-  add(flags, &em_ev_v2);
+  add_initial_values(flags, &em_ev_v2);
   srpc_evtool_emev_v2to1(&em_ev_v2, em_ev);
 }

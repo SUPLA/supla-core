@@ -49,10 +49,10 @@ class electricity_meter_config : public channel_json_config {
                                             char phase);
   bool update_available_counters(int measured_values);
   unsigned _supla_int64_t get_initial_value(int var);
-  void add(int var, unsigned char phase, int flags,
+  void add_initial_value(int var, unsigned char phase, int flags,
            unsigned _supla_int64_t *value);
-  void add(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
-  void add(int flags, TElectricityMeter_ExtendedValue *em_ev);
+  void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
+  void add_initial_values(int flags, TElectricityMeter_ExtendedValue *em_ev);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */
