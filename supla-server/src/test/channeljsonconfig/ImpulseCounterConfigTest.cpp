@@ -27,6 +27,144 @@ namespace testing {
 ImpulseCounterConfigTest::ImpulseCounterConfigTest(void) {}
 ImpulseCounterConfigTest::~ImpulseCounterConfigTest(void) {}
 
-// {"pricePerUnit":0,"impulsesPerUnit":2,"currency":null,"unit":"last","initialValue":2234.56,"resetCountersAvailable":false}
+TEST_F(ImpulseCounterConfigTest, getInitialValue) {
+  impulse_counter_config *config = new impulse_counter_config();
+  ASSERT_TRUE(config != NULL);
+
+  EXPECT_EQ(config->get_initial_value(), 0.0);
+
+  config->set_user_config("{\"initialValue\":2234.56}");
+
+  EXPECT_EQ(config->get_initial_value(), 2234.56);
+
+  config->set_user_config("{\"initialValue\":-1}");
+
+  EXPECT_EQ(config->get_initial_value(), 0.0);
+
+  config->set_user_config("{\"initialValue\":100000001.001}");
+
+  EXPECT_EQ(config->get_initial_value(), 100000000.0);
+
+  config->set_user_config("{\"initialValue\":100000000.001}");
+
+  EXPECT_EQ(config->get_initial_value(), 100000000.0);
+
+  config->set_user_config("{\"initialValue\":99999999.999}");
+
+  EXPECT_EQ(config->get_initial_value(), 99999999.999);
+
+  delete config;
+}
+
+TEST_F(ImpulseCounterConfigTest, getImpulsesPerUnit) {
+  impulse_counter_config *config = new impulse_counter_config();
+  ASSERT_TRUE(config != NULL);
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)0);
+
+  config->set_user_config("{\"impulsesPerUnit\":2234.56}");
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)2234);
+
+  config->set_user_config("{\"impulsesPerUnit\":-1}");
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)0);
+
+  config->set_user_config("{\"impulsesPerUnit\":1000001.001}");
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)1000000);
+
+  config->set_user_config("{\"impulsesPerUnit\":1000000.001}");
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)1000000);
+
+  config->set_user_config("{\"impulsesPerUnit\":999999.999}");
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)999999);
+
+  config->set_user_config("{\"impulsesPerUnit\":999999}");
+
+  EXPECT_EQ(config->get_impulses_per_unit(), (unsigned)999999);
+
+  delete config;
+}
+
+TEST_F(ImpulseCounterConfigTest, addingAnInitialValue) {
+  impulse_counter_config *config = new impulse_counter_config();
+  ASSERT_TRUE(config != NULL);
+
+  TDS_ImpulseCounter_Value value = {};
+  config->add_initial_value(NULL);
+
+  config->set_user_config("{\"impulsesPerUnit\":0, \"initialValue\":2234.56}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)0);
+
+  config->set_user_config("{\"impulsesPerUnit\":100, \"initialValue\":0}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)0);
+
+  config->set_user_config("{\"impulsesPerUnit\":1, \"initialValue\":100}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)100);
+
+  value.counter = 0;
+  config->set_user_config("{\"impulsesPerUnit\":1000, \"initialValue\":100}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)100000);
+
+  value.counter = 0;
+  config->set_user_config(
+      "{\"impulsesPerUnit\":1000, \"initialValue\":100.123}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)100123);
+
+  value.counter = 0;
+  config->set_user_config(
+      "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned long long)100000000000000);
+
+  value.counter = -1;
+  config->set_user_config(
+      "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned long long)-1);
+
+  value.counter = 0xFFFFFFFFFFFFFF00;
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned long long)-1);
+
+  delete config;
+}
+
+TEST_F(ImpulseCounterConfigTest, overValue) {
+  impulse_counter_config *config = new impulse_counter_config();
+  ASSERT_TRUE(config != NULL);
+
+  TDS_ImpulseCounter_Value value = {};
+
+  value.counter = -1;
+  config->set_user_config(
+      "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned long long)-1);
+
+  value.counter = 0xFFFFFFFFFFFFFF00;
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned long long)-1);
+
+  delete config;
+}
 
 } /* namespace testing */

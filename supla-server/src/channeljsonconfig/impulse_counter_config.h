@@ -37,7 +37,7 @@ class impulse_counter_config : public channel_json_config {
   impulse_counter_config(void);
   double get_initial_value(void);
   unsigned int get_impulses_per_unit(void);
-  void add(TDS_ImpulseCounter_Value *value);
+  void add_initial_value(TDS_ImpulseCounter_Value *value);
 };
 
 #endif /* IMPULSECOUNTERCONFIG_H_ */

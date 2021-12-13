@@ -44,6 +44,8 @@ double impulse_counter_config::get_double_value(const char *key, double max) {
   if (initial_value && cJSON_IsNumber(initial_value)) {
     if (initial_value->valuedouble > max) {
       return max;
+    } else if (initial_value->valuedouble < 0) {
+      return 0;
     }
     return initial_value->valuedouble;
   }
@@ -59,12 +61,14 @@ unsigned int impulse_counter_config::get_impulses_per_unit(void) {
   return get_double_value(impulses_per_unit_key, IMPULSES_PER_UNIT_MAX);
 }
 
-void impulse_counter_config::add(TDS_ImpulseCounter_Value *value) {
+void impulse_counter_config::add_initial_value(
+    TDS_ImpulseCounter_Value *value) {
   if (!value) {
     return;
   }
 
-  unsigned _supla_int64_t left = -1 - value->counter;
+  unsigned _supla_int64_t left =
+      ((unsigned _supla_int64_t) - 1) - value->counter;
   double initial_value = get_initial_value();
   int impulses_per_unit = get_impulses_per_unit();
 
@@ -73,7 +77,6 @@ void impulse_counter_config::add(TDS_ImpulseCounter_Value *value) {
   }
 
   unsigned _supla_int64_t _initial_value = initial_value * impulses_per_unit;
-
   if (_initial_value > left) {
     _initial_value = left;
   }
