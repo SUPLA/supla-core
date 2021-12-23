@@ -24,8 +24,8 @@
 #if defined(_WIN32)
 #include <Windows.h>
 #include <wchar.h>
-#elif defined(ARDUINO_ARCH_ESP8266) || defined(__AVR__)
-#include <Arduino.h>
+#elif defined(ARDUINO)
+void serialPrintLn(const char*);
 #else
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -41,19 +41,11 @@
 #include <mem.h>
 #include <osapi.h>
 
-#ifdef ARDUINO_ARCH_ESP8266
-#include <Arduino.h>
-#include <ets_sys.h>
-#else
-#include <user_interface.h>
-#include "espmissingincludes.h"
-#endif /*ARDUINO_ARCH_ESP8266*/
-
 #else
 
-#ifndef __AVR__
+#ifndef ARDUINO
 #include "cfg.h"
-#endif /*__AVR__*/
+#endif /*ARDUINO*/
 
 #endif /*ESP8266*/
 
@@ -114,7 +106,7 @@ char LOG_ICACHE_FLASH supla_log_string(char **buffer, int *size, va_list va,
 }
 
 #ifdef _WIN32
-
+// Windows variant
 void supla_vlog(int __pri, const char *message) {
   WCHAR wstr[2048];
   size_t convertedChars;
@@ -124,15 +116,17 @@ void supla_vlog(int __pri, const char *message) {
   OutputDebugStringW(wstr);
   OutputDebugStringW(L"\n");
 }
-
-#elif defined(ESP8266) || defined(__AVR__)
+#elif defined(ARDUINO)
+// supla-device variant for Arduino IDE
+void supla_vlog(int __pri, const char *message) {
+  (void)(__pri);
+  serialPrintLn(message);
+}
+#elif defined(ESP8266)
+// supla-espressif-esp variant
 void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
-#if defined(ESP8266) && !defined(ARDUINO_ARCH_ESP8266)
 #ifndef ESP8266_LOG_DISABLED
   os_printf("%s\r\n", message);
-#endif
-#else
-  Serial.println(message);
 #endif
 }
 #else
@@ -167,11 +161,7 @@ void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
   struct timeval now;
 #endif
 
-#if defined(ESP8266) || defined(__AVR__)
-  if (message == NULL) return;
-#else
   if (message == NULL || (debug_mode == 0 && __pri == LOG_DEBUG)) return;
-#endif
 
 #ifdef __LOG_CALLBACK
   if (__supla_log_callback) __supla_log_callback(__pri, message);
@@ -206,15 +196,11 @@ void LOG_ICACHE_FLASH supla_vlog(int __pri, const char *message) {
         break;
     }
 
-#if defined(ESP8266) || defined(__AVR__)
-    os_printf("%s\r\n", message);
-#else
     gettimeofday(&now, NULL);
     printf("[%li.%li] ", (unsigned long)now.tv_sec, (unsigned long)now.tv_usec);
     printf("%s", message);
     printf("\n");
     fflush(stdout);
-#endif
   }
 #endif
 
@@ -227,7 +213,7 @@ void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...) {
   char *buffer = NULL;
   int size = 0;
 
-#if defined(ESP8266) || defined(__AVR__) || defined(_WIN32)
+#if defined(ESP8266) || defined(ARDUINO) || defined(_WIN32)
   if (__fmt == NULL) return;
 #else
   if (__fmt == NULL || (debug_mode == 0 && __pri == LOG_DEBUG)) return;
@@ -252,6 +238,9 @@ void LOG_ICACHE_FLASH supla_log(int __pri, const char *__fmt, ...) {
 
 void LOG_ICACHE_FLASH supla_write_state_file(const char *file, int __pri,
                                              const char *__fmt, ...) {
+  (void)(file);
+  (void)(__pri);
+  (void)(__fmt);
   char *buffer = NULL;
   int size = 0;
 
@@ -273,7 +262,7 @@ void LOG_ICACHE_FLASH supla_write_state_file(const char *file, int __pri,
     supla_vlog(__pri, buffer);
   }
 
-#if !defined(ESP8266) && !defined(__AVR__) && !defined(WIN32)
+#if !defined(ESP8266) && !defined(ARDUINO) && !defined(WIN32)
 
   int fd;
 
