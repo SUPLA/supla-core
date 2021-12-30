@@ -522,6 +522,12 @@ supla_device_channel::supla_device_channel(
 
   switch (Type) {
     case SUPLA_CHANNELTYPE_ACTIONTRIGGER:
+    case SUPLA_CHANNELTYPE_ELECTRICITY_METER:
+    case SUPLA_CHANNELTYPE_IMPULSE_COUNTER:
+    case SUPLA_CHANNELTYPE_RELAY:
+    case SUPLA_CHANNELTYPE_RELAYHFD4:
+    case SUPLA_CHANNELTYPE_RELAYG5LA1A:
+    case SUPLA_CHANNELTYPE_2XRELAYG5LA1A:
       json_config = new channel_json_config(NULL);
       if (json_config) {
         json_config->set_properties(properties);
