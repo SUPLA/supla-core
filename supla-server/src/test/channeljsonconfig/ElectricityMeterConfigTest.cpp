@@ -77,6 +77,65 @@ TEST_F(ElectricityMeterConfigTest, setAllAvailableCounters) {
   delete config;
 }
 
+TEST_F(ElectricityMeterConfigTest, emEvSetAvailableCounters) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  TElectricityMeter_ExtendedValue em_ev = {};
+  em_ev.measured_values =
+      EM_VAR_FORWARD_ACTIVE_ENERGY | EM_VAR_FORWARD_REACTIVE_ENERGY;
+
+  TSuplaChannelExtendedValue ev = {};
+  EXPECT_TRUE(srpc_evtool_v1_emextended2extended(&em_ev, &ev));
+
+  EXPECT_TRUE(config->update_available_counters(&ev));
+  EXPECT_FALSE(config->update_available_counters(&ev));
+
+  char *str1 = config->get_properties();
+  EXPECT_TRUE(str1 != NULL);
+
+  if (str1) {
+    // TestHelper::printEscaped(str);
+    EXPECT_EQ(strncmp(str1,
+                      "{\"countersAvailable\":[\"forwardActiveEnergy\","
+                      "\"forwardReactiveEnergy\"]}",
+                      1000),
+              0);
+    free(str1);
+    str1 = NULL;
+  }
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, emEv2SetAvailableCounters) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  em_ev.measured_values = EM_VAR_REVERSE_ACTIVE_ENERGY;
+
+  TSuplaChannelExtendedValue ev = {};
+  EXPECT_TRUE(srpc_evtool_v2_emextended2extended(&em_ev, &ev));
+
+  EXPECT_TRUE(config->update_available_counters(&ev));
+  EXPECT_FALSE(config->update_available_counters(&ev));
+
+  char *str1 = config->get_properties();
+  EXPECT_TRUE(str1 != NULL);
+
+  if (str1) {
+    // TestHelper::printEscaped(str);
+    EXPECT_EQ(strncmp(str1, "{\"countersAvailable\":[\"reverseActiveEnergy\"]}",
+                      1000),
+              0);
+    free(str1);
+    str1 = NULL;
+  }
+
+  delete config;
+}
+
 TEST_F(ElectricityMeterConfigTest, getInitialValue) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
@@ -455,7 +514,7 @@ TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV_V2) {
     srpc_evtool_v2_emextended2extended(&em_ev, &ev);
   }
 
-  config->add_initial_values(0, (TSuplaChannelExtendedValue*)NULL);
+  config->add_initial_values(0, (TSuplaChannelExtendedValue *)NULL);
   config->add_initial_values(0, &ev);
 
   {

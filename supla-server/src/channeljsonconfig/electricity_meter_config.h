@@ -48,6 +48,7 @@ class electricity_meter_config : public channel_json_config {
   unsigned _supla_int64_t get_initial_value(int var, int channel_flags,
                                             char phase);
   bool update_available_counters(int measured_values);
+  bool update_available_counters(TSuplaChannelExtendedValue *ev);
   unsigned _supla_int64_t get_initial_value(int var);
   void add_initial_value(int var, unsigned char phase, int flags,
                          unsigned _supla_int64_t *value);
