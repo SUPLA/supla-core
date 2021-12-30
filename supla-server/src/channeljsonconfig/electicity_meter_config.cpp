@@ -116,6 +116,29 @@ bool electricity_meter_config::update_available_counters(int measured_values) {
   return result;
 }
 
+bool electricity_meter_config::update_available_counters(
+    TSuplaChannelExtendedValue *ev) {
+  if (ev == NULL) {
+    return false;
+  }
+
+  if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
+    TElectricityMeter_ExtendedValue em_ev = {};
+
+    if (srpc_evtool_v1_extended2emextended(ev, &em_ev) == 1) {
+      return update_available_counters(em_ev.measured_values);
+    }
+  } else if (ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+    TElectricityMeter_ExtendedValue_V2 em_ev = {};
+
+    if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
+      return update_available_counters(em_ev.measured_values);
+    }
+  }
+
+  return false;
+}
+
 unsigned _supla_int64_t electricity_meter_config::get_initial_value(int var) {
   if (!key_exists(var) || (get_available_counters() & var) == 0) {
     return 0;

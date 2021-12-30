@@ -1055,6 +1055,11 @@ void supla_device_channel::setExtendedValue(TSuplaChannelExtendedValue *ev) {
     if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
       electricity_meter_config *config =
           new electricity_meter_config(json_config);
+
+      if (config->update_available_counters(extendedValue)) {
+        db_set_properties(config);
+      }
+
       config->add_initial_values(Flags, extendedValue);
       delete config;
     }
