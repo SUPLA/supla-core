@@ -6,18 +6,21 @@
 CPP_SRCS += \
 ../src/channeljsonconfig/action_trigger_config.cpp \
 ../src/channeljsonconfig/channel_json_config.cpp \
+../src/channeljsonconfig/controlling_the_gate_config.cpp \
 ../src/channeljsonconfig/electicity_meter_config.cpp \
 ../src/channeljsonconfig/impulse_counter_config.cpp 
 
 OBJS += \
 ./src/channeljsonconfig/action_trigger_config.o \
 ./src/channeljsonconfig/channel_json_config.o \
+./src/channeljsonconfig/controlling_the_gate_config.o \
 ./src/channeljsonconfig/electicity_meter_config.o \
 ./src/channeljsonconfig/impulse_counter_config.o 
 
 CPP_DEPS += \
 ./src/channeljsonconfig/action_trigger_config.d \
 ./src/channeljsonconfig/channel_json_config.d \
+./src/channeljsonconfig/controlling_the_gate_config.d \
 ./src/channeljsonconfig/electicity_meter_config.d \
 ./src/channeljsonconfig/impulse_counter_config.d 
 

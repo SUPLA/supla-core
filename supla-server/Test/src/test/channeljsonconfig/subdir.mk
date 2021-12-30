@@ -6,18 +6,21 @@
 CPP_SRCS += \
 ../src/test/channeljsonconfig/ActionTriggerConfigTest.cpp \
 ../src/test/channeljsonconfig/ChannelJSONConfigTest.cpp \
+../src/test/channeljsonconfig/ControllingTheGateConfigTest.cpp \
 ../src/test/channeljsonconfig/ElectricityMeterConfigTest.cpp \
 ../src/test/channeljsonconfig/ImpulseCounterConfigTest.cpp 
 
 OBJS += \
 ./src/test/channeljsonconfig/ActionTriggerConfigTest.o \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.o \
+./src/test/channeljsonconfig/ControllingTheGateConfigTest.o \
 ./src/test/channeljsonconfig/ElectricityMeterConfigTest.o \
 ./src/test/channeljsonconfig/ImpulseCounterConfigTest.o 
 
 CPP_DEPS += \
 ./src/test/channeljsonconfig/ActionTriggerConfigTest.d \
 ./src/test/channeljsonconfig/ChannelJSONConfigTest.d \
+./src/test/channeljsonconfig/ControllingTheGateConfigTest.d \
 ./src/test/channeljsonconfig/ElectricityMeterConfigTest.d \
 ./src/test/channeljsonconfig/ImpulseCounterConfigTest.d 
 
