@@ -18,6 +18,7 @@
 
 #include "ActionGateOpenCloseIntegrationTest.h"
 #include "actions/action_gate_openclose.h"
+#include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
 #include "doubles/integration/asynctask/GateStateGetterMock.h"
 #include "log.h"
 
@@ -57,9 +58,9 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
-  supla_action_gate_openclose *task =
-      new supla_action_gate_openclose(queue, pool, 0, false, action_executor,
-                                      state_getter, 1, 2, 3, 5000000, open);
+  supla_action_gate_openclose *task = new supla_action_gate_openclose(
+      queue, pool, 0, false, action_executor, state_getter, NULL, 1, 2, 3,
+      5000000, open);
 
   ASSERT_TRUE(task != NULL);
 
@@ -74,7 +75,8 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
 }
 
 void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
-                                                   bool success) {
+                                                   bool success,
+                                                   int maxAttemptCount) {
   pool->set_thread_count_limit(1);
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
@@ -85,12 +87,29 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   state_getter->set_result(true);
   state_getter->set_closed(open);
 
+  ChannelJSONConfigGetterStub *config_getter =
+      new ChannelJSONConfigGetterStub();
+  EXPECT_TRUE(config_getter != NULL);
+
+  if (config_getter) {
+    channel_json_config *config = new channel_json_config();
+    EXPECT_TRUE(config != NULL);
+
+    if (config) {
+      char user_config[100];
+      snprintf(user_config, sizeof(user_config),
+               "{\"numberOfAttemptsToOpenOrClose\":%i}", maxAttemptCount);
+      config->set_user_config(user_config);
+      config_getter->set_config(config);
+    }
+  }
+
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
-  supla_action_gate_openclose *task =
-      new supla_action_gate_openclose(queue, pool, 0, false, action_executor,
-                                      state_getter, 1, 2, 3, 2000000, open);
+  supla_action_gate_openclose *task = new supla_action_gate_openclose(
+      queue, pool, 0, false, action_executor, state_getter, config_getter, 1, 2,
+      3, 2000000, open);
 
   ASSERT_TRUE(task != NULL);
   WaitForExec(pool, 1, 500000);
@@ -118,6 +137,11 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
 }
 
+void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
+                                                   bool success) {
+  openClose(open, attemptCount, success, 5);
+}
+
 TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   pool->set_thread_count_limit(10);
 
@@ -129,9 +153,9 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
-  supla_action_gate_openclose *task =
-      new supla_action_gate_openclose(queue, pool, 0, false, action_executor,
-                                      state_getter, 1, 2, 3, 5000000, true);
+  supla_action_gate_openclose *task = new supla_action_gate_openclose(
+      queue, pool, 0, false, action_executor, state_getter, NULL, 1, 2, 3,
+      5000000, true);
 
   ASSERT_TRUE(task != NULL);
 
@@ -179,6 +203,14 @@ TEST_F(ActionGateOpenCloseIntegrationTest, close_fiveVerifications) {
 
 TEST_F(ActionGateOpenCloseIntegrationTest, fiveAttemptsToCloseWithoutSuccess) {
   openClose(false, 5, false);
+}
+
+TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToOne) {
+  openClose(false, 1, false, 1);
+}
+
+TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToThree) {
+  openClose(false, 3, false, 3);
 }
 
 }  // namespace testing

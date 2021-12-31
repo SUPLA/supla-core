@@ -19,6 +19,7 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
+#include <functional>
 #include <list>
 
 #include "commontypes.h"
@@ -248,6 +249,7 @@ class supla_device_channel {
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
   supla_channel_thermostat_measurement *getThermostatMeasurement(void);
+  channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
   void action_trigger(int actions);
 };
@@ -267,6 +269,8 @@ class supla_device_channels {
 
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
+  void access_channel(int channel_id,
+                      std::function<void(supla_device_channel *)> on_channel);
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
@@ -413,6 +417,7 @@ class supla_device_channels {
                    bool SuperUserAuthorized);
   void timer_arm(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
                  unsigned char On, unsigned int DurationMS);
+  channel_json_config *get_json_config(int ChannelID);
 };
 
 #endif /* DEVICECHANNEL_H_ */

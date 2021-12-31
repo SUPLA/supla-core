@@ -1365,6 +1365,14 @@ supla_device_channel::getThermostatMeasurement(void) {
   return NULL;
 }
 
+channel_json_config *supla_device_channel::getJSONConfig(void) {
+  if (json_config) {
+    return new channel_json_config(json_config, true);
+  }
+
+  return NULL;
+}
+
 bool supla_device_channel::converValueToExtended(void) {
   bool result = false;
 
@@ -1470,6 +1478,19 @@ supla_device_channel *supla_device_channels::find_channel(int Id) {
 supla_device_channel *supla_device_channels::find_channel_by_number(
     int Number) {
   return (supla_device_channel *)safe_array_findcnd(arr, arr_findncmp, &Number);
+}
+
+void supla_device_channels::access_channel(
+    int channel_id, std::function<void(supla_device_channel *)> on_channel) {
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(channel_id);
+
+  if (channel) {
+    on_channel(channel);
+  }
+
+  safe_array_unlock(arr);
 }
 
 void supla_device_channels::add_channel(
@@ -2910,4 +2931,13 @@ void supla_device_channels::timer_arm(int SenderID, int ChannelID, int GroupID,
   }
 
   safe_array_unlock(arr);
+}
+
+channel_json_config *supla_device_channels::get_json_config(int ChannelID) {
+  channel_json_config *result = NULL;
+  access_channel(ChannelID, [&result](supla_device_channel *channel) -> void {
+    result = channel->getJSONConfig();
+  });
+
+  return result;
 }

@@ -23,6 +23,8 @@
 #define LONG_UNIQUEID_MAXSIZE 201
 
 #include <cstddef>
+#include <functional>
+
 #include "amazon/alexacredentials.h"
 #include "commontypes.h"
 #include "google/googlehomecredentials.h"
@@ -158,6 +160,9 @@ class supla_user {
   supla_device *get_device(int DeviceID);
   supla_device *device_by_channelid(int ChannelID);
   // ----
+
+  void access_device(int DeviceID,
+                     std::function<void(supla_device *device)> on_device);
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
