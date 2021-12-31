@@ -44,8 +44,10 @@ class channel_json_config {
 
  public:
   explicit channel_json_config(channel_json_config *root);
+  channel_json_config(channel_json_config *root, bool copy_and_detach);
   channel_json_config(void);
   virtual ~channel_json_config(void);
+  bool is_root_exists(void);
   void set_user_config(const char *config);
   char *get_user_config(void);
   void set_properties(const char *config);

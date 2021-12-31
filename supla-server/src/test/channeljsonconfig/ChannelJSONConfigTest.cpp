@@ -374,6 +374,10 @@ TEST_F(ChannelJSONConfigTest, propertiesRoot) {
   EXPECT_TRUE(c2 != NULL);
   EXPECT_TRUE(c3 != NULL);
 
+  EXPECT_FALSE(c1->is_root_exists());
+  EXPECT_TRUE(c2->is_root_exists());
+  EXPECT_TRUE(c3->is_root_exists());
+
   if (!c1 || !c2 || !c3) {
     if (c1) {
       delete c1;
@@ -562,6 +566,92 @@ TEST_F(ChannelJSONConfigTest, verificationOfIndependence) {
   }
 
   delete config;
+}
+
+TEST_F(ChannelJSONConfigTest, copyAndDetach_true) {
+  channel_json_config *c1 = new channel_json_config();
+  ASSERT_TRUE(c1 != NULL);
+  EXPECT_FALSE(c1->is_root_exists());
+
+  c1->set_user_config("{\"u\":123}");
+  c1->set_properties("{\"p\":456}");
+
+  channel_json_config *c2 = new channel_json_config(c1, true);
+  EXPECT_TRUE(c2 != NULL);
+
+  if (!c2) {
+	  delete c1;
+	  return;
+  }
+
+  c1->set_user_config("{}");
+  c1->set_properties("{}");
+
+  EXPECT_FALSE(c2->is_root_exists());
+
+  char *str = c2->get_user_config();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"u\":123}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  str = c2->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"p\":456}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  delete c1;
+  delete c2;
+}
+
+TEST_F(ChannelJSONConfigTest, copyAndDetach_false) {
+  channel_json_config *c1 = new channel_json_config();
+  ASSERT_TRUE(c1 != NULL);
+  EXPECT_FALSE(c1->is_root_exists());
+
+  c1->set_user_config("{\"u\":123}");
+  c1->set_properties("{\"p\":456}");
+
+  channel_json_config *c2 = new channel_json_config(c1, false);
+  EXPECT_TRUE(c2 != NULL);
+
+  if (!c2) {
+	  delete c1;
+	  return;
+  }
+
+  c1->set_user_config("{\"u\":2}");
+  c1->set_properties("{\"p\":3}");
+
+  EXPECT_TRUE(c2->is_root_exists());
+
+  char *str = c2->get_user_config();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"u\":2}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  str = c2->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"p\":3}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  delete c2;
+  delete c1;
 }
 
 } /* namespace testing */
