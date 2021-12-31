@@ -16,29 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
-#define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
+#ifndef CHANNEL_JSON_CONFIG_GETTER_STUB_H_
+#define CHANNEL_JSON_CONFIG_GETTER_STUB_H_
 
-#include <doubles/actions/ActionExecutorMock.h>
-
-#include "AsyncTaskIntegrationTest.h"
+#include "channeljsonconfig/abstract_channel_json_config_getter.h"
 
 namespace testing {
 
-class ActionGateOpenCloseIntegrationTest : public AsyncTaskIntegrationTest {
- protected:
-  void noActionRequired(bool open);
-  void openClose(bool open, int attemptCount, bool success);
-  void openClose(bool open, int attemptCount, bool success,
-                 int maxAttemptCount);
-  void WaitForOpenClose(ActionExecutorMock *action_executor, int expected_count,
-                        unsigned int usec);
+class ChannelJSONConfigGetterStub : public abstract_channel_json_config_getter {
+ private:
+  channel_json_config *config;
 
+ protected:
  public:
-  ActionGateOpenCloseIntegrationTest();
-  virtual ~ActionGateOpenCloseIntegrationTest();
+  ChannelJSONConfigGetterStub(void);
+  virtual ~ChannelJSONConfigGetterStub(void);
+  void set_config(channel_json_config *config);
+  virtual channel_json_config *get_config(int user_id, int device_id,
+                                          int channel_id);
 };
 
 } /* namespace testing */
 
-#endif /* ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_ */
+#endif /* CHANNEL_JSON_CONFIG_GETTER_STUB_H_ */

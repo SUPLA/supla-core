@@ -24,6 +24,8 @@
 #include "action_gate_openclose_search_condition.h"
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
+#include "channeljsonconfig/channel_json_config_getter.h"
+#include "channeljsonconfig/controlling_the_gate_config.h"
 #include "gate_state_getter.h"
 
 #define VERIFICATION_DELAY_US 60000000
@@ -31,37 +33,66 @@
 supla_action_gate_openclose::supla_action_gate_openclose(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
-    supla_abstract_gate_state_getter *state_getter, int user_id, int device_id,
-    int channel_id, unsigned int verification_delay_us, bool open)
+    supla_abstract_gate_state_getter *state_getter,
+    abstract_channel_json_config_getter *json_config_getter, int user_id,
+    int device_id, int channel_id, unsigned int verification_delay_us,
+    bool open)
     : supla_abstract_asynctask(queue, pool) {
-  action_init(action_executor, state_getter, user_id, device_id, channel_id,
-              verification_delay_us, open);
+  action_init(action_executor, state_getter, json_config_getter, user_id,
+              device_id, channel_id, verification_delay_us, open);
 }
 
 supla_action_gate_openclose::supla_action_gate_openclose(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     short priority, bool release_immediately,
     supla_abstract_action_executor *action_executor,
-    supla_abstract_gate_state_getter *state_getter, int user_id, int device_id,
-    int channel_id, unsigned int verification_delay_us, bool open)
+    supla_abstract_gate_state_getter *state_getter,
+    abstract_channel_json_config_getter *json_config_getter, int user_id,
+    int device_id, int channel_id, unsigned int verification_delay_us,
+    bool open)
     : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
-  action_init(action_executor, state_getter, user_id, device_id, channel_id,
-              verification_delay_us, open);
+  action_init(action_executor, state_getter, json_config_getter, user_id,
+              device_id, channel_id, verification_delay_us, open);
 }
 
 void supla_action_gate_openclose::action_init(
     supla_abstract_action_executor *action_executor,
-    supla_abstract_gate_state_getter *state_getter, int user_id, int device_id,
-    int channel_id, unsigned int verification_delay_us, bool open) {
+    supla_abstract_gate_state_getter *state_getter,
+    abstract_channel_json_config_getter *json_config_getter, int user_id,
+    int device_id, int channel_id, unsigned int verification_delay_us,
+    bool open) {
   assert(action_executor);
   this->action_executor = action_executor;
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
   this->open = open;
-  this->attempt_count_left = 5;
   this->state_getter = state_getter;
+  this->attempt_count_left = 0;
   this->verification_delay_us = verification_delay_us;
+
+  channel_json_config *json_config = NULL;
+  if (json_config_getter) {
+    json_config =
+        json_config_getter->get_config(user_id, device_id, channel_id);
+
+    delete json_config_getter;
+    json_config_getter = NULL;
+  }
+
+  controlling_the_gate_config *json_gconfig =
+      new controlling_the_gate_config(json_config);
+
+  if (json_gconfig) {
+    this->attempt_count_left = json_gconfig->get_number_of_attempts();
+    delete json_gconfig;
+    json_gconfig = NULL;
+  }
+
+  if (json_config) {
+    delete json_config;
+    json_config = NULL;
+  }
 
   action_executor->set_channel_id(user_id, device_id, channel_id);
   set_waiting();
@@ -134,10 +165,11 @@ void supla_action_gate_openclose::open_close(int user_id, int device_id,
 
   supla_action_executor *action_executor = new supla_action_executor();
   gate_state_getter *state_getter = new gate_state_getter();
+  channel_json_config_getter *config_getter = new channel_json_config_getter();
 
   new supla_action_gate_openclose(
       supla_asynctask_queue::global_instance(),
       supla_asynctask_default_thread_pool::global_instance(), action_executor,
-      state_getter, user_id, device_id, channel_id, VERIFICATION_DELAY_US,
-      open);
+      state_getter, config_getter, user_id, device_id, channel_id,
+      VERIFICATION_DELAY_US, open);
 }

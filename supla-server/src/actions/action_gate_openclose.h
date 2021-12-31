@@ -20,6 +20,7 @@
 #define ACTION_OPENCLOSE_H_
 
 #include <actions/action_executor.h>
+#include <channeljsonconfig/abstract_channel_json_config_getter.h>
 
 #include "abstract_gate_state_getter.h"
 #include "asynctask/abstract_asynctask.h"
@@ -35,28 +36,31 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   short attempt_count_left;
   unsigned int verification_delay_us;
   void action_init(supla_abstract_action_executor *action_executor,
-                   supla_abstract_gate_state_getter *state_getter, int user_id,
-                   int device_id, int channel_id,
+                   supla_abstract_gate_state_getter *state_getter,
+                   abstract_channel_json_config_getter *json_config_getter,
+                   int user_id, int device_id, int channel_id,
                    unsigned int verification_delay_us, bool open);
 
  protected:
   virtual bool _execute(bool *execute_again);
 
  public:
-  supla_action_gate_openclose(supla_asynctask_queue *queue,
-                              supla_abstract_asynctask_thread_pool *pool,
-                              supla_abstract_action_executor *action_executor,
-                              supla_abstract_gate_state_getter *state_getter,
-                              int user_id, int device_id, int channel_id,
-                              unsigned int verification_delay_us, bool open);
+  supla_action_gate_openclose(
+      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+      supla_abstract_action_executor *action_executor,
+      supla_abstract_gate_state_getter *state_getter,
+      abstract_channel_json_config_getter *json_config_getter, int user_id,
+      int device_id, int channel_id, unsigned int verification_delay_us,
+      bool open);
 
-  supla_action_gate_openclose(supla_asynctask_queue *queue,
-                              supla_abstract_asynctask_thread_pool *pool,
-                              short priority, bool release_immediately,
-                              supla_abstract_action_executor *action_executor,
-                              supla_abstract_gate_state_getter *state_getter,
-                              int user_id, int device_id, int channel_id,
-                              unsigned int verification_delay_us, bool open);
+  supla_action_gate_openclose(
+      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+      short priority, bool release_immediately,
+      supla_abstract_action_executor *action_executor,
+      supla_abstract_gate_state_getter *state_getter,
+      abstract_channel_json_config_getter *json_config_getter, int user_id,
+      int device_id, int channel_id, unsigned int verification_delay_us,
+      bool open);
   virtual ~supla_action_gate_openclose(void);
 
   int get_user_id(void);

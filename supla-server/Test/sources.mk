@@ -43,6 +43,7 @@ src/test/channeljsonconfig \
 src/test/doubles \
 src/test/doubles/actions \
 src/test/doubles/asynctask \
+src/test/doubles/channeljsonconfig \
 src/test/doubles/device \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \

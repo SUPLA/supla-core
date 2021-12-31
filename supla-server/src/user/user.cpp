@@ -429,6 +429,15 @@ supla_device *supla_user::get_device(int DeviceID) {
   return device_container->findByID(DeviceID);
 }
 
+void supla_user::access_device(
+    int DeviceID, std::function<void(supla_device *device)> on_device) {
+  supla_device *device = device_container->findByID(DeviceID);
+  if (device) {
+    on_device(device);
+    device->releasePtr();
+  }
+}
+
 bool supla_user::get_channel_double_value(int DeviceID, int ChannelID,
                                           double *Value, char Type) {
   bool result = false;
