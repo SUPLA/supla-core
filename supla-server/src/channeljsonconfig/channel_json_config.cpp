@@ -34,6 +34,20 @@ channel_json_config::channel_json_config(channel_json_config *root) {
   this->root = root;
 }
 
+channel_json_config::channel_json_config(channel_json_config *root,
+                                         bool copy_and_detach) {
+  this->properties_root = NULL;
+  this->user_root = NULL;
+  this->root = root;
+
+  if (root && copy_and_detach) {
+    this->properties_root =
+        cJSON_Duplicate(root->get_properties_root(), cJSON_True);
+    this->user_root = cJSON_Duplicate(root->get_user_root(), cJSON_True);
+    this->root = NULL;
+  }
+}
+
 channel_json_config::~channel_json_config(void) {
   if (properties_root) {
     cJSON_Delete(properties_root);
@@ -59,6 +73,8 @@ cJSON *channel_json_config::get_user_root(void) {
 
   return user_root;
 }
+
+bool channel_json_config::is_root_exists(void) { return root != NULL; }
 
 void channel_json_config::set_user_config(const char *config) {
   if (root) {
