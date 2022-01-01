@@ -209,6 +209,10 @@ TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToOne) {
   openClose(false, 1, false, 1);
 }
 
+TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToOneWithSuccess) {
+  openClose(false, 1, true, 1);
+}
+
 TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToThree) {
   openClose(false, 3, false, 3);
 }
