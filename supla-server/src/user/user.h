@@ -156,6 +156,7 @@ class supla_user {
   bool isSuperUserAuthorized(int ClientID);
 
   // Remember to call device->releasePtr()
+  // Deprecated. Use the access_device method
   static supla_device *get_device(int UserID, int DeviceID);
   supla_device *get_device(int DeviceID);
   supla_device *device_by_channelid(int ChannelID);
