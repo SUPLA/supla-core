@@ -453,6 +453,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_DGF 13
 #define SUPLA_MFR_COMELIT 14
 
+#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010  // ver. >= 17
+
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12
@@ -1332,7 +1334,7 @@ typedef struct {
   signed char position;  // -1 == calibration. -1 - 100%, DSC
   char reserved1;
   signed char bottom_position;  // Percentage points to the windowsill, SC
-  _supla_int16_t flags;  // DSC
+  _supla_int16_t flags;         // DSC
   char reserved2;
   char reserved3;
   char reserved4;
@@ -1357,9 +1359,9 @@ typedef struct {
   signed char position;  // -1 == calibration. -1 - 100%, DSC
   signed char tilt;      // -1 == not used/calibration, -1 - 100%, DSC
   char reserved;
-  _supla_int16_t flags;  // DSC
-  unsigned char tilt_0_angle;  // SC
-  unsigned char tilt_100_angle;  // SC
+  _supla_int16_t flags;             // DSC
+  unsigned char tilt_0_angle;       // SC
+  unsigned char tilt_100_angle;     // SC
   unsigned char facade_blind_type;  // DSC SUPLA_FACADEBLIND_TYPE_*
 } TDSC_FacadeBlindValue;
 
@@ -1421,9 +1423,10 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
+#define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
-#define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100            // v. >= 17
+#define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100  // v. >= 17
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1527,8 +1530,8 @@ typedef struct {
   _supla_int_t FullOpeningTimeMS;
   _supla_int_t FullClosingTimeMS;
   _supla_int_t TiltingTimeMS;
-  unsigned char FacadeBlindType;        // SUPLA_FACADEBLIND_TYPE_
-} TCalCfg_FacadeBlindSettings;          // v. >= 17
+  unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
+} TCalCfg_FacadeBlindSettings;    // v. >= 17
 
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2

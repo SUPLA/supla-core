@@ -164,6 +164,8 @@ class supla_user {
 
   void access_device(int DeviceID,
                      std::function<void(supla_device *device)> on_device);
+  static void access_device(int UserID, int DeviceID,
+                     std::function<void(supla_device *device)> on_device);
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,

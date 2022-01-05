@@ -66,6 +66,7 @@ class svr_ipcctrl {
   void on_device_settings_changed(const char *cmd);
   void reset_counters(const char *cmd);
   void recalibrate(const char *cmd);
+  void enter_cfg_mode(const char *cmd);
   void get_status(void);
 
   void send_result(const char *result);
