@@ -70,6 +70,7 @@ const char cmd_action_close[] = "ACTION-CLOSE:";
 const char cmd_reset_counters[] = "RESET-COUNTERS:";
 const char cmd_recalibrate[] = "RECALIBRATE:";
 const char cmd_get_status[] = "GET-STATUS";
+const char cmd_enter_cfg_mode[] = "ENTER-CONFIGURATION-MODE:";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
@@ -384,11 +385,12 @@ void svr_ipcctrl::get_digiglass_value(const char *cmd) {
     bool result = false;
     unsigned short Mask = 0;
 
-    supla_device *device = supla_user::get_device(UserID, DeviceID);
-    if (device) {
-      result = device->get_channels()->get_dgf_transparency(ChannelID, &Mask);
-      device->releasePtr();
-    }
+    supla_user::access_device(
+        UserID, DeviceID,
+        [&result, ChannelID, &Mask](supla_device *device) -> void {
+          result =
+              device->get_channels()->get_dgf_transparency(ChannelID, &Mask);
+        });
 
     if (result) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i", Mask);
@@ -409,15 +411,14 @@ void svr_ipcctrl::get_relay_value(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    supla_device *device = supla_user::get_device(UserID, DeviceID);
-
     TRelayChannel_Value value = {};
     bool result = false;
 
-    if (device) {
-      result = device->get_channels()->get_relay_value(ChannelID, &value);
-      device->releasePtr();
-    }
+    supla_user::access_device(
+        UserID, DeviceID,
+        [&result, ChannelID, &value](supla_device *device) -> void {
+          result = device->get_channels()->get_relay_value(ChannelID, &value);
+        });
 
     if (result) {
       snprintf(buffer, sizeof(buffer), "VALUE:%i,%i", value.hi, value.flags);
@@ -438,14 +439,11 @@ void svr_ipcctrl::reset_counters(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    supla_device *device = supla_user::get_device(UserID, DeviceID);
-
     bool result = false;
-
-    if (device) {
-      result = device->get_channels()->reset_counters(ChannelID);
-      device->releasePtr();
-    }
+    supla_user::access_device(
+        UserID, DeviceID, [&result, ChannelID](supla_device *device) -> void {
+          result = device->get_channels()->reset_counters(ChannelID);
+        });
 
     if (result) {
       send_result("OK:", ChannelID);
@@ -465,14 +463,12 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    supla_device *device = supla_user::get_device(UserID, DeviceID);
-
     bool result = false;
 
-    if (device) {
-      result = device->get_channels()->recalibrate(ChannelID, 0, true);
-      device->releasePtr();
-    }
+    supla_user::access_device(
+        UserID, DeviceID, [&result, ChannelID](supla_device *device) -> void {
+          result = device->get_channels()->recalibrate(ChannelID, 0, true);
+        });
 
     if (result) {
       send_result("OK:", ChannelID);
@@ -481,6 +477,29 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
   }
 
   send_result("UNKNOWN:", ChannelID);
+}
+
+void svr_ipcctrl::enter_cfg_mode(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i", &UserID, &DeviceID);
+
+  if (UserID && DeviceID) {
+    bool result = false;
+
+    supla_user::access_device(UserID, DeviceID,
+                              [&result](supla_device *device) -> void {
+                                result = device->enter_cfg_mode();
+                              });
+
+    if (result) {
+      send_result("OK:", DeviceID);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", DeviceID);
 }
 
 void svr_ipcctrl::get_status(void) {
@@ -565,22 +584,23 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
     if (group) {
       result = user->set_channelgroup_char_value(CGID, Value);
     } else if (!group && DeviceID) {
-      supla_device *device = user->get_device(DeviceID);
-      if (device) {
-        // onChannelValueChangeEvent must be called before
-        // set_device_channel_char_value for the potential report to contain
-        // AlexaCorrelationToken / GoogleRequestId
-        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-            user, DeviceID, CGID,
-            AlexaCorrelationToken
-                ? EST_AMAZON_ALEXA
-                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-            AlexaCorrelationToken, GoogleRequestId);
+      user->access_device(
+          DeviceID,
+          [&result, user, DeviceID, CGID, Value,
+           this](supla_device *device) -> void {
+            // onChannelValueChangeEvent must be called before
+            // set_device_channel_char_value for the potential report to contain
+            // AlexaCorrelationToken / GoogleRequestId
+            supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+                user, DeviceID, CGID,
+                AlexaCorrelationToken
+                    ? EST_AMAZON_ALEXA
+                    : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+                AlexaCorrelationToken, GoogleRequestId);
 
-        result = device->get_channels()->set_device_channel_char_value(
-            0, CGID, 0, false, Value);
-        device->releasePtr();
-      }
+            result = device->get_channels()->set_device_channel_char_value(
+                0, CGID, 0, false, Value);
+          });
     }
 
     free_correlation_token();
@@ -651,22 +671,24 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
       result = user->set_channelgroup_rgbw_value(CGID, Color, ColorBrightness,
                                                  Brightness, TurnOnOff);
     } else if (!group && DeviceID) {
-      supla_device *device = user->get_device(DeviceID);
-      if (device) {
-        // onChannelValueChangeEvent must be called before
-        // set_device_channel_char_value for the potential report to contain
-        // AlexaCorrelationToken / GoogleRequestId
-        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-            user, DeviceID, CGID,
-            AlexaCorrelationToken
-                ? EST_AMAZON_ALEXA
-                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-            AlexaCorrelationToken, GoogleRequestId);
+      user->access_device(
+          DeviceID,
+          [&result, this, user, DeviceID, CGID, Color, ColorBrightness,
+           Brightness, TurnOnOff](supla_device *device) -> void {
+            // onChannelValueChangeEvent must be called before
+            // set_device_channel_char_value for the potential report to contain
+            // AlexaCorrelationToken / GoogleRequestId
+            supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+                user, DeviceID, CGID,
+                AlexaCorrelationToken
+                    ? EST_AMAZON_ALEXA
+                    : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+                AlexaCorrelationToken, GoogleRequestId);
 
-        result = device->get_channels()->set_device_channel_rgbw_value(
-            0, CGID, 0, false, Color, ColorBrightness, Brightness, TurnOnOff);
-        device->releasePtr();
-      }
+            result = device->get_channels()->set_device_channel_rgbw_value(
+                0, CGID, 0, false, Color, ColorBrightness, Brightness,
+                TurnOnOff);
+          });
     }
 
     free_correlation_token();
@@ -696,12 +718,13 @@ void svr_ipcctrl::set_digiglass_value(const char *cmd) {
 
   if (UserID && DeviceID && ChannelID) {
     bool result = false;
-    supla_device *device = supla_user::get_device(UserID, DeviceID);
-    if (device) {
-      result = device->get_channels()->set_dgf_transparency(
-          0, ChannelID, ActiveBits & 0xFFFF, Mask & 0xFFFF);
-      device->releasePtr();
-    }
+
+    supla_user::access_device(
+        UserID, DeviceID,
+        [&result, ChannelID, ActiveBits, Mask](supla_device *device) -> void {
+          result = device->get_channels()->set_dgf_transparency(
+              0, ChannelID, ActiveBits & 0xFFFF, Mask & 0xFFFF);
+        });
 
     if (result) {
       send_result("OK:", ChannelID);
@@ -729,25 +752,27 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   if (UserID && DeviceID && ChannelID &&
       (user = supla_user::find(UserID, false)) != NULL) {
     bool result = false;
-    supla_device *device = user->get_device(DeviceID);
-    if (device) {
-      // onChannelValueChangeEvent must be called before
-      // set_device_channel_char_value for the potential report to contain
-      // AlexaCorrelationToken / GoogleRequestId
-      supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-          user, DeviceID, ChannelID,
-          AlexaCorrelationToken ? EST_AMAZON_ALEXA
-                                : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
-          AlexaCorrelationToken, GoogleRequestId);
 
-      if (open) {
-        result = device->get_channels()->action_open(0, ChannelID, 0, 0);
-      } else {
-        result = device->get_channels()->action_close(ChannelID);
-      }
+    supla_user::access_device(
+        UserID, DeviceID,
+        [&result, this, user, DeviceID, ChannelID,
+         open](supla_device *device) -> void {
+          // onChannelValueChangeEvent must be called before
+          // set_device_channel_char_value for the potential report to contain
+          // AlexaCorrelationToken / GoogleRequestId
+          supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+              user, DeviceID, ChannelID,
+              AlexaCorrelationToken
+                  ? EST_AMAZON_ALEXA
+                  : (GoogleRequestId ? EST_GOOGLE_HOME : EST_IPC),
+              AlexaCorrelationToken, GoogleRequestId);
 
-      device->releasePtr();
-    }
+          if (open) {
+            result = device->get_channels()->action_open(0, ChannelID, 0, 0);
+          } else {
+            result = device->get_channels()->action_close(ChannelID);
+          }
+        });
 
     if (result) {
       send_result("OK:", ChannelID);
@@ -1040,6 +1065,8 @@ void svr_ipcctrl::execute(void *sthread) {
           reset_counters(cmd_reset_counters);
         } else if (match_command(cmd_recalibrate, len)) {
           recalibrate(cmd_recalibrate);
+        } else if (match_command(cmd_enter_cfg_mode, len)) {
+          enter_cfg_mode(cmd_enter_cfg_mode);
         } else if (match_command(cmd_get_status, len)) {
           get_status();
         } else {

@@ -438,6 +438,16 @@ void supla_user::access_device(
   }
 }
 
+// static
+void supla_user::access_device(
+    int UserID, int DeviceID,
+    std::function<void(supla_device *device)> on_device) {
+  supla_user *user = find(UserID, false);
+  if (user) {
+    user->access_device(DeviceID, on_device);
+  }
+}
+
 bool supla_user::get_channel_double_value(int DeviceID, int ChannelID,
                                           double *Value, char Type) {
   bool result = false;
