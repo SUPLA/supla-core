@@ -17,8 +17,10 @@
  */
 
 #include "action_shutreveal.h"
+
 #include <stdlib.h>
 #include <string.h>
+
 #include "json/cJSON.h"
 #include "log.h"
 
@@ -37,6 +39,10 @@ s_worker_action_reveal::s_worker_action_reveal(s_abstract_worker *worker)
 s_worker_action_reveal_partially::s_worker_action_reveal_partially(
     s_abstract_worker *worker)
     : s_worker_action_shutreveal(worker, rsak_reveal_partially) {}
+
+s_worker_action_shut_partially::s_worker_action_shut_partially(
+    s_abstract_worker *worker)
+    : s_worker_action_shutreveal(worker, rsak_shut_partially) {}
 
 void s_worker_action_shutreveal::get_function_list(
     int list[FUNCTION_LIST_SIZE]) {
@@ -83,11 +89,14 @@ bool s_worker_action_shutreveal::result_success(int *fail_result_code) {
     expected_value = 100;
   } else if (kind == rsak_reveal) {
     expected_value = 0;
-  } else if (kind == rsak_reveal_partially) {
+  } else if (kind == rsak_reveal_partially || kind == rsak_shut_partially) {
     if (!parse_percentage(&expected_value)) {
       return false;
     }
-    expected_value = 100 - expected_value;  // Convert reveal to shut
+
+    if (kind == rsak_reveal_partially) {
+      expected_value = 100 - expected_value;  // Convert reveal to shut
+    }
   }
 
   char sensor_value = worker->ipcc_get_opening_sensor_value();
@@ -114,8 +123,13 @@ bool s_worker_action_shutreveal::do_action() {
     value = 1;  // For compatibility purposes set to 1
   } else if (kind == rsak_reveal) {
     value = 2;  // For compatibility purposes set to 2
-  } else if (kind == rsak_reveal_partially && parse_percentage(&percent)) {
-    value = 110 - percent;  // 10 == 0%, 110 == 100%
+  } else if ((kind == rsak_reveal_partially || kind == rsak_shut_partially) &&
+             parse_percentage(&percent)) {
+    if (kind == rsak_reveal_partially) {
+      percent = 100 - percent;
+    }
+
+    value = percent + 10;  // 10 == 0%, 110 == 100%
   }
 
   return worker->ipcc_set_char_value(value);
@@ -124,3 +138,4 @@ bool s_worker_action_shutreveal::do_action() {
 REGISTER_ACTION(s_worker_action_shut, ACTION_SHUT);
 REGISTER_ACTION(s_worker_action_reveal, ACTION_REVEAL);
 REGISTER_ACTION(s_worker_action_reveal_partially, ACTION_REVEAL_PARTIALLY);
+REGISTER_ACTION(s_worker_action_shut_partially, ACTION_SHUT_PARTIALLY);

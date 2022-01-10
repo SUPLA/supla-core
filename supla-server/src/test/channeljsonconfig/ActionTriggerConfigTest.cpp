@@ -515,6 +515,26 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
   delete config;
 }
 
+TEST_F(ActionTriggerConfigTest, actionShutPartially) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":45678,\"subjectType\":"
+      "\"channel\",\"action\":{\"id\":51,\"param\":{\"percentage\":20}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  _at_config_action_t action =
+      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(action.actionId, ACTION_SHUT_PARTIALLY);
+  EXPECT_EQ(action.subjectId, 45678);
+  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 20);
+  EXPECT_FALSE(action.channelGroup);
+
+  delete config;
+}
+
 TEST_F(ActionTriggerConfigTest, actionTurnOn) {
   action_trigger_config *config = new action_trigger_config();
   ASSERT_TRUE(config != NULL);

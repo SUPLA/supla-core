@@ -21,7 +21,7 @@
 
 #include "action.h"
 
-enum RSActionKind { rsak_shut, rsak_reveal, rsak_reveal_partially };
+enum RSActionKind { rsak_shut, rsak_reveal, rsak_reveal_partially, rsak_shut_partially };
 
 class s_worker_action_shutreveal : public s_worker_action {
  private:
@@ -53,6 +53,11 @@ class s_worker_action_reveal : public s_worker_action_shutreveal {
 class s_worker_action_reveal_partially : public s_worker_action_shutreveal {
  public:
   explicit s_worker_action_reveal_partially(s_abstract_worker *worker);
+};
+
+class s_worker_action_shut_partially : public s_worker_action_shutreveal {
+ public:
+  explicit s_worker_action_shut_partially(s_abstract_worker *worker);
 };
 
 #endif /*ACTION_SHUTREVEAL_H_*/
