@@ -76,10 +76,14 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
       case ACTION_REVEAL:
         aexec->reveal();
         break;
+      case ACTION_SHUT_PARTIALLY:
       case ACTION_REVEAL_PARTIALLY: {
         char percentage = config->get_percentage(cap);
         if (percentage > -1) {
-          percentage = 100 - percentage;
+          if (action.actionId == ACTION_REVEAL_PARTIALLY) {
+            percentage = 100 - percentage;
+          }
+
           aexec->shut(&percentage);
         }
       } break;
