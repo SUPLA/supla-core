@@ -33,6 +33,7 @@
 #include "sthread.h"
 #include "tools.h"
 #include "user.h"
+#include "user/userchannelgroups.h"
 
 // TODO(anyone): For setters, use the supla_action_executor class
 
@@ -66,6 +67,8 @@ const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE:";
 
 const char cmd_action_open[] = "ACTION-OPEN:";
 const char cmd_action_close[] = "ACTION-CLOSE:";
+const char cmd_action_toggle[] = "ACTION-TOGGLE:";
+const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
 
 const char cmd_reset_counters[] = "RESET-COUNTERS:";
 const char cmd_recalibrate[] = "RECALIBRATE:";
@@ -582,7 +585,7 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
     bool result = false;
 
     if (group) {
-      result = user->set_channelgroup_char_value(CGID, Value);
+      result = user->get_channel_groups()->set_char_value(CGID, Value);
     } else if (!group && DeviceID) {
       user->access_device(
           DeviceID,
@@ -668,8 +671,8 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
     bool result = false;
 
     if (group) {
-      result = user->set_channelgroup_rgbw_value(CGID, Color, ColorBrightness,
-                                                 Brightness, TurnOnOff);
+      result = user->get_channel_groups()->set_rgbw_value(
+          CGID, Color, ColorBrightness, Brightness, TurnOnOff);
     } else if (!group && DeviceID) {
       user->access_device(
           DeviceID,
@@ -753,8 +756,8 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
       (user = supla_user::find(UserID, false)) != NULL) {
     bool result = false;
 
-    supla_user::access_device(
-        UserID, DeviceID,
+    user->access_device(
+        DeviceID,
         [&result, this, user, DeviceID, ChannelID,
          open](supla_device *device) -> void {
           // onChannelValueChangeEvent must be called before
@@ -786,6 +789,47 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
 
   free_correlation_token();
   free_google_requestid();
+}
+
+void svr_ipcctrl::action_toggle(const char *cmd) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  bool result = false;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  supla_user::access_device(
+      UserID, DeviceID,
+      [&result, this, ChannelID](supla_device *device) -> void {
+        result = device->get_channels()->action_toggle(0, ChannelID, 0, 0);
+      });
+
+  if (result) {
+    send_result("OK:", ChannelID);
+  } else {
+    send_result("FAIL:", ChannelID);
+  }
+}
+
+void svr_ipcctrl::action_cg_toggle(const char *cmd) {
+  int UserID = 0;
+  int GroupID = 0;
+  bool result = false;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i", &UserID, &GroupID);
+
+  supla_user *user = NULL;
+  if (UserID && GroupID && (user = supla_user::find(UserID, false)) != NULL) {
+    result = user->get_channel_groups()->action_toggle(GroupID);
+  }
+
+  if (result) {
+    send_result("OK:", GroupID);
+  } else {
+    send_result("FAIL:", GroupID);
+  }
 }
 
 void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
@@ -1059,6 +1103,10 @@ void svr_ipcctrl::execute(void *sthread) {
           action_open_close(cmd_action_open, true);
         } else if (match_command(cmd_action_close, len)) {
           action_open_close(cmd_action_close, false);
+        } else if (match_command(cmd_action_toggle, len)) {
+          action_toggle(cmd_action_toggle);
+        } else if (match_command(cmd_action_cg_toggle, len)) {
+          action_cg_toggle(cmd_action_cg_toggle);
         } else if (match_command(cmd_get_relay_value, len)) {
           get_relay_value(cmd_get_relay_value);
         } else if (match_command(cmd_reset_counters, len)) {

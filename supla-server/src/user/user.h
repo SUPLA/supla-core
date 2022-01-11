@@ -193,11 +193,6 @@ class supla_user {
                                 unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
 
-  bool set_channelgroup_char_value(int GroupID, const char value);
-  bool set_channelgroup_rgbw_value(int GroupID, int color,
-                                   char color_brightness, char brightness,
-                                   char on_off);
-
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,
                                 int ChannelId = 0, bool Extended = false,

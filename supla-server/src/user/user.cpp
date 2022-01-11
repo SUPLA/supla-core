@@ -974,17 +974,6 @@ bool supla_user::set_device_channel_value(
   return result;
 }
 
-bool supla_user::set_channelgroup_char_value(int GroupID, const char value) {
-  return cgroups->set_char_value(GroupID, value);
-}
-
-bool supla_user::set_channelgroup_rgbw_value(int GroupID, int color,
-                                             char color_brightness,
-                                             char brightness, char on_off) {
-  return cgroups->set_rgbw_value(GroupID, color, color_brightness, brightness,
-                                 on_off);
-}
-
 void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
   {
     supla_client *client;
