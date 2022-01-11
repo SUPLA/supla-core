@@ -56,6 +56,8 @@ class svr_ipcctrl {
   void set_digiglass_value(const char *cmd);
   void get_relay_value(const char *cmd);
   void action_open_close(const char *cmd, bool open);
+  void action_toggle(const char *cmd);
+  void action_cg_toggle(const char *cmd);
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);
   void state_webhook_changed(const char *cmd);
