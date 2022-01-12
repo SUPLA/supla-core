@@ -384,6 +384,7 @@ class supla_device_channels {
 
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on);
+  bool is_on(int ChannelID);
   bool set_rgbw(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
                 unsigned int *color, char *color_brightness, char *brightness,
                 char *on_off);

@@ -57,7 +57,8 @@ int supla_user_channelgroups::available_data_types_for_remote(
 }
 
 bool supla_user_channelgroups::for_each_channel(
-    int GroupID, std::function<bool(supla_device *, int, char)> f) {
+    int GroupID, bool break_on_success,
+    std::function<bool(supla_device *, int, char)> f) {
   bool result = false;
 
   std::list<dcpair> pairs = find_channels(GroupID);
@@ -66,16 +67,25 @@ bool supla_user_channelgroups::for_each_channel(
 
   for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
-    supla_device *device = user->get_device(it->getDeviceId());
-    if (device) {
-      if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
-        result = true;
-      }
-      device->releasePtr();
+    user->access_device(
+        it->getDeviceId(),
+        [&result, f, &it, &pairs](supla_device *device) -> void {
+          if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
+            result = true;
+          }
+        });
+
+    if (break_on_success && result) {
+      break;
     }
   }
 
   return result;
+}
+
+bool supla_user_channelgroups::for_each_channel(
+    int GroupID, std::function<bool(supla_device *, int, char)> f) {
+  return for_each_channel(GroupID, false, f);
 }
 
 bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
@@ -135,11 +145,16 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
 }
 
 bool supla_user_channelgroups::action_toggle(int GroupID) {
+  bool any_on = for_each_channel(
+      GroupID, true, [](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->is_on(channelId);
+      });
+
   return for_each_channel(
       GroupID,
-      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
-        return device->get_channels()->action_toggle(0, channelId, GroupID,
-                                                     EOL);
+      [any_on, GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->set_on(0, channelId, GroupID, EOL,
+                                              !any_on);
       });
 }
 

@@ -2689,13 +2689,13 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
 
         if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
           if (toggle) {
-        	  if (!color_brightness && !brightness) {
-                  color_brightness = 100;
-                  brightness = 100;
-        	  } else {
-                  color_brightness = 0;
-                  brightness = 0;
-        	  }
+            if (!color_brightness && !brightness) {
+              color_brightness = 100;
+              brightness = 100;
+            } else {
+              color_brightness = 0;
+              brightness = 0;
+            }
           } else {
             color_brightness = on ? 100 : 0;
             brightness = on ? 100 : 0;
@@ -2706,6 +2706,46 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
           result = set_device_channel_rgbw_value(
               SenderID, channel->getId(), GroupID, EOL, color, color_brightness,
               brightness, on_off);
+        }
+        break;
+      }
+    }
+  }
+
+  safe_array_unlock(arr);
+
+  return result;
+}
+
+bool supla_device_channels::is_on(int ChannelID) {
+  bool result = false;
+
+  safe_array_lock(arr);
+
+  supla_device_channel *channel = find_channel(ChannelID);
+  if (channel) {
+    switch (channel->getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      case SUPLA_CHANNELFNC_THERMOSTAT:
+      case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS: {
+        char c = 0;
+        channel->getChar(&c);
+        result = c;
+        break;
+      }
+
+      case SUPLA_CHANNELFNC_DIMMER:
+      case SUPLA_CHANNELFNC_RGBLIGHTING:
+      case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING: {
+        int color = 0;
+        char color_brightness = 0;
+        char brightness = 0;
+        char on_off = 0;
+
+        if (channel->getRGBW(&color, &color_brightness, &brightness, &on_off)) {
+          result = color_brightness > 0 || brightness > 0;
         }
         break;
       }
