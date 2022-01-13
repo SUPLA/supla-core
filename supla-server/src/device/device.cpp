@@ -582,6 +582,7 @@ bool supla_device::enter_cfg_mode(void) {
     request.SuperUserAuthorized = true;
 
     srpc_sd_async_device_calcfg_request(getSvrConn()->srpc(), &request);
+    return true;
   }
 
   return false;
