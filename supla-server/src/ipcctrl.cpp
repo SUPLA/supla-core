@@ -73,7 +73,7 @@ const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
 const char cmd_reset_counters[] = "RESET-COUNTERS:";
 const char cmd_recalibrate[] = "RECALIBRATE:";
 const char cmd_get_status[] = "GET-STATUS";
-const char cmd_enter_cfg_mode[] = "ENTER-CONFIGURATION-MODE:";
+const char cmd_enter_cfg_mode[] = "ACTION-ENTER-CONFIGURATION-MODE:";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
