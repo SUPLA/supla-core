@@ -2839,56 +2839,108 @@ bool supla_device_channels::action_toggle(int SenderID, int ChannelID,
   return set_on(SenderID, ChannelID, GroupID, EOL, false, true);
 }
 
-bool supla_device_channels::action_shut_reveal(int SenderID, int ChannelID,
-                                               int GroupID, unsigned char EOL,
-                                               bool shut,
-                                               const char *closingPercentage,
-                                               bool stop) {
-  safe_array_lock(arr);
-
+bool supla_device_channels::rs_action(int SenderID, int ChannelID, int GroupID,
+                                      unsigned char EOL, rsAction action,
+                                      const char *closingPercentage) {
   bool result = false;
-  supla_device_channel *channel = find_channel(ChannelID);
-  if (channel && channel->isCharValueWritable()) {
-    switch (channel->getFunc()) {
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-      case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-        char v = 0;
-        if (shut) {
-          if (closingPercentage) {
-            v = *closingPercentage + 10;
-          } else {
-            v = 110;
-          }
-        } else if (!stop) {
-          v = 10;
-        }
-        result =
-            set_device_channel_char_value(SenderID, channel, GroupID, EOL, v);
-        break;
-    }
-  }
+  access_channel(ChannelID,
+                 [&result, this, SenderID, GroupID, EOL, action,
+                  closingPercentage](supla_device_channel *channel) void {
+                   char v = -1;
 
-  safe_array_unlock(arr);
+                   switch (channel->getFunc()) {
+                     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+                     case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+
+                       switch (action) {
+                         case rsActionStop:
+                           v = 0;
+                           break;
+                         case rsActionDown:
+                           v = 1;
+                           break;
+                         case rsActionUp:
+                           v = 2;
+                           break;
+                         case rsActionDownOrStop:
+                           v = 3;
+                           break;
+                         case rsActionUpOrStop:
+                           v = 4;
+                           break;
+                         case rsActionStepByStep:
+                           v = 5;
+                           break;
+                         case rsActionShut:
+                           if (closingPercentage) {
+                             if (*closingPercentage > 100) {
+                               v = 110;
+                             } else if (*closingPercentage < 0) {
+                               v = 10;
+                             } else {
+                               v = *closingPercentage + 10;
+                             }
+                           } else {
+                             v = 110;
+                           }
+                           break;
+                         case rsActionReveal:
+                           v = 10;
+                           break;
+                       }
+                       if (v >= 0 && v <= 110) {
+                         result = set_device_channel_char_value(
+                             SenderID, channel, GroupID, EOL, v);
+                       }
+                       break;
+                   }
+                 });
+
   return result;
 }
 
 bool supla_device_channels::action_shut(int SenderID, int ChannelID,
                                         int GroupID, unsigned char EOL,
                                         const char *closingPercentage) {
-  return action_shut_reveal(SenderID, ChannelID, GroupID, EOL, true,
-                            closingPercentage, false);
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionShut,
+                   closingPercentage);
 }
 
 bool supla_device_channels::action_reveal(int SenderID, int ChannelID,
                                           int GroupID, unsigned char EOL) {
-  return action_shut_reveal(SenderID, ChannelID, GroupID, EOL, false, NULL,
-                            false);
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionReveal, NULL);
 }
 
 bool supla_device_channels::action_stop(int SenderID, int ChannelID,
                                         int GroupID, unsigned char EOL) {
-  return action_shut_reveal(SenderID, ChannelID, GroupID, EOL, false, NULL,
-                            true);
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionStop, NULL);
+}
+
+bool supla_device_channels::action_up(int SenderID, int ChannelID, int GroupID,
+                                      unsigned char EOL) {
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionUp, NULL);
+}
+
+bool supla_device_channels::action_down(int SenderID, int ChannelID,
+                                        int GroupID, unsigned char EOL) {
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionDown, NULL);
+}
+
+bool supla_device_channels::action_up_or_stop(int SenderID, int ChannelID,
+                                              int GroupID, unsigned char EOL) {
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionUpOrStop, NULL);
+}
+
+bool supla_device_channels::action_down_or_stop(int SenderID, int ChannelID,
+                                                int GroupID,
+                                                unsigned char EOL) {
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionDownOrStop, NULL);
+}
+
+bool supla_device_channels::action_step_by_step(int SenderID, int ChannelID,
+                                                int GroupID,
+                                                unsigned char EOL) {
+  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionStepByStep, NULL);
 }
 
 bool supla_device_channels::action_open_close(int SenderID, int ChannelID,

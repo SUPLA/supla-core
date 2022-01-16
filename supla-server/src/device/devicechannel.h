@@ -29,6 +29,17 @@ class supla_user;
 class supla_device;
 class channel_json_config;
 
+enum rsAction {
+  rsActionStop,
+  rsActionDown,
+  rsActionUp,
+  rsActionDownOrStop,
+  rsActionUpOrStop,
+  rsActionStepByStep,
+  rsActionShut,
+  rsActionReveal
+};
+
 class channel_address {
  private:
   int DeviceId;
@@ -289,9 +300,8 @@ class supla_device_channels {
                                      bool cancelTasks = true);
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on, bool toggle);
-  bool action_shut_reveal(int SenderID, int ChannelID, int GroupID,
-                          unsigned char EOL, bool shut,
-                          const char *closingPercentage, bool stop);
+  bool rs_action(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                 rsAction action, const char *closingPercentage);
   bool action_open_close(int SenderID, int ChannelID, int GroupID,
                          unsigned char EOL, bool unknown, bool open,
                          bool cancelTasks = true);
@@ -403,6 +413,14 @@ class supla_device_channels {
                    const char *closingPercentage);
   bool action_reveal(int SenderID, int ChannelID, int GroupID,
                      unsigned char EOL);
+  bool action_up(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_down(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_up_or_stop(int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL);
+  bool action_down_or_stop(int SenderID, int ChannelID, int GroupID,
+                           unsigned char EOL);
+  bool action_step_by_step(int SenderID, int ChannelID, int GroupID,
+                           unsigned char EOL);
   bool action_stop(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
   bool action_open(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
   bool action_close(int SenderID, int ChannelID, int GroupID,
