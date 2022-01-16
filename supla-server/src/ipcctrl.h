@@ -26,10 +26,13 @@
 
 #include <stddef.h>
 
+#include <functional>
+
 #include "eh.h"
 
 #define IPC_BUFFER_SIZE 4096
 
+class supla_user_channelgroups;
 class svr_ipcctrl {
  private:
   int sfd;
@@ -55,8 +58,11 @@ class svr_ipcctrl {
   void set_rgbw(const char *cmd, bool group, bool random);
   void set_digiglass_value(const char *cmd);
   void get_relay_value(const char *cmd);
+  void action_cg_open_close(const char *cmd, bool open);
   void action_open_close(const char *cmd, bool open);
   void action_toggle(const char *cmd);
+  void channel_groups_action(
+      const char *cmd, std::function<bool(supla_user_channelgroups *, int)> f);
   void action_cg_toggle(const char *cmd);
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);

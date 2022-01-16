@@ -66,7 +66,9 @@ const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
 const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE:";
 
 const char cmd_action_open[] = "ACTION-OPEN:";
+const char cmd_action_cg_open[] = "ACTION-CG-OPEN:";
 const char cmd_action_close[] = "ACTION-CLOSE:";
+const char cmd_action_cg_close[] = "ACTION-CG-CLOSE:";
 const char cmd_action_toggle[] = "ACTION-TOGGLE:";
 const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
 
@@ -791,6 +793,18 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   free_google_requestid();
 }
 
+void svr_ipcctrl::action_cg_open_close(const char *cmd, bool open) {
+  channel_groups_action(
+      cmd,
+      [open](supla_user_channelgroups *channel_groups, int GroupID) -> bool {
+        if (open) {
+          return channel_groups->action_open(GroupID);
+        } else {
+          return channel_groups->action_close(GroupID);
+        }
+      });
+}
+
 void svr_ipcctrl::action_toggle(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
@@ -813,7 +827,8 @@ void svr_ipcctrl::action_toggle(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::action_cg_toggle(const char *cmd) {
+void svr_ipcctrl::channel_groups_action(
+    const char *cmd, std::function<bool(supla_user_channelgroups *, int)> f) {
   int UserID = 0;
   int GroupID = 0;
   bool result = false;
@@ -822,7 +837,7 @@ void svr_ipcctrl::action_cg_toggle(const char *cmd) {
 
   supla_user *user = NULL;
   if (UserID && GroupID && (user = supla_user::find(UserID, false)) != NULL) {
-    result = user->get_channel_groups()->action_toggle(GroupID);
+    result = f(user->get_channel_groups(), GroupID);
   }
 
   if (result) {
@@ -830,6 +845,13 @@ void svr_ipcctrl::action_cg_toggle(const char *cmd) {
   } else {
     send_result("FAIL:", GroupID);
   }
+}
+
+void svr_ipcctrl::action_cg_toggle(const char *cmd) {
+  channel_groups_action(
+      cmd, [](supla_user_channelgroups *channel_groups, int GroupID) -> bool {
+        return channel_groups->action_toggle(GroupID);
+      });
 }
 
 void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
@@ -1101,8 +1123,12 @@ void svr_ipcctrl::execute(void *sthread) {
           set_digiglass_value(cmd_set_digiglass_value);
         } else if (match_command(cmd_action_open, len)) {
           action_open_close(cmd_action_open, true);
+        } else if (match_command(cmd_action_cg_open, len)) {
+          action_cg_open_close(cmd_action_cg_open, true);
         } else if (match_command(cmd_action_close, len)) {
           action_open_close(cmd_action_close, false);
+        } else if (match_command(cmd_action_cg_close, len)) {
+          action_cg_open_close(cmd_action_cg_close, false);
         } else if (match_command(cmd_action_toggle, len)) {
           action_toggle(cmd_action_toggle);
         } else if (match_command(cmd_action_cg_toggle, len)) {
