@@ -17,182 +17,187 @@
  */
 
 #include <actions/action_executor.h>
+
 #include "userchannelgroups.h"
 
 supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
 
-supla_action_executor::supla_action_executor(supla_user *user,
-                                                             int device_id,
-                                                             int channel_id)
+supla_action_executor::supla_action_executor(supla_user *user, int device_id,
+                                             int channel_id)
     : supla_abstract_action_executor(user, device_id, channel_id) {}
 
-supla_action_executor::supla_action_executor(int user_id,
-                                                             int device_id,
-                                                             int channel_id)
+supla_action_executor::supla_action_executor(int user_id, int device_id,
+                                             int channel_id)
     : supla_abstract_action_executor(user_id, device_id, channel_id) {}
 
-void supla_action_executor::set_on(bool on) {
-  if (get_channel_groups()) {
-    get_channel_groups()->set_on(get_group_id(), on);
+void supla_action_executor::execute_action(
+    std::function<void(supla_user_channelgroups *, supla_device_channels *)>
+        f) {
+  supla_user_channelgroups *channel_groups = get_channel_groups();
+  if (channel_groups) {
+    f(channel_groups, NULL);
   } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->set_on(0, get_channel_id(), 0, 0, on ? 1 : 0);
-      device->releasePtr();
-    }
+    access_device([f](supla_device *device) -> void {
+      supla_device_channels *channels = device->get_channels();
+      if (channels) {
+        f(NULL, channels);
+      };
+    });
   }
+}
+
+void supla_action_executor::set_on(bool on) {
+  execute_action([this, on](supla_user_channelgroups *channel_groups,
+                            supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->set_on(get_group_id(), on);
+    } else {
+      channels->set_on(0, get_channel_id(), 0, 0, on ? 1 : 0);
+    }
+  });
 }
 
 void supla_action_executor::set_color(unsigned int color) {
-  if (get_channel_groups()) {
-    get_channel_groups()->set_color(get_group_id(), color);
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->set_color(0, get_channel_id(), 0, 0, color);
-      device->releasePtr();
+  execute_action([this, color](supla_user_channelgroups *channel_groups,
+                               supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->set_color(get_group_id(), color);
+    } else {
+      channels->set_color(0, get_channel_id(), 0, 0, color);
     }
-  }
+  });
 }
 
 void supla_action_executor::set_brightness(char brightness) {
-  if (get_channel_groups()) {
-    get_channel_groups()->set_brightness(get_group_id(), brightness);
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->set_brightness(0, get_channel_id(), 0, 0,
-                                             brightness);
-      device->releasePtr();
+  execute_action([this, brightness](supla_user_channelgroups *channel_groups,
+                                    supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->set_brightness(get_group_id(), brightness);
+    } else {
+      channels->set_brightness(0, get_channel_id(), 0, 0, brightness);
     }
-  }
+  });
 }
 
-void supla_action_executor::set_color_brightness(
-    char color_brightness) {
-  if (get_channel_groups()) {
-    get_channel_groups()->set_color_brightness(get_group_id(),
-                                               color_brightness);
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->set_color_brightness(0, get_channel_id(), 0, 0,
-                                                   color_brightness);
-      device->releasePtr();
+void supla_action_executor::set_color_brightness(char color_brightness) {
+  execute_action([this, color_brightness](
+                     supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->set_color_brightness(get_group_id(), color_brightness);
+    } else {
+      channels->set_color_brightness(0, get_channel_id(), 0, 0,
+                                     color_brightness);
     }
-  }
+  });
 }
 
 void supla_action_executor::set_rgbw(unsigned int *color,
-                                             char *color_brightness,
-                                             char *brightness) {
-  if (get_channel_groups()) {
-    get_channel_groups()->set_rgbw_value(get_group_id(), color,
-                                         color_brightness, brightness, NULL);
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->set_rgbw(0, get_channel_id(), 0, 0, color,
-                                       color_brightness, brightness, NULL);
-      device->releasePtr();
+                                     char *color_brightness, char *brightness) {
+  execute_action([this, color, color_brightness, brightness](
+                     supla_user_channelgroups *channel_groups,
+                     supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->set_rgbw_value(get_group_id(), color, color_brightness,
+                                     brightness, NULL);
+    } else {
+      channels->set_rgbw(0, get_channel_id(), 0, 0, color, color_brightness,
+                         brightness, NULL);
     }
-  }
+  });
 }
 
 void supla_action_executor::toggle(void) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_toggle(get_group_id());
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_toggle(0, get_channel_id(), 0, 0);
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_toggle(get_group_id());
+    } else {
+      channels->action_toggle(0, get_channel_id(), 0, 0);
     }
-  }
+  });
 }
 
 void supla_action_executor::shut(const char *closingPercentage) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_shut(get_group_id(), closingPercentage);
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_shut(0, get_channel_id(), 0, 0,
-                                          closingPercentage);
-      device->releasePtr();
-    }
-  }
+  execute_action(
+      [this, closingPercentage](supla_user_channelgroups *channel_groups,
+                                supla_device_channels *channels) -> void {
+        if (channel_groups) {
+          channel_groups->action_shut(get_group_id(), closingPercentage);
+        } else {
+          channels->action_shut(0, get_channel_id(), 0, 0, closingPercentage);
+        }
+      });
 }
 
 void supla_action_executor::reveal(void) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_reveal(get_group_id());
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_reveal(0, get_channel_id(), 0, 0);
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_reveal(get_group_id());
+    } else {
+      channels->action_reveal(0, get_channel_id(), 0, 0);
     }
-  }
+  });
 }
 
 void supla_action_executor::stop(void) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_stop(get_group_id());
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_stop(0, get_channel_id(), 0, 0);
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_stop(get_group_id());
+    } else {
+      channels->action_stop(0, get_channel_id(), 0, 0);
     }
-  }
+  });
 }
 
+void supla_action_executor::up_or_stop(void) {}
+
+void supla_action_executor::down_or_stop(void) {}
+
+void supla_action_executor::step_by_step(void) {}
+
 void supla_action_executor::open(void) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_open(get_group_id());
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_open(0, get_channel_id(), 0, 0);
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_open(get_group_id());
+    } else {
+      channels->action_open(0, get_channel_id(), 0, 0);
     }
-  }
+  });
 }
 
 void supla_action_executor::close(void) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_close(get_group_id());
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_close(get_channel_id());
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_close(get_group_id());
+    } else {
+      channels->action_close(get_channel_id());
     }
-  }
+  });
 }
 
 void supla_action_executor::open_close(void) {
-  if (get_channel_groups()) {
-    get_channel_groups()->action_open_close(get_group_id());
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_open_close(0, get_channel_id(), 0, 0);
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_open_close(get_group_id());
+    } else {
+      channels->action_open_close(0, get_channel_id(), 0, 0);
     }
-  }
+  });
 }
 
 void supla_action_executor::open_close_without_canceling_tasks() {
-  if (get_channel_groups()) {
-  } else {
-    supla_device *device = get_device();
-    if (device) {
-      device->get_channels()->action_open_close_without_canceling_tasks(
-          0, get_channel_id(), 0, 0);
-      device->releasePtr();
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (!channel_groups) {
+      channels->action_open_close_without_canceling_tasks(0, get_channel_id(),
+                                                          0, 0);
     }
-  }
+  });
 }
