@@ -23,8 +23,7 @@
 
 namespace testing {
 
-class ActionExecutorMock
-    : public supla_abstract_action_executor {
+class ActionExecutorMock : public supla_abstract_action_executor {
  private:
   int on_counter;
   int color_counter;
@@ -34,6 +33,11 @@ class ActionExecutorMock
   int toggle_counter;
   int shut_counter;
   int reveal_counter;
+  int up_counter;
+  int down_counter;
+  int up_or_stop_counter;
+  int down_or_stop_counter;
+  int step_by_step_counter;
   int stop_counter;
   int open_counter;
   int close_counter;
@@ -59,6 +63,11 @@ class ActionExecutorMock
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
+  virtual void up(void);
+  virtual void down(void);
+  virtual void up_or_stop(void);
+  virtual void down_or_stop(void);
+  virtual void step_by_step(void);
   virtual void stop(void);
   virtual void open(void);
   virtual void close(void);
@@ -76,6 +85,11 @@ class ActionExecutorMock
   int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);
+  int getUpCounter(void);
+  int getDownCounter(void);
+  int getUpOrStopCounter(void);
+  int getDownOrStopCounter(void);
+  int getStepByStepCounter(void);
   int getStopCounter(void);
   int getOpenCounter(void);
   int getCloseCounter(void);

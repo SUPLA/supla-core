@@ -174,6 +174,57 @@ TEST_F(ActionTriggerTest, revealPartially) {
   EXPECT_EQ(aexec->get_channel_id(), 4);
 }
 
+TEST_F(ActionTriggerTest, upOrStop) {
+  at_config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X2\":{\"subjectId\":4461,\"subjectType\":"
+      "\"channel\","
+      "\"action\":{\"id\":140,\"param\":[]}}}}");
+
+  dev_finder->setResult(3);
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getUpOrStopCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 3);
+  EXPECT_EQ(aexec->get_channel_id(), 4461);
+  EXPECT_EQ(aexec->get_group_id(), 0);
+}
+
+TEST_F(ActionTriggerTest, downOrStop) {
+  at_config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X2\":{\"subjectId\":44611,\"subjectType\":"
+      "\"channel\","
+      "\"action\":{\"id\":150,\"param\":[]}}}}");
+
+  dev_finder->setResult(3);
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getDownOrStopCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 3);
+  EXPECT_EQ(aexec->get_channel_id(), 44611);
+  EXPECT_EQ(aexec->get_group_id(), 0);
+}
+
+TEST_F(ActionTriggerTest, stepByStep) {
+  at_config->set_user_config(
+      "{\"actions\":{\"TOGGLE_X2\":{\"subjectId\":446111,\"subjectType\":"
+      "\"channel\","
+      "\"action\":{\"id\":160,\"param\":[]}}}}");
+
+  dev_finder->setResult(3);
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getStepByStepCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 3);
+  EXPECT_EQ(aexec->get_channel_id(), 446111);
+  EXPECT_EQ(aexec->get_group_id(), 0);
+}
+
 TEST_F(ActionTriggerTest, turnOn) {
   at_config->set_user_config(
       "{\"actions\":{\"TOGGLE_X4\":{\"subjectId\":5,\"subjectType\":"

@@ -35,8 +35,7 @@ supla_mqtt_value_setter::~supla_mqtt_value_setter(void) {
   }
 }
 
-supla_action_executor *supla_mqtt_value_setter::get_action_executor(
-    void) {
+supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
   if (action_executor == NULL) {
     action_executor = new supla_action_executor();
   }
@@ -95,6 +94,41 @@ void supla_mqtt_value_setter::action_reveal(void) {
   supla_action_executor *action = get_action_executor();
   if (action) {
     action->reveal();
+  }
+}
+
+void supla_mqtt_value_setter::action_up(void) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->up();
+  }
+}
+
+void supla_mqtt_value_setter::action_down(void) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->down();
+  }
+}
+
+void supla_mqtt_value_setter::action_up_or_stop(void) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->up_or_stop();
+  }
+}
+
+void supla_mqtt_value_setter::action_down_or_stop(void) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->down_or_stop();
+  }
+}
+
+void supla_mqtt_value_setter::action_step_by_step(void) {
+  supla_action_executor *action = get_action_executor();
+  if (action) {
+    action->step_by_step();
   }
 }
 

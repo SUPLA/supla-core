@@ -2863,13 +2863,22 @@ bool supla_device_channels::rs_action(int SenderID, int ChannelID, int GroupID,
                            v = 2;
                            break;
                          case rsActionDownOrStop:
-                           v = 3;
+                           if (channel->getFlags() &
+                               SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
+                             v = 3;
+                           }
                            break;
                          case rsActionUpOrStop:
-                           v = 4;
+                           if (channel->getFlags() &
+                               SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
+                             v = 4;
+                           }
                            break;
                          case rsActionStepByStep:
-                           v = 5;
+                           if (channel->getFlags() &
+                               SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS) {
+                             v = 5;
+                           }
                            break;
                          case rsActionShut:
                            if (closingPercentage) {

@@ -44,6 +44,8 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
   virtual void stop(void);
+  virtual void up(void);
+  virtual void down(void);
   virtual void up_or_stop(void);
   virtual void down_or_stop(void);
   virtual void step_by_step(void);

@@ -186,6 +186,49 @@ bool supla_user_channelgroups::action_stop(int GroupID) {
       });
 }
 
+bool supla_user_channelgroups::action_up(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_up(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_down(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_down(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_up_or_stop(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_up_or_stop(0, channelId, GroupID,
+                                                         EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_down_or_stop(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_down_or_stop(0, channelId,
+                                                           GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_step_by_step(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_step_by_step(0, channelId,
+                                                           GroupID, EOL);
+      });
+}
+
 bool supla_user_channelgroups::action_open(int GroupID) {
   return for_each_channel(
       GroupID,
