@@ -17,6 +17,7 @@
  */
 
 #include "MqttSubscriberIntegrationTest.h"
+
 #include "log.h"  // NOLINT
 #include "mqtt_subscriber.h"
 #include "mqtt_subscriber_datasource.h"
@@ -339,6 +340,96 @@ TEST_F(MqttSubscriberIntegrationTest, reveal) {
   ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
   ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
   ASSERT_EQ(getValueSetter()->getRevealCounter(), 1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, up) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "Up");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getUpCounter(), 1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, down) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "DoWn");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getDownCounter(), 1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, upOrStop) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "Up_Or_Stop");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getUpOrStopCounter(), 1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, downOrStop) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "Down_Or_Stop");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getDownOrStopCounter(), 1);
+}
+
+TEST_F(MqttSubscriberIntegrationTest, stepByStep) {
+  waitForConnection();
+  waitForData(3);
+
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 0);
+
+  getLibAdapter()->on_message_received(
+      "supla/7720767494dd87196e1896c7cbab707c/devices/10/channels/1234/"
+      "execute_action",
+      "Step_By_StEP");
+
+  ASSERT_TRUE(
+      getValueSetter()->suidEqualTo("7720767494dd87196e1896c7cbab707c"));
+  ASSERT_TRUE(getValueSetter()->channelEqualTo(1234));
+  ASSERT_EQ(getValueSetter()->counterSetCount(), 1);
+  ASSERT_EQ(getValueSetter()->getStepByStepCounter(), 1);
 }
 
 TEST_F(MqttSubscriberIntegrationTest, stop) {

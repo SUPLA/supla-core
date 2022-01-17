@@ -61,6 +61,11 @@ class supla_mqtt_abstract_value_setter {
   virtual void action_toggle(void) = 0;
   virtual void action_shut(const char *closingPercentage) = 0;
   virtual void action_reveal(void) = 0;
+  virtual void action_up(void) = 0;
+  virtual void action_down(void) = 0;
+  virtual void action_up_or_stop(void) = 0;
+  virtual void action_down_or_stop(void) = 0;
+  virtual void action_step_by_step(void) = 0;
   virtual void action_stop(void) = 0;
   virtual void action_open(void) = 0;
   virtual void action_close(void) = 0;

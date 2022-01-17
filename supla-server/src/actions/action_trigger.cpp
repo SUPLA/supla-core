@@ -76,6 +76,15 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
       case ACTION_REVEAL:
         aexec->reveal();
         break;
+      case ACTION_UP_OR_STOP:
+        aexec->up_or_stop();
+        break;
+      case ACTION_DOWN_OR_STOP:
+        aexec->down_or_stop();
+        break;
+      case ACTION_STEP_BY_STEP:
+        aexec->step_by_step();
+        break;
       case ACTION_SHUT_PARTIALLY:
       case ACTION_REVEAL_PARTIALLY: {
         char percentage = config->get_percentage(cap);

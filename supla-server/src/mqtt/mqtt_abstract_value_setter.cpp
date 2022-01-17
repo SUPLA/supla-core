@@ -17,11 +17,13 @@
  */
 
 #include "mqtt_abstract_value_setter.h"
+
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 supla_mqtt_abstract_value_setter::supla_mqtt_abstract_value_setter(
@@ -109,6 +111,16 @@ bool supla_mqtt_abstract_value_setter::parse_action(void) {
       action_shut(NULL);
     } else if (message_size == 6 && lc_equal("reveal")) {
       action_reveal();
+    } else if (message_size == 2 && lc_equal("up")) {
+      action_up();
+    } else if (message_size == 4 && lc_equal("down")) {
+      action_down();
+    } else if (message_size == 10 && lc_equal("up_or_stop")) {
+      action_up_or_stop();
+    } else if (message_size == 12 && lc_equal("down_or_stop")) {
+      action_down_or_stop();
+    } else if (message_size == 12 && lc_equal("step_by_step")) {
+      action_step_by_step();
     } else if (message_size == 4 && lc_equal("stop")) {
       action_stop();
     } else if (message_size == 10 && lc_equal("open_close")) {

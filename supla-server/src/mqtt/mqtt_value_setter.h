@@ -29,18 +29,23 @@ class supla_mqtt_value_setter : public supla_mqtt_abstract_value_setter {
 
  protected:
   supla_action_executor *get_action_executor(void);
-  void set_on(bool on);
-  void set_color(unsigned int color);
-  void set_brightness(char brightness);
-  void set_color_brightness(char brightness);
-  void action_toggle(void);
-  void action_shut(const char *closingPercentage);
-  void action_reveal(void);
-  void action_stop(void);
-  void action_open(void);
-  void action_close(void);
-  void action_open_close(void);
-  void refresh_all_existing(void);
+  virtual   void set_on(bool on);
+  virtual void set_color(unsigned int color);
+  virtual void set_brightness(char brightness);
+  virtual void set_color_brightness(char brightness);
+  virtual void action_toggle(void);
+  virtual void action_shut(const char *closingPercentage);
+  virtual void action_reveal(void);
+  virtual void action_up(void);
+  virtual void action_down(void);
+  virtual void action_up_or_stop(void);
+  virtual void action_down_or_stop(void);
+  virtual void action_step_by_step(void);
+  virtual void action_stop(void);
+  virtual void action_open(void);
+  virtual void action_close(void);
+  virtual void action_open_close(void);
+  virtual void refresh_all_existing(void);
 
  public:
   explicit supla_mqtt_value_setter(supla_mqtt_client_settings *settings);

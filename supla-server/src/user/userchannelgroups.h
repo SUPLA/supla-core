@@ -56,6 +56,11 @@ class supla_user_channelgroups : public supla_objcontainer {
   bool action_toggle(int GroupID);
   bool action_shut(int GroupID, const char *closing_percentage);
   bool action_reveal(int GroupID);
+  bool action_up(int GroupID);
+  bool action_down(int GroupID);
+  bool action_up_or_stop(int GroupID);
+  bool action_down_or_stop(int GroupID);
+  bool action_step_by_step(int GroupID);
   bool action_stop(int GroupID);
   bool action_open(int GroupID);
   bool action_close(int GroupID);

@@ -153,11 +153,60 @@ void supla_action_executor::stop(void) {
   });
 }
 
-void supla_action_executor::up_or_stop(void) {}
+void supla_action_executor::up(void) {
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_up(get_group_id());
+    } else {
+      channels->action_up(0, get_channel_id(), 0, 0);
+    }
+  });
+}
 
-void supla_action_executor::down_or_stop(void) {}
+void supla_action_executor::down(void) {
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_down(get_group_id());
+    } else {
+      channels->action_down(0, get_channel_id(), 0, 0);
+    }
+  });
+}
 
-void supla_action_executor::step_by_step(void) {}
+void supla_action_executor::up_or_stop(void) {
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_up_or_stop(get_group_id());
+    } else {
+      channels->action_up_or_stop(0, get_channel_id(), 0, 0);
+    }
+  });
+}
+
+void supla_action_executor::down_or_stop(void) {
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_down_or_stop(get_group_id());
+    } else {
+      channels->action_down_or_stop(0, get_channel_id(), 0, 0);
+    }
+  });
+}
+
+void supla_action_executor::step_by_step(void) {
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_step_by_step(get_group_id());
+    } else {
+      channels->action_step_by_step(0, get_channel_id(), 0, 0);
+    }
+  });
+}
 
 void supla_action_executor::open(void) {
   execute_action([this](supla_user_channelgroups *channel_groups,

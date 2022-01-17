@@ -63,6 +63,8 @@ class supla_abstract_action_executor {
   virtual void toggle(void) = 0;
   virtual void shut(const char *closingPercentage) = 0;
   virtual void reveal(void) = 0;
+  virtual void up(void) = 0;
+  virtual void down(void) = 0;
   virtual void up_or_stop(void) = 0;
   virtual void down_or_stop(void) = 0;
   virtual void step_by_step(void) = 0;

@@ -31,6 +31,11 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   int toggle_counter;
   int shut_counter;
   int reveal_counter;
+  int up_counter;
+  int down_counter;
+  int up_or_stop_counter;
+  int down_or_stop_counter;
+  int step_by_step_counter;
   int stop_counter;
   int open_counter;
   int close_counter;
@@ -43,13 +48,18 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   char closing_percentage;
 
  protected:
-  void set_on(bool on);
-  void set_color(unsigned int color);
-  void set_brightness(char brightness);
-  void set_color_brightness(char brightness);
-  void action_toggle(void);
-  void action_shut(const char *closingPercentage);
-  void action_reveal(void);
+  virtual void set_on(bool on);
+  virtual void set_color(unsigned int color);
+  virtual void set_brightness(char brightness);
+  virtual void set_color_brightness(char brightness);
+  virtual void action_toggle(void);
+  virtual void action_shut(const char *closingPercentage);
+  virtual void action_reveal(void);
+  virtual void action_up(void);
+  virtual void action_down(void);
+  virtual void action_up_or_stop(void);
+  virtual void action_down_or_stop(void);
+  virtual void action_step_by_step(void);
   void action_stop(void);
   void action_open(void);
   void action_close(void);
@@ -70,6 +80,11 @@ class MqttValueSetterMock : public supla_mqtt_abstract_value_setter {
   int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);
+  int getUpCounter(void);
+  int getDownCounter(void);
+  int getUpOrStopCounter(void);
+  int getDownOrStopCounter(void);
+  int getStepByStepCounter(void);
   int getStopCounter(void);
   int getOpenCounter(void);
   int getCloseCounter(void);

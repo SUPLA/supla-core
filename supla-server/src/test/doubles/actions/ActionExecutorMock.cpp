@@ -35,6 +35,11 @@ void ActionExecutorMock::clear(void) {
   this->toggle_counter = 0;
   this->shut_counter = 0;
   this->reveal_counter = 0;
+  this->up_counter = 0;
+  this->down_counter = 0;
+  this->up_or_stop_counter = 0;
+  this->down_or_stop_counter = 0;
+  this->step_by_step_counter = 0;
   this->stop_counter = 0;
   this->open_counter = 0;
   this->close_counter = 0;
@@ -97,6 +102,16 @@ void ActionExecutorMock::shut(const char *closingPercentage) {
 
 void ActionExecutorMock::reveal(void) { reveal_counter++; }
 
+void ActionExecutorMock::up(void) { up_counter++; };
+
+void ActionExecutorMock::down(void) { down_counter++; };
+
+void ActionExecutorMock::up_or_stop(void) { up_or_stop_counter++; };
+
+void ActionExecutorMock::down_or_stop(void) { down_or_stop_counter++; };
+
+void ActionExecutorMock::step_by_step(void) { step_by_step_counter++; };
+
 void ActionExecutorMock::stop(void) { stop_counter++; }
 
 void ActionExecutorMock::open(void) { open_counter++; }
@@ -130,6 +145,16 @@ int ActionExecutorMock::getToggleCounter(void) { return toggle_counter; }
 int ActionExecutorMock::getShutCounter(void) { return shut_counter; }
 
 int ActionExecutorMock::getRevealCounter(void) { return reveal_counter; }
+
+int ActionExecutorMock::getUpCounter(void) { return up_counter; }
+
+int ActionExecutorMock::getDownCounter(void) { return down_counter; }
+
+int ActionExecutorMock::getUpOrStopCounter(void) { return up_or_stop_counter; }
+
+int ActionExecutorMock::getDownOrStopCounter(void) { return down_or_stop_counter; }
+
+int ActionExecutorMock::getStepByStepCounter(void) { return step_by_step_counter; }
 
 int ActionExecutorMock::getStopCounter(void) { return stop_counter; }
 
@@ -184,6 +209,26 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (reveal_counter > 0) {
+    result++;
+  }
+
+  if (up_counter > 0) {
+    result++;
+  }
+
+  if (down_counter > 0) {
+    result++;
+  }
+
+  if (up_or_stop_counter > 0) {
+    result++;
+  }
+
+  if (down_or_stop_counter > 0) {
+    result++;
+  }
+
+  if (step_by_step_counter > 0) {
     result++;
   }
 
