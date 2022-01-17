@@ -72,6 +72,13 @@ const char cmd_action_cg_close[] = "ACTION-CG-CLOSE:";
 const char cmd_action_toggle[] = "ACTION-TOGGLE:";
 const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
 
+const char cmd_action_up_or_stop[] = "ACTION-UP-OR-STOP:";
+const char cmd_action_cg_up_or_stop[] = "ACTION-CG-UP-OR-STOP:";
+const char cmd_action_down_or_stop[] = "ACTION-DOWN-OR-STOP:";
+const char cmd_action_cg_down_or_stop[] = "ACTION-CG-DOWN-OR-STOP:";
+const char cmd_action_step_by_step[] = "ACTION-SBS:";
+const char cmd_action_cg_step_by_step[] = "ACTION-CG-SBS:";
+
 const char cmd_reset_counters[] = "RESET-COUNTERS:";
 const char cmd_recalibrate[] = "RECALIBRATE:";
 const char cmd_get_status[] = "GET-STATUS";
@@ -793,40 +800,6 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   free_google_requestid();
 }
 
-void svr_ipcctrl::action_cg_open_close(const char *cmd, bool open) {
-  channel_groups_action(
-      cmd,
-      [open](supla_user_channelgroups *channel_groups, int GroupID) -> bool {
-        if (open) {
-          return channel_groups->action_open(GroupID);
-        } else {
-          return channel_groups->action_close(GroupID);
-        }
-      });
-}
-
-void svr_ipcctrl::action_toggle(const char *cmd) {
-  int UserID = 0;
-  int DeviceID = 0;
-  int ChannelID = 0;
-  bool result = false;
-
-  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
-         &ChannelID);
-
-  supla_user::access_device(
-      UserID, DeviceID,
-      [&result, this, ChannelID](supla_device *device) -> void {
-        result = device->get_channels()->action_toggle(0, ChannelID, 0, 0);
-      });
-
-  if (result) {
-    send_result("OK:", ChannelID);
-  } else {
-    send_result("FAIL:", ChannelID);
-  }
-}
-
 void svr_ipcctrl::channel_groups_action(
     const char *cmd, std::function<bool(supla_user_channelgroups *, int)> f) {
   int UserID = 0;
@@ -847,10 +820,93 @@ void svr_ipcctrl::channel_groups_action(
   }
 }
 
+void svr_ipcctrl::channel_action(
+    const char *cmd, std::function<bool(supla_device_channels *, int)> f) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  bool result = false;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i", &UserID, &DeviceID,
+         &ChannelID);
+
+  supla_user::access_device(
+      UserID, DeviceID, [&result, ChannelID, f](supla_device *device) -> void {
+        result = f(device->get_channels(), ChannelID);
+      });
+
+  if (result) {
+    send_result("OK:", ChannelID);
+  } else {
+    send_result("FAIL:", ChannelID);
+  }
+}
+
+void svr_ipcctrl::action_cg_open_close(const char *cmd, bool open) {
+  channel_groups_action(
+      cmd,
+      [open](supla_user_channelgroups *channel_groups, int GroupID) -> bool {
+        if (open) {
+          return channel_groups->action_open(GroupID);
+        } else {
+          return channel_groups->action_close(GroupID);
+        }
+      });
+}
+
+void svr_ipcctrl::action_toggle(const char *cmd) {
+  channel_action(cmd,
+                 [](supla_device_channels *channels, int channel_id) -> bool {
+                   return channels->action_toggle(0, channel_id, 0, 0);
+                 });
+}
+
 void svr_ipcctrl::action_cg_toggle(const char *cmd) {
   channel_groups_action(
-      cmd, [](supla_user_channelgroups *channel_groups, int GroupID) -> bool {
-        return channel_groups->action_toggle(GroupID);
+      cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
+        return channel_groups->action_toggle(group_id);
+      });
+}
+
+void svr_ipcctrl::action_up_or_stop(const char *cmd) {
+  channel_action(cmd,
+                 [](supla_device_channels *channels, int channel_id) -> bool {
+                   return channels->action_up_or_stop(0, channel_id, 0, 0);
+                 });
+}
+
+void svr_ipcctrl::action_cg_up_or_stop(const char *cmd) {
+  channel_groups_action(
+      cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
+        return channel_groups->action_up_or_stop(group_id);
+      });
+}
+
+void svr_ipcctrl::action_down_or_stop(const char *cmd) {
+  channel_action(cmd,
+                 [](supla_device_channels *channels, int channel_id) -> bool {
+                   return channels->action_down_or_stop(0, channel_id, 0, 0);
+                 });
+}
+
+void svr_ipcctrl::action_cg_down_or_stop(const char *cmd) {
+  channel_groups_action(
+      cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
+        return channel_groups->action_down_or_stop(group_id);
+      });
+}
+
+void svr_ipcctrl::action_step_by_step(const char *cmd) {
+  channel_action(cmd,
+                 [](supla_device_channels *channels, int channel_id) -> bool {
+                   return channels->action_step_by_step(0, channel_id, 0, 0);
+                 });
+}
+
+void svr_ipcctrl::action_cg_step_by_step(const char *cmd) {
+  channel_groups_action(
+      cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
+        return channel_groups->action_step_by_step(group_id);
       });
 }
 
@@ -1133,6 +1189,18 @@ void svr_ipcctrl::execute(void *sthread) {
           action_toggle(cmd_action_toggle);
         } else if (match_command(cmd_action_cg_toggle, len)) {
           action_cg_toggle(cmd_action_cg_toggle);
+        } else if (match_command(cmd_action_up_or_stop, len)) {
+          action_up_or_stop(cmd_action_up_or_stop);
+        } else if (match_command(cmd_action_cg_up_or_stop, len)) {
+          action_cg_up_or_stop(cmd_action_cg_up_or_stop);
+        } else if (match_command(cmd_action_down_or_stop, len)) {
+          action_down_or_stop(cmd_action_down_or_stop);
+        } else if (match_command(cmd_action_cg_down_or_stop, len)) {
+          action_cg_down_or_stop(cmd_action_cg_down_or_stop);
+        } else if (match_command(cmd_action_step_by_step, len)) {
+          action_step_by_step(cmd_action_step_by_step);
+        } else if (match_command(cmd_action_cg_step_by_step, len)) {
+          action_cg_step_by_step(cmd_action_cg_step_by_step);
         } else if (match_command(cmd_get_relay_value, len)) {
           get_relay_value(cmd_get_relay_value);
         } else if (match_command(cmd_reset_counters, len)) {
