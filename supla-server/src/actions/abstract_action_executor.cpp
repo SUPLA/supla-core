@@ -81,12 +81,11 @@ void supla_abstract_action_executor::set_group_id(int user_id, int group_id) {
   this->is_group = true;
 }
 
-supla_device *supla_abstract_action_executor::get_device(void) {
+void supla_abstract_action_executor::access_device(
+    std::function<void(supla_device *device)> on_device) {
   if (user && device_id) {
-    return user->get_device(device_id);
+    return user->access_device(device_id, on_device);
   }
-
-  return NULL;
 }
 
 supla_user_channelgroups *supla_abstract_action_executor::get_channel_groups(

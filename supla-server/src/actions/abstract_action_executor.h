@@ -31,16 +31,15 @@ class supla_abstract_action_executor {
   bool is_group;
 
  protected:
-  supla_device *get_device(void);
+  void access_device(std::function<void(supla_device *device)> on_device);
   supla_user *get_user(void);
   supla_user_channelgroups *get_channel_groups(void);
 
  public:
   supla_abstract_action_executor(void);
   supla_abstract_action_executor(supla_user *user, int device_id,
-                                         int channel_id);
-  supla_abstract_action_executor(int user_id, int device_id,
-                                         int channel_id);
+                                 int channel_id);
+  supla_abstract_action_executor(int user_id, int device_id, int channel_id);
   supla_abstract_action_executor(supla_user *user, int group_id);
   supla_abstract_action_executor(int user_id, int group_id);
   virtual ~supla_abstract_action_executor(void);
@@ -64,6 +63,9 @@ class supla_abstract_action_executor {
   virtual void toggle(void) = 0;
   virtual void shut(const char *closingPercentage) = 0;
   virtual void reveal(void) = 0;
+  virtual void up_or_stop(void) = 0;
+  virtual void down_or_stop(void) = 0;
+  virtual void step_by_step(void) = 0;
   virtual void stop(void) = 0;
   virtual void open(void) = 0;
   virtual void close(void) = 0;
