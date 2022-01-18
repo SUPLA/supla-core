@@ -71,6 +71,8 @@ const char cmd_action_close[] = "ACTION-CLOSE:";
 const char cmd_action_cg_close[] = "ACTION-CG-CLOSE:";
 const char cmd_action_toggle[] = "ACTION-TOGGLE:";
 const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
+const char cmd_action_stop[] = "ACTION-STOP:";
+const char cmd_action_cg_stop[] = "ACTION-CG-STOP:";
 
 const char cmd_action_up_or_stop[] = "ACTION-UP-OR-STOP:";
 const char cmd_action_cg_up_or_stop[] = "ACTION-CG-UP-OR-STOP:";
@@ -868,6 +870,20 @@ void svr_ipcctrl::action_cg_toggle(const char *cmd) {
       });
 }
 
+void svr_ipcctrl::action_stop(const char *cmd) {
+  channel_action(cmd,
+                 [](supla_device_channels *channels, int channel_id) -> bool {
+                   return channels->action_stop(0, channel_id, 0, 0);
+                 });
+}
+
+void svr_ipcctrl::action_cg_stop(const char *cmd) {
+  channel_groups_action(
+      cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
+        return channel_groups->action_stop(group_id);
+      });
+}
+
 void svr_ipcctrl::action_up_or_stop(const char *cmd) {
   channel_action(cmd,
                  [](supla_device_channels *channels, int channel_id) -> bool {
@@ -1189,6 +1205,10 @@ void svr_ipcctrl::execute(void *sthread) {
           action_toggle(cmd_action_toggle);
         } else if (match_command(cmd_action_cg_toggle, len)) {
           action_cg_toggle(cmd_action_cg_toggle);
+        } else if (match_command(cmd_action_stop, len)) {
+          action_stop(cmd_action_stop);
+        } else if (match_command(cmd_action_cg_stop, len)) {
+          action_cg_stop(cmd_action_cg_stop);
         } else if (match_command(cmd_action_up_or_stop, len)) {
           action_up_or_stop(cmd_action_up_or_stop);
         } else if (match_command(cmd_action_cg_up_or_stop, len)) {

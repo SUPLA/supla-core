@@ -68,6 +68,8 @@ class svr_ipcctrl {
   void action_open_close(const char *cmd, bool open);
   void action_toggle(const char *cmd);
   void action_cg_toggle(const char *cmd);
+  void action_stop(const char *cmd);
+  void action_cg_stop(const char *cmd);
   void action_up_or_stop(const char *cmd);
   void action_cg_up_or_stop(const char *cmd);
   void action_down_or_stop(const char *cmd);
