@@ -15,12 +15,16 @@ C_SRCS += \
 ../src/tools.c 
 
 CPP_SRCS += \
+../src/abstract_rs_action.cpp \
 ../src/abstract_worker.cpp \
 ../src/action.cpp \
 ../src/action_openclose.cpp \
+../src/action_reveal.cpp \
+../src/action_reveal_partially.cpp \
 ../src/action_rgb.cpp \
 ../src/action_set.cpp \
-../src/action_shutreveal.cpp \
+../src/action_shut.cpp \
+../src/action_shut_partially.cpp \
 ../src/action_turn_onoff.cpp \
 ../src/database.cpp \
 ../src/dbcommon.cpp \
@@ -29,12 +33,16 @@ CPP_SRCS += \
 ../src/worker.cpp 
 
 OBJS += \
+./src/abstract_rs_action.o \
 ./src/abstract_worker.o \
 ./src/action.o \
 ./src/action_openclose.o \
+./src/action_reveal.o \
+./src/action_reveal_partially.o \
 ./src/action_rgb.o \
 ./src/action_set.o \
-./src/action_shutreveal.o \
+./src/action_shut.o \
+./src/action_shut_partially.o \
 ./src/action_turn_onoff.o \
 ./src/cfg.o \
 ./src/database.o \
@@ -63,12 +71,16 @@ C_DEPS += \
 ./src/tools.d 
 
 CPP_DEPS += \
+./src/abstract_rs_action.d \
 ./src/abstract_worker.d \
 ./src/action.d \
 ./src/action_openclose.d \
+./src/action_reveal.d \
+./src/action_reveal_partially.d \
 ./src/action_rgb.d \
 ./src/action_set.d \
-./src/action_shutreveal.d \
+./src/action_shut.d \
+./src/action_shut_partially.d \
 ./src/action_turn_onoff.d \
 ./src/database.d \
 ./src/dbcommon.d \
@@ -78,17 +90,17 @@ CPP_DEPS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-src/%.o: ../src/%.cpp
+src/%.o: ../src/%.cpp src/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -I$(INCMYSQL) -I../src -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -I$(INCMYSQL) -I../src -I../src/test -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-src/%.o: ../src/%.c
+src/%.o: ../src/%.c src/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -I$(INCMYSQL) -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -I$(INCMYSQL) -O2 -g3 -Wall -fsigned-char -c -fmessage-length=0 -fstack-protector-all -D_FORTIFY_SOURCE=2 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

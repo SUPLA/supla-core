@@ -20,7 +20,7 @@
 #include "WorkerMock.h"
 #include "action_rgb.h"
 #include "action_set.h"
-#include "action_shutreveal.h"
+#include "action_shut.h"
 #include "gtest/gtest.h"
 
 #define MIN_RETRY_TIME 5
