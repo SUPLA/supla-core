@@ -44,6 +44,8 @@ class supla_user_channelgroups : public supla_objcontainer {
 
  public:
   explicit supla_user_channelgroups(supla_user *user);
+  bool set_new_value(event_source_type eventSourceType, int SenderID,
+                     TCS_SuplaNewValue *new_value);
   bool set_char_value(int GroupID, const char value);
   bool set_on(int GroupID, bool on);
   bool set_color(int GroupID, unsigned int color);
@@ -53,6 +55,7 @@ class supla_user_channelgroups : public supla_objcontainer {
                       char *brightness, char *on_off);
   bool set_rgbw_value(int GroupID, int color, char color_brightness,
                       char brightness, char on_off);
+  bool calcfg_request(int SenderID, TCS_DeviceCalCfgRequest_B *request);
   bool action_toggle(int GroupID);
   bool action_shut(int GroupID, const char *closing_percentage);
   bool action_reveal(int GroupID);

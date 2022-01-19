@@ -29,6 +29,7 @@
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
+#include "user/userchannelgroups.h"
 
 supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
   this->locations = new supla_client_locations();
@@ -382,7 +383,11 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
   if (new_value->Target == SUPLA_TARGET_CHANNEL) {
     channels->set_device_channel_new_value(new_value);
   } else if (new_value->Target == SUPLA_TARGET_GROUP) {
-    cgroups->set_device_channel_new_value(new_value);
+    if (cgroups->groupExits(
+            new_value->Id)) {  // Make sure the client has access to this group
+      getUser()->get_channel_groups()->set_new_value(EST_CLIENT, getID(),
+                                                     new_value);
+    }
   }
 }
 
@@ -477,7 +482,10 @@ void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
       request->Target == SUPLA_TARGET_IODEVICE) {
     channels->device_calcfg_request(request);
   } else if (request->Target == SUPLA_TARGET_GROUP) {
-    cgroups->device_calcfg_request(request);
+    if (cgroups->groupExits(
+            request->Id)) {  // Make sure the client has access to this group
+      getUser()->get_channel_groups()->calcfg_request(getID(), request);
+    }
   }
 }
 

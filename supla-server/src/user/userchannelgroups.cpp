@@ -20,6 +20,7 @@
 
 #include "database.h"
 #include "safearray.h"
+#include "user.h"
 
 supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   this->user = user;
@@ -88,6 +89,23 @@ bool supla_user_channelgroups::for_each_channel(
   return for_each_channel(GroupID, false, f);
 }
 
+bool supla_user_channelgroups::set_new_value(event_source_type eventSourceType,
+                                             int SenderID,
+                                             TCS_SuplaNewValue *new_value) {
+  if (new_value->Target != SUPLA_TARGET_GROUP) {
+    return false;
+  }
+
+  return for_each_channel(
+      new_value->Id,
+      [new_value, this, eventSourceType, SenderID](
+          supla_device *device, int channelId, char EOL) -> bool {
+        return user->set_device_channel_value(
+            eventSourceType, SenderID, device->getID(), channelId,
+            new_value->Id, EOL, new_value->value);
+      });
+}
+
 bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
   return for_each_channel(
       GroupID,
@@ -141,6 +159,21 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
         return device->get_channels()->set_device_channel_rgbw_value(
             0, channelId, GroupID, EOL, color, color_brightness, brightness,
             on_off);
+      });
+}
+
+bool supla_user_channelgroups::calcfg_request(
+    int SenderID, TCS_DeviceCalCfgRequest_B *request) {
+  if (request == NULL || request->Target != SUPLA_TARGET_GROUP) {
+    return false;
+  }
+
+  return for_each_channel(
+      request->Id,
+      [this, SenderID, request](supla_device *device, int channelId,
+                                char EOL) -> bool {
+        return user->device_calcfg_request(SenderID, device->getID(), channelId,
+                                           request);
       });
 }
 
