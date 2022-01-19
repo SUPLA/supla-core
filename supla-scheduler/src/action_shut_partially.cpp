@@ -40,7 +40,7 @@ bool s_worker_action_shut_partially::do_action() {
   char percent = 0;
 
   if (parse_percentage(&percent)) {
-    return worker->ipcc_set_char_value(percent);
+    return worker->ipcc_set_char_value(percent + 10);  // 10 == 0%, 110 == 100%
   }
 
   return false;
