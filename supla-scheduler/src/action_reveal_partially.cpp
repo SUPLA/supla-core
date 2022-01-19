@@ -42,7 +42,7 @@ bool s_worker_action_reveal_partially::do_action() {
   char percent = 0;
 
   if (parse_percentage(&percent)) {
-    percent = 100 - percent + 10;
+    percent = 110 - percent;  // 10 == 0%, 110 == 100%
 
     return worker->ipcc_set_char_value(percent);
   }
