@@ -47,9 +47,8 @@ class supla_client_channelgroups : public supla_client_objcontainer {
   void load(void);
   virtual bool add(supla_client_objcontainer_item *obj, e_objc_scope scope);
   supla_client_channelgroup *findGroup(int Id);
+  bool groupExits(int Id);
   void on_channel_value_changed(void *srpc, int DeviceId, int ChannelId);
-  bool set_device_channel_new_value(TCS_SuplaNewValue *new_value);
-  bool device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
 };
 
 #endif /* CLIENTCHANNELGROUPS_H_ */
