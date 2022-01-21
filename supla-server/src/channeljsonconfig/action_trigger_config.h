@@ -39,6 +39,7 @@
 #define ACTION_UP_OR_STOP 140
 #define ACTION_DOWN_OR_STOP 150
 #define ACTION_STEP_BY_STEP 160
+#define ACTION_FORWARD_OUTSIDE 10000
 
 typedef struct {
   int cap;
