@@ -100,6 +100,12 @@ class supla_mqtt_channel_message_provider : public supla_mqtt_message_provider {
   bool ha_electricity_meter(unsigned short index, const char *topic_prefix,
                             char **topic_name, void **message,
                             size_t *message_size);
+  bool ha_device_trigger(unsigned short index, const char *topic_prefix,
+                         char **topic_name, void **message,
+                         size_t *message_size, unsigned int cap);
+  bool ha_action_trigger(unsigned short index, const char *topic_prefix,
+                         char **topic_name, void **message,
+                         size_t *message_size);
   bool get_home_assistant_cfgitem(unsigned short index,
                                   const char *topic_prefix, char **topic_name,
                                   void **message, size_t *message_size);
