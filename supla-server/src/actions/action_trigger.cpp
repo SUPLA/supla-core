@@ -120,6 +120,9 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
       case ACTION_TOGGLE:
         aexec->toggle();
         break;
+      case ACTION_FORWARD_OUTSIDE:
+        aexec->forward_outside(cap);
+        break;
     }
   }
 }

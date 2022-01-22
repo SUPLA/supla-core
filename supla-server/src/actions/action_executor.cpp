@@ -250,3 +250,5 @@ void supla_action_executor::open_close_without_canceling_tasks() {
     }
   });
 }
+
+void supla_action_executor::forward_outside(int cap) {}

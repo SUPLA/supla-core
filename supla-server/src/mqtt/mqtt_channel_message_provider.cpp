@@ -1223,7 +1223,8 @@ bool supla_mqtt_channel_message_provider::ha_device_trigger(
     void **message, size_t *message_size, unsigned int cap) {
   // https://www.home-assistant.io/integrations/device_trigger.mqtt/
 
-  cJSON *root = ha_json_create_root(topic_prefix, NULL, NULL, false);
+  cJSON *root =
+      ha_json_create_root(topic_prefix, NULL, NULL, false, index, true);
   if (!root) {
     return false;
   }
@@ -1238,7 +1239,7 @@ bool supla_mqtt_channel_message_provider::ha_device_trigger(
   }
 
   char topic[15] = {};
-  char statetopic[30] = {};
+  char actiontopic[30] = {};
   char type[30] = {};
   char subtype[20] = {};
 
@@ -1321,10 +1322,10 @@ bool supla_mqtt_channel_message_provider::ha_device_trigger(
       break;
   }
 
-  snprintf(statetopic, sizeof(statetopic), "state/%s", topic);
+  snprintf(actiontopic, sizeof(actiontopic), "action/%s", topic);
 
   ha_json_set_string_param(root, "atype", "trigger");
-  ha_json_set_short_topic(root, "t", statetopic);
+  ha_json_set_short_topic(root, "t", actiontopic);
   ha_json_set_string_param(root, "type", type);
   ha_json_set_string_param(root, "stype", subtype);
   ha_json_set_string_param(root, "pl", topic);
@@ -1389,8 +1390,6 @@ bool supla_mqtt_channel_message_provider::ha_action_trigger(
 
   return ha_device_trigger(index, topic_prefix, topic_name, message,
                            message_size, cap);
-
-  return false;
 }
 
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
@@ -1410,6 +1409,11 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       if (index > 1) {
+        return false;
+      }
+      break;
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      if (index > 7) {
         return false;
       }
       break;
@@ -1522,7 +1526,6 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_ACTIONTRIGGER:
       return ha_action_trigger(index, topic_prefix, topic_name, message,
                                message_size);
-      break;
   }
   return false;
 }

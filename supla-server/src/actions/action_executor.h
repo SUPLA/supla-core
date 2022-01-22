@@ -53,6 +53,7 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void close(void);
   virtual void open_close();
   virtual void open_close_without_canceling_tasks();
+  virtual void forward_outside(int cap);
 };
 
 #endif /*ACTION_EXECUTOR_H_*/
