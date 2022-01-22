@@ -124,6 +124,8 @@ void ActionExecutorMock::open_close_without_canceling_tasks(void) {
   open_close_wct_counter++;
 }
 
+void ActionExecutorMock::forward_outside(int cap) { forward_outside_counter++; }
+
 int ActionExecutorMock::getOnCounter(void) { return on_counter; }
 
 int ActionExecutorMock::getOffCounter(void) { return off_counter; }
@@ -152,9 +154,13 @@ int ActionExecutorMock::getDownCounter(void) { return down_counter; }
 
 int ActionExecutorMock::getUpOrStopCounter(void) { return up_or_stop_counter; }
 
-int ActionExecutorMock::getDownOrStopCounter(void) { return down_or_stop_counter; }
+int ActionExecutorMock::getDownOrStopCounter(void) {
+  return down_or_stop_counter;
+}
 
-int ActionExecutorMock::getStepByStepCounter(void) { return step_by_step_counter; }
+int ActionExecutorMock::getStepByStepCounter(void) {
+  return step_by_step_counter;
+}
 
 int ActionExecutorMock::getStopCounter(void) { return stop_counter; }
 
@@ -166,6 +172,10 @@ int ActionExecutorMock::getOpenCloseCounter(void) { return open_close_counter; }
 
 int ActionExecutorMock::getOpenCloseWctCounter(void) {
   return open_close_wct_counter;
+}
+
+int ActionExecutorMock::getForwardOutsideCounter(void) {
+  return forward_outside_counter;
 }
 
 char ActionExecutorMock::getClosingPercentage(void) {
