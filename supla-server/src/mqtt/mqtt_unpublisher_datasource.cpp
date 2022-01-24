@@ -341,8 +341,7 @@ bool supla_mqtt_unpublisher_datasource::fetch_deleted_device(
   }
 
   if (current_channel_row == NULL) {
-    current_channel_row = (_mqtt_db_data_row_channel_t *)malloc(
-        sizeof(_mqtt_db_data_row_channel_t));
+    current_channel_row = new _mqtt_db_data_row_channel_t();
   }
 
   *current_channel_row = current_device->channels.front();
@@ -459,7 +458,7 @@ void supla_mqtt_unpublisher_datasource::context_close(
   }
 
   if (current_channel_row) {
-    free(current_channel_row);
+    delete current_channel_row;
     current_channel_row = NULL;
   }
 

@@ -18,11 +18,15 @@
 
 #include "MqttChannelAndStateRemovedTopicsProviderTest.h"
 
+#include "mqtt_db.h"
+
 namespace testing {
 
 MqttChannelAndStateRemovedTopicsProviderTest::
     MqttChannelAndStateRemovedTopicsProviderTest(void)
-    : MqttMessageProviderTest() {}
+    : MqttMessageProviderTest() {
+  removed_topics_provider = NULL;
+}
 MqttChannelAndStateRemovedTopicsProviderTest::
     ~MqttChannelAndStateRemovedTopicsProviderTest(void) {}
 
@@ -52,7 +56,7 @@ TEST_F(MqttChannelAndStateRemovedTopicsProviderTest, setFunctionToNone) {
            "Roller Shutter 1");
   before.channel_hidden = false;
 
-  after = before;
+  supla_mqtt_db::copy_row(&after, &before);
   after.channel_func = SUPLA_CHANNELFNC_NONE;
 
   removed_topics_provider->set_data(NULL, &before, &after);
