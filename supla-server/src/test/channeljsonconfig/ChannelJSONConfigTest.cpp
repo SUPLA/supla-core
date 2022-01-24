@@ -654,4 +654,67 @@ TEST_F(ChannelJSONConfigTest, copyAndDetach_false) {
   delete c1;
 }
 
+TEST_F(ChannelJSONConfigTest, assigmentOperator) {
+  channel_json_config *c1 = new channel_json_config();
+  ASSERT_TRUE(c1 != NULL);
+  EXPECT_FALSE(c1->is_root_exists());
+
+  c1->set_user_config("{\"u\":123}");
+  c1->set_properties("{\"p\":456}");
+
+  channel_json_config *c2 = new channel_json_config(*c1);
+  EXPECT_TRUE(c2 != NULL);
+
+  if (!c2) {
+    delete c1;
+    return;
+  }
+
+  EXPECT_FALSE(c2->is_root_exists());
+
+  char *str = c2->get_user_config();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"u\":123}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  str = c2->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"p\":456}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  c1->set_user_config("{\"u\":333}");
+  c1->set_properties("{\"p\":444}");
+
+  *c2 = *c1;
+
+  str = c2->get_user_config();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"u\":333}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  str = c2->get_properties();
+  EXPECT_TRUE(str != NULL);
+
+  if (str) {
+    EXPECT_EQ(strncmp(str, "{\"p\":444}", 20), 0);
+    free(str);
+    str = NULL;
+  }
+
+  delete c2;
+  delete c1;
+}
+
 } /* namespace testing */

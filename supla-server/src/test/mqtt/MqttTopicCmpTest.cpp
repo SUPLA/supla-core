@@ -51,7 +51,7 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   channel_before.channel_hidden = false;
 
   _mqtt_db_data_row_channel_t channel_after = {};
-  supla_mqtt_db::copy_row(&channel_after, &channel_before);
+  channel_after = channel_before;
   channel_after.channel_func = SUPLA_CHANNELFNC_POWERSWITCH;
 
   mp_before->set_data_row(&channel_before);

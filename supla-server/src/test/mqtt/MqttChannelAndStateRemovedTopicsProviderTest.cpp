@@ -56,7 +56,7 @@ TEST_F(MqttChannelAndStateRemovedTopicsProviderTest, setFunctionToNone) {
            "Roller Shutter 1");
   before.channel_hidden = false;
 
-  supla_mqtt_db::copy_row(&after, &before);
+  after = before;
   after.channel_func = SUPLA_CHANNELFNC_NONE;
 
   removed_topics_provider->set_data(NULL, &before, &after);
