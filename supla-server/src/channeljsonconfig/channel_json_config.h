@@ -27,6 +27,7 @@ class channel_json_config {
   cJSON *properties_root;
 
   channel_json_config *root;
+  void json_clear(void);
 
  protected:
   cJSON *get_user_root(void);
@@ -43,7 +44,9 @@ class channel_json_config {
   int json_to_key(cJSON *item);
 
  public:
+  explicit channel_json_config(const channel_json_config &json_config);
   explicit channel_json_config(channel_json_config *root);
+  channel_json_config &operator=(const channel_json_config &json_config);
   channel_json_config(channel_json_config *root, bool copy_and_detach);
   channel_json_config(void);
   virtual ~channel_json_config(void);

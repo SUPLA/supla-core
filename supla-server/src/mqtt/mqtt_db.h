@@ -110,9 +110,6 @@ class supla_mqtt_db : public svrdb {
                           _mqtt_db_data_row_channel_t *row);
   bool channelquery_fetch_row(void *query);
   void close_channelquery(void *query);
-
-  static void copy_row(_mqtt_db_data_row_channel_t *dest,
-                       _mqtt_db_data_row_channel_t *src);
 };
 
 #endif /*MQTT_CLIENT_DBDATASOURCE_H_*/

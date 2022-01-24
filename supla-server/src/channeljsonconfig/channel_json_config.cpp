@@ -19,7 +19,9 @@
 #include "channel_json_config.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 #define MAX_STR_LEN 100
@@ -28,6 +30,40 @@ channel_json_config::channel_json_config(void) {
   this->properties_root = NULL;
   this->user_root = NULL;
   this->root = NULL;
+}
+
+channel_json_config::channel_json_config(
+    const channel_json_config &json_config) {
+  *this = json_config;
+}
+
+channel_json_config &channel_json_config::operator=(
+    const channel_json_config &json_config) {
+  json_clear();
+  this->root = json_config.root;
+
+  if (json_config.properties_root) {
+    this->properties_root =
+        cJSON_Duplicate(json_config.properties_root, cJSON_True);
+  }
+
+  if (json_config.user_root) {
+    this->user_root = cJSON_Duplicate(json_config.user_root, cJSON_True);
+  }
+
+  return *this;
+}
+
+void channel_json_config::json_clear(void) {
+  if (this->properties_root) {
+    cJSON_Delete(this->properties_root);
+    this->properties_root = NULL;
+  }
+
+  if (this->user_root) {
+    cJSON_Delete(this->user_root);
+    this->user_root = NULL;
+  }
 }
 
 channel_json_config::channel_json_config(channel_json_config *root) {
@@ -50,17 +86,7 @@ channel_json_config::channel_json_config(channel_json_config *root,
   }
 }
 
-channel_json_config::~channel_json_config(void) {
-  if (properties_root) {
-    cJSON_Delete(properties_root);
-    properties_root = NULL;
-  }
-
-  if (user_root) {
-    cJSON_Delete(user_root);
-    user_root = NULL;
-  }
-}
+channel_json_config::~channel_json_config(void) { json_clear(); }
 
 // User
 
