@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "MqttTopicCmpTest.h"
+
 #include <list>
 #include <string>
 
-#include "MqttTopicCmpTest.h"
 #include "mqtt_channelandstate_message_provider.h"
 
 namespace testing {
@@ -33,8 +34,7 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   supla_mqtt_channelandstate_message_provider *mp_after =
       new supla_mqtt_channelandstate_message_provider();
 
-  _mqtt_db_data_row_channel_t channel_before;
-  memset(&channel_before, 0, sizeof(_mqtt_db_data_row_channel_t));
+  _mqtt_db_data_row_channel_t channel_before = {};
 
   snprintf(channel_before.user_suid, SHORT_UNIQUEID_MAXSIZE,
            "7720767494dd87196e1896c7cbab707c");
@@ -49,8 +49,7 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
            "Socket");
   channel_before.channel_hidden = false;
 
-  _mqtt_db_data_row_channel_t channel_after;
-  memcpy(&channel_after, &channel_before, sizeof(_mqtt_db_data_row_channel_t));
+  _mqtt_db_data_row_channel_t channel_after = channel_before;
   channel_after.channel_func = SUPLA_CHANNELFNC_POWERSWITCH;
 
   mp_before->set_data_row(&channel_before);

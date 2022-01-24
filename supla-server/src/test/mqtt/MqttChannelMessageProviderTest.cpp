@@ -32,7 +32,7 @@ void MqttChannelMessageProviderTest::TearDown() { delete provider; }
 
 void MqttChannelMessageProviderTest::fillChannelData(
     _mqtt_db_data_row_channel_t *row_channel) {
-  memset(row_channel, 0, sizeof(_mqtt_db_data_row_channel_t));
+  *row_channel = {};
 
   snprintf(row_channel->user_suid, SHORT_UNIQUEID_MAXSIZE,
            "7720767494dd87196e1896c7cbab707c");

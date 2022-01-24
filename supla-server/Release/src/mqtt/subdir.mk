@@ -7,8 +7,10 @@ C_SRCS += \
 ../src/mqtt/mqtt.c 
 
 CPP_SRCS += \
+../src/mqtt/mqtt_abstract_action_message_provider.cpp \
 ../src/mqtt/mqtt_abstract_state_message_provider.cpp \
 ../src/mqtt/mqtt_abstract_value_setter.cpp \
+../src/mqtt/mqtt_action_message_provider.cpp \
 ../src/mqtt/mqtt_channel_message_provider.cpp \
 ../src/mqtt/mqtt_channelandstate_message_provider.cpp \
 ../src/mqtt/mqtt_channelandstate_removed_topics_provider.cpp \
@@ -40,8 +42,10 @@ CPP_SRCS += \
 
 OBJS += \
 ./src/mqtt/mqtt.o \
+./src/mqtt/mqtt_abstract_action_message_provider.o \
 ./src/mqtt/mqtt_abstract_state_message_provider.o \
 ./src/mqtt/mqtt_abstract_value_setter.o \
+./src/mqtt/mqtt_action_message_provider.o \
 ./src/mqtt/mqtt_channel_message_provider.o \
 ./src/mqtt/mqtt_channelandstate_message_provider.o \
 ./src/mqtt/mqtt_channelandstate_removed_topics_provider.o \
@@ -75,8 +79,10 @@ C_DEPS += \
 ./src/mqtt/mqtt.d 
 
 CPP_DEPS += \
+./src/mqtt/mqtt_abstract_action_message_provider.d \
 ./src/mqtt/mqtt_abstract_state_message_provider.d \
 ./src/mqtt/mqtt_abstract_value_setter.d \
+./src/mqtt/mqtt_action_message_provider.d \
 ./src/mqtt/mqtt_channel_message_provider.d \
 ./src/mqtt/mqtt_channelandstate_message_provider.d \
 ./src/mqtt/mqtt_channelandstate_removed_topics_provider.d \

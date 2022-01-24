@@ -20,7 +20,9 @@
 #define MQTT_CLIENT_DATASOURCE_H_
 
 #include <stdlib.h>
+
 #include <list>
+
 #include "database.h"
 #include "mqtt_client_library_adapter.h"
 #include "mqtt_client_settings.h"
@@ -59,7 +61,7 @@ class supla_mqtt_client_datasource {
   void context_open(void);
   void context_close(void);
   bool __fetch(char **topic_name, void **message, size_t *message_size,
-               bool *closed);
+               bool *closed, bool *retain);
 
  protected:
   void lock(void);
@@ -69,7 +71,7 @@ class supla_mqtt_client_datasource {
   supla_mqtt_client_settings *get_settings(void);
   virtual bool context_open(supla_mqtt_ds_context *context) = 0;
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
-                      void **message, size_t *message_size) = 0;
+                      void **message, size_t *message_size, bool *retain) = 0;
   virtual void context_close(supla_mqtt_ds_context *context) = 0;
 
  public:
@@ -77,7 +79,9 @@ class supla_mqtt_client_datasource {
   virtual ~supla_mqtt_client_datasource(void);
   virtual void thread_init(void);
   virtual void thread_cleanup(void);
-  bool fetch(char **topic_name, void **message, size_t *message_size);
+  virtual bool fetch(char **topic_name, void **message, size_t *message_size,
+                     bool *retain);
+  ;
   bool fetch(char **topic_name);
 
   virtual void on_broker_connected(void);

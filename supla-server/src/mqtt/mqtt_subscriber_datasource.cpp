@@ -42,7 +42,8 @@ bool supla_mqtt_subscriber_datasource::context_open(
 
 bool supla_mqtt_subscriber_datasource::_fetch(supla_mqtt_ds_context *context,
                                               char **topic_name, void **message,
-                                              size_t *message_size) {
+                                              size_t *message_size,
+                                              bool *retain) {
   if (provider) {
     return provider->fetch(get_settings()->getPrefix(), topic_name, NULL, NULL);
   }

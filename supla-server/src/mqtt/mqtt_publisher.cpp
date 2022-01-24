@@ -17,9 +17,13 @@
  */
 
 #include "mqtt_publisher.h"
+
 #include <string.h>
+
 #include <cstdio>
+
 #include "log.h"
+#include "mqtt_publisher_datasource.h"
 
 supla_mqtt_publisher::supla_mqtt_publisher(
     supla_mqtt_client_library_adapter *library_adapter,
@@ -44,9 +48,10 @@ bool supla_mqtt_publisher::on_iterate(void) {
   void *message = NULL;
   size_t message_size = 0;
   bool result = false;
+  bool retain = true;
 
-  if (datasource->fetch(&topic_name, &message, &message_size)) {
-    publish(topic_name, message, message_size, SUPLA_MQTT_QOS_0, true);
+  if (datasource->fetch(&topic_name, &message, &message_size, &retain)) {
+    publish(topic_name, message, message_size, SUPLA_MQTT_QOS_0, retain);
     result = true;
   }
 
@@ -63,3 +68,14 @@ bool supla_mqtt_publisher::on_iterate(void) {
 
 void supla_mqtt_publisher::on_message_received(
     const _received_mqtt_message_t *msg) {}
+
+void supla_mqtt_publisher::on_action_triggered(int user_id, int device_id,
+                                               int channel_id,
+                                               unsigned int action) {
+  supla_mqtt_publisher_datasource *pds =
+      dynamic_cast<supla_mqtt_publisher_datasource *>(datasource);
+  if (pds) {
+    pds->on_action_triggered(user_id, device_id, channel_id, action);
+    library_adapter->raise_event();
+  }
+}

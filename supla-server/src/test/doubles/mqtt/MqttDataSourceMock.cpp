@@ -17,6 +17,7 @@
  */
 
 #include "MqttDataSourceMock.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -36,7 +37,7 @@ bool MqttDataSourceMock::context_open(supla_mqtt_ds_context *context) {
 
 bool MqttDataSourceMock::_fetch(supla_mqtt_ds_context *context,
                                 char **topic_name, void **message,
-                                size_t *message_size) {
+                                size_t *message_size, bool *retain) {
   if (idx < 0 || idx >= 2) {
     return false;
   }

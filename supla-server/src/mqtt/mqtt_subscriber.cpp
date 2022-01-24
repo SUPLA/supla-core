@@ -41,7 +41,7 @@ bool supla_mqtt_subscriber::on_iterate(void) {
   char *topic_name = NULL;
   bool result = false;
 
-  if (datasource->fetch(&topic_name, NULL, NULL)) {
+  if (datasource->fetch(&topic_name, NULL, NULL, NULL)) {
     subscribe(topic_name, SUPLA_MQTT_QOS_0);
     result = true;
   }
