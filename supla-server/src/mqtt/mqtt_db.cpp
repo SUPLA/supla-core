@@ -93,7 +93,6 @@ typedef struct {
   char channel_user_config[2049];
   unsigned long channel_user_config_len;
   my_bool channel_user_config_is_null;
-
 } _mqtt_db_channelquery_t;
 
 supla_mqtt_db::supla_mqtt_db(void) : svrdb() {

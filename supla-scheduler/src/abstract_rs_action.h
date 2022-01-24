@@ -32,7 +32,7 @@ class s_abstract_rs_action : public s_worker_action {
 
  public:
   bool parse_percentage(char *percent);
-  s_abstract_rs_action(s_abstract_worker *worker);
+  explicit s_abstract_rs_action(s_abstract_worker *worker);
 };
 
 #endif /* ABSTRACT_RS_ACTION_H_ */

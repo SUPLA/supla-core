@@ -42,7 +42,7 @@ void supla_action_executor::execute_action(
       supla_device_channels *channels = device->get_channels();
       if (channels) {
         f(NULL, channels);
-      };
+      }
     });
   }
 }

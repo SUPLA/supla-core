@@ -580,8 +580,8 @@ TEST_F(ChannelJSONConfigTest, copyAndDetach_true) {
   EXPECT_TRUE(c2 != NULL);
 
   if (!c2) {
-	  delete c1;
-	  return;
+    delete c1;
+    return;
   }
 
   c1->set_user_config("{}");
@@ -623,8 +623,8 @@ TEST_F(ChannelJSONConfigTest, copyAndDetach_false) {
   EXPECT_TRUE(c2 != NULL);
 
   if (!c2) {
-	  delete c1;
-	  return;
+    delete c1;
+    return;
   }
 
   c1->set_user_config("{\"u\":2}");
