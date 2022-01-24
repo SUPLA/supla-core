@@ -20,6 +20,7 @@
 #define MQTT_UNPUBLISHER_DATASOURCE_H_
 
 #include <list>
+
 #include "mqtt_channelandstate_message_provider.h"
 #include "mqtt_channelandstate_removed_topics_provider.h"
 #include "mqtt_client_db_datasource.h"
@@ -71,7 +72,7 @@ class supla_mqtt_unpublisher_datasource
   virtual bool is_context_allowed(supla_mqtt_ds_context *context);
   virtual bool context_open(supla_mqtt_ds_context *context);
   virtual bool _fetch(supla_mqtt_ds_context *context, char **topic_name,
-                      void **message, size_t *message_size);
+                      void **message, size_t *message_size, bool *retain);
   virtual void context_close(supla_mqtt_ds_context *context);
 
  public:

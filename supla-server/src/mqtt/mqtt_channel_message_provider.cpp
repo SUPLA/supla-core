@@ -1343,7 +1343,7 @@ bool supla_mqtt_channel_message_provider::ha_action_trigger(
 
   unsigned int cap = 0;
 
-  action_trigger_config at_config(&row->json_config);
+  action_trigger_config at_config(row->json_config);
   unsigned int active = at_config.get_active_actions();
 
   switch (index) {

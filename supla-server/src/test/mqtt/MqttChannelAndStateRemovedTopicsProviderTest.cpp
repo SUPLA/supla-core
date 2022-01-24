@@ -36,10 +36,8 @@ void MqttChannelAndStateRemovedTopicsProviderTest::TearDown() {
 }
 
 TEST_F(MqttChannelAndStateRemovedTopicsProviderTest, setFunctionToNone) {
-  _mqtt_db_data_row_channel_t before;
-  _mqtt_db_data_row_channel_t after;
-  memset(&before, 0, sizeof(_mqtt_db_data_row_channel_t));
-  memset(&after, 0, sizeof(_mqtt_db_data_row_channel_t));
+  _mqtt_db_data_row_channel_t before = {};
+  _mqtt_db_data_row_channel_t after = {};
 
   snprintf(before.user_suid, SHORT_UNIQUEID_MAXSIZE,
            "7720767494dd87196e1896c7cbab707c");
@@ -54,7 +52,7 @@ TEST_F(MqttChannelAndStateRemovedTopicsProviderTest, setFunctionToNone) {
            "Roller Shutter 1");
   before.channel_hidden = false;
 
-  memcpy(&after, &before, sizeof(_mqtt_db_data_row_channel_t));
+  after = before;
   after.channel_func = SUPLA_CHANNELFNC_NONE;
 
   removed_topics_provider->set_data(NULL, &before, &after);

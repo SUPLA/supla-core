@@ -41,6 +41,18 @@ supla_mqtt_client_datasource *MqttPublisherIntegrationTest::dsInit(
   return new supla_mqtt_publisher_datasource(settings);
 }
 
+void MqttPublisherIntegrationTest::waitForActions(int expectedTopicCount) {
+  int n = 5000;
+  while (getLibAdapter()->published_count() != expectedTopicCount && n > 0) {
+    n--;
+    usleep(1000);
+  }
+
+  usleep(200000);
+
+  EXPECT_EQ(getLibAdapter()->published_count(), expectedTopicCount);
+}
+
 void MqttPublisherIntegrationTest::SetUp() {
   initTestDatabase();
   runSqlScript("DataForMqttTests.sql");
@@ -50,7 +62,7 @@ void MqttPublisherIntegrationTest::SetUp() {
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {
   waitForConnection();
-  waitForPublications(688);
+  waitForPublications(690);
   // print_expected();
 
   const char *expectedData[] = {
@@ -166,6 +178,10 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "Europe/Warsaw",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/account/email",
       "3741test@supla.org",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/account/timezone",
+      "Europe/Warsaw",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/account/email",
+      "3748test@supla.org",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/enabled",
       "true",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/last_connected",
@@ -516,20 +532,6 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "12",
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/soft_ver",
       "2.3.2/1.11 @lukfud",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/enabled",
-      "true",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/last_connected",
-      "2022-01-21T14:30:28Z",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/last_ipv4",
-      "155.133.49.157",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/manufacturer",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/name",
-      "ZAMEL RNW-01",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/proto_ver",
-      "17",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/soft_ver",
-      "2.8.47",
       "supla/7e2182788b9214ee5b66349d5b7668cf/devices/10190/enabled",
       "true",
       "supla/7e2182788b9214ee5b66349d5b7668cf/devices/10190/last_connected",
@@ -586,6 +588,20 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "7",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/soft_ver",
       "2.5.5s",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/enabled",
+      "true",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/last_connected",
+      "2022-01-21T14:30:28Z",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/last_ipv4",
+      "155.133.49.157",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/manufacturer",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/name",
+      "ZAMEL RNW-01",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/proto_ver",
+      "17",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/soft_ver",
+      "2.8.47",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/type",
       "RELAY",
       "supla/8ce92cb8c9f6db6b65703d2703691700/devices/12/channels/20/function",
@@ -2056,351 +2072,6 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10286/channels/18023/"
       "state/hi",
       NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18100/"
-      "type",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18100/"
-      "function",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18100/"
-      "caption",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18100/"
-      "hidden",
-      "false",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_0/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18100_0\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "turn_on\",\"type\":\"button_turn_on\",\"stype\":\"button_1\",\"pl\":"
-      "\"turn_on\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_1/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_2/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18100_2\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x1\",\"type\":\"button_short_press\",\"stype\":\"button_1\","
-      "\"pl\":\"toggle_x1\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_3/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18100_3\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x2\",\"type\":\"button_double_press\",\"stype\":\"button_1\","
-      "\"pl\":\"toggle_x2\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_4/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18100_4\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_1\","
-      "\"pl\":\"toggle_x3\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_5/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18100_5\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_1\","
-      "\"pl\":\"toggle_x4\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_6/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18100_6\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_1\","
-      "\"pl\":\"toggle_x5\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18100_7/config",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18100/"
-      "state/connected",
-      "false",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18101/"
-      "type",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18101/"
-      "function",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18101/"
-      "caption",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18101/"
-      "hidden",
-      "false",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_0/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_1/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18101_1\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "turn_off\",\"type\":\"button_turn_off\",\"stype\":\"button_2\",\"pl\":"
-      "\"turn_off\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_2/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18101_2\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x1\",\"type\":\"button_short_press\",\"stype\":\"button_2\","
-      "\"pl\":\"toggle_x1\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_3/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18101_3\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x2\",\"type\":\"button_double_press\",\"stype\":\"button_2\","
-      "\"pl\":\"toggle_x2\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_4/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18101_4\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_2\","
-      "\"pl\":\"toggle_x3\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_5/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18101_5\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_2\","
-      "\"pl\":\"toggle_x4\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_6/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18101_6\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_2\","
-      "\"pl\":\"toggle_x5\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18101_7/config",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18101/"
-      "state/connected",
-      "false",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18102/"
-      "type",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18102/"
-      "function",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18102/"
-      "caption",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18102/"
-      "hidden",
-      "false",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_0/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_1/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_2/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18102_2\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "press_x1\",\"type\":\"button_short_press\",\"stype\":\"button_3\","
-      "\"pl\":\"press_x1\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_3/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18102_3\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "press_x2\",\"type\":\"button_double_press\",\"stype\":\"button_3\","
-      "\"pl\":\"press_x2\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_4/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18102_4\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "press_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_3\","
-      "\"pl\":\"press_x3\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_5/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18102_5\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "press_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_3\","
-      "\"pl\":\"press_x4\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_6/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18102_6\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "press_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_3\","
-      "\"pl\":\"press_x5\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18102_7/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18102_7\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "hold\",\"type\":\"button_long_press\",\"stype\":\"button_3\",\"pl\":"
-      "\"hold\"}",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18102/"
-      "state/connected",
-      "false",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18103/"
-      "type",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18103/"
-      "function",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18103/"
-      "caption",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18103/"
-      "hidden",
-      "false",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_0/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_1/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_1\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "turn_off\",\"type\":\"button_turn_off\",\"stype\":\"button_4\",\"pl\":"
-      "\"turn_off\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_2/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_2\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x1\",\"type\":\"button_short_press\",\"stype\":\"button_4\","
-      "\"pl\":\"toggle_x1\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_3/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_3\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x2\",\"type\":\"button_double_press\",\"stype\":\"button_4\","
-      "\"pl\":\"toggle_x2\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_4/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_4\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_4\","
-      "\"pl\":\"toggle_x3\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_5/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_5\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_4\","
-      "\"pl\":\"toggle_x4\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_6/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_6\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "toggle_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_4\","
-      "\"pl\":\"toggle_x5\"}",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18103_7/config",
-      "{\"~\":\"supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/"
-      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
-      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
-      "trigger\",\"uniq_id\":\"supla_18103_7\",\"qos\":0,\"atype\":\"trigger\","
-      "\"t\":\"~/action/"
-      "hold\",\"type\":\"button_long_press\",\"stype\":\"button_4\",\"pl\":"
-      "\"hold\"}",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18103/"
-      "state/connected",
-      "false",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18104/"
-      "type",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18104/"
-      "function",
-      "ACTION_TRIGGER",
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18104/"
-      "caption",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18104/"
-      "hidden",
-      "false",
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_0/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_1/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_2/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_3/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_4/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_5/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_6/config",
-      NULL,
-      "homeassistant/device_automation/ee2611c4632f53261cf3fb8d9d2f182d/"
-      "18104_7/config",
-      NULL,
-      "supla/ee2611c4632f53261cf3fb8d9d2f182d/devices/10300/channels/18104/"
-      "state/connected",
-      "false",
       "supla/7e2182788b9214ee5b66349d5b7668cf/devices/10190/channels/17748/"
       "type",
       "DISTANCESENSOR",
@@ -2629,14 +2300,359 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "false",
       "supla/c8e5fd3b528033b98e09e0d1582d1031/devices/6361/channels/8453/state/"
       "hi",
-      NULL};
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18100/"
+      "type",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18100/"
+      "function",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18100/"
+      "caption",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18100/"
+      "hidden",
+      "false",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_0/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18100_0\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "turn_on\",\"type\":\"button_turn_on\",\"stype\":\"button_1\",\"pl\":"
+      "\"turn_on\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_1/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_2/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18100_2\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x1\",\"type\":\"button_short_press\",\"stype\":\"button_1\","
+      "\"pl\":\"toggle_x1\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_3/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18100_3\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x2\",\"type\":\"button_double_press\",\"stype\":\"button_1\","
+      "\"pl\":\"toggle_x2\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_4/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18100_4\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_1\","
+      "\"pl\":\"toggle_x3\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_5/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18100_5\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_1\","
+      "\"pl\":\"toggle_x4\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_6/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18100\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18100_6\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_1\","
+      "\"pl\":\"toggle_x5\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18100_7/config",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18100/"
+      "state/connected",
+      "false",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18101/"
+      "type",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18101/"
+      "function",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18101/"
+      "caption",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18101/"
+      "hidden",
+      "false",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_0/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_1/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18101_1\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "turn_off\",\"type\":\"button_turn_off\",\"stype\":\"button_2\",\"pl\":"
+      "\"turn_off\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_2/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18101_2\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x1\",\"type\":\"button_short_press\",\"stype\":\"button_2\","
+      "\"pl\":\"toggle_x1\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_3/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18101_3\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x2\",\"type\":\"button_double_press\",\"stype\":\"button_2\","
+      "\"pl\":\"toggle_x2\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_4/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18101_4\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_2\","
+      "\"pl\":\"toggle_x3\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_5/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18101_5\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_2\","
+      "\"pl\":\"toggle_x4\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_6/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18101\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18101_6\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_2\","
+      "\"pl\":\"toggle_x5\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18101_7/config",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18101/"
+      "state/connected",
+      "false",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18102/"
+      "type",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18102/"
+      "function",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18102/"
+      "caption",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18102/"
+      "hidden",
+      "false",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_0/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_1/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_2/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18102_2\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "press_x1\",\"type\":\"button_short_press\",\"stype\":\"button_3\","
+      "\"pl\":\"press_x1\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_3/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18102_3\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "press_x2\",\"type\":\"button_double_press\",\"stype\":\"button_3\","
+      "\"pl\":\"press_x2\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_4/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18102_4\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "press_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_3\","
+      "\"pl\":\"press_x3\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_5/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18102_5\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "press_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_3\","
+      "\"pl\":\"press_x4\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_6/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18102_6\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "press_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_3\","
+      "\"pl\":\"press_x5\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18102_7/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18102\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18102_7\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "hold\",\"type\":\"button_long_press\",\"stype\":\"button_3\",\"pl\":"
+      "\"hold\"}",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18102/"
+      "state/connected",
+      "false",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18103/"
+      "type",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18103/"
+      "function",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18103/"
+      "caption",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18103/"
+      "hidden",
+      "false",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_0/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_1/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_1\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "turn_off\",\"type\":\"button_turn_off\",\"stype\":\"button_4\",\"pl\":"
+      "\"turn_off\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_2/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_2\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x1\",\"type\":\"button_short_press\",\"stype\":\"button_4\","
+      "\"pl\":\"toggle_x1\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_3/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_3\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x2\",\"type\":\"button_double_press\",\"stype\":\"button_4\","
+      "\"pl\":\"toggle_x2\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_4/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_4\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x3\",\"type\":\"button_triple_press\",\"stype\":\"button_4\","
+      "\"pl\":\"toggle_x3\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_5/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_5\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x4\",\"type\":\"button_quadruple_press\",\"stype\":\"button_4\","
+      "\"pl\":\"toggle_x4\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_6/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_6\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "toggle_x5\",\"type\":\"button_quintuple_press\",\"stype\":\"button_4\","
+      "\"pl\":\"toggle_x5\"}",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18103_7/config",
+      "{\"~\":\"supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/"
+      "18103\",\"device\":{\"ids\":\"supla-iodevice-10300\",\"mf\":\"\","
+      "\"name\":\"ZAMEL RNW-01\",\"sw\":\"2.8.47\"},\"name\":\"Action "
+      "trigger\",\"uniq_id\":\"supla_18103_7\",\"qos\":0,\"atype\":\"trigger\","
+      "\"t\":\"~/action/"
+      "hold\",\"type\":\"button_long_press\",\"stype\":\"button_4\",\"pl\":"
+      "\"hold\"}",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18103/"
+      "state/connected",
+      "false",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18104/"
+      "type",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18104/"
+      "function",
+      "ACTION_TRIGGER",
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18104/"
+      "caption",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18104/"
+      "hidden",
+      "false",
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_0/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_1/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_2/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_3/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_4/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_5/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_6/config",
+      NULL,
+      "homeassistant/device_automation/aae5fd3b528033b98e09e0d1582d1031/"
+      "18104_7/config",
+      NULL,
+      "supla/aae5fd3b528033b98e09e0d1582d1031/devices/10300/channels/18104/"
+      "state/connected",
+      "false"};
 
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 }
 
 TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   waitForConnection();
-  waitForPublications(688);
+  waitForPublications(690);
   getLibAdapter()->published_clear();
 
   getDS()->on_userdata_changed(2487);
@@ -2727,45 +2743,92 @@ TEST_F(MqttPublisherIntegrationTest, deviceScope) {
   verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
 }
 
-TEST_F(MqttPublisherIntegrationTest, stateScope) {
+TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
+  if (!supla_user::find(3748, false)) {
+    new supla_user(3748, "aa4f2278a5dbdcdb4fa52278dbdca54f", "");
+  }
+
   waitForConnection();
-  waitForPublications(688);
+  waitForPublications(690);
   getLibAdapter()->published_clear();
 
-  getDS()->on_userdata_changed(2487);
-  waitForPublications(30);
-  getLibAdapter()->published_clear();
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_action_triggered(
+      3748, 10300, 18103, 0xFFFFFFFF);
 
-  getDS()->on_devicedata_changed(1802, 9717);
-  waitForPublications(21);
-  getLibAdapter()->published_clear();
-
-  ASSERT_TRUE(supla_user::find(2645, true) != NULL);
-
-  getDS()->on_channelstate_changed(2645, 4124, 4688);
-  waitForPublications(1);
-
+  waitForActions(13);
   // print_expected();
 
-  const char *expectedData[] = {
-      "supla/6527881802ebd8c4ff2b3955bc326704/devices/4124/channels/4688/state/"
-      "connected",
-      "false"};
+  {
+    const char *expectedData[] = {
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/turn_on",
+        "turn_on",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/turn_off",
+        "turn_off",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/toggle_x1",
+        "toggle_x1",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/toggle_x2",
+        "toggle_x2",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/toggle_x3",
+        "toggle_x3",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/toggle_x4",
+        "toggle_x4",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/toggle_x5",
+        "toggle_x5",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/hold",
+        "hold",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/press_x1",
+        "press_x1",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/press_x2",
+        "press_x2",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/press_x3",
+        "press_x3",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/press_x4",
+        "press_x4",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/18103/"
+        "action/press_x5",
+        "press_x5"};
 
-  verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
-
-  runSqlScript("DisableMqttForUser2645.sql");
+    verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
+  }
 
   getLibAdapter()->published_clear();
-  getDS()->on_userdata_changed(2645);
-  usleep(250000);
-  waitForPublications(0);
 
-  getLibAdapter()->published_clear();
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_action_triggered(
+      3748, 10300, 5, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_action_triggered(
+      3748, 10300, 6, SUPLA_ACTION_CAP_HOLD);
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_action_triggered(
+      3748, 10300, 5, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
 
-  getDS()->on_channelstate_changed(2645, 4124, 4688);
-  usleep(250000);
-  waitForPublications(0);
+  waitForActions(3);
+  // print_expected();
+
+  {
+    const char *expectedData[] = {
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/5/"
+        "action/press_x2",
+        "press_x2",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/5/"
+        "action/press_x3",
+        "press_x3",
+        "supla/aa4f2278a5dbdcdb4fa52278dbdca54f/devices/10300/channels/6/"
+        "action/hold",
+        "hold"};
+
+    verify_published(expectedData, sizeof(expectedData) / sizeof(void *));
+  }
 }
 
 } /* namespace testing */

@@ -613,8 +613,8 @@ bool supla_mqtt_db::channelquery_fetch_row(void *_query) {
         query->channel_properties, sizeof(query->channel_properties),
         query->channel_properties_len, query->channel_properties_is_null);
 
-    query->row->json_config.set_user_config(query->channel_user_config);
-    query->row->json_config.set_properties(query->channel_properties);
+    query->row->json_config->set_user_config(query->channel_user_config);
+    query->row->json_config->set_properties(query->channel_properties);
 
     query->row->device_enabled = query->device_enabled > 0;
     query->row->channel_hidden = query->channel_hidden > 0;

@@ -16,29 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MqttPublisherIntegrationTest_H_
-#define MqttPublisherIntegrationTest_H_
+#ifndef MQTT_ACTION_MESSAGE_PROVIDER_H_
+#define MQTT_ACTION_MESSAGE_PROVIDER_H_
 
-#include "MqttClientIntegrationTest.h"
+#include "mqtt_abstract_action_message_provider.h"
+#include "mqtt_db.h"
 
-namespace testing {
-
-class MqttPublisherIntegrationTest : public MqttClientIntegrationTest {
+class supla_mqtt_action_message_provider
+    : public supla_mqtt_abstract_action_message_provider {
  protected:
-  virtual supla_mqtt_client *clientInit(
-      supla_mqtt_client_library_adapter *library_adapter,
-      supla_mqtt_client_settings *settings,
-      supla_mqtt_client_datasource *datasource);
-  virtual supla_mqtt_client_datasource *dsInit(
-      supla_mqtt_client_settings *settings);
-  void waitForActions(int expectedTopicCount);
+  virtual const char *_get_user_suid(int user_id);
 
  public:
-  virtual void SetUp();
-  MqttPublisherIntegrationTest();
-  virtual ~MqttPublisherIntegrationTest();
+  supla_mqtt_action_message_provider(void);
+  virtual ~supla_mqtt_action_message_provider(void);
 };
 
-} /* namespace testing */
-
-#endif /* MqttPublisherIntegrationTest_H_ */
+#endif /*MQTT_ACTION_MESSAGE_PROVIDER_H_*/
