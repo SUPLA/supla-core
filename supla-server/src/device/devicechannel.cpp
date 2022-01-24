@@ -832,7 +832,7 @@ void supla_device_channel::db_set_properties(channel_json_config *config) {
       db->update_channel_properties(getId(), getUserID(), cfg_string);
 
       if (cfg_string) {
-        delete cfg_string;
+        free(cfg_string);
         cfg_string = NULL;
       }
     }
