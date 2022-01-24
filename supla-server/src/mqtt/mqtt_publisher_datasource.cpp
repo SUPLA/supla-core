@@ -132,20 +132,11 @@ bool supla_mqtt_publisher_datasource::context_open(
 void *supla_mqtt_publisher_datasource::datarow_malloc(int datatype) {
   switch (datatype) {
     case MPD_DATATYPE_USER:
-      return calloc(1, sizeof(_mqtt_db_data_row_user_t));
+      return new _mqtt_db_data_row_user_t();
     case MPD_DATATYPE_DEVICE:
-      return calloc(1, sizeof(_mqtt_db_data_row_device_t));
+      return new _mqtt_db_data_row_device_t();
     case MPD_DATATYPE_CHANNEL:
-      _mqtt_db_data_row_channel_t *row = (_mqtt_db_data_row_channel_t *)calloc(
-          1, sizeof(_mqtt_db_data_row_channel_t));
-      if (row) {
-        row->json_config = new channel_json_config();
-        if (row->json_config == NULL) {
-          free(row);
-        } else {
-          return row;
-        }
-      }
+      return new _mqtt_db_data_row_channel_t();
       break;
   }
 
@@ -461,7 +452,7 @@ void supla_mqtt_publisher_datasource::close_userquery(void) {
   }
 
   if (userdata_row) {
-    free(userdata_row);
+    delete static_cast<_mqtt_db_data_row_user_t *>(userdata_row);
     userdata_row = NULL;
   }
 
@@ -481,7 +472,7 @@ void supla_mqtt_publisher_datasource::close_devicequery(void) {
   }
 
   if (devicedata_row) {
-    free(devicedata_row);
+    delete static_cast<_mqtt_db_data_row_device_t *>(devicedata_row);
     devicedata_row = NULL;
   }
 
@@ -501,9 +492,7 @@ void supla_mqtt_publisher_datasource::close_channelquery(void) {
   }
 
   if (channeldata_row) {
-    delete static_cast<_mqtt_db_data_row_channel_t *>(channeldata_row)
-        ->json_config;
-    free(channeldata_row);
+    delete static_cast<_mqtt_db_data_row_channel_t *>(channeldata_row);
     channeldata_row = NULL;
   }
 

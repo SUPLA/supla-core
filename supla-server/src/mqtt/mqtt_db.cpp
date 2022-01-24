@@ -612,8 +612,8 @@ bool supla_mqtt_db::channelquery_fetch_row(void *_query) {
         query->channel_properties, sizeof(query->channel_properties),
         query->channel_properties_len, query->channel_properties_is_null);
 
-    query->row->json_config->set_user_config(query->channel_user_config);
-    query->row->json_config->set_properties(query->channel_properties);
+    query->row->json_config.set_user_config(query->channel_user_config);
+    query->row->json_config.set_properties(query->channel_properties);
 
     query->row->device_enabled = query->device_enabled > 0;
     query->row->channel_hidden = query->channel_hidden > 0;
@@ -625,4 +625,57 @@ bool supla_mqtt_db::channelquery_fetch_row(void *_query) {
 
 void supla_mqtt_db::close_channelquery(void *query) {
   close_query<_mqtt_db_devicequery_t>(query);
+}
+
+// static
+void supla_mqtt_db::copy_row(_mqtt_db_data_row_channel_t *dest,
+                             _mqtt_db_data_row_channel_t *src) {
+  if (!dest || !src) {
+    return;
+  }
+
+  dest->user_id = src->user_id;
+
+  memcpy(dest->user_suid, src->user_suid, sizeof(dest->user_suid));
+  dest->device_id = src->device_id;
+  dest->device_enabled = src->device_enabled;
+
+  dest->device_mfr_id = src->device_mfr_id;
+  memcpy(dest->device_name, src->device_name, sizeof(src->device_name));
+  memcpy(dest->device_softver, src->device_softver,
+         sizeof(src->device_softver));
+
+  dest->channel_id = src->channel_id;
+  dest->channel_number = src->channel_number;
+  dest->channel_type = src->channel_type;
+  dest->channel_func = src->channel_func;
+  dest->channel_flags = src->channel_flags;
+  memcpy(dest->channel_location, src->device_softver,
+         sizeof(src->device_softver));
+  memcpy(dest->channel_caption, src->device_softver,
+         sizeof(src->device_softver));
+  dest->channel_hidden = src->channel_hidden;
+
+  dest->channel_param1 = src->channel_param1;
+  dest->channel_param2 = src->channel_param2;
+  dest->channel_param3 = src->channel_param3;
+
+  memcpy(dest->channel_text_param1, src->channel_text_param1,
+         sizeof(src->channel_text_param1));
+  memcpy(dest->channel_text_param2, src->channel_text_param2,
+         sizeof(src->channel_text_param2));
+  memcpy(dest->channel_text_param3, src->channel_text_param3,
+         sizeof(src->channel_text_param3));
+  char *str = src->json_config.get_properties();
+  dest->json_config.set_properties(str);
+
+  if (str) {
+    free(str);
+  }
+
+  str = src->json_config.get_user_config();
+  dest->json_config.set_user_config(str);
+  if (str) {
+    free(str);
+  }
 }
