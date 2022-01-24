@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "tools.h"
+
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -26,7 +28,6 @@
 
 #include "eh.h"
 #include "log.h"
-#include "tools.h"
 
 #ifdef __OPENSSL_TOOLS
 #include <openssl/bio.h>
@@ -513,7 +514,8 @@ char st_bcrypt_gensalt(char *salt, int salt_buffer_size, char rounds) {
              : 1;
 }
 
-char st_bcrypt_hash(char *str, char *salt, char *hash, int hash_buffer_size) {
+char st_bcrypt_hash(const char *str, const char *salt, char *hash,
+                    int hash_buffer_size) {
   if (str == NULL || hash == NULL || salt == NULL || hash_buffer_size == 0)
     return 0;
 
