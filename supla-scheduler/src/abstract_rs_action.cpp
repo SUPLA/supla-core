@@ -16,19 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "abstract_rs_action.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "abstract_rs_action.h"
 #include "json/cJSON.h"
 #include "log.h"
 
-s_abstract_rs_action::s_abstract_rs_action(
-    s_abstract_worker *worker)
+s_abstract_rs_action::s_abstract_rs_action(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
-void s_abstract_rs_action::get_function_list(
-    int list[FUNCTION_LIST_SIZE]) {
+void s_abstract_rs_action::get_function_list(int list[FUNCTION_LIST_SIZE]) {
   list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
   list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW;
 }
@@ -69,7 +68,7 @@ bool s_abstract_rs_action::result_success(int *fail_result_code) {
   }
 
   if (!get_expected_value(&expected_value)) {
-	  return false;
+    return false;
   }
 
   char sensor_value = worker->ipcc_get_opening_sensor_value();
@@ -87,5 +86,3 @@ bool s_abstract_rs_action::result_success(int *fail_result_code) {
 
   return abs(expected_value - value) <= 2;  // tolerance 2%
 }
-
-

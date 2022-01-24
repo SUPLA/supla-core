@@ -28,7 +28,7 @@ class s_worker_action_reveal_partially : public s_abstract_rs_action {
   virtual bool do_action();
 
  public:
-  s_worker_action_reveal_partially(s_abstract_worker *worker);
+  explicit s_worker_action_reveal_partially(s_abstract_worker *worker);
 };
 
 #endif /*ACTION_REVEAL_PARTIALLY_H_*/

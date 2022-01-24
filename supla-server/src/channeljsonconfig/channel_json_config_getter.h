@@ -25,7 +25,7 @@ class channel_json_config_getter : public abstract_channel_json_config_getter {
  private:
  protected:
  public:
-  explicit channel_json_config_getter(void);
+  channel_json_config_getter(void);
   virtual ~channel_json_config_getter(void);
 
   virtual channel_json_config *get_config(int user_id, int device_id,

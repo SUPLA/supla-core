@@ -81,7 +81,6 @@ class supla_mqtt_client_datasource {
   virtual void thread_cleanup(void);
   virtual bool fetch(char **topic_name, void **message, size_t *message_size,
                      bool *retain);
-  ;
   bool fetch(char **topic_name);
 
   virtual void on_broker_connected(void);
