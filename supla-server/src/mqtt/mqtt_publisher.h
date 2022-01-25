@@ -34,8 +34,8 @@ class supla_mqtt_publisher : public supla_mqtt_client {
                        supla_mqtt_client_settings *settings,
                        supla_mqtt_client_datasource *datasource);
   virtual ~supla_mqtt_publisher(void);
-  void on_action_triggered(int user_id, int device_id, int channel_id,
-                                   unsigned int action);
+  void on_actions_triggered(int user_id, int device_id, int channel_id,
+                            unsigned int actions);
 };
 
 #endif /*MQTT_PUBLISHER_H_*/

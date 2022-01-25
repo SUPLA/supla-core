@@ -557,23 +557,21 @@ void supla_mqtt_publisher_datasource::context_close(
   db_disconnect();
 }
 
-void supla_mqtt_publisher_datasource::on_action_triggered(int user_id,
-                                                          int device_id,
-                                                          int channel_id,
-                                                          unsigned int action) {
+void supla_mqtt_publisher_datasource::on_actions_triggered(
+    int user_id, int device_id, int channel_id, unsigned int actions) {
   if (!user_id || !device_id || !channel_id) {
     return;
   }
 
-  action &= SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF |
-            SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_TOGGLE_x2 |
-            SUPLA_ACTION_CAP_TOGGLE_x3 | SUPLA_ACTION_CAP_TOGGLE_x4 |
-            SUPLA_ACTION_CAP_TOGGLE_x5 | SUPLA_ACTION_CAP_HOLD |
-            SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
-            SUPLA_ACTION_CAP_SHORT_PRESS_x3 | SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
-            SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+  actions &= SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF |
+             SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_TOGGLE_x2 |
+             SUPLA_ACTION_CAP_TOGGLE_x3 | SUPLA_ACTION_CAP_TOGGLE_x4 |
+             SUPLA_ACTION_CAP_TOGGLE_x5 | SUPLA_ACTION_CAP_HOLD |
+             SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
+             SUPLA_ACTION_CAP_SHORT_PRESS_x3 | SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
+             SUPLA_ACTION_CAP_SHORT_PRESS_x5;
 
-  if (!action) {
+  if (!actions) {
     return;
   }
 
@@ -588,20 +586,20 @@ void supla_mqtt_publisher_datasource::on_action_triggered(int user_id,
     if (it->user_id == user_id && it->device_id == device_id &&
         it->channel_id == channel_id) {
       exists = true;
-      it->actions |= action;
+      it->actions |= actions;
       it->time = now;
       break;
     }
   }
 
   if (!exists && is_user_enabled(user_id)) {
-    _mqtt_ds_triggered_actions_t actions = {};
-    actions.user_id = user_id;
-    actions.device_id = device_id;
-    actions.channel_id = channel_id;
-    actions.time = now;
-    actions.actions = action;
-    triggered_actions.push_back(actions);
+    _mqtt_ds_triggered_actions_t _actions = {};
+    _actions.user_id = user_id;
+    _actions.device_id = device_id;
+    _actions.channel_id = channel_id;
+    _actions.time = now;
+    _actions.actions = actions;
+    triggered_actions.push_back(_actions);
   }
 
   unlock();

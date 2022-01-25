@@ -32,6 +32,7 @@
 #include "database.h"
 #include "devicefinder.h"
 #include "log.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "safearray.h"
 #include "srpc.h"
 #include "user/user.h"
@@ -1428,6 +1429,9 @@ void supla_device_channel::action_trigger(int actions) {
     delete at_config;
     at_config = NULL;
   }
+
+  supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
+      getUserID(), getDevice()->getID(), getId(), actions);
 }
 
 // ---------------------------------------------
