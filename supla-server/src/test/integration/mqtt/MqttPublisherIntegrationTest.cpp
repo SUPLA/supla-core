@@ -2752,8 +2752,8 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
   waitForPublications(690);
   getLibAdapter()->published_clear();
 
-  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_actions_triggered(
-      3748, 10300, 18103, 0xFFFFFFFF);
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())
+      ->on_actions_triggered(3748, 10300, 18103, 0xFFFFFFFF);
 
   waitForActions(13);
   // print_expected();
@@ -2805,12 +2805,12 @@ TEST_F(MqttPublisherIntegrationTest, actionTrigger) {
 
   getLibAdapter()->published_clear();
 
-  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_actions_triggered(
-      3748, 10300, 5, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
-  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_actions_triggered(
-      3748, 10300, 6, SUPLA_ACTION_CAP_HOLD);
-  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())->on_actions_triggered(
-      3748, 10300, 5, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())
+      ->on_actions_triggered(3748, 10300, 5, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())
+      ->on_actions_triggered(3748, 10300, 6, SUPLA_ACTION_CAP_HOLD);
+  dynamic_cast<supla_mqtt_publisher_datasource *>(getDS())
+      ->on_actions_triggered(3748, 10300, 5, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
 
   waitForActions(3);
   // print_expected();
