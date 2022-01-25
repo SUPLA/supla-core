@@ -1011,7 +1011,9 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "Meter\",\"sw\":\"1.0\"},\"name\":\"EM (Power factor - Phase "
           "3)\",\"uniq_id\":\"supla_754_40\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/3/"
-          "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == None %}None{% else %}float(value) * 100.0 | round(5){% endif %}\",\"dev_cla\":\"power_factor\",\"state_class\":"
+          "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
+          "None %}None{% else %}float(value) * 100.0 | round(5){% endif "
+          "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
       ASSERT_TRUE(
