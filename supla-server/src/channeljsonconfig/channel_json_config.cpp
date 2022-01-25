@@ -34,6 +34,10 @@ channel_json_config::channel_json_config(void) {
 
 channel_json_config::channel_json_config(
     const channel_json_config &json_config) {
+  this->properties_root = NULL;
+  this->user_root = NULL;
+  this->root = NULL;
+
   *this = json_config;
 }
 
