@@ -17,7 +17,9 @@
  */
 
 #include <mqtt_client_suite.h>
+
 #include <cstddef>
+
 #include "tools.h"
 
 // static
@@ -219,5 +221,13 @@ void supla_mqtt_client_suite::beforeDeviceDelete(int UserID, int DeviceID) {
 void supla_mqtt_client_suite::onDeviceDeleted(int UserID, int DeviceID) {
   if (unpublisher && st_app_terminate == 0) {
     unpublisher->on_device_deleted(UserID, DeviceID);
+  }
+}
+
+void supla_mqtt_client_suite::onActionsTriggered(int UserID, int DeviceID,
+                                                 int ChannelID,
+                                                 unsigned int Actions) {
+  if (publisher && st_app_terminate == 0) {
+    publisher->on_actions_triggered(UserID, DeviceID, ChannelID, Actions);
   }
 }

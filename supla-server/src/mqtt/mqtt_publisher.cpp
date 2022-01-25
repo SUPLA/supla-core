@@ -69,13 +69,13 @@ bool supla_mqtt_publisher::on_iterate(void) {
 void supla_mqtt_publisher::on_message_received(
     const _received_mqtt_message_t *msg) {}
 
-void supla_mqtt_publisher::on_action_triggered(int user_id, int device_id,
+void supla_mqtt_publisher::on_actions_triggered(int user_id, int device_id,
                                                int channel_id,
-                                               unsigned int action) {
+                                               unsigned int actions) {
   supla_mqtt_publisher_datasource *pds =
       dynamic_cast<supla_mqtt_publisher_datasource *>(datasource);
   if (pds) {
-    pds->on_action_triggered(user_id, device_id, channel_id, action);
+    pds->on_actions_triggered(user_id, device_id, channel_id, actions);
     library_adapter->raise_event();
   }
 }

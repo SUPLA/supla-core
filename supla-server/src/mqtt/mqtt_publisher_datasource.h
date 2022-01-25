@@ -100,8 +100,8 @@ class supla_mqtt_publisher_datasource : public supla_mqtt_client_db_datasource {
   virtual ~supla_mqtt_publisher_datasource(void);
   virtual bool fetch(char **topic_name, void **message, size_t *message_size,
                      bool *retain);
-  void on_action_triggered(int user_id, int device_id, int channel_id,
-                           unsigned int action);
+  void on_actions_triggered(int user_id, int device_id, int channel_id,
+                            unsigned int actions);
 };
 
 #endif /*MQTT_PUBLISHER_DATASOURCE_H_*/
