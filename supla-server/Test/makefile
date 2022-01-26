@@ -15,6 +15,7 @@ RM := rm -rf
 -include src/test/integration/mqtt/subdir.mk
 -include src/test/integration/asynctask/subdir.mk
 -include src/test/integration/subdir.mk
+-include src/test/http/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
