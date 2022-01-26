@@ -50,6 +50,7 @@ src/test/doubles/integration/mqtt \
 src/test/doubles/mqtt \
 src/test/google \
 src/test/gtest \
+src/test/http \
 src/test/integration \
 src/test/integration/asynctask \
 src/test/integration/mqtt \

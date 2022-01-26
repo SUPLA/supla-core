@@ -17,8 +17,11 @@
  */
 
 #include "amazon/alexaresponserequest.h"
+
 #include <unistd.h>
+
 #include "http/httprequestqueue.h"
+#include "http/httprequestvoiceassistantextraparams.h"
 #include "log.h"
 #include "sthread.h"
 #include "svrcfg.h"
@@ -86,37 +89,57 @@ void supla_alexa_response_request::execute(void *sthread) {
   channel_complex_value value =
       getUser()->get_channel_complex_value(getChannelId());
 
+  char *correlationToken = NULL;
+  int subChannel = 0;
+
+  accessExtraParams([this, &correlationToken, &subChannel](
+                        supla_http_request_extra_params *_params) -> void {
+    supla_http_request_voice_assistant_extra_params *params =
+        dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
+            _params);
+    if (params) {
+      if (params->getCorrelationTokenPtr()) {
+        correlationToken =
+            strndup(params->getCorrelationTokenPtr(), CORRELATIONTOKEN_MAXSIZE);
+      }
+      subChannel = params->getSubChannel();
+    }
+  });
+
   switch (value.function) {
     case SUPLA_CHANNELFNC_POWERSWITCH:
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
-      getClient()->powerControllerSendResponse(
-          getCorrelationTokenPtr(), getChannelId(), value.hi, value.online);
+      getClient()->powerControllerSendResponse(correlationToken, getChannelId(),
+                                               value.hi, value.online);
       break;
     case SUPLA_CHANNELFNC_DIMMER:
       getClient()->brightnessControllerSendResponse(
-          getCorrelationTokenPtr(), getChannelId(), value.brightness,
-          value.online, 0);
+          correlationToken, getChannelId(), value.brightness, value.online, 0);
       break;
     case SUPLA_CHANNELFNC_RGBLIGHTING:
       getClient()->colorControllerSendResponse(
-          getCorrelationTokenPtr(), getChannelId(), value.color,
-          value.color_brightness, value.online, 0);
+          correlationToken, getChannelId(), value.color, value.color_brightness,
+          value.online, 0);
       break;
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-      if (getSubChannelFromCorrelationToken() == 1) {
+      if (subChannel == 1) {
         getClient()->colorControllerSendResponse(
-            getCorrelationTokenPtr(), getChannelId(), value.color,
+            correlationToken, getChannelId(), value.color,
             value.color_brightness, value.online, 1);
-      } else if (getSubChannelFromCorrelationToken() == 2) {
+      } else if (subChannel == 2) {
         getClient()->brightnessControllerSendResponse(
-            getCorrelationTokenPtr(), getChannelId(), value.brightness,
-            value.online, 2);
+            correlationToken, getChannelId(), value.brightness, value.online,
+            2);
       }
       break;
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       getClient()->percentageControllerSendResponse(
-          getCorrelationTokenPtr(), getChannelId(), value.shut, value.online);
+          correlationToken, getChannelId(), value.shut, value.online);
       break;
+  }
+
+  if (correlationToken) {
+    free(correlationToken);
   }
 }
 

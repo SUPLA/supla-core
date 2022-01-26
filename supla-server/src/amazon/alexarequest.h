@@ -26,7 +26,6 @@ class supla_alexa_request : public supla_http_request {
  private:
   void *lck;
   supla_alexa_client *client;
-  int subChannelFromCorrelationToken;
 
  public:
   supla_alexa_request(supla_user *user, int ClassID, int DeviceId,
@@ -34,7 +33,7 @@ class supla_alexa_request : public supla_http_request {
                       event_source_type EventSourceType);
   virtual ~supla_alexa_request();
   supla_alexa_client *getClient(void);
-  int getSubChannelFromCorrelationToken(void);
+
   virtual bool queueUp(void);
   virtual void terminate(void *sthread);
   virtual bool isCancelled(void *sthread);
@@ -42,7 +41,6 @@ class supla_alexa_request : public supla_http_request {
                                          bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   int getCauseType(void);
-  virtual void setCorrelationToken(const char correlationToken[]);
 };
 
 #endif /* AMAZON_ALEXAREQUEST_H_ */
