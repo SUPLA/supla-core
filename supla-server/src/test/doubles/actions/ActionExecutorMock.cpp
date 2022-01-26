@@ -102,15 +102,15 @@ void ActionExecutorMock::shut(const char *closingPercentage) {
 
 void ActionExecutorMock::reveal(void) { reveal_counter++; }
 
-void ActionExecutorMock::up(void) { up_counter++; };
+void ActionExecutorMock::up(void) { up_counter++; }
 
-void ActionExecutorMock::down(void) { down_counter++; };
+void ActionExecutorMock::down(void) { down_counter++; }
 
-void ActionExecutorMock::up_or_stop(void) { up_or_stop_counter++; };
+void ActionExecutorMock::up_or_stop(void) { up_or_stop_counter++; }
 
-void ActionExecutorMock::down_or_stop(void) { down_or_stop_counter++; };
+void ActionExecutorMock::down_or_stop(void) { down_or_stop_counter++; }
 
-void ActionExecutorMock::step_by_step(void) { step_by_step_counter++; };
+void ActionExecutorMock::step_by_step(void) { step_by_step_counter++; }
 
 void ActionExecutorMock::stop(void) { stop_counter++; }
 
