@@ -282,6 +282,13 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
 
   EXPECT_EQ(config->get_active_actions(), (unsigned int)0);
 
+  config->set_user_config(
+      "{\"relatedChannelId\":4266,\"hideInChannelsList\":true,\"actions\":{"
+      "\"TOGGLE_X1\":{\"subjectType\":\"other\",\"action\":{\"id\":10200}}}}");
+
+  EXPECT_EQ(config->get_active_actions(),
+            (unsigned int)(SUPLA_ACTION_CAP_TOGGLE_x5));
+
   delete config;
 }
 
