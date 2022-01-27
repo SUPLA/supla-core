@@ -84,4 +84,27 @@ TEST_F(HttpRequestVoiceAssistantExtraParamsTest, subChannel) {
   delete params;
 }
 
+TEST_F(HttpRequestVoiceAssistantExtraParamsTest, clone) {
+  supla_http_request_voice_assistant_extra_params *params =
+      new supla_http_request_voice_assistant_extra_params("abcd", "efgh");
+  ASSERT_TRUE(params != NULL);
+
+  supla_http_request_voice_assistant_extra_params *_clone =
+      dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
+          params->clone());
+  EXPECT_TRUE(_clone != NULL);
+  if (_clone) {
+    EXPECT_EQ(strncmp("abcd", _clone->getCorrelationTokenPtr(),
+                      CORRELATIONTOKEN_MAXSIZE),
+              0);
+
+    EXPECT_EQ(strncmp("efgh", _clone->getGoogleRequestIdPtr(),
+                      GOOGLEREQUESTID_MAXSIZE),
+              0);
+    delete _clone;
+  }
+
+  delete params;
+}
+
 } /* namespace testing */

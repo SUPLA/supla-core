@@ -40,8 +40,8 @@ TEST_F(HttpRequestActionTriggerExtraParamsTest, constructor) {
       SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF);
   EXPECT_TRUE(params != NULL);
   if (params) {
-    EXPECT_EQ(params->getActions(),
-              SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF);
+    EXPECT_EQ(params->getActions(), (unsigned int)(SUPLA_ACTION_CAP_TURN_ON |
+                                                   SUPLA_ACTION_CAP_TURN_OFF));
     delete params;
   }
 }
@@ -51,10 +51,30 @@ TEST_F(HttpRequestActionTriggerExtraParamsTest, addActions) {
       new supla_http_request_action_trigger_extra_params(
           SUPLA_ACTION_CAP_TURN_ON);
   ASSERT_TRUE(params != NULL);
-  EXPECT_EQ(params->getActions(), SUPLA_ACTION_CAP_TURN_ON);
+  EXPECT_EQ(params->getActions(), (unsigned int)SUPLA_ACTION_CAP_TURN_ON);
   params->addActions(SUPLA_ACTION_CAP_TURN_OFF | SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(params->getActions(),
-            SUPLA_ACTION_CAP_TURN_OFF | SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(params->getActions(), (unsigned int)(SUPLA_ACTION_CAP_TURN_ON |
+                                                 SUPLA_ACTION_CAP_TURN_OFF |
+                                                 SUPLA_ACTION_CAP_TOGGLE_x1));
+  delete params;
+}
+
+TEST_F(HttpRequestActionTriggerExtraParamsTest, clone) {
+  supla_http_request_action_trigger_extra_params *params =
+      new supla_http_request_action_trigger_extra_params(
+          SUPLA_ACTION_CAP_TOGGLE_x5);
+  ASSERT_TRUE(params != NULL);
+
+  supla_http_request_action_trigger_extra_params *_clone =
+      dynamic_cast<supla_http_request_action_trigger_extra_params *>(
+          params->clone());
+
+  EXPECT_TRUE(_clone != NULL);
+  if (_clone) {
+    EXPECT_EQ(_clone->getActions(), (unsigned int)SUPLA_ACTION_CAP_TOGGLE_x5);
+    delete _clone;
+  }
+
   delete params;
 }
 

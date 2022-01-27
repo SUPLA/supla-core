@@ -36,6 +36,7 @@ class supla_http_request_voice_assistant_extra_params
   supla_http_request_voice_assistant_extra_params(const char correlationToken[],
                                                   const char googleRequestId[]);
   virtual ~supla_http_request_voice_assistant_extra_params(void);
+  virtual supla_http_request_extra_params *clone(void);
   void setCorrelationToken(const char correlationToken[]);
   const char *getCorrelationTokenPtr(void);
   int getSubChannel(void);

@@ -424,7 +424,6 @@ void supla_http_request_queue::createByChannelEventSourceType(
 
       if (request) {
         request->setExtraParams(extraParams);
-        extraParams = NULL;
         request->requestWillBeAdded();
         addRequest(request);
       }
