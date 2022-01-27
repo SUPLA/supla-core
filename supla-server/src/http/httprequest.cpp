@@ -141,7 +141,7 @@ void supla_http_request::setExtraParams(
   if (this->extraParams) {
     delete this->extraParams;
   }
-  this->extraParams = extraParams;
+  this->extraParams = extraParams->clone();
   lck_unlock(this->lck);
 }
 

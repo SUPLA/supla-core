@@ -21,7 +21,8 @@
 
 class supla_http_request_extra_params {
  public:
-  virtual ~supla_http_request_extra_params() = 0;
+  virtual supla_http_request_extra_params *clone(void) = 0;
+  virtual ~supla_http_request_extra_params();
 };
 
 #endif /* HTTP_HTTPREQUESTEXTRAPARAMS_H_ */

@@ -53,6 +53,12 @@ supla_http_request_voice_assistant_extra_params::
   }
 }
 
+supla_http_request_extra_params*
+supla_http_request_voice_assistant_extra_params::clone(void) {
+  return new supla_http_request_voice_assistant_extra_params(correlationToken,
+                                                             googleRequestId);
+}
+
 void supla_http_request_voice_assistant_extra_params::setCorrelationToken(
     const char correlationToken[]) {
   if (this->correlationToken) {
