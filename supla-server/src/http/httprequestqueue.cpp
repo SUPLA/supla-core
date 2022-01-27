@@ -25,6 +25,7 @@
 
 #include "database.h"
 #include "http/httprequest.h"
+#include "http/httprequestactiontriggerextraparams.h"
 #include "http/httprequestvoiceassistantextraparams.h"
 #include "lck.h"
 #include "log.h"
@@ -477,7 +478,11 @@ void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
 
 void supla_http_request_queue::onActionsTriggered(supla_user *user,
                                                   int deviceId, int channelId,
-                                                  unsigned int actions) {}
+                                                  unsigned int actions) {
+  createByChannelEventSourceType(
+      user, deviceId, channelId, ET_ACTION_TRIGGERED, EST_DEVICE,
+      new supla_http_request_action_trigger_extra_params(actions));
+}
 
 void http_request_queue_loop(void *ssd, void *q_sthread) {
   supla_http_request_queue::getInstance()->iterate(q_sthread);

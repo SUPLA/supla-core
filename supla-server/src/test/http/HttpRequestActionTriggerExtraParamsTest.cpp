@@ -29,11 +29,11 @@ HttpRequestActionTriggerExtraParamsTest::
 HttpRequestActionTriggerExtraParamsTest::
     ~HttpRequestActionTriggerExtraParamsTest(void) {}
 
-TEST_F(HttpRequestActionTriggerExtraParamsTest, actions) {
+TEST_F(HttpRequestActionTriggerExtraParamsTest, constructor) {
   supla_http_request_action_trigger_extra_params *params =
       new supla_http_request_action_trigger_extra_params();
   ASSERT_TRUE(params != NULL);
-  EXPECT_EQ(params->getActions(), 0);
+  EXPECT_EQ(params->getActions(), (unsigned int)0);
   delete params;
 
   params = new supla_http_request_action_trigger_extra_params(
@@ -44,6 +44,18 @@ TEST_F(HttpRequestActionTriggerExtraParamsTest, actions) {
               SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF);
     delete params;
   }
+}
+
+TEST_F(HttpRequestActionTriggerExtraParamsTest, addActions) {
+  supla_http_request_action_trigger_extra_params *params =
+      new supla_http_request_action_trigger_extra_params(
+          SUPLA_ACTION_CAP_TURN_ON);
+  ASSERT_TRUE(params != NULL);
+  EXPECT_EQ(params->getActions(), SUPLA_ACTION_CAP_TURN_ON);
+  params->addActions(SUPLA_ACTION_CAP_TURN_OFF | SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(params->getActions(),
+            SUPLA_ACTION_CAP_TURN_OFF | SUPLA_ACTION_CAP_TOGGLE_x1);
+  delete params;
 }
 
 } /* namespace testing */
