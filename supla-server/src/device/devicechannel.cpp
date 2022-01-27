@@ -1409,7 +1409,7 @@ void supla_device_channel::action_trigger(int actions) {
     supla_action_trigger *trigger =
         new supla_action_trigger(aexec, at_config, dev_finder);
     if (trigger) {
-      trigger->execute_actions(getUserID(), actions);
+      trigger->execute_actions(getUserID(), getId(), actions);
       delete trigger;
     }
   }

@@ -50,6 +50,7 @@ void ActionExecutorMock::clear(void) {
   this->color_brightness = -1;
   this->closing_percentage = -1;
   this->rgbw_counter = 0;
+  this->forward_outside_counter = 0;
 }
 
 void ActionExecutorMock::set_on(bool on) {
@@ -263,6 +264,10 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (rgbw_counter > 0) {
+    result++;
+  }
+
+  if (forward_outside_counter > 0) {
     result++;
   }
 

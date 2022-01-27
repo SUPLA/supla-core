@@ -36,7 +36,7 @@ class supla_action_trigger {
                        supla_abstract_device_finder *dev_finder);
   ~supla_action_trigger(void);
 
-  void execute_actions(int user_id, unsigned int caps);
+  void execute_actions(int user_id, int source_channel_id, unsigned int caps);
 };
 
 #endif /* ACTIONTRIGGER_H_ */

@@ -72,12 +72,12 @@ TEST_F(ActionTriggerTest, open) {
       "\"action\":{\"id\":10,\"param\":[]}}}}");
 
   dev_finder->setResult(123);
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_HOLD);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_HOLD);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
@@ -93,12 +93,12 @@ TEST_F(ActionTriggerTest, openGroup) {
       "\"action\":{\"id\":10,\"param\":[]}}}}");
 
   dev_finder->setResult(123);
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_HOLD);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_HOLD);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
@@ -115,7 +115,7 @@ TEST_F(ActionTriggerTest, close) {
 
   dev_finder->setResult(2);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getCloseCounter(), 1);
@@ -132,7 +132,7 @@ TEST_F(ActionTriggerTest, shut) {
 
   dev_finder->setResult(3);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
@@ -149,7 +149,7 @@ TEST_F(ActionTriggerTest, reveal) {
 
   dev_finder->setResult(44);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x3);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x3);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x3);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRevealCounter(), 1);
@@ -165,7 +165,7 @@ TEST_F(ActionTriggerTest, revealPartially) {
 
   dev_finder->setResult(44);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x4);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x4);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x4);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
@@ -182,7 +182,7 @@ TEST_F(ActionTriggerTest, upOrStop) {
 
   dev_finder->setResult(3);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getUpOrStopCounter(), 1);
@@ -199,7 +199,7 @@ TEST_F(ActionTriggerTest, downOrStop) {
 
   dev_finder->setResult(3);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getDownOrStopCounter(), 1);
@@ -216,7 +216,7 @@ TEST_F(ActionTriggerTest, stepByStep) {
 
   dev_finder->setResult(3);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getStepByStepCounter(), 1);
@@ -233,7 +233,7 @@ TEST_F(ActionTriggerTest, turnOn) {
 
   dev_finder->setResult(45);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x4);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x4);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x4);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOnCounter(), 1);
@@ -249,7 +249,7 @@ TEST_F(ActionTriggerTest, turnOff) {
 
   dev_finder->setResult(499);
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x5);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x5);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOffCounter(), 1);
@@ -266,7 +266,7 @@ TEST_F(ActionTriggerTest, setRGBWParameters) {
 
   dev_finder->setResult(4999);
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x1);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x1);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_SHORT_PRESS_x1);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 1);
@@ -282,7 +282,7 @@ TEST_F(ActionTriggerTest, openClose) {
 
   dev_finder->setResult(4999);
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOpenCloseCounter(), 1);
@@ -298,7 +298,7 @@ TEST_F(ActionTriggerTest, stop) {
 
   dev_finder->setResult(4999);
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x3);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getStopCounter(), 1);
@@ -314,7 +314,7 @@ TEST_F(ActionTriggerTest, toggle) {
 
   dev_finder->setResult(4999);
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x4);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x4);
+  at->execute_actions(1, 0, SUPLA_ACTION_CAP_SHORT_PRESS_x4);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getToggleCounter(), 1);
@@ -333,12 +333,29 @@ TEST_F(ActionTriggerTest, multiAction) {
   dev_finder->setResult(4999);
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x1 |
                               SUPLA_ACTION_CAP_HOLD);
-  at->execute_actions(1,
+  at->execute_actions(1, 0,
                       SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_HOLD);
 
   EXPECT_EQ(aexec->counterSetCount(), 2);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 1);
+}
+
+TEST_F(ActionTriggerTest, forwardOutside) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"other\",\"action\":{\"id\":10000}},\"TOGGLE_X2\":{"
+      "\"subjectType\":\"other\",\"action\":{\"id\":10000}}}}");
+
+  dev_finder->setResult(4999);
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(1, 5, SUPLA_ACTION_CAP_TOGGLE_x2);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getForwardOutsideCounter(), 1);
+  EXPECT_EQ(aexec->get_device_id(), 4999);
+  EXPECT_EQ(aexec->get_channel_id(), 5);
 }
 
 } /* namespace testing */
