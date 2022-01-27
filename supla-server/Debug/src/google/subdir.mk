@@ -10,19 +10,19 @@ CPP_SRCS += \
 ../src/google/googlehomestatereportrequest.cpp \
 ../src/google/googlehomesyncrequest.cpp 
 
-OBJS += \
-./src/google/googlehomeclient.o \
-./src/google/googlehomecredentials.o \
-./src/google/googlehomerequest.o \
-./src/google/googlehomestatereportrequest.o \
-./src/google/googlehomesyncrequest.o 
-
 CPP_DEPS += \
 ./src/google/googlehomeclient.d \
 ./src/google/googlehomecredentials.d \
 ./src/google/googlehomerequest.d \
 ./src/google/googlehomestatereportrequest.d \
 ./src/google/googlehomesyncrequest.d 
+
+OBJS += \
+./src/google/googlehomeclient.o \
+./src/google/googlehomecredentials.o \
+./src/google/googlehomerequest.o \
+./src/google/googlehomestatereportrequest.o \
+./src/google/googlehomesyncrequest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -33,4 +33,11 @@ src/google/%.o: ../src/google/%.cpp src/google/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-google
+
+clean-src-2f-google:
+	-$(RM) ./src/google/googlehomeclient.d ./src/google/googlehomeclient.o ./src/google/googlehomecredentials.d ./src/google/googlehomecredentials.o ./src/google/googlehomerequest.d ./src/google/googlehomerequest.o ./src/google/googlehomestatereportrequest.d ./src/google/googlehomestatereportrequest.o ./src/google/googlehomesyncrequest.d ./src/google/googlehomesyncrequest.o
+
+.PHONY: clean-src-2f-google
 

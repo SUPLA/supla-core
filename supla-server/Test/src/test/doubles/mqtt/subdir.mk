@@ -7,13 +7,13 @@ CPP_SRCS += \
 ../src/test/doubles/mqtt/MqttDataSourceMock.cpp \
 ../src/test/doubles/mqtt/MqttStateMessageProviderMock.cpp 
 
-OBJS += \
-./src/test/doubles/mqtt/MqttDataSourceMock.o \
-./src/test/doubles/mqtt/MqttStateMessageProviderMock.o 
-
 CPP_DEPS += \
 ./src/test/doubles/mqtt/MqttDataSourceMock.d \
 ./src/test/doubles/mqtt/MqttStateMessageProviderMock.d 
+
+OBJS += \
+./src/test/doubles/mqtt/MqttDataSourceMock.o \
+./src/test/doubles/mqtt/MqttStateMessageProviderMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,4 +24,11 @@ src/test/doubles/mqtt/%.o: ../src/test/doubles/mqtt/%.cpp src/test/doubles/mqtt/
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-mqtt
+
+clean-src-2f-test-2f-doubles-2f-mqtt:
+	-$(RM) ./src/test/doubles/mqtt/MqttDataSourceMock.d ./src/test/doubles/mqtt/MqttDataSourceMock.o ./src/test/doubles/mqtt/MqttStateMessageProviderMock.d ./src/test/doubles/mqtt/MqttStateMessageProviderMock.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-mqtt
 

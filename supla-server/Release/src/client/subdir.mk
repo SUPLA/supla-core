@@ -15,18 +15,6 @@ CPP_SRCS += \
 ../src/client/clientobjcontainer.cpp \
 ../src/client/clientobjcontaineritem.cpp 
 
-OBJS += \
-./src/client/client.o \
-./src/client/clientchannel.o \
-./src/client/clientchannelgroup.o \
-./src/client/clientchannelgrouprelation.o \
-./src/client/clientchannelgroups.o \
-./src/client/clientchannelgroupvalue.o \
-./src/client/clientchannels.o \
-./src/client/clientlocation.o \
-./src/client/clientobjcontainer.o \
-./src/client/clientobjcontaineritem.o 
-
 CPP_DEPS += \
 ./src/client/client.d \
 ./src/client/clientchannel.d \
@@ -39,6 +27,18 @@ CPP_DEPS += \
 ./src/client/clientobjcontainer.d \
 ./src/client/clientobjcontaineritem.d 
 
+OBJS += \
+./src/client/client.o \
+./src/client/clientchannel.o \
+./src/client/clientchannelgroup.o \
+./src/client/clientchannelgrouprelation.o \
+./src/client/clientchannelgroups.o \
+./src/client/clientchannelgroupvalue.o \
+./src/client/clientchannels.o \
+./src/client/clientlocation.o \
+./src/client/clientobjcontainer.o \
+./src/client/clientobjcontaineritem.o 
+
 
 # Each subdirectory must supply rules for building sources it contributes
 src/client/%.o: ../src/client/%.cpp src/client/subdir.mk
@@ -48,4 +48,11 @@ src/client/%.o: ../src/client/%.cpp src/client/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-client
+
+clean-src-2f-client:
+	-$(RM) ./src/client/client.d ./src/client/client.o ./src/client/clientchannel.d ./src/client/clientchannel.o ./src/client/clientchannelgroup.d ./src/client/clientchannelgroup.o ./src/client/clientchannelgrouprelation.d ./src/client/clientchannelgrouprelation.o ./src/client/clientchannelgroups.d ./src/client/clientchannelgroups.o ./src/client/clientchannelgroupvalue.d ./src/client/clientchannelgroupvalue.o ./src/client/clientchannels.d ./src/client/clientchannels.o ./src/client/clientlocation.d ./src/client/clientlocation.o ./src/client/clientobjcontainer.d ./src/client/clientobjcontainer.o ./src/client/clientobjcontaineritem.d ./src/client/clientobjcontaineritem.o
+
+.PHONY: clean-src-2f-client
 

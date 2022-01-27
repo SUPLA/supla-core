@@ -9,17 +9,17 @@ CPP_SRCS += \
 ../src/device/devicechannel.cpp \
 ../src/device/devicefinder.cpp 
 
-OBJS += \
-./src/device/abstractdevicefinder.o \
-./src/device/device.o \
-./src/device/devicechannel.o \
-./src/device/devicefinder.o 
-
 CPP_DEPS += \
 ./src/device/abstractdevicefinder.d \
 ./src/device/device.d \
 ./src/device/devicechannel.d \
 ./src/device/devicefinder.d 
+
+OBJS += \
+./src/device/abstractdevicefinder.o \
+./src/device/device.o \
+./src/device/devicechannel.o \
+./src/device/devicefinder.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -30,4 +30,11 @@ src/device/%.o: ../src/device/%.cpp src/device/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-device
+
+clean-src-2f-device:
+	-$(RM) ./src/device/abstractdevicefinder.d ./src/device/abstractdevicefinder.o ./src/device/device.d ./src/device/device.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/devicefinder.d ./src/device/devicefinder.o
+
+.PHONY: clean-src-2f-device
 

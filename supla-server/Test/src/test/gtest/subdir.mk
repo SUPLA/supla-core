@@ -22,3 +22,10 @@ src/test/gtest/%.o: ../src/test/gtest/%.cc src/test/gtest/subdir.mk
 	@echo ' '
 
 
+clean: clean-src-2f-test-2f-gtest
+
+clean-src-2f-test-2f-gtest:
+	-$(RM) ./src/test/gtest/gtest-all.d ./src/test/gtest/gtest-all.o
+
+.PHONY: clean-src-2f-test-2f-gtest
+

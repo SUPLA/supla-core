@@ -6,11 +6,11 @@
 CPP_SRCS += \
 ../src/test/doubles/device/DeviceFinderStub.cpp 
 
-OBJS += \
-./src/test/doubles/device/DeviceFinderStub.o 
-
 CPP_DEPS += \
 ./src/test/doubles/device/DeviceFinderStub.d 
+
+OBJS += \
+./src/test/doubles/device/DeviceFinderStub.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,4 +21,11 @@ src/test/doubles/device/%.o: ../src/test/doubles/device/%.cpp src/test/doubles/d
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-device
+
+clean-src-2f-test-2f-doubles-2f-device:
+	-$(RM) ./src/test/doubles/device/DeviceFinderStub.d ./src/test/doubles/device/DeviceFinderStub.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-device
 

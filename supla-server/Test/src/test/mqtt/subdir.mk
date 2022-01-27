@@ -15,18 +15,6 @@ CPP_SRCS += \
 ../src/test/mqtt/MqttTopicCmpTest.cpp \
 ../src/test/mqtt/MqttUserMessageProviderTest.cpp 
 
-OBJS += \
-./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.o \
-./src/test/mqtt/MqttChannelMessageProviderTest.o \
-./src/test/mqtt/MqttDataSourceTest.o \
-./src/test/mqtt/MqttDeviceMessageProviderTest.o \
-./src/test/mqtt/MqttDsContextTest.o \
-./src/test/mqtt/MqttIniSettingsTest.o \
-./src/test/mqtt/MqttMessageProviderTest.o \
-./src/test/mqtt/MqttStateMessageProviderTest.o \
-./src/test/mqtt/MqttTopicCmpTest.o \
-./src/test/mqtt/MqttUserMessageProviderTest.o 
-
 CPP_DEPS += \
 ./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.d \
 ./src/test/mqtt/MqttChannelMessageProviderTest.d \
@@ -39,6 +27,18 @@ CPP_DEPS += \
 ./src/test/mqtt/MqttTopicCmpTest.d \
 ./src/test/mqtt/MqttUserMessageProviderTest.d 
 
+OBJS += \
+./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.o \
+./src/test/mqtt/MqttChannelMessageProviderTest.o \
+./src/test/mqtt/MqttDataSourceTest.o \
+./src/test/mqtt/MqttDeviceMessageProviderTest.o \
+./src/test/mqtt/MqttDsContextTest.o \
+./src/test/mqtt/MqttIniSettingsTest.o \
+./src/test/mqtt/MqttMessageProviderTest.o \
+./src/test/mqtt/MqttStateMessageProviderTest.o \
+./src/test/mqtt/MqttTopicCmpTest.o \
+./src/test/mqtt/MqttUserMessageProviderTest.o 
+
 
 # Each subdirectory must supply rules for building sources it contributes
 src/test/mqtt/%.o: ../src/test/mqtt/%.cpp src/test/mqtt/subdir.mk
@@ -48,4 +48,11 @@ src/test/mqtt/%.o: ../src/test/mqtt/%.cpp src/test/mqtt/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-mqtt
+
+clean-src-2f-test-2f-mqtt:
+	-$(RM) ./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.d ./src/test/mqtt/MqttChannelAndStateRemovedTopicsProviderTest.o ./src/test/mqtt/MqttChannelMessageProviderTest.d ./src/test/mqtt/MqttChannelMessageProviderTest.o ./src/test/mqtt/MqttDataSourceTest.d ./src/test/mqtt/MqttDataSourceTest.o ./src/test/mqtt/MqttDeviceMessageProviderTest.d ./src/test/mqtt/MqttDeviceMessageProviderTest.o ./src/test/mqtt/MqttDsContextTest.d ./src/test/mqtt/MqttDsContextTest.o ./src/test/mqtt/MqttIniSettingsTest.d ./src/test/mqtt/MqttIniSettingsTest.o ./src/test/mqtt/MqttMessageProviderTest.d ./src/test/mqtt/MqttMessageProviderTest.o ./src/test/mqtt/MqttStateMessageProviderTest.d ./src/test/mqtt/MqttStateMessageProviderTest.o ./src/test/mqtt/MqttTopicCmpTest.d ./src/test/mqtt/MqttTopicCmpTest.o ./src/test/mqtt/MqttUserMessageProviderTest.d ./src/test/mqtt/MqttUserMessageProviderTest.o
+
+.PHONY: clean-src-2f-test-2f-mqtt
 

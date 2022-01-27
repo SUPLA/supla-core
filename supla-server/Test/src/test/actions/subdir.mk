@@ -6,11 +6,11 @@
 CPP_SRCS += \
 ../src/test/actions/ActionTriggerTest.cpp 
 
-OBJS += \
-./src/test/actions/ActionTriggerTest.o 
-
 CPP_DEPS += \
 ./src/test/actions/ActionTriggerTest.d 
+
+OBJS += \
+./src/test/actions/ActionTriggerTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,4 +21,11 @@ src/test/actions/%.o: ../src/test/actions/%.cpp src/test/actions/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-actions
+
+clean-src-2f-test-2f-actions:
+	-$(RM) ./src/test/actions/ActionTriggerTest.d ./src/test/actions/ActionTriggerTest.o
+
+.PHONY: clean-src-2f-test-2f-actions
 
