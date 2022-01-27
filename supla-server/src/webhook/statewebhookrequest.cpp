@@ -73,19 +73,21 @@ unsigned int supla_state_webhook_request::getActions(void) {
 }
 
 bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
-  unsigned int actions = getActions();
+  if (existing->getEventType() == getEventType()) {
+    unsigned int actions = getActions();
 
-  existing->accessExtraParams(
-      [actions](supla_http_request_extra_params *_params) -> void {
-        supla_http_request_action_trigger_extra_params *params =
-            dynamic_cast<supla_http_request_action_trigger_extra_params *>(
-                _params);
-        if (params) {
-          params->addActions(actions);
-        }
-      });
+    existing->accessExtraParams(
+        [actions](supla_http_request_extra_params *_params) -> void {
+          supla_http_request_action_trigger_extra_params *params =
+              dynamic_cast<supla_http_request_action_trigger_extra_params *>(
+                  _params);
+          if (params) {
+            params->addActions(actions);
+          }
+        });
 
-  duplicateExists = true;
+    duplicateExists = true;
+  }
   return true;
 }
 
