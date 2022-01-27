@@ -151,7 +151,7 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
                 return true;
               case SUPLA_CHANNELFNC_ACTIONTRIGGER:
                 delayTime = 100000;
-                break;
+                return true;
               default:
                 return false;
             }
