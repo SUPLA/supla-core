@@ -16,8 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/action_executor.h>
+#include "actions/action_executor.h"
 
+#include "http/httprequestqueue.h"
+#include "mqtt/mqtt_client_suite.h"
 #include "userchannelgroups.h"
 
 supla_action_executor::supla_action_executor(void)
@@ -251,4 +253,15 @@ void supla_action_executor::open_close_without_canceling_tasks() {
   });
 }
 
-void supla_action_executor::forward_outside(int cap) {}
+void supla_action_executor::forward_outside(int cap) {
+  supla_user *user = get_user();
+  if (!user) {
+    return;
+  }
+
+  supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
+      user->getUserID(), get_device_id(), get_channel_id(), cap);
+
+  supla_http_request_queue::getInstance()->onActionsTriggered(
+      user, get_device_id(), get_channel_id(), cap);
+}
