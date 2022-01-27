@@ -190,10 +190,8 @@ void supla_google_home_statereport_request::execute(void *sthread) {
           supla_http_request_voice_assistant_extra_params *params =
               dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
                   _params);
-          if (params) {
-            getClient()->sendReportState(params->getGoogleRequestIdPtr(),
-                                         &resultCode);
-          }
+          getClient()->sendReportState(
+              params ? params->getGoogleRequestIdPtr() : NULL, &resultCode);
         });
 
     if (resultCode == 404) {
