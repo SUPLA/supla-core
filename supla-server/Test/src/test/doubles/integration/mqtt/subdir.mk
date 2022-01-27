@@ -8,15 +8,15 @@ CPP_SRCS += \
 ../src/test/doubles/integration/mqtt/MqttClientSettingsMock.cpp \
 ../src/test/doubles/integration/mqtt/MqttValueSetterMock.cpp 
 
-OBJS += \
-./src/test/doubles/integration/mqtt/MqttClientLibraryAdapterMock.o \
-./src/test/doubles/integration/mqtt/MqttClientSettingsMock.o \
-./src/test/doubles/integration/mqtt/MqttValueSetterMock.o 
-
 CPP_DEPS += \
 ./src/test/doubles/integration/mqtt/MqttClientLibraryAdapterMock.d \
 ./src/test/doubles/integration/mqtt/MqttClientSettingsMock.d \
 ./src/test/doubles/integration/mqtt/MqttValueSetterMock.d 
+
+OBJS += \
+./src/test/doubles/integration/mqtt/MqttClientLibraryAdapterMock.o \
+./src/test/doubles/integration/mqtt/MqttClientSettingsMock.o \
+./src/test/doubles/integration/mqtt/MqttValueSetterMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -27,4 +27,11 @@ src/test/doubles/integration/mqtt/%.o: ../src/test/doubles/integration/mqtt/%.cp
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-integration-2f-mqtt
+
+clean-src-2f-test-2f-doubles-2f-integration-2f-mqtt:
+	-$(RM) ./src/test/doubles/integration/mqtt/MqttClientLibraryAdapterMock.d ./src/test/doubles/integration/mqtt/MqttClientLibraryAdapterMock.o ./src/test/doubles/integration/mqtt/MqttClientSettingsMock.d ./src/test/doubles/integration/mqtt/MqttClientSettingsMock.o ./src/test/doubles/integration/mqtt/MqttValueSetterMock.d ./src/test/doubles/integration/mqtt/MqttValueSetterMock.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-integration-2f-mqtt
 

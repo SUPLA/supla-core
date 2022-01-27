@@ -6,11 +6,11 @@
 CPP_SRCS += \
 ../src/test/doubles/channeljsonconfig/ChannelJSONConfigGetterStub.cpp 
 
-OBJS += \
-./src/test/doubles/channeljsonconfig/ChannelJSONConfigGetterStub.o 
-
 CPP_DEPS += \
 ./src/test/doubles/channeljsonconfig/ChannelJSONConfigGetterStub.d 
+
+OBJS += \
+./src/test/doubles/channeljsonconfig/ChannelJSONConfigGetterStub.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,4 +21,11 @@ src/test/doubles/channeljsonconfig/%.o: ../src/test/doubles/channeljsonconfig/%.
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-channeljsonconfig
+
+clean-src-2f-test-2f-doubles-2f-channeljsonconfig:
+	-$(RM) ./src/test/doubles/channeljsonconfig/ChannelJSONConfigGetterStub.d ./src/test/doubles/channeljsonconfig/ChannelJSONConfigGetterStub.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-channeljsonconfig
 

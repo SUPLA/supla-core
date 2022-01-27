@@ -23,7 +23,8 @@
 namespace testing {
 
 HttpRequestVoiceAssistantExtraParamsTest::
-    HttpRequestVoiceAssistantExtraParamsTest(void) {}
+    HttpRequestVoiceAssistantExtraParamsTest(void)
+    : Test() {}
 HttpRequestVoiceAssistantExtraParamsTest::
     ~HttpRequestVoiceAssistantExtraParamsTest(void) {}
 

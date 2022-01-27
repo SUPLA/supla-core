@@ -7,13 +7,13 @@ CPP_SRCS += \
 ../src/test/asynctask/AsyncTaskTest.cpp \
 ../src/test/asynctask/AsyncTaskThreadPoolTest.cpp 
 
-OBJS += \
-./src/test/asynctask/AsyncTaskTest.o \
-./src/test/asynctask/AsyncTaskThreadPoolTest.o 
-
 CPP_DEPS += \
 ./src/test/asynctask/AsyncTaskTest.d \
 ./src/test/asynctask/AsyncTaskThreadPoolTest.d 
+
+OBJS += \
+./src/test/asynctask/AsyncTaskTest.o \
+./src/test/asynctask/AsyncTaskThreadPoolTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,4 +24,11 @@ src/test/asynctask/%.o: ../src/test/asynctask/%.cpp src/test/asynctask/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-asynctask
+
+clean-src-2f-test-2f-asynctask:
+	-$(RM) ./src/test/asynctask/AsyncTaskTest.d ./src/test/asynctask/AsyncTaskTest.o ./src/test/asynctask/AsyncTaskThreadPoolTest.d ./src/test/asynctask/AsyncTaskThreadPoolTest.o
+
+.PHONY: clean-src-2f-test-2f-asynctask
 

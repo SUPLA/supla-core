@@ -9,17 +9,17 @@ CPP_SRCS += \
 ../src/test/integration/mqtt/MqttSubscriberIntegrationTest.cpp \
 ../src/test/integration/mqtt/MqttUnpublisherIntegrationTest.cpp 
 
-OBJS += \
-./src/test/integration/mqtt/MqttClientIntegrationTest.o \
-./src/test/integration/mqtt/MqttPublisherIntegrationTest.o \
-./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o \
-./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o 
-
 CPP_DEPS += \
 ./src/test/integration/mqtt/MqttClientIntegrationTest.d \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d \
 ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.d \
 ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d 
+
+OBJS += \
+./src/test/integration/mqtt/MqttClientIntegrationTest.o \
+./src/test/integration/mqtt/MqttPublisherIntegrationTest.o \
+./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o \
+./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -30,4 +30,11 @@ src/test/integration/mqtt/%.o: ../src/test/integration/mqtt/%.cpp src/test/integ
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-integration-2f-mqtt
+
+clean-src-2f-test-2f-integration-2f-mqtt:
+	-$(RM) ./src/test/integration/mqtt/MqttClientIntegrationTest.d ./src/test/integration/mqtt/MqttClientIntegrationTest.o ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d ./src/test/integration/mqtt/MqttPublisherIntegrationTest.o ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.d ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o
+
+.PHONY: clean-src-2f-test-2f-integration-2f-mqtt
 

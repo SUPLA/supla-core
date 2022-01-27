@@ -6,11 +6,11 @@
 CPP_SRCS += \
 ../src/test/alexa/AlexaClientTest.cpp 
 
-OBJS += \
-./src/test/alexa/AlexaClientTest.o 
-
 CPP_DEPS += \
 ./src/test/alexa/AlexaClientTest.d 
+
+OBJS += \
+./src/test/alexa/AlexaClientTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,4 +21,11 @@ src/test/alexa/%.o: ../src/test/alexa/%.cpp src/test/alexa/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-alexa
+
+clean-src-2f-test-2f-alexa:
+	-$(RM) ./src/test/alexa/AlexaClientTest.d ./src/test/alexa/AlexaClientTest.o
+
+.PHONY: clean-src-2f-test-2f-alexa
 
