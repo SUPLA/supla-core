@@ -28,8 +28,9 @@ class supla_http_request_action_trigger_extra_params
 
  public:
   supla_http_request_action_trigger_extra_params(void);
-  supla_http_request_action_trigger_extra_params(unsigned int actions);
+  explicit supla_http_request_action_trigger_extra_params(unsigned int actions);
   unsigned int getActions(void);
+  void addActions(unsigned int actions);
 };
 
 #endif /* HTTP_HTTPREQUESTACTIONTRIGGEREXTRAPARAMS_H_ */

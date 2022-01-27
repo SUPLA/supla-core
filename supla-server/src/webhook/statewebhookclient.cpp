@@ -720,3 +720,77 @@ bool supla_state_webhook_client::sendImpulseCounterHeatMeasurementReport(
   return sendImpulseCounterMeasurementReport("IC_HEATMETER", channelId, icm,
                                              connected);
 }
+
+bool supla_state_webhook_client::triggeredActionsReport(int channelId,
+                                                        unsigned int actions) {
+  if (!actions) {
+    return false;
+  }
+
+  cJSON *root = getHeader("ACTION_TRIGGER", channelId);
+  if (root) {
+    cJSON *json_actions = cJSON_CreateArray();
+    if (json_actions) {
+      unsigned int bit = 1;
+      for (unsigned int a = 0; a < sizeof(actions) * 8; a++) {
+        cJSON *item = NULL;
+
+        if (actions & bit) {
+          switch (bit) {
+            case SUPLA_ACTION_CAP_TURN_ON:
+              item = cJSON_CreateString("TURN_ON");
+              break;
+            case SUPLA_ACTION_CAP_TURN_OFF:
+              item = cJSON_CreateString("TURN_OFF");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x1:
+              item = cJSON_CreateString("TOGGLE_X1");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x2:
+              item = cJSON_CreateString("TOGGLE_X2");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x3:
+              item = cJSON_CreateString("TOGGLE_X3");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x4:
+              item = cJSON_CreateString("TOGGLE_X4");
+              break;
+            case SUPLA_ACTION_CAP_TOGGLE_x5:
+              item = cJSON_CreateString("TOGGLE_X5");
+              break;
+            case SUPLA_ACTION_CAP_HOLD:
+              item = cJSON_CreateString("HOLD");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x1:
+              item = cJSON_CreateString("PRESS_X1");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x2:
+              item = cJSON_CreateString("PRESS_X2");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x3:
+              item = cJSON_CreateString("PRESS_X3");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x4:
+              item = cJSON_CreateString("PRESS_X4");
+              break;
+            case SUPLA_ACTION_CAP_SHORT_PRESS_x5:
+              item = cJSON_CreateString("PRESS_X5");
+              break;
+          }
+
+          if (item) {
+            cJSON_AddItemToArray(json_actions, item);
+          }
+        }
+        bit <<= 1;
+      }
+
+      cJSON_AddItemToObject(root, "triggered_actions", json_actions);
+      return sendReport(root);
+    } else {
+      cJSON_Delete(root);
+    }
+  }
+
+  return false;
+}

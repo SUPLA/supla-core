@@ -35,3 +35,8 @@ supla_http_request_action_trigger_extra_params::
 unsigned int supla_http_request_action_trigger_extra_params::getActions(void) {
   return actions;
 }
+
+void supla_http_request_action_trigger_extra_params::addActions(
+    unsigned int actions) {
+  this->actions |= actions;
+}
