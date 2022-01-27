@@ -31,6 +31,7 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "database.h"
 #include "devicefinder.h"
+#include "http/httprequestqueue.h"
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "safearray.h"
@@ -1432,6 +1433,9 @@ void supla_device_channel::action_trigger(int actions) {
 
   supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
       getUserID(), getDevice()->getID(), getId(), actions);
+
+  supla_http_request_queue::getInstance()->onActionsTriggered(
+      getUser(), getDevice()->getID(), getId(), actions);
 }
 
 // ---------------------------------------------
