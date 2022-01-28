@@ -5,30 +5,24 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/actions/abstract_action_executor.cpp \
-../src/actions/abstract_gate_state_getter.cpp \
 ../src/actions/action_executor.cpp \
 ../src/actions/action_gate_openclose.cpp \
 ../src/actions/action_gate_openclose_search_condition.cpp \
-../src/actions/action_trigger.cpp \
-../src/actions/gate_state_getter.cpp 
+../src/actions/action_trigger.cpp 
 
 CPP_DEPS += \
 ./src/actions/abstract_action_executor.d \
-./src/actions/abstract_gate_state_getter.d \
 ./src/actions/action_executor.d \
 ./src/actions/action_gate_openclose.d \
 ./src/actions/action_gate_openclose_search_condition.d \
-./src/actions/action_trigger.d \
-./src/actions/gate_state_getter.d 
+./src/actions/action_trigger.d 
 
 OBJS += \
 ./src/actions/abstract_action_executor.o \
-./src/actions/abstract_gate_state_getter.o \
 ./src/actions/action_executor.o \
 ./src/actions/action_gate_openclose.o \
 ./src/actions/action_gate_openclose_search_condition.o \
-./src/actions/action_trigger.o \
-./src/actions/gate_state_getter.o 
+./src/actions/action_trigger.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -43,7 +37,7 @@ src/actions/%.o: ../src/actions/%.cpp src/actions/subdir.mk
 clean: clean-src-2f-actions
 
 clean-src-2f-actions:
-	-$(RM) ./src/actions/abstract_action_executor.d ./src/actions/abstract_action_executor.o ./src/actions/abstract_gate_state_getter.d ./src/actions/abstract_gate_state_getter.o ./src/actions/action_executor.d ./src/actions/action_executor.o ./src/actions/action_gate_openclose.d ./src/actions/action_gate_openclose.o ./src/actions/action_gate_openclose_search_condition.d ./src/actions/action_gate_openclose_search_condition.o ./src/actions/action_trigger.d ./src/actions/action_trigger.o ./src/actions/gate_state_getter.d ./src/actions/gate_state_getter.o
+	-$(RM) ./src/actions/abstract_action_executor.d ./src/actions/abstract_action_executor.o ./src/actions/action_executor.d ./src/actions/action_executor.o ./src/actions/action_gate_openclose.d ./src/actions/action_gate_openclose.o ./src/actions/action_gate_openclose_search_condition.d ./src/actions/action_gate_openclose_search_condition.o ./src/actions/action_trigger.d ./src/actions/action_trigger.o
 
 .PHONY: clean-src-2f-actions
 

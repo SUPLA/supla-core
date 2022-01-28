@@ -16,28 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef GATE_STATE_GETTER_MOCK_H_
-#define GATE_STATE_GETTER_MOCK_H_
+#include <converter/value_to_action_converter.h>
 
-#include "device/abstract_gate_state_getter.h"
+value_to_action_converter::value_to_action_converter() {
+  // TODO Auto-generated constructor stub
+}
 
-namespace testing {
+value_to_action_converter::~value_to_action_converter() {
+  // TODO Auto-generated destructor stub
+}
 
-class GateStateGetterMock : public supla_abstract_gate_state_getter {
- private:
-  bool result;
-  bool is_closed;
-
- protected:
- public:
-  GateStateGetterMock();
-  virtual ~GateStateGetterMock();
-  virtual bool get_related_openingsensor_state(int user_id, int device_id,
-                                               int channel_id, bool *is_closed);
-  void set_result(bool result);
-  void set_closed(bool closed);
-};
-
-} /* namespace testing */
-
-#endif /* GATE_STATE_GETTER_MOCK_H_ */

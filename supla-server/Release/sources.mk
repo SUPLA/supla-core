@@ -29,6 +29,7 @@ src/amazon \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
+src/converter \
 src/crypt_blowfish \
 src/device \
 src/google \
