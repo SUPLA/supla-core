@@ -16,13 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CONVERTER_VALUE_TO_ACTION_CONVERTER_H_
-#define CONVERTER_VALUE_TO_ACTION_CONVERTER_H_
+#include <converter/abstract_value_to_action_converter.h>
 
-class value_to_action_converter {
- public:
-  value_to_action_converter();
-  virtual ~value_to_action_converter();
-};
+abstract_value_to_action_converter::abstract_value_to_action_converter(
+    abstract_value_getter *value_getter,
+    supla_abstract_action_executor *action_executor) {
+  this->value_getter = value_getter;
+  this->action_executor = action_executor;
+}
 
-#endif /* CONVERTER_VALUE_TO_ACTION_CONVERTER_H_ */
+abstract_value_to_action_converter::~abstract_value_to_action_converter() {}
+
+bool abstract_value_to_action_converter::convert(void) {
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+
+  if (!value_getter || !action_executor || !value_getter->get_value(value)) {
+    return false;
+  }
+
+  return convert(value, action_executor);
+}

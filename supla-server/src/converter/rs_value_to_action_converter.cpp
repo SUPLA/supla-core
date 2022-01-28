@@ -15,14 +15,10 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "converter/rs_value_to_action_converter.h"
 
-#include <converter/value_to_action_converter.h>
-
-value_to_action_converter::value_to_action_converter() {
-  // TODO Auto-generated constructor stub
+bool rs_value_to_action_converter::convert(
+    const char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_abstract_action_executor *action_executor) {
+  return false;
 }
-
-value_to_action_converter::~value_to_action_converter() {
-  // TODO Auto-generated destructor stub
-}
-
