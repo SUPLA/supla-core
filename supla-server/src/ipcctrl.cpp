@@ -400,7 +400,7 @@ void svr_ipcctrl::get_digiglass_value(const char *cmd) {
     unsigned short Mask = 0;
 
     supla_user::access_device(
-        UserID, DeviceID,
+        UserID, DeviceID, 0,
         [&result, ChannelID, &Mask](supla_device *device) -> void {
           result =
               device->get_channels()->get_dgf_transparency(ChannelID, &Mask);
@@ -429,7 +429,7 @@ void svr_ipcctrl::get_relay_value(const char *cmd) {
     bool result = false;
 
     supla_user::access_device(
-        UserID, DeviceID,
+        UserID, DeviceID, 0,
         [&result, ChannelID, &value](supla_device *device) -> void {
           result = device->get_channels()->get_relay_value(ChannelID, &value);
         });
@@ -455,7 +455,7 @@ void svr_ipcctrl::reset_counters(const char *cmd) {
   if (UserID && DeviceID && ChannelID) {
     bool result = false;
     supla_user::access_device(
-        UserID, DeviceID, [&result, ChannelID](supla_device *device) -> void {
+        UserID, DeviceID, 0, [&result, ChannelID](supla_device *device) -> void {
           result = device->get_channels()->reset_counters(ChannelID);
         });
 
@@ -480,7 +480,7 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
     bool result = false;
 
     supla_user::access_device(
-        UserID, DeviceID, [&result, ChannelID](supla_device *device) -> void {
+        UserID, DeviceID, 0,[&result, ChannelID](supla_device *device) -> void {
           result = device->get_channels()->recalibrate(ChannelID, 0, true);
         });
 
@@ -502,7 +502,7 @@ void svr_ipcctrl::enter_cfg_mode(const char *cmd) {
   if (UserID && DeviceID) {
     bool result = false;
 
-    supla_user::access_device(UserID, DeviceID,
+    supla_user::access_device(UserID, DeviceID, 0,
                               [&result](supla_device *device) -> void {
                                 result = device->enter_cfg_mode();
                               });
@@ -599,7 +599,7 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
       result = user->get_channel_groups()->set_char_value(CGID, Value);
     } else if (!group && DeviceID) {
       user->access_device(
-          DeviceID,
+          DeviceID, 0,
           [&result, user, DeviceID, CGID, Value,
            this](supla_device *device) -> void {
             // onChannelValueChangeEvent must be called before
@@ -686,7 +686,7 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
           CGID, Color, ColorBrightness, Brightness, TurnOnOff);
     } else if (!group && DeviceID) {
       user->access_device(
-          DeviceID,
+          DeviceID, 0,
           [&result, this, user, DeviceID, CGID, Color, ColorBrightness,
            Brightness, TurnOnOff](supla_device *device) -> void {
             // onChannelValueChangeEvent must be called before
@@ -734,7 +734,7 @@ void svr_ipcctrl::set_digiglass_value(const char *cmd) {
     bool result = false;
 
     supla_user::access_device(
-        UserID, DeviceID,
+        UserID, DeviceID, 0,
         [&result, ChannelID, ActiveBits, Mask](supla_device *device) -> void {
           result = device->get_channels()->set_dgf_transparency(
               0, ChannelID, ActiveBits & 0xFFFF, Mask & 0xFFFF);
@@ -768,7 +768,7 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
     bool result = false;
 
     user->access_device(
-        DeviceID,
+        DeviceID, 0,
         [&result, this, user, DeviceID, ChannelID,
          open](supla_device *device) -> void {
           // onChannelValueChangeEvent must be called before
@@ -833,7 +833,7 @@ void svr_ipcctrl::channel_action(
          &ChannelID);
 
   supla_user::access_device(
-      UserID, DeviceID, [&result, ChannelID, f](supla_device *device) -> void {
+      UserID, DeviceID, 0, [&result, ChannelID, f](supla_device *device) -> void {
         result = f(device->get_channels(), ChannelID);
       });
 

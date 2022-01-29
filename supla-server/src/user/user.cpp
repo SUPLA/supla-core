@@ -430,21 +430,26 @@ supla_device *supla_user::get_device(int DeviceID) {
 }
 
 void supla_user::access_device(
-    int DeviceID, std::function<void(supla_device *device)> on_device) {
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device) {
-    on_device(device);
-    device->releasePtr();
+    int DeviceId, int ChannelId,
+    std::function<void(supla_device *device)> on_device) {
+  if (DeviceId || ChannelId) {
+    supla_device *device = DeviceId
+                               ? device_container->findByID(DeviceId)
+                               : device_container->findByChannelID(ChannelId);
+    if (device) {
+      on_device(device);
+      device->releasePtr();
+    }
   }
 }
 
 // static
 void supla_user::access_device(
-    int UserID, int DeviceID,
+    int UserID, int DeviceId, int ChannelId,
     std::function<void(supla_device *device)> on_device) {
   supla_user *user = find(UserID, false);
   if (user) {
-    user->access_device(DeviceID, on_device);
+    user->access_device(DeviceId, ChannelId, on_device);
   }
 }
 
