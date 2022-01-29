@@ -29,15 +29,11 @@ channel_json_config_getter::~channel_json_config_getter(void) {}
 channel_json_config *channel_json_config_getter::get_config(int user_id,
                                                             int device_id,
                                                             int channel_id) {
-  supla_user *user = supla_user::find(user_id, false);
-  if (!user) {
-    return NULL;
-  }
-
   channel_json_config *result = NULL;
 
-  user->access_device(
-      device_id, [&result, channel_id](supla_device *device) -> void {
+  supla_user::access_device(
+      user_id, device_id, channel_id,
+      [&result, channel_id](supla_device *device) -> void {
         result = device->get_channels()->get_json_config(channel_id);
       });
   return result;
