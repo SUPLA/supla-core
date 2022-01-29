@@ -53,6 +53,7 @@ typedef struct {
   int actionId;
   bool channelGroup;
   int subjectId;
+  int sourceChannelId;
 } _at_config_action_t;
 
 typedef struct {
@@ -69,6 +70,7 @@ class action_trigger_config : public channel_json_config {
   static const char disables_local_operation_key[];
   static const char action_key[];
   static const char actions_key[];
+  static const char param_key[];
   int to_cap(cJSON *item);
   const char *to_string(int cap);
   int to_cap(const char *str);

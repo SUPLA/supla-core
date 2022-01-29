@@ -282,12 +282,16 @@ TEST_F(ActionTriggerConfigTest, readActiveTriggers) {
 
   EXPECT_EQ(config->get_active_actions(), (unsigned int)0);
 
+  config->set_properties(
+      "{\"actionTriggerCapabilities\":[\"HOLD\", \"SHORT_PRESS_X1\", "
+      "\"TOGGLE_X1\"]}");
+
   config->set_user_config(
       "{\"relatedChannelId\":4266,\"hideInChannelsList\":true,\"actions\":{"
       "\"TOGGLE_X1\":{\"subjectType\":\"other\",\"action\":{\"id\":10200}}}}");
 
   EXPECT_EQ(config->get_active_actions(),
-            (unsigned int)(SUPLA_ACTION_CAP_TOGGLE_x5));
+            (unsigned int)(SUPLA_ACTION_CAP_TOGGLE_x1));
 
   delete config;
 }
@@ -316,6 +320,7 @@ TEST_F(ActionTriggerConfigTest, actionShutRevelal) {
   action = config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_HOLD);
   EXPECT_EQ(action.actionId, ACTION_SHUT);
   EXPECT_EQ(action.subjectId, 3611);
+  EXPECT_EQ(action.sourceChannelId, 0);
   EXPECT_FALSE(action.channelGroup);
 
   delete config;
@@ -491,6 +496,7 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
       config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x5);
   EXPECT_EQ(action.actionId, ACTION_SET_RGBW_PARAMETERS);
   EXPECT_EQ(action.subjectId, 1551);
+  EXPECT_EQ(action.sourceChannelId, 0);
   EXPECT_FALSE(action.channelGroup);
 
   _at_config_rgbw_t rgbw = config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x5);
@@ -516,6 +522,7 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
       config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(action.actionId, ACTION_REVEAL_PARTIALLY);
   EXPECT_EQ(action.subjectId, 3611);
+  EXPECT_EQ(action.sourceChannelId, 0);
   EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 65);
   EXPECT_FALSE(action.channelGroup);
 
@@ -536,6 +543,7 @@ TEST_F(ActionTriggerConfigTest, actionShutPartially) {
       config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(action.actionId, ACTION_SHUT_PARTIALLY);
   EXPECT_EQ(action.subjectId, 45678);
+  EXPECT_EQ(action.sourceChannelId, 0);
   EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 20);
   EXPECT_FALSE(action.channelGroup);
 
@@ -556,6 +564,7 @@ TEST_F(ActionTriggerConfigTest, actionTurnOn) {
       SUPLA_ACTION_CAP_SHORT_PRESS_x5);
   EXPECT_EQ(action.actionId, ACTION_TURN_ON);
   EXPECT_EQ(action.subjectId, 3329);
+  EXPECT_EQ(action.sourceChannelId, 0);
   EXPECT_FALSE(action.channelGroup);
 
   delete config;
@@ -575,6 +584,7 @@ TEST_F(ActionTriggerConfigTest, actionTurnOnTheGroup) {
       SUPLA_ACTION_CAP_SHORT_PRESS_x5);
   EXPECT_EQ(action.actionId, ACTION_TURN_ON);
   EXPECT_EQ(action.subjectId, 3329);
+  EXPECT_EQ(action.sourceChannelId, 0);
   EXPECT_TRUE(action.channelGroup);
 
   delete config;
@@ -618,6 +628,28 @@ TEST_F(ActionTriggerConfigTest, checkingIfTheChannelIdExists) {
                            SUPLA_ACTION_CAP_SHORT_PRESS_x4);
 
   EXPECT_TRUE(config->channel_exists(3));
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, actionCopyToTheChannelGroup) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channelGroup\",\"subjectId\":31,\"action\":{\"id\":"
+      "10100,\"param\":{\"sourceChannelId\":46868}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  _at_config_action_t action =
+      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(action.actionId, ACTION_COPY);
+  EXPECT_EQ(action.subjectId, 31);
+  EXPECT_EQ(action.sourceChannelId, 46868);
+  EXPECT_TRUE(action.channelGroup);
 
   delete config;
 }
