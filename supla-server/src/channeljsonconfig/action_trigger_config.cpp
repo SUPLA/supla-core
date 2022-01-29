@@ -50,6 +50,9 @@ const char action_trigger_config::action_key[] = "action";
 // static
 const char action_trigger_config::actions_key[] = "actions";
 
+// static
+const char action_trigger_config::param_key[] = "param";
+
 action_trigger_config::action_trigger_config(void) : channel_json_config() {}
 
 action_trigger_config::action_trigger_config(channel_json_config *root)
@@ -239,6 +242,15 @@ _at_config_action_t action_trigger_config::get_action_assigned_to_capability(
     cJSON *id = cJSON_GetObjectItem(action, "id");
     if (id && cJSON_IsNumber(id)) {
       result.actionId = id->valueint;
+    }
+
+    cJSON *param = cJSON_GetObjectItem(action, param_key);
+
+    if (param) {
+      cJSON *sourceChannelId = cJSON_GetObjectItem(param, "sourceChannelId");
+      if (sourceChannelId && cJSON_IsNumber(sourceChannelId)) {
+        result.sourceChannelId = sourceChannelId->valueint;
+      }
     }
   }
 
