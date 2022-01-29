@@ -162,10 +162,11 @@ class supla_user {
   supla_device *device_by_channelid(int ChannelID);
   // ----
 
-  void access_device(int DeviceID,
+  void access_device(int DeviceId, int ChannelId,  // DeviceId or ChannelId
                      std::function<void(supla_device *device)> on_device);
-  static void access_device(int UserID, int DeviceID,
-                     std::function<void(supla_device *device)> on_device);
+  static void access_device(
+      int UserID, int DeviceId, int ChannelId,  // DeviceId or ChannelId
+      std::function<void(supla_device *device)> on_device);
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,

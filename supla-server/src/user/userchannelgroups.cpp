@@ -69,7 +69,7 @@ bool supla_user_channelgroups::for_each_channel(
   for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
     user->access_device(
-        it->getDeviceId(),
+        it->getDeviceId(), 0,
         [&result, f, &it, &pairs](supla_device *device) -> void {
           if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
             result = true;
