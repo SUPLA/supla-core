@@ -17,7 +17,9 @@
  */
 
 #include "gate_state_getter.h"
+
 #include <list>
+
 #include "device.h"
 
 gate_state_getter::gate_state_getter(void)
@@ -29,27 +31,27 @@ bool gate_state_getter::get_openingsensor_state(supla_user *user,
                                                 int channel_id,
                                                 bool *is_closed) {
   bool result = false;
-  supla_device *device = user->device_by_channelid(channel_id);
-  if (device) {
-    supla_device_channels *channels = device->get_channels();
+  user->access_device(
+      0, channel_id,
+      [&result, &is_closed, channel_id](supla_device *device) -> void {
+        supla_device_channels *channels = device->get_channels();
 
-    if (channels->is_channel_online(channel_id)) {
-      int func = channels->get_channel_func(channel_id);
+        if (channels->is_channel_online(channel_id)) {
+          int func = channels->get_channel_func(channel_id);
 
-      switch (func) {
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-        case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-          char v = 0;
-          if (channels->get_channel_char_value(channel_id, &v)) {
-            *is_closed = v != 0;
-            result = true;
+          switch (func) {
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+              char v = 0;
+              if (channels->get_channel_char_value(channel_id, &v)) {
+                *is_closed = v != 0;
+                result = true;
+              }
+              break;
           }
-          break;
-      }
-    }
+        }
+      });
 
-    device->releasePtr();
-  }
   return result;
 }
 
@@ -61,33 +63,30 @@ bool gate_state_getter::get_related_openingsensor_state(int user_id,
     return false;
   }
 
-  supla_user *user = supla_user::find(user_id, false);
-  if (!user) {
-    return false;
-  }
-
   bool result = false;
 
-  supla_device *device = user->get_device(master_device_id);
-  if (device) {
-    supla_device_channels *channels = device->get_channels();
-    if (channels->is_channel_online(master_channel_id)) {
-      int func = channels->get_channel_func(master_channel_id);
+  supla_user::access_device(
+      user_id, master_device_id, master_channel_id,
+      [&result, master_channel_id, &is_closed,
+       this](supla_device *device) -> void {
+        supla_device_channels *channels = device->get_channels();
+        if (channels->is_channel_online(master_channel_id)) {
+          int func = channels->get_channel_func(master_channel_id);
 
-      switch (func) {
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
-        case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-          std::list<int> rel =
-              device->get_channels()->related_channel(master_channel_id);
+          switch (func) {
+            case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+            case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+              std::list<int> rel =
+                  device->get_channels()->related_channel(master_channel_id);
 
-          if (rel.size()) {
-            result = get_openingsensor_state(user, rel.front(), is_closed);
+              if (rel.size()) {
+                result = get_openingsensor_state(device->getUser(), rel.front(),
+                                                 is_closed);
+              }
+              break;
           }
-          break;
-      }
-    }
-    device->releasePtr();
-  }
+        }
+      });
 
   return result;
 }
