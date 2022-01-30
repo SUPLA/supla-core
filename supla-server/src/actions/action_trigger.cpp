@@ -22,10 +22,12 @@
 
 supla_action_trigger::supla_action_trigger(
     supla_abstract_action_executor *aexec, action_trigger_config *config,
-    supla_abstract_device_finder *dev_finder) {
+    supla_abstract_device_finder *dev_finder,
+    supla_abstract_value_getter *value_getter) {
   this->aexec = aexec;
   this->config = config;
   this->dev_finder = dev_finder;
+  this->value_getter = value_getter;
 }
 
 supla_action_trigger::~supla_action_trigger(void) {}
@@ -124,6 +126,8 @@ void supla_action_trigger::execute_actions(int user_id, int source_channel_id,
         break;
       case ACTION_TOGGLE:
         aexec->toggle();
+        break;
+        aexec->copy(value_getter, 0, action.sourceChannelId);
         break;
       case ACTION_FORWARD_OUTSIDE:
         aexec->forward_outside(cap);

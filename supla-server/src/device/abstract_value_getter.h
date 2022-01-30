@@ -21,7 +21,7 @@
 
 #include "proto.h"
 
-class abstract_value_getter {
+class supla_abstract_value_getter {
  private:
   int user_id;
   int device_id;
@@ -29,16 +29,17 @@ class abstract_value_getter {
 
  protected:
   virtual bool _get_value(int user_id, int device_id, int channel_id,
-                          char value[SUPLA_CHANNELVALUE_SIZE]) = 0;
+                          char value[SUPLA_CHANNELVALUE_SIZE],
+                          int *channelFunc) = 0;
 
  public:
-  abstract_value_getter();
-  abstract_value_getter(int user_id, int device_id, int channel_id);
-  virtual ~abstract_value_getter();
+  supla_abstract_value_getter();
+  supla_abstract_value_getter(int user_id, int device_id, int channel_id);
+  virtual ~supla_abstract_value_getter();
 
-  bool get_value(char value[SUPLA_CHANNELVALUE_SIZE]);
+  bool get_value(char value[SUPLA_CHANNELVALUE_SIZE], int *channelFunc);
   bool get_value(int user_id, int device_id, int channel_id,
-                 char value[SUPLA_CHANNELVALUE_SIZE]);
+                 char value[SUPLA_CHANNELVALUE_SIZE], int *channelFunc);
 };
 
 #endif /* ABSTRACT_VALUE_GETTER_H_ */

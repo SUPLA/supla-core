@@ -16,20 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VALUE_TO_ACTION_CONVERTER_H_
-#define VALUE_TO_ACTION_CONVERTER_H_
+#include "ValueGetterStub.h"
 
-#include <abstract_value_getter.h>
-#include "actions/abstract_action_executor.h"
-#include "proto.h"
+#include <string.h>
 
-class abstract_value_to_action_converter {
- public:
-  abstract_value_to_action_converter(void);
+namespace testing {
+ValueGetterStub::ValueGetterStub(void) : supla_abstract_value_getter() {
+  channelFunc = 0;
+  memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
+}
 
-  virtual bool convert(const char value[SUPLA_CHANNELVALUE_SIZE],
-                       supla_abstract_action_executor *action_executor) = 0;
-  virtual ~abstract_value_to_action_converter();
-};
+ValueGetterStub::~ValueGetterStub(void) {}
 
-#endif /* VALUE_TO_ACTION_CONVERTER_H_ */
+bool ValueGetterStub::_get_value(int user_id, int device_id, int channel_id,
+                                 char value[SUPLA_CHANNELVALUE_SIZE],
+                                 int *channelFunc) {
+  memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
+  if (*channelFunc) {
+    *channelFunc = this->channelFunc;
+  }
+
+  return true;
+}
+
+}  // namespace testing

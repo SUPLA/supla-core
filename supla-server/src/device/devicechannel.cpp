@@ -30,6 +30,7 @@
 #include "channeljsonconfig/electricity_meter_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "database.h"
+#include "device/value_getter.h"
 #include "devicefinder.h"
 #include "log.h"
 #include "safearray.h"
@@ -1404,14 +1405,20 @@ void supla_device_channel::action_trigger(int actions) {
   supla_action_executor *aexec = new supla_action_executor();
   action_trigger_config *at_config = new action_trigger_config(json_config);
   supla_device_finder *dev_finder = new supla_device_finder();
+  supla_value_getter *value_getter = new supla_value_getter();
 
-  if (aexec && at_config) {
+  if (aexec && at_config && dev_finder && value_getter) {
     supla_action_trigger *trigger =
-        new supla_action_trigger(aexec, at_config, dev_finder);
+        new supla_action_trigger(aexec, at_config, dev_finder, value_getter);
     if (trigger) {
       trigger->execute_actions(getUserID(), getId(), actions);
       delete trigger;
     }
+  }
+
+  if (value_getter) {
+    delete value_getter;
+    value_getter = NULL;
   }
 
   if (dev_finder) {

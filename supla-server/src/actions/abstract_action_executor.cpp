@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/abstract_action_executor.h>
+#include "actions/abstract_action_executor.h"
+
+#include "converter/any_value_to_action_converter.h"
 
 supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->user = NULL;
@@ -107,4 +109,22 @@ int supla_abstract_action_executor::get_channel_id(void) {
 
 int supla_abstract_action_executor::get_group_id(void) {
   return is_group ? subject_id : 0;
+}
+
+void supla_abstract_action_executor::copy(
+    supla_abstract_value_getter *value_getter, int sourceDeviceId,
+    int sourceChannelId) {
+  if (value_getter) {
+    char value[SUPLA_CHANNELVALUE_SIZE] = {};
+    int channelFunc = 0;
+    if (value_getter->get_value(get_user_id(), sourceDeviceId, sourceChannelId,
+                                value, &channelFunc)) {
+      any_value_to_action_converter *converter =
+          new any_value_to_action_converter();
+      if (converter) {
+        converter->convert(value, channelFunc, this);
+        delete converter;
+      }
+    }
+  }
 }
