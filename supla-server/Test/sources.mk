@@ -45,7 +45,6 @@ src/test/doubles/actions \
 src/test/doubles/asynctask \
 src/test/doubles/channeljsonconfig \
 src/test/doubles/device \
-src/test/doubles/integration/actions \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/mqtt \
@@ -53,6 +52,7 @@ src/test/google \
 src/test/gtest \
 src/test/http \
 src/test/integration \
+src/test/integration/actions \
 src/test/integration/asynctask \
 src/test/integration/mqtt \
 src/test/mqtt \
