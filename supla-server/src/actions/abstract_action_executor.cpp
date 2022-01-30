@@ -90,6 +90,22 @@ void supla_abstract_action_executor::access_device(
   }
 }
 
+void supla_abstract_action_executor::execute_action(
+    std::function<void(supla_user_channelgroups *, supla_device_channels *)>
+        f) {
+  supla_user_channelgroups *channel_groups = get_channel_groups();
+  if (channel_groups) {
+    f(channel_groups, NULL);
+  } else {
+    access_device([f](supla_device *device) -> void {
+      supla_device_channels *channels = device->get_channels();
+      if (channels) {
+        f(NULL, channels);
+      }
+    });
+  }
+}
+
 supla_user_channelgroups *supla_abstract_action_executor::get_channel_groups(
     void) {
   return is_group && user ? user->get_channel_groups() : NULL;

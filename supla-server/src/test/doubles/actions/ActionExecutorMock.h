@@ -53,6 +53,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
  public:
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
+  void access_device(std::function<void(supla_device *device)> on_device);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);

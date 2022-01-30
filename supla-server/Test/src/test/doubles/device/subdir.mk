@@ -4,12 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/device/DeviceStub.cpp \
 ../src/test/doubles/device/ValueGetterStub.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/device/DeviceStub.d \
 ./src/test/doubles/device/ValueGetterStub.d 
 
 OBJS += \
+./src/test/doubles/device/DeviceStub.o \
 ./src/test/doubles/device/ValueGetterStub.o 
 
 
@@ -25,7 +28,7 @@ src/test/doubles/device/%.o: ../src/test/doubles/device/%.cpp src/test/doubles/d
 clean: clean-src-2f-test-2f-doubles-2f-device
 
 clean-src-2f-test-2f-doubles-2f-device:
-	-$(RM) ./src/test/doubles/device/ValueGetterStub.d ./src/test/doubles/device/ValueGetterStub.o
+	-$(RM) ./src/test/doubles/device/DeviceStub.d ./src/test/doubles/device/DeviceStub.o ./src/test/doubles/device/ValueGetterStub.d ./src/test/doubles/device/ValueGetterStub.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-device
 

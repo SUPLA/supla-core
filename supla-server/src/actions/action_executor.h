@@ -24,11 +24,6 @@
 #include "actions/abstract_action_executor.h"
 
 class supla_action_executor : public supla_abstract_action_executor {
- private:
-  void execute_action(
-      std::function<void(supla_user_channelgroups *, supla_device_channels *)>
-          f);
-
  public:
   supla_action_executor(void);
   supla_action_executor(supla_user *user, int device_id, int channel_id);
