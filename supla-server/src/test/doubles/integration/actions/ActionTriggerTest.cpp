@@ -27,6 +27,7 @@ ActionTriggerTest::ActionTriggerTest(void) {
   at_config = NULL;
   aexec = NULL;
   dev_finder = NULL;
+  value_getter = NULL;
 }
 ActionTriggerTest::~ActionTriggerTest(void) {}
 
@@ -40,7 +41,10 @@ void ActionTriggerTest::SetUp() {
   dev_finder = new DeviceFinderStub();
   EXPECT_TRUE(dev_finder != NULL);
 
-  at = new supla_action_trigger(aexec, at_config, dev_finder);
+  value_getter = new ValueGetterStub();
+  EXPECT_TRUE(value_getter != NULL);
+
+  at = new supla_action_trigger(aexec, at_config, dev_finder, value_getter);
   EXPECT_TRUE(at != NULL);
 }
 

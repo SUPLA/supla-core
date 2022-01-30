@@ -24,6 +24,7 @@
 #include "actions/action_trigger.h"
 #include "channeljsonconfig/action_trigger_config.h"
 #include "doubles/device/DeviceFinderStub.h"
+#include "doubles/device/ValueGetterStub.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
@@ -34,6 +35,7 @@ class ActionTriggerTest : public Test {
   action_trigger_config *at_config;
   ActionExecutorMock *aexec;
   DeviceFinderStub *dev_finder;
+  ValueGetterStub *value_getter;
 
  public:
   ActionTriggerTest(void);

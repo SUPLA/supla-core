@@ -455,7 +455,8 @@ void svr_ipcctrl::reset_counters(const char *cmd) {
   if (UserID && DeviceID && ChannelID) {
     bool result = false;
     supla_user::access_device(
-        UserID, DeviceID, 0, [&result, ChannelID](supla_device *device) -> void {
+        UserID, DeviceID, 0,
+        [&result, ChannelID](supla_device *device) -> void {
           result = device->get_channels()->reset_counters(ChannelID);
         });
 
@@ -480,7 +481,8 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
     bool result = false;
 
     supla_user::access_device(
-        UserID, DeviceID, 0,[&result, ChannelID](supla_device *device) -> void {
+        UserID, DeviceID, 0,
+        [&result, ChannelID](supla_device *device) -> void {
           result = device->get_channels()->recalibrate(ChannelID, 0, true);
         });
 
@@ -833,7 +835,8 @@ void svr_ipcctrl::channel_action(
          &ChannelID);
 
   supla_user::access_device(
-      UserID, DeviceID, 0, [&result, ChannelID, f](supla_device *device) -> void {
+      UserID, DeviceID, 0,
+      [&result, ChannelID, f](supla_device *device) -> void {
         result = f(device->get_channels(), ChannelID);
       });
 

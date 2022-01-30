@@ -18,34 +18,37 @@
 
 #include <abstract_value_getter.h>
 
-abstract_value_getter::abstract_value_getter() {
+supla_abstract_value_getter::supla_abstract_value_getter() {
   this->user_id = 0;
   this->device_id = 0;
   this->channel_id = 0;
 }
-abstract_value_getter::abstract_value_getter(int user_id, int device_id,
-                                             int channel_id) {
+supla_abstract_value_getter::supla_abstract_value_getter(int user_id,
+                                                         int device_id,
+                                                         int channel_id) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 }
 
-abstract_value_getter::~abstract_value_getter() {}
+supla_abstract_value_getter::~supla_abstract_value_getter() {}
 
-bool abstract_value_getter::get_value(char value[SUPLA_CHANNELVALUE_SIZE]) {
-  if (!user_id || !device_id || !channel_id) {
+bool supla_abstract_value_getter::get_value(char value[SUPLA_CHANNELVALUE_SIZE],
+                                            int *channelFunc) {
+  if (!user_id || !device_id || !channel_id || !channelFunc) {
     return false;
   }
 
-  return _get_value(user_id, device_id, channel_id, value);
+  return _get_value(user_id, device_id, channel_id, value, channelFunc);
 }
 
-bool abstract_value_getter::get_value(int user_id, int device_id,
-                                      int channel_id,
-                                      char value[SUPLA_CHANNELVALUE_SIZE]) {
+bool supla_abstract_value_getter::get_value(int user_id, int device_id,
+                                            int channel_id,
+                                            char value[SUPLA_CHANNELVALUE_SIZE],
+                                            int *channelFunc) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  return get_value(value);
+  return get_value(value, channelFunc);
 }

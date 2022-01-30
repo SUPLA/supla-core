@@ -18,10 +18,35 @@
 
 #include "converter/any_value_to_action_converter.h"
 
-any_value_to_action_converter::any_value_to_action_converter() {
-  // TODO Auto-generated constructor stub
-}
+#include "converter/rs_value_to_action_converter.h"
 
-any_value_to_action_converter::~any_value_to_action_converter() {
-  // TODO Auto-generated destructor stub
+any_value_to_action_converter::any_value_to_action_converter() {}
+
+any_value_to_action_converter::~any_value_to_action_converter() {}
+
+bool any_value_to_action_converter::convert(
+    const char value[SUPLA_CHANNELVALUE_SIZE], int channel_func,
+    supla_abstract_action_executor *action_executor) {
+  if (!channel_func || !action_executor) {
+    return false;
+  }
+
+  bool result = false;
+
+  abstract_value_to_action_converter *converter = NULL;
+
+  switch (channel_func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      converter = new rs_value_to_action_converter();
+      break;
+  }
+
+  if (converter) {
+    result = converter->convert(value, action_executor);
+    delete converter;
+    converter = NULL;
+  }
+
+  return result;
 }

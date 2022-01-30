@@ -18,21 +18,6 @@
 
 #include <converter/abstract_value_to_action_converter.h>
 
-abstract_value_to_action_converter::abstract_value_to_action_converter(
-    abstract_value_getter *value_getter,
-    supla_abstract_action_executor *action_executor) {
-  this->value_getter = value_getter;
-  this->action_executor = action_executor;
-}
+abstract_value_to_action_converter::abstract_value_to_action_converter() {}
 
 abstract_value_to_action_converter::~abstract_value_to_action_converter() {}
-
-bool abstract_value_to_action_converter::convert(void) {
-  char value[SUPLA_CHANNELVALUE_SIZE] = {};
-
-  if (!value_getter || !action_executor || !value_getter->get_value(value)) {
-    return false;
-  }
-
-  return convert(value, action_executor);
-}

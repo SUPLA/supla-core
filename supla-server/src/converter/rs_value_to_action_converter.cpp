@@ -20,5 +20,11 @@
 bool rs_value_to_action_converter::convert(
     const char value[SUPLA_CHANNELVALUE_SIZE],
     supla_abstract_action_executor *action_executor) {
+  if (value && action_executor) {
+    TDSC_RollerShutterValue *rs_val = (TDSC_RollerShutterValue *)value;
+    if (rs_val->position >= 0 && rs_val->position <= 100) {
+      action_executor->shut((const char *)&rs_val->position);
+    }
+  }
   return false;
 }
