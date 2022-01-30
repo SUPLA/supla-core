@@ -6,30 +6,24 @@
 CPP_SRCS += \
 ../src/device/abstract_gate_state_getter.cpp \
 ../src/device/abstract_value_getter.cpp \
-../src/device/abstractdevicefinder.cpp \
 ../src/device/device.cpp \
 ../src/device/devicechannel.cpp \
-../src/device/devicefinder.cpp \
 ../src/device/gate_state_getter.cpp \
 ../src/device/value_getter.cpp 
 
 CPP_DEPS += \
 ./src/device/abstract_gate_state_getter.d \
 ./src/device/abstract_value_getter.d \
-./src/device/abstractdevicefinder.d \
 ./src/device/device.d \
 ./src/device/devicechannel.d \
-./src/device/devicefinder.d \
 ./src/device/gate_state_getter.d \
 ./src/device/value_getter.d 
 
 OBJS += \
 ./src/device/abstract_gate_state_getter.o \
 ./src/device/abstract_value_getter.o \
-./src/device/abstractdevicefinder.o \
 ./src/device/device.o \
 ./src/device/devicechannel.o \
-./src/device/devicefinder.o \
 ./src/device/gate_state_getter.o \
 ./src/device/value_getter.o 
 
@@ -46,7 +40,7 @@ src/device/%.o: ../src/device/%.cpp src/device/subdir.mk
 clean: clean-src-2f-device
 
 clean-src-2f-device:
-	-$(RM) ./src/device/abstract_gate_state_getter.d ./src/device/abstract_gate_state_getter.o ./src/device/abstract_value_getter.d ./src/device/abstract_value_getter.o ./src/device/abstractdevicefinder.d ./src/device/abstractdevicefinder.o ./src/device/device.d ./src/device/device.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/devicefinder.d ./src/device/devicefinder.o ./src/device/gate_state_getter.d ./src/device/gate_state_getter.o ./src/device/value_getter.d ./src/device/value_getter.o
+	-$(RM) ./src/device/abstract_gate_state_getter.d ./src/device/abstract_gate_state_getter.o ./src/device/abstract_value_getter.d ./src/device/abstract_value_getter.o ./src/device/device.d ./src/device/device.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/gate_state_getter.d ./src/device/gate_state_getter.o ./src/device/value_getter.d ./src/device/value_getter.o
 
 .PHONY: clean-src-2f-device
 

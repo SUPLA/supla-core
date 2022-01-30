@@ -85,8 +85,8 @@ void supla_abstract_action_executor::set_group_id(int user_id, int group_id) {
 
 void supla_abstract_action_executor::access_device(
     std::function<void(supla_device *device)> on_device) {
-  if (user && device_id) {
-    return user->access_device(device_id, 0, on_device);
+  if (user && (device_id || (subject_id && !is_group))) {
+    return user->access_device(device_id, is_group ? 0 : subject_id, on_device);
   }
 }
 
