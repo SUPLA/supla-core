@@ -26,6 +26,11 @@ ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
 
 ActionExecutorMock::~ActionExecutorMock() {}
 
+void ActionExecutorMock::access_device(
+    std::function<void(supla_device *device)> on_device) {
+  supla_abstract_action_executor::access_device(on_device);
+}
+
 void ActionExecutorMock::clear(void) {
   this->on_counter = 0;
   this->color_counter = 0;

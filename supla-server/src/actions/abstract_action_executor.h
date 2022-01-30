@@ -33,6 +33,9 @@ class supla_abstract_action_executor {
   bool is_group;
 
  protected:
+  void execute_action(
+      std::function<void(supla_user_channelgroups *, supla_device_channels *)>
+          f);
   void access_device(std::function<void(supla_device *device)> on_device);
   supla_user *get_user(void);
   supla_user_channelgroups *get_channel_groups(void);

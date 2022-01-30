@@ -33,22 +33,6 @@ supla_action_executor::supla_action_executor(int user_id, int device_id,
                                              int channel_id)
     : supla_abstract_action_executor(user_id, device_id, channel_id) {}
 
-void supla_action_executor::execute_action(
-    std::function<void(supla_user_channelgroups *, supla_device_channels *)>
-        f) {
-  supla_user_channelgroups *channel_groups = get_channel_groups();
-  if (channel_groups) {
-    f(channel_groups, NULL);
-  } else {
-    access_device([f](supla_device *device) -> void {
-      supla_device_channels *channels = device->get_channels();
-      if (channels) {
-        f(NULL, channels);
-      }
-    });
-  }
-}
-
 void supla_action_executor::set_on(bool on) {
   execute_action([this, on](supla_user_channelgroups *channel_groups,
                             supla_device_channels *channels) -> void {
