@@ -49,6 +49,11 @@ void ActionTriggerTest::SetUp() {
 }
 
 void ActionTriggerTest::TearDown() {
+  if (value_getter) {
+    delete value_getter;
+    value_getter = NULL;
+  }
+
   if (at_config) {
     delete at_config;
     at_config = NULL;

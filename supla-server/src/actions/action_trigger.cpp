@@ -32,7 +32,8 @@ supla_action_trigger::supla_action_trigger(
 
 supla_action_trigger::~supla_action_trigger(void) {}
 
-void supla_action_trigger::execute_actions(int user_id, int source_channel_id,
+void supla_action_trigger::execute_actions(int user_id,
+                                           int subject_id_if_not_set,
                                            unsigned int caps) {
   if (!aexec || !config) {
     return;
@@ -49,7 +50,7 @@ void supla_action_trigger::execute_actions(int user_id, int source_channel_id,
     _at_config_action_t action = config->get_action_assigned_to_capability(cap);
 
     if (!action.subjectId && action.actionId == ACTION_FORWARD_OUTSIDE) {
-      action.subjectId = source_channel_id;
+      action.subjectId = subject_id_if_not_set;
     }
 
     if (!action.actionId || !action.subjectId) {
