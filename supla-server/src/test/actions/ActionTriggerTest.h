@@ -16,24 +16,32 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DEVICE_FINDER_STUB_H_
-#define DEVICE_FINDER_STUB_H_
+#ifndef ACTIONTRIGGERTEST_H_
+#define ACTIONTRIGGERTEST_H_
 
-#include "device/abstractdevicefinder.h"
+#include <doubles/actions/ActionExecutorMock.h>
+
+#include "actions/action_trigger.h"
+#include "channeljsonconfig/action_trigger_config.h"
+#include "doubles/device/ValueGetterStub.h"
+#include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class DeviceFinderStub : public supla_abstract_device_finder {
+class ActionTriggerTest : public Test {
  protected:
-  int result;
+  supla_action_trigger *at;
+  action_trigger_config *at_config;
+  ActionExecutorMock *aexec;
+  ValueGetterStub *value_getter;
 
  public:
-  DeviceFinderStub(void);
-  virtual ~DeviceFinderStub(void);
-  void setResult(int result);
-  virtual int find_device_id(int userId, int channelId);
+  ActionTriggerTest(void);
+  virtual ~ActionTriggerTest(void);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* DEVICE_FINDER_STUB_H_ */
+#endif /* ACTIONTRIGGERTEST_H_ */

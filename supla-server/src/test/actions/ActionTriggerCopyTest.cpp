@@ -34,7 +34,6 @@ void ActionTriggerCopyTest::SetUp() {
       "{\"actionTriggerCapabilities\":[\"TURN_ON\",\"TURN_OFF\",\"TOGGLE_X1\","
       "\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\",\"TOGGLE_X5\"]}");
 
-  dev_finder->setResult(123);
   supla_user::find(1, true);
 }
 

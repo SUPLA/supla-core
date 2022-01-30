@@ -23,19 +23,16 @@
 #include <actions/abstract_action_executor.h>
 
 #include "channeljsonconfig/action_trigger_config.h"
-#include "device/abstractdevicefinder.h"
 
 class supla_action_trigger {
  private:
   action_trigger_config *config;
   supla_abstract_action_executor *aexec;
-  supla_abstract_device_finder *dev_finder;
   supla_abstract_value_getter *value_getter;
 
  public:
   supla_action_trigger(supla_abstract_action_executor *aexec,
                        action_trigger_config *config,
-                       supla_abstract_device_finder *dev_finder,
                        supla_abstract_value_getter *value_getter);
   ~supla_action_trigger(void);
 

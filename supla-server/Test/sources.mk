@@ -37,6 +37,7 @@ src/http \
 src/json \
 src/mqtt \
 src/test \
+src/test/actions \
 src/test/alexa \
 src/test/asynctask \
 src/test/channeljsonconfig \
@@ -52,7 +53,6 @@ src/test/google \
 src/test/gtest \
 src/test/http \
 src/test/integration \
-src/test/integration/actions \
 src/test/integration/asynctask \
 src/test/integration/mqtt \
 src/test/mqtt \

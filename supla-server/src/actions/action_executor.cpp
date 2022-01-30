@@ -254,14 +254,13 @@ void supla_action_executor::open_close_without_canceling_tasks() {
 }
 
 void supla_action_executor::forward_outside(int cap) {
-  supla_user *user = get_user();
-  if (!user) {
-    return;
-  }
+  // device_id can be set to 0 so better to use device-> getID () inside the
+  // access_device method.
+  access_device([this, cap](supla_device *device) -> void {
+    supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
+        device->getUserID(), device->getID(), get_channel_id(), cap);
 
-  supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
-      user->getUserID(), get_device_id(), get_channel_id(), cap);
-
-  supla_http_request_queue::getInstance()->onActionsTriggered(
-      user, get_device_id(), get_channel_id(), cap);
+    supla_http_request_queue::getInstance()->onActionsTriggered(
+        device->getUser(), device->getID(), get_channel_id(), cap);
+  });
 }

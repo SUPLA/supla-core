@@ -16,34 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTIONTRIGGERTEST_H_
-#define ACTIONTRIGGERTEST_H_
+#ifndef ACTIONTRIGGERCOPYTEST_H_
+#define ACTIONTRIGGERCOPYTEST_H_
 
-#include <doubles/actions/ActionExecutorMock.h>
-
-#include "actions/action_trigger.h"
-#include "channeljsonconfig/action_trigger_config.h"
-#include "doubles/device/DeviceFinderStub.h"
-#include "doubles/device/ValueGetterStub.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "actions/ActionTriggerTest.h"
 
 namespace testing {
 
-class ActionTriggerTest : public Test {
+class ActionTriggerCopyTest : public ActionTriggerTest {
  protected:
-  supla_action_trigger *at;
-  action_trigger_config *at_config;
-  ActionExecutorMock *aexec;
-  DeviceFinderStub *dev_finder;
-  ValueGetterStub *value_getter;
-
  public:
-  ActionTriggerTest(void);
-  virtual ~ActionTriggerTest(void);
   virtual void SetUp();
   virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* ACTIONTRIGGERTEST_H_ */
+#endif /* ACTIONTRIGGERCOPYTEST_H_ */

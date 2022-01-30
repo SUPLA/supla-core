@@ -22,11 +22,9 @@
 
 supla_action_trigger::supla_action_trigger(
     supla_abstract_action_executor *aexec, action_trigger_config *config,
-    supla_abstract_device_finder *dev_finder,
     supla_abstract_value_getter *value_getter) {
   this->aexec = aexec;
   this->config = config;
-  this->dev_finder = dev_finder;
   this->value_getter = value_getter;
 }
 
@@ -60,15 +58,7 @@ void supla_action_trigger::execute_actions(int user_id,
     if (action.channelGroup) {
       aexec->set_group_id(user_id, action.subjectId);
     } else {
-      int device_id =
-          dev_finder ? dev_finder->find_device_id(user_id, action.subjectId)
-                     : 0;
-
-      if (!device_id) {
-        continue;
-      }
-
-      aexec->set_channel_id(user_id, device_id, action.subjectId);
+      aexec->set_channel_id(user_id, 0, action.subjectId);
     }
 
     switch (action.actionId) {
