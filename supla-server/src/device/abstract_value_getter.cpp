@@ -35,7 +35,7 @@ supla_abstract_value_getter::~supla_abstract_value_getter() {}
 
 bool supla_abstract_value_getter::get_value(char value[SUPLA_CHANNELVALUE_SIZE],
                                             int *channelFunc) {
-  if (!user_id || !device_id || !channel_id || !channelFunc) {
+  if (!user_id || (!device_id && !channel_id)) {
     return false;
   }
 
@@ -52,3 +52,9 @@ bool supla_abstract_value_getter::get_value(int user_id, int device_id,
 
   return get_value(value, channelFunc);
 }
+
+int supla_abstract_value_getter::get_user_id(void) { return user_id; }
+
+int supla_abstract_value_getter::get_device_id(void) { return device_id; }
+
+int supla_abstract_value_getter::get_channel_id(void) { return channel_id; }

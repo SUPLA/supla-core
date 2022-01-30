@@ -16,30 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef VALUE_GETTER_STUB_H_
-#define VALUE_GETTER_STUB_H_
+#ifndef ACTIONTRIGGERCOPYTEST_H_
+#define ACTIONTRIGGERCOPYTEST_H_
 
-#include <abstract_value_getter.h>
+#include "integration/actions/ActionTriggerTest.h"
 
 namespace testing {
 
-class ValueGetterStub : public supla_abstract_value_getter {
+class ActionTriggerCopyTest : public ActionTriggerTest {
  protected:
-  char value[SUPLA_CHANNELVALUE_SIZE];
-  int channelFunc;
-  bool result;
-  virtual bool _get_value(int user_id, int device_id, int channel_id,
-                          char value[SUPLA_CHANNELVALUE_SIZE],
-                          int *channelFunc);
-
  public:
-  ValueGetterStub(void);
-  virtual ~ValueGetterStub(void);
-  void setValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  void setFunction(int channelFunc);
-  void setResult(bool result);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* VALUE_GETTER_STUB_H_ */
+#endif /* ACTIONTRIGGERCOPYTEST_H_ */

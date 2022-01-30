@@ -40,6 +40,9 @@ class supla_abstract_value_getter {
   bool get_value(char value[SUPLA_CHANNELVALUE_SIZE], int *channelFunc);
   bool get_value(int user_id, int device_id, int channel_id,
                  char value[SUPLA_CHANNELVALUE_SIZE], int *channelFunc);
+  int get_user_id(void);
+  int get_device_id(void);
+  int get_channel_id(void);
 };
 
 #endif /* ABSTRACT_VALUE_GETTER_H_ */

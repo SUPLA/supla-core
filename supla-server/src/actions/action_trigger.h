@@ -21,6 +21,7 @@
 
 #include <abstract_value_getter.h>
 #include <actions/abstract_action_executor.h>
+
 #include "channeljsonconfig/action_trigger_config.h"
 #include "device/abstractdevicefinder.h"
 
@@ -38,7 +39,8 @@ class supla_action_trigger {
                        supla_abstract_value_getter *value_getter);
   ~supla_action_trigger(void);
 
-  void execute_actions(int user_id, int source_channel_id, unsigned int caps);
+  void execute_actions(int user_id, int subject_id_if_not_set,
+                       unsigned int caps);
 };
 
 #endif /* ACTIONTRIGGER_H_ */
