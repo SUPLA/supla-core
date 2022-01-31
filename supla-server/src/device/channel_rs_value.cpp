@@ -16,19 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <value_getter.h>
+#include "channel_rs_value.h"
 
-#include "device/device.h"
-#include "user/user.h"
+#include <string.h>
 
-supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
-                                                    int channel_id) {
-  supla_channel_value *result = NULL;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id](supla_device *device) -> void {
-        result = device->get_channels()->get_channel_value(channel_id);
-      });
+supla_channel_rs_value::supla_channel_rs_value(
+    char native_value[SUPLA_CHANNELVALUE_SIZE])
+    : supla_channel_value(native_value) {}
 
-  return result;
+supla_channel_rs_value::supla_channel_rs_value(TDSC_RollerShutterValue *value) {
+  memcpy(native_value, value, sizeof(TDSC_RollerShutterValue));
+}
+
+const TDSC_RollerShutterValue *supla_channel_rs_value::get_rs_value(void) {
+  return (TDSC_RollerShutterValue *)native_value;
+}
+
+void supla_channel_rs_value::set_rs_value(TDSC_RollerShutterValue *value) {
+  memset(native_value, 0, sizeof(native_value));
+  memcpy(native_value, value, sizeof(TDSC_RollerShutterValue));
 }

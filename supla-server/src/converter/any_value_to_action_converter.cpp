@@ -19,15 +19,16 @@
 #include "converter/any_value_to_action_converter.h"
 
 #include "converter/rs_value_to_action_converter.h"
+#include "device/channel_rs_value.h"
 
 any_value_to_action_converter::any_value_to_action_converter() {}
 
 any_value_to_action_converter::~any_value_to_action_converter() {}
 
 bool any_value_to_action_converter::convert(
-    const char value[SUPLA_CHANNELVALUE_SIZE], int channel_func,
+    supla_channel_value *value,
     supla_abstract_action_executor *action_executor) {
-  if (!channel_func || !action_executor) {
+  if (!value || !action_executor) {
     return false;
   }
 
@@ -35,11 +36,8 @@ bool any_value_to_action_converter::convert(
 
   abstract_value_to_action_converter *converter = NULL;
 
-  switch (channel_func) {
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-      converter = new rs_value_to_action_converter();
-      break;
+  if (dynamic_cast<supla_channel_rs_value *>(value)) {
+    converter = new rs_value_to_action_converter();
   }
 
   if (converter) {

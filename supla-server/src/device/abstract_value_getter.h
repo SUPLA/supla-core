@@ -19,6 +19,7 @@
 #ifndef ABSTRACT_VALUE_GETTER_H_
 #define ABSTRACT_VALUE_GETTER_H_
 
+#include "device/channel_value.h"
 #include "proto.h"
 
 class supla_abstract_value_getter {
@@ -28,18 +29,16 @@ class supla_abstract_value_getter {
   int channel_id;
 
  protected:
-  virtual bool _get_value(int user_id, int device_id, int channel_id,
-                          char value[SUPLA_CHANNELVALUE_SIZE],
-                          int *channelFunc) = 0;
+  virtual supla_channel_value* _get_value(int user_id, int device_id,
+                                          int channel_id) = 0;
 
  public:
   supla_abstract_value_getter();
   supla_abstract_value_getter(int user_id, int device_id, int channel_id);
   virtual ~supla_abstract_value_getter();
 
-  bool get_value(char value[SUPLA_CHANNELVALUE_SIZE], int *channelFunc);
-  bool get_value(int user_id, int device_id, int channel_id,
-                 char value[SUPLA_CHANNELVALUE_SIZE], int *channelFunc);
+  supla_channel_value* get_value(void);
+  supla_channel_value* get_value(int user_id, int device_id, int channel_id);
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);

@@ -22,6 +22,7 @@
 #include <functional>
 #include <list>
 
+#include "channel_value.h"
 #include "commontypes.h"
 #include "proto.h"
 
@@ -319,6 +320,7 @@ class supla_device_channels {
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,
                          bool for_client);
+  supla_channel_value *get_channel_value(int ChannelID);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_extendedvalue(int ChannelID,

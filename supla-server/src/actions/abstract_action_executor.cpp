@@ -131,16 +131,18 @@ void supla_abstract_action_executor::copy(
     supla_abstract_value_getter *value_getter, int sourceDeviceId,
     int sourceChannelId) {
   if (value_getter) {
-    char value[SUPLA_CHANNELVALUE_SIZE] = {};
-    int channelFunc = 0;
-    if (value_getter->get_value(get_user_id(), sourceDeviceId, sourceChannelId,
-                                value, &channelFunc)) {
+    supla_channel_value *value = NULL;
+    if ((value = value_getter->get_value(get_user_id(), sourceDeviceId,
+                                         sourceChannelId))) {
       any_value_to_action_converter *converter =
           new any_value_to_action_converter();
       if (converter) {
-        converter->convert(value, channelFunc, this);
+        converter->convert(value, this);
         delete converter;
       }
+
+      delete value;
+      value = NULL;
     }
   }
 }

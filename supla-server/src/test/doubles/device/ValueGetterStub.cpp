@@ -22,32 +22,18 @@
 
 namespace testing {
 ValueGetterStub::ValueGetterStub(void) : supla_abstract_value_getter() {
-  channelFunc = 0;
-  memset(value, 0, SUPLA_CHANNELVALUE_SIZE);
-  result = false;
+  result = NULL;
 }
 
 ValueGetterStub::~ValueGetterStub(void) {}
 
-bool ValueGetterStub::_get_value(int user_id, int device_id, int channel_id,
-                                 char value[SUPLA_CHANNELVALUE_SIZE],
-                                 int *channelFunc) {
-  memcpy(value, this->value, SUPLA_CHANNELVALUE_SIZE);
-  if (channelFunc) {
-    *channelFunc = this->channelFunc;
-  }
-
+supla_channel_value* ValueGetterStub::_get_value(int user_id, int device_id,
+                                                 int channel_id) {
   return result;
 }
 
-void ValueGetterStub::setValue(char value[SUPLA_CHANNELVALUE_SIZE]) {
-  memcpy(this->value, value, SUPLA_CHANNELVALUE_SIZE);
+void ValueGetterStub::setResult(supla_channel_value* result) {
+  this->result = result;
 }
-
-void ValueGetterStub::setFunction(int channelFunc) {
-  this->channelFunc = channelFunc;
-}
-
-void ValueGetterStub::setResult(bool result) { this->result = result; }
 
 }  // namespace testing

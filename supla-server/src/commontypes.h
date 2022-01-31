@@ -64,6 +64,10 @@ typedef struct {
   TValve_Value valve_value;
 } channel_complex_value;
 
+/* TODO(przemyslawzygmunt): Replace channel_complex_value with the classes that
+ * inherit from supla_channel_value
+ * https://github.com/SUPLA/supla-core/issues/268 */
+
 typedef struct {
   int deviceId;
   int channelId;
