@@ -80,16 +80,17 @@ void supla_action_executor::set_color_brightness(char color_brightness) {
 }
 
 void supla_action_executor::set_rgbw(unsigned int *color,
-                                     char *color_brightness, char *brightness) {
-  execute_action([this, color, color_brightness, brightness](
+                                     char *color_brightness, char *brightness,
+                                     char *on_off) {
+  execute_action([this, color, color_brightness, brightness, on_off](
                      supla_user_channelgroups *channel_groups,
                      supla_device_channels *channels) -> void {
     if (channel_groups) {
       channel_groups->set_rgbw_value(get_group_id(), color, color_brightness,
-                                     brightness, NULL);
+                                     brightness, on_off);
     } else {
       channels->set_rgbw(0, get_channel_id(), 0, 0, color, color_brightness,
-                         brightness, NULL);
+                         brightness, on_off);
     }
   });
 }

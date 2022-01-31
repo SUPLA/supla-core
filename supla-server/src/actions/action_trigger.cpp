@@ -106,7 +106,7 @@ void supla_action_trigger::execute_actions(int user_id,
           aexec->set_rgbw(
               rgbw.color ? &rgbw.color : NULL,
               rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
-              rgbw.brightness > -1 ? &rgbw.brightness : NULL);
+              rgbw.brightness > -1 ? &rgbw.brightness : NULL, NULL);
         }
       } break;
       case ACTION_OPEN_CLOSE:

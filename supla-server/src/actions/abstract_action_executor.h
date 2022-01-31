@@ -64,7 +64,7 @@ class supla_abstract_action_executor {
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness) = 0;
+                        char *brightness, char *on_off) = 0;
   virtual void toggle(void) = 0;
   virtual void shut(const char *closingPercentage) = 0;
   virtual void reveal(void) = 0;

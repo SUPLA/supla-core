@@ -31,6 +31,8 @@
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "database.h"
 #include "device/channel_gate_value.h"
+#include "device/channel_onoff_value.h"
+#include "device/channel_rgbw_value.h"
 #include "device/channel_rs_value.h"
 #include "device/value_getter.h"
 #include "log.h"
@@ -1615,6 +1617,15 @@ supla_channel_value *supla_device_channels::get_channel_value(int ChannelID) {
       gate_value->update_sensors(device->getUser(), param2, param3);
       return gate_value;
     }
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+      return new supla_channel_onoff_value(value);
+
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return new supla_channel_rgbw_value(value);
   }
 
   return new supla_channel_value(value);
@@ -2254,6 +2265,19 @@ bool supla_device_channels::set_device_channel_rgbw_value(
   if (channel && channel->isRgbwValueWritable()) {
     char v[SUPLA_CHANNELVALUE_SIZE];
     memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
+
+    if (on_off) {
+      char mask = 0;
+      if (channel->getFunc() == SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING) {
+        mask = RGBW_COLOR_ONOFF | RGBW_BRIGHTNESS_ONOFF;
+      } else if (channel->getFunc() == SUPLA_CHANNELFNC_DIMMER) {
+        mask = RGBW_BRIGHTNESS_ONOFF;
+      } else if (channel->getFunc() == SUPLA_CHANNELFNC_RGBLIGHTING) {
+        mask = RGBW_COLOR_ONOFF;
+      }
+
+      on_off = mask & on_off;
+    }
 
     channel->assignRgbwValue(v, color, color_brightness, brightness, on_off);
 

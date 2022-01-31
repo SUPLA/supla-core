@@ -56,6 +56,7 @@ void ActionExecutorMock::clear(void) {
   this->closing_percentage = -1;
   this->rgbw_counter = 0;
   this->forward_outside_counter = 0;
+  this->rgbw_on_off = -1;
 }
 
 void ActionExecutorMock::set_on(bool on) {
@@ -82,7 +83,7 @@ void ActionExecutorMock::set_color_brightness(char brightness) {
 }
 
 void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
-                                  char *brightness) {
+                                  char *brightness, char *on_off) {
   rgbw_counter++;
   if (color) {
     this->color = *color;
@@ -94,6 +95,10 @@ void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
 
   if (brightness) {
     this->brightness = *brightness;
+  }
+
+  if (on_off) {
+    this->rgbw_on_off = *on_off;
   }
 }
 
@@ -193,6 +198,8 @@ unsigned int ActionExecutorMock::getColor(void) { return color; }
 char ActionExecutorMock::getBrightness(void) { return brightness; }
 
 char ActionExecutorMock::getColorBrightness(void) { return color_brightness; }
+
+char ActionExecutorMock::getRGBWOnOff(void) { return rgbw_on_off; }
 
 int ActionExecutorMock::counterSetCount(void) {
   int result = 0;
