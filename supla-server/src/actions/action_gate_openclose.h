@@ -22,13 +22,13 @@
 #include <actions/action_executor.h>
 #include <channeljsonconfig/abstract_channel_json_config_getter.h>
 
-#include "abstract_gate_state_getter.h"
+#include "abstract_value_getter.h"
 #include "asynctask/abstract_asynctask.h"
 
 class supla_action_gate_openclose : public supla_abstract_asynctask {
  private:
   supla_abstract_action_executor *action_executor;
-  supla_abstract_gate_state_getter *state_getter;
+  supla_abstract_value_getter *value_getter;
   int user_id;
   int device_id;
   int channel_id;
@@ -36,10 +36,11 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   short attempt_count_left;
   unsigned int verification_delay_us;
   void action_init(supla_abstract_action_executor *action_executor,
-                   supla_abstract_gate_state_getter *state_getter,
+                   supla_abstract_value_getter *value_getter,
                    abstract_channel_json_config_getter *json_config_getter,
                    int user_id, int device_id, int channel_id,
                    unsigned int verification_delay_us, bool open);
+  bool get_closing_state(bool *is_closed);
 
  protected:
   virtual bool _execute(bool *execute_again);
@@ -48,7 +49,7 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
   supla_action_gate_openclose(
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_action_executor *action_executor,
-      supla_abstract_gate_state_getter *state_getter,
+      supla_abstract_value_getter *value_getter,
       abstract_channel_json_config_getter *json_config_getter, int user_id,
       int device_id, int channel_id, unsigned int verification_delay_us,
       bool open);
@@ -57,7 +58,7 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
       short priority, bool release_immediately,
       supla_abstract_action_executor *action_executor,
-      supla_abstract_gate_state_getter *state_getter,
+      supla_abstract_value_getter *value_getter,
       abstract_channel_json_config_getter *json_config_getter, int user_id,
       int device_id, int channel_id, unsigned int verification_delay_us,
       bool open);

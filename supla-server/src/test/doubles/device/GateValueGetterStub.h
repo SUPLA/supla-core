@@ -16,16 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_GATE_STATE_GETTER_H_
-#define ABSTRACT_GATE_STATE_GETTER_H_
+#ifndef GATE_VALUE_GETTER_STUB_H_
+#define GATE_VALUE_GETTER_STUB_H_
 
-class supla_abstract_gate_state_getter {
+#include "abstract_value_getter.h"
+#include "device/channel_gate_value.h"
+
+namespace testing {
+
+class GateValueGetterStub : public supla_abstract_value_getter {
+ private:
+  _gate_sensor_level_enum opening_sensor_level;
+  _gate_sensor_level_enum partial_opening_sensor_level;
+
+ protected:
+  supla_channel_value* _get_value(int user_id, int device_id, int channel_id);
+
  public:
-  supla_abstract_gate_state_getter(void);
-  virtual ~supla_abstract_gate_state_getter(void);
-  virtual bool get_related_openingsensor_state(int user_id, int device_id,
-                                               int channel_id,
-                                               bool *is_closed) = 0;
+  GateValueGetterStub(void);
+  virtual ~GateValueGetterStub(void);
+  void setResult(_gate_sensor_level_enum opening_sensor_level,
+                 _gate_sensor_level_enum partial_opening_sensor_level);
 };
 
-#endif /*ABSTRACT_GATE_STATE_GETTER_H_*/
+} /* namespace testing */
+
+#endif /* GATE_VALUE_GETTER_STUB_H_ */
