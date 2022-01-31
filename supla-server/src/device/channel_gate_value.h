@@ -22,7 +22,7 @@
 #include "device/channel_value.h"
 #include "user/user.h"
 
-enum _gate_sensor_level_enum { sl_unknown, sl_closed, sl_open };
+enum _gate_sensor_level_enum { gsl_unknown, gsl_closed, gsl_open };
 
 class supla_channel_gate_value : public supla_channel_value {
  private:

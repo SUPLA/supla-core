@@ -18,7 +18,13 @@
 
 #include "converter/any_value_to_action_converter.h"
 
+#include "converter/gate_value_to_action_converter.h"
+#include "converter/onoff_value_to_action_converter.h"
+#include "converter/rgbw_value_to_action_converter.h"
 #include "converter/rs_value_to_action_converter.h"
+#include "device/channel_gate_value.h"
+#include "device/channel_onoff_value.h"
+#include "device/channel_rgbw_value.h"
 #include "device/channel_rs_value.h"
 
 any_value_to_action_converter::any_value_to_action_converter() {}
@@ -36,8 +42,14 @@ bool any_value_to_action_converter::convert(
 
   abstract_value_to_action_converter *converter = NULL;
 
-  if (dynamic_cast<supla_channel_rs_value *>(value)) {
+  if (dynamic_cast<supla_channel_gate_value *>(value)) {
+    converter = new gate_value_to_action_converter();
+  } else if (dynamic_cast<supla_channel_rs_value *>(value)) {
     converter = new rs_value_to_action_converter();
+  } else if (dynamic_cast<supla_channel_onoff_value *>(value)) {
+    converter = new onoff_value_to_action_converter();
+  } else if (dynamic_cast<supla_channel_rgbw_value *>(value)) {
+    converter = new rgbw_value_to_action_converter();
   }
 
   if (converter) {

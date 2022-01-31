@@ -53,7 +53,7 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   GateValueGetterStub *value_getter = new GateValueGetterStub();
   ASSERT_TRUE(value_getter != NULL);
 
-  value_getter->setResult(open ? sl_open : sl_closed, sl_unknown);
+  value_getter->setResult(open ? gsl_open : gsl_closed, gsl_unknown);
 
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
@@ -84,7 +84,7 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   GateValueGetterStub *value_getter = new GateValueGetterStub();
   ASSERT_TRUE(value_getter != NULL);
 
-  value_getter->setResult(open ? sl_closed : sl_open, sl_unknown);
+  value_getter->setResult(open ? gsl_closed : gsl_open, gsl_unknown);
 
   ChannelJSONConfigGetterStub *config_getter =
       new ChannelJSONConfigGetterStub();
@@ -126,7 +126,7 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   }
 
   if (success) {
-    value_getter->setResult(open ? sl_open : sl_closed, sl_unknown);
+    value_getter->setResult(open ? gsl_open : gsl_closed, gsl_unknown);
     WaitForState(task, STA_STATE_SUCCESS, 3000000);
   } else {
     WaitForState(task, STA_STATE_FAILURE, 3000000);

@@ -49,6 +49,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char brightness;
   char color_brightness;
   char closing_percentage;
+  char rgbw_on_off;
 
  public:
   ActionExecutorMock();
@@ -60,7 +61,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness);
+                        char *brightness, char *on_off);
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
@@ -102,6 +103,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   unsigned int getColor(void);
   char getBrightness(void);
   char getColorBrightness(void);
+  char getRGBWOnOff(void);
 };
 
 } /* namespace testing */

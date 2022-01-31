@@ -20,8 +20,8 @@
 
 namespace testing {
 GateValueGetterStub::GateValueGetterStub(void) : supla_abstract_value_getter() {
-  opening_sensor_level = sl_unknown;
-  partial_opening_sensor_level = sl_unknown;
+  opening_sensor_level = gsl_unknown;
+  partial_opening_sensor_level = gsl_unknown;
 }
 
 GateValueGetterStub::~GateValueGetterStub(void) {}

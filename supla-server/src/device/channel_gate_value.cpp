@@ -24,15 +24,15 @@
 
 supla_channel_gate_value::supla_channel_gate_value(void)
     : supla_channel_value() {
-  opening_sensor_level = sl_unknown;
-  partial_opening_sensor_level = sl_unknown;
+  opening_sensor_level = gsl_unknown;
+  partial_opening_sensor_level = gsl_unknown;
 }
 
 supla_channel_gate_value::supla_channel_gate_value(
     char native_value[SUPLA_CHANNELVALUE_SIZE])
     : supla_channel_value(native_value) {
-  opening_sensor_level = sl_unknown;
-  partial_opening_sensor_level = sl_unknown;
+  opening_sensor_level = gsl_unknown;
+  partial_opening_sensor_level = gsl_unknown;
 }
 
 supla_channel_gate_value::supla_channel_gate_value(
@@ -66,7 +66,7 @@ void supla_channel_gate_value::set_partial_opening_sensor_level(
 
 _gate_sensor_level_enum supla_channel_gate_value::get_sensor_state(
     supla_user *user, int channel_id) {
-  _gate_sensor_level_enum result = sl_unknown;
+  _gate_sensor_level_enum result = gsl_unknown;
 
   if (user) {
     user->access_device(
@@ -81,7 +81,7 @@ _gate_sensor_level_enum supla_channel_gate_value::get_sensor_state(
               case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
                 char v = 0;
                 if (channels->get_channel_char_value(channel_id, &v)) {
-                  result = v != 0 ? sl_closed : sl_open;
+                  result = v != 0 ? gsl_closed : gsl_open;
                 }
                 break;
             }

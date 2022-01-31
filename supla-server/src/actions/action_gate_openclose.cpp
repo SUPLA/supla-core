@@ -122,7 +122,7 @@ bool supla_action_gate_openclose::get_closing_state(bool *is_closed) {
     return false;
   }
 
-  _gate_sensor_level_enum opening_sensor_level = sl_unknown;
+  _gate_sensor_level_enum opening_sensor_level = gsl_unknown;
 
   supla_channel_value *value =
       value_getter->get_value(get_user_id(), get_device_id(), get_channel_id());
@@ -136,11 +136,11 @@ bool supla_action_gate_openclose::get_closing_state(bool *is_closed) {
     value = NULL;
   }
 
-  if (opening_sensor_level != sl_unknown) {
-    *is_closed = opening_sensor_level == sl_closed;
+  if (opening_sensor_level != gsl_unknown) {
+    *is_closed = opening_sensor_level == gsl_closed;
   }
 
-  return opening_sensor_level != sl_unknown;
+  return opening_sensor_level != gsl_unknown;
 }
 
 bool supla_action_gate_openclose::_execute(bool *execute_again) {
