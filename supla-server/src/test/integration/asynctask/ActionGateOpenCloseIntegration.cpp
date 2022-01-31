@@ -18,8 +18,9 @@
 
 #include "ActionGateOpenCloseIntegrationTest.h"
 #include "actions/action_gate_openclose.h"
+#include "device/channel_gate_value.h"
 #include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
-#include "doubles/integration/asynctask/GateStateGetterMock.h"
+#include "doubles/device/GateValueGetterStub.h"
 #include "log.h"
 
 namespace testing {
@@ -49,17 +50,16 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  GateStateGetterMock *state_getter = new GateStateGetterMock();
-  ASSERT_TRUE(state_getter != NULL);
+  GateValueGetterStub *value_getter = new GateValueGetterStub();
+  ASSERT_TRUE(value_getter != NULL);
 
-  state_getter->set_result(true);
-  state_getter->set_closed(!open);
+  value_getter->setResult(open ? sl_open : sl_closed, sl_unknown);
 
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      queue, pool, 0, false, action_executor, state_getter, NULL, 1, 2, 3,
+      queue, pool, 0, false, action_executor, value_getter, NULL, 1, 2, 3,
       5000000, open);
 
   ASSERT_TRUE(task != NULL);
@@ -81,11 +81,10 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  GateStateGetterMock *state_getter = new GateStateGetterMock();
-  ASSERT_TRUE(state_getter != NULL);
+  GateValueGetterStub *value_getter = new GateValueGetterStub();
+  ASSERT_TRUE(value_getter != NULL);
 
-  state_getter->set_result(true);
-  state_getter->set_closed(open);
+  value_getter->setResult(open ? sl_closed : sl_open, sl_unknown);
 
   ChannelJSONConfigGetterStub *config_getter =
       new ChannelJSONConfigGetterStub();
@@ -108,7 +107,7 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      queue, pool, 0, false, action_executor, state_getter, config_getter, 1, 2,
+      queue, pool, 0, false, action_executor, value_getter, config_getter, 1, 2,
       3, 2000000, open);
 
   ASSERT_TRUE(task != NULL);
@@ -127,7 +126,7 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   }
 
   if (success) {
-    state_getter->set_closed(!open);
+    value_getter->setResult(open ? sl_open : sl_closed, sl_unknown);
     WaitForState(task, STA_STATE_SUCCESS, 3000000);
   } else {
     WaitForState(task, STA_STATE_FAILURE, 3000000);
@@ -147,14 +146,14 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
 
-  GateStateGetterMock *state_getter = new GateStateGetterMock();
-  EXPECT_TRUE(state_getter != NULL);
+  GateValueGetterStub *value_getter = new GateValueGetterStub();
+  ASSERT_TRUE(value_getter != NULL);
 
   ActionExecutorMock *action_executor = new ActionExecutorMock();
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      queue, pool, 0, false, action_executor, state_getter, NULL, 1, 2, 3,
+      queue, pool, 0, false, action_executor, value_getter, NULL, 1, 2, 3,
       5000000, true);
 
   ASSERT_TRUE(task != NULL);
