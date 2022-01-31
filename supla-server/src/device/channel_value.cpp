@@ -16,19 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <value_getter.h>
+#include "channel_value.h"
 
-#include "device/device.h"
-#include "user/user.h"
+#include <string.h>
 
-supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
-                                                    int channel_id) {
-  supla_channel_value *result = NULL;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id](supla_device *device) -> void {
-        result = device->get_channels()->get_channel_value(channel_id);
-      });
+supla_channel_value::supla_channel_value(void) {}
 
-  return result;
+supla_channel_value::supla_channel_value(
+    char native_value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(this->native_value, native_value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+supla_channel_value::~supla_channel_value(void) {}
+
+void supla_channel_value::get_native_value(
+    char native_value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(native_value, this->native_value, SUPLA_CHANNELVALUE_SIZE);
+}
+
+void supla_channel_value::set_native_value(
+    char native_value[SUPLA_CHANNELVALUE_SIZE]) {
+  memcpy(this->native_value, native_value, SUPLA_CHANNELVALUE_SIZE);
 }

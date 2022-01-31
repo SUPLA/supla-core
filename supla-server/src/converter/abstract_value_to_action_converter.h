@@ -20,14 +20,14 @@
 #define VALUE_TO_ACTION_CONVERTER_H_
 
 #include <abstract_value_getter.h>
+
 #include "actions/abstract_action_executor.h"
-#include "proto.h"
 
 class abstract_value_to_action_converter {
  public:
   abstract_value_to_action_converter(void);
 
-  virtual bool convert(const char value[SUPLA_CHANNELVALUE_SIZE],
+  virtual bool convert(supla_channel_value *value,
                        supla_abstract_action_executor *action_executor) = 0;
   virtual ~abstract_value_to_action_converter();
 };

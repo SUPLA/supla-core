@@ -18,6 +18,7 @@
 
 #include "ActionTriggerCopyTest.h"
 
+#include "device/channel_rs_value.h"
 #include "proto.h"
 
 namespace testing {
@@ -50,12 +51,8 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
-  value_getter->setResult(true);
-
-  at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(aexec->counterSetCount(), 0);
-
-  value_getter->setFunction(SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER);
+  TDSC_RollerShutterValue rsval = {};
+  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -67,16 +64,15 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
-  char value[SUPLA_CHANNELVALUE_SIZE] = {};
-  value[0] = -1;
-  value_getter->setValue(value);
+  rsval.position = -1;
+  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
 
-  value[0] = 45;
-  value_getter->setValue(value);
+  rsval.position = 45;
+  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
@@ -89,8 +85,8 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectType\":\"channel\",\"subjectId\":"
       "455,\"action\":{\"id\":10100,\"param\":{\"sourceChannelId\":68}}}}}");
 
-  value[0] = 80;
-  value_getter->setValue(value);
+  rsval.position = 80;
+  value_getter->setResult(new supla_channel_rs_value(&rsval));
 
   at->execute_actions(1, 0, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(value_getter->get_channel_id(), 68);

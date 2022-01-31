@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <abstract_value_getter.h>
+#include "abstract_value_getter.h"
+
+#include <string.h>
 
 supla_abstract_value_getter::supla_abstract_value_getter() {
   this->user_id = 0;
@@ -33,24 +35,22 @@ supla_abstract_value_getter::supla_abstract_value_getter(int user_id,
 
 supla_abstract_value_getter::~supla_abstract_value_getter() {}
 
-bool supla_abstract_value_getter::get_value(char value[SUPLA_CHANNELVALUE_SIZE],
-                                            int *channelFunc) {
+supla_channel_value* supla_abstract_value_getter::get_value(void) {
   if (!user_id || (!device_id && !channel_id)) {
-    return false;
+    return NULL;
   }
 
-  return _get_value(user_id, device_id, channel_id, value, channelFunc);
+  return _get_value(user_id, device_id, channel_id);
 }
 
-bool supla_abstract_value_getter::get_value(int user_id, int device_id,
-                                            int channel_id,
-                                            char value[SUPLA_CHANNELVALUE_SIZE],
-                                            int *channelFunc) {
+supla_channel_value* supla_abstract_value_getter::get_value(int user_id,
+                                                            int device_id,
+                                                            int channel_id) {
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
 
-  return get_value(value, channelFunc);
+  return get_value();
 }
 
 int supla_abstract_value_getter::get_user_id(void) { return user_id; }

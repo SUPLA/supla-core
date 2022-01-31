@@ -17,13 +17,18 @@
  */
 #include "converter/rs_value_to_action_converter.h"
 
+#include "device/channel_rs_value.h"
+
 bool rs_value_to_action_converter::convert(
-    const char value[SUPLA_CHANNELVALUE_SIZE],
+    supla_channel_value *value,
     supla_abstract_action_executor *action_executor) {
-  if (value && action_executor) {
-    TDSC_RollerShutterValue *rs_val = (TDSC_RollerShutterValue *)value;
-    if (rs_val->position >= 0 && rs_val->position <= 100) {
-      action_executor->shut((const char *)&rs_val->position);
+  supla_channel_rs_value *rs_value =
+      dynamic_cast<supla_channel_rs_value *>(value);
+
+  if (rs_value && action_executor) {
+    char position = rs_value->get_rs_value()->position;
+    if (position >= 0 && position <= 100) {
+      action_executor->shut(&position);
     }
   }
   return false;

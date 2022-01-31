@@ -23,7 +23,7 @@
 
 class rs_value_to_action_converter : public abstract_value_to_action_converter {
  public:
-  virtual bool convert(const char value[SUPLA_CHANNELVALUE_SIZE],
+  virtual bool convert(supla_channel_value *value,
                        supla_abstract_action_executor *action_executor);
 };
 

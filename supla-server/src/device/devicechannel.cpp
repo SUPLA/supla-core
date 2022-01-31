@@ -30,6 +30,8 @@
 #include "channeljsonconfig/electricity_meter_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "database.h"
+#include "device/channel_gate_value.h"
+#include "device/channel_rs_value.h"
 #include "device/value_getter.h"
 #include "log.h"
 #include "safearray.h"
@@ -1579,6 +1581,43 @@ bool supla_device_channels::get_channel_value(
   }
 
   return result;
+}
+
+supla_channel_value *supla_device_channels::get_channel_value(int ChannelID) {
+  char value[SUPLA_CHANNELVALUE_SIZE] = {};
+  int func = 0;
+  int param2 = 0;
+  int param3 = 0;
+
+  access_channel(
+      ChannelID,
+      [&value, &func, &param2, &param3](supla_device_channel *channel) -> void {
+        func = channel->getFunc();
+        param2 = channel->getParam2();
+        param3 = channel->getParam3();
+        channel->getValue(value);
+      });
+
+  if (!func) {
+    return NULL;
+  }
+
+  switch (func) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return new supla_channel_rs_value(value);
+
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
+      supla_channel_gate_value *gate_value =
+          new supla_channel_gate_value(value);
+
+      gate_value->update_sensors(device->getUser(), param2, param3);
+      return gate_value;
+    }
+  }
+
+  return new supla_channel_value(value);
 }
 
 bool supla_device_channels::get_channel_extendedvalue(
