@@ -16,15 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_TURN_ONOFF_H_
-#define ACTION_TURN_ONOFF_H_
+#ifndef ACTION_COPY_H_
+#define ACTION_COPY_H_
 
 #include "action.h"
 
-class s_worker_action_turn_onoff : public s_worker_action {
- private:
-  bool setOn;
-
+class s_worker_action_copy : public s_worker_action {
  protected:
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
   virtual int waiting_time_to_retry(void);
@@ -33,18 +30,9 @@ class s_worker_action_turn_onoff : public s_worker_action {
   virtual bool do_action();
 
  public:
-  s_worker_action_turn_onoff(s_abstract_worker *worker, bool setOn);
+  explicit s_worker_action_copy(s_abstract_worker *worker);
+  bool get_params(int *sourceDeviceId, int *sourceChannelId);
   virtual int try_limit(void);
 };
 
-class s_worker_action_turn_on : public s_worker_action_turn_onoff {
- public:
-  explicit s_worker_action_turn_on(s_abstract_worker *worker);
-};
-
-class s_worker_action_turn_off : public s_worker_action_turn_onoff {
- public:
-  explicit s_worker_action_turn_off(s_abstract_worker *worker);
-};
-
-#endif /*ACTION_TURN_ONOFF_*/
+#endif /*ACTION_COPY_H_*/

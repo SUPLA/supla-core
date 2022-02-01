@@ -23,17 +23,17 @@
 
 class s_worker_action_rgb : public s_worker_action {
  protected:
-  void get_function_list(int list[FUNCTION_LIST_SIZE]);
-  int try_limit(void);
-  int waiting_time_to_retry(void);
-  int waiting_time_to_check(void);
-  bool result_success(int *fail_result_code);
-  bool do_action();
+  virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
+  virtual int waiting_time_to_retry(void);
+  virtual int waiting_time_to_check(void);
+  virtual bool result_success(int *fail_result_code);
+  virtual bool do_action();
 
  public:
   explicit s_worker_action_rgb(s_abstract_worker *worker);
   char parse_rgbw_params(int *color, char *color_brightness, char *brightness,
                          bool *random);
+  virtual int try_limit(void);
 };
 
 #endif /*ACTION_RGB_*/

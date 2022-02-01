@@ -16,15 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 #include "ActionTest.h"
+
 #include <list>
+
 #include "WorkerMock.h"
+#include "action_copy.h"
 #include "action_rgb.h"
 #include "action_set.h"
 #include "action_shut.h"
 #include "gtest/gtest.h"
-
-#define MIN_RETRY_TIME 5
-#define MIN_CHECK_TIME 1
 
 namespace {
 
@@ -41,14 +41,15 @@ TEST_F(ActionTest, time) {
        it != AbstractActionFactory::factories.end(); it++) {
     s_worker_action *action = (*it)->create(worker);
     ASSERT_FALSE(action == NULL);
-    ASSERT_GE(action->waiting_time_to_retry(), MIN_RETRY_TIME);
-    ASSERT_GE(action->waiting_time_to_check(), MIN_CHECK_TIME);
+
+    EXPECT_GE(action->waiting_time_to_retry(), MIN_RETRY_TIME);
+    EXPECT_GE(action->waiting_time_to_check(), MIN_CHECK_TIME);
 
     int diff =
         action->waiting_time_to_retry() - action->waiting_time_to_check();
-    ASSERT_GT(diff, 0);
+    EXPECT_GT(diff, 0);
 
-    ASSERT_LT(action->get_max_time(), 280);  // Max time 4 min 40 sec.
+    EXPECT_LT(action->get_max_time(), 280);  // Max time 4 min 40 sec.
 
     delete action;
   }
@@ -214,32 +215,35 @@ TEST_F(ActionTest, parseRgb) {
   delete worker;
 }
 
-TEST_F(ActionTest, parseDigiglassParams) {
+TEST_F(ActionTest, copyActionParams) {
   WorkerMock *worker = new WorkerMock(NULL);
   ASSERT_FALSE(worker == NULL);
 
-  s_worker_action_set *action = new s_worker_action_set(worker);
+  s_worker_action_copy *action = new s_worker_action_copy(worker);
   EXPECT_FALSE(action == NULL);
 
   if (action) {
-    int active_bits = 0;
-    int mask = 0;
+    int source_device_id = 0;
+    int source_channel_id = 0;
+
+    worker->set_action_param("{\"sourceChannelId\":46865}");
+
+    EXPECT_TRUE(action->get_params(&source_device_id, &source_channel_id));
+    EXPECT_EQ(source_device_id, 0);
+    EXPECT_EQ(source_channel_id, 46865);
 
     worker->set_action_param(
-        "{\"mask\":1,\"activeBits\":73,\"transparent\":[0,3,6],\"opaque\":[]"
-        "}");
-    EXPECT_TRUE(action->get_digiglass_params(&active_bits, &mask));
-    EXPECT_EQ(active_bits, 73);
-    EXPECT_EQ(mask, 1);
+        "{\"sourceDeviceId\":67, \"sourceChannelId\":46865}");
 
-    EXPECT_FALSE(action->get_digiglass_params(NULL, &mask));
-    EXPECT_FALSE(action->get_digiglass_params(&active_bits, NULL));
+    EXPECT_TRUE(action->get_params(&source_device_id, &source_channel_id));
+    EXPECT_EQ(source_device_id, 67);
+    EXPECT_EQ(source_channel_id, 46865);
 
-    worker->set_action_param(NULL);
-    EXPECT_FALSE(action->get_digiglass_params(&active_bits, &mask));
+    worker->set_action_param("{\"sourceDeviceId\":67, \"sourceChannelId\":0}");
+    EXPECT_FALSE(action->get_params(&source_device_id, &source_channel_id));
 
     worker->set_action_param("");
-    EXPECT_FALSE(action->get_digiglass_params(&active_bits, &mask));
+    EXPECT_FALSE(action->get_params(&source_device_id, &source_channel_id));
 
     delete action;
   }

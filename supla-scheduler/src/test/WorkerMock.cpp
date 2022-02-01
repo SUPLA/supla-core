@@ -17,8 +17,10 @@
  */
 
 #include "WorkerMock.h"
+
 #include <stdlib.h>
 #include <string.h>
+
 #include <cstddef>
 
 WorkerMock::WorkerMock(queue *q) : s_abstract_worker(q) { action_param = NULL; }
@@ -74,5 +76,9 @@ bool WorkerMock::ipcc_set_digiglass_value(int active_bits, int mask) {
 }
 
 bool WorkerMock::ipcc_get_digiglass_value(int *mask) { return false; }
+
+bool WorkerMock::ipcc_action_copy(int sourceDeviceId, int sourceChannelId) {
+  return false;
+}
 
 char WorkerMock::ipcc_is_connected(void) { return 0; }
