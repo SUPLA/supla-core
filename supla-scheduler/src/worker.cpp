@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "worker.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,7 +30,6 @@
 #include "queue.h"
 #include "sthread.h"
 #include "tools.h"
-#include "worker.h"
 
 s_worker::s_worker(queue *q) : s_abstract_worker(q) {}
 
@@ -120,6 +121,12 @@ bool s_worker::ipcc_get_digiglass_value(int *mask) {
   return get_ipcc()->get_digiglass_value(get_exec()->user_id,
                                          get_exec()->iodevice_id,
                                          get_exec()->channel_id, mask);
+}
+
+bool s_worker::ipcc_action_copy(int sourceDeviceId, int sourceChannelId) {
+  return get_ipcc()->action_copy(
+      get_exec()->user_id, get_exec()->iodevice_id, get_exec()->channel_id,
+      get_exec()->channel_group_id, sourceDeviceId, sourceChannelId);
 }
 
 char s_worker::ipcc_is_connected(void) {

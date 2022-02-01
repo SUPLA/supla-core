@@ -62,6 +62,9 @@ class ipc_client {
                       char brightness);
   bool set_digiglass_value(int user_id, int device_id, int channel_id,
                            int active_bits, int mask);
+  bool action_copy(int user_id, int device_id, int channel_id,
+                   int channel_group_id, int source_device_id,
+                   int source_channel_id);
 };
 
 #endif /* IPCCLIENT_H_ */

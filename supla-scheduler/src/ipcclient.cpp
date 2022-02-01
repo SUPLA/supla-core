@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "ipcclient.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -30,7 +32,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include "ipcclient.h"
 #include "log.h"
 #include "schedulercfg.h"
 
@@ -50,6 +51,9 @@ const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE";
 const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE";
 const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE";
 const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE";
+
+const char cmd_action_copy[] = "ACTION-COPY:";
+const char cmd_action_cg_copy[] = "ACTION-CG-COPY:";
 
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
@@ -294,6 +298,25 @@ bool ipc_client::set_digiglass_value(int user_id, int device_id, int channel_id,
   snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i\n",
            cmd_set_digiglass_value, user_id, device_id, channel_id, active_bits,
            mask);
+
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+  // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
+  return check_set_result();
+}
+
+bool ipc_client::action_copy(int user_id, int device_id, int channel_id,
+                             int channel_group_id, int source_device_id,
+                             int source_channel_id) {
+  if (!ipc_connect()) return false;
+
+  if (channel_group_id) {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i\n", cmd_action_cg_copy,
+             user_id, channel_group_id, source_device_id, source_channel_id);
+  } else {
+    snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i,%i,%i,%i\n", cmd_action_copy,
+             user_id, device_id, channel_id, source_device_id,
+             source_channel_id);
+  }
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
   // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);

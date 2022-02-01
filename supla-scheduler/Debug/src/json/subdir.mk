@@ -7,13 +7,13 @@ C_SRCS += \
 ../src/json/cJSON.c \
 ../src/json/cJSON_Utils.c 
 
-OBJS += \
-./src/json/cJSON.o \
-./src/json/cJSON_Utils.o 
-
 C_DEPS += \
 ./src/json/cJSON.d \
 ./src/json/cJSON_Utils.d 
+
+OBJS += \
+./src/json/cJSON.o \
+./src/json/cJSON_Utils.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,4 +24,11 @@ src/json/%.o: ../src/json/%.c src/json/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-json
+
+clean-src-2f-json:
+	-$(RM) ./src/json/cJSON.d ./src/json/cJSON.o ./src/json/cJSON_Utils.d ./src/json/cJSON_Utils.o
+
+.PHONY: clean-src-2f-json
 

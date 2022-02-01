@@ -24,15 +24,15 @@
 class s_worker_action_set : public s_worker_action {
  protected:
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
-  int try_limit(void);
-  int waiting_time_to_retry(void);
-  int waiting_time_to_check(void);
-  bool result_success(int *fail_result_code);
-  bool do_action();
+  virtual int waiting_time_to_retry(void);
+  virtual int waiting_time_to_check(void);
+  virtual bool result_success(int *fail_result_code);
+  virtual bool do_action();
 
  public:
   explicit s_worker_action_set(s_abstract_worker *worker);
   bool get_digiglass_params(int *active_bits, int *mask);
+  virtual int try_limit(void);
 };
 
 #endif /*ACTION_SET_H_*/

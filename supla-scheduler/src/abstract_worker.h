@@ -58,6 +58,7 @@ class s_abstract_worker {
   virtual bool ipcc_get_valve_value(TValve_Value *value) = 0;
   virtual bool ipcc_set_digiglass_value(int active_bits, int mask) = 0;
   virtual bool ipcc_get_digiglass_value(int *mask) = 0;
+  virtual bool ipcc_action_copy(int sourceDeviceId, int sourceChannelId) = 0;
   virtual char ipcc_is_connected(void) = 0;
 };
 
