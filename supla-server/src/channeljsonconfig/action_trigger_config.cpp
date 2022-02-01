@@ -247,9 +247,14 @@ _at_config_action_t action_trigger_config::get_action_assigned_to_capability(
     cJSON *param = cJSON_GetObjectItem(action, param_key);
 
     if (param) {
-      cJSON *sourceChannelId = cJSON_GetObjectItem(param, "sourceChannelId");
-      if (sourceChannelId && cJSON_IsNumber(sourceChannelId)) {
-        result.sourceChannelId = sourceChannelId->valueint;
+      cJSON *id = cJSON_GetObjectItem(param, "sourceChannelId");
+      if (id && cJSON_IsNumber(id)) {
+        result.sourceChannelId = id->valueint;
+      }
+
+      id = cJSON_GetObjectItem(param, "sourceDeviceId");
+      if (id && cJSON_IsNumber(id)) {
+        result.sourceDeviceId = id->valueint;
       }
     }
   }

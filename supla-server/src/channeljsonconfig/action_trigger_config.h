@@ -53,6 +53,8 @@ typedef struct {
   int actionId;
   bool channelGroup;
   int subjectId;
+
+  int sourceDeviceId;
   int sourceChannelId;
 } _at_config_action_t;
 

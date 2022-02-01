@@ -32,7 +32,8 @@ void ActionTriggerCopyTest::SetUp() {
       "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
       "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
       "\"subjectType\":\"channelGroup\",\"subjectId\":31,\"action\":{\"id\":"
-      "10100,\"param\":{\"sourceChannelId\":46868}}}}}");
+      "10100,\"param\":{\"sourceDeviceId\":66,"
+      "\"sourceChannelId\":46868}}}}}");
 
   at_config->set_properties(
       "{\"actionTriggerCapabilities\":[\"TURN_ON\",\"TURN_OFF\",\"TOGGLE_X1\","
@@ -77,7 +78,7 @@ TEST_F(ActionTriggerCopyTest, gate) {
   EXPECT_EQ(aexec->getCloseCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
-  EXPECT_EQ(value_getter->get_device_id(), 0);
+  EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
@@ -98,7 +99,7 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(aexec->getClosingPercentage(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
-  EXPECT_EQ(value_getter->get_device_id(), 0);
+  EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
@@ -131,6 +132,7 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 3);
   EXPECT_EQ(aexec->getClosingPercentage(), 80);
+  EXPECT_EQ(value_getter->get_device_id(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 455);
   EXPECT_EQ(aexec->get_group_id(), 0);
 }
@@ -144,7 +146,7 @@ TEST_F(ActionTriggerCopyTest, onOff) {
   EXPECT_EQ(aexec->getOffCounter(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
-  EXPECT_EQ(value_getter->get_device_id(), 0);
+  EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
@@ -168,7 +170,7 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   EXPECT_EQ(aexec->getRGBWOnOff(), RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
-  EXPECT_EQ(value_getter->get_device_id(), 0);
+  EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
