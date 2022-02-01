@@ -25,7 +25,9 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "actions/action_executor.h"
 #include "database.h"
+#include "device/value_getter.h"
 #include "http/httprequestqueue.h"
 #include "ipcsocket.h"
 #include "log.h"
@@ -73,6 +75,8 @@ const char cmd_action_toggle[] = "ACTION-TOGGLE:";
 const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
 const char cmd_action_stop[] = "ACTION-STOP:";
 const char cmd_action_cg_stop[] = "ACTION-CG-STOP:";
+const char cmd_action_copy[] = "ACTION-COPY:";
+const char cmd_action_cg_copy[] = "ACTION-CG-COPY:";
 
 const char cmd_action_up_or_stop[] = "ACTION-UP-OR-STOP:";
 const char cmd_action_cg_up_or_stop[] = "ACTION-CG-UP-OR-STOP:";
@@ -929,6 +933,51 @@ void svr_ipcctrl::action_cg_step_by_step(const char *cmd) {
       });
 }
 
+void svr_ipcctrl::action_copy(const char *cmd, bool group) {
+  int UserID = 0;
+  int DeviceID = 0;
+  int ChannelID = 0;
+  int GroupID = 0;
+  int SourceDeviceID = 0;
+  int SourceChannelID = 0;
+  bool result = false;
+
+  if (group) {
+    sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i", &UserID,
+           &GroupID, &SourceDeviceID, &SourceChannelID);
+  } else {
+    sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i,%i,%i,%i", &UserID,
+           &DeviceID, &ChannelID, &SourceDeviceID, &SourceChannelID);
+  }
+
+  if (UserID && DeviceID && ChannelID) {
+    supla_action_executor *action_executor = new supla_action_executor();
+    if (action_executor) {
+      if (group) {
+        action_executor->set_group_id(UserID, GroupID);
+      } else {
+        action_executor->set_channel_id(UserID, DeviceID, ChannelID);
+      }
+
+      supla_value_getter *value_getter = new supla_value_getter();
+      if (value_getter) {
+        action_executor->copy(value_getter, SourceDeviceID, SourceChannelID);
+        result = true;
+      }
+    }
+  }
+
+  if (result) {
+    send_result("OK:", ChannelID);
+  } else {
+    send_result("FAIL:", ChannelID);
+  }
+}
+
+void svr_ipcctrl::action_copy(const char *cmd) { action_copy(cmd, false); }
+
+void svr_ipcctrl::action_cg_copy(const char *cmd) { action_copy(cmd, true); }
+
 void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
   int UserID = 0;
 
@@ -1224,6 +1273,10 @@ void svr_ipcctrl::execute(void *sthread) {
           action_step_by_step(cmd_action_step_by_step);
         } else if (match_command(cmd_action_cg_step_by_step, len)) {
           action_cg_step_by_step(cmd_action_cg_step_by_step);
+        } else if (match_command(cmd_action_copy, len)) {
+          action_copy(cmd_action_copy);
+        } else if (match_command(cmd_action_cg_copy, len)) {
+          action_cg_copy(cmd_action_cg_copy);
         } else if (match_command(cmd_get_relay_value, len)) {
           get_relay_value(cmd_get_relay_value);
         } else if (match_command(cmd_reset_counters, len)) {
