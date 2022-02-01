@@ -76,6 +76,9 @@ class svr_ipcctrl {
   void action_cg_down_or_stop(const char *cmd);
   void action_step_by_step(const char *cmd);
   void action_cg_step_by_step(const char *cmd);
+  void action_copy(const char *cmd, bool group);
+  void action_copy(const char *cmd);
+  void action_cg_copy(const char *cmd);
   void alexa_credentials_changed(const char *cmd);
   void google_home_credentials_changed(const char *cmd);
   void state_webhook_changed(const char *cmd);
