@@ -670,8 +670,32 @@ TEST_F(ActionTriggerConfigTest, actionCopyToTheChannelGroup) {
       config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(action.actionId, ACTION_COPY);
   EXPECT_EQ(action.subjectId, 31);
+  EXPECT_EQ(action.sourceDeviceId, 0);
   EXPECT_EQ(action.sourceChannelId, 46868);
   EXPECT_TRUE(action.channelGroup);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, sourceIds) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"subjectId\":55,\"action\":{\"id\":"
+      "10100,\"param\":{\"sourceDeviceId\":15,\"sourceChannelId\":16868}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  _at_config_action_t action =
+      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(action.actionId, ACTION_COPY);
+  EXPECT_EQ(action.subjectId, 55);
+  EXPECT_EQ(action.sourceDeviceId, 15);
+  EXPECT_EQ(action.sourceChannelId, 16868);
+  EXPECT_FALSE(action.channelGroup);
 
   delete config;
 }

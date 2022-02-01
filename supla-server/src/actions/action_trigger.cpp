@@ -119,7 +119,8 @@ void supla_action_trigger::execute_actions(int user_id,
         aexec->toggle();
         break;
       case ACTION_COPY:
-        aexec->copy(value_getter, 0, action.sourceChannelId);
+        aexec->copy(value_getter, action.sourceDeviceId,
+                    action.sourceChannelId);
         break;
       case ACTION_FORWARD_OUTSIDE:
         aexec->forward_outside(cap);
