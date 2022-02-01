@@ -950,7 +950,7 @@ void svr_ipcctrl::action_copy(const char *cmd, bool group) {
            &DeviceID, &ChannelID, &SourceDeviceID, &SourceChannelID);
   }
 
-  if (UserID && DeviceID && ChannelID) {
+  if (UserID && (ChannelID || GroupID)) {
     supla_action_executor *action_executor = new supla_action_executor();
     if (action_executor) {
       if (group) {
