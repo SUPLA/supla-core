@@ -2908,7 +2908,7 @@ bool supla_device_channels::rs_action(int SenderID, int ChannelID, int GroupID,
   bool result = false;
   access_channel(ChannelID,
                  [&result, this, SenderID, GroupID, EOL, action,
-                  closingPercentage](supla_device_channel *channel) void {
+                  closingPercentage](supla_device_channel *channel) -> void {
                    char v = -1;
 
                    switch (channel->getFunc()) {
