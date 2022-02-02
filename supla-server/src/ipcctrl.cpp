@@ -963,7 +963,12 @@ void svr_ipcctrl::action_copy(const char *cmd, bool group) {
       if (value_getter) {
         action_executor->copy(value_getter, SourceDeviceID, SourceChannelID);
         result = true;
+        delete value_getter;
+        value_getter = NULL;
       }
+
+      delete action_executor;
+      action_executor = NULL;
     }
   }
 
