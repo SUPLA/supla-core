@@ -1800,7 +1800,7 @@ bool supla_device_channels::get_dgf_transparency(int ChannelID,
          channel->getFunc() == SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL)) {
       char value[SUPLA_CHANNELVALUE_SIZE];
       channel->getValue(value);
-      *mask = ((TDigiglass_Value *)value)->mask;
+      *mask = static_cast<TDigiglass_Value *>(value)->mask;
       result = true;
     }
 
