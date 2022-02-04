@@ -86,6 +86,8 @@ class supla_user {
   bool client_reconnect(int ClientID);
   bool device_reconnect(int DeviceID);
   void loadUniqueIDs(void);
+  void access_client(int ClientID,
+                     std::function<void(supla_client *client)> on_client);
 
  public:
   static void init(void);
