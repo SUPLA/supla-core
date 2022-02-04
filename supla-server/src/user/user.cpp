@@ -303,8 +303,11 @@ supla_user *supla_user::add_device(supla_device *device, int UserID) {
 
     safe_array_lock(supla_user::user_arr);
     device_add_metric++;
+    safe_array_unlock(supla_user::user_arr);
 
     unsigned int dc = total_cd_count(false);
+
+    safe_array_lock(supla_user::user_arr);
     if (dc > supla_user::device_max_metric) {
       supla_user::device_max_metric = dc;
     }
@@ -332,8 +335,11 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
 
     safe_array_lock(supla_user::user_arr);
     client_add_metric++;
+    safe_array_unlock(supla_user::user_arr);
 
     unsigned int cc = total_cd_count(true);
+
+    safe_array_lock(supla_user::user_arr);
     if (cc > supla_user::client_max_metric) {
       supla_user::client_max_metric = cc;
     }
@@ -845,16 +851,14 @@ unsigned int supla_user::total_cd_count(bool client) {
   unsigned int result = 0;
   supla_user *user = NULL;
 
-  safe_array_lock(supla_user::user_arr);
+  int a = 0;
 
-  for (int a = 0; a < safe_array_count(user_arr); a++) {
-    if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
-      result += client ? user->client_container->count()
-                       : user->device_container->count();
-    }
+  while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+    result += client ? user->client_container->count()
+                     : user->device_container->count();
+    a++;
   }
 
-  safe_array_unlock(supla_user::user_arr);
   return result;
 }
 
@@ -875,37 +879,29 @@ void supla_user::log_metrics(int min_interval_sec) {
 
   supla_user *user = NULL;
 
-  unsigned int user_count = 0;
   unsigned int client_count = 0;
   unsigned int client_trash = 0;
   unsigned int device_count = 0;
   unsigned int device_trash = 0;
 
-  safe_array_lock(supla_user::user_arr);
-  serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-  user_count = safe_array_count(user_arr);
-
-  for (unsigned int a = 0; a < user_count; a++) {
+  int a=0;
+  while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
     serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-    if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
-      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-      client_count += user->client_container->count();
-      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-      client_trash += user->client_container->trashCount();
-      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-      device_count += user->device_container->count();
-      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-      device_trash += user->device_container->trashCount();
-      serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-    }
+    client_count += user->client_container->count();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    client_trash += user->client_container->trashCount();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    device_count += user->device_container->count();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    device_trash += user->device_container->trashCount();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    a++;
   }
-
-  safe_array_unlock(supla_user::user_arr);
 
   supla_log(LOG_INFO,
             "METRICS: USER[COUNT:%u] CLIENT[ADD:%u MAX:%u COUNT:%u TRASH:%u] "
             "DEVICE[ADD:%u MAX:%u COUNT:%u TRASH:%u]",
-            user_count, supla_user::client_add_metric,
+            a, supla_user::client_add_metric,
             supla_user::client_max_metric, client_count, client_trash,
             supla_user::device_add_metric, supla_user::device_max_metric,
             device_count, device_trash);
