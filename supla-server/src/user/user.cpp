@@ -884,7 +884,7 @@ void supla_user::log_metrics(int min_interval_sec) {
   unsigned int device_count = 0;
   unsigned int device_trash = 0;
 
-  int a=0;
+  int a = 0;
   while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
     serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
     client_count += user->client_container->count();
@@ -901,10 +901,9 @@ void supla_user::log_metrics(int min_interval_sec) {
   supla_log(LOG_INFO,
             "METRICS: USER[COUNT:%u] CLIENT[ADD:%u MAX:%u COUNT:%u TRASH:%u] "
             "DEVICE[ADD:%u MAX:%u COUNT:%u TRASH:%u]",
-            a, supla_user::client_add_metric,
-            supla_user::client_max_metric, client_count, client_trash,
-            supla_user::device_add_metric, supla_user::device_max_metric,
-            device_count, device_trash);
+            a, supla_user::client_add_metric, supla_user::client_max_metric,
+            client_count, client_trash, supla_user::device_add_metric,
+            supla_user::device_max_metric, device_count, device_trash);
   serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
