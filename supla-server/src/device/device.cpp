@@ -34,6 +34,7 @@
 
 supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
   this->channels = new supla_device_channels(this);
+  this->flags = 0;
 }
 
 supla_device::~supla_device() {
@@ -129,6 +130,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     dev_channels_c = register_device_e->channels;
     ManufacturerID = register_device_e->ManufacturerID;
     ProductID = register_device_e->ProductID;
+    flags = register_device_e->Flags;
   }
 
   if (!setGUID(GUID)) {
@@ -343,15 +345,16 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               db->commit();
 
               setID(DeviceID);
+              setUser(supla_user::find(UserID, true));
 
               load_config(UserID);
 
               channels->update_channels(dev_channels_b, dev_channels_c,
-                                           channel_count);
+                                        channel_count);
 
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
-              setUser(supla_user::add_device(this, UserID));
+              supla_user::add_device(this, UserID);
               getUser()->update_client_device_channels(LocationID, getID());
 
               channels->on_device_registered(getUser(), DeviceID,
@@ -568,4 +571,19 @@ void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
     getUser()->on_device_channel_state_result(ChannelID, state);
   }
+}
+
+bool supla_device::enter_cfg_mode(void) {
+  if (flags & SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE) {
+    TSD_DeviceCalCfgRequest request = {};
+
+    request.ChannelNumber = -1;
+    request.Command = SUPLA_CALCFG_CMD_ENTER_CFG_MODE;
+    request.SuperUserAuthorized = true;
+
+    srpc_sd_async_device_calcfg_request(getSvrConn()->srpc(), &request);
+    return true;
+  }
+
+  return false;
 }

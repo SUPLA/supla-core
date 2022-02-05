@@ -20,12 +20,16 @@
 #define DEVICE_H_
 
 #include <list>
+
 #include "cdbase.h"
 #include "commontypes.h"
 #include "devicechannel.h"
 
 class supla_user;
 class supla_device : public cdbase {
+ private:
+  int flags;
+
  protected:
   supla_device_channels *channels;
 
@@ -57,6 +61,7 @@ class supla_device : public cdbase {
   void on_channel_state_result(TDSC_ChannelState *state);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);
   void on_calcfg_result(TDS_DeviceCalCfgResult *result);
+  bool enter_cfg_mode(void);
 };
 
 #endif /* DEVICE_H_ */

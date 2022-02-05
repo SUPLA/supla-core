@@ -21,10 +21,13 @@
 
 #include <list>
 #include <string>
+
 #include "abstract_worker.h"
 #include "proto.h"
 
-#define FUNCTION_LIST_SIZE 10
+#define FUNCTION_LIST_SIZE 15
+#define MIN_RETRY_TIME 5
+#define MIN_CHECK_TIME 1
 
 class s_worker_action {
  private:
@@ -34,7 +37,6 @@ class s_worker_action {
   s_abstract_worker *worker;
 
   virtual void get_function_list(int list[FUNCTION_LIST_SIZE]) = 0;
-  virtual int try_limit(void) = 0;
   virtual bool do_action(void) = 0;
   virtual bool result_success(int *fail_result_code) = 0;
 
@@ -44,6 +46,7 @@ class s_worker_action {
  public:
   virtual int waiting_time_to_retry(void) = 0;  // return seconds
   virtual int waiting_time_to_check(void) = 0;  // return seconds
+  virtual int try_limit(void) = 0;
   explicit s_worker_action(s_abstract_worker *worker);
   virtual ~s_worker_action();
   void execute(void);

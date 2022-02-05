@@ -30,7 +30,7 @@ typedef void (*_suplaclient_cb_on_versionerror)(void *_suplaclient,
 typedef void (*_suplaclient_cb_on_action)(void *_suplaclient, void *user_data);
 typedef void (*_suplaclient_cb_on_registered)(
     void *_suplaclient, void *user_data,
-    TSC_SuplaRegisterClientResult_B *result);
+    TSC_SuplaRegisterClientResult_C *result);
 typedef void (*_suplaclient_cb_on_error)(void *_suplaclient, void *user_data,
                                          int code);
 typedef void (*_suplaclient_cb_location_update)(void *_suplaclient,
@@ -250,6 +250,9 @@ char supla_client_set_lightsource_lifespan(void *_suplaclient, int channelID,
 char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
                                        unsigned short mask,
                                        unsigned short active_bits);
+int supla_client_get_time_diff(void *_suplaclient);
+char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
+                            unsigned int durationMS);
 
 #ifdef __cplusplus
 }

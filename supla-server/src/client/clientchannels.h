@@ -19,8 +19,11 @@
 #ifndef CLIENTCHANNELS_H_
 #define CLIENTCHANNELS_H_
 
+#include <functional>
+
 #include "clientchannel.h"
 #include "clientobjcontainer.h"
+#include "device.h"
 
 class supla_client_channel;
 class supla_client_channels : public supla_client_objcontainer {
@@ -63,6 +66,8 @@ class supla_client_channels : public supla_client_objcontainer {
   void set_channel_caption(void *srpc, int ChannelId, char *Caption);
   unsigned _supla_int64_t value_validity_time_usec(void);
   void update_expired(void *srpc);
+
+  void device_call(int ChannelID, std::function<void(supla_device *)> method);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

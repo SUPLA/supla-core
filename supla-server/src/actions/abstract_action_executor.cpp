@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <actions/abstract_action_executor.h>
+#include "actions/abstract_action_executor.h"
+
+#include "converter/any_value_to_action_converter.h"
 
 supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->user = NULL;
@@ -81,12 +83,27 @@ void supla_abstract_action_executor::set_group_id(int user_id, int group_id) {
   this->is_group = true;
 }
 
-supla_device *supla_abstract_action_executor::get_device(void) {
-  if (user && device_id) {
-    return user->get_device(device_id);
+void supla_abstract_action_executor::access_device(
+    std::function<void(supla_device *device)> on_device) {
+  if (user && (device_id || (subject_id && !is_group))) {
+    return user->access_device(device_id, is_group ? 0 : subject_id, on_device);
   }
+}
 
-  return NULL;
+void supla_abstract_action_executor::execute_action(
+    std::function<void(supla_user_channelgroups *, supla_device_channels *)>
+        f) {
+  supla_user_channelgroups *channel_groups = get_channel_groups();
+  if (channel_groups) {
+    f(channel_groups, NULL);
+  } else {
+    access_device([f](supla_device *device) -> void {
+      supla_device_channels *channels = device->get_channels();
+      if (channels) {
+        f(NULL, channels);
+      }
+    });
+  }
 }
 
 supla_user_channelgroups *supla_abstract_action_executor::get_channel_groups(
@@ -108,4 +125,24 @@ int supla_abstract_action_executor::get_channel_id(void) {
 
 int supla_abstract_action_executor::get_group_id(void) {
   return is_group ? subject_id : 0;
+}
+
+void supla_abstract_action_executor::copy(
+    supla_abstract_value_getter *value_getter, int sourceDeviceId,
+    int sourceChannelId) {
+  if (value_getter) {
+    supla_channel_value *value = NULL;
+    if ((value = value_getter->get_value(get_user_id(), sourceDeviceId,
+                                         sourceChannelId))) {
+      any_value_to_action_converter *converter =
+          new any_value_to_action_converter();
+      if (converter) {
+        converter->convert(value, this);
+        delete converter;
+      }
+
+      delete value;
+      value = NULL;
+    }
+  }
 }

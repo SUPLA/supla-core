@@ -17,6 +17,8 @@
  */
 
 #include "google/googlehomestatereportrequest.h"
+
+#include "http/httprequestvoiceassistantextraparams.h"
 #include "log.h"
 #include "safearray.h"
 #include "svrcfg.h"
@@ -66,12 +68,22 @@ bool supla_google_home_statereport_request::verifyExisting(
   static_cast<supla_google_home_statereport_request *>(existing)->addChannelId(
       getChannelId());
 
-  if (getGoogleRequestIdPtr() != NULL) {
-    existing->setGoogleRequestId(getGoogleRequestIdPtr());
-  }
+  unsigned long long delayUs = 1000000;
 
-  existing->setDelay(existing->getGoogleRequestIdPtr() ? 3000000 : 1000000);
+  accessExtraParams(
+      [existing, &delayUs](supla_http_request_extra_params *_params) -> void {
+        supla_http_request_voice_assistant_extra_params *params =
+            dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
+                _params);
+        if (params && params->getGoogleRequestIdPtr()) {
+          existing->setExtraParams(
+              new supla_http_request_voice_assistant_extra_params(
+                  NULL, params->getGoogleRequestIdPtr()));
+          delayUs = 3000000;
+        }
+      });
 
+  existing->setDelay(delayUs);
   return true;
 }
 
@@ -172,7 +184,15 @@ void supla_google_home_statereport_request::execute(void *sthread) {
 
   if (content_exists) {
     int resultCode = 0;
-    getClient()->sendReportState(getGoogleRequestIdPtr(), &resultCode);
+
+    accessExtraParams(
+        [this, &resultCode](supla_http_request_extra_params *_params) -> void {
+          supla_http_request_voice_assistant_extra_params *params =
+              dynamic_cast<supla_http_request_voice_assistant_extra_params *>(
+                  _params);
+          getClient()->sendReportState(
+              params ? params->getGoogleRequestIdPtr() : NULL, &resultCode);
+        });
 
     if (resultCode == 404) {
       getUser()->googleHomeCredentials()->on_reportstate_404_error();

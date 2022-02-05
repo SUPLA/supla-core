@@ -10,19 +10,19 @@ CPP_SRCS += \
 ../src/amazon/alexarequest.cpp \
 ../src/amazon/alexaresponserequest.cpp 
 
-OBJS += \
-./src/amazon/alexachangereportrequest.o \
-./src/amazon/alexaclient.o \
-./src/amazon/alexacredentials.o \
-./src/amazon/alexarequest.o \
-./src/amazon/alexaresponserequest.o 
-
 CPP_DEPS += \
 ./src/amazon/alexachangereportrequest.d \
 ./src/amazon/alexaclient.d \
 ./src/amazon/alexacredentials.d \
 ./src/amazon/alexarequest.d \
 ./src/amazon/alexaresponserequest.d 
+
+OBJS += \
+./src/amazon/alexachangereportrequest.o \
+./src/amazon/alexaclient.o \
+./src/amazon/alexacredentials.o \
+./src/amazon/alexarequest.o \
+./src/amazon/alexaresponserequest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -33,4 +33,11 @@ src/amazon/%.o: ../src/amazon/%.cpp src/amazon/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-amazon
+
+clean-src-2f-amazon:
+	-$(RM) ./src/amazon/alexachangereportrequest.d ./src/amazon/alexachangereportrequest.o ./src/amazon/alexaclient.d ./src/amazon/alexaclient.o ./src/amazon/alexacredentials.d ./src/amazon/alexacredentials.o ./src/amazon/alexarequest.d ./src/amazon/alexarequest.o ./src/amazon/alexaresponserequest.d ./src/amazon/alexaresponserequest.o
+
+.PHONY: clean-src-2f-amazon
 

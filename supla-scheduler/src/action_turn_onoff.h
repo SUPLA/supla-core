@@ -26,15 +26,15 @@ class s_worker_action_turn_onoff : public s_worker_action {
   bool setOn;
 
  protected:
-  void get_function_list(int list[FUNCTION_LIST_SIZE]);
-  int try_limit(void);
-  int waiting_time_to_retry(void);
-  int waiting_time_to_check(void);
-  bool result_success(int *fail_result_code);
-  bool do_action();
+  virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
+  virtual int waiting_time_to_retry(void);
+  virtual int waiting_time_to_check(void);
+  virtual bool result_success(int *fail_result_code);
+  virtual bool do_action();
 
  public:
   s_worker_action_turn_onoff(s_abstract_worker *worker, bool setOn);
+  virtual int try_limit(void);
 };
 
 class s_worker_action_turn_on : public s_worker_action_turn_onoff {

@@ -303,8 +303,11 @@ supla_user *supla_user::add_device(supla_device *device, int UserID) {
 
     safe_array_lock(supla_user::user_arr);
     device_add_metric++;
+    safe_array_unlock(supla_user::user_arr);
 
     unsigned int dc = total_cd_count(false);
+
+    safe_array_lock(supla_user::user_arr);
     if (dc > supla_user::device_max_metric) {
       supla_user::device_max_metric = dc;
     }
@@ -332,8 +335,11 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
 
     safe_array_lock(supla_user::user_arr);
     client_add_metric++;
+    safe_array_unlock(supla_user::user_arr);
 
     unsigned int cc = total_cd_count(true);
+
+    safe_array_lock(supla_user::user_arr);
     if (cc > supla_user::client_max_metric) {
       supla_user::client_max_metric = cc;
     }
@@ -343,32 +349,35 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
   return user;
 }
 
-bool supla_user::is_client_online(int ClientID) {
+void supla_user::access_client(
+    int ClientID, std::function<void(supla_client *client)> on_client) {
   supla_client *client = client_container->findByID(ClientID);
   if (client) {
+    on_client(client);
     client->releasePtr();
-    return true;
   }
+}
 
-  return false;
+bool supla_user::is_client_online(int ClientID) {
+  bool result = false;
+  access_client(ClientID,
+                [&result](supla_client *client) -> void { result = true; });
+  return result;
 }
 
 bool supla_user::is_device_online(int DeviceID) {
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device) {
-    device->releasePtr();
-    return true;
-  }
-  return false;
+  bool result = false;
+  access_device(DeviceID, 0,
+                [&result](supla_device *device) -> void { result = true; });
+  return result;
 }
 
 bool supla_user::is_channel_online(int DeviceID, int ChannelID) {
   bool result = false;
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device) {
-    device->releasePtr();
-    result = device->get_channels()->is_channel_online(ChannelID);
-  }
+  access_device(DeviceID, 0,
+                [&result, ChannelID](supla_device *device) -> void {
+                  result = device->get_channels()->is_channel_online(ChannelID);
+                });
   return result;
 }
 
@@ -376,12 +385,10 @@ bool supla_user::is_channel_online(int DeviceID, int ChannelID) {
 bool supla_user::is_client_online(int UserID, int ClientID) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
-
-  if (user && user->is_client_online(ClientID) == true) result = true;
+  supla_user *user = supla_user::find(UserID, false);
+  if (user && user->is_client_online(ClientID) == true) {
+    result = true;
+  }
 
   return result;
 }
@@ -390,12 +397,11 @@ bool supla_user::is_client_online(int UserID, int ClientID) {
 bool supla_user::is_device_online(int UserID, int DeviceID) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
-  if (user && user->is_device_online(DeviceID) == true) result = true;
+  if (user && user->is_device_online(DeviceID) == true) {
+    result = true;
+  }
 
   return result;
 }
@@ -404,13 +410,11 @@ bool supla_user::is_device_online(int UserID, int DeviceID) {
 bool supla_user::is_channel_online(int UserID, int DeviceID, int ChannelID) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
-  if (user && user->is_channel_online(DeviceID, ChannelID) == true)
+  if (user && user->is_channel_online(DeviceID, ChannelID) == true) {
     result = true;
+  }
 
   return result;
 }
@@ -427,6 +431,30 @@ supla_device *supla_user::get_device(int UserID, int DeviceID) {
 
 supla_device *supla_user::get_device(int DeviceID) {
   return device_container->findByID(DeviceID);
+}
+
+void supla_user::access_device(
+    int DeviceId, int ChannelId,
+    std::function<void(supla_device *device)> on_device) {
+  if (DeviceId || ChannelId) {
+    supla_device *device = DeviceId
+                               ? device_container->findByID(DeviceId)
+                               : device_container->findByChannelID(ChannelId);
+    if (device) {
+      on_device(device);
+      device->releasePtr();
+    }
+  }
+}
+
+// static
+void supla_user::access_device(
+    int UserID, int DeviceId, int ChannelId,
+    std::function<void(supla_device *device)> on_device) {
+  supla_user *user = find(UserID, false);
+  if (user) {
+    user->access_device(DeviceId, ChannelId, on_device);
+  }
 }
 
 bool supla_user::get_channel_double_value(int DeviceID, int ChannelID,
@@ -519,10 +547,7 @@ bool supla_user::get_channel_double_value(int UserID, int DeviceID,
                                           char Type) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     switch (Type) {
@@ -567,10 +592,7 @@ bool supla_user::get_channel_char_value(int UserID, int DeviceID, int ChannelID,
                                         char *Value) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     result = user->get_channel_char_value(DeviceID, ChannelID, Value) == true;
@@ -585,10 +607,7 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
                                         char *brightness, char *on_off) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     result = user->get_channel_rgbw_value(DeviceID, ChannelID, color,
@@ -604,10 +623,7 @@ supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
     int UserID, int DeviceID, int ChannelID) {
   supla_channel_electricity_measurement *result = NULL;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     result = user->get_electricity_measurement(DeviceID, ChannelID);
@@ -621,10 +637,7 @@ supla_channel_ic_measurement *supla_user::supla_user::get_ic_measurement(
     int UserID, int DeviceID, int ChannelID) {
   supla_channel_ic_measurement *result = NULL;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     result = user->get_ic_measurement(DeviceID, ChannelID);
@@ -638,10 +651,7 @@ bool supla_user::get_channel_valve_value(int UserID, int DeviceID,
                                          int ChannelID, TValve_Value *Value) {
   bool result = false;
 
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     result = user->get_channel_valve_value(DeviceID, ChannelID, Value) == true;
@@ -767,10 +777,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
 
 // static
 void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     user->amazonAlexaCredentials()->on_credentials_changed();
@@ -779,10 +786,7 @@ void supla_user::on_amazon_alexa_credentials_changed(int UserID) {
 
 // static
 void supla_user::on_google_home_credentials_changed(int UserID) {
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     user->googleHomeCredentials()->on_credentials_changed();
@@ -791,10 +795,7 @@ void supla_user::on_google_home_credentials_changed(int UserID) {
 
 // static
 void supla_user::on_state_webhook_changed(int UserID) {
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     user->stateWebhookCredentials()->on_credentials_changed();
@@ -823,10 +824,7 @@ void supla_user::before_device_delete(int UserID, int DeviceID,
 // static
 void supla_user::on_device_deleted(int UserID, int DeviceID,
                                    event_source_type eventSourceType) {
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     supla_http_request_queue::getInstance()->onDeviceDeletedEvent(
@@ -840,10 +838,7 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
 // static
 void supla_user::on_device_settings_changed(int UserID, int DeviceID,
                                             event_source_type eventSourceType) {
-  safe_array_lock(supla_user::user_arr);
-  supla_user *user =
-      (supla_user *)safe_array_findcnd(user_arr, find_user_by_id, &UserID);
-  safe_array_unlock(supla_user::user_arr);
+  supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
     supla_mqtt_client_suite::globalInstance()->onDeviceSettingsChanged(
@@ -856,16 +851,14 @@ unsigned int supla_user::total_cd_count(bool client) {
   unsigned int result = 0;
   supla_user *user = NULL;
 
-  safe_array_lock(supla_user::user_arr);
+  int a = 0;
 
-  for (int a = 0; a < safe_array_count(user_arr); a++) {
-    if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
-      result += client ? user->client_container->count()
-                       : user->device_container->count();
-    }
+  while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+    result += client ? user->client_container->count()
+                     : user->device_container->count();
+    a++;
   }
 
-  safe_array_unlock(supla_user::user_arr);
   return result;
 }
 
@@ -886,34 +879,31 @@ void supla_user::log_metrics(int min_interval_sec) {
 
   supla_user *user = NULL;
 
-  unsigned int user_count = 0;
   unsigned int client_count = 0;
   unsigned int client_trash = 0;
   unsigned int device_count = 0;
   unsigned int device_trash = 0;
 
-  safe_array_lock(supla_user::user_arr);
-
-  user_count = safe_array_count(user_arr);
-
-  for (unsigned int a = 0; a < user_count; a++) {
-    if (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
-      client_count += user->client_container->count();
-      client_trash += user->client_container->trashCount();
-      device_count += user->device_container->count();
-      device_trash += user->device_container->trashCount();
-    }
+  int a = 0;
+  while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    client_count += user->client_container->count();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    client_trash += user->client_container->trashCount();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    device_count += user->device_container->count();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    device_trash += user->device_container->trashCount();
+    serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
+    a++;
   }
-
-  safe_array_unlock(supla_user::user_arr);
 
   supla_log(LOG_INFO,
             "METRICS: USER[COUNT:%u] CLIENT[ADD:%u MAX:%u COUNT:%u TRASH:%u] "
             "DEVICE[ADD:%u MAX:%u COUNT:%u TRASH:%u]",
-            user_count, supla_user::client_add_metric,
-            supla_user::client_max_metric, client_count, client_trash,
-            supla_user::device_add_metric, supla_user::device_max_metric,
-            device_count, device_trash);
+            a, supla_user::client_add_metric, supla_user::client_max_metric,
+            client_count, client_trash, supla_user::device_add_metric,
+            supla_user::device_max_metric, device_count, device_trash);
   serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
@@ -947,17 +937,6 @@ bool supla_user::set_device_channel_value(
   }
 
   return result;
-}
-
-bool supla_user::set_channelgroup_char_value(int GroupID, const char value) {
-  return cgroups->set_char_value(GroupID, value);
-}
-
-bool supla_user::set_channelgroup_rgbw_value(int GroupID, int color,
-                                             char color_brightness,
-                                             char brightness, char on_off) {
-  return cgroups->set_rgbw_value(GroupID, color, color_brightness, brightness,
-                                 on_off);
 }
 
 void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
@@ -1432,6 +1411,10 @@ void supla_user::set_channel_function(supla_client *sender,
       } else if (db->channel_is_associated_with_scene(func->ChannelID)) {
         result.ResultCode =
             SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE;
+      } else if (db->channel_is_associated_with_action_trigger(
+                     getUserID(), func->ChannelID)) {
+        result.ResultCode =
+            SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER;
       } else {
         if (Type != SUPLA_CHANNELTYPE_BRIDGE ||
             (func->Func != SUPLA_CHANNELFNC_NONE &&

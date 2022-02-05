@@ -22,6 +22,7 @@
 
 #include <list>
 
+#include "http/httprequestactiontriggerextraparams.h"
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
@@ -57,8 +58,36 @@ bool supla_state_webhook_request::isCancelled(void *sthread) {
   return !getUser()->stateWebhookCredentials()->isAccessTokenExists();
 }
 
+unsigned int supla_state_webhook_request::getActions(void) {
+  unsigned int actions = 0;
+  accessExtraParams([&actions](
+                        supla_http_request_extra_params *_params) -> void {
+    supla_http_request_action_trigger_extra_params *params =
+        dynamic_cast<supla_http_request_action_trigger_extra_params *>(_params);
+    if (params) {
+      actions = params->getActions();
+    }
+  });
+
+  return actions;
+}
+
 bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
-  duplicateExists = true;
+  if (existing->getEventType() == getEventType()) {
+    unsigned int actions = getActions();
+
+    existing->accessExtraParams(
+        [actions](supla_http_request_extra_params *_params) -> void {
+          supla_http_request_action_trigger_extra_params *params =
+              dynamic_cast<supla_http_request_action_trigger_extra_params *>(
+                  _params);
+          if (params) {
+            params->addActions(actions);
+          }
+        });
+
+    duplicateExists = true;
+  }
   return true;
 }
 
@@ -122,6 +151,9 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
               case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
               case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
                 return true;
+              case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+                delayTime = 100000;
+                return true;
               default:
                 return false;
             }
@@ -140,7 +172,8 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
 
 bool supla_state_webhook_request::isEventTypeAccepted(event_type eventType,
                                                       bool verification) {
-  return eventType == ET_CHANNEL_VALUE_CHANGED;
+  return eventType == ET_CHANNEL_VALUE_CHANGED ||
+         eventType == ET_ACTION_TRIGGERED;
 }
 
 supla_state_webhook_client *supla_state_webhook_request::getClient(void) {
@@ -204,6 +237,11 @@ void supla_state_webhook_request::impulseCounterChannelType(
 }
 
 void supla_state_webhook_request::execute(void *sthread) {
+  if (getEventType() == ET_ACTION_TRIGGERED) {
+    getClient()->triggeredActionsReport(getChannelId(), getActions());
+    return;
+  }
+
   channel_complex_value value =
       getUser()->get_channel_complex_value(getChannelId());
 

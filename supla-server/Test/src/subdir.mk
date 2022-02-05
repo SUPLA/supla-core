@@ -3,6 +3,22 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
+CPP_SRCS += \
+../src/accept_loop.cpp \
+../src/cdbase.cpp \
+../src/cdcontainer.cpp \
+../src/database.cpp \
+../src/datalogger.cpp \
+../src/dbcommon.cpp \
+../src/dcpair.cpp \
+../src/ipcctrl.cpp \
+../src/objcontainer.cpp \
+../src/objcontaineritem.cpp \
+../src/serverconnection.cpp \
+../src/serverstatus.cpp \
+../src/svrdb.cpp \
+../src/voiceassistantclient.cpp 
+
 C_SRCS += \
 ../src/cfg.c \
 ../src/eh.c \
@@ -19,21 +35,37 @@ C_SRCS += \
 ../src/svrcfg.c \
 ../src/tools.c 
 
-CPP_SRCS += \
-../src/accept_loop.cpp \
-../src/cdbase.cpp \
-../src/cdcontainer.cpp \
-../src/database.cpp \
-../src/datalogger.cpp \
-../src/dbcommon.cpp \
-../src/dcpair.cpp \
-../src/ipcctrl.cpp \
-../src/objcontainer.cpp \
-../src/objcontaineritem.cpp \
-../src/serverconnection.cpp \
-../src/serverstatus.cpp \
-../src/svrdb.cpp \
-../src/voiceassistantclient.cpp 
+CPP_DEPS += \
+./src/accept_loop.d \
+./src/cdbase.d \
+./src/cdcontainer.d \
+./src/database.d \
+./src/datalogger.d \
+./src/dbcommon.d \
+./src/dcpair.d \
+./src/ipcctrl.d \
+./src/objcontainer.d \
+./src/objcontaineritem.d \
+./src/serverconnection.d \
+./src/serverstatus.d \
+./src/svrdb.d \
+./src/voiceassistantclient.d 
+
+C_DEPS += \
+./src/cfg.d \
+./src/eh.d \
+./src/ini.d \
+./src/ipcsocket.d \
+./src/lck.d \
+./src/log.d \
+./src/proto.d \
+./src/safearray.d \
+./src/srpc.d \
+./src/sslcrypto.d \
+./src/sthread.d \
+./src/supla-socket.d \
+./src/svrcfg.d \
+./src/tools.d 
 
 OBJS += \
 ./src/accept_loop.o \
@@ -65,38 +97,6 @@ OBJS += \
 ./src/tools.o \
 ./src/voiceassistantclient.o 
 
-C_DEPS += \
-./src/cfg.d \
-./src/eh.d \
-./src/ini.d \
-./src/ipcsocket.d \
-./src/lck.d \
-./src/log.d \
-./src/proto.d \
-./src/safearray.d \
-./src/srpc.d \
-./src/sslcrypto.d \
-./src/sthread.d \
-./src/supla-socket.d \
-./src/svrcfg.d \
-./src/tools.d 
-
-CPP_DEPS += \
-./src/accept_loop.d \
-./src/cdbase.d \
-./src/cdcontainer.d \
-./src/database.d \
-./src/datalogger.d \
-./src/dbcommon.d \
-./src/dcpair.d \
-./src/ipcctrl.d \
-./src/objcontainer.d \
-./src/objcontaineritem.d \
-./src/serverconnection.d \
-./src/serverstatus.d \
-./src/svrdb.d \
-./src/voiceassistantclient.d 
-
 
 # Each subdirectory must supply rules for building sources it contributes
 src/%.o: ../src/%.cpp src/subdir.mk
@@ -113,4 +113,11 @@ src/%.o: ../src/%.c src/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src
+
+clean-src:
+	-$(RM) ./src/accept_loop.d ./src/accept_loop.o ./src/cdbase.d ./src/cdbase.o ./src/cdcontainer.d ./src/cdcontainer.o ./src/cfg.d ./src/cfg.o ./src/database.d ./src/database.o ./src/datalogger.d ./src/datalogger.o ./src/dbcommon.d ./src/dbcommon.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/ipcctrl.d ./src/ipcctrl.o ./src/ipcsocket.d ./src/ipcsocket.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverconnection.d ./src/serverconnection.o ./src/serverstatus.d ./src/serverstatus.o ./src/srpc.d ./src/srpc.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/svrdb.d ./src/svrdb.o ./src/tools.d ./src/tools.o ./src/voiceassistantclient.d ./src/voiceassistantclient.o
+
+.PHONY: clean-src
 

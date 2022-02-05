@@ -1218,4 +1218,45 @@ TEST_F(StateWebhookClientTest, sendElectricityMeasurementReport) {
   }
 }
 
+TEST_F(StateWebhookClientTest, triggeredActionsReport) {
+  const char expectedRequest1[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 179\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-"
+      "9da3-e8be5c71ae5b\",\"channelId\":567,\"channelFunction\":\"ACTION_"
+      "TRIGGER\",\"timestamp\":1600097258,\"triggered_actions\":[\"TOGGLE_X1\","
+      "\"PRESS_X3\"]}";
+
+  ASSERT_TRUE(client->triggeredActionsReport(
+      567, SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x3));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest1));
+
+  const char expectedRequest2[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 163\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-"
+      "9da3-e8be5c71ae5b\",\"channelId\":567,\"channelFunction\":\"ACTION_"
+      "TRIGGER\",\"timestamp\":1600097258,\"triggered_actions\":[\"HOLD\"]}";
+
+  ASSERT_TRUE(client->triggeredActionsReport(567, SUPLA_ACTION_CAP_HOLD));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest2));
+
+  const char expectedRequest3[] =
+      "POST / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: "
+      "supla-server\r\nContent-Length: 300\r\nAuthorization: Bearer "
+      "ACCESS-TOKEN\r\nConnection: close\r\nContent-Type: "
+      "application/"
+      "json\r\n\r\n{\"userShortUniqueId\":\"dc85740d-cb27-405b-9da3-"
+      "e8be5c71ae5b\",\"channelId\":7777,\"channelFunction\":\"ACTION_"
+      "TRIGGER\",\"timestamp\":1600097258,\"triggered_actions\":[\"TURN_ON\","
+      "\"TURN_OFF\",\"TOGGLE_X1\",\"TOGGLE_X2\",\"TOGGLE_X3\",\"TOGGLE_X4\","
+      "\"TOGGLE_X5\",\"HOLD\",\"PRESS_X1\",\"PRESS_X2\",\"PRESS_X3\",\"PRESS_"
+      "X4\",\"PRESS_X5\"]}";
+
+  ASSERT_TRUE(client->triggeredActionsReport(7777, 0xFFFFFFFF));
+  ASSERT_TRUE(TrivialHttpMock::outputEqualTo(expectedRequest3));
+}
+
 } /* namespace testing */

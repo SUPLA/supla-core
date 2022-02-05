@@ -11,16 +11,16 @@ C_SRCS += \
 S_UPPER_SRCS += \
 ../src/crypt_blowfish/x86.S 
 
+C_DEPS += \
+./src/crypt_blowfish/crypt_blowfish.d \
+./src/crypt_blowfish/crypt_gensalt.d \
+./src/crypt_blowfish/wrapper.d 
+
 OBJS += \
 ./src/crypt_blowfish/crypt_blowfish.o \
 ./src/crypt_blowfish/crypt_gensalt.o \
 ./src/crypt_blowfish/wrapper.o \
 ./src/crypt_blowfish/x86.o 
-
-C_DEPS += \
-./src/crypt_blowfish/crypt_blowfish.d \
-./src/crypt_blowfish/crypt_gensalt.d \
-./src/crypt_blowfish/wrapper.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -38,4 +38,11 @@ src/crypt_blowfish/x86.o: ../src/crypt_blowfish/x86.S src/crypt_blowfish/subdir.
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-crypt_blowfish
+
+clean-src-2f-crypt_blowfish:
+	-$(RM) ./src/crypt_blowfish/crypt_blowfish.d ./src/crypt_blowfish/crypt_blowfish.o ./src/crypt_blowfish/crypt_gensalt.d ./src/crypt_blowfish/crypt_gensalt.o ./src/crypt_blowfish/wrapper.d ./src/crypt_blowfish/wrapper.o ./src/crypt_blowfish/x86.o
+
+.PHONY: clean-src-2f-crypt_blowfish
 

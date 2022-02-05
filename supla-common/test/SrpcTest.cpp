@@ -500,6 +500,9 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
       return {SUPLA_DS_CALL_GET_CHANNEL_CONFIG,
               SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT,
               SUPLA_DS_CALL_ACTIONTRIGGER};
+
+    case 17:
+      return {SUPLA_CS_CALL_TIMER_ARM, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C};
   }
 
   return {};
@@ -1955,45 +1958,20 @@ TEST_F(SrpcTest, call_registerclient_d) {
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_registerclient_result) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result,
+                     TSC_SuplaRegisterClientResult,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT, 42,
+                     sc_register_client_result);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaRegisterClientResult, result);
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_b,
+                     TSC_SuplaRegisterClientResult_B,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B, 50,
+                     sc_register_client_result_b);
 
-  ASSERT_GT(srpc_sc_async_registerclient_result(srpc, &result), 0);
-  SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT, 42);
-
-  ASSERT_FALSE(cr_rd.data.sc_register_client_result == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result, &result,
-                      sizeof(TSC_SuplaRegisterClientResult)));
-
-  free(cr_rd.data.sc_register_client_result);
-  srpc_free(srpc);
-  srpc = NULL;
-}
-
-TEST_F(SrpcTest, call_registerclient_result_b) {
-  data_read_result = -1;
-  srpc = srpcInit();
-  ASSERT_FALSE(srpc == NULL);
-
-  DECLARE_WITH_RANDOM(TSC_SuplaRegisterClientResult_B, result);
-
-  ASSERT_GT(srpc_sc_async_registerclient_result_b(srpc, &result), 0);
-  SendAndReceive(SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B, 50);
-
-  ASSERT_FALSE(cr_rd.data.sc_register_client_result_b == NULL);
-
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_register_client_result_b, &result,
-                      sizeof(TSC_SuplaRegisterClientResult_B)));
-
-  free(cr_rd.data.sc_register_client_result_b);
-  srpc_free(srpc);
-  srpc = NULL;
-}
+SRPC_CALL_BASIC_TEST(srpc_sc_async_registerclient_result_c,
+                     TSC_SuplaRegisterClientResult_C,
+                     SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C, 54,
+                     sc_register_client_result_c);
 
 //---------------------------------------------------------
 // LOCATION UPDATE
@@ -3210,6 +3188,115 @@ TEST_F(SrpcTest, evtool_v1_thermostatextended2extended) {
   ASSERT_EQ(0, memcmp(ev.value, &th_ev, sizeof(TThermostat_ExtendedValue)));
 }
 
+TEST_F(SrpcTest, srpc_evtool_value_add) {
+  TSuplaChannelExtendedValue a = {};
+  TSuplaChannelExtendedValue b = {};
+
+  ASSERT_EQ(srpc_evtool_value_add(NULL, NULL), 0);
+  ASSERT_EQ(srpc_evtool_value_add(&a, NULL), 0);
+  ASSERT_EQ(srpc_evtool_value_add(NULL, &b), 0);
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 0);
+
+  a.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 0);
+
+  a.type = EV_TYPE_NONE;
+  b.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE;
+  set_random(b.value, sizeof(b.value));
+
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 0);
+
+  b.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1;
+  b.size = SUPLA_CHANNELEXTENDEDVALUE_SIZE;
+
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 1);
+  ASSERT_EQ(memcmp(&a, &b, sizeof(a)), 0);
+
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 0);
+
+  a.size = 5;
+  b.size = 10;
+
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 1);
+  ASSERT_EQ(a.type, (char)EV_TYPE_MULTI_VALUE);
+  ASSERT_EQ(a.size, (unsigned int)25);
+}
+
+TEST_F(SrpcTest, srpc_evtool_value_get) {
+  TSuplaChannelExtendedValue a = {};
+  TSuplaChannelExtendedValue b = {};
+  TSuplaChannelExtendedValue c = {};
+  TSuplaChannelExtendedValue d = {};
+  TSuplaChannelExtendedValue e = {};
+
+  b.type = EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1;
+  b.size = 10;
+  c.type = EV_TYPE_IMPULSE_COUNTER_DETAILS_V1;
+  c.size = 20;
+  d.type = EV_TYPE_THERMOSTAT_DETAILS_V1;
+  d.size = 30;
+  e.type = EV_TYPE_CHANNEL_STATE_V1;
+  e.size = 40;
+
+  set_random(b.value, b.size);
+  set_random(c.value, c.size);
+  set_random(d.value, d.size);
+  set_random(e.value, e.size);
+
+  ASSERT_EQ(a.type, EV_TYPE_NONE);
+  ASSERT_EQ(srpc_evtool_value_add(&a, &b), 1);
+
+  ASSERT_EQ(a.type, b.type);
+
+  {
+    TSuplaChannelExtendedValue x = {};
+    ASSERT_EQ(srpc_evtool_value_get(&a, 0, &x), 1);
+    ASSERT_EQ(memcmp(&x, &a, sizeof(a)), 0);
+    ASSERT_EQ(srpc_evtool_value_get(&a, 1, &x), 0);
+  }
+
+  ASSERT_EQ(srpc_evtool_value_add(&a, &c), 1);
+  ASSERT_EQ(a.type, EV_TYPE_MULTI_VALUE);
+
+  unsigned int header_size =
+      sizeof(TSuplaChannelExtendedValue) - sizeof(a.value);
+
+  {
+    TSuplaChannelExtendedValue x = {};
+    ASSERT_EQ(srpc_evtool_value_get(&a, 1, &x), 1);
+    ASSERT_EQ(memcmp(&x, &c, header_size + c.size), 0);
+    ASSERT_EQ(srpc_evtool_value_get(&a, 2, &x), 0);
+  }
+
+  ASSERT_EQ(srpc_evtool_value_add(&a, &d), 1);
+  ASSERT_EQ(srpc_evtool_value_add(&a, &e), 1);
+
+  {
+    TSuplaChannelExtendedValue x = {};
+    ASSERT_EQ(srpc_evtool_value_get(&a, 0, &x), 1);
+    ASSERT_EQ(memcmp(&x, &b, header_size + b.size), 0);
+  }
+
+  {
+    TSuplaChannelExtendedValue x = {};
+    ASSERT_EQ(srpc_evtool_value_get(&a, 1, &x), 1);
+    ASSERT_EQ(memcmp(&x, &c, header_size + c.size), 0);
+  }
+
+  {
+    TSuplaChannelExtendedValue x = {};
+    ASSERT_EQ(srpc_evtool_value_get(&a, 2, &x), 1);
+    ASSERT_EQ(memcmp(&x, &d, header_size + d.size), 0);
+  }
+
+  {
+    TSuplaChannelExtendedValue x = {};
+    ASSERT_EQ(srpc_evtool_value_get(&a, 3, &x), 1);
+    ASSERT_EQ(memcmp(&x, &e, header_size + e.size), 0);
+    ASSERT_EQ(srpc_evtool_value_get(&a, 4, &x), 0);
+  }
+}
+
 //---------------------------------------------------------
 // GET USER LOCALTIME
 //---------------------------------------------------------
@@ -3424,5 +3511,12 @@ SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_sd_async_get_channel_config_result,
 
 SRPC_CALL_BASIC_TEST(srpc_ds_async_action_trigger, TDS_ActionTrigger,
                      SUPLA_DS_CALL_ACTIONTRIGGER, 38, ds_action_trigger);
+
+//---------------------------------------------------------
+// TIMER
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_timer_arm, TCS_TimerArmRequest,
+                     SUPLA_CS_CALL_TIMER_ARM, 32, cs_timer_arm_request);
 
 }  // namespace

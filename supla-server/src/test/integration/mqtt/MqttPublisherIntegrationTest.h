@@ -31,6 +31,7 @@ class MqttPublisherIntegrationTest : public MqttClientIntegrationTest {
       supla_mqtt_client_datasource *datasource);
   virtual supla_mqtt_client_datasource *dsInit(
       supla_mqtt_client_settings *settings);
+  void waitForActions(int expectedTopicCount);
 
  public:
   virtual void SetUp();

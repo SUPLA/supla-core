@@ -8,15 +8,15 @@ CPP_SRCS += \
 ../src/test/doubles/asynctask/AsyncTaskQueueMock.cpp \
 ../src/test/doubles/asynctask/AsyncTaskThreadPoolMock.cpp 
 
-OBJS += \
-./src/test/doubles/asynctask/AsyncTaskMock.o \
-./src/test/doubles/asynctask/AsyncTaskQueueMock.o \
-./src/test/doubles/asynctask/AsyncTaskThreadPoolMock.o 
-
 CPP_DEPS += \
 ./src/test/doubles/asynctask/AsyncTaskMock.d \
 ./src/test/doubles/asynctask/AsyncTaskQueueMock.d \
 ./src/test/doubles/asynctask/AsyncTaskThreadPoolMock.d 
+
+OBJS += \
+./src/test/doubles/asynctask/AsyncTaskMock.o \
+./src/test/doubles/asynctask/AsyncTaskQueueMock.o \
+./src/test/doubles/asynctask/AsyncTaskThreadPoolMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -27,4 +27,11 @@ src/test/doubles/asynctask/%.o: ../src/test/doubles/asynctask/%.cpp src/test/dou
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-asynctask
+
+clean-src-2f-test-2f-doubles-2f-asynctask:
+	-$(RM) ./src/test/doubles/asynctask/AsyncTaskMock.d ./src/test/doubles/asynctask/AsyncTaskMock.o ./src/test/doubles/asynctask/AsyncTaskQueueMock.d ./src/test/doubles/asynctask/AsyncTaskQueueMock.o ./src/test/doubles/asynctask/AsyncTaskThreadPoolMock.d ./src/test/doubles/asynctask/AsyncTaskThreadPoolMock.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-asynctask
 

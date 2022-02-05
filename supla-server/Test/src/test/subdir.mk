@@ -16,19 +16,6 @@ CPP_SRCS += \
 ../src/test/TestHelper.cpp \
 ../src/test/ToolsTest.cpp 
 
-OBJS += \
-./src/test/AllTests.o \
-./src/test/CDBaseTest.o \
-./src/test/CDContainerTest.o \
-./src/test/DCPairTest.o \
-./src/test/DeviceChannelTest.o \
-./src/test/ProtoTest.o \
-./src/test/STCDContainer.o \
-./src/test/SafeArrayTest.o \
-./src/test/SrpcTest.o \
-./src/test/TestHelper.o \
-./src/test/ToolsTest.o 
-
 CPP_DEPS += \
 ./src/test/AllTests.d \
 ./src/test/CDBaseTest.d \
@@ -42,6 +29,19 @@ CPP_DEPS += \
 ./src/test/TestHelper.d \
 ./src/test/ToolsTest.d 
 
+OBJS += \
+./src/test/AllTests.o \
+./src/test/CDBaseTest.o \
+./src/test/CDContainerTest.o \
+./src/test/DCPairTest.o \
+./src/test/DeviceChannelTest.o \
+./src/test/ProtoTest.o \
+./src/test/STCDContainer.o \
+./src/test/SafeArrayTest.o \
+./src/test/SrpcTest.o \
+./src/test/TestHelper.o \
+./src/test/ToolsTest.o 
+
 
 # Each subdirectory must supply rules for building sources it contributes
 src/test/%.o: ../src/test/%.cpp src/test/subdir.mk
@@ -51,4 +51,11 @@ src/test/%.o: ../src/test/%.cpp src/test/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test
+
+clean-src-2f-test:
+	-$(RM) ./src/test/AllTests.d ./src/test/AllTests.o ./src/test/CDBaseTest.d ./src/test/CDBaseTest.o ./src/test/CDContainerTest.d ./src/test/CDContainerTest.o ./src/test/DCPairTest.d ./src/test/DCPairTest.o ./src/test/DeviceChannelTest.d ./src/test/DeviceChannelTest.o ./src/test/ProtoTest.d ./src/test/ProtoTest.o ./src/test/STCDContainer.d ./src/test/STCDContainer.o ./src/test/SafeArrayTest.d ./src/test/SafeArrayTest.o ./src/test/SrpcTest.d ./src/test/SrpcTest.o ./src/test/TestHelper.d ./src/test/TestHelper.o ./src/test/ToolsTest.d ./src/test/ToolsTest.o
+
+.PHONY: clean-src-2f-test
 

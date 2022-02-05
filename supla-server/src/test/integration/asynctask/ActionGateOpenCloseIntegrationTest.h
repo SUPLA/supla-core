@@ -20,6 +20,7 @@
 #define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
 
 #include <doubles/actions/ActionExecutorMock.h>
+
 #include "AsyncTaskIntegrationTest.h"
 
 namespace testing {
@@ -28,8 +29,10 @@ class ActionGateOpenCloseIntegrationTest : public AsyncTaskIntegrationTest {
  protected:
   void noActionRequired(bool open);
   void openClose(bool open, int attemptCount, bool success);
-  void WaitForOpenClose(ActionExecutorMock *action_executor,
-                        int expected_count, unsigned int usec);
+  void openClose(bool open, int attemptCount, bool success,
+                 int maxAttemptCount);
+  void WaitForOpenClose(ActionExecutorMock *action_executor, int expected_count,
+                        unsigned int usec);
 
  public:
   ActionGateOpenCloseIntegrationTest();

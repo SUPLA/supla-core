@@ -19,6 +19,8 @@
 #ifndef ABSTRACT_ACTION_EXECUTOR_H_
 #define ABSTRACT_ACTION_EXECUTOR_H_
 
+#include <abstract_value_getter.h>
+
 #include "device.h"
 #include "user.h"
 
@@ -31,16 +33,18 @@ class supla_abstract_action_executor {
   bool is_group;
 
  protected:
-  supla_device *get_device(void);
+  void execute_action(
+      std::function<void(supla_user_channelgroups *, supla_device_channels *)>
+          f);
+  void access_device(std::function<void(supla_device *device)> on_device);
   supla_user *get_user(void);
   supla_user_channelgroups *get_channel_groups(void);
 
  public:
   supla_abstract_action_executor(void);
   supla_abstract_action_executor(supla_user *user, int device_id,
-                                         int channel_id);
-  supla_abstract_action_executor(int user_id, int device_id,
-                                         int channel_id);
+                                 int channel_id);
+  supla_abstract_action_executor(int user_id, int device_id, int channel_id);
   supla_abstract_action_executor(supla_user *user, int group_id);
   supla_abstract_action_executor(int user_id, int group_id);
   virtual ~supla_abstract_action_executor(void);
@@ -60,15 +64,23 @@ class supla_abstract_action_executor {
   virtual void set_brightness(char brightness) = 0;
   virtual void set_color_brightness(char brightness) = 0;
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness) = 0;
+                        char *brightness, char *on_off) = 0;
   virtual void toggle(void) = 0;
   virtual void shut(const char *closingPercentage) = 0;
   virtual void reveal(void) = 0;
+  virtual void up(void) = 0;
+  virtual void down(void) = 0;
+  virtual void up_or_stop(void) = 0;
+  virtual void down_or_stop(void) = 0;
+  virtual void step_by_step(void) = 0;
   virtual void stop(void) = 0;
   virtual void open(void) = 0;
   virtual void close(void) = 0;
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
+  virtual void forward_outside(int cap) = 0;
+  void copy(supla_abstract_value_getter *value_getter, int sourceDeviceId,
+            int sourceChannelId);
 };
 
 #endif /*ABSTRACT_ACTION_EXECUTOR_H_*/

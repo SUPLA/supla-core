@@ -34,7 +34,6 @@ supla_alexa_request::supla_alexa_request(supla_user *user, int ClassID,
                          EventSourceType) {
   client = NULL;
   lck = lck_init();
-  subChannelFromCorrelationToken = 0;
 }
 
 supla_alexa_request::~supla_alexa_request() {
@@ -109,23 +108,3 @@ int supla_alexa_request::getCauseType(void) {
   }
 }
 
-int supla_alexa_request::getSubChannelFromCorrelationToken(void) {
-  return subChannelFromCorrelationToken;
-}
-
-void supla_alexa_request::setCorrelationToken(const char correlationToken[]) {
-  supla_http_request::setCorrelationToken(correlationToken);
-  subChannelFromCorrelationToken = 0;
-
-  char sub[] = "::SUB=";
-  size_t clen = 0;
-
-  if (this->correlationToken &&
-      (clen = strnlen(this->correlationToken, CORRELATIONTOKEN_MAXSIZE)) >=
-          sizeof(sub)) {
-    if (memcmp(&this->correlationToken[clen - 7], sub, sizeof(sub) - 1) == 0) {
-      subChannelFromCorrelationToken = atoi(&this->correlationToken[clen - 1]);
-      this->correlationToken[clen - 7] = 0;
-    }
-  }
-}

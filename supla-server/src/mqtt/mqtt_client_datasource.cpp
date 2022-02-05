@@ -18,6 +18,7 @@
 
 #include <mqtt_client_datasource.h>
 #include <string.h>
+
 #include "lck.h"
 #include "log.h"
 
@@ -97,10 +98,10 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
           1000;
 
       if (time_diff >= WARNING_TIME_MSEC) {
-        supla_log(
-            LOG_WARNING,
-            "MQTT context open delay: %llu msec. ChannelID: %i, Queue size %i",
-            time_diff, id.channel_id, channel_queue.size());
+        supla_log(LOG_WARNING,
+                  "MQTT - Context open delay: %llu msec. ChannelID: %i, Queue "
+                  "size %i",
+                  time_diff, id.channel_id, channel_queue.size());
       }
 
       result = true;
@@ -112,7 +113,8 @@ bool supla_mqtt_client_datasource::context_should_be_opened(void) {
 }
 
 bool supla_mqtt_client_datasource::__fetch(char **topic_name, void **message,
-                                           size_t *message_size, bool *closed) {
+                                           size_t *message_size, bool *closed,
+                                           bool *retain) {
   if (context_should_be_opened()) {
     bool _context__open = context_open(&context);
     lck_lock(lck);
@@ -126,7 +128,7 @@ bool supla_mqtt_client_datasource::__fetch(char **topic_name, void **message,
     if (context.get_scope() == MQTTDS_SCOPE_FULL) {
       context.set_user_id(0);
     }
-    result = _fetch(&context, topic_name, message, message_size);
+    result = _fetch(&context, topic_name, message, message_size, retain);
 
     if (!result) {
       context_close(&context);
@@ -141,21 +143,21 @@ bool supla_mqtt_client_datasource::__fetch(char **topic_name, void **message,
 }
 
 bool supla_mqtt_client_datasource::fetch(char **topic_name, void **message,
-                                         size_t *message_size) {
+                                         size_t *message_size, bool *retain) {
   bool closed = false;
-  if (__fetch(topic_name, message, message_size, &closed)) {
+  if (__fetch(topic_name, message, message_size, &closed, retain)) {
     return true;
   }
 
   if (closed) {
-    return __fetch(topic_name, message, message_size, &closed);
+    return __fetch(topic_name, message, message_size, &closed, retain);
   }
 
   return false;
 }
 
 bool supla_mqtt_client_datasource::fetch(char **topic_name) {
-  return fetch(topic_name, NULL, NULL);
+  return fetch(topic_name, NULL, NULL, NULL);
 }
 
 bool supla_mqtt_client_datasource::is_user_queued(int user_id) {

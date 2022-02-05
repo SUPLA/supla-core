@@ -19,24 +19,25 @@
 #ifndef ACTIONTRIGGER_H_
 #define ACTIONTRIGGER_H_
 
+#include <abstract_value_getter.h>
 #include <actions/abstract_action_executor.h>
 
-#include "action_trigger_config.h"
-#include "device/abstractdevicefinder.h"
+#include "channeljsonconfig/action_trigger_config.h"
 
 class supla_action_trigger {
  private:
   action_trigger_config *config;
   supla_abstract_action_executor *aexec;
-  supla_abstract_device_finder *dev_finder;
+  supla_abstract_value_getter *value_getter;
 
  public:
   supla_action_trigger(supla_abstract_action_executor *aexec,
                        action_trigger_config *config,
-                       supla_abstract_device_finder *dev_finder);
+                       supla_abstract_value_getter *value_getter);
   ~supla_action_trigger(void);
 
-  void execute_actions(int user_id, unsigned int caps);
+  void execute_actions(int user_id, int subject_id_if_not_set,
+                       unsigned int caps);
 };
 
 #endif /* ACTIONTRIGGER_H_ */

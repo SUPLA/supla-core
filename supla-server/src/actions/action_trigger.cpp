@@ -22,15 +22,17 @@
 
 supla_action_trigger::supla_action_trigger(
     supla_abstract_action_executor *aexec, action_trigger_config *config,
-    supla_abstract_device_finder *dev_finder) {
+    supla_abstract_value_getter *value_getter) {
   this->aexec = aexec;
   this->config = config;
-  this->dev_finder = dev_finder;
+  this->value_getter = value_getter;
 }
 
 supla_action_trigger::~supla_action_trigger(void) {}
 
-void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
+void supla_action_trigger::execute_actions(int user_id,
+                                           int subject_id_if_not_set,
+                                           unsigned int caps) {
   if (!aexec || !config) {
     return;
   }
@@ -45,6 +47,10 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
 
     _at_config_action_t action = config->get_action_assigned_to_capability(cap);
 
+    if (!action.subjectId && action.actionId == ACTION_FORWARD_OUTSIDE) {
+      action.subjectId = subject_id_if_not_set;
+    }
+
     if (!action.actionId || !action.subjectId) {
       continue;
     }
@@ -52,15 +58,7 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
     if (action.channelGroup) {
       aexec->set_group_id(user_id, action.subjectId);
     } else {
-      int device_id =
-          dev_finder ? dev_finder->find_device_id(user_id, action.subjectId)
-                     : 0;
-
-      if (!device_id) {
-        continue;
-      }
-
-      aexec->set_channel_id(user_id, device_id, action.subjectId);
+      aexec->set_channel_id(user_id, 0, action.subjectId);
     }
 
     switch (action.actionId) {
@@ -76,10 +74,23 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
       case ACTION_REVEAL:
         aexec->reveal();
         break;
+      case ACTION_UP_OR_STOP:
+        aexec->up_or_stop();
+        break;
+      case ACTION_DOWN_OR_STOP:
+        aexec->down_or_stop();
+        break;
+      case ACTION_STEP_BY_STEP:
+        aexec->step_by_step();
+        break;
+      case ACTION_SHUT_PARTIALLY:
       case ACTION_REVEAL_PARTIALLY: {
         char percentage = config->get_percentage(cap);
         if (percentage > -1) {
-          percentage = 100 - percentage;
+          if (action.actionId == ACTION_REVEAL_PARTIALLY) {
+            percentage = 100 - percentage;
+          }
+
           aexec->shut(&percentage);
         }
       } break;
@@ -95,7 +106,7 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
           aexec->set_rgbw(
               rgbw.color ? &rgbw.color : NULL,
               rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
-              rgbw.brightness > -1 ? &rgbw.brightness : NULL);
+              rgbw.brightness > -1 ? &rgbw.brightness : NULL, NULL);
         }
       } break;
       case ACTION_OPEN_CLOSE:
@@ -106,6 +117,13 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
         break;
       case ACTION_TOGGLE:
         aexec->toggle();
+        break;
+      case ACTION_COPY:
+        aexec->copy(value_getter, action.sourceDeviceId,
+                    action.sourceChannelId);
+        break;
+      case ACTION_FORWARD_OUTSIDE:
+        aexec->forward_outside(cap);
         break;
     }
   }

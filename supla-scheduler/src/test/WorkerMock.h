@@ -46,6 +46,7 @@ class WorkerMock : public s_abstract_worker {
   virtual bool ipcc_get_valve_value(TValve_Value *value);
   virtual bool ipcc_set_digiglass_value(int active_bits, int mask);
   virtual bool ipcc_get_digiglass_value(int *mask);
+  virtual bool ipcc_action_copy(int sourceDeviceId, int sourceChannelId);
   virtual char ipcc_is_connected(void);
 };
 

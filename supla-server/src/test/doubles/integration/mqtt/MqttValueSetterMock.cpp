@@ -17,8 +17,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "MqttValueSetterMock.h"
+
 #include <stdio.h>  // NOLINT
 #include <string.h>
+
 #include "proto.h"
 #include "user.h"
 
@@ -38,6 +40,11 @@ void MqttValueSetterMock::clear(void) {
   this->toggle_counter = 0;
   this->shut_counter = 0;
   this->reveal_counter = 0;
+  this->up_counter = 0;
+  this->down_counter = 0;
+  this->up_or_stop_counter = 0;
+  this->down_or_stop_counter = 0;
+  this->step_by_step_counter = 0;
   this->stop_counter = 0;
   this->open_counter = 0;
   this->close_counter = 0;
@@ -83,6 +90,16 @@ void MqttValueSetterMock::action_shut(const char *closingPercentage) {
 
 void MqttValueSetterMock::action_reveal(void) { reveal_counter++; }
 
+void MqttValueSetterMock::action_up(void) { up_counter++; };
+
+void MqttValueSetterMock::action_down(void) { down_counter++; };
+
+void MqttValueSetterMock::action_up_or_stop(void) { up_or_stop_counter++; };
+
+void MqttValueSetterMock::action_down_or_stop(void) { down_or_stop_counter++; };
+
+void MqttValueSetterMock::action_step_by_step(void) { step_by_step_counter++; };
+
 void MqttValueSetterMock::action_stop(void) { stop_counter++; }
 
 void MqttValueSetterMock::action_open(void) { open_counter++; }
@@ -114,6 +131,16 @@ int MqttValueSetterMock::getToggleCounter(void) { return toggle_counter; }
 int MqttValueSetterMock::getShutCounter(void) { return shut_counter; }
 
 int MqttValueSetterMock::getRevealCounter(void) { return reveal_counter; }
+
+int MqttValueSetterMock::getUpCounter(void) { return up_counter; }
+
+int MqttValueSetterMock::getDownCounter(void) { return down_counter; }
+
+int MqttValueSetterMock::getUpOrStopCounter(void) { return up_or_stop_counter; }
+
+int MqttValueSetterMock::getDownOrStopCounter(void) { return down_or_stop_counter; }
+
+int MqttValueSetterMock::getStepByStepCounter(void) { return step_by_step_counter; }
 
 int MqttValueSetterMock::getStopCounter(void) { return stop_counter; }
 
@@ -190,6 +217,26 @@ int MqttValueSetterMock::counterSetCount(void) {
   }
 
   if (reveal_counter > 0) {
+    result++;
+  }
+
+  if (up_counter > 0) {
+    result++;
+  }
+
+  if (down_counter > 0) {
+    result++;
+  }
+
+  if (up_or_stop_counter > 0) {
+    result++;
+  }
+
+  if (down_or_stop_counter > 0) {
+    result++;
+  }
+
+  if (step_by_step_counter > 0) {
     result++;
   }
 

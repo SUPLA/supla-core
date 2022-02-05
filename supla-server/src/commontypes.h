@@ -36,6 +36,7 @@ enum event_type {
   ET_CHANNELS_ADDED,
   ET_USER_RECONNECT,
   ET_GOOGLE_HOME_SYNC_NEEDED,
+  ET_ACTION_TRIGGERED,
 };
 
 typedef struct {
@@ -62,6 +63,10 @@ typedef struct {
   bool overcurrent_relay_off;
   TValve_Value valve_value;
 } channel_complex_value;
+
+/* TODO(przemyslawzygmunt): Replace channel_complex_value with the classes that
+ * inherit from supla_channel_value
+ * https://github.com/SUPLA/supla-core/issues/268 */
 
 typedef struct {
   int deviceId;

@@ -17,6 +17,7 @@
  */
 
 #include "mqtt_unpublisher_datasource.h"
+
 #include <string.h>
 
 #define SUBSCRIPTION_TIME_SEC 20
@@ -202,8 +203,7 @@ void supla_mqtt_unpublisher_datasource::before_channel_function_change(
     return;
   }
 
-  _unpub_channel_item_t channel;
-  memset(&channel, 0, sizeof(_unpub_channel_item_t));
+  _unpub_channel_item_t channel = {};
 
   if (load_channel_row(UserID, ChannelID, &channel.before)) {
     lock();
@@ -272,8 +272,7 @@ void supla_mqtt_unpublisher_datasource::before_device_delete(int UserID,
     }
 
     if (device.device.device_id) {
-      _mqtt_db_data_row_channel_t channel;
-      memset(&channel, 0, sizeof(_mqtt_db_data_row_channel_t));
+      _mqtt_db_data_row_channel_t channel = {};
       query = mqtt_db->open_channelquery(UserID, DeviceID, 0, &channel);
       if (query) {
         while (mqtt_db->channelquery_fetch_row(query)) {
@@ -342,8 +341,7 @@ bool supla_mqtt_unpublisher_datasource::fetch_deleted_device(
   }
 
   if (current_channel_row == NULL) {
-    current_channel_row = (_mqtt_db_data_row_channel_t *)malloc(
-        sizeof(_mqtt_db_data_row_channel_t));
+    current_channel_row = new _mqtt_db_data_row_channel_t();
   }
 
   *current_channel_row = current_device->channels.front();
@@ -357,7 +355,8 @@ bool supla_mqtt_unpublisher_datasource::fetch_deleted_device(
 bool supla_mqtt_unpublisher_datasource::_fetch(supla_mqtt_ds_context *context,
                                                char **topic_name,
                                                void **message,
-                                               size_t *message_size) {
+                                               size_t *message_size,
+                                               bool *retain) {
   remove_expired();
 
   if (fetch_deleted_device(topic_name)) {
@@ -459,7 +458,7 @@ void supla_mqtt_unpublisher_datasource::context_close(
   }
 
   if (current_channel_row) {
-    free(current_channel_row);
+    delete current_channel_row;
     current_channel_row = NULL;
   }
 

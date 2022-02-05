@@ -17,9 +17,11 @@
  */
 
 #include "action.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 s_worker_action::s_worker_action(s_abstract_worker *worker) {
@@ -79,7 +81,14 @@ void s_worker_action::execute(void) {
       }
 
     } else {
-      worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
+      if (worker->get_retry_count() == 0 && try_limit() <= 1) {
+        worker->get_db()->set_result(worker->get_id(),
+                                     action_result
+                                         ? ACTION_EXECUTED_WITHOUT_CONFIRMATION
+                                         : ACTION_EXECUTION_RESULT_FAILURE);
+      } else {
+        worker->get_db()->set_retry(worker->get_id(), waiting_time_to_check());
+      }
     }
 
     return;

@@ -4,22 +4,37 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/device/abstractdevicefinder.cpp \
+../src/device/abstract_value_getter.cpp \
+../src/device/channel_gate_value.cpp \
+../src/device/channel_onoff_value.cpp \
+../src/device/channel_rgbw_value.cpp \
+../src/device/channel_rs_value.cpp \
+../src/device/channel_value.cpp \
 ../src/device/device.cpp \
 ../src/device/devicechannel.cpp \
-../src/device/devicefinder.cpp 
-
-OBJS += \
-./src/device/abstractdevicefinder.o \
-./src/device/device.o \
-./src/device/devicechannel.o \
-./src/device/devicefinder.o 
+../src/device/value_getter.cpp 
 
 CPP_DEPS += \
-./src/device/abstractdevicefinder.d \
+./src/device/abstract_value_getter.d \
+./src/device/channel_gate_value.d \
+./src/device/channel_onoff_value.d \
+./src/device/channel_rgbw_value.d \
+./src/device/channel_rs_value.d \
+./src/device/channel_value.d \
 ./src/device/device.d \
 ./src/device/devicechannel.d \
-./src/device/devicefinder.d 
+./src/device/value_getter.d 
+
+OBJS += \
+./src/device/abstract_value_getter.o \
+./src/device/channel_gate_value.o \
+./src/device/channel_onoff_value.o \
+./src/device/channel_rgbw_value.o \
+./src/device/channel_rs_value.o \
+./src/device/channel_value.o \
+./src/device/device.o \
+./src/device/devicechannel.o \
+./src/device/value_getter.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -30,4 +45,11 @@ src/device/%.o: ../src/device/%.cpp src/device/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-device
+
+clean-src-2f-device:
+	-$(RM) ./src/device/abstract_value_getter.d ./src/device/abstract_value_getter.o ./src/device/channel_gate_value.d ./src/device/channel_gate_value.o ./src/device/channel_onoff_value.d ./src/device/channel_onoff_value.o ./src/device/channel_rgbw_value.d ./src/device/channel_rgbw_value.o ./src/device/channel_rs_value.d ./src/device/channel_rs_value.o ./src/device/channel_value.d ./src/device/channel_value.o ./src/device/device.d ./src/device/device.o ./src/device/devicechannel.d ./src/device/devicechannel.o ./src/device/value_getter.d ./src/device/value_getter.o
+
+.PHONY: clean-src-2f-device
 

@@ -23,6 +23,8 @@
 #define LONG_UNIQUEID_MAXSIZE 201
 
 #include <cstddef>
+#include <functional>
+
 #include "amazon/alexacredentials.h"
 #include "commontypes.h"
 #include "google/googlehomecredentials.h"
@@ -84,6 +86,8 @@ class supla_user {
   bool client_reconnect(int ClientID);
   bool device_reconnect(int DeviceID);
   void loadUniqueIDs(void);
+  void access_client(int ClientID,
+                     std::function<void(supla_client *client)> on_client);
 
  public:
   static void init(void);
@@ -154,10 +158,17 @@ class supla_user {
   bool isSuperUserAuthorized(int ClientID);
 
   // Remember to call device->releasePtr()
+  // Deprecated. Use the access_device method
   static supla_device *get_device(int UserID, int DeviceID);
   supla_device *get_device(int DeviceID);
   supla_device *device_by_channelid(int ChannelID);
   // ----
+
+  void access_device(int DeviceId, int ChannelId,  // DeviceId or ChannelId
+                     std::function<void(supla_device *device)> on_device);
+  static void access_device(
+      int UserID, int DeviceId, int ChannelId,  // DeviceId or ChannelId
+      std::function<void(supla_device *device)> on_device);
 
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
@@ -184,11 +195,6 @@ class supla_user {
                                 int DeviceID, int ChannelID, int GroupID,
                                 unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
-
-  bool set_channelgroup_char_value(int GroupID, const char value);
-  bool set_channelgroup_rgbw_value(int GroupID, int color,
-                                   char color_brightness, char brightness,
-                                   char on_off);
 
   void update_client_device_channels(int LocationID, int DeviceID);
   void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,

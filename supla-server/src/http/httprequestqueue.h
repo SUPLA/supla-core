@@ -21,6 +21,7 @@
 
 #include "commontypes.h"
 #include "eh.h"
+#include "http/httprequestextraparams.h"
 #include "string.h"
 
 class supla_http_request;
@@ -49,11 +50,10 @@ class supla_http_request_queue {
   int threadCount(void);
   int threadCountLimit(void);
   unsigned long long requestTotalCount(void);
-  void createByChannelEventSourceType(supla_user *user, int deviceId,
-                                      int channelId, event_type eventType,
-                                      event_source_type eventSourceType,
-                                      const char correlationToken[],
-                                      const char googleRequestId[]);
+  void createByChannelEventSourceType(
+      supla_user *user, int deviceId, int channelId, event_type eventType,
+      event_source_type eventSourceType,
+      supla_http_request_extra_params *extraParams);
   void recalculateTime(struct timeval *now);
 
  public:
@@ -76,9 +76,9 @@ class supla_http_request_queue {
                                  const char googleRequestId[] = NULL);
 
   void onChannelsAddedEvent(supla_user *user, int deviceId,
-                          event_source_type eventSourceType,
-                          const char correlationToken[] = NULL,
-                          const char googleRequestId[] = NULL);
+                            event_source_type eventSourceType,
+                            const char correlationToken[] = NULL,
+                            const char googleRequestId[] = NULL);
 
   void onDeviceDeletedEvent(supla_user *user, int deviceId,
                             event_source_type eventSourceType,
@@ -90,6 +90,9 @@ class supla_http_request_queue {
 
   void onGoogleHomeSyncNeededEvent(supla_user *user,
                                    event_source_type eventSourceType);
+
+  void onActionsTriggered(supla_user *user, int deviceId, int channelId,
+                          unsigned int actions);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);

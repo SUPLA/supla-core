@@ -18,6 +18,7 @@
 
 #include <mqtt_publisher_datasource.h>
 #include <string.h>
+
 #include "log.h"
 #include "mqtt_channelandstate_message_provider.h"
 #include "mqtt_device_message_provider.h"
@@ -26,6 +27,8 @@
 #define MPD_DATATYPE_USER 1
 #define MPD_DATATYPE_DEVICE 2
 #define MPD_DATATYPE_CHANNEL 3
+
+#define ACTION_TIMEOUT_MSEC 3000
 
 supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(
     supla_mqtt_client_settings *settings)
@@ -44,9 +47,30 @@ supla_mqtt_publisher_datasource::supla_mqtt_publisher_datasource(
   this->device_message_provider = NULL;
   this->channelandstate_message_provider = NULL;
   this->state_message_provider = NULL;
+  this->action_message_provider = NULL;
 }
 
-supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {}
+supla_mqtt_publisher_datasource::~supla_mqtt_publisher_datasource(void) {
+  if (user_message_provider) {
+    delete user_message_provider;
+  }
+
+  if (device_message_provider) {
+    delete device_message_provider;
+  }
+
+  if (channelandstate_message_provider) {
+    delete channelandstate_message_provider;
+  }
+
+  if (state_message_provider) {
+    delete state_message_provider;
+  }
+
+  if (action_message_provider) {
+    delete action_message_provider;
+  }
+}
 
 bool supla_mqtt_publisher_datasource::is_context_allowed(
     supla_mqtt_ds_context *context) {
@@ -108,11 +132,12 @@ bool supla_mqtt_publisher_datasource::context_open(
 void *supla_mqtt_publisher_datasource::datarow_malloc(int datatype) {
   switch (datatype) {
     case MPD_DATATYPE_USER:
-      return calloc(1, sizeof(_mqtt_db_data_row_user_t));
+      return new _mqtt_db_data_row_user_t();
     case MPD_DATATYPE_DEVICE:
-      return calloc(1, sizeof(_mqtt_db_data_row_device_t));
+      return new _mqtt_db_data_row_device_t();
     case MPD_DATATYPE_CHANNEL:
-      return calloc(1, sizeof(_mqtt_db_data_row_channel_t));
+      return new _mqtt_db_data_row_channel_t();
+      break;
   }
 
   return NULL;
@@ -235,6 +260,81 @@ bool supla_mqtt_publisher_datasource::fetch(
   return false;
 }
 
+bool supla_mqtt_publisher_datasource::fetch_actions(char **topic_name,
+                                                    void **message,
+                                                    size_t *message_size) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  unsigned long long time_diff = 0;
+
+  lock();
+  int queue_size = triggered_actions.size();
+  _mqtt_ds_triggered_actions_t actions = {};
+  bool action_exists = false;
+
+  if (queue_size > 0) {
+    actions = triggered_actions.front();
+    unsigned long long time_diff =
+        ((now.tv_sec * 1000000 + now.tv_usec) -
+         (actions.time.tv_sec * 1000000 + actions.time.tv_usec)) /
+        1000;
+
+    if (time_diff >= ACTION_TIMEOUT_MSEC) {
+      triggered_actions.pop_front();
+    } else {
+      unsigned int bit = 1;
+      time_diff = 0;
+
+      for (long unsigned int n = 0; n < sizeof(actions.actions) * 8; n++) {
+        if (actions.actions & bit) {
+          actions.actions = actions.actions & (~bit);
+          if (actions.actions) {
+            triggered_actions.front().actions = actions.actions;
+          } else {
+            triggered_actions.pop_front();
+          }
+          actions.actions = bit;
+          action_exists = true;
+          break;
+        }
+        bit <<= 1;
+      }
+    }
+  }
+
+  unlock();
+
+  if (!queue_size) {
+    if (action_message_provider) {
+      delete action_message_provider;
+      action_message_provider = NULL;
+    }
+  } else {
+    if (!action_message_provider) {
+      action_message_provider = new supla_mqtt_action_message_provider();
+    }
+  }
+
+  if (time_diff) {
+    supla_log(
+        LOG_WARNING,
+        "MQTT - Action trigger publication timeout: %llu msec. ChannelID: "
+        "%i, Queue size %i",
+        time_diff, actions.channel_id, queue_size);
+    return false;
+  }
+
+  if (!action_exists || !action_message_provider) {
+    return false;
+  }
+
+  action_message_provider->reset_index();
+  action_message_provider->set_action(actions.user_id, actions.device_id,
+                                      actions.channel_id, actions.actions);
+  return action_message_provider->fetch(get_settings()->getPrefix(), topic_name,
+                                        message, message_size);
+}
+
 bool supla_mqtt_publisher_datasource::fetch_user(supla_mqtt_ds_context *context,
                                                  char **topic_name,
                                                  void **message,
@@ -281,7 +381,8 @@ bool supla_mqtt_publisher_datasource::fetch_state(
 
 bool supla_mqtt_publisher_datasource::_fetch(supla_mqtt_ds_context *context,
                                              char **topic_name, void **message,
-                                             size_t *message_size) {
+                                             size_t *message_size,
+                                             bool *retain) {
   bool result = false;
   if (fetch_users) {
     result = fetch_user(context, topic_name, message, message_size);
@@ -325,6 +426,23 @@ bool supla_mqtt_publisher_datasource::_fetch(supla_mqtt_ds_context *context,
   return result;
 }
 
+bool supla_mqtt_publisher_datasource::fetch(char **topic_name, void **message,
+                                            size_t *message_size,
+                                            bool *retain) {
+  if (fetch_actions(topic_name, message, message_size)) {
+    if (retain) {
+      *retain = false;
+    }
+
+    return true;
+  }
+
+  *retain = true;
+
+  return supla_mqtt_client_db_datasource::fetch(topic_name, message,
+                                                message_size, retain);
+}
+
 void supla_mqtt_publisher_datasource::close_userquery(void) {
   if (user_query) {
     if (get_db()) {
@@ -334,7 +452,7 @@ void supla_mqtt_publisher_datasource::close_userquery(void) {
   }
 
   if (userdata_row) {
-    free(userdata_row);
+    delete static_cast<_mqtt_db_data_row_user_t *>(userdata_row);
     userdata_row = NULL;
   }
 
@@ -354,7 +472,7 @@ void supla_mqtt_publisher_datasource::close_devicequery(void) {
   }
 
   if (devicedata_row) {
-    free(devicedata_row);
+    delete static_cast<_mqtt_db_data_row_device_t *>(devicedata_row);
     devicedata_row = NULL;
   }
 
@@ -374,7 +492,7 @@ void supla_mqtt_publisher_datasource::close_channelquery(void) {
   }
 
   if (channeldata_row) {
-    free(channeldata_row);
+    delete static_cast<_mqtt_db_data_row_channel_t *>(channeldata_row);
     channeldata_row = NULL;
   }
 
@@ -437,4 +555,52 @@ void supla_mqtt_publisher_datasource::context_close(
   }
 
   db_disconnect();
+}
+
+void supla_mqtt_publisher_datasource::on_actions_triggered(
+    int user_id, int device_id, int channel_id, unsigned int actions) {
+  if (!user_id || !device_id || !channel_id) {
+    return;
+  }
+
+  actions &= SUPLA_ACTION_CAP_TURN_ON | SUPLA_ACTION_CAP_TURN_OFF |
+             SUPLA_ACTION_CAP_TOGGLE_x1 | SUPLA_ACTION_CAP_TOGGLE_x2 |
+             SUPLA_ACTION_CAP_TOGGLE_x3 | SUPLA_ACTION_CAP_TOGGLE_x4 |
+             SUPLA_ACTION_CAP_TOGGLE_x5 | SUPLA_ACTION_CAP_HOLD |
+             SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_SHORT_PRESS_x2 |
+             SUPLA_ACTION_CAP_SHORT_PRESS_x3 | SUPLA_ACTION_CAP_SHORT_PRESS_x4 |
+             SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+
+  if (!actions) {
+    return;
+  }
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  lock();
+  bool exists = false;
+  for (std::list<_mqtt_ds_triggered_actions_t>::iterator it =
+           triggered_actions.begin();
+       it != triggered_actions.end(); ++it) {
+    if (it->user_id == user_id && it->device_id == device_id &&
+        it->channel_id == channel_id) {
+      exists = true;
+      it->actions |= actions;
+      it->time = now;
+      break;
+    }
+  }
+
+  if (!exists && is_user_enabled(user_id)) {
+    _mqtt_ds_triggered_actions_t _actions = {};
+    _actions.user_id = user_id;
+    _actions.device_id = device_id;
+    _actions.channel_id = channel_id;
+    _actions.time = now;
+    _actions.actions = actions;
+    triggered_actions.push_back(_actions);
+  }
+
+  unlock();
 }

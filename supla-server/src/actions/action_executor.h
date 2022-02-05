@@ -19,7 +19,9 @@
 #ifndef ACTION_EXECUTOR_H_
 #define ACTION_EXECUTOR_H_
 
-#include <actions/abstract_action_executor.h>
+#include <functional>
+
+#include "actions/abstract_action_executor.h"
 
 class supla_action_executor : public supla_abstract_action_executor {
  public:
@@ -32,15 +34,21 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness);
+                        char *brightness, char *on_off);
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
   virtual void stop(void);
+  virtual void up(void);
+  virtual void down(void);
+  virtual void up_or_stop(void);
+  virtual void down_or_stop(void);
+  virtual void step_by_step(void);
   virtual void open(void);
   virtual void close(void);
   virtual void open_close();
   virtual void open_close_without_canceling_tasks();
+  virtual void forward_outside(int cap);
 };
 
 #endif /*ACTION_EXECUTOR_H_*/

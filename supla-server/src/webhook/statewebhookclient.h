@@ -102,6 +102,7 @@ class supla_state_webhook_client : public supla_webhook_basic_client {
       int channelId, supla_channel_ic_measurement *icm, bool connected);
   bool sendImpulseCounterHeatMeasurementReport(
       int channelId, supla_channel_ic_measurement *icm, bool connected);
+  bool triggeredActionsReport(int channelId, unsigned int actions);
 };
 
 #endif /* WEBHOOK_STATEWEBHOOKCLIENT_H_ */

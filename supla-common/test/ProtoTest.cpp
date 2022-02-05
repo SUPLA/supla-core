@@ -88,6 +88,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)639, sizeof(TCS_SuplaRegisterClient_D));
   ASSERT_EQ((unsigned int)19, sizeof(TSC_SuplaRegisterClientResult));
   ASSERT_EQ((unsigned int)27, sizeof(TSC_SuplaRegisterClientResult_B));
+  ASSERT_EQ((unsigned int)31, sizeof(TSC_SuplaRegisterClientResult_C));
   ASSERT_EQ((unsigned int)9, sizeof(TCS_SuplaChannelNewValue));
   ASSERT_EQ((unsigned int)12, sizeof(TCS_SuplaChannelNewValue_B));
   ASSERT_EQ((unsigned int)13, sizeof(TCS_SuplaNewValue));
@@ -110,6 +111,7 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_EQ((unsigned int)144, sizeof(TSC_DeviceCalCfgResult));
   ASSERT_EQ((unsigned int)149, sizeof(TSD_DeviceCalCfgRequest));
   ASSERT_EQ((unsigned int)148, sizeof(TDS_DeviceCalCfgResult));
+  ASSERT_EQ((unsigned int)9, sizeof(TCS_TimerArmRequest));
 
   ASSERT_LE(sizeof(TDS_ImpulseCounter_Value),
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);
@@ -204,7 +206,24 @@ TEST_F(ProtoTest, check_size_of_structures_and_types) {
   ASSERT_LE(sizeof(TCalCfg_RollerShutterSettings),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  ASSERT_LE(sizeof(TRollerShutterValue), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  ASSERT_EQ(static_cast<size_t>(13), sizeof(TCalCfg_FacadeBlindSettings));
+  ASSERT_LE(sizeof(TCalCfg_FacadeBlindSettings),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  ASSERT_EQ(static_cast<size_t>(13), sizeof(TSD_ChannelConfig_FacadeBlind));
+  ASSERT_LE(sizeof(TSD_ChannelConfig_FacadeBlind),
+            static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
+
+  ASSERT_LE(sizeof(TDSC_RollerShutterValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  ASSERT_LE(sizeof(TCSD_RollerShutterValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
+  ASSERT_LE(sizeof(TDSC_FacadeBlindValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  ASSERT_LE(sizeof(TCSD_FacadeBlindValue),
+      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+
   ASSERT_EQ((unsigned int)15, sizeof(TDS_ActionTrigger));
 }
 

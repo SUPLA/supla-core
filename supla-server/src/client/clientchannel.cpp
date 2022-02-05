@@ -16,12 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "clientchannel.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "client.h"
-#include "clientchannel.h"
 #include "database.h"
 #include "log.h"
 #include "proto.h"
@@ -334,34 +335,40 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     bool cev_exists = false;
 
     int ChannelId = getId();
-
-    supla_device *device = NULL;
-
-    switch (getFunc()) {
-      case SUPLA_CHANNELFNC_POWERSWITCH:
-      case SUPLA_CHANNELFNC_LIGHTSWITCH:
-        if (Param1) {
-          ChannelId = Param1;
-          device = client->getUser()->device_by_channelid(ChannelId);
-        }
-        break;
-
-      case SUPLA_CHANNELFNC_STAIRCASETIMER:
-        if (Param2) {
-          ChannelId = Param2;
-          device = client->getUser()->device_by_channelid(ChannelId);
-        }
-        break;
-
-      default:
-        device = client->getUser()->get_device(DeviceId);
-        break;
-    }
+    supla_device *device = client->getUser()->get_device(DeviceId);
 
     if (device) {
       cev_exists = device->get_channels()->get_channel_extendedvalue(
           ChannelId, cev, client->getProtocolVersion() < 12);
       device->releasePtr();
+    }
+
+    device = NULL;
+    ChannelId = 0;
+
+    switch (getFunc()) {
+      case SUPLA_CHANNELFNC_POWERSWITCH:
+      case SUPLA_CHANNELFNC_LIGHTSWITCH:
+        ChannelId = Param1;  // Associated measurement channel
+        break;
+
+      case SUPLA_CHANNELFNC_STAIRCASETIMER:
+        ChannelId = Param2;  // Associated measurement channel
+        break;
+    }
+
+    if (ChannelId) {
+      device = client->getUser()->device_by_channelid(ChannelId);
+
+      if (device) {
+        TSC_SuplaChannelExtendedValue second_cev = {};
+        if (device->get_channels()->get_channel_extendedvalue(
+                ChannelId, &second_cev, client->getProtocolVersion() < 12)) {
+          srpc_evtool_value_add(&cev->value, &second_cev.value);
+          cev_exists = true;
+        }
+        device->releasePtr();
+      }
     }
 
     if (cev_exists) {

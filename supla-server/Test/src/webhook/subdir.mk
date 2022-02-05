@@ -10,19 +10,19 @@ CPP_SRCS += \
 ../src/webhook/webhookbasicclient.cpp \
 ../src/webhook/webhookbasiccredentials.cpp 
 
-OBJS += \
-./src/webhook/statewebhookclient.o \
-./src/webhook/statewebhookcredentials.o \
-./src/webhook/statewebhookrequest.o \
-./src/webhook/webhookbasicclient.o \
-./src/webhook/webhookbasiccredentials.o 
-
 CPP_DEPS += \
 ./src/webhook/statewebhookclient.d \
 ./src/webhook/statewebhookcredentials.d \
 ./src/webhook/statewebhookrequest.d \
 ./src/webhook/webhookbasicclient.d \
 ./src/webhook/webhookbasiccredentials.d 
+
+OBJS += \
+./src/webhook/statewebhookclient.o \
+./src/webhook/statewebhookcredentials.o \
+./src/webhook/statewebhookrequest.o \
+./src/webhook/webhookbasicclient.o \
+./src/webhook/webhookbasiccredentials.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -33,4 +33,11 @@ src/webhook/%.o: ../src/webhook/%.cpp src/webhook/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-webhook
+
+clean-src-2f-webhook:
+	-$(RM) ./src/webhook/statewebhookclient.d ./src/webhook/statewebhookclient.o ./src/webhook/statewebhookcredentials.d ./src/webhook/statewebhookcredentials.o ./src/webhook/statewebhookrequest.d ./src/webhook/statewebhookrequest.o ./src/webhook/webhookbasicclient.d ./src/webhook/webhookbasicclient.o ./src/webhook/webhookbasiccredentials.d ./src/webhook/webhookbasiccredentials.o
+
+.PHONY: clean-src-2f-webhook
 

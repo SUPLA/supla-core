@@ -17,8 +17,11 @@
  */
 
 #include "mqtt_unpublisher.h"
+
 #include <string.h>
+
 #include <cstdio>
+
 #include "lck.h"
 #include "log.h"
 #include "mqtt_db.h"
@@ -53,7 +56,7 @@ bool supla_mqtt_unpublisher::on_iterate(void) {
     return false;
   }
 
-  if (ds->fetch(&topic_name, NULL, NULL)) {
+  if (ds->fetch(&topic_name, NULL, NULL, NULL)) {
     publish(topic_name, NULL, 0, SUPLA_MQTT_QOS_0, true);
     result = true;
   }

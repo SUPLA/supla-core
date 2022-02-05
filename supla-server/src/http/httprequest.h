@@ -19,13 +19,14 @@
 #ifndef HTTP_HTTPREQUEST_H_
 #define HTTP_HTTPREQUEST_H_
 
-#define CORRELATIONTOKEN_MAXSIZE 2048
-#define GOOGLEREQUESTID_MAXSIZE 512
-
 #include <sys/time.h>
+
 #include <cstddef>
+#include <functional>
 #include <list>
 #include <string>
+
+#include "http/httprequestextraparams.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
 #include "user/user.h"
@@ -33,6 +34,7 @@
 class supla_http_request {
  private:
   void *lck;
+  supla_http_request_extra_params *extraParams;
   supla_trivial_http *http;
   supla_trivial_https *https;
   supla_user *user;
@@ -47,8 +49,6 @@ class supla_http_request {
   unsigned long long touchCount;
 
  protected:
-  char *correlationToken;
-  char *googleRequestId;
   supla_trivial_http *getHttp();
   supla_trivial_https *getHttps();
 
@@ -68,10 +68,9 @@ class supla_http_request {
   virtual void setChannelId(int ChannelId);
   int getChannelId(void);
   virtual bool isChannelIdEqual(int ChannelId);
-  virtual void setCorrelationToken(const char correlationToken[]);
-  const char *getCorrelationTokenPtr(void);
-  virtual void setGoogleRequestId(const char googleRequestId[]);
-  const char *getGoogleRequestIdPtr(void);
+  void setExtraParams(supla_http_request_extra_params *extraParams);
+  void accessExtraParams(
+      std::function<void(supla_http_request_extra_params *)> f);
   void setDelay(unsigned long long delayUs);
   void setTimeout(unsigned long long timeoutUs);
   unsigned long long getTimeout(void);

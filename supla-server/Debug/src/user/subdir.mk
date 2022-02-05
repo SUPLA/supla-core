@@ -10,19 +10,19 @@ CPP_SRCS += \
 ../src/user/userchannelgroup.cpp \
 ../src/user/userchannelgroups.cpp 
 
-OBJS += \
-./src/user/clientcontainer.o \
-./src/user/devicecontainer.o \
-./src/user/user.o \
-./src/user/userchannelgroup.o \
-./src/user/userchannelgroups.o 
-
 CPP_DEPS += \
 ./src/user/clientcontainer.d \
 ./src/user/devicecontainer.d \
 ./src/user/user.d \
 ./src/user/userchannelgroup.d \
 ./src/user/userchannelgroups.d 
+
+OBJS += \
+./src/user/clientcontainer.o \
+./src/user/devicecontainer.o \
+./src/user/user.o \
+./src/user/userchannelgroup.o \
+./src/user/userchannelgroups.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -33,4 +33,11 @@ src/user/%.o: ../src/user/%.cpp src/user/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-user
+
+clean-src-2f-user:
+	-$(RM) ./src/user/clientcontainer.d ./src/user/clientcontainer.o ./src/user/devicecontainer.d ./src/user/devicecontainer.o ./src/user/user.d ./src/user/user.o ./src/user/userchannelgroup.d ./src/user/userchannelgroup.o ./src/user/userchannelgroups.d ./src/user/userchannelgroups.o
+
+.PHONY: clean-src-2f-user
 

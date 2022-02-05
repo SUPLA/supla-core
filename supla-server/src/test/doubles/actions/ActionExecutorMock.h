@@ -23,8 +23,7 @@
 
 namespace testing {
 
-class ActionExecutorMock
-    : public supla_abstract_action_executor {
+class ActionExecutorMock : public supla_abstract_action_executor {
  private:
   int on_counter;
   int color_counter;
@@ -34,36 +33,49 @@ class ActionExecutorMock
   int toggle_counter;
   int shut_counter;
   int reveal_counter;
+  int up_counter;
+  int down_counter;
+  int up_or_stop_counter;
+  int down_or_stop_counter;
+  int step_by_step_counter;
   int stop_counter;
   int open_counter;
   int close_counter;
   int open_close_counter;
   int open_close_wct_counter;
   int rgbw_counter;
-
+  int forward_outside_counter;
   unsigned int color;
   char brightness;
   char color_brightness;
   char closing_percentage;
+  char rgbw_on_off;
 
  public:
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
+  void access_device(std::function<void(supla_device *device)> on_device);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);
   virtual void set_brightness(char brightness);
   virtual void set_color_brightness(char brightness);
   virtual void set_rgbw(unsigned int *color, char *color_brightness,
-                        char *brightness);
+                        char *brightness, char *on_off);
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
+  virtual void up(void);
+  virtual void down(void);
+  virtual void up_or_stop(void);
+  virtual void down_or_stop(void);
+  virtual void step_by_step(void);
   virtual void stop(void);
   virtual void open(void);
   virtual void close(void);
   virtual void open_close(void);
   virtual void open_close_without_canceling_tasks(void);
+  virtual void forward_outside(int cap);
 
   void clear(void);
   int counterSetCount(void);
@@ -76,15 +88,22 @@ class ActionExecutorMock
   int getToggleCounter(void);
   int getShutCounter(void);
   int getRevealCounter(void);
+  int getUpCounter(void);
+  int getDownCounter(void);
+  int getUpOrStopCounter(void);
+  int getDownOrStopCounter(void);
+  int getStepByStepCounter(void);
   int getStopCounter(void);
   int getOpenCounter(void);
   int getCloseCounter(void);
   int getOpenCloseCounter(void);
   int getOpenCloseWctCounter(void);
+  int getForwardOutsideCounter(void);
   char getClosingPercentage(void);
   unsigned int getColor(void);
   char getBrightness(void);
   char getColorBrightness(void);
+  char getRGBWOnOff(void);
 };
 
 } /* namespace testing */

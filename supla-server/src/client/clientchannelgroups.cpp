@@ -17,9 +17,12 @@
  */
 
 #include "clientchannelgroups.h"
+
 #include <stdlib.h>  // NOLINT
 #include <string.h>  // NOLINT
-#include <list>      // NOLINT
+
+#include <list>  // NOLINT
+
 #include "client.h"
 #include "clientchannelgroup.h"
 #include "commontypes.h"
@@ -110,6 +113,10 @@ bool supla_client_channelgroups::channelRelationExists(int ChannelId) {
 
 supla_client_channelgroup *supla_client_channelgroups::findGroup(int Id) {
   return static_cast<supla_client_channelgroup *>(find(Id, master));
+}
+
+bool supla_client_channelgroups::groupExits(int Id) {
+  return findGroup(Id) != NULL;
 }
 
 template <typename TSuplaDataPack, class TObjClass>
@@ -226,63 +233,4 @@ void supla_client_channelgroups::on_channel_value_changed(void *srpc,
                                                           int ChannelId) {
   on_value_changed(srpc, ChannelId, DeviceId, detail2,
                    OI_REMOTEUPDATE_DATATYPE1);
-}
-
-bool supla_client_channelgroups::set_device_channel_new_value(
-    TCS_SuplaNewValue *new_value) {
-  bool result = false;
-
-  std::list<dcpair> pairs;
-  void *arr = getArr(master);
-
-  safe_array_lock(arr);
-  supla_client_channelgroup *cgroup = findGroup(new_value->Id);
-  if (cgroup) {
-    pairs = cgroup->get_channel_list();
-  }
-  safe_array_unlock(arr);
-
-  dcpair::sort_by_device_id(&pairs);
-
-  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
-       it++) {
-    if (getClient()->getUser()->set_device_channel_value(
-            EST_CLIENT, getClient()->getID(), it->getDeviceId(),
-            it->getChannelId(), new_value->Id, dcpair::last_one(&pairs, it),
-            new_value->value)) {
-      result = true;
-    }
-  }
-
-  return result;
-}
-
-bool supla_client_channelgroups::device_calcfg_request(
-    TCS_DeviceCalCfgRequest_B *request) {
-  bool result = false;
-
-  if (request == NULL || request->Target != SUPLA_TARGET_GROUP) {
-    return false;
-  }
-
-  std::list<dcpair> pairs;
-  void *arr = getArr(master);
-
-  safe_array_lock(arr);
-  supla_client_channelgroup *cgroup = findGroup(request->Id);
-  if (cgroup) {
-    pairs = cgroup->get_channel_list();
-  }
-  safe_array_unlock(arr);
-
-  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
-       it++) {
-    if (getClient()->getUser()->device_calcfg_request(
-            getClient()->getID(), it->getDeviceId(), it->getChannelId(),
-            request)) {
-      result = true;
-    }
-  }
-
-  return result;
 }

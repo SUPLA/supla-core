@@ -45,6 +45,7 @@ class s_worker : public s_abstract_worker {
   virtual bool ipcc_set_digiglass_value(int active_bits, int mask);
   virtual bool ipcc_get_digiglass_value(int *mask);
   virtual char ipcc_is_connected(void);
+  virtual bool ipcc_action_copy(int sourceDeviceId, int sourceChannelId);
 };
 
 #endif /* WORKER_H_ */

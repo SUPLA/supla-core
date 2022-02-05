@@ -4,13 +4,31 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/channeljsonconfig/channeljsonconfig.cpp 
-
-OBJS += \
-./src/channeljsonconfig/channeljsonconfig.o 
+../src/channeljsonconfig/abstract_channel_json_config_getter.cpp \
+../src/channeljsonconfig/action_trigger_config.cpp \
+../src/channeljsonconfig/channel_json_config.cpp \
+../src/channeljsonconfig/channel_json_config_getter.cpp \
+../src/channeljsonconfig/controlling_the_gate_config.cpp \
+../src/channeljsonconfig/electicity_meter_config.cpp \
+../src/channeljsonconfig/impulse_counter_config.cpp 
 
 CPP_DEPS += \
-./src/channeljsonconfig/channeljsonconfig.d 
+./src/channeljsonconfig/abstract_channel_json_config_getter.d \
+./src/channeljsonconfig/action_trigger_config.d \
+./src/channeljsonconfig/channel_json_config.d \
+./src/channeljsonconfig/channel_json_config_getter.d \
+./src/channeljsonconfig/controlling_the_gate_config.d \
+./src/channeljsonconfig/electicity_meter_config.d \
+./src/channeljsonconfig/impulse_counter_config.d 
+
+OBJS += \
+./src/channeljsonconfig/abstract_channel_json_config_getter.o \
+./src/channeljsonconfig/action_trigger_config.o \
+./src/channeljsonconfig/channel_json_config.o \
+./src/channeljsonconfig/channel_json_config_getter.o \
+./src/channeljsonconfig/controlling_the_gate_config.o \
+./src/channeljsonconfig/electicity_meter_config.o \
+./src/channeljsonconfig/impulse_counter_config.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,4 +39,11 @@ src/channeljsonconfig/%.o: ../src/channeljsonconfig/%.cpp src/channeljsonconfig/
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-channeljsonconfig
+
+clean-src-2f-channeljsonconfig:
+	-$(RM) ./src/channeljsonconfig/abstract_channel_json_config_getter.d ./src/channeljsonconfig/abstract_channel_json_config_getter.o ./src/channeljsonconfig/action_trigger_config.d ./src/channeljsonconfig/action_trigger_config.o ./src/channeljsonconfig/channel_json_config.d ./src/channeljsonconfig/channel_json_config.o ./src/channeljsonconfig/channel_json_config_getter.d ./src/channeljsonconfig/channel_json_config_getter.o ./src/channeljsonconfig/controlling_the_gate_config.d ./src/channeljsonconfig/controlling_the_gate_config.o ./src/channeljsonconfig/electicity_meter_config.d ./src/channeljsonconfig/electicity_meter_config.o ./src/channeljsonconfig/impulse_counter_config.d ./src/channeljsonconfig/impulse_counter_config.o
+
+.PHONY: clean-src-2f-channeljsonconfig
 

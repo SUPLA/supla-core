@@ -17,7 +17,9 @@
  */
 
 #include "http/httprequest.h"
+
 #include <stdlib.h>
+
 #include "lck.h"
 #include "log.h"
 #include "sthread.h"
@@ -29,6 +31,7 @@ supla_http_request::supla_http_request(supla_user *user, int ClassID,
                                        event_type EventType,
                                        event_source_type EventSourceType) {
   this->lck = lck_init();
+  this->extraParams = NULL;
   this->http = NULL;
   this->https = NULL;
   this->user = user;
@@ -40,8 +43,6 @@ supla_http_request::supla_http_request(supla_user *user, int ClassID,
   this->timeoutUs = 0;
   this->startTime.tv_sec = 0;
   this->startTime.tv_usec = 0;
-  this->correlationToken = NULL;
-  this->googleRequestId = NULL;
   this->touchTimeSec = 0;
   this->touchCount = 0;
 
@@ -50,23 +51,20 @@ supla_http_request::supla_http_request(supla_user *user, int ClassID,
 }
 
 supla_http_request::~supla_http_request() {
-  if (correlationToken) {
-    free(correlationToken);
-    correlationToken = NULL;
-  }
-
-  if (googleRequestId) {
-    free(googleRequestId);
-    googleRequestId = NULL;
-  }
-
   lck_lock(this->lck);
+  if (extraParams) {
+    delete extraParams;
+    extraParams = NULL;
+  }
+
   if (http) {
     delete http;
+    http = NULL;
   }
 
   if (https) {
     delete https;
+    https = NULL;
   }
   lck_unlock(this->lck);
 
@@ -137,49 +135,23 @@ bool supla_http_request::isChannelIdEqual(int ChannelId) {
   return this->ChannelId == ChannelId;
 }
 
-void supla_http_request::setCorrelationToken(const char correlationToken[]) {
+void supla_http_request::setExtraParams(
+    supla_http_request_extra_params *extraParams) {
   lck_lock(this->lck);
-  if (this->correlationToken) {
-    free(this->correlationToken);
-    this->correlationToken = NULL;
+  if (this->extraParams) {
+    delete this->extraParams;
   }
-
-  if (correlationToken &&
-      strnlen(correlationToken, CORRELATIONTOKEN_MAXSIZE) > 0) {
-    this->correlationToken =
-        strndup(correlationToken, CORRELATIONTOKEN_MAXSIZE);
+  if (extraParams) {
+    this->extraParams = extraParams->clone();
   }
   lck_unlock(this->lck);
 }
 
-const char *supla_http_request::getCorrelationTokenPtr(void) {
-  char *result = NULL;
+void supla_http_request::accessExtraParams(
+    std::function<void(supla_http_request_extra_params *)> f) {
   lck_lock(this->lck);
-  result = correlationToken;
+  f(extraParams);
   lck_unlock(this->lck);
-  return result;
-}
-
-void supla_http_request::setGoogleRequestId(const char googleRequestId[]) {
-  lck_lock(this->lck);
-  if (this->googleRequestId) {
-    free(this->googleRequestId);
-    this->googleRequestId = NULL;
-  }
-
-  if (googleRequestId &&
-      strnlen(googleRequestId, GOOGLEREQUESTID_MAXSIZE) > 0) {
-    this->googleRequestId = strndup(googleRequestId, GOOGLEREQUESTID_MAXSIZE);
-  }
-  lck_unlock(this->lck);
-}
-
-const char *supla_http_request::getGoogleRequestIdPtr(void) {
-  char *result = NULL;
-  lck_lock(this->lck);
-  result = googleRequestId;
-  lck_unlock(this->lck);
-  return result;
 }
 
 void supla_http_request::setDelay(unsigned long long delayUs) {

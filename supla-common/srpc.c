@@ -1075,6 +1075,15 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
 
         break;
 
+      case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
+
+        if (srpc->sdp.data_size == sizeof(TSC_SuplaRegisterClientResult_C))
+          rd->data.sc_register_client_result_c =
+              (TSC_SuplaRegisterClientResult_C *)malloc(
+                  sizeof(TSC_SuplaRegisterClientResult_C));
+
+        break;
+
       case SUPLA_SC_CALL_LOCATION_UPDATE:
 
         if (srpc->sdp.data_size >=
@@ -1390,6 +1399,12 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
                   sizeof(TSC_DeviceReconnectRequestResult));
         break;
 
+      case SUPLA_CS_CALL_TIMER_ARM:
+        if (srpc->sdp.data_size == sizeof(TCS_TimerArmRequest))
+          rd->data.cs_timer_arm_request =
+              (TCS_TimerArmRequest *)malloc(sizeof(TCS_TimerArmRequest));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1533,6 +1548,9 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT:
     case SUPLA_DS_CALL_ACTIONTRIGGER:
       return 16;
+    case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
+    case SUPLA_CS_CALL_TIMER_ARM:
+      return 17;
   }
 
   return 255;
@@ -2026,6 +2044,13 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_b(
   return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B,
                          (char *)registerclient_result,
                          sizeof(TSC_SuplaRegisterClientResult_B));
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_registerclient_result_c(
+    void *_srpc, TSC_SuplaRegisterClientResult_C *registerclient_result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C,
+                         (char *)registerclient_result,
+                         sizeof(TSC_SuplaRegisterClientResult_C));
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
@@ -2542,6 +2567,12 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
                          sizeof(TSC_DeviceReconnectRequestResult));
 }
 
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sc_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request) {
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_TIMER_ARM, (char *)request,
+                         sizeof(TCS_TimerArmRequest));
+}
+
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
@@ -2799,6 +2830,99 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_evtool_v1_extended2icextended(
 
   return 1;
 }
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_evtool_value_add(
+    TSuplaChannelExtendedValue *dest, TSuplaChannelExtendedValue *src) {
+  if (!dest || !src) {
+    return 0;
+  }
+
+  if (src->type == EV_TYPE_NONE || src->size == 0) {
+    return 0;
+  }
+
+  if (dest->type == EV_TYPE_NONE) {
+    memcpy(dest, src, sizeof(TSuplaChannelExtendedValue));
+    return 1;
+  }
+
+  unsigned int src_size =
+      sizeof(TSuplaChannelExtendedValue) - (sizeof(src->value) - src->size);
+
+  if (dest->type == EV_TYPE_MULTI_VALUE) {
+    if (dest->size + src_size > sizeof(dest->value)) {
+      return 0;
+    }
+
+    memcpy(&dest->value[dest->size], src, src_size);
+    dest->size += src_size;
+    return 1;
+  }
+
+  unsigned int prev_size =
+      sizeof(TSuplaChannelExtendedValue) - (sizeof(dest->value) - dest->size);
+
+  if (prev_size + src_size > sizeof(dest->value)) {
+    return 0;
+  }
+
+  TSuplaChannelExtendedValue prev = {};
+  memcpy(&prev, dest, sizeof(TSuplaChannelExtendedValue));
+
+  dest->type = EV_TYPE_MULTI_VALUE;
+  dest->size = prev_size;
+
+  memcpy(dest->value, &prev, prev_size);
+
+  return srpc_evtool_value_add(dest, src);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_evtool_value_get(TSuplaChannelExtendedValue *ev, unsigned short index,
+                      TSuplaChannelExtendedValue *dest) {
+  if (dest == NULL || ev == NULL || ev->type == EV_TYPE_NONE) {
+    return 0;
+  }
+
+  if (ev->type == EV_TYPE_MULTI_VALUE) {
+    unsigned int header_size =
+        sizeof(TSuplaChannelExtendedValue) - sizeof(ev->value);
+    unsigned int offset = 0;
+    unsigned int size = ev->size;
+    if (size > sizeof(ev->value)) {
+      size = sizeof(ev->value);
+    }
+    size -= header_size;
+
+    unsigned short n = 0;
+
+    while (offset < size) {
+      TSuplaChannelExtendedValue *next =
+          (TSuplaChannelExtendedValue *)&ev->value[offset];
+
+      if (next->type == EV_TYPE_NONE || next->size == 0 ||
+          next->size + offset + header_size > sizeof(ev->value)) {
+        return 0;
+      }
+
+      if (n == index) {
+        memcpy(dest, next, header_size + next->size);
+        return 1;
+      }
+
+      offset += header_size + next->size;
+      n++;
+    }
+  }
+
+  if (index == 0) {
+    memcpy(dest, ev, sizeof(TSuplaChannelExtendedValue));
+    return 1;
+  }
+
+  return 0;
+}
+
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #endif /*SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS*/

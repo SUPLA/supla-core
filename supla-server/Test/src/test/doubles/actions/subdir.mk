@@ -6,11 +6,11 @@
 CPP_SRCS += \
 ../src/test/doubles/actions/ActionExecutorMock.cpp 
 
-OBJS += \
-./src/test/doubles/actions/ActionExecutorMock.o 
-
 CPP_DEPS += \
 ./src/test/doubles/actions/ActionExecutorMock.d 
+
+OBJS += \
+./src/test/doubles/actions/ActionExecutorMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,4 +21,11 @@ src/test/doubles/actions/%.o: ../src/test/doubles/actions/%.cpp src/test/doubles
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-actions
+
+clean-src-2f-test-2f-doubles-2f-actions:
+	-$(RM) ./src/test/doubles/actions/ActionExecutorMock.d ./src/test/doubles/actions/ActionExecutorMock.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-actions
 

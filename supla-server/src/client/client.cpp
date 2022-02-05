@@ -16,11 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "client.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include "client.h"
 #include "clientlocation.h"
 #include "database.h"
 #include "lck.h"
@@ -28,6 +29,7 @@
 #include "safearray.h"
 #include "srpc.h"
 #include "user.h"
+#include "user/userchannelgroups.h"
 
 supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
   this->locations = new supla_client_locations();
@@ -288,8 +290,8 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
   revoke_superuser_authorization();
 
-  if (proto_version >= 9) {
-    TSC_SuplaRegisterClientResult_B srcr;
+  if (proto_version >= 17) {
+    TSC_SuplaRegisterClientResult_C srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
@@ -298,10 +300,25 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
     srcr.ChannelGroupCount = cgroups->count();
-    srcr.Flags = 0;
+
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    srcr.serverUnixTimestamp = now.tv_sec;
+
+    srpc_sc_async_registerclient_result_c(getSvrConn()->srpc(), &srcr);
+  } else if (proto_version >= 9) {
+    TSC_SuplaRegisterClientResult_B srcr = {};
+    srcr.result_code = resultcode;
+    srcr.ClientID = getID();
+    srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srcr.version_min = SUPLA_PROTO_VERSION_MIN;
+    srcr.version = SUPLA_PROTO_VERSION;
+    srcr.LocationCount = locations->count();
+    srcr.ChannelCount = channels->count();
+    srcr.ChannelGroupCount = cgroups->count();
     srpc_sc_async_registerclient_result_b(getSvrConn()->srpc(), &srcr);
   } else {
-    TSC_SuplaRegisterClientResult srcr;
+    TSC_SuplaRegisterClientResult srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
     srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
@@ -366,7 +383,11 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
   if (new_value->Target == SUPLA_TARGET_CHANNEL) {
     channels->set_device_channel_new_value(new_value);
   } else if (new_value->Target == SUPLA_TARGET_GROUP) {
-    cgroups->set_device_channel_new_value(new_value);
+    if (cgroups->groupExits(
+            new_value->Id)) {  // Make sure the client has access to this group
+      getUser()->get_channel_groups()->set_new_value(EST_CLIENT, getID(),
+                                                     new_value);
+    }
   }
 }
 
@@ -461,7 +482,10 @@ void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
       request->Target == SUPLA_TARGET_IODEVICE) {
     channels->device_calcfg_request(request);
   } else if (request->Target == SUPLA_TARGET_GROUP) {
-    cgroups->device_calcfg_request(request);
+    if (cgroups->groupExits(
+            request->Id)) {  // Make sure the client has access to this group
+      getUser()->get_channel_groups()->calcfg_request(getID(), request);
+    }
   }
 }
 
@@ -554,4 +578,16 @@ unsigned _supla_int64_t supla_client::waitTimeUSec() {
   }
 
   return 120000000;
+}
+
+void supla_client::timer_arm(TCS_TimerArmRequest *request) {
+  if (!request) {
+    return;
+  }
+
+  channels->device_call(
+      request->ChannelID, [this, request](supla_device *device) -> void {
+        device->get_channels()->timer_arm(getID(), request->ChannelID, 0, true,
+                                          request->On, request->DurationMS);
+      });
 }

@@ -20,6 +20,7 @@
 
 #include "database.h"
 #include "safearray.h"
+#include "user.h"
 
 supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   this->user = user;
@@ -56,8 +57,9 @@ int supla_user_channelgroups::available_data_types_for_remote(
   return 0;
 }
 
-bool supla_user_channelgroups::for_each_device(
-    int GroupID, std::function<bool(supla_device *, int, char)> f) {
+bool supla_user_channelgroups::for_each_channel(
+    int GroupID, bool break_on_success,
+    std::function<bool(supla_device *, int, char)> f) {
   bool result = false;
 
   std::list<dcpair> pairs = find_channels(GroupID);
@@ -66,20 +68,46 @@ bool supla_user_channelgroups::for_each_device(
 
   for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
        it++) {
-    supla_device *device = user->get_device(it->getDeviceId());
-    if (device) {
-      if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
-        result = true;
-      }
-      device->releasePtr();
+    user->access_device(
+        it->getDeviceId(), 0,
+        [&result, f, &it, &pairs](supla_device *device) -> void {
+          if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
+            result = true;
+          }
+        });
+
+    if (break_on_success && result) {
+      break;
     }
   }
 
   return result;
 }
 
+bool supla_user_channelgroups::for_each_channel(
+    int GroupID, std::function<bool(supla_device *, int, char)> f) {
+  return for_each_channel(GroupID, false, f);
+}
+
+bool supla_user_channelgroups::set_new_value(event_source_type eventSourceType,
+                                             int SenderID,
+                                             TCS_SuplaNewValue *new_value) {
+  if (new_value->Target != SUPLA_TARGET_GROUP) {
+    return false;
+  }
+
+  return for_each_channel(
+      new_value->Id,
+      [new_value, this, eventSourceType, SenderID](
+          supla_device *device, int channelId, char EOL) -> bool {
+        return user->set_device_channel_value(
+            eventSourceType, SenderID, device->getID(), channelId,
+            new_value->Id, EOL, new_value->value);
+      });
+}
+
 bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, value](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->set_device_channel_char_value(
@@ -88,7 +116,7 @@ bool supla_user_channelgroups::set_char_value(int GroupID, const char value) {
 }
 
 bool supla_user_channelgroups::set_on(int GroupID, bool on) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, on](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->set_on(0, channelId, GroupID, EOL, on);
@@ -111,7 +139,7 @@ bool supla_user_channelgroups::set_brightness(int GroupID, char brightness) {
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, unsigned int *color,
                                               char *color_brightness,
                                               char *brightness, char *on_off) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, color, color_brightness, brightness, on_off](
           supla_device *device, int channelId, char EOL) -> bool {
@@ -124,7 +152,7 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, unsigned int *color,
 bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
                                               char color_brightness,
                                               char brightness, char on_off) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, color, color_brightness, brightness, on_off](
           supla_device *device, int channelId, char EOL) -> bool {
@@ -134,18 +162,38 @@ bool supla_user_channelgroups::set_rgbw_value(int GroupID, int color,
       });
 }
 
+bool supla_user_channelgroups::calcfg_request(
+    int SenderID, TCS_DeviceCalCfgRequest_B *request) {
+  if (request == NULL || request->Target != SUPLA_TARGET_GROUP) {
+    return false;
+  }
+
+  return for_each_channel(
+      request->Id,
+      [this, SenderID, request](supla_device *device, int channelId,
+                                char EOL) -> bool {
+        return user->device_calcfg_request(SenderID, device->getID(), channelId,
+                                           request);
+      });
+}
+
 bool supla_user_channelgroups::action_toggle(int GroupID) {
-  return for_each_device(
+  bool any_on = for_each_channel(
+      GroupID, true, [](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->is_on(channelId);
+      });
+
+  return for_each_channel(
       GroupID,
-      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
-        return device->get_channels()->action_toggle(0, channelId, GroupID,
-                                                     EOL);
+      [any_on, GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->set_on(0, channelId, GroupID, EOL,
+                                              !any_on);
       });
 }
 
 bool supla_user_channelgroups::action_shut(int GroupID,
                                            const char *closing_percentage) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID, closing_percentage](supla_device *device, int channelId,
                                     char EOL) -> bool {
@@ -155,7 +203,7 @@ bool supla_user_channelgroups::action_shut(int GroupID,
 }
 
 bool supla_user_channelgroups::action_reveal(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_reveal(0, channelId, GroupID,
@@ -164,15 +212,58 @@ bool supla_user_channelgroups::action_reveal(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_stop(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_stop(0, channelId, GroupID, EOL);
       });
 }
 
+bool supla_user_channelgroups::action_up(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_up(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_down(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_down(0, channelId, GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_up_or_stop(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_up_or_stop(0, channelId, GroupID,
+                                                         EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_down_or_stop(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_down_or_stop(0, channelId,
+                                                           GroupID, EOL);
+      });
+}
+
+bool supla_user_channelgroups::action_step_by_step(int GroupID) {
+  return for_each_channel(
+      GroupID,
+      [GroupID](supla_device *device, int channelId, char EOL) -> bool {
+        return device->get_channels()->action_step_by_step(0, channelId,
+                                                           GroupID, EOL);
+      });
+}
+
 bool supla_user_channelgroups::action_open(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_open(0, channelId, GroupID, EOL);
@@ -180,7 +271,7 @@ bool supla_user_channelgroups::action_open(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_close(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_close(0, channelId, GroupID, EOL);
@@ -188,7 +279,7 @@ bool supla_user_channelgroups::action_close(int GroupID) {
 }
 
 bool supla_user_channelgroups::action_open_close(int GroupID) {
-  return for_each_device(
+  return for_each_channel(
       GroupID,
       [GroupID](supla_device *device, int channelId, char EOL) -> bool {
         return device->get_channels()->action_open_close(0, channelId, GroupID,

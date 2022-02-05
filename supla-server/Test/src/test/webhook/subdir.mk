@@ -7,13 +7,13 @@ CPP_SRCS += \
 ../src/test/webhook/StateWebhookClientTest.cpp \
 ../src/test/webhook/StateWebhookCredentialsTest.cpp 
 
-OBJS += \
-./src/test/webhook/StateWebhookClientTest.o \
-./src/test/webhook/StateWebhookCredentialsTest.o 
-
 CPP_DEPS += \
 ./src/test/webhook/StateWebhookClientTest.d \
 ./src/test/webhook/StateWebhookCredentialsTest.d 
+
+OBJS += \
+./src/test/webhook/StateWebhookClientTest.o \
+./src/test/webhook/StateWebhookCredentialsTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,4 +24,11 @@ src/test/webhook/%.o: ../src/test/webhook/%.cpp src/test/webhook/subdir.mk
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-webhook
+
+clean-src-2f-test-2f-webhook:
+	-$(RM) ./src/test/webhook/StateWebhookClientTest.d ./src/test/webhook/StateWebhookClientTest.o ./src/test/webhook/StateWebhookCredentialsTest.d ./src/test/webhook/StateWebhookCredentialsTest.o
+
+.PHONY: clean-src-2f-test-2f-webhook
 

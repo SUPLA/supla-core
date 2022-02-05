@@ -16,10 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <mqtt_channel_message_provider.h>
+#include "mqtt_channel_message_provider.h"
+
 #include <stdlib.h>
 #include <string.h>
 
+#include "channeljsonconfig/action_trigger_config.h"
 #include "log.h"
 
 supla_mqtt_channel_message_provider::supla_mqtt_channel_message_provider(void)
@@ -820,7 +822,8 @@ bool supla_mqtt_channel_message_provider::ha_sensor(
     ha_json_set_string_param(root, "val_tpl", value_tmpl);
   } else {
     char tpl[50];
-    snprintf(tpl, sizeof(tpl), "{{ value | round(%i) }}", precision);
+    snprintf(tpl, sizeof(tpl), "{{ value | round(%i,default=none) }}",
+             precision);
 
     ha_json_set_string_param(root, "val_tpl", tpl);
   }
@@ -1200,7 +1203,9 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
     case 40:
       return ha_phase_sensor(
           index, phase, "%", 3, "state/phases/%i/power_factor",
-          "Power factor - Phase %i", "{{ (float(value) * 100.0) | round(3) }}",
+          "Power factor - Phase %i",
+          "{% if float(value, default=none) == None %}None{% else "
+          "%}float(value) * 100.0 | round(5){% endif %}",
           "power_factor", false, topic_prefix, topic_name, message,
           message_size);
 
@@ -1214,6 +1219,180 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
   }
 
   return false;
+}
+
+bool supla_mqtt_channel_message_provider::ha_device_trigger(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size, unsigned int cap) {
+  // https://www.home-assistant.io/integrations/device_trigger.mqtt/
+
+  cJSON *root =
+      ha_json_create_root(topic_prefix, NULL, NULL, false, index, true);
+  if (!root) {
+    return false;
+  }
+
+  char component[] = "device_automation";
+
+  if (!cap) {
+    if (message_size) {
+      *message_size = 0;
+    }
+    return ha_get_message(root, component, index, true, topic_name, NULL, NULL);
+  }
+
+  char topic[15] = {};
+  char actiontopic[30] = {};
+  char type[30] = {};
+  char subtype[20] = {};
+
+  // Also note that the combination of type and subtype should be unique for a
+  // device.
+
+  snprintf(subtype, sizeof(subtype), "button_%i", row->channel_number + 1);
+
+  switch (cap) {
+    case SUPLA_ACTION_CAP_TURN_ON:
+      snprintf(topic, sizeof(topic), "turn_on");
+      break;
+    case SUPLA_ACTION_CAP_TURN_OFF:
+      snprintf(topic, sizeof(topic), "turn_off");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x1:
+      snprintf(topic, sizeof(topic), "toggle_x1");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x2:
+      snprintf(topic, sizeof(topic), "toggle_x2");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x3:
+      snprintf(topic, sizeof(topic), "toggle_x3");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x4:
+      snprintf(topic, sizeof(topic), "toggle_x4");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x5:
+      snprintf(topic, sizeof(topic), "toggle_x5");
+      break;
+    case SUPLA_ACTION_CAP_HOLD:
+      snprintf(topic, sizeof(topic), "hold");
+      break;
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x1:
+      snprintf(topic, sizeof(topic), "press_x1");
+      break;
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x2:
+      snprintf(topic, sizeof(topic), "press_x2");
+      break;
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x3:
+      snprintf(topic, sizeof(topic), "press_x3");
+      break;
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x4:
+      snprintf(topic, sizeof(topic), "press_x4");
+      break;
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x5:
+      snprintf(topic, sizeof(topic), "press_x5");
+      break;
+  }
+
+  switch (cap) {
+    case SUPLA_ACTION_CAP_TURN_ON:
+      snprintf(type, sizeof(type), "button_turn_on");
+      break;
+    case SUPLA_ACTION_CAP_TURN_OFF:
+      snprintf(type, sizeof(type), "button_turn_off");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x1:
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x1:
+      snprintf(type, sizeof(type), "button_short_press");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x2:
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x2:
+      snprintf(type, sizeof(type), "button_double_press");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x3:
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x3:
+      snprintf(type, sizeof(type), "button_triple_press");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x4:
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x4:
+      snprintf(type, sizeof(type), "button_quadruple_press");
+      break;
+    case SUPLA_ACTION_CAP_TOGGLE_x5:
+    case SUPLA_ACTION_CAP_SHORT_PRESS_x5:
+      snprintf(type, sizeof(type), "button_quintuple_press");
+      break;
+    case SUPLA_ACTION_CAP_HOLD:
+      snprintf(type, sizeof(type), "button_long_press");
+      break;
+  }
+
+  snprintf(actiontopic, sizeof(actiontopic), "action/%s", topic);
+
+  ha_json_set_string_param(root, "atype", "trigger");
+  ha_json_set_short_topic(root, "t", actiontopic);
+  ha_json_set_string_param(root, "type", type);
+  ha_json_set_string_param(root, "stype", subtype);
+  ha_json_set_string_param(root, "pl", topic);
+
+  return ha_get_message(root, component, index, true, topic_name, message,
+                        message_size);
+}
+
+bool supla_mqtt_channel_message_provider::ha_action_trigger(
+    unsigned short index, const char *topic_prefix, char **topic_name,
+    void **message, size_t *message_size) {
+  if (index > 12) {
+    return false;
+  }
+
+  unsigned int cap = 0;
+
+  action_trigger_config at_config(&row->json_config);
+  unsigned int active = at_config.get_active_actions();
+
+  switch (index) {
+    case 0:
+      cap = SUPLA_ACTION_CAP_TURN_ON;
+      break;
+    case 1:
+      cap = SUPLA_ACTION_CAP_TURN_OFF;
+      break;
+    case 2:
+      cap = (active & SUPLA_ACTION_CAP_TOGGLE_x1)
+                ? SUPLA_ACTION_CAP_TOGGLE_x1
+                : SUPLA_ACTION_CAP_SHORT_PRESS_x1;
+      break;
+    case 3:
+      cap = (active & SUPLA_ACTION_CAP_TOGGLE_x2)
+                ? SUPLA_ACTION_CAP_TOGGLE_x2
+                : SUPLA_ACTION_CAP_SHORT_PRESS_x2;
+      break;
+    case 4:
+      cap = (active & SUPLA_ACTION_CAP_TOGGLE_x3)
+                ? SUPLA_ACTION_CAP_TOGGLE_x3
+                : SUPLA_ACTION_CAP_SHORT_PRESS_x3;
+      break;
+    case 5:
+      cap = (active & SUPLA_ACTION_CAP_TOGGLE_x4)
+                ? SUPLA_ACTION_CAP_TOGGLE_x4
+                : SUPLA_ACTION_CAP_SHORT_PRESS_x4;
+      break;
+    case 6:
+      cap = (active & SUPLA_ACTION_CAP_TOGGLE_x5)
+                ? SUPLA_ACTION_CAP_TOGGLE_x5
+                : SUPLA_ACTION_CAP_SHORT_PRESS_x5;
+      break;
+    case 7:
+      cap = SUPLA_ACTION_CAP_HOLD;
+      break;
+  }
+
+  if (at_config.get_action_assigned_to_capability(cap).actionId !=
+      ACTION_FORWARD_OUTSIDE) {
+    cap = 0;
+  }
+
+  return ha_device_trigger(index, topic_prefix, topic_name, message,
+                           message_size, cap);
 }
 
 bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
@@ -1233,6 +1412,11 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
       if (index > 1) {
+        return false;
+      }
+      break;
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      if (index > 7) {
         return false;
       }
       break;
@@ -1342,6 +1526,9 @@ bool supla_mqtt_channel_message_provider::get_home_assistant_cfgitem(
     case SUPLA_CHANNELFNC_IC_HEAT_METER:
       return ha_impulse_counter(index, topic_prefix, topic_name, message,
                                 message_size, row->channel_func);
+    case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+      return ha_action_trigger(index, topic_prefix, topic_name, message,
+                               message_size);
   }
   return false;
 }

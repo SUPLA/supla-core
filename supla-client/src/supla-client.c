@@ -16,13 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "supla-client.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "lck.h"
 #include "log.h"
 #include "srpc.h"
-#include "supla-client.h"
 #include "supla-socket.h"
 
 typedef struct {
@@ -39,6 +40,7 @@ typedef struct {
   char connected;
   char registered;
   int server_activity_timeout;
+  int server_time_diff;
 
   TSuplaClientCfg cfg;
 } TSuplaClientData;
@@ -134,7 +136,7 @@ void supla_client_set_registered(void *_suplaclient, char registered) {
 
 void supla_client_on_register_result(
     TSuplaClientData *scd,
-    TSC_SuplaRegisterClientResult_B *register_client_result) {
+    TSC_SuplaRegisterClientResult_C *register_client_result) {
   if (register_client_result->result_code == SUPLA_RESULTCODE_TRUE) {
     supla_client_set_registered(scd, 1);
 
@@ -705,12 +707,70 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
           }
         }
 
-      /* no break between SUPLA_SC_CALL_REGISTER_CLIENT_RESULT and
-       * SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B!!! */
+        /* no break between SUPLA_SC_CALL_REGISTER_CLIENT_RESULT and
+         * SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B!!! */
+
       case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B:
-        if (rd.data.sc_register_client_result_b) {
+
+        if (rd.data.sc_register_client_result_b == NULL) {
+          break;
+        }
+
+        {
+          TSC_SuplaRegisterClientResult_C *sc_register_client_result_c =
+              (TSC_SuplaRegisterClientResult_C *)malloc(
+                  sizeof(TSC_SuplaRegisterClientResult_C));
+
+          if (sc_register_client_result_c == NULL) {
+            break;
+          } else {
+            sc_register_client_result_c->result_code =
+                rd.data.sc_register_client_result_b->result_code;
+
+            sc_register_client_result_c->ClientID =
+                rd.data.sc_register_client_result_b->ClientID;
+
+            sc_register_client_result_c->LocationCount =
+                rd.data.sc_register_client_result_b->LocationCount;
+
+            sc_register_client_result_c->ChannelCount =
+                rd.data.sc_register_client_result_b->ChannelCount;
+
+            sc_register_client_result_c->ChannelGroupCount =
+                rd.data.sc_register_client_result_b->ChannelGroupCount;
+            sc_register_client_result_c->Flags =
+                rd.data.sc_register_client_result_b->Flags;
+
+            sc_register_client_result_c->activity_timeout =
+                rd.data.sc_register_client_result_b->activity_timeout;
+
+            sc_register_client_result_c->version =
+                rd.data.sc_register_client_result_b->version;
+
+            sc_register_client_result_c->version_min =
+                rd.data.sc_register_client_result_b->version_min;
+
+            sc_register_client_result_c->serverUnixTimestamp = 0;
+
+            free(rd.data.sc_register_client_result_b);
+            rd.data.sc_register_client_result_c = sc_register_client_result_c;
+          }
+        }
+
+      /* no break between SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B and
+       * SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C!!! */
+      case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
+        if (rd.data.sc_register_client_result_c) {
+          scd->server_time_diff = 0;
+          if (rd.data.sc_register_client_result_c->serverUnixTimestamp) {
+            struct timeval now;
+            gettimeofday(&now, NULL);
+            scd->server_time_diff =
+                now.tv_sec -
+                rd.data.sc_register_client_result_c->serverUnixTimestamp;
+          }
           supla_client_on_register_result(scd,
-                                          rd.data.sc_register_client_result_b);
+                                          rd.data.sc_register_client_result_c);
         }
         break;
       case SUPLA_SC_CALL_LOCATION_UPDATE:
@@ -1615,5 +1675,31 @@ char supla_client_set_dgf_transparency(void *_suplaclient, int channelID,
   }
   lck_unlock(suplaclient->lck);
 
+  return result;
+}
+
+int supla_client_get_time_diff(void *_suplaclient) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  return suplaclient->server_time_diff;
+}
+
+char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
+                            unsigned int durationMS) {
+  TSuplaClientData *suplaclient = (TSuplaClientData *)_suplaclient;
+  char result = 0;
+
+  lck_lock(suplaclient->lck);
+  if (supla_client_registered(_suplaclient) == 1) {
+    TCS_TimerArmRequest request = {};
+    request.ChannelID = channelID;
+    request.On = On;
+    request.DurationMS = durationMS;
+
+    result = srpc_sc_async_timer_arm(suplaclient->srpc, &request) ==
+                     SUPLA_RESULT_FALSE
+                 ? 0
+                 : 1;
+  }
+  lck_unlock(suplaclient->lck);
   return result;
 }

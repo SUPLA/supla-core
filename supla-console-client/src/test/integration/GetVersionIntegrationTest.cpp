@@ -34,7 +34,7 @@ void GetVersionIntegrationTest::onConnected() {
 }
 
 void GetVersionIntegrationTest::onRegistered(
-    TSC_SuplaRegisterClientResult_B *result) {
+    TSC_SuplaRegisterClientResult_C *result) {
   if (!withoutRegistration) {
     cancelIteration();
   }

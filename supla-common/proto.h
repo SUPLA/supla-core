@@ -78,6 +78,10 @@ struct _supla_timeval {
 #define _supla_timeval timeval
 #endif
 
+#if defined(ARDUINO)
+#undef PROTO_ICACHE_FLASH
+#endif /*defined(ARDUINO)*/
+
 #ifndef PROTO_ICACHE_FLASH
 #define PROTO_ICACHE_FLASH
 #endif /*PROTO_ICACHE_FLASH*/
@@ -96,7 +100,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 16
+#define SUPLA_PROTO_VERSION 17
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -159,6 +163,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_REGISTER_CLIENT_D 87  // ver. >= 12
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT 90
 #define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_B 92  // ver. >= 9
+#define SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C 94  // ver. >= 17
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED 100
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B 102        // ver. >= 12
 #define SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C 103        // ver. >= 12
@@ -228,6 +233,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_GET_CHANNEL_CONFIG 680                  // ver. >= 16
 #define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 #define SUPLA_DS_CALL_ACTIONTRIGGER 700                       // ver. >= 16
+#define SUPLA_CS_CALL_TIMER_ARM 800                           // ver. >= 17
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -267,6 +273,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_RESULTCODE_DENY_CHANNEL_BELONG_TO_GROUP 27           // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_HAS_SCHEDULE 28              // ver. >= 12
 #define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_SCENE 29  // ver. >= 12
+#define SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER \
+  30  // ver. >= 16
 
 #define SUPLA_OAUTH_RESULTCODE_ERROR 0         // ver. >= 10
 #define SUPLA_OAUTH_RESULTCODE_SUCCESS 1       // ver. >= 10
@@ -387,6 +395,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELFNC_ACTIONTRIGGER 700                // ver. >= 16
 #define SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL 800         // ver. >= 14
 #define SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL 810           // ver. >= 14
+#define SUPLA_CHANNELFNC_CONTROLLINGTHEFACADEBLIND 900    // ver. >= 17
 
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATEWAYLOCK 0x00000001
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEGATE 0x00000002
@@ -404,6 +413,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_BIT_FUNC_RAINSENSOR 0x00002000                // ver. >= 12
 #define SUPLA_BIT_FUNC_WEIGHTSENSOR 0x00004000              // ver. >= 12
 #define SUPLA_BIT_FUNC_CONTROLLINGTHEROOFWINDOW 0x00008000  // ver. >= 13
+#define SUPLA_BIT_FUNC_CONTROLLINGTHEFACADEBLIND 0x0010000  // ver. >= 17
 
 #define SUPLA_EVENT_CONTROLLINGTHEGATEWAYLOCK 10
 #define SUPLA_EVENT_CONTROLLINGTHEGATE 20
@@ -443,6 +453,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_MFR_DGF 13
 #define SUPLA_MFR_COMELIT 14
 
+#define SUPLA_DEVICE_FLAG_CALCFG_ENTER_CFG_MODE 0x0010  // ver. >= 17
+
 #define SUPLA_CHANNEL_FLAG_ZWAVE_BRIDGE 0x0001  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_IR_BRIDGE 0x0002     // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_RF_BRIDGE 0x0004     // ver. >= 12
@@ -450,7 +462,10 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNEL_FLAG_CHART_TYPE_BAR 0x0010                  // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_DS_TYPE_DIFFERENTAL 0x0020       // ver. >= 12
 #define SUPLA_CHANNEL_FLAG_CHART_INTERPOLATE_MEASUREMENTS 0x0040  // ver. >= 12
-// Free bits for future use:  0x0080, 0x0100, 0x0200, 0x0400, 0x0800
+#define SUPLA_CHANNEL_FLAG_RS_SBS_AND_STOP_ACTIONS 0x0080         // ver. >= 17
+#define SUPLA_CHANNEL_FLAG_RGBW_SET_LEVEL_WITHOUT_SWITCHING_ON \
+  0x0100  // ver. >= 17
+// Free bits for future use:  0x0200, 0x0400, 0x0800
 #define SUPLA_CHANNEL_FLAG_RS_AUTO_CALIBRATION 0x1000    // ver. >= 15
 #define SUPLA_CHANNEL_FLAG_CALCFG_RESET_COUNTERS 0x2000  // ver. >= 15
 // Free bits for future use: 0x8000
@@ -541,6 +556,7 @@ typedef struct {
 #define SUBV_TYPE_ELECTRICITY_MEASUREMENTS 2
 #define SUBV_TYPE_IC_MEASUREMENTS 3
 
+#define EV_TYPE_NONE 0
 #ifdef USE_DEPRECATED_EMEV_V1
 #define EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 10
 #endif /*USE_DEPRECATED_EMEV_V1*/
@@ -550,6 +566,7 @@ typedef struct {
 #define EV_TYPE_CHANNEL_STATE_V1 40
 #define EV_TYPE_TIMER_STATE_V1 50
 #define EV_TYPE_CHANNEL_AND_TIMER_STATE_V1 60
+#define EV_TYPE_MULTI_VALUE 100
 
 #define CALCFG_TYPE_THERMOSTAT_DETAILS_V1 10
 
@@ -611,6 +628,11 @@ typedef struct {
 } TDS_SuplaDeviceChannel_B;  // ver. >= 2
 
 typedef struct {
+  unsigned char relatedChannelNumber;  // ChannelNumber + 1.
+  unsigned _supla_int_t disablesLocalOperation;
+} TActionTriggerProperties;
+
+typedef struct {
   // device -> server
 
   unsigned char Number;
@@ -626,8 +648,7 @@ typedef struct {
 
   union {
     char value[SUPLA_CHANNELVALUE_SIZE];
-    unsigned char
-        ActionTriggerRelatedChannelNumber;  // ChannelNumber + 1. ver. >= 16
+    TActionTriggerProperties actionTriggerProperties;  // ver. >= 16
   };
 } TDS_SuplaDeviceChannel_C;  // ver. >= 10
 
@@ -1094,6 +1115,21 @@ typedef struct {
 } TSC_SuplaRegisterClientResult_B;  // ver. >= 9
 
 typedef struct {
+  // server -> client
+
+  _supla_int_t result_code;
+  _supla_int_t ClientID;
+  _supla_int_t LocationCount;
+  _supla_int_t ChannelCount;
+  _supla_int_t ChannelGroupCount;
+  _supla_int_t Flags;
+  unsigned char activity_timeout;
+  unsigned char version;
+  unsigned char version_min;
+  unsigned _supla_int_t serverUnixTimestamp;  // current server time
+} TSC_SuplaRegisterClientResult_C;            // ver. >= 17
+
+typedef struct {
   // client -> server
   unsigned char ChannelId;
   char value[SUPLA_CHANNELVALUE_SIZE];
@@ -1288,12 +1324,62 @@ typedef struct {
 #define RS_VALUE_FLAG_MOTOR_PROBLEM 0x8
 #define RS_VALUE_FLAG_CALIBRATION_IN_PROGRESS 0x10
 
+#define SUPLA_FACADEBLIND_TYPE_STANDS_IN_POSITION_WHILE_TILTING 1
+#define SUPLA_FACADEBLIND_TYPE_CHANGES_POSITION_WHILE_TILTING 2
+#define SUPLA_FACADEBLINE_TYPE_TILTS_ONLY_WHEN_FULLY_CLOSED 3
+
+// Roller shutter channel value payload
+// Device -> Server -> Client
 typedef struct {
-  char position;  // -1 == calibration. -1 - 100%
-  char tilt;
-  char bottom_position;  // Percentage points to the windowsill
-  _supla_int16_t flags;
-} TRollerShutterValue;
+  signed char position;  // -1 == calibration. -1 - 100%, DSC
+  char reserved1;
+  signed char bottom_position;  // Percentage points to the windowsill, SC
+  _supla_int16_t flags;         // DSC
+  char reserved2;
+  char reserved3;
+  char reserved4;
+} TDSC_RollerShutterValue;
+
+// Roller shutter channel value payload
+// Client -> Server -> Device
+typedef struct {
+  signed char position;  // 0 - STOP
+                         // 1 - DOWN
+                         // 2 - UP
+                         // 3 - DOWN_OR_STOP
+                         // 4 - UP_OR_STOP
+                         // 5 - STEP_BY_STEP
+                         // 10-110 - target position + 10
+  char reserved[7];
+} TCSD_RollerShutterValue;
+
+// Facade blind channel value payload
+// Device -> Server -> Client
+typedef struct {
+  signed char position;  // -1 == calibration. -1 - 100%, DSC
+  signed char tilt;      // -1 == not used/calibration, -1 - 100%, DSC
+  char reserved;
+  _supla_int16_t flags;             // DSC
+  unsigned char tilt_0_angle;       // SC
+  unsigned char tilt_100_angle;     // SC
+  unsigned char facade_blind_type;  // DSC SUPLA_FACADEBLIND_TYPE_*
+} TDSC_FacadeBlindValue;
+
+// Facade blind channel value payload
+// Client -> Server -> Device
+typedef struct {
+  signed char position;  // -1 - not set (actual behavior is device specific)
+                         // 0 - STOP
+                         // 1 - DOWN
+                         // 2 - UP
+                         // 3 - DOWN_OR_STOP
+                         // 4 - UP_OR_STOP
+                         // 5 - STEP_BY_STEP
+                         // 10-110 - target position + 10
+  signed char tilt;      // -1 - not set (actual behavior is device specific)
+                         // 10-110 - target position + 10
+  char reserved[6];
+} TCSD_FacadeBlindValue;
 
 typedef struct {
   unsigned _supla_int64_t calculated_value;  // * 0.001
@@ -1337,8 +1423,10 @@ typedef struct {
 #define SUPLA_CALCFG_CMD_SET_LIGHTSOURCE_LIFESPAN 6000    // v. >= 12
 #define SUPLA_CALCFG_CMD_RESET_COUNTERS 7000              // v. >= 15
 #define SUPLA_CALCFG_CMD_RECALIBRATE 8000                 // v. >= 15
+#define SUPLA_CALCFG_CMD_ENTER_CFG_MODE 9000              // v. >= 17
 
 #define SUPLA_CALCFG_DATATYPE_RS_SETTINGS 1000
+#define SUPLA_CALCFG_DATATYPE_FB_SETTINGS 1100  // v. >= 17
 
 #define CALCFG_ZWAVE_SCREENTYPE_UNKNOWN 0
 #define CALCFG_ZWAVE_SCREENTYPE_MULTILEVEL 1
@@ -1438,15 +1526,22 @@ typedef struct {
   _supla_int_t FullClosingTimeMS;
 } TCalCfg_RollerShutterSettings;
 
+typedef struct {
+  _supla_int_t FullOpeningTimeMS;
+  _supla_int_t FullClosingTimeMS;
+  _supla_int_t TiltingTimeMS;
+  unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
+} TCalCfg_FacadeBlindSettings;    // v. >= 17
+
 #define RGBW_BRIGHTNESS_ONOFF 0x1
 #define RGBW_COLOR_ONOFF 0x2
 
 typedef struct {
   char brightness;
   char colorBrightness;
-  char R;
-  char G;
   char B;
+  char G;
+  char R;
   char onOff;
 } TRGBW_Value;  // v. >= 10
 
@@ -1666,7 +1761,7 @@ typedef struct {
   union {
     // Remaining time to turn off
     unsigned _supla_int_t RemainingTimeMs;
-    unsigned _supla_int_t RemainingTimeTs;  // Unix timestamp - Filled by server
+    unsigned _supla_int_t CountdownEndsAt;  // Unix timestamp - Filled by server
   };
 
   unsigned char TargetValue[SUPLA_CHANNELVALUE_SIZE];
@@ -1800,6 +1895,13 @@ typedef struct {
 } TSD_ChannelConfig_Rollershutter;  // v. >= 16
 
 typedef struct {
+  _supla_int_t ClosingTimeMS;
+  _supla_int_t OpeningTimeMS;
+  _supla_int_t TiltingTimeMS;
+  unsigned char FacadeBlindType;  // SUPLA_FACADEBLIND_TYPE_
+} TSD_ChannelConfig_FacadeBlind;  // v. >= 17
+
+typedef struct {
   unsigned _supla_int_t ActiveActions;
 } TSD_ChannelConfig_ActionTrigger;  // v. >= 16
 
@@ -1807,7 +1909,7 @@ typedef struct {
   _supla_int_t ChannelID;
   unsigned _supla_int_t DurationMS;
   unsigned char On;
-} TCS_TimerArmRequest;  // v. >= 16
+} TCS_TimerArmRequest;  // v. >= 17
 
 // Recommended for bistable buttons
 #define SUPLA_ACTION_CAP_TURN_ON (1 << 0)

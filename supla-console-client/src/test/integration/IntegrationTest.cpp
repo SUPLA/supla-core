@@ -17,6 +17,7 @@
  */
 
 #include "IntegrationTest.h"
+
 #include "MySqlShell.h"
 #include "log.h"
 #include "tools.h"
@@ -50,7 +51,7 @@ void integration_test_on_connerror(void *_suplaclient, void *instance,
 }
 
 void integration_test_on_registered(void *_suplaclient, void *instance,
-                                    TSC_SuplaRegisterClientResult_B *result) {
+                                    TSC_SuplaRegisterClientResult_C *result) {
   static_cast<IntegrationTest *>(instance)->onRegistered(result);
 }
 
@@ -296,7 +297,7 @@ void IntegrationTest::onDisconnected() {}
 
 void IntegrationTest::onConnectionError(int code) { ASSERT_TRUE(false); }
 
-void IntegrationTest::onRegistered(TSC_SuplaRegisterClientResult_B *result) {
+void IntegrationTest::onRegistered(TSC_SuplaRegisterClientResult_C *result) {
   ASSERT_FALSE(result == NULL);
   ASSERT_EQ(result->result_code, SUPLA_RESULTCODE_TRUE);
 }

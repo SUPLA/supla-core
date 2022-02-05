@@ -9,17 +9,17 @@ CPP_SRCS += \
 ../src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.cpp \
 ../src/test/integration/asynctask/ChannelSearchCondition.cpp 
 
-OBJS += \
-./src/test/integration/asynctask/ActionGateOpenCloseIntegration.o \
-./src/test/integration/asynctask/AsyncTaskIntegrationTest.o \
-./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.o \
-./src/test/integration/asynctask/ChannelSearchCondition.o 
-
 CPP_DEPS += \
 ./src/test/integration/asynctask/ActionGateOpenCloseIntegration.d \
 ./src/test/integration/asynctask/AsyncTaskIntegrationTest.d \
 ./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.d \
 ./src/test/integration/asynctask/ChannelSearchCondition.d 
+
+OBJS += \
+./src/test/integration/asynctask/ActionGateOpenCloseIntegration.o \
+./src/test/integration/asynctask/AsyncTaskIntegrationTest.o \
+./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.o \
+./src/test/integration/asynctask/ChannelSearchCondition.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -30,4 +30,11 @@ src/test/integration/asynctask/%.o: ../src/test/integration/asynctask/%.cpp src/
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-integration-2f-asynctask
+
+clean-src-2f-test-2f-integration-2f-asynctask:
+	-$(RM) ./src/test/integration/asynctask/ActionGateOpenCloseIntegration.d ./src/test/integration/asynctask/ActionGateOpenCloseIntegration.o ./src/test/integration/asynctask/AsyncTaskIntegrationTest.d ./src/test/integration/asynctask/AsyncTaskIntegrationTest.o ./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.d ./src/test/integration/asynctask/AsyncTaskSearchIntegrationTest.o ./src/test/integration/asynctask/ChannelSearchCondition.d ./src/test/integration/asynctask/ChannelSearchCondition.o
+
+.PHONY: clean-src-2f-test-2f-integration-2f-asynctask
 

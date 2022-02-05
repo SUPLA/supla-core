@@ -9,7 +9,7 @@ if ! [ -e ./tools/lint.sh ]; then
 fi
 
 cpplint ./supla-server/src/* 
-cpplint ./supla-server/src/actions/* 
+cpplint --filter=-build/include_what_you_use ./supla-server/src/actions/* 
 cpplint ./supla-server/src/amazon/* 
 cpplint ./supla-server/src/asynctask/* 
 cpplint ./supla-server/src/channeljsonconfig/* 
@@ -26,11 +26,14 @@ cpplint --filter=-build/include ./supla-server/src/test/alexa/*
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/channeljsonconfig/* 
 cpplint --filter=-build/include ./supla-server/src/test/google/* 
-cpplint --filter=-build/include ./supla-server/src/test/integration/asynctask/* 
-cpplint --filter=-build/include ./supla-server/src/test/integration/mqtt/* 
+cpplint --filter=-build/include ./supla-server/src/test/http/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 
 cpplint --filter=-build/include ./supla-server/src/test/webhook/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/* 
+cpplint --filter=-build/include ./supla-server/src/test/doubles/actions/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/asynctask/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/channeljsonconfig/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/device/*
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 

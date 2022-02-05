@@ -19,13 +19,27 @@
 #ifndef DEVICECHANNEL_H_
 #define DEVICECHANNEL_H_
 
+#include <functional>
 #include <list>
 
+#include "channel_value.h"
 #include "commontypes.h"
 #include "proto.h"
 
 class supla_user;
+class supla_device;
 class channel_json_config;
+
+enum rsAction {
+  rsActionStop,
+  rsActionDown,
+  rsActionUp,
+  rsActionDownOrStop,
+  rsActionUpOrStop,
+  rsActionStepByStep,
+  rsActionShut,
+  rsActionReveal
+};
 
 class channel_address {
  private:
@@ -160,9 +174,9 @@ class supla_channel_thermostat_measurement {
 
 class supla_device_channel {
  private:
+  supla_device *Device;
   int Id;
   unsigned char Number;
-  int UserID;
   int Type;
   int Func;
   int Param1;
@@ -183,10 +197,11 @@ class supla_device_channel {
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int Param1, int Param2, int Param3, int Param4);
+  void updateTimerState(TSuplaChannelExtendedValue *ev);
 
  public:
-  supla_device_channel(int Id, int Number, int UserID, int Type, int Func,
-                       int Param1, int Param2, int Param3, int Param4,
+  supla_device_channel(supla_device *Device, int Id, int Number, int Type,
+                       int Func, int Param1, int Param2, int Param3, int Param4,
                        const char *TextParam1, const char *TextParam2,
                        const char *TextParam3, bool Hidden, unsigned int Flags,
                        const char value[SUPLA_CHANNELVALUE_SIZE],
@@ -200,6 +215,8 @@ class supla_device_channel {
   int getId(void);
   int getNumber(void);
   int getUserID(void);
+  supla_user *getUser();
+  supla_device *getDevice();
   int getFunc(void);
   void setFunc(int Func);
   int getType(void);
@@ -235,7 +252,8 @@ class supla_device_channel {
   bool getValveValue(TValve_Value *Value);
   void getConfig(TSD_ChannelConfig *config, unsigned char configType,
                  unsigned _supla_int_t flags);
-  void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId);
+  void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId,
+                              unsigned int disablesLocalOperation);
 
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
@@ -243,6 +261,7 @@ class supla_device_channel {
   supla_channel_electricity_measurement *getElectricityMeasurement(void);
   supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
   supla_channel_thermostat_measurement *getThermostatMeasurement(void);
+  channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
   void action_trigger(int actions);
 };
@@ -262,9 +281,16 @@ class supla_device_channels {
 
   supla_device_channel *find_channel(int Id);
   supla_device_channel *find_channel_by_number(int Number);
+  void access_channel(int channel_id,
+                      std::function<void(supla_device_channel *)> on_channel);
 
   std::list<int> mr_channel(int ChannelID, bool Master);
 
+  void async_set_channel_value(supla_device_channel *channel, int SenderID,
+                               int GroupID, unsigned char EOL,
+                               const char value[SUPLA_CHANNELVALUE_SIZE],
+                               unsigned int durationMS,
+                               bool cancelTasks = true);
   void async_set_channel_value(supla_device_channel *channel, int SenderID,
                                int GroupID, unsigned char EOL,
                                const char value[SUPLA_CHANNELVALUE_SIZE],
@@ -275,9 +301,8 @@ class supla_device_channels {
                                      bool cancelTasks = true);
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on, bool toggle);
-  bool action_shut_reveal(int SenderID, int ChannelID, int GroupID,
-                          unsigned char EOL, bool shut,
-                          const char *closingPercentage, bool stop);
+  bool rs_action(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                 rsAction action, const char *closingPercentage);
   bool action_open_close(int SenderID, int ChannelID, int GroupID,
                          unsigned char EOL, bool unknown, bool open,
                          bool cancelTasks = true);
@@ -285,16 +310,17 @@ class supla_device_channels {
  public:
   explicit supla_device_channels(supla_device *device);
   virtual ~supla_device_channels();
-  void add_channel(int Id, int Number, int UserID, int Type, int Func,
-                   int Param1, int Param2, int Param3, int Param4,
-                   const char *TextParam1, const char *TextParam2,
-                   const char *TextParam3, bool Hidden, unsigned int Flags,
+  void add_channel(int Id, int Number, int Type, int Func, int Param1,
+                   int Param2, int Param3, int Param4, const char *TextParam1,
+                   const char *TextParam2, const char *TextParam3, bool Hidden,
+                   unsigned int Flags,
                    const char value[SUPLA_CHANNELVALUE_SIZE],
                    unsigned _supla_int_t validity_time_sec,
                    const char *user_config, const char *properties);
   bool get_channel_value(int ChannelID, char value[SUPLA_CHANNELVALUE_SIZE],
                          char *online, unsigned _supla_int_t *validity_time_sec,
                          bool for_client);
+  supla_channel_value *get_channel_value(int ChannelID);
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_extendedvalue(int ChannelID,
@@ -370,6 +396,7 @@ class supla_device_channels {
 
   bool set_on(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
               bool on);
+  bool is_on(int ChannelID);
   bool set_rgbw(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
                 unsigned int *color, char *color_brightness, char *brightness,
                 char *on_off);
@@ -388,6 +415,14 @@ class supla_device_channels {
                    const char *closingPercentage);
   bool action_reveal(int SenderID, int ChannelID, int GroupID,
                      unsigned char EOL);
+  bool action_up(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_down(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
+  bool action_up_or_stop(int SenderID, int ChannelID, int GroupID,
+                         unsigned char EOL);
+  bool action_down_or_stop(int SenderID, int ChannelID, int GroupID,
+                           unsigned char EOL);
+  bool action_step_by_step(int SenderID, int ChannelID, int GroupID,
+                           unsigned char EOL);
   bool action_stop(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
   bool action_open(int SenderID, int ChannelID, int GroupID, unsigned char EOL);
   bool action_close(int SenderID, int ChannelID, int GroupID,
@@ -401,6 +436,9 @@ class supla_device_channels {
   bool reset_counters(int ChannelID);
   bool recalibrate(int ChannelID, _supla_int_t SenderID,
                    bool SuperUserAuthorized);
+  void timer_arm(int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+                 unsigned char On, unsigned int DurationMS);
+  channel_json_config *get_json_config(int ChannelID);
 };
 
 #endif /* DEVICECHANNEL_H_ */

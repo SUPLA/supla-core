@@ -4,16 +4,13 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.cpp \
-../src/test/doubles/integration/asynctask/GateStateGetterMock.cpp 
-
-OBJS += \
-./src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.o \
-./src/test/doubles/integration/asynctask/GateStateGetterMock.o 
+../src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.cpp 
 
 CPP_DEPS += \
-./src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.d \
-./src/test/doubles/integration/asynctask/GateStateGetterMock.d 
+./src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.d 
+
+OBJS += \
+./src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -24,4 +21,11 @@ src/test/doubles/integration/asynctask/%.o: ../src/test/doubles/integration/asyn
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src-2f-test-2f-doubles-2f-integration-2f-asynctask
+
+clean-src-2f-test-2f-doubles-2f-integration-2f-asynctask:
+	-$(RM) ./src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.d ./src/test/doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.o
+
+.PHONY: clean-src-2f-test-2f-doubles-2f-integration-2f-asynctask
 

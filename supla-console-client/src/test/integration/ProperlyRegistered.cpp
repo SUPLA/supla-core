@@ -30,7 +30,7 @@ void ProperlyRegistered::SetUp() {
   iterateUntilDefaultTimeout();
 }
 
-void ProperlyRegistered::onRegistered(TSC_SuplaRegisterClientResult_B *result) {
+void ProperlyRegistered::onRegistered(TSC_SuplaRegisterClientResult_C *result) {
   IntegrationTest::onRegistered(result);
   cancelIteration();
 }
