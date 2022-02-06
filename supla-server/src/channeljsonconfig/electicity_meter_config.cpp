@@ -272,3 +272,11 @@ void electricity_meter_config::add_initial_values(
     }
   }
 }
+
+void electricity_meter_config::add_initial_value(
+    TElectricityMeter_Value *value) {
+  if (value) {
+    value->total_forward_active_energy +=
+        get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY) / 1000;
+  }
+}

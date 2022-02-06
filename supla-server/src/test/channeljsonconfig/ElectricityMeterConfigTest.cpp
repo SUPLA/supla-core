@@ -648,4 +648,27 @@ TEST_F(ElectricityMeterConfigTest, overValue) {
 
   delete config;
 }
+
+TEST_F(ElectricityMeterConfigTest, channelValue) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":100.123,"
+      "\"reverseActiveEnergy\":201.167,\"forwardReactiveEnergy\":1200.0001,"
+      "\"reverseReactiveEnergy\":30001.1234,\"forwardActiveEnergyBalanced\":0."
+      "00002,"
+      "\"reverseActiveEnergyBalanced\":123.678}}");
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  TElectricityMeter_Value value = {};
+  value.total_forward_active_energy = 5;
+
+  config->add_initial_value(&value);
+  EXPECT_EQ(value.total_forward_active_energy, (unsigned)10017);
+
+  delete config;
+}
+
 } /* namespace testing */
