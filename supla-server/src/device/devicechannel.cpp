@@ -937,6 +937,11 @@ bool supla_device_channel::setValue(
   } else if (Type == SUPLA_CHANNELTYPE_DIGIGLASS) {
     TDigiglass_Value *dgf_val = (TDigiglass_Value *)this->value;
     dgf_val->sectionCount = Param1;
+  } else if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
+    electricity_meter_config *config =
+        new electricity_meter_config(json_config);
+    config->add_initial_value((TElectricityMeter_Value *)this->value);
+    delete config;
   } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     impulse_counter_config *config = new impulse_counter_config(json_config);
     config->add_initial_value((TDS_ImpulseCounter_Value *)this->value);
