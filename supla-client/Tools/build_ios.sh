@@ -16,7 +16,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-SDK_VERSION="8.2"
+SDK_VERSION="9.0"
 BUILD_CFG="Release"
 IOS_OPENSSL_LIB_INC="/Users/przemek/CProjects/openssl/OpenSSL-for-iPhone/include"
 
