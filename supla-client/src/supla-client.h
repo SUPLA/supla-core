@@ -254,6 +254,10 @@ int supla_client_get_time_diff(void *_suplaclient);
 char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
                             unsigned int durationMS);
 
+_supla_int_t srpc_evtool_value_get(TSuplaChannelExtendedValue *ev,
+                                   unsigned short index,
+                                   TSuplaChannelExtendedValue *dest);
+
 #ifdef __cplusplus
 }
 #endif
