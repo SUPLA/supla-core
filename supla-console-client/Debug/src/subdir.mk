@@ -3,39 +3,46 @@
 ################################################################################
 
 # Add inputs and outputs from these tool invocations to the build variables 
+CPP_SRCS += \
+../src/supla-console-client.cpp 
+
 C_SRCS += \
 ../src/client_loop.c \
 ../src/clientcfg.c 
 
-CPP_SRCS += \
-../src/supla-console-client.cpp 
+CPP_DEPS += \
+./src/supla-console-client.d 
+
+C_DEPS += \
+./src/client_loop.d \
+./src/clientcfg.d 
 
 OBJS += \
 ./src/client_loop.o \
 ./src/clientcfg.o \
 ./src/supla-console-client.o 
 
-C_DEPS += \
-./src/client_loop.d \
-./src/clientcfg.d 
-
-CPP_DEPS += \
-./src/supla-console-client.d 
-
 
 # Each subdirectory must supply rules for building sources it contributes
-src/%.o: ../src/%.c
+src/%.o: ../src/%.c src/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross GCC Compiler'
-	gcc -D__DEBUG=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -I$(SSLDIR)/include -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -D__DEBUG=1 -DUSE_DEPRECATED_EMEV_V1=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -I$(SSLDIR)/include -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-src/%.o: ../src/%.cpp
+src/%.o: ../src/%.cpp src/subdir.mk
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -I$(SSLDIR)/include -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	g++ -D__DEBUG=1 -DUSE_DEPRECATED_EMEV_V1=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -I$(SSLDIR)/include -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
+
+clean: clean-src
+
+clean-src:
+	-$(RM) ./src/client_loop.d ./src/client_loop.o ./src/clientcfg.d ./src/clientcfg.o ./src/supla-console-client.d ./src/supla-console-client.o
+
+.PHONY: clean-src
 
