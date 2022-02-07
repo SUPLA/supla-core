@@ -364,7 +364,14 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
         TSC_SuplaChannelExtendedValue second_cev = {};
         if (device->get_channels()->get_channel_extendedvalue(
                 ChannelId, &second_cev, client->getProtocolVersion() < 12)) {
-          srpc_evtool_value_add(&cev->value, &second_cev.value);
+          if (client->getProtocolVersion() >= 17) {
+            srpc_evtool_value_add(&cev->value, &second_cev.value);
+          } else {
+            // For backward compatibility, overwrite cev->value
+            memcpy(&cev->value, &second_cev.value,
+                   sizeof(TSuplaChannelExtendedValue));
+          }
+
           cev_exists = true;
         }
         device->releasePtr();
