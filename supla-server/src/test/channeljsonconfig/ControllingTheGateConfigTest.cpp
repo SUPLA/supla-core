@@ -27,26 +27,52 @@ namespace testing {
 ControllingTheGateConfigTest::ControllingTheGateConfigTest(void) {}
 ControllingTheGateConfigTest::~ControllingTheGateConfigTest(void) {}
 
-TEST_F(ControllingTheGateConfigTest, getNumberOfAttempts) {
+TEST_F(ControllingTheGateConfigTest, getNumberOfAttemptsToClose) {
   controlling_the_gate_config *config = new controlling_the_gate_config();
   ASSERT_TRUE(config != NULL);
 
-  EXPECT_EQ(config->get_number_of_attempts(), 5);
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 5);
 
-  config->set_user_config("{\"numberOfAttemptsToOpenOrClose\":-1}");
-  EXPECT_EQ(config->get_number_of_attempts(), 5);
+  config->set_user_config("{\"numberOfAttemptsToClose\":-1}");
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 5);
 
-  config->set_user_config("{\"numberOfAttemptsToOpenOrClose\":6}");
-  EXPECT_EQ(config->get_number_of_attempts(), 5);
+  config->set_user_config("{\"numberOfAttemptsToClose\":6}");
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 5);
 
-  config->set_user_config("{\"numberOfAttemptsToOpenOrClose\":1}");
-  EXPECT_EQ(config->get_number_of_attempts(), 1);
+  config->set_user_config("{\"numberOfAttemptsToClose\":1}");
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 1);
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 5);
 
-  config->set_user_config("{\"numberOfAttemptsToOpenOrClose\":4}");
-  EXPECT_EQ(config->get_number_of_attempts(), 4);
+  config->set_user_config("{\"numberOfAttemptsToClose\":4}");
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 4);
 
-  config->set_user_config("{\"numberOfAttemptsToOpenOrClose\":5}");
-  EXPECT_EQ(config->get_number_of_attempts(), 5);
+  config->set_user_config("{\"numberOfAttemptsToClose\":5}");
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 5);
+
+  delete config;
+}
+
+TEST_F(ControllingTheGateConfigTest, getNumberOfAttemptsToOpen) {
+  controlling_the_gate_config *config = new controlling_the_gate_config();
+  ASSERT_TRUE(config != NULL);
+
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 5);
+
+  config->set_user_config("{\"numberOfAttemptsToOpen\":-1}");
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 5);
+
+  config->set_user_config("{\"numberOfAttemptsToOpen\":6}");
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 5);
+
+  config->set_user_config("{\"numberOfAttemptsToOpen\":1}");
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 1);
+  EXPECT_EQ(config->get_number_of_attempts_to_close(), 5);
+
+  config->set_user_config("{\"numberOfAttemptsToOpen\":4}");
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 4);
+
+  config->set_user_config("{\"numberOfAttemptsToOpen\":5}");
+  EXPECT_EQ(config->get_number_of_attempts_to_open(), 5);
 
   delete config;
 }

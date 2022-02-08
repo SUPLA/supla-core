@@ -27,13 +27,16 @@
 
 class controlling_the_gate_config : public channel_json_config {
  private:
-  static const char number_of_attempts_key[];
+  static const char number_of_attempts_to_open_key[];
+  static const char number_of_attempts_to_close_key[];
+  int get_number_of_attempts(const char *key);
 
  protected:
  public:
   explicit controlling_the_gate_config(channel_json_config *root);
   controlling_the_gate_config(void);
-  int get_number_of_attempts(void);
+  int get_number_of_attempts_to_open(void);
+  int get_number_of_attempts_to_close(void);
 };
 
 #endif /* CONTROLLINGTHEGATECONFIG_H_ */

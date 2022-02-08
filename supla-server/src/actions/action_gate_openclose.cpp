@@ -85,7 +85,9 @@ void supla_action_gate_openclose::action_init(
       new controlling_the_gate_config(json_config);
 
   if (json_gconfig) {
-    this->attempt_count_left = json_gconfig->get_number_of_attempts();
+    this->attempt_count_left =
+        open ? json_gconfig->get_number_of_attempts_to_open()
+             : json_gconfig->get_number_of_attempts_to_close();
     delete json_gconfig;
     json_gconfig = NULL;
   }
