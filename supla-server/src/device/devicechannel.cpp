@@ -624,6 +624,22 @@ bool supla_device_channel::getHidden(void) { return Hidden; }
 
 unsigned int supla_device_channel::getFlags() { return Flags; }
 
+void supla_device_channel::addFlags(unsigned int flags) {
+  if ((this->Flags | flags) != this->Flags) {
+    this->Flags = flags;
+
+    database *db = new database();
+
+    if (db) {
+      if (db->connect() == true) {
+        db->update_channel_flags(getId(), getUserID(), Flags);
+      }
+      delete db;
+      db = NULL;
+    }
+  }
+}
+
 const char *supla_device_channel::getTextParam1(void) { return TextParam1; }
 
 const char *supla_device_channel::getTextParam2(void) { return TextParam2; }
@@ -2073,6 +2089,7 @@ void supla_device_channels::update_channels(
     char *value = NULL;
     unsigned char number = 0;
     unsigned int actionTriggerCaps = 0;
+    unsigned int flags = 0;
     TActionTriggerProperties atProps = {};
 
     if (schannel_b != NULL) {
@@ -2085,6 +2102,7 @@ void supla_device_channels::update_channels(
       number = schannel_c[a].Number;
       actionTriggerCaps = schannel_c[a].ActionTriggerCaps;
       atProps = schannel_c[a].actionTriggerProperties;
+      flags = schannel_c[a].Flags;
     }
 
     int channelId = get_channel_id(number);
@@ -2095,6 +2113,8 @@ void supla_device_channels::update_channels(
 
     if (channel) {
       set_channel_value(channelId, value, NULL, 0, NULL);
+
+      channel->addFlags(flags);
 
       if (type == SUPLA_CHANNELTYPE_ACTIONTRIGGER) {
         int actionTriggerRelatedChannelId = 0;

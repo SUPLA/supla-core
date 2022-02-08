@@ -583,10 +583,10 @@ int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
 int database::update_device(int DeviceID, int OriginalLocationID,
                             const char *AuthKey, const char *Name,
                             unsigned int ipv4, const char *softver,
-                            int proto_version) {
+                            int proto_version, int flags) {
   char *AuthKeyHashHEX = NULL;
 
-  MYSQL_BIND pbind[7];
+  MYSQL_BIND pbind[8];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_STRING;
@@ -627,9 +627,12 @@ int database::update_device(int DeviceID, int OriginalLocationID,
   pbind[6].buffer_type = MYSQL_TYPE_LONG;
   pbind[6].buffer = (char *)&DeviceID;
 
+  pbind[7].buffer_type = MYSQL_TYPE_LONG;
+  pbind[7].buffer = (char *)&flags;
+
   const char sql[] =
       "CALL "
-      "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?)";
+      "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?,?)";
 
   MYSQL_STMT *stmt = NULL;
   if (!stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
@@ -2906,6 +2909,28 @@ void database::update_channel_params(int channel_id, int user_id, int param1,
   const char sql[] = "CALL `supla_update_channel_params`(?, ?, ?, ?, ?, ?)";
 
   if (stmt_execute((void **)&stmt, sql, pbind, 6, true)) {
+    if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
+  }
+}
+
+void database::update_channel_flags(int channel_id, int user_id,
+                                    unsigned int flags) {
+  MYSQL_STMT *stmt = NULL;
+  MYSQL_BIND pbind[6];
+  memset(pbind, 0, sizeof(pbind));
+
+  pbind[0].buffer_type = MYSQL_TYPE_LONG;
+  pbind[0].buffer = (char *)&channel_id;
+
+  pbind[1].buffer_type = MYSQL_TYPE_LONG;
+  pbind[1].buffer = (char *)&user_id;
+
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&flags;
+
+  const char sql[] = "CALL `supla_update_channel_flags`(?, ?, ?)";
+
+  if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     if (stmt != NULL) mysql_stmt_close((MYSQL_STMT *)stmt);
   }
 }

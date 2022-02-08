@@ -229,6 +229,7 @@ class supla_device_channel {
   const char *getTextParam3(void);
   bool getHidden(void);
   unsigned int getFlags();
+  void addFlags(unsigned int flags);
   bool isOffline(void);
   bool setOffline(bool Offline);
   bool isValueWritable(void);
