@@ -338,7 +338,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               DeviceID = db->update_device(
                   DeviceID, _OriginalLocationID, AuthKey, Name,
-                  getSvrConn()->getClientIpv4(), SoftVer, proto_version);
+                  getSvrConn()->getClientIpv4(), SoftVer, proto_version, flags);
             }
 
             if (DeviceID != 0) {
