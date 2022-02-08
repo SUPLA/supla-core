@@ -23,8 +23,12 @@
 #define NOA_DEFAULT 5
 
 // static
-const char controlling_the_gate_config::number_of_attempts_key[] =
-    "numberOfAttemptsToOpenOrClose";
+const char controlling_the_gate_config::number_of_attempts_to_open_key[] =
+    "numberOfAttemptsToOpen";
+
+// static
+const char controlling_the_gate_config::number_of_attempts_to_close_key[] =
+    "numberOfAttemptsToClose";
 
 controlling_the_gate_config::controlling_the_gate_config(void)
     : channel_json_config() {}
@@ -33,13 +37,13 @@ controlling_the_gate_config::controlling_the_gate_config(
     channel_json_config *root)
     : channel_json_config(root) {}
 
-int controlling_the_gate_config::get_number_of_attempts(void) {
+int controlling_the_gate_config::get_number_of_attempts(const char *key) {
   cJSON *root = get_user_root();
   if (!root) {
     return NOA_DEFAULT;
   }
 
-  cJSON *value = cJSON_GetObjectItem(root, number_of_attempts_key);
+  cJSON *value = cJSON_GetObjectItem(root, key);
   if (value && cJSON_IsNumber(value)) {
     if (value->valueint >= NOA_MIN && value->valueint <= NOA_MAX) {
       return value->valueint;
@@ -47,4 +51,12 @@ int controlling_the_gate_config::get_number_of_attempts(void) {
   }
 
   return NOA_DEFAULT;
+}
+
+int controlling_the_gate_config::get_number_of_attempts_to_open(void) {
+  return get_number_of_attempts(number_of_attempts_to_open_key);
+}
+
+int controlling_the_gate_config::get_number_of_attempts_to_close(void) {
+  return get_number_of_attempts(number_of_attempts_to_close_key);
 }
