@@ -74,7 +74,7 @@ unsigned int impulse_counter_config::get_impulses_per_unit(void) {
   return get_double_value(impulses_per_unit_key, IMPULSES_PER_UNIT_MAX);
 }
 
-void impulse_counter_config::apply_initial_value(
+void impulse_counter_config::add_initial_value(
     TDS_ImpulseCounter_Value *value) {
   if (!value) {
     return;

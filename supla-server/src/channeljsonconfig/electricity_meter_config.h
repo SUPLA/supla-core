@@ -52,12 +52,12 @@ class electricity_meter_config : public channel_json_config {
   bool update_available_counters(int measured_values);
   bool update_available_counters(TSuplaChannelExtendedValue *ev);
   unsigned _supla_int64_t get_initial_value(int var);
-  void apply_initial_value(int var, unsigned char phase, int flags,
+  void add_initial_value(int var, unsigned char phase, int flags,
                            unsigned _supla_int64_t *value);
-  void apply_initial_values(int flags,
+  void add_initial_values(int flags,
                             TElectricityMeter_ExtendedValue_V2 *em_ev);
-  void apply_initial_values(int flags, TSuplaChannelExtendedValue *ev);
-  void apply_initial_value(TElectricityMeter_Value *value);
+  void add_initial_values(int flags, TSuplaChannelExtendedValue *ev);
+  void add_initial_value(TElectricityMeter_Value *value);
 };
 
 #endif /* ELECTRICITYMETERCONFIG_H_ */

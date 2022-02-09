@@ -168,7 +168,7 @@ unsigned _supla_int64_t electricity_meter_config::get_initial_value(int var) {
   return 0;
 }
 
-void electricity_meter_config::apply_initial_value(
+void electricity_meter_config::add_initial_value(
     int var, unsigned char phase, int flags, unsigned _supla_int64_t *value) {
   if (phase > 3) {
     return;
@@ -218,34 +218,34 @@ void electricity_meter_config::apply_initial_value(
   *value += addition > left ? left : addition;
 }
 
-void electricity_meter_config::apply_initial_values(
+void electricity_meter_config::add_initial_values(
     int flags, TElectricityMeter_ExtendedValue_V2 *em_ev) {
   if (!em_ev) {
     return;
   }
 
   for (unsigned char phase = 1; phase <= 3; phase++) {
-    apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, phase, flags,
+    add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, phase, flags,
                       &em_ev->total_forward_active_energy[phase - 1]);
 
-    apply_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY, phase, flags,
+    add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY, phase, flags,
                       &em_ev->total_reverse_active_energy[phase - 1]);
 
-    apply_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY, phase, flags,
+    add_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY, phase, flags,
                       &em_ev->total_forward_reactive_energy[phase - 1]);
 
-    apply_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY, phase, flags,
+    add_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY, phase, flags,
                       &em_ev->total_reverse_reactive_energy[phase - 1]);
   }
 
-  apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0,
+  add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED, 0, 0,
                     &em_ev->total_forward_active_energy_balanced);
 
-  apply_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, 0,
+  add_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED, 0, 0,
                     &em_ev->total_reverse_active_energy_balanced);
 }
 
-void electricity_meter_config::apply_initial_values(
+void electricity_meter_config::add_initial_values(
     int flags, TSuplaChannelExtendedValue *ev) {
   if (ev == NULL) {
     return;
@@ -255,13 +255,13 @@ void electricity_meter_config::apply_initial_values(
     TElectricityMeter_ExtendedValue_V2 em_ev = {};
 
     if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
-      apply_initial_values(flags, &em_ev);
+      add_initial_values(flags, &em_ev);
       srpc_evtool_v2_emextended2extended(&em_ev, ev);
     }
   }
 }
 
-void electricity_meter_config::apply_initial_value(
+void electricity_meter_config::add_initial_value(
     TElectricityMeter_Value *value) {
   if (value) {
     value->total_forward_active_energy +=
