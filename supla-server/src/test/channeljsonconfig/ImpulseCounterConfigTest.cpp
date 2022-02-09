@@ -167,4 +167,21 @@ TEST_F(ImpulseCounterConfigTest, overValue) {
   delete config;
 }
 
+TEST_F(ImpulseCounterConfigTest, addToHitorryFlagTest) {
+  impulse_counter_config *config = new impulse_counter_config();
+  ASSERT_TRUE(config != NULL);
+
+  ASSERT_FALSE(config->should_be_added_to_history());
+
+  config->set_user_config("{\"addToHistory\":false}");
+
+  ASSERT_FALSE(config->should_be_added_to_history());
+
+  config->set_user_config("{\"addToHistory\":true}");
+
+  ASSERT_TRUE(config->should_be_added_to_history());
+
+  delete config;
+}
+
 } /* namespace testing */
