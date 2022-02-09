@@ -338,8 +338,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     supla_device *device = client->getUser()->get_device(DeviceId);
 
     if (device) {
-      cev_exists = device->get_channels()->get_channel_extendedvalue(
-          ChannelId, cev, client->getProtocolVersion() < 12);
+      cev_exists =
+          device->get_channels()->get_channel_extendedvalue(ChannelId, cev);
       device->releasePtr();
     }
 
@@ -362,8 +362,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
       if (device) {
         TSC_SuplaChannelExtendedValue second_cev = {};
-        if (device->get_channels()->get_channel_extendedvalue(
-                ChannelId, &second_cev, client->getProtocolVersion() < 12)) {
+        if (device->get_channels()->get_channel_extendedvalue(ChannelId,
+                                                              &second_cev)) {
           if (client->getProtocolVersion() >= 17) {
             srpc_evtool_value_add(&cev->value, &second_cev.value);
           } else {
