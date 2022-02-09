@@ -33,6 +33,7 @@ D | double
 #include <android/log.h>
 #include <jni.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "proto.h"
 #include "srpc.h"
