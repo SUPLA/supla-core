@@ -923,7 +923,7 @@ bool supla_device_channel::setValue(
   } else if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER) {
     electricity_meter_config *config =
         new electricity_meter_config(json_config);
-    config->apply_initial_value((TElectricityMeter_Value *)this->value);
+    config->add_initial_value((TElectricityMeter_Value *)this->value);
     delete config;
   } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     impulse_counter_config *config = new impulse_counter_config(json_config);
@@ -932,7 +932,7 @@ bool supla_device_channel::setValue(
       memcpy(logger_data->value, this->value, SUPLA_CHANNELVALUE_SIZE);
     }
 
-    config->apply_initial_value((TDS_ImpulseCounter_Value *)this->value);
+    config->add_initial_value((TDS_ImpulseCounter_Value *)this->value);
 
     if (logger_data && config->should_be_added_to_history()) {
       memcpy(logger_data->value, this->value, SUPLA_CHANNELVALUE_SIZE);
@@ -1080,7 +1080,7 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
            sizeof(TSuplaChannelExtendedValue));
   }
 
-  config->apply_initial_values(Flags, extendedValue);
+  config->add_initial_values(Flags, extendedValue);
 
   if (logger_data && logger_data->extendedValue &&
       config->should_be_added_to_history()) {
