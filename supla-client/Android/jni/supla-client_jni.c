@@ -907,29 +907,19 @@ void supla_android_client_channelextendedvalue_set_object(
   TChannelState_ExtendedValue *channel_state = NULL;
   TTimerState_ExtendedValue *timer_state = NULL;
 
-  if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1 ||
-      channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+  if (channel_extendedvalue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
     TElectricityMeter_ExtendedValue_V2 em_ev;
 
-    if (channel_extendedvalue->type ==
-        EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V1) {
-      TElectricityMeter_ExtendedValue em_ev_v1;
-      if (srpc_evtool_v1_extended2emextended(channel_extendedvalue,
-                                             &em_ev_v1) == 0 ||
-          srpc_evtool_emev_v1to2(&em_ev_v1, &em_ev) == 0) {
-      }
-    } else if (channel_extendedvalue->type ==
-                   EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2 &&
-               srpc_evtool_v2_extended2emextended(channel_extendedvalue,
-                                                  &em_ev) == 0) {
+    if (srpc_evtool_v2_extended2emextended(channel_extendedvalue, &em_ev) ==
+        1) {
+      fid = supla_client_GetFieldID(
+          env, cls, "ElectricityMeterValue",
+          "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
+      jobject chv =
+          supla_android_client_channelelectricitymetervalue_to_jobject(asc, env,
+                                                                       &em_ev);
+      (*env)->SetObjectField(env, obj, fid, chv);
     }
-    fid = supla_client_GetFieldID(
-        env, cls, "ElectricityMeterValue",
-        "Lorg/supla/android/lib/SuplaChannelElectricityMeterValue;");
-    jobject chv = supla_android_client_channelelectricitymetervalue_to_jobject(
-        asc, env, &em_ev);
-    (*env)->SetObjectField(env, obj, fid, chv);
-
   } else if (channel_extendedvalue->type ==
              EV_TYPE_IMPULSE_COUNTER_DETAILS_V1) {
     TSC_ImpulseCounter_ExtendedValue ic_ev;
