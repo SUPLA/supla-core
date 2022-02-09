@@ -22,6 +22,11 @@
 #include <functional>
 #include <list>
 
+#include "channel_address.h"
+#include "channel_electricity_measurement.h"
+#include "channel_ic_measurement.h"
+#include "channel_temphum.h"
+#include "channel_thermostat_measurement.h"
 #include "channel_value.h"
 #include "commontypes.h"
 #include "proto.h"
@@ -39,131 +44,6 @@ enum rsAction {
   rsActionStepByStep,
   rsActionShut,
   rsActionReveal
-};
-
-class channel_address {
- private:
-  int DeviceId;
-  int ChannelId;
-
- public:
-  channel_address(int DeviceId, int ChannelId);
-  int getDeviceId(void);
-  int getChannelId(void);
-};
-
-class supla_channel_temphum {
- private:
-  int ChannelId;
-  bool TempAndHumidity;
-  double Temperature;
-  double Humidity;
-
- public:
-  supla_channel_temphum(bool TempAndHumidity, int ChannelId, double Temperature,
-                        double Humidity);
-  supla_channel_temphum(bool TempAndHumidity, int ChannelId,
-                        const char value[SUPLA_CHANNELVALUE_SIZE]);
-  supla_channel_temphum(int ChannelId, int Func,
-                        const char value[SUPLA_CHANNELVALUE_SIZE]);
-
-  int getChannelId(void);
-  bool isTempAndHumidity(void);
-  double getTemperature(void);
-  double getHumidity(void);
-  void setTemperature(double Temperature);
-  void setHumidity(double Humidity);
-  void toValue(char value[SUPLA_CHANNELVALUE_SIZE]);
-  void assignValue(const char value[SUPLA_CHANNELVALUE_SIZE],
-                   bool TempAndHumidity);
-
-  static void free(void *tarr);
-};
-
-class supla_channel_electricity_measurement {
- private:
-  TElectricityMeter_ExtendedValue_V2 em_ev;
-  int ChannelId;
-  void assign(int Param2, const char *TextParam1,
-              TElectricityMeter_ExtendedValue_V2 *em_ev);
-
-  static void set_costs(int Param2, const char *TextParam1,
-                        TElectricityMeter_ExtendedValue_V2 *em_ev);
-
- public:
-  supla_channel_electricity_measurement(
-      int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
-      const char *TextParam1);
-
-  int getChannelId(void);
-  void getMeasurement(TElectricityMeter_ExtendedValue_V2 *em_ev);
-  void getCurrency(char currency[4]);
-
-  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
-                         const char *TextParam1);
-  static void free(void *emarr);
-};
-
-class supla_channel_ic_measurement {
- private:
-  int ChannelId;
-
-  _supla_int_t totalCost;
-  _supla_int_t pricePerUnit;
-  char currency[4];
-  char customUnit[9];
-  _supla_int_t impulsesPerUnit;
-  unsigned _supla_int64_t counter;
-  _supla_int64_t calculatedValue;
-
- public:
-  supla_channel_ic_measurement(int ChannelId, int Func,
-                               TDS_ImpulseCounter_Value *ic_val,
-                               const char *TextParam1, const char *TextParam2,
-                               int Param2, int Param3);
-
-  int getChannelId(void);
-  _supla_int_t getTotalCost(void);
-  _supla_int_t getPricePerUnit(void);
-  const char *getCurrency(void);
-  const char *getCustomUnit(void);
-  _supla_int_t getImpulsesPerUnit(void);
-  unsigned _supla_int64_t getCounter(void);
-  unsigned _supla_int64_t getCalculatedValue(void);
-
-  static void set_default_unit(int Func, char unit[9]);
-  static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Func,
-                         int Param2, int Param3, const char *TextParam1,
-                         const char *TextParam2);
-
-  static double get_calculated_d(_supla_int_t impulses_per_unit,
-                                 unsigned _supla_int64_t counter);
-  static _supla_int64_t get_calculated_i(_supla_int_t impulses_per_unit,
-                                         unsigned _supla_int64_t counter);
-  static void get_cost_and_currency(const char *TextParam1, int Param2,
-                                    char currency[3], _supla_int_t *total_cost,
-                                    _supla_int_t *price_per_unit, double count);
-  static void free(void *icarr);
-};
-
-class supla_channel_thermostat_measurement {
- private:
-  int ChannelId;
-  bool on;
-  double MeasuredTemperature;
-  double PresetTemperature;
-
- public:
-  supla_channel_thermostat_measurement(int ChannelId, bool on,
-                                       double MeasuredTemperature,
-                                       double PresetTemperature);
-
-  int getChannelId(void);
-  double getMeasuredTemperature(void);
-  double getPresetTemperature(void);
-  bool getOn(void);
-
-  static void free(void *icarr);
 };
 
 typedef struct {
