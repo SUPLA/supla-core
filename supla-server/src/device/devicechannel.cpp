@@ -468,6 +468,7 @@ supla_device_channel::supla_device_channel(
   this->value_valid_to.tv_sec = 0;
   this->value_valid_to.tv_usec = 0;
   this->json_config = NULL;
+  this->logger_data = NULL;
 
   if (validity_time_sec > 0) {
     gettimeofday(&value_valid_to, NULL);
@@ -491,6 +492,11 @@ supla_device_channel::supla_device_channel(
       }
       break;
   }
+
+  if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER ||
+      SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
+    logger_data = new _logger_purpose_t();
+  }
 }
 
 supla_device_channel::~supla_device_channel() {
@@ -513,6 +519,15 @@ supla_device_channel::~supla_device_channel() {
 
   if (json_config) {
     delete json_config;
+  }
+
+  if (logger_data) {
+    if (Type == SUPLA_CHANNELTYPE_ELECTRICITY_METER &&
+        logger_data->extendedValue) {
+      delete logger_data->extendedValue;
+    }
+    delete logger_data;
+    logger_data = NULL;
   }
 }
 
@@ -912,7 +927,17 @@ bool supla_device_channel::setValue(
     delete config;
   } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     impulse_counter_config *config = new impulse_counter_config(json_config);
-    config->apply_initial_value((TDS_ImpulseCounter_Value *)this->value, false);
+
+    if (logger_data && !config->should_be_added_to_history()) {
+      memcpy(logger_data->value, this->value, SUPLA_CHANNELVALUE_SIZE);
+    }
+
+    config->apply_initial_value((TDS_ImpulseCounter_Value *)this->value);
+
+    if (logger_data && config->should_be_added_to_history()) {
+      memcpy(logger_data->value, this->value, SUPLA_CHANNELVALUE_SIZE);
+    }
+
     delete config;
   } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
@@ -1045,7 +1070,24 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
     db_set_properties(config);
   }
 
+  if (logger_data && !logger_data->extendedValue) {
+    logger_data->extendedValue = new TSuplaChannelExtendedValue();
+  }
+
+  if (logger_data && logger_data->extendedValue &&
+      !config->should_be_added_to_history()) {
+    memcpy(logger_data->extendedValue, extendedValue,
+           sizeof(TSuplaChannelExtendedValue));
+  }
+
   config->apply_initial_values(Flags, extendedValue);
+
+  if (logger_data && logger_data->extendedValue &&
+      config->should_be_added_to_history()) {
+    memcpy(logger_data->extendedValue, extendedValue,
+           sizeof(TSuplaChannelExtendedValue));
+  }
+
   delete config;
 }
 
@@ -1291,14 +1333,17 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
 }
 
 supla_channel_electricity_measurement *
-supla_device_channel::getElectricityMeasurement(
-    bool for_data_logger_purposesd) {
-  if (getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
-      extendedValue != NULL) {
-    if (extendedValue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
+supla_device_channel::getElectricityMeasurement(bool for_data_logger_purposes) {
+  if (getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+    TSuplaChannelExtendedValue *ev =
+        for_data_logger_purposes
+            ? (logger_data ? logger_data->extendedValue : NULL)
+            : extendedValue;
+
+    if (ev && ev->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
       TElectricityMeter_ExtendedValue_V2 em_ev;
 
-      if (srpc_evtool_v2_extended2emextended(extendedValue, &em_ev) == 1) {
+      if (srpc_evtool_v2_extended2emextended(ev, &em_ev) == 1) {
         return new supla_channel_electricity_measurement(getId(), &em_ev,
                                                          Param2, TextParam1);
       }
@@ -1310,25 +1355,29 @@ supla_device_channel::getElectricityMeasurement(
 
 supla_channel_ic_measurement *
 supla_device_channel::getImpulseCounterMeasurement(
-    bool for_data_logger_purposesd) {
+    bool for_data_logger_purposes) {
   switch (getFunc()) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
     case SUPLA_CHANNELFNC_IC_GAS_METER:
     case SUPLA_CHANNELFNC_IC_HEAT_METER: {
+      TDS_ImpulseCounter_Value *ic_val = NULL;
       char value[SUPLA_CHANNELVALUE_SIZE];
-      getValue(value);
 
-      TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
-
-      impulse_counter_config *config = new impulse_counter_config(json_config);
-      if (!config->should_be_added_to_history()) {
-        config->apply_initial_value(ic_val, true);
+      if (for_data_logger_purposes) {
+        ic_val =
+            logger_data ? (TDS_ImpulseCounter_Value *)logger_data->value : NULL;
+      } else {
+        getValue(value);
+        ic_val = (TDS_ImpulseCounter_Value *)value;
       }
-      delete config;
 
-      return new supla_channel_ic_measurement(getId(), Func, ic_val, TextParam1,
-                                              TextParam2, Param2, Param3);
+      if (ic_val) {
+        return new supla_channel_ic_measurement(
+            getId(), Func, ic_val, TextParam1, TextParam2, Param2, Param3);
+      }
+
+      break;
     }
   }
   return NULL;
