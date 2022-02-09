@@ -168,10 +168,10 @@ class supla_channel_thermostat_measurement {
 
 typedef struct {
   union {
-    char *raw_value;
-    TSuplaChannelExtendedValue *raw_extendedValue;
+    char value[SUPLA_CHANNELVALUE_SIZE];
+    TSuplaChannelExtendedValue *extendedValue;
   };
-} _logger_purpose_value_t;
+} _logger_purpose_t;
 
 class supla_device_channel {
  private:
@@ -197,6 +197,8 @@ class supla_device_channel {
   TSuplaChannelExtendedValue *extendedValue;
 
   channel_json_config *json_config;
+
+  _logger_purpose_t *logger_data;
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int Param1, int Param2, int Param3, int Param4);
