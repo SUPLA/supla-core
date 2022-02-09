@@ -88,25 +88,19 @@ class supla_channel_electricity_measurement {
               TElectricityMeter_ExtendedValue_V2 *em_ev);
 
   static void set_costs(int Param2, const char *TextParam1,
-                        TElectricityMeter_ExtendedValue *em_ev);
-  static void set_costs(int Param2, const char *TextParam1,
                         TElectricityMeter_ExtendedValue_V2 *em_ev);
 
  public:
-  supla_channel_electricity_measurement(int ChannelId,
-                                        TElectricityMeter_ExtendedValue *em_ev,
-                                        int Param2, const char *TextParam1);
   supla_channel_electricity_measurement(
       int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,
       const char *TextParam1);
 
   int getChannelId(void);
-  void getMeasurement(TElectricityMeter_ExtendedValue *em_ev);
   void getMeasurement(TElectricityMeter_ExtendedValue_V2 *em_ev);
   void getCurrency(char currency[4]);
 
   static bool update_cev(TSC_SuplaChannelExtendedValue *cev, int Param2,
-                         const char *TextParam1, bool convert_to_v1);
+                         const char *TextParam1);
   static void free(void *emarr);
 };
 
@@ -197,7 +191,8 @@ class supla_device_channel {
 
   void db_set_properties(channel_json_config *config);
   void db_set_params(int Param1, int Param2, int Param3, int Param4);
-  void updateTimerState(TSuplaChannelExtendedValue *ev);
+  void updateTimerState(void);
+  void updateExtendedElectricityMeterValue(void);
 
  public:
   supla_device_channel(supla_device *Device, int Id, int Number, int Type,
@@ -325,8 +320,7 @@ class supla_device_channels {
   bool get_channel_extendedvalue(int ChannelID,
                                  TSuplaChannelExtendedValue *value);
   bool get_channel_extendedvalue(int ChannelID,
-                                 TSC_SuplaChannelExtendedValue *cev,
-                                 bool convert_to_v1);
+                                 TSC_SuplaChannelExtendedValue *cev);
   bool get_channel_double_value(int ChannelID, double *Value);
   supla_channel_temphum *get_channel_temp_and_humidity_value(int ChannelID);
   bool get_channel_temperature_value(int ChannelID, double *Value);
