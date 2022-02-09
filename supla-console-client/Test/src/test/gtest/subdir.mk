@@ -14,18 +14,11 @@ OBJS += \
 
 
 # Each subdirectory must supply rules for building sources it contributes
-src/test/gtest/%.o: ../src/test/gtest/%.cc src/test/gtest/subdir.mk
+src/test/gtest/%.o: ../src/test/gtest/%.cc
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -D__DEBUG=1 -DUSE_DEPRECATED_EMEV_V1=1 -D__OPENSSL_TOOLS=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -I$(SSLDIR)/include -I../src/supla-client-lib -I../src/test -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$@" -o "$@" "$<"
+	g++ -D__DEBUG=1 -D__OPENSSL_TOOLS=1 -D__SSOCKET_WRITE_TO_FILE=$(SSOCKET_WRITE_TO_FILE) -I$(SSLDIR)/include -I../src/supla-client-lib -I../src/test -O0 -g3 -Wall -fsigned-char  -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
-
-clean: clean-src-2f-test-2f-gtest
-
-clean-src-2f-test-2f-gtest:
-	-$(RM) ./src/test/gtest/gtest-all.d ./src/test/gtest/gtest-all.o
-
-.PHONY: clean-src-2f-test-2f-gtest
 
