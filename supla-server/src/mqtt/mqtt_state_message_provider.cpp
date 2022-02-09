@@ -19,6 +19,7 @@
 #include <mqtt_state_message_provider.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "user.h"
 
 supla_mqtt_state_message_provider::supla_mqtt_state_message_provider(void)
@@ -50,20 +51,25 @@ channel_complex_value *supla_mqtt_state_message_provider::_get_complex_value(
 }
 supla_channel_electricity_measurement *
 supla_mqtt_state_message_provider::_get_electricity_measurement(void) {
-  supla_user *user = supla_user::find(get_user_id(), false);
-  if (user != NULL) {
-    return user->get_electricity_measurement(get_device_id(), get_channel_id());
-  }
+  supla_channel_electricity_measurement *result = NULL;
+  supla_user::access_device(
+      get_user_id(), get_device_id(), get_channel_id(),
+      [this, &result](supla_device *device) -> void {
+        result = device->get_channels()->get_electricity_measurement(
+            get_channel_id());
+      });
 
-  return NULL;
+  return result;
 }
 
 supla_channel_ic_measurement *
 supla_mqtt_state_message_provider::_get_impulse_counter_measurement(void) {
-  supla_user *user = supla_user::find(get_user_id(), false);
-  if (user != NULL) {
-    return user->get_ic_measurement(get_device_id(), get_channel_id());
-  }
+  supla_channel_ic_measurement *result = NULL;
+  supla_user::access_device(
+      get_user_id(), get_device_id(), get_channel_id(),
+      [this, &result](supla_device *device) -> void {
+        result = device->get_channels()->get_ic_measurement(get_channel_id());
+      });
 
-  return NULL;
+  return result;
 }

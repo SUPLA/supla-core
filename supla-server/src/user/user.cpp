@@ -619,34 +619,6 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
 }
 
 // static
-supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
-    int UserID, int DeviceID, int ChannelID) {
-  supla_channel_electricity_measurement *result = NULL;
-
-  supla_user *user = supla_user::find(UserID, false);
-
-  if (user) {
-    result = user->get_electricity_measurement(DeviceID, ChannelID);
-  }
-
-  return result;
-}
-
-// static
-supla_channel_ic_measurement *supla_user::supla_user::get_ic_measurement(
-    int UserID, int DeviceID, int ChannelID) {
-  supla_channel_ic_measurement *result = NULL;
-
-  supla_user *user = supla_user::find(UserID, false);
-
-  if (user) {
-    result = user->get_ic_measurement(DeviceID, ChannelID);
-  }
-
-  return result;
-}
-
-// static
 bool supla_user::get_channel_valve_value(int UserID, int DeviceID,
                                          int ChannelID, TValve_Value *Value) {
   bool result = false;
@@ -1053,19 +1025,6 @@ void supla_user::get_electricity_measurements(void *emarr) {
   }
 }
 
-supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
-    int DeviceID, int ChannelID) {
-  supla_channel_electricity_measurement *result = NULL;
-
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device != NULL) {
-    result = device->get_channels()->get_electricity_measurement(ChannelID);
-    device->releasePtr();
-  }
-
-  return result;
-}
-
 void supla_user::get_ic_measurements(void *icarr) {
   int a;
   supla_device *device;
@@ -1076,19 +1035,6 @@ void supla_user::get_ic_measurements(void *icarr) {
       device->releasePtr();
     }
   }
-}
-
-supla_channel_ic_measurement *supla_user::get_ic_measurement(int DeviceID,
-                                                             int ChannelID) {
-  supla_channel_ic_measurement *result = NULL;
-
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device != NULL) {
-    result = device->get_channels()->get_ic_measurement(ChannelID);
-    device->releasePtr();
-  }
-
-  return result;
 }
 
 void supla_user::get_thermostat_measurements(void *tharr) {

@@ -22,6 +22,8 @@
 
 #include <list>
 
+#include "device/device.h"
+#include "device/devicechannel.h"
 #include "http/httprequestactiontriggerextraparams.h"
 #include "lck.h"
 #include "sthread.h"
@@ -195,8 +197,14 @@ supla_state_webhook_client *supla_state_webhook_request::getClient(void) {
 void supla_state_webhook_request::electricityMeterChannelType(
     channel_complex_value *value) {
   if (value->function == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
-    supla_channel_electricity_measurement *em =
-        getUser()->get_electricity_measurement(getDeviceId(), getChannelId());
+    supla_channel_electricity_measurement *em = NULL;
+
+    getUser()->access_device(
+        getDeviceId(), getChannelId(),
+        [this, &em](supla_device *device) -> void {
+          em = device->get_channels()->get_electricity_measurement(
+              getChannelId());
+        });
 
     getClient()->sendElectricityMeasurementReport(getChannelId(), em,
                                                   value->online);
@@ -209,8 +217,13 @@ void supla_state_webhook_request::electricityMeterChannelType(
 
 void supla_state_webhook_request::impulseCounterChannelType(
     channel_complex_value *value) {
-  supla_channel_ic_measurement *icm =
-      getUser()->get_ic_measurement(getDeviceId(), getChannelId());
+  supla_channel_ic_measurement *icm = NULL;
+
+  getUser()->access_device(
+      getDeviceId(), getChannelId(),
+      [this, &icm](supla_device *device) -> void {
+        icm = device->get_channels()->get_ic_measurement(getChannelId());
+      });
 
   switch (value->function) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
