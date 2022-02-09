@@ -635,7 +635,7 @@ int database::update_device(int DeviceID, int OriginalLocationID,
       "`supla_update_iodevice`(?,?,?,?,?,unhex(?),?,?)";
 
   MYSQL_STMT *stmt = NULL;
-  if (!stmt_execute((void **)&stmt, sql, pbind, 7, true)) {
+  if (!stmt_execute((void **)&stmt, sql, pbind, 8, true)) {
     DeviceID = 0;
   }
 
