@@ -77,7 +77,6 @@ TEST_F(ElectricityMeterConfigTest, setAllAvailableCounters) {
   delete config;
 }
 
-
 TEST_F(ElectricityMeterConfigTest, emEvSetAvailableCounters) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
@@ -216,40 +215,40 @@ TEST_F(ElectricityMeterConfigTest, onePhase) {
 
   unsigned _supla_int64_t v = 10;
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                            SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
-                                SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
-                            &v);
+                              SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                                  SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
+                              &v);
 
   EXPECT_EQ(v, (unsigned)77800010);
 
   v = 1234;
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                            &v);
+                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                              &v);
 
   EXPECT_EQ(v, (unsigned)1234);
 
   v = 1234;
 
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                            &v);
+                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                              &v);
 
   EXPECT_EQ(v, (unsigned)1234);
 
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2,
-                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                            &v);
+                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                              &v);
 
   EXPECT_EQ(v, (unsigned)1234);
 
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 3,
-                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                            &v);
+                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                              &v);
 
   EXPECT_EQ(v, (unsigned)77801234);
 
@@ -268,19 +267,19 @@ TEST_F(ElectricityMeterConfigTest, twoPhases) {
 
   unsigned _supla_int64_t v = 0;
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
+                              SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
 
   EXPECT_EQ(v, (unsigned)27750167);
 
   v = 0;
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2,
-                            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
+                              SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
 
   EXPECT_EQ(v, (unsigned)27750166);
 
   v = 1122;
   config->apply_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2,
-                            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
+                              SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
 
   EXPECT_EQ(v, (unsigned)27751288);
 
@@ -514,7 +513,6 @@ TEST_F(ElectricityMeterConfigTest, channelExtendedValue_EV) {
   delete config;
 }
 
-
 TEST_F(ElectricityMeterConfigTest, overValue) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
@@ -557,6 +555,23 @@ TEST_F(ElectricityMeterConfigTest, channelValue) {
 
   config->apply_initial_value(&value);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned)10017);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, addToHitorryFlagTest) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  ASSERT_FALSE(config->should_be_added_to_history());
+
+  config->set_user_config("{\"addToHistory\":false}");
+
+  ASSERT_FALSE(config->should_be_added_to_history());
+
+  config->set_user_config("{\"addToHistory\":true}");
+
+  ASSERT_TRUE(config->should_be_added_to_history());
 
   delete config;
 }
