@@ -447,6 +447,21 @@ void supla_user::access_device(
   }
 }
 
+void supla_user::for_each_device(
+    std::function<bool(supla_device *device)> on_device) {
+  for (int a = 0; a < device_container->count(); a++) {
+    supla_device *device = NULL;
+
+    if (NULL != (device = device_container->get(a))) {
+      bool _continue = on_device(device);
+      device->releasePtr();
+      if (!_continue) {
+        break;
+      }
+    }
+  }
+}
+
 // static
 void supla_user::access_device(
     int UserID, int DeviceId, int ChannelId,
@@ -991,62 +1006,6 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
       client->call_event(event);
       client->releasePtr();
     }
-}
-
-void supla_user::get_temp_and_humidity(void *tarr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_temp_and_humidity(tarr);
-      device->releasePtr();
-    }
-  }
-
-  database *db = new database();
-
-  if (db->connect() == true) {
-    db->load_temperatures_and_humidity(getUserID(), tarr);
-  }
-
-  delete db;
-}
-
-void supla_user::get_electricity_measurements(void *emarr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_electricity_measurements(emarr);
-      device->releasePtr();
-    }
-  }
-}
-
-void supla_user::get_ic_measurements(void *icarr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_ic_measurements(icarr);
-      device->releasePtr();
-    }
-  }
-}
-
-void supla_user::get_thermostat_measurements(void *tharr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_thermostat_measurements(tharr);
-      device->releasePtr();
-    }
-  }
 }
 
 bool supla_user::device_calcfg_request(int SenderID, int DeviceId,

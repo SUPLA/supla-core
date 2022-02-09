@@ -165,6 +165,8 @@ class supla_user {
       int UserID, int DeviceId, int ChannelId,  // DeviceId or ChannelId
       std::function<void(supla_device *device)> on_device);
 
+  void for_each_device(std::function<bool(supla_device *device)> on_device);
+
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
                                      double *Value);
@@ -198,10 +200,6 @@ class supla_user {
   void on_channel_become_online(int DeviceId, int ChannelId);
 
   void call_event(TSC_SuplaEvent *event);
-  void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurements(void *emarr);
-  void get_ic_measurements(void *icarr);
-  void get_thermostat_measurements(void *tharr);
 
   bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
                              TCS_DeviceCalCfgRequest_B *request);

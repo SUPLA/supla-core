@@ -912,7 +912,7 @@ bool supla_device_channel::setValue(
     delete config;
   } else if (Type == SUPLA_CHANNELTYPE_IMPULSE_COUNTER) {
     impulse_counter_config *config = new impulse_counter_config(json_config);
-    config->apply_initial_value((TDS_ImpulseCounter_Value *)this->value);
+    config->apply_initial_value((TDS_ImpulseCounter_Value *)this->value, false);
     delete config;
   } else if (Type == SUPLA_CHANNELTYPE_SENSORNC) {
     this->value[0] = this->value[0] == 0 ? 1 : 0;
@@ -1291,7 +1291,8 @@ supla_channel_temphum *supla_device_channel::getTempHum(void) {
 }
 
 supla_channel_electricity_measurement *
-supla_device_channel::getElectricityMeasurement(void) {
+supla_device_channel::getElectricityMeasurement(
+    bool for_data_logger_purposesd) {
   if (getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
       extendedValue != NULL) {
     if (extendedValue->type == EV_TYPE_ELECTRICITY_METER_MEASUREMENT_V2) {
@@ -1308,7 +1309,8 @@ supla_device_channel::getElectricityMeasurement(void) {
 }
 
 supla_channel_ic_measurement *
-supla_device_channel::getImpulseCounterMeasurement(void) {
+supla_device_channel::getImpulseCounterMeasurement(
+    bool for_data_logger_purposesd) {
   switch (getFunc()) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
     case SUPLA_CHANNELFNC_IC_WATER_METER:
@@ -1318,6 +1320,12 @@ supla_device_channel::getImpulseCounterMeasurement(void) {
       getValue(value);
 
       TDS_ImpulseCounter_Value *ic_val = (TDS_ImpulseCounter_Value *)value;
+
+      impulse_counter_config *config = new impulse_counter_config(json_config);
+      if (!config->should_be_added_to_history()) {
+        config->apply_initial_value(ic_val, true);
+      }
+      delete config;
 
       return new supla_channel_ic_measurement(getId(), Func, ic_val, TextParam1,
                                               TextParam2, Param2, Param3);
@@ -2327,7 +2335,8 @@ bool supla_device_channels::get_channel_rgbw_value(int ChannelID, int *color,
   return result;
 }
 
-void supla_device_channels::get_electricity_measurements(void *emarr) {
+void supla_device_channels::get_electricity_measurements(
+    void *emarr, bool for_data_logger_purposes) {
   int a;
   safe_array_lock(arr);
 
@@ -2337,7 +2346,7 @@ void supla_device_channels::get_electricity_measurements(void *emarr) {
 
     if (channel != NULL && !channel->isOffline()) {
       supla_channel_electricity_measurement *em =
-          channel->getElectricityMeasurement();
+          channel->getElectricityMeasurement(for_data_logger_purposes);
       if (em) {
         safe_array_add(emarr, em);
       }
@@ -2356,7 +2365,7 @@ supla_device_channels::get_electricity_measurement(int ChannelID) {
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel != NULL) {
-    result = channel->getElectricityMeasurement();
+    result = channel->getElectricityMeasurement(false);
   }
 
   safe_array_unlock(arr);
@@ -2364,7 +2373,8 @@ supla_device_channels::get_electricity_measurement(int ChannelID) {
   return result;
 }
 
-void supla_device_channels::get_ic_measurements(void *icarr) {
+void supla_device_channels::get_ic_measurements(void *icarr,
+                                                bool for_data_logger_purposes) {
   int a;
   safe_array_lock(arr);
 
@@ -2374,7 +2384,7 @@ void supla_device_channels::get_ic_measurements(void *icarr) {
 
     if (channel != NULL && !channel->isOffline()) {
       supla_channel_ic_measurement *ic =
-          channel->getImpulseCounterMeasurement();
+          channel->getImpulseCounterMeasurement(for_data_logger_purposes);
       if (ic) {
         safe_array_add(icarr, ic);
       }
@@ -2413,7 +2423,7 @@ supla_channel_ic_measurement *supla_device_channels::get_ic_measurement(
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel != NULL) {
-    result = channel->getImpulseCounterMeasurement();
+    result = channel->getImpulseCounterMeasurement(false);
   }
 
   safe_array_unlock(arr);
