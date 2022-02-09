@@ -16,9 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "datalogger.h"
+
 #include <unistd.h>
 
-#include "datalogger.h"
 #include "log.h"
 #include "safearray.h"
 #include "sthread.h"
@@ -41,7 +42,13 @@ void supla_datalogger::log_temperature() {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_temp_and_humidity(tarr);
+
+    user->for_each_device([&tarr](supla_device *device) -> bool {
+      device->get_channels()->get_temp_and_humidity(tarr);
+      return true;
+    });
+
+    db->load_temperatures_and_humidity(user->getUserID(), tarr);
   }
 
   for (a = 0; a < safe_array_count(tarr); a++) {
@@ -69,7 +76,11 @@ void supla_datalogger::log_electricity_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_electricity_measurements(emarr);
+
+    user->for_each_device([&emarr](supla_device *device) -> bool {
+      device->get_channels()->get_electricity_measurements(emarr, true);
+      return true;
+    });
   }
 
   for (a = 0; a < safe_array_count(emarr); a++) {
@@ -91,7 +102,10 @@ void supla_datalogger::log_ic_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_ic_measurements(icarr);
+    user->for_each_device([&icarr](supla_device *device) -> bool {
+      device->get_channels()->get_ic_measurements(icarr, true);
+      return true;
+    });
   }
 
   for (a = 0; a < safe_array_count(icarr); a++) {
@@ -113,7 +127,11 @@ void supla_datalogger::log_thermostat_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->get_thermostat_measurements(tharr);
+
+    user->for_each_device([&tharr](supla_device *device) -> bool {
+      device->get_channels()->get_thermostat_measurements(tharr);
+      return true;
+    });
   }
 
   for (a = 0; a < safe_array_count(tharr); a++) {

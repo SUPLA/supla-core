@@ -166,6 +166,13 @@ class supla_channel_thermostat_measurement {
   static void free(void *icarr);
 };
 
+typedef struct {
+  union {
+    char *raw_value;
+    TSuplaChannelExtendedValue *raw_extendedValue;
+  };
+} _logger_purpose_value_t;
+
 class supla_device_channel {
  private:
   supla_device *Device;
@@ -185,8 +192,10 @@ class supla_device_channel {
   unsigned int Flags;
 
   char value[SUPLA_CHANNELVALUE_SIZE];
+
   struct timeval value_valid_to;  // during offline
   TSuplaChannelExtendedValue *extendedValue;
+
   channel_json_config *json_config;
 
   void db_set_properties(channel_json_config *config);
@@ -254,8 +263,10 @@ class supla_device_channel {
   std::list<int> master_channel(void);
   std::list<int> related_channel(void);
   supla_channel_temphum *getTempHum(void);
-  supla_channel_electricity_measurement *getElectricityMeasurement(void);
-  supla_channel_ic_measurement *getImpulseCounterMeasurement(void);
+  supla_channel_electricity_measurement *getElectricityMeasurement(
+      bool for_data_logger_purposes);
+  supla_channel_ic_measurement *getImpulseCounterMeasurement(
+      bool for_data_logger_purposes);
   supla_channel_thermostat_measurement *getThermostatMeasurement(void);
   channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
@@ -371,10 +382,10 @@ class supla_device_channels {
   void load(int UserID, int DeviceID);
 
   void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurements(void *emarr);
+  void get_electricity_measurements(void *emarr, bool for_data_logger_purposes);
   supla_channel_electricity_measurement *get_electricity_measurement(
       int ChannelID);
-  void get_ic_measurements(void *icarr);
+  void get_ic_measurements(void *icarr, bool for_data_logger_purposes);
   supla_channel_ic_measurement *get_ic_measurement(int ChannelID);
   void get_thermostat_measurements(void *tharr);
 
