@@ -20,26 +20,32 @@
 #include <string.h>
 #include <webhook/webhookbasicclient.h>
 #include <webhook/webhookbasiccredentials.h>
+
 #include "http/trivialhttps.h"
 #include "json/cJSON.h"
 #include "lck.h"
 #include "user/user.h"
 
 supla_webhook_basic_client::supla_webhook_basic_client(
-    supla_webhook_basic_credentials *credentials) {
+    supla_webhook_basic_credentials *credentials, bool secure) {
   this->lck = lck_init();
   this->httpConnection = NULL;
   this->httpConnectionFactory = NULL;
   this->credentials = credentials;
+  this->secure = secure;
 }
 
 void supla_webhook_basic_client::httpConnectionInit(void) {
   httpConnectionFree();
   lck_lock(lck);
   if (httpConnectionFactory) {
-    httpConnection = httpConnectionFactory->createConnection();
+    httpConnection = httpConnectionFactory->createConnection(secure);
   } else {
-    httpConnection = new supla_trivial_https();
+    if (secure) {
+      httpConnection = new supla_trivial_https();
+    } else {
+      httpConnection = new supla_trivial_http();
+    }
   }
 
   lck_unlock(lck);
