@@ -17,27 +17,30 @@
  */
 
 #include "StateWebhookCredentialsTest.h"
+
 #include "webhook/statewebhookcredentials.h"
 
 namespace testing {
 
 StateWebhookCredentialsTest::StateWebhookCredentialsTest() {}
 
-TEST_F(StateWebhookCredentialsTest, urlProtocolVerification) {
+TEST_F(StateWebhookCredentialsTest, urlSchemeVerification) {
   supla_state_webhook_credentials *c =
       new supla_state_webhook_credentials(NULL);
   c->set(NULL, NULL, 0, NULL, NULL);
-  ASSERT_FALSE(c->isUrlProtocolAccepted());
+  EXPECT_EQ(c->getScheme(), schemeNotAccepted);
   c->set(NULL, NULL, 0, "http://", NULL);
-  ASSERT_FALSE(c->isUrlProtocolAccepted());
+  EXPECT_EQ(c->getScheme(), schemeHttp);
+  c->set(NULL, NULL, 0, "hTtP://", NULL);
+  EXPECT_EQ(c->getScheme(), schemeHttp);
   c->set(NULL, NULL, 0, "https:/", NULL);
-  ASSERT_FALSE(c->isUrlProtocolAccepted());
+  EXPECT_EQ(c->getScheme(), schemeNotAccepted);
   c->set(NULL, NULL, 0, "https://", NULL);
-  ASSERT_TRUE(c->isUrlProtocolAccepted());
+  EXPECT_EQ(c->getScheme(), schemeHttps);
   c->set(NULL, NULL, 0, "HTTPS://", NULL);
-  ASSERT_TRUE(c->isUrlProtocolAccepted());
+  EXPECT_EQ(c->getScheme(), schemeHttps);
   c->set(NULL, NULL, 0, "HttPS://", NULL);
-  ASSERT_TRUE(c->isUrlProtocolAccepted());
+  EXPECT_EQ(c->getScheme(), schemeHttps);
   delete c;
 }
 
@@ -45,14 +48,27 @@ TEST_F(StateWebhookCredentialsTest, urlValidation) {
   supla_state_webhook_credentials *c =
       new supla_state_webhook_credentials(NULL);
   c->set(NULL, NULL, 0, NULL, NULL);
-  ASSERT_FALSE(c->isUrlValid());
+  EXPECT_FALSE(c->isUrlValid());
   c->set(NULL, NULL, 0, "http://", NULL);
-  ASSERT_FALSE(c->isUrlValid());
+  EXPECT_FALSE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "https://", NULL);
+  EXPECT_FALSE(c->isUrlValid());
   c->set(NULL, NULL, 0, "https://abc", NULL);
-  ASSERT_FALSE(c->isUrlValid());
+  EXPECT_TRUE(c->isUrlValid());
   c->set(NULL, NULL, 0, "https://b.pl", NULL);
-  ASSERT_TRUE(c->isUrlValid());
-
+  EXPECT_TRUE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "http://b.pl", NULL);
+  EXPECT_TRUE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "http://b.pl:5000", NULL);
+  EXPECT_TRUE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "http://b.pl:800/abcd.php", NULL);
+  EXPECT_TRUE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "http://b.pl:80a/abcd.php", NULL);
+  EXPECT_FALSE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "http://b.pl;", NULL);
+  EXPECT_FALSE(c->isUrlValid());
+  c->set(NULL, NULL, 0, "https://supla.fracz.com/api/state-webhook", NULL);
+  EXPECT_TRUE(c->isUrlValid());
   delete c;
 }
 
@@ -61,22 +77,53 @@ TEST_F(StateWebhookCredentialsTest, getHost) {
       new supla_state_webhook_credentials(NULL);
   c->set(NULL, NULL, 0, NULL, NULL);
   char *host = c->getHost();
-  ASSERT_TRUE(host == NULL);
+  EXPECT_TRUE(host == NULL);
   c->set(NULL, NULL, 0, "http://", NULL);
   host = c->getHost();
-  ASSERT_TRUE(host == NULL);
+  EXPECT_TRUE(host == NULL);
+  if (host) {
+    free(host);
+  }
 
   c->set(NULL, NULL, 0, "https://localhost", NULL);
   host = c->getHost();
-  ASSERT_FALSE(host == NULL);
-  ASSERT_EQ(strcmp(host, "localhost"), 0);
-  free(host);
+  EXPECT_FALSE(host == NULL);
+  if (host) {
+    EXPECT_EQ(strcmp(host, "localhost"), 0);
+    free(host);
+  }
+
+  c->set(NULL, NULL, 0, "https://localhost/", NULL);
+  host = c->getHost();
+  EXPECT_FALSE(host == NULL);
+  if (host) {
+    EXPECT_EQ(strcmp(host, "localhost"), 0);
+    free(host);
+  }
+
+  c->set(NULL, NULL, 0, "https://localhost:", NULL);
+  host = c->getHost();
+  EXPECT_FALSE(host == NULL);
+  if (host) {
+    EXPECT_EQ(strcmp(host, "localhost"), 0);
+    free(host);
+  }
+
+  c->set(NULL, NULL, 0, "https://localhost:8080", NULL);
+  host = c->getHost();
+  EXPECT_FALSE(host == NULL);
+  if (host) {
+    EXPECT_EQ(strcmp(host, "localhost"), 0);
+    free(host);
+  }
 
   c->set(NULL, NULL, 0, "https://localhost/xyz.php", NULL);
   host = c->getHost();
-  ASSERT_FALSE(host == NULL);
-  ASSERT_EQ(strcmp(host, "localhost"), 0);
-  free(host);
+  EXPECT_FALSE(host == NULL);
+  if (host) {
+    EXPECT_EQ(strcmp(host, "localhost"), 0);
+    free(host);
+  }
 
   delete c;
 }
@@ -86,28 +133,75 @@ TEST_F(StateWebhookCredentialsTest, getResource) {
       new supla_state_webhook_credentials(NULL);
   c->set(NULL, NULL, 0, NULL, NULL);
   char *resource = c->getResource();
-  ASSERT_TRUE(resource == NULL);
+  EXPECT_TRUE(resource == NULL);
   c->set(NULL, NULL, 0, "http://", NULL);
   resource = c->getResource();
-  ASSERT_TRUE(resource == NULL);
+  EXPECT_TRUE(resource == NULL);
+  if (resource) {
+    free(resource);
+  }
 
   c->set(NULL, NULL, 0, "https://localhost", NULL);
   resource = c->getResource();
-  ASSERT_FALSE(resource == NULL);
-  ASSERT_EQ(strcmp(resource, "/"), 0);
-  free(resource);
+  EXPECT_FALSE(resource == NULL);
+  if (resource) {
+    EXPECT_EQ(strcmp(resource, "/"), 0);
+    free(resource);
+  }
+
+  c->set(NULL, NULL, 0, "https://localhost:8080", NULL);
+  resource = c->getResource();
+  EXPECT_FALSE(resource == NULL);
+  if (resource) {
+    EXPECT_EQ(strcmp(resource, "/"), 0);
+    free(resource);
+  }
+
+  c->set(NULL, NULL, 0, "https://localhost:443/", NULL);
+  resource = c->getResource();
+  EXPECT_FALSE(resource == NULL);
+  if (resource) {
+    EXPECT_EQ(strcmp(resource, "/"), 0);
+    free(resource);
+  }
 
   c->set(NULL, NULL, 0, "https://localhost/xyz.php", NULL);
   resource = c->getResource();
-  ASSERT_FALSE(resource == NULL);
-  ASSERT_EQ(strcmp(resource, "/xyz.php"), 0);
-  free(resource);
+  EXPECT_FALSE(resource == NULL);
+  if (resource) {
+    EXPECT_EQ(strcmp(resource, "/xyz.php"), 0);
+    free(resource);
+  }
 
   c->set(NULL, NULL, 0, "https://localhost/api/xyz.php", NULL);
   resource = c->getResource();
-  ASSERT_FALSE(resource == NULL);
-  ASSERT_EQ(strcmp(resource, "/api/xyz.php"), 0);
-  free(resource);
+  EXPECT_FALSE(resource == NULL);
+  if (resource) {
+    EXPECT_EQ(strcmp(resource, "/api/xyz.php"), 0);
+    free(resource);
+  }
+
+  delete c;
+}
+
+TEST_F(StateWebhookCredentialsTest, getPort) {
+  supla_state_webhook_credentials *c =
+      new supla_state_webhook_credentials(NULL);
+
+  c->set(NULL, NULL, 0, "https://localhost", NULL);
+  EXPECT_EQ(c->getPort(), 443);
+
+  c->set(NULL, NULL, 0, "https://localhost/abcd.xml", NULL);
+  EXPECT_EQ(c->getPort(), 443);
+
+  c->set(NULL, NULL, 0, "https://localhost:", NULL);
+  EXPECT_EQ(c->getPort(), 0);
+
+  c->set(NULL, NULL, 0, "https://localhost:8080", NULL);
+  EXPECT_EQ(c->getPort(), 8080);
+
+  c->set(NULL, NULL, 0, "https://localhost:8081/", NULL);
+  EXPECT_EQ(c->getPort(), 8081);
 
   delete c;
 }
