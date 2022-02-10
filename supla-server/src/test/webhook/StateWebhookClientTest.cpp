@@ -24,14 +24,18 @@
 
 namespace testing {
 
-StateWebhookClientTest::StateWebhookClientTest() {}
+StateWebhookClientTest::StateWebhookClientTest() {
+  user = NULL;
+  client = NULL;
+}
 
 void StateWebhookClientTest::SetUp() {
   user = new supla_user(1001, "dc85740d-cb27-405b-9da3-e8be5c71ae5b", NULL);
 
   user->stateWebhookCredentials()->set("ACCESS-TOKEN", "RERESH-TOKEN", 3600,
                                        "https://localhost", "130,140");
-  client = new supla_state_webhook_client(user->stateWebhookCredentials());
+  client =
+      new supla_state_webhook_client(user->stateWebhookCredentials(), false);
 
   client->setHttpConnectionFactory(new TrivialHttpFactoryMock());
 }

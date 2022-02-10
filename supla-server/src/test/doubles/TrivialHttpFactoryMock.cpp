@@ -22,6 +22,6 @@
 
 TrivialHttpFactoryMock::TrivialHttpFactoryMock() {}
 
-supla_trivial_http* TrivialHttpFactoryMock::createConnection(void) {
+supla_trivial_http* TrivialHttpFactoryMock::createConnection(bool secure) {
   return new TrivialHttpMock();
 }

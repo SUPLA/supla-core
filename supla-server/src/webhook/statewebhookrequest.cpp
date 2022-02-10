@@ -186,7 +186,8 @@ supla_state_webhook_client *supla_state_webhook_request::getClient(void) {
   supla_state_webhook_client *result = NULL;
   lck_lock(lck);
   if (!client) {
-    client = new supla_state_webhook_client(credentials);
+    client = new supla_state_webhook_client(
+        credentials, credentials->getScheme() == schemeHttps);
   }
   result = client;
   lck_unlock(lck);

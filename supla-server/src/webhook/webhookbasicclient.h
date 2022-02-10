@@ -30,6 +30,7 @@ class supla_webhook_basic_client {
   supla_trivial_http *httpConnection;
   supla_trivial_http_factory *httpConnectionFactory;
   supla_webhook_basic_credentials *credentials;
+  bool secure;
 
  protected:
   void httpConnectionFree();
@@ -39,7 +40,7 @@ class supla_webhook_basic_client {
 
  public:
   explicit supla_webhook_basic_client(
-      supla_webhook_basic_credentials *credentials);
+      supla_webhook_basic_credentials *credentials, bool secure);
   virtual ~supla_webhook_basic_client();
   void terminate(void);
   void setHttpConnectionFactory(

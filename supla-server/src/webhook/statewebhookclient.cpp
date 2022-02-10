@@ -24,8 +24,8 @@
 #include "user/user.h"
 
 supla_state_webhook_client::supla_state_webhook_client(
-    supla_webhook_basic_credentials *credentials)
-    : supla_webhook_basic_client(credentials) {}
+    supla_webhook_basic_credentials *credentials, bool secure)
+    : supla_webhook_basic_client(credentials, secure) {}
 
 supla_state_webhook_credentials *
 supla_state_webhook_client::getStateWebhookCredentials(void) {
@@ -53,6 +53,7 @@ bool supla_state_webhook_client::postRequest(const char *data,
   getHttpConnection()->setHost(getStateWebhookCredentials()->getHost(), false);
   getHttpConnection()->setResource(getStateWebhookCredentials()->getResource(),
                                    false);
+  getHttpConnection()->setPort(getStateWebhookCredentials()->getPort());
   getHttpConnection()->setToken(getStateWebhookCredentials()->getAccessToken(),
                                 false);
 
