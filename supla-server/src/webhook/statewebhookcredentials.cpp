@@ -16,11 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "webhook/statewebhookcredentials.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "database.h"
-#include "webhook/statewebhookcredentials.h"
+#include "log.h"
 
 supla_state_webhook_credentials::supla_state_webhook_credentials(
     supla_user *user)
@@ -153,43 +155,66 @@ std::list<int> supla_state_webhook_credentials::getFunctionsIds(void) {
 
 void supla_state_webhook_credentials::on_credentials_changed() { load(); }
 
-bool supla_state_webhook_credentials::isUrlProtocolAccepted(void) {
-  bool result = false;
+urlScheme supla_state_webhook_credentials::getScheme(void) {
+  urlScheme result = schemeNotAccepted;
+
   data_lock();
   if (url) {
     int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
-    if (len >= 8) {
-      result = (url[0] == 'h' || url[0] == 'H') &&
-               (url[1] == 't' || url[1] == 'T') &&
-               (url[2] == 't' || url[2] == 'T') &&
-               (url[3] == 'p' || url[3] == 'P') &&
-               (url[4] == 's' || url[4] == 'S') && url[5] == ':' &&
-               url[6] == '/' && url[7] == '/';
+    if (len >= 7) {
+      if ((url[0] == 'h' || url[0] == 'H') &&
+          (url[1] == 't' || url[1] == 'T') &&
+          (url[2] == 't' || url[2] == 'T') &&
+          (url[3] == 'p' || url[3] == 'P')) {
+        int offset = 4;
+
+        if (url[4] == 's' || url[4] == 'S') {
+          offset = 5;
+        }
+
+        if (offset + 2 < len && url[offset] == ':' && url[offset + 1] == '/' &&
+            url[offset + 2] == '/') {
+          result = offset == 4 ? schemeHttp : schemeHttps;
+        }
+      }
     }
   }
   data_unlock();
   return result;
 }
 
-bool supla_state_webhook_credentials::isUrlValid(void) {
-  return isUrlProtocolAccepted() && strnlen(url, WEBHOOK_URL_MAXSIZE) > 11;
-}
-
 char *supla_state_webhook_credentials::getHost(void) {
-  if (!isUrlValid()) {
+  urlScheme scheme = getScheme();
+
+  if (scheme == schemeNotAccepted) {
     return NULL;
   }
 
   data_lock();
   char *result = NULL;
 
+  int scheme_offset = scheme == schemeHttps ? 8 : 7;
+
   int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
-  for (int a = 8; a < len; a++) {
-    if (url[a] == '/' || a == len - 1) {
-      len = a == len - 1 ? a - 6 : a - 7;
-      result = (char *)malloc(len);
-      memcpy(result, &url[8], len - 1);
-      result[len - 1] = 0;
+  int dest_len = 0;
+  for (int a = scheme_offset; a < len; a++) {
+    char c = url[a];
+
+    if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+          (c >= '0' && c <= '9') || c == '.' || c == '/' || c == ':')) {
+      break;
+    }
+
+    if (c == '/' || c == ':') {
+      dest_len = a - scheme_offset;
+    } else if (a == len - 1) {
+      dest_len = a - scheme_offset + 1;
+    }
+
+    if (dest_len) {
+      result = (char *)malloc(dest_len + 1);
+      memcpy(result, &url[scheme_offset], dest_len);
+      result[dest_len] = 0;
       break;
     }
   }
@@ -199,7 +224,9 @@ char *supla_state_webhook_credentials::getHost(void) {
 }
 
 char *supla_state_webhook_credentials::getResource(void) {
-  if (!isUrlValid()) {
+  urlScheme scheme = getScheme();
+
+  if (scheme == schemeNotAccepted) {
     return NULL;
   }
 
@@ -207,8 +234,10 @@ char *supla_state_webhook_credentials::getResource(void) {
   char *result = NULL;
   int slash_pos = 0;
 
+  int scheme_offset = scheme == schemeHttps ? 8 : 7;
+
   int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
-  for (int a = 8; a < len; a++) {
+  for (int a = scheme_offset; a < len; a++) {
     if (slash_pos == 0 && url[a] == '/') {
       slash_pos = a;
     }
@@ -224,6 +253,69 @@ char *supla_state_webhook_credentials::getResource(void) {
     }
   }
   data_unlock();
+
+  return result;
+}
+
+int supla_state_webhook_credentials::getPort(void) {
+  int result = 0;
+
+  urlScheme scheme = getScheme();
+
+  if (scheme == schemeNotAccepted) {
+    return 0;
+  }
+
+  data_lock();
+  bool colon = false;
+  int scheme_offset = 0;
+
+  if (scheme == schemeHttps) {
+    scheme_offset = 8;
+    result = 443;
+  } else {
+    scheme_offset = 7;
+    result = 80;
+  }
+
+  int len = strnlen(url, WEBHOOK_URL_MAXSIZE);
+  char c = 0;
+  for (int a = scheme_offset; a < len; a++) {
+    c = url[a];
+
+    if (colon) {
+      if (!((c >= '0' && c <= '9') || c == '/')) {
+        result = 0;
+        break;
+      }
+
+      if (c != '/') {
+        result = result * 10 + c - '0';
+      }
+    }
+
+    if (!colon && c == ':') {
+      result = 0;
+      colon = true;
+    }
+
+    if (a == len - 1 || c == '/') {
+      break;
+    }
+  }
+  data_unlock();
+
+  return result;
+}
+
+bool supla_state_webhook_credentials::isUrlValid(void) {
+  // This validation checks only a few cases.
+  bool result = false;
+  char *host = getHost();
+  if (host) {
+    result = strnlen(host, WEBHOOK_URL_MAXSIZE) > 0 && getPort() != 0;
+    free(host);
+  }
 
   return result;
 }
