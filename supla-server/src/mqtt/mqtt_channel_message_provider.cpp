@@ -1205,7 +1205,7 @@ bool supla_mqtt_channel_message_provider::ha_electricity_meter(
           index, phase, "%", 3, "state/phases/%i/power_factor",
           "Power factor - Phase %i",
           "{% if float(value, default=none) == None %}None{% else "
-          "%}float(value) * 100.0 | round(5){% endif %}",
+          "%}{{float(value) * 100.0 | round(5)}}{% endif %}",
           "power_factor", false, topic_prefix, topic_name, message,
           message_size);
 
