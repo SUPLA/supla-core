@@ -1238,8 +1238,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "meter (Power factor - Phase "
       "1)\",\"uniq_id\":\"supla_966_16\",\"qos\":0,\"unit_of_meas\":\"%\","
       "\"stat_t\":\"~/state/phases/1/power_factor\",\"val_tpl\":\"{% if "
-      "float(value, default=none) == None %}None{% else %}float(value) * 100.0 "
-      "| round(5){% endif "
+      "float(value, default=none) == None %}None{% else %}{{float(value) * "
+      "100.0 "
+      "| round(5)}}{% endif "
       "%}\",\"dev_cla\":\"power_factor\",\"state_class\":\"measurement\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_17/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
@@ -1393,8 +1394,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "meter (Power factor - Phase "
       "2)\",\"uniq_id\":\"supla_966_28\",\"qos\":0,\"unit_of_meas\":\"%\","
       "\"stat_t\":\"~/state/phases/2/power_factor\",\"val_tpl\":\"{% if "
-      "float(value, default=none) == None %}None{% else %}float(value) * 100.0 "
-      "| round(5){% endif "
+      "float(value, default=none) == None %}None{% else %}{{float(value) * "
+      "100.0 "
+      "| round(5)}}{% endif "
       "%}\",\"dev_cla\":\"power_factor\",\"state_class\":\"measurement\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_29/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
@@ -1548,8 +1550,9 @@ TEST_F(MqttPublisherIntegrationTest, fullScope) {
       "meter (Power factor - Phase "
       "3)\",\"uniq_id\":\"supla_966_40\",\"qos\":0,\"unit_of_meas\":\"%\","
       "\"stat_t\":\"~/state/phases/3/power_factor\",\"val_tpl\":\"{% if "
-      "float(value, default=none) == None %}None{% else %}float(value) * 100.0 "
-      "| round(5){% endif "
+      "float(value, default=none) == None %}None{% else %}{{float(value) * "
+      "100.0 "
+      "| round(5)}}{% endif "
       "%}\",\"dev_cla\":\"power_factor\",\"state_class\":\"measurement\"}",
       "homeassistant/sensor/0df527b1786040fe57d6d9f43b632fbb/966_41/config",
       "{\"avty\":{\"topic\":\"supla/0df527b1786040fe57d6d9f43b632fbb/devices/"
