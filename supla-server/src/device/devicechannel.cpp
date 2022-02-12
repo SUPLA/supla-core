@@ -67,6 +67,8 @@ supla_device_channel::supla_device_channel(
   this->value_valid_to.tv_usec = 0;
   this->json_config = NULL;
   this->logger_data = NULL;
+  this->tmp_ev_time1 = {};
+  this->tmp_ev_time2 = {};
 
   if (validity_time_sec > 0) {
     gettimeofday(&value_valid_to, NULL);
@@ -651,6 +653,8 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
     return;
   }
 
+  gettimeofday(&tmp_ev_time1, NULL);
+
   TElectricityMeter_ExtendedValue em_ev_v1 = {};
   if (srpc_evtool_v1_extended2emextended(extendedValue, &em_ev_v1)) {
     TElectricityMeter_ExtendedValue_V2 em_ev_v2 = {};
@@ -676,6 +680,7 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
       !config->should_be_added_to_history()) {
     memcpy(logger_data->extendedValue, extendedValue,
            sizeof(TSuplaChannelExtendedValue));
+    gettimeofday(&tmp_ev_time2, NULL);
   }
 
   config->add_initial_values(Flags, extendedValue);
@@ -684,6 +689,7 @@ void supla_device_channel::updateExtendedElectricityMeterValue(void) {
       config->should_be_added_to_history()) {
     memcpy(logger_data->extendedValue, extendedValue,
            sizeof(TSuplaChannelExtendedValue));
+    gettimeofday(&tmp_ev_time2, NULL);
   }
 
   delete config;
@@ -1987,15 +1993,46 @@ void supla_device_channels::get_electricity_measurements(
   int a;
   safe_array_lock(arr);
 
+  // TODO(anyone): Remove
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  // ---
+
   for (a = 0; a < safe_array_count(arr); a++) {
     supla_device_channel *channel =
         (supla_device_channel *)safe_array_get(arr, a);
+
+    // TODO(anyone): Remove
+    if (channel->getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
+      if (channel->isOffline()) {
+        supla_log(LOG_WARNING, "Electricity Meter is offline. Channel Id: %i",
+                  channel->getId());
+      }
+
+      if (now.tv_sec - channel->tmp_ev_time2.tv_sec > 300) {
+        supla_log(LOG_WARNING,
+                  "Last measurement data provided more than 5 min ago; %i/%i. "
+                  "Channel Id: %i",
+                  channel->tmp_ev_time1.tv_sec - now.tv_sec,
+                  channel->tmp_ev_time2.tv_sec - now.tv_sec, channel->getId());
+      }
+    }
+    // ----
 
     if (channel != NULL && !channel->isOffline()) {
       supla_channel_electricity_measurement *em =
           channel->getElectricityMeasurement(for_data_logger_purposes);
       if (em) {
         safe_array_add(emarr, em);
+      } else {
+        // TODO(anyone): Remove
+        if (channel->getFunc() == SUPLA_CHANNELFNC_ELECTRICITY_METER &&
+            channel->isOffline()) {
+          supla_log(LOG_WARNING,
+                    "No electricity meter data available. Channel Id: %i",
+                    channel->getId());
+        }
+        // ----
       }
     }
   }

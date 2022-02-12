@@ -153,6 +153,11 @@ class supla_device_channel {
   channel_json_config *getJSONConfig(void);
   bool converValueToExtended(void);
   void action_trigger(int actions);
+
+  // TMP DEBUG
+  struct timeval tmp_ev_time1;
+  struct timeval tmp_ev_time2;
+  // TMP------
 };
 
 class supla_device;
