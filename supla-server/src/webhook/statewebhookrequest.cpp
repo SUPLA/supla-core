@@ -113,52 +113,50 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());
 
-      if (!value.hidden_channel) {
-        std::list<int> fids = credentials->getFunctionsIds();
-        for (int f : fids) {
-          if (f == value.function) {
-            switch (value.function) {
-              case SUPLA_CHANNELFNC_DIMMER:
-              case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
-              case SUPLA_CHANNELFNC_RGBLIGHTING:
-                delayTime = 2500000;
-                return true;
-              case SUPLA_CHANNELFNC_THERMOMETER:
-              case SUPLA_CHANNELFNC_HUMIDITY:
-              case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
-              case SUPLA_CHANNELFNC_WINDSENSOR:
-              case SUPLA_CHANNELFNC_PRESSURESENSOR:
-              case SUPLA_CHANNELFNC_RAINSENSOR:
-              case SUPLA_CHANNELFNC_WEIGHTSENSOR:
-              case SUPLA_CHANNELFNC_DISTANCESENSOR:
-              case SUPLA_CHANNELFNC_DEPTHSENSOR:
-              case SUPLA_CHANNELFNC_ELECTRICITY_METER:
-              case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
-              case SUPLA_CHANNELFNC_IC_GAS_METER:
-              case SUPLA_CHANNELFNC_IC_WATER_METER:
-              case SUPLA_CHANNELFNC_IC_HEAT_METER:
-                delayTime = 15000000;
-                return true;
-              case SUPLA_CHANNELFNC_POWERSWITCH:
-              case SUPLA_CHANNELFNC_LIGHTSWITCH:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
-              case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
-              case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
-              case SUPLA_CHANNELFNC_MAILSENSOR:
-              case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
-              case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
-                return true;
-              case SUPLA_CHANNELFNC_ACTIONTRIGGER:
-                delayTime = 100000;
-                return true;
-              default:
-                return false;
-            }
+      std::list<int> fids = credentials->getFunctionsIds();
+      for (int f : fids) {
+        if (f == value.function) {
+          switch (value.function) {
+            case SUPLA_CHANNELFNC_DIMMER:
+            case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+            case SUPLA_CHANNELFNC_RGBLIGHTING:
+              delayTime = 2500000;
+              return true;
+            case SUPLA_CHANNELFNC_THERMOMETER:
+            case SUPLA_CHANNELFNC_HUMIDITY:
+            case SUPLA_CHANNELFNC_HUMIDITYANDTEMPERATURE:
+            case SUPLA_CHANNELFNC_WINDSENSOR:
+            case SUPLA_CHANNELFNC_PRESSURESENSOR:
+            case SUPLA_CHANNELFNC_RAINSENSOR:
+            case SUPLA_CHANNELFNC_WEIGHTSENSOR:
+            case SUPLA_CHANNELFNC_DISTANCESENSOR:
+            case SUPLA_CHANNELFNC_DEPTHSENSOR:
+            case SUPLA_CHANNELFNC_ELECTRICITY_METER:
+            case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:
+            case SUPLA_CHANNELFNC_IC_GAS_METER:
+            case SUPLA_CHANNELFNC_IC_WATER_METER:
+            case SUPLA_CHANNELFNC_IC_HEAT_METER:
+              delayTime = 15000000;
+              return true;
+            case SUPLA_CHANNELFNC_POWERSWITCH:
+            case SUPLA_CHANNELFNC_LIGHTSWITCH:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_GATE:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_GARAGEDOOR:
+            case SUPLA_CHANNELFNC_NOLIQUIDSENSOR:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_DOOR:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_ROLLERSHUTTER:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_ROOFWINDOW:
+            case SUPLA_CHANNELFNC_OPENINGSENSOR_WINDOW:
+            case SUPLA_CHANNELFNC_MAILSENSOR:
+            case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+            case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+              return true;
+            case SUPLA_CHANNELFNC_ACTIONTRIGGER:
+              delayTime = 100000;
+              return true;
+            default:
+              return false;
           }
         }
       }
