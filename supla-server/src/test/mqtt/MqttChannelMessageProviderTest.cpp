@@ -487,7 +487,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "1)\",\"uniq_id\":\"supla_754_16\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/1/"
           "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
-          "None %}None{% else %}float(value) * 100.0 | round(5){% endif "
+          "None %}None{% else %}{{float(value) * 100.0 | round(5)}}{% endif "
           "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
@@ -749,7 +749,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "2)\",\"uniq_id\":\"supla_754_28\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/2/"
           "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
-          "None %}None{% else %}float(value) * 100.0 | round(5){% endif "
+          "None %}None{% else %}{{float(value) * 100.0 | round(5)}}{% endif "
           "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 
@@ -1012,7 +1012,7 @@ void MqttChannelMessageProviderTest::electricityMeterTest(int channel_flags) {
           "3)\",\"uniq_id\":\"supla_754_40\",\"qos\":0,\"unit_of_meas\":\"%\","
           "\"stat_t\":\"~/state/phases/3/"
           "power_factor\",\"val_tpl\":\"{% if float(value, default=none) == "
-          "None %}None{% else %}float(value) * 100.0 | round(5){% endif "
+          "None %}None{% else %}{{float(value) * 100.0 | round(5)}}{% endif "
           "%}\",\"dev_cla\":\"power_factor\",\"state_class\":"
           "\"measurement\"}";
 

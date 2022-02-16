@@ -25,7 +25,7 @@ class supla_trivial_http_factory {
  public:
   supla_trivial_http_factory();
   virtual ~supla_trivial_http_factory();
-  virtual supla_trivial_http* createConnection(void) = 0;
+  virtual supla_trivial_http* createConnection(bool secure) = 0;
 };
 
 #endif /* HTTP_TRIVIALHTTPFACTORY_H_ */

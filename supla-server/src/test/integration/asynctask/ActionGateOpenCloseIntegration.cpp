@@ -96,8 +96,9 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
 
     if (config) {
       char user_config[100];
-      snprintf(user_config, sizeof(user_config),
-               "{\"numberOfAttemptsToOpenOrClose\":%i}", maxAttemptCount);
+      snprintf(user_config, sizeof(user_config), "{\"%s\":%i}",
+               open ? "numberOfAttemptsToOpen" : "numberOfAttemptsToClose",
+               maxAttemptCount);
       config->set_user_config(user_config);
       config_getter->set_config(config);
     }

@@ -16,12 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "TrivialHttpFactoryMock.h"
+#ifndef CHANNEL_THERMOSTAT_MEASUREMENT_H_
+#define CHANNEL_THERMOSTAT_MEASUREMENT_H_
 
-#include "TrivialHttpMock.h"
+class supla_channel_thermostat_measurement {
+ private:
+  int ChannelId;
+  bool on;
+  double MeasuredTemperature;
+  double PresetTemperature;
+  static char tharr_clean(void *ptr);
 
-TrivialHttpFactoryMock::TrivialHttpFactoryMock() {}
+ public:
+  supla_channel_thermostat_measurement(int ChannelId, bool on,
+                                       double MeasuredTemperature,
+                                       double PresetTemperature);
 
-supla_trivial_http* TrivialHttpFactoryMock::createConnection(bool secure) {
-  return new TrivialHttpMock();
-}
+  int getChannelId(void);
+  double getMeasuredTemperature(void);
+  double getPresetTemperature(void);
+  bool getOn(void);
+
+  static void free(void *icarr);
+};
+
+#endif /* CHANNEL_THERMOSTAT_MEASUREMENT_H_ */

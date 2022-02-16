@@ -29,10 +29,23 @@ const char impulse_counter_config::initial_value_key[] = "initialValue";
 // static
 const char impulse_counter_config::impulses_per_unit_key[] = "impulsesPerUnit";
 
+// static
+const char impulse_counter_config::add_to_history_key[] = "addToHistory";
+
 impulse_counter_config::impulse_counter_config(void) : channel_json_config() {}
 
 impulse_counter_config::impulse_counter_config(channel_json_config *root)
     : channel_json_config(root) {}
+
+bool impulse_counter_config::should_be_added_to_history(void) {
+  cJSON *root = get_user_root();
+  if (!root) {
+    return 0;
+  }
+
+  cJSON *item = cJSON_GetObjectItem(root, add_to_history_key);
+  return item && cJSON_IsBool(item) && cJSON_IsTrue(item);
+}
 
 double impulse_counter_config::get_double_value(const char *key, double max) {
   cJSON *root = get_user_root();

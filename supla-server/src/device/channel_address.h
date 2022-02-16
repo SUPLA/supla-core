@@ -16,12 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "TrivialHttpFactoryMock.h"
+#ifndef CHANNEL_ADDRESS_H_
+#define CHANNEL_ADDRESS_H_
 
-#include "TrivialHttpMock.h"
+class channel_address {
+ private:
+  int DeviceId;
+  int ChannelId;
 
-TrivialHttpFactoryMock::TrivialHttpFactoryMock() {}
-
-supla_trivial_http* TrivialHttpFactoryMock::createConnection(bool secure) {
-  return new TrivialHttpMock();
-}
+ public:
+  channel_address(int DeviceId, int ChannelId);
+  int getDeviceId(void);
+  int getChannelId(void);
+};
+#endif /* CHANNEL_ADDRESS_H_ */

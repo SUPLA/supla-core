@@ -70,7 +70,7 @@ class database : public svrdb {
 
   int update_device(int DeviceID, int OriginalLocationID, const char *AuthKey,
                     const char *Name, unsigned int ipv4, const char *softver,
-                    int proto_version);
+                    int proto_version, int flags);
 
   int add_channel(int DeviceID, int ChannelNumber, int ChannelType);
   int add_device_channel(int DeviceID, int ChannelNumber, int Type, int Func,
@@ -189,6 +189,7 @@ class database : public svrdb {
 
   void update_channel_params(int channel_id, int user_id, int param1,
                              int param2, int param3, int param4);
+  void update_channel_flags(int channel_id, int user_id, unsigned int flags);
 };
 
 #endif /* DATABASE_H_ */

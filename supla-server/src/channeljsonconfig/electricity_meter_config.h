@@ -35,6 +35,7 @@ class electricity_meter_config : public channel_json_config {
   static const _emc_map_t map[];
   static const char counters_available_key[];
   static const char em_initial_values_key[];
+  static const char add_to_history_key[];
 
  protected:
   virtual int get_map_size(void);
@@ -45,15 +46,16 @@ class electricity_meter_config : public channel_json_config {
  public:
   explicit electricity_meter_config(channel_json_config *root);
   electricity_meter_config(void);
+  bool should_be_added_to_history(void);
   unsigned _supla_int64_t get_initial_value(int var, int channel_flags,
                                             char phase);
   bool update_available_counters(int measured_values);
   bool update_available_counters(TSuplaChannelExtendedValue *ev);
   unsigned _supla_int64_t get_initial_value(int var);
   void add_initial_value(int var, unsigned char phase, int flags,
-                         unsigned _supla_int64_t *value);
-  void add_initial_values(int flags, TElectricityMeter_ExtendedValue_V2 *em_ev);
-  void add_initial_values(int flags, TElectricityMeter_ExtendedValue *em_ev);
+                           unsigned _supla_int64_t *value);
+  void add_initial_values(int flags,
+                            TElectricityMeter_ExtendedValue_V2 *em_ev);
   void add_initial_values(int flags, TSuplaChannelExtendedValue *ev);
   void add_initial_value(TElectricityMeter_Value *value);
 };

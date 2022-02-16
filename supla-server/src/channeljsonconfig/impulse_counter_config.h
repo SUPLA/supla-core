@@ -29,12 +29,15 @@ class impulse_counter_config : public channel_json_config {
  private:
   static const char initial_value_key[];
   static const char impulses_per_unit_key[];
+  static const char add_to_history_key[];
+
   double get_double_value(const char *key, double max);
 
  protected:
  public:
   explicit impulse_counter_config(channel_json_config *root);
   impulse_counter_config(void);
+  bool should_be_added_to_history(void);
   double get_initial_value(void);
   unsigned int get_impulses_per_unit(void);
   void add_initial_value(TDS_ImpulseCounter_Value *value);

@@ -17,15 +17,17 @@
  */
 
 #include "voiceassistantclient.h"
+
 #include <stdlib.h>
 #include <string.h>
+
 #include "http/trivialhttp.h"
 #include "lck.h"
 #include "user/user.h"
 
 supla_voice_assistant_client::supla_voice_assistant_client(
     supla_webhook_basic_credentials *credentials)
-    : supla_webhook_basic_client(credentials) {}
+    : supla_webhook_basic_client(credentials, true) {}
 
 char *supla_voice_assistant_client::getEndpointId(int channelId,
                                                   short subChannel) {

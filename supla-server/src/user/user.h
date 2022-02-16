@@ -114,11 +114,6 @@ class supla_user {
   static bool get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
                                      int *color, char *color_brightness,
                                      char *brightness, char *on_off);
-  static supla_channel_electricity_measurement *get_electricity_measurement(
-      int UserID, int DeviceID, int ChannelID);
-  static supla_channel_ic_measurement *get_ic_measurement(int UserID,
-                                                          int DeviceID,
-                                                          int ChannelID);
   static bool get_channel_valve_value(int UserID, int DeviceID, int ChannelID,
                                       TValve_Value *Value);
 
@@ -170,6 +165,8 @@ class supla_user {
       int UserID, int DeviceId, int ChannelId,  // DeviceId or ChannelId
       std::function<void(supla_device *device)> on_device);
 
+  void for_each_device(std::function<bool(supla_device *device)> on_device);
+
   bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
   bool get_channel_temperature_value(int DeviceID, int ChannelID,
                                      double *Value);
@@ -203,13 +200,6 @@ class supla_user {
   void on_channel_become_online(int DeviceId, int ChannelId);
 
   void call_event(TSC_SuplaEvent *event);
-  void get_temp_and_humidity(void *tarr);
-  void get_electricity_measurements(void *emarr);
-  supla_channel_electricity_measurement *get_electricity_measurement(
-      int DeviceID, int ChannelID);
-  void get_ic_measurements(void *icarr);
-  supla_channel_ic_measurement *get_ic_measurement(int DeviceID, int ChannelID);
-  void get_thermostat_measurements(void *tharr);
 
   bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
                              TCS_DeviceCalCfgRequest_B *request);

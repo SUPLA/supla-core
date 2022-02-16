@@ -447,6 +447,21 @@ void supla_user::access_device(
   }
 }
 
+void supla_user::for_each_device(
+    std::function<bool(supla_device *device)> on_device) {
+  for (int a = 0; a < device_container->count(); a++) {
+    supla_device *device = NULL;
+
+    if (NULL != (device = device_container->get(a))) {
+      bool _continue = on_device(device);
+      device->releasePtr();
+      if (!_continue) {
+        break;
+      }
+    }
+  }
+}
+
 // static
 void supla_user::access_device(
     int UserID, int DeviceId, int ChannelId,
@@ -613,34 +628,6 @@ bool supla_user::get_channel_rgbw_value(int UserID, int DeviceID, int ChannelID,
     result = user->get_channel_rgbw_value(DeviceID, ChannelID, color,
                                           color_brightness, brightness,
                                           on_off) == true;
-  }
-
-  return result;
-}
-
-// static
-supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
-    int UserID, int DeviceID, int ChannelID) {
-  supla_channel_electricity_measurement *result = NULL;
-
-  supla_user *user = supla_user::find(UserID, false);
-
-  if (user) {
-    result = user->get_electricity_measurement(DeviceID, ChannelID);
-  }
-
-  return result;
-}
-
-// static
-supla_channel_ic_measurement *supla_user::supla_user::get_ic_measurement(
-    int UserID, int DeviceID, int ChannelID) {
-  supla_channel_ic_measurement *result = NULL;
-
-  supla_user *user = supla_user::find(UserID, false);
-
-  if (user) {
-    result = user->get_ic_measurement(DeviceID, ChannelID);
   }
 
   return result;
@@ -1019,88 +1006,6 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
       client->call_event(event);
       client->releasePtr();
     }
-}
-
-void supla_user::get_temp_and_humidity(void *tarr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_temp_and_humidity(tarr);
-      device->releasePtr();
-    }
-  }
-
-  database *db = new database();
-
-  if (db->connect() == true) {
-    db->load_temperatures_and_humidity(getUserID(), tarr);
-  }
-
-  delete db;
-}
-
-void supla_user::get_electricity_measurements(void *emarr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_electricity_measurements(emarr);
-      device->releasePtr();
-    }
-  }
-}
-
-supla_channel_electricity_measurement *supla_user::get_electricity_measurement(
-    int DeviceID, int ChannelID) {
-  supla_channel_electricity_measurement *result = NULL;
-
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device != NULL) {
-    result = device->get_channels()->get_electricity_measurement(ChannelID);
-    device->releasePtr();
-  }
-
-  return result;
-}
-
-void supla_user::get_ic_measurements(void *icarr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_ic_measurements(icarr);
-      device->releasePtr();
-    }
-  }
-}
-
-supla_channel_ic_measurement *supla_user::get_ic_measurement(int DeviceID,
-                                                             int ChannelID) {
-  supla_channel_ic_measurement *result = NULL;
-
-  supla_device *device = device_container->findByID(DeviceID);
-  if (device != NULL) {
-    result = device->get_channels()->get_ic_measurement(ChannelID);
-    device->releasePtr();
-  }
-
-  return result;
-}
-
-void supla_user::get_thermostat_measurements(void *tharr) {
-  int a;
-  supla_device *device;
-
-  for (a = 0; a < device_container->count(); a++) {
-    if (NULL != (device = device_container->get(a))) {
-      device->get_channels()->get_thermostat_measurements(tharr);
-      device->releasePtr();
-    }
-  }
 }
 
 bool supla_user::device_calcfg_request(int SenderID, int DeviceId,

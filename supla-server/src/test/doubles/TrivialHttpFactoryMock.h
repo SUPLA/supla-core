@@ -24,7 +24,7 @@
 class TrivialHttpFactoryMock : public supla_trivial_http_factory {
  public:
   TrivialHttpFactoryMock();
-  virtual supla_trivial_http* createConnection(void);
+  virtual supla_trivial_http* createConnection(bool secure);
 };
 
 #endif /*H_TrivialHttpFactoryMock_TEST_H_*/

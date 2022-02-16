@@ -20,11 +20,18 @@
 #define WEBHOOK_STATEWEBHOOKCREDENTIALS_H_
 
 #include <list>
+
 #include "webhook/webhookbasiccredentials.h"
 
 #define WEBHOOK_TOKEN_MAXSIZE 255
 #define WEBHOOK_URL_MAXSIZE 255
 #define WEBHOOK_FUNCTIONS_IDS_MAXSIZE 255
+
+enum urlScheme {
+  schemeNotAccepted,
+  schemeHttp,
+  schemeHttps,
+};
 
 class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
  private:
@@ -44,10 +51,11 @@ class supla_state_webhook_credentials : public supla_webhook_basic_credentials {
   void remove(void);
   void on_credentials_changed();
   char *getUrl(void);
-  bool isUrlProtocolAccepted(void);
+  urlScheme getScheme(void);
   bool isUrlValid(void);
   char *getHost(void);
   char *getResource(void);
+  int getPort(void);
   std::list<int> getFunctionsIds(void);
 };
 

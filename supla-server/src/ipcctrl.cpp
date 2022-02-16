@@ -243,8 +243,12 @@ void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    supla_channel_ic_measurement *icm =
-        supla_user::get_ic_measurement(UserID, DeviceID, ChannelID);
+    supla_channel_ic_measurement *icm = NULL;
+    supla_user::access_device(
+        UserID, DeviceID, ChannelID,
+        [&icm, ChannelID](supla_device *device) -> void {
+          icm = device->get_channels()->get_ic_measurement(ChannelID);
+        });
 
     if (icm != NULL) {
       char *unit_b64 = st_openssl_base64_encode(
@@ -280,11 +284,15 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
          &ChannelID);
 
   if (UserID && DeviceID && ChannelID) {
-    supla_channel_electricity_measurement *em =
-        supla_user::get_electricity_measurement(UserID, DeviceID, ChannelID);
+    supla_channel_electricity_measurement *em = NULL;
+    supla_user::access_device(
+        UserID, DeviceID, ChannelID,
+        [&em, ChannelID](supla_device *device) -> void {
+          em = device->get_channels()->get_electricity_measurement(ChannelID);
+        });
 
     if (em != NULL) {
-      TElectricityMeter_ExtendedValue em_ev = {};
+      TElectricityMeter_ExtendedValue_V2 em_ev = {};
       char currency[4];
       em->getMeasurement(&em_ev);
       em->getCurrency(currency);
