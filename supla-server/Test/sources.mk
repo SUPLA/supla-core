@@ -36,6 +36,7 @@ src/google \
 src/http \
 src/json \
 src/mqtt \
+src/scene \
 src/test \
 src/test/actions \
 src/test/alexa \
