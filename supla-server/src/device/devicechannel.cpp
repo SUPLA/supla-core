@@ -456,9 +456,14 @@ void supla_device_channel::setActionTriggerConfig(
     json_config = at_config;
   }
 
-  if (at_config->set_capabilities(capabilities) ||
-      at_config->set_caps_that_disables_local_operation(
+  bool at_config_changed = at_config->set_capabilities(capabilities);
+
+  if (at_config->set_caps_that_disables_local_operation(
           disablesLocalOperation)) {
+    at_config_changed = true;
+  }
+
+  if (at_config_changed) {
     db_set_properties(at_config);
   }
 
