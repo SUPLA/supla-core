@@ -1050,10 +1050,12 @@ void supla_device_channel::action_trigger(int actions) {
   supla_value_getter *value_getter = new supla_value_getter();
 
   if (aexec && at_config && value_getter) {
+    at_config->set_subject_id_if_not_set(getId());
+
     supla_action_trigger *trigger =
         new supla_action_trigger(aexec, at_config, value_getter);
     if (trigger) {
-      trigger->execute_actions(getUserID(), getId(), actions);
+      trigger->execute_actions(getUserID(), actions);
       delete trigger;
     }
   }
