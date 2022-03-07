@@ -18,6 +18,8 @@
 
 #include "ElectricityMeterConfigTest.h"
 
+#include <limits.h>
+
 #include "TestHelper.h"
 #include "channeljsonconfig/electricity_meter_config.h"
 #include "srpc.h"
@@ -134,7 +136,7 @@ TEST_F(ElectricityMeterConfigTest, getInitialValue) {
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
             (unsigned)0);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
-            (unsigned long long)45678900000);
+            (long long)45678900000);
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
             (unsigned)0);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
@@ -149,7 +151,7 @@ TEST_F(ElectricityMeterConfigTest, getInitialValue) {
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
             (unsigned)1);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
-            (unsigned long long)45678900000);
+            (long long)45678900000);
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
             (unsigned)12300000);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
@@ -168,13 +170,13 @@ TEST_F(ElectricityMeterConfigTest, getInitialValue) {
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY),
             (unsigned)1);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY),
-            (unsigned long long)45678900000);
+            (long long)45678900000);
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_REACTIVE_ENERGY),
             (unsigned)12300000);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_REACTIVE_ENERGY),
             (unsigned)87612345);
   EXPECT_EQ(config->get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY_BALANCED),
-            (unsigned long long)1000000000000);
+            (long long)1000000000000);
   EXPECT_EQ(config->get_initial_value(EM_VAR_REVERSE_ACTIVE_ENERGY_BALANCED),
             (unsigned)0);
 
@@ -215,40 +217,40 @@ TEST_F(ElectricityMeterConfigTest, onePhase) {
 
   unsigned _supla_int64_t v = 10;
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                              SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
-                                  SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
-                              &v);
+                            SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED |
+                                SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED,
+                            &v);
 
   EXPECT_EQ(v, (unsigned)77800010);
 
   v = 1234;
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                              &v);
+                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                            &v);
 
   EXPECT_EQ(v, (unsigned)1234);
 
   v = 1234;
 
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                              &v);
+                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                            &v);
 
   EXPECT_EQ(v, (unsigned)1234);
 
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2,
-                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                              &v);
+                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                            &v);
 
   EXPECT_EQ(v, (unsigned)1234);
 
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 3,
-                              SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
-                                  SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
-                              &v);
+                            SUPLA_CHANNEL_FLAG_PHASE1_UNSUPPORTED |
+                                SUPLA_CHANNEL_FLAG_PHASE2_UNSUPPORTED,
+                            &v);
 
   EXPECT_EQ(v, (unsigned)77801234);
 
@@ -267,19 +269,19 @@ TEST_F(ElectricityMeterConfigTest, twoPhases) {
 
   unsigned _supla_int64_t v = 0;
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 1,
-                              SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
+                            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
 
   EXPECT_EQ(v, (unsigned)27750167);
 
   v = 0;
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2,
-                              SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
+                            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
 
   EXPECT_EQ(v, (unsigned)27750166);
 
   v = 1122;
   config->add_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY, 2,
-                              SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
+                            SUPLA_CHANNEL_FLAG_PHASE3_UNSUPPORTED, &v);
 
   EXPECT_EQ(v, (unsigned)27751288);
 
@@ -530,9 +532,35 @@ TEST_F(ElectricityMeterConfigTest, overValue) {
 
   config->add_initial_values(0, &em_ev);
 
-  EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned long long)-1);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], ULONG_MAX);
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)1000037446);
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1000037446);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, negative) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"reverseReactiveEnergy\":-30001."
+      "1234}}");
+
+  EXPECT_TRUE(
+      config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+
+  em_ev.total_reverse_reactive_energy[0] = 1000037448;
+  em_ev.total_reverse_reactive_energy[1] = 1;
+  em_ev.total_reverse_reactive_energy[2] = 1000037447;
+
+  config->add_initial_values(0, &em_ev);
+
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned)0);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)0);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1);
 
   delete config;
 }
@@ -555,6 +583,48 @@ TEST_F(ElectricityMeterConfigTest, channelValue) {
 
   config->add_initial_value(&value);
   EXPECT_EQ(value.total_forward_active_energy, (unsigned)10017);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, channelValueOverflow) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":10000000}}");
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  TElectricityMeter_Value value = {};
+  value.total_forward_active_energy = UINT_MAX - 1000;
+
+  config->add_initial_value(&value);
+  EXPECT_EQ(value.total_forward_active_energy, UINT_MAX);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, channelValueNeg) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":-10000000}"
+      "}");
+
+  EXPECT_TRUE(config->update_available_counters(0xFFFFFFFF));
+
+  TElectricityMeter_Value value = {};
+  value.total_forward_active_energy = 1000;
+
+  config->add_initial_value(&value);
+  EXPECT_EQ(value.total_forward_active_energy, (unsigned int)0);
+
+  value.total_forward_active_energy = 1000000001;
+
+  config->add_initial_value(&value);
+  EXPECT_EQ(value.total_forward_active_energy, (unsigned int)1);
 
   delete config;
 }

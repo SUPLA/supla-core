@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <limits.h>
+
 #include "electricity_meter_config.h"
 #include "srpc.h"
 
@@ -146,7 +148,7 @@ bool electricity_meter_config::should_be_added_to_history(void) {
   return item && cJSON_IsBool(item) && cJSON_IsTrue(item);
 }
 
-unsigned _supla_int64_t electricity_meter_config::get_initial_value(int var) {
+_supla_int64_t electricity_meter_config::get_initial_value(int var) {
   if (!key_exists(var) || (get_available_counters() & var) == 0) {
     return 0;
   }
@@ -161,7 +163,7 @@ unsigned _supla_int64_t electricity_meter_config::get_initial_value(int var) {
     cJSON *initial_value =
         cJSON_GetObjectItem(initial_values, string_with_key(var));
     if (initial_value && cJSON_IsNumber(initial_value)) {
-      return (unsigned _supla_int64_t)100000.0 * initial_value->valuedouble;
+      return 100000.0 * initial_value->valuedouble;
     }
   }
 
@@ -181,7 +183,7 @@ void electricity_meter_config::add_initial_value(
   }
 
   unsigned _supla_int64_t left = -1 - *value;
-  unsigned _supla_int64_t initial_value = get_initial_value(var);
+  _supla_int64_t initial_value = get_initial_value(var);
 
   unsigned char phase_count = 3;
   unsigned char first_supported_phase = 1;
@@ -209,13 +211,20 @@ void electricity_meter_config::add_initial_value(
     phase_count--;
   }
 
-  unsigned _supla_int64_t addition = initial_value / phase_count;
+  _supla_int64_t addition = initial_value / phase_count;
 
   if (first_supported_phase == phase) {
     addition += initial_value - (initial_value / phase_count * phase_count);
   }
 
-  *value += addition > left ? left : addition;
+  if (addition < 0) {
+    if ((unsigned _supla_int64_t)(addition * -1) > *value) {
+      addition = *value * -1;
+    }
+    *value += addition;
+  } else {
+    *value += (unsigned _supla_int64_t)addition > left ? left : addition;
+  }
 }
 
 void electricity_meter_config::add_initial_values(
@@ -264,7 +273,21 @@ void electricity_meter_config::add_initial_values(
 void electricity_meter_config::add_initial_value(
     TElectricityMeter_Value *value) {
   if (value) {
-    value->total_forward_active_energy +=
+    _supla_int64_t initial_value =
         get_initial_value(EM_VAR_FORWARD_ACTIVE_ENERGY) / 1000;
+
+    if (initial_value < 0) {
+      if (initial_value * -1 > value->total_forward_active_energy) {
+        initial_value = value->total_forward_active_energy * -1;
+      }
+    } else {
+      unsigned _supla_int64_t left =
+          UINT_MAX - value->total_forward_active_energy;
+      if ((unsigned _supla_int64_t)initial_value > left) {
+        initial_value = left;
+      }
+    }
+
+    value->total_forward_active_energy += initial_value;
   }
 }

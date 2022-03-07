@@ -18,6 +18,8 @@
 
 #include "ImpulseCounterConfigTest.h"
 
+#include <limits.h>
+
 #include "TestHelper.h"
 #include "channeljsonconfig/impulse_counter_config.h"
 #include "proto.h"
@@ -39,7 +41,11 @@ TEST_F(ImpulseCounterConfigTest, getInitialValue) {
 
   config->set_user_config("{\"initialValue\":-1}");
 
-  EXPECT_EQ(config->get_initial_value(), 0.0);
+  EXPECT_EQ(config->get_initial_value(), -1);
+
+  config->set_user_config("{\"initialValue\":-100000001.001}");
+
+  EXPECT_EQ(config->get_initial_value(), -100000000.0);
 
   config->set_user_config("{\"initialValue\":100000001.001}");
 
@@ -136,12 +142,12 @@ TEST_F(ImpulseCounterConfigTest, addingAnInitialValue) {
       "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
   config->add_initial_value(&value);
 
-  EXPECT_EQ(value.counter, (unsigned long long)-1);
+  EXPECT_EQ(value.counter, ULONG_MAX);
 
   value.counter = 0xFFFFFFFFFFFFFF00;
   config->add_initial_value(&value);
 
-  EXPECT_EQ(value.counter, (unsigned long long)-1);
+  EXPECT_EQ(value.counter, ULONG_MAX);
 
   delete config;
 }
@@ -152,17 +158,43 @@ TEST_F(ImpulseCounterConfigTest, overValue) {
 
   TDS_ImpulseCounter_Value value = {};
 
-  value.counter = -1;
+  value.counter = ULONG_MAX;
   config->set_user_config(
       "{\"impulsesPerUnit\":1000000, \"initialValue\":100000000}");
   config->add_initial_value(&value);
 
-  EXPECT_EQ(value.counter, (unsigned long long)-1);
+  EXPECT_EQ(value.counter, ULONG_MAX);
 
-  value.counter = 0xFFFFFFFFFFFFFF00;
+  value.counter = ULONG_MAX - 100;
   config->add_initial_value(&value);
 
-  EXPECT_EQ(value.counter, (unsigned long long)-1);
+  EXPECT_EQ(value.counter, ULONG_MAX);
+
+  delete config;
+}
+
+TEST_F(ImpulseCounterConfigTest, negative) {
+  impulse_counter_config *config = new impulse_counter_config();
+  ASSERT_TRUE(config != NULL);
+
+  TDS_ImpulseCounter_Value value = {};
+
+  config->set_user_config("{\"impulsesPerUnit\":5, \"initialValue\":-100}");
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)0);
+
+  value.counter = 499;
+
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)0);
+
+  value.counter = 501;
+
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.counter, (unsigned)1);
 
   delete config;
 }
