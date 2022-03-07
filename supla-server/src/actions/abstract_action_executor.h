@@ -21,6 +21,7 @@
 
 #include <abstract_value_getter.h>
 
+#include "channeljsonconfig/abstract_action_config.h"
 #include "device.h"
 #include "user.h"
 
@@ -58,6 +59,9 @@ class supla_abstract_action_executor {
   int get_device_id(void);
   int get_channel_id(void);
   int get_group_id(void);
+
+  void execute_action(int user_id, abstract_action_config *config,
+                      supla_abstract_value_getter *value_getter);
 
   virtual void set_on(bool on) = 0;
   virtual void set_color(unsigned int color) = 0;

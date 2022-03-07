@@ -1386,8 +1386,8 @@ bool supla_mqtt_channel_message_provider::ha_action_trigger(
       break;
   }
 
-  if (at_config.get_action_assigned_to_capability(cap).actionId !=
-      ACTION_FORWARD_OUTSIDE) {
+  at_config.set_active_cap(cap);
+  if (at_config.get_action_id() != ACTION_FORWARD_OUTSIDE) {
     cap = 0;
   }
 

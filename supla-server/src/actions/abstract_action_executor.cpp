@@ -91,6 +91,89 @@ void supla_abstract_action_executor::access_device(
 }
 
 void supla_abstract_action_executor::execute_action(
+    int user_id, abstract_action_config *config,
+    supla_abstract_value_getter *value_getter) {
+  int action_id = 0;
+  int subject_id = 0;
+
+  if (!config || (action_id = config->get_action_id()) == 0 ||
+      (subject_id = config->get_subject_id()) == 0) {
+    return;
+  }
+
+  if (config->get_subject_type() == stChannelGroup) {
+    set_group_id(user_id, subject_id);
+  } else {
+    set_channel_id(user_id, 0, subject_id);
+  }
+
+  switch (action_id) {
+    case ACTION_OPEN:
+      open();
+      break;
+    case ACTION_CLOSE:
+      close();
+      break;
+    case ACTION_SHUT:
+      shut(NULL);
+      break;
+    case ACTION_REVEAL:
+      reveal();
+      break;
+    case ACTION_UP_OR_STOP:
+      up_or_stop();
+      break;
+    case ACTION_DOWN_OR_STOP:
+      down_or_stop();
+      break;
+    case ACTION_STEP_BY_STEP:
+      step_by_step();
+      break;
+    case ACTION_SHUT_PARTIALLY:
+    case ACTION_REVEAL_PARTIALLY: {
+      char percentage = config->get_percentage();
+      if (percentage > -1) {
+        if (action_id == ACTION_REVEAL_PARTIALLY) {
+          percentage = 100 - percentage;
+        }
+
+        shut(&percentage);
+      }
+    } break;
+    case ACTION_TURN_ON:
+      set_on(true);
+      break;
+    case ACTION_TURN_OFF:
+      set_on(false);
+      break;
+    case ACTION_SET_RGBW_PARAMETERS: {
+      _action_config_rgbw_t rgbw = config->get_rgbw();
+      if (rgbw.brightness > -1 || rgbw.color_brightness > -1 || rgbw.color) {
+        set_rgbw(rgbw.color ? &rgbw.color : NULL,
+                 rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
+                 rgbw.brightness > -1 ? &rgbw.brightness : NULL, NULL);
+      }
+    } break;
+    case ACTION_OPEN_CLOSE:
+      open_close();
+      break;
+    case ACTION_STOP:
+      stop();
+      break;
+    case ACTION_TOGGLE:
+      toggle();
+      break;
+    case ACTION_COPY:
+      copy(value_getter, config->get_source_device_id(),
+           config->get_source_channel_id());
+      break;
+    case ACTION_FORWARD_OUTSIDE:
+      forward_outside(config->get_cap());
+      break;
+  }
+}
+
+void supla_abstract_action_executor::execute_action(
     std::function<void(supla_user_channelgroups *, supla_device_channels *)>
         f) {
   supla_user_channelgroups *channel_groups = get_channel_groups();
