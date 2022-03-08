@@ -58,7 +58,7 @@ class action_trigger_config : public abstract_action_config,
   bool set_capabilities(const char *key, std::function<unsigned int()> get_caps,
                         unsigned int caps);
   int get_action_id(int cap);
-  subjectType get_subject_type(int cap);
+  _subjectType_e get_subject_type(int cap);
   int get_subject_id(int cap);
   int get_source_id(const char *key);
   int active_cap;
@@ -75,7 +75,7 @@ class action_trigger_config : public abstract_action_config,
   virtual ~action_trigger_config(void);
 
   virtual int get_action_id(void);
-  virtual subjectType get_subject_type(void);
+  virtual _subjectType_e get_subject_type(void);
   virtual int get_subject_id(void);
   void set_subject_id_if_not_set(int subject_id);
 

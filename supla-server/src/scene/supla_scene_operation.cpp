@@ -18,10 +18,6 @@
 
 #include "supla_scene_operation.h"
 
-supla_scene_operation::supla_scene_operation() {
-  // TODO Auto-generated constructor stub
-}
+supla_scene_operation::supla_scene_operation() {}
 
-supla_scene_operation::~supla_scene_operation() {
-  // TODO Auto-generated destructor stub
-}
+supla_scene_operation::~supla_scene_operation() {}

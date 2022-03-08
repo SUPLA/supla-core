@@ -19,8 +19,6 @@
 #ifndef ABSTRACTACTIONCONFIG_H_
 #define ABSTRACTACTIONCONFIG_H_
 
-#include "channeljsonconfig/channel_json_config.h"
-
 #define ACTION_OPEN 10
 #define ACTION_CLOSE 20
 #define ACTION_SHUT 30
@@ -46,7 +44,7 @@ typedef struct {
   bool color_random;
 } _action_config_rgbw_t;
 
-enum subjectType { stUnknown, stChannel, stChannelGroup, stScene };
+enum _subjectType_e { stUnknown, stChannel, stChannelGroup, stScene };
 
 class abstract_action_config {
  public:
@@ -54,7 +52,7 @@ class abstract_action_config {
   virtual ~abstract_action_config(void);
 
   virtual int get_action_id(void) = 0;
-  virtual subjectType get_subject_type(void) = 0;
+  virtual _subjectType_e get_subject_type(void) = 0;
   virtual int get_subject_id(void) = 0;
 
   virtual int get_source_device_id(void) = 0;
