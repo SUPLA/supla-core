@@ -48,10 +48,10 @@ typedef struct {
 
 enum subjectType { stUnknown, stChannel, stChannelGroup, stScene };
 
-class abstract_action_config : public channel_json_config {
+class abstract_action_config {
  public:
-  explicit abstract_action_config(channel_json_config *root);
   abstract_action_config(void);
+  virtual ~abstract_action_config(void);
 
   virtual int get_action_id(void) = 0;
   virtual subjectType get_subject_type(void) = 0;

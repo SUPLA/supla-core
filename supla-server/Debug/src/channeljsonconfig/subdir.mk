@@ -4,7 +4,6 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/channeljsonconfig/abstract_action_config.cpp \
 ../src/channeljsonconfig/abstract_channel_json_config_getter.cpp \
 ../src/channeljsonconfig/action_trigger_config.cpp \
 ../src/channeljsonconfig/channel_json_config.cpp \
@@ -14,7 +13,6 @@ CPP_SRCS += \
 ../src/channeljsonconfig/impulse_counter_config.cpp 
 
 CPP_DEPS += \
-./src/channeljsonconfig/abstract_action_config.d \
 ./src/channeljsonconfig/abstract_channel_json_config_getter.d \
 ./src/channeljsonconfig/action_trigger_config.d \
 ./src/channeljsonconfig/channel_json_config.d \
@@ -24,7 +22,6 @@ CPP_DEPS += \
 ./src/channeljsonconfig/impulse_counter_config.d 
 
 OBJS += \
-./src/channeljsonconfig/abstract_action_config.o \
 ./src/channeljsonconfig/abstract_channel_json_config_getter.o \
 ./src/channeljsonconfig/action_trigger_config.o \
 ./src/channeljsonconfig/channel_json_config.o \
@@ -46,7 +43,7 @@ src/channeljsonconfig/%.o: ../src/channeljsonconfig/%.cpp src/channeljsonconfig/
 clean: clean-src-2f-channeljsonconfig
 
 clean-src-2f-channeljsonconfig:
-	-$(RM) ./src/channeljsonconfig/abstract_action_config.d ./src/channeljsonconfig/abstract_action_config.o ./src/channeljsonconfig/abstract_channel_json_config_getter.d ./src/channeljsonconfig/abstract_channel_json_config_getter.o ./src/channeljsonconfig/action_trigger_config.d ./src/channeljsonconfig/action_trigger_config.o ./src/channeljsonconfig/channel_json_config.d ./src/channeljsonconfig/channel_json_config.o ./src/channeljsonconfig/channel_json_config_getter.d ./src/channeljsonconfig/channel_json_config_getter.o ./src/channeljsonconfig/controlling_the_gate_config.d ./src/channeljsonconfig/controlling_the_gate_config.o ./src/channeljsonconfig/electicity_meter_config.d ./src/channeljsonconfig/electicity_meter_config.o ./src/channeljsonconfig/impulse_counter_config.d ./src/channeljsonconfig/impulse_counter_config.o
+	-$(RM) ./src/channeljsonconfig/abstract_channel_json_config_getter.d ./src/channeljsonconfig/abstract_channel_json_config_getter.o ./src/channeljsonconfig/action_trigger_config.d ./src/channeljsonconfig/action_trigger_config.o ./src/channeljsonconfig/channel_json_config.d ./src/channeljsonconfig/channel_json_config.o ./src/channeljsonconfig/channel_json_config_getter.d ./src/channeljsonconfig/channel_json_config_getter.o ./src/channeljsonconfig/controlling_the_gate_config.d ./src/channeljsonconfig/controlling_the_gate_config.o ./src/channeljsonconfig/electicity_meter_config.d ./src/channeljsonconfig/electicity_meter_config.o ./src/channeljsonconfig/impulse_counter_config.d ./src/channeljsonconfig/impulse_counter_config.o
 
 .PHONY: clean-src-2f-channeljsonconfig
 
