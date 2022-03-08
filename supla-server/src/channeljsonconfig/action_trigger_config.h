@@ -22,7 +22,8 @@
 #include <functional>
 #include <string>
 
-#include "channeljsonconfig/abstract_action_config.h"
+#include "actions/abstract_action_config.h"
+#include "channeljsonconfig/channel_json_config.h"
 
 #define DISABLE_LOCAL_FUNCTION 10200
 
@@ -40,7 +41,8 @@ typedef struct {
   int sourceChannelId;
 } _at_config_action_t;
 
-class action_trigger_config : public abstract_action_config {
+class action_trigger_config : public abstract_action_config,
+                              public channel_json_config {
  private:
   static const _atc_map_t map[];
   static const char caps_key[];
@@ -70,6 +72,7 @@ class action_trigger_config : public abstract_action_config {
  public:
   explicit action_trigger_config(channel_json_config *root);
   action_trigger_config(void);
+  virtual ~action_trigger_config(void);
 
   virtual int get_action_id(void);
   virtual subjectType get_subject_type(void);

@@ -16,11 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "channeljsonconfig/abstract_action_config.h"
+#include "abstract_action_config.h"
 
-abstract_action_config::abstract_action_config(void) : channel_json_config() {}
+abstract_action_config::abstract_action_config(void) {}
 
-abstract_action_config::abstract_action_config(channel_json_config *root)
-    : channel_json_config(root) {}
+abstract_action_config::~abstract_action_config(void) {}
 
 int abstract_action_config::get_cap(void) { return 0; }

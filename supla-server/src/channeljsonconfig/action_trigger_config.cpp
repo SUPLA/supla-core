@@ -53,16 +53,19 @@ const char action_trigger_config::actions_key[] = "actions";
 // static
 const char action_trigger_config::param_key[] = "param";
 
-action_trigger_config::action_trigger_config(void) : abstract_action_config() {
+action_trigger_config::action_trigger_config(void)
+    : abstract_action_config(), channel_json_config() {
   active_cap = 0;
   subject_id_if_not_set = 0;
 }
 
 action_trigger_config::action_trigger_config(channel_json_config *root)
-    : abstract_action_config(root) {
+    : abstract_action_config(), channel_json_config(root) {
   active_cap = 0;
   subject_id_if_not_set = 0;
 }
+
+action_trigger_config::~action_trigger_config(void) {}
 
 int action_trigger_config::get_map_size(void) {
   return sizeof(map) / sizeof(_atc_map_t);

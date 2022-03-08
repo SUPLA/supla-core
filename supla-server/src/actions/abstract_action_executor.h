@@ -19,9 +19,8 @@
 #ifndef ABSTRACT_ACTION_EXECUTOR_H_
 #define ABSTRACT_ACTION_EXECUTOR_H_
 
-#include <abstract_value_getter.h>
-
-#include "channeljsonconfig/abstract_action_config.h"
+#include "abstract_action_config.h"
+#include "abstract_value_getter.h"
 #include "device.h"
 #include "user.h"
 
