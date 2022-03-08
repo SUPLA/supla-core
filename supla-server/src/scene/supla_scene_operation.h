@@ -19,10 +19,9 @@
 #ifndef SUPLA_SCENE_OPERATION_H_
 #define SUPLA_SCENE_OPERATION_H_
 
-
 class supla_scene_operation {
  public:
-	supla_scene_operation();
+  supla_scene_operation();
   virtual ~supla_scene_operation();
 };
 

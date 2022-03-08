@@ -104,7 +104,7 @@ int action_trigger_config::get_action_id(void) {
   return get_action_id(active_cap);
 }
 
-subjectType action_trigger_config::get_subject_type(int cap) {
+_subjectType_e action_trigger_config::get_subject_type(int cap) {
   cJSON *cap_cfg = get_cap_user_config(cap);
 
   if (!cap_cfg) {
@@ -115,7 +115,7 @@ subjectType action_trigger_config::get_subject_type(int cap) {
   return equal(subjectType, "channelGroup") ? stChannelGroup : stChannel;
 }
 
-subjectType action_trigger_config::get_subject_type(void) {
+_subjectType_e action_trigger_config::get_subject_type(void) {
   if (!active_cap) {
     return stUnknown;
   }
