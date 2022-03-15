@@ -28,7 +28,7 @@
 class database : public svrdb {
  private:
   bool auth(const char *query, int ID, char *PWD, int PWD_MAXXSIZE, int *UserID,
-            bool *is_enabled);
+            bool *is_enabled, bool *is_active);
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
@@ -46,7 +46,7 @@ class database : public svrdb {
   bool location_auth(int LocationID, char *LocationPWD, int *UserID,
                      bool *is_enabled);
   bool accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
-                     bool *is_enabled);
+                     bool *is_enabled, bool *is_active);
 
   char *get_user_email(int UserID);
 
@@ -104,13 +104,14 @@ class database : public svrdb {
   int get_client_limit_left(int UserID);
   int get_client_count(int UserID);
 
-  int get_access_id(int UserID, bool enabled);
-  int get_client_access_id(int ClientID, bool *accessid_enabled);
+  int get_access_id(int UserID, bool enabled, bool active);
+  int get_client_access_id(int ClientID, bool *accessid_enabled,
+                           bool *accessid_active);
 
   bool get_client_reg_enabled(int UserID);
   int get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]);
   int get_client(int ClientID, bool *client_enabled, int *access_id,
-                 bool *accessid_enabled);
+                 bool *accessid_enabled, bool *accessid_active);
 
   int add_client(int AccessID, const char *GUID, const char *AuthKey,
                  const char *Name, unsigned int ipv4, const char *softver,

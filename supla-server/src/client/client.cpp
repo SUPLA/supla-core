@@ -133,10 +133,12 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
       int UserID = 0;
       bool pwd_is_set = false;
       bool accessid_enabled = false;
+      bool accessid_active = false;
 
       if (register_client_b != NULL &&
           false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
-                                     &UserID, &accessid_enabled)) {
+                                     &UserID, &accessid_enabled,
+                                     &accessid_active)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_client_d != NULL &&
@@ -154,14 +156,16 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
         bool client_enabled = true;
         bool do_update = true;
         bool _accessid_enabled = false;
+        bool _accessid_active = false;
 
         db->start_transaction();
 
         int ClientID =
             db->get_client(db->get_client_id(UserID, GUID), &client_enabled,
-                           &_AccessID, &_accessid_enabled);
+                           &_AccessID, &_accessid_enabled, &_accessid_active);
 
         if (_accessid_enabled) accessid_enabled = true;
+        if (_accessid_active) accessid_active = true;
 
         pwd_is_set =
             register_client_d != NULL &&
@@ -189,13 +193,20 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
             if (AccessID == 0 && register_client_d != NULL &&
                 (db->get_client_count(UserID) == 0 ||
                  is_superuser_authorized())) {
-              AccessID = db->get_access_id(UserID, true);
+              AccessID = db->get_access_id(UserID, true, true);
 
               if (AccessID > 0) {
                 accessid_enabled = true;
+                accessid_active = true;
               } else {
                 accessid_enabled = false;
-                AccessID = db->get_access_id(UserID, false);
+                AccessID = db->get_access_id(UserID, false, true);
+                if (AccessID > 0) {
+                  accessid_active = true;
+                } else {
+                  accessid_active = false;
+                  AccessID = db->get_access_id(UserID, false, false);
+                }
               }
             }
 
@@ -212,11 +223,17 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
               if (AccessID == 0) {
                 _accessid_enabled = false;
-                AccessID =
-                    db->get_client_access_id(ClientID, &_accessid_enabled);
+                _accessid_active = false;
+                AccessID = db->get_client_access_id(
+                    ClientID, &_accessid_enabled, &_accessid_active);
 
-                if (AccessID && _accessid_enabled) {
-                  accessid_enabled = true;
+                if (AccessID) {
+                  if (_accessid_enabled) {
+                    accessid_enabled = true;
+                  }
+                  if (_accessid_active) {
+                    accessid_active = true;
+                  }
                 }
               }
             }
@@ -240,10 +257,11 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
                 }
 
                 if (is_superuser_authorized()) {
-                  AccessID = db->get_access_id(UserID, true);
+                  AccessID = db->get_access_id(UserID, true, true);
 
                   if (AccessID) {
                     accessid_enabled = true;
+                    accessid_active = true;
                   }
                 }
               }
@@ -267,6 +285,9 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
               } else if (!accessid_enabled) {
                 resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
+
+              } else if (!accessid_active) {
+                resultcode = SUPLA_RESULTCODE_ACCESSID_INACTIVE;
 
               } else {
                 setID(ClientID);

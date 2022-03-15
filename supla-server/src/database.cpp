@@ -43,7 +43,7 @@
 #include "userchannelgroups.h"
 
 bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
-                    int *UserID, bool *is_enabled) {
+                    int *UserID, bool *is_enabled, bool *is_active) {
   if (_mysql == NULL || ID == 0 || strnlen(PWD, PWD_MAXSIZE) < 1) return false;
 
   MYSQL_BIND pbind[2];
@@ -57,16 +57,21 @@ bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
   pbind[1].buffer_length = strnlen(PWD, PWD_MAXSIZE);
 
   int _is_enabled = 0;
+  int _is_active = 0;
 
   int __ID = 0;
   MYSQL_STMT *stmt = NULL;
-  if (!stmt_get_int((void **)&stmt, &__ID, UserID, &_is_enabled, NULL, query,
-                    pbind, 2)) {
+  if (!stmt_get_int((void **)&stmt, &__ID, UserID, &_is_enabled,
+                    is_active ? &_is_active : NULL, query, pbind, 2)) {
     __ID = 0;
     _is_enabled = 0;
+    _is_active = 0;
   }
 
   *is_enabled = _is_enabled == 1;
+  if (is_active) {
+    *is_active = _is_active == 1;
+  }
 
   return __ID != 0;
 }
@@ -78,17 +83,20 @@ bool database::location_auth(int LocationID, char *LocationPWD, int *UserID,
   return auth(
       "SELECT id, user_id, enabled FROM `supla_location` WHERE id = ? AND "
       "password = ?",
-      LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID, is_enabled);
+      LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID, is_enabled,
+      NULL);
 }
 
 bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
-                             bool *is_enabled) {
+                             bool *is_enabled, bool *is_active) {
   if (AccessID == 0) return false;
 
   return auth(
-      "SELECT id, user_id, enabled FROM `supla_accessid` WHERE id = ? AND "
+      "SELECT id, user_id, enabled, is_now_active FROM "
+      "`supla_v_accessid_active` WHERE id = ? AND "
       "password = ?",
-      AccessID, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, UserID, is_enabled);
+      AccessID, AccessIDpwd, SUPLA_ACCESSID_PWD_MAXSIZE, UserID, is_enabled,
+      is_active);
 }
 
 char *database::get_user_email(int UserID) {
@@ -930,7 +938,7 @@ int database::get_client_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
 }
 
 int database::get_client(int ClientID, bool *client_enabled, int *access_id,
-                         bool *accessid_enabled) {
+                         bool *accessid_enabled, bool *accessid_active) {
   if (_mysql == NULL || ClientID == 0) return 0;
 
   MYSQL_BIND pbind[1];
@@ -942,19 +950,23 @@ int database::get_client(int ClientID, bool *client_enabled, int *access_id,
   int _client_enabled = 0;
   int _access_id = 0;
   int _accessid_enabled = 0;
+  int _accessid_active = 0;
 
   MYSQL_STMT *stmt = NULL;
 
-  if (stmt_get_int((void **)&stmt, &_client_enabled, &_access_id,
-                   &_accessid_enabled, NULL,
-                   "SELECT CAST(c.`enabled` AS unsigned integer) `c_enabled`, "
-                   "IFNULL(c.access_id, 0), IFNULL(CAST(a.`enabled` AS "
-                   "unsigned integer), 0) `a_enabled` FROM supla_client c LEFT "
-                   "JOIN supla_accessid a ON a.id = c.access_id WHERE c.id = ?",
-                   pbind, 1)) {
+  if (stmt_get_int(
+          (void **)&stmt, &_client_enabled, &_access_id, &_accessid_enabled,
+          &_accessid_active,
+          "SELECT CAST(c.`enabled` AS unsigned integer), IFNULL(c.access_id, "
+          "0), IFNULL(CAST(a.`enabled` AS unsigned integer), 0), "
+          "IFNULL(CAST(a.`is_now_active` AS unsigned integer), 0) FROM "
+          "supla_client c LEFT JOIN supla_v_accessid_active a ON a.id = "
+          "c.access_id WHERE c.id = ?",
+          pbind, 1)) {
     *client_enabled = _client_enabled == 1;
     *access_id = _access_id;
     *accessid_enabled = _accessid_enabled == 1;
+    *accessid_active = _accessid_active == 1;
     return ClientID;
   }
 
@@ -973,12 +985,13 @@ int database::get_client_count(int UserID) {
                    "SELECT COUNT(*) FROM supla_client WHERE user_id = ?");
 }
 
-int database::get_access_id(int UserID, bool enabled) {
+int database::get_access_id(int UserID, bool enabled, bool active) {
   MYSQL_STMT *stmt = NULL;
   int Result = 0;
   int _enabled = enabled ? 1 : 0;
+  int _active = active ? 1 : 0;
 
-  MYSQL_BIND pbind[2];
+  MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -987,16 +1000,20 @@ int database::get_access_id(int UserID, bool enabled) {
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&_enabled;
 
+  pbind[2].buffer_type = MYSQL_TYPE_LONG;
+  pbind[2].buffer = (char *)&_active;
+
   if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
-                    "SELECT id FROM `supla_accessid` WHERE user_id = ? AND "
-                    "enabled = ? LIMIT 1",
-                    pbind, 2))
+                    "SELECT id FROM `supla_v_accessid_active` WHERE user_id = "
+                    "? AND enabled = ? AND is_now_active = ? LIMIT 1",
+                    pbind, 3))
     return 0;
 
   return Result;
 }
 
-int database::get_client_access_id(int ClientID, bool *accessid_enabled) {
+int database::get_client_access_id(int ClientID, bool *accessid_enabled,
+                                   bool *accessid_active) {
   MYSQL_STMT *stmt = NULL;
   int Result = 0;
 
@@ -1004,18 +1021,26 @@ int database::get_client_access_id(int ClientID, bool *accessid_enabled) {
   memset(pbind, 0, sizeof(pbind));
 
   int _accessid_enabled = 0;
+  int _accessid_active = 0;
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&ClientID;
 
-  if (!stmt_get_int((void **)&stmt, &Result, &_accessid_enabled, NULL, NULL,
-                    "SELECT c.access_id, a.enabled FROM `supla_client` c JOIN "
-                    "`supla_accessid` a ON a.id = c.access_id WHERE c.id = ?",
-                    pbind, 1))
+  if (!stmt_get_int((void **)&stmt, &Result, &_accessid_enabled,
+                    &_accessid_active, NULL,
+                    "SELECT c.access_id, a.enabled, a.is_now_active FROM "
+                    "`supla_client` c JOIN `supla_v_accessid_active` a ON a.id "
+                    "= c.access_id WHERE c.id = ?",
+                    pbind, 1)) {
     return 0;
+  }
 
-  if (accessid_enabled && _accessid_enabled == 1) {
-    *accessid_enabled = true;
+  if (accessid_enabled) {
+    *accessid_enabled = _accessid_enabled == 1;
+  }
+
+  if (accessid_active) {
+    *accessid_active = _accessid_active == 1;
   }
 
   return Result;
