@@ -19,10 +19,22 @@
 #ifndef SUPLA_SCENE_OPERATIONS_H_
 #define SUPLA_SCENE_OPERATIONS_H_
 
+#include <list>
+
+#include "scene/supla_scene_operation.h"
+
 class supla_scene_operations {
+ private:
+  std::list<supla_scene_operation *> operations;
+
  public:
   supla_scene_operations();
   virtual ~supla_scene_operations();
+
+  int count(void);
+  void push(supla_scene_operation *operation);
+  supla_scene_operation *pop(void);
+  int get_delay_ms(void);
 };
 
 #endif /* SUPLA_SCENE_OPERATIONS_H_ */

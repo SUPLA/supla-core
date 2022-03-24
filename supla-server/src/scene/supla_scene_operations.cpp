@@ -20,4 +20,33 @@
 
 supla_scene_operations::supla_scene_operations() {}
 
-supla_scene_operations::~supla_scene_operations() {}
+supla_scene_operations::~supla_scene_operations() {
+  while (operations.size()) {
+    delete operations.back();
+    operations.pop_back();
+  }
+}
+
+int supla_scene_operations::count(void) { return operations.size(); }
+
+void supla_scene_operations::push(supla_scene_operation *operation) {
+  operations.push_back(operation);
+}
+
+supla_scene_operation *supla_scene_operations::pop(void) {
+  supla_scene_operation *result = NULL;
+  if (operations.size()) {
+    result = operations.front();
+    operations.pop_front();
+  }
+
+  return result;
+}
+
+int supla_scene_operations::get_delay_ms(void) {
+  if (operations.size()) {
+    return operations.front()->get_delay_ms();
+  }
+
+  return 0;
+}

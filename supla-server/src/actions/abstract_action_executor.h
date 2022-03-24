@@ -82,8 +82,8 @@ class supla_abstract_action_executor {
   virtual void open_close(void) = 0;
   virtual void open_close_without_canceling_tasks(void) = 0;
   virtual void forward_outside(int cap) = 0;
-  void copy(supla_abstract_value_getter *value_getter, int sourceDeviceId,
-            int sourceChannelId);
+  void copy(supla_abstract_value_getter *value_getter, int source_device_id,
+            int source_channel_id);
 };
 
 #endif /*ABSTRACT_ACTION_EXECUTOR_H_*/
