@@ -211,12 +211,12 @@ int supla_abstract_action_executor::get_group_id(void) {
 }
 
 void supla_abstract_action_executor::copy(
-    supla_abstract_value_getter *value_getter, int sourceDeviceId,
-    int sourceChannelId) {
+    supla_abstract_value_getter *value_getter, int source_device_id,
+    int source_channel_id) {
   if (value_getter) {
     supla_channel_value *value = NULL;
-    if ((value = value_getter->get_value(get_user_id(), sourceDeviceId,
-                                         sourceChannelId))) {
+    if ((value = value_getter->get_value(get_user_id(), source_device_id,
+                                         source_channel_id))) {
       any_value_to_action_converter *converter =
           new any_value_to_action_converter();
       if (converter) {

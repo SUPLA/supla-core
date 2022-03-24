@@ -25,15 +25,24 @@
 
 class supla_scene_asynctask : public supla_abstract_asynctask {
  private:
+  int user_id;
+  int scene_id;
   supla_abstract_action_executor *action_executor;
+  supla_abstract_value_getter *value_getter;
   supla_scene_operations *operations;
+  void set_delay(void);
+
+ protected:
+  bool _execute(bool *execute_again);
 
  public:
-  supla_scene_asynctask(supla_asynctask_queue *queue,
+  supla_scene_asynctask(int user_id, int scene_id, supla_asynctask_queue *queue,
                         supla_abstract_asynctask_thread_pool *pool,
                         supla_abstract_action_executor *action_executor,
+                        supla_abstract_value_getter *value_getter,
                         supla_scene_operations *operations);
   virtual ~supla_scene_asynctask();
+  int get_scene_id(void);
 };
 
 #endif /* SUPLA_SCENE_ASYNCTASK_H_ */
