@@ -175,4 +175,15 @@ TEST_F(CallerClassTest, conversionToSenderId) {
   EXPECT_EQ(c8.convert_to_sender_id(), 0);
 }
 
+TEST_F(CallerClassTest, comparsionOperator) {
+  supla_caller c1;
+  supla_caller c2(ctDevice);
+
+  EXPECT_TRUE(c1 == ctUnknown);
+  EXPECT_FALSE(c1 == ctDevice);
+
+  EXPECT_FALSE(c1 != ctUnknown);
+  EXPECT_TRUE(c1 != ctDevice);
+}
+
 } /* namespace testing */
