@@ -140,3 +140,7 @@ supla_caller &supla_caller::operator=(const supla_caller &caller) {
 
   return *this;
 }
+
+bool supla_caller::operator==(_callerType_e type) { return get_type() == type; }
+
+bool supla_caller::operator!=(_callerType_e type) { return get_type() != type; }
