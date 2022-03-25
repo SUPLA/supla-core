@@ -89,8 +89,7 @@ bool supla_user_channelgroups::for_each_channel(
   return for_each_channel(GroupID, false, f);
 }
 
-bool supla_user_channelgroups::set_new_value(event_source_type eventSourceType,
-                                             int SenderID,
+bool supla_user_channelgroups::set_new_value(const supla_caller &caller,
                                              TCS_SuplaNewValue *new_value) {
   if (new_value->Target != SUPLA_TARGET_GROUP) {
     return false;
@@ -98,11 +97,11 @@ bool supla_user_channelgroups::set_new_value(event_source_type eventSourceType,
 
   return for_each_channel(
       new_value->Id,
-      [new_value, this, eventSourceType, SenderID](
-          supla_device *device, int channelId, char EOL) -> bool {
-        return user->set_device_channel_value(
-            eventSourceType, SenderID, device->getID(), channelId,
-            new_value->Id, EOL, new_value->value);
+      [new_value, this, caller](supla_device *device, int channelId,
+                                char EOL) -> bool {
+        return user->set_device_channel_value(caller, device->getID(),
+                                              channelId, new_value->Id, EOL,
+                                              new_value->value);
       });
 }
 

@@ -28,10 +28,10 @@ class supla_alexa_changereport_request : public supla_alexa_request {
  public:
   supla_alexa_changereport_request(supla_user *user, int ClassID, int DeviceId,
                                    int ChannelId, event_type EventType,
-                                   event_source_type EventSourceType);
+                                   const supla_caller &Caller);
   virtual ~supla_alexa_changereport_request();
   virtual bool verifyExisting(supla_http_request *existing);
-  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
+  virtual bool isCallerAccepted(const supla_caller &caller,
                                          bool verification);
   virtual void execute(void *sthread);
   virtual bool queueUp(void);

@@ -32,9 +32,9 @@
 
 supla_state_webhook_request::supla_state_webhook_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, event_source_type EventSourceType)
+    event_type EventType, const supla_caller &Caller)
     : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
-                         EventSourceType) {
+                         Caller) {
   client = NULL;
   delayTime = 500000;
   duplicateExists = false;
@@ -95,8 +95,8 @@ bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
 
 bool supla_state_webhook_request::queueUp(void) { return !duplicateExists; }
 
-bool supla_state_webhook_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
+bool supla_state_webhook_request::isCallerAccepted(
+    const supla_caller &caller, bool verification) {
   supla_state_webhook_credentials *credentials =
       getUser()->stateWebhookCredentials();
   if (credentials == NULL || !credentials->isAccessTokenExists() ||
@@ -104,12 +104,14 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
     return false;
   }
 
-  switch (eventSourceType) {
-    case EST_DEVICE:
-    case EST_CLIENT:
-    case EST_AMAZON_ALEXA:
-    case EST_GOOGLE_HOME:
-    case EST_IPC: {
+  switch (caller.get_type()) {
+    case ctDevice:
+    case ctClient:
+    case ctAmazonAlexa:
+    case ctGoogleHome:
+    case ctActionTrigger:
+    case ctScene:
+    case ctIPC: {
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());
 
@@ -163,7 +165,7 @@ bool supla_state_webhook_request::isEventSourceTypeAccepted(
 
       return false;
     } break;
-    case EST_UNKNOWN:
+    case ctUnknown:
       return false;
   }
 

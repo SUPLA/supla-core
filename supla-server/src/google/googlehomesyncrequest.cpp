@@ -17,15 +17,16 @@
  */
 
 #include "google/googlehomesyncrequest.h"
+
 #include "log.h"
 #include "svrcfg.h"
 #include "user/user.h"
 
 supla_google_home_sync_request::supla_google_home_sync_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, event_source_type EventSourceType)
+    event_type EventType, const supla_caller &Caller)
     : supla_google_home_request(user, ClassID, DeviceId, ChannelId, EventType,
-                                EventSourceType) {
+                                Caller) {
   setDelay(15000000);  // 15 sec.
   setTimeout(scfg_int(CFG_GOOGLE_HOME_SYNCREQUEST_TIMEOUT) * 1000);
 }
@@ -41,8 +42,8 @@ bool supla_google_home_sync_request::verifyExisting(
   return true;
 }
 
-bool supla_google_home_sync_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
+bool supla_google_home_sync_request::isCallerAccepted(
+    const supla_caller &caller, bool verification) {
   return true;
 }
 

@@ -65,8 +65,8 @@ supla_caller::~supla_caller() {
   }
 }
 
-supla_caller *supla_caller::get_first(void) {
-  supla_caller *caller = this;
+const supla_caller *supla_caller::get_first(void) const {
+  const supla_caller *caller = this;
   while (caller) {
     if (!caller->parent) {
       return caller;
@@ -77,9 +77,9 @@ supla_caller *supla_caller::get_first(void) {
   return NULL;
 }
 
-int supla_caller::get_id(void) { return get_first()->id; }
+int supla_caller::get_id(void) const { return get_first()->id; }
 
-_callerType_e supla_caller::get_type() { return get_first()->type; }
+_callerType_e supla_caller::get_type() const { return get_first()->type; }
 
 supla_caller *supla_caller::clone(void) const {
   supla_caller *result = new supla_caller();
@@ -92,17 +92,17 @@ supla_caller *supla_caller::clone(void) const {
   return result;
 }
 
-int supla_caller::convert_to_sender_id(void) {
+int supla_caller::convert_to_sender_id(void) const {
   if (type == ctClient) {
     return id;
   }
   return 0;
 }
 
-int supla_caller::find(_callerType_e type, int id) {
+int supla_caller::find(_callerType_e type, int id) const {
   int count = 0;
   int n = 0;
-  supla_caller *caller = this;
+  const supla_caller *caller = this;
   while (caller) {
     count++;
     if (caller->type == type && caller->id == id) {
@@ -115,11 +115,11 @@ int supla_caller::find(_callerType_e type, int id) {
   return n ? count - n + 1 : 0;
 }
 
-int supla_caller::find(_callerType_e type) { return find(type, 0); }
+int supla_caller::find(_callerType_e type) const { return find(type, 0); }
 
-int supla_caller::stack_size(void) {
+int supla_caller::stack_size(void) const {
   int result = 0;
-  supla_caller *caller = this;
+  const supla_caller *caller = this;
   while (caller) {
     result++;
     caller = caller->parent;
@@ -141,6 +141,10 @@ supla_caller &supla_caller::operator=(const supla_caller &caller) {
   return *this;
 }
 
-bool supla_caller::operator==(_callerType_e type) { return get_type() == type; }
+bool supla_caller::operator==(_callerType_e type) const {
+  return get_type() == type;
+}
 
-bool supla_caller::operator!=(_callerType_e type) { return get_type() != type; }
+bool supla_caller::operator!=(_callerType_e type) const {
+  return get_type() != type;
+}

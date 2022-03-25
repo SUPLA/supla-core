@@ -44,8 +44,7 @@ class supla_user_channelgroups : public supla_objcontainer {
 
  public:
   explicit supla_user_channelgroups(supla_user *user);
-  bool set_new_value(event_source_type eventSourceType, int SenderID,
-                     TCS_SuplaNewValue *new_value);
+  bool set_new_value(const supla_caller &caller, TCS_SuplaNewValue *new_value);
   bool set_char_value(int GroupID, const char value);
   bool set_on(int GroupID, bool on);
   bool set_color(int GroupID, unsigned int color);

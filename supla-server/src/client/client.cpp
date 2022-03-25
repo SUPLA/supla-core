@@ -406,8 +406,8 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
   } else if (new_value->Target == SUPLA_TARGET_GROUP) {
     if (cgroups->groupExits(
             new_value->Id)) {  // Make sure the client has access to this group
-      getUser()->get_channel_groups()->set_new_value(EST_CLIENT, getID(),
-                                                     new_value);
+      getUser()->get_channel_groups()->set_new_value(
+          supla_caller(ctDevice, getID()), new_value);
     }
   }
 }

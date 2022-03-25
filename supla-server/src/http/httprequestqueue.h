@@ -19,6 +19,7 @@
 #ifndef HTTP_HTTPREQUESTQUEUE_H_
 #define HTTP_HTTPREQUESTQUEUE_H_
 
+#include "caller.h"
 #include "commontypes.h"
 #include "eh.h"
 #include "http/httprequestextraparams.h"
@@ -50,10 +51,10 @@ class supla_http_request_queue {
   int threadCount(void);
   int threadCountLimit(void);
   unsigned long long requestTotalCount(void);
-  void createByChannelEventSourceType(
-      supla_user *user, int deviceId, int channelId, event_type eventType,
-      event_source_type eventSourceType,
-      supla_http_request_extra_params *extraParams);
+  void createInTheCallerContext(supla_user *user, int deviceId, int channelId,
+                                event_type eventType,
+                                const supla_caller &caller,
+                                supla_http_request_extra_params *extraParams);
   void recalculateTime(struct timeval *now);
 
  public:
@@ -71,25 +72,24 @@ class supla_http_request_queue {
   void iterate(void *q_sthread);
   void addRequest(supla_http_request *request);
   void onChannelValueChangeEvent(supla_user *user, int deviceId, int channelId,
-                                 event_source_type eventSourceType,
+                                 const supla_caller &caller,
                                  const char correlationToken[] = NULL,
                                  const char googleRequestId[] = NULL);
 
   void onChannelsAddedEvent(supla_user *user, int deviceId,
-                            event_source_type eventSourceType,
+                            const supla_caller &caller,
                             const char correlationToken[] = NULL,
                             const char googleRequestId[] = NULL);
 
   void onDeviceDeletedEvent(supla_user *user, int deviceId,
-                            event_source_type eventSourceType,
+                            const supla_caller &caller,
                             const char correlationToken[] = NULL,
                             const char googleRequestId[] = NULL);
 
-  void onUserReconnectEvent(supla_user *user,
-                            event_source_type eventSourceType);
+  void onUserReconnectEvent(supla_user *user, const supla_caller &caller);
 
   void onGoogleHomeSyncNeededEvent(supla_user *user,
-                                   event_source_type eventSourceType);
+                                   const supla_caller &caller);
 
   void onActionsTriggered(supla_user *user, int deviceId, int channelId,
                           unsigned int actions);

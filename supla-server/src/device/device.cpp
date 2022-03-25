@@ -41,7 +41,8 @@ supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
     std::list<int> ids = channels->get_channel_ids();
     for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
-      getUser()->on_channel_value_changed(EST_DEVICE, getID(), *it);
+      getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
+                                          getID(), *it);
     }
   }
 
@@ -355,17 +356,19 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
               supla_user::add_device(this, UserID);
-              getUser()->update_client_device_channels(LocationID, getID());
+              getUser()->update_client_device_channels(LocationID, DeviceID);
 
               channels->on_device_registered(getUser(), DeviceID,
                                              dev_channels_b, dev_channels_c,
                                              channel_count);
 
               if (channels_added) {
-                getUser()->on_channels_added(DeviceID, EST_DEVICE);
+                getUser()->on_channels_added(DeviceID,
+                                             supla_caller(ctDevice, DeviceID));
               }
 
-              getUser()->on_device_registered(DeviceID, EST_DEVICE);
+              getUser()->on_device_registered(DeviceID,
+                                              supla_caller(ctDevice, DeviceID));
             }
           }
         }
@@ -437,12 +440,13 @@ void supla_device::on_device_channel_value_changed(
       differ = true;
     }
     if (differ) {
-      getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, false,
+      getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
+                                          getID(), ChannelId, false,
                                           significantChange);
 
       if (converted2extended) {
-        getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId,
-                                            true);
+        getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
+                                            getID(), ChannelId, true);
       }
     }
   }
@@ -454,7 +458,8 @@ void supla_device::on_device_channel_extendedvalue_changed(
 
   if (ChannelId != 0) {
     channels->set_channel_extendedvalue(ChannelId, &ev->value);
-    getUser()->on_channel_value_changed(EST_DEVICE, getID(), ChannelId, true);
+    getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
+                                        getID(), ChannelId, true);
   }
 }
 

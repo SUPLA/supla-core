@@ -17,6 +17,7 @@
  */
 
 #include <google/googlehomecredentials.h>
+
 #include "database.h"
 #include "http/httprequestqueue.h"
 #include "log.h"
@@ -66,7 +67,7 @@ void supla_google_home_credentials::on_sync_40x_error() {
 
 void supla_google_home_credentials::on_reportstate_404_error() {
   supla_http_request_queue::getInstance()->onGoogleHomeSyncNeededEvent(
-      getUser(), EST_GOOGLE_HOME);
+      getUser(), supla_caller(ctGoogleHome));
 }
 
 void supla_google_home_credentials::update(const char *access_token,
