@@ -21,15 +21,6 @@
 
 #include "proto.h"
 
-enum event_source_type {
-  EST_UNKNOWN,
-  EST_DEVICE,
-  EST_CLIENT,
-  EST_IPC,
-  EST_AMAZON_ALEXA,
-  EST_GOOGLE_HOME,
-};
-
 enum event_type {
   ET_CHANNEL_VALUE_CHANGED,
   ET_DEVICE_DELETED,

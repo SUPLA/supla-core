@@ -283,8 +283,8 @@ bool supla_client_channels::set_device_channel_new_value(int ChannelId,
 
     if (DeviceID) {
       return getClient()->getUser()->set_device_channel_value(
-          EST_CLIENT, getClient()->getID(), DeviceID, ChannelId, 0, false,
-          value);
+          supla_caller(ctDevice, getClient()->getID()), DeviceID, ChannelId, 0,
+          false, value);
     }
   }
 

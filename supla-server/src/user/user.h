@@ -26,6 +26,7 @@
 #include <functional>
 
 #include "amazon/alexacredentials.h"
+#include "caller.h"
 #include "commontypes.h"
 #include "google/googlehomecredentials.h"
 #include "proto.h"
@@ -97,7 +98,7 @@ class supla_user {
   static supla_user *find(int UserID, bool create);
   static supla_user *find_by_suid(const char *suid);
   static int suid_to_user_id(const char *suid, bool use_database);
-  static bool reconnect(int UserID, event_source_type eventSourceType);
+  static bool reconnect(int UserID, const supla_caller &caller);
   static bool client_reconnect(int UserID, int ClientID);
   static bool device_reconnect(int UserID, int DeviceID);
   static bool is_client_online(int UserID, int ClientID);
@@ -125,22 +126,21 @@ class supla_user {
   static void on_state_webhook_changed(int UserID);
   static void on_mqtt_settings_changed(int UserID);
   static void before_channel_function_change(int UserID, int ChannelID,
-                                             event_source_type eventSourceType);
+                                             const supla_caller &caller);
   static void before_device_delete(int UserID, int DeviceID,
-                                   event_source_type eventSourceType);
+                                   const supla_caller &caller);
   static void on_device_deleted(int UserID, int DeviceID,
-                                event_source_type eventSourceType);
+                                const supla_caller &caller);
   static void on_device_settings_changed(int UserID, int DeviceID,
-                                         event_source_type eventSourceType);
+                                         const supla_caller &caller);
   static unsigned int total_cd_count(bool client);
   static void log_metrics(int min_interval_sec);
 
-  void reconnect(event_source_type eventSourceType);
-  void reconnect(event_source_type eventSourceType, bool allDevices,
-                 bool allClients);
+  void reconnect(const supla_caller &caller);
+  void reconnect(const supla_caller &caller, bool allDevices, bool allClients);
 
-  void on_channels_added(int DeviceID, event_source_type eventSourceType);
-  void on_device_registered(int DeviceID, event_source_type eventSourceType);
+  void on_channels_added(int DeviceID, const supla_caller &caller);
+  void on_device_registered(int DeviceID, const supla_caller &caller);
 
   void moveDeviceToTrash(supla_device *device);
   void moveClientToTrash(supla_client *client);
@@ -188,13 +188,12 @@ class supla_user {
                          unsigned _supla_int_t *validity_time_sec,
                          bool for_client);
 
-  bool set_device_channel_value(event_source_type eventSourceType, int SenderID,
-                                int DeviceID, int ChannelID, int GroupID,
-                                unsigned char EOL,
+  bool set_device_channel_value(const supla_caller &caller, int DeviceID,
+                                int ChannelID, int GroupID, unsigned char EOL,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
 
   void update_client_device_channels(int LocationID, int DeviceID);
-  void on_channel_value_changed(event_source_type eventSourceType, int DeviceId,
+  void on_channel_value_changed(const supla_caller &caller, int DeviceId,
                                 int ChannelId = 0, bool Extended = false,
                                 bool SignificantChange = true);
   void on_channel_become_online(int DeviceId, int ChannelId);

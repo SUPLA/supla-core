@@ -33,14 +33,14 @@ class supla_google_home_request : public supla_http_request {
  public:
   supla_google_home_request(supla_user *user, int ClassID, int DeviceId,
                             int ChannelId, event_type EventType,
-                            event_source_type EventSourceType);
+                            const supla_caller &Caller);
   virtual ~supla_google_home_request();
 
   supla_google_home_client *getClient(void);
   virtual bool queueUp(void);
   virtual bool isCancelled(void *sthread);
   virtual void terminate(void *sthread);
-  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
+  virtual bool isCallerAccepted(const supla_caller &caller,
                                          bool verification);
   virtual bool isDeviceIdEqual(int DeviceId);
   virtual bool isChannelIdEqual(int ChannelId);

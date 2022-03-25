@@ -35,7 +35,7 @@ class supla_caller {
   supla_caller *parent;
   _callerType_e type;
   int id;
-  supla_caller *get_first(void);
+  const supla_caller *get_first(void) const;
 
  public:
   explicit supla_caller(const supla_caller &caller);
@@ -45,16 +45,16 @@ class supla_caller {
   supla_caller(const supla_caller &parent, _callerType_e type);
   supla_caller(const supla_caller &parent, _callerType_e type, int id);
   virtual ~supla_caller();
-  int get_id(void);
-  _callerType_e get_type();
+  int get_id(void) const;
+  _callerType_e get_type() const;
   supla_caller *clone(void) const;
-  int convert_to_sender_id(void);
-  int find(_callerType_e type, int id);
-  int find(_callerType_e type);
-  int stack_size(void);
+  int convert_to_sender_id(void) const;
+  int find(_callerType_e type, int id) const;
+  int find(_callerType_e type) const;
+  int stack_size(void) const;
   supla_caller &operator=(const supla_caller &caller);
-  bool operator==(_callerType_e type);
-  bool operator!=(_callerType_e type);
+  bool operator==(_callerType_e type) const;
+  bool operator!=(_callerType_e type) const;
 };
 
 #endif /* CALLER_H_ */

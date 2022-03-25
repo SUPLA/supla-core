@@ -17,16 +17,20 @@
  */
 
 #include "google/googlehomerequest.h"
+
 #include <assert.h>
+
 #include "lck.h"
 #include "sthread.h"
 #include "user/user.h"
 
-supla_google_home_request::supla_google_home_request(
-    supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, event_source_type EventSourceType)
+supla_google_home_request::supla_google_home_request(supla_user *user,
+                                                     int ClassID, int DeviceId,
+                                                     int ChannelId,
+                                                     event_type EventType,
+                                                     const supla_caller &Caller)
     : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
-                         EventSourceType) {
+                         Caller) {
   client = NULL;
   lck = lck_init();
   duplicateExists = false;
@@ -78,8 +82,8 @@ supla_google_home_client *supla_google_home_request::getClient(void) {
   return result;
 }
 
-bool supla_google_home_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
+bool supla_google_home_request::isCallerAccepted(
+    const supla_caller &caller, bool verification) {
   supla_google_home_credentials *google_home_credentials =
       getUser()->googleHomeCredentials();
   return google_home_credentials &&

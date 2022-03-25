@@ -30,14 +30,14 @@ class supla_alexa_request : public supla_http_request {
  public:
   supla_alexa_request(supla_user *user, int ClassID, int DeviceId,
                       int ChannelId, event_type EventType,
-                      event_source_type EventSourceType);
+                      const supla_caller &Caller);
   virtual ~supla_alexa_request();
   supla_alexa_client *getClient(void);
 
   virtual bool queueUp(void);
   virtual void terminate(void *sthread);
   virtual bool isCancelled(void *sthread);
-  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
+  virtual bool isCallerAccepted(const supla_caller &caller,
                                          bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   int getCauseType(void);

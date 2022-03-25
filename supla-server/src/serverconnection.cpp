@@ -925,7 +925,8 @@ void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
         case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
           if (client->is_superuser_authorized()) {
-            client->getUser()->reconnect(EST_CLIENT, false, true);
+            client->getUser()->reconnect(supla_caller(ctClient, cdptr->getID()),
+                                         false, true);
           } else {
             TSC_ClientsReconnectRequestResult result;
             memset(&result, 0, sizeof(TSC_ClientsReconnectRequestResult));
