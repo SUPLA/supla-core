@@ -57,6 +57,7 @@ bool supla_alexa_changereport_request::isCallerAccepted(
     case ctClient:
     case ctAmazonAlexa:
     case ctIPC:
+    case ctMQTT:
     case ctScene:
     case ctActionTrigger: {
       channel_complex_value value =

@@ -21,12 +21,14 @@
 
 #include "abstract_action_config.h"
 #include "abstract_value_getter.h"
+#include "caller.h"
 #include "device.h"
 #include "user.h"
 
 class supla_user_channelgroups;
 class supla_abstract_action_executor {
  private:
+  supla_caller caller;
   supla_user *user;
   int device_id;
   int subject_id;
@@ -42,24 +44,30 @@ class supla_abstract_action_executor {
 
  public:
   supla_abstract_action_executor(void);
-  supla_abstract_action_executor(supla_user *user, int device_id,
-                                 int channel_id);
-  supla_abstract_action_executor(int user_id, int device_id, int channel_id);
-  supla_abstract_action_executor(supla_user *user, int group_id);
-  supla_abstract_action_executor(int user_id, int group_id);
+  supla_abstract_action_executor(const supla_caller &caller, supla_user *user,
+                                 int device_id, int channel_id);
+  supla_abstract_action_executor(const supla_caller &caller, int user_id,
+                                 int device_id, int channel_id);
+  supla_abstract_action_executor(const supla_caller &caller, supla_user *user,
+                                 int group_id);
+  supla_abstract_action_executor(const supla_caller &caller, int user_id,
+                                 int group_id);
   virtual ~supla_abstract_action_executor(void);
 
+  void set_caller(const supla_caller &caller);
   void set_channel_id(supla_user *user, int device_id, int channel_id);
   void set_channel_id(int user_id, int device_id, int channel_id);
   void set_group_id(supla_user *user, int group_id);
   void set_group_id(int user_id, int group_id);
 
+  const supla_caller &get_caller(void);
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
   int get_group_id(void);
 
-  void execute_action(int user_id, abstract_action_config *config,
+  void execute_action(const supla_caller &caller, int user_id,
+                      abstract_action_config *config,
                       supla_abstract_value_getter *value_getter);
 
   virtual void set_on(bool on) = 0;

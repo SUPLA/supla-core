@@ -407,7 +407,7 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
     if (cgroups->groupExits(
             new_value->Id)) {  // Make sure the client has access to this group
       getUser()->get_channel_groups()->set_new_value(
-          supla_caller(ctDevice, getID()), new_value);
+          supla_caller(ctClient, getID()), new_value);
     }
   }
 }
@@ -505,7 +505,8 @@ void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
   } else if (request->Target == SUPLA_TARGET_GROUP) {
     if (cgroups->groupExits(
             request->Id)) {  // Make sure the client has access to this group
-      getUser()->get_channel_groups()->calcfg_request(getID(), request);
+      getUser()->get_channel_groups()->calcfg_request(
+          supla_caller(ctClient, getID()), request);
     }
   }
 }
@@ -608,7 +609,8 @@ void supla_client::timer_arm(TCS_TimerArmRequest *request) {
 
   channels->device_call(
       request->ChannelID, [this, request](supla_device *device) -> void {
-        device->get_channels()->timer_arm(getID(), request->ChannelID, 0, true,
+        device->get_channels()->timer_arm(supla_caller(ctClient, getID()),
+                                          request->ChannelID, 0, true,
                                           request->On, request->DurationMS);
       });
 }

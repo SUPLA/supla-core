@@ -469,11 +469,12 @@ void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
                            NULL);
 }
 
-void supla_http_request_queue::onActionsTriggered(supla_user *user,
+void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
+                                                  supla_user *user,
                                                   int deviceId, int channelId,
                                                   unsigned int actions) {
   createInTheCallerContext(
-      user, deviceId, channelId, ET_ACTION_TRIGGERED, supla_caller(ctDevice),
+      user, deviceId, channelId, ET_ACTION_TRIGGERED, caller,
       new supla_http_request_action_trigger_extra_params(actions));
 }
 

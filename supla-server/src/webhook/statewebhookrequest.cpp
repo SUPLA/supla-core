@@ -95,8 +95,8 @@ bool supla_state_webhook_request::verifyExisting(supla_http_request *existing) {
 
 bool supla_state_webhook_request::queueUp(void) { return !duplicateExists; }
 
-bool supla_state_webhook_request::isCallerAccepted(
-    const supla_caller &caller, bool verification) {
+bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
+                                                   bool verification) {
   supla_state_webhook_credentials *credentials =
       getUser()->stateWebhookCredentials();
   if (credentials == NULL || !credentials->isAccessTokenExists() ||
@@ -111,7 +111,8 @@ bool supla_state_webhook_request::isCallerAccepted(
     case ctGoogleHome:
     case ctActionTrigger:
     case ctScene:
-    case ctIPC: {
+    case ctIPC:
+    case ctMQTT: {
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());
 

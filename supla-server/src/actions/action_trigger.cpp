@@ -30,7 +30,8 @@ supla_action_trigger::supla_action_trigger(
 
 supla_action_trigger::~supla_action_trigger(void) {}
 
-void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
+void supla_action_trigger::execute_actions(int at_channel_id, int user_id,
+                                           unsigned int caps) {
   if (!aexec || !config) {
     return;
   }
@@ -44,6 +45,7 @@ void supla_action_trigger::execute_actions(int user_id, unsigned int caps) {
     }
 
     config->set_active_cap(cap);
-    aexec->execute_action(user_id, config, value_getter);
+    aexec->execute_action(supla_caller(ctActionTrigger, at_channel_id), user_id,
+                          config, value_getter);
   }
 }

@@ -27,29 +27,36 @@ supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->is_group = false;
 }
 
-supla_abstract_action_executor::supla_abstract_action_executor(supla_user *user,
-                                                               int device_id,
-                                                               int channel_id) {
+supla_abstract_action_executor::supla_abstract_action_executor(
+    const supla_caller &caller, supla_user *user, int device_id,
+    int channel_id) {
+  set_caller(caller);
   set_channel_id(user, device_id, channel_id);
 }
 
-supla_abstract_action_executor::supla_abstract_action_executor(int user_id,
-                                                               int device_id,
-                                                               int channel_id) {
+supla_abstract_action_executor::supla_abstract_action_executor(
+    const supla_caller &caller, int user_id, int device_id, int channel_id) {
+  set_caller(caller);
   set_channel_id(user_id, device_id, channel_id);
 }
 
-supla_abstract_action_executor::supla_abstract_action_executor(supla_user *user,
-                                                               int group_id) {
+supla_abstract_action_executor::supla_abstract_action_executor(
+    const supla_caller &caller, supla_user *user, int group_id) {
+  set_caller(caller);
   set_group_id(user, group_id);
 }
 
-supla_abstract_action_executor::supla_abstract_action_executor(int user_id,
-                                                               int group_id) {
+supla_abstract_action_executor::supla_abstract_action_executor(
+    const supla_caller &caller, int user_id, int group_id) {
+  set_caller(caller);
   set_group_id(user_id, group_id);
 }
 
 supla_abstract_action_executor::~supla_abstract_action_executor(void) {}
+
+void supla_abstract_action_executor::set_caller(const supla_caller &caller) {
+  this->caller = caller;
+}
 
 void supla_abstract_action_executor::set_channel_id(supla_user *user,
                                                     int device_id,
@@ -91,7 +98,7 @@ void supla_abstract_action_executor::access_device(
 }
 
 void supla_abstract_action_executor::execute_action(
-    int user_id, abstract_action_config *config,
+    const supla_caller &caller, int user_id, abstract_action_config *config,
     supla_abstract_value_getter *value_getter) {
   int action_id = 0;
   int subject_id = 0;
@@ -100,6 +107,8 @@ void supla_abstract_action_executor::execute_action(
       (subject_id = config->get_subject_id()) == 0) {
     return;
   }
+
+  set_caller(caller);
 
   if (config->get_subject_type() == stChannelGroup) {
     set_group_id(user_id, subject_id);
@@ -187,6 +196,10 @@ void supla_abstract_action_executor::execute_action(
       }
     });
   }
+}
+
+const supla_caller &supla_abstract_action_executor::get_caller(void) {
+  return caller;
 }
 
 supla_user_channelgroups *supla_abstract_action_executor::get_channel_groups(

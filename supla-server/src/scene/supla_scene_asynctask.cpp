@@ -21,8 +21,8 @@
 #include <assert.h>
 
 supla_scene_asynctask::supla_scene_asynctask(
-    int user_id, int scene_id, supla_asynctask_queue *queue,
-    supla_abstract_asynctask_thread_pool *pool,
+    const supla_caller &caller, int user_id, int scene_id,
+    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
     supla_scene_operations *operations)
@@ -31,6 +31,7 @@ supla_scene_asynctask::supla_scene_asynctask(
   assert(operations);
   assert(value_getter);
 
+  this->caller = caller;
   this->user_id = user_id;
   this->scene_id = scene_id;
   this->action_executor = action_executor;
@@ -65,9 +66,14 @@ void supla_scene_asynctask::set_delay(void) {
 int supla_scene_asynctask::get_scene_id(void) { return scene_id; }
 
 bool supla_scene_asynctask::_execute(bool *execute_again) {
+  if (caller.find(ctScene, scene_id)) {
+    return false;
+  }
+
   supla_scene_operation *operation = operations->pop();
   if (operation) {
-    action_executor->execute_action(user_id, operation->get_action(),
+    action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
+                                    user_id, operation->get_action(),
                                     value_getter);
     delete operation;
   }

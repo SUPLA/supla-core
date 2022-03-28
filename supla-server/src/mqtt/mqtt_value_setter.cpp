@@ -41,6 +41,7 @@ supla_action_executor *supla_mqtt_value_setter::get_action_executor(void) {
   }
 
   if (action_executor) {
+    action_executor->set_caller(supla_caller(ctMQTT));
     action_executor->set_channel_id(supla_user::find_by_suid(get_suid()),
                                     get_device_id(), get_channel_id());
   }

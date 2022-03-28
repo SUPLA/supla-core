@@ -52,7 +52,7 @@ void ActionTriggerCopyTest::TearDown() {
 }
 
 TEST_F(ActionTriggerCopyTest, empty) {
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 }
 
@@ -60,45 +60,48 @@ TEST_F(ActionTriggerCopyTest, gate) {
   value_getter->setResult(
       new supla_channel_gate_value(gsl_unknown, gsl_unknown));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
   value_getter->setResult(
       new supla_channel_gate_value(gsl_unknown, gsl_closed));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 0);
 
   value_getter->setResult(
       new supla_channel_gate_value(gsl_closed, gsl_unknown));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(77, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
 
   EXPECT_EQ(aexec->getCloseCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 77));
   EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
   value_getter->setResult(new supla_channel_gate_value(gsl_open, gsl_unknown));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(22, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 2);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 22));
 }
 
 TEST_F(ActionTriggerCopyTest, rollerShutter) {
   TDSC_RollerShutterValue rsval = {};
   value_getter->setResult(new supla_channel_rs_value(&rsval));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
   EXPECT_EQ(aexec->getClosingPercentage(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
   EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
@@ -106,19 +109,21 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   rsval.position = -1;
   value_getter->setResult(new supla_channel_rs_value(&rsval));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(6, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 6));
 
   rsval.position = 45;
   value_getter->setResult(new supla_channel_rs_value(&rsval));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(7, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 2);
   EXPECT_EQ(aexec->getClosingPercentage(), 45);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 7));
 
   at_config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectType\":\"channel\",\"subjectId\":"
@@ -127,7 +132,7 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   rsval.position = 80;
   value_getter->setResult(new supla_channel_rs_value(&rsval));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(8, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(value_getter->get_channel_id(), 68);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 3);
@@ -135,33 +140,36 @@ TEST_F(ActionTriggerCopyTest, rollerShutter) {
   EXPECT_EQ(value_getter->get_device_id(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 455);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 8));
 }
 
 TEST_F(ActionTriggerCopyTest, onOff) {
   value_getter->setResult(new supla_channel_onoff_value(true));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOnCounter(), 1);
   EXPECT_EQ(aexec->getOffCounter(), 0);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
   EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
 
   value_getter->setResult(new supla_channel_onoff_value(false));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 2);
   EXPECT_EQ(aexec->getOffCounter(), 1);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 1));
 }
 
 TEST_F(ActionTriggerCopyTest, rgbw) {
   TRGBW_Value rgbw = {};
   value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(1, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 1);
   EXPECT_EQ(aexec->getColor(), (unsigned int)0);
@@ -170,6 +178,7 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
   EXPECT_EQ(aexec->getRGBWOnOff(), RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 31);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 1));
   EXPECT_EQ(value_getter->get_device_id(), 66);
   EXPECT_EQ(value_getter->get_channel_id(), 46868);
   EXPECT_EQ(value_getter->get_user_id(), 1);
@@ -181,13 +190,14 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
 
   value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(2, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 2);
   EXPECT_EQ(aexec->getColor(), (unsigned int)0xAABBCC);
   EXPECT_EQ(aexec->getColorBrightness(), 50);
   EXPECT_EQ(aexec->getBrightness(), 0);
   EXPECT_EQ(aexec->getRGBWOnOff(), RGBW_BRIGHTNESS_ONOFF);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 2));
 
   rgbw.R = 0xA1;
   rgbw.G = 0xB2;
@@ -197,13 +207,14 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
 
   value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(3, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 3);
   EXPECT_EQ(aexec->getColor(), (unsigned int)0xA1B2C3);
   EXPECT_EQ(aexec->getColorBrightness(), 0);
   EXPECT_EQ(aexec->getBrightness(), 15);
   EXPECT_EQ(aexec->getRGBWOnOff(), RGBW_COLOR_ONOFF);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 3));
 
   rgbw.R = 0xA1;
   rgbw.G = 0x00;
@@ -213,13 +224,14 @@ TEST_F(ActionTriggerCopyTest, rgbw) {
 
   value_getter->setResult(new supla_channel_rgbw_value(&rgbw));
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(4, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 4);
   EXPECT_EQ(aexec->getColor(), (unsigned int)0xA100C3);
   EXPECT_EQ(aexec->getColorBrightness(), 25);
   EXPECT_EQ(aexec->getBrightness(), 15);
   EXPECT_EQ(aexec->getRGBWOnOff(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 4));
 }
 
 } /* namespace testing */

@@ -36,7 +36,7 @@ class supla_action_trigger {
                        supla_abstract_value_getter *value_getter);
   ~supla_action_trigger(void);
 
-  void execute_actions(int user_id, unsigned int caps);
+  void execute_actions(int at_channel_id, int user_id, unsigned int caps);
 };
 
 #endif /* ACTIONTRIGGER_H_ */
