@@ -148,3 +148,11 @@ bool supla_caller::operator==(_callerType_e type) const {
 bool supla_caller::operator!=(_callerType_e type) const {
   return get_type() != type;
 }
+
+bool supla_caller::operator==(const supla_caller &caller) const {
+  return get_id() == caller.get_id() && get_type() == caller.get_type();
+}
+
+bool supla_caller::operator!=(const supla_caller &caller) const {
+  return get_id() != caller.get_id() || get_type() != caller.get_type();
+}

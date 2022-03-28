@@ -110,8 +110,7 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
 
 bool supla_google_home_statereport_request::isCallerAccepted(
     const supla_caller &caller, bool verification) {
-  if (!supla_google_home_request::isCallerAccepted(caller,
-                                                            verification)) {
+  if (!supla_google_home_request::isCallerAccepted(caller, verification)) {
     return false;
   }
 
@@ -119,6 +118,7 @@ bool supla_google_home_statereport_request::isCallerAccepted(
     case ctDevice:
     case ctClient:
     case ctIPC:
+    case ctMQTT:
     case ctGoogleHome:
     case ctAmazonAlexa:
     case ctScene:

@@ -916,8 +916,8 @@ bool supla_user::set_device_channel_value(
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
         this, DeviceID, ChannelID, caller);
 
-    device->get_channels()->set_device_channel_value(
-        caller.convert_to_sender_id(), ChannelID, GroupID, EOL, value);
+    device->get_channels()->set_device_channel_value(caller, ChannelID, GroupID,
+                                                     EOL, value);
     device->releasePtr();
   }
 
@@ -991,7 +991,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
   supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-      this, DeviceId, ChannelId, supla_caller(ctDevice));
+      this, DeviceId, ChannelId, supla_caller(ctDevice, DeviceId));
   supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
       getUserID(), DeviceId, ChannelId);
 }
@@ -1006,7 +1006,7 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
     }
 }
 
-bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
+bool supla_user::device_calcfg_request(const supla_caller &caller, int DeviceId,
                                        int ChannelId,
                                        TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
@@ -1040,9 +1040,12 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
   }
 
   if (device) {
+    bool superUserAuthorized = false;
+    if (caller == ctClient && caller.get_id() > 0) {
+      superUserAuthorized = isSuperUserAuthorized(caller.get_id());
+    }
     result = device->get_channels()->calcfg_request(
-        SenderID, ChannelId,
-        SenderID > 0 ? isSuperUserAuthorized(SenderID) : false, request);
+        caller, ChannelId, superUserAuthorized, request);
     device->releasePtr();
   }
 
@@ -1071,19 +1074,6 @@ void supla_user::on_device_channel_state_result(int ChannelID,
     client->on_device_channel_state_result(ChannelID, state);
     client->releasePtr();
   }
-}
-
-bool supla_user::device_get_channel_state(int SenderID, int DeviceId,
-                                          TCSD_ChannelStateRequest *request) {
-  bool result = false;
-
-  supla_device *device = device_container->findByID(DeviceId);
-  if (device) {
-    result = device->get_channels()->get_channel_state(SenderID, request);
-    device->releasePtr();
-  }
-
-  return result;
 }
 
 void supla_user::reconnect(const supla_caller &caller, bool allDevices,

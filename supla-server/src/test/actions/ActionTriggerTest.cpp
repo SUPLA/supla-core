@@ -71,17 +71,19 @@ TEST_F(ActionTriggerTest, open) {
       "{\"actions\":{\"HOLD\":{\"subjectId\":3611,\"subjectType\":\"channel\","
       "\"action\":{\"id\":10,\"param\":[]}}}}");
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(2, 1, SUPLA_ACTION_CAP_HOLD);
   EXPECT_EQ(aexec->counterSetCount(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctUnknown, 0));
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(331122, 1, SUPLA_ACTION_CAP_HOLD);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 3611);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 331122));
 }
 
 TEST_F(ActionTriggerTest, openGroup) {
@@ -90,17 +92,19 @@ TEST_F(ActionTriggerTest, openGroup) {
       "\"channelGroup\","
       "\"action\":{\"id\":10,\"param\":[]}}}}");
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_HOLD);
   EXPECT_EQ(aexec->counterSetCount(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctUnknown, 0));
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
 
-  at->execute_actions(1, SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(6, 1, SUPLA_ACTION_CAP_HOLD);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 0);
   EXPECT_EQ(aexec->get_group_id(), 3611);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 6));
 }
 
 TEST_F(ActionTriggerTest, close) {
@@ -110,12 +114,13 @@ TEST_F(ActionTriggerTest, close) {
       "\"action\":{\"id\":20,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(33, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getCloseCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 4611);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 33));
 }
 
 TEST_F(ActionTriggerTest, shut) {
@@ -125,12 +130,13 @@ TEST_F(ActionTriggerTest, shut) {
       "\"action\":{\"id\":30,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(44, 1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 461);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 44));
 }
 
 TEST_F(ActionTriggerTest, reveal) {
@@ -140,11 +146,12 @@ TEST_F(ActionTriggerTest, reveal) {
       "\"action\":{\"id\":40,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x3);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x3);
+  at->execute_actions(75, 1, SUPLA_ACTION_CAP_TOGGLE_x3);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRevealCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 4);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 75));
 }
 
 TEST_F(ActionTriggerTest, revealPartially) {
@@ -154,12 +161,13 @@ TEST_F(ActionTriggerTest, revealPartially) {
       "\"action\":{\"id\":50,\"param\":{\"percentage\":11}}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x4);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x4);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x4);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getShutCounter(), 1);
   EXPECT_EQ(aexec->getClosingPercentage(), 89);
   EXPECT_EQ(aexec->get_channel_id(), 4);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, upOrStop) {
@@ -169,12 +177,13 @@ TEST_F(ActionTriggerTest, upOrStop) {
       "\"action\":{\"id\":140,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getUpOrStopCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 4461);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, downOrStop) {
@@ -184,12 +193,13 @@ TEST_F(ActionTriggerTest, downOrStop) {
       "\"action\":{\"id\":150,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getDownOrStopCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 44611);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, stepByStep) {
@@ -199,12 +209,13 @@ TEST_F(ActionTriggerTest, stepByStep) {
       "\"action\":{\"id\":160,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getStepByStepCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 446111);
   EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, turnOn) {
@@ -214,11 +225,12 @@ TEST_F(ActionTriggerTest, turnOn) {
       "\"action\":{\"id\":60,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x4);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x4);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x4);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOnCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 5);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, turnOff) {
@@ -228,11 +240,12 @@ TEST_F(ActionTriggerTest, turnOff) {
       "\"action\":{\"id\":70,\"param\":[]}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x5);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x5);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOffCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 6);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, setRGBWParameters) {
@@ -243,11 +256,12 @@ TEST_F(ActionTriggerTest, setRGBWParameters) {
       "brightness\":31}}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x1);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_SHORT_PRESS_x1);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 6789);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, openClose) {
@@ -257,11 +271,12 @@ TEST_F(ActionTriggerTest, openClose) {
       "\"action\":{\"id\":90}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x2);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_SHORT_PRESS_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getOpenCloseCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 6789);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, stop) {
@@ -271,11 +286,12 @@ TEST_F(ActionTriggerTest, stop) {
       "\"action\":{\"id\":100}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x3);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_SHORT_PRESS_x3);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getStopCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 6789);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, toggle) {
@@ -285,11 +301,12 @@ TEST_F(ActionTriggerTest, toggle) {
       "\"action\":{\"id\":110}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x4);
-  at->execute_actions(1, SUPLA_ACTION_CAP_SHORT_PRESS_x4);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_SHORT_PRESS_x4);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getToggleCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 6789);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, multiAction) {
@@ -302,12 +319,13 @@ TEST_F(ActionTriggerTest, multiAction) {
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x1 |
                               SUPLA_ACTION_CAP_HOLD);
-  at->execute_actions(1,
+  at->execute_actions(5, 1,
                       SUPLA_ACTION_CAP_SHORT_PRESS_x1 | SUPLA_ACTION_CAP_HOLD);
 
   EXPECT_EQ(aexec->counterSetCount(), 2);
   EXPECT_EQ(aexec->getOpenCounter(), 1);
   EXPECT_EQ(aexec->getRGBWCounter(), 1);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 TEST_F(ActionTriggerTest, forwardOutside) {
@@ -319,11 +337,12 @@ TEST_F(ActionTriggerTest, forwardOutside) {
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
   at_config->set_subject_id_if_not_set(5);
-  at->execute_actions(1, SUPLA_ACTION_CAP_TOGGLE_x2);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getForwardOutsideCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 5);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 
 } /* namespace testing */

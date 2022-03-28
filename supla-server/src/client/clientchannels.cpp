@@ -283,7 +283,7 @@ bool supla_client_channels::set_device_channel_new_value(int ChannelId,
 
     if (DeviceID) {
       return getClient()->getUser()->set_device_channel_value(
-          supla_caller(ctDevice, getClient()->getID()), DeviceID, ChannelId, 0,
+          supla_caller(ctClient, getClient()->getID()), DeviceID, ChannelId, 0,
           false, value);
     }
   }
@@ -329,7 +329,8 @@ bool supla_client_channels::device_calcfg_request(
 
   if (DeviceID) {
     return getClient()->getUser()->device_calcfg_request(
-        getClient()->getID(), DeviceID, ChannelID, request);
+        supla_caller(ctClient, getClient()->getID()), DeviceID, ChannelID,
+        request);
   }
 
   return false;
@@ -338,6 +339,8 @@ bool supla_client_channels::device_calcfg_request(
 bool supla_client_channels::device_get_channel_state(
     TCSD_ChannelStateRequest *request) {
   if (request == NULL) return false;
+
+  bool result = false;
 
   if (channel_exists(request->ChannelID)) {
     safe_array_lock(getArr());
@@ -352,12 +355,15 @@ bool supla_client_channels::device_get_channel_state(
     safe_array_unlock(getArr());
 
     if (DeviceID) {
-      return getClient()->getUser()->device_get_channel_state(
-          getClient()->getID(), DeviceID, request);
+      getClient()->getUser()->access_device(
+          DeviceID, 0, [this, &result, request](supla_device *device) -> void {
+            result = device->get_channels()->get_channel_state(
+                supla_caller(ctClient, getClient()->getID()), request);
+          });
     }
   }
 
-  return false;
+  return result;
 }
 
 void supla_client_channels::get_channel_basic_cfg(

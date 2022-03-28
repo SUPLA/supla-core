@@ -200,13 +200,10 @@ class supla_user {
 
   void call_event(TSC_SuplaEvent *event);
 
-  bool device_calcfg_request(int SenderID, int DeviceId, int ChannelId,
-                             TCS_DeviceCalCfgRequest_B *request);
+  bool device_calcfg_request(const supla_caller &caller, int DeviceId,
+                             int ChannelId, TCS_DeviceCalCfgRequest_B *request);
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
   void on_device_channel_state_result(int ChannelID, TDSC_ChannelState *state);
-
-  bool device_get_channel_state(int SenderID, int DeviceId,
-                                TCSD_ChannelStateRequest *request);
 
   channel_complex_value get_channel_complex_value(int ChannelID);
 

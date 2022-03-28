@@ -21,10 +21,12 @@
 
 #include "actions/action_executor.h"
 #include "asynctask/abstract_asynctask.h"
+#include "caller.h"
 #include "supla_scene_operations.h"
 
 class supla_scene_asynctask : public supla_abstract_asynctask {
  private:
+  supla_caller caller;
   int user_id;
   int scene_id;
   supla_abstract_action_executor *action_executor;
@@ -36,7 +38,8 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   bool _execute(bool *execute_again);
 
  public:
-  supla_scene_asynctask(int user_id, int scene_id, supla_asynctask_queue *queue,
+  supla_scene_asynctask(const supla_caller &caller, int user_id, int scene_id,
+                        supla_asynctask_queue *queue,
                         supla_abstract_asynctask_thread_pool *pool,
                         supla_abstract_action_executor *action_executor,
                         supla_abstract_value_getter *value_getter,

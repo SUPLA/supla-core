@@ -84,7 +84,7 @@ supla_alexa_client *supla_alexa_request::getClient(void) {
 }
 
 bool supla_alexa_request::isCallerAccepted(const supla_caller &caller,
-                                                    bool verification) {
+                                           bool verification) {
   supla_amazon_alexa_credentials *alexa = getUser()->amazonAlexaCredentials();
   return alexa && alexa->isAccessTokenExists() &&
          getUser()->is_device_online(getDeviceId());
@@ -102,6 +102,7 @@ int supla_alexa_request::getCauseType(void) {
 
     case ctClient:
     case ctIPC:
+    case ctMQTT:
     case ctGoogleHome:
     case ctScene:
       return CAUSE_APP_INTERACTION;

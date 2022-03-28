@@ -91,8 +91,8 @@ class supla_http_request_queue {
   void onGoogleHomeSyncNeededEvent(supla_user *user,
                                    const supla_caller &caller);
 
-  void onActionsTriggered(supla_user *user, int deviceId, int channelId,
-                          unsigned int actions);
+  void onActionsTriggered(const supla_caller &caller, supla_user *user,
+                          int deviceId, int channelId, unsigned int actions);
 };
 
 void http_request_queue_loop(void *ssd, void *q_sthread);

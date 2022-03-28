@@ -24,6 +24,7 @@ enum _callerType_e {
   ctDevice,
   ctClient,
   ctIPC,
+  ctMQTT,
   ctAmazonAlexa,
   ctGoogleHome,
   ctActionTrigger,
@@ -55,6 +56,8 @@ class supla_caller {
   supla_caller &operator=(const supla_caller &caller);
   bool operator==(_callerType_e type) const;
   bool operator!=(_callerType_e type) const;
+  bool operator==(const supla_caller &caller) const;
+  bool operator!=(const supla_caller &caller) const;
 };
 
 #endif /* CALLER_H_ */
