@@ -2068,3 +2068,43 @@ ALTER ALGORITHM = UNDEFINED SQL SECURITY DEFINER VIEW `supla_v_client_channel` A
 
 ALTER TABLE supla_dev_channel ADD properties VARCHAR(255) DEFAULT NULL;
 ALTER TABLE supla_dev_channel CHANGE config user_config LONGTEXT DEFAULT NULL;
+
+ALTER TABLE supla_accessid ADD active_from DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_to DATETIME DEFAULT NULL COMMENT '(DC2Type:utcdatetime)', ADD active_hours VARCHAR(768) DEFAULT NULL;
+
+DROP FUNCTION IF EXISTS supla_current_weekday_hour;
+DELIMITER ||
+CREATE FUNCTION supla_current_weekday_hour(`user_timezone` VARCHAR(50))
+        RETURNS VARCHAR(3)
+        BEGIN
+            DECLARE current_weekday INT;
+            DECLARE current_hour INT;
+            DECLARE current_time_in_user_timezone DATETIME;
+            SELECT COALESCE(CONVERT_TZ(CURRENT_TIMESTAMP, 'UTC', `user_timezone`), UTC_TIMESTAMP) INTO current_time_in_user_timezone;
+            SELECT (WEEKDAY(current_time_in_user_timezone) + 1) INTO current_weekday;
+            SELECT HOUR(current_time_in_user_timezone) INTO current_hour;
+            RETURN CONCAT(current_weekday, current_hour);
+        END||
+DROP FUNCTION IF EXISTS supla_is_access_id_now_active||
+CREATE FUNCTION supla_is_access_id_now_active(`active_from` DATETIME, `active_to` DATETIME, `active_hours` VARCHAR(768), `user_timezone` VARCHAR(50))
+        RETURNS int(11)
+        BEGIN
+            DECLARE res INT DEFAULT 1;
+
+            IF `active_from` IS NOT NULL THEN
+              SELECT (active_from <= UTC_TIMESTAMP) INTO res;
+            END IF;
+
+            IF res = 1 AND `active_to` IS NOT NULL THEN
+              SELECT (active_to >= UTC_TIMESTAMP) INTO res;
+            END IF;
+
+            IF res = 1 AND `active_hours` IS NOT NULL THEN
+              SELECT (`active_hours` LIKE CONCAT('%,', supla_current_weekday_hour(`user_timezone`) ,',%') COLLATE utf8mb4_unicode_ci) INTO res;
+            END IF;
+
+            RETURN res;
+        END||
+        CREATE OR REPLACE VIEW supla_v_accessid_active AS 
+        SELECT sa.*, supla_is_access_id_now_active(active_from, active_to, active_hours, timezone) is_now_active
+        FROM supla_accessid sa
+        INNER JOIN supla_user su ON su.id = sa.user_id||
