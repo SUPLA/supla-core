@@ -25,16 +25,6 @@
 supla_action_executor::supla_action_executor(void)
     : supla_abstract_action_executor() {}
 
-supla_action_executor::supla_action_executor(const supla_caller &caller,
-                                             supla_user *user, int device_id,
-                                             int channel_id)
-    : supla_abstract_action_executor(caller, user, device_id, channel_id) {}
-
-supla_action_executor::supla_action_executor(const supla_caller &caller,
-                                             int user_id, int device_id,
-                                             int channel_id)
-    : supla_abstract_action_executor(caller, user_id, device_id, channel_id) {}
-
 void supla_action_executor::set_on(bool on) {
   execute_action([this, on](supla_user_channelgroups *channel_groups,
                             supla_device_channels *channels) -> void {
@@ -135,15 +125,27 @@ void supla_action_executor::reveal(void) {
   });
 }
 
+void supla_action_executor::start(void) {
+  if (get_scene_id() && get_user()) {
+    // get_user()->scenes()->start(get_scene_id());
+  }
+}
+
 void supla_action_executor::stop(void) {
-  execute_action([this](supla_user_channelgroups *channel_groups,
-                        supla_device_channels *channels) -> void {
-    if (channel_groups) {
-      channel_groups->action_stop(get_caller(), get_group_id());
-    } else {
-      channels->action_stop(get_caller(), get_channel_id(), 0, 0);
+  if (get_scene_id()) {
+    if (get_user()) {
+      // get_user()->scenes()->stop(get_scene_id());
     }
-  });
+  } else {
+    execute_action([this](supla_user_channelgroups *channel_groups,
+                          supla_device_channels *channels) -> void {
+      if (channel_groups) {
+        channel_groups->action_stop(get_caller(), get_group_id());
+      } else {
+        channels->action_stop(get_caller(), get_channel_id(), 0, 0);
+      }
+    });
+  }
 }
 
 void supla_action_executor::up(void) {

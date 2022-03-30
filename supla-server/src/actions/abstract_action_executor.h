@@ -32,7 +32,7 @@ class supla_abstract_action_executor {
   supla_user *user;
   int device_id;
   int subject_id;
-  bool is_group;
+  _subjectType_e subject_type;
 
  protected:
   void execute_action(
@@ -41,17 +41,10 @@ class supla_abstract_action_executor {
   void access_device(std::function<void(supla_device *device)> on_device);
   supla_user *get_user(void);
   supla_user_channelgroups *get_channel_groups(void);
+  void set_unknown_subject_type(void);
 
  public:
   supla_abstract_action_executor(void);
-  supla_abstract_action_executor(const supla_caller &caller, supla_user *user,
-                                 int device_id, int channel_id);
-  supla_abstract_action_executor(const supla_caller &caller, int user_id,
-                                 int device_id, int channel_id);
-  supla_abstract_action_executor(const supla_caller &caller, supla_user *user,
-                                 int group_id);
-  supla_abstract_action_executor(const supla_caller &caller, int user_id,
-                                 int group_id);
   virtual ~supla_abstract_action_executor(void);
 
   void set_caller(const supla_caller &caller);
@@ -59,12 +52,15 @@ class supla_abstract_action_executor {
   void set_channel_id(int user_id, int device_id, int channel_id);
   void set_group_id(supla_user *user, int group_id);
   void set_group_id(int user_id, int group_id);
+  void set_scene_id(supla_user *user, int scene_id);
+  void set_scene_id(int user_id, int scene_id);
 
   const supla_caller &get_caller(void);
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
   int get_group_id(void);
+  int get_scene_id(void);
 
   void execute_action(const supla_caller &caller, int user_id,
                       abstract_action_config *config,
@@ -84,6 +80,7 @@ class supla_abstract_action_executor {
   virtual void up_or_stop(void) = 0;
   virtual void down_or_stop(void) = 0;
   virtual void step_by_step(void) = 0;
+  virtual void start(void) = 0;
   virtual void stop(void) = 0;
   virtual void open(void) = 0;
   virtual void close(void) = 0;

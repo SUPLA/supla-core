@@ -26,10 +26,6 @@
 class supla_action_executor : public supla_abstract_action_executor {
  public:
   supla_action_executor(void);
-  supla_action_executor(const supla_caller &caller, supla_user *user,
-                        int device_id, int channel_id);
-  supla_action_executor(const supla_caller &caller, int user_id, int device_id,
-                        int channel_id);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);
@@ -40,6 +36,7 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void toggle(void);
   virtual void shut(const char *closingPercentage);
   virtual void reveal(void);
+  virtual void start(void);
   virtual void stop(void);
   virtual void up(void);
   virtual void down(void);
