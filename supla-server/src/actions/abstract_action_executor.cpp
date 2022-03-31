@@ -172,8 +172,8 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_OPEN_CLOSE:
       open_close();
       break;
-    case ACTION_START:
-      start();
+    case ACTION_EXECUTE:
+      execute();
       break;
     case ACTION_STOP:
       stop();
