@@ -121,18 +121,18 @@ TEST_F(ActionExecutorTest, setGetSceneId) {
   EXPECT_EQ(aexec->get_scene_id(), 3);
 }
 
-TEST_F(ActionExecutorTest, startScene) {
+TEST_F(ActionExecutorTest, executeScene) {
   supla_action_config config;
   config.set_subject_id(15);
   config.set_subject_type(stScene);
-  config.set_action_id(ACTION_START);
+  config.set_action_id(ACTION_EXECUTE);
 
   ValueGetterStub value_getter;
 
   aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
-  EXPECT_EQ(aexec->getStartCounter(), 1);
+  EXPECT_EQ(aexec->getExecuteCounter(), 1);
   EXPECT_EQ(aexec->get_scene_id(), 15);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }

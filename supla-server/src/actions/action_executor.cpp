@@ -125,7 +125,7 @@ void supla_action_executor::reveal(void) {
   });
 }
 
-void supla_action_executor::start(void) {
+void supla_action_executor::execute(void) {
   if (get_scene_id() && get_user()) {
     // get_user()->scenes()->start(get_scene_id());
   }
