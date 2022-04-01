@@ -16,29 +16,35 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ASYNCTASK_SEARCH_INTEGRATION_TEST_H_
-#define ASYNCTASK_SEARCH_INTEGRATION_TEST_H_
+#ifndef MqttSubscriberTest_H_
+#define MqttSubscriberTest_H_
 
-#include "ChannelSearchCondition.h"
-#include "asynctask_queue.h"
-#include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
-#include "integration/IntegrationTest.h"
+#include "MqttClientTest.h"
+#include "doubles/integration/mqtt/MqttValueSetterMock.h"
+#include "gtest/gtest.h"
 
 namespace testing {
 
-class AsyncTaskSearchIntegrationTest : public IntegrationTest {
+class MqttSubscriberTest : public MqttClientTest {
+ private:
+  MqttValueSetterMock *value_setter;
+
  protected:
-  supla_asynctask_queue *queue;
-  AsyncTaskThreadPoolMock *pool;
-  ChannelSearchCondition *cnd;
+  void waitForData(int expectedTopicCount);
+  MqttValueSetterMock *getValueSetter(void);
+  virtual supla_mqtt_client *clientInit(
+      supla_mqtt_client_library_adapter *library_adapter,
+      supla_mqtt_client_settings *settings,
+      supla_mqtt_client_datasource *datasource);
+  virtual supla_mqtt_client_datasource *dsInit(
+      supla_mqtt_client_settings *settings);
 
  public:
-  virtual void SetUp();
+  MqttSubscriberTest();
+  virtual ~MqttSubscriberTest();
   virtual void TearDown();
-  AsyncTaskSearchIntegrationTest();
-  virtual ~AsyncTaskSearchIntegrationTest();
 };
 
 } /* namespace testing */
 
-#endif /* ASYNCTASK_SEARCH_INTEGRATION_TEST_H_ */
+#endif /* MqttSubscriberTest_H_ */

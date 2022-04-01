@@ -4,16 +4,28 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/asynctask/ActionGateOpenClose.cpp \
+../src/test/asynctask/AsyncTaskBasicTest.cpp \
+../src/test/asynctask/AsyncTaskSearchTest.cpp \
 ../src/test/asynctask/AsyncTaskTest.cpp \
-../src/test/asynctask/AsyncTaskThreadPoolTest.cpp 
+../src/test/asynctask/AsyncTaskThreadPoolTest.cpp \
+../src/test/asynctask/ChannelSearchCondition.cpp 
 
 CPP_DEPS += \
+./src/test/asynctask/ActionGateOpenClose.d \
+./src/test/asynctask/AsyncTaskBasicTest.d \
+./src/test/asynctask/AsyncTaskSearchTest.d \
 ./src/test/asynctask/AsyncTaskTest.d \
-./src/test/asynctask/AsyncTaskThreadPoolTest.d 
+./src/test/asynctask/AsyncTaskThreadPoolTest.d \
+./src/test/asynctask/ChannelSearchCondition.d 
 
 OBJS += \
+./src/test/asynctask/ActionGateOpenClose.o \
+./src/test/asynctask/AsyncTaskBasicTest.o \
+./src/test/asynctask/AsyncTaskSearchTest.o \
 ./src/test/asynctask/AsyncTaskTest.o \
-./src/test/asynctask/AsyncTaskThreadPoolTest.o 
+./src/test/asynctask/AsyncTaskThreadPoolTest.o \
+./src/test/asynctask/ChannelSearchCondition.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -28,7 +40,7 @@ src/test/asynctask/%.o: ../src/test/asynctask/%.cpp src/test/asynctask/subdir.mk
 clean: clean-src-2f-test-2f-asynctask
 
 clean-src-2f-test-2f-asynctask:
-	-$(RM) ./src/test/asynctask/AsyncTaskTest.d ./src/test/asynctask/AsyncTaskTest.o ./src/test/asynctask/AsyncTaskThreadPoolTest.d ./src/test/asynctask/AsyncTaskThreadPoolTest.o
+	-$(RM) ./src/test/asynctask/ActionGateOpenClose.d ./src/test/asynctask/ActionGateOpenClose.o ./src/test/asynctask/AsyncTaskBasicTest.d ./src/test/asynctask/AsyncTaskBasicTest.o ./src/test/asynctask/AsyncTaskSearchTest.d ./src/test/asynctask/AsyncTaskSearchTest.o ./src/test/asynctask/AsyncTaskTest.d ./src/test/asynctask/AsyncTaskTest.o ./src/test/asynctask/AsyncTaskThreadPoolTest.d ./src/test/asynctask/AsyncTaskThreadPoolTest.o ./src/test/asynctask/ChannelSearchCondition.d ./src/test/asynctask/ChannelSearchCondition.o
 
 .PHONY: clean-src-2f-test-2f-asynctask
 

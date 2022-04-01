@@ -23,7 +23,7 @@
 
 namespace testing {
 
-class IntegrationTest : public Test {
+class IntegrationTest {
  private:
  protected:
   void runSqlScript(const char *script);

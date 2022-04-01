@@ -16,29 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
-#define ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_
+#ifndef ASYNCTASKBASIC_TEST_H_
+#define ASYNCTASKBASIC_TEST_H_
 
-#include <doubles/actions/ActionExecutorMock.h>
-
-#include "AsyncTaskIntegrationTest.h"
+#include "asynctask_queue.h"
+#include "doubles/asynctask/AsyncTaskMock.h"
+#include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
+#include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class ActionGateOpenCloseIntegrationTest : public AsyncTaskIntegrationTest {
+class AsyncTaskBasicTest : public Test {
  protected:
-  void noActionRequired(bool open);
-  void openClose(bool open, int attemptCount, bool success);
-  void openClose(bool open, int attemptCount, bool success,
-                 int maxAttemptCount);
-  void WaitForOpenClose(ActionExecutorMock *action_executor, int expected_count,
-                        unsigned int usec);
+  supla_asynctask_queue *queue;
+  AsyncTaskThreadPoolMock *pool;
+  AsyncTaskMock *task;
 
  public:
-  ActionGateOpenCloseIntegrationTest();
-  virtual ~ActionGateOpenCloseIntegrationTest();
+  AsyncTaskBasicTest();
+  virtual ~AsyncTaskBasicTest();
+  void SetUp();
+  void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* ACTION_GATE_OPENCLOSE_INTEGRATION_TEST_H_ */
+#endif /* ASYNCTASKBASIC_TEST_H_ */

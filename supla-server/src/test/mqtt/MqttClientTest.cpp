@@ -16,16 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "MqttClientIntegrationTest.h"
-#include "log.h" // NOLINT
+#include <mqtt/MqttClientTest.h>
+
+#include "log.h"  // NOLINT
 
 namespace testing {
 
-MqttClientIntegrationTest::MqttClientIntegrationTest() : IntegrationTest() {}
+MqttClientTest::MqttClientTest() : Test() {}
 
-MqttClientIntegrationTest::~MqttClientIntegrationTest() {}
+MqttClientTest::~MqttClientTest() {}
 
-void MqttClientIntegrationTest::SetUp() {
+void MqttClientTest::SetUp() {
   iniSettings = new MqttClientSettingsMock();
   libraryAdapter = new MqttClientLibraryAdapterMock(iniSettings);
   dataSource = dsInit(iniSettings);
@@ -34,7 +35,7 @@ void MqttClientIntegrationTest::SetUp() {
   client->start();
 }
 
-void MqttClientIntegrationTest::TearDown() {
+void MqttClientTest::TearDown() {
   client->stop();
   delete client;
   delete dataSource;
@@ -42,21 +43,19 @@ void MqttClientIntegrationTest::TearDown() {
   delete libraryAdapter;
 }
 
-supla_mqtt_client *MqttClientIntegrationTest::getClient(void) { return client; }
+supla_mqtt_client *MqttClientTest::getClient(void) { return client; }
 
-supla_mqtt_client_datasource *MqttClientIntegrationTest::getDS(void) {
-  return dataSource;
-}
+supla_mqtt_client_datasource *MqttClientTest::getDS(void) { return dataSource; }
 
-MqttClientLibraryAdapterMock *MqttClientIntegrationTest::getLibAdapter(void) {
+MqttClientLibraryAdapterMock *MqttClientTest::getLibAdapter(void) {
   return libraryAdapter;
 }
 
-MqttClientSettingsMock *MqttClientIntegrationTest::getSettings(void) {
+MqttClientSettingsMock *MqttClientTest::getSettings(void) {
   return iniSettings;
 }
 
-void MqttClientIntegrationTest::waitForConnection() {
+void MqttClientTest::waitForConnection() {
   for (int a = 0; a < 5000; a++) {
     if (libraryAdapter->is_connected()) {
       return;
@@ -67,7 +66,7 @@ void MqttClientIntegrationTest::waitForConnection() {
   ASSERT_TRUE(false);
 }
 
-void MqttClientIntegrationTest::waitForPublications(int expectedTopicCount) {
+void MqttClientTest::waitForPublications(int expectedTopicCount) {
   for (int a = 0; a < 5000; a++) {
     if (getLibAdapter()->published_count() == expectedTopicCount &&
         !getDS()->is_context_open()) {
@@ -81,7 +80,7 @@ void MqttClientIntegrationTest::waitForPublications(int expectedTopicCount) {
   ASSERT_TRUE(false);
 }
 
-void MqttClientIntegrationTest::print_expected(void) {
+void MqttClientTest::print_expected(void) {
   printf("const char *expectedData[] = {\n");
   bool first = true;
   while (getLibAdapter()->published_count()) {
@@ -121,8 +120,7 @@ void MqttClientIntegrationTest::print_expected(void) {
   printf("};\n");
 }  // namespace testing
 
-void MqttClientIntegrationTest::verify_published(const char *expectedData[],
-                                                 int count) {
+void MqttClientTest::verify_published(const char *expectedData[], int count) {
   ASSERT_EQ(count / 2, getLibAdapter()->published_count());
 
   int n = 0;
