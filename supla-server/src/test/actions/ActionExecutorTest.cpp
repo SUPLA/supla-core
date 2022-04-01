@@ -148,7 +148,7 @@ TEST_F(ActionExecutorTest, stopScene) {
   aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
-  EXPECT_EQ(aexec->getExecuteCounter(), 1);
+  EXPECT_EQ(aexec->getStopCounter(), 1);
   EXPECT_EQ(aexec->get_scene_id(), 25);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }
