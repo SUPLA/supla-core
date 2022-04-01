@@ -22,7 +22,7 @@
 #include "asynctask_queue.h"
 #include "doubles/asynctask/AsyncTaskMock.h"
 #include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "gtest/gtest.h"
 
 namespace testing {
 
@@ -30,13 +30,16 @@ class AsyncTaskTest : public Test {
  protected:
   supla_asynctask_queue *queue;
   AsyncTaskThreadPoolMock *pool;
-  AsyncTaskMock *task;
+  void WaitForState(supla_abstract_asynctask *task, async_task_state expected,
+                    unsigned int usec);
+  void WaitForExec(AsyncTaskThreadPoolMock *pool, unsigned int expected_count,
+                   unsigned int usec);
 
  public:
+  virtual void SetUp();
+  virtual void TearDown();
   AsyncTaskTest();
   virtual ~AsyncTaskTest();
-  void SetUp();
-  void TearDown();
 };
 
 } /* namespace testing */

@@ -16,19 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef MQTTCLIENTINTEGRATIONTEST_H_
-#define MQTTCLIENTINTEGRATIONTEST_H_
+#ifndef MQTTCLIENTTEST_H_
+#define MQTTCLIENTTEST_H_
 
 #include <mqtt_publisher_datasource.h>
 
 #include "doubles/integration/mqtt/MqttClientLibraryAdapterMock.h"
 #include "doubles/integration/mqtt/MqttClientSettingsMock.h"
-#include "integration/IntegrationTest.h"
+#include "gtest/gtest.h"
 #include "mqtt_publisher.h"
 
 namespace testing {
 
-class MqttClientIntegrationTest : public IntegrationTest {
+class MqttClientTest : public Test {
  private:
   MqttClientSettingsMock *iniSettings;
   MqttClientLibraryAdapterMock *libraryAdapter;
@@ -56,10 +56,10 @@ class MqttClientIntegrationTest : public IntegrationTest {
  public:
   virtual void SetUp();
   virtual void TearDown();
-  MqttClientIntegrationTest();
-  virtual ~MqttClientIntegrationTest();
+  MqttClientTest();
+  virtual ~MqttClientTest();
 };
 
 } /* namespace testing */
 
-#endif /* MQTTCLIENTINTEGRATIONTEST_H_ */
+#endif /* MQTTCLIENTTEST_H_ */

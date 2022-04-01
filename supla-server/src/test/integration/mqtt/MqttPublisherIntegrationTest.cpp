@@ -25,7 +25,7 @@
 namespace testing {
 
 MqttPublisherIntegrationTest::MqttPublisherIntegrationTest()
-    : MqttClientIntegrationTest() {}
+    : MqttClientTest(), IntegrationTest() {}
 
 MqttPublisherIntegrationTest::~MqttPublisherIntegrationTest() {}
 
@@ -57,7 +57,7 @@ void MqttPublisherIntegrationTest::SetUp() {
   initTestDatabase();
   runSqlScript("DataForMqttTests.sql");
 
-  MqttClientIntegrationTest::SetUp();
+  MqttClientTest::SetUp();
 }
 
 TEST_F(MqttPublisherIntegrationTest, fullScope) {

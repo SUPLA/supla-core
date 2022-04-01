@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "AsyncTaskSearchIntegrationTest.h"
+#include <asynctask/AsyncTaskSearchTest.h>
 
 #include "doubles/asynctask/AsyncTaskMock.h"
 #include "doubles/integration/asynctask/ChannelOrientedAsyncTaskMock.h"
@@ -24,14 +24,14 @@
 
 namespace testing {
 
-AsyncTaskSearchIntegrationTest::AsyncTaskSearchIntegrationTest(void) {
+AsyncTaskSearchTest::AsyncTaskSearchTest(void) {
   queue = NULL;
   pool = NULL;
   cnd = NULL;
 }
-AsyncTaskSearchIntegrationTest::~AsyncTaskSearchIntegrationTest(void) {}
+AsyncTaskSearchTest::~AsyncTaskSearchTest(void) {}
 
-void AsyncTaskSearchIntegrationTest::SetUp() {
+void AsyncTaskSearchTest::SetUp() {
   queue = new supla_asynctask_queue();
   ASSERT_TRUE(queue != NULL);
 
@@ -42,7 +42,7 @@ void AsyncTaskSearchIntegrationTest::SetUp() {
   EXPECT_TRUE(cnd != NULL);
 }
 
-void AsyncTaskSearchIntegrationTest::TearDown() {
+void AsyncTaskSearchTest::TearDown() {
   if (queue) {
     delete queue;
   }
@@ -52,8 +52,7 @@ void AsyncTaskSearchIntegrationTest::TearDown() {
   }
 }
 
-TEST_F(AsyncTaskSearchIntegrationTest,
-       testsRelatedToSearchingForTasksInTheQueue) {
+TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
   ASSERT_EQ(queue->total_count(), (unsigned int)0);
 
   int a;

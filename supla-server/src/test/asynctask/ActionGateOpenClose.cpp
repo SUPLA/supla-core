@@ -16,7 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ActionGateOpenCloseIntegrationTest.h"
+#include <asynctask/ActionGateOpenCloseTest.h>
+
 #include "actions/action_gate_openclose.h"
 #include "device/channel_gate_value.h"
 #include "doubles/channeljsonconfig/ChannelJSONConfigGetterStub.h"
@@ -26,7 +27,7 @@
 namespace testing {
 
 ActionGateOpenCloseIntegrationTest::ActionGateOpenCloseIntegrationTest()
-    : AsyncTaskIntegrationTest() {}
+    : AsyncTaskTest() {}
 
 ActionGateOpenCloseIntegrationTest::~ActionGateOpenCloseIntegrationTest() {}
 
