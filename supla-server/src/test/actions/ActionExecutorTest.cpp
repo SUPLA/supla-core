@@ -137,4 +137,20 @@ TEST_F(ActionExecutorTest, executeScene) {
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }
 
+TEST_F(ActionExecutorTest, stopScene) {
+  supla_action_config config;
+  config.set_subject_id(25);
+  config.set_subject_type(stScene);
+  config.set_action_id(ACTION_STOP);
+
+  ValueGetterStub value_getter;
+
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getExecuteCounter(), 1);
+  EXPECT_EQ(aexec->get_scene_id(), 25);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
+}
+
 } /* namespace testing */
