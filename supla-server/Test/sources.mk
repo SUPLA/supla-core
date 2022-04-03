@@ -56,6 +56,7 @@ src/test/http \
 src/test/integration \
 src/test/integration/mqtt \
 src/test/mqtt \
+src/test/scene \
 src/test/webhook \
 src/user \
 src/webhook \
