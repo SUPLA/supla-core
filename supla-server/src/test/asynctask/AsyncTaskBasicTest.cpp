@@ -22,19 +22,11 @@
 
 namespace testing {
 
-AsyncTaskBasicTest::AsyncTaskBasicTest(void) {
-  queue = NULL;
-  pool = NULL;
-  task = NULL;
-}
+AsyncTaskBasicTest::AsyncTaskBasicTest(void) : AsyncTaskTest() { task = NULL; }
 AsyncTaskBasicTest::~AsyncTaskBasicTest(void) {}
 
 void AsyncTaskBasicTest::SetUp() {
-  queue = new supla_asynctask_queue();
-  ASSERT_TRUE(queue != NULL);
-
-  pool = new AsyncTaskThreadPoolMock(queue);
-  EXPECT_TRUE(pool != NULL);
+  AsyncTaskTest::SetUp();
 
   if (pool) {
     task = new AsyncTaskMock(queue, pool, -123, true);
