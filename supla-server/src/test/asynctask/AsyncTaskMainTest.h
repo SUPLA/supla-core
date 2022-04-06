@@ -16,27 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ASYNCTASKBASIC_TEST_H_
-#define ASYNCTASKBASIC_TEST_H_
+#ifndef ASYNCTASKMAIN_TEST_H_
+#define ASYNCTASKMAIN_TEST_H_
 
 #include "AsyncTaskTest.h"
 #include "asynctask_queue.h"
 #include "doubles/asynctask/AsyncTaskMock.h"
 #include "doubles/asynctask/AsyncTaskThreadPoolMock.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "gtest/gtest.h"
 
 namespace testing {
 
-class AsyncTaskBasicTest : public AsyncTaskTest {
- protected:
-  AsyncTaskMock *task;
-
+class AsyncTaskMainTest : public AsyncTaskTest {
  public:
-  AsyncTaskBasicTest();
-  virtual ~AsyncTaskBasicTest();
-  void SetUp();
+  AsyncTaskMainTest();
+  virtual ~AsyncTaskMainTest();
 };
 
 } /* namespace testing */
 
-#endif /* ASYNCTASKBASIC_TEST_H_ */
+#endif /* ASYNCTASKMAIN_TEST_H_ */
