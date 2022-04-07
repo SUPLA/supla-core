@@ -25,8 +25,8 @@ supla_scene_asynctask::supla_scene_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
-    supla_scene_operations *operations)
-    : supla_abstract_asynctask(queue, pool) {
+    supla_scene_operations *operations, bool release_immediately)
+    : supla_abstract_asynctask(queue, pool, 0, release_immediately) {
   assert(action_executor);
   assert(operations);
   assert(value_getter);

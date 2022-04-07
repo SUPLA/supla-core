@@ -33,8 +33,6 @@ void AsyncTaskBasicTest::SetUp() {
   }
 }
 
-void AsyncTaskBasicTest::TearDown() { delete queue; }
-
 TEST_F(AsyncTaskBasicTest, initWithNulls_1) {
   ASSERT_DEATH(new AsyncTaskMock(NULL, NULL, 0, true),
                "Assertion `queue' failed");
@@ -108,4 +106,5 @@ TEST_F(AsyncTaskBasicTest, cancel) {
   ASSERT_EQ(task->get_state(), STA_STATE_CANCELED);
   ASSERT_TRUE(task->is_finished());
 }
+
 }  // namespace testing

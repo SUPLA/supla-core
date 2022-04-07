@@ -19,16 +19,23 @@
 #ifndef SCENETEST_H_
 #define SCENETEST_H_
 
+#include "asynctask/AsyncTaskTest.h"
+#include "doubles/actions/ActionExecutorMock.h"
+#include "doubles/device/ValueGetterStub.h"
 #include "gtest/gtest.h"
+#include "scene/supla_scene_asynctask.h"
 
 namespace testing {
 
-class SceneTest : public Test {
+class SceneTest : public AsyncTaskTest {
  private:
  protected:
+  ActionExecutorMock *action_executor;
+  ValueGetterStub *value_getter;
+  supla_scene_operations *operations;
+
  public:
   virtual void SetUp();
-  virtual void TearDown();
   SceneTest();
   virtual ~SceneTest();
 };
