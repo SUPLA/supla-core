@@ -16,30 +16,36 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SCENETEST_H_
-#define SCENETEST_H_
+#ifndef SCENE_ACTION_EXECUTOR_MOCK_H_
+#define SCENE_ACTION_EXECUTOR_MOCK_H_
 
-#include "asynctask/AsyncTaskTest.h"
-#include "doubles/device/ValueGetterStub.h"
-#include "doubles/scene/SceneActionExecutorMock.h"
-#include "gtest/gtest.h"
+#include "asynctask/abstract_asynctask.h"
+#include "doubles/actions/ActionExecutorMock.h"
 #include "scene/supla_scene_asynctask.h"
 
 namespace testing {
 
-class SceneTest : public AsyncTaskTest {
+class SceneActionExecutorMock : public ActionExecutorMock {
  private:
- protected:
+  supla_asynctask_queue *queue;
+  supla_abstract_asynctask_thread_pool *pool;
   SceneActionExecutorMock *action_executor;
-  ValueGetterStub *value_getter;
+  supla_abstract_value_getter *value_getter;
   supla_scene_operations *operations;
+  supla_scene_asynctask *last_executed_scene;
 
  public:
-  virtual void SetUp();
-  SceneTest();
-  virtual ~SceneTest();
+  SceneActionExecutorMock();
+  virtual ~SceneActionExecutorMock();
+  virtual void execute(void);
+  void set_scene_params(supla_asynctask_queue *queue,
+                        supla_abstract_asynctask_thread_pool *pool,
+                        SceneActionExecutorMock *action_executor,
+                        supla_abstract_value_getter *value_getter,
+                        supla_scene_operations *operations);
+  supla_scene_asynctask *get_last_executed_scene(void);
 };
 
 } /* namespace testing */
 
-#endif /* SCENETEST_H_ */
+#endif /* SCENE_ACTION_EXECUTOR_MOCK_H_ */

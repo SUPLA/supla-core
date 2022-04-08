@@ -53,6 +53,9 @@ class supla_caller {
   int find(_callerType_e type, int id) const;
   int find(_callerType_e type) const;
   int stack_size(void) const;
+#ifdef __DEBUG
+  void print_stack(void) const;
+#endif /*__DEBUG*/
   supla_caller &operator=(const supla_caller &caller);
   bool operator==(_callerType_e type) const;
   bool operator!=(_callerType_e type) const;

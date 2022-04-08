@@ -20,6 +20,8 @@
 
 #include <string.h>
 
+#include "log.h"
+
 supla_caller::supla_caller(const supla_caller &caller) {
   this->parent = NULL;
   this->type = ctUnknown;
@@ -127,6 +129,17 @@ int supla_caller::stack_size(void) const {
 
   return result;
 }
+
+#ifdef __DEBUG
+void supla_caller::print_stack(void) const {
+  supla_log(LOG_DEBUG, "CALLER STACK");
+  const supla_caller *caller = this;
+  while (caller) {
+    supla_log(LOG_DEBUG, "%i:%i", caller->type, caller->id);
+    caller = caller->parent;
+  }
+}
+#endif /*__DEBUG*/
 
 supla_caller &supla_caller::operator=(const supla_caller &caller) {
   if (parent) {

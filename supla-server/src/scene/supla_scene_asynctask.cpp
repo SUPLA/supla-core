@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include "log.h"
+
 supla_scene_asynctask::supla_scene_asynctask(
     const supla_caller &caller, int user_id, int scene_id,
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
@@ -73,7 +75,7 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
   supla_scene_operation *operation = operations->pop();
   if (operation) {
     action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
-                                    user_id, operation->get_action(),
+                                    user_id, operation->get_action_config(),
                                     value_getter);
     delete operation;
   }

@@ -50,6 +50,7 @@ src/test/doubles/device \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/mqtt \
+src/test/doubles/scene \
 src/test/google \
 src/test/gtest \
 src/test/http \

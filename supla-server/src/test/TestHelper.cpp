@@ -35,12 +35,17 @@ void TestHelper::printEscaped(const char *str) {
 }
 
 // static
+unsigned long long TestHelper::timeDiffUs(const struct timeval &now,
+                                          const struct timeval &then) {
+  return (now.tv_sec * 1000000 + now.tv_usec) -
+         (then.tv_sec * 1000000 + then.tv_usec);
+}
+
+// static
 unsigned long long TestHelper::usecSince(const struct timeval &tv) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
-
-  return (now.tv_sec * 1000000 + now.tv_usec) -
-         (tv.tv_sec * 1000000 + tv.tv_usec);
+  return timeDiffUs(now, tv);
 }
 
 }  // namespace testing

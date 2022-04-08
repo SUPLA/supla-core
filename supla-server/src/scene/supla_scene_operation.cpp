@@ -22,11 +22,14 @@ supla_scene_operation::supla_scene_operation(void) { this->delay_ms = 0; }
 
 supla_scene_operation::~supla_scene_operation() {}
 
-void supla_scene_operation::set_action(const supla_action_config &action) {
-  this->action = action;
+void supla_scene_operation::set_action_config(
+    const supla_action_config &action_config) {
+  this->action_config = action_config;
 }
 
-supla_action_config *supla_scene_operation::get_action(void) { return &action; }
+supla_action_config *supla_scene_operation::get_action_config(void) {
+  return &action_config;
+}
 
 int supla_scene_operation::get_delay_ms(void) { return delay_ms; }
 

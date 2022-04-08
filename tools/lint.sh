@@ -36,6 +36,7 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/asynctask/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/channeljsonconfig/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/device/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/mqtt/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/scene/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/asynctask/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 

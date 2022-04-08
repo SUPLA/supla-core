@@ -18,6 +18,7 @@ RM := rm -rf
 -include src/test/http/subdir.mk
 -include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
+-include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
