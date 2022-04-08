@@ -18,11 +18,16 @@
 
 #include "scene/SceneTest.h"
 
+#include "TestHelper.h"
 #include "log.h"  // NOLINT
 
 namespace testing {
 
-SceneTest::SceneTest() : AsyncTaskTest() {}
+SceneTest::SceneTest() : AsyncTaskTest() {
+  action_executor = NULL;
+  value_getter = NULL;
+  operations = NULL;
+}
 
 SceneTest::~SceneTest() {}
 
@@ -52,6 +57,8 @@ void SceneTest::SetUp() {
 }
 
 TEST_F(SceneTest, executeEmptyScene) {
+  EXPECT_EQ(operations->get_delay_ms(), 0);
+
   supla_scene_asynctask *scene = new supla_scene_asynctask(
       supla_caller(ctIPC), 1, 2, queue, pool, action_executor, value_getter,
       operations, false);
