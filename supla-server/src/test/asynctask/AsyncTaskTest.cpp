@@ -44,15 +44,15 @@ void AsyncTaskTest::TearDown() {
 
 void AsyncTaskTest::WaitForState(supla_abstract_asynctask *task,
                                  async_task_state expected, unsigned int usec) {
-  async_task_state last;
-  unsigned int steps = usec / 10000;
+  async_task_state last = STA_STATE_INIT;
+  unsigned int steps = usec / 100;
 
   for (unsigned int a = 0; a < steps; a++) {
     last = task->get_state();
     if (last == expected) {
       return;
     }
-    usleep(10000);
+    usleep(100);
   }
 
   ASSERT_EQ(last, expected);
