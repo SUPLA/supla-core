@@ -106,8 +106,8 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   EXPECT_EQ(times.size(), 2UL);
   EXPECT_LT(TestHelper::timeDiffUs(times.back(), now) -
                 TestHelper::timeDiffUs(times.front(), now),
-            5000UL);
-  EXPECT_LT(TestHelper::timeDiffUs(times.back(), now), 11000UL);
+            100000UL);
+  EXPECT_LT(TestHelper::timeDiffUs(times.back(), now), 100000UL);
 }
 
 TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
