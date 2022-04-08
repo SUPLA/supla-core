@@ -51,6 +51,8 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char color_brightness;
   char closing_percentage;
   char rgbw_on_off;
+  std::list<struct timeval> times;
+  void addTime(void);
 
  public:
   ActionExecutorMock();
@@ -107,6 +109,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   char getBrightness(void);
   char getColorBrightness(void);
   char getRGBWOnOff(void);
+  std::list<struct timeval> getTimes(void);
 };
 
 } /* namespace testing */

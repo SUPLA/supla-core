@@ -16,7 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <doubles/actions/ActionExecutorMock.h>
+#include "doubles/actions/ActionExecutorMock.h"
+
+#include <sys/time.h>
 
 namespace testing {
 
@@ -60,7 +62,14 @@ void ActionExecutorMock::clear(void) {
   this->rgbw_on_off = -1;
 }
 
+void ActionExecutorMock::addTime(void) {
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+  times.push_back(now);
+}
+
 void ActionExecutorMock::set_on(bool on) {
+  addTime();
   if (on) {
     on_counter++;
   } else {
@@ -69,22 +78,26 @@ void ActionExecutorMock::set_on(bool on) {
 }
 
 void ActionExecutorMock::set_color(unsigned int color) {
+  addTime();
   color_counter++;
   this->color = color;
 }
 
 void ActionExecutorMock::set_brightness(char brightness) {
+  addTime();
   brightness_counter++;
   this->brightness = brightness;
 }
 
 void ActionExecutorMock::set_color_brightness(char brightness) {
+  addTime();
   color_brightness_counter++;
   this->color_brightness = color_brightness;
 }
 
 void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
                                   char *brightness, char *on_off) {
+  addTime();
   rgbw_counter++;
   if (color) {
     this->color = *color;
@@ -103,42 +116,83 @@ void ActionExecutorMock::set_rgbw(unsigned int *color, char *color_brightness,
   }
 }
 
-void ActionExecutorMock::toggle(void) { toggle_counter++; }
+void ActionExecutorMock::toggle(void) {
+  addTime();
+  toggle_counter++;
+}
 
 void ActionExecutorMock::shut(const char *closingPercentage) {
+  addTime();
   shut_counter++;
   if (closingPercentage) {
     closing_percentage = *closingPercentage;
   }
 }
 
-void ActionExecutorMock::reveal(void) { reveal_counter++; }
+void ActionExecutorMock::reveal(void) {
+  addTime();
+  reveal_counter++;
+}
 
-void ActionExecutorMock::up(void) { up_counter++; }
+void ActionExecutorMock::up(void) {
+  addTime();
+  up_counter++;
+}
 
-void ActionExecutorMock::down(void) { down_counter++; }
+void ActionExecutorMock::down(void) {
+  addTime();
+  down_counter++;
+}
 
-void ActionExecutorMock::up_or_stop(void) { up_or_stop_counter++; }
+void ActionExecutorMock::up_or_stop(void) {
+  addTime();
+  up_or_stop_counter++;
+}
 
-void ActionExecutorMock::down_or_stop(void) { down_or_stop_counter++; }
+void ActionExecutorMock::down_or_stop(void) {
+  addTime();
+  down_or_stop_counter++;
+}
 
-void ActionExecutorMock::step_by_step(void) { step_by_step_counter++; }
+void ActionExecutorMock::step_by_step(void) {
+  addTime();
+  step_by_step_counter++;
+}
 
-void ActionExecutorMock::stop(void) { stop_counter++; }
+void ActionExecutorMock::stop(void) {
+  addTime();
+  stop_counter++;
+}
 
-void ActionExecutorMock::execute(void) { execute_counter++; }
+void ActionExecutorMock::execute(void) {
+  addTime();
+  execute_counter++;
+}
 
-void ActionExecutorMock::open(void) { open_counter++; }
+void ActionExecutorMock::open(void) {
+  addTime();
+  open_counter++;
+}
 
-void ActionExecutorMock::close(void) { close_counter++; }
+void ActionExecutorMock::close(void) {
+  addTime();
+  close_counter++;
+}
 
-void ActionExecutorMock::open_close(void) { open_close_counter++; }
+void ActionExecutorMock::open_close(void) {
+  addTime();
+  open_close_counter++;
+}
 
 void ActionExecutorMock::open_close_without_canceling_tasks(void) {
+  addTime();
   open_close_wct_counter++;
 }
 
-void ActionExecutorMock::forward_outside(int cap) { forward_outside_counter++; }
+void ActionExecutorMock::forward_outside(int cap) {
+  addTime();
+  forward_outside_counter++;
+}
 
 int ActionExecutorMock::getOnCounter(void) { return on_counter; }
 
@@ -294,5 +348,7 @@ int ActionExecutorMock::counterSetCount(void) {
 
   return result;
 }
+
+std::list<struct timeval> ActionExecutorMock::getTimes(void) { return times; }
 
 }  // namespace testing
