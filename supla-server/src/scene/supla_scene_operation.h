@@ -30,6 +30,7 @@ class supla_scene_operation {
   supla_scene_operation(void);
   virtual ~supla_scene_operation();
 
+  void set_action(const supla_action_config &action);
   supla_action_config *get_action(void);
   void set_delay_ms(int delay_ms);
   int get_delay_ms(void);
