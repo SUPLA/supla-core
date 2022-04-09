@@ -19,10 +19,10 @@
 #ifndef SUPLA_SCENE_ASYNCTASK_H_
 #define SUPLA_SCENE_ASYNCTASK_H_
 
+#include <scene/scene_operations.h>
 #include "actions/action_executor.h"
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
-#include "supla_scene_operations.h"
 
 class supla_scene_asynctask : public supla_abstract_asynctask {
  private:

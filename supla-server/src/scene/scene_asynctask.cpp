@@ -16,9 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "supla_scene_asynctask.h"
-
 #include <assert.h>
+#include <scene/scene_asynctask.h>
 
 #include "log.h"
 

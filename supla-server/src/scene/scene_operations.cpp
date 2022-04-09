@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "supla_scene_operations.h"
+#include <scene/scene_operations.h>
 
 supla_scene_operations::supla_scene_operations() {}
 

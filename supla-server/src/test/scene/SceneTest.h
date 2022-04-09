@@ -19,11 +19,11 @@
 #ifndef SCENETEST_H_
 #define SCENETEST_H_
 
+#include <scene/scene_asynctask.h>
 #include "asynctask/AsyncTaskTest.h"
 #include "doubles/device/ValueGetterStub.h"
 #include "doubles/scene/SceneActionExecutorMock.h"
 #include "gtest/gtest.h"
-#include "scene/supla_scene_asynctask.h"
 
 namespace testing {
 

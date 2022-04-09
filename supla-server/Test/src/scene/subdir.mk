@@ -4,19 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/scene/supla_scene_asynctask.cpp \
-../src/scene/supla_scene_operation.cpp \
-../src/scene/supla_scene_operations.cpp 
+../src/scene/scene_asynctask.cpp \
+../src/scene/scene_operation.cpp \
+../src/scene/scene_operations.cpp 
 
 CPP_DEPS += \
-./src/scene/supla_scene_asynctask.d \
-./src/scene/supla_scene_operation.d \
-./src/scene/supla_scene_operations.d 
+./src/scene/scene_asynctask.d \
+./src/scene/scene_operation.d \
+./src/scene/scene_operations.d 
 
 OBJS += \
-./src/scene/supla_scene_asynctask.o \
-./src/scene/supla_scene_operation.o \
-./src/scene/supla_scene_operations.o 
+./src/scene/scene_asynctask.o \
+./src/scene/scene_operation.o \
+./src/scene/scene_operations.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -31,7 +31,7 @@ src/scene/%.o: ../src/scene/%.cpp src/scene/subdir.mk
 clean: clean-src-2f-scene
 
 clean-src-2f-scene:
-	-$(RM) ./src/scene/supla_scene_asynctask.d ./src/scene/supla_scene_asynctask.o ./src/scene/supla_scene_operation.d ./src/scene/supla_scene_operation.o ./src/scene/supla_scene_operations.d ./src/scene/supla_scene_operations.o
+	-$(RM) ./src/scene/scene_asynctask.d ./src/scene/scene_asynctask.o ./src/scene/scene_operation.d ./src/scene/scene_operation.o ./src/scene/scene_operations.d ./src/scene/scene_operations.o
 
 .PHONY: clean-src-2f-scene
 
