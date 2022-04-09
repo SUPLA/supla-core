@@ -101,14 +101,22 @@ int supla_caller::convert_to_sender_id(void) const {
   return 0;
 }
 
-int supla_caller::find(_callerType_e type, int id) const {
+int supla_caller::find(_callerType_e type, int id, _callerType_e top_edge_type,
+                       int top_edge_id) const {
   int count = 0;
   int n = 0;
   const supla_caller *caller = this;
+  bool edge = false;
+
   while (caller) {
     count++;
-    if (caller->type == type && caller->id == id) {
+    if (!edge && caller->type == type && caller->id == id) {
       n = count;
+    }
+
+    if (top_edge_id && top_edge_type != ctUnknown &&
+        top_edge_type == caller->type && caller->id == top_edge_id) {
+      edge = true;
     }
 
     caller = caller->parent;
@@ -117,7 +125,13 @@ int supla_caller::find(_callerType_e type, int id) const {
   return n ? count - n + 1 : 0;
 }
 
-int supla_caller::find(_callerType_e type) const { return find(type, 0); }
+int supla_caller::find(_callerType_e type, int id) const {
+  return find(type, id, ctUnknown, 0);
+}
+
+int supla_caller::find(_callerType_e type) const {
+  return find(type, 0, ctUnknown, 0);
+}
 
 int supla_caller::stack_size(void) const {
   int result = 0;
@@ -133,10 +147,13 @@ int supla_caller::stack_size(void) const {
 #ifdef __DEBUG
 void supla_caller::print_stack(void) const {
   supla_log(LOG_DEBUG, "CALLER STACK");
+  int size = stack_size();
+  int n = 0;
   const supla_caller *caller = this;
   while (caller) {
-    supla_log(LOG_DEBUG, "%i:%i", caller->type, caller->id);
+    supla_log(LOG_DEBUG, "%i - %i:%i", size - n, caller->type, caller->id);
     caller = caller->parent;
+    n++;
   }
 }
 #endif /*__DEBUG*/
