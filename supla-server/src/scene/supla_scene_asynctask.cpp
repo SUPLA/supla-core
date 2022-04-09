@@ -68,15 +68,16 @@ void supla_scene_asynctask::set_delay(void) {
 int supla_scene_asynctask::get_scene_id(void) { return scene_id; }
 
 bool supla_scene_asynctask::_execute(bool *execute_again) {
-  if (caller.find(ctScene, scene_id)) {
-    return false;
-  }
-
   supla_scene_operation *operation = operations->pop();
   if (operation) {
-    action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
-                                    user_id, operation->get_action_config(),
-                                    value_getter);
+    if (operation->get_action_config()->get_subject_type() != stScene ||
+        !caller.find(ctScene,
+                     operation->get_action_config()->get_subject_id())) {
+      action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
+                                      user_id, operation->get_action_config(),
+                                      value_getter);
+    }
+
     delete operation;
   }
 
