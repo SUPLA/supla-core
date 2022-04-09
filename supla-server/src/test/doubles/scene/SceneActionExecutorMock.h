@@ -19,9 +19,9 @@
 #ifndef SCENE_ACTION_EXECUTOR_MOCK_H_
 #define SCENE_ACTION_EXECUTOR_MOCK_H_
 
+#include <scene/scene_asynctask.h>
 #include "asynctask/abstract_asynctask.h"
 #include "doubles/actions/ActionExecutorMock.h"
-#include "scene/supla_scene_asynctask.h"
 
 namespace testing {
 

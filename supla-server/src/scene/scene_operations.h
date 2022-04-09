@@ -19,9 +19,9 @@
 #ifndef SUPLA_SCENE_OPERATIONS_H_
 #define SUPLA_SCENE_OPERATIONS_H_
 
+#include <scene/scene_operation.h>
 #include <list>
 
-#include "scene/supla_scene_operation.h"
 
 class supla_scene_operations {
  private:

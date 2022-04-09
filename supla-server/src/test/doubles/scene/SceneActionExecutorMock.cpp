@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <scene/scene_asynctask.h>
 #include "doubles/scene/SceneActionExecutorMock.h"
 
 #include "log.h"
-#include "scene/supla_scene_asynctask.h"
 
 namespace testing {
 
