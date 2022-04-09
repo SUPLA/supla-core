@@ -60,8 +60,8 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      queue, pool, 0, false, action_executor, value_getter, NULL, 1, 2, 3,
-      5000000, open);
+      supla_caller(ctUnknown), queue, pool, 0, false, action_executor,
+      value_getter, NULL, 1, 2, 3, 5000000, open);
 
   ASSERT_TRUE(task != NULL);
 
@@ -109,8 +109,8 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      queue, pool, 0, false, action_executor, value_getter, config_getter, 1, 2,
-      3, 2000000, open);
+      supla_caller(ctUnknown), queue, pool, 0, false, action_executor,
+      value_getter, config_getter, 1, 2, 3, 2000000, open);
 
   ASSERT_TRUE(task != NULL);
   WaitForExec(pool, 1, 500000);
@@ -155,8 +155,8 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   EXPECT_TRUE(action_executor != NULL);
 
   supla_action_gate_openclose *task = new supla_action_gate_openclose(
-      queue, pool, 0, false, action_executor, value_getter, NULL, 1, 2, 3,
-      5000000, true);
+      supla_caller(ctUnknown), queue, pool, 0, false, action_executor,
+      value_getter, NULL, 1, 2, 3, 5000000, true);
 
   ASSERT_TRUE(task != NULL);
 
