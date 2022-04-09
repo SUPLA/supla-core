@@ -32,38 +32,40 @@
 #define VERIFICATION_DELAY_US 60000000
 
 supla_action_gate_openclose::supla_action_gate_openclose(
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+    const supla_caller &caller, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool,
     supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
     abstract_channel_json_config_getter *json_config_getter, int user_id,
     int device_id, int channel_id, unsigned int verification_delay_us,
     bool open)
     : supla_abstract_asynctask(queue, pool) {
-  action_init(action_executor, value_getter, json_config_getter, user_id,
-              device_id, channel_id, verification_delay_us, open);
+  action_init(caller, action_executor, value_getter, json_config_getter,
+              user_id, device_id, channel_id, verification_delay_us, open);
 }
 
 supla_action_gate_openclose::supla_action_gate_openclose(
-    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-    short priority, bool release_immediately,
-    supla_abstract_action_executor *action_executor,
+    const supla_caller &caller, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool, short priority,
+    bool release_immediately, supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
     abstract_channel_json_config_getter *json_config_getter, int user_id,
     int device_id, int channel_id, unsigned int verification_delay_us,
     bool open)
     : supla_abstract_asynctask(queue, pool, priority, release_immediately) {
-  action_init(action_executor, value_getter, json_config_getter, user_id,
-              device_id, channel_id, verification_delay_us, open);
+  action_init(caller, action_executor, value_getter, json_config_getter,
+              user_id, device_id, channel_id, verification_delay_us, open);
 }
 
 void supla_action_gate_openclose::action_init(
-    supla_abstract_action_executor *action_executor,
+    const supla_caller &caller, supla_abstract_action_executor *action_executor,
     supla_abstract_value_getter *value_getter,
     abstract_channel_json_config_getter *json_config_getter, int user_id,
     int device_id, int channel_id, unsigned int verification_delay_us,
     bool open) {
   assert(action_executor);
   this->action_executor = action_executor;
+  this->caller = caller;
   this->user_id = user_id;
   this->device_id = device_id;
   this->channel_id = channel_id;
@@ -109,6 +111,10 @@ supla_action_gate_openclose::~supla_action_gate_openclose(void) {
   if (action_executor) {
     delete action_executor;
   }
+}
+
+const supla_caller &supla_action_gate_openclose::get_caller(void) const {
+  return caller;
 }
 
 int supla_action_gate_openclose::get_user_id(void) { return user_id; }
@@ -178,7 +184,8 @@ void supla_action_gate_openclose::cancel_tasks(int user_id, int device_id,
 }
 
 // static
-void supla_action_gate_openclose::open_close(int user_id, int device_id,
+void supla_action_gate_openclose::open_close(const supla_caller &caller,
+                                             int user_id, int device_id,
                                              int channel_id, bool open) {
   {
     supla_action_gate_openclose_search_condition cnd(NULL, user_id, device_id,
@@ -196,7 +203,7 @@ void supla_action_gate_openclose::open_close(int user_id, int device_id,
   channel_json_config_getter *config_getter = new channel_json_config_getter();
 
   new supla_action_gate_openclose(
-      supla_asynctask_queue::global_instance(),
+      caller, supla_asynctask_queue::global_instance(),
       supla_asynctask_default_thread_pool::global_instance(), action_executor,
       value_getter, config_getter, user_id, device_id, channel_id,
       VERIFICATION_DELAY_US, open);

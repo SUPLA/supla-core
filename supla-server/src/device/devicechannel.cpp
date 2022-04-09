@@ -2720,8 +2720,9 @@ bool supla_device_channels::action_open_close(const supla_caller &caller,
       switch (channel->getFunc()) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-          supla_action_gate_openclose::open_close(
-              device->getUserID(), device->getID(), channel->getId(), open);
+          supla_action_gate_openclose::open_close(caller, device->getUserID(),
+                                                  device->getID(),
+                                                  channel->getId(), open);
           result = true;
         } break;
         case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
