@@ -36,6 +36,8 @@ SceneTest::~SceneTest() {}
 void SceneTest::SetUp() {
   AsyncTaskTest::SetUp();
 
+  pool->set_thread_count_limit(10);
+
   action_executor = new SceneActionExecutorMock();
   ASSERT_FALSE(action_executor == NULL);
 
@@ -66,7 +68,7 @@ TEST_F(SceneTest, executeEmptyScene) {
       operations, false);
   ASSERT_FALSE(scene == NULL);
   WaitForState(scene, STA_STATE_SUCCESS, 1000);
-  EXPECT_EQ(pool->exec_count(), (unsigned int)1);
+  WaitForExec(pool, 1, 1000);
 }
 
 TEST_F(SceneTest, executeSceneWithoutDelay) {
@@ -102,7 +104,7 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   // significantly.
 
   WaitForState(scene, STA_STATE_SUCCESS, 2000);
-  EXPECT_EQ(pool->exec_count(), (unsigned int)2);
+  WaitForExec(pool, 2, 2000000);
 
   std::list<struct timeval> times = action_executor->getTimes();
   EXPECT_EQ(times.size(), 2UL);
@@ -155,7 +157,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   // significantly.
 
   WaitForState(scene, STA_STATE_SUCCESS, 1500000);
-  EXPECT_EQ(pool->exec_count(), (unsigned int)3);
+  WaitForExec(pool, 3, 2000000);
 
   std::list<struct timeval> times = action_executor->getTimes();
   EXPECT_EQ(times.size(), 3UL);
@@ -219,7 +221,7 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   EXPECT_GT(pool->exec_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->getExecuteCounter(), 1);
   EXPECT_EQ(action_executor_s2->getOnCounter(), 1);
-  EXPECT_EQ(pool->exec_count(), (unsigned int)2);
+  WaitForExec(pool, 2, 1000000);
   EXPECT_EQ(action_executor_s2->get_caller().stack_size(), 3);
   EXPECT_TRUE(action_executor_s2->get_caller().find(ctIPC));
   EXPECT_TRUE(action_executor_s2->get_caller().find(ctScene, 111));
