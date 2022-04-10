@@ -50,8 +50,6 @@ class supla_caller {
   _callerType_e get_type() const;
   supla_caller *clone(void) const;
   int convert_to_sender_id(void) const;
-  int find(_callerType_e type, int id, _callerType_e top_edge_type,
-           int top_edge_id) const;
   int find(_callerType_e type, int id) const;
   int find(_callerType_e type) const;
   int stack_size(void) const;

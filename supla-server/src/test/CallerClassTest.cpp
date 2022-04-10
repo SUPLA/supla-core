@@ -186,26 +186,4 @@ TEST_F(CallerClassTest, comparsionOperator) {
   EXPECT_TRUE(c1 != ctDevice);
 }
 
-TEST_F(CallerClassTest, findWithEdge) {
-  supla_caller c1(supla_caller(
-      supla_caller(supla_caller(ctScene, 1), ctScene, 2), ctScene, 3));
-  EXPECT_EQ(c1.find(ctScene, 2), 2);
-  EXPECT_EQ(c1.find(ctScene, 2, ctScene, 0), 2);
-  EXPECT_EQ(c1.find(ctScene, 2, ctUnknown, 1), 2);
-  EXPECT_EQ(c1.find(ctScene, 2, ctScene, 2), 2);
-  EXPECT_EQ(c1.find(ctScene, 2, ctScene, 3), 0);
-  EXPECT_EQ(c1.find(ctScene, 2, ctScene, 1), 2);
-  EXPECT_EQ(c1.find(ctScene, 3, ctScene, 1), 3);
-  EXPECT_EQ(c1.find(ctClient, 3, ctScene, 1), 0);
-  EXPECT_EQ(c1.find(ctScene, 1, ctScene, 2), 0);
-  EXPECT_EQ(c1.find(ctScene, 1, ctScene, 3), 0);
-  EXPECT_EQ(c1.find(ctScene, 1, ctScene, 1), 1);
-  EXPECT_EQ(c1.find(ctScene, 3, ctScene, 2), 3);
-
-  EXPECT_EQ(c1.get_id(), 1);
-  EXPECT_EQ(c1.get_type(), ctScene);
-
-  // c1.print_stack();
-}
-
 } /* namespace testing */
