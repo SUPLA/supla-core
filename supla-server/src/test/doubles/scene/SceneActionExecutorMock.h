@@ -20,6 +20,7 @@
 #define SCENE_ACTION_EXECUTOR_MOCK_H_
 
 #include <scene/scene_asynctask.h>
+
 #include "asynctask/abstract_asynctask.h"
 #include "doubles/actions/ActionExecutorMock.h"
 
@@ -32,18 +33,19 @@ class SceneActionExecutorMock : public ActionExecutorMock {
   SceneActionExecutorMock *action_executor;
   supla_abstract_value_getter *value_getter;
   supla_scene_operations *operations;
-  supla_scene_asynctask *last_executed_scene;
+  supla_abstract_asynctask *last_executed_asynctask;
 
  public:
   SceneActionExecutorMock();
   virtual ~SceneActionExecutorMock();
   virtual void execute(void);
-  void set_scene_params(supla_asynctask_queue *queue,
-                        supla_abstract_asynctask_thread_pool *pool,
-                        SceneActionExecutorMock *action_executor,
-                        supla_abstract_value_getter *value_getter,
-                        supla_scene_operations *operations);
-  supla_scene_asynctask *get_last_executed_scene(void);
+  virtual void open(void);
+  void set_asynctask_params(supla_asynctask_queue *queue,
+                            supla_abstract_asynctask_thread_pool *pool,
+                            SceneActionExecutorMock *action_executor,
+                            supla_abstract_value_getter *value_getter,
+                            supla_scene_operations *operations);
+  supla_abstract_asynctask *get_last_executed_asynctask(void);
 };
 
 } /* namespace testing */
