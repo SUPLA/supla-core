@@ -19,7 +19,9 @@
 #include "scene/SceneTest.h"
 
 #include "TestHelper.h"
+#include "actions/action_gate_openclose.h"
 #include "log.h"  // NOLINT
+#include "scene/scene_search_condition.h"
 
 namespace testing {
 
@@ -202,8 +204,8 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   op->set_action_config(action_config);
   operations_s2->push(op);
 
-  action_executor->set_scene_params(queue, pool, action_executor_s2,
-                                    value_getter_s2, operations_s2);
+  action_executor->set_asynctask_params(queue, pool, action_executor_s2,
+                                        value_getter_s2, operations_s2);
   // ----------------------------
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
@@ -212,8 +214,8 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   ASSERT_FALSE(scene == NULL);
 
   WaitForState(scene, STA_STATE_SUCCESS, 1000);
-  WaitForState(action_executor->get_last_executed_scene(), STA_STATE_SUCCESS,
-               1000);
+  WaitForState(action_executor->get_last_executed_asynctask(),
+               STA_STATE_SUCCESS, 1000);
   EXPECT_GT(pool->exec_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->getExecuteCounter(), 1);
   EXPECT_EQ(action_executor_s2->getOnCounter(), 1);
@@ -252,8 +254,8 @@ TEST_F(SceneTest, infinityLoop) {
   op->set_action_config(action_config);
   operations_s2->push(op);
 
-  action_executor->set_scene_params(queue, pool, action_executor_s2,
-                                    value_getter_s2, operations_s2);
+  action_executor->set_asynctask_params(queue, pool, action_executor_s2,
+                                        value_getter_s2, operations_s2);
   // ----------------------------
 
   supla_scene_asynctask *scene = new supla_scene_asynctask(
@@ -262,12 +264,143 @@ TEST_F(SceneTest, infinityLoop) {
   ASSERT_FALSE(scene == NULL);
 
   WaitForState(scene, STA_STATE_SUCCESS, 1000);
-  WaitForState(action_executor->get_last_executed_scene(), STA_STATE_SUCCESS,
-               1000);
+  WaitForState(action_executor->get_last_executed_asynctask(),
+               STA_STATE_SUCCESS, 1000);
   EXPECT_GT(pool->exec_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->getExecuteCounter(), 1);
   EXPECT_EQ(action_executor_s2->getExecuteCounter(), 0);
   EXPECT_EQ(action_executor_s2->counterSetCount(), 0);
+}
+
+TEST_F(SceneTest, interruptScene) {
+  if (!supla_user::find(2, false)) {
+    new supla_user(2, "aa4f2278a5dbdcdb4fa52278dbdca54f", "");
+  }
+
+  supla_scene_operation *op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+  supla_action_config action_config;
+  action_config.set_action_id(ACTION_EXECUTE);
+  action_config.set_subject_id(15);
+  action_config.set_subject_type(stScene);
+  op->set_delay_ms(0);
+  op->set_action_config(action_config);
+  operations->push(op);
+
+  op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+  action_config.set_action_id(ACTION_TURN_ON);
+  action_config.set_subject_id(50);
+  action_config.set_subject_type(stChannel);
+  op->set_delay_ms(2000);
+  op->set_action_config(action_config);
+  operations->push(op);
+
+  // Parameters for the second scene
+  supla_scene_operations *operations_s2 = new supla_scene_operations();
+  ASSERT_FALSE(operations_s2 == NULL);
+
+  ValueGetterStub *value_getter_s2 = new ValueGetterStub();
+  ASSERT_FALSE(value_getter_s2 == NULL);
+
+  SceneActionExecutorMock *action_executor_s2 = new SceneActionExecutorMock();
+  ASSERT_FALSE(action_executor_s2 == NULL);
+
+  op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+  action_config.set_action_id(ACTION_EXECUTE);
+  action_config.set_subject_id(16);
+  action_config.set_subject_type(stScene);
+  op->set_delay_ms(0);
+  op->set_action_config(action_config);
+  operations_s2->push(op);
+
+  op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+  action_config.set_action_id(ACTION_TURN_OFF);
+  action_config.set_subject_id(51);
+  action_config.set_subject_type(stChannel);
+  op->set_delay_ms(20000);
+  op->set_action_config(action_config);
+  operations_s2->push(op);
+
+  action_executor->set_asynctask_params(queue, pool, action_executor_s2,
+                                        value_getter_s2, operations_s2);
+  // ----------------------------
+
+  // Parameters for the third scene
+  supla_scene_operations *operations_s3 = new supla_scene_operations();
+  ASSERT_FALSE(operations_s3 == NULL);
+
+  ValueGetterStub *value_getter_s3 = new ValueGetterStub();
+  ASSERT_FALSE(value_getter_s3 == NULL);
+
+  SceneActionExecutorMock *action_executor_s3 = new SceneActionExecutorMock();
+  ASSERT_FALSE(action_executor_s3 == NULL);
+
+  op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+  action_config.set_action_id(ACTION_OPEN);
+  action_config.set_subject_id(52);
+  action_config.set_subject_type(stChannel);
+  op->set_delay_ms(0);
+  op->set_action_config(action_config);
+  operations_s3->push(op);
+
+  op = new supla_scene_operation();
+  ASSERT_FALSE(op == NULL);
+  action_config.set_action_id(ACTION_TURN_OFF);
+  action_config.set_subject_id(53);
+  action_config.set_subject_type(stChannel);
+  op->set_delay_ms(20000);
+  op->set_action_config(action_config);
+  operations_s3->push(op);
+
+  action_executor_s2->set_asynctask_params(queue, pool, action_executor_s3,
+                                           value_getter_s3, operations_s3);
+
+  // Parameters for the Open / Close action
+
+  SceneActionExecutorMock *action_executor_oc = new SceneActionExecutorMock();
+  ASSERT_FALSE(action_executor_oc == NULL);
+
+  ValueGetterStub *value_getter_oc = new ValueGetterStub();
+  ASSERT_FALSE(value_getter_oc == NULL);
+
+  action_executor_s3->set_asynctask_params(queue, pool, action_executor_oc,
+                                           value_getter_oc, NULL);
+
+  // ----------------------------
+
+  supla_scene_asynctask *scene = new supla_scene_asynctask(
+      supla_caller(ctIPC), 2, 111, queue, pool, action_executor, value_getter,
+      operations, false);
+  ASSERT_FALSE(scene == NULL);
+
+  supla_scene_search_condition cnd(2, 15, true);
+
+  WaitForExec(pool, 5, 5000000);
+  queue->cancel_tasks(&cnd);
+  WaitForState(scene, STA_STATE_SUCCESS, 5000000);
+  EXPECT_EQ(action_executor->getOnCounter(), 1);
+  EXPECT_EQ(action_executor->getExecuteCounter(), 1);
+  EXPECT_EQ(action_executor->counterSetCount(), 2);
+  EXPECT_EQ(action_executor_s2->getExecuteCounter(), 1);
+  EXPECT_EQ(action_executor_s2->counterSetCount(), 1);
+  EXPECT_EQ(action_executor_s3->getOpenCounter(), 1);
+  EXPECT_EQ(action_executor_s3->counterSetCount(), 1);
+
+  WaitForState(action_executor->get_last_executed_asynctask(),
+               STA_STATE_CANCELED, 1000000);
+
+  WaitForState(action_executor_s2->get_last_executed_asynctask(),
+               STA_STATE_CANCELED, 1000000);
+
+  WaitForState(action_executor_s3->get_last_executed_asynctask(),
+               STA_STATE_CANCELED, 1000000);
+
+  ASSERT_TRUE(dynamic_cast<supla_action_gate_openclose *>(
+                  action_executor_s3->get_last_executed_asynctask()) != NULL);
 }
 
 } /* namespace testing */

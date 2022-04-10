@@ -37,9 +37,7 @@ bool supla_scene_search_condition::condition_met(
       return true;
     }
 
-    return include_sub_tasks &&
-           scene->get_caller_id().find(ctScene, scene->get_scene_id(), ctScene,
-                                       scene_id);
+    return include_sub_tasks && scene->get_caller_id().find(ctScene, scene_id);
   }
 
   if (include_sub_tasks) {
