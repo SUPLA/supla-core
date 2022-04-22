@@ -32,6 +32,7 @@ src/client \
 src/converter \
 src/crypt_blowfish \
 src/device \
+src/distributedobjects \
 src/google \
 src/http \
 src/json \

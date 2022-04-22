@@ -15,6 +15,7 @@ cpplint ./supla-server/src/asynctask/*
 cpplint ./supla-server/src/channeljsonconfig/* 
 cpplint ./supla-server/src/client/* 
 cpplint ./supla-server/src/device/* 
+cpplint ./supla-server/src/distributedobjects/* 
 cpplint ./supla-server/src/google/* 
 cpplint ./supla-server/src/http/* 
 cpplint --exclude=./supla-server/src/mqtt/mqtt.c --exclude=./supla-server/src/mqtt/mqtt.h ./supla-server/src/mqtt/*
