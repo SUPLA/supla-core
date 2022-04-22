@@ -451,7 +451,7 @@ void supla_client_channels::update_expired(void *srpc) {
   safe_array_unlock(arr);
 }
 
-void supla_client_channels::device_call(
+void supla_client_channels::device_access(
     int ChannelID, std::function<void(supla_device *)> method) {
   safe_array_lock(getArr());
 

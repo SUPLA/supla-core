@@ -607,7 +607,7 @@ void supla_client::timer_arm(TCS_TimerArmRequest *request) {
     return;
   }
 
-  channels->device_call(
+  channels->device_access(
       request->ChannelID, [this, request](supla_device *device) -> void {
         device->get_channels()->timer_arm(supla_caller(ctClient, getID()),
                                           request->ChannelID, 0, true,
