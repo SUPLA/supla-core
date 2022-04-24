@@ -110,7 +110,6 @@ void *LCK_ICACHE_FLASH lck_init(void) {
                                 CRITICAL_SECTION_NO_DEBUG_INFO);
 #else
 
-    lck->mutex = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
