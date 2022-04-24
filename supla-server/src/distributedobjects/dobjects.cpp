@@ -28,18 +28,22 @@ void supla_dobjects::load(void) {}
 
 void supla_dobjects::load(int id) {}
 
+void supla_dobjects::lock(void) { lck_lock(lck); }
+
+void supla_dobjects::unlock(void) { lck_unlock(lck); }
+
 void supla_dobjects::access_object(
     int id, std::function<void(supla_dobject *object)> on_access) {
   if (!id || !on_access) {
     return;
   }
 
-  lck_lock(lck);
+  lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     if ((*it)->get_id() == id) {
       on_access(*it);
       break;
     }
   }
-  lck_unlock(lck);
+  unlock();
 }
