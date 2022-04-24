@@ -22,14 +22,17 @@
 #include <distributedobjects/dobject.h>
 
 #include <functional>
-#include <list>
+#include <vector>
 
 class supla_dobjects {
  private:
   void *lck;
-  std::list<supla_dobject *> objects;
+  std::vector<supla_dobject *> objects;
 
  protected:
+  void lock(void);
+  void unlock(void);
+
  public:
   supla_dobjects(void);
   virtual ~supla_dobjects();
