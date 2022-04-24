@@ -19,12 +19,15 @@
 #ifndef SUPLA_DISTRIBUTED_OBJECT_CLIENT_ORIENTED_H_
 #define SUPLA_DISTRIBUTED_OBJECT_CLIENT_ORIENTED_H_
 
-#include <list>
+#include <vector>
 
 #include "distributedobjects/dobject.h"
+#include "distributedobjects/dobject_related_identifier.h"
 
 class supla_dobject_client_oriented : public supla_dobject {
  private:
+  std::vector<supla_dobject_related_identifier> client_ids;
+
  protected:
  public:
   explicit supla_dobject_client_oriented(int id);
