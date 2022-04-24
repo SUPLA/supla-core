@@ -16,30 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DISTRIBUTED_OBJECTS_H_
-#define SUPLA_DISTRIBUTED_OBJECTS_H_
+#ifndef SUPLA_DISTRIBUTED_OBJECT_REPOSITORY_FACTORY_H_
+#define SUPLA_DISTRIBUTED_OBJECT_REPOSITORY_FACTORY_H_
 
-#include <distributedobjects/dobject.h>]
+#include "distributedobjects/dobject_repository.h"
 
-#include <functional>
-#include <vector>
-
-class supla_dobjects {
+class supla_dobject_repository_factory {
  private:
-  void *lck;
-  std::vector<supla_dobject *> objects;
+  int user_id;
 
  protected:
-  void lock(void);
-  void unlock(void);
-
  public:
-  supla_dobjects(void);
-  virtual ~supla_dobjects();
-  void load(void);
-  void load(int id);
-  void access_object(int id,
-                     std::function<void(supla_dobject *object)> on_access);
+  explicit supla_dobject_repository_factory(int user_id);
+  virtual ~supla_dobject_repository_factory();
+  virtual supla_dobject_repository *get_repository(void) = 0;
 };
 
-#endif /* SUPLA_DISTRIBUTED_OBJECTS_H_ */
+#endif /* SUPLA_DISTRIBUTED_OBJECT_REPOSITORY_FACTORY_H_ */
