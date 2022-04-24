@@ -9,6 +9,7 @@ CPP_SRCS += \
 ../src/distributedobjects/dobject_related_identifier.cpp \
 ../src/distributedobjects/dobject_remote_update_indicator.cpp \
 ../src/distributedobjects/dobject_repository.cpp \
+../src/distributedobjects/dobject_repository_factory.cpp \
 ../src/distributedobjects/dobjects.cpp 
 
 CPP_DEPS += \
@@ -17,6 +18,7 @@ CPP_DEPS += \
 ./src/distributedobjects/dobject_related_identifier.d \
 ./src/distributedobjects/dobject_remote_update_indicator.d \
 ./src/distributedobjects/dobject_repository.d \
+./src/distributedobjects/dobject_repository_factory.d \
 ./src/distributedobjects/dobjects.d 
 
 OBJS += \
@@ -25,6 +27,7 @@ OBJS += \
 ./src/distributedobjects/dobject_related_identifier.o \
 ./src/distributedobjects/dobject_remote_update_indicator.o \
 ./src/distributedobjects/dobject_repository.o \
+./src/distributedobjects/dobject_repository_factory.o \
 ./src/distributedobjects/dobjects.o 
 
 
@@ -40,7 +43,7 @@ src/distributedobjects/%.o: ../src/distributedobjects/%.cpp src/distributedobjec
 clean: clean-src-2f-distributedobjects
 
 clean-src-2f-distributedobjects:
-	-$(RM) ./src/distributedobjects/dobject.d ./src/distributedobjects/dobject.o ./src/distributedobjects/dobject_client_oriented.d ./src/distributedobjects/dobject_client_oriented.o ./src/distributedobjects/dobject_related_identifier.d ./src/distributedobjects/dobject_related_identifier.o ./src/distributedobjects/dobject_remote_update_indicator.d ./src/distributedobjects/dobject_remote_update_indicator.o ./src/distributedobjects/dobject_repository.d ./src/distributedobjects/dobject_repository.o ./src/distributedobjects/dobjects.d ./src/distributedobjects/dobjects.o
+	-$(RM) ./src/distributedobjects/dobject.d ./src/distributedobjects/dobject.o ./src/distributedobjects/dobject_client_oriented.d ./src/distributedobjects/dobject_client_oriented.o ./src/distributedobjects/dobject_related_identifier.d ./src/distributedobjects/dobject_related_identifier.o ./src/distributedobjects/dobject_remote_update_indicator.d ./src/distributedobjects/dobject_remote_update_indicator.o ./src/distributedobjects/dobject_repository.d ./src/distributedobjects/dobject_repository.o ./src/distributedobjects/dobject_repository_factory.d ./src/distributedobjects/dobject_repository_factory.o ./src/distributedobjects/dobjects.d ./src/distributedobjects/dobjects.o
 
 .PHONY: clean-src-2f-distributedobjects
 
