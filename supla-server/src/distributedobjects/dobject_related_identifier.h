@@ -19,15 +19,21 @@
 #ifndef SUPLA_DISTRIBUTED_OBJECT_RELATED_IDENTIFIER_H_
 #define SUPLA_DISTRIBUTED_OBJECT_RELATED_IDENTIFIER_H_
 
+#include "distributedobjects/dobject_remote_update_indicator.h"
+
 class supla_dobject_related_identifier {
  private:
   int id;
+  supla_dobject_remote_update_indicator* rui;
 
  protected:
  public:
   explicit supla_dobject_related_identifier(int id);
   virtual ~supla_dobject_related_identifier();
   int get_id();
+  void set_remote_update_indicator(supla_dobject_remote_update_indicator* rui);
+  const supla_dobject_remote_update_indicator* get_remote_update_indicator(
+      void) const;
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECT_RELATED_IDENTIFIER_H_ */

@@ -19,22 +19,27 @@
 #ifndef SUPLA_DISTRIBUTED_OBJECTS_H_
 #define SUPLA_DISTRIBUTED_OBJECTS_H_
 
-#include <distributedobjects/dobject.h>]
-
 #include <functional>
 #include <vector>
+
+#include "distributedobjects/dobject.h"
+#include "distributedobjects/dobject_repository_factory.h"
 
 class supla_dobjects {
  private:
   void *lck;
   std::vector<supla_dobject *> objects;
+  supla_dobject_repository_factory *repository_factory;
+  void object_add(supla_dobject *object);
 
  protected:
   void lock(void);
   void unlock(void);
+  void access_repository(
+      std::function<void(supla_dobject_repository *repository)> on_access);
 
  public:
-  supla_dobjects(void);
+  explicit supla_dobjects(supla_dobject_repository_factory *repository_factory);
   virtual ~supla_dobjects();
   void load(void);
   void load(int id);

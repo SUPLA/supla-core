@@ -18,8 +18,12 @@
 
 #include <distributedobjects/dobject.h>
 
-supla_dobject::supla_dobject(int id) {}
+supla_dobject::supla_dobject(int id) { this->id = id; }
 
-supla_dobject::~supla_dobject() {}
+supla_dobject::~supla_dobject() {
+  if (rui) {
+    delete rui;
+  }
+}
 
 int supla_dobject::get_id(void) { return id; }

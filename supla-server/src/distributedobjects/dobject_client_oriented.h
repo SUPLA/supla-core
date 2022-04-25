@@ -32,6 +32,8 @@ class supla_dobject_client_oriented : public supla_dobject {
  public:
   explicit supla_dobject_client_oriented(int id);
   virtual ~supla_dobject_client_oriented();
+  virtual void set_remote_update_indicator(
+      supla_dobject_remote_update_indicator *rui);
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECT_CLIENT_ORIENTED_H_ */

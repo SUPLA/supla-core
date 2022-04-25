@@ -22,3 +22,13 @@ supla_dobject_client_oriented::supla_dobject_client_oriented(int id)
     : supla_dobject(id) {}
 
 supla_dobject_client_oriented::~supla_dobject_client_oriented() {}
+
+void supla_dobject_client_oriented::set_remote_update_indicator(
+    supla_dobject_remote_update_indicator *rui) {
+  for (auto it = client_ids.begin(); it != client_ids.end(); ++it) {
+    it->set_remote_update_indicator(rui ? rui->clone() : NULL);
+  }
+  if (rui) {
+    delete rui;
+  }
+}

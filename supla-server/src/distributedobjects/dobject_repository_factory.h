@@ -26,6 +26,8 @@ class supla_dobject_repository_factory {
   int user_id;
 
  protected:
+  int get_user_id(void);
+
  public:
   explicit supla_dobject_repository_factory(int user_id);
   virtual ~supla_dobject_repository_factory();
