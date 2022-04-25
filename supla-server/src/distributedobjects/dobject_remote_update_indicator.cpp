@@ -16,13 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <distributedobjects/dobject_remote_update_indicator.h>
+#include "distributedobjects/dobject_remote_update_indicator.h"
 
 supla_dobject_remote_update_indicator::supla_dobject_remote_update_indicator() {
   this->updated = false;
 }
 
+supla_dobject_remote_update_indicator::supla_dobject_remote_update_indicator(
+    bool updated) {
+  this->updated = updated;
+}
+
 supla_dobject_remote_update_indicator::
     ~supla_dobject_remote_update_indicator() {}
 
-bool supla_dobject_remote_update_indicator::is_updated(void) { return updated; }
+bool supla_dobject_remote_update_indicator::is_updated(void) const {
+  return updated;
+}
+
+void supla_dobject_remote_update_indicator::apply_previous(
+    const supla_dobject_remote_update_indicator *previous) {}
+
+supla_dobject_remote_update_indicator *
+supla_dobject_remote_update_indicator::clone(void) {
+  return new supla_dobject_remote_update_indicator(updated);
+}

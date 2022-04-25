@@ -18,10 +18,35 @@
 
 #include "distributedobjects/dobject_related_identifier.h"
 
+#include <cstddef>
+
 supla_dobject_related_identifier::supla_dobject_related_identifier(int id) {
   this->id = id;
+  this->rui = NULL;
 }
 
-supla_dobject_related_identifier::~supla_dobject_related_identifier() {}
+supla_dobject_related_identifier::~supla_dobject_related_identifier() {
+  if (rui) {
+    delete rui;
+  }
+}
 
 int supla_dobject_related_identifier::get_id(void) { return id; }
+
+void supla_dobject_related_identifier::set_remote_update_indicator(
+    supla_dobject_remote_update_indicator* rui) {
+  supla_dobject_remote_update_indicator* old = this->rui;
+  this->rui = rui;
+  if (rui && old) {
+    rui->apply_previous(old);
+  }
+
+  if (old) {
+    delete old;
+  }
+}
+
+const supla_dobject_remote_update_indicator*
+supla_dobject_related_identifier::get_remote_update_indicator(void) const {
+  return rui;
+}

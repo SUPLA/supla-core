@@ -23,4 +23,6 @@ supla_dobject_repository_factory::supla_dobject_repository_factory(
   this->user_id = user_id;
 }
 
+int supla_dobject_repository_factory::get_user_id(void) { return user_id; }
+
 supla_dobject_repository_factory::~supla_dobject_repository_factory() {}

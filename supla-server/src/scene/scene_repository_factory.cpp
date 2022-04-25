@@ -16,26 +16,15 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DISTRIBUTED_OBJECT_H_
-#define SUPLA_DISTRIBUTED_OBJECT_H_
+#include "scene/scene_repository_factory.h"
 
-#include <list>
+#include "scene/scene_repository.h"
 
-#include "distributedobjects/dobject_related_identifier.h"
-#include "distributedobjects/dobject_remote_update_indicator.h"
+supla_scene_repository_factory::supla_scene_repository_factory(int user_id)
+    : supla_dobject_repository_factory(user_id) {}
 
-class supla_dobject {
- private:
-  int id;
-  supla_dobject_remote_update_indicator *rui;
+supla_scene_repository_factory::~supla_scene_repository_factory() {}
 
- protected:
- public:
-  explicit supla_dobject(int id);
-  virtual ~supla_dobject();
-  int get_id(void);
-  virtual void set_remote_update_indicator(
-      supla_dobject_remote_update_indicator *rui) = 0;
-};
-
-#endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */
+supla_dobject_repository* supla_scene_repository_factory::get_repository(void) {
+  return new supla_scene_repository(get_user_id());
+}

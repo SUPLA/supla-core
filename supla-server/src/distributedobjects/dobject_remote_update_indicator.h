@@ -26,8 +26,12 @@ class supla_dobject_remote_update_indicator {
  protected:
  public:
   supla_dobject_remote_update_indicator();
+  explicit supla_dobject_remote_update_indicator(bool updated);
   virtual ~supla_dobject_remote_update_indicator();
-  bool is_updated(void);
+  virtual void apply_previous(
+      const supla_dobject_remote_update_indicator *previous);
+  virtual supla_dobject_remote_update_indicator *clone(void);
+  bool is_updated(void) const;
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECT_REMOTE_UPDATE_INDICATOR_H_ */
