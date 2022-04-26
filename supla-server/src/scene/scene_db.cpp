@@ -16,12 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <distributedobjects/dobject_repository.h>
+#include "scene/scene_db.h"
 
-supla_dobject_repository::supla_dobject_repository(int user_id) {
-  this->user_id = user_id;
+#include <mysql.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "log.h"
+
+supla_scene_db::supla_scene_db(void) : svrdb() {}
+
+supla_scene_db::~supla_scene_db(void) { close_scene_query(); }
+
+void supla_scene_db::open_scene_query(int user_id, int scene_id) {}
+
+void supla_scene_db::open_scene_query(int user_id) {
+  open_scene_query(user_id, 0);
 }
 
-int supla_dobject_repository::get_user_id(void) { return user_id; }
+supla_scene *supla_scene_db::fetch_scene(void) { return NULL; }
 
-supla_dobject_repository::~supla_dobject_repository() {}
+void supla_scene_db::close_scene_query(void) {}

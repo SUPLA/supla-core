@@ -16,14 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <distributedobjects/dobject.h>
+#include "distributedobjects/dobject.h"
+
+#include <cstddef>
 
 supla_dobject::supla_dobject(int id) { this->id = id; }
 
-supla_dobject::~supla_dobject() {
-  if (rui) {
-    delete rui;
-  }
-}
+supla_dobject::~supla_dobject() {}
 
 int supla_dobject::get_id(void) { return id; }
