@@ -28,7 +28,9 @@ supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_datasource(settings) {
   this->mqtt_db = NULL;
+#ifdef __TEST
   this->pthread = 0;
+#endif /*__TEST*/
 }
 
 supla_mqtt_client_db_datasource::~supla_mqtt_client_db_datasource(void) {}
