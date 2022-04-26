@@ -19,12 +19,66 @@
 #include "scene/scene_repository.h"
 
 supla_scene_repository::supla_scene_repository(int user_id)
-    : supla_dobject_repository(user_id) {}
+    : supla_dobject_repository(user_id) {
+  this->current = NULL;
+  this->db = NULL;
+}
 
 supla_scene_repository::~supla_scene_repository() {}
 
-supla_dobject *supla_scene_repository::get_first(void) { return NULL; }
+supla_scene_db *supla_scene_repository::db_connect(void) {
+  if (!db) {
+    db = new supla_scene_db();
+  }
+  if (db && !db->connect()) {
+    delete db;
+    db = NULL;
+  }
+  return db;
+}
 
-supla_dobject *supla_scene_repository::get_next(void) { return NULL; }
+supla_dobject *supla_scene_repository::get_first(void) {
+  supla_scene_db *db = db_connect();
+  if (db) {
+    db->close_scene_query();
+    db->open_scene_query(get_user_id());
+    current = db->fetch_scene();
+    if (!current) {
+      db->close_scene_query();
+    }
+  } else {
+    current = NULL;
+  }
 
-supla_dobject *supla_scene_repository::get_object(int id) { return NULL; }
+  return current;
+}
+
+supla_dobject *supla_scene_repository::get_next(void) {
+  if (!current) {
+    return get_first();
+  }
+  if (db) {
+    current = db->fetch_scene();
+    if (!current) {
+      db->close_scene_query();
+    }
+  } else {
+    current = NULL;
+  }
+
+  return current;
+}
+
+supla_dobject *supla_scene_repository::get_object(int id) {
+  current = NULL;
+  supla_dobject *result = NULL;
+  supla_scene_db *db = db_connect();
+  if (db) {
+    db->close_scene_query();
+    db->open_scene_query(get_user_id(), id);
+    result = db->fetch_scene();
+    db->close_scene_query();
+  }
+
+  return result;
+}

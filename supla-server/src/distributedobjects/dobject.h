@@ -27,7 +27,6 @@
 class supla_dobject {
  private:
   int id;
-  supla_dobject_remote_update_indicator *rui;
 
  protected:
  public:
