@@ -19,10 +19,10 @@
 #ifndef SUPLA_DISTRIBUTED_OBJECT_H_
 #define SUPLA_DISTRIBUTED_OBJECT_H_
 
+#include <distributedobjects/dobject_change_indicator.h>
 #include <list>
 
 #include "distributedobjects/dobject_related_identifier.h"
-#include "distributedobjects/dobject_remote_update_indicator.h"
 
 class supla_dobject {
  private:
@@ -34,7 +34,7 @@ class supla_dobject {
   virtual ~supla_dobject();
   int get_id(void);
   virtual void set_remote_update_indicator(
-      supla_dobject_remote_update_indicator *rui) = 0;
+      supla_dobject_change_indicator *rui) = 0;
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */

@@ -34,8 +34,8 @@ supla_dobject_related_identifier::~supla_dobject_related_identifier() {
 int supla_dobject_related_identifier::get_id(void) { return id; }
 
 void supla_dobject_related_identifier::set_remote_update_indicator(
-    supla_dobject_remote_update_indicator* rui) {
-  supla_dobject_remote_update_indicator* old = this->rui;
+    supla_dobject_change_indicator* rui) {
+  supla_dobject_change_indicator* old = this->rui;
   this->rui = rui;
   if (rui && old) {
     rui->apply_previous(old);
@@ -46,7 +46,7 @@ void supla_dobject_related_identifier::set_remote_update_indicator(
   }
 }
 
-const supla_dobject_remote_update_indicator*
+const supla_dobject_change_indicator*
 supla_dobject_related_identifier::get_remote_update_indicator(void) const {
   return rui;
 }

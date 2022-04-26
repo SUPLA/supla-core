@@ -18,6 +18,6 @@
 
 #include "scene/scene.h"
 
-supla_scene::supla_scene(int id) : supla_dobject_client_oriented(id) {}
+supla_scene::supla_scene(int id) : supla_dobject(id) {}
 
 supla_scene::~supla_scene(void) {}

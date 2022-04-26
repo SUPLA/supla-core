@@ -19,9 +19,9 @@
 #ifndef SUPLA_SCENE_H_
 #define SUPLA_SCENE_H_
 
-#include "distributedobjects/dobject_client_oriented.h"
+#include "distributedobjects/dobject.h"
 
-class supla_scene : public supla_dobject_client_oriented {
+class supla_scene : public supla_dobject {
  private:
  protected:
  public:

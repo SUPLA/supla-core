@@ -16,28 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "distributedobjects/dobject_remote_update_indicator.h"
+#include <distributedobjects/dobject_change_indicator.h>
 
-supla_dobject_remote_update_indicator::supla_dobject_remote_update_indicator() {
-  this->updated = false;
+supla_dobject_change_indicator::supla_dobject_change_indicator() {
+  this->changed = true;
 }
 
-supla_dobject_remote_update_indicator::supla_dobject_remote_update_indicator(
-    bool updated) {
-  this->updated = updated;
+supla_dobject_change_indicator::supla_dobject_change_indicator(bool changed) {
+  this->changed = changed;
 }
 
-supla_dobject_remote_update_indicator::
-    ~supla_dobject_remote_update_indicator() {}
+supla_dobject_change_indicator::~supla_dobject_change_indicator() {}
 
-bool supla_dobject_remote_update_indicator::is_updated(void) const {
-  return updated;
-}
+bool supla_dobject_change_indicator::is_changed(void) const { return changed; }
 
-void supla_dobject_remote_update_indicator::apply_previous(
-    const supla_dobject_remote_update_indicator *previous) {}
+void supla_dobject_change_indicator::apply_previous(
+    const supla_dobject_change_indicator *previous) {}
 
-supla_dobject_remote_update_indicator *
-supla_dobject_remote_update_indicator::clone(void) {
-  return new supla_dobject_remote_update_indicator(updated);
+supla_dobject_change_indicator *supla_dobject_change_indicator::clone(void) {
+  return new supla_dobject_change_indicator(changed);
 }
