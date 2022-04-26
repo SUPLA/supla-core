@@ -16,19 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "distributedobjects/dobject_client_oriented.h"
+#ifndef SUPLA_DISTRIBUTED_OBJECT_CHANGE_INDICATOR_H_
+#define SUPLA_DISTRIBUTED_OBJECT_CHANGE_INDICATOR_H_
 
-supla_dobject_client_oriented::supla_dobject_client_oriented(int id)
-    : supla_dobject(id) {}
+class supla_dobject_change_indicator {
+ private:
+  bool changed;
 
-supla_dobject_client_oriented::~supla_dobject_client_oriented() {}
+ protected:
+ public:
+  supla_dobject_change_indicator();
+  explicit supla_dobject_change_indicator(bool changed);
+  virtual ~supla_dobject_change_indicator();
+  virtual void apply_previous(const supla_dobject_change_indicator *previous);
+  virtual supla_dobject_change_indicator *clone(void);
+  bool is_changed(void) const;
+};
 
-void supla_dobject_client_oriented::set_remote_update_indicator(
-    supla_dobject_remote_update_indicator *rui) {
-  for (auto it = client_ids.begin(); it != client_ids.end(); ++it) {
-    it->set_remote_update_indicator(rui ? rui->clone() : NULL);
-  }
-  if (rui) {
-    delete rui;
-  }
-}
+#endif /* SUPLA_DISTRIBUTED_OBJECT_CHANGE_INDICATOR_H_ */
