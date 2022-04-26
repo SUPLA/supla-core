@@ -17,6 +17,7 @@
  */
 
 #include <mqtt_client_db_datasource.h>
+
 #include "log.h"
 
 #ifdef __TEST
@@ -27,6 +28,7 @@ supla_mqtt_client_db_datasource::supla_mqtt_client_db_datasource(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_datasource(settings) {
   this->mqtt_db = NULL;
+  this->pthread = 0;
 }
 
 supla_mqtt_client_db_datasource::~supla_mqtt_client_db_datasource(void) {}
