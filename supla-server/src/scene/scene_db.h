@@ -22,8 +22,21 @@
 #include "scene/scene.h"
 #include "svrdb.h"
 
+#define SCENE_CAPTION_MAXSIZE 256
+#define SCENE_ACTION_PARAM_MAXSIZE 256
+
 class supla_scene_db : public svrdb {
  private:
+  int scene_id;
+  char *caption[SCENE_CAPTION_MAXSIZE];
+  int op_location_id;
+  int op_channel_id;
+  int op_channel_group_id;
+  int op_scene_id;
+  int op_action;
+  char *op_action_param[SCENE_ACTION_PARAM_MAXSIZE];
+  int op_delay_ms;
+
  public:
   supla_scene_db(void);
   virtual ~supla_scene_db(void);
