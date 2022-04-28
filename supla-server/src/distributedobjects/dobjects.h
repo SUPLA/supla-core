@@ -25,32 +25,30 @@
 
 #include "distributedobjects/dobject.h"
 #include "distributedobjects/dobject_registered_observer.h"
-#include "distributedobjects/dobject_repository_factory.h"
 
 class supla_dobjects {
  private:
   void *lck;
   std::vector<supla_dobject *> objects;
   std::list<supla_dobject_registered_observer *> registered_observers;
-  supla_dobject_repository_factory *repository_factory;
 
-  void object_add(supla_dobject *object);
-
- protected:
   void lock(void);
   void unlock(void);
-  void access_repository(
-      std::function<void(supla_dobject_repository *repository)> on_access);
 
- public:
-  explicit supla_dobjects(supla_dobject_repository_factory *repository_factory);
-  virtual ~supla_dobjects();
-  void load(void);
-  void load(int id);
+ protected:
+  void clear(void);
+  void add(supla_dobject *object);
+  void replace(const std::vector<supla_dobject *> &objects);
+
   void access_object(int id,
                      std::function<void(supla_dobject *object)> on_access);
+
   void register_observer(supla_dobject_observer *observer);
   void unregister_observer(supla_dobject_observer *observer);
+
+ public:
+  explicit supla_dobjects(void);
+  virtual ~supla_dobjects();
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECTS_H_ */

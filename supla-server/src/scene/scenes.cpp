@@ -18,7 +18,6 @@
 
 #include "scene/scenes.h"
 
-supla_scenes::supla_scenes(supla_scene_repository_factory* repository_factory)
-    : supla_dobjects(repository_factory) {}
+supla_scenes::supla_scenes(supla_scene_abstract_repository *repository) {}
 
 supla_scenes::~supla_scenes(void) {}

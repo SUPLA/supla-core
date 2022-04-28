@@ -16,13 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "distributedobjects/dobject_repository_factory.h"
+#include <scene/scene_abstract_repository.h>
 
-supla_dobject_repository_factory::supla_dobject_repository_factory(
-    int user_id) {
-  this->user_id = user_id;
-}
+supla_scene_abstract_repository::supla_scene_abstract_repository(int user_id) {}
 
-int supla_dobject_repository_factory::get_user_id(void) { return user_id; }
-
-supla_dobject_repository_factory::~supla_dobject_repository_factory() {}
+supla_scene_abstract_repository::~supla_scene_abstract_repository() {}
