@@ -16,69 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "scene/scene_repository.h"
+#include <scene/scene_repository.h>
 
-supla_scene_repository::supla_scene_repository(int user_id)
-    : supla_dobject_repository(user_id) {
-  this->current = NULL;
-  this->db = NULL;
-}
+supla_scene_repository::supla_scene_repository(int user_id) {}
 
 supla_scene_repository::~supla_scene_repository() {}
 
-supla_scene_db *supla_scene_repository::db_connect(void) {
-  if (!db) {
-    db = new supla_scene_db();
-  }
-  if (db && !db->connect()) {
-    delete db;
-    db = NULL;
-  }
-  return db;
-}
+supla_scene *supla_scene_repository::get_scene(int id) {}
 
-supla_dobject *supla_scene_repository::get_first(void) {
-  supla_scene_db *db = db_connect();
-  if (db) {
-    db->close_scene_query();
-    db->open_scene_query(get_user_id());
-    current = db->fetch_scene();
-    if (!current) {
-      db->close_scene_query();
-    }
-  } else {
-    current = NULL;
-  }
-
-  return current;
-}
-
-supla_dobject *supla_scene_repository::get_next(void) {
-  if (!current) {
-    return get_first();
-  }
-  if (db) {
-    current = db->fetch_scene();
-    if (!current) {
-      db->close_scene_query();
-    }
-  } else {
-    current = NULL;
-  }
-
-  return current;
-}
-
-supla_dobject *supla_scene_repository::get_object(int id) {
-  current = NULL;
-  supla_dobject *result = NULL;
-  supla_scene_db *db = db_connect();
-  if (db) {
-    db->close_scene_query();
-    db->open_scene_query(get_user_id(), id);
-    result = db->fetch_scene();
-    db->close_scene_query();
-  }
-
-  return result;
-}
+std::vector<supla_scene *> supla_scene_repository::get_all_scenes(void) {}

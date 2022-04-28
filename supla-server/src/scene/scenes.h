@@ -19,14 +19,15 @@
 #ifndef SUPLA_SCENES_H_
 #define SUPLA_SCENES_H_
 
+#include <scene/scene_abstract_repository.h>
+
 #include "distributedobjects/dobjects.h"
-#include "scene_repository_factory.h"
 
 class supla_scenes : public supla_dobjects {
  private:
  protected:
  public:
-  explicit supla_scenes(supla_scene_repository_factory* repository_factory);
+  explicit supla_scenes(supla_scene_abstract_repository *repository);
   virtual ~supla_scenes(void);
 };
 

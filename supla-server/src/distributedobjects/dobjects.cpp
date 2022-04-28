@@ -21,72 +21,46 @@
 #include "assert.h"
 #include "lck.h"
 
-supla_dobjects::supla_dobjects(
-    supla_dobject_repository_factory *repository_factory) {
-  this->repository_factory = repository_factory;
-  assert(repository_factory != NULL);
-  lck = lck_init();
-}
+supla_dobjects::supla_dobjects(void) { lck = lck_init(); }
 
-supla_dobjects::~supla_dobjects() {
-  lck_free(lck);
+supla_dobjects::~supla_dobjects() { lck_free(lck); }
 
-  delete repository_factory;
-  repository_factory = NULL;
-}
+void supla_dobjects::lock(void) { lck_lock(lck); }
 
-void supla_dobjects::object_add(supla_dobject *object) {
-  objects.push_back(object);
-}
+void supla_dobjects::unlock(void) { lck_unlock(lck); }
 
-void supla_dobjects::access_repository(
-    std::function<void(supla_dobject_repository *repository)> on_access) {
-  supla_dobject_repository *repo = repository_factory->get_repository();
-  if (repo) {
-    on_access(repo);
-    delete repo;
-  }
-}
-
-void supla_dobjects::load(void) {
+void supla_dobjects::clear(void) {
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     delete *it;
   }
   objects.clear();
-
-  access_repository([this](supla_dobject_repository *repo) -> void {
-    supla_dobject *object = NULL;
-    while (NULL != (object = repo->get_next())) {
-      object_add(object);
-    }
-  });
-
   unlock();
 }
 
-void supla_dobjects::load(int id) {
+void supla_dobjects::add(supla_dobject *object) {
+  if (!object) {
+    return;
+  }
+
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if ((*it)->get_id() == id) {
+    if ((*it)->get_id() == object->get_id()) {
       delete *it;
+      objects.erase(it);
       break;
     }
   }
-
-  access_repository([id, this](supla_dobject_repository *repo) -> void {
-    supla_dobject *object = repo->get_object(id);
-    if (object) {
-      object_add(object);
-    }
-  });
-
+  objects.push_back(object);
   unlock();
 }
 
-void supla_dobjects::lock(void) { lck_lock(lck); }
-
-void supla_dobjects::unlock(void) { lck_unlock(lck); }
+void supla_dobjects::replace(const std::vector<supla_dobject *> &objects) {
+  lock();
+  clear();
+  this->objects = objects;
+  unlock();
+}
 
 void supla_dobjects::access_object(
     int id, std::function<void(supla_dobject *object)> on_access) {

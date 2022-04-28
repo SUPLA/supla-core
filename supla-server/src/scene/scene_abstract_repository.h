@@ -16,15 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "scene/scene_repository_factory.h"
+#ifndef SUPLA_SCENE_ABSTRACT_REPOSITORY_H_
+#define SUPLA_SCENE_ABSTRACT_REPOSITORY_H_
 
-#include "scene/scene_repository.h"
+#include <vector>
 
-supla_scene_repository_factory::supla_scene_repository_factory(int user_id)
-    : supla_dobject_repository_factory(user_id) {}
+#include "scene/scene.h"
 
-supla_scene_repository_factory::~supla_scene_repository_factory() {}
+class supla_scene_abstract_repository {
+ private:
+ protected:
+ public:
+  explicit supla_scene_abstract_repository(int user_id);
+  virtual ~supla_scene_abstract_repository();
+  virtual supla_scene *get_scene(int id) = 0;
+  virtual std::vector<supla_scene *> get_all_scenes(void) = 0;
+};
 
-supla_dobject_repository* supla_scene_repository_factory::get_repository(void) {
-  return new supla_scene_repository(get_user_id());
-}
+#endif /* SUPLA_SCENE_ABSTRACT_REPOSITORY_H_ */

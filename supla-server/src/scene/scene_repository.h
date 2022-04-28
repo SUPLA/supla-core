@@ -19,23 +19,18 @@
 #ifndef SUPLA_SCENE_REPOSITORY_H_
 #define SUPLA_SCENE_REPOSITORY_H_
 
-#include "distributedobjects/dobject_repository.h"
-#include "scene/scene_db.h"
+#include <vector>
 
-class supla_scene_repository : public supla_dobject_repository {
+#include "scene/scene_abstract_repository.h"
+
+class supla_scene_repository {
  private:
-  supla_dobject *current;
-  supla_scene_db *db;
-
  protected:
-  supla_scene_db *db_connect(void);
-
  public:
   explicit supla_scene_repository(int user_id);
   virtual ~supla_scene_repository();
-  virtual supla_dobject *get_first(void);
-  virtual supla_dobject *get_next(void);
-  virtual supla_dobject *get_object(int id);
+  virtual supla_scene *get_scene(int id);
+  virtual std::vector<supla_scene *> get_all_scenes(void);
 };
 
 #endif /* SUPLA_SCENE_REPOSITORY_H_ */
