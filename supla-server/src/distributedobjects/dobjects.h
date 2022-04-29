@@ -47,7 +47,7 @@ class supla_dobjects {
   void unregister_observer(supla_dobject_observer *observer);
 
  public:
-  explicit supla_dobjects(void);
+  supla_dobjects(void);
   virtual ~supla_dobjects();
 };
 

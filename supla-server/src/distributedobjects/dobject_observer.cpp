@@ -18,9 +18,6 @@
 
 #include "distributedobjects/dobject_observer.h"
 
-supla_dobject_observer::supla_dobject_observer() {
-
-}
+supla_dobject_observer::supla_dobject_observer() {}
 
 supla_dobject_observer::~supla_dobject_observer() {}
-
