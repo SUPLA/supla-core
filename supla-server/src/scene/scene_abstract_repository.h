@@ -25,7 +25,11 @@
 
 class supla_scene_abstract_repository {
  private:
+  int user_id;
+
  protected:
+  int get_user_id(void);
+
  public:
   explicit supla_scene_abstract_repository(int user_id);
   virtual ~supla_scene_abstract_repository();

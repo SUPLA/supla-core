@@ -19,6 +19,8 @@
 #ifndef SCENE_DB_H_
 #define SCENE_DB_H_
 
+#include <vector>
+
 #include "scene/scene.h"
 #include "svrdb.h"
 
@@ -27,24 +29,12 @@
 
 class supla_scene_db : public svrdb {
  private:
-  int scene_id;
-  char *caption[SCENE_CAPTION_MAXSIZE];
-  int op_location_id;
-  int op_channel_id;
-  int op_channel_group_id;
-  int op_scene_id;
-  int op_action;
-  char *op_action_param[SCENE_ACTION_PARAM_MAXSIZE];
-  int op_delay_ms;
-
  public:
   supla_scene_db(void);
   virtual ~supla_scene_db(void);
 
-  void open_scene_query(int user_id, int scene_id);
-  void open_scene_query(int user_id);
-  supla_scene *fetch_scene(void);
-  void close_scene_query(void);
+  supla_scene *get_scene(int user_id, int id);
+  std::vector<supla_scene *> get_all_scenes(int user_id);
 };
 
 #endif /*SCENE_DB_H_*/

@@ -26,14 +26,11 @@
 
 supla_scene_db::supla_scene_db(void) : svrdb() {}
 
-supla_scene_db::~supla_scene_db(void) { close_scene_query(); }
+supla_scene_db::~supla_scene_db(void) {}
 
-void supla_scene_db::open_scene_query(int user_id, int scene_id) {}
+supla_scene *supla_scene_db::get_scene(int user_id, int id) { return NULL; }
 
-void supla_scene_db::open_scene_query(int user_id) {
-  open_scene_query(user_id, 0);
+std::vector<supla_scene *> supla_scene_db::get_all_scenes(int user_id) {
+  std::vector<supla_scene *> result;
+  return result;
 }
-
-supla_scene *supla_scene_db::fetch_scene(void) { return NULL; }
-
-void supla_scene_db::close_scene_query(void) {}

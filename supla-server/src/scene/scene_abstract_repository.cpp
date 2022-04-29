@@ -21,3 +21,5 @@
 supla_scene_abstract_repository::supla_scene_abstract_repository(int user_id) {}
 
 supla_scene_abstract_repository::~supla_scene_abstract_repository() {}
+
+int supla_scene_abstract_repository::get_user_id(void) { return user_id; }
