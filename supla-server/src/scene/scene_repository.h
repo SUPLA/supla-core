@@ -22,10 +22,13 @@
 #include <vector>
 
 #include "scene/scene_abstract_repository.h"
+#include "scene/scene_db.h"
 
-class supla_scene_repository {
+class supla_scene_repository : public supla_scene_abstract_repository {
  private:
  protected:
+  supla_scene_db *get_db(void);
+
  public:
   explicit supla_scene_repository(int user_id);
   virtual ~supla_scene_repository();
