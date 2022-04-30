@@ -22,13 +22,36 @@
 #include <vector>
 
 #include "scene/scene.h"
+#include "scene/scene_operation.h"
 #include "svrdb.h"
 
 #define SCENE_CAPTION_MAXSIZE 256
 #define SCENE_ACTION_PARAM_MAXSIZE 256
 
+typedef struct {
+  int scene_id;
+  char caption[SCENE_CAPTION_MAXSIZE];
+  int location_id;
+} _supla_db_scene_row_t;
+
+typedef struct {
+  int owning_scene_id;
+  int channel_id;
+  int channel_group_id;
+  int scene_id;
+  int action;
+  char action_param[SCENE_ACTION_PARAM_MAXSIZE];
+  int delay_ms;
+} _supla_db_operation_row_t;
+
 class supla_scene_db : public svrdb {
  private:
+  supla_scene *convert(_supla_db_scene_row_t *row);
+  supla_scene_operation *convert(_supla_db_operation_row_t *row);
+
+  void add_operations(std::vector<supla_scene *> *scenes, int user_id, int id);
+  std::vector<supla_scene *> get_scenes(int user_id, int id);
+
  public:
   supla_scene_db(void);
   virtual ~supla_scene_db(void);
