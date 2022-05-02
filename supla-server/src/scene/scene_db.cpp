@@ -23,17 +23,73 @@
 #include <string.h>
 
 #include "log.h"
+#include "scene/scene_action_config.h"
+
+/*
+ *
+typedef struct {
+  int action;
+  char action_param[SCENE_ACTION_PARAM_MAXSIZE];
+  int delay_ms;
+} _supla_db_operation_row_t;
+ */
 
 supla_scene_db::supla_scene_db(void) : svrdb() {}
 
 supla_scene_db::~supla_scene_db(void) {}
 
 supla_scene *supla_scene_db::convert(_supla_db_scene_row_t *row) {
-  return NULL;
+  if (!row) {
+    return NULL;
+  }
+  supla_scene *scene = new supla_scene(row->scene_id);
+  if (scene) {
+    scene->set_location_id(row->location_id);
+    scene->set_caption(row->caption);
+  }
+  return scene;
 }
 
 supla_scene_operation *supla_scene_db::convert(_supla_db_operation_row_t *row) {
-  return NULL;
+  if (!row) {
+    return NULL;
+  }
+  supla_scene_operation *op = new supla_scene_operation();
+  if (op) {
+    supla_scene_action_config config;
+    if (row->channel_id) {
+      config.set_subject_id(row->channel_id);
+      config.set_subject_type(stChannel);
+    } else if (row->channel_group_id) {
+      config.set_subject_id(row->channel_group_id);
+      config.set_subject_type(stChannelGroup);
+    } else if (row->scene_id) {
+      config.set_subject_id(row->scene_id);
+      config.set_subject_type(stScene);
+    }
+
+    config.set_action_id(row->action_id);
+    config.set_params(row->action_param);
+    op->set_delay_ms(row->delay_ms);
+    op->set_action_config(config);
+  }
+  return op;
+}
+
+void supla_scene_db::set_operations(int scene_id,
+                                    std::vector<supla_scene *> *scenes,
+                                    supla_scene_operations *ops) {
+  for (auto it = scenes->begin(); it != scenes->end(); ++it) {
+    if ((*it)->get_id() == scene_id) {
+      (*it)->set_operations(ops);
+      ops = NULL;
+      break;
+    }
+  }
+
+  if (ops) {
+    delete ops;
+  }
 }
 
 void supla_scene_db::add_operations(std::vector<supla_scene *> *scenes,
@@ -49,7 +105,7 @@ void supla_scene_db::add_operations(std::vector<supla_scene *> *scenes,
       "o.`scene_id`, o.`action`, o.`action_param`, o.`delay_ms` FROM "
       "`supla_scene_operation` o LEFT JOIN `supla_scene` s ON s.`id` = "
       "o.`owning_scene_id` WHERE s.`user_id` = ? AND (? = 0 OR s.`id` = ?) AND "
-      "s.`enabled` = 1";
+      "s.`enabled` = 1 ORDER BY o.`owning_scene_id`";
 
   MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
@@ -84,7 +140,7 @@ void supla_scene_db::add_operations(std::vector<supla_scene *> *scenes,
     rbind[3].buffer_length = sizeof(int);
 
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&row.action;
+    rbind[4].buffer = (char *)&row.action_id;
     rbind[4].buffer_length = sizeof(int);
 
     rbind[5].buffer_type = MYSQL_TYPE_STRING;
@@ -104,11 +160,35 @@ void supla_scene_db::add_operations(std::vector<supla_scene *> *scenes,
       mysql_stmt_store_result(stmt);
 
       if (mysql_stmt_num_rows(stmt) > 0) {
+        supla_scene_operations *ops = NULL;
+        int last_owning_scene_id = 0;
         while (!mysql_stmt_fetch(stmt)) {
           set_terminating_byte(row.action_param, sizeof(row.action_param),
                                action_param_len, action_param_is_null);
 
+          if (row.owning_scene_id != last_owning_scene_id) {
+            last_owning_scene_id = row.owning_scene_id;
+            if (ops) {
+              set_operations(row.owning_scene_id, scenes, ops);
+              ops = NULL;
+            }
+          }
+
+          supla_scene_operation *op = convert(&row);
+          if (op) {
+            if (!ops) {
+              ops = new supla_scene_operations();
+            }
+            if (ops) {
+              ops->push(op);
+            }
+          }
           row = {};
+        }
+
+        if (ops) {
+          set_operations(last_owning_scene_id, scenes, ops);
+          ops = NULL;
         }
       }
     }

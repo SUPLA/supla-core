@@ -19,14 +19,27 @@
 #ifndef SUPLA_SCENE_H_
 #define SUPLA_SCENE_H_
 
+#include <string>
+
 #include "distributedobjects/dobject.h"
+#include "scene/scene_operations.h"
 
 class supla_scene : public supla_dobject {
  private:
+  int location_id;
+  std::string caption;
+  supla_scene_operations *operations;
+
  protected:
  public:
   explicit supla_scene(int id);
   virtual ~supla_scene(void);
+  void set_operations(supla_scene_operations *operations);
+  void set_location_id(int location_id);
+  void set_caption(const char *caption);
+  int get_location_id(void);
+  const std::string get_caption(void);
+  virtual void set_remote_update_indicator(supla_dobject_change_indicator *rui);
 };
 
 #endif /* SUPLA_SCENE_H_ */
