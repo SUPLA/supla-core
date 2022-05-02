@@ -16,18 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "scene/scenes.h"
+#include <scene/scene_action_config.h>
 
-supla_scenes::supla_scenes(supla_scene_abstract_repository *repository) {}
+supla_scene_action_config::supla_scene_action_config(void)
+    : supla_action_config() {}
 
-supla_scenes::~supla_scenes(void) {}
+supla_scene_action_config::~supla_scene_action_config(void) {}
 
-void supla_scenes::access_scene(
-    int id, std::function<void(supla_scene *scene)> on_access) {
-  access_object(id, [on_access](supla_dobject *object) -> void {
-    supla_scene *scene = dynamic_cast<supla_scene *>(object);
-    if (scene) {
-      on_access(scene);
-    }
-  });
-}
+void supla_scene_action_config::set_params(const char *params) {}

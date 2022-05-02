@@ -18,6 +18,37 @@
 
 #include "scene/scene.h"
 
-supla_scene::supla_scene(int id) : supla_dobject(id) {}
+supla_scene::supla_scene(int id) : supla_dobject(id) {
+  operations = NULL;
+  location_id = 0;
+}
 
-supla_scene::~supla_scene(void) {}
+supla_scene::~supla_scene(void) {
+  if (operations) {
+    delete operations;
+    operations = NULL;
+  }
+}
+
+void supla_scene::set_operations(supla_scene_operations *operations) {
+  if (this->operations) {
+    delete this->operations;
+  }
+
+  this->operations = operations;
+}
+
+void supla_scene::set_location_id(int location_id) {
+  this->location_id = location_id;
+}
+
+void supla_scene::set_caption(const char *caption) {
+  this->caption = caption ? caption : "";
+}
+
+int supla_scene::get_location_id(void) { return location_id; }
+
+const std::string supla_scene::get_caption(void) { return caption; }
+
+void supla_scene::set_remote_update_indicator(
+    supla_dobject_change_indicator *rui) {}

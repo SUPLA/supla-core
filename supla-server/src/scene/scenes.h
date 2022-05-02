@@ -29,6 +29,7 @@ class supla_scenes : public supla_dobjects {
  public:
   explicit supla_scenes(supla_scene_abstract_repository *repository);
   virtual ~supla_scenes(void);
+  void access_scene(int id, std::function<void(supla_scene *scene)> on_access);
 };
 
 #endif /* SUPLA_SCENES_H_ */
