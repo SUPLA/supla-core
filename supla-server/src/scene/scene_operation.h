@@ -19,18 +19,18 @@
 #ifndef SUPLA_SCENE_OPERATION_H_
 #define SUPLA_SCENE_OPERATION_H_
 
-#include "actions/action_config.h"
+#include "scene/scene_action_config.h"
 
 class supla_scene_operation {
  private:
   int delay_ms;
-  supla_action_config action_config;
+  supla_scene_action_config action_config;
 
  public:
   supla_scene_operation(void);
   virtual ~supla_scene_operation();
 
-  void set_action_config(const supla_action_config &action);
+  void set_action_config(const supla_scene_action_config &action);
   supla_action_config *get_action_config(void);
   void set_delay_ms(int delay_ms);
   int get_delay_ms(void);
