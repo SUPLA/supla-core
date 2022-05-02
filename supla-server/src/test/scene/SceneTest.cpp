@@ -75,7 +75,7 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   supla_scene_operation *op = new supla_scene_operation();
   ASSERT_FALSE(op == NULL);
 
-  supla_action_config action_config;
+  supla_scene_action_config action_config;
   action_config.set_action_id(ACTION_TURN_ON);
   action_config.set_subject_id(10);
   action_config.set_subject_type(stChannel);
@@ -118,7 +118,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   supla_scene_operation *op = new supla_scene_operation();
   ASSERT_FALSE(op == NULL);
 
-  supla_action_config action_config;
+  supla_scene_action_config action_config;
   action_config.set_action_id(ACTION_TURN_ON);
   action_config.set_subject_id(10);
   action_config.set_subject_type(stChannel);
@@ -177,7 +177,7 @@ TEST_F(SceneTest, executeSceneInsideScene) {
   supla_scene_operation *op = new supla_scene_operation();
   ASSERT_FALSE(op == NULL);
 
-  supla_action_config action_config;
+  supla_scene_action_config action_config;
   action_config.set_action_id(ACTION_EXECUTE);
   action_config.set_subject_id(15);
   action_config.set_subject_type(stScene);
@@ -233,7 +233,7 @@ TEST_F(SceneTest, infinityLoop) {
   supla_scene_operation *op = new supla_scene_operation();
   ASSERT_FALSE(op == NULL);
 
-  supla_action_config action_config;
+  supla_scene_action_config action_config;
   action_config.set_action_id(ACTION_EXECUTE);
   action_config.set_subject_id(15);
   action_config.set_subject_type(stScene);
@@ -281,7 +281,7 @@ TEST_F(SceneTest, interruptScene) {
 
   supla_scene_operation *op = new supla_scene_operation();
   ASSERT_FALSE(op == NULL);
-  supla_action_config action_config;
+  supla_scene_action_config action_config;
   action_config.set_action_id(ACTION_EXECUTE);
   action_config.set_subject_id(15);
   action_config.set_subject_type(stScene);
