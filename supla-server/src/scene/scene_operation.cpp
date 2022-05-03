@@ -23,7 +23,7 @@ supla_scene_operation::supla_scene_operation(void) { this->delay_ms = 0; }
 supla_scene_operation::~supla_scene_operation() {}
 
 void supla_scene_operation::set_action_config(
-    const supla_scene_action_config &action_config) {
+    const supla_action_config &action_config) {
   this->action_config = action_config;
 }
 

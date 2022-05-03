@@ -6,7 +6,6 @@
 CPP_SRCS += \
 ../src/scene/scene.cpp \
 ../src/scene/scene_abstract_repository.cpp \
-../src/scene/scene_action_config.cpp \
 ../src/scene/scene_asynctask.cpp \
 ../src/scene/scene_db.cpp \
 ../src/scene/scene_operation.cpp \
@@ -18,7 +17,6 @@ CPP_SRCS += \
 CPP_DEPS += \
 ./src/scene/scene.d \
 ./src/scene/scene_abstract_repository.d \
-./src/scene/scene_action_config.d \
 ./src/scene/scene_asynctask.d \
 ./src/scene/scene_db.d \
 ./src/scene/scene_operation.d \
@@ -30,7 +28,6 @@ CPP_DEPS += \
 OBJS += \
 ./src/scene/scene.o \
 ./src/scene/scene_abstract_repository.o \
-./src/scene/scene_action_config.o \
 ./src/scene/scene_asynctask.o \
 ./src/scene/scene_db.o \
 ./src/scene/scene_operation.o \
@@ -52,7 +49,7 @@ src/scene/%.o: ../src/scene/%.cpp src/scene/subdir.mk
 clean: clean-src-2f-scene
 
 clean-src-2f-scene:
-	-$(RM) ./src/scene/scene.d ./src/scene/scene.o ./src/scene/scene_abstract_repository.d ./src/scene/scene_abstract_repository.o ./src/scene/scene_action_config.d ./src/scene/scene_action_config.o ./src/scene/scene_asynctask.d ./src/scene/scene_asynctask.o ./src/scene/scene_db.d ./src/scene/scene_db.o ./src/scene/scene_operation.d ./src/scene/scene_operation.o ./src/scene/scene_operations.d ./src/scene/scene_operations.o ./src/scene/scene_repository.d ./src/scene/scene_repository.o ./src/scene/scene_search_condition.d ./src/scene/scene_search_condition.o ./src/scene/scenes.d ./src/scene/scenes.o
+	-$(RM) ./src/scene/scene.d ./src/scene/scene.o ./src/scene/scene_abstract_repository.d ./src/scene/scene_abstract_repository.o ./src/scene/scene_asynctask.d ./src/scene/scene_asynctask.o ./src/scene/scene_db.d ./src/scene/scene_db.o ./src/scene/scene_operation.d ./src/scene/scene_operation.o ./src/scene/scene_operations.d ./src/scene/scene_operations.o ./src/scene/scene_repository.d ./src/scene/scene_repository.o ./src/scene/scene_search_condition.d ./src/scene/scene_search_condition.o ./src/scene/scenes.d ./src/scene/scenes.o
 
 .PHONY: clean-src-2f-scene
 

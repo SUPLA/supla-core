@@ -55,6 +55,8 @@ class supla_action_config : public abstract_action_config {
 
   virtual _action_config_rgbw_t get_rgbw(void);
   void set_rgbw(_action_config_rgbw_t rgbw);
+
+  void apply_json_params(const char *param);
 };
 
 #endif /* ACTIONCONFIG_H_ */

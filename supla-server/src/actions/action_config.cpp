@@ -18,6 +18,13 @@
 
 #include "action_config.h"
 
+#include <stdlib.h>
+#include <strings.h>
+#include <time.h>
+
+#include "json/cJSON.h"
+#include "tools.h"
+
 supla_action_config::supla_action_config(void) : abstract_action_config() {
   action_id = 0;
   subject_type = stUnknown;
@@ -74,4 +81,89 @@ _action_config_rgbw_t supla_action_config::get_rgbw(void) { return rgbw; }
 
 void supla_action_config::set_rgbw(_action_config_rgbw_t rgbw) {
   this->rgbw = rgbw;
+}
+
+void supla_action_config::apply_json_params(const char *params) {
+  cJSON *root = cJSON_Parse(params);
+  if (!root) {
+    return;
+  }
+
+  cJSON *item = cJSON_GetObjectItem(root, "percentage");
+
+  if (item) {
+    if (cJSON_IsNumber(item)) {
+      if (item->valuedouble < 0) {
+        set_percentage(0);
+      } else if (item->valuedouble > 100) {
+        set_percentage(100);
+      } else {
+        set_percentage(item->valuedouble);
+      }
+    }
+  }
+
+  item = cJSON_GetObjectItem(root, "sourceChannelId");
+
+  if (item && cJSON_IsNumber(item)) {
+    set_source_channel_id(item->valuedouble);
+  }
+
+  item = cJSON_GetObjectItem(root, "sourceDeviceId");
+
+  if (item && cJSON_IsNumber(item)) {
+    set_source_device_id(item->valuedouble);
+  }
+
+  _action_config_rgbw_t rgbw = {};
+  bool rgbw_changed = false;
+
+  item = cJSON_GetObjectItem(root, "brightness");
+  if (item && cJSON_IsNumber(item)) {
+    if (item->valuedouble < 0) {
+      rgbw.brightness = 0;
+    } else if (item->valuedouble > 100) {
+      rgbw.brightness = 100;
+    } else {
+      rgbw.brightness = item->valuedouble;
+    }
+
+    rgbw_changed = true;
+  }
+
+  item = cJSON_GetObjectItem(root, "color_brightness");
+  if (item && cJSON_IsNumber(item)) {
+    if (item->valuedouble < 0) {
+      rgbw.color_brightness = 0;
+    } else if (item->valuedouble > 100) {
+      rgbw.color_brightness = 100;
+    } else {
+      rgbw.color_brightness = item->valuedouble;
+    }
+    rgbw_changed = true;
+  }
+
+  item = cJSON_GetObjectItem(root, "hue");
+  if (item) {
+    if (cJSON_IsNumber(item)) {
+      rgbw.color = st_hue2rgb(item->valuedouble);
+      rgbw_changed = true;
+    } else if (cJSON_IsString(item)) {
+      if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
+        unsigned int seed = time(NULL);
+        rgbw.color = st_hue2rgb(rand_r(&seed) % 360);
+        rgbw.color_random = true;
+        rgbw_changed = true;
+      } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {
+        rgbw.color = 0xFFFFFF;
+        rgbw_changed = true;
+      }
+    }
+  }
+
+  if (rgbw_changed) {
+    set_rgbw(rgbw);
+  }
+
+  cJSON_Delete(root);
 }
