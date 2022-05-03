@@ -16,17 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SCENEACTIONCONFIG_H_
-#define SCENEACTIONCONFIG_H_
+#ifndef ACTIONCONFIGTEST_H_
+#define ACTIONCONFIGTEST_H_
 
 #include "actions/action_config.h"
+#include "gtest/gtest.h"  // NOLINT
 
-class supla_scene_action_config : public supla_action_config {
- private:
+namespace testing {
+
+class ActionConfigTest : public Test {
+ protected:
+  supla_action_config config;
+
  public:
-  supla_scene_action_config(void);
-  virtual ~supla_scene_action_config(void);
-  void set_params(const char *params);
+  ActionConfigTest(void);
+  virtual ~ActionConfigTest(void);
 };
 
-#endif /* SCENEACTIONCONFIG_H_ */
+} /* namespace testing */
+
+#endif /* ACTIONCONFIGTEST_H_ */

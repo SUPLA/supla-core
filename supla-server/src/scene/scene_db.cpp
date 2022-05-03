@@ -22,17 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "actions/action_config.h"
 #include "log.h"
-#include "scene/scene_action_config.h"
-
-/*
- *
-typedef struct {
-  int action;
-  char action_param[SCENE_ACTION_PARAM_MAXSIZE];
-  int delay_ms;
-} _supla_db_operation_row_t;
- */
 
 supla_scene_db::supla_scene_db(void) : svrdb() {}
 
@@ -56,7 +47,7 @@ supla_scene_operation *supla_scene_db::convert(_supla_db_operation_row_t *row) {
   }
   supla_scene_operation *op = new supla_scene_operation();
   if (op) {
-    supla_scene_action_config config;
+    supla_action_config config;
     if (row->channel_id) {
       config.set_subject_id(row->channel_id);
       config.set_subject_type(stChannel);
@@ -69,7 +60,7 @@ supla_scene_operation *supla_scene_db::convert(_supla_db_operation_row_t *row) {
     }
 
     config.set_action_id(row->action_id);
-    config.set_params(row->action_param);
+    config.apply_json_params(row->action_param);
     op->set_delay_ms(row->delay_ms);
     op->set_action_config(config);
   }
