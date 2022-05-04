@@ -1,4 +1,8 @@
 DELETE FROM `supla_client`;
+DELETE FROM `supla_scene_operation`;
+DELETE FROM `supla_scene`;
+DELETE FROM `supla_rel_cg`;
+DELETE FROM `supla_dev_channel_group`;
 DELETE FROM `supla_dev_channel`;
 DELETE FROM `supla_iodevice`;
 DELETE FROM `supla_rel_aidloc`;
