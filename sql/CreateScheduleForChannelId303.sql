@@ -1,2 +1,2 @@
-INSERT INTO `supla_schedule` (`user_id`, `channel_id`, `time_expression`, `action`, `action_param`, `mode`, `date_start`, `date_end`, `enabled`, `next_calculation_date`, `caption`, `retry`, `channel_group_id`) VALUES
-(2, 303, '*/15 * * * *', 70, NULL, 'minutely', '2017-04-25 21:38:32', '2017-04-25 21:45:00', 0, '2018-05-07 14:01:02', '', 1, NULL);
+INSERT INTO `supla_schedule` (`user_id`, `channel_id`, `mode`, `date_start`, `date_end`, `enabled`, `next_calculation_date`, `caption`, `retry`, `channel_group_id`, `config`, `scene_id`) VALUES
+(2, 303, 'minutely', '2021-02-19 07:51:34', NULL, 0, '2021-03-05 02:20:01', NULL, 1, NULL, '[{\"crontab\":\"*/5 * * * *\",\"action\":{\"id\":60,\"param\":null}}]', NULL);
