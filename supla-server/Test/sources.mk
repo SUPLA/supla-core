@@ -57,6 +57,7 @@ src/test/gtest \
 src/test/http \
 src/test/integration \
 src/test/integration/mqtt \
+src/test/integration/scene \
 src/test/mqtt \
 src/test/scene \
 src/test/webhook \
