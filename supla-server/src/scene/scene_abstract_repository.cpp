@@ -18,7 +18,9 @@
 
 #include <scene/scene_abstract_repository.h>
 
-supla_scene_abstract_repository::supla_scene_abstract_repository(int user_id) {}
+supla_scene_abstract_repository::supla_scene_abstract_repository(int user_id) {
+  this->user_id = user_id;
+}
 
 supla_scene_abstract_repository::~supla_scene_abstract_repository() {}
 

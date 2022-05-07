@@ -34,6 +34,7 @@ class supla_scene_operation {
   supla_action_config *get_action_config(void);
   void set_delay_ms(int delay_ms);
   int get_delay_ms(void);
+  supla_scene_operation *clone(void);
 };
 
 #endif /* SUPLA_SCENE_OPERATION_H_ */

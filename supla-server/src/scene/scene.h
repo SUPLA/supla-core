@@ -40,6 +40,7 @@ class supla_scene : public supla_dobject {
   int get_location_id(void);
   const std::string get_caption(void);
   virtual void set_remote_update_indicator(supla_dobject_change_indicator *rui);
+  const supla_scene_operations *get_operations();
 };
 
 #endif /* SUPLA_SCENE_H_ */
