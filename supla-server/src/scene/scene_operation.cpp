@@ -36,3 +36,12 @@ int supla_scene_operation::get_delay_ms(void) { return delay_ms; }
 void supla_scene_operation::set_delay_ms(int delay_ms) {
   this->delay_ms = delay_ms;
 }
+
+supla_scene_operation *supla_scene_operation::clone(void) {
+  supla_scene_operation *result = new supla_scene_operation();
+  if (result) {
+    *result = *this;
+  }
+
+  return result;
+}

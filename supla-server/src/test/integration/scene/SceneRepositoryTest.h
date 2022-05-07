@@ -20,14 +20,25 @@
 #define SceneRepositoryTest_H_
 
 #include "integration/IntegrationTest.h"
+#include "scene/scene_repository.h"
 
 namespace testing {
 
-class SceneRepositoryTest : public IntegrationTest {
+class SceneRepositoryTest : public IntegrationTest, public Test {
  protected:
+  supla_scene_repository *repo;
+  void VerifyScene1(supla_scene *scene);
+  void VerifyScene2(supla_scene *scene);
+  void VerifyScene3(supla_scene *scene);
+  void VerifyScene4(supla_scene *scene);
+  void VerifyScene5(supla_scene *scene);
+  void VerifyScene6(supla_scene *scene);
+
  public:
   SceneRepositoryTest();
   virtual ~SceneRepositoryTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */

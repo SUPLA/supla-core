@@ -20,8 +20,8 @@
 #define SUPLA_SCENE_OPERATIONS_H_
 
 #include <scene/scene_operation.h>
-#include <list>
 
+#include <list>
 
 class supla_scene_operations {
  private:
@@ -35,6 +35,7 @@ class supla_scene_operations {
   void push(supla_scene_operation *operation);
   supla_scene_operation *pop(void);
   int get_delay_ms(void);
+  supla_scene_operations *clone(void) const;
 };
 
 #endif /* SUPLA_SCENE_OPERATIONS_H_ */

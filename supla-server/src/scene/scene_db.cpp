@@ -96,7 +96,7 @@ void supla_scene_db::add_operations(std::vector<supla_scene *> *scenes,
       "o.`scene_id`, o.`action`, o.`action_param`, o.`delay_ms` FROM "
       "`supla_scene_operation` o LEFT JOIN `supla_scene` s ON s.`id` = "
       "o.`owning_scene_id` WHERE s.`user_id` = ? AND (? = 0 OR s.`id` = ?) AND "
-      "s.`enabled` = 1 ORDER BY o.`owning_scene_id`";
+      "s.`enabled` = 1 ORDER BY o.`owning_scene_id`, o.`id`";
 
   MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
@@ -158,11 +158,11 @@ void supla_scene_db::add_operations(std::vector<supla_scene *> *scenes,
                                action_param_len, action_param_is_null);
 
           if (row.owning_scene_id != last_owning_scene_id) {
-            last_owning_scene_id = row.owning_scene_id;
             if (ops) {
-              set_operations(row.owning_scene_id, scenes, ops);
+              set_operations(last_owning_scene_id, scenes, ops);
               ops = NULL;
             }
+            last_owning_scene_id = row.owning_scene_id;
           }
 
           supla_scene_operation *op = convert(&row);
@@ -202,7 +202,7 @@ std::vector<supla_scene *> supla_scene_db::get_scenes(int user_id, int id) {
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
       "SELECT `id`, `location_id`, `caption` FROM `supla_scene` WHERE "
-      "`user_id` = ? AND (? = 0 OR `id` = ?) AND `enabled` = 1";
+      "`user_id` = ? AND (? = 0 OR `id` = ?) AND `enabled` = 1 ORDER BY `id`";
 
   MYSQL_BIND pbind[3];
   memset(pbind, 0, sizeof(pbind));
@@ -216,7 +216,7 @@ std::vector<supla_scene *> supla_scene_db::get_scenes(int user_id, int id) {
   pbind[2].buffer_type = MYSQL_TYPE_LONG;
   pbind[2].buffer = (char *)&id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 3, true)) {
     MYSQL_BIND rbind[3];
     memset(rbind, 0, sizeof(rbind));
 
@@ -225,7 +225,7 @@ std::vector<supla_scene *> supla_scene_db::get_scenes(int user_id, int id) {
     rbind[0].buffer_length = sizeof(int);
 
     rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&row.scene_id;
+    rbind[1].buffer = (char *)&row.location_id;
     rbind[1].buffer_length = sizeof(int);
 
     rbind[2].buffer_type = MYSQL_TYPE_STRING;

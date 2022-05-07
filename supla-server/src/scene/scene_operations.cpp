@@ -50,3 +50,14 @@ int supla_scene_operations::get_delay_ms(void) {
 
   return 0;
 }
+
+supla_scene_operations *supla_scene_operations::clone(void) const {
+  supla_scene_operations *result = new supla_scene_operations();
+  if (result) {
+    for (auto it = operations.begin(); it != operations.end(); ++it) {
+      result->push((*it)->clone());
+    }
+  }
+
+  return result;
+}

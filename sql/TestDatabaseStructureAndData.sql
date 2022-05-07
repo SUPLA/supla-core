@@ -46,7 +46,7 @@ CREATE TABLE `esp_update` (
   KEY `device_id` (`device_id`),
   KEY `fparam3` (`fparam3`),
   KEY `fparam4` (`fparam4`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -55,6 +55,7 @@ CREATE TABLE `esp_update` (
 
 LOCK TABLES `esp_update` WRITE;
 /*!40000 ALTER TABLE `esp_update` DISABLE KEYS */;
+INSERT INTO `esp_update` VALUES (1,0,'SUPLA-GATE-MODULE',1,'2.0.1',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=gate_module2_wroom_user2.2048.new.5.bin',1),(2,0,'SUPLA-GATE-MODULE',1,'2.0.1',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=gate_module2_wroom_user1.2048.new.5.bin',1),(3,0,'NICE Wi-Fi',1,'2.7.28',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user2.2048_DIO.new.5.bin',1),(4,0,'NICE Wi-Fi',1,'2.7.28',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user1.2048_DIO.new.5.bin',1),(5,0,'NICE Wi-Fi SBP-01',1,'2.7.28',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user2.2048_DIO.new.5.bin',1),(6,0,'NICE Wi-Fi SBP-01',1,'2.7.28',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_sbw_01_2728_user1.2048_DIO.new.5.bin',1),(7,0,'NICE Wi-Fi SCREEN',1,'2.8.47',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_srw_01_2847_user2.2048_DIO.new.5.sdk3x.bin',1),(8,0,'NICE Wi-Fi SCREEN',1,'2.8.47',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=n_srw_01_2847_user1.2048_DIO.new.5.sdk3x.bin',1),(9,0,'ZAMEL SRW-03',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_03_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(10,0,'ZAMEL SRW-03',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_03_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(11,0,'ZAMEL ROW-02 FIX',1,'9.9.9',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01to02_user2.2048_DIO.new.5.bin',1),(12,0,'ZAMEL ROW-02 FIX',1,'9.9.9',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01to02_user1.2048_DIO.new.5.bin',1),(13,0,'PEVEKO VALVE',1,'2.7.21',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=peveko_valve_user2.2048_DIO.new.5.bin',1),(14,0,'PEVEKO VALVE',1,'2.7.21',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=peveko_valve_user1.2048_DIO.new.5.bin',1),(15,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(16,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(17,0,'ZAMEL SRW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(18,0,'ZAMEL SRW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(19,0,'ZAMEL SBW-01',1,'2.7.24',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_01_2724_user2.2048_DIO.new.5.bin',1),(20,0,'ZAMEL SBW-01',1,'2.7.24',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_01_2724_user1.2048_DIO.new.5.bin',1),(21,0,'ZAMEL SBW-02',1,'2.7.24',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_02_2724_user2.2048_DIO.new.5.bin',1),(22,0,'ZAMEL SBW-02',1,'2.7.24',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_sbw_02_2724_user1.2048_DIO.new.5.bin',1),(23,0,'ZAMEL ROW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(24,0,'ZAMEL ROW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(25,0,'ZAMEL ROW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(26,0,'ZAMEL ROW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(27,0,'ZAMEL LIW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_liw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(28,0,'ZAMEL LIW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_liw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(29,0,'ZAMEL SLW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(30,0,'ZAMEL SLW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(31,0,'ZAMEL SLW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_02_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(32,0,'ZAMEL SLW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_slw_02_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(33,0,'ZAMEL ROW-01/16A',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(34,0,'ZAMEL ROW-01/16A',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(35,0,'ZAMEL ROW-04',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2725_user2.2048_DIO.new.5.bin',1),(36,0,'ZAMEL ROW-04',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2725_user1.2048_DIO.new.5.bin',1),(37,0,'ZAMEL ROW-04m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(38,0,'ZAMEL ROW-04m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_04m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(39,0,'UV TRONIC',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=uvtronic_2725_user2.2048_DIO.new.5.bin',1),(40,0,'UV TRONIC',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=uvtronic_2725_user1.2048_DIO.new.5.bin',1),(41,0,'ZAMEL MEW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(42,0,'ZAMEL MEW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(43,0,'HEATPOL HOME+',1,'2.7.26',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=hp_homeplus_2726_user2.2048_DIO.new.5.bin',1),(44,0,'HEATPOL HOME+',1,'2.7.26',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=hp_homeplus_2726_user1.2048_DIO.new.5.bin',1),(45,0,'ZAMEL SRW-02m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(46,0,'ZAMEL SRW-02m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(47,0,'ZAMEL SRW-02',1,'2.7.25',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2725_user2.2048_DIO.new.5.bin',1),(48,0,'ZAMEL SRW-02',1,'2.7.25',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_02m_2725_user1.2048_DIO.new.5.bin',1),(49,0,'ZAMEL PNW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_pnw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(50,0,'ZAMEL PNW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_pnw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(51,0,'ZAMEL DIW-01',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(52,0,'ZAMEL DIW-01',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(53,0,'ZAMEL LEW-01',1,'2.8.7',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_lew_01_287_user2.2048_DIO.new.5.sdk3x.bin',1),(54,0,'ZAMEL LEW-01',1,'2.8.7',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_lew_01_287_user1.2048_DIO.new.5.sdk3x.bin',1),(55,0,'ZAMEL mROW-02',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(56,0,'ZAMEL mROW-02',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(57,0,'ZAMEL ROW-02m',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02m_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(58,0,'ZAMEL ROW-02m',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02m_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(59,0,'Comelit WREL205',1,'2.8.46',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_comelit_2846_user2.2048_DIO.new.5.sdk3x.bin',1),(60,0,'Comelit WREL205',1,'2.8.46',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_02_mini_comelit_2846_user1.2048_DIO.new.5.sdk3x.bin',1),(61,0,'Comelit WDIM100',1,'2.8.36',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_comelit_2836_user2.2048_DIO.new.5.sdk3x.bin',1),(62,0,'Comelit WDIM100',1,'2.8.36',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_diw_01_comelit_2836_user1.2048_DIO.new.5.sdk3x.bin',1),(63,0,'Comelit WMIS300',1,'2.8.29',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_comelit_2829_user2.2048_DIO.new.5.sdk3x.bin',1),(64,0,'Comelit WMIS300',1,'2.8.29',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_mew_01_comelit_2829_user1.2048_DIO.new.5.sdk3x.bin',1),(65,0,'Comelit WREL116',1,'2.8.47',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_comelit_2847_user2.2048_DIO.new.5.sdk3x.bin',1),(66,0,'Comelit WREL116',1,'2.8.47',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_16A_comelit_2847_user1.2048_DIO.new.5.sdk3x.bin',1),(67,0,'ZAMEL mSRW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(68,0,'ZAMEL mSRW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(69,0,'Comelit WTAP100',1,'2.8.46',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_comelit_2846_user2.2048_DIO.new.5.sdk3x.bin',1),(70,0,'Comelit WTAP100',1,'2.8.46',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_srw_01_mini_comelit_2846_user1.2048_DIO.new.5.sdk3x.bin',1),(71,0,'ZAMEL ROW-07',1,'2.8.48',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_07_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(72,0,'ZAMEL ROW-07',1,'2.8.48',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_row_07_2848_user1.2048_DIO.new.5.sdk3x.bin',1),(73,0,'ZAMEL OSW-01',1,'2.8.50',5,0,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_osw_01_2850_user2.2048_DIO.new.5.sdk3x.bin',1),(74,0,'ZAMEL OSW-01',1,'2.8.50',5,1,0,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=zam_osw_01_2850_user1.2048_DIO.new.5.sdk3x.bin',1),(75,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,0,1,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_pic13_2848_user2.2048_DIO.new.5.sdk3x.bin',1),(76,0,'VARILIGHT V-PRO SMART',1,'2.8.48',5,1,1,0,1,'www.acsoftware.pl',80,'support/get_esp_firmware.php?file=vl_dimmer_pic13_2848_user1.2048_DIO.new.5.sdk3x.bin',1);
 /*!40000 ALTER TABLE `esp_update` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -193,7 +194,7 @@ CREATE TABLE `supla_audit` (
   KEY `supla_audit_created_at_idx` (`created_at`),
   KEY `supla_audit_int_param` (`int_param`),
   CONSTRAINT `FK_EFE348F4A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -202,7 +203,7 @@ CREATE TABLE `supla_audit` (
 
 LOCK TABLES `supla_audit` WRITE;
 /*!40000 ALTER TABLE `supla_audit` DISABLE KEYS */;
-INSERT INTO `supla_audit` VALUES (1,NULL,2,'2020-04-16 08:55:27',2457392666,'',0),(2,NULL,2,'2020-04-16 08:55:32',2457392666,'',0),(3,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(4,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(5,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(6,NULL,2,'2020-04-16 08:55:46',2457392666,'',0),(7,NULL,2,'2020-04-16 14:05:47',2457392666,'test@supla.org',2),(8,NULL,7,'2020-04-16 14:06:28',NULL,'test@supla.org',1),(9,2,1,'2020-04-16 14:13:12',2457392666,'test@supla.org',NULL),(10,NULL,2,'2020-04-16 14:24:06',2457392666,'',0),(11,NULL,2,'2020-04-16 14:24:07',2457392666,'',0),(12,2,2,'2020-04-16 20:08:42',2457392666,'test@supla.org',2),(13,2,2,'2020-04-16 20:08:49',2457392666,'test@supla.org',2),(14,2,1,'2020-04-16 20:09:18',2457392666,'test@supla.org',NULL),(15,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(16,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(17,NULL,2,'2020-05-19 20:55:28',2457392666,'',0),(18,2,1,'2022-05-04 19:30:21',2457392666,'test@supla.org',NULL);
+INSERT INTO `supla_audit` VALUES (1,NULL,2,'2020-04-16 08:55:27',2457392666,'',0),(2,NULL,2,'2020-04-16 08:55:32',2457392666,'',0),(3,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(4,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(5,NULL,2,'2020-04-16 08:55:40',2457392666,'',0),(6,NULL,2,'2020-04-16 08:55:46',2457392666,'',0),(7,NULL,2,'2020-04-16 14:05:47',2457392666,'test@supla.org',2),(8,NULL,7,'2020-04-16 14:06:28',NULL,'test@supla.org',1),(9,2,1,'2020-04-16 14:13:12',2457392666,'test@supla.org',NULL),(10,NULL,2,'2020-04-16 14:24:06',2457392666,'',0),(11,NULL,2,'2020-04-16 14:24:07',2457392666,'',0),(12,2,2,'2020-04-16 20:08:42',2457392666,'test@supla.org',2),(13,2,2,'2020-04-16 20:08:49',2457392666,'test@supla.org',2),(14,2,1,'2020-04-16 20:09:18',2457392666,'test@supla.org',NULL),(15,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(16,NULL,2,'2020-05-19 20:55:27',2457392666,'',0),(17,NULL,2,'2020-05-19 20:55:28',2457392666,'',0),(18,2,1,'2022-05-04 19:30:21',2457392666,'test@supla.org',NULL),(19,2,1,'2022-05-07 11:50:42',2457392666,'test@supla.org',NULL),(20,NULL,2,'2022-05-07 15:10:43',2457392666,'',0),(21,NULL,2,'2022-05-07 15:10:50',2457392666,'',0),(22,NULL,2,'2022-05-07 15:10:57',2457392666,'',0),(23,NULL,2,'2022-05-07 15:11:04',2457392666,'',0),(24,NULL,2,'2022-05-07 15:11:11',2457392666,'',0),(25,NULL,2,'2022-05-07 15:11:18',2457392666,'',0),(26,NULL,2,'2022-05-07 15:11:25',2457392666,'',0),(27,2,2,'2022-05-07 15:11:35',2457392666,'test@supla.org',2),(28,2,1,'2022-05-07 15:11:44',2457392666,'test@supla.org',NULL);
 /*!40000 ALTER TABLE `supla_audit` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -470,7 +471,7 @@ CREATE TABLE `supla_email_notifications` (
   KEY `IDX_7C77A74CFB7336F0` (`queue_name`),
   KEY `IDX_7C77A74CE3BD61CE` (`available_at`),
   KEY `IDX_7C77A74C16BA31DB` (`delivered_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -597,7 +598,7 @@ CREATE TABLE `supla_location` (
   PRIMARY KEY (`id`),
   KEY `IDX_3698128EA76ED395` (`user_id`),
   CONSTRAINT `FK_3698128EA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -606,7 +607,7 @@ CREATE TABLE `supla_location` (
 
 LOCK TABLES `supla_location` WRITE;
 /*!40000 ALTER TABLE `supla_location` DISABLE KEYS */;
-INSERT INTO `supla_location` VALUES (2,2,'8aea','Location #1',1);
+INSERT INTO `supla_location` VALUES (2,2,'8aea','Location #1',1),(3,2,'4b15','Location #2',1);
 /*!40000 ALTER TABLE `supla_location` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -637,7 +638,7 @@ CREATE TABLE `supla_oauth_access_tokens` (
   CONSTRAINT `FK_2402564B4FEA67CF` FOREIGN KEY (`access_id`) REFERENCES `supla_accessid` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_2402564BA76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_2402564BCA22CF77` FOREIGN KEY (`api_client_authorization_id`) REFERENCES `supla_oauth_client_authorizations` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -646,7 +647,7 @@ CREATE TABLE `supla_oauth_access_tokens` (
 
 LOCK TABLES `supla_oauth_access_tokens` WRITE;
 /*!40000 ALTER TABLE `supla_oauth_access_tokens` DISABLE KEYS */;
-INSERT INTO `supla_oauth_access_tokens` VALUES (1,1,2,'ZWE2ZWQ5NDVkMTQ5Y2UxYTI3ODdmOTVkYjE5ODEwMjcxZDZjM2U0ZDA2OWMxZjg0ZGI0NDY3MjNmNDdkYzQyZQ.aHR0cHM6Ly9kZXZlbC1jbG91ZC5zdXBsYS5vcmc=',1587047672,'channels_ea channelgroups_ea scenes_ea channels_files accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(2,1,2,'ZWNmMWQ1OTY5ZDM2YTc3YTU0MDNjMzQ3MjAzMjBkNjkxMjIwMjM1NDNmNmUyNDc1ZDAzNThjODlhZGUyZTg1MA.aHR0cHM6Ly9kZXZlbC1jbG91ZC5zdXBsYS5vcmc=',1587047672,'channels_files',NULL,NULL,NULL),(3,1,2,'ZGZhYzJlMjY4YzQ5MzkwNTFmZTI4ODEyYzIwZmU4ZGQwNGY3ZTc2NzVhMTUzZmFlZjA3ZWMyZTQ5NDcwZTRhMQ.aHR0cHM6Ly9kZXZlbC1jbG91ZC5zdXBsYS5vcmc=',1587069003,'channels_ea channelgroups_ea scenes_ea channels_files accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(4,1,2,'MjhjMDg3NTRiMjExM2Y0ZmRkYWUzMjQ0YzM4MGVkY2E5MTMwMGUzOGQwM2RjNzk3NTg1MWVkYjFjOTkzOGJjZg.aHR0cHM6Ly9kZXZlbC1jbG91ZC5zdXBsYS5vcmc=',1587069003,'channels_files',NULL,NULL,NULL),(5,1,2,'MjIzYmJkY2M0OTk1NGViODljYWFjOTIxMGNiODJhMGM3ZGNiOWZlZGY4NDljZmUzM2YyNTcyNjVkMGY5NTViNw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651722054,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(6,1,2,'MDFkYmFkMTBkMzQwYzQ1OWI1YjQyYTEyN2UzOGRmMjY1NTMyMTE3MDIzYjdlOGVmYzk4Yjg4Zjk2YjdhYjQ4ZQ.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651722054,'channels_files',NULL,NULL,NULL);
+INSERT INTO `supla_oauth_access_tokens` VALUES (5,1,2,'MjIzYmJkY2M0OTk1NGViODljYWFjOTIxMGNiODJhMGM3ZGNiOWZlZGY4NDljZmUzM2YyNTcyNjVkMGY5NTViNw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651722054,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(6,1,2,'MDFkYmFkMTBkMzQwYzQ1OWI1YjQyYTEyN2UzOGRmMjY1NTMyMTE3MDIzYjdlOGVmYzk4Yjg4Zjk2YjdhYjQ4ZQ.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651722054,'channels_files',NULL,NULL,NULL),(7,1,2,'M2M3YjhlMzAyYmJkZWIxNWVkNTBjZjMyNWJhOGViNTY4MWJjMzFmNmI5NmIyNGYzN2IzNzA3NjNkYTUxMmQ4Mw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651955259,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(8,1,2,'NDVjMzBmZDJjOWVkNmM4OTE4N2IwNTBiMmVlOTYxMGU5ODUyODE1ZjMwNDI4YTQzYWEzMGYyMWQ2Yjg1OWM4MA.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651955259,'channels_files',NULL,NULL,NULL),(9,1,2,'NTA0ODk1OWQ0MGI4N2YwNzcxOTBiOWRiOWI1MmI2ZDI0YjU5OTQ5MGMxYzliODkzYzMzYmJjOTAyYWM5YzJmMw.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651965363,'channels_ea channelgroups_ea channels_files scenes_ea accessids_r accessids_rw account_r account_rw channels_r channels_rw channelgroups_r channelgroups_rw clientapps_r clientapps_rw directlinks_r directlinks_rw iodevices_r iodevices_rw locations_r locations_rw scenes_r scenes_rw schedules_r schedules_rw',NULL,NULL,NULL),(10,1,2,'ZWQ4NTM3ZTg3YTY5ODIxYzJiYjg3YzU1NDljNjM5ZWEyNTU0OGFlZWU0OWQyMDQ4YjQwZTQ2YTUzNTc4ODg4NQ.aHR0cHM6Ly9iZXRhLWNsb3VkLnN1cGxhLm9yZw==',1651965363,'channels_files',NULL,NULL,NULL);
 /*!40000 ALTER TABLE `supla_oauth_access_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -811,7 +812,7 @@ CREATE TABLE `supla_rel_aidloc` (
 
 LOCK TABLES `supla_rel_aidloc` WRITE;
 /*!40000 ALTER TABLE `supla_rel_aidloc` DISABLE KEYS */;
-INSERT INTO `supla_rel_aidloc` VALUES (2,2);
+INSERT INTO `supla_rel_aidloc` VALUES (2,2),(3,2);
 /*!40000 ALTER TABLE `supla_rel_aidloc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -864,7 +865,7 @@ CREATE TABLE `supla_scene` (
   CONSTRAINT `FK_A482585764D218E` FOREIGN KEY (`location_id`) REFERENCES `supla_location` (`id`),
   CONSTRAINT `FK_A4825857A76ED395` FOREIGN KEY (`user_id`) REFERENCES `supla_user` (`id`),
   CONSTRAINT `FK_A4825857CB4C938` FOREIGN KEY (`user_icon_id`) REFERENCES `supla_user_icons` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -873,7 +874,7 @@ CREATE TABLE `supla_scene` (
 
 LOCK TABLES `supla_scene` WRITE;
 /*!40000 ALTER TABLE `supla_scene` DISABLE KEYS */;
-INSERT INTO `supla_scene` VALUES (1,2,2,'Scena #1',1,NULL),(2,2,2,'Scena #2',1,NULL),(3,2,2,'Scena #3',1,NULL);
+INSERT INTO `supla_scene` VALUES (1,2,2,'Scene #1',1,NULL),(2,2,2,'Scene #2',1,NULL),(3,2,2,'Scene #3',1,NULL),(4,2,3,'Scene #4',1,NULL),(5,2,2,'Scene #5',1,NULL),(6,2,2,'Scene #6',1,NULL);
 /*!40000 ALTER TABLE `supla_scene` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -902,7 +903,7 @@ CREATE TABLE `supla_scene_operation` (
   CONSTRAINT `FK_64A50CF572F5A1AA` FOREIGN KEY (`channel_id`) REFERENCES `supla_dev_channel` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_64A50CF589E4AAEE` FOREIGN KEY (`channel_group_id`) REFERENCES `supla_dev_channel_group` (`id`) ON DELETE CASCADE,
   CONSTRAINT `FK_64A50CF5E019BC26` FOREIGN KEY (`owning_scene_id`) REFERENCES `supla_scene` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -911,7 +912,7 @@ CREATE TABLE `supla_scene_operation` (
 
 LOCK TABLES `supla_scene_operation` WRITE;
 /*!40000 ALTER TABLE `supla_scene_operation` DISABLE KEYS */;
-INSERT INTO `supla_scene_operation` VALUES (1,1,140,NULL,NULL,60,NULL,0),(2,1,308,NULL,NULL,10,NULL,1000),(3,1,170,NULL,NULL,80,'{\"brightness\":10}',0),(4,2,142,NULL,NULL,60,NULL,0),(5,2,140,NULL,NULL,70,NULL,5000),(8,3,NULL,1,NULL,60,NULL,0),(9,3,171,NULL,NULL,80,'{\"brightness\":6,\"hue\":240,\"color_brightness\":10}',0),(10,3,NULL,NULL,1,3000,NULL,0);
+INSERT INTO `supla_scene_operation` VALUES (17,1,140,NULL,NULL,60,NULL,0),(18,1,308,NULL,NULL,10,NULL,1000),(19,1,170,NULL,NULL,80,'{\"brightness\":10}',0),(20,2,142,NULL,NULL,60,NULL,0),(21,2,140,NULL,NULL,70,NULL,5000),(22,3,NULL,1,NULL,60,NULL,0),(23,3,171,NULL,NULL,80,'{\"brightness\":6,\"hue\":240,\"color_brightness\":10}',0),(24,3,NULL,NULL,1,3000,NULL,0),(26,5,173,NULL,NULL,50,'{\"percentage\":15}',0),(27,5,303,NULL,NULL,51,'{\"percentage\":25}',0),(28,6,171,NULL,NULL,80,'{\"brightness\":50,\"hue\":\"white\",\"color_brightness\":5}',0),(29,6,171,NULL,NULL,80,'{\"brightness\":20,\"hue\":\"random\",\"color_brightness\":15}',5000),(30,4,140,NULL,NULL,10100,'{\"sourceDeviceId\":73,\"sourceChannelId\":143}',0);
 /*!40000 ALTER TABLE `supla_scene_operation` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2427,4 +2428,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-05-04 21:59:06
+-- Dump completed on 2022-05-07 17:13:51

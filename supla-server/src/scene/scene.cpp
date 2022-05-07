@@ -38,6 +38,10 @@ void supla_scene::set_operations(supla_scene_operations *operations) {
   this->operations = operations;
 }
 
+const supla_scene_operations *supla_scene::get_operations(void) {
+  return operations;
+}
+
 void supla_scene::set_location_id(int location_id) {
   this->location_id = location_id;
 }
