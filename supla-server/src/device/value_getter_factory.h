@@ -16,23 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_SCENE_ABSTRACT_REPOSITORY_H_
-#define SUPLA_SCENE_ABSTRACT_REPOSITORY_H_
+#ifndef VALUE_GETTER_FACTORY_H_
+#define VALUE_GETTER_FACTORY_H_
 
-#include <vector>
+#include "device/abstract_value_getter_factory.h"
 
-#include "scene/scene.h"
-
-class supla_scene_abstract_repository {
+class supla_value_getter_factory : public supla_abstract_value_getter_factory {
  private:
-  int user_id;
+  static supla_value_getter_factory *_global_instance;
 
  public:
-  explicit supla_scene_abstract_repository(int user_id);
-  virtual ~supla_scene_abstract_repository();
-  int get_user_id(void);
-  virtual supla_scene *get_scene(int id) = 0;
-  virtual std::vector<supla_scene *> get_all_scenes(void) = 0;
+  static supla_value_getter_factory *global_instance(void);
+  static void global_instance_release(void);
+
+  supla_value_getter_factory();
+  virtual ~supla_value_getter_factory();
+  virtual supla_abstract_value_getter *get_value_getter(void);
 };
 
-#endif /* SUPLA_SCENE_ABSTRACT_REPOSITORY_H_ */
+#endif /* VALUE_GETTER_FACTORY_H_ */

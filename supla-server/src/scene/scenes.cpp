@@ -18,9 +18,47 @@
 
 #include "scene/scenes.h"
 
-supla_scenes::supla_scenes(supla_scene_abstract_repository *repository) {}
+#include <assert.h>
 
-supla_scenes::~supla_scenes(void) {}
+#include "scene/scene_asynctask.h"
+#include "scene/scene_search_condition.h"
+
+supla_scenes::supla_scenes(
+    supla_scene_abstract_repository *repository, supla_asynctask_queue *queue,
+    supla_abstract_asynctask_thread_pool *pool,
+    supla_abstract_action_executor_factory *action_executor_factory,
+    supla_abstract_value_getter_factory *value_getter_factory)
+    : supla_dobjects() {
+  assert(repository != NULL);
+  assert(queue != NULL);
+  assert(pool != NULL);
+  assert(action_executor_factory != NULL);
+  assert(value_getter_factory != NULL);
+
+  this->repository = repository;
+  this->queue = queue;
+  this->pool = pool;
+  this->action_executor_factory = action_executor_factory;
+  this->value_getter_factory = value_getter_factory;
+}
+
+supla_scenes::~supla_scenes(void) { delete repository; }
+
+void supla_scenes::load() {
+  lock();
+
+  const std::vector<supla_scene *> scenes = repository->get_all_scenes();
+
+  for (auto it = scenes.begin(); it != scenes.end(); ++it) {
+    add_or_replace(*it);
+  }
+  unlock();
+}
+
+void supla_scenes::load(int id) {
+  interrupt(id);
+  add_or_replace(repository->get_scene(id));
+}
 
 void supla_scenes::access_scene(
     int id, std::function<void(supla_scene *scene)> on_access) {
@@ -30,4 +68,25 @@ void supla_scenes::access_scene(
       on_access(scene);
     }
   });
+}
+
+void supla_scenes::execute(const supla_caller &caller, int id) {
+  lock();
+  supla_scene_search_condition cnd(repository->get_user_id(), id, false);
+  if (queue->task_exists(&cnd)) {
+  } else {
+    access_scene(id, [caller, id, this](supla_scene *scene) -> void {
+      supla_scene_operations *operations = scene->get_operations()->clone();
+      new supla_scene_asynctask(
+          caller, repository->get_user_id(), id, queue, pool,
+          action_executor_factory->get_action_executor(),
+          value_getter_factory->get_value_getter(), operations, true);
+    });
+  }
+  unlock();
+}
+
+void supla_scenes::interrupt(int id) {
+  supla_scene_search_condition cnd(repository->get_user_id(), id, false);
+  queue->cancel_tasks(&cnd);
 }

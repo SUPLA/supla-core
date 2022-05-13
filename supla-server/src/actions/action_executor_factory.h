@@ -16,23 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_SCENE_ABSTRACT_REPOSITORY_H_
-#define SUPLA_SCENE_ABSTRACT_REPOSITORY_H_
+#ifndef ACTION_EXECUTOR_FACTORY_H_
+#define ACTION_EXECUTOR_FACTORY_H_
 
-#include <vector>
+#include "actions/abstract_action_executor_factory.h"
 
-#include "scene/scene.h"
-
-class supla_scene_abstract_repository {
+class supla_action_executor_factory : supla_abstract_action_executor_factory {
  private:
-  int user_id;
+  static supla_action_executor_factory *_global_instance;
 
  public:
-  explicit supla_scene_abstract_repository(int user_id);
-  virtual ~supla_scene_abstract_repository();
-  int get_user_id(void);
-  virtual supla_scene *get_scene(int id) = 0;
-  virtual std::vector<supla_scene *> get_all_scenes(void) = 0;
+  static supla_action_executor_factory *global_instance(void);
+  static void global_instance_release(void);
+
+  supla_action_executor_factory(void);
+  virtual ~supla_action_executor_factory(void);
+  virtual supla_abstract_action_executor *get_action_executor(void);
 };
 
-#endif /* SUPLA_SCENE_ABSTRACT_REPOSITORY_H_ */
+#endif /*ABSTRACT_ACTION_EXECUTOR_FACTORY_H_*/
