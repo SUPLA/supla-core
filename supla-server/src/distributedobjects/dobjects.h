@@ -32,23 +32,22 @@ class supla_dobjects {
   std::vector<supla_dobject *> objects;
   std::list<supla_dobject_registered_observer *> registered_observers;
 
+ protected:
   void lock(void);
   void unlock(void);
 
- protected:
   void clear(void);
-  void add(supla_dobject *object);
-  void replace(const std::vector<supla_dobject *> &objects);
+  void add_or_replace(supla_dobject *object);
 
   void access_object(int id,
                      std::function<void(supla_dobject *object)> on_access);
 
   void register_observer(supla_dobject_observer *observer);
   void unregister_observer(supla_dobject_observer *observer);
-
  public:
   supla_dobjects(void);
   virtual ~supla_dobjects();
+  int count(void);
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECTS_H_ */

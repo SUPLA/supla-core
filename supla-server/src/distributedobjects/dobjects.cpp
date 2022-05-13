@@ -23,7 +23,10 @@
 
 supla_dobjects::supla_dobjects(void) { lck = lck_init(); }
 
-supla_dobjects::~supla_dobjects() { lck_free(lck); }
+supla_dobjects::~supla_dobjects() {
+  clear();
+  lck_free(lck);
+}
 
 void supla_dobjects::lock(void) { lck_lock(lck); }
 
@@ -38,7 +41,7 @@ void supla_dobjects::clear(void) {
   unlock();
 }
 
-void supla_dobjects::add(supla_dobject *object) {
+void supla_dobjects::add_or_replace(supla_dobject *object) {
   if (!object) {
     return;
   }
@@ -51,14 +54,11 @@ void supla_dobjects::add(supla_dobject *object) {
       break;
     }
   }
-  objects.push_back(object);
-  unlock();
-}
 
-void supla_dobjects::replace(const std::vector<supla_dobject *> &objects) {
-  lock();
-  clear();
-  this->objects = objects;
+  if (object) {
+    objects.push_back(object);
+  }
+
   unlock();
 }
 
@@ -81,3 +81,11 @@ void supla_dobjects::access_object(
 void supla_dobjects::register_observer(supla_dobject_observer *observer) {}
 
 void supla_dobjects::unregister_observer(supla_dobject_observer *observer) {}
+
+int supla_dobjects::count(void) {
+  lock();
+  int result = objects.size();
+  unlock();
+
+  return result;
+}

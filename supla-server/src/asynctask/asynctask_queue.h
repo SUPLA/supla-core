@@ -20,6 +20,7 @@
 #define ASYNCTASK_QUEUE_H_
 
 #include <vector>
+
 #include "abstract_asynctask.h"
 #include "abstract_asynctask_search_condition.h"
 #include "eh.h"
