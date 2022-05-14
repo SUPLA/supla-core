@@ -31,6 +31,7 @@
 #include "http/httprequestqueue.h"
 #include "ipcsocket.h"
 #include "log.h"
+#include "scene/scene_asynctask.h"
 #include "serverstatus.h"
 #include "sthread.h"
 #include "tools.h"
@@ -89,6 +90,9 @@ const char cmd_reset_counters[] = "RESET-COUNTERS:";
 const char cmd_recalibrate[] = "RECALIBRATE:";
 const char cmd_get_status[] = "GET-STATUS";
 const char cmd_enter_cfg_mode[] = "ACTION-ENTER-CONFIGURATION-MODE:";
+
+const char cmd_execute_scene[] = "EXECUTE-SCENE:";
+const char cmd_interrupt_scene[] = "INTERRUPT-SCENE:";
 
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
@@ -585,6 +589,42 @@ void svr_ipcctrl::cut_correlation_token(const char *cmd) {
 void svr_ipcctrl::cut_google_requestid(const char *cmd) {
   free_google_requestid();
   GoogleRequestId = cut(cmd, GRI_VAR);
+}
+
+void svr_ipcctrl::execute_scene(const char *cmd) {
+  int UserID = 0;
+  int SceneID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i", &UserID, &SceneID);
+
+  if (UserID && SceneID) {
+    _sceneExecutionResult_e result =
+        supla_scene_asynctask::execute(supla_caller(ctIPC), UserID, SceneID);
+
+    if (result == serOK) {
+      send_result("OK:", SceneID);
+      return;
+    } else if (result == serIsDuringExecution) {
+      send_result("IS-DURING-EXECUTION:", SceneID);
+      return;
+    }
+  }
+
+  send_result("UNKNOWN:", SceneID);
+}
+
+void svr_ipcctrl::interrupt_scene(const char *cmd) {
+  int UserID = 0;
+  int SceneID = 0;
+
+  sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i", &UserID, &SceneID);
+
+  if (UserID && SceneID) {
+    supla_scene_asynctask::interrupt(UserID, SceneID);
+    send_result("OK:", SceneID);
+  }
+
+  send_result("UNKNOWN:", SceneID);
 }
 
 void svr_ipcctrl::set_char(const char *cmd, bool group) {
@@ -1314,6 +1354,10 @@ void svr_ipcctrl::execute(void *sthread) {
           enter_cfg_mode(cmd_enter_cfg_mode);
         } else if (match_command(cmd_get_status, len)) {
           get_status();
+        } else if (match_command(cmd_execute_scene, len)) {
+          execute_scene(cmd_execute_scene);
+        } else if (match_command(cmd_interrupt_scene, len)) {
+          interrupt_scene(cmd_interrupt_scene);
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
           send_result("COMMAND_UNKNOWN");

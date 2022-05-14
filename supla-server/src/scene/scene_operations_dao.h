@@ -16,10 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "actions/abstract_action_executor_factory.h"
+#ifndef SUPLA_SCENE_OPERATIONS_DAO_H_
+#define SUPLA_SCENE_OPERATIONS_DAO_H_
 
-supla_abstract_action_executor_factory::supla_abstract_action_executor_factory(
-    void) {}
+#include "scene/abstract_scene_operations_dao.h"
 
-supla_abstract_action_executor_factory::~supla_abstract_action_executor_factory(
-    void) {}
+class supla_scene_operations_dao : public supla_abstract_scene_operations_dao {
+ private:
+ public:
+  supla_scene_operations_dao();
+  virtual ~supla_scene_operations_dao();
+
+  virtual supla_scene_operations *get_scene_operations(int scene_id);
+};
+
+#endif /*SUPLA_SCENE_OPERATIONS_DAO_H_ */

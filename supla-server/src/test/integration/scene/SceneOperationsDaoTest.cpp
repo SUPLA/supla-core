@@ -16,46 +16,37 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "SceneRepositoryTest.h"
+#include <integration/scene/SceneOperationsDaoTest.h>
 
 #include "log.h"  // NOLINT
 
 namespace testing {
 
-SceneRepositoryTest::SceneRepositoryTest() : IntegrationTest(), Test() {
-  repo = NULL;
+SceneOperationsDaoTest::SceneOperationsDaoTest() : IntegrationTest(), Test() {
+  dao = NULL;
 }
 
-SceneRepositoryTest::~SceneRepositoryTest() {}
+SceneOperationsDaoTest::~SceneOperationsDaoTest() {}
 
-void SceneRepositoryTest::SetUp() {
-  repo = new supla_scene_repository(2);
-  ASSERT_TRUE(repo != NULL);
+void SceneOperationsDaoTest::SetUp() {
+  dao = new supla_scene_operations_dao();
+  ASSERT_TRUE(dao != NULL);
 
   initTestDatabase();
   Test::SetUp();
 }
 
-void SceneRepositoryTest::TearDown() {
-  if (repo) {
-    delete repo;
-    repo = NULL;
+void SceneOperationsDaoTest::TearDown() {
+  if (dao) {
+    delete dao;
+    dao = NULL;
   }
   Test::TearDown();
 }
 
-void SceneRepositoryTest::VerifyScene1(supla_scene *scene) {
-  EXPECT_TRUE(scene != NULL);
-  if (!scene) {
-    return;
-  }
+TEST_F(SceneOperationsDaoTest, operationsForScene1) {
+  supla_scene_operations *operations = dao->get_scene_operations(1);
 
-  EXPECT_EQ(scene->get_id(), 1);
-  EXPECT_EQ(scene->get_location_id(), 2);
-  EXPECT_EQ(scene->get_caption(), "Scene #1");
-
-  supla_scene_operations *operations =
-      scene->get_operations() ? scene->get_operations()->clone() : NULL;
   EXPECT_TRUE(operations != NULL);
   if (operations) {
     EXPECT_EQ(operations->count(), 3);
@@ -114,22 +105,10 @@ void SceneRepositoryTest::VerifyScene1(supla_scene *scene) {
     }
     delete operations;
   }
-
-  delete scene;
 }
 
-void SceneRepositoryTest::VerifyScene2(supla_scene *scene) {
-  EXPECT_TRUE(scene != NULL);
-  if (!scene) {
-    return;
-  }
-
-  EXPECT_EQ(scene->get_id(), 2);
-  EXPECT_EQ(scene->get_location_id(), 2);
-  EXPECT_EQ(scene->get_caption(), "Scene #2");
-
-  supla_scene_operations *operations =
-      scene->get_operations() ? scene->get_operations()->clone() : NULL;
+TEST_F(SceneOperationsDaoTest, operationsForScene2) {
+  supla_scene_operations *operations = dao->get_scene_operations(2);
   EXPECT_TRUE(operations != NULL);
   if (operations) {
     EXPECT_EQ(operations->count(), 2);
@@ -170,22 +149,11 @@ void SceneRepositoryTest::VerifyScene2(supla_scene *scene) {
     }
     delete operations;
   }
-
-  delete scene;
 }
 
-void SceneRepositoryTest::VerifyScene3(supla_scene *scene) {
-  EXPECT_TRUE(scene != NULL);
-  if (!scene) {
-    return;
-  }
+TEST_F(SceneOperationsDaoTest, operationsForScene3) {
+  supla_scene_operations *operations = dao->get_scene_operations(3);
 
-  EXPECT_EQ(scene->get_id(), 3);
-  EXPECT_EQ(scene->get_location_id(), 2);
-  EXPECT_EQ(scene->get_caption(), "Scene #3");
-
-  supla_scene_operations *operations =
-      scene->get_operations() ? scene->get_operations()->clone() : NULL;
   EXPECT_TRUE(operations != NULL);
   if (operations) {
     EXPECT_EQ(operations->count(), 3);
@@ -242,22 +210,11 @@ void SceneRepositoryTest::VerifyScene3(supla_scene *scene) {
     }
     delete operations;
   }
-
-  delete scene;
 }
 
-void SceneRepositoryTest::VerifyScene4(supla_scene *scene) {
-  EXPECT_TRUE(scene != NULL);
-  if (!scene) {
-    return;
-  }
+TEST_F(SceneOperationsDaoTest, operationsForScene4) {
+  supla_scene_operations *operations = dao->get_scene_operations(4);
 
-  EXPECT_EQ(scene->get_id(), 4);
-  EXPECT_EQ(scene->get_location_id(), 3);
-  EXPECT_EQ(scene->get_caption(), "Scene #4");
-
-  supla_scene_operations *operations =
-      scene->get_operations() ? scene->get_operations()->clone() : NULL;
   EXPECT_TRUE(operations != NULL);
   if (operations) {
     EXPECT_EQ(operations->count(), 1);
@@ -280,22 +237,11 @@ void SceneRepositoryTest::VerifyScene4(supla_scene *scene) {
     }
     delete operations;
   }
-
-  delete scene;
 }
 
-void SceneRepositoryTest::VerifyScene5(supla_scene *scene) {
-  EXPECT_TRUE(scene != NULL);
-  if (!scene) {
-    return;
-  }
+TEST_F(SceneOperationsDaoTest, operationsForScene5) {
+  supla_scene_operations *operations = dao->get_scene_operations(5);
 
-  EXPECT_EQ(scene->get_id(), 5);
-  EXPECT_EQ(scene->get_location_id(), 2);
-  EXPECT_EQ(scene->get_caption(), "Scene #5");
-
-  supla_scene_operations *operations =
-      scene->get_operations() ? scene->get_operations()->clone() : NULL;
   EXPECT_TRUE(operations != NULL);
   if (operations) {
     EXPECT_EQ(operations->count(), 2);
@@ -336,22 +282,11 @@ void SceneRepositoryTest::VerifyScene5(supla_scene *scene) {
     }
     delete operations;
   }
-
-  delete scene;
 }
 
-void SceneRepositoryTest::VerifyScene6(supla_scene *scene) {
-  EXPECT_TRUE(scene != NULL);
-  if (!scene) {
-    return;
-  }
+TEST_F(SceneOperationsDaoTest, operationsForScene6) {
+  supla_scene_operations *operations = dao->get_scene_operations(6);
 
-  EXPECT_EQ(scene->get_id(), 6);
-  EXPECT_EQ(scene->get_location_id(), 2);
-  EXPECT_EQ(scene->get_caption(), "Scene #6");
-
-  supla_scene_operations *operations =
-      scene->get_operations() ? scene->get_operations()->clone() : NULL;
   EXPECT_TRUE(operations != NULL);
   if (operations) {
     EXPECT_EQ(operations->count(), 2);
@@ -392,74 +327,33 @@ void SceneRepositoryTest::VerifyScene6(supla_scene *scene) {
     }
     delete operations;
   }
-
-  delete scene;
 }
 
-TEST_F(SceneRepositoryTest, getAllScenes) {
-  std::vector<supla_scene *> scenes = repo->get_all_scenes();
-  EXPECT_EQ(scenes.size(), 6U);
+TEST_F(SceneOperationsDaoTest, getOperationsForDisabledScene) {
+  supla_scene_operations *operations = dao->get_scene_operations(3);
+  EXPECT_TRUE(operations != NULL);
+  if (operations) {
+    EXPECT_EQ(operations->count(), 3);
+    delete operations;
+  }
 
-  supla_scene *scene = scenes.back();
-  scenes.pop_back();
+  runSqlScript("DisableScenes3.sql");
 
-  VerifyScene6(scene);
-
-  scene = scenes.back();
-  scenes.pop_back();
-
-  VerifyScene5(scene);
-
-  scene = scenes.back();
-  scenes.pop_back();
-
-  VerifyScene4(scene);
-
-  scene = scenes.back();
-  scenes.pop_back();
-
-  VerifyScene3(scene);
-
-  scene = scenes.back();
-  scenes.pop_back();
-
-  VerifyScene2(scene);
-
-  scene = scenes.back();
-  scenes.pop_back();
-
-  VerifyScene1(scene);
+  operations = dao->get_scene_operations(3);
+  EXPECT_TRUE(operations != NULL);
+  if (operations) {
+    EXPECT_EQ(operations->count(), 0);
+    delete operations;
+  }
 }
 
-TEST_F(SceneRepositoryTest, disableAllScenesExceptOne) {
-  runSqlScript("DisableAllScenesExceptOne.sql");
-
-  std::vector<supla_scene *> scenes = repo->get_all_scenes();
-  EXPECT_EQ(scenes.size(), 1U);
-
-  supla_scene *scene = scenes.back();
-  scenes.pop_back();
-
-  VerifyScene3(scene);
-}
-
-TEST_F(SceneRepositoryTest, getSingleScene) {
-  supla_scene *scene = repo->get_scene(5);
-  VerifyScene5(scene);
-}
-
-TEST_F(SceneRepositoryTest, getNonExistentScene) {
-  supla_scene *scene = repo->get_scene(550);
-  EXPECT_TRUE(scene == NULL);
-}
-
-TEST_F(SceneRepositoryTest, getAllScenesForNonExistentUser) {
-  delete repo;
-  repo = new supla_scene_repository(23456);
-  ASSERT_TRUE(repo != NULL);
-
-  std::vector<supla_scene *> scenes = repo->get_all_scenes();
-  EXPECT_EQ(scenes.size(), 0U);
+TEST_F(SceneOperationsDaoTest, getOperationsForNonExistentScene) {
+  supla_scene_operations *operations = dao->get_scene_operations(23);
+  EXPECT_TRUE(operations != NULL);
+  if (operations) {
+    EXPECT_EQ(operations->count(), 0);
+    delete operations;
+  }
 }
 
 } /* namespace testing */

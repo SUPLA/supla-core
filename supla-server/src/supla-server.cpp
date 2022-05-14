@@ -26,7 +26,6 @@
 #include "asynctask/asynctask_queue.h"
 #include "database.h"
 #include "datalogger.h"
-#include "device/value_getter_factory.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
 #include "ipcsocket.h"
@@ -120,8 +119,6 @@ int main(int argc, char *argv[]) {
   if (0 == st_set_ug_id(scfg_getuid(CFG_UID), scfg_getgid(CFG_GID))) {
     goto exit_fail;
   }
-
-  supla_value_getter_factory::global_instance();
 
   // ASYNCTASK QUEUE
   supla_asynctask_queue::global_instance();
@@ -218,8 +215,6 @@ int main(int argc, char *argv[]) {
   serverstatus::globalInstanceRelease();
   st_delpidfile(pidfile_path);
   svrcfg_free();
-
-  supla_value_getter_factory::global_instance_release();
 
   {
     char dt[64];

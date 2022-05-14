@@ -16,8 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "abstract_value_getter_factory.h"
+#ifndef SceneRepositoryTest_H_
+#define SceneRepositoryTest_H_
 
-supla_abstract_value_getter_factory::supla_abstract_value_getter_factory() {}
+#include "integration/IntegrationTest.h"
+#include "scene/scene_operations_dao.h"
 
-supla_abstract_value_getter_factory::~supla_abstract_value_getter_factory() {}
+namespace testing {
+
+class SceneOperationsDaoTest : public IntegrationTest, public Test {
+ protected:
+  supla_scene_operations_dao *dao;
+
+ public:
+  SceneOperationsDaoTest();
+  virtual ~SceneOperationsDaoTest();
+  virtual void SetUp();
+  virtual void TearDown();
+};
+
+} /* namespace testing */
+
+#endif /* SceneRepositoryTest_H_ */

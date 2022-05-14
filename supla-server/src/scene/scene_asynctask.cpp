@@ -16,10 +16,16 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <assert.h>
-#include <scene/scene_asynctask.h>
+#include "scene/scene_asynctask.h"
 
+#include <assert.h>
+
+#include "asynctask/asynctask_default_thread_pool.h"
+#include "asynctask/asynctask_queue.h"
+#include "device/value_getter.h"
 #include "log.h"
+#include "scene/scene_operations_dao.h"
+#include "scene/scene_search_condition.h"
 
 supla_scene_asynctask::supla_scene_asynctask(
     const supla_caller &caller, int user_id, int scene_id,
@@ -94,4 +100,39 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
 
   *execute_again = false;
   return true;
+}
+
+// static
+_sceneExecutionResult_e supla_scene_asynctask::execute(
+    const supla_caller &caller, int user_id, int scene_id) {
+  supla_scene_search_condition cnd(user_id, scene_id, false);
+  if (supla_asynctask_queue::global_instance()->task_exists(&cnd)) {
+    return serIsDuringExecution;
+  } else {
+    supla_scene_operations_dao dao;
+    supla_scene_operations *operations = dao.get_scene_operations(scene_id);
+    if (operations && operations->count() == 0) {
+      delete operations;
+      operations = NULL;
+    }
+
+    if (operations == NULL) {
+      return serNotExists;
+    } else {
+      supla_action_executor *action_executor = new supla_action_executor();
+      supla_value_getter *value_getter = new supla_value_getter();
+
+      new supla_scene_asynctask(
+          caller, user_id, scene_id, supla_asynctask_queue::global_instance(),
+          supla_asynctask_default_thread_pool::global_instance(),
+          action_executor, value_getter, operations, true);
+      return serOK;
+    }
+  }
+}
+
+// static
+void supla_scene_asynctask::interrupt(int user_id, int scene_id) {
+  supla_scene_search_condition cnd(user_id, scene_id, true);
+  supla_asynctask_queue::global_instance()->cancel_tasks(&cnd);
 }

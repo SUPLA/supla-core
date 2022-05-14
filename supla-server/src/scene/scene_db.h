@@ -19,9 +19,8 @@
 #ifndef SCENE_DB_H_
 #define SCENE_DB_H_
 
-#include <vector>
+#include <list>
 
-#include "scene/scene.h"
 #include "scene/scene_operations.h"
 #include "svrdb.h"
 
@@ -46,20 +45,13 @@ typedef struct {
 
 class supla_scene_db : public svrdb {
  private:
-  supla_scene *convert(_supla_db_scene_row_t *row);
   supla_scene_operation *convert(_supla_db_operation_row_t *row);
-
-  void set_operations(int scene_id, std::vector<supla_scene *> *scenes,
-                      supla_scene_operations *ops);
-  void add_operations(std::vector<supla_scene *> *scenes, int user_id, int id);
-  std::vector<supla_scene *> get_scenes(int user_id, int id);
 
  public:
   supla_scene_db(void);
   virtual ~supla_scene_db(void);
 
-  supla_scene *get_scene(int user_id, int id);
-  std::vector<supla_scene *> get_all_scenes(int user_id);
+  std::list<supla_scene_operation *> get_operations(int scene_id);
 };
 
 #endif /*SCENE_DB_H_*/
