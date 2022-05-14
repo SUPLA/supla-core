@@ -91,6 +91,8 @@ class svr_ipcctrl {
   void recalibrate(const char *cmd);
   void enter_cfg_mode(const char *cmd);
   void get_status(void);
+  void execute_scene(const char *cmd);
+  void interrupt_scene(const char *cmd);
 
   void send_result(const char *result);
   void send_result(const char *result, int i);

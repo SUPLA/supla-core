@@ -25,6 +25,8 @@
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
 
+enum _sceneExecutionResult_e { serNotExists, serOK, serIsDuringExecution };
+
 class supla_scene_asynctask : public supla_abstract_asynctask {
  private:
   supla_caller caller;
@@ -50,6 +52,10 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   const supla_caller &get_caller_id(void) const;
   int get_user_id(void);
   int get_scene_id(void);
+
+  static _sceneExecutionResult_e execute(const supla_caller &caller,
+                                         int user_id, int scene_id);
+  static void interrupt(int user_id, int scene_id);
 };
 
 #endif /* SUPLA_SCENE_ASYNCTASK_H_ */

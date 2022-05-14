@@ -16,24 +16,36 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_SCENE_REPOSITORY_H_
-#define SUPLA_SCENE_REPOSITORY_H_
+#include "scene/scene_operations_dao.h"
 
-#include <vector>
+#include <list>
 
-#include "scene/scene_abstract_repository.h"
 #include "scene/scene_db.h"
 
-class supla_scene_repository : public supla_scene_abstract_repository {
- private:
- protected:
-  supla_scene_db *get_db(void);
+supla_scene_operations_dao::supla_scene_operations_dao()
+    : supla_abstract_scene_operations_dao() {}
 
- public:
-  explicit supla_scene_repository(int user_id);
-  virtual ~supla_scene_repository();
-  virtual supla_scene *get_scene(int id);
-  virtual std::vector<supla_scene *> get_all_scenes(void);
-};
+supla_scene_operations_dao::~supla_scene_operations_dao() {}
 
-#endif /* SUPLA_SCENE_REPOSITORY_H_ */
+supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
+    int scene_id) {
+  supla_scene_operations *operations = new supla_scene_operations();
+  if (!operations) {
+    return NULL;
+  }
+
+  supla_scene_db *db = new supla_scene_db();
+  if (db) {
+    if (db->connect()) {
+      std::list<supla_scene_operation *> ops = db->get_operations(scene_id);
+
+      for (auto it = ops.begin(); it != ops.end(); ++it) {
+        operations->push(*it);
+      }
+    }
+    delete db;
+    db = NULL;
+  }
+
+  return operations;
+}
