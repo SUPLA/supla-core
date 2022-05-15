@@ -19,6 +19,7 @@
 #include "scene/scene_asynctask.h"
 
 #include <assert.h>
+#include <unistd.h>
 
 #include "asynctask/asynctask_default_thread_pool.h"
 #include "asynctask/asynctask_queue.h"
@@ -79,18 +80,29 @@ int supla_scene_asynctask::get_user_id(void) { return user_id; }
 int supla_scene_asynctask::get_scene_id(void) { return scene_id; }
 
 bool supla_scene_asynctask::_execute(bool *execute_again) {
-  supla_scene_operation *operation = operations->pop();
-  if (operation) {
-    if (operation->get_action_config()->get_subject_type() != stScene ||
-        !caller.find(ctScene,
-                     operation->get_action_config()->get_subject_id())) {
-      action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
-                                      user_id, operation->get_action_config(),
-                                      value_getter);
+  do {
+    supla_scene_operation *operation = operations->pop();
+    if (operation) {
+      if (operation->get_action_config()->get_subject_type() != stScene ||
+          !caller.find(ctScene,
+                       operation->get_action_config()->get_subject_id())) {
+        action_executor->execute_action(supla_caller(caller, ctScene, scene_id),
+                                        user_id, operation->get_action_config(),
+                                        value_getter);
+      }
+
+      delete operation;
     }
 
-    delete operation;
-  }
+    if (!operations->count() || operations->get_delay_ms() > 1000) {
+      break;
+    } else {
+      // Operations to be performed not later than in a second should be
+      // performed in one _execute cycle.
+      usleep(operations->get_delay_ms() * 1000);
+    }
+
+  } while (true);
 
   if (operations->count()) {
     set_delay();

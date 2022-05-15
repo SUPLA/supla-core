@@ -104,7 +104,9 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   // significantly.
 
   WaitForState(scene, STA_STATE_SUCCESS, 2000);
-  WaitForExec(pool, 2, 2000000);
+  WaitForExec(pool, 1,
+              2000000);  // Both operations should be performed in one cycle.
+                         // There should be one cycle in total.
 
   std::list<struct timeval> times = action_executor->getTimes();
   EXPECT_EQ(times.size(), 2UL);
@@ -157,7 +159,9 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   // significantly.
 
   WaitForState(scene, STA_STATE_SUCCESS, 1500000);
-  WaitForExec(pool, 3, 2000000);
+  WaitForExec(pool, 2,
+              2000000);  // Two of the three operations should be performed in
+                         // one cycle. There should be two cycles in total.
 
   std::list<struct timeval> times = action_executor->getTimes();
   EXPECT_EQ(times.size(), 3UL);
