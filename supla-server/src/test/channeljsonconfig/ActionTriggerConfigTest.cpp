@@ -719,7 +719,7 @@ TEST_F(ActionTriggerConfigTest, setSubjectIdIfNotSet) {
   EXPECT_EQ(config->get_source_channel_id(), 16868);
   EXPECT_EQ(config->get_subject_type(), stChannel);
 
-  config->set_subject_id_if_not_set(123);
+  config->set_channel_id_if_subject_not_set(123);
   EXPECT_EQ(config->get_subject_id(), 0);
 
   config->set_user_config(
@@ -737,7 +737,7 @@ TEST_F(ActionTriggerConfigTest, setSubjectIdIfNotSet) {
       "\"subjectType\":\"channelGroup\",\"subjectId\":31,\"action\":{\"id\":"
       "10000,\"param\":{\"sourceChannelId\":46868}}}}}");
 
-  config->set_subject_id_if_not_set(456);
+  config->set_channel_id_if_subject_not_set(456);
   EXPECT_EQ(config->get_subject_id(), 31);
   EXPECT_EQ(config->get_action_id(), ACTION_FORWARD_OUTSIDE);
 

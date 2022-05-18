@@ -336,12 +336,43 @@ TEST_F(ActionTriggerTest, forwardOutside) {
       "\"subjectType\":\"other\",\"action\":{\"id\":10000}}}}");
 
   at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x2);
-  at_config->set_subject_id_if_not_set(5);
+  at_config->set_channel_id_if_subject_not_set(5);
   at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x2);
 
   EXPECT_EQ(aexec->counterSetCount(), 1);
   EXPECT_EQ(aexec->getForwardOutsideCounter(), 1);
   EXPECT_EQ(aexec->get_channel_id(), 5);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
+}
+
+TEST_F(ActionTriggerTest, executeScene) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"HOLD\":{\"subjectType\":"
+      "\"scene\",\"subjectId\":20,\"action\":{\"id\":3000,\"param\":[]}}}}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_HOLD);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_HOLD);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getExecuteCounter(), 1);
+  EXPECT_EQ(aexec->get_scene_id(), 20);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
+}
+
+TEST_F(ActionTriggerTest, interruptScene) {
+  at_config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"scene\",\"subjectId\":20,\"action\":{\"id\":3001,"
+      "\"param\":[]}}}}");
+
+  at_config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  at->execute_actions(5, 1, SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getInterruptCounter(), 1);
+  EXPECT_EQ(aexec->get_scene_id(), 20);
   EXPECT_TRUE(aexec->get_caller() == supla_caller(ctActionTrigger, 5));
 }
 

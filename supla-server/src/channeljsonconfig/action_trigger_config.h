@@ -62,7 +62,7 @@ class action_trigger_config : public abstract_action_config,
   int get_subject_id(int cap);
   int get_source_id(const char *key);
   int active_cap;
-  int subject_id_if_not_set;
+  int channel_id_if_subject_not_set;
 
  protected:
   virtual int get_map_size(void);
@@ -77,7 +77,7 @@ class action_trigger_config : public abstract_action_config,
   virtual int get_action_id(void);
   virtual _subjectType_e get_subject_type(void);
   virtual int get_subject_id(void);
-  void set_subject_id_if_not_set(int subject_id);
+  void set_channel_id_if_subject_not_set(int subject_id);
 
   virtual int get_source_device_id(void);
   virtual int get_source_channel_id(void);
