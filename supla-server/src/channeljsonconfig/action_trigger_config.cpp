@@ -56,13 +56,13 @@ const char action_trigger_config::param_key[] = "param";
 action_trigger_config::action_trigger_config(void)
     : abstract_action_config(), channel_json_config() {
   active_cap = 0;
-  subject_id_if_not_set = 0;
+  channel_id_if_subject_not_set = 0;
 }
 
 action_trigger_config::action_trigger_config(channel_json_config *root)
     : abstract_action_config(), channel_json_config(root) {
   active_cap = 0;
-  subject_id_if_not_set = 0;
+  channel_id_if_subject_not_set = 0;
 }
 
 action_trigger_config::~action_trigger_config(void) {}
@@ -112,7 +112,22 @@ _subjectType_e action_trigger_config::get_subject_type(int cap) {
   }
 
   cJSON *subjectType = cJSON_GetObjectItem(cap_cfg, "subjectType");
-  return equal(subjectType, "channelGroup") ? stChannelGroup : stChannel;
+  if (equal(subjectType, "channelGroup")) {
+    return stChannelGroup;
+  } else if (equal(subjectType, "channel")) {
+    return stChannel;
+  } else if (equal(subjectType, "scene")) {
+    return stScene;
+  } else if (channel_id_if_subject_not_set) {
+    cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+    if (action) {
+      cJSON *id = cJSON_GetObjectItem(action, "id");
+      if (id && cJSON_IsNumber(id) && id->valueint == ACTION_FORWARD_OUTSIDE) {
+        return stChannel;
+      }
+    }
+  }
+  return stUnknown;
 }
 
 _subjectType_e action_trigger_config::get_subject_type(void) {
@@ -133,12 +148,12 @@ int action_trigger_config::get_subject_id(int cap) {
   cJSON *id = cJSON_GetObjectItem(cap_cfg, "subjectId");
   if (id && cJSON_IsNumber(id) && id->valueint) {
     return id->valueint;
-  } else if (subject_id_if_not_set) {
+  } else if (channel_id_if_subject_not_set) {
     cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
     if (action) {
       id = cJSON_GetObjectItem(action, "id");
       if (id && cJSON_IsNumber(id) && id->valueint == ACTION_FORWARD_OUTSIDE) {
-        return subject_id_if_not_set;
+        return channel_id_if_subject_not_set;
       }
     }
   }
@@ -154,8 +169,8 @@ int action_trigger_config::get_subject_id(void) {
   return get_subject_id(active_cap);
 }
 
-void action_trigger_config::set_subject_id_if_not_set(int subject_id) {
-  subject_id_if_not_set = subject_id;
+void action_trigger_config::set_channel_id_if_subject_not_set(int subject_id) {
+  channel_id_if_subject_not_set = subject_id;
 }
 
 int action_trigger_config::get_source_id(const char *key) {

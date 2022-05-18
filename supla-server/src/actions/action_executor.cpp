@@ -20,6 +20,7 @@
 
 #include "http/httprequestqueue.h"
 #include "mqtt/mqtt_client_suite.h"
+#include "scene/scene_asynctask.h"
 #include "userchannelgroups.h"
 
 supla_action_executor::supla_action_executor(void)
@@ -127,25 +128,26 @@ void supla_action_executor::reveal(void) {
 
 void supla_action_executor::execute(void) {
   if (get_scene_id() && get_user()) {
-    // get_user()->scenes()->start(get_scene_id());
+    supla_scene_asynctask::execute(get_caller(), get_user()->getUserID(),
+                                   get_scene_id());
+  }
+}
+
+void supla_action_executor::interrupt(void) {
+  if (get_scene_id() && get_user()) {
+    supla_scene_asynctask::interrupt(get_user()->getUserID(), get_scene_id());
   }
 }
 
 void supla_action_executor::stop(void) {
-  if (get_scene_id()) {
-    if (get_user()) {
-      // get_user()->scenes()->stop(get_scene_id());
+  execute_action([this](supla_user_channelgroups *channel_groups,
+                        supla_device_channels *channels) -> void {
+    if (channel_groups) {
+      channel_groups->action_stop(get_caller(), get_group_id());
+    } else {
+      channels->action_stop(get_caller(), get_channel_id(), 0, 0);
     }
-  } else {
-    execute_action([this](supla_user_channelgroups *channel_groups,
-                          supla_device_channels *channels) -> void {
-      if (channel_groups) {
-        channel_groups->action_stop(get_caller(), get_group_id());
-      } else {
-        channels->action_stop(get_caller(), get_channel_id(), 0, 0);
-      }
-    });
-  }
+  });
 }
 
 void supla_action_executor::up(void) {

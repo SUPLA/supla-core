@@ -175,6 +175,9 @@ void supla_abstract_action_executor::execute_action(
     case ACTION_EXECUTE:
       execute();
       break;
+    case ACTION_INTERRUPT:
+      interrupt();
+      break;
     case ACTION_STOP:
       stop();
       break;
