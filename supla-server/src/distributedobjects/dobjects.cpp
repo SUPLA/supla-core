@@ -78,10 +78,6 @@ void supla_dobjects::access_object(
   unlock();
 }
 
-void supla_dobjects::register_observer(supla_dobject_observer *observer) {}
-
-void supla_dobjects::unregister_observer(supla_dobject_observer *observer) {}
-
 int supla_dobjects::count(void) {
   lock();
   int result = objects.size();

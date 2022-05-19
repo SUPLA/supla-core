@@ -19,10 +19,9 @@
 #ifndef SUPLA_DISTRIBUTED_OBJECT_H_
 #define SUPLA_DISTRIBUTED_OBJECT_H_
 
-#include <distributedobjects/dobject_change_indicator.h>
 #include <list>
 
-#include "distributedobjects/dobject_related_identifier.h"
+#include "distributedobjects/dobject_change_indicator.h"
 
 class supla_dobject {
  private:

@@ -101,7 +101,6 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
       // performed in one _execute cycle.
       usleep(operations->get_delay_ms() * 1000);
     }
-
   } while (true);
 
   if (operations->count()) {
