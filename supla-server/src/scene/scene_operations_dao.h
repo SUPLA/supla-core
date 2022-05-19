@@ -20,8 +20,10 @@
 #define SUPLA_SCENE_OPERATIONS_DAO_H_
 
 #include "scene/abstract_scene_operations_dao.h"
+#include "svrdb.h"
 
-class supla_scene_operations_dao : public supla_abstract_scene_operations_dao {
+class supla_scene_operations_dao : public supla_abstract_scene_operations_dao,
+                                   private svrdb {
  private:
  public:
   supla_scene_operations_dao();

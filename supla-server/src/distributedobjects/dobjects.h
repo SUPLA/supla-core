@@ -24,13 +24,11 @@
 #include <vector>
 
 #include "distributedobjects/dobject.h"
-#include "distributedobjects/dobject_registered_observer.h"
 
 class supla_dobjects {
  private:
   void *lck;
   std::vector<supla_dobject *> objects;
-  std::list<supla_dobject_registered_observer *> registered_observers;
 
  protected:
   void lock(void);
@@ -42,8 +40,6 @@ class supla_dobjects {
   void access_object(int id,
                      std::function<void(supla_dobject *object)> on_access);
 
-  void register_observer(supla_dobject_observer *observer);
-  void unregister_observer(supla_dobject_observer *observer);
  public:
   supla_dobjects(void);
   virtual ~supla_dobjects();
