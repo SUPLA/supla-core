@@ -100,7 +100,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 // CS  - client -> server
 // SC  - server -> client
 
-#define SUPLA_PROTO_VERSION 17
+#define SUPLA_PROTO_VERSION 18
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
@@ -138,13 +138,18 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELVALUE_PACK_MAXCOUNT 20         // ver. >= 9
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXCOUNT 5  // ver. >= 10
 #define SUPLA_CHANNELEXTENDEDVALUE_PACK_MAXDATASIZE \
-  (SUPLA_MAX_DATA_SIZE - 50)           // ver. >= 10
-#define SUPLA_CALCFG_DATA_MAXSIZE 128  // ver. >= 10
-#define SUPLA_TIMEZONE_MAXSIZE 51      // ver. >= 11
+  (SUPLA_MAX_DATA_SIZE - 50)            // ver. >= 10
+#define SUPLA_CALCFG_DATA_MAXSIZE 128   // ver. >= 10
+#define SUPLA_TIMEZONE_MAXSIZE 51       // ver. >= 11
+#define SUPLA_ACTION_PARAM_MAXSIZE 500  // ver. >= 18
 
 #ifndef SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
 #endif /*SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT*/
+
+#define SUPLA_SCENE_CAPTION_MAXSIZE 401      // ver. >= 18
+#define SUPLA_SCENE_PACK_MAXCOUNT 20         // ver. >= 18
+#define SUPLA_SCENE_STATUS_PACK_MAXCOUNT 20  // ver. >= 18
 
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
@@ -234,6 +239,11 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_SD_CALL_GET_CHANNEL_CONFIG_RESULT 690           // ver. >= 16
 #define SUPLA_DS_CALL_ACTIONTRIGGER 700                       // ver. >= 16
 #define SUPLA_CS_CALL_TIMER_ARM 800                           // ver. >= 17
+#define SUPLA_SC_CALL_SCENE_PACK_UPDATE 900                   // ver. >= 18
+#define SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE 910            // ver. >= 18
+#define SUPLA_CS_CALL_EXECUTE_ACTION 1000                     // ver. >= 18
+#define SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION 1010            // ver. >= 18
+#define SUPLA_SC_CALL_ACTION_EXECUTION_RESULT 1020            // ver. >= 18
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4
@@ -284,6 +294,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DEVICE_NAME_MAXSIZE 201
 #define SUPLA_CLIENT_NAME_MAXSIZE 201
 #define SUPLA_SENDER_NAME_MAXSIZE 201
+#define SUPLA_INITIATOR_NAME_MAXSIZE SUPLA_SENDER_NAME_MAXSIZE
 
 #ifdef __AVR__
 #ifdef __AVR_ATmega2560__
@@ -1037,6 +1048,103 @@ typedef struct {
       items[SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT];  // Last variable in
                                                          // struct!
 } TSC_SuplaChannelGroupRelationPack;                     // ver. >= 9
+
+typedef struct {
+  // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t Id;
+  _supla_int_t LocationId;
+  _supla_int_t AltIcon;
+  _supla_int_t UserIcon;
+
+  unsigned _supla_int16_t
+      CaptionSize;  // including the terminating null byte ('\0')
+  char Caption[SUPLA_SCENE_CAPTION_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaScene;                             // ver. >= 18
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaScene items[SUPLA_SCENE_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaScenePack;                               // ver. >= 18
+
+typedef struct {
+  // server -> client
+  char EOL;  // End Of List
+
+  _supla_int_t SceneId;
+  unsigned _supla_int_t MillisecondsFromStart;
+  unsigned _supla_int_t MillsecondsLeft;
+
+  _supla_int_t InitiatorId;
+  unsigned _supla_int16_t
+      InitiatorNameSize;  // including the terminating null byte ('\0')
+  char InitiatorName[SUPLA_INITIATOR_NAME_MAXSIZE];  // Last variable in struct!
+} TSC_SuplaSceneStatus;                              // ver. >= 18
+
+typedef struct {
+  // server -> client
+
+  _supla_int_t count;
+  _supla_int_t total_left;
+  TSC_SuplaSceneStatus
+      items[SUPLA_SCENE_STATUS_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaSceneStatusPack;                     // ver. >= 18
+
+#define ACTION_SUBJECT_TYPE_UNKNOWN 0
+#define ACTION_SUBJECT_TYPE_CHANNEL 1
+#define ACTION_SUBJECT_TYPE_CHANNEL_GROUP 1
+#define ACTION_SUBJECT_TYPE_SCENE 2
+
+#define ACTION_OPEN 10
+#define ACTION_CLOSE 20
+#define ACTION_SHUT 30
+#define ACTION_REVEAL 40
+#define ACTION_REVEAL_PARTIALLY 50
+#define ACTION_SHUT_PARTIALLY 51
+#define ACTION_TURN_ON 60
+#define ACTION_TURN_OFF 70
+#define ACTION_SET_RGBW_PARAMETERS 80
+#define ACTION_OPEN_CLOSE 90
+#define ACTION_STOP 100
+#define ACTION_TOGGLE 110
+#define ACTION_UP_OR_STOP 140
+#define ACTION_DOWN_OR_STOP 150
+#define ACTION_STEP_BY_STEP 160
+#define ACTION_EXECUTE 3000
+#define ACTION_INTERRUPT 3001
+
+typedef struct {
+  _supla_int_t ActionId;
+  _supla_int_t SubjectId;
+  _supla_int_t SubjectType;
+  unsigned _supla_int16_t ParamSize;
+  char Param[SUPLA_ACTION_PARAM_MAXSIZE];
+} TCS_Action;  // ver. >= 18
+
+typedef struct {
+  _supla_int_t AccessID;
+  char AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE];  // UTF8
+  char Email[SUPLA_EMAIL_MAXSIZE];               // UTF8
+  char AuthKey[SUPLA_AUTHKEY_SIZE];
+  char GUID[SUPLA_GUID_SIZE];
+  char ServerName[SUPLA_SERVER_NAME_MAXSIZE];
+} TCS_ClientAuthorizationDetails;  // ver. >= 18
+
+typedef struct {
+  TCS_ClientAuthorizationDetails Auth;
+  TCS_Action Action;
+} TCS_ActionWithAuth;  // ver. >= 18
+
+typedef struct {
+  _supla_int_t ActionId;
+  _supla_int_t SubjectId;
+  _supla_int_t SubjectType;
+  _supla_int_t ResultCode;
+} TSC_ActionExecutionResult;  // ver. >= 18
 
 typedef struct {
   // client -> server

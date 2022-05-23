@@ -166,6 +166,11 @@ union TsrpcDataPacketData {
   TSD_ChannelConfig *sd_channel_config;
   TDS_ActionTrigger *ds_action_trigger;
   TCS_TimerArmRequest *cs_timer_arm_request;
+  TSC_SuplaScenePack *sc_scene_pack;
+  TSC_SuplaSceneStatusPack *sc_scene_status_pack;
+  TCS_Action *cs_action;
+  TCS_ActionWithAuth *cs_action_with_auth;
+  TSC_ActionExecutionResult *sc_action_execution_result;
 };
 
 typedef struct {
@@ -385,7 +390,17 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_device_reconnect_request(
 _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
     void *_srpc, TSC_DeviceReconnectRequestResult *result);
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_sc_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request);
+srpc_cs_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_scene_pack_update(
+    void *_srpc, TSC_SuplaScenePack *scene_pack);  // ver. >= 18
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_scene_status_pack_update(
+    void *_srpc, TSC_SuplaSceneStatusPack *scene_status_pack);  // ver. >= 18
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_execute_action(void *_srpc, TCS_Action *action);
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_execute_action_with_auth(
+    void *_srpc, TCS_ActionWithAuth *action);
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_action_execution_result(
+    void *_srpc, TSC_ActionExecutionResult *result);
 #endif /*SRPC_EXCLUDE_CLIENT*/
 
 #ifndef SRPC_EXCLUDE_EXTENDEDVALUE_TOOLS
