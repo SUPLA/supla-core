@@ -16,22 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DISTRIBUTED_OBJECT_H_
-#define SUPLA_DISTRIBUTED_OBJECT_H_
+#ifndef SUPLA_CLIENT_SCENE_H_
+#define SUPLA_CLIENT_SCENE_H_
 
-#include <list>
+#include "distributedobjects/dobject.h"
 
-#include "distributedobjects/dobject_change_indicator.h"
-
-class supla_dobject {
+class supla_client_scene : public supla_dobject {
  private:
-  int id;
+  char *caption;
+  int user_icon_id;
 
  protected:
  public:
-  explicit supla_dobject(int id);
-  virtual ~supla_dobject();
-  int get_id(void);
+  explicit supla_client_scene(int id);
+  virtual ~supla_client_scene();
+  void set_caption(const char *caption);
+  const char *get_caption(void);
+  void set_user_icon_id(int user_icon_id);
+  int get_user_icon_id(void);
 };
 
-#endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */
+#endif /* SUPLA_CLIENT_SCENE_H_ */

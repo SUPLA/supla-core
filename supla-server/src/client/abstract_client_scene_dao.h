@@ -16,22 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DISTRIBUTED_OBJECT_H_
-#define SUPLA_DISTRIBUTED_OBJECT_H_
+#ifndef SUPLA_ABSTRACT_CLIENT_SCENE_DAO_H_
+#define SUPLA_ABSTRACT_CLIENT_SCENE_DAO_H_
 
 #include <list>
 
-#include "distributedobjects/dobject_change_indicator.h"
+#include "client/client_scene.h"
 
-class supla_dobject {
+class supla_abstract_client_scene_dao {
  private:
-  int id;
-
- protected:
  public:
-  explicit supla_dobject(int id);
-  virtual ~supla_dobject();
-  int get_id(void);
+  supla_abstract_client_scene_dao();
+  virtual ~supla_abstract_client_scene_dao();
+
+  virtual std::list<supla_client_scene *> get_all_scenes(int user_id,
+                                                         int client_id) = 0;
 };
 
-#endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */
+#endif /*SUPLA_ABSTRACT_CLIENT_SCENE_DAO_H_ */
