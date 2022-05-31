@@ -16,22 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DISTRIBUTED_OBJECT_H_
-#define SUPLA_DISTRIBUTED_OBJECT_H_
+#include "client/abstract_client_scene_dao.h"
 
-#include <list>
+supla_abstract_client_scene_dao::supla_abstract_client_scene_dao() {}
 
-#include "distributedobjects/dobject_change_indicator.h"
-
-class supla_dobject {
- private:
-  int id;
-
- protected:
- public:
-  explicit supla_dobject(int id);
-  virtual ~supla_dobject();
-  int get_id(void);
-};
-
-#endif /* SUPLA_DISTRIBUTED_OBJECT_H_ */
+supla_abstract_client_scene_dao::~supla_abstract_client_scene_dao() {}

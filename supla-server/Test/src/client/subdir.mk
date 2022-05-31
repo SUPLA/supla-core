@@ -4,7 +4,10 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/client/abstract_client_scene_dao.cpp \
 ../src/client/client.cpp \
+../src/client/client_scene.cpp \
+../src/client/client_scene_dao.cpp \
 ../src/client/clientchannel.cpp \
 ../src/client/clientchannelgroup.cpp \
 ../src/client/clientchannelgrouprelation.cpp \
@@ -16,7 +19,10 @@ CPP_SRCS += \
 ../src/client/clientobjcontaineritem.cpp 
 
 CPP_DEPS += \
+./src/client/abstract_client_scene_dao.d \
 ./src/client/client.d \
+./src/client/client_scene.d \
+./src/client/client_scene_dao.d \
 ./src/client/clientchannel.d \
 ./src/client/clientchannelgroup.d \
 ./src/client/clientchannelgrouprelation.d \
@@ -28,7 +34,10 @@ CPP_DEPS += \
 ./src/client/clientobjcontaineritem.d 
 
 OBJS += \
+./src/client/abstract_client_scene_dao.o \
 ./src/client/client.o \
+./src/client/client_scene.o \
+./src/client/client_scene_dao.o \
 ./src/client/clientchannel.o \
 ./src/client/clientchannelgroup.o \
 ./src/client/clientchannelgrouprelation.o \
@@ -52,7 +61,7 @@ src/client/%.o: ../src/client/%.cpp src/client/subdir.mk
 clean: clean-src-2f-client
 
 clean-src-2f-client:
-	-$(RM) ./src/client/client.d ./src/client/client.o ./src/client/clientchannel.d ./src/client/clientchannel.o ./src/client/clientchannelgroup.d ./src/client/clientchannelgroup.o ./src/client/clientchannelgrouprelation.d ./src/client/clientchannelgrouprelation.o ./src/client/clientchannelgroups.d ./src/client/clientchannelgroups.o ./src/client/clientchannelgroupvalue.d ./src/client/clientchannelgroupvalue.o ./src/client/clientchannels.d ./src/client/clientchannels.o ./src/client/clientlocation.d ./src/client/clientlocation.o ./src/client/clientobjcontainer.d ./src/client/clientobjcontainer.o ./src/client/clientobjcontaineritem.d ./src/client/clientobjcontaineritem.o
+	-$(RM) ./src/client/abstract_client_scene_dao.d ./src/client/abstract_client_scene_dao.o ./src/client/client.d ./src/client/client.o ./src/client/client_scene.d ./src/client/client_scene.o ./src/client/client_scene_dao.d ./src/client/client_scene_dao.o ./src/client/clientchannel.d ./src/client/clientchannel.o ./src/client/clientchannelgroup.d ./src/client/clientchannelgroup.o ./src/client/clientchannelgrouprelation.d ./src/client/clientchannelgrouprelation.o ./src/client/clientchannelgroups.d ./src/client/clientchannelgroups.o ./src/client/clientchannelgroupvalue.d ./src/client/clientchannelgroupvalue.o ./src/client/clientchannels.d ./src/client/clientchannels.o ./src/client/clientlocation.d ./src/client/clientlocation.o ./src/client/clientobjcontainer.d ./src/client/clientobjcontainer.o ./src/client/clientobjcontaineritem.d ./src/client/clientobjcontaineritem.o
 
 .PHONY: clean-src-2f-client
 

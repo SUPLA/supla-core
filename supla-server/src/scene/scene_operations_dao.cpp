@@ -33,8 +33,8 @@ typedef struct {
   int scene_id;
   int action_id;
   char action_param[SCENE_ACTION_PARAM_MAXSIZE];
-  unsigned long action_param_len = 0;
-  my_bool action_param_is_null = true;
+  unsigned long action_param_len;
+  my_bool action_param_is_null;
   int delay_ms;
 } _supla_scene_operation_row_t;
 
