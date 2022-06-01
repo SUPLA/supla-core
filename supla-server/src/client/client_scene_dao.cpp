@@ -94,6 +94,8 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
 
           supla_client_scene *scene = new supla_client_scene(row.scene_id);
           if (scene) {
+            scene->set_user_icon_id(row.user_icon_id);
+            scene->set_caption(row.caption);
             result.push_back(scene);
             row = {};
           }
