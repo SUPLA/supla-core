@@ -45,6 +45,7 @@ cpplint --filter=-build/include ./supla-server/src/test/actions/*
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/* 
+cpplint --filter=-build/include ./supla-server/src/test/integration/client/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/mqtt/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/scene/* 
 cpplint ./supla-scheduler/src/* 
