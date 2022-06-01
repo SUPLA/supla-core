@@ -1695,7 +1695,7 @@ char supla_client_timer_arm(void *_suplaclient, int channelID, char On,
     request.On = On;
     request.DurationMS = durationMS;
 
-    result = srpc_sc_async_timer_arm(suplaclient->srpc, &request) ==
+    result = srpc_cs_async_timer_arm(suplaclient->srpc, &request) ==
                      SUPLA_RESULT_FALSE
                  ? 0
                  : 1;
