@@ -3,7 +3,7 @@ name: default
 
 services:
 - name: db
-  image: mariadb:10.8.3
+  image: mariadb:10.7.3
   environment:
     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     MYSQL_DATABASE: test
