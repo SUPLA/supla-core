@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/distributedobjects/abstract_dobject_remote_updater.cpp \
 ../src/distributedobjects/dobject.cpp \
 ../src/distributedobjects/dobject_change_indicator.cpp \
 ../src/distributedobjects/dobjects.cpp 
 
 CPP_DEPS += \
+./src/distributedobjects/abstract_dobject_remote_updater.d \
 ./src/distributedobjects/dobject.d \
 ./src/distributedobjects/dobject_change_indicator.d \
 ./src/distributedobjects/dobjects.d 
 
 OBJS += \
+./src/distributedobjects/abstract_dobject_remote_updater.o \
 ./src/distributedobjects/dobject.o \
 ./src/distributedobjects/dobject_change_indicator.o \
 ./src/distributedobjects/dobjects.o 
@@ -31,7 +34,7 @@ src/distributedobjects/%.o: ../src/distributedobjects/%.cpp src/distributedobjec
 clean: clean-src-2f-distributedobjects
 
 clean-src-2f-distributedobjects:
-	-$(RM) ./src/distributedobjects/dobject.d ./src/distributedobjects/dobject.o ./src/distributedobjects/dobject_change_indicator.d ./src/distributedobjects/dobject_change_indicator.o ./src/distributedobjects/dobjects.d ./src/distributedobjects/dobjects.o
+	-$(RM) ./src/distributedobjects/abstract_dobject_remote_updater.d ./src/distributedobjects/abstract_dobject_remote_updater.o ./src/distributedobjects/dobject.d ./src/distributedobjects/dobject.o ./src/distributedobjects/dobject_change_indicator.d ./src/distributedobjects/dobject_change_indicator.o ./src/distributedobjects/dobjects.d ./src/distributedobjects/dobjects.o
 
 .PHONY: clean-src-2f-distributedobjects
 

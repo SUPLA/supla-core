@@ -26,11 +26,14 @@
 class supla_dobject {
  private:
   int id;
+  supla_dobject_change_indicator *change_indicator;
 
  protected:
  public:
   explicit supla_dobject(int id);
   virtual ~supla_dobject();
+  void set_change_indicator(supla_dobject_change_indicator *change_indicator);
+  const supla_dobject_change_indicator *get_change_indicator(void);
   int get_id(void);
 };
 

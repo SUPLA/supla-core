@@ -24,12 +24,12 @@ class supla_dobject_change_indicator {
   bool changed;
 
  protected:
+  void set_changed(bool changed);
+
  public:
   supla_dobject_change_indicator();
   explicit supla_dobject_change_indicator(bool changed);
   virtual ~supla_dobject_change_indicator();
-  virtual void apply_previous(const supla_dobject_change_indicator *previous);
-  virtual supla_dobject_change_indicator *clone(void);
   bool is_changed(void) const;
 };
 

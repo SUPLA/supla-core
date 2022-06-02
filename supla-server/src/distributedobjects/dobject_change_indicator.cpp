@@ -30,9 +30,6 @@ supla_dobject_change_indicator::~supla_dobject_change_indicator() {}
 
 bool supla_dobject_change_indicator::is_changed(void) const { return changed; }
 
-void supla_dobject_change_indicator::apply_previous(
-    const supla_dobject_change_indicator *previous) {}
-
-supla_dobject_change_indicator *supla_dobject_change_indicator::clone(void) {
-  return new supla_dobject_change_indicator(changed);
+void supla_dobject_change_indicator::set_changed(bool changed) {
+  this->changed = changed;
 }
