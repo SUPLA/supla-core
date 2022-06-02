@@ -16,38 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "distributedobjects/dobject.h"
+#ifndef DISTRIBUTED_OBJECTS_MOCK_H_
+#define DISTRIBUTED_OBJECTS_MOCK_H_
 
-#include <cstddef>
+#include "distributedobjects/dobjects.h"
 
-supla_dobject::supla_dobject(int id) {
-  this->id = id;
-  this->change_indicator = NULL;
-}
+namespace testing {
 
-supla_dobject::~supla_dobject() {
-  if (change_indicator) {
-    delete change_indicator;
-    change_indicator = NULL;
-  }
-}
+class DObjectsMock : public supla_dobjects {
+ private:
+ protected:
+ public:
+  explicit DObjectsMock(supla_abstract_dobject_remote_updater *updater);
+  virtual ~DObjectsMock(void);
+};
 
-int supla_dobject::get_id(void) { return id; }
+} /* namespace testing */
 
-void supla_dobject::set_change_indicator(
-    supla_dobject_change_indicator *change_indicator) {
-  if (this->change_indicator == change_indicator) {
-    return;
-  }
-
-  if (this->change_indicator) {
-    delete this->change_indicator;
-  }
-
-  this->change_indicator = change_indicator;
-}
-
-const supla_dobject_change_indicator *supla_dobject::get_change_indicator(
-    void) {
-  return change_indicator;
-}
+#endif /* DISTRIBUTED_OBJECTS_MOCK_H_ */

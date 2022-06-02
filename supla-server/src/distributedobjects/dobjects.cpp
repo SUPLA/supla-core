@@ -21,7 +21,10 @@
 #include "assert.h"
 #include "lck.h"
 
-supla_dobjects::supla_dobjects(void) { lck = lck_init(); }
+supla_dobjects::supla_dobjects(supla_abstract_dobject_remote_updater *updater) {
+  this->lck = lck_init();
+  this->updater = updater;
+}
 
 supla_dobjects::~supla_dobjects() {
   clear();
@@ -41,19 +44,24 @@ void supla_dobjects::clear(void) {
   unlock();
 }
 
-void supla_dobjects::add_or_replace(supla_dobject *object) {
-  if (!object) {
-    return;
-  }
-
+void supla_dobjects::remove(int id) {
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if ((*it)->get_id() == object->get_id()) {
+    if ((*it)->get_id() == id) {
       delete *it;
       objects.erase(it);
       break;
     }
   }
+  unlock();
+}
+
+void supla_dobjects::add(supla_dobject *object) {
+  if (!object) {
+    return;
+  }
+
+  lock();
 
   if (object) {
     objects.push_back(object);
@@ -84,4 +92,22 @@ int supla_dobjects::count(void) {
   unlock();
 
   return result;
+}
+
+bool supla_dobjects::update_remote(void) {
+  if (!updater) {
+    return false;
+  }
+
+  lock();
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    updater->update(*it);
+
+    if (updater->is_transaction_should_end()) {
+      break;
+    }
+  }
+  unlock();
+
+  return updater->end_transaction();
 }

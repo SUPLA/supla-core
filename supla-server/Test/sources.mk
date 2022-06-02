@@ -48,6 +48,7 @@ src/test/doubles/actions \
 src/test/doubles/asynctask \
 src/test/doubles/channeljsonconfig \
 src/test/doubles/device \
+src/test/doubles/distributedobjects \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
 src/test/doubles/mqtt \
