@@ -25,16 +25,4 @@ DObjectRemoteUpdaterMock::DObjectRemoteUpdaterMock(void *srpc,
 
 DObjectRemoteUpdaterMock::~DObjectRemoteUpdaterMock(void) {}
 
-void DObjectRemoteUpdaterMock::on_transaction_begin(supla_dobject *object) {}
-
-void DObjectRemoteUpdaterMock::on_transaction_end(void *srpc,
-                                                  int protocol_version) {}
-
-bool DObjectRemoteUpdaterMock::prepare_the_update(
-    supla_dobject *object,
-    supla_dobject_change_indicator **new_change_indicator,
-    bool *transaction_should_end, int protocol_version) {
-  return true;
-}
-
 }  // namespace testing

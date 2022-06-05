@@ -24,4 +24,6 @@ DObjectsMock::DObjectsMock(supla_abstract_dobject_remote_updater *updater)
 
 DObjectsMock::~DObjectsMock(void) {}
 
+void DObjectsMock::add(supla_dobject *object) { supla_dobjects::add(object); }
+
 }  // namespace testing

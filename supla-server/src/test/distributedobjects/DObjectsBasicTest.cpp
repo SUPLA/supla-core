@@ -18,7 +18,11 @@
 
 #include "DObjectsBasicTest.h"
 
+#include "doubles/distributedobjects/DObjectMock.h"
+
 namespace testing {
+
+using ::testing::_;
 
 DObjectBasicTest::DObjectBasicTest(void) {
   objects = NULL;
@@ -45,6 +49,22 @@ void DObjectBasicTest::TearDown() {
   if (remoteUpdater) {
     delete remoteUpdater;
   }
+}
+
+TEST_F(DObjectBasicTest, objectsWithoutChangeIndicator) {
+  DObjectMock *obj = new DObjectMock(10);
+  objects->add(obj);
+
+  obj = new DObjectMock(20);
+  objects->add(obj);
+
+  EXPECT_EQ(objects->count(), 2);
+
+  EXPECT_CALL(*remoteUpdater, on_transaction_begin(_)).Times(0);
+  EXPECT_CALL(*remoteUpdater, on_transaction_end(_, _)).Times(0);
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(_, _, _, _)).Times(0);
+
+  objects->update_remote();
 }
 
 } /* namespace testing */
