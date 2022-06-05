@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lssl -l$(LIBMYSQL) -lcrypto
+LIBS := -lssl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
 

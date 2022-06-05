@@ -43,6 +43,7 @@ src/test/actions \
 src/test/alexa \
 src/test/asynctask \
 src/test/channeljsonconfig \
+src/test/distributedobjects \
 src/test/doubles \
 src/test/doubles/actions \
 src/test/doubles/asynctask \
@@ -54,7 +55,6 @@ src/test/doubles/integration/mqtt \
 src/test/doubles/mqtt \
 src/test/doubles/scene \
 src/test/google \
-src/test/gtest \
 src/test/http \
 src/test/integration \
 src/test/integration/client \

@@ -18,7 +18,6 @@ RM := rm -rf
 -include src/test/integration/client/subdir.mk
 -include src/test/integration/subdir.mk
 -include src/test/http/subdir.mk
--include src/test/gtest/subdir.mk
 -include src/test/google/subdir.mk
 -include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
@@ -30,6 +29,7 @@ RM := rm -rf
 -include src/test/doubles/asynctask/subdir.mk
 -include src/test/doubles/actions/subdir.mk
 -include src/test/doubles/subdir.mk
+-include src/test/distributedobjects/subdir.mk
 -include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk
