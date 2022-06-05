@@ -16,22 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DISTRIBUTED_OBJECTS_MOCK_H_
-#define DISTRIBUTED_OBJECTS_MOCK_H_
+#ifndef DISTRIBUTEDOBJECTSBASICTEST_H_
+#define DISTRIBUTEDOBJECTSBASICTEST_H_
 
-#include "distributedobjects/dobjects.h"
+#include "doubles/distributedobjects/DObjectRemoteUpdaterMock.h"
+#include "doubles/distributedobjects/DObjectsMock.h"
+#include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class DObjectsMock : public supla_dobjects {
- private:
+class DObjectBasicTest : public Test {
  protected:
+  DObjectRemoteUpdaterMock *remoteUpdater;
+  DObjectsMock *objects;
+
  public:
-  explicit DObjectsMock(supla_abstract_dobject_remote_updater *updater);
-  virtual ~DObjectsMock(void);
-  void add(supla_dobject *object);
+  DObjectBasicTest(void);
+  virtual ~DObjectBasicTest(void);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* DISTRIBUTED_OBJECTS_MOCK_H_ */
+#endif /* DISTRIBUTEDOBJECTSBASICTEST_H_ */

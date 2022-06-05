@@ -16,22 +16,35 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DISTRIBUTED_OBJECTS_MOCK_H_
-#define DISTRIBUTED_OBJECTS_MOCK_H_
-
-#include "distributedobjects/dobjects.h"
+#include "DObjectsBasicTest.h"
 
 namespace testing {
 
-class DObjectsMock : public supla_dobjects {
- private:
- protected:
- public:
-  explicit DObjectsMock(supla_abstract_dobject_remote_updater *updater);
-  virtual ~DObjectsMock(void);
-  void add(supla_dobject *object);
-};
+DObjectBasicTest::DObjectBasicTest(void) {
+  objects = NULL;
+  remoteUpdater = NULL;
+}
+DObjectBasicTest::~DObjectBasicTest(void) {}
+
+void DObjectBasicTest::SetUp() {
+  Test::SetUp();
+
+  remoteUpdater = new DObjectRemoteUpdaterMock(this, 10);
+  ASSERT_TRUE(remoteUpdater != NULL);
+
+  objects = new DObjectsMock(remoteUpdater);
+  ASSERT_TRUE(objects != NULL);
+}
+
+void DObjectBasicTest::TearDown() {
+  Test::TearDown();
+  if (objects) {
+    delete objects;
+  }
+
+  if (remoteUpdater) {
+    delete remoteUpdater;
+  }
+}
 
 } /* namespace testing */
-
-#endif /* DISTRIBUTED_OBJECTS_MOCK_H_ */
