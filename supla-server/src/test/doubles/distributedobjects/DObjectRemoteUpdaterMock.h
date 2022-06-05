@@ -19,24 +19,24 @@
 #ifndef DISTRIBUTED_OBJECT_REMOTE_UPDATER_MOCK_H_
 #define DISTRIBUTED_OBJECT_REMOTE_UPDATER_MOCK_H_
 
-#include <distributedobjects/abstract_dobject_remote_updater.h>
+#include <gmock/gmock.h>
+
+#include "distributedobjects/abstract_dobject_remote_updater.h"
 
 namespace testing {
 
 class DObjectRemoteUpdaterMock : public supla_abstract_dobject_remote_updater {
  private:
  protected:
-  virtual void on_transaction_begin(supla_dobject *object);
-  virtual void on_transaction_end(void *srpc, int protocol_version);
-
-  virtual bool prepare_the_update(
-      supla_dobject *object,
-      supla_dobject_change_indicator **new_change_indicator,
-      bool *transaction_should_end, int protocol_version);
-
  public:
   DObjectRemoteUpdaterMock(void *srpc, int protocol_version);
   virtual ~DObjectRemoteUpdaterMock(void);
+  MOCK_METHOD1(on_transaction_begin, void(supla_dobject *object));
+  MOCK_METHOD2(on_transaction_end, void(void *srpc, int protocol_version));
+  MOCK_METHOD4(prepare_the_update,
+               bool(supla_dobject *object,
+                    supla_dobject_change_indicator **new_change_indicator,
+                    bool *transaction_should_end, int protocol_version));
 };
 
 } /* namespace testing */
