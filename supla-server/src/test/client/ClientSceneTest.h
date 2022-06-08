@@ -16,33 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CLIENT_SCENE_H_
-#define SUPLA_CLIENT_SCENE_H_
+#ifndef CLIENTSCENETEST_H_
+#define CLIENTSCENETEST_H_
 
-#include "distributedobjects/dobject.h"
-#include "proto.h"
+#include "gtest/gtest.h"
 
-class supla_client_scene : public supla_dobject {
- private:
-  char *caption;
-  int user_icon_id;
-  int alt_icon_id;
-  int location_id;
+namespace testing {
 
- protected:
+class ClientSceneTest : public Test {
  public:
-  explicit supla_client_scene(int id);
-  virtual ~supla_client_scene();
-  void set_caption(const char *caption);
-  const char *get_caption(void);
-  void set_user_icon_id(int user_icon_id);
-  int get_user_icon_id(void);
-  void set_alt_icon_id(int alt_icon_id);
-  int get_alt_icon_id(void);
-  void set_location_id(int location_id);
-  int get_location_id(void);
-
-  void convert(TSC_SuplaScene *dest);
+  ClientSceneTest();
+  virtual ~ClientSceneTest();
 };
 
-#endif /* SUPLA_CLIENT_SCENE_H_ */
+} /* namespace testing */
+
+#endif /* CLIENTSCENETEST_H_ */

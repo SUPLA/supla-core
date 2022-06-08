@@ -558,6 +558,49 @@ TEST_F(ProtoTest, pop_out_data) {
 
   sproto_free(sproto);
 }
+
+TEST_F(ProtoTest, set_null_terminated_string) {
+  char src[] = "abcdefghijk";
+  char msk[] = "nmoprstuwz123456789";
+  char dst[] = "                   ";
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  unsigned _supla_int16_t dest_size = 0;
+
+  sproto__set_null_terminated_string(NULL, dst, &dest_size, 10);
+
+  EXPECT_EQ(dst[0], 0);
+  EXPECT_EQ(dest_size, 1U);
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  dest_size = 0;
+
+  sproto__set_null_terminated_string(src, dst, &dest_size, 1);
+
+  EXPECT_EQ(dst[0], 0);
+  EXPECT_EQ(dest_size, 1U);
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  dest_size = 0;
+
+  sproto__set_null_terminated_string(src, dst, &dest_size, 5);
+
+  EXPECT_EQ(dst[0], 'a');
+  EXPECT_EQ(dst[1], 'b');
+  EXPECT_EQ(dst[2], 'c');
+  EXPECT_EQ(dst[3], 'd');
+  EXPECT_EQ(dst[4], 0);
+  EXPECT_EQ(dest_size, 5U);
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  dest_size = 0;
+
+  sproto__set_null_terminated_string(src, dst, &dest_size, sizeof(dst));
+
+  EXPECT_EQ(strncmp(src, dst, sizeof(dst)), 0);
+  EXPECT_EQ(dest_size, strnlen(src, sizeof(src)) + 1);
+}
+
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 }  // namespace

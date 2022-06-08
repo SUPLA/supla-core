@@ -43,6 +43,7 @@ src/test/actions \
 src/test/alexa \
 src/test/asynctask \
 src/test/channeljsonconfig \
+src/test/client \
 src/test/distributedobjects \
 src/test/doubles \
 src/test/doubles/actions \

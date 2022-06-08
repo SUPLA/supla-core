@@ -52,7 +52,7 @@ TEST_F(ClientSceneDaoTest, getScenesForNonExistentClient) {
 
 TEST_F(ClientSceneDaoTest, getAllScenes) {
   runSqlScript("SetUserIconForSceneWithId2.sql");
-
+  runSqlScript("ChangeLocationForSceneWithId2.sql");
   std::list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
 
   EXPECT_EQ(scenes.size(), 6U);
@@ -60,6 +60,8 @@ TEST_F(ClientSceneDaoTest, getAllScenes) {
   supla_client_scene *scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 1);
   EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
+  EXPECT_EQ(scene->get_location_id(), 2);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #1", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
@@ -70,6 +72,8 @@ TEST_F(ClientSceneDaoTest, getAllScenes) {
   scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 2);
   EXPECT_EQ(scene->get_user_icon_id(), 26);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
+  EXPECT_EQ(scene->get_location_id(), 3);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #2", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
@@ -79,6 +83,8 @@ TEST_F(ClientSceneDaoTest, getAllScenes) {
 
   scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 3);
+  EXPECT_EQ(scene->get_location_id(), 2);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(scene->get_user_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #3", SUPLA_SCENE_CAPTION_MAXSIZE),
@@ -89,6 +95,8 @@ TEST_F(ClientSceneDaoTest, getAllScenes) {
 
   scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 4);
+  EXPECT_EQ(scene->get_location_id(), 3);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(scene->get_user_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #4", SUPLA_SCENE_CAPTION_MAXSIZE),
@@ -99,7 +107,9 @@ TEST_F(ClientSceneDaoTest, getAllScenes) {
 
   scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 5);
+  EXPECT_EQ(scene->get_location_id(), 2);
   EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #5", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
@@ -109,7 +119,9 @@ TEST_F(ClientSceneDaoTest, getAllScenes) {
 
   scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 6);
+  EXPECT_EQ(scene->get_location_id(), 2);
   EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #6", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
@@ -126,7 +138,9 @@ TEST_F(ClientSceneDaoTest, disableAllScenesExceptOne) {
 
   supla_client_scene *scene = scenes.front();
   EXPECT_EQ(scene->get_id(), 3);
+  EXPECT_EQ(scene->get_location_id(), 2);
   EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 0);
   EXPECT_EQ(
       strncmp(scene->get_caption(), "Scene #3", SUPLA_SCENE_CAPTION_MAXSIZE),
       0);
