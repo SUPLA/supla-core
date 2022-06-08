@@ -25,7 +25,9 @@
 
 supla_client_scene::supla_client_scene(int id) : supla_dobject(id) {
   this->user_icon_id = 0;
+  this->alt_icon_id = 0;
   this->caption = NULL;
+  this->location_id = 0;
 }
 
 supla_client_scene::~supla_client_scene() {
@@ -51,4 +53,30 @@ const char *supla_client_scene::get_caption(void) { return caption; }
 void supla_client_scene::set_user_icon_id(int user_icon_id) {
   this->user_icon_id = user_icon_id;
 }
+
 int supla_client_scene::get_user_icon_id(void) { return user_icon_id; }
+
+void supla_client_scene::set_location_id(int location_id) {
+  this->location_id = location_id;
+}
+
+int supla_client_scene::get_location_id(void) { return location_id; }
+
+void supla_client_scene::set_alt_icon_id(int alt_icon_id) {
+  this->alt_icon_id = alt_icon_id;
+}
+
+int supla_client_scene::get_alt_icon_id(void) { return alt_icon_id; }
+
+void supla_client_scene::convert(TSC_SuplaScene *dest) {
+  *dest = {};
+
+  dest->Id = get_id();
+  dest->LocationId = get_location_id();
+  dest->AltIcon = get_alt_icon_id();
+  dest->UserIcon = get_user_icon_id();
+
+  sproto__set_null_terminated_string(get_caption(), dest->Caption,
+                                    &dest->CaptionSize,
+                                    SUPLA_SCENE_CAPTION_MAXSIZE);
+}

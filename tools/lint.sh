@@ -27,6 +27,7 @@ cpplint --filter=-build/include ./supla-server/src/test/actions/*
 cpplint --filter=-build/include ./supla-server/src/test/alexa/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/channeljsonconfig/* 
+cpplint --filter=-build/include ./supla-server/src/test/client/* 
 cpplint --filter=-build/include ./supla-server/src/test/google/* 
 cpplint --filter=-build/include ./supla-server/src/test/http/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 

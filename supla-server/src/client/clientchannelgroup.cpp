@@ -17,7 +17,9 @@
  */
 
 #include "clientchannelgroup.h"
+
 #include <string.h>
+
 #include "client.h"
 #include "log.h"
 #include "proto.h"
@@ -104,8 +106,9 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
   group->AltIcon = AltIcon;
   group->Flags = Flags;
 
-  proto_get_caption(group->Caption, &group->CaptionSize,
-                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), group->Caption,
+                                    &group->CaptionSize,
+                                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
 
 void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
@@ -118,8 +121,9 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
   group->UserIcon = UserIcon;
   group->Flags = Flags;
 
-  proto_get_caption(group->Caption, &group->CaptionSize,
-                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), group->Caption,
+                                    &group->CaptionSize,
+                                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
 
 std::list<dcpair> supla_client_channelgroup::get_channel_list(void) {

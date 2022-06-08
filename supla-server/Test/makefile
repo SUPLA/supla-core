@@ -30,6 +30,7 @@ RM := rm -rf
 -include src/test/doubles/actions/subdir.mk
 -include src/test/doubles/subdir.mk
 -include src/test/distributedobjects/subdir.mk
+-include src/test/client/subdir.mk
 -include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
 -include src/test/alexa/subdir.mk

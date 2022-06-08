@@ -34,10 +34,6 @@ class supla_client_objcontainer_item : public supla_objcontainer_item {
  private:
   char *Caption;
 
- protected:
-  void proto_get_caption(char *Caption, unsigned _supla_int_t *CaptionSize,
-                         unsigned int MaxSize);
-
  public:
   explicit supla_client_objcontainer_item(supla_client_objcontainer *Container,
                                           int Id, const char *Caption);

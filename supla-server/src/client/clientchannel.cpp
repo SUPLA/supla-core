@@ -247,8 +247,9 @@ void supla_client_channel::proto_get(TSC_SuplaChannel *channel,
   channel->LocationID = this->LocationId;
 
   proto_get_value(&channel->value, &channel->online, client);
-  proto_get_caption(channel->Caption, &channel->CaptionSize,
-                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), channel->Caption,
+                                    &channel->CaptionSize,
+                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
@@ -263,8 +264,9 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_B *channel,
   channel->Flags = this->Flags;
 
   proto_get_value(&channel->value, &channel->online, client);
-  proto_get_caption(channel->Caption, &channel->CaptionSize,
-                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), channel->Caption,
+                                    &channel->CaptionSize,
+                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
@@ -284,8 +286,9 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_C *channel,
   channel->Flags = this->Flags;
 
   proto_get_value(&channel->value, &channel->online, client);
-  proto_get_caption(channel->Caption, &channel->CaptionSize,
-                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), channel->Caption,
+                                    &channel->CaptionSize,
+                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
@@ -305,8 +308,9 @@ void supla_client_channel::proto_get(TSC_SuplaChannel_D *channel,
   channel->Flags = this->Flags;
 
   proto_get_value(&channel->value, &channel->online, client);
-  proto_get_caption(channel->Caption, &channel->CaptionSize,
-                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), channel->Caption,
+                                    &channel->CaptionSize,
+                                    SUPLA_CHANNEL_CAPTION_MAXSIZE);
 }
 
 void supla_client_channel::proto_get(TSC_SuplaChannelValue *channel_value,

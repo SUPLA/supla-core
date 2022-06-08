@@ -17,9 +17,12 @@
  */
 
 #include "proto.h"
+
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "log.h"
 
 #if defined(ESP8266) || defined(ESP32)
@@ -32,6 +35,7 @@
 
 #if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32)
 #include <user_interface.h>
+
 #include "espmissingincludes.h"
 #endif
 
@@ -407,4 +411,38 @@ void PROTO_ICACHE_FLASH sproto_buffer_dump(void *spd_ptr, unsigned char in) {
 
   for (a = 0; a < size; a++)
     supla_log(LOG_DEBUG, "%c [%i]", buffer[a], buffer[a]);
+}
+
+void PROTO_ICACHE_FLASH sproto_set_null_terminated_string(
+    const char *src, char *dest, unsigned _supla_int_t *dest_size,
+    unsigned int max_size) {
+  unsigned _supla_int16_t _dest_size = 0;
+  sproto__set_null_terminated_string(src, dest, &_dest_size, max_size);
+  *dest_size = _dest_size;
+}
+
+void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
+    const char *src, char *dest, unsigned _supla_int16_t *dest_size,
+    unsigned int max_size) {
+  if (max_size == 0) {
+    return;
+  }
+
+  if (!dest || !dest_size) {
+    if (dest) {
+      dest[0] = 0;
+    }
+
+    if (dest_size) {
+      *dest_size = 0;
+    }
+    return;
+  }
+  if (src) {
+    snprintf(dest, max_size, "%s", src);
+    *dest_size = strnlen(dest, max_size - 1) + 1;
+  } else {
+    *dest_size = 1;
+    dest[0] = 0;
+  }
 }

@@ -2086,6 +2086,14 @@ void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp);
 void PROTO_ICACHE_FLASH sproto_log_summary(void *spd_ptr);
 void PROTO_ICACHE_FLASH sproto_buffer_dump(void *spd_ptr, unsigned char in);
 
+void PROTO_ICACHE_FLASH sproto_set_null_terminated_string(
+    const char *src, char *dest, unsigned _supla_int_t *dest_size,
+    unsigned int max_size);
+
+void PROTO_ICACHE_FLASH sproto__set_null_terminated_string(
+    const char *src, char *dest, unsigned _supla_int16_t *dest_size,
+    unsigned int max_size);
+
 #ifdef __cplusplus
 }
 #endif

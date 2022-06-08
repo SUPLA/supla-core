@@ -29,6 +29,8 @@ typedef struct {
   int scene_id;
   char caption[SUPLA_SCENE_CAPTION_MAXSIZE];
   int user_icon_id;
+  int alt_icon_id;
+  int location_id;
   unsigned long caption_len;
   my_bool caption_is_null;
 } _supla_scene_row_t;
@@ -50,11 +52,11 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
 
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT s.id, s.caption, s.user_icon_id FROM `supla_scene` s LEFT JOIN "
-      "supla_rel_aidloc al ON al.location_id = s.location_id LEFT JOIN "
-      "supla_accessid a ON a.id = al.access_id LEFT JOIN supla_client c ON "
-      "c.access_id = al.access_id WHERE s.user_id = ? AND s.enabled = 1 AND "
-      "c.id = ? GROUP BY s.id";
+      "SELECT s.id, s.caption, s.user_icon_id, s.location_id, 0 FROM "
+      "`supla_scene` s LEFT JOIN supla_rel_aidloc al ON al.location_id = "
+      "s.location_id LEFT JOIN supla_accessid a ON a.id = al.access_id LEFT "
+      "JOIN supla_client c ON c.access_id = al.access_id WHERE s.user_id = ? "
+      "AND s.enabled = 1 AND c.id = ? GROUP BY s.id";
 
   MYSQL_BIND pbind[2] = {};
 
@@ -65,7 +67,7 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
   pbind[1].buffer = (char *)&client_id;
 
   if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
-    MYSQL_BIND rbind[3] = {};
+    MYSQL_BIND rbind[5] = {};
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
     rbind[0].buffer = (char *)&row.scene_id;
@@ -81,6 +83,14 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
     rbind[2].buffer = (char *)&row.user_icon_id;
     rbind[2].buffer_length = sizeof(int);
 
+    rbind[3].buffer_type = MYSQL_TYPE_LONG;
+    rbind[3].buffer = (char *)&row.location_id;
+    rbind[3].buffer_length = sizeof(int);
+
+    rbind[4].buffer_type = MYSQL_TYPE_LONG;
+    rbind[4].buffer = (char *)&row.alt_icon_id;
+    rbind[4].buffer_length = sizeof(int);
+
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
                 mysql_stmt_error(stmt));
@@ -95,6 +105,8 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
           supla_client_scene *scene = new supla_client_scene(row.scene_id);
           if (scene) {
             scene->set_user_icon_id(row.user_icon_id);
+            scene->set_alt_icon_id(row.alt_icon_id);
+            scene->set_location_id(row.location_id);
             scene->set_caption(row.caption);
             result.push_back(scene);
             row = {};
