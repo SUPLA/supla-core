@@ -102,6 +102,10 @@ typedef struct {
   void *lck;
 } Tsrpc;
 
+void SRPC_ICACHE_FLASH srpc_get_scene_pack(Tsrpc *srpc, TsrpcReceivedData *rd);
+void SRPC_ICACHE_FLASH srpc_get_scene_status_pack(Tsrpc *srpc,
+                                                  TsrpcReceivedData *rd);
+
 void SRPC_ICACHE_FLASH srpc_params_init(TsrpcParams *params) {
   memset(params, 0, sizeof(TsrpcParams));
 }

@@ -19,12 +19,12 @@
 #ifndef SUPLA_ABSTRACT_DISTRIBUTED_OBJECT_REMOTE_UPDATER_H_
 #define SUPLA_ABSTRACT_DISTRIBUTED_OBJECT_REMOTE_UPDATER_H_
 
+#include "abstract_srpc_adapter.h"
 #include "distributedobjects/dobject.h"
 
 class supla_abstract_dobject_remote_updater {
  private:
-  void *srpc;
-  int protocol_version;
+  supla_abstract_srpc_adapter *srpc_adapter;
 
   bool transaction_started;
   bool transaction_should_end;
@@ -32,19 +32,23 @@ class supla_abstract_dobject_remote_updater {
   void begin_transaction(supla_dobject *object);
 
  protected:
-  void *get_srpc(void);
-  virtual void on_transaction_begin(supla_dobject *object) = 0;
-  virtual void on_transaction_end(void *srpc, int protocol_version) = 0;
+  supla_abstract_srpc_adapter *get_srpc_adapter(void);
+  virtual bool on_transaction_begin(supla_dobject *object,
+                                    int protocol_version) = 0;
+  virtual void on_transaction_end(
+      supla_abstract_srpc_adapter *srpc_adapter) = 0;
 
   virtual bool prepare_the_update(
       supla_dobject *object,
       supla_dobject_change_indicator **new_change_indicator,
-      bool *transaction_should_end, int protocol_version) = 0;
+      bool *transaction_should_end) = 0;
 
  public:
-  supla_abstract_dobject_remote_updater(void *srpc, int protocol_version);
+  supla_abstract_dobject_remote_updater(
+      supla_abstract_srpc_adapter *srpc_adapter);
   virtual ~supla_abstract_dobject_remote_updater();
   void update(supla_dobject *object);
+  bool is_transaction_started(void);
   bool is_transaction_should_end(void);
   bool end_transaction(void);
 };

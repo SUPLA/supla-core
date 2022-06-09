@@ -19,9 +19,9 @@
 #include "doubles/distributedobjects/DObjectRemoteUpdaterMock.h"
 
 namespace testing {
-DObjectRemoteUpdaterMock::DObjectRemoteUpdaterMock(void *srpc,
-                                                   int protocol_version)
-    : supla_abstract_dobject_remote_updater(srpc, protocol_version) {}
+DObjectRemoteUpdaterMock::DObjectRemoteUpdaterMock(
+    supla_abstract_srpc_adapter *srpc_adapter)
+    : supla_abstract_dobject_remote_updater(srpc_adapter) {}
 
 DObjectRemoteUpdaterMock::~DObjectRemoteUpdaterMock(void) {}
 

@@ -16,29 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DISTRIBUTEDOBJECTSBASICTEST_H_
-#define DISTRIBUTEDOBJECTSBASICTEST_H_
+#include "abstract_srpc_adapter.h"
 
-#include "doubles/SrpcAdapterMock.h"
-#include "doubles/distributedobjects/DObjectRemoteUpdaterMock.h"
-#include "doubles/distributedobjects/DObjectsMock.h"
-#include "gtest/gtest.h"  // NOLINT
+supla_abstract_srpc_adapter::supla_abstract_srpc_adapter(void *srpc) {
+  this->srpc = srpc;
+}
 
-namespace testing {
+supla_abstract_srpc_adapter::~supla_abstract_srpc_adapter() {}
 
-class DObjectBasicTest : public Test {
- protected:
-  SrpcAdapterMock *srpcAdapter;
-  DObjectRemoteUpdaterMock *remoteUpdater;
-  DObjectsMock *objects;
-
- public:
-  DObjectBasicTest(void);
-  virtual ~DObjectBasicTest(void);
-  virtual void SetUp();
-  virtual void TearDown();
-};
-
-} /* namespace testing */
-
-#endif /* DISTRIBUTEDOBJECTSBASICTEST_H_ */
+void *supla_abstract_srpc_adapter::get_srpc(void) { return srpc; }

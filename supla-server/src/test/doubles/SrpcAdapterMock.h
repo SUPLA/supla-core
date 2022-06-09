@@ -16,31 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DISTRIBUTED_OBJECT_REMOTE_UPDATER_MOCK_H_
-#define DISTRIBUTED_OBJECT_REMOTE_UPDATER_MOCK_H_
+#ifndef SRPC_ADAPTER_MOCK_H_
+#define SRPC_ADAPTER_MOCK_H_
 
 #include <gmock/gmock.h>
 
-#include "distributedobjects/abstract_dobject_remote_updater.h"
+#include "abstract_srpc_adapter.h"
 
 namespace testing {
 
-class DObjectRemoteUpdaterMock : public supla_abstract_dobject_remote_updater {
+class SrpcAdapterMock : public supla_abstract_srpc_adapter {
  private:
  protected:
  public:
-  DObjectRemoteUpdaterMock(supla_abstract_srpc_adapter *srpc_adapter);
-  virtual ~DObjectRemoteUpdaterMock(void);
-  MOCK_METHOD2(on_transaction_begin,
-               bool(supla_dobject *object, int protocol_version));
-  MOCK_METHOD1(on_transaction_end,
-               void(supla_abstract_srpc_adapter *srpc_adapter));
-  MOCK_METHOD3(prepare_the_update,
-               bool(supla_dobject *object,
-                    supla_dobject_change_indicator **new_change_indicator,
-                    bool *transaction_should_end));
+  explicit SrpcAdapterMock(void *srpc);
+  virtual ~SrpcAdapterMock(void);
+  MOCK_METHOD0(get_proto_version, char(void));
+  MOCK_METHOD1(sc_async_scene_pack_update,
+               _supla_int_t(TSC_SuplaScenePack *scene_pack));
+  MOCK_METHOD1(sc_async_scene_status_pack_update,
+               _supla_int_t(TSC_SuplaSceneStatusPack *scene_status_pack));
 };
 
 } /* namespace testing */
 
-#endif /* DISTRIBUTED_OBJECT_REMOTE_UPDATER_MOCK_H_ */
+#endif /* SRPC_ADAPTER_MOCK_H_ */
