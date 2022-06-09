@@ -29,7 +29,7 @@ class DObjectRemoteUpdaterMock : public supla_abstract_dobject_remote_updater {
  private:
  protected:
  public:
-  DObjectRemoteUpdaterMock(supla_abstract_srpc_adapter *srpc_adapter);
+  explicit DObjectRemoteUpdaterMock(supla_abstract_srpc_adapter *srpc_adapter);
   virtual ~DObjectRemoteUpdaterMock(void);
   MOCK_METHOD2(on_transaction_begin,
                bool(supla_dobject *object, int protocol_version));
