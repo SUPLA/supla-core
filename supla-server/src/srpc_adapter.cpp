@@ -16,29 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef DISTRIBUTEDOBJECTSBASICTEST_H_
-#define DISTRIBUTEDOBJECTSBASICTEST_H_
+#include "srpc_adapter.h"
 
-#include "doubles/SrpcAdapterMock.h"
-#include "doubles/distributedobjects/DObjectRemoteUpdaterMock.h"
-#include "doubles/distributedobjects/DObjectsMock.h"
-#include "gtest/gtest.h"  // NOLINT
+#include "srpc.h"
 
-namespace testing {
+supla_srpc_adapter::supla_srpc_adapter(void *srpc)
+    : supla_abstract_srpc_adapter(srpc) {}
 
-class DObjectBasicTest : public Test {
- protected:
-  SrpcAdapterMock *srpcAdapter;
-  DObjectRemoteUpdaterMock *remoteUpdater;
-  DObjectsMock *objects;
+supla_srpc_adapter::~supla_srpc_adapter() {}
 
- public:
-  DObjectBasicTest(void);
-  virtual ~DObjectBasicTest(void);
-  virtual void SetUp();
-  virtual void TearDown();
-};
+char supla_srpc_adapter::get_proto_version(void) {
+  return srpc_get_proto_version(get_srpc());
+}
 
-} /* namespace testing */
+_supla_int_t supla_srpc_adapter::sc_async_scene_pack_update(
+    TSC_SuplaScenePack *scene_pack) {
+  return srpc_sc_async_scene_pack_update(get_srpc(), scene_pack);
+}
 
-#endif /* DISTRIBUTEDOBJECTSBASICTEST_H_ */
+_supla_int_t supla_srpc_adapter::sc_async_scene_status_pack_update(
+    TSC_SuplaSceneStatusPack *scene_status_pack) {
+  return srpc_sc_async_scene_status_pack_update(get_srpc(), scene_status_pack);
+}

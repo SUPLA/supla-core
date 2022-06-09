@@ -20,6 +20,7 @@
 
 #include "distributedobjects/dobject_change_indicator.h"
 #include "doubles/distributedobjects/DObjectMock.h"
+#include "srpc_adapter.h"
 
 namespace testing {
 
@@ -28,19 +29,24 @@ using ::testing::_;
 DObjectBasicTest::DObjectBasicTest(void) {
   objects = NULL;
   remoteUpdater = NULL;
+  srpcAdapter = NULL;
 }
 DObjectBasicTest::~DObjectBasicTest(void) {}
 
 void DObjectBasicTest::SetUp() {
   Test::SetUp();
 
-  remoteUpdater = new DObjectRemoteUpdaterMock(this, 18);
+  srpcAdapter = new SrpcAdapterMock(NULL);
+
+  remoteUpdater = new DObjectRemoteUpdaterMock(srpcAdapter);
   ASSERT_TRUE(remoteUpdater != NULL);
 
   objects = new DObjectsMock(remoteUpdater);
   ASSERT_TRUE(objects != NULL);
 
+  ON_CALL(*remoteUpdater, on_transaction_begin).WillByDefault(Return(true));
   ON_CALL(*remoteUpdater, prepare_the_update).WillByDefault(Return(true));
+  ON_CALL(*srpcAdapter, get_proto_version).WillByDefault(Return(18));
 }
 
 void DObjectBasicTest::TearDown() {
@@ -51,6 +57,10 @@ void DObjectBasicTest::TearDown() {
 
   if (remoteUpdater) {
     delete remoteUpdater;
+  }
+
+  if (srpcAdapter) {
+    delete srpcAdapter;
   }
 }
 
@@ -99,10 +109,10 @@ TEST_F(DObjectBasicTest, objectsWithChangeIndicator_Changed) {
 
   EXPECT_EQ(objects->count(), 2);
 
-  EXPECT_CALL(*remoteUpdater, on_transaction_begin(obj1)).Times(1);
-  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj1, _, _, 18)).Times(1);
-  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj2, _, _, 18)).Times(1);
-  EXPECT_CALL(*remoteUpdater, on_transaction_end(this, 18)).Times(1);
+  EXPECT_CALL(*remoteUpdater, on_transaction_begin(obj1, 18)).Times(1);
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj1, _, _)).Times(1);
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj2, _, _)).Times(1);
+  EXPECT_CALL(*remoteUpdater, on_transaction_end(srpcAdapter)).Times(1);
 
   EXPECT_TRUE(objects->update_remote());
 }
@@ -118,14 +128,14 @@ TEST_F(DObjectBasicTest, failedToPrepareData) {
 
   EXPECT_EQ(objects->count(), 2);
 
-  EXPECT_CALL(*remoteUpdater, on_transaction_begin(obj1)).Times(1);
-  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj1, _, _, 18))
+  EXPECT_CALL(*remoteUpdater, on_transaction_begin(obj1, 18)).Times(1);
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj1, _, _))
       .Times(1)
       .WillOnce(Return(false));
-  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj2, _, _, 18))
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj2, _, _))
       .Times(1)
       .WillOnce(Return(false));
-  EXPECT_CALL(*remoteUpdater, on_transaction_end(this, 18)).Times(1);
+  EXPECT_CALL(*remoteUpdater, on_transaction_end(srpcAdapter)).Times(1);
 
   EXPECT_FALSE(objects->update_remote());
 }
@@ -141,14 +151,34 @@ TEST_F(DObjectBasicTest, stopProcessing) {
 
   EXPECT_EQ(objects->count(), 2);
 
-  EXPECT_CALL(*remoteUpdater, on_transaction_begin(obj1)).Times(1);
-  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj1, _, _, 18))
+  EXPECT_CALL(*remoteUpdater, on_transaction_begin(obj1, 18)).Times(1);
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj1, _, _))
       .Times(1)
       .WillOnce(DoAll(SetArgPointee<2>(true), Return(true)));
-  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj2, _, _, 18)).Times(0);
-  EXPECT_CALL(*remoteUpdater, on_transaction_end(this, 18)).Times(1);
+  EXPECT_CALL(*remoteUpdater, prepare_the_update(obj2, _, _)).Times(0);
+  EXPECT_CALL(*remoteUpdater, on_transaction_end(srpcAdapter)).Times(1);
 
   EXPECT_TRUE(objects->update_remote());
+}
+
+TEST_F(DObjectBasicTest, stopProcessingRightAtTheBegining) {
+  DObjectMock *obj1 = new DObjectMock(10);
+  obj1->set_change_indicator(new supla_dobject_change_indicator(true));
+  objects->add(obj1);
+
+  DObjectMock *obj2 = new DObjectMock(20);
+  obj2->set_change_indicator(new supla_dobject_change_indicator(true));
+  objects->add(obj2);
+
+  EXPECT_EQ(objects->count(), 2);
+
+  EXPECT_CALL(*remoteUpdater, on_transaction_begin)
+      .Times(1)
+      .WillOnce(Return(false));
+  EXPECT_CALL(*remoteUpdater, prepare_the_update).Times(0);
+  EXPECT_CALL(*remoteUpdater, on_transaction_end).Times(0);
+
+  EXPECT_FALSE(objects->update_remote());
 }
 
 TEST_F(DObjectBasicTest, stillChanged) {
