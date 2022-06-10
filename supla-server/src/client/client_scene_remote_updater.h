@@ -24,6 +24,9 @@
 class supla_client_scene_remote_updater
     : public supla_abstract_dobject_remote_updater {
  private:
+  TSC_SuplaScenePack *scene_pack;
+  TSC_SuplaSceneStatePack *state_pack;
+
  protected:
   virtual bool on_transaction_begin(supla_dobject *object,
                                     int protocol_version);

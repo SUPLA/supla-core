@@ -33,8 +33,8 @@ class supla_client_scene_change_indicator
   supla_client_scene_change_indicator(bool scene_changed, bool state_changed);
   virtual ~supla_client_scene_change_indicator();
 
-  bool is_scene_changed(void);
-  bool is_state_changed(void);
+  bool is_scene_changed(void) const;
+  bool is_state_changed(void) const;
 };
 
 #endif /* SUPLA_CLIENT_SCENE_CHANGE_INDICATOR_H_ */

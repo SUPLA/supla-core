@@ -43,10 +43,10 @@ supla_client_scene_change_indicator::supla_client_scene_change_indicator(
 
 supla_client_scene_change_indicator::~supla_client_scene_change_indicator() {}
 
-bool supla_client_scene_change_indicator::is_scene_changed(void) {
+bool supla_client_scene_change_indicator::is_scene_changed(void) const {
   return scene_changed;
 }
 
-bool supla_client_scene_change_indicator::is_state_changed(void) {
+bool supla_client_scene_change_indicator::is_state_changed(void) const {
   return state_changed;
 }
