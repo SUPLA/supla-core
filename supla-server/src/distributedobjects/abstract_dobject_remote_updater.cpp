@@ -40,12 +40,10 @@ void supla_abstract_dobject_remote_updater::begin_transaction(
     supla_dobject *object) {
   if (!transaction_started) {
     if (on_transaction_begin(object, srpc_adapter->get_proto_version())) {
-      supla_log(LOG_DEBUG, "AAAA");
       transaction_started = true;
       transaction_should_end = false;
       any_updates = false;
     } else {
-      supla_log(LOG_DEBUG, "BBB");
       transaction_should_end = true;
     }
   }

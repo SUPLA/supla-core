@@ -19,12 +19,33 @@
 #ifndef SRPC_ADAPTER_H_
 #define SRPC_ADAPTER_H_
 
+#include <functional>
+
 #include "abstract_srpc_adapter.h"
 
 class supla_srpc_adapter : supla_abstract_srpc_adapter {
  public:
   explicit supla_srpc_adapter(void *srpc);
   virtual ~supla_srpc_adapter();
+
+  template <typename TSuplaDataPack, typename TSuplaDataPackItem>
+  static void datapack_add(TSuplaDataPack *pack, int max_count,
+                           std::function<void(TSuplaDataPackItem *)> fill) {
+    if (pack->count < max_count) {
+      fill(&pack->items[pack->count]);
+      pack->items[pack->count].EOL = 0;
+      pack->count++;
+    } else {
+      pack->total_left++;
+    }
+  }
+
+  template <typename TSuplaDataPack>
+  static void datapack_set_eol(TSuplaDataPack *pack) {
+    if (pack && pack->count > 0) {
+      if (pack->total_left == 0) pack->items[pack->count - 1].EOL = 1;
+    }
+  }
 
   virtual char get_proto_version(void);
 
