@@ -147,9 +147,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT 100  // ver. >= 9
 #endif /*SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT*/
 
-#define SUPLA_SCENE_CAPTION_MAXSIZE 401      // ver. >= 18
-#define SUPLA_SCENE_PACK_MAXCOUNT 20         // ver. >= 18
-#define SUPLA_SCENE_STATUS_PACK_MAXCOUNT 20  // ver. >= 18
+#define SUPLA_SCENE_CAPTION_MAXSIZE 401     // ver. >= 18
+#define SUPLA_SCENE_PACK_MAXCOUNT 20        // ver. >= 18
+#define SUPLA_SCENE_STATE_PACK_MAXCOUNT 20  // ver. >= 18
 
 #define SUPLA_DCS_CALL_GETVERSION 10
 #define SUPLA_SDC_CALL_GETVERSION_RESULT 20
@@ -240,7 +240,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_DS_CALL_ACTIONTRIGGER 700                       // ver. >= 16
 #define SUPLA_CS_CALL_TIMER_ARM 800                           // ver. >= 17
 #define SUPLA_SC_CALL_SCENE_PACK_UPDATE 900                   // ver. >= 18
-#define SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE 910            // ver. >= 18
+#define SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE 910             // ver. >= 18
 #define SUPLA_CS_CALL_EXECUTE_ACTION 1000                     // ver. >= 18
 #define SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION 1010            // ver. >= 18
 #define SUPLA_SC_CALL_ACTION_EXECUTION_RESULT 1020            // ver. >= 18
@@ -1077,22 +1077,22 @@ typedef struct {
 
   _supla_int_t SceneId;
   unsigned _supla_int_t MillisecondsFromStart;
-  unsigned _supla_int_t MillsecondsLeft;
+  unsigned _supla_int_t MillisecondsLeft;
 
   _supla_int_t InitiatorId;
   unsigned _supla_int16_t
       InitiatorNameSize;  // including the terminating null byte ('\0')
   char InitiatorName[SUPLA_INITIATOR_NAME_MAXSIZE];  // Last variable in struct!
-} TSC_SuplaSceneStatus;                              // ver. >= 18
+} TSC_SuplaSceneState;                               // ver. >= 18
 
 typedef struct {
   // server -> client
 
   _supla_int_t count;
   _supla_int_t total_left;
-  TSC_SuplaSceneStatus
-      items[SUPLA_SCENE_STATUS_PACK_MAXCOUNT];  // Last variable in struct!
-} TSC_SuplaSceneStatusPack;                     // ver. >= 18
+  TSC_SuplaSceneState
+      items[SUPLA_SCENE_STATE_PACK_MAXCOUNT];  // Last variable in struct!
+} TSC_SuplaSceneStatePack;                     // ver. >= 18
 
 #define ACTION_SUBJECT_TYPE_UNKNOWN 0
 #define ACTION_SUBJECT_TYPE_CHANNEL 1

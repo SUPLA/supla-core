@@ -103,8 +103,8 @@ typedef struct {
 } Tsrpc;
 
 void SRPC_ICACHE_FLASH srpc_get_scene_pack(Tsrpc *srpc, TsrpcReceivedData *rd);
-void SRPC_ICACHE_FLASH srpc_get_scene_status_pack(Tsrpc *srpc,
-                                                  TsrpcReceivedData *rd);
+void SRPC_ICACHE_FLASH srpc_get_scene_state_pack(Tsrpc *srpc,
+                                                 TsrpcReceivedData *rd);
 
 void SRPC_ICACHE_FLASH srpc_params_init(TsrpcParams *params) {
   memset(params, 0, sizeof(TsrpcParams));
@@ -1413,8 +1413,8 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
         srpc_get_scene_pack(srpc, rd);
         break;
 
-      case SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE:
-        srpc_get_scene_status_pack(srpc, rd);
+      case SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE:
+        srpc_get_scene_state_pack(srpc, rd);
         break;
 
       case SUPLA_CS_CALL_EXECUTE_ACTION:
@@ -1588,7 +1588,7 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_CS_CALL_TIMER_ARM:
       return 17;
     case SUPLA_SC_CALL_SCENE_PACK_UPDATE:
-    case SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE:
+    case SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE:
     case SUPLA_CS_CALL_EXECUTE_ACTION:
     case SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION:
     case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
@@ -2663,52 +2663,52 @@ void SRPC_ICACHE_FLASH srpc_get_scene_pack(Tsrpc *srpc, TsrpcReceivedData *rd) {
 }
 
 unsigned _supla_int_t SRPC_ICACHE_FLASH
-srpc_scenestatuspack_get_initiatorname_size(void *pack, _supla_int_t idx) {
-  return ((TSC_SuplaSceneStatusPack *)pack)->items[idx].InitiatorNameSize;
+srpc_scenestatepack_get_initiatorname_size(void *pack, _supla_int_t idx) {
+  return ((TSC_SuplaSceneStatePack *)pack)->items[idx].InitiatorNameSize;
 }
 
-void *SRPC_ICACHE_FLASH srpc_scenestatuspack_get_item_ptr(void *pack,
-                                                          _supla_int_t idx) {
-  return &((TSC_SuplaSceneStatusPack *)pack)->items[idx];  // NOLINT
+void *SRPC_ICACHE_FLASH srpc_scenestatepack_get_item_ptr(void *pack,
+                                                         _supla_int_t idx) {
+  return &((TSC_SuplaSceneStatePack *)pack)->items[idx];  // NOLINT
 }
 
-void SRPC_ICACHE_FLASH srpc_scenestatuspack_set_pack_count(
+void SRPC_ICACHE_FLASH srpc_scenestatepack_set_pack_count(
     void *pack, _supla_int_t count, unsigned char increment) {
   if (increment == 0) {
-    ((TSC_SuplaSceneStatusPack *)pack)->count = count;
+    ((TSC_SuplaSceneStatePack *)pack)->count = count;
   } else {
-    ((TSC_SuplaSceneStatusPack *)pack)->count += count;
+    ((TSC_SuplaSceneStatePack *)pack)->count += count;
   }
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_scene_status_pack_update(
-    void *_srpc, TSC_SuplaSceneStatusPack *scene_status_pack) {
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_scene_state_pack_update(
+    void *_srpc, TSC_SuplaSceneStatePack *scene_state_pack) {
   return srpc_set_pack(
-      _srpc, scene_status_pack, scene_status_pack->count,
-      &srpc_scenestatuspack_get_initiatorname_size,
-      &srpc_scenestatuspack_get_item_ptr, &srpc_scenestatuspack_set_pack_count,
-      sizeof(TSC_SuplaSceneStatusPack), SUPLA_SCENE_STATUS_PACK_MAXCOUNT,
-      SUPLA_INITIATOR_NAME_MAXSIZE, sizeof(TSC_SuplaSceneStatus),
-      SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE);
+      _srpc, scene_state_pack, scene_state_pack->count,
+      &srpc_scenestatepack_get_initiatorname_size,
+      &srpc_scenestatepack_get_item_ptr, &srpc_scenestatepack_set_pack_count,
+      sizeof(TSC_SuplaSceneStatePack), SUPLA_SCENE_STATE_PACK_MAXCOUNT,
+      SUPLA_INITIATOR_NAME_MAXSIZE, sizeof(TSC_SuplaSceneState),
+      SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE);
 }
 
-_supla_int_t SRPC_ICACHE_FLASH srpc_scenestatuspack_get_pack_count(void *pack) {
-  return ((TSC_SuplaSceneStatusPack *)pack)->count;
+_supla_int_t SRPC_ICACHE_FLASH srpc_scenestatepack_get_pack_count(void *pack) {
+  return ((TSC_SuplaSceneStatePack *)pack)->count;
 }
 
 unsigned _supla_int_t SRPC_ICACHE_FLASH
-srpc_scenestatuspack_get_item_initiatorname_size(void *item) {
-  return ((TSC_SuplaSceneStatus *)item)->InitiatorNameSize;
+srpc_scenestatepack_get_item_initiatorname_size(void *item) {
+  return ((TSC_SuplaSceneState *)item)->InitiatorNameSize;
 }
 
-void SRPC_ICACHE_FLASH srpc_get_scene_status_pack(Tsrpc *srpc,
-                                                  TsrpcReceivedData *rd) {
+void SRPC_ICACHE_FLASH srpc_get_scene_state_pack(Tsrpc *srpc,
+                                                 TsrpcReceivedData *rd) {
   srpc_getpack(
-      srpc, rd, sizeof(TSC_SuplaSceneStatusPack), sizeof(TSC_SuplaSceneStatus),
-      SUPLA_SCENE_STATUS_PACK_MAXCOUNT, SUPLA_INITIATOR_NAME_MAXSIZE,
-      &srpc_scenestatuspack_get_pack_count,
-      &srpc_scenestatuspack_set_pack_count, &srpc_scenestatuspack_get_item_ptr,
-      &srpc_scenestatuspack_get_item_initiatorname_size);
+      srpc, rd, sizeof(TSC_SuplaSceneStatePack), sizeof(TSC_SuplaSceneState),
+      SUPLA_SCENE_STATE_PACK_MAXCOUNT, SUPLA_INITIATOR_NAME_MAXSIZE,
+      &srpc_scenestatepack_get_pack_count, &srpc_scenestatepack_set_pack_count,
+      &srpc_scenestatepack_get_item_ptr,
+      &srpc_scenestatepack_get_item_initiatorname_size);
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
