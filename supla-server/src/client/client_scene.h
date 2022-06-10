@@ -29,7 +29,11 @@ class supla_client_scene : public supla_dobject {
   int alt_icon_id;
   int location_id;
 
- protected:
+  int initiator_id;
+  char *initiator_name;
+  unsigned _supla_int_t milliseconds_from_start;
+  unsigned _supla_int_t milliseconds_left;
+
  public:
   explicit supla_client_scene(int id);
   virtual ~supla_client_scene();
@@ -41,8 +45,18 @@ class supla_client_scene : public supla_dobject {
   int get_alt_icon_id(void);
   void set_location_id(int location_id);
   int get_location_id(void);
+  void set_initiator_id(int initiator_id);
+  int get_initiator_id(void);
+  void set_initiator_name(const char *initiator_name);
+  const char *get_initiator_name(void);
+  void set_milliseconds_from_start(
+      unsigned _supla_int_t milliseconds_from_start);
+  unsigned _supla_int_t get_milliseconds_from_start(void);
+  void set_milliseconds_left(unsigned _supla_int_t milliseconds_left);
+  unsigned _supla_int_t get_milliseconds_left(void);
 
   void convert(TSC_SuplaScene *dest);
+  void convert(TSC_SuplaSceneState *dest);
 };
 
 #endif /* SUPLA_CLIENT_SCENE_H_ */

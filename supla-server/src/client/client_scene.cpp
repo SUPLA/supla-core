@@ -28,12 +28,22 @@ supla_client_scene::supla_client_scene(int id) : supla_dobject(id) {
   this->alt_icon_id = 0;
   this->caption = NULL;
   this->location_id = 0;
+
+  this->initiator_id = 0;
+  this->initiator_name = 0;
+  this->milliseconds_from_start = 0;
+  this->milliseconds_left = 0;
 }
 
 supla_client_scene::~supla_client_scene() {
   if (caption) {
     free(caption);
     caption = NULL;
+  }
+
+  if (initiator_name) {
+    free(initiator_name);
+    initiator_name = NULL;
   }
 }
 
@@ -68,6 +78,46 @@ void supla_client_scene::set_alt_icon_id(int alt_icon_id) {
 
 int supla_client_scene::get_alt_icon_id(void) { return alt_icon_id; }
 
+void supla_client_scene::set_initiator_id(int initiator_id) {
+  this->initiator_id = initiator_id;
+}
+
+int supla_client_scene::get_initiator_id(void) { return initiator_id; }
+
+void supla_client_scene::set_initiator_name(const char *initiator_name) {
+  if (this->initiator_name) {
+    free(this->initiator_name);
+    this->initiator_name = NULL;
+  }
+
+  if (initiator_name) {
+    this->initiator_name =
+        strndup(initiator_name, SUPLA_INITIATOR_NAME_MAXSIZE);
+  }
+}
+
+const char *supla_client_scene::get_initiator_name(void) {
+  return initiator_name;
+}
+
+void supla_client_scene::set_milliseconds_from_start(
+    unsigned _supla_int_t milliseconds_from_start) {
+  this->milliseconds_from_start = milliseconds_from_start;
+}
+
+unsigned _supla_int_t supla_client_scene::get_milliseconds_from_start(void) {
+  return milliseconds_from_start;
+}
+
+void supla_client_scene::set_milliseconds_left(
+    unsigned _supla_int_t milliseconds_left) {
+  this->milliseconds_left = milliseconds_left;
+}
+
+unsigned _supla_int_t supla_client_scene::get_milliseconds_left(void) {
+  return milliseconds_left;
+}
+
 void supla_client_scene::convert(TSC_SuplaScene *dest) {
   *dest = {};
 
@@ -77,6 +127,19 @@ void supla_client_scene::convert(TSC_SuplaScene *dest) {
   dest->UserIcon = get_user_icon_id();
 
   sproto__set_null_terminated_string(get_caption(), dest->Caption,
-                                    &dest->CaptionSize,
-                                    SUPLA_SCENE_CAPTION_MAXSIZE);
+                                     &dest->CaptionSize,
+                                     SUPLA_SCENE_CAPTION_MAXSIZE);
+}
+
+void supla_client_scene::convert(TSC_SuplaSceneState *dest) {
+  *dest = {};
+
+  dest->SceneId = get_id();
+  dest->MillisecondsFromStart = get_milliseconds_from_start();
+  dest->MillisecondsLeft = get_milliseconds_left();
+
+  dest->InitiatorId = get_initiator_id();
+  sproto__set_null_terminated_string(get_initiator_name(), dest->InitiatorName,
+                                     &dest->InitiatorNameSize,
+                                     SUPLA_INITIATOR_NAME_MAXSIZE);
 }

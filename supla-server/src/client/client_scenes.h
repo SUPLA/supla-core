@@ -16,28 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_SRPC_ADAPTER_H_
-#define ABSTRACT_SRPC_ADAPTER_H_
+#ifndef SUPLA_CLIENT_SCENES_H_
+#define SUPLA_CLIENT_SCENES_H_
 
+#include "client/abstract_client_scene_dao.h"
+#include "distributedobjects/dobjects.h"
 #include "proto.h"
 
-class supla_abstract_srpc_adapter {
+class supla_client_scenes : public supla_dobjects {
  private:
-  void *srpc;
+  supla_abstract_client_scene_dao *dao;
 
  protected:
-  void *get_srpc(void);
-
  public:
-  explicit supla_abstract_srpc_adapter(void *srpc);
-  virtual ~supla_abstract_srpc_adapter();
-
-  virtual char get_proto_version(void) = 0;
-
-  virtual _supla_int_t sc_async_scene_pack_update(
-      TSC_SuplaScenePack *scene_pack) = 0;  // ver. >= 18
-  virtual _supla_int_t sc_async_scene_state_pack_update(
-      TSC_SuplaSceneStatePack *scene_state_pack) = 0;  // ver. >= 18
+  explicit supla_client_scenes(supla_abstract_dobject_remote_updater *updater,
+                               supla_abstract_client_scene_dao *dao);
+  virtual ~supla_client_scenes();
 };
 
-#endif /* ABSTRACT_SRPC_ADAPTER_H_ */
+#endif /* SUPLA_CLIENT_SCENES_H_ */

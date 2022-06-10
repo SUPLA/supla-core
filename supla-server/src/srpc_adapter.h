@@ -30,8 +30,8 @@ class supla_srpc_adapter : supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack);  // ver. >= 18
-  virtual _supla_int_t sc_async_scene_status_pack_update(
-      TSC_SuplaSceneStatusPack *scene_status_pack);  // ver. >= 18
+  virtual _supla_int_t sc_async_scene_state_pack_update(
+      TSC_SuplaSceneStatePack *scene_state_pack);  // ver. >= 18
 };
 
 #endif /* SRPC_ADAPTER_H_ */

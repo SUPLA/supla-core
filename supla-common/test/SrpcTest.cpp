@@ -506,7 +506,7 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
 
     case 18:
       return {SUPLA_SC_CALL_SCENE_PACK_UPDATE,
-              SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE,
+              SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE,
               SUPLA_CS_CALL_EXECUTE_ACTION,
               SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
               SUPLA_SC_CALL_ACTION_EXECUTION_RESULT};
@@ -3628,94 +3628,94 @@ TEST_F(SrpcTest, call_scene_pack_update_with_full_size) {
 // SCENE STATUS PACK UPDATE
 //---------------------------------------------------------
 
-TEST_F(SrpcTest, call_scene_status_pack_update_with_over_size) {
+TEST_F(SrpcTest, call_scene_state_pack_update_with_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatusPack, pack);
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
 
-  pack.count = SUPLA_SCENE_STATUS_PACK_MAXCOUNT + 1;
+  pack.count = SUPLA_SCENE_STATE_PACK_MAXCOUNT + 1;
 
-  ASSERT_EQ(srpc_sc_async_scene_status_pack_update(srpc, &pack), 0);
+  ASSERT_EQ(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
 
   srpc_free(srpc);
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_scene_status_pack_update_with_zero_size) {
+TEST_F(SrpcTest, call_scene_state_pack_update_with_zero_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatusPack, pack);
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
 
   pack.count = 0;
 
-  ASSERT_EQ(srpc_sc_async_scene_status_pack_update(srpc, &pack), 0);
+  ASSERT_EQ(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
 
   srpc_free(srpc);
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_scene_status_pack_update_with_caption_over_size) {
+TEST_F(SrpcTest, call_scene_state_pack_update_with_caption_over_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatusPack, pack);
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
 
-  pack.count = SUPLA_SCENE_STATUS_PACK_MAXCOUNT;
+  pack.count = SUPLA_SCENE_STATE_PACK_MAXCOUNT;
 
   pack.items[0].InitiatorNameSize = SUPLA_INITIATOR_NAME_MAXSIZE + 1;
 
-  for (int a = 1; a < SUPLA_SCENE_STATUS_PACK_MAXCOUNT; a++) {
+  for (int a = 1; a < SUPLA_SCENE_STATE_PACK_MAXCOUNT; a++) {
     pack.items[a].InitiatorNameSize = SUPLA_INITIATOR_NAME_MAXSIZE;
   }
 
-  ASSERT_GT(srpc_sc_async_scene_status_pack_update(srpc, &pack), 0);
-  SendAndReceive(SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE, 4211);
+  ASSERT_GT(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE, 4211);
 
-  ASSERT_FALSE(cr_rd.data.sc_scene_status_pack == NULL);
-  ASSERT_EQ(cr_rd.data.sc_scene_status_pack->count,
-            SUPLA_SCENE_STATUS_PACK_MAXCOUNT - 1);
-  ASSERT_EQ(cr_rd.data.sc_scene_status_pack->total_left, pack.total_left);
+  ASSERT_FALSE(cr_rd.data.sc_scene_state_pack == NULL);
+  ASSERT_EQ(cr_rd.data.sc_scene_state_pack->count,
+            SUPLA_SCENE_STATE_PACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_scene_state_pack->total_left, pack.total_left);
 
-  for (int a = 0; a < SUPLA_SCENE_STATUS_PACK_MAXCOUNT - 1; a++) {
+  for (int a = 0; a < SUPLA_SCENE_STATE_PACK_MAXCOUNT - 1; a++) {
     ASSERT_EQ(
-        memcmp(&cr_rd.data.sc_scene_status_pack->items[a], &pack.items[a + 1],
-               sizeof(TSC_SuplaSceneStatus) - SUPLA_INITIATOR_NAME_MAXSIZE +
+        memcmp(&cr_rd.data.sc_scene_state_pack->items[a], &pack.items[a + 1],
+               sizeof(TSC_SuplaSceneState) - SUPLA_INITIATOR_NAME_MAXSIZE +
                    pack.items[a + 1].InitiatorNameSize),
         0);
   }
 
-  free(cr_rd.data.sc_scene_status_pack);
+  free(cr_rd.data.sc_scene_state_pack);
   srpc_free(srpc);
   srpc = NULL;
 }
 
-TEST_F(SrpcTest, call_scene_status_pack_update_with_full_size) {
+TEST_F(SrpcTest, call_scene_state_pack_update_with_full_size) {
   data_read_result = -1;
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
 
-  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatusPack, pack);
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
 
-  pack.count = SUPLA_SCENE_STATUS_PACK_MAXCOUNT;
+  pack.count = SUPLA_SCENE_STATE_PACK_MAXCOUNT;
 
-  for (int a = 0; a < SUPLA_SCENE_STATUS_PACK_MAXCOUNT; a++) {
+  for (int a = 0; a < SUPLA_SCENE_STATE_PACK_MAXCOUNT; a++) {
     pack.items[a].InitiatorNameSize = SUPLA_INITIATOR_NAME_MAXSIZE;
   }
 
-  ASSERT_GT(srpc_sc_async_scene_status_pack_update(srpc, &pack), 0);
-  SendAndReceive(SUPLA_SC_CALL_SCENE_STATUS_PACK_UPDATE, 4431);
+  ASSERT_GT(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE, 4431);
 
-  ASSERT_FALSE(cr_rd.data.sc_scene_status_pack == NULL);
+  ASSERT_FALSE(cr_rd.data.sc_scene_state_pack == NULL);
 
-  ASSERT_EQ(0, memcmp(cr_rd.data.sc_scene_status_pack, &pack,
-                      sizeof(TSC_SuplaSceneStatusPack)));
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_scene_state_pack, &pack,
+                      sizeof(TSC_SuplaSceneStatePack)));
 
-  free(cr_rd.data.sc_scene_status_pack);
+  free(cr_rd.data.sc_scene_state_pack);
   srpc_free(srpc);
   srpc = NULL;
 }

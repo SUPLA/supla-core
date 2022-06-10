@@ -32,6 +32,10 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   scene.set_user_icon_id(20);
   scene.set_alt_icon_id(30);
   scene.set_location_id(40);
+  scene.set_initiator_id(50);
+  scene.set_initiator_name("Samsung Galaxy");
+  scene.set_milliseconds_from_start(123456);
+  scene.set_milliseconds_left(567890);
 
   EXPECT_EQ(scene.get_id(), 15);
   EXPECT_EQ(strncmp(scene.get_caption(), "Scene caption",
@@ -40,9 +44,16 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   EXPECT_EQ(scene.get_user_icon_id(), 20);
   EXPECT_EQ(scene.get_alt_icon_id(), 30);
   EXPECT_EQ(scene.get_location_id(), 40);
+  EXPECT_EQ(scene.get_initiator_id(), 50);
+  EXPECT_EQ(strncmp(scene.get_initiator_name(), "Samsung Galaxy",
+                    SUPLA_INITIATOR_NAME_MAXSIZE + 1),
+            0);
+
+  EXPECT_EQ(scene.get_milliseconds_from_start(), 123456U);
+  EXPECT_EQ(scene.get_milliseconds_left(), 567890U);
 }
 
-TEST_F(ClientSceneTest, convert) {
+TEST_F(ClientSceneTest, convertScene) {
   supla_client_scene scene(123);
   scene.set_caption("Scene caption #123");
   scene.set_user_icon_id(2);
@@ -61,6 +72,31 @@ TEST_F(ClientSceneTest, convert) {
             strnlen(scene.get_caption(), SUPLA_SCENE_CAPTION_MAXSIZE) + 1);
   EXPECT_EQ(strncmp(sc_scene.Caption, scene.get_caption(),
                     SUPLA_SCENE_CAPTION_MAXSIZE + 1),
+            0);
+}
+
+TEST_F(ClientSceneTest, convertSceneState) {
+  supla_client_scene scene(123);
+  scene.set_initiator_id(456);
+  scene.set_initiator_name("Samsung Galaxy");
+  scene.set_milliseconds_from_start(2345);
+  scene.set_milliseconds_left(67890);
+
+  TSC_SuplaSceneState sc_scene_state = {};
+  scene.convert(&sc_scene_state);
+
+  EXPECT_EQ(sc_scene_state.EOL, 0);
+  EXPECT_EQ(sc_scene_state.SceneId, 123);
+  EXPECT_EQ(sc_scene_state.InitiatorId, 456);
+  EXPECT_EQ(sc_scene_state.MillisecondsFromStart, 2345U);
+  EXPECT_EQ(sc_scene_state.MillisecondsLeft, 67890U);
+
+  EXPECT_EQ(
+      sc_scene_state.InitiatorNameSize,
+      strnlen(scene.get_initiator_name(), SUPLA_INITIATOR_NAME_MAXSIZE) + 1);
+
+  EXPECT_EQ(strncmp(sc_scene_state.InitiatorName, scene.get_initiator_name(),
+                    SUPLA_INITIATOR_NAME_MAXSIZE + 1),
             0);
 }
 
