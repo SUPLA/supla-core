@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include <list>
+
 supla_client_scenes::supla_client_scenes(
     supla_abstract_dobject_remote_updater *updater,
     supla_abstract_client_scene_dao *dao)

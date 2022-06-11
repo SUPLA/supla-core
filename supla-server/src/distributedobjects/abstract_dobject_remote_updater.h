@@ -28,6 +28,7 @@ class supla_abstract_dobject_remote_updater {
 
   bool transaction_started;
   bool transaction_should_end;
+  bool transaction_rejected;
   bool any_updates;
   void begin_transaction(supla_dobject *object);
 
@@ -48,7 +49,7 @@ class supla_abstract_dobject_remote_updater {
       supla_abstract_srpc_adapter *srpc_adapter);
   virtual ~supla_abstract_dobject_remote_updater();
   void update(supla_dobject *object);
-  bool is_transaction_started(void);
+  bool is_transaction_rejected(void);
   bool is_transaction_should_end(void);
   bool end_transaction(void);
 };

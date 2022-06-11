@@ -16,19 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <integration/scene/SceneOperationsDaoTest.h>
+#include <integration/scene/SceneOperationsDaoIntegrationTest.h>
 
 #include "log.h"  // NOLINT
 
 namespace testing {
 
-SceneOperationsDaoTest::SceneOperationsDaoTest() : IntegrationTest(), Test() {
+SceneOperationsDaoIntegrationTest::SceneOperationsDaoIntegrationTest()
+    : IntegrationTest(), Test() {
   dao = NULL;
 }
 
-SceneOperationsDaoTest::~SceneOperationsDaoTest() {}
+SceneOperationsDaoIntegrationTest::~SceneOperationsDaoIntegrationTest() {}
 
-void SceneOperationsDaoTest::SetUp() {
+void SceneOperationsDaoIntegrationTest::SetUp() {
   dao = new supla_scene_operations_dao();
   ASSERT_TRUE(dao != NULL);
 
@@ -36,7 +37,7 @@ void SceneOperationsDaoTest::SetUp() {
   Test::SetUp();
 }
 
-void SceneOperationsDaoTest::TearDown() {
+void SceneOperationsDaoIntegrationTest::TearDown() {
   if (dao) {
     delete dao;
     dao = NULL;
@@ -44,7 +45,7 @@ void SceneOperationsDaoTest::TearDown() {
   Test::TearDown();
 }
 
-TEST_F(SceneOperationsDaoTest, operationsForScene1) {
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene1) {
   supla_scene_operations *operations = dao->get_scene_operations(1);
 
   EXPECT_TRUE(operations != NULL);
@@ -107,7 +108,7 @@ TEST_F(SceneOperationsDaoTest, operationsForScene1) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, operationsForScene2) {
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene2) {
   supla_scene_operations *operations = dao->get_scene_operations(2);
   EXPECT_TRUE(operations != NULL);
   if (operations) {
@@ -151,7 +152,7 @@ TEST_F(SceneOperationsDaoTest, operationsForScene2) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, operationsForScene3) {
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene3) {
   supla_scene_operations *operations = dao->get_scene_operations(3);
 
   EXPECT_TRUE(operations != NULL);
@@ -212,7 +213,7 @@ TEST_F(SceneOperationsDaoTest, operationsForScene3) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, operationsForScene4) {
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene4) {
   supla_scene_operations *operations = dao->get_scene_operations(4);
 
   EXPECT_TRUE(operations != NULL);
@@ -239,7 +240,7 @@ TEST_F(SceneOperationsDaoTest, operationsForScene4) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, operationsForScene5) {
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene5) {
   supla_scene_operations *operations = dao->get_scene_operations(5);
 
   EXPECT_TRUE(operations != NULL);
@@ -284,7 +285,7 @@ TEST_F(SceneOperationsDaoTest, operationsForScene5) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, operationsForScene6) {
+TEST_F(SceneOperationsDaoIntegrationTest, operationsForScene6) {
   supla_scene_operations *operations = dao->get_scene_operations(6);
 
   EXPECT_TRUE(operations != NULL);
@@ -329,7 +330,7 @@ TEST_F(SceneOperationsDaoTest, operationsForScene6) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, getOperationsForDisabledScene) {
+TEST_F(SceneOperationsDaoIntegrationTest, getOperationsForDisabledScene) {
   supla_scene_operations *operations = dao->get_scene_operations(3);
   EXPECT_TRUE(operations != NULL);
   if (operations) {
@@ -347,7 +348,7 @@ TEST_F(SceneOperationsDaoTest, getOperationsForDisabledScene) {
   }
 }
 
-TEST_F(SceneOperationsDaoTest, getOperationsForNonExistentScene) {
+TEST_F(SceneOperationsDaoIntegrationTest, getOperationsForNonExistentScene) {
   supla_scene_operations *operations = dao->get_scene_operations(23);
   EXPECT_TRUE(operations != NULL);
   if (operations) {
