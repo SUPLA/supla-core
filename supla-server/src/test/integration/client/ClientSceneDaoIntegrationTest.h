@@ -24,13 +24,13 @@
 
 namespace testing {
 
-class ClientSceneDaoTest : public IntegrationTest, public Test {
+class ClientSceneDaoIntegrationTest : public IntegrationTest, public Test {
  protected:
   supla_client_scene_dao *dao;
 
  public:
-  ClientSceneDaoTest();
-  virtual ~ClientSceneDaoTest();
+  ClientSceneDaoIntegrationTest();
+  virtual ~ClientSceneDaoIntegrationTest();
   virtual void SetUp();
   virtual void TearDown();
 };

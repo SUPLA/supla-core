@@ -103,7 +103,7 @@ bool supla_dobjects::update_remote(void) {
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     updater->update(*it);
 
-    if (!updater->is_transaction_started() ||
+    if (updater->is_transaction_rejected() ||
         updater->is_transaction_should_end()) {
       break;
     }

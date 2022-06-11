@@ -25,6 +25,7 @@ supla_abstract_dobject_remote_updater::supla_abstract_dobject_remote_updater(
   this->srpc_adapter = srpc_adapter;
   this->transaction_started = false;
   this->transaction_should_end = false;
+  this->transaction_rejected = false;
   this->any_updates = false;
 }
 
@@ -42,9 +43,10 @@ void supla_abstract_dobject_remote_updater::begin_transaction(
     if (on_transaction_begin(object, srpc_adapter->get_proto_version())) {
       transaction_started = true;
       transaction_should_end = false;
+      transaction_rejected = false;
       any_updates = false;
     } else {
-      transaction_should_end = true;
+      transaction_rejected = true;
     }
   }
 }
@@ -74,8 +76,8 @@ void supla_abstract_dobject_remote_updater::update(supla_dobject *object) {
     }
   }
 }
-bool supla_abstract_dobject_remote_updater::is_transaction_started(void) {
-  return transaction_started;
+bool supla_abstract_dobject_remote_updater::is_transaction_rejected(void) {
+  return transaction_rejected;
 }
 
 bool supla_abstract_dobject_remote_updater::is_transaction_should_end(void) {

@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/integration/client/ClientSceneDaoTest.cpp 
+../src/test/integration/client/ClientSceneDaoIntegrationTest.cpp \
+../src/test/integration/client/ClientSceneIntegrationTest.cpp 
 
 CPP_DEPS += \
-./src/test/integration/client/ClientSceneDaoTest.d 
+./src/test/integration/client/ClientSceneDaoIntegrationTest.d \
+./src/test/integration/client/ClientSceneIntegrationTest.d 
 
 OBJS += \
-./src/test/integration/client/ClientSceneDaoTest.o 
+./src/test/integration/client/ClientSceneDaoIntegrationTest.o \
+./src/test/integration/client/ClientSceneIntegrationTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ src/test/integration/client/%.o: ../src/test/integration/client/%.cpp src/test/i
 clean: clean-src-2f-test-2f-integration-2f-client
 
 clean-src-2f-test-2f-integration-2f-client:
-	-$(RM) ./src/test/integration/client/ClientSceneDaoTest.d ./src/test/integration/client/ClientSceneDaoTest.o
+	-$(RM) ./src/test/integration/client/ClientSceneDaoIntegrationTest.d ./src/test/integration/client/ClientSceneDaoIntegrationTest.o ./src/test/integration/client/ClientSceneIntegrationTest.d ./src/test/integration/client/ClientSceneIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-client
 

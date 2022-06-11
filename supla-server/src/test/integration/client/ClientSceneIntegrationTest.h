@@ -16,25 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SceneOperationsDaoTest_H_
-#define SceneOperationsDaoTest_H_
+#ifndef ClientSceneTest_H_
+#define ClientSceneTest_H_
 
 #include "integration/IntegrationTest.h"
-#include "scene/scene_operations_dao.h"
 
 namespace testing {
 
-class SceneOperationsDaoTest : public IntegrationTest, public Test {
+class ClientSceneIntegrationTest : public IntegrationTest, public Test {
  protected:
-  supla_scene_operations_dao *dao;
-
  public:
-  SceneOperationsDaoTest();
-  virtual ~SceneOperationsDaoTest();
+  ClientSceneIntegrationTest();
+  virtual ~ClientSceneIntegrationTest();
   virtual void SetUp();
-  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* SceneOperationsDaoTest_H_ */
+#endif /* ClientSceneTest_H_ */
