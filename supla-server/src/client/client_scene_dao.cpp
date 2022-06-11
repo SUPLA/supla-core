@@ -40,8 +40,8 @@ supla_client_scene_dao::supla_client_scene_dao()
 
 supla_client_scene_dao::~supla_client_scene_dao() {}
 
-std::list<supla_client_scene *> supla_client_scene_dao::get_scenes(
-    int user_id, int client_id, int scene_id) {
+std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
+    int user_id, int client_id) {
   std::list<supla_client_scene *> result;
 
   if (!connect()) {
@@ -56,9 +56,9 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_scenes(
       "`supla_scene` s LEFT JOIN supla_rel_aidloc al ON al.location_id = "
       "s.location_id LEFT JOIN supla_accessid a ON a.id = al.access_id LEFT "
       "JOIN supla_client c ON c.access_id = al.access_id WHERE s.user_id = ? "
-      "AND s.enabled = 1 AND c.id = ? AND ( ? = 0 OR s.id = ? ) GROUP BY s.id";
+      "AND s.enabled = 1 AND c.id = ? GROUP BY s.id";
 
-  MYSQL_BIND pbind[4] = {};
+  MYSQL_BIND pbind[2] = {};
 
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&user_id;
@@ -66,13 +66,7 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_scenes(
   pbind[1].buffer_type = MYSQL_TYPE_LONG;
   pbind[1].buffer = (char *)&client_id;
 
-  pbind[2].buffer_type = MYSQL_TYPE_LONG;
-  pbind[2].buffer = (char *)&scene_id;
-
-  pbind[3].buffer_type = MYSQL_TYPE_LONG;
-  pbind[3].buffer = (char *)&scene_id;
-
-  if (stmt_execute((void **)&stmt, sql, pbind, 4, true)) {
+  if (stmt_execute((void **)&stmt, sql, pbind, 2, true)) {
     MYSQL_BIND rbind[5] = {};
 
     rbind[0].buffer_type = MYSQL_TYPE_LONG;
@@ -127,21 +121,4 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_scenes(
   disconnect();
 
   return result;
-}
-
-std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
-    int user_id, int client_id) {
-  return get_scenes(user_id, client_id, 0);
-}
-
-supla_client_scene *supla_client_scene_dao::get_scene(int user_id,
-                                                      int client_id,
-                                                      int scene_id) {
-  std::list<supla_client_scene *> scenes =
-      get_scenes(user_id, client_id, scene_id);
-  if (scenes.size() == 1) {
-    return scenes.front();
-  }
-
-  return NULL;
 }

@@ -51,30 +51,6 @@ TEST_F(ClientSceneDaoIntegrationTest, getScenesForNonExistentClient) {
   EXPECT_EQ(scenes.size(), 0U);
 }
 
-TEST_F(ClientSceneDaoIntegrationTest, getNonExistentScene) {
-  supla_client_scene *scene = dao->get_scene(2, 1, 200);
-  EXPECT_TRUE(scene == NULL);
-  if (scene) {
-    delete scene;
-  }
-}
-
-TEST_F(ClientSceneDaoIntegrationTest, getScene) {
-  supla_client_scene *scene = dao->get_scene(2, 1, 3);
-  EXPECT_TRUE(scene != NULL);
-  if (scene) {
-    EXPECT_EQ(scene->get_id(), 3);
-    EXPECT_EQ(scene->get_location_id(), 2);
-    EXPECT_EQ(scene->get_alt_icon_id(), 0);
-    EXPECT_EQ(scene->get_user_icon_id(), 0);
-    EXPECT_EQ(
-        strncmp(scene->get_caption(), "Scene #3", SUPLA_SCENE_CAPTION_MAXSIZE),
-        0);
-
-    delete scene;
-  }
-}
-
 TEST_F(ClientSceneDaoIntegrationTest, getAllScenes) {
   runSqlScript("SetUserIconForSceneWithId2.sql");
   runSqlScript("ChangeLocationForSceneWithId2.sql");
