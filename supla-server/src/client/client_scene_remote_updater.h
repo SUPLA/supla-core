@@ -28,6 +28,8 @@ class supla_client_scene_remote_updater
   TSC_SuplaSceneStatePack *state_pack;
 
  protected:
+  virtual bool is_protocol_version_allowed(int protocol_version);
+
   virtual bool on_transaction_begin(supla_dobject *object,
                                     int protocol_version);
   virtual void on_transaction_end(supla_abstract_srpc_adapter *srpc_adapter);
