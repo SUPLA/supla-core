@@ -32,6 +32,8 @@ class supla_client_scenes : public supla_dobjects {
   explicit supla_client_scenes(supla_abstract_dobject_remote_updater *updater,
                                supla_abstract_client_scene_dao *dao);
   virtual ~supla_client_scenes();
+  void load(int user_id, int client_id, int scene_id);
+  void load(int user_id, int client_id);
 };
 
 #endif /* SUPLA_CLIENT_SCENES_H_ */
