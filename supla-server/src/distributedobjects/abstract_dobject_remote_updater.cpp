@@ -16,12 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <assert.h>
 #include <distributedobjects/abstract_dobject_remote_updater.h>
 
 #include "log.h"
 
 supla_abstract_dobject_remote_updater::supla_abstract_dobject_remote_updater(
     supla_abstract_srpc_adapter *srpc_adapter) {
+  assert(srpc_adapter != NULL);
   this->srpc_adapter = srpc_adapter;
   this->transaction_started = false;
   this->transaction_should_end = false;
@@ -97,4 +99,8 @@ bool supla_abstract_dobject_remote_updater::end_transaction(void) {
   }
 
   return false;
+}
+
+bool supla_abstract_dobject_remote_updater::is_update_possible(void) {
+  return is_protocol_version_allowed(srpc_adapter->get_proto_version());
 }

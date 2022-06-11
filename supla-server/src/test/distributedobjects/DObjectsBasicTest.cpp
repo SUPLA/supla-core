@@ -44,6 +44,8 @@ void DObjectBasicTest::SetUp() {
   objects = new DObjectsMock(remoteUpdater);
   ASSERT_TRUE(objects != NULL);
 
+  ON_CALL(*remoteUpdater, is_protocol_version_allowed)
+      .WillByDefault(Return(true));
   ON_CALL(*remoteUpdater, on_transaction_begin).WillByDefault(Return(true));
   ON_CALL(*remoteUpdater, prepare_the_update).WillByDefault(Return(true));
   ON_CALL(*srpcAdapter, get_proto_version).WillByDefault(Return(18));
@@ -175,6 +177,26 @@ TEST_F(DObjectBasicTest, stopProcessingRightAtTheBegining) {
   EXPECT_CALL(*remoteUpdater, on_transaction_begin)
       .Times(1)
       .WillOnce(Return(false));
+  EXPECT_CALL(*remoteUpdater, prepare_the_update).Times(0);
+  EXPECT_CALL(*remoteUpdater, on_transaction_end).Times(0);
+
+  EXPECT_FALSE(objects->update_remote());
+}
+
+TEST_F(DObjectBasicTest, notAllowedVersion) {
+  DObjectMock *obj1 = new DObjectMock(10);
+  obj1->set_change_indicator(new supla_dobject_change_indicator(true));
+  objects->add(obj1);
+
+  DObjectMock *obj2 = new DObjectMock(20);
+  obj2->set_change_indicator(new supla_dobject_change_indicator(true));
+  objects->add(obj2);
+
+  EXPECT_EQ(objects->count(), 2);
+
+  EXPECT_CALL(*remoteUpdater, is_protocol_version_allowed)
+      .WillOnce(Return(false));
+  EXPECT_CALL(*remoteUpdater, on_transaction_begin).Times(0);
   EXPECT_CALL(*remoteUpdater, prepare_the_update).Times(0);
   EXPECT_CALL(*remoteUpdater, on_transaction_end).Times(0);
 

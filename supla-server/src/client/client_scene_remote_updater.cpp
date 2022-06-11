@@ -31,12 +31,13 @@ supla_client_scene_remote_updater::supla_client_scene_remote_updater(
 
 supla_client_scene_remote_updater::~supla_client_scene_remote_updater() {}
 
+bool supla_client_scene_remote_updater::is_protocol_version_allowed(
+    int protocol_version) {
+  return protocol_version >= 18;
+}
+
 bool supla_client_scene_remote_updater::on_transaction_begin(
     supla_dobject *object, int protocol_version) {
-  if (protocol_version < 18) {
-    return false;
-  }
-
   const supla_client_scene_change_indicator *ind =
       dynamic_cast<const supla_client_scene_change_indicator *>(
           object->get_change_indicator());

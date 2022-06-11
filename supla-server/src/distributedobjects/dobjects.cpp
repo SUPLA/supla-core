@@ -95,7 +95,7 @@ int supla_dobjects::count(void) {
 }
 
 bool supla_dobjects::update_remote(void) {
-  if (!updater) {
+  if (!updater || !updater->is_update_possible()) {
     return false;
   }
 
