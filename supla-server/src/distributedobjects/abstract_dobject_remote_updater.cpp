@@ -59,7 +59,7 @@ void supla_abstract_dobject_remote_updater::update(supla_dobject *object) {
     if (!transaction_started) {
       begin_transaction(object);
 
-      if (transaction_should_end) {
+      if (transaction_rejected) {
         return;
       }
     }

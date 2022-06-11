@@ -32,16 +32,6 @@ supla_client_scenes::supla_client_scenes(
 
 supla_client_scenes::~supla_client_scenes() {}
 
-void supla_client_scenes::load(int user_id, int client_id, int scene_id) {
-  lock();
-  remove(scene_id);
-  supla_client_scene *scene = dao->get_scene(user_id, client_id, scene_id);
-  if (scene) {
-    add(scene);
-  }
-  unlock();
-}
-
 void supla_client_scenes::load(int user_id, int client_id) {
   lock();
   clear();
