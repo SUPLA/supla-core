@@ -31,6 +31,9 @@ class supla_abstract_client_scene_dao {
 
   virtual std::list<supla_client_scene *> get_all_scenes(int user_id,
                                                          int client_id) = 0;
+
+  virtual supla_client_scene *get_scene(int user_id, int client_id,
+                                        int scene_id) = 0;
 };
 
 #endif /*SUPLA_ABSTRACT_CLIENT_SCENE_DAO_H_ */

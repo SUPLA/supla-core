@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "client/client_scene_change_indicator.h"
 #include "proto.h"
 
 supla_client_scene::supla_client_scene(int id) : supla_dobject(id) {
@@ -33,6 +34,8 @@ supla_client_scene::supla_client_scene(int id) : supla_dobject(id) {
   this->initiator_name = 0;
   this->milliseconds_from_start = 0;
   this->milliseconds_left = 0;
+
+  this->set_change_indicator(new supla_client_scene_change_indicator());
 }
 
 supla_client_scene::~supla_client_scene() {

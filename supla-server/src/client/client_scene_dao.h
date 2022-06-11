@@ -27,12 +27,18 @@
 class supla_client_scene_dao : public supla_abstract_client_scene_dao,
                                private svrdb {
  private:
+  virtual std::list<supla_client_scene *> get_scenes(int user_id, int client_id,
+                                                     int scene_id);
+
  public:
   supla_client_scene_dao();
   virtual ~supla_client_scene_dao();
 
   virtual std::list<supla_client_scene *> get_all_scenes(int user_id,
                                                          int client_id);
+
+  virtual supla_client_scene *get_scene(int user_id, int client_id,
+                                        int scene_id);
 };
 
 #endif /*SUPLA_CLIENT_SCENE_DAO_H_ */

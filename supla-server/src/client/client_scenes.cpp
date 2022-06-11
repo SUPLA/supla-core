@@ -18,11 +18,37 @@
 
 #include "client/client_scenes.h"
 
+#include <assert.h>
+
 supla_client_scenes::supla_client_scenes(
     supla_abstract_dobject_remote_updater *updater,
     supla_abstract_client_scene_dao *dao)
     : supla_dobjects(updater) {
+  assert(dao != NULL);
   this->dao = dao;
 }
 
 supla_client_scenes::~supla_client_scenes() {}
+
+void supla_client_scenes::load(int user_id, int client_id, int scene_id) {
+  lock();
+  remove(scene_id);
+  supla_client_scene *scene = dao->get_scene(user_id, client_id, scene_id);
+  if (scene) {
+    add(scene);
+  }
+  unlock();
+}
+
+void supla_client_scenes::load(int user_id, int client_id) {
+  lock();
+  clear();
+  std::list<supla_client_scene *> scenes =
+      dao->get_all_scenes(user_id, client_id);
+
+  for (auto it = scenes.begin(); it != scenes.end(); ++it) {
+    add(*it);
+  }
+
+  unlock();
+}
