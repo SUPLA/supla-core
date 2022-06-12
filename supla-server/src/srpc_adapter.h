@@ -29,15 +29,17 @@ class supla_srpc_adapter : supla_abstract_srpc_adapter {
   virtual ~supla_srpc_adapter();
 
   template <typename TSuplaDataPack, typename TSuplaDataPackItem>
-  static void datapack_add(TSuplaDataPack *pack, int max_count,
+  static bool datapack_add(TSuplaDataPack *pack, int max_count,
                            std::function<void(TSuplaDataPackItem *)> fill) {
     if (pack->count < max_count) {
       fill(&pack->items[pack->count]);
       pack->items[pack->count].EOL = 0;
       pack->count++;
+      return true;
     } else {
       pack->total_left++;
     }
+    return false;
   }
 
   template <typename TSuplaDataPack>

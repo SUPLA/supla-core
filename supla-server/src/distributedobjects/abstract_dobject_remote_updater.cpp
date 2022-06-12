@@ -72,7 +72,8 @@ void supla_abstract_dobject_remote_updater::update(supla_dobject *object) {
       object->set_change_indicator(new_change_indicator);
       any_updates = true;
 
-    } else if (new_change_indicator) {
+    } else if (new_change_indicator &&
+               new_change_indicator != change_indicator) {
       delete new_change_indicator;
       new_change_indicator = NULL;
     }
