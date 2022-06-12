@@ -83,36 +83,39 @@ bool supla_client_scene_remote_updater::prepare_the_update(
     return false;
   }
 
+  bool result = false;
+
   if (scene_pack) {
     if (ind->is_scene_changed()) {
-      *new_change_indicator = new supla_client_scene_change_indicator(
-          false, ind->is_state_changed());
+      result =
+          supla_srpc_adapter::datapack_add<TSC_SuplaScenePack, TSC_SuplaScene>(
+              scene_pack, SUPLA_SCENE_PACK_MAXCOUNT,
+              [scene](TSC_SuplaScene *sc_scene) -> void {
+                scene->convert(sc_scene);
+              });
 
-      supla_srpc_adapter::datapack_add<TSC_SuplaScenePack, TSC_SuplaScene>(
-          scene_pack, SUPLA_SCENE_PACK_MAXCOUNT,
-          [scene](TSC_SuplaScene *sc_scene) -> void {
-            scene->convert(sc_scene);
-          });
-
-      return true;
+      if (result) {
+        *new_change_indicator = new supla_client_scene_change_indicator(
+            false, ind->is_state_changed());
+      }
     }
   } else if (state_pack) {
     if (ind->is_state_changed()) {
-      *new_change_indicator = new supla_client_scene_change_indicator(
-          ind->is_scene_changed(), false);
-
-      supla_srpc_adapter::datapack_add<TSC_SuplaSceneStatePack,
-                                       TSC_SuplaSceneState>(
+      result = supla_srpc_adapter::datapack_add<TSC_SuplaSceneStatePack,
+                                                TSC_SuplaSceneState>(
           state_pack, SUPLA_SCENE_STATE_PACK_MAXCOUNT,
           [scene](TSC_SuplaSceneState *sc_state) -> void {
             scene->convert(sc_state);
           });
-    }
 
-    return true;
+      if (result) {
+        *new_change_indicator = new supla_client_scene_change_indicator(
+            ind->is_scene_changed(), false);
+      }
+    }
   }
 
-  return false;
+  return result;
 }
 
 void supla_client_scene_remote_updater::on_transaction_end(
