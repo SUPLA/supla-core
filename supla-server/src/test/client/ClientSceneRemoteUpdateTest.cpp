@@ -129,5 +129,179 @@ TEST_F(ClientSceneRemoteUpdateTest, countOfScenesOverPackItemLimit) {
   EXPECT_FALSE(scenes.update_remote());
 }
 
+TEST_F(ClientSceneRemoteUpdateTest, sceneUpdate) {
+  SrpcAdapterMock srpcAdapter(NULL);
+
+  TSC_SuplaScenePack scenePack = {};
+
+  supla_client_scene_remote_updater remoteUpdater(&srpcAdapter);
+  DObjectsMock scenes(&remoteUpdater);
+
+  supla_client_scene *scene = new supla_client_scene(123);
+  if (scene) {
+    scene->set_change_indicator(
+        new supla_client_scene_change_indicator(true, false));
+    scene->set_alt_icon_id(345);
+    scene->set_caption("My Scene");
+    scene->set_user_icon_id(890);
+    scene->set_location_id(56);
+    scenes.add(scene);
+  }
+
+  EXPECT_EQ(scenes.count(), 1);
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update)
+      .Times(1)
+      .WillOnce(DoAll(SaveArgPointee<0>(&scenePack), Return(1)));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
+
+  EXPECT_TRUE(scenes.update_remote());
+
+  EXPECT_EQ(scenePack.count, 1);
+  EXPECT_EQ(scenePack.total_left, 0);
+  EXPECT_EQ(scenePack.items[0].Id, 123);
+  EXPECT_EQ(scenePack.items[0].AltIcon, 345);
+  EXPECT_EQ(scenePack.items[0].UserIcon, 890);
+  EXPECT_EQ(scenePack.items[0].LocationId, 56);
+  EXPECT_EQ(scenePack.items[0].EOL, 1);
+  EXPECT_EQ(strncmp(scenePack.items[0].Caption, scene->get_caption(),
+                    SUPLA_SCENE_CAPTION_MAXSIZE),
+            0);
+  EXPECT_EQ(scenePack.items[0].CaptionSize,
+            strnlen(scene->get_caption(), SUPLA_SCENE_CAPTION_MAXSIZE) + 1);
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(1);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
+
+  EXPECT_FALSE(scenes.update_remote());
+}
+
+TEST_F(ClientSceneRemoteUpdateTest, sceneAndStateUpdate) {
+  SrpcAdapterMock srpcAdapter(NULL);
+
+  TSC_SuplaScenePack scenePack = {};
+
+  supla_client_scene_remote_updater remoteUpdater(&srpcAdapter);
+  DObjectsMock scenes(&remoteUpdater);
+
+  supla_client_scene *scene = new supla_client_scene(12356);
+  if (scene) {
+    scene->set_change_indicator(
+        new supla_client_scene_change_indicator(true, true));
+    scene->set_alt_icon_id(3455);
+    scene->set_caption("My Scene!");
+    scene->set_user_icon_id(8900);
+    scene->set_location_id(560);
+    scene->set_initiator_id(34);
+    scene->set_initiator_name("iPhone Steve");
+    scene->set_milliseconds_from_start(1500);
+    scene->set_milliseconds_left(5000);
+    scenes.add(scene);
+  }
+
+  EXPECT_EQ(scenes.count(), 1);
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update)
+      .Times(1)
+      .WillOnce(DoAll(SaveArgPointee<0>(&scenePack), Return(1)));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
+
+  EXPECT_TRUE(scenes.update_remote());
+
+  EXPECT_EQ(scenePack.count, 1);
+  EXPECT_EQ(scenePack.total_left, 0);
+  EXPECT_EQ(scenePack.items[0].Id, 12356);
+  EXPECT_EQ(scenePack.items[0].AltIcon, 3455);
+  EXPECT_EQ(scenePack.items[0].UserIcon, 8900);
+  EXPECT_EQ(scenePack.items[0].LocationId, 560);
+  EXPECT_EQ(scenePack.items[0].EOL, 1);
+  EXPECT_EQ(strncmp(scenePack.items[0].Caption, scene->get_caption(),
+                    SUPLA_SCENE_CAPTION_MAXSIZE),
+            0);
+  EXPECT_EQ(scenePack.items[0].CaptionSize,
+            strnlen(scene->get_caption(), SUPLA_SCENE_CAPTION_MAXSIZE) + 1);
+
+  TSC_SuplaSceneStatePack statePack = {};
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update)
+      .Times(1)
+      .WillOnce(DoAll(SaveArgPointee<0>(&statePack), Return(1)));
+
+  EXPECT_TRUE(scenes.update_remote());
+
+  EXPECT_EQ(statePack.count, 1);
+  EXPECT_EQ(statePack.total_left, 0);
+  EXPECT_EQ(statePack.items[0].EOL, 1);
+  EXPECT_EQ(statePack.items[0].SceneId, 12356);
+  EXPECT_EQ(statePack.items[0].InitiatorId, 34);
+  EXPECT_EQ(statePack.items[0].MillisecondsFromStart, 1500);
+  EXPECT_EQ(statePack.items[0].MillisecondsLeft, 5000);
+  EXPECT_EQ(strncmp(statePack.items[0].InitiatorName,
+                    scene->get_initiator_name(), SUPLA_INITIATOR_NAME_MAXSIZE),
+            0);
+  EXPECT_EQ(
+      statePack.items[0].InitiatorNameSize,
+      strnlen(scene->get_initiator_name(), SUPLA_INITIATOR_NAME_MAXSIZE) + 1);
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(1);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
+
+  EXPECT_FALSE(scenes.update_remote());
+}
+
+TEST_F(ClientSceneRemoteUpdateTest, stateUpdate) {
+  SrpcAdapterMock srpcAdapter(NULL);
+
+  supla_client_scene_remote_updater remoteUpdater(&srpcAdapter);
+  DObjectsMock scenes(&remoteUpdater);
+
+  supla_client_scene *scene = new supla_client_scene(22356);
+  if (scene) {
+    scene->set_change_indicator(
+        new supla_client_scene_change_indicator(false, true));
+    scene->set_alt_icon_id(3455);
+    scene->set_initiator_id(3467);
+    scene->set_initiator_name("iPhone Elon");
+    scene->set_milliseconds_from_start(5000);
+    scene->set_milliseconds_left(1200);
+    scenes.add(scene);
+  }
+
+  TSC_SuplaSceneStatePack statePack = {};
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update)
+      .Times(1)
+      .WillOnce(DoAll(SaveArgPointee<0>(&statePack), Return(1)));
+
+  EXPECT_TRUE(scenes.update_remote());
+
+  EXPECT_EQ(statePack.count, 1);
+  EXPECT_EQ(statePack.total_left, 0);
+  EXPECT_EQ(statePack.items[0].EOL, 1);
+  EXPECT_EQ(statePack.items[0].SceneId, 22356);
+  EXPECT_EQ(statePack.items[0].InitiatorId, 3467);
+  EXPECT_EQ(statePack.items[0].MillisecondsFromStart, 5000);
+  EXPECT_EQ(statePack.items[0].MillisecondsLeft, 1200);
+  EXPECT_EQ(strncmp(statePack.items[0].InitiatorName,
+                    scene->get_initiator_name(), SUPLA_INITIATOR_NAME_MAXSIZE),
+            0);
+  EXPECT_EQ(
+      statePack.items[0].InitiatorNameSize,
+      strnlen(scene->get_initiator_name(), SUPLA_INITIATOR_NAME_MAXSIZE) + 1);
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(1);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
+
+  EXPECT_FALSE(scenes.update_remote());
+}
 
 } /* namespace testing */
