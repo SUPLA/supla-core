@@ -100,6 +100,13 @@ bool supla_dobjects::update_remote(void) {
   }
 
   lock();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    if (!updater->pre_transaction_verification(*it, *it == objects.front())) {
+      break;
+    }
+  }
+
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     updater->update(*it);
 

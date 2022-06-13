@@ -27,6 +27,7 @@ supla_client_scene_remote_updater::supla_client_scene_remote_updater(
     : supla_abstract_dobject_remote_updater(srpc_adapter) {
   scene_pack = NULL;
   state_pack = NULL;
+  any_scene_changed = false;
 }
 
 supla_client_scene_remote_updater::~supla_client_scene_remote_updater() {}
@@ -36,6 +37,24 @@ bool supla_client_scene_remote_updater::is_protocol_version_allowed(
   return protocol_version >= 18;
 }
 
+bool supla_client_scene_remote_updater::pre_transaction_verification(
+    supla_dobject *object, bool first) {
+  if (first) {
+    any_scene_changed = false;
+  }
+
+  const supla_client_scene_change_indicator *ind =
+      dynamic_cast<const supla_client_scene_change_indicator *>(
+          object->get_change_indicator());
+
+  if (ind && ind->is_scene_changed()) {
+    any_scene_changed = true;
+    return false;
+  }
+
+  return true;
+}
+
 bool supla_client_scene_remote_updater::on_transaction_begin(
     supla_dobject *object, int protocol_version) {
   const supla_client_scene_change_indicator *ind =
@@ -43,7 +62,7 @@ bool supla_client_scene_remote_updater::on_transaction_begin(
           object->get_change_indicator());
 
   if (ind) {
-    if (ind->is_scene_changed()) {
+    if (any_scene_changed || ind->is_scene_changed()) {
       if (!scene_pack) {
         scene_pack = new TSC_SuplaScenePack();
       }

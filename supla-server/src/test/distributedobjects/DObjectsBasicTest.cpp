@@ -46,6 +46,8 @@ void DObjectBasicTest::SetUp() {
 
   ON_CALL(*remoteUpdater, is_protocol_version_allowed)
       .WillByDefault(Return(true));
+  ON_CALL(*remoteUpdater, pre_transaction_verification)
+      .WillByDefault(Return(false));
   ON_CALL(*remoteUpdater, on_transaction_begin).WillByDefault(Return(true));
   ON_CALL(*remoteUpdater, prepare_the_update).WillByDefault(Return(true));
   ON_CALL(*srpcAdapter, get_proto_version).WillByDefault(Return(18));

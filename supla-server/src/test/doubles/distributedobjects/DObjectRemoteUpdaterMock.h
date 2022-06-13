@@ -32,6 +32,8 @@ class DObjectRemoteUpdaterMock : public supla_abstract_dobject_remote_updater {
   explicit DObjectRemoteUpdaterMock(supla_abstract_srpc_adapter *srpc_adapter);
   virtual ~DObjectRemoteUpdaterMock(void);
   MOCK_METHOD1(is_protocol_version_allowed, bool(int protocol_version));
+  MOCK_METHOD2(pre_transaction_verification,
+               bool(supla_dobject *object, bool first));
   MOCK_METHOD2(on_transaction_begin,
                bool(supla_dobject *object, int protocol_version));
   MOCK_METHOD1(on_transaction_end,

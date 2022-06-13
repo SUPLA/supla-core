@@ -26,6 +26,7 @@ class supla_client_scene_remote_updater
  private:
   TSC_SuplaScenePack *scene_pack;
   TSC_SuplaSceneStatePack *state_pack;
+  bool any_scene_changed;
 
  protected:
   virtual bool is_protocol_version_allowed(int protocol_version);
@@ -43,6 +44,7 @@ class supla_client_scene_remote_updater
   explicit supla_client_scene_remote_updater(
       supla_abstract_srpc_adapter *srpc_adapter);
   virtual ~supla_client_scene_remote_updater();
+  bool pre_transaction_verification(supla_dobject *object, bool first);
 };
 
 #endif /* SUPLA_CLIENT_SCENE_REMOTE_UPDATER_H_ */

@@ -46,7 +46,7 @@ TEST_F(ClientSceneRemoteUpdateTest, countOfScenesOverPackItemLimit) {
     supla_client_scene *scene = new supla_client_scene(a + 1);
     if (scene) {
       scene->set_change_indicator(
-          new supla_client_scene_change_indicator(true, false));
+          new supla_client_scene_change_indicator(true, a == 0));
       scenes.add(scene);
     }
   }
@@ -57,6 +57,7 @@ TEST_F(ClientSceneRemoteUpdateTest, countOfScenesOverPackItemLimit) {
   EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update)
       .Times(1)
       .WillOnce(DoAll(SaveArgPointee<0>(&scenePack), Return(1)));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
 
   EXPECT_TRUE(scenes.update_remote());
 
@@ -74,6 +75,7 @@ TEST_F(ClientSceneRemoteUpdateTest, countOfScenesOverPackItemLimit) {
   EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update)
       .Times(1)
       .WillOnce(DoAll(SaveArgPointee<0>(&scenePack), Return(1)));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
 
   EXPECT_TRUE(scenes.update_remote());
 
@@ -91,6 +93,7 @@ TEST_F(ClientSceneRemoteUpdateTest, countOfScenesOverPackItemLimit) {
   EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update)
       .Times(1)
       .WillOnce(DoAll(SaveArgPointee<0>(&scenePack), Return(1)));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
 
   EXPECT_TRUE(scenes.update_remote());
 
@@ -102,10 +105,29 @@ TEST_F(ClientSceneRemoteUpdateTest, countOfScenesOverPackItemLimit) {
     EXPECT_EQ(scenePack.items[a].EOL, a == addition - 1 ? 1 : 0);
   }
 
+  TSC_SuplaSceneStatePack statePack = {};
+
+  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update)
+      .Times(1)
+      .WillOnce(DoAll(SaveArgPointee<0>(&statePack), Return(1)));
+
+  EXPECT_TRUE(scenes.update_remote());
+
+  EXPECT_EQ(statePack.count, 1);
+  EXPECT_EQ(statePack.total_left, 0);
+
+  EXPECT_EQ(statePack.items[0].SceneId, 1);
+  EXPECT_EQ(statePack.items[0].EOL, 1);
+
   EXPECT_CALL(srpcAdapter, get_proto_version).Times(1);
   EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
+  EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update).Times(0);
 
   EXPECT_FALSE(scenes.update_remote());
 }
+
 
 } /* namespace testing */
