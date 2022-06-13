@@ -49,7 +49,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
                         supla_scene_operations *operations,
                         bool release_immediately);
   virtual ~supla_scene_asynctask();
-  const supla_caller &get_caller_id(void) const;
+  const supla_caller &get_caller(void) const;
   int get_user_id(void);
   int get_scene_id(void);
 

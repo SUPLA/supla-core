@@ -71,7 +71,7 @@ void supla_scene_asynctask::set_delay(void) {
   set_delay_usec(operations->get_delay_ms() * 1000);
 }
 
-const supla_caller &supla_scene_asynctask::get_caller_id(void) const {
+const supla_caller &supla_scene_asynctask::get_caller(void) const {
   return caller;
 }
 
