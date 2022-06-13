@@ -1,0 +1,147 @@
+/*
+ Copyright (C) AC SOFTWARE SP. Z O.O.
+
+ This program is free software; you can redistribute it and/or
+ modify it under the terms of the GNU General Public License
+ as published by the Free Software Foundation; either version 2
+ of the License, or (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#include "scene/scene_state.h"
+
+#include <stdlib.h>
+
+#include "string.h"
+
+supla_scene_state::supla_scene_state(const supla_scene_state &state) {
+  initiator_name = NULL;
+  *this = state;
+}
+
+supla_scene_state::supla_scene_state(const supla_caller &caller,
+                                     struct timeval started_at,
+                                     unsigned _supla_int_t millis_left) {
+  this->initiator_name = NULL;
+  this->initiator_name_get_attempt = false;
+  this->started_at = started_at;
+  unsigned long long ending_at_usec =
+      started_at.tv_sec * 1000000 + started_at.tv_usec + millis_left * 1000;
+  this->ending_at.tv_sec = ending_at_usec / 1000000;
+  this->ending_at.tv_usec = ending_at_usec % 1000000;
+  this->caller = caller;
+}
+
+supla_scene_state::~supla_scene_state(void) {
+  if (initiator_name) {
+    free(initiator_name);
+  }
+}
+
+const supla_caller &supla_scene_state::get_caller(void) { return caller; }
+
+bool supla_scene_state::is_during_execution(void) {
+  bool result = false;
+
+  if (started_at.tv_sec || started_at.tv_usec) {
+    struct timeval now = {};
+    gettimeofday(&now, NULL);
+
+    result =
+        started_at.tv_sec < now.tv_sec ||
+        (started_at.tv_sec == now.tv_sec && started_at.tv_usec <= now.tv_usec);
+
+    if (result) {
+      result =
+          ending_at.tv_sec > now.tv_sec ||
+          (ending_at.tv_sec == now.tv_sec && ending_at.tv_usec > now.tv_usec);
+    }
+  }
+
+  return result;
+}
+
+int supla_scene_state::get_initiator_id(void) {
+  return caller.get_type() == ctClient ? caller.get_id() : 0;
+}
+
+const char *supla_scene_state::get_initiator_name(
+    supla_abstract_initiator_name_getter *getter) {
+  if (initiator_name == NULL && !initiator_name_get_attempt &&
+      get_initiator_id() && getter) {
+    initiator_name = getter->get_name_with_caller(caller);
+    initiator_name_get_attempt = true;
+  }
+
+  return initiator_name;
+}
+
+struct timeval supla_scene_state::get_started_at(void) {
+  return started_at;
+}
+
+struct timeval supla_scene_state::get_ending_at(void) {
+  return ending_at;
+}
+
+unsigned _supla_int_t supla_scene_state::get_milliseconds_from_start(void) {
+  if (started_at.tv_sec || started_at.tv_usec) {
+    struct timeval now = {};
+    gettimeofday(&now, NULL);
+
+    unsigned long long now_usec = now.tv_sec * 1000000 + now.tv_usec;
+    unsigned long long started_at_usec =
+        started_at.tv_sec * 1000000 + started_at.tv_usec;
+
+    if (now_usec >= started_at_usec) {
+      return (now_usec - started_at_usec) / 1000;
+    }
+  }
+
+  return 0;
+}
+
+unsigned _supla_int_t supla_scene_state::get_milliseconds_left(void) {
+  if (ending_at.tv_sec || ending_at.tv_usec) {
+    struct timeval now = {};
+    gettimeofday(&now, NULL);
+
+    unsigned long long now_usec = now.tv_sec * 1000000 + now.tv_usec;
+    unsigned long long ending_at_usec =
+        ending_at.tv_sec * 1000000 + ending_at.tv_usec;
+
+    if (now_usec < ending_at_usec) {
+      return (ending_at_usec - now_usec) / 1000;
+    }
+  }
+
+  return 0;
+}
+
+supla_scene_state &supla_scene_state::operator=(
+    const supla_scene_state &state) {
+  started_at = state.started_at;
+  ending_at = state.ending_at;
+  caller = state.caller;
+  initiator_name_get_attempt = state.initiator_name_get_attempt;
+
+  if (initiator_name) {
+    free(initiator_name);
+    initiator_name = NULL;
+  }
+
+  if (state.initiator_name) {
+    initiator_name =
+        strndup(state.initiator_name, SUPLA_INITIATOR_NAME_MAXSIZE);
+  }
+
+  return *this;
+}

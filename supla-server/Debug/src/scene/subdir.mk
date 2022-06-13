@@ -9,7 +9,8 @@ CPP_SRCS += \
 ../src/scene/scene_operation.cpp \
 ../src/scene/scene_operations.cpp \
 ../src/scene/scene_operations_dao.cpp \
-../src/scene/scene_search_condition.cpp 
+../src/scene/scene_search_condition.cpp \
+../src/scene/scene_state.cpp 
 
 CPP_DEPS += \
 ./src/scene/abstract_scene_operations_dao.d \
@@ -17,7 +18,8 @@ CPP_DEPS += \
 ./src/scene/scene_operation.d \
 ./src/scene/scene_operations.d \
 ./src/scene/scene_operations_dao.d \
-./src/scene/scene_search_condition.d 
+./src/scene/scene_search_condition.d \
+./src/scene/scene_state.d 
 
 OBJS += \
 ./src/scene/abstract_scene_operations_dao.o \
@@ -25,7 +27,8 @@ OBJS += \
 ./src/scene/scene_operation.o \
 ./src/scene/scene_operations.o \
 ./src/scene/scene_operations_dao.o \
-./src/scene/scene_search_condition.o 
+./src/scene/scene_search_condition.o \
+./src/scene/scene_state.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -40,7 +43,7 @@ src/scene/%.o: ../src/scene/%.cpp src/scene/subdir.mk
 clean: clean-src-2f-scene
 
 clean-src-2f-scene:
-	-$(RM) ./src/scene/abstract_scene_operations_dao.d ./src/scene/abstract_scene_operations_dao.o ./src/scene/scene_asynctask.d ./src/scene/scene_asynctask.o ./src/scene/scene_operation.d ./src/scene/scene_operation.o ./src/scene/scene_operations.d ./src/scene/scene_operations.o ./src/scene/scene_operations_dao.d ./src/scene/scene_operations_dao.o ./src/scene/scene_search_condition.d ./src/scene/scene_search_condition.o
+	-$(RM) ./src/scene/abstract_scene_operations_dao.d ./src/scene/abstract_scene_operations_dao.o ./src/scene/scene_asynctask.d ./src/scene/scene_asynctask.o ./src/scene/scene_operation.d ./src/scene/scene_operation.o ./src/scene/scene_operations.d ./src/scene/scene_operations.o ./src/scene/scene_operations_dao.d ./src/scene/scene_operations_dao.o ./src/scene/scene_search_condition.d ./src/scene/scene_search_condition.o ./src/scene/scene_state.d ./src/scene/scene_state.o
 
 .PHONY: clean-src-2f-scene
 
