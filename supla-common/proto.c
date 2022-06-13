@@ -27,13 +27,13 @@
 
 #if defined(ESP8266) || defined(ESP32)
 
-#if !defined(ARDUINO_ARCH_ESP32)
+#if !defined(ARDUINO)
 #include <osapi.h>
 #endif
 #define BUFFER_MIN_SIZE 512
 #define BUFFER_MAX_SIZE 2048
 
-#if !defined(ARDUINO_ARCH_ESP8266) && !defined(ARDUINO_ARCH_ESP32)
+#if !defined(ARDUINO)
 #include <user_interface.h>
 
 #include "espmissingincludes.h"
@@ -43,6 +43,10 @@
 
 #define BUFFER_MIN_SIZE 32
 #define BUFFER_MAX_SIZE 1024
+
+#elif defined(SUPLA_DEVICE)
+#define BUFFER_MIN_SIZE 512
+#define BUFFER_MAX_SIZE 2048
 
 #endif /*ESP8266*/
 
@@ -109,6 +113,7 @@ unsigned char PROTO_ICACHE_FLASH sproto_buffer_append(
     void *spd_ptr, char **buffer, unsigned _supla_int_t *buffer_size,
     unsigned _supla_int_t *buffer_data_size, char *data,
     unsigned _supla_int_t data_size) {
+  (void)(spd_ptr);
   unsigned _supla_int_t size = *buffer_size;
 
   if (size < BUFFER_MIN_SIZE) {
@@ -128,12 +133,9 @@ unsigned char PROTO_ICACHE_FLASH sproto_buffer_append(
       return (SUPLA_RESULT_FALSE);
     }
 
-#ifndef ESP8266
-#ifndef ESP32
-#ifndef __AVR__
+#if !defined(ESP8266) && !defined(ESP32) && !defined(ARDUINO) && \
+    !defined(SUPLA_DEVICE)
     if (errno == ENOMEM) return (SUPLA_RESULT_FALSE);
-#endif
-#endif
 #endif
 
     *buffer = new_buffer;
@@ -219,6 +221,7 @@ unsigned _supla_int_t PROTO_ICACHE_FLASH sproto_pop_out_data(
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 char PROTO_ICACHE_FLASH sproto_out_dataexists(void *spd_ptr) {
+  (void)(spd_ptr);
 #ifdef SPROTO_WITHOUT_OUT_BUFFER
   return SUPLA_RESULT_FALSE;
 #else
@@ -235,7 +238,7 @@ char PROTO_ICACHE_FLASH sproto_in_dataexists(void *spd_ptr) {
 void PROTO_ICACHE_FLASH sproto_shrink_in_buffer(TSuplaProtoInBuffer *in,
                                                 unsigned _supla_int_t size) {
   unsigned _supla_int_t old_size = in->size;
-  _supla_int_t a, b;
+  unsigned _supla_int_t a, b;
 
   in->begin_tag = 0;
 

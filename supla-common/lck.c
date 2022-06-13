@@ -26,7 +26,8 @@
 #endif /*__LCK_DEBUG*/
 
 #if defined(__AVR__) || defined(ARDUINO_ARCH_ESP8266) || \
-    defined(ARDUINO_ARCH_ESP32)
+    defined(ARDUINO_ARCH_ESP32) || defined(SUPLA_DEVICE)
+// TODO add multithread support for SUPLA_DEVICE
 #define __SINGLE_THREAD
 #else
 
@@ -139,6 +140,7 @@ void LCK_ICACHE_FLASH __lck_lock(void *lck, const char *file, int line) {
 void LCK_ICACHE_FLASH _lck_lock(void *lck) {
 #else
 void lck_lock(void *lck) {
+  (void)(lck);
 #endif /*__LCK_DEBUG*/
 #ifndef __SINGLE_THREAD
   if (lck != NULL) {
@@ -153,6 +155,7 @@ void lck_lock(void *lck) {
 }
 
 void LCK_ICACHE_FLASH lck_unlock(void *lck) {
+  (void)(lck);
 #ifdef __LCK_DEBUG
   ((TLckData *)lck)->count--;
 #endif /*__LCK_DEBUG*/
@@ -169,6 +172,7 @@ void LCK_ICACHE_FLASH lck_unlock(void *lck) {
 }
 
 int LCK_ICACHE_FLASH lck_unlock_r(void *lck, int result) {
+  (void)(lck);
 #ifndef __SINGLE_THREAD
   lck_unlock(lck);
 #endif /*__SINGLE_THREAD*/
@@ -176,6 +180,7 @@ int LCK_ICACHE_FLASH lck_unlock_r(void *lck, int result) {
 }
 
 void LCK_ICACHE_FLASH lck_free(void *lck) {
+  (void)(lck);
 #ifdef __LCK_DEBUG
   int a;
   int n = sizeof(ptrs) / sizeof(void *);

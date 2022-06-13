@@ -20,6 +20,7 @@
 #define supla_proto_H_
 
 #ifdef _WIN32
+// *** WINDOWS ***
 
 #include <WinSock2.h>
 #define _supla_int_t int
@@ -27,7 +28,9 @@
 #define _supla_int64_t __int64
 #define _supla_timeval timeval
 
+
 #elif defined(__AVR__)
+// *** ARDUINO MEGA ***
 
 #define SPROTO_WITHOUT_OUT_BUFFER
 
@@ -42,11 +45,18 @@ struct _supla_timeval {
 #define _supla_int_t long
 #define _supla_int64_t long long
 
-#elif defined(ESP8266) || defined(ESP32)
+#elif defined(ESP8266) || defined(ESP32) || defined(ESP_PLATFORM)
+// *** Espressif NONOS SDK for ESP8266 OR ARDUINO WITH ESP8266 or ESP32 ***
+// *** ESP-IDF, ESP8266 RTOS SDK ***
+#ifndef ESP_PLATFORM
+#ifndef ARDUINO
 #include <mem.h>
 #define PROTO_ICACHE_FLASH ICACHE_FLASH_ATTR
+#endif /*ARDUINO*/
+#endif /*ESP_PLATFORM*/
 
-#if defined(ARDUINO_ARCH_ESP8266) || defined(ARDUINO_ARCH_ESP32)
+#if defined(ARDUINO) || defined(ESP_PLATFORM)
+// *** Only ARDUINO ESPxxx and ESP-IDS, RTOS SDK (NONOS is excluded) ***
 #define SPROTO_WITHOUT_OUT_BUFFER
 #endif /*ARDUINO_ARCH_ESP8266*/
 
@@ -59,6 +69,7 @@ struct _supla_timeval {
 #define _supla_int_t int
 #define _supla_int64_t long long
 #elif defined(__arm__)
+// *** ARM - RPI? *** 
 
 struct _supla_timeval {
   long long tv_sec;
@@ -71,16 +82,25 @@ struct _supla_timeval {
 #define _supla_int64_t long long
 
 #else /*__arm__*/
+// *** OTHER? Linux, what else? ***
 #include <sys/time.h>
 #define _supla_int16_t short
 #define _supla_int_t int
 #define _supla_int64_t long long
+// timeval for 64 bit system
+#if __GNUC__
+#if __x86_64__ || __ppc64__
 #define _supla_timeval timeval
-#endif
+#else
+// timeval for 32 bit system
+struct _supla_timeval {
+  long long tv_sec;
+  long long tv_usec;
+};
 
-#if defined(ARDUINO)
-#undef PROTO_ICACHE_FLASH
-#endif /*defined(ARDUINO)*/
+#endif /* __x86_64__ || __ppc64__*/
+#endif /* __GNUC__*/
+#endif
 
 #ifndef PROTO_ICACHE_FLASH
 #define PROTO_ICACHE_FLASH
@@ -104,8 +124,8 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_PROTO_VERSION_MIN 1
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
-#elif defined(ARDUINO_ARCH_ESP8266) || \
-    defined(ARDUINO_ARCH_ESP32)   // Arduino IDE for ESP8266
+#elif defined(ARDUINO) || \
+    defined(SUPLA_DEVICE)   // Other Arduino compilations and SUPLA_DEVICE
 #define SUPLA_MAX_DATA_SIZE 3264  // Registration header + 128 channels x 21 B
 #elif defined(ESP8266)
 #define SUPLA_MAX_DATA_SIZE 1536
