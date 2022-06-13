@@ -69,7 +69,7 @@ struct _supla_timeval {
 #define _supla_int_t int
 #define _supla_int64_t long long
 #elif defined(__arm__)
-// *** ARM - RPI? *** 
+// *** ARM - RPI? ***
 
 struct _supla_timeval {
   long long tv_sec;

@@ -150,7 +150,7 @@ void supla_vlog(int __pri, const char *message) {
       break;
     default:
       ESP_LOGE(SUPLA_TAG, "%s", message);
-  };
+  }
 }
 #elif defined(SUPLA_DEVICE)
 // Keep it empty - supla_vlog is defined in target specific file in porting
