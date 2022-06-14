@@ -19,6 +19,8 @@
 #ifndef CALLER_H_
 #define CALLER_H_
 
+#include <string>
+
 enum _callerType_e {
   ctUnknown,
   ctDevice,
@@ -36,6 +38,7 @@ class supla_caller {
   supla_caller *parent;
   _callerType_e type;
   int id;
+  std::string name;
   const supla_caller *get_first(void) const;
 
  public:
@@ -43,11 +46,15 @@ class supla_caller {
   supla_caller(void);
   explicit supla_caller(_callerType_e type);
   supla_caller(_callerType_e type, int id);
+  supla_caller(_callerType_e type, int id, const std::string &name);
   supla_caller(const supla_caller &parent, _callerType_e type);
   supla_caller(const supla_caller &parent, _callerType_e type, int id);
+  supla_caller(const supla_caller &parent, _callerType_e type, int id,
+               const std::string &name);
   virtual ~supla_caller();
   int get_id(void) const;
   _callerType_e get_type() const;
+  const std::string &get_name(void) const;
   supla_caller *clone(void) const;
   int convert_to_sender_id(void) const;
   int find(_callerType_e type, int id) const;

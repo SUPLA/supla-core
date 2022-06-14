@@ -47,6 +47,14 @@ supla_caller::supla_caller(_callerType_e type, int id) {
   this->id = id;
 }
 
+supla_caller::supla_caller(_callerType_e type, int id,
+                           const std::string &name) {
+  this->parent = NULL;
+  this->type = type;
+  this->id = id;
+  this->name = name;
+}
+
 supla_caller::supla_caller(const supla_caller &parent, _callerType_e type) {
   this->parent = parent.clone();
   this->type = type;
@@ -58,6 +66,14 @@ supla_caller::supla_caller(const supla_caller &parent, _callerType_e type,
   this->parent = parent.clone();
   this->type = type;
   this->id = id;
+}
+
+supla_caller::supla_caller(const supla_caller &parent, _callerType_e type,
+                           int id, const std::string &name) {
+  this->parent = parent.clone();
+  this->type = type;
+  this->id = id;
+  this->name = name;
 }
 
 supla_caller::~supla_caller() {
@@ -83,12 +99,17 @@ int supla_caller::get_id(void) const { return get_first()->id; }
 
 _callerType_e supla_caller::get_type() const { return get_first()->type; }
 
+const std::string &supla_caller::get_name(void) const {
+  return get_first()->name;
+}
+
 supla_caller *supla_caller::clone(void) const {
   supla_caller *result = new supla_caller();
   if (result) {
     result->parent = parent ? parent->clone() : NULL;
     result->type = type;
     result->id = id;
+    result->name = name;
   }
 
   return result;
@@ -150,6 +171,7 @@ supla_caller &supla_caller::operator=(const supla_caller &caller) {
   parent = caller.parent ? caller.parent->clone() : NULL;
   type = caller.type;
   id = caller.id;
+  name = caller.name;
 
   return *this;
 }

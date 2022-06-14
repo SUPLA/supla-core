@@ -32,6 +32,7 @@ TEST_F(CallerClassTest, constructorsWithoutParent) {
     EXPECT_EQ(caller->stack_size(), 1);
     EXPECT_EQ(caller->get_id(), 0);
     EXPECT_EQ(caller->get_type(), ctUnknown);
+    EXPECT_EQ(caller->get_name(), "");
     delete caller;
   }
 
@@ -41,6 +42,7 @@ TEST_F(CallerClassTest, constructorsWithoutParent) {
     EXPECT_EQ(caller->stack_size(), 1);
     EXPECT_EQ(caller->get_id(), 0);
     EXPECT_EQ(caller->get_type(), ctGoogleHome);
+    EXPECT_EQ(caller->get_name(), "");
     delete caller;
   }
 
@@ -50,6 +52,17 @@ TEST_F(CallerClassTest, constructorsWithoutParent) {
     EXPECT_EQ(caller->stack_size(), 1);
     EXPECT_EQ(caller->get_id(), 123);
     EXPECT_EQ(caller->get_type(), ctDevice);
+    EXPECT_EQ(caller->get_name(), "");
+    delete caller;
+  }
+
+  caller = new supla_caller(ctClient, 123, "iPhone Elon");
+  EXPECT_TRUE(caller != NULL);
+  if (caller) {
+    EXPECT_EQ(caller->stack_size(), 1);
+    EXPECT_EQ(caller->get_id(), 123);
+    EXPECT_EQ(caller->get_type(), ctClient);
+    EXPECT_EQ(caller->get_name(), "iPhone Elon");
     delete caller;
   }
 }
@@ -65,6 +78,21 @@ TEST_F(CallerClassTest, constructorsWithParent) {
     EXPECT_EQ(caller->stack_size(), 2);
     EXPECT_EQ(caller->get_id(), 123);
     EXPECT_EQ(caller->get_type(), ctClient);
+    EXPECT_EQ(caller->get_name(), "");
+    EXPECT_EQ(caller->find(ctClient, 1), 0);
+    EXPECT_EQ(caller->find(ctClient, 123), 1);
+    EXPECT_EQ(caller->find(ctGoogleHome), 2);
+    delete caller;
+  }
+
+  caller = new supla_caller(supla_caller(ctClient, 123, "iPhone Steve"),
+                            ctGoogleHome);
+  EXPECT_TRUE(caller != NULL);
+  if (caller) {
+    EXPECT_EQ(caller->stack_size(), 2);
+    EXPECT_EQ(caller->get_id(), 123);
+    EXPECT_EQ(caller->get_type(), ctClient);
+    EXPECT_EQ(caller->get_name(), "iPhone Steve");
     EXPECT_EQ(caller->find(ctClient, 1), 0);
     EXPECT_EQ(caller->find(ctClient, 123), 1);
     EXPECT_EQ(caller->find(ctGoogleHome), 2);
@@ -77,6 +105,7 @@ TEST_F(CallerClassTest, constructorsWithParent) {
     EXPECT_EQ(caller->stack_size(), 2);
     EXPECT_EQ(caller->get_id(), 0);
     EXPECT_EQ(caller->get_type(), ctIPC);
+    EXPECT_EQ(caller->get_name(), "");
     EXPECT_EQ(caller->find(ctScene, 123), 2);
     EXPECT_EQ(caller->find(ctIPC), 1);
     delete caller;
@@ -91,6 +120,7 @@ TEST_F(CallerClassTest, constructorsWithParent) {
     EXPECT_EQ(caller->stack_size(), 4);
     EXPECT_EQ(caller->get_id(), 1);
     EXPECT_EQ(caller->get_type(), ctScene);
+    EXPECT_EQ(caller->get_name(), "");
     EXPECT_EQ(caller->find(ctScene, 1), 1);
     EXPECT_EQ(caller->find(ctScene, 2), 2);
     EXPECT_EQ(caller->find(ctScene, 3), 3);
@@ -147,12 +177,24 @@ TEST_F(CallerClassTest, assignmentOperator) {
   supla_caller c4;
   EXPECT_EQ(c4.get_id(), 0);
   EXPECT_EQ(c4.get_type(), ctUnknown);
+  EXPECT_EQ(c4.get_name(), "");
 
   c4 = c3;
   EXPECT_EQ(c3.get_id(), 5);
   EXPECT_EQ(c3.get_type(), ctScene);
   EXPECT_TRUE(c3.get_id() == c4.get_id());
   EXPECT_TRUE(c3.get_type() == c4.get_type());
+  EXPECT_TRUE(c3.get_name() == c4.get_name());
+
+  supla_caller c5(ctClient, 15, "Client Name");
+  c4 = c5;
+  EXPECT_EQ(c5.get_id(), 15);
+  EXPECT_EQ(c5.get_type(), ctClient);
+  EXPECT_EQ(c5.get_name(), "Client Name");
+
+  EXPECT_TRUE(c5.get_id() == c4.get_id());
+  EXPECT_TRUE(c5.get_type() == c4.get_type());
+  EXPECT_EQ(c5.get_name(), c4.get_name());
 }
 
 TEST_F(CallerClassTest, conversionToSenderId) {
