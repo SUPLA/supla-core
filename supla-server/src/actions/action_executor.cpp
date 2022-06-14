@@ -128,14 +128,16 @@ void supla_action_executor::reveal(void) {
 
 void supla_action_executor::execute(void) {
   if (get_scene_id() && get_user()) {
-    supla_scene_asynctask::execute(get_caller(), get_user()->getUserID(),
-                                   get_scene_id());
+    supla_scene_asynctask::execute(
+        supla_scene_asynctask::get_queue(), supla_scene_asynctask::get_pool(),
+        get_caller(), get_user()->getUserID(), get_scene_id());
   }
 }
 
 void supla_action_executor::interrupt(void) {
   if (get_scene_id() && get_user()) {
-    supla_scene_asynctask::interrupt(get_user()->getUserID(), get_scene_id());
+    supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
+                                     get_user()->getUserID(), get_scene_id());
   }
 }
 

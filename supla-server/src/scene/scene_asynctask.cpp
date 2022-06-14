@@ -114,10 +114,21 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
 }
 
 // static
+supla_asynctask_queue *supla_scene_asynctask::get_queue(void) {
+  return supla_asynctask_queue::global_instance();
+}
+
+// static
+supla_abstract_asynctask_thread_pool *supla_scene_asynctask::get_pool(void) {
+  return supla_asynctask_default_thread_pool::global_instance();
+}
+
+// static
 _sceneExecutionResult_e supla_scene_asynctask::execute(
+    supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
     const supla_caller &caller, int user_id, int scene_id) {
   supla_scene_search_condition cnd(user_id, scene_id, false);
-  if (supla_asynctask_queue::global_instance()->task_exists(&cnd)) {
+  if (queue->task_exists(&cnd)) {
     return serIsDuringExecution;
   } else {
     supla_scene_operations_dao dao;
@@ -133,17 +144,17 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
       supla_action_executor *action_executor = new supla_action_executor();
       supla_value_getter *value_getter = new supla_value_getter();
 
-      new supla_scene_asynctask(
-          caller, user_id, scene_id, supla_asynctask_queue::global_instance(),
-          supla_asynctask_default_thread_pool::global_instance(),
-          action_executor, value_getter, operations, true);
+      new supla_scene_asynctask(caller, user_id, scene_id, queue, pool,
+                                action_executor, value_getter, operations,
+                                true);
       return serOK;
     }
   }
 }
 
 // static
-void supla_scene_asynctask::interrupt(int user_id, int scene_id) {
+void supla_scene_asynctask::interrupt(supla_asynctask_queue *queue, int user_id,
+                                      int scene_id) {
   supla_scene_search_condition cnd(user_id, scene_id, true);
-  supla_asynctask_queue::global_instance()->cancel_tasks(&cnd);
+  queue->cancel_tasks(&cnd);
 }

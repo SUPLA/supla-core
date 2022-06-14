@@ -53,9 +53,14 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   int get_user_id(void);
   int get_scene_id(void);
 
-  static _sceneExecutionResult_e execute(const supla_caller &caller,
-                                         int user_id, int scene_id);
-  static void interrupt(int user_id, int scene_id);
+  static supla_asynctask_queue *get_queue(void);
+  static supla_abstract_asynctask_thread_pool *get_pool(void);
+
+  static _sceneExecutionResult_e execute(
+      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+      const supla_caller &caller, int user_id, int scene_id);
+  static void interrupt(supla_asynctask_queue *queue, int user_id,
+                        int scene_id);
 };
 
 #endif /* SUPLA_SCENE_ASYNCTASK_H_ */

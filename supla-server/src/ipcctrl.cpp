@@ -598,8 +598,9 @@ void svr_ipcctrl::execute_scene(const char *cmd) {
   sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i", &UserID, &SceneID);
 
   if (UserID && SceneID) {
-    _sceneExecutionResult_e result =
-        supla_scene_asynctask::execute(supla_caller(ctIPC), UserID, SceneID);
+    _sceneExecutionResult_e result = supla_scene_asynctask::execute(
+        supla_scene_asynctask::get_queue(), supla_scene_asynctask::get_pool(),
+        supla_caller(ctIPC), UserID, SceneID);
 
     if (result == serOK) {
       send_result("OK:", SceneID);
@@ -620,7 +621,8 @@ void svr_ipcctrl::interrupt_scene(const char *cmd) {
   sscanf(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], "%i,%i", &UserID, &SceneID);
 
   if (UserID && SceneID) {
-    supla_scene_asynctask::interrupt(UserID, SceneID);
+    supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(), UserID,
+                                     SceneID);
     send_result("OK:", SceneID);
   }
 
