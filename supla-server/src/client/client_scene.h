@@ -21,6 +21,7 @@
 
 #include "distributedobjects/dobject.h"
 #include "proto.h"
+#include "scene/scene_state.h"
 
 class supla_client_scene : public supla_dobject {
  private:
@@ -28,11 +29,7 @@ class supla_client_scene : public supla_dobject {
   int user_icon_id;
   int alt_icon_id;
   int location_id;
-
-  int initiator_id;
-  char *initiator_name;
-  unsigned _supla_int_t milliseconds_from_start;
-  unsigned _supla_int_t milliseconds_left;
+  supla_scene_state state;
 
  public:
   explicit supla_client_scene(int id);
@@ -45,15 +42,8 @@ class supla_client_scene : public supla_dobject {
   int get_alt_icon_id(void);
   void set_location_id(int location_id);
   int get_location_id(void);
-  void set_initiator_id(int initiator_id);
-  int get_initiator_id(void);
-  void set_initiator_name(const char *initiator_name);
-  const char *get_initiator_name(void);
-  void set_milliseconds_from_start(
-      unsigned _supla_int_t milliseconds_from_start);
-  unsigned _supla_int_t get_milliseconds_from_start(void);
-  void set_milliseconds_left(unsigned _supla_int_t milliseconds_left);
-  unsigned _supla_int_t get_milliseconds_left(void);
+  const supla_scene_state &get_state(void);
+  void set_state(const supla_scene_state &state);
 
   void convert(TSC_SuplaScene *dest);
   void convert(TSC_SuplaSceneState *dest);

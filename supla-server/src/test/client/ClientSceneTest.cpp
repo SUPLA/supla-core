@@ -19,6 +19,7 @@
 #include "client/ClientSceneTest.h"
 
 #include "client/client_scene.h"
+#include "doubles/InitiatorNameGetterMock.h"
 
 namespace testing {
 
@@ -32,10 +33,21 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   scene.set_user_icon_id(20);
   scene.set_alt_icon_id(30);
   scene.set_location_id(40);
-  scene.set_initiator_id(50);
-  scene.set_initiator_name("Samsung Galaxy");
-  scene.set_milliseconds_from_start(123456);
-  scene.set_milliseconds_left(567890);
+
+  InitiatorNameGetterrMock initiatorNameGetter;
+
+  char initiatorName[] = "Samsung Galaxy";
+
+  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
+      .Times(1)
+      .WillOnce(Return(strdup(initiatorName)));
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+  now.tv_sec -= 5;
+  supla_scene_state state(supla_caller(ctClient, 50), now, 10000);
+  state.set_initiator_name(&initiatorNameGetter);
+  scene.set_state(state);
 
   EXPECT_EQ(scene.get_id(), 15);
   EXPECT_EQ(strncmp(scene.get_caption(), "Scene caption",
@@ -44,13 +56,15 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   EXPECT_EQ(scene.get_user_icon_id(), 20);
   EXPECT_EQ(scene.get_alt_icon_id(), 30);
   EXPECT_EQ(scene.get_location_id(), 40);
-  EXPECT_EQ(scene.get_initiator_id(), 50);
-  EXPECT_EQ(strncmp(scene.get_initiator_name(), "Samsung Galaxy",
+  EXPECT_EQ(scene.get_state().get_initiator_id(), 50);
+  EXPECT_EQ(strncmp(scene.get_state().get_initiator_name(), "Samsung Galaxy",
                     SUPLA_INITIATOR_NAME_MAXSIZE + 1),
             0);
 
-  EXPECT_EQ(scene.get_milliseconds_from_start(), 123456U);
-  EXPECT_EQ(scene.get_milliseconds_left(), 567890U);
+  EXPECT_GE(scene.get_state().get_milliseconds_from_start(), 5000U);
+  EXPECT_LE(scene.get_state().get_milliseconds_from_start(), 5200U);
+  EXPECT_LE(scene.get_state().get_milliseconds_left(), 5000U);
+  EXPECT_GE(scene.get_state().get_milliseconds_left(), 4800U);
 }
 
 TEST_F(ClientSceneTest, convertScene) {
@@ -76,11 +90,22 @@ TEST_F(ClientSceneTest, convertScene) {
 }
 
 TEST_F(ClientSceneTest, convertSceneState) {
+  char initiatorName[] = "Samsung Galaxy";
+
+  InitiatorNameGetterrMock initiatorNameGetter;
+
+  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
+      .Times(1)
+      .WillOnce(Return(strdup(initiatorName)));
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+  now.tv_sec -= 15;
+  supla_scene_state state(supla_caller(ctClient, 456), now, 60000);
+  state.set_initiator_name(&initiatorNameGetter);
+
   supla_client_scene scene(123);
-  scene.set_initiator_id(456);
-  scene.set_initiator_name("Samsung Galaxy");
-  scene.set_milliseconds_from_start(2345);
-  scene.set_milliseconds_left(67890);
+  scene.set_state(state);
 
   TSC_SuplaSceneState sc_scene_state = {};
   scene.convert(&sc_scene_state);
@@ -88,14 +113,18 @@ TEST_F(ClientSceneTest, convertSceneState) {
   EXPECT_EQ(sc_scene_state.EOL, 0);
   EXPECT_EQ(sc_scene_state.SceneId, 123);
   EXPECT_EQ(sc_scene_state.InitiatorId, 456);
-  EXPECT_EQ(sc_scene_state.MillisecondsFromStart, 2345U);
-  EXPECT_EQ(sc_scene_state.MillisecondsLeft, 67890U);
+  EXPECT_GE(sc_scene_state.MillisecondsFromStart, 15000U);
+  EXPECT_LE(sc_scene_state.MillisecondsFromStart, 15200U);
+  EXPECT_LE(sc_scene_state.MillisecondsLeft, 45000U);
+  EXPECT_GE(sc_scene_state.MillisecondsLeft, 44800U);
 
-  EXPECT_EQ(
-      sc_scene_state.InitiatorNameSize,
-      strnlen(scene.get_initiator_name(), SUPLA_INITIATOR_NAME_MAXSIZE) + 1);
+  EXPECT_EQ(sc_scene_state.InitiatorNameSize,
+            strnlen(scene.get_state().get_initiator_name(),
+                    SUPLA_INITIATOR_NAME_MAXSIZE) +
+                1);
 
-  EXPECT_EQ(strncmp(sc_scene_state.InitiatorName, scene.get_initiator_name(),
+  EXPECT_EQ(strncmp(sc_scene_state.InitiatorName,
+                    scene.get_state().get_initiator_name(),
                     SUPLA_INITIATOR_NAME_MAXSIZE + 1),
             0);
 }

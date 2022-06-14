@@ -22,6 +22,12 @@
 
 #include "string.h"
 
+supla_scene_state::supla_scene_state(void) {
+  this->initiator_name = NULL;
+  this->started_at = {};
+  this->ending_at = {};
+}
+
 supla_scene_state::supla_scene_state(const supla_scene_state &state) {
   initiator_name = NULL;
   *this = state;
@@ -31,7 +37,6 @@ supla_scene_state::supla_scene_state(const supla_caller &caller,
                                      struct timeval started_at,
                                      unsigned _supla_int_t millis_left) {
   this->initiator_name = NULL;
-  this->initiator_name_get_attempt = false;
   this->started_at = started_at;
   unsigned long long ending_at_usec =
       started_at.tv_sec * 1000000 + started_at.tv_usec + millis_left * 1000;
@@ -46,9 +51,9 @@ supla_scene_state::~supla_scene_state(void) {
   }
 }
 
-const supla_caller &supla_scene_state::get_caller(void) { return caller; }
+const supla_caller &supla_scene_state::get_caller(void) const { return caller; }
 
-bool supla_scene_state::is_during_execution(void) {
+bool supla_scene_state::is_during_execution(void) const {
   bool result = false;
 
   if (started_at.tv_sec || started_at.tv_usec) {
@@ -69,30 +74,36 @@ bool supla_scene_state::is_during_execution(void) {
   return result;
 }
 
-int supla_scene_state::get_initiator_id(void) {
+int supla_scene_state::get_initiator_id(void) const {
   return caller.get_type() == ctClient ? caller.get_id() : 0;
 }
 
-const char *supla_scene_state::get_initiator_name(
-    supla_abstract_initiator_name_getter *getter) {
-  if (initiator_name == NULL && !initiator_name_get_attempt &&
-      get_initiator_id() && getter) {
-    initiator_name = getter->get_name_with_caller(caller);
-    initiator_name_get_attempt = true;
-  }
-
+const char *supla_scene_state::get_initiator_name(void) const {
   return initiator_name;
 }
 
-struct timeval supla_scene_state::get_started_at(void) {
+void supla_scene_state::set_initiator_name(
+    supla_abstract_initiator_name_getter *getter) {
+  if (initiator_name) {
+    free(initiator_name);
+    initiator_name = NULL;
+  }
+
+  if (get_initiator_id() && getter) {
+    initiator_name = getter->get_name_with_caller(caller);
+  }
+}
+
+struct timeval supla_scene_state::get_started_at(void) const {
   return started_at;
 }
 
-struct timeval supla_scene_state::get_ending_at(void) {
+struct timeval supla_scene_state::get_ending_at(void) const {
   return ending_at;
 }
 
-unsigned _supla_int_t supla_scene_state::get_milliseconds_from_start(void) {
+unsigned _supla_int_t
+supla_scene_state::get_milliseconds_from_start(void) const {
   if (started_at.tv_sec || started_at.tv_usec) {
     struct timeval now = {};
     gettimeofday(&now, NULL);
@@ -109,7 +120,7 @@ unsigned _supla_int_t supla_scene_state::get_milliseconds_from_start(void) {
   return 0;
 }
 
-unsigned _supla_int_t supla_scene_state::get_milliseconds_left(void) {
+unsigned _supla_int_t supla_scene_state::get_milliseconds_left(void) const {
   if (ending_at.tv_sec || ending_at.tv_usec) {
     struct timeval now = {};
     gettimeofday(&now, NULL);
@@ -126,12 +137,23 @@ unsigned _supla_int_t supla_scene_state::get_milliseconds_left(void) {
   return 0;
 }
 
+void supla_scene_state::convert(TSC_SuplaSceneState *dest) const {
+  *dest = {};
+
+  dest->MillisecondsFromStart = get_milliseconds_from_start();
+  dest->MillisecondsLeft = get_milliseconds_left();
+
+  dest->InitiatorId = get_initiator_id();
+  sproto__set_null_terminated_string(get_initiator_name(), dest->InitiatorName,
+                                     &dest->InitiatorNameSize,
+                                     SUPLA_INITIATOR_NAME_MAXSIZE);
+}
+
 supla_scene_state &supla_scene_state::operator=(
     const supla_scene_state &state) {
   started_at = state.started_at;
   ending_at = state.ending_at;
   caller = state.caller;
-  initiator_name_get_attempt = state.initiator_name_get_attempt;
 
   if (initiator_name) {
     free(initiator_name);

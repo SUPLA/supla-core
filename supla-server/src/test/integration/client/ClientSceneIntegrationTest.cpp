@@ -40,7 +40,9 @@ TEST_F(ClientSceneIntegrationTest, loadAndUpdateRemote) {
 
   TSC_SuplaScenePack scenePack = {};
 
-  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, get_proto_version)
+      .Times(2)
+      .WillRepeatedly(Return(18));
   EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update)
       .Times(1)
       .WillOnce(DoAll(SaveArgPointee<0>(&scenePack), Return(1)));
@@ -74,7 +76,9 @@ TEST_F(ClientSceneIntegrationTest, loadAndUpdateRemote) {
 
   TSC_SuplaSceneStatePack statePack = {};
 
-  EXPECT_CALL(srpcAdapter, get_proto_version).Times(2).WillOnce(Return(18));
+  EXPECT_CALL(srpcAdapter, get_proto_version)
+      .Times(2)
+      .WillRepeatedly(Return(18));
   EXPECT_CALL(srpcAdapter, sc_async_scene_pack_update).Times(0);
   EXPECT_CALL(srpcAdapter, sc_async_scene_state_pack_update)
       .Times(1)

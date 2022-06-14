@@ -28,23 +28,25 @@ class supla_scene_state {
   struct timeval started_at;
   struct timeval ending_at;
   char *initiator_name;
-  bool initiator_name_get_attempt;
   supla_caller caller;
 
  public:
+  supla_scene_state(void);
   supla_scene_state(const supla_scene_state &state);
   supla_scene_state(const supla_caller &caller, struct timeval started_at,
                     unsigned _supla_int_t millis_left);
   virtual ~supla_scene_state();
 
-  const supla_caller &get_caller(void);
-  bool is_during_execution(void);
-  int get_initiator_id(void);
-  const char *get_initiator_name(supla_abstract_initiator_name_getter *getter);
-  struct timeval get_started_at(void);
-  struct timeval get_ending_at(void);
-  unsigned _supla_int_t get_milliseconds_from_start(void);
-  unsigned _supla_int_t get_milliseconds_left(void);
+  const supla_caller &get_caller(void) const;
+  bool is_during_execution(void) const;
+  int get_initiator_id(void) const;
+  const char *get_initiator_name(void) const;
+  void set_initiator_name(supla_abstract_initiator_name_getter *getter);
+  struct timeval get_started_at(void) const;
+  struct timeval get_ending_at(void) const;
+  unsigned _supla_int_t get_milliseconds_from_start(void) const;
+  unsigned _supla_int_t get_milliseconds_left(void) const;
+  void convert(TSC_SuplaSceneState *dest) const;
 
   supla_scene_state &operator=(const supla_scene_state &state);
 };
