@@ -5,21 +5,18 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/doubles/CDBaseMock.cpp \
-../src/test/doubles/InitiatorNameGetterMock.cpp \
 ../src/test/doubles/SrpcAdapterMock.cpp \
 ../src/test/doubles/TrivialHttpFactoryMock.cpp \
 ../src/test/doubles/TrivialHttpMock.cpp 
 
 CPP_DEPS += \
 ./src/test/doubles/CDBaseMock.d \
-./src/test/doubles/InitiatorNameGetterMock.d \
 ./src/test/doubles/SrpcAdapterMock.d \
 ./src/test/doubles/TrivialHttpFactoryMock.d \
 ./src/test/doubles/TrivialHttpMock.d 
 
 OBJS += \
 ./src/test/doubles/CDBaseMock.o \
-./src/test/doubles/InitiatorNameGetterMock.o \
 ./src/test/doubles/SrpcAdapterMock.o \
 ./src/test/doubles/TrivialHttpFactoryMock.o \
 ./src/test/doubles/TrivialHttpMock.o 
@@ -37,7 +34,7 @@ src/test/doubles/%.o: ../src/test/doubles/%.cpp src/test/doubles/subdir.mk
 clean: clean-src-2f-test-2f-doubles
 
 clean-src-2f-test-2f-doubles:
-	-$(RM) ./src/test/doubles/CDBaseMock.d ./src/test/doubles/CDBaseMock.o ./src/test/doubles/InitiatorNameGetterMock.d ./src/test/doubles/InitiatorNameGetterMock.o ./src/test/doubles/SrpcAdapterMock.d ./src/test/doubles/SrpcAdapterMock.o ./src/test/doubles/TrivialHttpFactoryMock.d ./src/test/doubles/TrivialHttpFactoryMock.o ./src/test/doubles/TrivialHttpMock.d ./src/test/doubles/TrivialHttpMock.o
+	-$(RM) ./src/test/doubles/CDBaseMock.d ./src/test/doubles/CDBaseMock.o ./src/test/doubles/SrpcAdapterMock.d ./src/test/doubles/SrpcAdapterMock.o ./src/test/doubles/TrivialHttpFactoryMock.d ./src/test/doubles/TrivialHttpFactoryMock.o ./src/test/doubles/TrivialHttpMock.d ./src/test/doubles/TrivialHttpMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles
 

@@ -21,7 +21,6 @@
 #include "client/client_scene.h"
 #include "client/client_scene_change_indicator.h"
 #include "client/client_scene_remote_updater.h"
-#include "doubles/InitiatorNameGetterMock.h"
 #include "doubles/SrpcAdapterMock.h"
 #include "doubles/distributedobjects/DObjectsMock.h"
 #include "scene/scene_state.h"
@@ -201,15 +200,10 @@ TEST_F(ClientSceneRemoteUpdateTest, sceneAndStateUpdate) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
   now.tv_sec--;
-  supla_scene_state state(supla_caller(ctClient, 34), now, 6000);
 
-  char initiatorName[] = "iPhone Steve";
-  InitiatorNameGetterrMock initiatorNameGetter;
+  const char initiatorName[] = "iPhone Steve";
 
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
-  state.set_initiator_name(&initiatorNameGetter);
+  supla_scene_state state(supla_caller(ctClient, 34, initiatorName), now, 6000);
 
   supla_client_scene *scene = new supla_client_scene(12356);
   if (scene) {
@@ -291,19 +285,13 @@ TEST_F(ClientSceneRemoteUpdateTest, stateUpdate) {
   supla_client_scene_remote_updater remoteUpdater(&srpcAdapter);
   DObjectsMock scenes(&remoteUpdater);
 
-  InitiatorNameGetterrMock initiatorNameGetter;
-
   char initiatorName[] = "iPhone Elon";
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
 
   struct timeval now = {};
   gettimeofday(&now, NULL);
   now.tv_sec -= 5;
-  supla_scene_state state(supla_caller(ctClient, 3467), now, 6200);
-  state.set_initiator_name(&initiatorNameGetter);
+  supla_scene_state state(supla_caller(ctClient, 3467, initiatorName), now,
+                          6200);
 
   supla_client_scene *scene = new supla_client_scene(22356);
   if (scene) {

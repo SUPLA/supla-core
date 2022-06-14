@@ -18,7 +18,6 @@
 
 #include "scene/SceneStateTest.h"
 
-#include "doubles/InitiatorNameGetterMock.h"
 #include "scene/scene_state.h"
 
 namespace testing {
@@ -63,25 +62,14 @@ TEST_F(SceneStateTest, initiatorId) {
 }
 
 TEST_F(SceneStateTest, initiatorName) {
-  InitiatorNameGetterrMock initiatorNameGetter;
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller).Times(0);
-
   {
     supla_scene_state state(supla_caller(ctScene, 10), {}, 0);
-    state.set_initiator_name(&initiatorNameGetter);
     EXPECT_TRUE(state.get_initiator_name() == NULL);
   }
 
-  char initiatorName[] = "iPhone Elon";
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
-
   {
-    supla_scene_state state(supla_caller(ctClient, 10), {}, 0);
-    state.set_initiator_name(&initiatorNameGetter);
+    const char initiatorName[] = "iPhone Elon";
+    supla_scene_state state(supla_caller(ctClient, 10, initiatorName), {}, 0);
     EXPECT_TRUE(state.get_initiator_name() != NULL);
     EXPECT_EQ(strncmp(state.get_initiator_name(), initiatorName,
                       sizeof(initiatorName)),
@@ -204,17 +192,9 @@ TEST_F(SceneStateTest, millisecondsLeft) {
 TEST_F(SceneStateTest, copy) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
-  supla_scene_state state1(supla_caller(ctClient, 55), now, 500);
 
-  InitiatorNameGetterrMock initiatorNameGetter;
-
-  char initiatorName[] = "iPhone Steve";
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
-
-  state1.set_initiator_name(&initiatorNameGetter);
+  const char initiatorName[] = "iPhone Steve";
+  supla_scene_state state1(supla_caller(ctClient, 55, initiatorName), now, 500);
 
   supla_scene_state state2 = state1;
   EXPECT_TRUE(state1.get_caller() == state2.get_caller());
@@ -233,19 +213,11 @@ TEST_F(SceneStateTest, copy) {
 }
 
 TEST_F(SceneStateTest, convert) {
-  InitiatorNameGetterrMock initiatorNameGetter;
-
-  char initiatorName[] = "Windows Phone Bill";
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
-
   struct timeval now = {};
   gettimeofday(&now, NULL);
   now.tv_sec--;
-  supla_scene_state state(supla_caller(ctClient, 55), now, 1500);
-  state.set_initiator_name(&initiatorNameGetter);
+  supla_scene_state state(supla_caller(ctClient, 55, "Windows Phone Bill"), now,
+                          1500);
 
   TSC_SuplaSceneState sc_scene_state = {};
   state.convert(&sc_scene_state);

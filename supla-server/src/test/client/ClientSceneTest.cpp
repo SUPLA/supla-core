@@ -19,7 +19,6 @@
 #include "client/ClientSceneTest.h"
 
 #include "client/client_scene.h"
-#include "doubles/InitiatorNameGetterMock.h"
 
 namespace testing {
 
@@ -34,19 +33,13 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   scene.set_alt_icon_id(30);
   scene.set_location_id(40);
 
-  InitiatorNameGetterrMock initiatorNameGetter;
-
   char initiatorName[] = "Samsung Galaxy";
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
 
   struct timeval now = {};
   gettimeofday(&now, NULL);
   now.tv_sec -= 5;
-  supla_scene_state state(supla_caller(ctClient, 50), now, 10000);
-  state.set_initiator_name(&initiatorNameGetter);
+  supla_scene_state state(supla_caller(ctClient, 50, initiatorName), now,
+                          10000);
   scene.set_state(state);
 
   EXPECT_EQ(scene.get_id(), 15);
@@ -57,7 +50,7 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   EXPECT_EQ(scene.get_alt_icon_id(), 30);
   EXPECT_EQ(scene.get_location_id(), 40);
   EXPECT_EQ(scene.get_state().get_initiator_id(), 50);
-  EXPECT_EQ(strncmp(scene.get_state().get_initiator_name(), "Samsung Galaxy",
+  EXPECT_EQ(strncmp(scene.get_state().get_initiator_name(), initiatorName,
                     SUPLA_INITIATOR_NAME_MAXSIZE + 1),
             0);
 
@@ -92,17 +85,11 @@ TEST_F(ClientSceneTest, convertScene) {
 TEST_F(ClientSceneTest, convertSceneState) {
   char initiatorName[] = "Samsung Galaxy";
 
-  InitiatorNameGetterrMock initiatorNameGetter;
-
-  EXPECT_CALL(initiatorNameGetter, get_name_with_caller)
-      .Times(1)
-      .WillOnce(Return(strdup(initiatorName)));
-
   struct timeval now = {};
   gettimeofday(&now, NULL);
   now.tv_sec -= 15;
-  supla_scene_state state(supla_caller(ctClient, 456), now, 60000);
-  state.set_initiator_name(&initiatorNameGetter);
+  supla_scene_state state(supla_caller(ctClient, 456, initiatorName), now,
+                          60000);
 
   supla_client_scene scene(123);
   scene.set_state(state);

@@ -23,20 +23,17 @@
 #include "string.h"
 
 supla_scene_state::supla_scene_state(void) {
-  this->initiator_name = NULL;
   this->started_at = {};
   this->ending_at = {};
 }
 
 supla_scene_state::supla_scene_state(const supla_scene_state &state) {
-  initiator_name = NULL;
   *this = state;
 }
 
 supla_scene_state::supla_scene_state(const supla_caller &caller,
                                      struct timeval started_at,
                                      unsigned _supla_int_t millis_left) {
-  this->initiator_name = NULL;
   this->started_at = started_at;
   unsigned long long ending_at_usec =
       started_at.tv_sec * 1000000 + started_at.tv_usec + millis_left * 1000;
@@ -45,11 +42,7 @@ supla_scene_state::supla_scene_state(const supla_caller &caller,
   this->caller = caller;
 }
 
-supla_scene_state::~supla_scene_state(void) {
-  if (initiator_name) {
-    free(initiator_name);
-  }
-}
+supla_scene_state::~supla_scene_state(void) {}
 
 const supla_caller &supla_scene_state::get_caller(void) const { return caller; }
 
@@ -79,19 +72,9 @@ int supla_scene_state::get_initiator_id(void) const {
 }
 
 const char *supla_scene_state::get_initiator_name(void) const {
-  return initiator_name;
-}
-
-void supla_scene_state::set_initiator_name(
-    supla_abstract_initiator_name_getter *getter) {
-  if (initiator_name) {
-    free(initiator_name);
-    initiator_name = NULL;
-  }
-
-  if (get_initiator_id() && getter) {
-    initiator_name = getter->get_name_with_caller(caller);
-  }
+  return caller.get_type() == ctClient && caller.get_name().length()
+             ? caller.get_name().c_str()
+             : NULL;
 }
 
 struct timeval supla_scene_state::get_started_at(void) const {
@@ -154,16 +137,5 @@ supla_scene_state &supla_scene_state::operator=(
   started_at = state.started_at;
   ending_at = state.ending_at;
   caller = state.caller;
-
-  if (initiator_name) {
-    free(initiator_name);
-    initiator_name = NULL;
-  }
-
-  if (state.initiator_name) {
-    initiator_name =
-        strndup(state.initiator_name, SUPLA_INITIATOR_NAME_MAXSIZE);
-  }
-
   return *this;
 }

@@ -19,7 +19,6 @@
 #ifndef SUPLA_SCENE_STATE_H_
 #define SUPLA_SCENE_STATE_H_
 
-#include "abstract_initiator_name_getter.h"
 #include "caller.h"
 #include "proto.h"
 
@@ -27,7 +26,6 @@ class supla_scene_state {
  private:
   struct timeval started_at;
   struct timeval ending_at;
-  char *initiator_name;
   supla_caller caller;
 
  public:
@@ -41,7 +39,6 @@ class supla_scene_state {
   bool is_during_execution(void) const;
   int get_initiator_id(void) const;
   const char *get_initiator_name(void) const;
-  void set_initiator_name(supla_abstract_initiator_name_getter *getter);
   struct timeval get_started_at(void) const;
   struct timeval get_ending_at(void) const;
   unsigned _supla_int_t get_milliseconds_from_start(void) const;
