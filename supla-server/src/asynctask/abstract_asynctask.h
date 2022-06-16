@@ -20,25 +20,17 @@
 #define ABSTRACT_ASYNCTASK_H_
 
 #include <sys/time.h>
+
 #include <list>
 
-enum async_task_state {
-  STA_STATE_INIT,
-  STA_STATE_WAITING,
-  STA_STATE_PICKED,
-  STA_STATE_EXECUTING,
-  STA_STATE_SUCCESS,
-  STA_STATE_FAILURE,
-  STA_STATE_TIMEOUT,
-  STA_STATE_CANCELED,
-};
+#include "asynctask_state.h"
 
 class supla_asynctask_queue;
 class supla_abstract_asynctask_thread_pool;
 class supla_abstract_asynctask {
  private:
   void *lck;
-  async_task_state state;
+  supla_asynctask_state state;
   long long delay_usec;
   struct timeval start_time;
   unsigned long long timeout_usec;
@@ -72,7 +64,7 @@ class supla_abstract_asynctask {
   supla_abstract_asynctask_thread_pool *get_pool(void);
   short get_priority(void);
   long long time_left_usec(struct timeval *now);
-  async_task_state get_state(void);
+  supla_asynctask_state get_state(void);
   long long get_delay_usec(void);
   void set_delay_usec(long long delay_usec);
   void set_timeout(unsigned long long timeout_usec);

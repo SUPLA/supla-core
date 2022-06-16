@@ -20,6 +20,15 @@
 
 supla_asynctask_state::supla_asynctask_state() { state = INIT; }
 
+supla_asynctask_state::supla_asynctask_state(
+    const supla_asynctask_state &state) {
+  this->state = state.get_state();
+}
+
+supla_asynctask_state::supla_asynctask_state(const _state_e state) {
+  this->state = state;
+}
+
 supla_asynctask_state::~supla_asynctask_state(void) {}
 
 void supla_asynctask_state::set_state(_state_e state) { this->state = state; }

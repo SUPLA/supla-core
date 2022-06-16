@@ -37,7 +37,7 @@ TEST_F(AsyncTaskMainTest, releaseQueueContainingUninitializedTask) {
   ASSERT_EQ(queue->total_count(), (unsigned int)1);
   ASSERT_EQ(queue->waiting_count(), (unsigned int)0);
   ASSERT_FALSE(pool->is_terminated());
-  ASSERT_EQ(task->get_state(), STA_STATE_INIT);
+  ASSERT_EQ(task->get_state(), supla_asynctask_state::INIT);
 
   delete queue;
   queue = NULL;
@@ -52,10 +52,10 @@ TEST_F(AsyncTaskMainTest, runTaskWithoutDelay) {
   task->set_job_time_usec(500000);
   task->set_result(true);
   task->set_waiting();
-  WaitForState(task, STA_STATE_EXECUTING, 1000000);
+  WaitForState(task, supla_asynctask_state::EXECUTING, 1000000);
   EXPECT_EQ(pool->thread_count(), (unsigned int)1);
   EXPECT_EQ(pool->exec_count(), (unsigned int)0);
-  WaitForState(task, STA_STATE_SUCCESS, 1000000);
+  WaitForState(task, supla_asynctask_state::SUCCESS, 1000000);
   EXPECT_LT(task->exec_delay_usec(), 200000);
   usleep(1000);
   EXPECT_EQ(pool->thread_count(), (unsigned int)0);
@@ -70,7 +70,7 @@ TEST_F(AsyncTaskMainTest, runTaskWithDelay) {
   task->set_delay_usec(1200000);
   task->set_result(true);
   task->set_waiting();
-  WaitForState(task, STA_STATE_SUCCESS, 2000000);
+  WaitForState(task, supla_asynctask_state::SUCCESS, 2000000);
   EXPECT_GT(task->exec_delay_usec(), 1200000);
   EXPECT_LT(task->exec_delay_usec(), 1500000);
 }
@@ -137,7 +137,7 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
   for (std::vector<AsyncTaskMock *>::reverse_iterator it = tasks.rbegin() + 1;
        it != tasks.rend(); ++it) {
     EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
-    EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
+    EXPECT_EQ((*it)->get_state(), supla_asynctask_state::SUCCESS);
     time_usec = (*it)->exec_time_since(&now);
   }
 
@@ -162,7 +162,7 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
 
   for (std::vector<AsyncTaskMock *>::iterator it = tasks.begin() + 1;
        it != tasks.end(); ++it) {
-    EXPECT_EQ((*it)->get_state(), STA_STATE_SUCCESS);
+    EXPECT_EQ((*it)->get_state(), supla_asynctask_state::SUCCESS);
     EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
     time_usec = (*it)->exec_time_since(&now);
   }
@@ -179,8 +179,11 @@ TEST_F(AsyncTaskMainTest, taskWithSubTasks) {
 
   for (unsigned int a = 1; a <= 3; a++) {
     supla_log(LOG_DEBUG, "SubTask: %i", a);
-    WaitForState(task, STA_STATE_EXECUTING, 2000000);
-    WaitForState(task, a == 3 ? STA_STATE_SUCCESS : STA_STATE_WAITING, 2000000);
+    WaitForState(task, supla_asynctask_state::EXECUTING, 2000000);
+    WaitForState(task,
+                 a == 3 ? supla_asynctask_state::SUCCESS
+                        : supla_asynctask_state::WAITING,
+                 2000000);
     EXPECT_EQ(task->exec_count(), a);
     EXPECT_EQ(pool->exec_count(), a);
   }

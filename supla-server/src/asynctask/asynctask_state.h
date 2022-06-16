@@ -19,8 +19,6 @@
 #ifndef ASYNCTASK_STATE_H_
 #define ASYNCTASK_STATE_H_
 
-#include "abstract_asynctask.h"
-
 class supla_asynctask_state {
  public:
   enum _state_e {
@@ -39,6 +37,9 @@ class supla_asynctask_state {
 
  public:
   supla_asynctask_state(void);
+  supla_asynctask_state(const supla_asynctask_state &state);  // NOLINT
+  supla_asynctask_state(const _state_e state);                // NOLINT
+
   virtual ~supla_asynctask_state(void);
   void set_state(_state_e state);
   _state_e get_state(void) const;

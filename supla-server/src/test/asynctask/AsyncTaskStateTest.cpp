@@ -26,18 +26,30 @@ AsyncTaskStateTest::AsyncTaskStateTest(void) {}
 
 AsyncTaskStateTest::~AsyncTaskStateTest(void) {}
 
+TEST_F(AsyncTaskStateTest, constructor) {
+  supla_asynctask_state s1;
+  EXPECT_EQ(s1, supla_asynctask_state::INIT);
+  s1 = supla_asynctask_state::EXECUTING;
+
+  supla_asynctask_state s2(s1);
+  EXPECT_EQ(s2, supla_asynctask_state::EXECUTING);
+
+  supla_asynctask_state s3(supla_asynctask_state::PICKED);
+  EXPECT_EQ(s3, supla_asynctask_state::PICKED);
+}
+
 TEST_F(AsyncTaskStateTest, setterGetter) {
   supla_asynctask_state state;
-  EXPECT_EQ(state.get_state(), supla_asynctask_state::INIT);
+  EXPECT_EQ(state, supla_asynctask_state::INIT);
   state.set_state(supla_asynctask_state::SUCCESS);
-  EXPECT_EQ(state.get_state(), supla_asynctask_state::SUCCESS);
+  EXPECT_EQ(state, supla_asynctask_state::SUCCESS);
 }
 
 TEST_F(AsyncTaskStateTest, assignmentOperator) {
   supla_asynctask_state state;
-  EXPECT_EQ(state.get_state(), supla_asynctask_state::INIT);
+  EXPECT_EQ(state, supla_asynctask_state::INIT);
   state = supla_asynctask_state::WAITING;
-  EXPECT_EQ(state.get_state(), supla_asynctask_state::WAITING);
+  EXPECT_EQ(state, supla_asynctask_state::WAITING);
 
   supla_asynctask_state::_state_e s = supla_asynctask_state::PICKED;
   s = state;

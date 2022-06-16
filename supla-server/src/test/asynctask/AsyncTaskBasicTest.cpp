@@ -66,7 +66,7 @@ TEST_F(AsyncTaskBasicTest, queueGetter) { ASSERT_EQ(task->get_queue(), queue); }
 TEST_F(AsyncTaskBasicTest, poolGetter) { ASSERT_EQ(task->get_pool(), pool); }
 
 TEST_F(AsyncTaskBasicTest, defaultState) {
-  ASSERT_EQ(task->get_state(), STA_STATE_INIT);
+  ASSERT_EQ(task->get_state(), supla_asynctask_state::INIT);
 }
 
 TEST_F(AsyncTaskBasicTest, releaseFlag) {
@@ -100,10 +100,10 @@ TEST_F(AsyncTaskBasicTest, timeout) {
 }
 
 TEST_F(AsyncTaskBasicTest, cancel) {
-  ASSERT_NE(task->get_state(), STA_STATE_CANCELED);
+  ASSERT_NE(task->get_state(), supla_asynctask_state::CANCELED);
   ASSERT_FALSE(task->is_finished());
   task->cancel();
-  ASSERT_EQ(task->get_state(), STA_STATE_CANCELED);
+  ASSERT_EQ(task->get_state(), supla_asynctask_state::CANCELED);
   ASSERT_TRUE(task->is_finished());
 }
 

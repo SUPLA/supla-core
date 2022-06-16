@@ -74,7 +74,7 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
 
   EXPECT_EQ(queue->total_count(), (unsigned int)21);
 
-  async_task_state state;
+  supla_asynctask_state state;
 
   EXPECT_FALSE(queue->get_task_state(&state, cnd));
   cnd->set_channels({100, 200});
@@ -82,20 +82,20 @@ TEST_F(AsyncTaskSearchTest, testsRelatedToSearchingForTasksInTheQueue) {
 
   cnd->set_channels({ctask->get_channel_id()});
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
-  EXPECT_EQ(state, STA_STATE_INIT);
+  EXPECT_EQ(state, supla_asynctask_state::INIT);
 
   ctask->set_delay_usec(5000000);
   ctask->set_waiting();
 
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
-  EXPECT_EQ(state, STA_STATE_WAITING);
+  EXPECT_EQ(state, supla_asynctask_state::WAITING);
 
-  EXPECT_EQ(ctask_dup->get_state(), STA_STATE_INIT);
+  EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::INIT);
 
   queue->cancel_tasks(cnd);
   EXPECT_TRUE(queue->get_task_state(&state, cnd));
-  EXPECT_EQ(state, STA_STATE_CANCELED);
-  EXPECT_EQ(ctask_dup->get_state(), STA_STATE_CANCELED);
+  EXPECT_EQ(state, supla_asynctask_state::CANCELED);
+  EXPECT_EQ(ctask_dup->get_state(), supla_asynctask_state::CANCELED);
 
   EXPECT_EQ(queue->get_task_count(cnd), (unsigned int)2);
   cnd->set_channels({1, 2, 3, 4, 5, 700});

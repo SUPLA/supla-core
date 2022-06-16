@@ -67,7 +67,7 @@ TEST_F(SceneTest, executeEmptyScene) {
       supla_caller(ctIPC), 1, 2, queue, pool, action_executor, value_getter,
       operations, false);
   ASSERT_FALSE(scene == NULL);
-  WaitForState(scene, STA_STATE_SUCCESS, 1000);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
   WaitForExec(pool, 1, 1000);
 }
 
@@ -103,7 +103,7 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
   // Note that testing with Valgrind turned on increases the time between tasks
   // significantly.
 
-  WaitForState(scene, STA_STATE_SUCCESS, 2000);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 2000);
   WaitForExec(pool, 1,
               2000000);  // Both operations should be performed in one cycle.
                          // There should be one cycle in total.
@@ -158,7 +158,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   // Note that testing with Valgrind turned on increases the time between tasks
   // significantly.
 
-  WaitForState(scene, STA_STATE_SUCCESS, 1500000);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 1500000);
   WaitForExec(pool, 2,
               2000000);  // Two of the three operations should be performed in
                          // one cycle. There should be two cycles in total.
@@ -219,9 +219,9 @@ TEST_F(SceneTest, executeSceneInsideScene) {
       operations, false);
   ASSERT_FALSE(scene == NULL);
 
-  WaitForState(scene, STA_STATE_SUCCESS, 1000);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
   WaitForState(action_executor->get_last_executed_asynctask(),
-               STA_STATE_SUCCESS, 1000);
+               supla_asynctask_state::SUCCESS, 1000);
   EXPECT_GT(pool->exec_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->getExecuteCounter(), 1);
   EXPECT_EQ(action_executor_s2->getOnCounter(), 1);
@@ -269,9 +269,9 @@ TEST_F(SceneTest, infinityLoop) {
       operations, false);
   ASSERT_FALSE(scene == NULL);
 
-  WaitForState(scene, STA_STATE_SUCCESS, 1000);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 1000);
   WaitForState(action_executor->get_last_executed_asynctask(),
-               STA_STATE_SUCCESS, 1000);
+               supla_asynctask_state::SUCCESS, 1000);
   EXPECT_GT(pool->exec_count(), (unsigned int)0);
   EXPECT_EQ(action_executor->getExecuteCounter(), 1);
   EXPECT_EQ(action_executor_s2->getExecuteCounter(), 0);
@@ -387,7 +387,7 @@ TEST_F(SceneTest, interruptScene) {
 
   WaitForExec(pool, 5, 5000000);
   queue->cancel_tasks(&cnd);
-  WaitForState(scene, STA_STATE_SUCCESS, 5000000);
+  WaitForState(scene, supla_asynctask_state::SUCCESS, 5000000);
   EXPECT_EQ(action_executor->getOnCounter(), 1);
   EXPECT_EQ(action_executor->getExecuteCounter(), 1);
   EXPECT_EQ(action_executor->counterSetCount(), 2);
@@ -397,13 +397,13 @@ TEST_F(SceneTest, interruptScene) {
   EXPECT_EQ(action_executor_s3->counterSetCount(), 1);
 
   WaitForState(action_executor->get_last_executed_asynctask(),
-               STA_STATE_CANCELED, 1000000);
+               supla_asynctask_state::CANCELED, 1000000);
 
   WaitForState(action_executor_s2->get_last_executed_asynctask(),
-               STA_STATE_CANCELED, 1000000);
+               supla_asynctask_state::CANCELED, 1000000);
 
   WaitForState(action_executor_s3->get_last_executed_asynctask(),
-               STA_STATE_CANCELED, 1000000);
+               supla_asynctask_state::CANCELED, 1000000);
 
   ASSERT_TRUE(dynamic_cast<supla_action_gate_openclose *>(
                   action_executor_s3->get_last_executed_asynctask()) != NULL);

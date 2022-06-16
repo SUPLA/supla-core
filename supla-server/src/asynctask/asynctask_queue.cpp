@@ -197,8 +197,8 @@ supla_abstract_asynctask *supla_asynctask_queue::pick(
   lck_lock(lck);
   for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
        it != tasks.end(); ++it) {
-    if ((*it)->get_state() == STA_STATE_WAITING && (*it)->get_pool() == pool &&
-        (*it)->time_left_usec(NULL) <= 0) {
+    if ((*it)->get_state() == supla_asynctask_state::WAITING &&
+        (*it)->get_pool() == pool && (*it)->time_left_usec(NULL) <= 0) {
       result = *it;
       result->pick();
       break;
@@ -224,7 +224,7 @@ void supla_asynctask_queue::iterate(void) {
        it != tasks.end(); ++it) {
     long long time_left = (*it)->time_left_usec(&now);
     if (time_left <= 0) {
-      if ((*it)->get_state() == STA_STATE_WAITING) {
+      if ((*it)->get_state() == supla_asynctask_state::WAITING) {
         (*it)->get_pool()->execution_request(*it);
       }
     } else if (time_left < wait_time) {
@@ -261,7 +261,7 @@ unsigned int supla_asynctask_queue::waiting_count(void) {
   lck_lock(lck);
   for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
        it != tasks.end(); ++it) {
-    if ((*it)->get_state() == STA_STATE_WAITING) {
+    if ((*it)->get_state() == supla_asynctask_state::WAITING) {
       result++;
     }
   }
@@ -297,7 +297,8 @@ supla_abstract_asynctask *supla_asynctask_queue::find_task(
 }
 
 bool supla_asynctask_queue::get_task_state(
-    async_task_state *state, supla_abstract_asynctask_search_condition *cnd) {
+    supla_asynctask_state *state,
+    supla_abstract_asynctask_search_condition *cnd) {
   if (!state) {
     return false;
   }
@@ -351,8 +352,8 @@ void supla_asynctask_queue::cancel_tasks(
   for (std::vector<supla_abstract_asynctask *>::iterator it = found.begin();
        it != found.end(); ++it) {
     bool release = (*it)->release_immediately_after_execution() &&
-                   ((*it)->get_state() == STA_STATE_INIT ||
-                    (*it)->get_state() == STA_STATE_WAITING);
+                   ((*it)->get_state() == supla_asynctask_state::INIT ||
+                    (*it)->get_state() == supla_asynctask_state::WAITING);
 
     (*it)->cancel();
 

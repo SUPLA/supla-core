@@ -43,12 +43,13 @@ void AsyncTaskTest::TearDown() {
 }
 
 void AsyncTaskTest::WaitForState(supla_abstract_asynctask *task,
-                                 async_task_state expected, unsigned int usec) {
+                                 const supla_asynctask_state &expected,
+                                 unsigned int usec) {
   if (!task) {
     return;
   }
 
-  async_task_state last = STA_STATE_INIT;
+  supla_asynctask_state last;
   unsigned int steps = usec / 100;
 
   for (unsigned int a = 0; a < steps; a++) {

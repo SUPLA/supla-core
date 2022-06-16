@@ -70,7 +70,7 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   EXPECT_EQ(pool->exec_count(), (unsigned int)1);
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
-  EXPECT_EQ(task->get_state(), STA_STATE_SUCCESS);
+  EXPECT_EQ(task->get_state(), supla_asynctask_state::SUCCESS);
   delete task;
   EXPECT_EQ(queue->total_count(), (unsigned int)0);
 }
@@ -124,14 +124,14 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
     EXPECT_EQ(pool->exec_count(), (unsigned int)1 + a);
     EXPECT_EQ(queue->total_count(), (unsigned int)1);
     EXPECT_EQ(action_executor->counterSetCount(), 1);
-    EXPECT_EQ(task->get_state(), STA_STATE_WAITING);
+    EXPECT_EQ(task->get_state(), supla_asynctask_state::WAITING);
   }
 
   if (success) {
     value_getter->setResult(open ? gsl_open : gsl_closed, gsl_unknown);
-    WaitForState(task, STA_STATE_SUCCESS, 3000000);
+    WaitForState(task, supla_asynctask_state::SUCCESS, 3000000);
   } else {
-    WaitForState(task, STA_STATE_FAILURE, 3000000);
+    WaitForState(task, supla_asynctask_state::FAILURE, 3000000);
   }
 
   EXPECT_EQ(pool->exec_count(), (unsigned int)attemptCount + 1);
@@ -165,7 +165,7 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   EXPECT_EQ(pool->exec_count(), (unsigned int)1);
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
-  EXPECT_EQ(task->get_state(), STA_STATE_FAILURE);
+  EXPECT_EQ(task->get_state(), supla_asynctask_state::FAILURE);
   delete task;
   EXPECT_EQ(queue->total_count(), (unsigned int)0);
 }
