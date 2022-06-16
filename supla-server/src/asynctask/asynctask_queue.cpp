@@ -24,11 +24,12 @@
 #include "abstract_asynctask_thread_pool.h"
 #include "lck.h"
 #include "log.h"
-#include "sthread.h"
 #include "serverstatus.h"
+#include "sthread.h"
 
 supla_asynctask_queue::supla_asynctask_queue(void) {
   this->lck = lck_init();
+  this->observer_lck = lck_init();
   this->eh = eh_init();
   this->last_iterate_time_sec = 0;
   this->thread = sthread_simple_run(loop, this, 0);
@@ -40,6 +41,7 @@ supla_asynctask_queue::~supla_asynctask_queue(void) {
   release_tasks();
 
   lck_free(lck);
+  lck_free(observer_lck);
   eh_free(eh);
 }
 
@@ -359,6 +361,18 @@ void supla_asynctask_queue::cancel_tasks(
     }
   }
   lck_unlock(lck);
+}
+
+void supla_asynctask_queue::add_observer(
+    supla_abstract_asynctask_observer *observer) {
+  lck_lock(observer_lck);
+  lck_unlock(observer_lck);
+}
+
+void supla_asynctask_queue::remove_observer(
+    supla_abstract_asynctask_observer *observer) {
+  lck_lock(observer_lck);
+  lck_unlock(observer_lck);
 }
 
 void supla_asynctask_queue::log_stuck_warning(void) {

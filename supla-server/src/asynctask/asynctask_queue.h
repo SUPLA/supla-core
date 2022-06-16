@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "abstract_asynctask.h"
+#include "abstract_asynctask_observer.h"
 #include "abstract_asynctask_search_condition.h"
 #include "eh.h"
 
@@ -29,9 +30,11 @@ class supla_asynctask_queue {
  private:
   static supla_asynctask_queue *_global_instance;
   void *lck;
+  void *observer_lck;
   void *thread;
   TEventHandler *eh;
   unsigned long long last_iterate_time_sec;
+  std::vector<supla_abstract_asynctask_observer *> observers;
 
   std::vector<supla_abstract_asynctask *> tasks;
   std::vector<supla_abstract_asynctask_thread_pool *> pools;
@@ -71,6 +74,8 @@ class supla_asynctask_queue {
   unsigned int get_task_count(supla_abstract_asynctask_search_condition *cnd);
   bool task_exists(supla_abstract_asynctask_search_condition *cnd);
   void cancel_tasks(supla_abstract_asynctask_search_condition *cnd);
+  void add_observer(supla_abstract_asynctask_observer *observer);
+  void remove_observer(supla_abstract_asynctask_observer *observer);
   void log_stuck_warning(void);
 };
 
