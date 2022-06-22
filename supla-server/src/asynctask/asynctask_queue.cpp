@@ -367,13 +367,59 @@ void supla_asynctask_queue::cancel_tasks(
 void supla_asynctask_queue::add_observer(
     supla_abstract_asynctask_observer *observer) {
   lck_lock(observer_lck);
+  bool exists = false;
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    if (*it == observer) {
+      exists = true;
+      break;
+    }
+    if (!exists) {
+      observers.push_back(observer);
+    }
+  }
   lck_unlock(observer_lck);
 }
 
 void supla_asynctask_queue::remove_observer(
     supla_abstract_asynctask_observer *observer) {
   lck_lock(observer_lck);
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    if (*it == observer) {
+      observers.erase(it);
+      break;
+    }
+  }
   lck_unlock(observer_lck);
+}
+
+void supla_asynctask_queue::on_task_started(supla_abstract_asynctask *task) {
+  lck_lock(observer_lck);
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    (*it)->on_asynctask_started(task);
+  }
+  lck_unlock(observer_lck);
+}
+
+void supla_asynctask_queue::on_task_finished(supla_abstract_asynctask *task) {
+  lck_lock(observer_lck);
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    (*it)->on_asynctask_finished(task);
+  }
+  lck_unlock(observer_lck);
+}
+
+bool supla_asynctask_queue::access_task(
+    supla_abstract_asynctask_search_condition *cnd,
+    std::function<void(supla_abstract_asynctask *)> on_task) {
+  bool result = false;
+  lck_lock(lck);
+  supla_abstract_asynctask *task = find_task(cnd);
+  if (task != NULL) {
+    result = true;
+    on_task(task);
+  }
+  lck_unlock(lck);
+  return result;
 }
 
 void supla_asynctask_queue::log_stuck_warning(void) {

@@ -85,8 +85,7 @@ struct timeval supla_scene_state::get_ending_at(void) const {
   return ending_at;
 }
 
-unsigned _supla_int_t
-supla_scene_state::get_milliseconds_from_start(void) const {
+unsigned int supla_scene_state::get_milliseconds_from_start(void) const {
   if (started_at.tv_sec || started_at.tv_usec) {
     struct timeval now = {};
     gettimeofday(&now, NULL);
@@ -103,7 +102,7 @@ supla_scene_state::get_milliseconds_from_start(void) const {
   return 0;
 }
 
-unsigned _supla_int_t supla_scene_state::get_milliseconds_left(void) const {
+unsigned int supla_scene_state::get_milliseconds_left(void) const {
   if (ending_at.tv_sec || ending_at.tv_usec) {
     struct timeval now = {};
     gettimeofday(&now, NULL);

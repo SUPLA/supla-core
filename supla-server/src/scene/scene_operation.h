@@ -23,7 +23,7 @@
 
 class supla_scene_operation {
  private:
-  int delay_ms;
+  unsigned int delay_ms;
   supla_action_config action_config;
 
  public:
@@ -32,8 +32,8 @@ class supla_scene_operation {
 
   void set_action_config(const supla_action_config &action);
   supla_action_config *get_action_config(void);
-  void set_delay_ms(int delay_ms);
-  int get_delay_ms(void);
+  void set_delay_ms(unsigned int delay_ms);
+  unsigned int get_delay_ms(void);
   supla_scene_operation *clone(void);
 };
 

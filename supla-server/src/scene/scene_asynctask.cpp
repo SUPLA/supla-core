@@ -67,8 +67,37 @@ supla_scene_asynctask::~supla_scene_asynctask() {
   }
 }
 
+unsigned int supla_scene_asynctask::op_get_delay_ms(void) {
+  lock();
+  int result = operations->get_delay_ms();
+  unlock();
+  return result;
+}
+
+unsigned int supla_scene_asynctask::op_get_time_left_ms(void) {
+  lock();
+  int result = operations->get_time_left_ms();
+  unlock();
+  return result;
+}
+
+supla_scene_operation *supla_scene_asynctask::op_pop(void) {
+  lock();
+  supla_scene_operation *result = operations->pop();
+  unlock();
+
+  return result;
+}
+
+int supla_scene_asynctask::op_count(void) {
+  lock();
+  int result = operations->count();
+  unlock();
+  return result;
+}
+
 void supla_scene_asynctask::set_delay(void) {
-  set_delay_usec(operations->get_delay_ms() * 1000);
+  set_delay_usec(op_get_delay_ms() * 1000);
 }
 
 const supla_caller &supla_scene_asynctask::get_caller(void) const {
@@ -79,9 +108,13 @@ int supla_scene_asynctask::get_user_id(void) { return user_id; }
 
 int supla_scene_asynctask::get_scene_id(void) { return scene_id; }
 
+supla_scene_state supla_scene_asynctask::get_scene_state(void) {
+  return supla_scene_state(caller, get_started_at(), op_get_time_left_ms());
+}
+
 bool supla_scene_asynctask::_execute(bool *execute_again) {
   do {
-    supla_scene_operation *operation = operations->pop();
+    supla_scene_operation *operation = op_pop();
     if (operation) {
       if (operation->get_action_config()->get_subject_type() != stScene ||
           !caller.find(ctScene,
@@ -94,16 +127,16 @@ bool supla_scene_asynctask::_execute(bool *execute_again) {
       delete operation;
     }
 
-    if (!operations->count() || operations->get_delay_ms() > 1000) {
+    if (!op_count() || op_get_delay_ms() > 1000U) {
       break;
     } else {
       // Operations to be performed not later than in a second should be
       // performed in one _execute cycle.
-      usleep(operations->get_delay_ms() * 1000);
+      usleep(op_get_delay_ms() * 1000U);
     }
   } while (true);
 
-  if (operations->count()) {
+  if (op_count()) {
     set_delay();
     *execute_again = true;
     return false;
@@ -133,6 +166,7 @@ _sceneExecutionResult_e supla_scene_asynctask::execute(
   } else {
     supla_scene_operations_dao dao;
     supla_scene_operations *operations = dao.get_scene_operations(scene_id);
+
     if (operations && operations->count() == 0) {
       delete operations;
       operations = NULL;

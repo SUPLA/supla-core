@@ -31,9 +31,9 @@ supla_action_config *supla_scene_operation::get_action_config(void) {
   return &action_config;
 }
 
-int supla_scene_operation::get_delay_ms(void) { return delay_ms; }
+unsigned int supla_scene_operation::get_delay_ms(void) { return delay_ms; }
 
-void supla_scene_operation::set_delay_ms(int delay_ms) {
+void supla_scene_operation::set_delay_ms(unsigned int delay_ms) {
   this->delay_ms = delay_ms;
 }
 

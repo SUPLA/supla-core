@@ -41,8 +41,8 @@ class supla_scene_state {
   const char *get_initiator_name(void) const;
   struct timeval get_started_at(void) const;
   struct timeval get_ending_at(void) const;
-  unsigned _supla_int_t get_milliseconds_from_start(void) const;
-  unsigned _supla_int_t get_milliseconds_left(void) const;
+  unsigned int get_milliseconds_from_start(void) const;
+  unsigned int get_milliseconds_left(void) const;
   void convert(TSC_SuplaSceneState *dest) const;
 
   supla_scene_state &operator=(const supla_scene_state &state);

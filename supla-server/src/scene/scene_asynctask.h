@@ -24,6 +24,7 @@
 #include "actions/action_executor.h"
 #include "asynctask/abstract_asynctask.h"
 #include "caller.h"
+#include "scene/scene_state.h"
 
 enum _sceneExecutionResult_e { serNotExists, serOK, serIsDuringExecution };
 
@@ -36,6 +37,10 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   supla_abstract_value_getter *value_getter;
   supla_scene_operations *operations;
   void set_delay(void);
+  unsigned int op_get_delay_ms(void);
+  unsigned int op_get_time_left_ms(void);
+  supla_scene_operation *op_pop(void);
+  int op_count(void);
 
  protected:
   bool _execute(bool *execute_again);
@@ -52,6 +57,7 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   const supla_caller &get_caller(void) const;
   int get_user_id(void);
   int get_scene_id(void);
+  supla_scene_state get_scene_state(void);
 
   static supla_asynctask_queue *get_queue(void);
   static supla_abstract_asynctask_thread_pool *get_pool(void);

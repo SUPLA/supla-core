@@ -43,12 +43,22 @@ supla_scene_operation *supla_scene_operations::pop(void) {
   return result;
 }
 
-int supla_scene_operations::get_delay_ms(void) {
+unsigned int supla_scene_operations::get_delay_ms(void) {
   if (operations.size()) {
     return operations.front()->get_delay_ms();
   }
 
   return 0;
+}
+
+unsigned int supla_scene_operations::get_time_left_ms(void) {
+  unsigned int result = 0;
+
+  for (auto it = operations.begin(); it != operations.end(); ++it) {
+    result += (*it)->get_delay_ms();
+  }
+
+  return result;
 }
 
 supla_scene_operations *supla_scene_operations::clone(void) const {

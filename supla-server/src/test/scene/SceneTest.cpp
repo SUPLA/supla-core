@@ -146,6 +146,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
   operations->push(op);
 
   EXPECT_EQ(operations->get_delay_ms(), 100);
+  EXPECT_EQ(operations->get_time_left_ms(), 1300);
 
   struct timeval now = {};
   gettimeofday(&now, NULL);

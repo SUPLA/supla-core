@@ -32,7 +32,8 @@ class supla_abstract_asynctask {
   void *lck;
   supla_asynctask_state state;
   long long delay_usec;
-  struct timeval start_time;
+  struct timeval started_at;
+  struct timeval execution_start_time;
   unsigned long long timeout_usec;
   supla_asynctask_queue *queue;
   supla_abstract_asynctask_thread_pool *pool;
@@ -63,6 +64,7 @@ class supla_abstract_asynctask {
   supla_asynctask_queue *get_queue(void);
   supla_abstract_asynctask_thread_pool *get_pool(void);
   short get_priority(void);
+  struct timeval get_started_at(void);
   long long time_left_usec(struct timeval *now);
   supla_asynctask_state get_state(void);
   long long get_delay_usec(void);

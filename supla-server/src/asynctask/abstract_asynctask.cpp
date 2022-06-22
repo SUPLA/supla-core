@@ -29,12 +29,14 @@ supla_abstract_asynctask::supla_abstract_asynctask(
     short priority, bool release_immediately) {
   init(queue, pool, priority, release_immediately);
   queue->add_task(this);
+  queue->on_task_started(this);
 }
 
 supla_abstract_asynctask::supla_abstract_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool) {
   init(queue, pool, 0, true);
   queue->add_task(this);
+  queue->on_task_started(this);
 }
 
 void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
@@ -45,13 +47,15 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
 
   this->lck = lck_init();
   this->delay_usec = 0;
-  this->start_time.tv_sec = 0;
-  this->start_time.tv_usec = 0;
+  this->started_at = {};
+  this->execution_start_time = {};
   this->timeout_usec = 0;
   this->queue = queue;
   this->pool = pool;
   this->priority = priority;
   this->release_immediately = release_immediately;
+
+  gettimeofday(&started_at, NULL);
 }
 
 supla_abstract_asynctask::~supla_abstract_asynctask(void) {
@@ -81,6 +85,13 @@ supla_asynctask_state supla_abstract_asynctask::get_state(void) {
   return result;
 }
 
+struct timeval supla_abstract_asynctask::get_started_at(void) {
+  lock();
+  struct timeval result = started_at;
+  unlock();
+  return result;
+}
+
 long long supla_abstract_asynctask::get_delay_usec(void) {
   lock();
   long long result = delay_usec;
@@ -90,12 +101,12 @@ long long supla_abstract_asynctask::get_delay_usec(void) {
 
 void supla_abstract_asynctask::set_delay_usec(long long delay_usec) {
   lock();
-  gettimeofday(&start_time, NULL);
+  gettimeofday(&execution_start_time, NULL);
   this->delay_usec = delay_usec;
 
   if (delay_usec > 0) {
-    start_time.tv_sec += delay_usec / 1000000;
-    start_time.tv_usec += delay_usec % 1000000;
+    execution_start_time.tv_sec += delay_usec / 1000000;
+    execution_start_time.tv_usec += delay_usec % 1000000;
   }
 
   unlock();
@@ -126,8 +137,9 @@ long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
 
   lock();
   long long result = 0;
-  if (start_time.tv_sec || start_time.tv_usec) {
-    result = (start_time.tv_sec * (long long)1000000 + start_time.tv_usec) -
+  if (execution_start_time.tv_sec || execution_start_time.tv_usec) {
+    result = (execution_start_time.tv_sec * (long long)1000000 +
+              execution_start_time.tv_usec) -
              (now->tv_sec * (long long)1000000 + now->tv_usec);
   }
   unlock();
@@ -194,6 +206,10 @@ void supla_abstract_asynctask::execute(void) {
     }
   }
   unlock();
+
+  if (is_finished()) {
+    queue->on_task_finished(this);
+  }
 }
 
 void supla_abstract_asynctask::cancel(void) {

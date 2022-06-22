@@ -19,12 +19,16 @@
 #ifndef ABSTRACT_ASYNCTASK_OBSERVER_H_
 #define ABSTRACT_ASYNCTASK_OBSERVER_H_
 
+#include "asynctask/abstract_asynctask.h"
+
 class supla_abstract_asynctask_observer {
  private:
  protected:
  public:
   supla_abstract_asynctask_observer(void);
   virtual ~supla_abstract_asynctask_observer(void);
+  virtual void on_asynctask_started(supla_abstract_asynctask *asynctask) = 0;
+  virtual void on_asynctask_finished(supla_abstract_asynctask *asynctask) = 0;
 };
 
 #endif /*ABSTRACT_ASYNCTASK_OBSERVER_H_*/

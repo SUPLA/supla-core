@@ -19,6 +19,7 @@
 #ifndef ASYNCTASK_QUEUE_H_
 #define ASYNCTASK_QUEUE_H_
 
+#include <functional>
 #include <vector>
 
 #include "abstract_asynctask.h"
@@ -55,6 +56,8 @@ class supla_asynctask_queue {
   bool pool_exists(supla_abstract_asynctask_thread_pool *pool);
   void register_pool(supla_abstract_asynctask_thread_pool *pool);
   void unregister_pool(supla_abstract_asynctask_thread_pool *pool);
+  void on_task_started(supla_abstract_asynctask *task);
+  void on_task_finished(supla_abstract_asynctask *task);
 
   supla_abstract_asynctask *pick(supla_abstract_asynctask_thread_pool *pool);
 
@@ -76,6 +79,8 @@ class supla_asynctask_queue {
   void cancel_tasks(supla_abstract_asynctask_search_condition *cnd);
   void add_observer(supla_abstract_asynctask_observer *observer);
   void remove_observer(supla_abstract_asynctask_observer *observer);
+  bool access_task(supla_abstract_asynctask_search_condition *cnd,
+                   std::function<void(supla_abstract_asynctask *)> on_task);
   void log_stuck_warning(void);
 };
 
