@@ -30,6 +30,7 @@ class supla_abstract_asynctask_thread_pool;
 class supla_abstract_asynctask {
  private:
   void *lck;
+  bool observable;
   supla_asynctask_state state;
   long long delay_usec;
   struct timeval started_at;
@@ -53,6 +54,9 @@ class supla_abstract_asynctask {
   bool pick(void);
   virtual bool _execute(bool *execute_again) = 0;
   void execute(void);
+  void set_observable(void);  // This method should only be called in the
+                              // constructor. Calling it results in calling the
+                              // on_asynctask_started method in the observer
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,
@@ -73,6 +77,7 @@ class supla_abstract_asynctask {
   unsigned long long get_timeout(void);
   void cancel(void);
   bool is_finished(void);
+  bool is_observable(void);
   bool release_immediately_after_execution(void);
 };
 

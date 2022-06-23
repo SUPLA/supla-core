@@ -29,14 +29,12 @@ supla_abstract_asynctask::supla_abstract_asynctask(
     short priority, bool release_immediately) {
   init(queue, pool, priority, release_immediately);
   queue->add_task(this);
-  queue->on_task_started(this);
 }
 
 supla_abstract_asynctask::supla_abstract_asynctask(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool) {
   init(queue, pool, 0, true);
   queue->add_task(this);
-  queue->on_task_started(this);
 }
 
 void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
@@ -46,6 +44,7 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
   assert(pool);
 
   this->lck = lck_init();
+  this->observable = false;
   this->delay_usec = 0;
   this->started_at = {};
   this->execution_start_time = {};
@@ -66,6 +65,27 @@ supla_abstract_asynctask::~supla_abstract_asynctask(void) {
 void supla_abstract_asynctask::lock(void) { lck_lock(lck); }
 
 void supla_abstract_asynctask::unlock(void) { lck_unlock(lck); }
+
+void supla_abstract_asynctask::set_observable(void) {
+  lock();
+  bool prev = observable;
+  if (!observable) {
+    observable = true;
+  }
+  unlock();
+
+  if (!prev) {
+    queue->on_task_started(this);
+  }
+}
+
+bool supla_abstract_asynctask::is_observable(void) {
+  lock();
+  bool result = observable;
+  unlock();
+
+  return result;
+}
 
 supla_asynctask_queue *supla_abstract_asynctask::get_queue(void) {
   return queue;
@@ -207,7 +227,7 @@ void supla_abstract_asynctask::execute(void) {
   }
   unlock();
 
-  if (is_finished()) {
+  if (is_observable() && is_finished()) {
     queue->on_task_finished(this);
   }
 }

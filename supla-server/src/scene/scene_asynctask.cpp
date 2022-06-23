@@ -48,6 +48,7 @@ supla_scene_asynctask::supla_scene_asynctask(
 
   set_delay();
   set_waiting();
+  set_observable();
 }
 
 supla_scene_asynctask::~supla_scene_asynctask() {

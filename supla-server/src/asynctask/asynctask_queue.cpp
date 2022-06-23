@@ -373,10 +373,12 @@ void supla_asynctask_queue::add_observer(
       exists = true;
       break;
     }
-    if (!exists) {
-      observers.push_back(observer);
-    }
   }
+
+  if (!exists) {
+    observers.push_back(observer);
+  }
+
   lck_unlock(observer_lck);
 }
 
