@@ -50,3 +50,17 @@ bool supla_client_scene_change_indicator::is_scene_changed(void) const {
 bool supla_client_scene_change_indicator::is_state_changed(void) const {
   return state_changed;
 }
+
+bool supla_client_scene_change_indicator::operator==(
+    const supla_client_scene_change_indicator &ind) const {
+  return ind.is_changed() == is_changed() &&
+         ind.is_scene_changed() == is_scene_changed() &&
+         ind.is_state_changed() == is_state_changed();
+}
+
+bool supla_client_scene_change_indicator::operator!=(
+    const supla_client_scene_change_indicator &ind) const {
+  return ind.is_changed() != is_changed() ||
+         ind.is_scene_changed() != is_scene_changed() ||
+         ind.is_state_changed() != is_state_changed();
+}

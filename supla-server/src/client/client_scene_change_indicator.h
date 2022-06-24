@@ -35,6 +35,9 @@ class supla_client_scene_change_indicator
 
   bool is_scene_changed(void) const;
   bool is_state_changed(void) const;
+
+  bool operator==(const supla_client_scene_change_indicator &ind) const;
+  bool operator!=(const supla_client_scene_change_indicator &ind) const;
 };
 
 #endif /* SUPLA_CLIENT_SCENE_CHANGE_INDICATOR_H_ */

@@ -46,6 +46,8 @@ class supla_scene_state {
   void convert(TSC_SuplaSceneState *dest) const;
 
   supla_scene_state &operator=(const supla_scene_state &state);
+  bool operator==(const supla_scene_state &state) const;
+  bool operator!=(const supla_scene_state &state) const;
 };
 
 #endif /* SUPLA_SCENE_STATE_H_ */

@@ -138,3 +138,17 @@ supla_scene_state &supla_scene_state::operator=(
   caller = state.caller;
   return *this;
 }
+
+bool supla_scene_state::operator==(const supla_scene_state &state) const {
+  return started_at.tv_sec == state.started_at.tv_sec &&
+         started_at.tv_usec == state.started_at.tv_usec &&
+         ending_at.tv_sec == state.ending_at.tv_sec &&
+         ending_at.tv_usec == state.ending_at.tv_usec && caller == state.caller;
+}
+
+bool supla_scene_state::operator!=(const supla_scene_state &state) const {
+  return started_at.tv_sec != state.started_at.tv_sec ||
+         started_at.tv_usec != state.started_at.tv_usec ||
+         ending_at.tv_sec != state.ending_at.tv_sec ||
+         ending_at.tv_usec != state.ending_at.tv_usec || caller != state.caller;
+}

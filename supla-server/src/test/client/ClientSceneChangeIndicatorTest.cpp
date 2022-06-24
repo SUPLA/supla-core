@@ -71,4 +71,46 @@ TEST_F(ClientSceneChangeIndicatorTest, constructorWithTwoParameters) {
   EXPECT_TRUE(ind4.is_state_changed());
 }
 
+TEST_F(ClientSceneChangeIndicatorTest, compare) {
+  supla_client_scene_change_indicator ind1(false, false);
+  supla_client_scene_change_indicator ind2(false, true);
+  supla_client_scene_change_indicator ind3(true, true);
+  supla_client_scene_change_indicator ind4(true, false);
+
+  supla_client_scene_change_indicator ind1_bis = ind1;
+  supla_client_scene_change_indicator ind2_bis = ind2;
+  supla_client_scene_change_indicator ind3_bis = ind3;
+  supla_client_scene_change_indicator ind4_bis = ind4;
+
+  EXPECT_FALSE(ind1 == ind2);
+  EXPECT_TRUE(ind1 != ind2);
+
+  EXPECT_FALSE(ind1 == ind3);
+  EXPECT_TRUE(ind1 != ind3);
+
+  EXPECT_FALSE(ind1 == ind4);
+  EXPECT_TRUE(ind1 != ind4);
+
+  EXPECT_FALSE(ind2 == ind3);
+  EXPECT_TRUE(ind2 != ind3);
+
+  EXPECT_FALSE(ind2 == ind4);
+  EXPECT_TRUE(ind2 != ind4);
+
+  EXPECT_FALSE(ind3 == ind4);
+  EXPECT_TRUE(ind3 != ind4);
+
+  EXPECT_TRUE(ind1 == ind1_bis);
+  EXPECT_FALSE(ind1 != ind1_bis);
+
+  EXPECT_TRUE(ind2 == ind2_bis);
+  EXPECT_FALSE(ind2 != ind2_bis);
+
+  EXPECT_TRUE(ind3 == ind3_bis);
+  EXPECT_FALSE(ind3 != ind3_bis);
+
+  EXPECT_TRUE(ind4 == ind4_bis);
+  EXPECT_FALSE(ind4 != ind4_bis);
+}
+
 } /* namespace testing */

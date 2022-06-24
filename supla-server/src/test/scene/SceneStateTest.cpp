@@ -212,6 +212,47 @@ TEST_F(SceneStateTest, copy) {
             0);
 }
 
+TEST_F(SceneStateTest, compare) {
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+
+  const char initiatorName[] = "iPhone Steve";
+  supla_scene_state state1(supla_caller(ctClient, 55, initiatorName), now, 500);
+
+  supla_scene_state state2(supla_caller(ctClient, 55, initiatorName), now, 501);
+
+  struct timeval _now = now;
+  _now.tv_sec++;
+
+  supla_scene_state state3(supla_caller(ctClient, 55, initiatorName), _now,
+                           500);
+
+  _now = now;
+  _now.tv_usec++;
+
+  supla_scene_state state4(supla_caller(ctClient, 55, initiatorName), _now,
+                           500);
+
+  supla_scene_state state5(supla_caller(ctClient, 56, initiatorName), now, 500);
+
+  supla_scene_state state6 = state1;
+
+  EXPECT_FALSE(state1 == state2);
+  EXPECT_TRUE(state1 != state2);
+
+  EXPECT_FALSE(state1 == state3);
+  EXPECT_TRUE(state1 != state3);
+
+  EXPECT_FALSE(state1 == state4);
+  EXPECT_TRUE(state1 != state4);
+
+  EXPECT_FALSE(state1 == state5);
+  EXPECT_TRUE(state1 != state5);
+
+  EXPECT_TRUE(state1 == state6);
+  EXPECT_FALSE(state1 != state6);
+}
+
 TEST_F(SceneStateTest, convert) {
   struct timeval now = {};
   gettimeofday(&now, NULL);
