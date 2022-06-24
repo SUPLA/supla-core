@@ -19,6 +19,7 @@
 #ifndef SUPLA_CLIENT_SCENES_H_
 #define SUPLA_CLIENT_SCENES_H_
 
+#include "asynctask_queue.h"
 #include "client/abstract_client_scene_dao.h"
 #include "distributedobjects/dobjects.h"
 #include "proto.h"
@@ -33,6 +34,7 @@ class supla_client_scenes : public supla_dobjects {
                                supla_abstract_client_scene_dao *dao);
   virtual ~supla_client_scenes();
 
+  void load(supla_asynctask_queue *queue, int user_id, int client_id);
   void load(int user_id, int client_id);
 };
 
