@@ -19,6 +19,7 @@
 #include "client/ClientSceneTest.h"
 
 #include "client/client_scene.h"
+#include "client/client_scene_change_indicator.h"
 
 namespace testing {
 
@@ -58,6 +59,80 @@ TEST_F(ClientSceneTest, settersAndGetters) {
   EXPECT_LE(scene.get_state().get_milliseconds_from_start(), 5200U);
   EXPECT_LE(scene.get_state().get_milliseconds_left(), 5000U);
   EXPECT_GE(scene.get_state().get_milliseconds_left(), 4800U);
+}
+
+TEST_F(ClientSceneTest, setState) {
+  supla_client_scene scene(15);
+
+  scene.set_change_indicator(
+      new supla_client_scene_change_indicator(false, false));
+
+  EXPECT_FALSE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                   scene.get_change_indicator())
+                   ->is_changed());
+
+  EXPECT_FALSE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                   scene.get_change_indicator())
+                   ->is_scene_changed());
+
+  EXPECT_FALSE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                   scene.get_change_indicator())
+                   ->is_state_changed());
+
+  scene.set_state(supla_scene_state());
+
+  EXPECT_FALSE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                   scene.get_change_indicator())
+                   ->is_changed());
+
+  struct timeval started_at = {};
+  supla_scene_state state1(supla_caller(ctIPC), started_at, 500);
+  scene.set_state(state1);
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_changed());
+
+  EXPECT_FALSE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                   scene.get_change_indicator())
+                   ->is_scene_changed());
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_state_changed());
+
+  scene.set_change_indicator(
+      new supla_client_scene_change_indicator(true, false));
+
+  scene.set_state(state1);
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_changed());
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_scene_changed());
+
+  EXPECT_FALSE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                   scene.get_change_indicator())
+                   ->is_state_changed());
+
+  supla_scene_state state2(supla_caller(ctIPC), started_at, 5010);
+
+  scene.set_state(state2);
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_changed());
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_scene_changed());
+
+  EXPECT_TRUE(dynamic_cast<const supla_client_scene_change_indicator*>(
+                  scene.get_change_indicator())
+                  ->is_state_changed());
 }
 
 TEST_F(ClientSceneTest, convertScene) {

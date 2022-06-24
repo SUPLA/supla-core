@@ -74,7 +74,16 @@ int supla_client_scene::get_alt_icon_id(void) { return alt_icon_id; }
 const supla_scene_state &supla_client_scene::get_state(void) { return state; }
 
 void supla_client_scene::set_state(const supla_scene_state &state) {
-  this->state = state;
+  if (this->state != state) {
+    this->state = state;
+    const supla_client_scene_change_indicator *ind =
+        dynamic_cast<const supla_client_scene_change_indicator *>(
+            get_change_indicator());
+    if (!ind || !ind->is_state_changed()) {
+      set_change_indicator(new supla_client_scene_change_indicator(
+          ind && ind->is_scene_changed(), true));
+    }
+  }
 }
 
 void supla_client_scene::convert(TSC_SuplaScene *dest) {
