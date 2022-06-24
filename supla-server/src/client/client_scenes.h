@@ -19,7 +19,7 @@
 #ifndef SUPLA_CLIENT_SCENES_H_
 #define SUPLA_CLIENT_SCENES_H_
 
-#include "asynctask_queue.h"
+#include "asynctask/asynctask_queue.h"
 #include "client/abstract_client_scene_dao.h"
 #include "distributedobjects/dobjects.h"
 #include "proto.h"
