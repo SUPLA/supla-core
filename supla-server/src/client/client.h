@@ -20,9 +20,13 @@
 #define CLIENT_H_
 
 #include "cdbase.h"
+#include "client_scene_dao.h"
+#include "client_scene_remote_updater.h"
+#include "client_scenes.h"
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
+#include "srpc_adapter.h"
 
 class supla_user;
 class serverconnection;
@@ -33,9 +37,14 @@ class supla_client : public cdbase {
   int access_id;
 
  protected:
+  supla_srpc_adapter *srpc_adapter;
   supla_client_locations *locations;
   supla_client_channels *channels;
   supla_client_channelgroups *cgroups;
+  supla_client_scenes *scenes;
+
+  supla_client_scene_remote_updater *scene_remote_updater;
+  supla_client_scene_dao scene_dao;
 
   void loadIODevices(void);
   void loadConfig(void);

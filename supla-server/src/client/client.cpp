@@ -32,9 +32,13 @@
 #include "user/userchannelgroups.h"
 
 supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
+  this->srpc_adapter = new supla_srpc_adapter(svrconn->srpc());
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
+  this->scene_remote_updater =
+      new supla_client_scene_remote_updater(srpc_adapter);
+  this->scenes = new supla_client_scenes(scene_remote_updater, &scene_dao);
   this->name[0] = 0;
   this->superuser_authorized = false;
   this->access_id = 0;
@@ -44,6 +48,9 @@ supla_client::~supla_client() {
   delete cgroups;
   delete channels;
   delete locations;
+  delete scenes;
+  delete scene_remote_updater;
+  delete srpc_adapter;
 }
 
 void supla_client::setName(const char *name) {
@@ -385,12 +392,15 @@ void supla_client::remote_update_lists(void) {
   if (channels->remote_update(getSvrConn()->srpc())) return;
 
   if (cgroups->remote_update(getSvrConn()->srpc())) return;
+
+  if (scenes->update_remote()) return;
 }
 
 void supla_client::loadConfig(void) {
   locations->load(getID());
   channels->load();
   cgroups->load();
+  scenes->load(getUserID(), getID());
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }
