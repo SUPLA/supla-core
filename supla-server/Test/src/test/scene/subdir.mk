@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/scene/SceneAccessTest.cpp \
 ../src/test/scene/SceneObserverTest.cpp \
 ../src/test/scene/SceneStateTest.cpp \
 ../src/test/scene/SceneTest.cpp 
 
 CPP_DEPS += \
+./src/test/scene/SceneAccessTest.d \
 ./src/test/scene/SceneObserverTest.d \
 ./src/test/scene/SceneStateTest.d \
 ./src/test/scene/SceneTest.d 
 
 OBJS += \
+./src/test/scene/SceneAccessTest.o \
 ./src/test/scene/SceneObserverTest.o \
 ./src/test/scene/SceneStateTest.o \
 ./src/test/scene/SceneTest.o 
@@ -31,7 +34,7 @@ src/test/scene/%.o: ../src/test/scene/%.cpp src/test/scene/subdir.mk
 clean: clean-src-2f-test-2f-scene
 
 clean-src-2f-test-2f-scene:
-	-$(RM) ./src/test/scene/SceneObserverTest.d ./src/test/scene/SceneObserverTest.o ./src/test/scene/SceneStateTest.d ./src/test/scene/SceneStateTest.o ./src/test/scene/SceneTest.d ./src/test/scene/SceneTest.o
+	-$(RM) ./src/test/scene/SceneAccessTest.d ./src/test/scene/SceneAccessTest.o ./src/test/scene/SceneObserverTest.d ./src/test/scene/SceneObserverTest.o ./src/test/scene/SceneStateTest.d ./src/test/scene/SceneStateTest.o ./src/test/scene/SceneTest.d ./src/test/scene/SceneTest.o
 
 .PHONY: clean-src-2f-test-2f-scene
 
