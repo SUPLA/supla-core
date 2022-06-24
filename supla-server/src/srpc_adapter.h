@@ -23,7 +23,7 @@
 
 #include "abstract_srpc_adapter.h"
 
-class supla_srpc_adapter : supla_abstract_srpc_adapter {
+class supla_srpc_adapter : public supla_abstract_srpc_adapter {
  public:
   explicit supla_srpc_adapter(void *srpc);
   virtual ~supla_srpc_adapter();
