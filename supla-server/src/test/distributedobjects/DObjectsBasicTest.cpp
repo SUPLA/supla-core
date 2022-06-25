@@ -282,13 +282,13 @@ TEST_F(DObjectBasicTest, accessObject) {
 
   bool result = false;
 
-  access_object(15,
-                [&result](supla_dobject *object) -> void { result = true; });
+  objects->access_object(
+      15, [&result](supla_dobject *object) -> void { result = true; });
 
   EXPECT_FALSE(result);
 
-  access_object(10,
-                [&result](supla_dobject *object) -> void { result = true; });
+  objects->access_object(
+      10, [&result](supla_dobject *object) -> void { result = true; });
 
   EXPECT_TRUE(result);
 }

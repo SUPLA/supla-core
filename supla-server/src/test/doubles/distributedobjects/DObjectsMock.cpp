@@ -26,4 +26,9 @@ DObjectsMock::~DObjectsMock(void) {}
 
 void DObjectsMock::add(supla_dobject *object) { supla_dobjects::add(object); }
 
+void DObjectsMock::access_object(
+    int id, std::function<void(supla_dobject *object)> on_access) {
+  supla_dobjects::access_object(id, on_access);
+}
+
 }  // namespace testing

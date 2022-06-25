@@ -30,6 +30,8 @@ class DObjectsMock : public supla_dobjects {
   explicit DObjectsMock(supla_abstract_dobject_remote_updater *updater);
   virtual ~DObjectsMock(void);
   void add(supla_dobject *object);
+  void access_object(int id,
+                     std::function<void(supla_dobject *object)> on_access);
 };
 
 } /* namespace testing */
