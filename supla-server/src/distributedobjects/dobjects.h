@@ -20,6 +20,7 @@
 #define SUPLA_DISTRIBUTED_OBJECTS_H_
 
 #include <distributedobjects/abstract_dobject_remote_updater.h>
+
 #include <functional>
 #include <list>
 #include <vector>
@@ -48,6 +49,7 @@ class supla_dobjects {
   virtual ~supla_dobjects();
   int count(void);
   bool update_remote(void);
+  bool object_exists(int id);
 };
 
 #endif /* SUPLA_DISTRIBUTED_OBJECTS_H_ */

@@ -276,4 +276,29 @@ TEST_F(DObjectBasicTest, stillChanged) {
   EXPECT_TRUE(obj1->get_change_indicator() == NULL);
 }
 
+TEST_F(DObjectBasicTest, accessObject) {
+  DObjectMock *obj = new DObjectMock(10);
+  objects->add(obj);
+
+  bool result = false;
+
+  access_object(15,
+                [&result](supla_dobject *object) -> void { result = true; });
+
+  EXPECT_FALSE(result);
+
+  access_object(10,
+                [&result](supla_dobject *object) -> void { result = true; });
+
+  EXPECT_TRUE(result);
+}
+
+TEST_F(DObjectBasicTest, objectExists) {
+  DObjectMock *obj = new DObjectMock(10);
+  objects->add(obj);
+
+  EXPECT_FALSE(objects->object_exists(15));
+  EXPECT_TRUE(objects->object_exists(10));
+}
+
 } /* namespace testing */

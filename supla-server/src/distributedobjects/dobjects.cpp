@@ -119,3 +119,10 @@ bool supla_dobjects::update_remote(void) {
 
   return updater->end_transaction();
 }
+
+bool supla_dobjects::object_exists(int id) {
+  bool result = false;
+  access_object(id,
+                [&result](supla_dobject *object) -> void { result = true; });
+  return result;
+}
