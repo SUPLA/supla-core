@@ -28,16 +28,24 @@
 
 supla_client_scenes::supla_client_scenes(
     supla_abstract_dobject_remote_updater *updater,
-    supla_abstract_client_scene_dao *dao)
+    supla_abstract_client_scene_dao *dao, supla_asynctask_queue *queue)
     : supla_dobjects(updater) {
   assert(dao != NULL);
   this->dao = dao;
+  this->queue = queue;
+
+  if (queue) {
+    queue->add_observer(this);
+  }
 }
 
-supla_client_scenes::~supla_client_scenes() {}
+supla_client_scenes::~supla_client_scenes() {
+  if (queue) {
+    queue->remove_observer(this);
+  }
+}
 
-void supla_client_scenes::load(supla_asynctask_queue *queue, int user_id,
-                               int client_id) {
+void supla_client_scenes::load(int user_id, int client_id) {
   lock();
   clear();
   std::list<supla_client_scene *> scenes =
@@ -61,6 +69,33 @@ void supla_client_scenes::load(supla_asynctask_queue *queue, int user_id,
   unlock();
 }
 
-void supla_client_scenes::load(int user_id, int client_id) {
-  load(NULL, user_id, client_id);
+void supla_client_scenes::on_asynctask_started_finished(
+    supla_abstract_asynctask *asynctask) {
+  bool do_update = false;
+  supla_scene_asynctask *scene_task =
+      dynamic_cast<supla_scene_asynctask *>(asynctask);
+  if (scene_task) {
+    access_object(scene_task->get_scene_id(),
+                  [scene_task, &do_update](supla_dobject *object) -> void {
+                    dynamic_cast<supla_client_scene *>(object)->set_state(
+                        scene_task->get_scene_state());
+                    if (object->get_change_indicator()->is_changed()) {
+                      do_update = true;
+                    }
+                  });
+  }
+
+  if (do_update) {
+    update_remote();
+  }
+}
+
+void supla_client_scenes::on_asynctask_started(
+    supla_abstract_asynctask *asynctask) {
+  on_asynctask_started_finished(asynctask);
+}
+
+void supla_client_scenes::on_asynctask_finished(
+    supla_abstract_asynctask *asynctask) {
+  on_asynctask_started_finished(asynctask);
 }

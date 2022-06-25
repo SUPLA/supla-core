@@ -51,7 +51,7 @@ TEST_F(ClientSceneIntegrationTest, loadAndUpdateRemote) {
   supla_client_scene_remote_updater remoteUpdater(&srpcAdapter);
 
   supla_client_scene_dao dao;
-  supla_client_scenes scenes(&remoteUpdater, &dao);
+  supla_client_scenes scenes(&remoteUpdater, &dao, NULL);
 
   scenes.load(2, 1);
   EXPECT_EQ(scenes.count(), 6);

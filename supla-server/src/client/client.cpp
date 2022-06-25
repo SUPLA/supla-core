@@ -27,6 +27,7 @@
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
+#include "scene/scene_asynctask.h"
 #include "srpc.h"
 #include "user.h"
 #include "user/userchannelgroups.h"
@@ -38,7 +39,8 @@ supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
   this->cgroups = new supla_client_channelgroups(this);
   this->scene_remote_updater =
       new supla_client_scene_remote_updater(srpc_adapter);
-  this->scenes = new supla_client_scenes(scene_remote_updater, &scene_dao);
+  this->scenes = new supla_client_scenes(scene_remote_updater, &scene_dao,
+                                         supla_scene_asynctask::get_queue());
   this->name[0] = 0;
   this->superuser_authorized = false;
   this->access_id = 0;

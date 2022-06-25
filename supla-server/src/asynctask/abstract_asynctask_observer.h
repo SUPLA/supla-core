@@ -21,14 +21,17 @@
 
 #include "asynctask/abstract_asynctask.h"
 
+class supla_asynctask_queue;
 class supla_abstract_asynctask_observer {
  private:
  protected:
+  friend class supla_asynctask_queue;
+  virtual void on_asynctask_started(supla_abstract_asynctask *asynctask) = 0;
+  virtual void on_asynctask_finished(supla_abstract_asynctask *asynctask) = 0;
+
  public:
   supla_abstract_asynctask_observer(void);
   virtual ~supla_abstract_asynctask_observer(void);
-  virtual void on_asynctask_started(supla_abstract_asynctask *asynctask) = 0;
-  virtual void on_asynctask_finished(supla_abstract_asynctask *asynctask) = 0;
 };
 
 #endif /*ABSTRACT_ASYNCTASK_OBSERVER_H_*/

@@ -19,22 +19,29 @@
 #ifndef SUPLA_CLIENT_SCENES_H_
 #define SUPLA_CLIENT_SCENES_H_
 
+#include "asynctask/abstract_asynctask_observer.h"
 #include "asynctask/asynctask_queue.h"
 #include "client/abstract_client_scene_dao.h"
 #include "distributedobjects/dobjects.h"
 #include "proto.h"
 
-class supla_client_scenes : public supla_dobjects {
+class supla_client_scenes : public supla_dobjects,
+                            protected supla_abstract_asynctask_observer {
  private:
   supla_abstract_client_scene_dao *dao;
+  supla_asynctask_queue *queue;
 
  protected:
+  void on_asynctask_started_finished(supla_abstract_asynctask *asynctask);
+  virtual void on_asynctask_started(supla_abstract_asynctask *asynctask);
+  virtual void on_asynctask_finished(supla_abstract_asynctask *asynctask);
+
  public:
   explicit supla_client_scenes(supla_abstract_dobject_remote_updater *updater,
-                               supla_abstract_client_scene_dao *dao);
+                               supla_abstract_client_scene_dao *dao,
+                               supla_asynctask_queue *queue);
   virtual ~supla_client_scenes();
 
-  void load(supla_asynctask_queue *queue, int user_id, int client_id);
   void load(int user_id, int client_id);
 };
 
