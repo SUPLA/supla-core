@@ -2784,14 +2784,17 @@ bool database::channel_is_associated_with_action_trigger(int UserID,
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         action_trigger_config *config = new action_trigger_config();
-        while (!mysql_stmt_fetch(stmt)) {
-          config->set_user_config(is_null[0] ? NULL : user_config);
-          config->set_properties(is_null[1] ? NULL : properties);
+        if (config) {
+          while (!mysql_stmt_fetch(stmt)) {
+            config->set_user_config(is_null[0] ? NULL : user_config);
+            config->set_properties(is_null[1] ? NULL : properties);
 
-          if (config->channel_exists(ChannelID)) {
-            result = true;
-            break;
+            if (config->channel_exists(ChannelID)) {
+              result = true;
+              break;
+            }
           }
+          delete config;
         }
       }
     }
