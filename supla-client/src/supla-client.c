@@ -205,6 +205,13 @@ void supla_client_set_str(char *str, unsigned int *size, unsigned int max) {
     str[0] = 0;
 }
 
+void supla_client__set_str(char *str, unsigned short *size,
+                           unsigned short max) {
+  unsigned int isize = *size;
+  supla_client_set_str(str, &isize, max);
+  *size = isize;
+}
+
 void supla_client_location_update(TSuplaClientData *scd,
                                   TSC_SuplaLocation *location, char gn) {
   supla_client_set_str(location->Caption, &location->CaptionSize,
@@ -299,6 +306,59 @@ void supla_client_channelgroup_relation_pack_update(
 
   for (a = 0; a < pack->count; a++)
     supla_client_channelgroup_relation_update(scd, &pack->items[a], 0);
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_scene_pack_update(TSuplaClientData *scd,
+                                    TSC_SuplaScenePack *pack) {
+  int a;
+
+  if (!scd->cfg.cb_scene_update) {
+    return;
+  }
+
+  for (a = 0; a < pack->count; a++) {
+    TSC_SuplaScene scene = {};
+
+    scene.EOL = pack->items[a].EOL;
+    scene.Id = pack->items[a].Id;
+    scene.LocationId = pack->items[a].LocationId;
+    scene.AltIcon = pack->items[a].AltIcon;
+    scene.UserIcon = pack->items[a].UserIcon;
+
+    scene.CaptionSize = pack->items[a].CaptionSize;
+    memcpy(scene.Caption, pack->items[a].Caption, SUPLA_SCENE_CAPTION_MAXSIZE);
+
+    supla_client__set_str(scene.Caption, &scene.CaptionSize,
+                          SUPLA_SCENE_CAPTION_MAXSIZE);
+    scd->cfg.cb_scene_update(scd, scd->cfg.user_data, &scene);
+  }
+
+  srpc_cs_async_get_next(scd->srpc);
+}
+
+void supla_client_scene_state_pack_update(TSuplaClientData *scd,
+                                          TSC_SuplaSceneStatePack *pack) {
+  int a;
+
+  if (!scd->cfg.cb_scene_state_update) {
+    return;
+  }
+
+  for (a = 0; a < pack->count; a++) {
+    TSC_SuplaSceneState state = {};
+
+    state.EOL = pack->items[a].EOL;
+
+    state.InitiatorNameSize = pack->items[a].InitiatorNameSize;
+    memcpy(state.InitiatorName, pack->items[a].InitiatorName,
+           SUPLA_INITIATOR_NAME_MAXSIZE);
+
+    supla_client__set_str(state.InitiatorName, &state.InitiatorNameSize,
+                          SUPLA_INITIATOR_NAME_MAXSIZE);
+    scd->cfg.cb_scene_state_update(scd, scd->cfg.user_data, &state);
+  }
 
   srpc_cs_async_get_next(scd->srpc);
 }
@@ -844,6 +904,17 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
         if (rd.data.sc_channelgroup_relation_pack) {
           supla_client_channelgroup_relation_pack_update(
               scd, rd.data.sc_channelgroup_relation_pack);
+        }
+        break;
+      case SUPLA_SC_CALL_SCENE_PACK_UPDATE:
+        if (rd.data.sc_scene_pack) {
+          supla_client_scene_pack_update(scd, rd.data.sc_scene_pack);
+        }
+        break;
+      case SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE:
+        if (rd.data.sc_scene_state_pack) {
+          supla_client_scene_state_pack_update(scd,
+                                               rd.data.sc_scene_state_pack);
         }
         break;
       case SUPLA_SC_CALL_CHANNELVALUE_PACK_UPDATE:

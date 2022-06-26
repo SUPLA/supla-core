@@ -32,8 +32,8 @@ D | double
 
 #include <android/log.h>
 #include <jni.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "proto.h"
 #include "srpc.h"
@@ -189,6 +189,8 @@ typedef struct {
   jmethodID j_mid_on_min_version_required;
   jmethodID j_mid_channelgroup_update;
   jmethodID j_mid_channelgroup_relation_update;
+  jmethodID j_mid_scene_update;
+  jmethodID j_mid_scene_state_update;
   jmethodID j_mid_on_oauth_token_request_result;
   jmethodID j_mid_on_superuser_authorization_result;
   jmethodID j_mid_on_device_calcfg_result;
@@ -1121,6 +1123,45 @@ void supla_android_client_cb_channelgroup_relation_update(
   }
 }
 
+void supla_android_client_cb_scene_update(void *_suplaclient, void *user_data,
+                                          TSC_SuplaScene *scene) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_scene_update) {
+    jclass cls = (*env)->FindClass(env, "org/supla/android/lib/SuplaScene");
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>",
+                                                  "(IIIILjava/lang/String;Z)V");
+    jobject scene_obj = (*env)->NewObject(
+        env, cls, methodID, scene->Id, scene->LocationId, scene->AltIcon,
+        scene->UserIcon, new_string_utf(env, scene->Caption),
+        scene->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+
+    supla_android_client(asc, asc->j_mid_scene_update, scene_obj);
+  }
+}
+
+void supla_android_client_cb_scene_state_update(void *_suplaclient,
+                                                void *user_data,
+                                                TSC_SuplaSceneState *state) {
+  ASC_VAR_DECLARATION();
+  ENV_VAR_DECLARATION();
+
+  if (asc->j_mid_scene_state_update) {
+    jclass cls =
+        (*env)->FindClass(env, "org/supla/android/lib/SuplaSceneState");
+    jmethodID methodID = supla_client_GetMethodID(env, cls, "<init>",
+                                                  "(IIIILjava/lang/String;Z)V");
+    jobject state_obj = (*env)->NewObject(
+        env, cls, methodID, state->SceneId, state->MillisecondsFromStart,
+        state->MillisecondsLeft, state->InitiatorId,
+        new_string_utf(env, state->InitiatorName),
+        state->EOL == 1 ? JNI_TRUE : JNI_FALSE);
+
+    supla_android_client(asc, asc->j_mid_scene_state_update, state_obj);
+  }
+}
+
 void supla_android_client_cb_on_oauth_token_request_result(
     void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result) {
   ASC_VAR_DECLARATION();
@@ -1716,6 +1757,10 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
     _asc->j_mid_channelgroup_relation_update = supla_client_GetMethodID(
         env, oclass, "channelGroupRelationUpdate",
         "(Lorg/supla/android/lib/SuplaChannelGroupRelation;)V");
+    _asc->j_mid_scene_update = supla_client_GetMethodID(
+        env, oclass, "sceneUpdate", "(Lorg/supla/android/lib/SuplaScene;)V");
+    _asc->j_mid_scene_state_update = supla_client_GetMethodID(
+        env, oclass, "sceneState", "(Lorg/supla/android/lib/SuplaState;)V");
     _asc->j_mid_on_oauth_token_request_result =
         supla_client_GetMethodID(env, oclass, "onOAuthTokenRequestResult",
                                  "(Lorg/supla/android/lib/SuplaOAuthToken;)V");
@@ -1786,6 +1831,9 @@ JNIEXPORT jlong JNICALL Java_org_supla_android_lib_SuplaClient_scInit(
         supla_android_client_cb_channelgroup_update;
     sclient_cfg.cb_channelgroup_relation_update =
         supla_android_client_cb_channelgroup_relation_update;
+    sclient_cfg.cb_scene_update = supla_android_client_cb_scene_update;
+    sclient_cfg.cb_scene_state_update =
+        supla_android_client_cb_scene_state_update;
     sclient_cfg.cb_on_oauth_token_request_result =
         supla_android_client_cb_on_oauth_token_request_result;
     sclient_cfg.cb_on_superuser_authorization_result =
