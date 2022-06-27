@@ -53,6 +53,7 @@ class supla_asynctask_queue {
   bool task_exists(supla_abstract_asynctask *task);
   void add_task(supla_abstract_asynctask *task);
   void remove_task(supla_abstract_asynctask *task);
+  void release_task(supla_abstract_asynctask *task);
   bool pool_exists(supla_abstract_asynctask_thread_pool *pool);
   void register_pool(supla_abstract_asynctask_thread_pool *pool);
   void unregister_pool(supla_abstract_asynctask_thread_pool *pool);

@@ -87,11 +87,16 @@ void supla_asynctask_queue::release_pools(void) {
   } while (pool_count());
 }
 
+void supla_asynctask_queue::release_task(supla_abstract_asynctask *task) {
+  task->on_task_finished();
+  delete task;
+}
+
 void supla_asynctask_queue::release_tasks(void) {
   do {
     lck_lock(lck);
     if (tasks.size()) {
-      delete tasks.front();
+      release_task(tasks.front());
     }
     lck_unlock(lck);
   } while (total_count());
@@ -358,7 +363,7 @@ void supla_asynctask_queue::cancel_tasks(
     (*it)->cancel();
 
     if (release) {
-      delete (*it);
+      release_task(*it);
     }
   }
   lck_unlock(lck);
