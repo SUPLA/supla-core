@@ -110,7 +110,8 @@ int supla_scene_asynctask::get_user_id(void) { return user_id; }
 int supla_scene_asynctask::get_scene_id(void) { return scene_id; }
 
 supla_scene_state supla_scene_asynctask::get_scene_state(void) {
-  return supla_scene_state(caller, get_started_at(), op_get_time_left_ms());
+  return supla_scene_state(caller, get_started_at(),
+                           is_finished() ? 0 : op_get_time_left_ms());
 }
 
 bool supla_scene_asynctask::_execute(bool *execute_again) {
