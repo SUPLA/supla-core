@@ -350,6 +350,10 @@ void supla_client_scene_state_pack_update(TSuplaClientData *scd,
     TSC_SuplaSceneState state = {};
 
     state.EOL = pack->items[a].EOL;
+    state.SceneId = pack->items[a].SceneId;
+    state.MillisecondsFromStart = pack->items[a].MillisecondsFromStart;
+    state.MillisecondsLeft = pack->items[a].MillisecondsLeft;
+    state.InitiatorId = pack->items[a].InitiatorId;
 
     state.InitiatorNameSize = pack->items[a].InitiatorNameSize;
     memcpy(state.InitiatorName, pack->items[a].InitiatorName,
