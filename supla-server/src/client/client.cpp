@@ -303,11 +303,13 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
                 setName(Name);
                 setAccessID(AccessID);
 
+                // Set the user before loading config
+                setUser(supla_user::add_client(this, UserID));
+
                 loadConfig();
 
                 resultcode = SUPLA_RESULTCODE_TRUE;
                 result = 1;
-                setUser(supla_user::add_client(this, UserID));
               }
             }
           }
