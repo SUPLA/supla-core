@@ -45,6 +45,7 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
 
   this->lck = lck_init();
   this->observable = false;
+  this->observer_notified = false;
   this->delay_usec = 0;
   this->started_at = {};
   this->execution_start_time = {};
@@ -58,6 +59,7 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
 }
 
 supla_abstract_asynctask::~supla_abstract_asynctask(void) {
+  on_task_finished();
   queue->remove_task(this);
   lck_free(lck);
 }
@@ -227,7 +229,14 @@ void supla_abstract_asynctask::execute(void) {
   }
   unlock();
 
-  if (is_observable() && is_finished()) {
+  if (is_finished()) {
+    on_task_finished();
+  }
+}
+
+void supla_abstract_asynctask::on_task_finished(void) {
+  if (is_observable() && !observer_notified) {
+    observer_notified = true;
     queue->on_task_finished(this);
   }
 }

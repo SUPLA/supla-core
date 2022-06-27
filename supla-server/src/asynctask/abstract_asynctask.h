@@ -31,6 +31,7 @@ class supla_abstract_asynctask {
  private:
   void *lck;
   bool observable;
+  bool observer_notified;
   supla_asynctask_state state;
   long long delay_usec;
   struct timeval started_at;
@@ -43,6 +44,7 @@ class supla_abstract_asynctask {
   void init(supla_asynctask_queue *queue,
             supla_abstract_asynctask_thread_pool *pool, short priority,
             bool release_immediately);
+  void on_task_finished(void) ;
 
  protected:
   friend class supla_abstract_asynctask_thread_pool;
