@@ -35,6 +35,7 @@ src/device \
 src/distributedobjects \
 src/google \
 src/http \
+src/ipc \
 src/json \
 src/mqtt \
 src/scene \
@@ -53,6 +54,7 @@ src/test/doubles/device \
 src/test/doubles/distributedobjects \
 src/test/doubles/integration/asynctask \
 src/test/doubles/integration/mqtt \
+src/test/doubles/ipc \
 src/test/doubles/mqtt \
 src/test/doubles/scene \
 src/test/google \
@@ -61,6 +63,7 @@ src/test/integration \
 src/test/integration/client \
 src/test/integration/mqtt \
 src/test/integration/scene \
+src/test/ipc \
 src/test/mqtt \
 src/test/scene \
 src/test/webhook \

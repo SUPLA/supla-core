@@ -24,17 +24,19 @@
 #define IPC_AUTH_LEVEL_OAUTH_USER 1
 #define IPC_AUTH_LEVEL_SUPERUSER 2
 
+#define IPC_BUFFER_SIZE 4096
+
 #include <stddef.h>
 
 #include <functional>
+#include <vector>
 
 #include "eh.h"
-
-#define IPC_BUFFER_SIZE 4096
+#include "ipc/abstract_ipc_command.h"
 
 class supla_user_channelgroups;
 class supla_device_channels;
-class svr_ipcctrl {
+class supla_ipc_ctrl {
  private:
   int sfd;
   TEventHandler *eh;
@@ -101,9 +103,9 @@ class svr_ipcctrl {
   char buffer[IPC_BUFFER_SIZE];
 
  public:
-  explicit svr_ipcctrl(int sfd);
+  explicit supla_ipc_ctrl(int sfd);
   void execute(void *sthread);
-  virtual ~svr_ipcctrl();
+  virtual ~supla_ipc_ctrl();
 };
 
 #endif /* IPCCTRL_H_ */

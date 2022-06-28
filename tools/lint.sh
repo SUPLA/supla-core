@@ -18,6 +18,7 @@ cpplint ./supla-server/src/device/*
 cpplint ./supla-server/src/distributedobjects/* 
 cpplint ./supla-server/src/google/* 
 cpplint ./supla-server/src/http/* 
+cpplint ./supla-server/src/ipc/* 
 cpplint --exclude=./supla-server/src/mqtt/mqtt.c --exclude=./supla-server/src/mqtt/mqtt.h ./supla-server/src/mqtt/*
 cpplint ./supla-server/src/scene/* 
 cpplint ./supla-server/src/user/* 
@@ -42,12 +43,14 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/scene/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/asynctask/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/integration/mqtt/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/ipc/*
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/actions/* 
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/distributedobjects/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/* 
+cpplint --filter=-build/include ./supla-server/src/test/ipc/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/client/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/mqtt/* 
 cpplint --filter=-build/include ./supla-server/src/test/integration/scene/* 

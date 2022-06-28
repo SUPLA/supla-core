@@ -18,13 +18,13 @@
 
 #include "accept_loop.h"
 
+#include <ipc/ipc_ctrl.h>
 #include <stdio.h>
 #include <unistd.h>
 
 #include "client.h"
 #include "database.h"
 #include "device.h"
-#include "ipcctrl.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "safearray.h"
@@ -98,11 +98,11 @@ void accept_loop(void *ssd, void *al_sthread) {
 
 void accept_loop_ipcctrl_execute(void *ipcctrl, void *sthread) {
   database::thread_init();
-  ((svr_ipcctrl *)ipcctrl)->execute(sthread);
+  ((supla_ipc_ctrl *)ipcctrl)->execute(sthread);
 }
 
 void accept_loop_ipcctrl_finish(void *ipcctrl, void *sthread) {
-  delete (svr_ipcctrl *)ipcctrl;
+  delete (supla_ipc_ctrl *)ipcctrl;
   database::thread_end();
 }
 
@@ -134,7 +134,7 @@ void ipc_accept_loop(void *ipc, void *ipc_al_sthread) {
 
       stp.execute = accept_loop_ipcctrl_execute;
       stp.finish = accept_loop_ipcctrl_finish;
-      stp.user_data = new svr_ipcctrl(client_sd);
+      stp.user_data = new supla_ipc_ctrl(client_sd);
       stp.free_on_finish = 0;
       stp.initialize = NULL;
 

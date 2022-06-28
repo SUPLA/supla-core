@@ -16,8 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipcctrl.h"
-
+#include <ipc/ipc_ctrl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -94,6 +93,11 @@ const char cmd_enter_cfg_mode[] = "ACTION-ENTER-CONFIGURATION-MODE:";
 const char cmd_execute_scene[] = "EXECUTE-SCENE:";
 const char cmd_interrupt_scene[] = "INTERRUPT-SCENE:";
 
+const char cmd_get_scene_summary[] = "GET-SCENE-SUMMARY:";
+const char cmd_on_scene_added[] = "USER-ON-SCENE-ADDED:";
+const char cmd_on_scene_deleted[] = "USER-ON-SCENE-DELETED:";
+const char cmd_on_scene_changed[] = "USER-ON-SCENE-CHANGED:";
+
 const char cmd_user_alexa_credentials_changed[] =
     "USER-ALEXA-CREDENTIALS-CHANGED:";
 
@@ -117,14 +121,14 @@ const char cmd_user_before_channel_function_change[] =
 char ACT_VAR[] = ",ALEXA-CORRELATION-TOKEN=";
 char GRI_VAR[] = ",GOOGLE-REQUEST-ID=";
 
-svr_ipcctrl::svr_ipcctrl(int sfd) {
+supla_ipc_ctrl::supla_ipc_ctrl(int sfd) {
   this->sfd = sfd;
 
   this->eh = eh_init();
   eh_add_fd(eh, sfd);
 }
 
-bool svr_ipcctrl::match_command(const char *cmd, int len) {
+bool supla_ipc_ctrl::match_command(const char *cmd, int len) {
   if (len > (int)strnlen(cmd, IPC_BUFFER_SIZE) &&
       memcmp(buffer, cmd, strnlen(cmd, IPC_BUFFER_SIZE)) == 0 &&
       buffer[len - 1] == '\n') {
@@ -135,22 +139,22 @@ bool svr_ipcctrl::match_command(const char *cmd, int len) {
   return false;
 }
 
-void svr_ipcctrl::send_result(const char *result) {
+void supla_ipc_ctrl::send_result(const char *result) {
   snprintf(buffer, sizeof(buffer), "%s\n", result);
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
-void svr_ipcctrl::send_result(const char *result, int i) {
+void supla_ipc_ctrl::send_result(const char *result, int i) {
   snprintf(buffer, sizeof(buffer), "%s%i\n", result, i);
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
-void svr_ipcctrl::send_result(const char *result, double i) {
+void supla_ipc_ctrl::send_result(const char *result, double i) {
   snprintf(buffer, sizeof(buffer), "%s%f\n", result, i);
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
-void svr_ipcctrl::get_double(const char *cmd, char Type) {
+void supla_ipc_ctrl::get_double(const char *cmd, char Type) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -186,7 +190,7 @@ void svr_ipcctrl::get_double(const char *cmd, char Type) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_char(const char *cmd) {
+void supla_ipc_ctrl::get_char(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -208,7 +212,7 @@ void svr_ipcctrl::get_char(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_rgbw(const char *cmd) {
+void supla_ipc_ctrl::get_rgbw(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -238,7 +242,7 @@ void svr_ipcctrl::get_rgbw(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
+void supla_ipc_ctrl::get_impulsecounter_value(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -279,7 +283,7 @@ void svr_ipcctrl::get_impulsecounter_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
+void supla_ipc_ctrl::get_electricitymeter_value(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -378,7 +382,7 @@ void svr_ipcctrl::get_electricitymeter_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_valve_value(const char *cmd) {
+void supla_ipc_ctrl::get_valve_value(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -403,7 +407,7 @@ void svr_ipcctrl::get_valve_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_digiglass_value(const char *cmd) {
+void supla_ipc_ctrl::get_digiglass_value(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -432,7 +436,7 @@ void svr_ipcctrl::get_digiglass_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::get_relay_value(const char *cmd) {
+void supla_ipc_ctrl::get_relay_value(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -460,7 +464,7 @@ void svr_ipcctrl::get_relay_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::reset_counters(const char *cmd) {
+void supla_ipc_ctrl::reset_counters(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -485,7 +489,7 @@ void svr_ipcctrl::reset_counters(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::recalibrate(const char *cmd) {
+void supla_ipc_ctrl::recalibrate(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -512,7 +516,7 @@ void svr_ipcctrl::recalibrate(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::enter_cfg_mode(const char *cmd) {
+void supla_ipc_ctrl::enter_cfg_mode(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
 
@@ -535,28 +539,28 @@ void svr_ipcctrl::enter_cfg_mode(const char *cmd) {
   send_result("UNKNOWN:", DeviceID);
 }
 
-void svr_ipcctrl::get_status(void) {
+void supla_ipc_ctrl::get_status(void) {
   if (!serverstatus::globalInstance()->getStatus(buffer, IPC_BUFFER_SIZE)) {
     supla_log(LOG_ERR, "%s", buffer);
   }
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE), 0);
 }
 
-void svr_ipcctrl::free_correlation_token() {
+void supla_ipc_ctrl::free_correlation_token() {
   if (AlexaCorrelationToken) {
     free(AlexaCorrelationToken);
     AlexaCorrelationToken = NULL;
   }
 }
 
-void svr_ipcctrl::free_google_requestid() {
+void supla_ipc_ctrl::free_google_requestid() {
   if (GoogleRequestId) {
     free(GoogleRequestId);
     GoogleRequestId = NULL;
   }
 }
 
-char *svr_ipcctrl::cut(const char *cmd, const char *var) {
+char *supla_ipc_ctrl::cut(const char *cmd, const char *var) {
   char *result = NULL;
 
   char *ct = strstr(&buffer[strnlen(cmd, IPC_BUFFER_SIZE)], var);
@@ -581,17 +585,17 @@ char *svr_ipcctrl::cut(const char *cmd, const char *var) {
   return result;
 }
 
-void svr_ipcctrl::cut_correlation_token(const char *cmd) {
+void supla_ipc_ctrl::cut_correlation_token(const char *cmd) {
   free_correlation_token();
   AlexaCorrelationToken = cut(cmd, ACT_VAR);
 }
 
-void svr_ipcctrl::cut_google_requestid(const char *cmd) {
+void supla_ipc_ctrl::cut_google_requestid(const char *cmd) {
   free_google_requestid();
   GoogleRequestId = cut(cmd, GRI_VAR);
 }
 
-void svr_ipcctrl::execute_scene(const char *cmd) {
+void supla_ipc_ctrl::execute_scene(const char *cmd) {
   int UserID = 0;
   int SceneID = 0;
 
@@ -614,7 +618,7 @@ void svr_ipcctrl::execute_scene(const char *cmd) {
   send_result("UNKNOWN:", SceneID);
 }
 
-void svr_ipcctrl::interrupt_scene(const char *cmd) {
+void supla_ipc_ctrl::interrupt_scene(const char *cmd) {
   int UserID = 0;
   int SceneID = 0;
 
@@ -629,7 +633,7 @@ void svr_ipcctrl::interrupt_scene(const char *cmd) {
   send_result("UNKNOWN:", SceneID);
 }
 
-void svr_ipcctrl::set_char(const char *cmd, bool group) {
+void supla_ipc_ctrl::set_char(const char *cmd, bool group) {
   int UserID = 0;
   int CGID = 0;
   int DeviceID = 0;
@@ -690,7 +694,7 @@ void svr_ipcctrl::set_char(const char *cmd, bool group) {
   send_result("UNKNOWN:", CGID);
 }
 
-void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
+void supla_ipc_ctrl::set_rgbw(const char *cmd, bool group, bool random) {
   int UserID = 0;
   int DeviceID = 0;
   int CGID = 0;
@@ -779,7 +783,7 @@ void svr_ipcctrl::set_rgbw(const char *cmd, bool group, bool random) {
   send_result("UNKNOWN:", CGID);
 }
 
-void svr_ipcctrl::set_digiglass_value(const char *cmd) {
+void supla_ipc_ctrl::set_digiglass_value(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -811,7 +815,7 @@ void svr_ipcctrl::set_digiglass_value(const char *cmd) {
   send_result("UNKNOWN:", ChannelID);
 }
 
-void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
+void supla_ipc_ctrl::action_open_close(const char *cmd, bool open) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -864,7 +868,7 @@ void svr_ipcctrl::action_open_close(const char *cmd, bool open) {
   free_google_requestid();
 }
 
-void svr_ipcctrl::channel_groups_action(
+void supla_ipc_ctrl::channel_groups_action(
     const char *cmd, std::function<bool(supla_user_channelgroups *, int)> f) {
   int UserID = 0;
   int GroupID = 0;
@@ -884,7 +888,7 @@ void svr_ipcctrl::channel_groups_action(
   }
 }
 
-void svr_ipcctrl::channel_action(
+void supla_ipc_ctrl::channel_action(
     const char *cmd, std::function<bool(supla_device_channels *, int)> f) {
   int UserID = 0;
   int DeviceID = 0;
@@ -907,7 +911,7 @@ void svr_ipcctrl::channel_action(
   }
 }
 
-void svr_ipcctrl::action_cg_open_close(const char *cmd, bool open) {
+void supla_ipc_ctrl::action_cg_open_close(const char *cmd, bool open) {
   channel_groups_action(
       cmd,
       [open](supla_user_channelgroups *channel_groups, int GroupID) -> bool {
@@ -919,35 +923,35 @@ void svr_ipcctrl::action_cg_open_close(const char *cmd, bool open) {
       });
 }
 
-void svr_ipcctrl::action_toggle(const char *cmd) {
+void supla_ipc_ctrl::action_toggle(const char *cmd) {
   channel_action(
       cmd, [](supla_device_channels *channels, int channel_id) -> bool {
         return channels->action_toggle(supla_caller(ctIPC), channel_id, 0, 0);
       });
 }
 
-void svr_ipcctrl::action_cg_toggle(const char *cmd) {
+void supla_ipc_ctrl::action_cg_toggle(const char *cmd) {
   channel_groups_action(
       cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
         return channel_groups->action_toggle(supla_caller(ctIPC), group_id);
       });
 }
 
-void svr_ipcctrl::action_stop(const char *cmd) {
+void supla_ipc_ctrl::action_stop(const char *cmd) {
   channel_action(
       cmd, [](supla_device_channels *channels, int channel_id) -> bool {
         return channels->action_stop(supla_caller(ctIPC), channel_id, 0, 0);
       });
 }
 
-void svr_ipcctrl::action_cg_stop(const char *cmd) {
+void supla_ipc_ctrl::action_cg_stop(const char *cmd) {
   channel_groups_action(
       cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
         return channel_groups->action_stop(supla_caller(ctIPC), group_id);
       });
 }
 
-void svr_ipcctrl::action_up_or_stop(const char *cmd) {
+void supla_ipc_ctrl::action_up_or_stop(const char *cmd) {
   channel_action(cmd,
                  [](supla_device_channels *channels, int channel_id) -> bool {
                    return channels->action_up_or_stop(supla_caller(ctIPC),
@@ -955,14 +959,14 @@ void svr_ipcctrl::action_up_or_stop(const char *cmd) {
                  });
 }
 
-void svr_ipcctrl::action_cg_up_or_stop(const char *cmd) {
+void supla_ipc_ctrl::action_cg_up_or_stop(const char *cmd) {
   channel_groups_action(
       cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
         return channel_groups->action_up_or_stop(supla_caller(ctIPC), group_id);
       });
 }
 
-void svr_ipcctrl::action_down_or_stop(const char *cmd) {
+void supla_ipc_ctrl::action_down_or_stop(const char *cmd) {
   channel_action(cmd,
                  [](supla_device_channels *channels, int channel_id) -> bool {
                    return channels->action_down_or_stop(supla_caller(ctIPC),
@@ -970,7 +974,7 @@ void svr_ipcctrl::action_down_or_stop(const char *cmd) {
                  });
 }
 
-void svr_ipcctrl::action_cg_down_or_stop(const char *cmd) {
+void supla_ipc_ctrl::action_cg_down_or_stop(const char *cmd) {
   channel_groups_action(
       cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
         return channel_groups->action_down_or_stop(supla_caller(ctIPC),
@@ -978,7 +982,7 @@ void svr_ipcctrl::action_cg_down_or_stop(const char *cmd) {
       });
 }
 
-void svr_ipcctrl::action_step_by_step(const char *cmd) {
+void supla_ipc_ctrl::action_step_by_step(const char *cmd) {
   channel_action(cmd,
                  [](supla_device_channels *channels, int channel_id) -> bool {
                    return channels->action_step_by_step(supla_caller(ctIPC),
@@ -986,7 +990,7 @@ void svr_ipcctrl::action_step_by_step(const char *cmd) {
                  });
 }
 
-void svr_ipcctrl::action_cg_step_by_step(const char *cmd) {
+void supla_ipc_ctrl::action_cg_step_by_step(const char *cmd) {
   channel_groups_action(
       cmd, [](supla_user_channelgroups *channel_groups, int group_id) -> bool {
         return channel_groups->action_step_by_step(supla_caller(ctIPC),
@@ -994,7 +998,7 @@ void svr_ipcctrl::action_cg_step_by_step(const char *cmd) {
       });
 }
 
-void svr_ipcctrl::action_copy(const char *cmd, bool group) {
+void supla_ipc_ctrl::action_copy(const char *cmd, bool group) {
   int UserID = 0;
   int DeviceID = 0;
   int ChannelID = 0;
@@ -1041,11 +1045,11 @@ void svr_ipcctrl::action_copy(const char *cmd, bool group) {
   }
 }
 
-void svr_ipcctrl::action_copy(const char *cmd) { action_copy(cmd, false); }
+void supla_ipc_ctrl::action_copy(const char *cmd) { action_copy(cmd, false); }
 
-void svr_ipcctrl::action_cg_copy(const char *cmd) { action_copy(cmd, true); }
+void supla_ipc_ctrl::action_cg_copy(const char *cmd) { action_copy(cmd, true); }
 
-void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
+void supla_ipc_ctrl::alexa_credentials_changed(const char *cmd) {
   int UserID = 0;
 
   sscanf(&buffer[strnlen(cmd_user_alexa_credentials_changed, IPC_BUFFER_SIZE)],
@@ -1059,7 +1063,7 @@ void svr_ipcctrl::alexa_credentials_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::google_home_credentials_changed(const char *cmd) {
+void supla_ipc_ctrl::google_home_credentials_changed(const char *cmd) {
   int UserID = 0;
 
   sscanf(&buffer[strnlen(cmd_user_google_home_credentials_changed,
@@ -1073,7 +1077,7 @@ void svr_ipcctrl::google_home_credentials_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::state_webhook_changed(const char *cmd) {
+void supla_ipc_ctrl::state_webhook_changed(const char *cmd) {
   int UserID = 0;
 
   sscanf(&buffer[strnlen(cmd_user_state_webhook_changed, IPC_BUFFER_SIZE)],
@@ -1086,7 +1090,7 @@ void svr_ipcctrl::state_webhook_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::mqtt_settings_changed(const char *cmd) {
+void supla_ipc_ctrl::mqtt_settings_changed(const char *cmd) {
   int UserID = 0;
 
   sscanf(&buffer[strnlen(cmd_user_mqtt_settings_changed, IPC_BUFFER_SIZE)],
@@ -1099,7 +1103,7 @@ void svr_ipcctrl::mqtt_settings_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::before_channel_function_change(const char *cmd) {
+void supla_ipc_ctrl::before_channel_function_change(const char *cmd) {
   int UserID = 0;
   int ChannelID = 0;
 
@@ -1115,7 +1119,7 @@ void svr_ipcctrl::before_channel_function_change(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::before_device_delete(const char *cmd) {
+void supla_ipc_ctrl::before_device_delete(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
 
@@ -1129,7 +1133,7 @@ void svr_ipcctrl::before_device_delete(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::on_device_deleted(const char *cmd) {
+void supla_ipc_ctrl::on_device_deleted(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
 
@@ -1143,7 +1147,7 @@ void svr_ipcctrl::on_device_deleted(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::on_device_settings_changed(const char *cmd) {
+void supla_ipc_ctrl::on_device_settings_changed(const char *cmd) {
   int UserID = 0;
   int DeviceID = 0;
 
@@ -1158,7 +1162,7 @@ void svr_ipcctrl::on_device_settings_changed(const char *cmd) {
   }
 }
 
-void svr_ipcctrl::execute(void *sthread) {
+void supla_ipc_ctrl::execute(void *sthread) {
   if (sfd == -1) return;
 
   int len;
@@ -1382,7 +1386,7 @@ void svr_ipcctrl::execute(void *sthread) {
   }
 }
 
-svr_ipcctrl::~svr_ipcctrl() {
+supla_ipc_ctrl::~supla_ipc_ctrl() {
   if (sfd != -1) close(sfd);
 
   eh_free(eh);

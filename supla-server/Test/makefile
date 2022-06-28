@@ -13,6 +13,7 @@ RM := rm -rf
 -include src/test/webhook/subdir.mk
 -include src/test/scene/subdir.mk
 -include src/test/mqtt/subdir.mk
+-include src/test/ipc/subdir.mk
 -include src/test/integration/scene/subdir.mk
 -include src/test/integration/mqtt/subdir.mk
 -include src/test/integration/client/subdir.mk
@@ -21,6 +22,7 @@ RM := rm -rf
 -include src/test/google/subdir.mk
 -include src/test/doubles/scene/subdir.mk
 -include src/test/doubles/mqtt/subdir.mk
+-include src/test/doubles/ipc/subdir.mk
 -include src/test/doubles/integration/mqtt/subdir.mk
 -include src/test/doubles/integration/asynctask/subdir.mk
 -include src/test/doubles/distributedobjects/subdir.mk
@@ -39,6 +41,7 @@ RM := rm -rf
 -include src/scene/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
+-include src/ipc/subdir.mk
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk

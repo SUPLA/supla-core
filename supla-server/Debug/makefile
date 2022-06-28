@@ -13,6 +13,7 @@ RM := rm -rf
 -include src/scene/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk
+-include src/ipc/subdir.mk
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk

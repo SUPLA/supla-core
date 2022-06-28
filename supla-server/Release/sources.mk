@@ -35,6 +35,7 @@ src/device \
 src/distributedobjects \
 src/google \
 src/http \
+src/ipc \
 src/json \
 src/mqtt \
 src/scene \
