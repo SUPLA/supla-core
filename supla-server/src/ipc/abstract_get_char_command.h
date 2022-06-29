@@ -34,9 +34,7 @@ class supla_abstract_get_char_command : public supla_abstract_ipc_command {
                                       int channel_id, char *value) = 0;
 
  public:
-  supla_abstract_get_char_command(
-      supla_abstract_ipc_response_agent *response_agent, char *buffer,
-      unsigned int buffer_size);
+  supla_abstract_get_char_command(void);
 };
 
 #endif /* SUPLA_ABSTRACT_GET_CHAR_COMMAND_H_ */

@@ -19,18 +19,18 @@
 #ifndef IPCCOMMANDTEST_H_
 #define IPCCOMMANDTEST_H_
 
-#include "doubles/ipc/ResponseAgentMock.h"
+#include <doubles/ipc/IpcSocketAdapterMock.h>
+
 #include "gtest/gtest.h"
 
 namespace testing {
 
 class IpcCommandTest : public Test {
  protected:
-  ResponseAgentMock responseAgent;
-
  public:
   IpcCommandTest();
   virtual ~IpcCommandTest();
+  virtual void SetUp();
 };
 
 } /* namespace testing */

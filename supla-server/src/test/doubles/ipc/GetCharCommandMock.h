@@ -16,16 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/get_char_command.h"
+#ifndef GET_CHAR_COMMMAND_MOCK_H_
+#define GET_CHAR_COMMMAND_MOCK_H_
 
-#include "user.h"
+#include <gmock/gmock.h>
 
-supla_get_char_command::supla_get_char_command(void)
-    : supla_abstract_get_char_command() {}
+#include "ipc/abstract_get_char_command.h"
 
-bool supla_get_char_command::get_channel_char_value(int user_id, int device_id,
-                                                    int channel_id,
-                                                    char *value) {
-  return supla_user::get_channel_char_value(user_id, device_id, channel_id,
-                                            value);
-}
+namespace testing {
+
+class GetCharCommandMock : public supla_abstract_get_char_command {
+ public:
+  GetCharCommandMock(void);
+
+  MOCK_METHOD4(get_channel_char_value,
+               bool(int user_id, int device_id, int channel_id, char *value));
+};
+
+} /* namespace testing */
+
+#endif /* GET_CHAR_COMMMAND_MOCK_H_ */

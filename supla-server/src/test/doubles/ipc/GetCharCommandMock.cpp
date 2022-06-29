@@ -16,8 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/abstract_ipc_response_agent.h"
+#include "doubles/ipc/GetCharCommandMock.h"
 
-supla_abstract_ipc_response_agent::supla_abstract_ipc_response_agent(void) {}
+namespace testing {
 
-supla_abstract_ipc_response_agent::~supla_abstract_ipc_response_agent() {}
+GetCharCommandMock::GetCharCommandMock(void)
+    : supla_abstract_get_char_command() {}
+
+}  // namespace testing

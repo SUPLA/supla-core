@@ -16,16 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/get_char_command.h"
+#ifndef SUPLA_ABSTRACT_IPC_SOCKET_ADAPTER_H_
+#define SUPLA_ABSTRACT_IPC_SOCKET_ADAPTER_H_
 
-#include "user.h"
+#include <string>
 
-supla_get_char_command::supla_get_char_command(void)
-    : supla_abstract_get_char_command() {}
+#include "eh.h"
 
-bool supla_get_char_command::get_channel_char_value(int user_id, int device_id,
-                                                    int channel_id,
-                                                    char *value) {
-  return supla_user::get_channel_char_value(user_id, device_id, channel_id,
-                                            value);
-}
+class supla_abstract_ipc_socket_adapter {
+ private:
+  int sfd;
+  TEventHandler *eh;
+
+ public:
+  explicit supla_abstract_ipc_socket_adapter(int sfd);
+  virtual ~supla_abstract_ipc_socket_adapter();
+  void wait(int usec);
+  virtual void send(const std::string &data) = 0;
+  virtual bool recv_byte(char *b) = 0;
+  virtual bool is_error(void) = 0;
+};
+
+#endif /* SUPLA_ABSTRACT_IPC_SOCKET_ADAPTER_H_ */

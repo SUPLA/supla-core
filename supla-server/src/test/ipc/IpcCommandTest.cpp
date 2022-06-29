@@ -18,10 +18,24 @@
 
 #include "ipc/IpcCommandTest.h"
 
+#include "doubles/ipc/GetCharCommandMock.h"
+
 namespace testing {
 
 IpcCommandTest::IpcCommandTest() : Test() {}
 
 IpcCommandTest::~IpcCommandTest() {}
+
+void IpcCommandTest::SetUp() { Test::SetUp(); }
+/*
+TEST_F(IpcCommandTest, getChar) {
+  GetCharCommandMock cmd(&responseAgent, buffer, sizeof(buffer));
+  EXPECT_FALSE(cmd.match_command(sizeof(buffer)));
+
+  snprintf(buffer, sizeof(buffer), "GET-CHAR-VALUE:10,20,30\n");
+
+  EXPECT_TRUE(cmd.match_command(strnlen(buffer, sizeof(buffer))));
+}
+*/
 
 } /* namespace testing */

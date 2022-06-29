@@ -16,16 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/get_char_command.h"
+#ifndef IPC_CTRL_MOCK_H_
+#define IPC_CTRL_MOCK_H_
 
-#include "user.h"
+#include <gmock/gmock.h>
+#include <ipc/abstract_ipc_ctrl.h>
 
-supla_get_char_command::supla_get_char_command(void)
-    : supla_abstract_get_char_command() {}
+namespace testing {
 
-bool supla_get_char_command::get_channel_char_value(int user_id, int device_id,
-                                                    int channel_id,
-                                                    char *value) {
-  return supla_user::get_channel_char_value(user_id, device_id, channel_id,
-                                            value);
-}
+class IpcCtrlMock : public supla_abstract_ipc_ctrl {
+ public:
+  explicit IpcCtrlMock(supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual ~IpcCtrlMock();
+  MOCK_METHOD0(is_terminated, bool());
+  MOCK_METHOD0(terminate, void());
+};
+
+} /* namespace testing */
+
+#endif /* IPC_CTRL_MOCK_H_ */

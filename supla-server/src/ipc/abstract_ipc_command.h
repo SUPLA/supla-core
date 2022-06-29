@@ -19,16 +19,17 @@
 #ifndef SUPLA_ABSTRACT_IPC_COMMAND_H_
 #define SUPLA_ABSTRACT_IPC_COMMAND_H_
 
-#include <ipc/abstract_ipc_response_agent.h>
+#include <ipc/abstract_ipc_socket_adapter.h>
 
+class supla_abstract_ipc_ctrl;
 class supla_abstract_ipc_command {
  private:
-  supla_abstract_ipc_response_agent *response_agent;
-
-  char *buffer;
-  unsigned int buffer_size;
+  supla_abstract_ipc_ctrl *ipc_ctrl;
 
  protected:
+  friend class supla_abstract_ipc_ctrl;
+  void set_ipc_ctrl(supla_abstract_ipc_ctrl *ipc_ctrl);
+
   void send_result(const char *result);
   void send_result(const char *result, int i);
   void send_result(const char *result, double i);
@@ -37,10 +38,9 @@ class supla_abstract_ipc_command {
   virtual const char *get_command_name(void) = 0;
 
  public:
-  supla_abstract_ipc_command(supla_abstract_ipc_response_agent *response_agent,
-                             char *buffer, unsigned int buffer_size);
+  supla_abstract_ipc_command(void);
   virtual ~supla_abstract_ipc_command();
-  bool match_command(unsigned int data_len);
+  bool process_command(unsigned int data_len);
 };
 
 #endif /* SUPLA_ABSTRACT_IPC_COMMAND_H_ */

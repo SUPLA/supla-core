@@ -16,31 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/abstract_get_char_command.h"
+#include "ipc/abstract_ipc_socket_adapter.h"
 
-supla_abstract_get_char_command::supla_abstract_get_char_command()
-    : supla_abstract_ipc_command(), command_name("GET-CHAR-VALUE:") {}
-
-const char *supla_abstract_get_char_command::get_command_name(void) {
-  return command_name.c_str();
+supla_abstract_ipc_socket_adapter::supla_abstract_ipc_socket_adapter(int sfd) {
+  this->sfd = sfd;
+  this->eh = NULL;
+  if (sfd != -1) {
+    eh = eh_init();
+    eh_add_fd(eh, sfd);
+  }
 }
 
-void supla_abstract_get_char_command::on_command_match(const char *params) {
-  int user_id = 0;
-  int device_id = 0;
-  int channel_id = 0;
-  char value = 0;
-
-  sscanf(params, "%i,%i,%i", &user_id, &device_id, &channel_id);
-
-  if (user_id && device_id && channel_id) {
-    bool r = get_channel_char_value(user_id, device_id, channel_id, &value);
-
-    if (r) {
-      send_result("VALUE:", (int)value);
-      return;
-    }
+supla_abstract_ipc_socket_adapter::~supla_abstract_ipc_socket_adapter() {
+  if (eh) {
+    eh_free(eh);
+    eh = NULL;
   }
+}
 
-  send_result("UNKNOWN:", channel_id);
+void supla_abstract_ipc_socket_adapter::wait(int usec) {
+  if (eh) {
+    eh_wait(eh, usec);
+  }
 }

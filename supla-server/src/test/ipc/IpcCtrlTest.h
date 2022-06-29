@@ -16,16 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ABSTRACT_IPC_RESPONSE_AGENT_H_
-#define SUPLA_ABSTRACT_IPC_RESPONSE_AGENT_H_
+#ifndef IPCCTRLTEST_H_
+#define IPCCTRLTEST_H_
 
-#include <string>
+#include "doubles/ipc/GetCharCommandMock.h"
+#include "doubles/ipc/IpcCtrlMock.h"
+#include "doubles/ipc/IpcSocketAdapterMock.h"
+#include "gtest/gtest.h"
 
-class supla_abstract_ipc_response_agent {
+namespace testing {
+
+class IpcCtrlTest : public Test {
+ protected:
+  IpcSocketAdapterMock *socket_adapter;
+  IpcCtrlMock *ipc_ctrl;
+  GetCharCommandMock *get_char_cmd;
+
  public:
-  supla_abstract_ipc_response_agent(void);
-  virtual ~supla_abstract_ipc_response_agent();
-  virtual void send_response(const std::string &response) = 0;
+  IpcCtrlTest();
+  virtual ~IpcCtrlTest();
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* SUPLA_ABSTRACT_IPC_RESPONSE_AGENT_H_ */
+} /* namespace testing */
+
+#endif /* IPCCTRLTEST_H_ */

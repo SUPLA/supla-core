@@ -16,14 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "doubles/ipc/ResponseAgentMock.h"
+#ifndef IPC_SOCKET_ADAPTER_MOCK_H_
+#define IPC_SOCKET_ADAPTER_MOCK_H_
 
-#include <sys/time.h>
+#include <gmock/gmock.h>
+#include <ipc/abstract_ipc_socket_adapter.h>
 
 namespace testing {
 
-ResponseAgentMock::ResponseAgentMock() : supla_abstract_ipc_response_agent() {}
+class IpcSocketAdapterMock : public supla_abstract_ipc_socket_adapter {
+ private:
+  char *recv_buffer;
+  unsigned int recv_buffer_size;
+  unsigned int recv_buffer_offset;
 
-ResponseAgentMock::~ResponseAgentMock() {}
+ public:
+  explicit IpcSocketAdapterMock(int sfd);
+  virtual ~IpcSocketAdapterMock();
 
-}  // namespace testing
+  MOCK_METHOD1(send, void(const std::string &response));
+  MOCK_METHOD0(is_error, bool());
+  virtual bool recv_byte(char *b);
+  void set_recv_buffer(char *recv_buffer, unsigned int recv_buffer_size);
+};
+
+} /* namespace testing */
+
+#endif /* IPC_SOCKET_ADAPTER_MOCK_H_ */
