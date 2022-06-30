@@ -56,7 +56,7 @@ void supla_abstract_ipc_command::send_result(const char *result, double d) {
 }
 
 void supla_abstract_ipc_command::process_parameters(
-    const char *params,
+    const char *params, const char *failure_suffix,
     std::function<bool(int user_id, int device_id, int channel_id)> on_ids) {
   int user_id = 0;
   int device_id = 0;
@@ -70,7 +70,13 @@ void supla_abstract_ipc_command::process_parameters(
       return;
     }
   }
-  send_result("UNKNOWN:", channel_id);
+  send_result(failure_suffix, channel_id);
+}
+
+void supla_abstract_ipc_command::process_parameters(
+    const char *params,
+    std::function<bool(int user_id, int device_id, int channel_id)> on_ids) {
+  process_parameters(params, "UNKNOWN:", on_ids);
 }
 
 bool supla_abstract_ipc_command::process_command(char *buffer,

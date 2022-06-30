@@ -36,6 +36,10 @@ class supla_abstract_ipc_command {
   void send_result(const char *result, double d);
 
   void process_parameters(
+      const char *params, const char *failure_suffix,
+      std::function<bool(int user_id, int device_id, int channel_id)> on_ids);
+
+  void process_parameters(
       const char *params,
       std::function<bool(int user_id, int device_id, int channel_id)> on_ids);
 

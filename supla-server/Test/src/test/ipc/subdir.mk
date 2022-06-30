@@ -7,6 +7,7 @@ CPP_SRCS += \
 ../src/test/ipc/GetCharCommandTest.cpp \
 ../src/test/ipc/IpcCommandTest.cpp \
 ../src/test/ipc/IpcCtrlTest.cpp \
+../src/test/ipc/IsChannelConnectedCommandTest.cpp \
 ../src/test/ipc/IsClientConnectedCommandTest.cpp \
 ../src/test/ipc/IsDeviceConnectedCommandTest.cpp 
 
@@ -14,6 +15,7 @@ CPP_DEPS += \
 ./src/test/ipc/GetCharCommandTest.d \
 ./src/test/ipc/IpcCommandTest.d \
 ./src/test/ipc/IpcCtrlTest.d \
+./src/test/ipc/IsChannelConnectedCommandTest.d \
 ./src/test/ipc/IsClientConnectedCommandTest.d \
 ./src/test/ipc/IsDeviceConnectedCommandTest.d 
 
@@ -21,6 +23,7 @@ OBJS += \
 ./src/test/ipc/GetCharCommandTest.o \
 ./src/test/ipc/IpcCommandTest.o \
 ./src/test/ipc/IpcCtrlTest.o \
+./src/test/ipc/IsChannelConnectedCommandTest.o \
 ./src/test/ipc/IsClientConnectedCommandTest.o \
 ./src/test/ipc/IsDeviceConnectedCommandTest.o 
 
@@ -37,7 +40,7 @@ src/test/ipc/%.o: ../src/test/ipc/%.cpp src/test/ipc/subdir.mk
 clean: clean-src-2f-test-2f-ipc
 
 clean-src-2f-test-2f-ipc:
-	-$(RM) ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o ./src/test/ipc/IsDeviceConnectedCommandTest.d ./src/test/ipc/IsDeviceConnectedCommandTest.o
+	-$(RM) ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsChannelConnectedCommandTest.d ./src/test/ipc/IsChannelConnectedCommandTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o ./src/test/ipc/IsDeviceConnectedCommandTest.d ./src/test/ipc/IsDeviceConnectedCommandTest.o
 
 .PHONY: clean-src-2f-test-2f-ipc
 
