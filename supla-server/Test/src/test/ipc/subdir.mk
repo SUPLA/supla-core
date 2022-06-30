@@ -6,17 +6,20 @@
 CPP_SRCS += \
 ../src/test/ipc/GetCharCommandTest.cpp \
 ../src/test/ipc/IpcCommandTest.cpp \
-../src/test/ipc/IpcCtrlTest.cpp 
+../src/test/ipc/IpcCtrlTest.cpp \
+../src/test/ipc/IsClientConnectedCommandTest.cpp 
 
 CPP_DEPS += \
 ./src/test/ipc/GetCharCommandTest.d \
 ./src/test/ipc/IpcCommandTest.d \
-./src/test/ipc/IpcCtrlTest.d 
+./src/test/ipc/IpcCtrlTest.d \
+./src/test/ipc/IsClientConnectedCommandTest.d 
 
 OBJS += \
 ./src/test/ipc/GetCharCommandTest.o \
 ./src/test/ipc/IpcCommandTest.o \
-./src/test/ipc/IpcCtrlTest.o 
+./src/test/ipc/IpcCtrlTest.o \
+./src/test/ipc/IsClientConnectedCommandTest.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -31,7 +34,7 @@ src/test/ipc/%.o: ../src/test/ipc/%.cpp src/test/ipc/subdir.mk
 clean: clean-src-2f-test-2f-ipc
 
 clean-src-2f-test-2f-ipc:
-	-$(RM) ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o
+	-$(RM) ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o
 
 .PHONY: clean-src-2f-test-2f-ipc
 

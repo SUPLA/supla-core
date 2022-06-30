@@ -8,24 +8,30 @@ CPP_SRCS += \
 ../src/ipc/abstract_ipc_command.cpp \
 ../src/ipc/abstract_ipc_ctrl.cpp \
 ../src/ipc/abstract_ipc_socket_adapter.cpp \
+../src/ipc/abstract_is_client_connected_command.cpp \
 ../src/ipc/get_char_command.cpp \
-../src/ipc/ipc_ctrl.cpp 
+../src/ipc/ipc_ctrl.cpp \
+../src/ipc/is_client_connected_command.cpp 
 
 CPP_DEPS += \
 ./src/ipc/abstract_get_char_command.d \
 ./src/ipc/abstract_ipc_command.d \
 ./src/ipc/abstract_ipc_ctrl.d \
 ./src/ipc/abstract_ipc_socket_adapter.d \
+./src/ipc/abstract_is_client_connected_command.d \
 ./src/ipc/get_char_command.d \
-./src/ipc/ipc_ctrl.d 
+./src/ipc/ipc_ctrl.d \
+./src/ipc/is_client_connected_command.d 
 
 OBJS += \
 ./src/ipc/abstract_get_char_command.o \
 ./src/ipc/abstract_ipc_command.o \
 ./src/ipc/abstract_ipc_ctrl.o \
 ./src/ipc/abstract_ipc_socket_adapter.o \
+./src/ipc/abstract_is_client_connected_command.o \
 ./src/ipc/get_char_command.o \
-./src/ipc/ipc_ctrl.o 
+./src/ipc/ipc_ctrl.o \
+./src/ipc/is_client_connected_command.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -40,7 +46,7 @@ src/ipc/%.o: ../src/ipc/%.cpp src/ipc/subdir.mk
 clean: clean-src-2f-ipc
 
 clean-src-2f-ipc:
-	-$(RM) ./src/ipc/abstract_get_char_command.d ./src/ipc/abstract_get_char_command.o ./src/ipc/abstract_ipc_command.d ./src/ipc/abstract_ipc_command.o ./src/ipc/abstract_ipc_ctrl.d ./src/ipc/abstract_ipc_ctrl.o ./src/ipc/abstract_ipc_socket_adapter.d ./src/ipc/abstract_ipc_socket_adapter.o ./src/ipc/get_char_command.d ./src/ipc/get_char_command.o ./src/ipc/ipc_ctrl.d ./src/ipc/ipc_ctrl.o
+	-$(RM) ./src/ipc/abstract_get_char_command.d ./src/ipc/abstract_get_char_command.o ./src/ipc/abstract_ipc_command.d ./src/ipc/abstract_ipc_command.o ./src/ipc/abstract_ipc_ctrl.d ./src/ipc/abstract_ipc_ctrl.o ./src/ipc/abstract_ipc_socket_adapter.d ./src/ipc/abstract_ipc_socket_adapter.o ./src/ipc/abstract_is_client_connected_command.d ./src/ipc/abstract_is_client_connected_command.o ./src/ipc/get_char_command.d ./src/ipc/get_char_command.o ./src/ipc/ipc_ctrl.d ./src/ipc/ipc_ctrl.o ./src/ipc/is_client_connected_command.d ./src/ipc/is_client_connected_command.o
 
 .PHONY: clean-src-2f-ipc
 
