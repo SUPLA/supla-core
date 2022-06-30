@@ -19,18 +19,26 @@
 #ifndef IPCCOMMANDTEST_H_
 #define IPCCOMMANDTEST_H_
 
-#include <doubles/ipc/IpcSocketAdapterMock.h>
-
+#include "doubles/ipc/IpcSocketAdapterMock.h"
 #include "gtest/gtest.h"
+#include "ipc/abstract_ipc_command.h"
+#include "ipc/abstract_ipc_ctrl.h"
 
 namespace testing {
 
 class IpcCommandTest : public Test {
  protected:
+  IpcSocketAdapterMock *socketAdapter;
+  char buffer[IPC_BUFFER_MAX_SIZE];
+  virtual supla_abstract_ipc_command *getCommand(void) = 0;
+
+  void commandProcessingTest(const char *input, const char *expected);
+
  public:
   IpcCommandTest();
   virtual ~IpcCommandTest();
   virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */

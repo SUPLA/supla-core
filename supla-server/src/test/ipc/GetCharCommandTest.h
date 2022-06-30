@@ -16,33 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef GETCHARCOMMANDTEST_H_
+#define GETCHARCOMMANDTEST_H_
+
+#include "doubles/ipc/GetCharCommandMock.h"
 #include "ipc/IpcCommandTest.h"
 
 namespace testing {
 
-IpcCommandTest::IpcCommandTest() : Test() { socketAdapter = NULL; }
+class GetCharCommandTest : public IpcCommandTest {
+ protected:
+  GetCharCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
 
-IpcCommandTest::~IpcCommandTest() {}
-
-void IpcCommandTest::SetUp() {
-  Test::SetUp();
-  memset(buffer, 0, sizeof(buffer));
-  socketAdapter = new IpcSocketAdapterMock(-1);
-}
-
-void IpcCommandTest::TearDown() {
-  Test::TearDown();
-  delete socketAdapter;
-}
-
-void IpcCommandTest::commandProcessingTest(const char *input,
-                                           const char *expected) {
-  snprintf(buffer, sizeof(buffer), input);
-
-  EXPECT_CALL(*socketAdapter, send(std::string(expected))).Times(1);
-
-  EXPECT_TRUE(getCommand()->process_command(
-      buffer, sizeof(buffer), strnlen(buffer, IPC_BUFFER_MAX_SIZE)));
-}
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
+};
 
 } /* namespace testing */
+
+#endif /* GETCHARCOMMANDTEST_H_ */

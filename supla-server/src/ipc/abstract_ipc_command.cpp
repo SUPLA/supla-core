@@ -55,6 +55,24 @@ void supla_abstract_ipc_command::send_result(const char *result, double d) {
   send_result<double>(result, "%s%f\n", d);
 }
 
+void supla_abstract_ipc_command::process_parameters(
+    const char *params,
+    std::function<bool(int user_id, int device_id, int channel_id)> on_ids) {
+  int user_id = 0;
+  int device_id = 0;
+  int channel_id = 0;
+
+  if (params) {
+    sscanf(params, "%i,%i,%i", &user_id, &device_id, &channel_id);
+
+    if (user_id && device_id && channel_id &&
+        on_ids(user_id, device_id, channel_id)) {
+      return;
+    }
+  }
+  send_result("UNKNOWN:", channel_id);
+}
+
 bool supla_abstract_ipc_command::process_command(char *buffer,
                                                  unsigned int buffer_size,
                                                  unsigned int data_size) {

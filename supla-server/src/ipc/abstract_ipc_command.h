@@ -19,7 +19,9 @@
 #ifndef SUPLA_ABSTRACT_IPC_COMMAND_H_
 #define SUPLA_ABSTRACT_IPC_COMMAND_H_
 
-#include <ipc/abstract_ipc_socket_adapter.h>
+#include <functional>
+
+#include "ipc/abstract_ipc_socket_adapter.h"
 
 class supla_abstract_ipc_ctrl;
 class supla_abstract_ipc_command {
@@ -32,6 +34,10 @@ class supla_abstract_ipc_command {
   void send_result(const char *result);
   void send_result(const char *result, int i);
   void send_result(const char *result, double d);
+
+  void process_parameters(
+      const char *params,
+      std::function<bool(int user_id, int device_id, int channel_id)> on_ids);
 
   virtual void on_command_match(const char *params) = 0;
   virtual const char *get_command_name(void) = 0;

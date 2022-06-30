@@ -28,21 +28,15 @@ const char *supla_abstract_get_char_command::get_command_name(void) {
 }
 
 void supla_abstract_get_char_command::on_command_match(const char *params) {
-  int user_id = 0;
-  int device_id = 0;
-  int channel_id = 0;
-  char value = 0;
+  process_parameters(
+      params, [this](int user_id, int device_id, int channel_id) -> bool {
+        char value = 0;
 
-  sscanf(params, "%i,%i,%i", &user_id, &device_id, &channel_id);
+        if (get_channel_char_value(user_id, device_id, channel_id, &value)) {
+          send_result("VALUE:", (int)value);
+          return true;
+        }
 
-  if (user_id && device_id && channel_id) {
-    bool r = get_channel_char_value(user_id, device_id, channel_id, &value);
-
-    if (r) {
-      send_result("VALUE:", (int)value);
-      return;
-    }
-  }
-
-  send_result("UNKNOWN:", channel_id);
+        return false;
+      });
 }
