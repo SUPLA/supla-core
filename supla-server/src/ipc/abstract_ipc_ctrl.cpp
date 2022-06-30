@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <sys/time.h>
+
 supla_abstract_ipc_ctrl::supla_abstract_ipc_ctrl(
     supla_abstract_ipc_socket_adapter *socket_adapter) {
   this->socket_adapter = socket_adapter;
@@ -35,19 +36,7 @@ supla_abstract_ipc_ctrl::~supla_abstract_ipc_ctrl() {
 }
 
 void supla_abstract_ipc_ctrl::add_command(supla_abstract_ipc_command *command) {
-  command->set_ipc_ctrl(this);
   commands.push_back(command);
-}
-
-char *supla_abstract_ipc_ctrl::get_buffer(void) { return buffer; }
-
-unsigned int supla_abstract_ipc_ctrl::get_buffer_size(void) {
-  return sizeof(buffer);
-}
-
-supla_abstract_ipc_socket_adapter *supla_abstract_ipc_ctrl::get_socket_adapter(
-    void) {
-  return socket_adapter;
 }
 
 void supla_abstract_ipc_ctrl::execute(void) {
@@ -55,7 +44,7 @@ void supla_abstract_ipc_ctrl::execute(void) {
     return;
   }
 
-  char buffer[IPC_BUFFER_SIZE] = {};
+  char buffer[IPC_BUFFER_MAX_SIZE] = {};
 
   struct timeval last_action = {};
   struct timeval now = {};
@@ -81,7 +70,7 @@ void supla_abstract_ipc_ctrl::execute(void) {
         bool result = false;
 
         for (auto it = commands.begin(); it != commands.end(); ++it) {
-          if ((*it)->process_command(offset)) {
+          if ((*it)->process_command(buffer, sizeof(buffer), offset)) {
             result = true;
             break;
           }

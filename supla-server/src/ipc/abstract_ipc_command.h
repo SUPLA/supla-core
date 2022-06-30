@@ -24,23 +24,24 @@
 class supla_abstract_ipc_ctrl;
 class supla_abstract_ipc_command {
  private:
-  supla_abstract_ipc_ctrl *ipc_ctrl;
+  supla_abstract_ipc_socket_adapter *socket_adapter;
+  template <typename T>
+  void send_result(const char *result, const char *format, T value);
 
  protected:
-  friend class supla_abstract_ipc_ctrl;
-  void set_ipc_ctrl(supla_abstract_ipc_ctrl *ipc_ctrl);
-
   void send_result(const char *result);
   void send_result(const char *result, int i);
-  void send_result(const char *result, double i);
+  void send_result(const char *result, double d);
 
   virtual void on_command_match(const char *params) = 0;
   virtual const char *get_command_name(void) = 0;
 
  public:
-  supla_abstract_ipc_command(void);
+  explicit supla_abstract_ipc_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
   virtual ~supla_abstract_ipc_command();
-  bool process_command(unsigned int data_len);
+  bool process_command(char *buffer, unsigned int buffer_size,
+                       unsigned int data_size);
 };
 
 #endif /* SUPLA_ABSTRACT_IPC_COMMAND_H_ */

@@ -22,39 +22,43 @@
 #include <string.h>
 
 #include "ipc/abstract_ipc_ctrl.h"
+#include "log.h"
 
-supla_abstract_ipc_command::supla_abstract_ipc_command(void) {
-  this->ipc_ctrl = NULL;
+supla_abstract_ipc_command::supla_abstract_ipc_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter) {
+  this->socket_adapter = socket_adapter;
 }
 
 supla_abstract_ipc_command::~supla_abstract_ipc_command() {}
 
-void supla_abstract_ipc_command::set_ipc_ctrl(
-    supla_abstract_ipc_ctrl *ipc_ctrl) {
-  this->ipc_ctrl = ipc_ctrl;
+template <typename T>
+void supla_abstract_ipc_command::send_result(const char *result,
+                                             const char *format, T value) {
+  unsigned int size = strnlen(result, IPC_BUFFER_MAX_SIZE) + 20;
+  char *buffer = (char *)malloc(size);
+  if (buffer) {
+    snprintf(buffer, size, format, result, value);
+    socket_adapter->send(buffer);
+    free(buffer);
+  }
 }
 
 void supla_abstract_ipc_command::send_result(const char *result) {
-  snprintf(ipc_ctrl->get_buffer(), ipc_ctrl->get_buffer_size(), "%s\n", result);
-  ipc_ctrl->get_socket_adapter()->send(ipc_ctrl->get_buffer());
+  send_result<const char *>(result, "%s%s", "\n");
 }
 
 void supla_abstract_ipc_command::send_result(const char *result, int i) {
-  snprintf(ipc_ctrl->get_buffer(), ipc_ctrl->get_buffer_size(), "%s%i\n",
-           result, i);
-  ipc_ctrl->get_socket_adapter()->send(ipc_ctrl->get_buffer());
+  send_result<int>(result, "%s%i\n", i);
 }
 
-void supla_abstract_ipc_command::send_result(const char *result, double i) {
-  snprintf(ipc_ctrl->get_buffer(), ipc_ctrl->get_buffer_size(), "%s%f\n",
-           result, i);
-  ipc_ctrl->get_socket_adapter()->send(ipc_ctrl->get_buffer());
+void supla_abstract_ipc_command::send_result(const char *result, double d) {
+  send_result<double>(result, "%s%f\n", d);
 }
 
-bool supla_abstract_ipc_command::process_command(unsigned int data_size) {
+bool supla_abstract_ipc_command::process_command(char *buffer,
+                                                 unsigned int buffer_size,
+                                                 unsigned int data_size) {
   const char *cmd = get_command_name();
-  char *buffer = ipc_ctrl->get_buffer();
-  unsigned int buffer_size = ipc_ctrl->get_buffer_size();
 
   unsigned int cmd_len = strnlen(cmd, buffer_size);
   if (data_size > cmd_len && memcmp(buffer, cmd, cmd_len) == 0 &&

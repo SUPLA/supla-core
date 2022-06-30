@@ -18,8 +18,10 @@
 
 #include "ipc/abstract_get_char_command.h"
 
-supla_abstract_get_char_command::supla_abstract_get_char_command()
-    : supla_abstract_ipc_command(), command_name("GET-CHAR-VALUE:") {}
+supla_abstract_get_char_command::supla_abstract_get_char_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_ipc_command(socket_adapter),
+      command_name("GET-CHAR-VALUE:") {}
 
 const char *supla_abstract_get_char_command::get_command_name(void) {
   return command_name.c_str();

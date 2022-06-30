@@ -21,7 +21,7 @@
 
 #include <vector>
 
-#define IPC_BUFFER_SIZE 4096
+#define IPC_BUFFER_MAX_SIZE 4096
 #define IPC_DEFAULT_TIMEOUT_SEC 5
 
 #include "ipc/abstract_ipc_command.h"
@@ -46,9 +46,6 @@ class supla_abstract_ipc_ctrl {
   bool is_timeout(void);
   void set_timeout(unsigned char timeout);
   void add_command(supla_abstract_ipc_command *command);
-  char *get_buffer(void);
-  unsigned int get_buffer_size(void);
-  supla_abstract_ipc_socket_adapter *get_socket_adapter(void);
   virtual ~supla_abstract_ipc_ctrl();
 };
 

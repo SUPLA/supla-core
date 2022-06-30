@@ -27,7 +27,8 @@ namespace testing {
 
 class GetCharCommandMock : public supla_abstract_get_char_command {
  public:
-  GetCharCommandMock(void);
+  explicit GetCharCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
 
   MOCK_METHOD4(get_channel_char_value,
                bool(int user_id, int device_id, int channel_id, char *value));

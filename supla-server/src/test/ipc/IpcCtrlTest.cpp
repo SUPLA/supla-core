@@ -32,7 +32,7 @@ void IpcCtrlTest::SetUp() {
   Test::SetUp();
   socket_adapter = new IpcSocketAdapterMock(-1);
   ipc_ctrl = new IpcCtrlMock(socket_adapter);
-  get_char_cmd = new GetCharCommandMock();
+  get_char_cmd = new GetCharCommandMock(socket_adapter);
   ipc_ctrl->add_command(get_char_cmd);
 }
 
@@ -107,15 +107,110 @@ TEST_F(IpcCtrlTest, adapterError) {
 }
 
 TEST_F(IpcCtrlTest, singleCommand) {
-  char recv_buffer[] = "GET-CHAR-VALUE:1,2,3\n";
+  struct timeval then = {};
+  gettimeofday(&then, NULL);
+
+  char recv_buffer[] = "GET-CHAR-VALUE:12,23,34\n";
   socket_adapter->set_recv_buffer(recv_buffer, sizeof(recv_buffer));
+
+  Sequence s1;
 
   EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
   EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(false));
+
+  EXPECT_CALL(*get_char_cmd, get_channel_char_value(12, 23, 34, _))
+      .WillOnce([](int user_id, int device_id, int channel_id, char *value) {
+        *value = 31;
+        return true;
+      });
+
   EXPECT_CALL(*socket_adapter, send(std::string("SUPLA SERVER CTRL\n")))
-      .Times(1);
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, send(std::string("VALUE:31\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, is_error())
+      .InSequence(s1)
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*ipc_ctrl, terminate()).Times(1).InSequence(s1);
 
   ipc_ctrl->execute();
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+
+  EXPECT_GE(now.tv_sec - then.tv_sec, 0);
+  EXPECT_LE(now.tv_sec - then.tv_sec, 1);
+
+  EXPECT_FALSE(ipc_ctrl->is_timeout());
+}
+
+TEST_F(IpcCtrlTest, multipleCommands) {
+  struct timeval then = {};
+  gettimeofday(&then, NULL);
+
+  char recv_buffer[] =
+      "GET-CHAR-VALUE:12,23,34\nGET-CHAR-VALUE:116,1163,2284\nGET-CHAR-VALUE:"
+      "56,63,84\n";
+  socket_adapter->set_recv_buffer(recv_buffer, sizeof(recv_buffer));
+
+  Sequence s1;
+
+  EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(false));
+
+  EXPECT_CALL(*get_char_cmd, get_channel_char_value(12, 23, 34, _))
+      .WillOnce([](int user_id, int device_id, int channel_id, char *value) {
+        *value = 66;
+        return true;
+      });
+
+  EXPECT_CALL(*get_char_cmd, get_channel_char_value(116, 1163, 2284, _))
+      .WillOnce([](int user_id, int device_id, int channel_id, char *value) {
+        return false;
+      });
+
+  EXPECT_CALL(*get_char_cmd, get_channel_char_value(56, 63, 84, _))
+      .WillOnce([](int user_id, int device_id, int channel_id, char *value) {
+        *value = 1;
+        return true;
+      });
+
+  EXPECT_CALL(*socket_adapter, send(std::string("SUPLA SERVER CTRL\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, send(std::string("VALUE:66\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, send(std::string("UNKNOWN:2284\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, send(std::string("VALUE:1\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, is_error())
+      .InSequence(s1)
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*ipc_ctrl, terminate()).Times(1).InSequence(s1);
+
+  ipc_ctrl->execute();
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+
+  EXPECT_GE(now.tv_sec - then.tv_sec, 0);
+  EXPECT_LE(now.tv_sec - then.tv_sec, 1);
+
+  EXPECT_FALSE(ipc_ctrl->is_timeout());
 }
 
 } /* namespace testing */

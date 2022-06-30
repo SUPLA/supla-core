@@ -20,7 +20,8 @@
 
 namespace testing {
 
-GetCharCommandMock::GetCharCommandMock(void)
-    : supla_abstract_get_char_command() {}
+GetCharCommandMock::GetCharCommandMock(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_get_char_command(socket_adapter) {}
 
 }  // namespace testing

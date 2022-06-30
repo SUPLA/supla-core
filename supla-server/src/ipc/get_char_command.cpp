@@ -20,8 +20,9 @@
 
 #include "user.h"
 
-supla_get_char_command::supla_get_char_command(void)
-    : supla_abstract_get_char_command() {}
+supla_get_char_command::supla_get_char_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_get_char_command(socket_adapter) {}
 
 bool supla_get_char_command::get_channel_char_value(int user_id, int device_id,
                                                     int channel_id,
