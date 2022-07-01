@@ -56,12 +56,12 @@ TEST_F(UserReconnectCommandTest, noParams) {
 
 TEST_F(UserReconnectCommandTest, paramsWithZeros) {
   EXPECT_CALL(*cmd, reconnect).Times(0);
-  commandProcessingTest("USER-RECONNECT:0,0,0\n", "USER_UNKNOWN:0\n");
+  commandProcessingTest("USER-RECONNECT:0\n", "USER_UNKNOWN:0\n");
 }
 
 TEST_F(UserReconnectCommandTest, badParams) {
   EXPECT_CALL(*cmd, reconnect).Times(0);
-  commandProcessingTest("USER-RECONNECT:a,10,c\n", "USER_UNKNOWN:0\n");
+  commandProcessingTest("USER-RECONNECT:a\n", "USER_UNKNOWN:0\n");
 }
 
 } /* namespace testing */
