@@ -34,7 +34,7 @@ void supla_abstract_client_reconnect_command::on_command_match(
   int client_id = 0;
   sscanf(params, "%i,%i", &user_id, &client_id);
 
-  if (user_id, client_id && reconnect(user_id, client_id)) {
+  if (user_id && client_id && reconnect(user_id, client_id)) {
     send_result("OK:", client_id);
   } else {
     send_result("USER_OR_CLIENT_UNKNOWN");
