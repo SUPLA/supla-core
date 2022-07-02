@@ -6,6 +6,7 @@
 CPP_SRCS += \
 ../src/test/doubles/ipc/ClientReconnectCommandMock.cpp \
 ../src/test/doubles/ipc/GetCharCommandMock.cpp \
+../src/test/doubles/ipc/GetDoubleCommandMock.cpp \
 ../src/test/doubles/ipc/IpcCtrlMock.cpp \
 ../src/test/doubles/ipc/IpcSocketAdapterMock.cpp \
 ../src/test/doubles/ipc/IsChannelConnectedCommandMock.cpp \
@@ -16,6 +17,7 @@ CPP_SRCS += \
 CPP_DEPS += \
 ./src/test/doubles/ipc/ClientReconnectCommandMock.d \
 ./src/test/doubles/ipc/GetCharCommandMock.d \
+./src/test/doubles/ipc/GetDoubleCommandMock.d \
 ./src/test/doubles/ipc/IpcCtrlMock.d \
 ./src/test/doubles/ipc/IpcSocketAdapterMock.d \
 ./src/test/doubles/ipc/IsChannelConnectedCommandMock.d \
@@ -26,6 +28,7 @@ CPP_DEPS += \
 OBJS += \
 ./src/test/doubles/ipc/ClientReconnectCommandMock.o \
 ./src/test/doubles/ipc/GetCharCommandMock.o \
+./src/test/doubles/ipc/GetDoubleCommandMock.o \
 ./src/test/doubles/ipc/IpcCtrlMock.o \
 ./src/test/doubles/ipc/IpcSocketAdapterMock.o \
 ./src/test/doubles/ipc/IsChannelConnectedCommandMock.o \
@@ -46,7 +49,7 @@ src/test/doubles/ipc/%.o: ../src/test/doubles/ipc/%.cpp src/test/doubles/ipc/sub
 clean: clean-src-2f-test-2f-doubles-2f-ipc
 
 clean-src-2f-test-2f-doubles-2f-ipc:
-	-$(RM) ./src/test/doubles/ipc/ClientReconnectCommandMock.d ./src/test/doubles/ipc/ClientReconnectCommandMock.o ./src/test/doubles/ipc/GetCharCommandMock.d ./src/test/doubles/ipc/GetCharCommandMock.o ./src/test/doubles/ipc/IpcCtrlMock.d ./src/test/doubles/ipc/IpcCtrlMock.o ./src/test/doubles/ipc/IpcSocketAdapterMock.d ./src/test/doubles/ipc/IpcSocketAdapterMock.o ./src/test/doubles/ipc/IsChannelConnectedCommandMock.d ./src/test/doubles/ipc/IsChannelConnectedCommandMock.o ./src/test/doubles/ipc/IsClientConnectedCommandMock.d ./src/test/doubles/ipc/IsClientConnectedCommandMock.o ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.d ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.o ./src/test/doubles/ipc/UserReconnectCommandMock.d ./src/test/doubles/ipc/UserReconnectCommandMock.o
+	-$(RM) ./src/test/doubles/ipc/ClientReconnectCommandMock.d ./src/test/doubles/ipc/ClientReconnectCommandMock.o ./src/test/doubles/ipc/GetCharCommandMock.d ./src/test/doubles/ipc/GetCharCommandMock.o ./src/test/doubles/ipc/GetDoubleCommandMock.d ./src/test/doubles/ipc/GetDoubleCommandMock.o ./src/test/doubles/ipc/IpcCtrlMock.d ./src/test/doubles/ipc/IpcCtrlMock.o ./src/test/doubles/ipc/IpcSocketAdapterMock.d ./src/test/doubles/ipc/IpcSocketAdapterMock.o ./src/test/doubles/ipc/IsChannelConnectedCommandMock.d ./src/test/doubles/ipc/IsChannelConnectedCommandMock.o ./src/test/doubles/ipc/IsClientConnectedCommandMock.d ./src/test/doubles/ipc/IsClientConnectedCommandMock.o ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.d ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.o ./src/test/doubles/ipc/UserReconnectCommandMock.d ./src/test/doubles/ipc/UserReconnectCommandMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-ipc
 
