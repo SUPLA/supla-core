@@ -320,7 +320,7 @@ void supla_ipc_ctrl::get_electricitymeter_value(const char *cmd) {
       _supla_int64_t power_active2 = em_ev.m[0].power_active[1];
       _supla_int64_t power_active3 = em_ev.m[0].power_active[2];
 
-      if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+      if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW) {
         power_active1 *= 1000;
         power_active2 *= 1000;
         power_active3 *= 1000;

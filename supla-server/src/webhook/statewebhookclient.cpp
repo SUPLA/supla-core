@@ -572,7 +572,7 @@ bool supla_state_webhook_client::sendElectricityMeasurementReport(
 
                 if (em_ev.measured_values & EM_VAR_POWER_ACTIVE) {
                   double value = em_ev.m[0].power_active[p] * 0.00001;
-                  if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+                  if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW) {
                     value *= 1000;
                   }
                   cJSON_AddNumberToObject(phase, "powerActive", value);

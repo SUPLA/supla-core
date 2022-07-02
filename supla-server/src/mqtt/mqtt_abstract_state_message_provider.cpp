@@ -808,7 +808,7 @@ bool supla_mqtt_abstract_state_message_provider::
                   message_size);
       {
         double power = em ? (em_ev.m[0].power_active[phase] * 0.00001) : 0;
-        if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KWH) {
+        if (em_ev.measured_values & EM_VAR_POWER_ACTIVE_KW) {
           power *= 1000;
         }
         snprintf(value, sizeof(value), "%.5f", power);
