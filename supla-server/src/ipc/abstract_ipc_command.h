@@ -27,8 +27,14 @@ class supla_abstract_ipc_ctrl;
 class supla_abstract_ipc_command {
  private:
   supla_abstract_ipc_socket_adapter *socket_adapter;
+  char *alexa_correlation_token;
+  char *google_request_id;
+
   template <typename T>
   void send_result(const char *result, const char *format, T value);
+  char *cut(const char *params, const char *var, unsigned int buffer_size);
+  void free_correlation_token();
+  void free_google_requestid();
 
  protected:
   void send_result(const char *result);
@@ -45,6 +51,8 @@ class supla_abstract_ipc_command {
 
   virtual void on_command_match(const char *params) = 0;
   virtual const char *get_command_name(void) = 0;
+  const char *get_alexa_correlation_token();
+  const char *get_google_request_id();
 
  public:
   explicit supla_abstract_ipc_command(

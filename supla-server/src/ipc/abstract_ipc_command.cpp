@@ -23,13 +23,19 @@
 
 #include "ipc/abstract_ipc_ctrl.h"
 #include "log.h"
+#include "tools.h"
 
 supla_abstract_ipc_command::supla_abstract_ipc_command(
     supla_abstract_ipc_socket_adapter *socket_adapter) {
   this->socket_adapter = socket_adapter;
+  this->alexa_correlation_token = NULL;
+  this->google_request_id = NULL;
 }
 
-supla_abstract_ipc_command::~supla_abstract_ipc_command() {}
+supla_abstract_ipc_command::~supla_abstract_ipc_command() {
+  free_correlation_token();
+  free_google_requestid();
+}
 
 template <typename T>
 void supla_abstract_ipc_command::send_result(const char *result,
@@ -53,6 +59,54 @@ void supla_abstract_ipc_command::send_result(const char *result, int i) {
 
 void supla_abstract_ipc_command::send_result(const char *result, double d) {
   send_result<double>(result, "%s%f\n", d);
+}
+
+void supla_abstract_ipc_command::free_correlation_token() {
+  if (alexa_correlation_token) {
+    free(alexa_correlation_token);
+    alexa_correlation_token = NULL;
+  }
+}
+
+void supla_abstract_ipc_command::free_google_requestid() {
+  if (google_request_id) {
+    free(google_request_id);
+    google_request_id = NULL;
+  }
+}
+
+char *supla_abstract_ipc_command::cut(const char *params, const char *var,
+                                      unsigned int buffer_size) {
+  char *result = NULL;
+
+  char *ct = strstr((char *)params, var);
+  unsigned int var_len = strnlen(var, 255);
+
+  if (ct != NULL && strnlen(ct, buffer_size) > var_len) {
+    char *value = &ct[var_len];
+
+    int len = strnlen(value, buffer_size);
+
+    if (len > 0) {
+      result = st_openssl_base64_decode(value, len, NULL);
+      if (strnlen(result, buffer_size) <= 0) {
+        delete result;
+        result = NULL;
+      }
+    }
+
+    ct[0] = 0;
+  }
+
+  return result;
+}
+
+const char *supla_abstract_ipc_command::get_alexa_correlation_token() {
+  return alexa_correlation_token;
+}
+
+const char *supla_abstract_ipc_command::get_google_request_id() {
+  return google_request_id;
 }
 
 void supla_abstract_ipc_command::process_parameters(
@@ -88,6 +142,13 @@ bool supla_abstract_ipc_command::process_command(char *buffer,
   if (data_size > cmd_len && memcmp(buffer, cmd, cmd_len) == 0 &&
       buffer[data_size - 1] == '\n') {
     buffer[data_size - 1] = 0;
+
+    free_correlation_token();
+    free_google_requestid();
+
+    alexa_correlation_token =
+        cut(cmd, ",ALEXA-CORRELATION-TOKEN=", buffer_size);
+    google_request_id = cut(cmd, ",GOOGLE-REQUEST-ID=", buffer_size);
 
     on_command_match(data_size > cmd_len ? &buffer[cmd_len] : NULL);
     return true;
