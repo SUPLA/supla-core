@@ -147,12 +147,19 @@ bool supla_abstract_ipc_command::process_command(char *buffer,
     free_google_requestid();
 
     alexa_correlation_token =
-        cut(cmd, ",ALEXA-CORRELATION-TOKEN=", buffer_size);
-    google_request_id = cut(cmd, ",GOOGLE-REQUEST-ID=", buffer_size);
+        cut(buffer, ",ALEXA-CORRELATION-TOKEN=", buffer_size);
+    google_request_id = cut(buffer, ",GOOGLE-REQUEST-ID=", buffer_size);
 
     on_command_match(data_size > cmd_len ? &buffer[cmd_len] : NULL);
     return true;
   }
 
   return false;
+}
+
+supla_caller supla_abstract_ipc_command::get_caller() {
+  supla_caller caller(alexa_correlation_token
+                          ? ctAmazonAlexa
+                          : (google_request_id ? ctGoogleHome : ctIPC));
+  return caller;
 }

@@ -21,6 +21,7 @@
 
 #include <functional>
 
+#include "caller.h"
 #include "ipc/abstract_ipc_socket_adapter.h"
 
 class supla_abstract_ipc_ctrl;
@@ -53,6 +54,7 @@ class supla_abstract_ipc_command {
   virtual const char *get_command_name(void) = 0;
   const char *get_alexa_correlation_token();
   const char *get_google_request_id();
+  supla_caller get_caller();
 
  public:
   explicit supla_abstract_ipc_command(
