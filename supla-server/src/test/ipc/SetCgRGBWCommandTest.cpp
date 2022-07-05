@@ -54,7 +54,7 @@ TEST_F(SetCgRGBWCommandTest, randomColor) {
   int color2 = 0;
 
   EXPECT_CALL(*cmd, set_cg_rgbw_value(user, 30, Gt(0), 3, 2, 1))
-      .WillOnce(DoAll(SaveArg<3>(&color1), Return(true)));
+      .WillOnce(DoAll(SaveArg<2>(&color1), Return(true)));
 
   char cmdString[] = "SET-CG-RAND-RGBW-VALUE:10,30,3,2,1\n";
   char expectedResult[] = "OK:30\n";
@@ -65,7 +65,7 @@ TEST_F(SetCgRGBWCommandTest, randomColor) {
   cmd = new SetCgRGBWCommandMock(socketAdapter, true);
 
   EXPECT_CALL(*cmd, set_cg_rgbw_value(user, 30, Gt(0), 3, 2, 1))
-      .WillOnce(DoAll(SaveArg<3>(&color2), Return(true)));
+      .WillOnce(DoAll(SaveArg<2>(&color2), Return(true)));
 
   commandProcessingTest(cmdString, expectedResult);
 
