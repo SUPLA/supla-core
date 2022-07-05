@@ -54,8 +54,6 @@ RM := rm -rf
 -include src/amazon/subdir.mk
 -include src/actions/subdir.mk
 -include src/subdir.mk
--include objects.mk
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
@@ -99,10 +97,10 @@ all: main-build
 main-build: supla-server
 
 # Tool invocations
-supla-server: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
+supla-server: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/usr/include/mysql -L$(SSLDIR)/lib -pthread -lrt -o "supla-server" $(OBJS) $(USER_OBJS) $(LIBS) -lssl -lgtest -lgmock -l$(LIBMYSQL) -lcrypto
 	@echo 'Finished building target: $@'
 	@echo ' '
 
