@@ -28,7 +28,9 @@ void SetRGBWCommandTest::SetUp() {
 
 void SetRGBWCommandTest::TearDown() {
   IpcCommandTest::TearDown();
-  delete cmd;
+  if (cmd) {
+    delete cmd;
+  }
 }
 
 supla_abstract_ipc_command *SetRGBWCommandTest::getCommand(void) { return cmd; }
@@ -43,6 +45,34 @@ TEST_F(SetRGBWCommandTest, setRGBWWithSuccess) {
       .WillOnce(Return(true));
 
   commandProcessingTest("SET-RGBW-VALUE:10,20,30,4,3,2,1\n", "OK:30\n");
+}
+
+TEST_F(SetRGBWCommandTest, rendomColor) {
+  delete cmd;
+  cmd = new SetRGBWCommandMock(socketAdapter, true);
+
+  int color1 = 0;
+  int color2 = 0;
+
+  EXPECT_CALL(*cmd,
+              set_channel_rgbw_value(user, 20, 30, Gt(0), 3, 2, 1, NULL, NULL))
+      .WillOnce(DoAll(SaveArg<3>(&color1), Return(true)));
+
+  char cmdString[] = "SET-RAND-RGBW-VALUE:10,20,30,3,2,1\n";
+  char expectedResult[] = "OK:30\n";
+
+  commandProcessingTest(cmdString, expectedResult);
+
+  delete cmd;
+  cmd = new SetRGBWCommandMock(socketAdapter, true);
+
+  EXPECT_CALL(*cmd,
+              set_channel_rgbw_value(user, 20, 30, Gt(0), 3, 2, 1, NULL, NULL))
+      .WillOnce(DoAll(SaveArg<3>(&color2), Return(true)));
+
+  commandProcessingTest(cmdString, expectedResult);
+
+  EXPECT_NE(color1, color2);
 }
 
 TEST_F(SetRGBWCommandTest, setRGBWWithFilure) {
