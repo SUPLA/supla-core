@@ -22,7 +22,7 @@ namespace testing {
 
 void SetCgRGBWCommandTest::SetUp() {
   IpcCommandTest::SetUp();
-  cmd = new SetCgRGBWCommandMock(socketAdapter);
+  cmd = new SetCgRGBWCommandMock(socketAdapter, false);
   user = supla_user::find(10, true);
 }
 

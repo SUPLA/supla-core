@@ -29,7 +29,7 @@ class supla_set_cg_rgbw_command : public supla_abstract_set_cg_rgbw_command {
                                  char color_brightness, char brightness,
                                  char on_off);
   explicit supla_set_cg_rgbw_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+      supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color);
 };
 
 #endif /* SUPLA_SET_CG_RGBW_COMMAND_H_ */

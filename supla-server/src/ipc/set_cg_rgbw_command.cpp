@@ -22,8 +22,8 @@
 #include "user/userchannelgroups.h"
 
 supla_set_cg_rgbw_command::supla_set_cg_rgbw_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_set_cg_rgbw_command(socket_adapter) {}
+    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
+    : supla_abstract_set_cg_rgbw_command(socket_adapter, random_color) {}
 
 bool supla_set_cg_rgbw_command::set_cg_rgbw_value(supla_user *user,
                                                   int group_id, int color,

@@ -18,10 +18,15 @@
 
 #include "ipc/abstract_set_cg_rgbw_command.h"
 
+#include "ipc/abstract_set_rgbw_command.h"
+
 supla_abstract_set_cg_rgbw_command::supla_abstract_set_cg_rgbw_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
+    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
     : supla_abstract_ipc_command(socket_adapter),
-      command_name("SET-CG-RGBW-VALUE:") {}
+      command_name(random_color ? "SET-CG-RAND-RGBW-VALUE"
+                                : "SET-CG-RGBW-VALUE:") {
+  this->random_color = random_color;
+}
 
 const char *supla_abstract_set_cg_rgbw_command::get_command_name(void) {
   return command_name.c_str();
@@ -36,8 +41,14 @@ void supla_abstract_set_cg_rgbw_command::on_command_match(const char *params) {
   int turn_onoff = 0;
 
   if (params) {
-    sscanf(params, "%i,%i,%i,%i,%i,%i", &user_id, &group_id, &color,
-           &color_brightness, &brightness, &turn_onoff);
+    if (random_color) {
+      sscanf(params, "%i,%i,%i,%i,%i", &user_id, &group_id, &color_brightness,
+             &brightness, &turn_onoff);
+      color = supla_abstract_set_rgbw_command::get_random_color();
+    } else {
+      sscanf(params, "%i,%i,%i,%i,%i,%i", &user_id, &group_id, &color,
+             &color_brightness, &brightness, &turn_onoff);
+    }
 
     supla_user *user = NULL;
 

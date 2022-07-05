@@ -28,7 +28,7 @@ namespace testing {
 class SetCgRGBWCommandMock : public supla_abstract_set_cg_rgbw_command {
  public:
   explicit SetCgRGBWCommandMock(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+      supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color);
 
   MOCK_METHOD6(set_cg_rgbw_value,
                bool(supla_user *user, int group_id, int color,
