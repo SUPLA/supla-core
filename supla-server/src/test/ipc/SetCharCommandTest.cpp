@@ -44,7 +44,7 @@ TEST_F(SetCharCommandTest, setCharWithSuccess) {
   commandProcessingTest("SET-CHAR-VALUE:10,20,30,1\n", "OK:30\n");
 }
 
-TEST_F(SetCharCommandTest, getCharWithFilure) {
+TEST_F(SetCharCommandTest, setCharWithFilure) {
   EXPECT_CALL(*cmd, set_channel_char_value).WillOnce(Return(false));
   commandProcessingTest("SET-CHAR-VALUE:10,20,30,1\n", "FAIL:30\n");
 }
