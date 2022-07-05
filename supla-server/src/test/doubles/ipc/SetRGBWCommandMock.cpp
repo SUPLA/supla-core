@@ -21,7 +21,7 @@
 namespace testing {
 
 SetRGBWCommandMock::SetRGBWCommandMock(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_set_rgbw_command(socket_adapter) {}
+    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
+    : supla_abstract_set_rgbw_command(socket_adapter, random_color) {}
 
 }  // namespace testing

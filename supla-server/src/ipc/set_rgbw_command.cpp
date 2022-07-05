@@ -23,8 +23,8 @@
 #include "user.h"
 
 supla_set_rgbw_command::supla_set_rgbw_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_set_rgbw_command(socket_adapter) {}
+    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
+    : supla_abstract_set_rgbw_command(socket_adapter, random_color) {}
 
 bool supla_set_rgbw_command::set_channel_rgbw_value(
     supla_user *user, int device_id, int channel_id, int color,

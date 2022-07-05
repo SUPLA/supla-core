@@ -27,6 +27,7 @@
 class supla_abstract_set_rgbw_command : public supla_abstract_ipc_command {
  private:
   const std::string command_name;
+  bool random_color;
 
  protected:
   virtual void on_command_match(const char *params);
@@ -40,7 +41,8 @@ class supla_abstract_set_rgbw_command : public supla_abstract_ipc_command {
 
  public:
   explicit supla_abstract_set_rgbw_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+      supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color);
+  static int get_random_color(void);
 };
 
 #endif /* SUPLA_ABSTRACT_SET_RGBW_COMMAND_H_ */

@@ -18,10 +18,14 @@
 
 #include "ipc/abstract_set_rgbw_command.h"
 
+#include "tools.h"
+
 supla_abstract_set_rgbw_command::supla_abstract_set_rgbw_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
+    supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
     : supla_abstract_ipc_command(socket_adapter),
-      command_name("SET-RGBW-VALUE:") {}
+      command_name(random_color ? "SET-RAND-RGBW-VALUE:" : "SET-RGBW-VALUE:") {
+  this->random_color = random_color;
+}
 
 const char *supla_abstract_set_rgbw_command::get_command_name(void) {
   return command_name.c_str();
@@ -39,8 +43,14 @@ void supla_abstract_set_rgbw_command::on_command_match(const char *params) {
   supla_user *user = NULL;
 
   if (params) {
-    sscanf(params, "%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
-           &color, &color_brightness, &brightness, &turn_onoff);
+    if (random_color) {
+      sscanf(params, "%i,%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
+             &color_brightness, &brightness, &turn_onoff);
+      color = get_random_color();
+    } else {
+      sscanf(params, "%i,%i,%i,%i,%i,%i,%i", &user_id, &device_id, &channel_id,
+             &color, &color_brightness, &brightness, &turn_onoff);
+    }
 
     if (user_id && device_id && channel_id &&
         (user = supla_user::find(user_id, false)) != NULL) {
@@ -62,4 +72,18 @@ void supla_abstract_set_rgbw_command::on_command_match(const char *params) {
     }
   }
   send_result("UNKNOWN:", channel_id);
+}
+
+int supla_abstract_set_rgbw_command::get_random_color(void) {
+  int color = 0;
+
+  while (!color) {
+    struct timeval time;
+    gettimeofday(&time, NULL);
+    unsigned int seed = time.tv_sec + time.tv_usec;
+
+    color = st_hue2rgb(rand_r(&seed) % 360);
+  }
+
+  return color;
 }
