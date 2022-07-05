@@ -18,8 +18,6 @@
 
 #include "ipc/set_cg_char_command.h"
 
-#include "device.h"
-#include "http/httprequestqueue.h"
 #include "user/user.h"
 #include "user/userchannelgroups.h"
 
