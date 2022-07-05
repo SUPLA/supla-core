@@ -23,7 +23,7 @@
 supla_abstract_set_cg_rgbw_command::supla_abstract_set_cg_rgbw_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
     : supla_abstract_ipc_command(socket_adapter),
-      command_name(random_color ? "SET-CG-RAND-RGBW-VALUE"
+      command_name(random_color ? "SET-CG-RAND-RGBW-VALUE:"
                                 : "SET-CG-RGBW-VALUE:") {
   this->random_color = random_color;
 }
