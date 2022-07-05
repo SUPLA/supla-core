@@ -29,6 +29,6 @@ supla_set_cg_char_command::supla_set_cg_char_command(
 
 bool supla_set_cg_char_command::set_cg_char_value(supla_user *user,
                                                   int group_id, char value) {
-  return user->get_channel_groups()->set_char_value(supla_caller(ctIPC),
-                                                    group_id, value);
+  return user->get_channel_groups()->set_char_value(get_caller(), group_id,
+                                                    value);
 }

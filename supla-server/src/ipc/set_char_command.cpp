@@ -42,7 +42,7 @@ bool supla_set_char_command::set_channel_char_value(
             alexa_correlation_token, google_request_id);
 
         result = device->get_channels()->set_device_channel_char_value(
-            supla_caller(ctIPC), channel_id, 0, false, value);
+            get_caller(), channel_id, 0, false, value);
       });
 
   return result;
