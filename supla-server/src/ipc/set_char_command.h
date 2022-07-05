@@ -25,7 +25,7 @@
 
 class supla_set_char_command : public supla_abstract_set_char_command {
  protected:
-  virtual bool set_channel_char_value(int user_id, int device_id,
+  virtual bool set_channel_char_value(supla_user *user, int device_id,
                                       int channel_id, char value,
                                       const char *alexa_correlation_token,
                                       const char *google_request_id);

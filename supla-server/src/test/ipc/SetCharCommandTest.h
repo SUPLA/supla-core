@@ -26,6 +26,7 @@ namespace testing {
 
 class SetCharCommandTest : public IpcCommandTest {
  protected:
+  supla_user *user;
   SetCharCommandMock *cmd;
   virtual supla_abstract_ipc_command *getCommand(void);
 

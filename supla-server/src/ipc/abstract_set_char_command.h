@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ipc/abstract_ipc_command.h"
+#include "user.h"
 
 class supla_abstract_set_char_command : public supla_abstract_ipc_command {
  private:
@@ -30,7 +31,7 @@ class supla_abstract_set_char_command : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
   virtual const char *get_command_name(void);
-  virtual bool set_channel_char_value(int user_id, int device_id,
+  virtual bool set_channel_char_value(supla_user *user, int device_id,
                                       int channel_id, char value,
                                       const char *alexa_correlation_token,
                                       const char *google_request_id) = 0;

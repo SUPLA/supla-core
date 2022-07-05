@@ -31,7 +31,7 @@ class SetCharCommandMock : public supla_abstract_set_char_command {
       supla_abstract_ipc_socket_adapter *socket_adapter);
 
   MOCK_METHOD6(set_channel_char_value,
-               bool(int user_id, int device_id, int channel_id, char value,
+               bool(supla_user *user, int device_id, int channel_id, char value,
                     const char *alexa_correlation_token,
                     const char *google_request_id));
 };

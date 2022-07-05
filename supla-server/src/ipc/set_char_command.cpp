@@ -27,11 +27,11 @@ supla_set_char_command::supla_set_char_command(
     : supla_abstract_set_char_command(socket_adapter) {}
 
 bool supla_set_char_command::set_channel_char_value(
-    int user_id, int device_id, int channel_id, char value,
+    supla_user *user, int device_id, int channel_id, char value,
     const char *alexa_correlation_token, const char *google_request_id) {
   bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
+  user->access_device(
+      device_id, channel_id,
       [&result, channel_id, value, alexa_correlation_token, google_request_id,
        this](supla_device *device) -> void {
         // onChannelValueChangeEvent must be called before

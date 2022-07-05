@@ -32,17 +32,19 @@ void supla_abstract_set_char_command::on_command_match(const char *params) {
   int device_id = 0;
   int channel_id = 0;
   int value = 0;
+  supla_user *user = NULL;
 
   if (params) {
     sscanf(params, "%i,%i,%i,%i", &user_id, &device_id, &channel_id, &value);
 
-    if (user_id && device_id && channel_id) {
+    if (user_id && device_id && channel_id &&
+        (user = supla_user::find(user_id, false)) != NULL) {
       if (value < 0 || value > 255) {
         send_result("VALUE OUT OF RANGE");
         return;
       }
 
-      if (set_channel_char_value(user_id, device_id, channel_id, value,
+      if (set_channel_char_value(user, device_id, channel_id, value,
                                  get_alexa_correlation_token(),
                                  get_google_request_id())) {
         send_result("OK:", channel_id);

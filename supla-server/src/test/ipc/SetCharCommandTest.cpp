@@ -23,6 +23,7 @@ namespace testing {
 void SetCharCommandTest::SetUp() {
   IpcCommandTest::SetUp();
   cmd = new SetCharCommandMock(socketAdapter);
+  user = supla_user::find(10, true);
 }
 
 void SetCharCommandTest::TearDown() {
@@ -37,7 +38,7 @@ TEST_F(SetCharCommandTest, noData) {
 }
 
 TEST_F(SetCharCommandTest, setCharWithSuccess) {
-  EXPECT_CALL(*cmd, set_channel_char_value(10, 20, 30, 1, NULL, NULL))
+  EXPECT_CALL(*cmd, set_channel_char_value(user, 20, 30, 1, NULL, NULL))
       .WillOnce(Return(true));
 
   commandProcessingTest("SET-CHAR-VALUE:10,20,30,1\n", "OK:30\n");
@@ -69,7 +70,7 @@ TEST_F(SetCharCommandTest, valueLessThanZero) {
 }
 
 TEST_F(SetCharCommandTest, max) {
-  EXPECT_CALL(*cmd, set_channel_char_value(10, 20, 30, 255, NULL, NULL))
+  EXPECT_CALL(*cmd, set_channel_char_value(user, 20, 30, 255, NULL, NULL))
       .WillOnce(Return(true));
 
   commandProcessingTest("SET-CHAR-VALUE:10,20,30,255\n", "OK:30\n");
@@ -83,7 +84,7 @@ TEST_F(SetCharCommandTest, valueGreaterThan255) {
 
 TEST_F(SetCharCommandTest, alexaCorrelationToken) {
   EXPECT_CALL(*cmd,
-              set_channel_char_value(10, 20, 30, 1, StrEq("TokenABCD"), NULL))
+              set_channel_char_value(user, 20, 30, 1, StrEq("TokenABCD"), NULL))
       .WillOnce(Return(true));
 
   commandProcessingTest(
@@ -93,7 +94,7 @@ TEST_F(SetCharCommandTest, alexaCorrelationToken) {
 
 TEST_F(SetCharCommandTest, googleRequestId) {
   EXPECT_CALL(*cmd,
-              set_channel_char_value(10, 20, 30, 1, NULL, StrEq("RequestID")))
+              set_channel_char_value(user, 20, 30, 1, NULL, StrEq("RequestID")))
       .WillOnce(Return(true));
 
   commandProcessingTest(
