@@ -47,7 +47,7 @@ TEST_F(SetRGBWCommandTest, setRGBWWithSuccess) {
   commandProcessingTest("SET-RGBW-VALUE:10,20,30,4,3,2,1\n", "OK:30\n");
 }
 
-TEST_F(SetRGBWCommandTest, rendomColor) {
+TEST_F(SetRGBWCommandTest, randomColor) {
   delete cmd;
   cmd = new SetRGBWCommandMock(socketAdapter, true);
 
