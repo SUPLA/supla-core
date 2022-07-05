@@ -40,4 +40,4 @@ class supla_abstract_set_char_command : public supla_abstract_ipc_command {
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };
 
-#endif /* SUPLA_ABSTRACT_GET_CHAR_COMMAND_H_ */
+#endif /* SUPLA_ABSTRACT_SET_CHAR_COMMAND_H_ */
