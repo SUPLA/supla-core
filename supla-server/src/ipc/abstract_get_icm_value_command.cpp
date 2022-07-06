@@ -24,11 +24,10 @@
 
 supla_abstract_get_icm_value_command::supla_abstract_get_icm_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter),
-      command_name("GET-IC-VALUE:") {}
+    : supla_abstract_ipc_command(socket_adapter) {}
 
-const char *supla_abstract_get_icm_value_command::get_command_name(void) {
-  return command_name.c_str();
+const std::string supla_abstract_get_icm_value_command::get_command_name(void) {
+  return "GET-IC-VALUE:";
 }
 
 void supla_abstract_get_icm_value_command::on_command_match(

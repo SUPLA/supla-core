@@ -24,12 +24,9 @@
 #include "ipc/abstract_ipc_command.h"
 
 class supla_abstract_get_humidity_command : public supla_abstract_ipc_command {
- private:
-  const std::string command_name;
-
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool get_channel_humidity_value(int user_id, int device_id,
                                           int channel_id, double *value) = 0;
 

@@ -20,6 +20,7 @@
 #define SUPLA_ABSTRACT_IPC_COMMAND_H_
 
 #include <functional>
+#include <string>
 
 #include "caller.h"
 #include "ipc/abstract_ipc_socket_adapter.h"
@@ -51,7 +52,7 @@ class supla_abstract_ipc_command {
       std::function<bool(int user_id, int device_id, int channel_id)> on_ids);
 
   virtual void on_command_match(const char *params) = 0;
-  virtual const char *get_command_name(void) = 0;
+  virtual const std::string get_command_name(void) = 0;
   const char *get_alexa_correlation_token();
   const char *get_google_request_id();
   supla_caller get_caller();

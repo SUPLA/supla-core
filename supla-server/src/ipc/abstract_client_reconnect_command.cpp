@@ -21,11 +21,11 @@
 supla_abstract_client_reconnect_command::
     supla_abstract_client_reconnect_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter),
-      command_name("CLIENT-RECONNECT:") {}
+    : supla_abstract_ipc_command(socket_adapter) {}
 
-const char *supla_abstract_client_reconnect_command::get_command_name(void) {
-  return command_name.c_str();
+const std::string supla_abstract_client_reconnect_command::get_command_name(
+    void) {
+  return "CLIENT-RECONNECT:";
 }
 
 void supla_abstract_client_reconnect_command::on_command_match(

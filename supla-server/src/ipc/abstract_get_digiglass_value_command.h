@@ -25,12 +25,9 @@
 
 class supla_abstract_get_digiglass_value_command
     : public supla_abstract_ipc_command {
- private:
-  const std::string command_name;
-
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool get_digiglass_value(int user_id, int device_id, int channel_id,
                                    unsigned short *value) = 0;
 

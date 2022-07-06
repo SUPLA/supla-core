@@ -25,12 +25,9 @@
 #include "user.h"
 
 class supla_abstract_set_char_command : public supla_abstract_ipc_command {
- private:
-  const std::string command_name;
-
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool set_channel_char_value(supla_user *user, int device_id,
                                       int channel_id, char value,
                                       const char *alexa_correlation_token,

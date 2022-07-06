@@ -25,12 +25,9 @@
 
 class supla_abstract_is_channel_connected_command
     : public supla_abstract_ipc_command {
- private:
-  const std::string command_name;
-
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool is_channel_online(int user_id, int device_id,
                                  int channel_id) = 0;
 

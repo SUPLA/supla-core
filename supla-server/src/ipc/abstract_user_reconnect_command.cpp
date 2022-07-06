@@ -20,11 +20,11 @@
 
 supla_abstract_user_reconnect_command::supla_abstract_user_reconnect_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_ipc_command(socket_adapter),
-      command_name("USER-RECONNECT:") {}
+    : supla_abstract_ipc_command(socket_adapter) {}
 
-const char *supla_abstract_user_reconnect_command::get_command_name(void) {
-  return command_name.c_str();
+const std::string supla_abstract_user_reconnect_command::get_command_name(
+    void) {
+  return "USER-RECONNECT:";
 }
 
 void supla_abstract_user_reconnect_command::on_command_match(

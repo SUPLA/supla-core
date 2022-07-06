@@ -136,10 +136,13 @@ void supla_abstract_ipc_command::process_parameters(
 bool supla_abstract_ipc_command::process_command(char *buffer,
                                                  unsigned int buffer_size,
                                                  unsigned int data_size) {
-  const char *cmd = get_command_name();
+  const std::string cmd = get_command_name();
 
-  unsigned int cmd_len = strnlen(cmd, buffer_size);
-  if (data_size > cmd_len && memcmp(buffer, cmd, cmd_len) == 0 &&
+  if (cmd.empty()) {
+    return false;
+  }
+
+  if (data_size > cmd.size() && memcmp(buffer, cmd.c_str(), cmd.size()) == 0 &&
       buffer[data_size - 1] == '\n') {
     buffer[data_size - 1] = 0;
 
@@ -150,7 +153,7 @@ bool supla_abstract_ipc_command::process_command(char *buffer,
         cut(buffer, ",ALEXA-CORRELATION-TOKEN=", buffer_size);
     google_request_id = cut(buffer, ",GOOGLE-REQUEST-ID=", buffer_size);
 
-    on_command_match(data_size > cmd_len ? &buffer[cmd_len] : NULL);
+    on_command_match(data_size > cmd.size() ? &buffer[cmd.size()] : NULL);
     return true;
   }
 

@@ -26,12 +26,11 @@
 
 class supla_abstract_set_cg_rgbw_command : public supla_abstract_ipc_command {
  private:
-  const std::string command_name;
   bool random_color;
 
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool set_cg_rgbw_value(supla_user *user, int group_id, int color,
                                  char color_brightness, char brightness,
                                  char on_off) = 0;

@@ -25,12 +25,9 @@
 #include "user.h"
 
 class supla_abstract_set_cg_char_command : public supla_abstract_ipc_command {
- private:
-  const std::string command_name;
-
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool set_cg_char_value(supla_user *user, int group_id,
                                  char value) = 0;
 

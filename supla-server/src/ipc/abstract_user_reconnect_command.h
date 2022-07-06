@@ -25,12 +25,9 @@
 
 class supla_abstract_user_reconnect_command
     : public supla_abstract_ipc_command {
- private:
-  const std::string command_name;
-
  protected:
   virtual void on_command_match(const char *params);
-  virtual const char *get_command_name(void);
+  virtual const std::string get_command_name(void);
   virtual bool reconnect(int user_id) = 0;
 
  public:

@@ -22,13 +22,12 @@
 
 supla_abstract_set_rgbw_command::supla_abstract_set_rgbw_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
-    : supla_abstract_ipc_command(socket_adapter),
-      command_name(random_color ? "SET-RAND-RGBW-VALUE:" : "SET-RGBW-VALUE:") {
+    : supla_abstract_ipc_command(socket_adapter) {
   this->random_color = random_color;
 }
 
-const char *supla_abstract_set_rgbw_command::get_command_name(void) {
-  return command_name.c_str();
+const std::string supla_abstract_set_rgbw_command::get_command_name(void) {
+  return random_color ? "SET-RAND-RGBW-VALUE:" : "SET-RGBW-VALUE:";
 }
 
 void supla_abstract_set_rgbw_command::on_command_match(const char *params) {
