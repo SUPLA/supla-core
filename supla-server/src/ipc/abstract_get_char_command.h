@@ -19,6 +19,8 @@
 #ifndef SUPLA_ABSTRACT_GET_CHAR_COMMAND_H_
 #define SUPLA_ABSTRACT_GET_CHAR_COMMAND_H_
 
+#include <string>
+
 #include "ipc/abstract_ipc_command.h"
 
 class supla_abstract_get_char_command : public supla_abstract_ipc_command {
