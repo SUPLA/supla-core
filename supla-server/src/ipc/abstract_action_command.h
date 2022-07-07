@@ -30,18 +30,18 @@ class supla_abstract_action_command : public supla_abstract_ipc_command {
   std::string get_command_name(int action);
   virtual void on_command_match(const char *params);
   virtual const std::string get_command_name(void);
-  virtual bool action_open_close(int user_id, int device_id, int chennal_id,
+  virtual bool action_open_close(int user_id, int device_id, int channel_id,
                                  bool open, const char *alexa_correlation_token,
                                  const char *google_request_id) = 0;
-  virtual bool action_toggle(int user_id, int device_id, int chennal_id) = 0;
-  virtual bool action_stop(int user_id, int device_id, int chennal_id) = 0;
+  virtual bool action_toggle(int user_id, int device_id, int channel_id) = 0;
+  virtual bool action_stop(int user_id, int device_id, int channel_id) = 0;
   virtual bool action_up_or_stop(int user_id, int device_id,
-                                 int chennal_id) = 0;
+                                 int channel_id) = 0;
   virtual bool action_down_or_stop(int user_id, int device_id,
-                                   int chennal_id) = 0;
+                                   int channel_id) = 0;
   virtual bool action_step_by_step(int user_id, int device_id,
-                                   int chennal_id) = 0;
-  virtual bool action_copy(int user_id, int device_id, int chennal_id,
+                                   int channel_id) = 0;
+  virtual bool action_copy(int user_id, int device_id, int channel_id,
                            int source_device_id, int source_channel_id) = 0;
 
  public:
