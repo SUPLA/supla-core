@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/ipc/ActionCgCommandMock.cpp \
 ../src/test/doubles/ipc/ActionCommandMock.cpp \
 ../src/test/doubles/ipc/ClientReconnectCommandMock.cpp \
 ../src/test/doubles/ipc/GetCharCommandMock.cpp \
@@ -29,6 +30,7 @@ CPP_SRCS += \
 ../src/test/doubles/ipc/UserReconnectCommandMock.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/ipc/ActionCgCommandMock.d \
 ./src/test/doubles/ipc/ActionCommandMock.d \
 ./src/test/doubles/ipc/ClientReconnectCommandMock.d \
 ./src/test/doubles/ipc/GetCharCommandMock.d \
@@ -54,6 +56,7 @@ CPP_DEPS += \
 ./src/test/doubles/ipc/UserReconnectCommandMock.d 
 
 OBJS += \
+./src/test/doubles/ipc/ActionCgCommandMock.o \
 ./src/test/doubles/ipc/ActionCommandMock.o \
 ./src/test/doubles/ipc/ClientReconnectCommandMock.o \
 ./src/test/doubles/ipc/GetCharCommandMock.o \
@@ -91,7 +94,7 @@ src/test/doubles/ipc/%.o: ../src/test/doubles/ipc/%.cpp src/test/doubles/ipc/sub
 clean: clean-src-2f-test-2f-doubles-2f-ipc
 
 clean-src-2f-test-2f-doubles-2f-ipc:
-	-$(RM) ./src/test/doubles/ipc/ActionCommandMock.d ./src/test/doubles/ipc/ActionCommandMock.o ./src/test/doubles/ipc/ClientReconnectCommandMock.d ./src/test/doubles/ipc/ClientReconnectCommandMock.o ./src/test/doubles/ipc/GetCharCommandMock.d ./src/test/doubles/ipc/GetCharCommandMock.o ./src/test/doubles/ipc/GetDigiglassValueCommandMock.d ./src/test/doubles/ipc/GetDigiglassValueCommandMock.o ./src/test/doubles/ipc/GetDoubleCommandMock.d ./src/test/doubles/ipc/GetDoubleCommandMock.o ./src/test/doubles/ipc/GetEmValueCommandMock.d ./src/test/doubles/ipc/GetEmValueCommandMock.o ./src/test/doubles/ipc/GetHumidityCommandMock.d ./src/test/doubles/ipc/GetHumidityCommandMock.o ./src/test/doubles/ipc/GetIcmValueCommandMock.d ./src/test/doubles/ipc/GetIcmValueCommandMock.o ./src/test/doubles/ipc/GetRGBWCommandMock.d ./src/test/doubles/ipc/GetRGBWCommandMock.o ./src/test/doubles/ipc/GetRelayValueCommandMock.d ./src/test/doubles/ipc/GetRelayValueCommandMock.o ./src/test/doubles/ipc/GetTemperatureCommandMock.d ./src/test/doubles/ipc/GetTemperatureCommandMock.o ./src/test/doubles/ipc/GetValveValueCommandMock.d ./src/test/doubles/ipc/GetValveValueCommandMock.o ./src/test/doubles/ipc/IpcCtrlMock.d ./src/test/doubles/ipc/IpcCtrlMock.o ./src/test/doubles/ipc/IpcSocketAdapterMock.d ./src/test/doubles/ipc/IpcSocketAdapterMock.o ./src/test/doubles/ipc/IsChannelConnectedCommandMock.d ./src/test/doubles/ipc/IsChannelConnectedCommandMock.o ./src/test/doubles/ipc/IsClientConnectedCommandMock.d ./src/test/doubles/ipc/IsClientConnectedCommandMock.o ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.d ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.o ./src/test/doubles/ipc/SetCgCharCommandMock.d ./src/test/doubles/ipc/SetCgCharCommandMock.o ./src/test/doubles/ipc/SetCgRGBWCommandMock.d ./src/test/doubles/ipc/SetCgRGBWCommandMock.o ./src/test/doubles/ipc/SetCharCommandMock.d ./src/test/doubles/ipc/SetCharCommandMock.o ./src/test/doubles/ipc/SetDigiglassValueCommandMock.d ./src/test/doubles/ipc/SetDigiglassValueCommandMock.o ./src/test/doubles/ipc/SetRGBWCommandMock.d ./src/test/doubles/ipc/SetRGBWCommandMock.o ./src/test/doubles/ipc/UserReconnectCommandMock.d ./src/test/doubles/ipc/UserReconnectCommandMock.o
+	-$(RM) ./src/test/doubles/ipc/ActionCgCommandMock.d ./src/test/doubles/ipc/ActionCgCommandMock.o ./src/test/doubles/ipc/ActionCommandMock.d ./src/test/doubles/ipc/ActionCommandMock.o ./src/test/doubles/ipc/ClientReconnectCommandMock.d ./src/test/doubles/ipc/ClientReconnectCommandMock.o ./src/test/doubles/ipc/GetCharCommandMock.d ./src/test/doubles/ipc/GetCharCommandMock.o ./src/test/doubles/ipc/GetDigiglassValueCommandMock.d ./src/test/doubles/ipc/GetDigiglassValueCommandMock.o ./src/test/doubles/ipc/GetDoubleCommandMock.d ./src/test/doubles/ipc/GetDoubleCommandMock.o ./src/test/doubles/ipc/GetEmValueCommandMock.d ./src/test/doubles/ipc/GetEmValueCommandMock.o ./src/test/doubles/ipc/GetHumidityCommandMock.d ./src/test/doubles/ipc/GetHumidityCommandMock.o ./src/test/doubles/ipc/GetIcmValueCommandMock.d ./src/test/doubles/ipc/GetIcmValueCommandMock.o ./src/test/doubles/ipc/GetRGBWCommandMock.d ./src/test/doubles/ipc/GetRGBWCommandMock.o ./src/test/doubles/ipc/GetRelayValueCommandMock.d ./src/test/doubles/ipc/GetRelayValueCommandMock.o ./src/test/doubles/ipc/GetTemperatureCommandMock.d ./src/test/doubles/ipc/GetTemperatureCommandMock.o ./src/test/doubles/ipc/GetValveValueCommandMock.d ./src/test/doubles/ipc/GetValveValueCommandMock.o ./src/test/doubles/ipc/IpcCtrlMock.d ./src/test/doubles/ipc/IpcCtrlMock.o ./src/test/doubles/ipc/IpcSocketAdapterMock.d ./src/test/doubles/ipc/IpcSocketAdapterMock.o ./src/test/doubles/ipc/IsChannelConnectedCommandMock.d ./src/test/doubles/ipc/IsChannelConnectedCommandMock.o ./src/test/doubles/ipc/IsClientConnectedCommandMock.d ./src/test/doubles/ipc/IsClientConnectedCommandMock.o ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.d ./src/test/doubles/ipc/IsDeviceConnectedCommandMock.o ./src/test/doubles/ipc/SetCgCharCommandMock.d ./src/test/doubles/ipc/SetCgCharCommandMock.o ./src/test/doubles/ipc/SetCgRGBWCommandMock.d ./src/test/doubles/ipc/SetCgRGBWCommandMock.o ./src/test/doubles/ipc/SetCharCommandMock.d ./src/test/doubles/ipc/SetCharCommandMock.o ./src/test/doubles/ipc/SetDigiglassValueCommandMock.d ./src/test/doubles/ipc/SetDigiglassValueCommandMock.o ./src/test/doubles/ipc/SetRGBWCommandMock.d ./src/test/doubles/ipc/SetRGBWCommandMock.o ./src/test/doubles/ipc/UserReconnectCommandMock.d ./src/test/doubles/ipc/UserReconnectCommandMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-ipc
 

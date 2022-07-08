@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/ipc/ActionCgCommandTest.cpp \
 ../src/test/ipc/ActionCommandTest.cpp \
 ../src/test/ipc/ClientReconnectCommandTest.cpp \
 ../src/test/ipc/GetCharCommandTest.cpp \
@@ -29,6 +30,7 @@ CPP_SRCS += \
 ../src/test/ipc/UserReconnectCommandTest.cpp 
 
 CPP_DEPS += \
+./src/test/ipc/ActionCgCommandTest.d \
 ./src/test/ipc/ActionCommandTest.d \
 ./src/test/ipc/ClientReconnectCommandTest.d \
 ./src/test/ipc/GetCharCommandTest.d \
@@ -54,6 +56,7 @@ CPP_DEPS += \
 ./src/test/ipc/UserReconnectCommandTest.d 
 
 OBJS += \
+./src/test/ipc/ActionCgCommandTest.o \
 ./src/test/ipc/ActionCommandTest.o \
 ./src/test/ipc/ClientReconnectCommandTest.o \
 ./src/test/ipc/GetCharCommandTest.o \
@@ -91,7 +94,7 @@ src/test/ipc/%.o: ../src/test/ipc/%.cpp src/test/ipc/subdir.mk
 clean: clean-src-2f-test-2f-ipc
 
 clean-src-2f-test-2f-ipc:
-	-$(RM) ./src/test/ipc/ActionCommandTest.d ./src/test/ipc/ActionCommandTest.o ./src/test/ipc/ClientReconnectCommandTest.d ./src/test/ipc/ClientReconnectCommandTest.o ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/GetDigiglassValueCommandTest.d ./src/test/ipc/GetDigiglassValueCommandTest.o ./src/test/ipc/GetDoubleCommandTest.d ./src/test/ipc/GetDoubleCommandTest.o ./src/test/ipc/GetEmValueCommandTest.d ./src/test/ipc/GetEmValueCommandTest.o ./src/test/ipc/GetHumidityCommandTest.d ./src/test/ipc/GetHumidityCommandTest.o ./src/test/ipc/GetIcmValueCommandTest.d ./src/test/ipc/GetIcmValueCommandTest.o ./src/test/ipc/GetRGBWCommandTest.d ./src/test/ipc/GetRGBWCommandTest.o ./src/test/ipc/GetRelayValueCommandTest.d ./src/test/ipc/GetRelayValueCommandTest.o ./src/test/ipc/GetTemperatureCommandTest.d ./src/test/ipc/GetTemperatureCommandTest.o ./src/test/ipc/GetValveValueCommandTest.d ./src/test/ipc/GetValveValueCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsChannelConnectedCommandTest.d ./src/test/ipc/IsChannelConnectedCommandTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o ./src/test/ipc/IsDeviceConnectedCommandTest.d ./src/test/ipc/IsDeviceConnectedCommandTest.o ./src/test/ipc/SetCgCharCommandTest.d ./src/test/ipc/SetCgCharCommandTest.o ./src/test/ipc/SetCgRGBWCommandTest.d ./src/test/ipc/SetCgRGBWCommandTest.o ./src/test/ipc/SetCharCommandTest.d ./src/test/ipc/SetCharCommandTest.o ./src/test/ipc/SetDigiglassValueCommandTest.d ./src/test/ipc/SetDigiglassValueCommandTest.o ./src/test/ipc/SetRGBWCommandTest.d ./src/test/ipc/SetRGBWCommandTest.o ./src/test/ipc/UserReconnectCommandTest.d ./src/test/ipc/UserReconnectCommandTest.o
+	-$(RM) ./src/test/ipc/ActionCgCommandTest.d ./src/test/ipc/ActionCgCommandTest.o ./src/test/ipc/ActionCommandTest.d ./src/test/ipc/ActionCommandTest.o ./src/test/ipc/ClientReconnectCommandTest.d ./src/test/ipc/ClientReconnectCommandTest.o ./src/test/ipc/GetCharCommandTest.d ./src/test/ipc/GetCharCommandTest.o ./src/test/ipc/GetDigiglassValueCommandTest.d ./src/test/ipc/GetDigiglassValueCommandTest.o ./src/test/ipc/GetDoubleCommandTest.d ./src/test/ipc/GetDoubleCommandTest.o ./src/test/ipc/GetEmValueCommandTest.d ./src/test/ipc/GetEmValueCommandTest.o ./src/test/ipc/GetHumidityCommandTest.d ./src/test/ipc/GetHumidityCommandTest.o ./src/test/ipc/GetIcmValueCommandTest.d ./src/test/ipc/GetIcmValueCommandTest.o ./src/test/ipc/GetRGBWCommandTest.d ./src/test/ipc/GetRGBWCommandTest.o ./src/test/ipc/GetRelayValueCommandTest.d ./src/test/ipc/GetRelayValueCommandTest.o ./src/test/ipc/GetTemperatureCommandTest.d ./src/test/ipc/GetTemperatureCommandTest.o ./src/test/ipc/GetValveValueCommandTest.d ./src/test/ipc/GetValveValueCommandTest.o ./src/test/ipc/IpcCommandTest.d ./src/test/ipc/IpcCommandTest.o ./src/test/ipc/IpcCtrlTest.d ./src/test/ipc/IpcCtrlTest.o ./src/test/ipc/IsChannelConnectedCommandTest.d ./src/test/ipc/IsChannelConnectedCommandTest.o ./src/test/ipc/IsClientConnectedCommandTest.d ./src/test/ipc/IsClientConnectedCommandTest.o ./src/test/ipc/IsDeviceConnectedCommandTest.d ./src/test/ipc/IsDeviceConnectedCommandTest.o ./src/test/ipc/SetCgCharCommandTest.d ./src/test/ipc/SetCgCharCommandTest.o ./src/test/ipc/SetCgRGBWCommandTest.d ./src/test/ipc/SetCgRGBWCommandTest.o ./src/test/ipc/SetCharCommandTest.d ./src/test/ipc/SetCharCommandTest.o ./src/test/ipc/SetDigiglassValueCommandTest.d ./src/test/ipc/SetDigiglassValueCommandTest.o ./src/test/ipc/SetRGBWCommandTest.d ./src/test/ipc/SetRGBWCommandTest.o ./src/test/ipc/UserReconnectCommandTest.d ./src/test/ipc/UserReconnectCommandTest.o
 
 .PHONY: clean-src-2f-test-2f-ipc
 
