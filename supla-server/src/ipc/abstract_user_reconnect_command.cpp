@@ -30,11 +30,14 @@ const std::string supla_abstract_user_reconnect_command::get_command_name(
 void supla_abstract_user_reconnect_command::on_command_match(
     const char *params) {
   int user_id = 0;
-  sscanf(params, "%i", &user_id);
+  if (params) {
+    sscanf(params, "%i", &user_id);
 
-  if (user_id && reconnect(user_id)) {
-    send_result("OK:", user_id);
-  } else {
-    send_result("USER_UNKNOWN:", user_id);
+    if (user_id && reconnect(user_id)) {
+      send_result("OK:", user_id);
+      return;
+    }
   }
+
+  send_result("USER_UNKNOWN:", user_id);
 }

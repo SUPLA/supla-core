@@ -58,6 +58,11 @@ void supla_abstract_action_command::_send_result(bool success, int channel_id) {
 }
 
 void supla_abstract_action_command::on_command_match(const char *params) {
+  if (!params) {
+    send_result("UNKNOWN:0");
+    return;
+  }
+
   if (action == ACTION_COPY) {
     int user_id = 0;
     int device_id = 0;

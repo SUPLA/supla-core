@@ -30,13 +30,15 @@ const std::string supla_abstract_is_device_connected_command::get_command_name(
 
 void supla_abstract_is_device_connected_command::on_command_match(
     const char *params) {
-  int user_id = 0;
-  int device_id = 0;
-  sscanf(params, "%i,%i", &user_id, &device_id);
+  if (params) {
+    int user_id = 0;
+    int device_id = 0;
+    sscanf(params, "%i,%i", &user_id, &device_id);
 
-  if (user_id && device_id && is_device_online(user_id, device_id)) {
-    send_result("CONNECTED:", device_id);
-  } else {
-    send_result("DISCONNECTED:", device_id);
+    if (user_id && device_id && is_device_online(user_id, device_id)) {
+      send_result("CONNECTED:", device_id);
+      return;
+    }
   }
+  send_result("DISCONNECTED:", device_id);
 }
