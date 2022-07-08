@@ -30,9 +30,9 @@ const std::string supla_abstract_is_client_connected_command::get_command_name(
 
 void supla_abstract_is_client_connected_command::on_command_match(
     const char *params) {
+  int user_id = 0;
+  int client_id = 0;
   if (params) {
-    int user_id = 0;
-    int client_id = 0;
     sscanf(params, "%i,%i", &user_id, &client_id);
 
     if (user_id && client_id && is_client_online(user_id, client_id)) {
