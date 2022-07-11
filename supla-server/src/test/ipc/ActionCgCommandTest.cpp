@@ -55,6 +55,13 @@ TEST_F(ActionCgCommandTest, OpenWithFilure) {
   commandProcessingTest("ACTION-CG-OPEN:10,30\n", "FAIL:30\n");
 }
 
+TEST_F(ActionCgCommandTest, OpenWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_OPEN);
+  cmd = &c;
+  EXPECT_CALL(c, action_open_close).Times(0);
+  commandProcessingTest("ACTION-CG-OPEN:\n", "UNKNOWN:0\n");
+}
+
 TEST_F(ActionCgCommandTest, CloseWithSuccess) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_CLOSE);
   cmd = &c;
@@ -68,6 +75,13 @@ TEST_F(ActionCgCommandTest, CloseWithFilure) {
   cmd = &c;
   EXPECT_CALL(c, action_open_close).WillOnce(Return(false));
   commandProcessingTest("ACTION-CG-CLOSE:10,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCgCommandTest, CloseWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_CLOSE);
+  cmd = &c;
+  EXPECT_CALL(c, action_open_close).Times(0);
+  commandProcessingTest("ACTION-CG-CLOSE:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(ActionCgCommandTest, ToggleWithSuccess) {
@@ -85,6 +99,13 @@ TEST_F(ActionCgCommandTest, ToggleWithFilure) {
   commandProcessingTest("ACTION-CG-TOGGLE:10,30\n", "FAIL:30\n");
 }
 
+TEST_F(ActionCgCommandTest, ToggleWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_TOGGLE);
+  cmd = &c;
+  EXPECT_CALL(c, action_toggle).Times(0);
+  commandProcessingTest("ACTION-CG-TOGGLE:\n", "UNKNOWN:0\n");
+}
+
 TEST_F(ActionCgCommandTest, StopWithSuccess) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_STOP);
   cmd = &c;
@@ -98,6 +119,13 @@ TEST_F(ActionCgCommandTest, StopWithFilure) {
   cmd = &c;
   EXPECT_CALL(c, action_stop).WillOnce(Return(false));
   commandProcessingTest("ACTION-CG-STOP:10,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCgCommandTest, StopWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_STOP);
+  cmd = &c;
+  EXPECT_CALL(c, action_stop).Times(0);
+  commandProcessingTest("ACTION-CG-STOP:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(ActionCgCommandTest, UpOrStopWithSuccess) {
@@ -115,6 +143,13 @@ TEST_F(ActionCgCommandTest, UpOrStopWithFilure) {
   commandProcessingTest("ACTION-CG-UP-OR-STOP:10,30\n", "FAIL:30\n");
 }
 
+TEST_F(ActionCgCommandTest, UpOrStopWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_UP_OR_STOP);
+  cmd = &c;
+  EXPECT_CALL(c, action_up_or_stop).Times(0);
+  commandProcessingTest("ACTION-CG-UP-OR-STOP:\n", "UNKNOWN:0\n");
+}
+
 TEST_F(ActionCgCommandTest, DownOrStopWithSuccess) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_DOWN_OR_STOP);
   cmd = &c;
@@ -128,6 +163,13 @@ TEST_F(ActionCgCommandTest, DownOrStopWithFilure) {
   cmd = &c;
   EXPECT_CALL(c, action_down_or_stop).WillOnce(Return(false));
   commandProcessingTest("ACTION-CG-DOWN-OR-STOP:10,30\n", "FAIL:30\n");
+}
+
+TEST_F(ActionCgCommandTest, DownOrStopWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_DOWN_OR_STOP);
+  cmd = &c;
+  EXPECT_CALL(c, action_down_or_stop).Times(0);
+  commandProcessingTest("ACTION-CG-DOWN-OR-STOP:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(ActionCgCommandTest, StepByStepWithSuccess) {
@@ -145,6 +187,13 @@ TEST_F(ActionCgCommandTest, StepByStepWithFilure) {
   commandProcessingTest("ACTION-CG-SBS:10,30\n", "FAIL:30\n");
 }
 
+TEST_F(ActionCgCommandTest, StepByStepWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_STEP_BY_STEP);
+  cmd = &c;
+  EXPECT_CALL(c, action_step_by_step).Times(0);
+  commandProcessingTest("ACTION-CG-SBS:\n", "UNKNOWN:0\n");
+}
+
 TEST_F(ActionCgCommandTest, CopyWithSuccess) {
   StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_COPY);
   cmd = &c;
@@ -160,11 +209,11 @@ TEST_F(ActionCgCommandTest, CopyWithFilure) {
   commandProcessingTest("ACTION-CG-COPY:10,30,50,100\n", "FAIL:30\n");
 }
 
-TEST_F(ActionCgCommandTest, noParams) {
-  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_OPEN);
+TEST_F(ActionCgCommandTest, CopyWithoutParams) {
+  StrictMock<ActionCgCommandMock> c(socketAdapter, ACTION_COPY);
   cmd = &c;
-  EXPECT_CALL(c, action_open_close).Times(0);
-  commandProcessingTest("ACTION-CG-OPEN:\n", "UNKNOWN:0\n");
+  EXPECT_CALL(c, action_copy).Times(0);
+  commandProcessingTest("ACTION-CG-COPY:\n", "UNKNOWN:0\n");
 }
 
 TEST_F(ActionCgCommandTest, paramsWithZeros) {
