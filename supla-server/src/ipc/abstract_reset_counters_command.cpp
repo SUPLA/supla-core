@@ -34,7 +34,6 @@ void supla_abstract_reset_counters_command::on_command_match(
         if (reset_counters(user_id, device_id, channel_id)) {
           send_result("OK:", channel_id);
           return true;
-        } else {
         }
 
         return false;
