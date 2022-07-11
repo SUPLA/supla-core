@@ -46,7 +46,7 @@ TEST_F(ResetCountersCommandTest, ResetCountersWithSuccess) {
 
 TEST_F(ResetCountersCommandTest, ResetCountersWithFilure) {
   EXPECT_CALL(*cmd, reset_counters).WillOnce(Return(false));
-  commandProcessingTest("RESET-COUNTERS:10,20,30\n", "FAIL:30\n");
+  commandProcessingTest("RESET-COUNTERS:10,20,30\n", "UNKNOWN:30\n");
 }
 
 TEST_F(ResetCountersCommandTest, noParams) {
