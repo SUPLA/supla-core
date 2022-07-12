@@ -33,7 +33,7 @@ void supla_abstract_enter_cfg_mode_command::on_command_match(
   int device_id = 0;
 
   if (params) {
-    sscanf(params, "%i,%i,%i", &user_id, &device_id);
+    sscanf(params, "%i,%i", &user_id, &device_id);
 
     if (user_id && device_id && enter_cfg_mode(user_id, device_id)) {
       send_result("OK:", device_id);
