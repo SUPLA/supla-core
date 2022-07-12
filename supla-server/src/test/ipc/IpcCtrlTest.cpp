@@ -213,4 +213,41 @@ TEST_F(IpcCtrlTest, multipleCommands) {
   EXPECT_FALSE(ipc_ctrl->is_timeout());
 }
 
+TEST_F(IpcCtrlTest, unknownCommand) {
+  struct timeval then = {};
+  gettimeofday(&then, NULL);
+
+  char recv_buffer[] = "XYZ\n";
+  socket_adapter->set_recv_buffer(recv_buffer, sizeof(recv_buffer));
+
+  Sequence s1;
+
+  EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(false));
+
+  EXPECT_CALL(*socket_adapter, send(std::string("SUPLA SERVER CTRL\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, send(std::string("COMMAND_UNKNOWN\n")))
+      .Times(1)
+      .InSequence(s1);
+
+  EXPECT_CALL(*socket_adapter, is_error())
+      .InSequence(s1)
+      .WillRepeatedly(Return(true));
+
+  EXPECT_CALL(*ipc_ctrl, terminate()).Times(2);
+
+  ipc_ctrl->execute();
+
+  struct timeval now = {};
+  gettimeofday(&now, NULL);
+
+  EXPECT_GE(now.tv_sec - then.tv_sec, 0);
+  EXPECT_LE(now.tv_sec - then.tv_sec, 1);
+
+  EXPECT_FALSE(ipc_ctrl->is_timeout());
+}
+
 } /* namespace testing */

@@ -21,6 +21,8 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include "log.h"
+
 supla_abstract_ipc_ctrl::supla_abstract_ipc_ctrl(
     supla_abstract_ipc_socket_adapter *socket_adapter) {
   this->socket_adapter = socket_adapter;
@@ -79,6 +81,8 @@ void supla_abstract_ipc_ctrl::execute(void) {
         if (result) {
           gettimeofday(&last_action, NULL);
         } else {
+          supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
+          socket_adapter->send("COMMAND_UNKNOWN\n");
           terminate();
         }
         offset = 0;
