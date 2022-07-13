@@ -52,6 +52,7 @@ TEST_F(SetCgRGBWCommandTest, randomColor) {
 
   int color1 = 0;
   int color2 = 0;
+  int color3 = 0;
 
   EXPECT_CALL(*cmd, set_cg_rgbw_value(user, 30, Gt(0), 3, 2, 1))
       .WillOnce(DoAll(SaveArg<2>(&color1), Return(true)));
@@ -62,6 +63,16 @@ TEST_F(SetCgRGBWCommandTest, randomColor) {
   commandProcessingTest(cmdString, expectedResult);
 
   delete cmd;
+  usleep(50);
+  cmd = new SetCgRGBWCommandMock(socketAdapter, true);
+
+  EXPECT_CALL(*cmd, set_cg_rgbw_value(user, 30, Gt(0), 3, 2, 1))
+      .WillOnce(DoAll(SaveArg<2>(&color3), Return(true)));
+
+  commandProcessingTest(cmdString, expectedResult);
+
+  delete cmd;
+  usleep(50);
   cmd = new SetCgRGBWCommandMock(socketAdapter, true);
 
   EXPECT_CALL(*cmd, set_cg_rgbw_value(user, 30, Gt(0), 3, 2, 1))
@@ -69,7 +80,7 @@ TEST_F(SetCgRGBWCommandTest, randomColor) {
 
   commandProcessingTest(cmdString, expectedResult);
 
-  EXPECT_NE(color1, color2);
+  EXPECT_TRUE(color1 != color2 || color1 != color3);
 }
 
 TEST_F(SetCgRGBWCommandTest, setRGBWWithFilure) {
