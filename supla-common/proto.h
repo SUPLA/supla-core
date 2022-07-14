@@ -241,9 +241,9 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #define SUPLA_CS_CALL_TIMER_ARM 800                           // ver. >= 17
 #define SUPLA_SC_CALL_SCENE_PACK_UPDATE 900                   // ver. >= 18
 #define SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE 910             // ver. >= 18
-#define SUPLA_CS_CALL_EXECUTE_ACTION 1000                     // ver. >= 18
-#define SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION 1010            // ver. >= 18
-#define SUPLA_SC_CALL_ACTION_EXECUTION_RESULT 1020            // ver. >= 18
+#define SUPLA_CS_CALL_EXECUTE_ACTION 1000                     // ver. >= 19
+#define SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION 1010            // ver. >= 19
+#define SUPLA_SC_CALL_ACTION_EXECUTION_RESULT 1020            // ver. >= 19
 
 #define SUPLA_RESULT_CALL_NOT_ALLOWED -5
 #define SUPLA_RESULT_DATA_TOO_LARGE -4

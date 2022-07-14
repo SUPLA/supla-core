@@ -506,8 +506,9 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
 
     case 18:
       return {SUPLA_SC_CALL_SCENE_PACK_UPDATE,
-              SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE,
-              SUPLA_CS_CALL_EXECUTE_ACTION,
+              SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE};
+    case 19:
+      return {SUPLA_CS_CALL_EXECUTE_ACTION,
               SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
               SUPLA_SC_CALL_ACTION_EXECUTION_RESULT};
   }
@@ -3720,6 +3721,7 @@ TEST_F(SrpcTest, call_scene_state_pack_update_with_full_size) {
   srpc = NULL;
 }
 
+#if SUPLA_PROTO_VERSION >= 19
 //---------------------------------------------------------
 // EXECUTE ACTION
 //---------------------------------------------------------
@@ -3748,5 +3750,5 @@ SRPC_CALL_BASIC_TEST(srpc_sc_async_action_execution_result,
                      TSC_ActionExecutionResult,
                      SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 39,
                      sc_action_execution_result);
-
+#endif /*SUPLA_PROTO_VERSION >= 19*/
 }  // namespace
