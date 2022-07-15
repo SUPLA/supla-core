@@ -44,7 +44,7 @@ void supla_abstract_ipc_command::send_result(const char *result,
   char *buffer = (char *)malloc(size);
   if (buffer) {
     snprintf(buffer, size, format, result, value);
-    socket_adapter->send(buffer);
+    socket_adapter->send_data(buffer);
     free(buffer);
   }
 }

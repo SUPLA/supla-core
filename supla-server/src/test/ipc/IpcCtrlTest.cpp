@@ -39,7 +39,6 @@ void IpcCtrlTest::SetUp() {
 void IpcCtrlTest::TearDown() {
   Test::TearDown();
   delete ipc_ctrl;
-  delete socket_adapter;
 }
 
 TEST_F(IpcCtrlTest, timeout) {

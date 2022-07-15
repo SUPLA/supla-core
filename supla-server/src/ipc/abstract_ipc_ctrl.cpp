@@ -35,6 +35,7 @@ supla_abstract_ipc_ctrl::~supla_abstract_ipc_ctrl() {
   for (auto it = commands.begin(); it != commands.end(); ++it) {
     delete *it;
   }
+  delete socket_adapter;
 }
 
 void supla_abstract_ipc_ctrl::add_command(supla_abstract_ipc_command *command) {
@@ -53,7 +54,7 @@ void supla_abstract_ipc_ctrl::execute(void) {
 
   gettimeofday(&last_action, NULL);
 
-  socket_adapter->send("SUPLA SERVER CTRL\n");
+  socket_adapter->send_data("SUPLA SERVER CTRL\n");
 
   unsigned int offset = 0;
 
@@ -82,7 +83,7 @@ void supla_abstract_ipc_ctrl::execute(void) {
           gettimeofday(&last_action, NULL);
         } else {
           supla_log(LOG_WARNING, "IPC - COMMAND UNKNOWN: %s", buffer);
-          socket_adapter->send("COMMAND_UNKNOWN\n");
+          socket_adapter->send_data("COMMAND_UNKNOWN\n");
           terminate();
         }
         offset = 0;

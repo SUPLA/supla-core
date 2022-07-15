@@ -39,3 +39,5 @@ void supla_abstract_ipc_socket_adapter::wait(int usec) {
     eh_wait(eh, usec);
   }
 }
+
+int supla_abstract_ipc_socket_adapter::get_sfd(void) { return sfd; }

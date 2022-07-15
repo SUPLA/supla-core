@@ -27,6 +27,8 @@ class supla_before_channel_function_change_command
     : public supla_abstract_before_channel_function_change_command {
  protected:
   virtual void before_channel_function_change(int user_id, int channel_id);
+
+ public:
   explicit supla_before_channel_function_change_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

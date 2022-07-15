@@ -32,7 +32,8 @@ class supla_abstract_ipc_socket_adapter {
   explicit supla_abstract_ipc_socket_adapter(int sfd);
   virtual ~supla_abstract_ipc_socket_adapter();
   void wait(int usec);
-  virtual void send(const std::string &data) = 0;
+  int get_sfd(void);
+  virtual void send_data(const std::string &data) = 0;
   virtual bool recv_byte(char *b) = 0;
   virtual bool is_error(void) = 0;
 };

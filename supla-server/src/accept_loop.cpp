@@ -18,13 +18,14 @@
 
 #include "accept_loop.h"
 
-#include <ipc/ipc_ctrl.h>
 #include <stdio.h>
 #include <unistd.h>
 
 #include "client.h"
 #include "database.h"
 #include "device.h"
+#include "ipc/ipc_ctrl.h"
+#include "ipc/ipc_socket_adapter.h"
 #include "ipcsocket.h"
 #include "log.h"
 #include "safearray.h"
@@ -134,7 +135,8 @@ void ipc_accept_loop(void *ipc, void *ipc_al_sthread) {
 
       stp.execute = accept_loop_ipcctrl_execute;
       stp.finish = accept_loop_ipcctrl_finish;
-      stp.user_data = new supla_ipc_ctrl(client_sd);
+      stp.user_data =
+          new supla_ipc_ctrl(new supla_ipc_socket_adapter(client_sd));
       stp.free_on_finish = 0;
       stp.initialize = NULL;
 
