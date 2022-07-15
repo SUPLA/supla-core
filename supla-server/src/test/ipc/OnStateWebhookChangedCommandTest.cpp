@@ -38,7 +38,7 @@ TEST_F(OnStateWebhookChangedCommandTest, noData) {
   EXPECT_FALSE(cmd->process_command(buffer, sizeof(buffer), 0));
 }
 
-TEST_F(OnStateWebhookChangedCommandTest, credentialsChanged) {
+TEST_F(OnStateWebhookChangedCommandTest, stateWebhookChanged) {
   EXPECT_CALL(*cmd, on_state_webhook_changed(10));
 
   commandProcessingTest("USER-ON-STATE-WEBHOOK-CHANGED:10\n", "OK:10\n");
