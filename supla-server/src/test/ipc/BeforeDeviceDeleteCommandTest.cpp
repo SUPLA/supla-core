@@ -38,7 +38,7 @@ TEST_F(BeforeDeviceDeleteCommandTest, noData) {
   EXPECT_FALSE(cmd->process_command(buffer, sizeof(buffer), 0));
 }
 
-TEST_F(BeforeDeviceDeleteCommandTest, deviceDeleted) {
+TEST_F(BeforeDeviceDeleteCommandTest, beforeDelete) {
   EXPECT_CALL(*cmd, before_device_delete(10, 20));
 
   commandProcessingTest("USER-BEFORE-DEVICE-DELETE:10,20\n", "OK:20\n");
