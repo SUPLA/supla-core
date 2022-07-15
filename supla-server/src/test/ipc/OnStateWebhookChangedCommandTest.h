@@ -16,24 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef STATE_WEBHOOK_CHANGED_COMMMAND_MOCK_H_
-#define STATE_WEBHOOK_CHANGED_COMMMAND_MOCK_H_
+#ifndef ONSTATEWEBHOOKCHANGEDCOMMANDTEST_H_
+#define ONSTATEWEBHOOKCHANGEDCOMMANDTEST_H_
 
-#include <gmock/gmock.h>
+#include <doubles/ipc/OnStateWebhookChangedCommandMock.h>
 
-#include "ipc/abstract_state_webhook_changed_command.h"
+#include "ipc/IpcCommandTest.h"
 
 namespace testing {
 
-class StateWebhookChangedCommandMock
-    : public supla_abstract_state_webhook_changed_command {
- public:
-  explicit StateWebhookChangedCommandMock(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+class OnStateWebhookChangedCommandTest : public IpcCommandTest {
+ protected:
+  OnStateWebhookChangedCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
 
-  MOCK_METHOD1(on_state_webhook_changed, void(int user_id));
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 } /* namespace testing */
 
-#endif /* STATE_WEBHOOK_CHANGED_COMMMAND_MOCK_H_ */
+#endif /* ONSTATEWEBHOOKCHANGEDCOMMANDTEST_H_ */

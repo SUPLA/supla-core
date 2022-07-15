@@ -16,42 +16,42 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/StateWebhookChangedCommandTest.h>
+#include <ipc/OnStateWebhookChangedCommandTest.h>
 
 namespace testing {
 
-void StateWebhookChangedCommandTest::SetUp() {
+void OnStateWebhookChangedCommandTest::SetUp() {
   IpcCommandTest::SetUp();
-  cmd = new StateWebhookChangedCommandMock(socketAdapter);
+  cmd = new OnStateWebhookChangedCommandMock(socketAdapter);
 }
 
-void StateWebhookChangedCommandTest::TearDown() {
+void OnStateWebhookChangedCommandTest::TearDown() {
   IpcCommandTest::TearDown();
   delete cmd;
 }
 
-supla_abstract_ipc_command *StateWebhookChangedCommandTest::getCommand(void) {
+supla_abstract_ipc_command *OnStateWebhookChangedCommandTest::getCommand(void) {
   return cmd;
 }
 
-TEST_F(StateWebhookChangedCommandTest, noData) {
+TEST_F(OnStateWebhookChangedCommandTest, noData) {
   EXPECT_FALSE(cmd->process_command(buffer, sizeof(buffer), 0));
 }
 
-TEST_F(StateWebhookChangedCommandTest, credentialsChanged) {
+TEST_F(OnStateWebhookChangedCommandTest, credentialsChanged) {
   EXPECT_CALL(*cmd, on_state_webhook_changed(10));
 
-  commandProcessingTest("USER-STATE-WEBHOOK-CHANGED:10\n", "OK:10\n");
+  commandProcessingTest("USER-ON-STATE-WEBHOOK-CHANGED:10\n", "OK:10\n");
 }
 
-TEST_F(StateWebhookChangedCommandTest, noParams) {
+TEST_F(OnStateWebhookChangedCommandTest, noParams) {
   EXPECT_CALL(*cmd, on_state_webhook_changed).Times(0);
-  commandProcessingTest("USER-STATE-WEBHOOK-CHANGED:\n", "UNKNOWN:0\n");
+  commandProcessingTest("USER-ON-STATE-WEBHOOK-CHANGED:\n", "UNKNOWN:0\n");
 }
 
-TEST_F(StateWebhookChangedCommandTest, paramsWithZeros) {
+TEST_F(OnStateWebhookChangedCommandTest, paramsWithZeros) {
   EXPECT_CALL(*cmd, on_state_webhook_changed).Times(0);
-  commandProcessingTest("USER-STATE-WEBHOOK-CHANGED:0\n", "UNKNOWN:0\n");
+  commandProcessingTest("USER-ON-STATE-WEBHOOK-CHANGED:0\n", "UNKNOWN:0\n");
 }
 
 } /* namespace testing */

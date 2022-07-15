@@ -16,15 +16,30 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/state_webhook_changed_command.h"
+#include <ipc/abstract_on_state_webhook_changed_command.h>
 
-#include "user.h"
+supla_abstract_on_state_webhook_changed_command::
+    supla_abstract_on_state_webhook_changed_command(
+        supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_ipc_command(socket_adapter) {}
 
-supla_state_webhook_changed_command::supla_state_webhook_changed_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_state_webhook_changed_command(socket_adapter) {}
+const std::string
+supla_abstract_on_state_webhook_changed_command::get_command_name(void) {
+  return "USER-ON-STATE-WEBHOOK-CHANGED:";
+}
 
-void supla_state_webhook_changed_command::on_state_webhook_changed(
-    int user_id) {
-  supla_user::on_state_webhook_changed(user_id);
+void supla_abstract_on_state_webhook_changed_command::on_command_match(
+    const char *params) {
+  int user_id = 0;
+
+  if (params) {
+    sscanf(params, "%i", &user_id);
+
+    if (user_id) {
+      on_state_webhook_changed(user_id);
+      send_result("OK:", user_id);
+      return;
+    }
+  }
+  send_result("UNKNOWN:", user_id);
 }
