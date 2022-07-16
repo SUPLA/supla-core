@@ -46,6 +46,7 @@ class supla_abstract_ipc_ctrl {
   bool is_timeout(void);
   void set_timeout(unsigned char timeout);
   void add_command(supla_abstract_ipc_command *command);
+  std::vector<std::string> get_command_list(void);
   virtual ~supla_abstract_ipc_ctrl();
 };
 

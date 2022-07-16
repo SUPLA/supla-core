@@ -114,3 +114,13 @@ bool supla_abstract_ipc_ctrl::is_timeout(void) { return timeout; }
 void supla_abstract_ipc_ctrl::set_timeout(unsigned char timeout_sec) {
   this->timeout_sec = timeout_sec;
 }
+
+std::vector<std::string> supla_abstract_ipc_ctrl::get_command_list(void) {
+  std::vector<std::string> result;
+
+  for (auto it = commands.begin(); it != commands.end(); ++it) {
+    result.push_back((*it)->get_command_name());
+  }
+
+  return result;
+}
