@@ -19,6 +19,7 @@
 #ifndef SUPLA_ABSTRACT_IPC_CTRL_H_
 #define SUPLA_ABSTRACT_IPC_CTRL_H_
 
+#include <string>
 #include <vector>
 
 #define IPC_BUFFER_MAX_SIZE 4096
