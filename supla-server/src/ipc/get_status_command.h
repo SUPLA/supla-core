@@ -26,6 +26,8 @@
 class supla_get_status_command : public supla_abstract_get_status_command {
  protected:
   virtual void get_status(char *buffer, unsigned int buffer_size);
+
+ public:
   explicit supla_get_status_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

@@ -28,6 +28,7 @@ class supla_is_device_connected_command
  protected:
   virtual bool is_device_online(int user_id, int device_id);
 
+ public:
   explicit supla_is_device_connected_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

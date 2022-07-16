@@ -28,6 +28,7 @@ class supla_get_em_value_command : public supla_abstract_get_em_value_command {
   virtual supla_channel_electricity_measurement *get_electricity_measurement(
       int user_id, int device_id, int channel_id);
 
+ public:
   explicit supla_get_em_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

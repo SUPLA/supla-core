@@ -27,6 +27,8 @@ class supla_enter_cfg_mode_command
     : public supla_abstract_enter_cfg_mode_command {
  protected:
   virtual bool enter_cfg_mode(int user_id, int device_id);
+
+ public:
   explicit supla_enter_cfg_mode_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

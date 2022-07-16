@@ -27,6 +27,8 @@ class supla_on_device_deleted_command
     : public supla_abstract_on_device_deleted_command {
  protected:
   virtual void on_device_deleted(int user_id, int device_id);
+
+ public:
   explicit supla_on_device_deleted_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

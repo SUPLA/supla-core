@@ -27,6 +27,8 @@ class supla_alexa_cred_changed_command
     : public supla_abstract_alexa_cred_changed_command {
  protected:
   virtual void on_credentials_changed(int user_id);
+
+ public:
   explicit supla_alexa_cred_changed_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

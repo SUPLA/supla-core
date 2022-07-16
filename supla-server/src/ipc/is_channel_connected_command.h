@@ -28,6 +28,7 @@ class supla_is_channel_connected_command
  protected:
   virtual bool is_channel_online(int user_id, int device_id, int channel_id);
 
+ public:
   explicit supla_is_channel_connected_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

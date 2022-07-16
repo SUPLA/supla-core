@@ -29,6 +29,8 @@ class supla_set_char_command : public supla_abstract_set_char_command {
                                       int channel_id, char value,
                                       const char *alexa_correlation_token,
                                       const char *google_request_id);
+
+ public:
   explicit supla_set_char_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

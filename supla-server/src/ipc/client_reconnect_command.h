@@ -28,6 +28,7 @@ class supla_client_reconnect_command
  protected:
   virtual bool reconnect(int user_id, int client_id);
 
+ public:
   explicit supla_client_reconnect_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

@@ -27,6 +27,8 @@ class supla_execute_scene_command
     : public supla_abstract_execute_scene_command {
  protected:
   virtual _sceneExecutionResult_e execute(int user_id, int scene_id);
+
+ public:
   explicit supla_execute_scene_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

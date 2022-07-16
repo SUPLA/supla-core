@@ -27,6 +27,8 @@ class supla_before_device_delete_command
     : public supla_abstract_before_device_delete_command {
  protected:
   virtual void before_device_delete(int user_id, int device_id);
+
+ public:
   explicit supla_before_device_delete_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

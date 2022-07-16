@@ -26,6 +26,8 @@
 class supla_recalibrate_command : public supla_abstract_recalibrate_command {
  protected:
   virtual bool recalibrate(int user_id, int device_id, int channel_id);
+
+ public:
   explicit supla_recalibrate_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

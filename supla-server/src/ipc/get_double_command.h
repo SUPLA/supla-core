@@ -27,6 +27,8 @@ class supla_get_double_command : public supla_abstract_get_double_command {
  protected:
   virtual bool get_channel_double_value(int user_id, int device_id,
                                         int channel_id, double *value);
+
+ public:
   explicit supla_get_double_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

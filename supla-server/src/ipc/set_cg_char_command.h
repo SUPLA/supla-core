@@ -26,6 +26,8 @@
 class supla_set_cg_char_command : public supla_abstract_set_cg_char_command {
  protected:
   virtual bool set_cg_char_value(supla_user *user, int group_id, char value);
+
+ public:
   explicit supla_set_cg_char_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

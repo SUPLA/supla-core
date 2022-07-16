@@ -29,6 +29,8 @@ class supla_get_rgbw_command : public supla_abstract_get_rgbw_command {
                                       int channel_id, int *color,
                                       char *color_brightness, char *brightness,
                                       char *on_off);
+
+ public:
   explicit supla_get_rgbw_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

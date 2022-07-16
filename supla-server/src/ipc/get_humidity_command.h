@@ -25,6 +25,8 @@ class supla_get_humidity_command : public supla_abstract_get_humidity_command {
  protected:
   virtual bool get_channel_humidity_value(int user_id, int device_id,
                                           int channel_id, double *value);
+
+ public:
   explicit supla_get_humidity_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

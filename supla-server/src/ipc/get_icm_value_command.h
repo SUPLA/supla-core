@@ -30,6 +30,7 @@ class supla_get_icm_value_command
                                                            int device_id,
                                                            int channel_id);
 
+ public:
   explicit supla_get_icm_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

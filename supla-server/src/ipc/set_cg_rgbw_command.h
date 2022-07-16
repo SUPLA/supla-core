@@ -28,6 +28,8 @@ class supla_set_cg_rgbw_command : public supla_abstract_set_cg_rgbw_command {
   virtual bool set_cg_rgbw_value(supla_user *user, int group_id, int color,
                                  char color_brightness, char brightness,
                                  char on_off);
+
+ public:
   explicit supla_set_cg_rgbw_command(
       supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color);
 };

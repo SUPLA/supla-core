@@ -29,6 +29,8 @@ class supla_get_relay_value_command
   virtual bool get_channel_relay_value(int user_id, int device_id,
                                        int channel_id,
                                        TRelayChannel_Value *value);
+
+ public:
   explicit supla_get_relay_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

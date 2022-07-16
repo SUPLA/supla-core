@@ -27,6 +27,8 @@ class supla_interrupt_scene_command
     : public supla_abstract_interrupt_scene_command {
  protected:
   virtual void interrupt(int user_id, int scene_id);
+
+ public:
   explicit supla_interrupt_scene_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };
