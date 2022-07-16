@@ -26,10 +26,11 @@
 class supla_set_digiglass_value_command
     : public supla_abstract_set_digiglass_value_command {
  protected:
-  virtual bool set_channel_char_value(int user_id, int device_id,
-                                      int channel_id,
-                                      unsigned short active_bits,
-                                      unsigned short mask);
+  virtual bool set_digiglass_value(int user_id, int device_id, int channel_id,
+                                   unsigned short active_bits,
+                                   unsigned short mask);
+
+ public:
   explicit supla_set_digiglass_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

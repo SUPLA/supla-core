@@ -26,7 +26,7 @@ supla_set_digiglass_value_command::supla_set_digiglass_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_set_digiglass_value_command(socket_adapter) {}
 
-bool supla_set_digiglass_value_command::set_channel_char_value(
+bool supla_set_digiglass_value_command::set_digiglass_value(
     int user_id, int device_id, int channel_id, unsigned short active_bits,
     unsigned short mask) {
   bool result = false;
