@@ -22,88 +22,99 @@
 
 // TODO(anyone): For setters, use the supla_action_executor class
 
-const char hello[] = "SUPLA SERVER CTRL\n";
-const char cmd_is_client_connected[] = "IS-CLIENT-CONNECTED:";
-const char cmd_is_iodev_connected[] = "IS-IODEV-CONNECTED:";
-const char cmd_is_channel_connected[] = "IS-CHANNEL-CONNECTED:";
-const char cmd_is_channel_online[] = "IS-CHANNEL-ONLINE:";
-const char cmd_user_reconnect[] = "USER-RECONNECT:";
-const char cmd_client_reconnect[] = "CLIENT-RECONNECT:";
-const char cmd_get_double_value[] = "GET-DOUBLE-VALUE:";
-const char cmd_get_temperature_value[] = "GET-TEMPERATURE-VALUE:";
-const char cmd_get_humidity_value[] = "GET-HUMIDITY-VALUE:";
-const char cmd_get_char_value[] = "GET-CHAR-VALUE:";
-const char cmd_get_rgbw_value[] = "GET-RGBW-VALUE:";
-const char cmd_get_em_value[] = "GET-EM-VALUE:";
-const char cmd_get_ic_value[] = "GET-IC-VALUE:";
-const char cmd_get_valve_value[] = "GET-VALVE-VALUE:";
-const char cmd_get_relay_value[] = "GET-RELAY-VALUE:";
-
-const char cmd_set_char_value[] = "SET-CHAR-VALUE:";
-const char cmd_set_rgbw_value[] = "SET-RGBW-VALUE:";
-const char cmd_set_rand_rgbw_value[] = "SET-RAND-RGBW-VALUE:";
-
-const char cmd_set_cg_char_value[] = "SET-CG-CHAR-VALUE:";
-const char cmd_set_cg_rgbw_value[] = "SET-CG-RGBW-VALUE:";
-const char cmd_set_cg_rand_rgbw_value[] = "SET-CG-RAND-RGBW-VALUE:";
-
-const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE:";
-const char cmd_get_digiglass_value[] = "GET-DIGIGLASS-VALUE:";
-
-const char cmd_action_open[] = "ACTION-OPEN:";
-const char cmd_action_cg_open[] = "ACTION-CG-OPEN:";
-const char cmd_action_close[] = "ACTION-CLOSE:";
-const char cmd_action_cg_close[] = "ACTION-CG-CLOSE:";
-const char cmd_action_toggle[] = "ACTION-TOGGLE:";
-const char cmd_action_cg_toggle[] = "ACTION-CG-TOGGLE:";
-const char cmd_action_stop[] = "ACTION-STOP:";
-const char cmd_action_cg_stop[] = "ACTION-CG-STOP:";
-const char cmd_action_copy[] = "ACTION-COPY:";
-const char cmd_action_cg_copy[] = "ACTION-CG-COPY:";
-
-const char cmd_action_up_or_stop[] = "ACTION-UP-OR-STOP:";
-const char cmd_action_cg_up_or_stop[] = "ACTION-CG-UP-OR-STOP:";
-const char cmd_action_down_or_stop[] = "ACTION-DOWN-OR-STOP:";
-const char cmd_action_cg_down_or_stop[] = "ACTION-CG-DOWN-OR-STOP:";
-const char cmd_action_step_by_step[] = "ACTION-SBS:";
-const char cmd_action_cg_step_by_step[] = "ACTION-CG-SBS:";
-
-const char cmd_reset_counters[] = "RESET-COUNTERS:";
-const char cmd_recalibrate[] = "RECALIBRATE:";
-const char cmd_get_status[] = "GET-STATUS";
-const char cmd_enter_cfg_mode[] = "ACTION-ENTER-CONFIGURATION-MODE:";
-
-const char cmd_execute_scene[] = "EXECUTE-SCENE:";
-const char cmd_interrupt_scene[] = "INTERRUPT-SCENE:";
-
-const char cmd_get_scene_summary[] = "GET-SCENE-SUMMARY:";
-const char cmd_on_scene_added[] = "USER-ON-SCENE-ADDED:";
-const char cmd_on_scene_deleted[] = "USER-ON-SCENE-DELETED:";
-const char cmd_on_scene_changed[] = "USER-ON-SCENE-CHANGED:";
-
-const char cmd_user_alexa_credentials_changed[] =
-    "USER-ALEXA-CREDENTIALS-CHANGED:";
-
-const char cmd_user_google_home_credentials_changed[] =
-    "USER-GOOGLE-HOME-CREDENTIALS-CHANGED:";
-
-const char cmd_user_state_webhook_changed[] = "USER-STATE-WEBHOOK-CHANGED:";
-
-const char cmd_user_on_device_deleted[] = "USER-ON-DEVICE-DELETED:";
-
-const char cmd_user_mqtt_settings_changed[] = "USER-MQTT-SETTINGS-CHANGED:";
-
-const char cmd_user_before_device_delete[] = "USER-BEFORE-DEVICE-DELETE:";
-
-const char cmd_user_on_device_settings_changed[] =
-    "USER-ON-DEVICE-SETTINGS-CHANGED:";
-
+#include "ipc/action_cg_command.h"
+#include "ipc/action_command.h"
+#include "ipc/alexa_cred_changed_command.h"
 #include "ipc/before_channel_function_change_command.h"
+#include "ipc/before_device_delete_command.h"
+#include "ipc/client_reconnect_command.h"
+#include "ipc/enter_cfg_mode_command.h"
+#include "ipc/execute_scene_command.h"
+#include "ipc/get_char_command.h"
+#include "ipc/get_digiglass_value_command.h"
+#include "ipc/get_double_command.h"
+#include "ipc/get_em_value_command.h"
+#include "ipc/get_humidity_command.h"
+#include "ipc/get_icm_value_command.h"
+#include "ipc/get_relay_value_command.h"
+#include "ipc/get_rgbw_command.h"
+#include "ipc/get_status_command.h"
+#include "ipc/get_temperature_command.h"
+#include "ipc/get_valve_value_command.h"
+#include "ipc/gh_cred_changed_command.h"
+#include "ipc/interrupt_scene_command.h"
+#include "ipc/is_channel_connected_command.h"
+#include "ipc/is_client_connected_command.h"
+#include "ipc/is_device_connected_command.h"
+#include "ipc/on_device_deleted_command.h"
+#include "ipc/on_device_settings_changed_command.h"
+#include "ipc/on_mqtt_settings_changed_command.h"
+#include "ipc/on_state_webhook_changed_command.h"
+#include "ipc/recalibrate_command.h"
+#include "ipc/reset_counters_command.h"
+#include "ipc/set_cg_char_command.h"
+#include "ipc/set_cg_rgbw_command.h"
+#include "ipc/set_char_command.h"
+#include "ipc/set_digiglass_value_command.h"
+#include "ipc/set_rgbw_command.h"
+#include "ipc/user_reconnect_command.h"
 
 supla_ipc_ctrl::supla_ipc_ctrl(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_ctrl(socket_adapter) {
   sthread = NULL;
+
+  add_command(new supla_is_client_connected_command(socket_adapter));
+  add_command(new supla_is_device_connected_command(socket_adapter));
+  add_command(new supla_is_channel_connected_command(socket_adapter));
+  add_command(new supla_user_reconnect_command(socket_adapter));
+  add_command(new supla_client_reconnect_command(socket_adapter));
+  add_command(new supla_get_double_command(socket_adapter));
+  add_command(new supla_get_temperature_command(socket_adapter));
+  add_command(new supla_get_humidity_command(socket_adapter));
+  add_command(new supla_get_char_command(socket_adapter));
+  add_command(new supla_get_rgbw_command(socket_adapter));
+  add_command(new supla_get_em_value_command(socket_adapter));
+  add_command(new supla_get_icm_value_command(socket_adapter));
+  add_command(new supla_get_valve_value_command(socket_adapter));
+  add_command(new supla_get_relay_value_command(socket_adapter));
+  add_command(new supla_set_char_command(socket_adapter));
+  add_command(new supla_set_cg_char_command(socket_adapter));
+  add_command(new supla_set_rgbw_command(socket_adapter, true));
+  add_command(new supla_set_rgbw_command(socket_adapter, false));
+  add_command(new supla_set_cg_rgbw_command(socket_adapter, true));
+  add_command(new supla_set_cg_rgbw_command(socket_adapter, false));
+  add_command(new supla_set_digiglass_value_command(socket_adapter));
+  add_command(new supla_get_digiglass_value_command(socket_adapter));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_OPEN));
+  add_command(new supla_action_command(socket_adapter, ACTION_OPEN));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_CLOSE));
+  add_command(new supla_action_command(socket_adapter, ACTION_CLOSE));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_TOGGLE));
+  add_command(new supla_action_command(socket_adapter, ACTION_TOGGLE));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_STOP));
+  add_command(new supla_action_command(socket_adapter, ACTION_STOP));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_COPY));
+  add_command(new supla_action_command(socket_adapter, ACTION_COPY));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_UP_OR_STOP));
+  add_command(new supla_action_command(socket_adapter, ACTION_UP_OR_STOP));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_DOWN_OR_STOP));
+  add_command(new supla_action_command(socket_adapter, ACTION_DOWN_OR_STOP));
+  add_command(new supla_action_cg_command(socket_adapter, ACTION_STEP_BY_STEP));
+  add_command(new supla_action_command(socket_adapter, ACTION_STEP_BY_STEP));
+  add_command(new supla_reset_counters_command(socket_adapter));
+  add_command(new supla_recalibrate_command(socket_adapter));
+  add_command(new supla_get_status_command(socket_adapter));
+  add_command(new supla_enter_cfg_mode_command(socket_adapter));
+  add_command(new supla_execute_scene_command(socket_adapter));
+  add_command(new supla_interrupt_scene_command(socket_adapter));
+  add_command(new supla_alexa_cred_changed_command(socket_adapter));
+  add_command(new supla_gh_cred_changed_command(socket_adapter));
+  add_command(new supla_on_state_webhook_changed_command(socket_adapter));
+  add_command(new supla_on_device_deleted_command(socket_adapter));
+  add_command(new supla_on_mqtt_settings_changed_command(socket_adapter));
+  add_command(new supla_before_device_delete_command(socket_adapter));
+  add_command(new supla_on_device_settings_changed_command(socket_adapter));
   add_command(new supla_before_channel_function_change_command(socket_adapter));
 }
 

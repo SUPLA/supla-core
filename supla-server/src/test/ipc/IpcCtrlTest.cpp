@@ -18,6 +18,8 @@
 
 #include "ipc/IpcCtrlTest.h"
 
+#include "ipc/ipc_ctrl.h"
+
 namespace testing {
 
 IpcCtrlTest::IpcCtrlTest() : Test() {
@@ -247,6 +249,27 @@ TEST_F(IpcCtrlTest, unknownCommand) {
   EXPECT_LE(now.tv_sec - then.tv_sec, 1);
 
   EXPECT_FALSE(ipc_ctrl->is_timeout());
+}
+
+TEST_F(IpcCtrlTest, thereShouldBeNoDuplicates) {
+  supla_ipc_ctrl ipc(new IpcSocketAdapterMock(-1));
+
+  std::vector<std::string> cmd_list = ipc.get_command_list();
+
+  std::list<std::string> diff;
+
+  std::sort(cmd_list.begin(), cmd_list.end());
+  std::set<std::string> ucmd_list(
+      cmd_list.begin(), cmd_list.end());  // Sort and remove duplicates
+  std::set_difference(cmd_list.begin(), cmd_list.end(), ucmd_list.begin(),
+                      ucmd_list.end(), back_inserter(diff));
+
+  EXPECT_EQ(diff.size(), 0);
+}
+
+TEST_F(IpcCtrlTest, checkTheNumberOfCommands) {
+  supla_ipc_ctrl ipc(new IpcSocketAdapterMock(-1));
+  EXPECT_EQ(ipc.get_command_list().size(), 52);
 }
 
 } /* namespace testing */
