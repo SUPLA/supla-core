@@ -34,7 +34,7 @@ class IpcSocketAdapterMock : public supla_abstract_ipc_socket_adapter {
   explicit IpcSocketAdapterMock(int sfd);
   virtual ~IpcSocketAdapterMock();
 
-  MOCK_METHOD1(send, void(const std::string &response));
+  MOCK_METHOD1(send_data, void(const std::string &response));
   MOCK_METHOD0(is_error, bool());
   virtual bool recv_byte(char *b);
   void set_recv_buffer(char *recv_buffer, unsigned int recv_buffer_size);
