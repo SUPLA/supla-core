@@ -19,14 +19,16 @@
 #ifndef SUPLA_ON_MQTT_SETTINGS_CHANGED_COMMAND_H_
 #define SUPLA_ON_MQTT_SETTINGS_CHANGED_COMMAND_H_
 
-#include <ipc/abstract_on_state_webhook_changed_command.h>
+#include <ipc/abstract_on_mqtt_settings_changed_command.h>
 
 #include <string>
 
 class supla_on_mqtt_settings_changed_command
-    : public supla_abstract_on_state_webhook_changed_command {
+    : public supla_abstract_on_mqtt_settings_changed_command {
  protected:
   virtual void on_mqtt_settings_changed(int user_id);
+
+ public:
   explicit supla_on_mqtt_settings_changed_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
 };

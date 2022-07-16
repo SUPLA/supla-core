@@ -22,7 +22,7 @@
 
 supla_on_mqtt_settings_changed_command::supla_on_mqtt_settings_changed_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_state_webhook_changed_command(socket_adapter) {}
+    : supla_abstract_on_mqtt_settings_changed_command(socket_adapter) {}
 
 void supla_on_mqtt_settings_changed_command::on_mqtt_settings_changed(
     int user_id) {
