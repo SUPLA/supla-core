@@ -28,7 +28,6 @@ class supla_abstract_get_relay_value_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual bool get_channel_relay_value(int user_id, int device_id,
                                        int channel_id,
                                        TRelayChannel_Value *value) = 0;
@@ -36,6 +35,7 @@ class supla_abstract_get_relay_value_command
  public:
   explicit supla_abstract_get_relay_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_GET_RELAY_VALUE_COMMAND_H_ */

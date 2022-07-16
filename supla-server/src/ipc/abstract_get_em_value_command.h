@@ -27,13 +27,13 @@
 class supla_abstract_get_em_value_command : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual supla_channel_electricity_measurement *get_electricity_measurement(
       int user_id, int device_id, int channel_id) = 0;
 
  public:
   explicit supla_abstract_get_em_value_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_GET_EM_VALUE_COMMAND_H_ */

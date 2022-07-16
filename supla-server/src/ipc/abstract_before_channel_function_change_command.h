@@ -27,12 +27,12 @@ class supla_abstract_before_channel_function_change_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual void before_channel_function_change(int user_id, int channel_id) = 0;
 
  public:
   explicit supla_abstract_before_channel_function_change_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_BEFORE_CHANNEL_FUNCTION_CHANGE_COMMAND_H_ */

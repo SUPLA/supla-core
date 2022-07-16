@@ -32,7 +32,6 @@ class supla_abstract_action_cg_command : public supla_abstract_ipc_command {
  protected:
   std::string get_command_name(int action);
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual bool action_open_close(supla_user *user, int group_id, bool open) = 0;
   virtual bool action_toggle(supla_user *user, int group_id) = 0;
   virtual bool action_stop(supla_user *user, int group_id) = 0;
@@ -45,6 +44,7 @@ class supla_abstract_action_cg_command : public supla_abstract_ipc_command {
  public:
   explicit supla_abstract_action_cg_command(
       supla_abstract_ipc_socket_adapter *socket_adapter, int action);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_ACTION_CG_COMMAND_H_ */

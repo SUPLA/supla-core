@@ -27,12 +27,12 @@ class supla_abstract_before_device_delete_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual void before_device_delete(int user_id, int device_id) = 0;
 
  public:
   explicit supla_abstract_before_device_delete_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_BEFORE_DEVICE_DELETE_COMMAND_H_ */

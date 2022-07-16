@@ -26,12 +26,12 @@
 class supla_abstract_get_status_command : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual void get_status(char *buffer, unsigned int buffer_size) = 0;
 
  public:
   explicit supla_abstract_get_status_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_GET_STATUS_COMMAND_H_ */

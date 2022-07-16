@@ -31,7 +31,6 @@ class supla_abstract_action_command : public supla_abstract_ipc_command {
  protected:
   std::string get_command_name(int action);
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual bool action_open_close(int user_id, int device_id, int channel_id,
                                  bool open, const char *alexa_correlation_token,
                                  const char *google_request_id) = 0;
@@ -49,6 +48,7 @@ class supla_abstract_action_command : public supla_abstract_ipc_command {
  public:
   explicit supla_abstract_action_command(
       supla_abstract_ipc_socket_adapter *socket_adapter, int action);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_ACTION_COMMAND_H_ */

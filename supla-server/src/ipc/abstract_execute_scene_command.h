@@ -27,12 +27,12 @@
 class supla_abstract_execute_scene_command : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual _sceneExecutionResult_e execute(int user_id, int scene_id) = 0;
 
  public:
   explicit supla_abstract_execute_scene_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_EXECUTE_SCENE_COMMAND_H_ */

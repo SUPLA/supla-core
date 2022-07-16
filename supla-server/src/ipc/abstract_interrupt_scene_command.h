@@ -27,12 +27,12 @@ class supla_abstract_interrupt_scene_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual void interrupt(int user_id, int scene_id) = 0;
 
  public:
   explicit supla_abstract_interrupt_scene_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_INTERRUPT_SCENE_COMMAND_H_ */

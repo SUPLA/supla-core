@@ -27,12 +27,12 @@ class supla_abstract_gh_cred_changed_command
     : public supla_abstract_ipc_command {
  protected:
   virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
   virtual void on_credentials_changed(int user_id) = 0;
 
  public:
   explicit supla_abstract_gh_cred_changed_command(
       supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual const std::string get_command_name(void);
 };
 
 #endif /* SUPLA_ABSTRACT_GH_CRED_CHANGED_COMMAND_H_ */
