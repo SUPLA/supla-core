@@ -19,6 +19,8 @@
 #ifndef SUPLA_IPC_SOCKET_ADAPTER_H_
 #define SUPLA_IPC_SOCKET_ADAPTER_H_
 
+#include <string>
+
 #include "eh.h"
 #include "ipc/abstract_ipc_socket_adapter.h"
 
