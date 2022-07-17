@@ -36,6 +36,7 @@
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "safearray.h"
+#include "scene/scene_asynctask.h"
 #include "serverstatus.h"
 #include "userchannelgroups.h"
 
@@ -1417,4 +1418,15 @@ supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
 
 supla_user_channelgroups *supla_user::get_channel_groups(void) {
   return cgroups;
+}
+
+// static
+void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
+                                  int scene_id) {
+  supla_user *user = find(user_id, false);
+  if (user) {
+    user->reconnect(caller, false, true);
+    supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
+                                     user_id, scene_id);
+  }
 }

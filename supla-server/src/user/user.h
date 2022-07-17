@@ -214,6 +214,9 @@ class supla_user {
   supla_google_home_credentials *googleHomeCredentials(void);
   supla_state_webhook_credentials *stateWebhookCredentials(void);
 
+  static void on_scene_changed(const supla_caller &caller, int user_id,
+                               int scene_id);
+
   explicit supla_user(int UserID);
   supla_user(int UserID, const char *short_unique_id,
              const char *long_unique_id);
