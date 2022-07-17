@@ -114,6 +114,21 @@ supla_scene_state supla_scene_asynctask::get_scene_state(void) {
                            is_finished() ? 0 : op_get_time_left_ms());
 }
 
+// static
+bool supla_scene_asynctask::get_scene_state(supla_asynctask_queue *queue,
+                                            int user_id, int scene_id,
+                                            supla_scene_state *state) {
+  bool success = false;
+  supla_scene_search_condition cnd(user_id, scene_id, false);
+  queue->access_task(
+      &cnd, [&success, &state](supla_abstract_asynctask *task) -> void {
+        *state = dynamic_cast<supla_scene_asynctask *>(task)->get_scene_state();
+        success = true;
+      });
+
+  return success;
+}
+
 bool supla_scene_asynctask::_execute(bool *execute_again) {
   do {
     supla_scene_operation *operation = op_pop();

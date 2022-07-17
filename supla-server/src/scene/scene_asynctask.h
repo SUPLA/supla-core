@@ -58,6 +58,8 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
   int get_user_id(void);
   int get_scene_id(void);
   supla_scene_state get_scene_state(void);
+  static bool get_scene_state(supla_asynctask_queue *queue, int user_id,
+                              int scene_id, supla_scene_state *state);
 
   static supla_asynctask_queue *get_queue(void);
   static supla_abstract_asynctask_thread_pool *get_pool(void);
