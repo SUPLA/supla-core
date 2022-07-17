@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef ARDUINO
+
 #include "tools.h"
 
 #include <pthread.h>
@@ -633,3 +635,4 @@ char *st_openssl_base64_decode(char *src, int src_len, int *dst_len) {
 }
 
 #endif /*__OPENSSL_TOOLS*/
+#endif /* !ARDUINO */

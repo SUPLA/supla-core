@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef ARDUINO
+
 #ifndef suplatools_H_
 #define suplatools_H_
 
@@ -92,3 +94,4 @@ char *st_openssl_base64_decode(char *src, int src_len, int *dst_len);
 #endif
 
 #endif /* suplatools_H_ */
+#endif /* !ARDUINO */
