@@ -42,7 +42,7 @@ TEST_F(OnDeviceSettingsChangedCommandTest, noData) {
 TEST_F(OnDeviceSettingsChangedCommandTest, deviceSettingsChanged) {
   EXPECT_CALL(*cmd, on_device_settings_changed(10, 20));
 
-  commandProcessingTest("USER-ON-DEVICE-SETTINGS-CHANGED:10,20\n", "OK:20\n");
+  commandProcessingTest("USER-ON-DEVICE-SETTINGS-CHANGED:10,20\n", "OK:10\n");
 }
 
 TEST_F(OnDeviceSettingsChangedCommandTest, noParams) {
@@ -52,7 +52,7 @@ TEST_F(OnDeviceSettingsChangedCommandTest, noParams) {
 
 TEST_F(OnDeviceSettingsChangedCommandTest, paramsWithZero) {
   EXPECT_CALL(*cmd, on_device_settings_changed).Times(0);
-  commandProcessingTest("USER-ON-DEVICE-SETTINGS-CHANGED:0,10\n",
+  commandProcessingTest("USER-ON-DEVICE-SETTINGS-CHANGED:10,0\n",
                         "UNKNOWN:10\n");
 }
 

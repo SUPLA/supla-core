@@ -41,7 +41,7 @@ TEST_F(OnSceneChangedCommandTest, noData) {
 TEST_F(OnSceneChangedCommandTest, onSceneAdded) {
   EXPECT_CALL(*cmd, on_scene_changed(10, 20)).Times(1);
 
-  commandProcessingTest("USER-ON-SCENE-CHANGED:10,20\n", "OK:20\n");
+  commandProcessingTest("USER-ON-SCENE-CHANGED:10,20\n", "OK:10\n");
 }
 
 TEST_F(OnSceneChangedCommandTest, noParams) {

@@ -41,7 +41,7 @@ TEST_F(BeforeDeviceDeleteCommandTest, noData) {
 TEST_F(BeforeDeviceDeleteCommandTest, beforeDelete) {
   EXPECT_CALL(*cmd, before_device_delete(10, 20));
 
-  commandProcessingTest("USER-BEFORE-DEVICE-DELETE:10,20\n", "OK:20\n");
+  commandProcessingTest("USER-BEFORE-DEVICE-DELETE:10,20\n", "OK:10\n");
 }
 
 TEST_F(BeforeDeviceDeleteCommandTest, noParams) {
@@ -51,7 +51,7 @@ TEST_F(BeforeDeviceDeleteCommandTest, noParams) {
 
 TEST_F(BeforeDeviceDeleteCommandTest, paramsWithZero) {
   EXPECT_CALL(*cmd, before_device_delete).Times(0);
-  commandProcessingTest("USER-BEFORE-DEVICE-DELETE:0,10\n", "UNKNOWN:10\n");
+  commandProcessingTest("USER-BEFORE-DEVICE-DELETE:10,0\n", "UNKNOWN:10\n");
 }
 
 TEST_F(BeforeDeviceDeleteCommandTest, paramsWithZeros) {

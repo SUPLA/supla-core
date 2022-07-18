@@ -38,9 +38,9 @@ void supla_abstract_before_channel_function_change_command::on_command_match(
 
     if (user_id && channel_id) {
       before_channel_function_change(user_id, channel_id);
-      send_result("OK:", channel_id);
+      send_result("OK:", user_id);
       return;
     }
   }
-  send_result("UNKNOWN:", channel_id);
+  send_result("UNKNOWN:", user_id);
 }

@@ -37,9 +37,9 @@ void supla_abstract_on_scene_added_command::on_command_match(
 
     if (user_id && scene_id) {
       on_scene_added(user_id, scene_id);
-      send_result("OK:", scene_id);
+      send_result("OK:", user_id);
       return;
     }
   }
-  send_result("UNKNOWN:", scene_id);
+  send_result("UNKNOWN:", user_id);
 }

@@ -38,9 +38,9 @@ void supla_abstract_before_device_delete_command::on_command_match(
 
     if (user_id && device_id) {
       before_device_delete(user_id, device_id);
-      send_result("OK:", device_id);
+      send_result("OK:", user_id);
       return;
     }
   }
-  send_result("UNKNOWN:", device_id);
+  send_result("UNKNOWN:", user_id);
 }

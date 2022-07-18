@@ -41,7 +41,7 @@ TEST_F(OnSceneDeletedCommandTest, noData) {
 TEST_F(OnSceneDeletedCommandTest, onSceneAdded) {
   EXPECT_CALL(*cmd, on_scene_deleted(10, 20)).Times(1);
 
-  commandProcessingTest("USER-ON-SCENE-DELETED:10,20\n", "OK:20\n");
+  commandProcessingTest("USER-ON-SCENE-DELETED:10,20\n", "OK:10\n");
 }
 
 TEST_F(OnSceneDeletedCommandTest, noParams) {

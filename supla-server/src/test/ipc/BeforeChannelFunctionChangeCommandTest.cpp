@@ -43,7 +43,7 @@ TEST_F(BeforeChannelFunctionChangeCommandTest, beforeChange) {
   EXPECT_CALL(*cmd, before_channel_function_change(10, 20));
 
   commandProcessingTest("USER-BEFORE-CHANNEL-FUNCTION-CHANGE:10,20\n",
-                        "OK:20\n");
+                        "OK:10\n");
 }
 
 TEST_F(BeforeChannelFunctionChangeCommandTest, noParams) {
@@ -54,7 +54,7 @@ TEST_F(BeforeChannelFunctionChangeCommandTest, noParams) {
 
 TEST_F(BeforeChannelFunctionChangeCommandTest, paramsWithZero) {
   EXPECT_CALL(*cmd, before_channel_function_change).Times(0);
-  commandProcessingTest("USER-BEFORE-CHANNEL-FUNCTION-CHANGE:0,10\n",
+  commandProcessingTest("USER-BEFORE-CHANNEL-FUNCTION-CHANGE:10,0\n",
                         "UNKNOWN:10\n");
 }
 

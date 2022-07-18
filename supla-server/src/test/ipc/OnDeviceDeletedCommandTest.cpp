@@ -41,7 +41,7 @@ TEST_F(OnDeviceDeletedCommandTest, noData) {
 TEST_F(OnDeviceDeletedCommandTest, deviceDeleted) {
   EXPECT_CALL(*cmd, on_device_deleted(10, 20));
 
-  commandProcessingTest("USER-ON-DEVICE-DELETED:10,20\n", "OK:20\n");
+  commandProcessingTest("USER-ON-DEVICE-DELETED:10,20\n", "OK:10\n");
 }
 
 TEST_F(OnDeviceDeletedCommandTest, noParams) {
@@ -51,7 +51,7 @@ TEST_F(OnDeviceDeletedCommandTest, noParams) {
 
 TEST_F(OnDeviceDeletedCommandTest, paramsWithZero) {
   EXPECT_CALL(*cmd, on_device_deleted).Times(0);
-  commandProcessingTest("USER-ON-DEVICE-DELETED:0,10\n", "UNKNOWN:10\n");
+  commandProcessingTest("USER-ON-DEVICE-DELETED:10,0\n", "UNKNOWN:10\n");
 }
 
 TEST_F(OnDeviceDeletedCommandTest, paramsWithZeros) {
