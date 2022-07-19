@@ -28,7 +28,6 @@
 #define _supla_int64_t __int64
 #define _supla_timeval timeval
 
-
 #elif defined(__AVR__)
 // *** ARDUINO MEGA ***
 
@@ -125,7 +124,7 @@ extern char sproto_tag[SUPLA_TAG_SIZE];
 #if defined(ARDUINO_ARCH_AVR)     // Arduino IDE for Arduino HW
 #define SUPLA_MAX_DATA_SIZE 1248  // Registration header + 32 channels x 21 B
 #elif defined(ARDUINO) || \
-    defined(SUPLA_DEVICE)   // Other Arduino compilations and SUPLA_DEVICE
+    defined(SUPLA_DEVICE)         // Other Arduino compilations and SUPLA_DEVICE
 #define SUPLA_MAX_DATA_SIZE 3264  // Registration header + 128 channels x 21 B
 #elif defined(ESP8266)
 #define SUPLA_MAX_DATA_SIZE 1536
@@ -1134,8 +1133,12 @@ typedef struct {
 #define ACTION_UP_OR_STOP 140
 #define ACTION_DOWN_OR_STOP 150
 #define ACTION_STEP_BY_STEP 160
+#define ACTION_READ 1000
+#define ACTION_SET 2000
 #define ACTION_EXECUTE 3000
 #define ACTION_INTERRUPT 3001
+#define ACTION_COPY 10100
+#define ACTION_FORWARD_OUTSIDE 10000
 
 typedef struct {
   _supla_int_t ActionId;

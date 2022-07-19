@@ -21,9 +21,6 @@
 
 #include "proto.h"
 
-#define ACTION_COPY 10100
-#define ACTION_FORWARD_OUTSIDE 10000
-
 typedef struct {
   char brightness;
   char color_brightness;
