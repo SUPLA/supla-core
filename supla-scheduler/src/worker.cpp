@@ -41,7 +41,9 @@ int s_worker::get_id(void) { return get_params()->id; }
 
 bool s_worker::it_applies_to_scene(void) { return get_params()->scene_id; }
 
-bool s_worker::channel_group(void) { return get_params()->channel_group_id > 0; }
+bool s_worker::channel_group(void) {
+  return get_params()->channel_group_id > 0;
+}
 
 int s_worker::get_retry_count(void) { return get_params()->retry_count; }
 
@@ -83,8 +85,8 @@ char s_worker::ipcc_get_opening_sensor_value() {
 
 bool s_worker::ipcc_set_char_value(char value) {
   return get_ipcc()->set_char_value(
-      get_params()->user_id, get_params()->iodevice_id, get_params()->channel_id,
-      get_params()->channel_group_id, value);
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id, value);
 }
 
 bool s_worker::ipcc_get_char_value(char *value) {
@@ -96,15 +98,16 @@ bool s_worker::ipcc_get_char_value(char *value) {
 bool s_worker::ipcc_get_rgbw_value(int *color, char *color_brightness,
                                    char *brightness) {
   return get_ipcc()->get_rgbw_value(
-      get_params()->user_id, get_params()->iodevice_id, get_params()->channel_id,
-      color, color_brightness, brightness);
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, color, color_brightness, brightness);
 }
 
 bool s_worker::ipcc_set_rgbw_value(int color, char color_brightness,
                                    char brightness) {
   return get_ipcc()->set_rgbw_value(
-      get_params()->user_id, get_params()->iodevice_id, get_params()->channel_id,
-      get_params()->channel_group_id, color, color_brightness, brightness);
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id, color,
+      color_brightness, brightness);
 }
 
 bool s_worker::ipcc_get_valve_value(TValve_Value *value) {
@@ -115,8 +118,8 @@ bool s_worker::ipcc_get_valve_value(TValve_Value *value) {
 
 bool s_worker::ipcc_set_digiglass_value(int active_bits, int mask) {
   return get_ipcc()->set_digiglass_value(
-      get_params()->user_id, get_params()->iodevice_id, get_params()->channel_id,
-      active_bits, mask);
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, active_bits, mask);
 }
 
 bool s_worker::ipcc_get_digiglass_value(int *mask) {
@@ -127,10 +130,22 @@ bool s_worker::ipcc_get_digiglass_value(int *mask) {
 
 bool s_worker::ipcc_action_copy(int sourceDeviceId, int sourceChannelId) {
   return get_ipcc()->action_copy(
-      get_params()->user_id, get_params()->iodevice_id, get_params()->channel_id,
-      get_params()->channel_group_id, sourceDeviceId, sourceChannelId);
+      get_params()->user_id, get_params()->iodevice_id,
+      get_params()->channel_id, get_params()->channel_group_id, sourceDeviceId,
+      sourceChannelId);
+}
+
+bool s_worker::ipcc_execute_scene(void) {
+  return get_ipcc()->execute_scene(get_params()->user_id,
+                                   get_params()->scene_id);
+}
+
+bool s_worker::ipcc_interrupt_scene(void) {
+  return get_ipcc()->interrupt_scene(get_params()->user_id,
+                                     get_params()->scene_id);
 }
 
 char s_worker::ipcc_is_connected(void) {
-  return get_ipcc()->is_connected(get_params()->user_id, get_params()->iodevice_id);
+  return get_ipcc()->is_connected(get_params()->user_id,
+                                  get_params()->iodevice_id);
 }

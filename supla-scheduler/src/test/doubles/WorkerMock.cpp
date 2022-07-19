@@ -16,22 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_ACTION_TEST_H_
-#define H_ACTION_TEST_H_
+#include "WorkerMock.h"
 
-#include "doubles/WorkerMock.h"
+#include <stdlib.h>
+#include <string.h>
 
-namespace testing {
-class ActionTest : public Test {
- protected:
-  WorkerMock *worker;
+#include <cstddef>
 
- public:
-  virtual ~ActionTest();
-  ActionTest();
-  virtual void SetUp();
-  virtual void TearDown();
-};
-}  // namespace testing
+WorkerMock::WorkerMock(queue *q) : s_abstract_worker(q) {}
 
-#endif /*H_ACTION_TEST_H_*/
+WorkerMock::~WorkerMock() {}

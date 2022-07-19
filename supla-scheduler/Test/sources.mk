@@ -26,5 +26,5 @@ SUBDIRS := \
 src \
 src/json \
 src/test \
-src/test/gtest \
+src/test/doubles \
 

@@ -8,12 +8,10 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include src/test/gtest/subdir.mk
+-include src/test/doubles/subdir.mk
 -include src/test/subdir.mk
 -include src/json/subdir.mk
 -include src/subdir.mk
--include objects.mk
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
@@ -57,10 +55,10 @@ all: main-build
 main-build: supla-scheduler
 
 # Tool invocations
-supla-scheduler: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
+supla-scheduler: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -L/usr/include/mysql -pthread -lrt -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/usr/include/mysql -pthread -lrt -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS) -l$(LIBMYSQL) -lgmock -lgtest
 	@echo 'Finished building target: $@'
 	@echo ' '
 
