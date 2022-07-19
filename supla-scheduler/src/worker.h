@@ -29,6 +29,7 @@ class s_worker : public s_abstract_worker {
 
   virtual int get_channel_func(void);
   virtual int get_id(void);
+  virtual bool it_applies_to_scene(void);
   virtual int get_retry_count(void);
   virtual bool channel_group(void);
   virtual const char *get_action_param(void);

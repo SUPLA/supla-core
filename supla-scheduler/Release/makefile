@@ -10,8 +10,6 @@ RM := rm -rf
 -include sources.mk
 -include src/json/subdir.mk
 -include src/subdir.mk
--include objects.mk
-
 ifneq ($(MAKECMDGOALS),clean)
 ifneq ($(strip $(C++_DEPS)),)
 -include $(C++_DEPS)
@@ -55,10 +53,10 @@ all: main-build
 main-build: supla-scheduler
 
 # Tool invocations
-supla-scheduler: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
+supla-scheduler: $(OBJS) $(USER_OBJS) makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++ -pthread -lrt -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -pthread -lrt -o "supla-scheduler" $(OBJS) $(USER_OBJS) $(LIBS) -l$(LIBMYSQL)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

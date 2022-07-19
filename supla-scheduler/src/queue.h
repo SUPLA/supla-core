@@ -61,7 +61,7 @@ class queue {
   void set_overdue_result(void);
   void set_zombie_result(void);
 
-  s_exec_t get_job(void);
+  s_exec_params_t get_job(void);
   void mark_fetched();
 
   bool limit_exceeded();

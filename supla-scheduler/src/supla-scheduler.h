@@ -33,6 +33,7 @@ typedef struct {
   int id;
   int schedule_id;
   int user_id;
+  int scene_id;
   int iodevice_id;
   int channel_id;
   int channel_group_id;
@@ -46,7 +47,7 @@ typedef struct {
   int retry_timestamp;
   int retry_count;
   bool retry_when_fail;
-} s_exec_t;
+} s_exec_params_t;
 
 #define EXPIRE_TIME 300  // 5 min since planned_time
 #define ZOMBIE_TIME 60   // 1 min since fetched_time
