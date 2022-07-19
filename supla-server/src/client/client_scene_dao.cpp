@@ -52,7 +52,7 @@ std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
 
   MYSQL_STMT *stmt = NULL;
   const char sql[] =
-      "SELECT s.id, s.caption, s.user_icon_id, s.location_id, 0 FROM "
+      "SELECT s.id, s.caption, s.user_icon_id, s.location_id, s.alt_icon FROM "
       "`supla_scene` s LEFT JOIN supla_rel_aidloc al ON al.location_id = "
       "s.location_id LEFT JOIN supla_accessid a ON a.id = al.access_id LEFT "
       "JOIN supla_client c ON c.access_id = al.access_id WHERE s.user_id = ? "

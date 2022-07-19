@@ -149,4 +149,24 @@ TEST_F(ClientSceneDaoIntegrationTest, disableAllScenesExceptOne) {
   delete scene;
 }
 
+TEST_F(ClientSceneDaoIntegrationTest, setAltIcon) {
+  runSqlScript("DisableAllScenesExceptOne.sql");
+  runSqlScript("SetAltIconForEnabledScenes.sql");
+
+  std::list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
+
+  EXPECT_EQ(scenes.size(), 1U);
+
+  supla_client_scene *scene = scenes.front();
+  EXPECT_EQ(scene->get_id(), 3);
+  EXPECT_EQ(scene->get_location_id(), 2);
+  EXPECT_EQ(scene->get_user_icon_id(), 0);
+  EXPECT_EQ(scene->get_alt_icon_id(), 4);
+  EXPECT_EQ(
+      strncmp(scene->get_caption(), "Scene #3", SUPLA_SCENE_CAPTION_MAXSIZE),
+      0);
+
+  delete scene;
+}
+
 } /* namespace testing */
