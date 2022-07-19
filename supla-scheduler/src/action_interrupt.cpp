@@ -16,36 +16,36 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "action_execute.h"
+#include "action_interrupt.h"
 
 #include <string.h>
 
 #include "json/cJSON.h"
 #include "log.h"
 
-s_worker_action_execute::s_worker_action_execute(s_abstract_worker *worker)
+s_worker_action_interrupt::s_worker_action_interrupt(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
-bool s_worker_action_execute::is_action_allowed(void) {
+bool s_worker_action_interrupt::is_action_allowed(void) {
   return worker->it_applies_to_scene();
 }
 
-int s_worker_action_execute::try_limit(void) { return 1; }
+int s_worker_action_interrupt::try_limit(void) { return 1; }
 
-int s_worker_action_execute::waiting_time_to_retry(void) {
+int s_worker_action_interrupt::waiting_time_to_retry(void) {
   return MIN_RETRY_TIME;
 }
 
-int s_worker_action_execute::waiting_time_to_check(void) {
+int s_worker_action_interrupt::waiting_time_to_check(void) {
   return MIN_CHECK_TIME;
 }
 
-bool s_worker_action_execute::result_success(int *fail_result_code) {
+bool s_worker_action_interrupt::result_success(int *fail_result_code) {
   return true;
 }
 
-bool s_worker_action_execute::do_action() {
-  return worker->ipcc_execute_scene();
+bool s_worker_action_interrupt::do_action() {
+  return worker->ipcc_interrupt_scene();
 }
 
-REGISTER_ACTION(s_worker_action_execute, ACTION_EXECUTE);
+REGISTER_ACTION(s_worker_action_interrupt, ACTION_INTERRUPT);
