@@ -35,7 +35,7 @@ bool s_worker_action::_is_action_allowed(void) {
     worker->get_db()->set_result(worker->get_id(),
                                  ACTION_EXECUTION_RESULT_CANCELLED);
     return false;
-  };
+  }
 
   return true;
 }

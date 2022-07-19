@@ -39,7 +39,9 @@ ipc_client *s_abstract_worker::get_ipcc(void) { return ipcc; }
 
 queue *s_abstract_worker::get_queue(void) { return q; }
 
-const s_exec_params_t *s_abstract_worker::get_params(void) { return &s_exec_params; }
+const s_exec_params_t *s_abstract_worker::get_params(void) {
+  return &s_exec_params;
+}
 
 void s_abstract_worker::execute(void *sthread) {
   if (!db->connect()) return;

@@ -163,7 +163,8 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          s_exec_params_t *s_exec = (s_exec_params_t *)malloc(sizeof(s_exec_params_t));
+          s_exec_params_t *s_exec =
+              (s_exec_params_t *)malloc(sizeof(s_exec_params_t));
 
           if (s_exec != NULL) {
             memset(s_exec, 0, sizeof(s_exec_params_t));
