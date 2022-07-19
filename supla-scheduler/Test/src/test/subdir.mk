@@ -4,16 +4,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/ActionParamTest.cpp \
 ../src/test/ActionTest.cpp \
 ../src/test/AllTests.cpp \
 ../src/test/WorkerTest.cpp 
 
 CPP_DEPS += \
+./src/test/ActionParamTest.d \
 ./src/test/ActionTest.d \
 ./src/test/AllTests.d \
 ./src/test/WorkerTest.d 
 
 OBJS += \
+./src/test/ActionParamTest.o \
 ./src/test/ActionTest.o \
 ./src/test/AllTests.o \
 ./src/test/WorkerTest.o 
@@ -31,7 +34,7 @@ src/test/%.o: ../src/test/%.cpp src/test/subdir.mk
 clean: clean-src-2f-test
 
 clean-src-2f-test:
-	-$(RM) ./src/test/ActionTest.d ./src/test/ActionTest.o ./src/test/AllTests.d ./src/test/AllTests.o ./src/test/WorkerTest.d ./src/test/WorkerTest.o
+	-$(RM) ./src/test/ActionParamTest.d ./src/test/ActionParamTest.o ./src/test/ActionTest.d ./src/test/ActionTest.o ./src/test/AllTests.d ./src/test/AllTests.o ./src/test/WorkerTest.d ./src/test/WorkerTest.o
 
 .PHONY: clean-src-2f-test
 

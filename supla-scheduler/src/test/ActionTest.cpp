@@ -16,22 +16,37 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_ACTION_PARAM_TEST_H_
-#define H_ACTION_PARAM_TEST_H_
+#include "ActionTest.h"
 
+#include <list>
+
+#include "action.h"
 #include "doubles/WorkerMock.h"
 
 namespace testing {
-class ActionParamTest : public Test {
- protected:
-  WorkerMock *worker;
 
- public:
-  virtual ~ActionParamTest();
-  ActionParamTest();
-  virtual void SetUp();
-  virtual void TearDown();
-};
+ActionTest::ActionTest() {}
+
+ActionTest::~ActionTest() {}
+
+TEST_F(ActionTest, time) {
+  WorkerMock worker(NULL);
+  for (auto it = AbstractActionFactory::factories.begin();
+       it != AbstractActionFactory::factories.end(); it++) {
+    s_worker_action *action = (*it)->create(&worker);
+    ASSERT_FALSE(action == NULL);
+
+    EXPECT_GE(action->waiting_time_to_retry(), MIN_RETRY_TIME);
+    EXPECT_GE(action->waiting_time_to_check(), MIN_CHECK_TIME);
+
+    int diff =
+        action->waiting_time_to_retry() - action->waiting_time_to_check();
+    EXPECT_GT(diff, 0);
+
+    EXPECT_LT(action->get_max_time(), 280);  // Max time 4 min 40 sec.
+
+    delete action;
+  }
+}
+
 }  // namespace testing
-
-#endif /*H_ACTION_PARAM_TEST_H_*/

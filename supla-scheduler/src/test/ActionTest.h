@@ -16,22 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_ACTION_PARAM_TEST_H_
-#define H_ACTION_PARAM_TEST_H_
+#ifndef H_ACTION_TEST_H_
+#define H_ACTION_TEST_H_
 
-#include "doubles/WorkerMock.h"
+#include <gtest/gtest.h>
 
 namespace testing {
-class ActionParamTest : public Test {
- protected:
-  WorkerMock *worker;
-
+class ActionTest : public Test {
  public:
-  virtual ~ActionParamTest();
-  ActionParamTest();
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual ~ActionTest();
+  ActionTest();
 };
 }  // namespace testing
 
-#endif /*H_ACTION_PARAM_TEST_H_*/
+#endif /*H_ACTION_TEST_H_*/

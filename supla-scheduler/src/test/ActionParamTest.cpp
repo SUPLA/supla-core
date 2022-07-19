@@ -60,26 +60,6 @@ void ActionParamTest::TearDown() {
   delete worker;
 }
 
-TEST_F(ActionParamTest, time) {
-  for (std::list<AbstractActionFactory *>::iterator it =
-           AbstractActionFactory::factories.begin();
-       it != AbstractActionFactory::factories.end(); it++) {
-    s_worker_action *action = (*it)->create(worker);
-    ASSERT_FALSE(action == NULL);
-
-    EXPECT_GE(action->waiting_time_to_retry(), MIN_RETRY_TIME);
-    EXPECT_GE(action->waiting_time_to_check(), MIN_CHECK_TIME);
-
-    int diff =
-        action->waiting_time_to_retry() - action->waiting_time_to_check();
-    EXPECT_GT(diff, 0);
-
-    EXPECT_LT(action->get_max_time(), 280);  // Max time 4 min 40 sec.
-
-    delete action;
-  }
-}
-
 TEST_F(ActionParamTest, parsePercentage) {
   s_worker_action_shut *action = new s_worker_action_shut(worker);
   EXPECT_FALSE(action == NULL);
