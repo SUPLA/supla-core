@@ -15,10 +15,9 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-#include "ActionTest.h"
-
 #include <list>
 
+#include "ActionParamTest.h"
 #include "action_copy.h"
 #include "action_rgb.h"
 #include "action_set.h"
@@ -26,11 +25,11 @@
 
 namespace testing {
 
-ActionTest::ActionTest() { worker = NULL; }
+ActionParamTest::ActionParamTest() { worker = NULL; }
 
-ActionTest::~ActionTest() {}
+ActionParamTest::~ActionParamTest() {}
 
-void ActionTest::SetUp() {
+void ActionParamTest::SetUp() {
   Test::SetUp();
 
   worker = new WorkerMock(NULL);
@@ -56,12 +55,12 @@ void ActionTest::SetUp() {
   ON_CALL(*worker, ipcc_is_connected).WillByDefault(Return(false));
 }
 
-void ActionTest::TearDown() {
+void ActionParamTest::TearDown() {
   Test::TearDown();
   delete worker;
 }
 
-TEST_F(ActionTest, time) {
+TEST_F(ActionParamTest, time) {
   for (std::list<AbstractActionFactory *>::iterator it =
            AbstractActionFactory::factories.begin();
        it != AbstractActionFactory::factories.end(); it++) {
@@ -81,7 +80,7 @@ TEST_F(ActionTest, time) {
   }
 }
 
-TEST_F(ActionTest, parsePercentage) {
+TEST_F(ActionParamTest, parsePercentage) {
   s_worker_action_shut *action = new s_worker_action_shut(worker);
   EXPECT_FALSE(action == NULL);
 
@@ -131,7 +130,7 @@ TEST_F(ActionTest, parsePercentage) {
   }
 }
 
-TEST_F(ActionTest, parseRgb) {
+TEST_F(ActionParamTest, parseRgb) {
   s_worker_action_rgb *action = new s_worker_action_rgb(worker);
   EXPECT_FALSE(action == NULL);
 
@@ -262,7 +261,7 @@ TEST_F(ActionTest, parseRgb) {
   }
 }
 
-TEST_F(ActionTest, copyActionParams) {
+TEST_F(ActionParamTest, copyActionParams) {
   s_worker_action_copy *action = new s_worker_action_copy(worker);
   EXPECT_FALSE(action == NULL);
 
