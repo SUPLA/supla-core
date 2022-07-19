@@ -56,6 +56,7 @@ cpplint --filter=-build/include ./supla-server/src/test/integration/mqtt/*
 cpplint --filter=-build/include ./supla-server/src/test/integration/scene/* 
 cpplint ./supla-scheduler/src/* 
 cpplint --filter=-build/include ./supla-scheduler/src/test/* 
+cpplint --filter=-build/include ./supla-scheduler/src/test/doubles/* 
 cpplint ./supla-dev/src/* 
 cpplint ./supla-client/src/* 
 cpplint ./supla-console-client/src/* 
