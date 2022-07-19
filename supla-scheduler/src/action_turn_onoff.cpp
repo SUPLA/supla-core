@@ -30,15 +30,19 @@ s_worker_action_turn_on::s_worker_action_turn_on(s_abstract_worker *worker)
 s_worker_action_turn_off::s_worker_action_turn_off(s_abstract_worker *worker)
     : s_worker_action_turn_onoff(worker, false) {}
 
-void s_worker_action_turn_onoff::get_function_list(
-    int list[FUNCTION_LIST_SIZE]) {
-  list[0] = SUPLA_CHANNELFNC_LIGHTSWITCH;
-  list[1] = SUPLA_CHANNELFNC_POWERSWITCH;
-  list[2] = SUPLA_CHANNELFNC_DIMMER;
-  list[3] = SUPLA_CHANNELFNC_RGBLIGHTING;
-  list[4] = SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
-  list[5] = SUPLA_CHANNELFNC_STAIRCASETIMER;
-  list[6] = SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS;
+bool s_worker_action_turn_onoff::is_action_allowed(void) {
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_THERMOSTAT_HEATPOL_HOMEPLUS:
+      return true;
+  }
+
+  return false;
 }
 
 int s_worker_action_turn_onoff::try_limit(void) { return 2; }

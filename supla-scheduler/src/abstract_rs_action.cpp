@@ -27,9 +27,13 @@
 s_abstract_rs_action::s_abstract_rs_action(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
-void s_abstract_rs_action::get_function_list(int list[FUNCTION_LIST_SIZE]) {
-  list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
-  list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW;
+bool s_abstract_rs_action::is_action_allowed(void) {
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+      return true;
+  }
+  return false;
 }
 
 int s_abstract_rs_action::try_limit(void) { return 2; }

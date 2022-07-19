@@ -17,7 +17,9 @@
  */
 
 #include "action_openclose.h"
+
 #include <string.h>
+
 #include "log.h"
 
 s_worker_action_openclose::s_worker_action_openclose(s_abstract_worker *worker,
@@ -26,13 +28,16 @@ s_worker_action_openclose::s_worker_action_openclose(s_abstract_worker *worker,
   this->doOpen = doOpen;
 }
 
-void s_worker_action_openclose::get_function_list(
-    int list[FUNCTION_LIST_SIZE]) {
+bool s_worker_action_openclose::is_action_allowed(void) {
   if (!worker->channel_group()) {
-    list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
-    list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
-    list[2] = SUPLA_CHANNELFNC_VALVE_OPENCLOSE;
+    switch (worker->get_channel_func()) {
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+      case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+      case SUPLA_CHANNELFNC_VALVE_OPENCLOSE:
+        return true;
+    }
   }
+  return false;
 }
 
 bool s_worker_action_openclose::garage_func(void) {
@@ -56,10 +61,13 @@ bool s_worker_action_openclose::check_before_start(void) {
 s_worker_action_open::s_worker_action_open(s_abstract_worker *worker)
     : s_worker_action_openclose(worker, true) {}
 
-void s_worker_action_open::get_function_list(int list[FUNCTION_LIST_SIZE]) {
-  s_worker_action_openclose::get_function_list(list);
-  list[3] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK;
-  list[4] = SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK;
+bool s_worker_action_open::is_action_allowed(void) {
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
+      return true;
+  }
+  return false;
 }
 
 s_worker_action_close::s_worker_action_close(s_abstract_worker *worker)

@@ -26,7 +26,7 @@ class s_worker_action_openclose : public s_worker_action {
   bool doOpen;
 
  protected:
-  virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
+  virtual bool is_action_allowed(void);
   virtual bool retry_when_fail(void);
   virtual int waiting_time_to_retry(void);
   virtual int waiting_time_to_check(void);
@@ -43,7 +43,7 @@ class s_worker_action_openclose : public s_worker_action {
 
 class s_worker_action_open : public s_worker_action_openclose {
  protected:
-  virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
+  virtual bool is_action_allowed(void);
 
  public:
   explicit s_worker_action_open(s_abstract_worker *worker);
