@@ -18,6 +18,8 @@
 
 #include "ipc/abstract_ipc_socket_adapter.h"
 
+#include <unistd.h>
+
 supla_abstract_ipc_socket_adapter::supla_abstract_ipc_socket_adapter(int sfd) {
   this->sfd = sfd;
   this->eh = NULL;
@@ -31,6 +33,10 @@ supla_abstract_ipc_socket_adapter::~supla_abstract_ipc_socket_adapter() {
   if (eh) {
     eh_free(eh);
     eh = NULL;
+  }
+  if (sfd != -1) {
+    close(sfd);
+    sfd = -1;
   }
 }
 
