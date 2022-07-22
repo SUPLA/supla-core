@@ -67,6 +67,7 @@ class ipc_client {
                    int source_channel_id);
   bool execute_scene(int user_id, int scene_id);
   bool interrupt_scene(int user_id, int scene_id);
+  bool interrupt_and_execute_scene(int user_id, int scene_id);
 };
 
 #endif /* IPCCLIENT_H_ */

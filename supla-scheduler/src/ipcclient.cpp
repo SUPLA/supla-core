@@ -57,6 +57,7 @@ const char cmd_action_cg_copy[] = "ACTION-CG-COPY";
 
 const char cmd_execute_scene[] = "EXECUTE-SCENE";
 const char cmd_interrupt_scene[] = "INTERRUPT-SCENE";
+const char cmd_interrupt_and_execute_scene[] = "INTERRUPT-AND-EXECUTE";
 
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
@@ -350,6 +351,17 @@ bool ipc_client::interrupt_scene(int user_id, int scene_id) {
 
   snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_interrupt_scene, user_id,
            scene_id);
+
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+
+  return check_set_result();
+}
+
+bool ipc_client::interrupt_and_execute_scene(int user_id, int scene_id) {
+  if (!ipc_connect()) return false;
+
+  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n",
+           cmd_interrupt_and_execute_scene, user_id, scene_id);
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
 

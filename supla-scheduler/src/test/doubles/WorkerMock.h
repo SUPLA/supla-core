@@ -48,6 +48,7 @@ class WorkerMock : public s_abstract_worker {
   MOCK_METHOD2(ipcc_action_copy, bool(int sourceDeviceId, int sourceChannelId));
   MOCK_METHOD0(ipcc_execute_scene, bool(void));
   MOCK_METHOD0(ipcc_interrupt_scene, bool(void));
+  MOCK_METHOD0(ipcc_interrupt_and_execute_scene, bool(void));
   MOCK_METHOD0(ipcc_is_connected, char(void));
 };
 

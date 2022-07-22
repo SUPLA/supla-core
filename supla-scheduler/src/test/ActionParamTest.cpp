@@ -15,9 +15,10 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
+#include "ActionParamTest.h"
+
 #include <list>
 
-#include "ActionParamTest.h"
 #include "action_copy.h"
 #include "action_rgb.h"
 #include "action_set.h"
@@ -52,6 +53,8 @@ void ActionParamTest::SetUp() {
   ON_CALL(*worker, ipcc_action_copy).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_execute_scene).WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_interrupt_scene).WillByDefault(Return(false));
+  ON_CALL(*worker, ipcc_interrupt_and_execute_scene)
+      .WillByDefault(Return(false));
   ON_CALL(*worker, ipcc_is_connected).WillByDefault(Return(false));
 }
 

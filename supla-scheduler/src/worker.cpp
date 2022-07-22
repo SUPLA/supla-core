@@ -145,6 +145,11 @@ bool s_worker::ipcc_interrupt_scene(void) {
                                      get_params()->scene_id);
 }
 
+bool s_worker::ipcc_interrupt_and_execute_scene(void) {
+  return get_ipcc()->interrupt_and_execute_scene(get_params()->user_id,
+                                                 get_params()->scene_id);
+}
+
 char s_worker::ipcc_is_connected(void) {
   return get_ipcc()->is_connected(get_params()->user_id,
                                   get_params()->iodevice_id);

@@ -62,6 +62,7 @@ class s_abstract_worker {
   virtual bool ipcc_action_copy(int sourceDeviceId, int sourceChannelId) = 0;
   virtual bool ipcc_execute_scene(void) = 0;
   virtual bool ipcc_interrupt_scene(void) = 0;
+  virtual bool ipcc_interrupt_and_execute_scene(void) = 0;
   virtual char ipcc_is_connected(void) = 0;
 };
 
