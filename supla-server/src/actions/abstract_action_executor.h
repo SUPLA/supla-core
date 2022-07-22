@@ -82,6 +82,7 @@ class supla_abstract_action_executor {
   virtual void step_by_step(void) = 0;
   virtual void execute(void) = 0;
   virtual void interrupt(void) = 0;
+  virtual void interrupt_and_execute(void) = 0;
   virtual void stop(void) = 0;
   virtual void open(void) = 0;
   virtual void close(void) = 0;

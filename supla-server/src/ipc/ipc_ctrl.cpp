@@ -42,6 +42,7 @@
 #include "ipc/get_temperature_command.h"
 #include "ipc/get_valve_value_command.h"
 #include "ipc/gh_cred_changed_command.h"
+#include "ipc/interrupt_and_execute_scene_command.h"
 #include "ipc/interrupt_scene_command.h"
 #include "ipc/is_channel_connected_command.h"
 #include "ipc/is_client_connected_command.h"
@@ -111,6 +112,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_enter_cfg_mode_command(socket_adapter));
   add_command(new supla_execute_scene_command(socket_adapter));
   add_command(new supla_interrupt_scene_command(socket_adapter));
+  add_command(new supla_interrupt_and_execute_scene_command(socket_adapter));
   add_command(new supla_alexa_cred_changed_command(socket_adapter));
   add_command(new supla_gh_cred_changed_command(socket_adapter));
   add_command(new supla_on_scene_added_command(socket_adapter));

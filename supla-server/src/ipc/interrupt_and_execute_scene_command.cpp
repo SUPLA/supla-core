@@ -16,15 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/execute_scene_command.h"
+#include "ipc/interrupt_and_execute_scene_command.h"
 
-supla_execute_scene_command::supla_execute_scene_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_execute_scene_command(socket_adapter) {}
+#include "scene/scene_asynctask.h"
 
-_sceneExecutionResult_e supla_execute_scene_command::execute(int user_id,
-                                                             int scene_id) {
+supla_interrupt_and_execute_scene_command::
+    supla_interrupt_and_execute_scene_command(
+        supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_interrupt_and_execute_scene_command(socket_adapter) {}
+
+bool supla_interrupt_and_execute_scene_command::interrupt_and_execute(
+    int user_id, int scene_id) {
   return supla_scene_asynctask::execute(supla_scene_asynctask::get_queue(),
                                         supla_scene_asynctask::get_pool(),
-                                        get_caller(), user_id, scene_id, false);
+                                        get_caller(), user_id, scene_id,
+                                        true) == serOK;
 }

@@ -16,15 +16,25 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/execute_scene_command.h"
+#ifndef INTERRUPTANDEXECUTESCENECOMMANDTEST_H_
+#define INTERRUPTANDEXECUTESCENECOMMANDTEST_H_
 
-supla_execute_scene_command::supla_execute_scene_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_execute_scene_command(socket_adapter) {}
+#include <doubles/ipc/InterruptAndExecuteSceneCommandMock.h>
 
-_sceneExecutionResult_e supla_execute_scene_command::execute(int user_id,
-                                                             int scene_id) {
-  return supla_scene_asynctask::execute(supla_scene_asynctask::get_queue(),
-                                        supla_scene_asynctask::get_pool(),
-                                        get_caller(), user_id, scene_id, false);
-}
+#include "ipc/IpcCommandTest.h"
+
+namespace testing {
+
+class InterruptAndExecuteSceneCommandTest : public IpcCommandTest {
+ protected:
+  InterruptAndExecuteSceneCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
+
+ public:
+  virtual void SetUp();
+  virtual void TearDown();
+};
+
+} /* namespace testing */
+
+#endif /* INTERRUPTANDEXECUTESCENECOMMANDTEST_H_ */

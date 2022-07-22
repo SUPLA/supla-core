@@ -49,6 +49,7 @@ void ActionExecutorMock::clear(void) {
   this->step_by_step_counter = 0;
   this->execute_counter = 0;
   this->interrupt_counter = 0;
+  this->interrupt_and_execute_counter = 0;
   this->stop_counter = 0;
   this->open_counter = 0;
   this->close_counter = 0;
@@ -175,6 +176,11 @@ void ActionExecutorMock::interrupt(void) {
   interrupt_counter++;
 }
 
+void ActionExecutorMock::interrupt_and_execute(void) {
+  addTime();
+  interrupt_and_execute_counter++;
+}
+
 void ActionExecutorMock::open(void) {
   addTime();
   open_counter++;
@@ -239,6 +245,10 @@ int ActionExecutorMock::getStepByStepCounter(void) {
 int ActionExecutorMock::getExecuteCounter(void) { return execute_counter; }
 
 int ActionExecutorMock::getInterruptCounter(void) { return interrupt_counter; }
+
+int ActionExecutorMock::getInterruptAndExecuteCounter(void) {
+  return interrupt_and_execute_counter;
+}
 
 int ActionExecutorMock::getStopCounter(void) { return stop_counter; }
 
@@ -327,6 +337,10 @@ int ActionExecutorMock::counterSetCount(void) {
   }
 
   if (interrupt_counter > 0) {
+    result++;
+  }
+
+  if (interrupt_and_execute_counter > 0) {
     result++;
   }
 

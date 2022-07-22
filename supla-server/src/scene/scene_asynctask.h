@@ -66,7 +66,8 @@ class supla_scene_asynctask : public supla_abstract_asynctask {
 
   static _sceneExecutionResult_e execute(
       supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-      const supla_caller &caller, int user_id, int scene_id);
+      const supla_caller &caller, int user_id, int scene_id,
+      bool interrupt_before_execute);
   static void interrupt(supla_asynctask_queue *queue, int user_id,
                         int scene_id);
 };

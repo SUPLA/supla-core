@@ -38,6 +38,7 @@ class supla_action_executor : public supla_abstract_action_executor {
   virtual void reveal(void);
   virtual void execute(void);
   virtual void interrupt(void);
+  virtual void interrupt_and_execute(void);
   virtual void stop(void);
   virtual void up(void);
   virtual void down(void);

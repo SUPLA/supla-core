@@ -269,7 +269,7 @@ TEST_F(IpcCtrlTest, thereShouldBeNoDuplicates) {
 
 TEST_F(IpcCtrlTest, checkTheNumberOfCommands) {
   supla_ipc_ctrl ipc(new IpcSocketAdapterMock(-1));
-  EXPECT_EQ(ipc.get_command_list().size(), 55);
+  EXPECT_EQ(ipc.get_command_list().size(), 56);
 }
 
 } /* namespace testing */

@@ -176,11 +176,17 @@ supla_abstract_asynctask_thread_pool *supla_scene_asynctask::get_pool(void) {
 // static
 _sceneExecutionResult_e supla_scene_asynctask::execute(
     supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-    const supla_caller &caller, int user_id, int scene_id) {
+    const supla_caller &caller, int user_id, int scene_id,
+    bool interrupt_before_execute) {
   supla_scene_search_condition cnd(user_id, scene_id, false);
-  if (queue->task_exists(&cnd)) {
+  if (!interrupt_before_execute && queue->task_exists(&cnd)) {
     return serIsDuringExecution;
   } else {
+    if (interrupt_before_execute) {
+      interrupt(queue, user_id, scene_id);
+      usleep(10000);
+    }
+
     supla_scene_operations_dao dao;
     supla_scene_operations *operations = dao.get_scene_operations(scene_id);
 

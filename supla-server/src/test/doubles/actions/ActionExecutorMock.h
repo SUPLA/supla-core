@@ -40,6 +40,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int step_by_step_counter;
   int execute_counter;
   int interrupt_counter;
+  int interrupt_and_execute_counter;
   int stop_counter;
   int open_counter;
   int close_counter;
@@ -76,6 +77,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   virtual void step_by_step(void);
   virtual void execute(void);
   virtual void interrupt(void);
+  virtual void interrupt_and_execute(void);
   virtual void stop(void);
   virtual void open(void);
   virtual void close(void);
@@ -102,6 +104,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
   int getStopCounter(void);
   int getExecuteCounter(void);
   int getInterruptCounter(void);
+  int getInterruptAndExecuteCounter(void);
   int getOpenCounter(void);
   int getCloseCounter(void);
   int getOpenCloseCounter(void);

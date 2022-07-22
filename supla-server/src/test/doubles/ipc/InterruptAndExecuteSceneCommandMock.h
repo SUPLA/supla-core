@@ -16,15 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/execute_scene_command.h"
+#ifndef INTERRUPT_AND_EXECUTE_SCENE_COMMMAND_MOCK_H_
+#define INTERRUPT_AND_EXECUTE_SCENE_COMMMAND_MOCK_H_
 
-supla_execute_scene_command::supla_execute_scene_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_execute_scene_command(socket_adapter) {}
+#include <gmock/gmock.h>
 
-_sceneExecutionResult_e supla_execute_scene_command::execute(int user_id,
-                                                             int scene_id) {
-  return supla_scene_asynctask::execute(supla_scene_asynctask::get_queue(),
-                                        supla_scene_asynctask::get_pool(),
-                                        get_caller(), user_id, scene_id, false);
-}
+#include "ipc/abstract_interrupt_and_execute_scene_command.h"
+
+namespace testing {
+
+class InterruptAndExecuteSceneCommandMock
+    : public supla_abstract_interrupt_and_execute_scene_command {
+ public:
+  explicit InterruptAndExecuteSceneCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+
+  MOCK_METHOD2(interrupt_and_execute, bool(int user_id, int scene_id));
+};
+
+} /* namespace testing */
+
+#endif /* INTERRUPT_AND_EXECUTE_SCENE_COMMMAND_MOCK_H_ */
