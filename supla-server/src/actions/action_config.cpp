@@ -77,7 +77,15 @@ void supla_action_config::set_percentage(char percentage) {
   this->percentage = percentage;
 }
 
-_action_config_rgbw_t supla_action_config::get_rgbw(void) { return rgbw; }
+_action_config_rgbw_t supla_action_config::get_rgbw(void) {
+  if (rgbw.color_random) {
+    struct timeval now = {};
+    gettimeofday(&now, NULL);
+    unsigned int seed = now.tv_sec + now.tv_usec;
+    rgbw.color = st_hue2rgb(rand_r(&seed) % 360);
+  }
+  return rgbw;
+}
 
 void supla_action_config::set_rgbw(_action_config_rgbw_t rgbw) {
   this->rgbw = rgbw;
@@ -150,8 +158,6 @@ void supla_action_config::apply_json_params(const char *params) {
       rgbw_changed = true;
     } else if (cJSON_IsString(item)) {
       if (strncasecmp(cJSON_GetStringValue(item), "random", 255) == 0) {
-        unsigned int seed = time(NULL);
-        rgbw.color = st_hue2rgb(rand_r(&seed) % 360);
         rgbw.color_random = true;
         rgbw_changed = true;
       } else if (strncasecmp(cJSON_GetStringValue(item), "white", 255) == 0) {

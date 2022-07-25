@@ -151,6 +151,22 @@ TEST_F(ActionConfigTest, jsonRGBW_random) {
   EXPECT_GT(rgbw2.color, (unsigned int)0);
   EXPECT_EQ(rgbw2.color_brightness, 22);
   EXPECT_TRUE(rgbw2.color_random);
+
+  unsigned int color = 0;
+
+  for (short n = 0; n < 10; n++) {
+    color = rgbw2.color;
+
+    short a = 0;
+    for (a = 0; a < 10; a++) {
+      rgbw2 = config.get_rgbw();
+      if (rgbw2.color != color) {
+        break;
+      }
+    }
+
+    EXPECT_LT(a, 10);
+  }
 }
 
 TEST_F(ActionConfigTest, jsonMultipleParams) {
