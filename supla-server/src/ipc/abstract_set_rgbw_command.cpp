@@ -77,7 +77,7 @@ int supla_abstract_set_rgbw_command::get_random_color(void) {
   int color = 0;
 
   while (!color) {
-    struct timeval time;
+    struct timeval time = {};
     gettimeofday(&time, NULL);
     unsigned int seed = time.tv_sec + time.tv_usec;
 

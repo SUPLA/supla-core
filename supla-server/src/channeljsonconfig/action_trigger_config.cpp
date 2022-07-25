@@ -423,7 +423,7 @@ _action_config_rgbw_t action_trigger_config::get_rgbw(void) {
           result.color = 0xFFFFFF;
         } else if (equal(item, "random")) {
           while (!result.color) {
-            struct timeval time;
+            struct timeval time = {};
             gettimeofday(&time, NULL);
             unsigned int seed = time.tv_sec + time.tv_usec;
             result.color = st_hue2rgb(rand_r(&seed) % 360);
