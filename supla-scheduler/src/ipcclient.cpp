@@ -57,7 +57,7 @@ const char cmd_action_cg_copy[] = "ACTION-CG-COPY";
 
 const char cmd_execute_scene[] = "EXECUTE-SCENE";
 const char cmd_interrupt_scene[] = "INTERRUPT-SCENE";
-const char cmd_interrupt_and_execute_scene[] = "INTERRUPT-AND-EXECUTE";
+const char cmd_interrupt_and_execute_scene[] = "INTERRUPT-AND-EXECUTE-SCENE";
 
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
