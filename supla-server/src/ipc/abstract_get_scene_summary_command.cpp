@@ -42,8 +42,12 @@ void supla_abstract_get_scene_summary_command::on_command_match(
   if (params) {
     sscanf(params, "%i,%i", &user_id, &scene_id);
 
-    supla_scene_state state;
-    if (user_id && scene_id && get_scene_state(user_id, scene_id, &state)) {
+    if (user_id && scene_id) {
+      supla_scene_state state;
+      if (!get_scene_state(user_id, scene_id, &state)) {
+        state = supla_scene_state();
+      }
+
       char *initiator_name_b64 =
           st_openssl_base64_encode(state.get_caller().get_name().c_str(),
                                    state.get_caller().get_name().size());

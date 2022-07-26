@@ -90,7 +90,7 @@ TEST_F(GetSceneSummaryCommandTest, sceneStarted) {
 
 TEST_F(GetSceneSummaryCommandTest, getStateFailed) {
   EXPECT_CALL(*cmd, get_scene_state).WillOnce(Return(false));
-  commandProcessingTest("GET-SCENE-SUMMARY:10,20\n", "UNKNOWN:20\n");
+  commandProcessingTest("GET-SCENE-SUMMARY:10,20\n", "SUMMARY:20,0,0,,0,0\n");
 }
 
 TEST_F(GetSceneSummaryCommandTest, noParams) {
