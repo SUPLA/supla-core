@@ -26,12 +26,11 @@
 
 namespace testing {
 
-ActionGateOpenCloseIntegrationTest::ActionGateOpenCloseIntegrationTest()
-    : AsyncTaskTest() {}
+ActionGateOpenCloseTest::ActionGateOpenCloseTest() : AsyncTaskTest() {}
 
-ActionGateOpenCloseIntegrationTest::~ActionGateOpenCloseIntegrationTest() {}
+ActionGateOpenCloseTest::~ActionGateOpenCloseTest() {}
 
-void ActionGateOpenCloseIntegrationTest::WaitForOpenClose(
+void ActionGateOpenCloseTest::WaitForOpenClose(
     ActionExecutorMock *action_executor, int expected_count,
     unsigned int usec) {
   unsigned int steps = usec / 100000;
@@ -46,7 +45,7 @@ void ActionGateOpenCloseIntegrationTest::WaitForOpenClose(
   ASSERT_EQ(action_executor->getOpenCloseWctCounter(), expected_count);
 }
 
-void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
+void ActionGateOpenCloseTest::noActionRequired(bool open) {
   pool->set_thread_count_limit(10);
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
@@ -71,13 +70,15 @@ void ActionGateOpenCloseIntegrationTest::noActionRequired(bool open) {
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
   EXPECT_EQ(task->get_state(), supla_asynctask_state::SUCCESS);
-  delete task;
+  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_FALSE(weak.expired());
+  queue->remove_task(task);
   EXPECT_EQ(queue->total_count(), (unsigned int)0);
+  EXPECT_TRUE(weak.expired());
 }
 
-void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
-                                                   bool success,
-                                                   int maxAttemptCount) {
+void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
+                                        bool success, int maxAttemptCount) {
   pool->set_thread_count_limit(1);
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
@@ -138,12 +139,12 @@ void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
 }
 
-void ActionGateOpenCloseIntegrationTest::openClose(bool open, int attemptCount,
-                                                   bool success) {
+void ActionGateOpenCloseTest::openClose(bool open, int attemptCount,
+                                        bool success) {
   openClose(open, attemptCount, success, 5);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
+TEST_F(ActionGateOpenCloseTest, openWithDisconnectedSensor) {
   pool->set_thread_count_limit(10);
 
   ASSERT_EQ(pool->thread_count(), (unsigned int)0);
@@ -166,55 +167,54 @@ TEST_F(ActionGateOpenCloseIntegrationTest, openWithDisconnectedSensor) {
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
   EXPECT_EQ(task->get_state(), supla_asynctask_state::FAILURE);
-  delete task;
+  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_FALSE(weak.expired());
+  queue->remove_task(task);
   EXPECT_EQ(queue->total_count(), (unsigned int)0);
+  EXPECT_TRUE(weak.expired());
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, openAlreadyOpened) {
-  noActionRequired(true);
-}
+TEST_F(ActionGateOpenCloseTest, openAlreadyOpened) { noActionRequired(true); }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, open_oneVerification) {
+TEST_F(ActionGateOpenCloseTest, open_oneVerification) {
   openClose(true, 1, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, closeAlreadyClosed) {
-  noActionRequired(false);
-}
+TEST_F(ActionGateOpenCloseTest, closeAlreadyClosed) { noActionRequired(false); }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, close_oneVerification) {
+TEST_F(ActionGateOpenCloseTest, close_oneVerification) {
   openClose(false, 1, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, close_twoVerifications) {
+TEST_F(ActionGateOpenCloseTest, close_twoVerifications) {
   openClose(false, 2, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, close_threVerifications) {
+TEST_F(ActionGateOpenCloseTest, close_threVerifications) {
   openClose(false, 3, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, close_fourVerifications) {
+TEST_F(ActionGateOpenCloseTest, close_fourVerifications) {
   openClose(false, 4, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, close_fiveVerifications) {
+TEST_F(ActionGateOpenCloseTest, close_fiveVerifications) {
   openClose(false, 5, true);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, fiveAttemptsToCloseWithoutSuccess) {
+TEST_F(ActionGateOpenCloseTest, fiveAttemptsToCloseWithoutSuccess) {
   openClose(false, 5, false);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToOne) {
+TEST_F(ActionGateOpenCloseTest, limitAttemptsToOne) {
   openClose(false, 1, false, 1);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToOneWithSuccess) {
+TEST_F(ActionGateOpenCloseTest, limitAttemptsToOneWithSuccess) {
   openClose(false, 1, true, 1);
 }
 
-TEST_F(ActionGateOpenCloseIntegrationTest, limitAttemptsToThree) {
+TEST_F(ActionGateOpenCloseTest, limitAttemptsToThree) {
   openClose(false, 3, false, 3);
 }
 

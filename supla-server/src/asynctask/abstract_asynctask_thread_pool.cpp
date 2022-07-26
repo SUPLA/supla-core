@@ -17,8 +17,12 @@
  */
 
 #include "abstract_asynctask_thread_pool.h"
+
 #include <assert.h>
 #include <unistd.h>
+
+#include <memory>
+
 #include "abstract_asynctask.h"
 #include "asynctask_queue.h"
 #include "lck.h"
@@ -153,7 +157,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
   do {
-    supla_abstract_asynctask *task = queue->pick(this);
+    std::shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
 
     if (task) {
       task->execute();
@@ -162,16 +166,16 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
       lck_unlock(lck);
 
       if (task->is_finished() && task->release_immediately_after_execution()) {
-        delete task;
+        queue->remove_task(task.get());
       }
+
+      remove_task(task.get());
     }
 
     if (task == NULL) {
       if (!sthread_isterminated(sthread)) {
         usleep(PICK_RETRY_DELAY_USEC);
       }
-    } else {
-      remove_task(task);
     }
 
     lck_lock(lck);

@@ -52,6 +52,8 @@ supla_scene_asynctask::supla_scene_asynctask(
 }
 
 supla_scene_asynctask::~supla_scene_asynctask() {
+  on_task_finished();
+
   if (action_executor) {
     delete action_executor;
     action_executor = NULL;

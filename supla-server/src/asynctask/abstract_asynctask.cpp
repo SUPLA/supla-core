@@ -59,7 +59,7 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
 }
 
 supla_abstract_asynctask::~supla_abstract_asynctask(void) {
-  queue->remove_task(this);
+  on_task_finished();
   lck_free(lck);
 }
 

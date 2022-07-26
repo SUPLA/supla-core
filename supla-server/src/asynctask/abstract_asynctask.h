@@ -44,7 +44,6 @@ class supla_abstract_asynctask {
   void init(supla_asynctask_queue *queue,
             supla_abstract_asynctask_thread_pool *pool, short priority,
             bool release_immediately);
-  void on_task_finished(void);
 
  protected:
   friend class supla_abstract_asynctask_thread_pool;
@@ -59,6 +58,7 @@ class supla_abstract_asynctask {
   void set_observable(void);  // This method should only be called in the
                               // constructor. Calling it results in calling the
                               // on_asynctask_started method in the observer
+  void on_task_finished(void);
 
  public:
   supla_abstract_asynctask(supla_asynctask_queue *queue,

@@ -24,7 +24,7 @@
 
 namespace testing {
 
-class ActionGateOpenCloseIntegrationTest : public AsyncTaskTest {
+class ActionGateOpenCloseTest : public AsyncTaskTest {
  protected:
   void noActionRequired(bool open);
   void openClose(bool open, int attemptCount, bool success);
@@ -34,8 +34,8 @@ class ActionGateOpenCloseIntegrationTest : public AsyncTaskTest {
                         unsigned int usec);
 
  public:
-  ActionGateOpenCloseIntegrationTest();
-  virtual ~ActionGateOpenCloseIntegrationTest();
+  ActionGateOpenCloseTest();
+  virtual ~ActionGateOpenCloseTest();
 };
 
 } /* namespace testing */

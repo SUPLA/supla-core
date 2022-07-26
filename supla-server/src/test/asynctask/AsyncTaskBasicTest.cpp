@@ -46,7 +46,11 @@ TEST_F(AsyncTaskBasicTest, initWithNulls_2) {
 TEST_F(AsyncTaskBasicTest, correctInitialization_1) {
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, true);
   ASSERT_TRUE(task != NULL);
-  delete task;
+
+  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_FALSE(weak.expired());
+  queue->remove_task(task);
+  EXPECT_TRUE(weak.expired());
 }
 
 TEST_F(AsyncTaskBasicTest, correctInitialization_2) {
@@ -54,7 +58,11 @@ TEST_F(AsyncTaskBasicTest, correctInitialization_2) {
   ASSERT_TRUE(task != NULL);
   EXPECT_EQ(task->get_priority(), 0);
   EXPECT_TRUE(task->release_immediately_after_execution());
-  delete task;
+
+  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_FALSE(weak.expired());
+  queue->remove_task(task);
+  EXPECT_TRUE(weak.expired());
 }
 
 TEST_F(AsyncTaskBasicTest, priorityCheck) {
@@ -75,7 +83,11 @@ TEST_F(AsyncTaskBasicTest, releaseFlag) {
   AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
   ASSERT_TRUE(task != NULL);
   ASSERT_FALSE(task->release_immediately_after_execution());
-  delete task;
+
+  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  EXPECT_FALSE(weak.expired());
+  queue->remove_task(task);
+  EXPECT_TRUE(weak.expired());
 }
 
 TEST_F(AsyncTaskBasicTest, delay) {
