@@ -26,6 +26,8 @@
 #include "scene/scene_asynctask.h"
 #include "scene/scene_search_condition.h"
 
+using std::list;
+
 supla_client_scenes::supla_client_scenes(
     supla_abstract_dobject_remote_updater *updater,
     supla_abstract_client_scene_dao *dao, supla_asynctask_queue *queue)
@@ -48,8 +50,7 @@ supla_client_scenes::~supla_client_scenes() {
 void supla_client_scenes::load(int user_id, int client_id) {
   lock();
   clear();
-  std::list<supla_client_scene *> scenes =
-      dao->get_all_scenes(user_id, client_id);
+  list<supla_client_scene *> scenes = dao->get_all_scenes(user_id, client_id);
 
   for (auto it = scenes.begin(); it != scenes.end(); ++it) {
     if (queue) {

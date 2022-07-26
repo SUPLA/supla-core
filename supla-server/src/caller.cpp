@@ -22,6 +22,8 @@
 
 #include "log.h"
 
+using std::string;
+
 supla_caller::supla_caller(const supla_caller &caller) {
   this->parent = NULL;
   this->type = ctUnknown;
@@ -47,8 +49,7 @@ supla_caller::supla_caller(_callerType_e type, int id) {
   this->id = id;
 }
 
-supla_caller::supla_caller(_callerType_e type, int id,
-                           const std::string &name) {
+supla_caller::supla_caller(_callerType_e type, int id, const string &name) {
   this->parent = NULL;
   this->type = type;
   this->id = id;
@@ -69,7 +70,7 @@ supla_caller::supla_caller(const supla_caller &parent, _callerType_e type,
 }
 
 supla_caller::supla_caller(const supla_caller &parent, _callerType_e type,
-                           int id, const std::string &name) {
+                           int id, const string &name) {
   this->parent = parent.clone();
   this->type = type;
   this->id = id;
@@ -99,9 +100,7 @@ int supla_caller::get_id(void) const { return get_first()->id; }
 
 _callerType_e supla_caller::get_type() const { return get_first()->type; }
 
-const std::string &supla_caller::get_name(void) const {
-  return get_first()->name;
-}
+const string &supla_caller::get_name(void) const { return get_first()->name; }
 
 supla_caller *supla_caller::clone(void) const {
   supla_caller *result = new supla_caller();

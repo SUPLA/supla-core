@@ -20,6 +20,8 @@
 
 #include "converter/any_value_to_action_converter.h"
 
+using std::function;
+
 supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->user = NULL;
   this->device_id = 0;
@@ -87,7 +89,7 @@ void supla_abstract_action_executor::set_scene_id(int user_id, int scene_id) {
 }
 
 void supla_abstract_action_executor::access_device(
-    std::function<void(supla_device *device)> on_device) {
+    function<void(supla_device *device)> on_device) {
   if (user && (device_id || (subject_id && subject_type == stChannel))) {
     return user->access_device(
         device_id, subject_type == stChannelGroup ? 0 : subject_id, on_device);
@@ -198,8 +200,7 @@ void supla_abstract_action_executor::execute_action(
 }
 
 void supla_abstract_action_executor::execute_action(
-    std::function<void(supla_user_channelgroups *, supla_device_channels *)>
-        f) {
+    function<void(supla_user_channelgroups *, supla_device_channels *)> f) {
   supla_user_channelgroups *channel_groups = get_channel_groups();
   if (channel_groups) {
     f(channel_groups, NULL);

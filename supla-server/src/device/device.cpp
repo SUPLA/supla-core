@@ -32,6 +32,8 @@
 #include "srpc.h"
 #include "user.h"
 
+using std::list;
+
 supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
   this->channels = new supla_device_channels(this);
   this->flags = 0;
@@ -39,8 +41,8 @@ supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
 
 supla_device::~supla_device() {
   if (getUser()) {  // 1st line!
-    std::list<int> ids = channels->get_channel_ids();
-    for (std::list<int>::iterator it = ids.begin(); it != ids.end(); it++) {
+    list<int> ids = channels->get_channel_ids();
+    for (auto it = ids.begin(); it != ids.end(); it++) {
       getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
                                           getID(), *it);
     }

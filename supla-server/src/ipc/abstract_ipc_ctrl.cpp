@@ -23,6 +23,9 @@
 
 #include "log.h"
 
+using std::string;
+using std::vector;
+
 supla_abstract_ipc_ctrl::supla_abstract_ipc_ctrl(
     supla_abstract_ipc_socket_adapter *socket_adapter) {
   this->socket_adapter = socket_adapter;
@@ -115,8 +118,8 @@ void supla_abstract_ipc_ctrl::set_timeout(unsigned char timeout_sec) {
   this->timeout_sec = timeout_sec;
 }
 
-std::vector<std::string> supla_abstract_ipc_ctrl::get_command_list(void) {
-  std::vector<std::string> result;
+vector<string> supla_abstract_ipc_ctrl::get_command_list(void) {
+  vector<string> result;
 
   for (auto it = commands.begin(); it != commands.end(); ++it) {
     result.push_back((*it)->get_command_name());

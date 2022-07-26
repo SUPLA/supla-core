@@ -26,6 +26,8 @@
 
 namespace testing {
 
+using std::string;
+
 ActionParamTest::ActionParamTest() { worker = NULL; }
 
 ActionParamTest::~ActionParamTest() {}
@@ -69,7 +71,7 @@ TEST_F(ActionParamTest, parsePercentage) {
 
   if (action) {
     char p = 0;
-    std::string action_param;
+    string action_param;
 
     action_param = "{\"percentage\":45}";
     EXPECT_CALL(*worker, get_action_param)
@@ -117,7 +119,7 @@ TEST_F(ActionParamTest, parseRgb) {
   s_worker_action_rgb *action = new s_worker_action_rgb(worker);
   EXPECT_FALSE(action == NULL);
 
-  std::string action_param;
+  string action_param;
 
   action_param = "{\"brightness\":33,\"hue\":0,\"color_brightness\":28}";
   EXPECT_CALL(*worker, get_action_param)
@@ -251,7 +253,7 @@ TEST_F(ActionParamTest, copyActionParams) {
   if (action) {
     int source_device_id = 0;
     int source_channel_id = 0;
-    std::string action_param;
+    string action_param;
 
     action_param = "{\"sourceChannelId\":46865}";
     EXPECT_CALL(*worker, get_action_param)

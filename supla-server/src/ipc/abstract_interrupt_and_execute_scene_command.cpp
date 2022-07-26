@@ -18,12 +18,14 @@
 
 #include "ipc/abstract_interrupt_and_execute_scene_command.h"
 
+using std::string;
+
 supla_abstract_interrupt_and_execute_scene_command::
     supla_abstract_interrupt_and_execute_scene_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const std::string
+const string
 supla_abstract_interrupt_and_execute_scene_command::get_command_name(void) {
   return "INTERRUPT-AND-EXECUTE-SCENE:";
 }

@@ -22,6 +22,9 @@
 
 namespace testing {
 
+using std::function;
+using std::list;
+
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   clear();
 }
@@ -29,7 +32,7 @@ ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
 ActionExecutorMock::~ActionExecutorMock() {}
 
 void ActionExecutorMock::access_device(
-    std::function<void(supla_device *device)> on_device) {
+    function<void(supla_device *device)> on_device) {
   supla_abstract_action_executor::access_device(on_device);
 }
 
@@ -375,6 +378,6 @@ int ActionExecutorMock::counterSetCount(void) {
   return result;
 }
 
-std::list<struct timeval> ActionExecutorMock::getTimes(void) { return times; }
+list<struct timeval> ActionExecutorMock::getTimes(void) { return times; }
 
 }  // namespace testing

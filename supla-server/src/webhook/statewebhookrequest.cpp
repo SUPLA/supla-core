@@ -30,6 +30,8 @@
 #include "user/user.h"
 #include "webhook/statewebhookcredentials.h"
 
+using std::list;
+
 supla_state_webhook_request::supla_state_webhook_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
     event_type EventType, const supla_caller &Caller)
@@ -116,7 +118,7 @@ bool supla_state_webhook_request::isCallerAccepted(const supla_caller &caller,
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());
 
-      std::list<int> fids = credentials->getFunctionsIds();
+      list<int> fids = credentials->getFunctionsIds();
       for (int f : fids) {
         if (f == value.function) {
           switch (value.function) {

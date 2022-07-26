@@ -20,6 +20,8 @@
 
 namespace testing {
 
+using std::string;
+
 IpcCommandTest::IpcCommandTest() : Test() { socketAdapter = NULL; }
 
 IpcCommandTest::~IpcCommandTest() {}
@@ -39,7 +41,7 @@ void IpcCommandTest::commandProcessingTest(const char *input,
                                            const char *expected) {
   snprintf(buffer, sizeof(buffer), input);
 
-  EXPECT_CALL(*socketAdapter, send_data(std::string(expected))).Times(1);
+  EXPECT_CALL(*socketAdapter, send_data(string(expected))).Times(1);
 
   EXPECT_TRUE(getCommand()->process_command(
       buffer, sizeof(buffer), strnlen(buffer, IPC_BUFFER_MAX_SIZE)));

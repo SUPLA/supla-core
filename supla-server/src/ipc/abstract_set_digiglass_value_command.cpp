@@ -18,12 +18,14 @@
 
 #include "ipc/abstract_set_digiglass_value_command.h"
 
+using std::string;
+
 supla_abstract_set_digiglass_value_command::
     supla_abstract_set_digiglass_value_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const std::string supla_abstract_set_digiglass_value_command::get_command_name(
+const string supla_abstract_set_digiglass_value_command::get_command_name(
     void) {
   return "SET-DIGIGLASS-VALUE:";
 }

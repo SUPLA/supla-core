@@ -17,11 +17,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "MqttClientLibraryAdapterMock.h"
+
 #include <string.h>  // NOLINT
 #include <unistd.h>
+
 #include "lck.h"
 #include "log.h"
 #include "mqtt_message_provider.h"
+
+using std::string;
 
 MqttClientLibraryAdapterMock::MqttClientLibraryAdapterMock(
     supla_mqtt_client_settings *settings)
@@ -72,12 +76,12 @@ void MqttClientLibraryAdapterMock::raise_event(void) {}
 
 bool MqttClientLibraryAdapterMock::subscribe(const char *topic_name,
                                              QOS_Level max_qos_level) {
-  subscribed_messages.push_back(std::string(topic_name));
+  subscribed_messages.push_back(string(topic_name));
   return true;
 }
 
 bool MqttClientLibraryAdapterMock::unsubscribe(const char *topic_name) {
-  unsubscribed_messages.push_back(std::string(topic_name));
+  unsubscribed_messages.push_back(string(topic_name));
   return true;
 }
 
@@ -148,8 +152,8 @@ int MqttClientLibraryAdapterMock::subscribed_count(void) {
   return result;
 }
 
-std::string MqttClientLibraryAdapterMock::subscribed_pop(void) {
-  std::string result;
+string MqttClientLibraryAdapterMock::subscribed_pop(void) {
+  string result;
   lck_lock(lck);
   result = subscribed_messages.front();
   subscribed_messages.pop_front();
@@ -171,8 +175,8 @@ int MqttClientLibraryAdapterMock::unsubscribed_count(void) {
   return result;
 }
 
-std::string MqttClientLibraryAdapterMock::unsubscribed_pop(void) {
-  std::string result;
+string MqttClientLibraryAdapterMock::unsubscribed_pop(void) {
+  string result;
   lck_lock(lck);
   result = unsubscribed_messages.front();
   unsubscribed_messages.pop_front();

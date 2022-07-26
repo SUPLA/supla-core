@@ -22,11 +22,13 @@
 
 #include "ipc/abstract_ipc_ctrl.h"
 
+using std::string;
+
 supla_abstract_get_em_value_command::supla_abstract_get_em_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const std::string supla_abstract_get_em_value_command::get_command_name(void) {
+const string supla_abstract_get_em_value_command::get_command_name(void) {
   return "GET-EM-VALUE:";
 }
 

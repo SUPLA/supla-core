@@ -22,6 +22,9 @@
 #include "safearray.h"
 #include "user.h"
 
+using std::function;
+using std::list;
+
 supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   this->user = user;
   id_cmp_use_both[master] = true;
@@ -32,8 +35,8 @@ void supla_user_channelgroups::_load(database *db, e_objc_scope scope) {
   db->get_user_channel_groups(user->getUserID(), this);
 }
 
-std::list<dcpair> supla_user_channelgroups::find_channels(int GroupId) {
-  std::list<dcpair> pairs;
+list<dcpair> supla_user_channelgroups::find_channels(int GroupId) {
+  list<dcpair> pairs;
   void *arr = getArr(master);
 
   safe_array_lock(arr);
@@ -59,15 +62,14 @@ int supla_user_channelgroups::available_data_types_for_remote(
 
 bool supla_user_channelgroups::for_each_channel(
     int GroupID, bool break_on_success,
-    std::function<bool(supla_device *, int, char)> f) {
+    function<bool(supla_device *, int, char)> f) {
   bool result = false;
 
-  std::list<dcpair> pairs = find_channels(GroupID);
+  list<dcpair> pairs = find_channels(GroupID);
 
   dcpair::sort_by_device_id(&pairs);
 
-  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
-       it++) {
+  for (auto it = pairs.begin(); it != pairs.end(); it++) {
     user->access_device(
         it->getDeviceId(), 0,
         [&result, f, &it, &pairs](supla_device *device) -> void {
@@ -85,7 +87,7 @@ bool supla_user_channelgroups::for_each_channel(
 }
 
 bool supla_user_channelgroups::for_each_channel(
-    int GroupID, std::function<bool(supla_device *, int, char)> f) {
+    int GroupID, function<bool(supla_device *, int, char)> f) {
   return for_each_channel(GroupID, false, f);
 }
 

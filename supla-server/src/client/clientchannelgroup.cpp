@@ -25,6 +25,8 @@
 #include "proto.h"
 #include "safearray.h"
 
+using std::list;
+
 supla_client_channelgroup::supla_client_channelgroup(
     supla_client_channelgroups *Container, int Id, int LocationID, int Func,
     const char *Caption, int AltIcon, int UserIcon)
@@ -126,8 +128,8 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
                                     SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
 
-std::list<dcpair> supla_client_channelgroup::get_channel_list(void) {
-  std::list<dcpair> result;
+list<dcpair> supla_client_channelgroup::get_channel_list(void) {
+  list<dcpair> result;
 
   supla_client_channelgroup_relation *rel = NULL;
   safe_array_lock(relarr);

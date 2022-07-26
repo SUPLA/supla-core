@@ -19,6 +19,9 @@
 #include "doubles/distributedobjects/DObjectsMock.h"
 
 namespace testing {
+
+using std::function;
+
 DObjectsMock::DObjectsMock(supla_abstract_dobject_remote_updater *updater)
     : supla_dobjects(updater) {}
 
@@ -27,7 +30,7 @@ DObjectsMock::~DObjectsMock(void) {}
 void DObjectsMock::add(supla_dobject *object) { supla_dobjects::add(object); }
 
 void DObjectsMock::access_object(
-    int id, std::function<void(supla_dobject *object)> on_access) {
+    int id, function<void(supla_dobject *object)> on_access) {
   supla_dobjects::access_object(id, on_access);
 }
 

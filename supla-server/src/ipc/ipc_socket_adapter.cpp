@@ -20,6 +20,8 @@
 
 #include <sys/socket.h>
 
+using std::string;
+
 supla_ipc_socket_adapter::supla_ipc_socket_adapter(int sfd)
     : supla_abstract_ipc_socket_adapter(sfd) {
   error = false;
@@ -27,7 +29,7 @@ supla_ipc_socket_adapter::supla_ipc_socket_adapter(int sfd)
 
 supla_ipc_socket_adapter::~supla_ipc_socket_adapter() {}
 
-void supla_ipc_socket_adapter::send_data(const std::string &data) {
+void supla_ipc_socket_adapter::send_data(const string &data) {
   send(get_sfd(), data.c_str(), data.size(), 0);
 }
 

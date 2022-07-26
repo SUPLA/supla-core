@@ -25,6 +25,8 @@
 
 namespace {
 
+using std::vector;
+
 #define SRPC_QUEUE_SIZE 10
 #define MAX_CALL_ID 10000
 #define BUFFER_MAX_SIZE 131072
@@ -264,7 +266,7 @@ class SrpcTest : public ::testing::Test {
   char *data_write;
   _supla_int_t data_write_size;
   void *srpcInit(void);
-  void srpcCallAllowed(int min_version, std::vector<int> call_ids);
+  void srpcCallAllowed(int min_version, vector<int> call_ids);
 
   unsigned _supla_int_t cr_rr_id;
   unsigned _supla_int_t cr_call_type;
@@ -272,7 +274,7 @@ class SrpcTest : public ::testing::Test {
   TsrpcReceivedData cr_rd;
 
   void set_random(void *ptr, unsigned int size);
-  std::vector<int> get_call_ids(int version);
+  vector<int> get_call_ids(int version);
 
  public:
   virtual void SetUp();
@@ -372,15 +374,14 @@ TEST_F(SrpcTest, set_proto) {
   srpc = NULL;
 }
 
-void SrpcTest::srpcCallAllowed(int min_version, std::vector<int> call_ids) {
+void SrpcTest::srpcCallAllowed(int min_version, vector<int> call_ids) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
   ASSERT_NE(call_ids.size(), (const long unsigned int)0);
   srpc_set_proto_version(srpc, min_version);
 
   int n = 0;
-  for (std::vector<int>::iterator it = call_ids.begin(); it != call_ids.end();
-       it++) {
+  for (auto it = call_ids.begin(); it != call_ids.end(); it++) {
     ASSERT_TRUE(*it <= MAX_CALL_ID);
     ASSERT_EQ(srpc_call_allowed(srpc, *it), 1);
 
@@ -398,7 +399,7 @@ void SrpcTest::set_random(void *ptr, unsigned int size) {
   }
 }
 
-std::vector<int> SrpcTest::get_call_ids(int version) {
+vector<int> SrpcTest::get_call_ids(int version) {
   switch (version) {
     case 1:
       return {SUPLA_DCS_CALL_GETVERSION,
@@ -557,12 +558,12 @@ TEST_F(SrpcTest, call_allowed_v17) { srpcCallAllowed(17, get_call_ids(17)); }
 TEST_F(SrpcTest, call_allowed_v18) { srpcCallAllowed(18, get_call_ids(18)); }
 
 TEST_F(SrpcTest, call_not_allowed) {
-  std::vector<int> all_calls;
+  vector<int> all_calls;
 
   for (int a = 1; a <= SUPLA_PROTO_VERSION; a++) {
-    std::vector<int> calls = get_call_ids(a);
-    all_calls.insert(all_calls.end(), std::make_move_iterator(calls.begin()),
-                     std::make_move_iterator(calls.end()));
+    vector<int> calls = get_call_ids(a);
+    all_calls.insert(all_calls.end(), make_move_iterator(calls.begin()),
+                     make_move_iterator(calls.end()));
   }
 
   ASSERT_GT(all_calls.size(), (const long unsigned int)0);
@@ -574,8 +575,7 @@ TEST_F(SrpcTest, call_not_allowed) {
 
   for (int a = 0; a <= MAX_CALL_ID; a++) {
     bool exists = false;
-    for (std::vector<int>::iterator it = all_calls.begin();
-         it != all_calls.end(); it++) {
+    for (auto it = all_calls.begin(); it != all_calls.end(); it++) {
       if (*it == a) {
         exists = true;
         break;

@@ -150,9 +150,7 @@ bool supla_asynctask_queue::pool_exists(
     supla_abstract_asynctask_thread_pool *pool) {
   bool result = false;
   lck_lock(lck);
-  for (vector<supla_abstract_asynctask_thread_pool *>::iterator it =
-           pools.begin();
-       it != pools.end(); ++it) {
+  for (auto it = pools.begin(); it != pools.end(); ++it) {
     if (*it == pool) {
       result = true;
       break;

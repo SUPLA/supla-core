@@ -25,6 +25,9 @@
 #include "log.h"
 #include "tools.h"
 
+using std::function;
+using std::string;
+
 supla_abstract_ipc_command::supla_abstract_ipc_command(
     supla_abstract_ipc_socket_adapter *socket_adapter) {
   this->socket_adapter = socket_adapter;
@@ -111,7 +114,7 @@ const char *supla_abstract_ipc_command::get_google_request_id() {
 
 void supla_abstract_ipc_command::process_parameters(
     const char *params, const char *failure_suffix,
-    std::function<bool(int user_id, int device_id, int channel_id)> on_ids) {
+    function<bool(int user_id, int device_id, int channel_id)> on_ids) {
   int user_id = 0;
   int device_id = 0;
   int channel_id = 0;
@@ -129,14 +132,14 @@ void supla_abstract_ipc_command::process_parameters(
 
 void supla_abstract_ipc_command::process_parameters(
     const char *params,
-    std::function<bool(int user_id, int device_id, int channel_id)> on_ids) {
+    function<bool(int user_id, int device_id, int channel_id)> on_ids) {
   process_parameters(params, "UNKNOWN:", on_ids);
 }
 
 bool supla_abstract_ipc_command::process_command(char *buffer,
                                                  unsigned int buffer_size,
                                                  unsigned int data_size) {
-  const std::string cmd = get_command_name();
+  const string cmd = get_command_name();
 
   if (cmd.empty()) {
     return false;

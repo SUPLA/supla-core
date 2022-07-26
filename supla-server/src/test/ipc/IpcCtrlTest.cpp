@@ -22,6 +22,13 @@
 
 namespace testing {
 
+using std::list;
+using std::set;
+using std::set_difference;
+using std::sort;
+using std::string;
+using std::vector;
+
 IpcCtrlTest::IpcCtrlTest() : Test() {
   socket_adapter = NULL;
   ipc_ctrl = NULL;
@@ -51,7 +58,7 @@ TEST_F(IpcCtrlTest, timeout) {
 
   EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
   EXPECT_CALL(*ipc_ctrl, terminate()).Times(1);
-  EXPECT_CALL(*socket_adapter, send_data(std::string("SUPLA SERVER CTRL\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")))
       .Times(1);
   EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(false));
 
@@ -71,7 +78,7 @@ TEST_F(IpcCtrlTest, terminate) {
   gettimeofday(&then, NULL);
 
   EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*socket_adapter, send_data(std::string("SUPLA SERVER CTRL\n")));
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")));
   EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(false));
   ipc_ctrl->set_timeout(10);
   ipc_ctrl->execute();
@@ -92,7 +99,7 @@ TEST_F(IpcCtrlTest, adapterError) {
 
   EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
   EXPECT_CALL(*ipc_ctrl, terminate()).Times(1);
-  EXPECT_CALL(*socket_adapter, send_data(std::string("SUPLA SERVER CTRL\n")));
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")));
   EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(true));
   ipc_ctrl->set_timeout(10);
   ipc_ctrl->execute();
@@ -125,11 +132,11 @@ TEST_F(IpcCtrlTest, singleCommand) {
         return true;
       });
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("SUPLA SERVER CTRL\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")))
       .Times(1)
       .InSequence(s1);
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("VALUE:31\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("VALUE:31\n")))
       .Times(1)
       .InSequence(s1);
 
@@ -181,19 +188,19 @@ TEST_F(IpcCtrlTest, multipleCommands) {
         return true;
       });
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("SUPLA SERVER CTRL\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")))
       .Times(1)
       .InSequence(s1);
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("VALUE:66\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("VALUE:66\n")))
       .Times(1)
       .InSequence(s1);
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("UNKNOWN:2284\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("UNKNOWN:2284\n")))
       .Times(1)
       .InSequence(s1);
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("VALUE:1\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("VALUE:1\n")))
       .Times(1)
       .InSequence(s1);
 
@@ -226,11 +233,11 @@ TEST_F(IpcCtrlTest, unknownCommand) {
   EXPECT_CALL(*ipc_ctrl, is_terminated()).WillRepeatedly(Return(false));
   EXPECT_CALL(*socket_adapter, is_error()).WillRepeatedly(Return(false));
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("SUPLA SERVER CTRL\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("SUPLA SERVER CTRL\n")))
       .Times(1)
       .InSequence(s1);
 
-  EXPECT_CALL(*socket_adapter, send_data(std::string("COMMAND_UNKNOWN\n")))
+  EXPECT_CALL(*socket_adapter, send_data(string("COMMAND_UNKNOWN\n")))
       .Times(1)
       .InSequence(s1);
 
@@ -254,15 +261,15 @@ TEST_F(IpcCtrlTest, unknownCommand) {
 TEST_F(IpcCtrlTest, thereShouldBeNoDuplicates) {
   supla_ipc_ctrl ipc(new IpcSocketAdapterMock(-1));
 
-  std::vector<std::string> cmd_list = ipc.get_command_list();
+  vector<string> cmd_list = ipc.get_command_list();
 
-  std::list<std::string> diff;
+  list<string> diff;
 
-  std::sort(cmd_list.begin(), cmd_list.end());
-  std::set<std::string> ucmd_list(
-      cmd_list.begin(), cmd_list.end());  // Sort and remove duplicates
-  std::set_difference(cmd_list.begin(), cmd_list.end(), ucmd_list.begin(),
-                      ucmd_list.end(), back_inserter(diff));
+  sort(cmd_list.begin(), cmd_list.end());
+  set<string> ucmd_list(cmd_list.begin(),
+                        cmd_list.end());  // Sort and remove duplicates
+  set_difference(cmd_list.begin(), cmd_list.end(), ucmd_list.begin(),
+                 ucmd_list.end(), back_inserter(diff));
 
   EXPECT_EQ(diff.size(), 0);
 }

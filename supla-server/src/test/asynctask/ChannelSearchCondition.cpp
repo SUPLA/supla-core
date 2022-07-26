@@ -22,11 +22,13 @@
 
 namespace testing {
 
+using std::vector;
+
 ChannelSearchCondition::ChannelSearchCondition(void) { this->any_id = false; }
 
 ChannelSearchCondition::~ChannelSearchCondition() {}
 
-void ChannelSearchCondition::set_channels(std::vector<int> channels) {
+void ChannelSearchCondition::set_channels(vector<int> channels) {
   this->channels = channels;
 }
 
@@ -40,8 +42,7 @@ bool ChannelSearchCondition::condition_met(supla_abstract_asynctask *task) {
       return true;
     }
 
-    for (std::vector<int>::iterator it = channels.begin(); it != channels.end();
-         ++it) {
+    for (auto it = channels.begin(); it != channels.end(); ++it) {
       if (*it == ctask->get_channel_id()) {
         return true;
       }

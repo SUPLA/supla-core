@@ -23,6 +23,8 @@
 #define SUBSCRIPTION_TIME_SEC 20
 #define EXPIRE_TIME_SEC 10
 
+using std::list;
+
 supla_mqtt_unpublisher_datasource::supla_mqtt_unpublisher_datasource(
     supla_mqtt_client_settings *settings)
     : supla_mqtt_client_db_datasource(settings) {
@@ -70,8 +72,7 @@ void supla_mqtt_unpublisher_datasource::thread_init(void) {
 bool supla_mqtt_unpublisher_datasource::is_user_enabled(int user_id) {
   bool result = false;
   lock();
-  for (std::list<_unpub_user_item_t>::iterator it = users.begin();
-       it != users.end(); ++it) {
+  for (auto it = users.begin(); it != users.end(); ++it) {
     if (it->user_id == user_id) {
       result = it->mqtt_enabled;
       break;
@@ -92,8 +93,7 @@ void supla_mqtt_unpublisher_datasource::on_userdata_changed(int user_id) {
 
     lock();
     bool exists = false;
-    for (std::list<_unpub_user_item_t>::iterator it = users.begin();
-         it != users.end(); ++it) {
+    for (auto it = users.begin(); it != users.end(); ++it) {
       if (it->user_id == user_id) {
         exists = true;
         if (it->mqtt_enabled != mqtt_enabled) {
@@ -135,17 +135,15 @@ void supla_mqtt_unpublisher_datasource::remove_expired(void) {
   gettimeofday(&now, NULL);
 
   lock();
-  for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
-       it != deleted_devices.end(); ++it) {
+  for (auto it = deleted_devices.begin(); it != deleted_devices.end(); ++it) {
     if (it->event_time.tv_sec + EXPIRE_TIME_SEC < now.tv_sec) {
       it = deleted_devices.erase(it);
       --it;
     }
   }
 
-  for (std::list<_unpub_channel_item_t>::iterator it =
-           modified_channels.begin();
-       it != modified_channels.end(); ++it) {
+  for (auto it = modified_channels.begin(); it != modified_channels.end();
+       ++it) {
     if (it->event_time.tv_sec + EXPIRE_TIME_SEC < now.tv_sec) {
       it = modified_channels.erase(it);
       --it;
@@ -188,9 +186,8 @@ void supla_mqtt_unpublisher_datasource::before_channel_function_change(
   gettimeofday(&now, NULL);
 
   lock();
-  for (std::list<_unpub_channel_item_t>::iterator it =
-           modified_channels.begin();
-       it != modified_channels.end(); ++it) {
+  for (auto it = modified_channels.begin(); it != modified_channels.end();
+       ++it) {
     if (it->before.channel_id == ChannelID) {
       exists = true;
       it->event_time = now;
@@ -218,9 +215,8 @@ void supla_mqtt_unpublisher_datasource::on_devicedata_changed(int UserID,
   remove_expired();
 
   lock();
-  for (std::list<_unpub_channel_item_t>::iterator it =
-           modified_channels.begin();
-       it != modified_channels.end(); ++it) {
+  for (auto it = modified_channels.begin(); it != modified_channels.end();
+       ++it) {
     if (it->before.device_id == DeviceID) {
       on_channelstate_changed(it->before.user_id, it->before.device_id,
                               it->before.channel_id);
@@ -238,8 +234,7 @@ void supla_mqtt_unpublisher_datasource::before_device_delete(int UserID,
   gettimeofday(&now, NULL);
 
   lock();
-  for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
-       it != deleted_devices.end(); ++it) {
+  for (auto it = deleted_devices.begin(); it != deleted_devices.end(); ++it) {
     if (it->device.device_id == DeviceID) {
       exists = true;
       it->event_time = now;
@@ -300,8 +295,7 @@ void supla_mqtt_unpublisher_datasource::on_device_deleted(int UserID,
   remove_expired();
 
   lock();
-  for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
-       it != deleted_devices.end(); ++it) {
+  for (auto it = deleted_devices.begin(); it != deleted_devices.end(); ++it) {
     if (it->device.device_id == DeviceID) {
       supla_mqtt_client_db_datasource::on_devicedata_changed(UserID, DeviceID);
       break;
@@ -387,8 +381,7 @@ bool supla_mqtt_unpublisher_datasource::context_open(
     }
 
     lock();
-    for (std::list<_unpub_device_item_t>::iterator it = deleted_devices.begin();
-         it != deleted_devices.end(); ++it) {
+    for (auto it = deleted_devices.begin(); it != deleted_devices.end(); ++it) {
       if (it->device.device_id == context->get_device_id()) {
         current_device = new _unpub_device_item_t;
 
@@ -410,9 +403,8 @@ bool supla_mqtt_unpublisher_datasource::context_open(
   } else if (context->get_scope() == MQTTDS_SCOPE_CHANNEL_STATE) {
     _unpub_channel_item_t *channel = NULL;
     lock();
-    for (std::list<_unpub_channel_item_t>::iterator it =
-             modified_channels.begin();
-         it != modified_channels.end(); ++it) {
+    for (auto it = modified_channels.begin(); it != modified_channels.end();
+         ++it) {
       if (it->before.channel_id == context->get_channel_id()) {
         channel = new _unpub_channel_item_t;
         *channel = *it;
@@ -482,8 +474,7 @@ bool supla_mqtt_unpublisher_datasource::fetch_subscription(char **topic_name,
   gettimeofday(&now, NULL);
 
   lock();
-  for (std::list<_unpub_user_item_t>::iterator it = users.begin();
-       it != users.end(); ++it) {
+  for (auto it = users.begin(); it != users.end(); ++it) {
     if ((it->needs_subscribe && !it->subscribe_timeto.tv_sec) ||
         (it->subscribe_timeto.tv_sec &&
          it->subscribe_timeto.tv_sec <= now.tv_sec)) {

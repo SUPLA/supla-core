@@ -21,6 +21,8 @@
 #include "assert.h"
 #include "lck.h"
 
+using std::function;
+
 supla_dobjects::supla_dobjects(supla_abstract_dobject_remote_updater *updater) {
   this->lck = lck_init();
   this->updater = updater;
@@ -71,7 +73,7 @@ void supla_dobjects::add(supla_dobject *object) {
 }
 
 void supla_dobjects::access_object(
-    int id, std::function<void(supla_dobject *object)> on_access) {
+    int id, function<void(supla_dobject *object)> on_access) {
   if (!id || !on_access) {
     return;
   }

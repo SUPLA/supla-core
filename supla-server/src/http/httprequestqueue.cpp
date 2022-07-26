@@ -36,6 +36,8 @@
 #include "tools.h"
 #include "user/user.h"
 
+using std::list;
+
 // TODO(anyone): Pass the http queue handling to supla_asynctasks
 
 typedef struct {
@@ -389,12 +391,11 @@ void supla_http_request_queue::createInTheCallerContext(
     return;
   }
 
-  std::list<supla_http_request *> requests =
+  list<supla_http_request *> requests =
       AbstractHttpRequestFactory::createInTheCallerContext(
           user, deviceId, channelId, eventType, caller);
 
-  for (std::list<supla_http_request *>::iterator it = requests.begin();
-       it != requests.end(); it++) {
+  for (auto it = requests.begin(); it != requests.end(); it++) {
     supla_http_request *request = *it;
 
     safe_array_lock(arr_queue);

@@ -25,6 +25,8 @@
 
 namespace testing {
 
+using std::list;
+
 SceneTest::SceneTest() : AsyncTaskTest() {
   action_executor = NULL;
   value_getter = NULL;
@@ -108,7 +110,7 @@ TEST_F(SceneTest, executeSceneWithoutDelay) {
               2000000);  // Both operations should be performed in one cycle.
                          // There should be one cycle in total.
 
-  std::list<struct timeval> times = action_executor->getTimes();
+  list<struct timeval> times = action_executor->getTimes();
   EXPECT_EQ(times.size(), 2UL);
   EXPECT_LT(TestHelper::timeDiffUs(times.back(), now) -
                 TestHelper::timeDiffUs(times.front(), now),
@@ -164,7 +166,7 @@ TEST_F(SceneTest, executeSceneWithDelayBetweenActions) {
               2000000);  // Two of the three operations should be performed in
                          // one cycle. There should be two cycles in total.
 
-  std::list<struct timeval> times = action_executor->getTimes();
+  list<struct timeval> times = action_executor->getTimes();
   EXPECT_EQ(times.size(), 3UL);
   EXPECT_LT(TestHelper::timeDiffUs(times.back(), now) -
                 TestHelper::timeDiffUs(times.front(), now),

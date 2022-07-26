@@ -22,6 +22,8 @@
 
 namespace testing {
 
+using std::vector;
+
 AsyncTaskMainTest::AsyncTaskMainTest(void) : AsyncTaskTest() {}
 
 AsyncTaskMainTest::~AsyncTaskMainTest(void) {}
@@ -113,7 +115,7 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
   pool->set_thread_count_limit(1);
   pool->hold();
 
-  std::vector<AsyncTaskMock *> tasks;
+  vector<AsyncTaskMock *> tasks;
   int a;
 
   for (a = 0; a < 100; a++) {
@@ -134,8 +136,7 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
 
   long long time_usec = tasks.back()->exec_time_since(&now);
 
-  for (std::vector<AsyncTaskMock *>::reverse_iterator it = tasks.rbegin() + 1;
-       it != tasks.rend(); ++it) {
+  for (auto it = tasks.rbegin() + 1; it != tasks.rend(); ++it) {
     EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
     EXPECT_EQ((*it)->get_state(), supla_asynctask_state::SUCCESS);
     time_usec = (*it)->exec_time_since(&now);
@@ -160,8 +161,7 @@ TEST_F(AsyncTaskMainTest, priorityTest) {
 
   time_usec = tasks.front()->exec_time_since(&now);
 
-  for (std::vector<AsyncTaskMock *>::iterator it = tasks.begin() + 1;
-       it != tasks.end(); ++it) {
+  for (auto it = tasks.begin() + 1; it != tasks.end(); ++it) {
     EXPECT_EQ((*it)->get_state(), supla_asynctask_state::SUCCESS);
     EXPECT_TRUE(time_usec > (*it)->exec_time_since(&now));
     time_usec = (*it)->exec_time_since(&now);

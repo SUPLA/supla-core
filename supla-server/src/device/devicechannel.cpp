@@ -40,6 +40,9 @@
 #include "srpc.h"
 #include "user/user.h"
 
+using std::function;
+using std::list;
+
 supla_device_channel::supla_device_channel(
     supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
     int Param2, int Param3, int Param4, const char *TextParam1,
@@ -826,8 +829,8 @@ unsigned int supla_device_channel::getValueDuration(void) {
   return 0;
 }
 
-std::list<int> supla_device_channel::related_channel(void) {
-  std::list<int> result;
+list<int> supla_device_channel::related_channel(void) {
+  list<int> result;
 
   // Only channels associated with NO / NC sensors can return more than one
   // channel!!!
@@ -874,8 +877,8 @@ std::list<int> supla_device_channel::related_channel(void) {
   return result;
 }
 
-std::list<int> supla_device_channel::master_channel(void) {
-  std::list<int> result;
+list<int> supla_device_channel::master_channel(void) {
+  list<int> result;
 
   switch (Func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -1127,7 +1130,7 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 }
 
 void supla_device_channels::access_channel(
-    int channel_id, std::function<void(supla_device_channel *)> on_channel) {
+    int channel_id, function<void(supla_device_channel *)> on_channel) {
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(channel_id);
@@ -1649,8 +1652,8 @@ int supla_device_channels::get_channel_type(int ChannelID) {
   return Type;
 }
 
-std::list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
-  std::list<int> result;
+list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
+  list<int> result;
   if (ChannelID == 0) return result;
 
   safe_array_lock(arr);
@@ -1665,11 +1668,11 @@ std::list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
   return result;
 }
 
-std::list<int> supla_device_channels::master_channel(int ChannelID) {
+list<int> supla_device_channels::master_channel(int ChannelID) {
   return mr_channel(ChannelID, true);
 }
 
-std::list<int> supla_device_channels::related_channel(int ChannelID) {
+list<int> supla_device_channels::related_channel(int ChannelID) {
   return mr_channel(ChannelID, false);
 }
 
@@ -2310,8 +2313,8 @@ bool supla_device_channels::get_channel_complex_value(
   return result;
 }
 
-std::list<int> supla_device_channels::get_channel_ids(void) {
-  std::list<int> result;
+list<int> supla_device_channels::get_channel_ids(void) {
+  list<int> result;
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
     supla_device_channel *channel =

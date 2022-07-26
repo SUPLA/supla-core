@@ -17,11 +17,15 @@
  */
 
 #include "MySqlShell.h"
+
 #include <gtest/gtest.h>  // NOLINT
+
 #include "log.h"
 #include "tools.h"
 
 namespace testing {
+
+using std::string;
 
 // static
 void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
@@ -53,7 +57,7 @@ void MySqlShell::runSqlScript(const char *sql_dir, const char *db_host,
 // static
 void MySqlShell::sqlQuery(const char *sql_dir, const char *db_host,
                           const char *db_user, const char *db_name,
-                          const char *query, std::string *result) {
+                          const char *query, string *result) {
   ASSERT_FALSE(query == NULL);
   ASSERT_GT(strlen(query), (unsigned long)0);
 

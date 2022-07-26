@@ -20,13 +20,15 @@
 
 #include "ipc/abstract_set_rgbw_command.h"
 
+using std::string;
+
 supla_abstract_set_cg_rgbw_command::supla_abstract_set_cg_rgbw_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, bool random_color)
     : supla_abstract_ipc_command(socket_adapter) {
   this->random_color = random_color;
 }
 
-const std::string supla_abstract_set_cg_rgbw_command::get_command_name(void) {
+const string supla_abstract_set_cg_rgbw_command::get_command_name(void) {
   return random_color ? "SET-CG-RAND-RGBW-VALUE:" : "SET-CG-RGBW-VALUE:";
 }
 

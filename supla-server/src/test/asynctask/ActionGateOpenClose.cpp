@@ -26,6 +26,8 @@
 
 namespace testing {
 
+using std::weak_ptr;
+
 ActionGateOpenCloseTest::ActionGateOpenCloseTest() : AsyncTaskTest() {}
 
 ActionGateOpenCloseTest::~ActionGateOpenCloseTest() {}
@@ -70,7 +72,7 @@ void ActionGateOpenCloseTest::noActionRequired(bool open) {
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
   EXPECT_EQ(task->get_state(), supla_asynctask_state::SUCCESS);
-  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
   EXPECT_FALSE(weak.expired());
   queue->remove_task(task);
   EXPECT_EQ(queue->total_count(), (unsigned int)0);
@@ -167,7 +169,7 @@ TEST_F(ActionGateOpenCloseTest, openWithDisconnectedSensor) {
   EXPECT_EQ(queue->total_count(), (unsigned int)1);
   EXPECT_EQ(action_executor->counterSetCount(), 0);
   EXPECT_EQ(task->get_state(), supla_asynctask_state::FAILURE);
-  std::weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
+  weak_ptr<supla_abstract_asynctask> weak = queue->get_weak_ptr(task);
   EXPECT_FALSE(weak.expired());
   queue->remove_task(task);
   EXPECT_EQ(queue->total_count(), (unsigned int)0);

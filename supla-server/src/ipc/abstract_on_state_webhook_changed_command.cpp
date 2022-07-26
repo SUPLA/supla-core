@@ -18,13 +18,15 @@
 
 #include <ipc/abstract_on_state_webhook_changed_command.h>
 
+using std::string;
+
 supla_abstract_on_state_webhook_changed_command::
     supla_abstract_on_state_webhook_changed_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const std::string
-supla_abstract_on_state_webhook_changed_command::get_command_name(void) {
+const string supla_abstract_on_state_webhook_changed_command::get_command_name(
+    void) {
   return "USER-ON-STATE-WEBHOOK-CHANGED:";
 }
 

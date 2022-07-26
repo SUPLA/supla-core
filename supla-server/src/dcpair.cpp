@@ -18,6 +18,8 @@
 
 #include <dcpair.h>
 
+using std::list;
+
 dcpair::dcpair(int DeviceId, int ChannelId) {
   this->DeviceId = DeviceId;
   this->ChannelId = ChannelId;
@@ -28,13 +30,13 @@ int dcpair::getDeviceId() { return DeviceId; }
 int dcpair::getChannelId() { return ChannelId; }
 
 // static
-bool dcpair::popDeviceChannelIDs(std::list<dcpair> *pairs, int *deviceId,
-                                 std::list<int> *cids) {
+bool dcpair::popDeviceChannelIDs(list<dcpair> *pairs, int *deviceId,
+                                 list<int> *cids) {
   if (pairs && deviceId && cids) {
     *deviceId = 0;
     cids->clear();
 
-    std::list<dcpair>::iterator it = pairs->begin();
+    auto it = pairs->begin();
     while (it != pairs->end()) {
       if (*deviceId == 0) {
         *deviceId = it->getDeviceId();
@@ -60,13 +62,12 @@ bool dcpair::compare(const dcpair p1, const dcpair p2) {
 }
 
 // static
-void dcpair::sort_by_device_id(std::list<dcpair> *pairs) {
+void dcpair::sort_by_device_id(list<dcpair> *pairs) {
   pairs->sort(dcpair::compare);
 }
 
 // static
-bool dcpair::last_one(std::list<dcpair> *pairs,
-                      std::list<dcpair>::iterator it) {
+bool dcpair::last_one(list<dcpair> *pairs, list<dcpair>::iterator it) {
   if (pairs->end() == it) {
     return true;
   }

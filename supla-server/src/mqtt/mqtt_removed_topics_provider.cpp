@@ -18,8 +18,13 @@
 
 #include <mqtt_removed_topics_provider.h>
 #include <stdlib.h>
+
 #include <string>
+
 #include "user.h"
+
+using std::list;
+using std::string;
 
 supla_mqtt_removed_topics_provider::supla_mqtt_removed_topics_provider(void)
     : supla_mqtt_message_provider() {}
@@ -41,8 +46,7 @@ bool supla_mqtt_removed_topics_provider::get_message_at_index(
 }
 
 void supla_mqtt_removed_topics_provider::clear(void) {
-  for (std::list<char *>::iterator it = topics.begin(); it != topics.end();
-       ++it) {
+  for (auto it = topics.begin(); it != topics.end(); ++it) {
     free(*it);
   }
 }
@@ -55,11 +59,11 @@ void supla_mqtt_removed_topics_provider::set_data(
     return;
   }
 
-  std::list<std::string> topics_after;
+  list<string> topics_after;
   char *topic_name = NULL;
   while (after->fetch(topic_prefix, &topic_name, NULL, NULL)) {
     if (topic_name) {
-      topics_after.push_back(std::string(topic_name));
+      topics_after.push_back(string(topic_name));
       free(topic_name);
       topic_name = NULL;
     }
@@ -68,8 +72,7 @@ void supla_mqtt_removed_topics_provider::set_data(
   while (before->fetch(topic_prefix, &topic_name, NULL, NULL)) {
     if (topic_name) {
       bool exists = false;
-      for (std::list<std::string>::iterator it = topics_after.begin();
-           it != topics_after.end(); ++it) {
+      for (auto it = topics_after.begin(); it != topics_after.end(); ++it) {
         if (it->compare(topic_name) == 0) {
           exists = true;
           break;

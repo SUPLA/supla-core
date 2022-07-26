@@ -21,13 +21,15 @@
 #include "actions/abstract_action_config.h"
 #include "proto.h"
 
+using std::string;
+
 supla_abstract_action_command::supla_abstract_action_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, int action)
     : supla_abstract_ipc_command(socket_adapter) {
   this->action = action;
 }
 
-const std::string supla_abstract_action_command::get_command_name(void) {
+const string supla_abstract_action_command::get_command_name(void) {
   switch (action) {
     case ACTION_OPEN:
       return "ACTION-OPEN:";

@@ -18,13 +18,14 @@
 
 #include "ipc/abstract_client_reconnect_command.h"
 
+using std::string;
+
 supla_abstract_client_reconnect_command::
     supla_abstract_client_reconnect_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const std::string supla_abstract_client_reconnect_command::get_command_name(
-    void) {
+const string supla_abstract_client_reconnect_command::get_command_name(void) {
   return "CLIENT-RECONNECT:";
 }
 

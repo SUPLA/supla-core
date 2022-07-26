@@ -30,6 +30,8 @@
 #include "srpc.h"
 #include "user.h"
 
+using std::function;
+
 supla_client_channels::supla_client_channels(supla_client *client)
     : supla_client_objcontainer(client) {}
 
@@ -452,7 +454,7 @@ void supla_client_channels::update_expired(void *srpc) {
 }
 
 void supla_client_channels::device_access(
-    int ChannelID, std::function<void(supla_device *)> method) {
+    int ChannelID, function<void(supla_device *)> method) {
   safe_array_lock(getArr());
 
   supla_client_channel *channel = NULL;

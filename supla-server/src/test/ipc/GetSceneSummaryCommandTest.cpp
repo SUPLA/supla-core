@@ -20,6 +20,8 @@
 
 namespace testing {
 
+using std::string;
+
 void GetSceneSummaryCommandTest::SetUp() {
   IpcCommandTest::SetUp();
   cmd = new GetSceneSummaryCommandMock(socketAdapter);
@@ -66,7 +68,7 @@ TEST_F(GetSceneSummaryCommandTest, sceneStarted) {
       .WillOnce([&summary_scene_id, &summary_initiator_type,
                  &summary_initiator_id, &summary_initiator_name,
                  &sumamry_time_from_start,
-                 &summary_time_left](const std::string &data) {
+                 &summary_time_left](const string &data) {
         sscanf(data.c_str(), "SUMMARY:%i,%i,%i,%[^,],%i,%i\n",
                &summary_scene_id, &summary_initiator_type,
                &summary_initiator_id, summary_initiator_name,

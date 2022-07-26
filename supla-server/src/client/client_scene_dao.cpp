@@ -25,6 +25,8 @@
 #include "log.h"
 #include "proto.h"
 
+using std::list;
+
 typedef struct {
   int scene_id;
   char caption[SUPLA_SCENE_CAPTION_MAXSIZE];
@@ -40,9 +42,9 @@ supla_client_scene_dao::supla_client_scene_dao()
 
 supla_client_scene_dao::~supla_client_scene_dao() {}
 
-std::list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
+list<supla_client_scene *> supla_client_scene_dao::get_all_scenes(
     int user_id, int client_id) {
-  std::list<supla_client_scene *> result;
+  list<supla_client_scene *> result;
 
   if (!connect()) {
     return result;

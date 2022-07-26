@@ -47,6 +47,9 @@ unsigned int supla_user::device_add_metric = 0;
 unsigned int supla_user::device_max_metric = 0;
 struct timeval supla_user::metric_tv = (struct timeval){0};
 
+using std::function;
+using std::list;
+
 // static
 char supla_user::find_user_by_id(void *ptr, void *UserID) {
   return ((supla_user *)ptr)->getUserID() == *(int *)UserID ? 1 : 0;
@@ -350,8 +353,8 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
   return user;
 }
 
-void supla_user::access_client(
-    int ClientID, std::function<void(supla_client *client)> on_client) {
+void supla_user::access_client(int ClientID,
+                               function<void(supla_client *client)> on_client) {
   supla_client *client = client_container->findByID(ClientID);
   if (client) {
     on_client(client);
@@ -434,9 +437,8 @@ supla_device *supla_user::get_device(int DeviceID) {
   return device_container->findByID(DeviceID);
 }
 
-void supla_user::access_device(
-    int DeviceId, int ChannelId,
-    std::function<void(supla_device *device)> on_device) {
+void supla_user::access_device(int DeviceId, int ChannelId,
+                               function<void(supla_device *device)> on_device) {
   if (DeviceId || ChannelId) {
     supla_device *device = DeviceId
                                ? device_container->findByID(DeviceId)
@@ -449,7 +451,7 @@ void supla_user::access_device(
 }
 
 void supla_user::for_each_device(
-    std::function<bool(supla_device *device)> on_device) {
+    function<bool(supla_device *device)> on_device) {
   for (int a = 0; a < device_container->count(); a++) {
     supla_device *device = NULL;
 
@@ -464,9 +466,8 @@ void supla_user::for_each_device(
 }
 
 // static
-void supla_user::access_device(
-    int UserID, int DeviceId, int ChannelId,
-    std::function<void(supla_device *device)> on_device) {
+void supla_user::access_device(int UserID, int DeviceId, int ChannelId,
+                               function<void(supla_device *device)> on_device) {
   supla_user *user = find(UserID, false);
   if (user) {
     user->access_device(DeviceId, ChannelId, on_device);
@@ -672,10 +673,10 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
         ChannelID, value, online, validity_time_sec, for_client);
 
     if (result) {
-      std::list<int> related_list =
+      list<int> related_list =
           device->get_channels()->related_channel(ChannelID);
 
-      std::list<int>::iterator it = related_list.begin();
+      auto it = related_list.begin();
       bool sub_value_exists = false;
       char sub_channel_online = 0;
 
@@ -941,19 +942,17 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
                                           int DeviceId, int ChannelId,
                                           bool Extended,
                                           bool SignificantChange) {
-  std::list<channel_address> ca_list;
+  list<channel_address> ca_list;
   ca_list.push_back(channel_address(DeviceId, ChannelId));
 
   supla_device *device = device_container->findByID(DeviceId);
   if (device) {
-    std::list<int> master_list =
-        device->get_channels()->master_channel(ChannelId);
+    list<int> master_list = device->get_channels()->master_channel(ChannelId);
 
     device->releasePtr();
     device = NULL;
 
-    for (std::list<int>::iterator it = master_list.begin();
-         it != master_list.end(); it++) {
+    for (auto it = master_list.begin(); it != master_list.end(); it++) {
       device = device_container->findByChannelID(*it);
 
       if (device) {
@@ -968,8 +967,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
 
   for (int a = 0; a < client_container->count(); a++) {
     if (NULL != (client = client_container->get(a))) {
-      for (std::list<channel_address>::iterator it = ca_list.begin();
-           it != ca_list.end(); it++) {
+      for (auto it = ca_list.begin(); it != ca_list.end(); it++) {
         client->on_channel_value_changed(it->getDeviceId(), it->getChannelId(),
                                          Extended);
       }
@@ -977,8 +975,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
     }
   }
 
-  for (std::list<channel_address>::iterator it = ca_list.begin();
-       it != ca_list.end(); it++) {
+  for (auto it = ca_list.begin(); it != ca_list.end(); it++) {
     if (SignificantChange && !Extended && DeviceId && ChannelId &&
         caller != ctUnknown) {
       supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
@@ -1024,7 +1021,7 @@ bool supla_user::device_calcfg_request(const supla_caller &caller, int DeviceId,
       switch (device->get_channels()->get_channel_func(ChannelId)) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-          std::list<int> related =
+          list<int> related =
               device->get_channels()->related_channel(ChannelId);
           if (related.size() == 1) {
             DeviceId = 0;
@@ -1086,7 +1083,7 @@ void supla_user::reconnect(const supla_caller &caller, bool allDevices,
 
   cgroups->load();  // load == reload
 
-  std::list<cdbase *> cdb;
+  list<cdbase *> cdb;
 
   if (allDevices) {
     supla_device *device;
@@ -1107,8 +1104,7 @@ void supla_user::reconnect(const supla_caller &caller, bool allDevices,
   }
 
   if (cdb.size() > 0) {
-    for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end();
-         it++) {
+    for (auto it = cdb.begin(); it != cdb.end(); it++) {
       (*it)->terminate();
       (*it)->releasePtr();
     }

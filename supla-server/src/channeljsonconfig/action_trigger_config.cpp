@@ -21,6 +21,8 @@
 #include "proto.h"
 #include "tools.h"
 
+using std::function;
+
 // static
 const _atc_map_t action_trigger_config::map[] = {
     {.cap = SUPLA_ACTION_CAP_TURN_ON, .str = "TURN_ON"},
@@ -229,9 +231,9 @@ unsigned int action_trigger_config::get_capabilities(const char *key) {
   return result;
 }
 
-bool action_trigger_config::set_capabilities(
-    const char *key, std::function<unsigned int()> get_caps,
-    unsigned int caps) {
+bool action_trigger_config::set_capabilities(const char *key,
+                                             function<unsigned int()> get_caps,
+                                             unsigned int caps) {
   cJSON *json = get_properties_root();
   if (!json) {
     return false;

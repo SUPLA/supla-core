@@ -23,6 +23,8 @@
 
 namespace testing {
 
+using std::list;
+
 ClientSceneDaoIntegrationTest::ClientSceneDaoIntegrationTest()
     : IntegrationTest(), Test() {
   dao = NULL;
@@ -47,14 +49,14 @@ void ClientSceneDaoIntegrationTest::TearDown() {
 }
 
 TEST_F(ClientSceneDaoIntegrationTest, getScenesForNonExistentClient) {
-  std::list<supla_client_scene *> scenes = dao->get_all_scenes(2, 2);
+  list<supla_client_scene *> scenes = dao->get_all_scenes(2, 2);
   EXPECT_EQ(scenes.size(), 0U);
 }
 
 TEST_F(ClientSceneDaoIntegrationTest, getAllScenes) {
   runSqlScript("SetUserIconForSceneWithId2.sql");
   runSqlScript("ChangeLocationForSceneWithId2.sql");
-  std::list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
+  list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
 
   EXPECT_EQ(scenes.size(), 6U);
 
@@ -133,7 +135,7 @@ TEST_F(ClientSceneDaoIntegrationTest, getAllScenes) {
 TEST_F(ClientSceneDaoIntegrationTest, disableAllScenesExceptOne) {
   runSqlScript("DisableAllScenesExceptOne.sql");
 
-  std::list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
+  list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
 
   EXPECT_EQ(scenes.size(), 1U);
 
@@ -153,7 +155,7 @@ TEST_F(ClientSceneDaoIntegrationTest, setAltIcon) {
   runSqlScript("DisableAllScenesExceptOne.sql");
   runSqlScript("SetAltIconForEnabledScenes.sql");
 
-  std::list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
+  list<supla_client_scene *> scenes = dao->get_all_scenes(2, 1);
 
   EXPECT_EQ(scenes.size(), 1U);
 
