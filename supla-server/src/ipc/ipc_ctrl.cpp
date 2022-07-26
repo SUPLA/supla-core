@@ -38,6 +38,7 @@
 #include "ipc/get_icm_value_command.h"
 #include "ipc/get_relay_value_command.h"
 #include "ipc/get_rgbw_command.h"
+#include "ipc/get_scene_summary_command.h"
 #include "ipc/get_status_command.h"
 #include "ipc/get_temperature_command.h"
 #include "ipc/get_valve_value_command.h"
@@ -119,6 +120,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_on_scene_changed_command(socket_adapter));
   add_command(new supla_on_scene_deleted_command(socket_adapter));
   add_command(new supla_on_state_webhook_changed_command(socket_adapter));
+  add_command(new supla_get_scene_summary_command(socket_adapter));
   add_command(new supla_on_device_deleted_command(socket_adapter));
   add_command(new supla_on_mqtt_settings_changed_command(socket_adapter));
   add_command(new supla_before_device_delete_command(socket_adapter));
