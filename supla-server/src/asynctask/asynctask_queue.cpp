@@ -24,11 +24,17 @@
 #include "abstract_asynctask_thread_pool.h"
 #include "lck.h"
 #include "log.h"
-#include "sthread.h"
 #include "serverstatus.h"
+#include "sthread.h"
+
+using std::function;
+using std::shared_ptr;
+using std::vector;
+using std::weak_ptr;
 
 supla_asynctask_queue::supla_asynctask_queue(void) {
   this->lck = lck_init();
+  this->observer_lck = lck_init();
   this->eh = eh_init();
   this->last_iterate_time_sec = 0;
   this->thread = sthread_simple_run(loop, this, 0);
@@ -37,9 +43,16 @@ supla_asynctask_queue::supla_asynctask_queue(void) {
 supla_asynctask_queue::~supla_asynctask_queue(void) {
   sthread_twf(thread);
   release_pools();
-  release_tasks();
+
+  lck_lock(lck);
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    (*it)->cancel();
+  }
+  tasks.clear();
+  lck_unlock(lck);
 
   lck_free(lck);
+  lck_free(observer_lck);
   eh_free(eh);
 }
 
@@ -85,22 +98,11 @@ void supla_asynctask_queue::release_pools(void) {
   } while (pool_count());
 }
 
-void supla_asynctask_queue::release_tasks(void) {
-  do {
-    lck_lock(lck);
-    if (tasks.size()) {
-      delete tasks.front();
-    }
-    lck_unlock(lck);
-  } while (total_count());
-}
-
 bool supla_asynctask_queue::task_exists(supla_abstract_asynctask *task) {
   bool result = false;
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if (*it == task) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if (it->get() == task) {
       result = true;
       break;
     }
@@ -117,17 +119,16 @@ void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
 
   lck_lock(lck);
 
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
     if ((*it)->get_priority() < task->get_priority()) {
-      tasks.insert(it, task);
+      tasks.insert(it, shared_ptr<supla_abstract_asynctask>(task));
       task = NULL;
       break;
     }
   }
 
   if (task) {
-    tasks.push_back(task);
+    tasks.push_back(shared_ptr<supla_abstract_asynctask>(task));
   }
   lck_unlock(lck);
 
@@ -136,9 +137,8 @@ void supla_asynctask_queue::add_task(supla_abstract_asynctask *task) {
 
 void supla_asynctask_queue::remove_task(supla_abstract_asynctask *task) {
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if (*it == task) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if (it->get() == task) {
       tasks.erase(it);
       break;
     }
@@ -150,9 +150,7 @@ bool supla_asynctask_queue::pool_exists(
     supla_abstract_asynctask_thread_pool *pool) {
   bool result = false;
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
-           pools.begin();
-       it != pools.end(); ++it) {
+  for (auto it = pools.begin(); it != pools.end(); ++it) {
     if (*it == pool) {
       result = true;
       break;
@@ -177,7 +175,7 @@ void supla_asynctask_queue::register_pool(
 void supla_asynctask_queue::unregister_pool(
     supla_abstract_asynctask_thread_pool *pool) {
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
+  for (vector<supla_abstract_asynctask_thread_pool *>::iterator it =
            pools.begin();
        it != pools.end(); ++it) {
     if (*it == pool) {
@@ -188,15 +186,14 @@ void supla_asynctask_queue::unregister_pool(
   lck_unlock(lck);
 }
 
-supla_abstract_asynctask *supla_asynctask_queue::pick(
+shared_ptr<supla_abstract_asynctask> supla_asynctask_queue::pick(
     supla_abstract_asynctask_thread_pool *pool) {
-  supla_abstract_asynctask *result = NULL;
+  shared_ptr<supla_abstract_asynctask> result;
 
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if ((*it)->get_state() == STA_STATE_WAITING && (*it)->get_pool() == pool &&
-        (*it)->time_left_usec(NULL) <= 0) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if ((*it)->get_state() == supla_asynctask_state::WAITING &&
+        (*it)->get_pool() == pool && (*it)->time_left_usec(NULL) <= 0) {
       result = *it;
       result->pick();
       break;
@@ -218,12 +215,11 @@ void supla_asynctask_queue::iterate(void) {
   long long wait_time = 1000000;
 
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
     long long time_left = (*it)->time_left_usec(&now);
     if (time_left <= 0) {
-      if ((*it)->get_state() == STA_STATE_WAITING) {
-        (*it)->get_pool()->execution_request(*it);
+      if ((*it)->get_state() == supla_asynctask_state::WAITING) {
+        (*it)->get_pool()->execution_request(it->get());
       }
     } else if (time_left < wait_time) {
       wait_time = time_left;
@@ -257,9 +253,8 @@ unsigned int supla_asynctask_queue::total_count(void) {
 unsigned int supla_asynctask_queue::waiting_count(void) {
   unsigned int result = 0;
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if ((*it)->get_state() == STA_STATE_WAITING) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if ((*it)->get_state() == supla_asynctask_state::WAITING) {
       result++;
     }
   }
@@ -271,9 +266,7 @@ unsigned int supla_asynctask_queue::waiting_count(void) {
 unsigned int supla_asynctask_queue::thread_count(void) {
   unsigned int result = 0;
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask_thread_pool *>::iterator it =
-           pools.begin();
-       it != pools.end(); ++it) {
+  for (auto it = pools.begin(); it != pools.end(); ++it) {
     result += (*it)->thread_count();
   }
   lck_unlock(lck);
@@ -285,17 +278,17 @@ void supla_asynctask_queue::raise_event(void) { eh_raise_event(eh); }
 
 supla_abstract_asynctask *supla_asynctask_queue::find_task(
     supla_abstract_asynctask_search_condition *cnd) {
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if (cnd->condition_met(*it)) {
-      return *it;
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if (cnd->condition_met(it->get())) {
+      return it->get();
     }
   }
   return NULL;
 }
 
 bool supla_asynctask_queue::get_task_state(
-    async_task_state *state, supla_abstract_asynctask_search_condition *cnd) {
+    supla_asynctask_state *state,
+    supla_abstract_asynctask_search_condition *cnd) {
   if (!state) {
     return false;
   }
@@ -314,9 +307,8 @@ unsigned int supla_asynctask_queue::get_task_count(
     supla_abstract_asynctask_search_condition *cnd) {
   unsigned int result = 0;
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if (cnd->condition_met(*it)) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if (cnd->condition_met(it->get())) {
       result++;
     }
   }
@@ -337,28 +329,98 @@ void supla_asynctask_queue::cancel_tasks(
     supla_abstract_asynctask_search_condition *cnd) {
   lck_lock(lck);
 
-  std::vector<supla_abstract_asynctask *> found;
+  vector<shared_ptr<supla_abstract_asynctask> > found;
 
-  for (std::vector<supla_abstract_asynctask *>::iterator it = tasks.begin();
-       it != tasks.end(); ++it) {
-    if (cnd->condition_met(*it)) {
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if (cnd->condition_met(it->get())) {
       found.push_back(*it);
     }
   }
 
-  for (std::vector<supla_abstract_asynctask *>::iterator it = found.begin();
-       it != found.end(); ++it) {
-    bool release = (*it)->release_immediately_after_execution() &&
-                   ((*it)->get_state() == STA_STATE_INIT ||
-                    (*it)->get_state() == STA_STATE_WAITING);
-
+  for (auto it = found.begin(); it != found.end(); ++it) {
     (*it)->cancel();
 
-    if (release) {
-      delete (*it);
+    if ((*it)->release_immediately_after_execution()) {
+      remove_task(it->get());
     }
   }
   lck_unlock(lck);
+}
+
+void supla_asynctask_queue::add_observer(
+    supla_abstract_asynctask_observer *observer) {
+  lck_lock(observer_lck);
+  bool exists = false;
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    if (*it == observer) {
+      exists = true;
+      break;
+    }
+  }
+
+  if (!exists) {
+    observers.push_back(observer);
+  }
+
+  lck_unlock(observer_lck);
+}
+
+void supla_asynctask_queue::remove_observer(
+    supla_abstract_asynctask_observer *observer) {
+  lck_lock(observer_lck);
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    if (*it == observer) {
+      observers.erase(it);
+      break;
+    }
+  }
+  lck_unlock(observer_lck);
+}
+
+void supla_asynctask_queue::on_task_started(supla_abstract_asynctask *task) {
+  lck_lock(observer_lck);
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    (*it)->on_asynctask_started(task);
+  }
+  lck_unlock(observer_lck);
+}
+
+void supla_asynctask_queue::on_task_finished(supla_abstract_asynctask *task) {
+  lck_lock(observer_lck);
+  for (auto it = observers.begin(); it != observers.end(); ++it) {
+    (*it)->on_asynctask_finished(task);
+  }
+  lck_unlock(observer_lck);
+}
+
+bool supla_asynctask_queue::access_task(
+    supla_abstract_asynctask_search_condition *cnd,
+    function<void(supla_abstract_asynctask *)> on_task) {
+  bool result = false;
+  lck_lock(lck);
+  supla_abstract_asynctask *task = find_task(cnd);
+  if (task != NULL) {
+    result = true;
+    on_task(task);
+  }
+  lck_unlock(lck);
+  return result;
+}
+
+weak_ptr<supla_abstract_asynctask> supla_asynctask_queue::get_weak_ptr(
+    supla_abstract_asynctask *task) {
+  weak_ptr<supla_abstract_asynctask> result;
+
+  lck_lock(lck);
+  for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+    if (it->get() == task) {
+      result = *it;
+      break;
+    }
+  }
+  lck_unlock(lck);
+
+  return result;
 }
 
 void supla_asynctask_queue::log_stuck_warning(void) {

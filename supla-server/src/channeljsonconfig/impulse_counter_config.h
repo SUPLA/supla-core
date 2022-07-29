@@ -31,7 +31,7 @@ class impulse_counter_config : public channel_json_config {
   static const char impulses_per_unit_key[];
   static const char add_to_history_key[];
 
-  double get_double_value(const char *key, double max);
+  double get_double_value(const char *key, double min, double max);
 
  protected:
  public:

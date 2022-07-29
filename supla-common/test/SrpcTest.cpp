@@ -25,6 +25,8 @@
 
 namespace {
 
+using std::vector;
+
 #define SRPC_QUEUE_SIZE 10
 #define MAX_CALL_ID 10000
 #define BUFFER_MAX_SIZE 131072
@@ -264,7 +266,7 @@ class SrpcTest : public ::testing::Test {
   char *data_write;
   _supla_int_t data_write_size;
   void *srpcInit(void);
-  void srpcCallAllowed(int min_version, std::vector<int> call_ids);
+  void srpcCallAllowed(int min_version, vector<int> call_ids);
 
   unsigned _supla_int_t cr_rr_id;
   unsigned _supla_int_t cr_call_type;
@@ -272,7 +274,7 @@ class SrpcTest : public ::testing::Test {
   TsrpcReceivedData cr_rd;
 
   void set_random(void *ptr, unsigned int size);
-  std::vector<int> get_call_ids(int version);
+  vector<int> get_call_ids(int version);
 
  public:
   virtual void SetUp();
@@ -372,15 +374,14 @@ TEST_F(SrpcTest, set_proto) {
   srpc = NULL;
 }
 
-void SrpcTest::srpcCallAllowed(int min_version, std::vector<int> call_ids) {
+void SrpcTest::srpcCallAllowed(int min_version, vector<int> call_ids) {
   srpc = srpcInit();
   ASSERT_FALSE(srpc == NULL);
   ASSERT_NE(call_ids.size(), (const long unsigned int)0);
   srpc_set_proto_version(srpc, min_version);
 
   int n = 0;
-  for (std::vector<int>::iterator it = call_ids.begin(); it != call_ids.end();
-       it++) {
+  for (auto it = call_ids.begin(); it != call_ids.end(); it++) {
     ASSERT_TRUE(*it <= MAX_CALL_ID);
     ASSERT_EQ(srpc_call_allowed(srpc, *it), 1);
 
@@ -398,7 +399,7 @@ void SrpcTest::set_random(void *ptr, unsigned int size) {
   }
 }
 
-std::vector<int> SrpcTest::get_call_ids(int version) {
+vector<int> SrpcTest::get_call_ids(int version) {
   switch (version) {
     case 1:
       return {SUPLA_DCS_CALL_GETVERSION,
@@ -503,6 +504,14 @@ std::vector<int> SrpcTest::get_call_ids(int version) {
 
     case 17:
       return {SUPLA_CS_CALL_TIMER_ARM, SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C};
+
+    case 18:
+      return {SUPLA_SC_CALL_SCENE_PACK_UPDATE,
+              SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE};
+    case 19:
+      return {SUPLA_CS_CALL_EXECUTE_ACTION,
+              SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
+              SUPLA_SC_CALL_ACTION_EXECUTION_RESULT};
   }
 
   return {};
@@ -544,13 +553,17 @@ TEST_F(SrpcTest, call_allowed_v15) { srpcCallAllowed(15, get_call_ids(15)); }
 
 TEST_F(SrpcTest, call_allowed_v16) { srpcCallAllowed(16, get_call_ids(16)); }
 
+TEST_F(SrpcTest, call_allowed_v17) { srpcCallAllowed(17, get_call_ids(17)); }
+
+TEST_F(SrpcTest, call_allowed_v18) { srpcCallAllowed(18, get_call_ids(18)); }
+
 TEST_F(SrpcTest, call_not_allowed) {
-  std::vector<int> all_calls;
+  vector<int> all_calls;
 
   for (int a = 1; a <= SUPLA_PROTO_VERSION; a++) {
-    std::vector<int> calls = get_call_ids(a);
-    all_calls.insert(all_calls.end(), std::make_move_iterator(calls.begin()),
-                     std::make_move_iterator(calls.end()));
+    vector<int> calls = get_call_ids(a);
+    all_calls.insert(all_calls.end(), make_move_iterator(calls.begin()),
+                     make_move_iterator(calls.end()));
   }
 
   ASSERT_GT(all_calls.size(), (const long unsigned int)0);
@@ -562,8 +575,7 @@ TEST_F(SrpcTest, call_not_allowed) {
 
   for (int a = 0; a <= MAX_CALL_ID; a++) {
     bool exists = false;
-    for (std::vector<int>::iterator it = all_calls.begin();
-         it != all_calls.end(); it++) {
+    for (auto it = all_calls.begin(); it != all_calls.end(); it++) {
       if (*it == a) {
         exists = true;
         break;
@@ -3516,7 +3528,227 @@ SRPC_CALL_BASIC_TEST(srpc_ds_async_action_trigger, TDS_ActionTrigger,
 // TIMER
 //---------------------------------------------------------
 
-SRPC_CALL_BASIC_TEST(srpc_sc_async_timer_arm, TCS_TimerArmRequest,
+SRPC_CALL_BASIC_TEST(srpc_cs_async_timer_arm, TCS_TimerArmRequest,
                      SUPLA_CS_CALL_TIMER_ARM, 32, cs_timer_arm_request);
 
+//---------------------------------------------------------
+// SCENE PACK UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_scene_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaScenePack, pack);
+
+  pack.count = SUPLA_SCENE_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_scene_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_scene_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaScenePack, pack);
+
+  pack.count = 0;
+
+  ASSERT_EQ(srpc_sc_async_scene_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_scene_pack_update_with_caption_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaScenePack, pack);
+
+  pack.count = SUPLA_SCENE_PACK_MAXCOUNT;
+
+  pack.items[0].CaptionSize = SUPLA_SCENE_CAPTION_MAXSIZE + 1;
+
+  for (int a = 1; a < SUPLA_SCENE_PACK_MAXCOUNT; a++) {
+    pack.items[a].CaptionSize = SUPLA_SCENE_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_scene_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_SCENE_PACK_UPDATE, 8011);
+
+  ASSERT_FALSE(cr_rd.data.sc_scene_pack == NULL);
+  ASSERT_EQ(cr_rd.data.sc_scene_pack->count, SUPLA_SCENE_PACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_scene_pack->total_left, pack.total_left);
+
+  for (int a = 0; a < SUPLA_SCENE_PACK_MAXCOUNT - 1; a++) {
+    ASSERT_EQ(memcmp(&cr_rd.data.sc_scene_pack->items[a], &pack.items[a + 1],
+                     sizeof(TSC_SuplaScene) - SUPLA_SCENE_CAPTION_MAXSIZE +
+                         pack.items[a + 1].CaptionSize),
+              0);
+  }
+
+  free(cr_rd.data.sc_scene_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_scene_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaScenePack, pack);
+
+  pack.count = SUPLA_SCENE_PACK_MAXCOUNT;
+
+  for (int a = 0; a < SUPLA_SCENE_PACK_MAXCOUNT; a++) {
+    pack.items[a].CaptionSize = SUPLA_SCENE_CAPTION_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_scene_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_SCENE_PACK_UPDATE, 8431);
+
+  ASSERT_FALSE(cr_rd.data.sc_scene_pack == NULL);
+
+  ASSERT_EQ(
+      0, memcmp(cr_rd.data.sc_scene_pack, &pack, sizeof(TSC_SuplaScenePack)));
+
+  free(cr_rd.data.sc_scene_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+//---------------------------------------------------------
+// SCENE STATUS PACK UPDATE
+//---------------------------------------------------------
+
+TEST_F(SrpcTest, call_scene_state_pack_update_with_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
+
+  pack.count = SUPLA_SCENE_STATE_PACK_MAXCOUNT + 1;
+
+  ASSERT_EQ(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_scene_state_pack_update_with_zero_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
+
+  pack.count = 0;
+
+  ASSERT_EQ(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
+
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_scene_state_pack_update_with_caption_over_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
+
+  pack.count = SUPLA_SCENE_STATE_PACK_MAXCOUNT;
+
+  pack.items[0].InitiatorNameSize = SUPLA_INITIATOR_NAME_MAXSIZE + 1;
+
+  for (int a = 1; a < SUPLA_SCENE_STATE_PACK_MAXCOUNT; a++) {
+    pack.items[a].InitiatorNameSize = SUPLA_INITIATOR_NAME_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE, 4211);
+
+  ASSERT_FALSE(cr_rd.data.sc_scene_state_pack == NULL);
+  ASSERT_EQ(cr_rd.data.sc_scene_state_pack->count,
+            SUPLA_SCENE_STATE_PACK_MAXCOUNT - 1);
+  ASSERT_EQ(cr_rd.data.sc_scene_state_pack->total_left, pack.total_left);
+
+  for (int a = 0; a < SUPLA_SCENE_STATE_PACK_MAXCOUNT - 1; a++) {
+    ASSERT_EQ(
+        memcmp(&cr_rd.data.sc_scene_state_pack->items[a], &pack.items[a + 1],
+               sizeof(TSC_SuplaSceneState) - SUPLA_INITIATOR_NAME_MAXSIZE +
+                   pack.items[a + 1].InitiatorNameSize),
+        0);
+  }
+
+  free(cr_rd.data.sc_scene_state_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+TEST_F(SrpcTest, call_scene_state_pack_update_with_full_size) {
+  data_read_result = -1;
+  srpc = srpcInit();
+  ASSERT_FALSE(srpc == NULL);
+
+  DECLARE_WITH_RANDOM(TSC_SuplaSceneStatePack, pack);
+
+  pack.count = SUPLA_SCENE_STATE_PACK_MAXCOUNT;
+
+  for (int a = 0; a < SUPLA_SCENE_STATE_PACK_MAXCOUNT; a++) {
+    pack.items[a].InitiatorNameSize = SUPLA_INITIATOR_NAME_MAXSIZE;
+  }
+
+  ASSERT_GT(srpc_sc_async_scene_state_pack_update(srpc, &pack), 0);
+  SendAndReceive(SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE, 4431);
+
+  ASSERT_FALSE(cr_rd.data.sc_scene_state_pack == NULL);
+
+  ASSERT_EQ(0, memcmp(cr_rd.data.sc_scene_state_pack, &pack,
+                      sizeof(TSC_SuplaSceneStatePack)));
+
+  free(cr_rd.data.sc_scene_state_pack);
+  srpc_free(srpc);
+  srpc = NULL;
+}
+
+#if SUPLA_PROTO_VERSION >= 19
+//---------------------------------------------------------
+// EXECUTE ACTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action, TCS_Action,
+                                     SUPLA_CS_CALL_EXECUTE_ACTION, 37, 537,
+                                     cs_action, SUPLA_ACTION_PARAM_MAXSIZE,
+                                     Param, ParamSize);
+
+//---------------------------------------------------------
+// CLIENT AUTH AND EXECUTE ACTION
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST_WITH_SIZE_PARAM(srpc_cs_async_execute_action_with_auth,
+                                     TCS_ActionWithAuth,
+                                     SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION, 427,
+                                     927, cs_action_with_auth,
+                                     SUPLA_ACTION_PARAM_MAXSIZE, Action.Param,
+                                     Action.ParamSize);
+
+//---------------------------------------------------------
+// ACTION EXECUTION RESULT
+//---------------------------------------------------------
+
+SRPC_CALL_BASIC_TEST(srpc_sc_async_action_execution_result,
+                     TSC_ActionExecutionResult,
+                     SUPLA_SC_CALL_ACTION_EXECUTION_RESULT, 39,
+                     sc_action_execution_result);
+#endif /*SUPLA_PROTO_VERSION >= 19*/
 }  // namespace

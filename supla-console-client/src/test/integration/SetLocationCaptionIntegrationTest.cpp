@@ -17,9 +17,12 @@
  */
 
 #include "SetLocationCaptionIntegrationTest.h"
+
 #include "log.h"
 
 namespace testing {
+
+using std::string;
 
 SetLocationCaptionIntegrationTest::SetLocationCaptionIntegrationTest() {
   expectedResultCode = 0;
@@ -69,7 +72,7 @@ void SetLocationCaptionIntegrationTest::reconnect() {
   IntegrationTest::reconnect();
 }
 
-std::string SetLocationCaptionIntegrationTest::dbGetCaption(int locationId) {
+string SetLocationCaptionIntegrationTest::dbGetCaption(int locationId) {
   char sql[100];
   snprintf(sql, sizeof(sql), "SELECT caption FROM supla_location WHERE id = %i",
            locationId);

@@ -29,9 +29,9 @@
 
 supla_alexa_response_request::supla_alexa_response_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, event_source_type EventSourceType)
+    event_type EventType, const supla_caller &Caller)
     : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventType,
-                          EventSourceType) {
+                          Caller) {
   setDelay(1000000);
   setTimeout(scfg_int(CFG_ALEXA_RESPONSE_TIMEOUT) * 1000);
 }
@@ -40,7 +40,7 @@ supla_alexa_response_request::~supla_alexa_response_request() {}
 
 bool supla_alexa_response_request::verifyExisting(
     supla_http_request *existing) {
-  if (getEventSourceType() == EST_DEVICE) {
+  if (getCaller() == ctDevice) {
     existing->setDelay(0);
     return true;
   }
@@ -48,14 +48,13 @@ bool supla_alexa_response_request::verifyExisting(
 }
 
 bool supla_alexa_response_request::queueUp(void) {
-  return getEventSourceType() == EST_AMAZON_ALEXA &&
+  return getCaller() == ctAmazonAlexa &&
          supla_alexa_request::queueUp();
 }
 
-bool supla_alexa_response_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
-  if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
-                                                      verification)) {
+bool supla_alexa_response_request::isCallerAccepted(
+    const supla_caller &caller, bool verification) {
+  if (!supla_alexa_request::isCallerAccepted(caller, verification)) {
     return false;
   }
 
@@ -70,11 +69,10 @@ bool supla_alexa_response_request::isEventSourceTypeAccepted(
     case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
       if (verification) {
-        if (eventSourceType == EST_DEVICE ||
-            eventSourceType == EST_AMAZON_ALEXA) {
+        if (caller == ctDevice || caller == ctAmazonAlexa) {
           return !summary.hidden_channel;
         }
-      } else if (eventSourceType == EST_AMAZON_ALEXA) {
+      } else if (caller == ctAmazonAlexa) {
         return !summary.hidden_channel;
       }
       break;

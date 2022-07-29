@@ -24,24 +24,23 @@
 
 #include "log.h"
 
+using std::list;
+using std::string;
+
 s_worker_action::s_worker_action(s_abstract_worker *worker) {
   this->worker = worker;
 }
 
 s_worker_action::~s_worker_action() {}
 
-bool s_worker_action::is_function_allowed(void) {
-  int flist[FUNCTION_LIST_SIZE];
-  memset((void *)flist, 0, FUNCTION_LIST_SIZE * sizeof(int));
+bool s_worker_action::_is_action_allowed(void) {
+  if (!is_action_allowed()) {
+    worker->get_db()->set_result(worker->get_id(),
+                                 ACTION_EXECUTION_RESULT_CANCELLED);
+    return false;
+  }
 
-  get_function_list(flist);
-
-  for (int a = 0; a < FUNCTION_LIST_SIZE; a++)
-    if (flist[a] == worker->get_channel_func()) return true;
-
-  worker->get_db()->set_result(worker->get_id(),
-                               ACTION_EXECUTION_RESULT_CANCELLED);
-  return false;
+  return true;
 }
 
 bool s_worker_action::check_before_start(void) { return false; }
@@ -51,7 +50,7 @@ bool s_worker_action::retry_when_fail(void) {
 }
 
 void s_worker_action::execute(void) {
-  if (worker == NULL || worker->get_db() == NULL || !is_function_allowed())
+  if (worker == NULL || worker->get_db() == NULL || !_is_action_allowed())
     return;
 
   if (!worker->channel_group() && check_before_start() &&
@@ -134,12 +133,12 @@ int s_worker_action::get_max_time(void) {
 //-----------------------------------------------------------------
 //-----------------------------------------------------------------
 
-std::list<AbstractActionFactory *> AbstractActionFactory::factories;
+list<AbstractActionFactory *> AbstractActionFactory::factories;
 
 AbstractActionFactory::~AbstractActionFactory(void) {}
 
 AbstractActionFactory::AbstractActionFactory(int action_type,
-                                             std::string classname) {
+                                             string classname) {
   assert(AbstractActionFactory::factoryByActionType(action_type) == NULL);
 
   this->action_type = action_type;
@@ -149,14 +148,11 @@ AbstractActionFactory::AbstractActionFactory(int action_type,
 
 int AbstractActionFactory::getActionType(void) { return action_type; }
 
-std::string AbstractActionFactory::getActionClassName(void) {
-  return classname;
-}
+string AbstractActionFactory::getActionClassName(void) { return classname; }
 
 AbstractActionFactory *AbstractActionFactory::factoryByActionType(
     int action_type) {
-  for (std::list<AbstractActionFactory *>::iterator it =
-           AbstractActionFactory::factories.begin();
+  for (auto it = AbstractActionFactory::factories.begin();
        it != AbstractActionFactory::factories.end(); it++) {
     if ((*it)->getActionType() == action_type) return *it;
   }

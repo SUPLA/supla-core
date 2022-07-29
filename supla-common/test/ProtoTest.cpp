@@ -30,201 +30,211 @@ class ProtoTest : public ::testing::Test {
 };
 
 TEST_F(ProtoTest, check_size_of_structures_and_types) {
-  ASSERT_EQ((unsigned int)2, sizeof(_supla_int16_t));
-  ASSERT_EQ((unsigned int)4, sizeof(_supla_int_t));
-  ASSERT_EQ((unsigned int)8, sizeof(_supla_int64_t));
-  ASSERT_EQ((unsigned int)16, sizeof(struct _supla_timeval));
-  ASSERT_EQ((unsigned int)10258, sizeof(TSuplaDataPacket));
-  ASSERT_EQ((unsigned int)23, sizeof(TSDC_SuplaGetVersionResult));
-  ASSERT_EQ((unsigned int)2, sizeof(TSDC_SuplaVersionError));
-  ASSERT_EQ((unsigned int)16, sizeof(TDCS_SuplaPingServer));
-  ASSERT_EQ((unsigned int)8, sizeof(TDCS_SuplaPingServer_COMPAT));
-  ASSERT_EQ((unsigned int)16, sizeof(TSDC_SuplaPingServerResult));
-  ASSERT_EQ((unsigned int)1, sizeof(TDCS_SuplaSetActivityTimeout));
-  ASSERT_EQ((unsigned int)3, sizeof(TSDC_SuplaSetActivityTimeoutResult));
-  ASSERT_EQ((unsigned int)16, sizeof(TSuplaChannelValue));
-  ASSERT_EQ((unsigned int)17, sizeof(TSuplaChannelValue_B));
-  ASSERT_EQ((unsigned int)1029, sizeof(TSuplaChannelExtendedValue));
-  ASSERT_EQ((unsigned int)410, sizeof(TSC_SuplaLocation));
-  ASSERT_EQ((unsigned int)8208, sizeof(TSC_SuplaLocationPack));
-  ASSERT_EQ((unsigned int)13, sizeof(TDS_SuplaDeviceChannel));
-  ASSERT_EQ((unsigned int)1940, sizeof(TDS_SuplaRegisterDevice));
-  ASSERT_EQ((unsigned int)21, sizeof(TDS_SuplaDeviceChannel_B));
-  ASSERT_EQ((unsigned int)25, sizeof(TDS_SuplaDeviceChannel_C));
-  ASSERT_EQ((unsigned int)2964, sizeof(TDS_SuplaRegisterDevice_B));
-  ASSERT_EQ((unsigned int)3029, sizeof(TDS_SuplaRegisterDevice_C));
-  ASSERT_EQ((unsigned int)3264, sizeof(TDS_SuplaRegisterDevice_D));
-  ASSERT_EQ((unsigned int)3784, sizeof(TDS_SuplaRegisterDevice_E));
-  ASSERT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
-  ASSERT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
-  ASSERT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
-  ASSERT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
-  ASSERT_EQ((unsigned int)1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
-  ASSERT_EQ((unsigned int)17, sizeof(TSD_SuplaChannelNewValue));
-  ASSERT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelGroupNewValue));
-  ASSERT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
-  ASSERT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
-  ASSERT_EQ((unsigned int)23, sizeof(TSC_SuplaChannelValue_B));
-  ASSERT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
-  ASSERT_EQ((unsigned int)448, sizeof(TSC_SuplaChannelValuePack));
-  ASSERT_EQ((unsigned int)468, sizeof(TSC_SuplaChannelValuePack_B));
-  ASSERT_EQ((unsigned int)10202, sizeof(TSC_SuplaChannelExtendedValuePack));
-  ASSERT_EQ((unsigned int)435, sizeof(TSC_SuplaChannel));
-  ASSERT_EQ((unsigned int)8708, sizeof(TSC_SuplaChannelPack));
-  ASSERT_EQ((unsigned int)444, sizeof(TSC_SuplaChannel_B));
-  ASSERT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
-  ASSERT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
-  ASSERT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
-  ASSERT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
-  ASSERT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
-  ASSERT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
-  ASSERT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));
-  ASSERT_EQ((unsigned int)8608, sizeof(TSC_SuplaChannelGroupPack_B));
-  ASSERT_EQ((unsigned int)9, sizeof(TSC_SuplaChannelGroupRelation));
-  ASSERT_EQ((unsigned int)908, sizeof(TSC_SuplaChannelGroupRelationPack));
-  ASSERT_EQ((unsigned int)275, sizeof(TCS_SuplaRegisterClient));
-  ASSERT_EQ((unsigned int)340, sizeof(TCS_SuplaRegisterClient_B));
-  ASSERT_EQ((unsigned int)575, sizeof(TCS_SuplaRegisterClient_C));
-  ASSERT_EQ((unsigned int)639, sizeof(TCS_SuplaRegisterClient_D));
-  ASSERT_EQ((unsigned int)19, sizeof(TSC_SuplaRegisterClientResult));
-  ASSERT_EQ((unsigned int)27, sizeof(TSC_SuplaRegisterClientResult_B));
-  ASSERT_EQ((unsigned int)31, sizeof(TSC_SuplaRegisterClientResult_C));
-  ASSERT_EQ((unsigned int)9, sizeof(TCS_SuplaChannelNewValue));
-  ASSERT_EQ((unsigned int)12, sizeof(TCS_SuplaChannelNewValue_B));
-  ASSERT_EQ((unsigned int)13, sizeof(TCS_SuplaNewValue));
-  ASSERT_EQ((unsigned int)221, sizeof(TSC_SuplaEvent));
-  ASSERT_EQ((unsigned int)17, sizeof(TDS_FirmwareUpdateParams));
-  ASSERT_EQ((unsigned int)207, sizeof(TSD_FirmwareUpdate_Url));
-  ASSERT_EQ((unsigned int)208, sizeof(TSD_FirmwareUpdate_UrlResult));
-  ASSERT_EQ((unsigned int)8, sizeof(TSDC_RegistrationEnabled));
-  ASSERT_EQ((unsigned int)264, sizeof(TSC_OAuthToken));
-  ASSERT_EQ((unsigned int)265, sizeof(TSC_OAuthTokenRequestResult));
-  ASSERT_EQ((unsigned int)62, sizeof(TElectricityMeter_Measurement));
-  ASSERT_EQ((unsigned int)429, sizeof(TElectricityMeter_ExtendedValue));
-  ASSERT_EQ((unsigned int)449, sizeof(TElectricityMeter_ExtendedValue_V2));
-  ASSERT_EQ((unsigned int)5, sizeof(TElectricityMeter_Value));
-  ASSERT_EQ((unsigned int)40, sizeof(TSC_ImpulseCounter_ExtendedValue));
-  ASSERT_EQ((unsigned int)8, sizeof(TSC_ImpulseCounter_Value));
-  ASSERT_EQ((unsigned int)320, sizeof(TCS_SuperUserAuthorizationRequest));
-  ASSERT_EQ((unsigned int)144, sizeof(TCS_DeviceCalCfgRequest));
-  ASSERT_EQ((unsigned int)145, sizeof(TCS_DeviceCalCfgRequest_B));
-  ASSERT_EQ((unsigned int)144, sizeof(TSC_DeviceCalCfgResult));
-  ASSERT_EQ((unsigned int)149, sizeof(TSD_DeviceCalCfgRequest));
-  ASSERT_EQ((unsigned int)148, sizeof(TDS_DeviceCalCfgResult));
-  ASSERT_EQ((unsigned int)9, sizeof(TCS_TimerArmRequest));
+  EXPECT_EQ((unsigned int)2, sizeof(_supla_int16_t));
+  EXPECT_EQ((unsigned int)4, sizeof(_supla_int_t));
+  EXPECT_EQ((unsigned int)8, sizeof(_supla_int64_t));
+  EXPECT_EQ((unsigned int)16, sizeof(struct _supla_timeval));
+  EXPECT_EQ((unsigned int)10258, sizeof(TSuplaDataPacket));
+  EXPECT_EQ((unsigned int)23, sizeof(TSDC_SuplaGetVersionResult));
+  EXPECT_EQ((unsigned int)2, sizeof(TSDC_SuplaVersionError));
+  EXPECT_EQ((unsigned int)16, sizeof(TDCS_SuplaPingServer));
+  EXPECT_EQ((unsigned int)8, sizeof(TDCS_SuplaPingServer_COMPAT));
+  EXPECT_EQ((unsigned int)16, sizeof(TSDC_SuplaPingServerResult));
+  EXPECT_EQ((unsigned int)1, sizeof(TDCS_SuplaSetActivityTimeout));
+  EXPECT_EQ((unsigned int)3, sizeof(TSDC_SuplaSetActivityTimeoutResult));
+  EXPECT_EQ((unsigned int)16, sizeof(TSuplaChannelValue));
+  EXPECT_EQ((unsigned int)17, sizeof(TSuplaChannelValue_B));
+  EXPECT_EQ((unsigned int)1029, sizeof(TSuplaChannelExtendedValue));
+  EXPECT_EQ((unsigned int)410, sizeof(TSC_SuplaLocation));
+  EXPECT_EQ((unsigned int)8208, sizeof(TSC_SuplaLocationPack));
+  EXPECT_EQ((unsigned int)13, sizeof(TDS_SuplaDeviceChannel));
+  EXPECT_EQ((unsigned int)1940, sizeof(TDS_SuplaRegisterDevice));
+  EXPECT_EQ((unsigned int)21, sizeof(TDS_SuplaDeviceChannel_B));
+  EXPECT_EQ((unsigned int)25, sizeof(TDS_SuplaDeviceChannel_C));
+  EXPECT_EQ((unsigned int)2964, sizeof(TDS_SuplaRegisterDevice_B));
+  EXPECT_EQ((unsigned int)3029, sizeof(TDS_SuplaRegisterDevice_C));
+  EXPECT_EQ((unsigned int)3264, sizeof(TDS_SuplaRegisterDevice_D));
+  EXPECT_EQ((unsigned int)3784, sizeof(TDS_SuplaRegisterDevice_E));
+  EXPECT_EQ((unsigned int)7, sizeof(TSD_SuplaRegisterDeviceResult));
+  EXPECT_EQ((unsigned int)9, sizeof(TDS_SuplaDeviceChannelValue));
+  EXPECT_EQ((unsigned int)10, sizeof(TDS_SuplaDeviceChannelValue_B));
+  EXPECT_EQ((unsigned int)14, sizeof(TDS_SuplaDeviceChannelValue_C));
+  EXPECT_EQ((unsigned int)1030, sizeof(TDS_SuplaDeviceChannelExtendedValue));
+  EXPECT_EQ((unsigned int)17, sizeof(TSD_SuplaChannelNewValue));
+  EXPECT_EQ((unsigned int)22, sizeof(TSD_SuplaChannelGroupNewValue));
+  EXPECT_EQ((unsigned int)6, sizeof(TDS_SuplaChannelNewValueResult));
+  EXPECT_EQ((unsigned int)22, sizeof(TSC_SuplaChannelValue));
+  EXPECT_EQ((unsigned int)23, sizeof(TSC_SuplaChannelValue_B));
+  EXPECT_EQ((unsigned int)1033, sizeof(TSC_SuplaChannelExtendedValue));
+  EXPECT_EQ((unsigned int)448, sizeof(TSC_SuplaChannelValuePack));
+  EXPECT_EQ((unsigned int)468, sizeof(TSC_SuplaChannelValuePack_B));
+  EXPECT_EQ((unsigned int)10202, sizeof(TSC_SuplaChannelExtendedValuePack));
+  EXPECT_EQ((unsigned int)435, sizeof(TSC_SuplaChannel));
+  EXPECT_EQ((unsigned int)8708, sizeof(TSC_SuplaChannelPack));
+  EXPECT_EQ((unsigned int)444, sizeof(TSC_SuplaChannel_B));
+  EXPECT_EQ((unsigned int)8888, sizeof(TSC_SuplaChannelPack_B));
+  EXPECT_EQ((unsigned int)460, sizeof(TSC_SuplaChannel_C));
+  EXPECT_EQ((unsigned int)9208, sizeof(TSC_SuplaChannelPack_C));
+  EXPECT_EQ((unsigned int)9228, sizeof(TSC_SuplaChannelPack_D));
+  EXPECT_EQ((unsigned int)426, sizeof(TSC_SuplaChannelGroup));
+  EXPECT_EQ((unsigned int)8528, sizeof(TSC_SuplaChannelGroupPack));
+  EXPECT_EQ((unsigned int)430, sizeof(TSC_SuplaChannelGroup_B));
+  EXPECT_EQ((unsigned int)8608, sizeof(TSC_SuplaChannelGroupPack_B));
+  EXPECT_EQ((unsigned int)9, sizeof(TSC_SuplaChannelGroupRelation));
+  EXPECT_EQ((unsigned int)908, sizeof(TSC_SuplaChannelGroupRelationPack));
+  EXPECT_EQ((unsigned int)275, sizeof(TCS_SuplaRegisterClient));
+  EXPECT_EQ((unsigned int)340, sizeof(TCS_SuplaRegisterClient_B));
+  EXPECT_EQ((unsigned int)575, sizeof(TCS_SuplaRegisterClient_C));
+  EXPECT_EQ((unsigned int)639, sizeof(TCS_SuplaRegisterClient_D));
+  EXPECT_EQ((unsigned int)19, sizeof(TSC_SuplaRegisterClientResult));
+  EXPECT_EQ((unsigned int)27, sizeof(TSC_SuplaRegisterClientResult_B));
+  EXPECT_EQ((unsigned int)31, sizeof(TSC_SuplaRegisterClientResult_C));
+  EXPECT_EQ((unsigned int)9, sizeof(TCS_SuplaChannelNewValue));
+  EXPECT_EQ((unsigned int)12, sizeof(TCS_SuplaChannelNewValue_B));
+  EXPECT_EQ((unsigned int)13, sizeof(TCS_SuplaNewValue));
+  EXPECT_EQ((unsigned int)221, sizeof(TSC_SuplaEvent));
+  EXPECT_EQ((unsigned int)17, sizeof(TDS_FirmwareUpdateParams));
+  EXPECT_EQ((unsigned int)207, sizeof(TSD_FirmwareUpdate_Url));
+  EXPECT_EQ((unsigned int)208, sizeof(TSD_FirmwareUpdate_UrlResult));
+  EXPECT_EQ((unsigned int)8, sizeof(TSDC_RegistrationEnabled));
+  EXPECT_EQ((unsigned int)264, sizeof(TSC_OAuthToken));
+  EXPECT_EQ((unsigned int)265, sizeof(TSC_OAuthTokenRequestResult));
+  EXPECT_EQ((unsigned int)62, sizeof(TElectricityMeter_Measurement));
+  EXPECT_EQ((unsigned int)429, sizeof(TElectricityMeter_ExtendedValue));
+  EXPECT_EQ((unsigned int)449, sizeof(TElectricityMeter_ExtendedValue_V2));
+  EXPECT_EQ((unsigned int)5, sizeof(TElectricityMeter_Value));
+  EXPECT_EQ((unsigned int)40, sizeof(TSC_ImpulseCounter_ExtendedValue));
+  EXPECT_EQ((unsigned int)8, sizeof(TSC_ImpulseCounter_Value));
+  EXPECT_EQ((unsigned int)320, sizeof(TCS_SuperUserAuthorizationRequest));
+  EXPECT_EQ((unsigned int)144, sizeof(TCS_DeviceCalCfgRequest));
+  EXPECT_EQ((unsigned int)145, sizeof(TCS_DeviceCalCfgRequest_B));
+  EXPECT_EQ((unsigned int)144, sizeof(TSC_DeviceCalCfgResult));
+  EXPECT_EQ((unsigned int)149, sizeof(TSD_DeviceCalCfgRequest));
+  EXPECT_EQ((unsigned int)148, sizeof(TDS_DeviceCalCfgResult));
+  EXPECT_EQ((unsigned int)9, sizeof(TCS_TimerArmRequest));
 
-  ASSERT_LE(sizeof(TDS_ImpulseCounter_Value),
+  EXPECT_LE(sizeof(TDS_ImpulseCounter_Value),
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);
-  ASSERT_LE(sizeof(TSC_ImpulseCounter_ExtendedValue),
+  EXPECT_LE(sizeof(TSC_ImpulseCounter_ExtendedValue),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
-  ASSERT_LE(sizeof(TElectricityMeter_Value),
+  EXPECT_LE(sizeof(TElectricityMeter_Value),
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);
-  ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue),
+  EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
-  ASSERT_LE(sizeof(TElectricityMeter_ExtendedValue_V2),
-            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
-
-  ASSERT_EQ((unsigned int)4, sizeof(TThermostat_Time));
-  ASSERT_EQ((unsigned int)246, sizeof(TThermostat_ExtendedValue));
-  ASSERT_EQ((unsigned int)6, sizeof(TThermostat_Value));
-  ASSERT_EQ((unsigned int)169, sizeof(TThermostat_Schedule));
-  ASSERT_EQ((unsigned int)104, sizeof(TThermostat_ScheduleCfg));
-  ASSERT_EQ((unsigned int)22, sizeof(TThermostatTemperatureCfg));
-
-  ASSERT_LE(sizeof(TThermostat_ExtendedValue),
-            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
-  ASSERT_LE(sizeof(TThermostat_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
-  ASSERT_LE(sizeof(TThermostat_ScheduleCfg),
-            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
-  ASSERT_LE(sizeof(TThermostatTemperatureCfg),
-            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
-
-  ASSERT_EQ((unsigned int)63, sizeof(TSDC_UserLocalTimeResult));
-
-  ASSERT_EQ((unsigned int)50, sizeof(TDSC_ChannelState));
-  ASSERT_EQ((unsigned int)8, sizeof(TCSD_ChannelStateRequest));
-  ASSERT_EQ((unsigned int)8, sizeof(TCS_SetChannelFunction));
-  ASSERT_EQ((unsigned int)9, sizeof(TSC_SetChannelFunctionResult));
-  ASSERT_EQ((unsigned int)660, sizeof(TSC_ChannelBasicCfg));
-  ASSERT_EQ((unsigned int)4, sizeof(TCS_ChannelBasicCfgRequest));
-  ASSERT_EQ((unsigned int)1, sizeof(TSC_ClientsReconnectRequestResult));
-  ASSERT_EQ((unsigned int)8, sizeof(TCS_SetRegistrationEnabled));
-  ASSERT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
-  ASSERT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
-  ASSERT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
-  ASSERT_EQ((unsigned int)409, sizeof(TCS_SetCaption));
-  ASSERT_EQ((unsigned int)410, sizeof(TSC_SetCaptionResult));
-  ASSERT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
-  ASSERT_EQ((unsigned int)58, sizeof(TCalCfg_ZWave_Node));
-  ASSERT_LE(sizeof(TCalCfg_ZWave_Node),
-            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
-  ASSERT_LE(sizeof(unsigned char), (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
-  ASSERT_LE(sizeof(TCalCfg_ProgressReport),
-            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
-
-  ASSERT_EQ((unsigned int)221, sizeof(TTimerState_ExtendedValue));
-  ASSERT_EQ((unsigned int)271, sizeof(TChannelAndTimerState_ExtendedValue));
-
-  ASSERT_LE(sizeof(TTimerState_ExtendedValue),
-            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
-  ASSERT_LE(sizeof(TChannelAndTimerState_ExtendedValue),
+  EXPECT_LE(sizeof(TElectricityMeter_ExtendedValue_V2),
             (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
 
-  ASSERT_EQ((unsigned int)4, sizeof(TCalCfg_LightSourceLifespan));
-  ASSERT_LE(sizeof(TCalCfg_LightSourceLifespan),
+  EXPECT_EQ((unsigned int)4, sizeof(TThermostat_Time));
+  EXPECT_EQ((unsigned int)246, sizeof(TThermostat_ExtendedValue));
+  EXPECT_EQ((unsigned int)6, sizeof(TThermostat_Value));
+  EXPECT_EQ((unsigned int)169, sizeof(TThermostat_Schedule));
+  EXPECT_EQ((unsigned int)104, sizeof(TThermostat_ScheduleCfg));
+  EXPECT_EQ((unsigned int)22, sizeof(TThermostatTemperatureCfg));
+
+  EXPECT_LE(sizeof(TThermostat_ExtendedValue),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  EXPECT_LE(sizeof(TThermostat_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  EXPECT_LE(sizeof(TThermostat_ScheduleCfg),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+  EXPECT_LE(sizeof(TThermostatTemperatureCfg),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 
-  ASSERT_LE(sizeof(TDigiglass_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  EXPECT_EQ((unsigned int)63, sizeof(TSDC_UserLocalTimeResult));
 
-  ASSERT_LE(sizeof(TCSD_Digiglass_NewValue),
+  EXPECT_EQ((unsigned int)50, sizeof(TDSC_ChannelState));
+  EXPECT_EQ((unsigned int)8, sizeof(TCSD_ChannelStateRequest));
+  EXPECT_EQ((unsigned int)8, sizeof(TCS_SetChannelFunction));
+  EXPECT_EQ((unsigned int)9, sizeof(TSC_SetChannelFunctionResult));
+  EXPECT_EQ((unsigned int)660, sizeof(TSC_ChannelBasicCfg));
+  EXPECT_EQ((unsigned int)4, sizeof(TCS_ChannelBasicCfgRequest));
+  EXPECT_EQ((unsigned int)1, sizeof(TSC_ClientsReconnectRequestResult));
+  EXPECT_EQ((unsigned int)8, sizeof(TCS_SetRegistrationEnabled));
+  EXPECT_EQ((unsigned int)1, sizeof(TSC_SetRegistrationEnabledResult));
+  EXPECT_EQ((unsigned int)4, sizeof(TCS_DeviceReconnectRequest));
+  EXPECT_EQ((unsigned int)5, sizeof(TSC_DeviceReconnectRequestResult));
+  EXPECT_EQ((unsigned int)409, sizeof(TCS_SetCaption));
+  EXPECT_EQ((unsigned int)410, sizeof(TSC_SetCaptionResult));
+  EXPECT_EQ((unsigned int)513, sizeof(TSD_ChannelFunctions));
+  EXPECT_EQ((unsigned int)58, sizeof(TCalCfg_ZWave_Node));
+  EXPECT_LE(sizeof(TCalCfg_ZWave_Node),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+  EXPECT_LE(sizeof(unsigned char), (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+  EXPECT_LE(sizeof(TCalCfg_ProgressReport),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  EXPECT_EQ((unsigned int)221, sizeof(TTimerState_ExtendedValue));
+  EXPECT_EQ((unsigned int)271, sizeof(TChannelAndTimerState_ExtendedValue));
+
+  EXPECT_LE(sizeof(TTimerState_ExtendedValue),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+  EXPECT_LE(sizeof(TChannelAndTimerState_ExtendedValue),
+            (unsigned int)SUPLA_CHANNELEXTENDEDVALUE_SIZE);
+
+  EXPECT_EQ((unsigned int)4, sizeof(TCalCfg_LightSourceLifespan));
+  EXPECT_LE(sizeof(TCalCfg_LightSourceLifespan),
+            (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
+
+  EXPECT_LE(sizeof(TDigiglass_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+
+  EXPECT_LE(sizeof(TCSD_Digiglass_NewValue),
             (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
-  ASSERT_EQ((unsigned int)12, sizeof(TCalCfg_ZWave_WakeupSettingsReport));
-  ASSERT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsReport),
+  EXPECT_EQ((unsigned int)12, sizeof(TCalCfg_ZWave_WakeupSettingsReport));
+  EXPECT_LE(sizeof(TCalCfg_ZWave_WakeupSettingsReport),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 
-  ASSERT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
-  ASSERT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
+  EXPECT_EQ((unsigned int)3, sizeof(TCalCfg_ZWave_WakeUpTime));
+  EXPECT_LE(sizeof(TCalCfg_ZWave_WakeUpTime),
             (unsigned int)SUPLA_CALCFG_DATA_MAXSIZE);
 
-  ASSERT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
-  ASSERT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
-  ASSERT_EQ((unsigned int)3, sizeof(TRelayChannel_Value));
-  ASSERT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
+  EXPECT_EQ((unsigned int)13, sizeof(TSD_ChannelIntParams));
+  EXPECT_EQ((unsigned int)1, sizeof(TDS_GetChannelIntParamsRequest));
+  EXPECT_EQ((unsigned int)3, sizeof(TRelayChannel_Value));
+  EXPECT_LE(sizeof(TRelayChannel_Value), (unsigned int)SUPLA_CHANNELVALUE_SIZE);
 
-  ASSERT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
-  ASSERT_EQ((unsigned int)136, sizeof(TSD_ChannelConfig));
-  ASSERT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
+  EXPECT_EQ((unsigned int)6, sizeof(TDS_GetChannelConfigRequest));
+  EXPECT_EQ((unsigned int)136, sizeof(TSD_ChannelConfig));
+  EXPECT_LE(sizeof(TSD_ChannelConfig_StaircaseTimer),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-  ASSERT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
+  EXPECT_LE(sizeof(TSD_ChannelConfig_Rollershutter),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-  ASSERT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
-            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
-
-  ASSERT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
-  ASSERT_LE(sizeof(TCalCfg_RollerShutterSettings),
+  EXPECT_LE(sizeof(TSD_ChannelConfig_ActionTrigger),
             (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
 
-  ASSERT_EQ(static_cast<size_t>(13), sizeof(TCalCfg_FacadeBlindSettings));
-  ASSERT_LE(sizeof(TCalCfg_FacadeBlindSettings),
+  EXPECT_EQ((unsigned int)8, sizeof(TCalCfg_RollerShutterSettings));
+  EXPECT_LE(sizeof(TCalCfg_RollerShutterSettings),
+            (unsigned int)SUPLA_CHANNEL_CONFIG_MAXSIZE);
+
+  EXPECT_EQ(static_cast<size_t>(13), sizeof(TCalCfg_FacadeBlindSettings));
+  EXPECT_LE(sizeof(TCalCfg_FacadeBlindSettings),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
-  ASSERT_EQ(static_cast<size_t>(13), sizeof(TSD_ChannelConfig_FacadeBlind));
-  ASSERT_LE(sizeof(TSD_ChannelConfig_FacadeBlind),
+  EXPECT_EQ(static_cast<size_t>(13), sizeof(TSD_ChannelConfig_FacadeBlind));
+  EXPECT_LE(sizeof(TSD_ChannelConfig_FacadeBlind),
             static_cast<size_t>(SUPLA_CHANNEL_CONFIG_MAXSIZE));
 
-  ASSERT_LE(sizeof(TDSC_RollerShutterValue),
-      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
-  ASSERT_LE(sizeof(TCSD_RollerShutterValue),
-      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  EXPECT_LE(sizeof(TDSC_RollerShutterValue),
+            static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  EXPECT_LE(sizeof(TCSD_RollerShutterValue),
+            static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
 
-  ASSERT_LE(sizeof(TDSC_FacadeBlindValue),
-      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
-  ASSERT_LE(sizeof(TCSD_FacadeBlindValue),
-      static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  EXPECT_LE(sizeof(TDSC_FacadeBlindValue),
+            static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
+  EXPECT_LE(sizeof(TCSD_FacadeBlindValue),
+            static_cast<size_t>(SUPLA_CHANNELVALUE_SIZE));
 
-  ASSERT_EQ((unsigned int)15, sizeof(TDS_ActionTrigger));
+  EXPECT_EQ((unsigned int)15, sizeof(TDS_ActionTrigger));
+
+  EXPECT_EQ((unsigned int)420, sizeof(TSC_SuplaScene));
+  EXPECT_EQ((unsigned int)8408, sizeof(TSC_SuplaScenePack));
+  EXPECT_EQ((unsigned int)220, sizeof(TSC_SuplaSceneState));
+  EXPECT_EQ((unsigned int)4408, sizeof(TSC_SuplaSceneStatePack));
+
+  EXPECT_EQ((unsigned int)514, sizeof(TCS_Action));
+  EXPECT_EQ((unsigned int)390, sizeof(TCS_ClientAuthorizationDetails));
+  EXPECT_EQ((unsigned int)904, sizeof(TCS_ActionWithAuth));
+  EXPECT_EQ((unsigned int)16, sizeof(TSC_ActionExecutionResult));
 }
 
 TEST_F(ProtoTest, init) {
@@ -548,6 +558,49 @@ TEST_F(ProtoTest, pop_out_data) {
 
   sproto_free(sproto);
 }
+
+TEST_F(ProtoTest, set_null_terminated_string) {
+  char src[] = "abcdefghijk";
+  char msk[] = "nmoprstuwz123456789";
+  char dst[] = "                   ";
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  unsigned _supla_int16_t dest_size = 0;
+
+  sproto__set_null_terminated_string(NULL, dst, &dest_size, 10);
+
+  EXPECT_EQ(dst[0], 0);
+  EXPECT_EQ(dest_size, 1U);
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  dest_size = 0;
+
+  sproto__set_null_terminated_string(src, dst, &dest_size, 1);
+
+  EXPECT_EQ(dst[0], 0);
+  EXPECT_EQ(dest_size, 1U);
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  dest_size = 0;
+
+  sproto__set_null_terminated_string(src, dst, &dest_size, 5);
+
+  EXPECT_EQ(dst[0], 'a');
+  EXPECT_EQ(dst[1], 'b');
+  EXPECT_EQ(dst[2], 'c');
+  EXPECT_EQ(dst[3], 'd');
+  EXPECT_EQ(dst[4], 0);
+  EXPECT_EQ(dest_size, 5U);
+
+  snprintf(dst, sizeof(dst), "%s", msk);
+  dest_size = 0;
+
+  sproto__set_null_terminated_string(src, dst, &dest_size, sizeof(dst));
+
+  EXPECT_EQ(strncmp(src, dst, sizeof(dst)), 0);
+  EXPECT_EQ(dest_size, strnlen(src, sizeof(src)) + 1);
+}
+
 #endif /*SPROTO_WITHOUT_OUT_BUFFER*/
 
 }  // namespace

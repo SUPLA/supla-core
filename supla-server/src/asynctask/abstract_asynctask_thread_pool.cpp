@@ -17,8 +17,12 @@
  */
 
 #include "abstract_asynctask_thread_pool.h"
+
 #include <assert.h>
 #include <unistd.h>
+
+#include <memory>
+
 #include "abstract_asynctask.h"
 #include "asynctask_queue.h"
 #include "lck.h"
@@ -28,6 +32,9 @@
 #define WARNING_MIN_FREQ_SEC 5
 #define PICK_RETRY_LIMIT 3
 #define PICK_RETRY_DELAY_USEC 10000
+
+using std::shared_ptr;
+using std::vector;
 
 supla_abstract_asynctask_thread_pool::supla_abstract_asynctask_thread_pool(
     supla_asynctask_queue *queue) {
@@ -73,9 +80,7 @@ void supla_abstract_asynctask_thread_pool::execution_request(
     bool already_exists = false;
 
     lck_lock(lck);
-    for (std::vector<supla_abstract_asynctask *>::iterator it =
-             requests.begin();
-         it != requests.end(); ++it) {
+    for (auto it = requests.begin(); it != requests.end(); ++it) {
       if (*it == task) {
         already_exists = true;
         break;
@@ -133,8 +138,7 @@ void supla_abstract_asynctask_thread_pool::execution_request(
 void supla_abstract_asynctask_thread_pool::remove_task(
     supla_abstract_asynctask *task) {
   lck_lock(lck);
-  for (std::vector<supla_abstract_asynctask *>::iterator it = requests.begin();
-       it != requests.end(); ++it) {
+  for (auto it = requests.begin(); it != requests.end(); ++it) {
     if (*it == task) {
       requests.erase(it);
       break;
@@ -153,7 +157,7 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
   bool iterate = true;
 
   do {
-    supla_abstract_asynctask *task = queue->pick(this);
+    shared_ptr<supla_abstract_asynctask> task = queue->pick(this);
 
     if (task) {
       task->execute();
@@ -162,16 +166,16 @@ void supla_abstract_asynctask_thread_pool::execute(void *sthread) {
       lck_unlock(lck);
 
       if (task->is_finished() && task->release_immediately_after_execution()) {
-        delete task;
+        queue->remove_task(task.get());
       }
+
+      remove_task(task.get());
     }
 
     if (task == NULL) {
       if (!sthread_isterminated(sthread)) {
         usleep(PICK_RETRY_DELAY_USEC);
       }
-    } else {
-      remove_task(task);
     }
 
     lck_lock(lck);
@@ -190,8 +194,7 @@ void supla_abstract_asynctask_thread_pool::_on_thread_finish(void *_pool,
 
 void supla_abstract_asynctask_thread_pool::on_thread_finish(void *sthread) {
   lck_lock(lck);
-  for (std::vector<void *>::iterator it = threads.begin(); it != threads.end();
-       ++it) {
+  for (auto it = threads.begin(); it != threads.end(); ++it) {
     if (*it == sthread) {
       threads.erase(it);
       break;
@@ -242,8 +245,7 @@ void supla_abstract_asynctask_thread_pool::terminate(void) {
   lck_lock(lck);
   terminated = true;
 
-  for (std::vector<void *>::iterator it = threads.begin(); it != threads.end();
-       ++it) {
+  for (auto it = threads.begin(); it != threads.end(); ++it) {
     sthread_terminate(*it);
   }
 

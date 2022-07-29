@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "database.h"
+
 #include <mysql.h>
 #include <string.h>
 
-#include "database.h"
 #include "log.h"
 #include "safearray.h"
 #include "schedulercfg.h"
@@ -65,9 +66,10 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 
   if (stmt_execute(
           (void **)&stmt,
-          "SELECT e.`id`, e.`schedule_id`, s.`user_id`, "
-          "IFNULL(c.`iodevice_id`, 0) `iodevice_id`, IFNULL(s.`channel_id`, 0) "
-          "`channel_id`, IFNULL(s.`channel_group_id`, 0) `channel_group_id`, "
+          "SELECT e.`id`, e.`schedule_id`, s.`user_id`, IFNULL(s.`scene_id`, "
+          "0) `scene_id`, IFNULL(c.`iodevice_id`, 0) `iodevice_id`, "
+          "IFNULL(s.`channel_id`, 0) `channel_id`, "
+          "IFNULL(s.`channel_group_id`, 0) `channel_group_id`, "
           "IFNULL(c.`func`, IFNULL(g.`func`, 0)) `func`, IFNULL(c.`param1`, 0) "
           "`param1`, IFNULL(c.`param2`, 0) `param2`, IFNULL(c.`param3`, 0) "
           "`param3`, e.`action`, e.`action_param`, "
@@ -84,11 +86,12 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
           pbind, 1, true)) {
     my_bool is_null[4];
 
-    MYSQL_BIND rbind[16];
+    MYSQL_BIND rbind[17];
     memset(rbind, 0, sizeof(rbind));
 
-    int id, schedule_id, user_id, device_id, channel_id, channel_group_id,
-        channel_func, channel_param1, channel_param2, channel_param3;
+    int id, schedule_id, user_id, scene_id, device_id, channel_id,
+        channel_group_id, channel_func, channel_param1, channel_param2,
+        channel_param3;
     int action, planned_timestamp, retry_timestamp, retry_count,
         retry_when_fail;
 
@@ -105,49 +108,52 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
     rbind[2].buffer = (char *)&user_id;
 
     rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&device_id;
+    rbind[3].buffer = (char *)&scene_id;
 
     rbind[4].buffer_type = MYSQL_TYPE_LONG;
-    rbind[4].buffer = (char *)&channel_id;
+    rbind[4].buffer = (char *)&device_id;
 
     rbind[5].buffer_type = MYSQL_TYPE_LONG;
-    rbind[5].buffer = (char *)&channel_group_id;
+    rbind[5].buffer = (char *)&channel_id;
 
     rbind[6].buffer_type = MYSQL_TYPE_LONG;
-    rbind[6].buffer = (char *)&channel_func;
+    rbind[6].buffer = (char *)&channel_group_id;
 
     rbind[7].buffer_type = MYSQL_TYPE_LONG;
-    rbind[7].buffer = (char *)&channel_param1;
+    rbind[7].buffer = (char *)&channel_func;
 
     rbind[8].buffer_type = MYSQL_TYPE_LONG;
-    rbind[8].buffer = (char *)&channel_param2;
+    rbind[8].buffer = (char *)&channel_param1;
 
     rbind[9].buffer_type = MYSQL_TYPE_LONG;
-    rbind[9].buffer = (char *)&channel_param3;
+    rbind[9].buffer = (char *)&channel_param2;
 
     rbind[10].buffer_type = MYSQL_TYPE_LONG;
-    rbind[10].buffer = (char *)&action;
+    rbind[10].buffer = (char *)&channel_param3;
 
-    rbind[11].buffer_type = MYSQL_TYPE_STRING;
-    rbind[11].buffer = action_param;
-    rbind[11].is_null = &is_null[0];
-    rbind[11].buffer_length = 256;
-    rbind[11].length = &length;
+    rbind[11].buffer_type = MYSQL_TYPE_LONG;
+    rbind[11].buffer = (char *)&action;
 
-    rbind[12].buffer_type = MYSQL_TYPE_LONG;
-    rbind[12].buffer = &planned_timestamp;
+    rbind[12].buffer_type = MYSQL_TYPE_STRING;
+    rbind[12].buffer = action_param;
+    rbind[12].is_null = &is_null[0];
+    rbind[12].buffer_length = 256;
+    rbind[12].length = &length;
 
     rbind[13].buffer_type = MYSQL_TYPE_LONG;
-    rbind[13].buffer = &retry_timestamp;
-    rbind[13].is_null = &is_null[1];
+    rbind[13].buffer = &planned_timestamp;
 
     rbind[14].buffer_type = MYSQL_TYPE_LONG;
-    rbind[14].buffer = &retry_count;
-    rbind[14].is_null = &is_null[2];
+    rbind[14].buffer = &retry_timestamp;
+    rbind[14].is_null = &is_null[1];
 
     rbind[15].buffer_type = MYSQL_TYPE_LONG;
-    rbind[15].buffer = &retry_when_fail;
-    rbind[15].is_null = &is_null[3];
+    rbind[15].buffer = &retry_count;
+    rbind[15].is_null = &is_null[2];
+
+    rbind[16].buffer_type = MYSQL_TYPE_LONG;
+    rbind[16].buffer = &retry_when_fail;
+    rbind[16].is_null = &is_null[3];
 
     if (mysql_stmt_bind_result(stmt, rbind)) {
       supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
@@ -157,14 +163,16 @@ void database::get_s_executions(void *s_exec_arr, int limit) {
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          s_exec_t *s_exec = (s_exec_t *)malloc(sizeof(s_exec_t));
+          s_exec_params_t *s_exec =
+              (s_exec_params_t *)malloc(sizeof(s_exec_params_t));
 
           if (s_exec != NULL) {
-            memset(s_exec, 0, sizeof(s_exec_t));
+            memset(s_exec, 0, sizeof(s_exec_params_t));
 
             s_exec->id = id;
             s_exec->schedule_id = schedule_id;
             s_exec->user_id = user_id;
+            s_exec->scene_id = scene_id;
             s_exec->iodevice_id = device_id;
             s_exec->channel_id = channel_id;
             s_exec->channel_group_id = channel_group_id;

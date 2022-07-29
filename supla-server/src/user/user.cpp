@@ -36,6 +36,7 @@
 #include "log.h"
 #include "mqtt/mqtt_client_suite.h"
 #include "safearray.h"
+#include "scene/scene_asynctask.h"
 #include "serverstatus.h"
 #include "userchannelgroups.h"
 
@@ -45,6 +46,9 @@ unsigned int supla_user::client_max_metric = 0;
 unsigned int supla_user::device_add_metric = 0;
 unsigned int supla_user::device_max_metric = 0;
 struct timeval supla_user::metric_tv = (struct timeval){0};
+
+using std::function;
+using std::list;
 
 // static
 char supla_user::find_user_by_id(void *ptr, void *UserID) {
@@ -349,8 +353,8 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
   return user;
 }
 
-void supla_user::access_client(
-    int ClientID, std::function<void(supla_client *client)> on_client) {
+void supla_user::access_client(int ClientID,
+                               function<void(supla_client *client)> on_client) {
   supla_client *client = client_container->findByID(ClientID);
   if (client) {
     on_client(client);
@@ -433,9 +437,8 @@ supla_device *supla_user::get_device(int DeviceID) {
   return device_container->findByID(DeviceID);
 }
 
-void supla_user::access_device(
-    int DeviceId, int ChannelId,
-    std::function<void(supla_device *device)> on_device) {
+void supla_user::access_device(int DeviceId, int ChannelId,
+                               function<void(supla_device *device)> on_device) {
   if (DeviceId || ChannelId) {
     supla_device *device = DeviceId
                                ? device_container->findByID(DeviceId)
@@ -448,7 +451,7 @@ void supla_user::access_device(
 }
 
 void supla_user::for_each_device(
-    std::function<bool(supla_device *device)> on_device) {
+    function<bool(supla_device *device)> on_device) {
   for (int a = 0; a < device_container->count(); a++) {
     supla_device *device = NULL;
 
@@ -463,9 +466,8 @@ void supla_user::for_each_device(
 }
 
 // static
-void supla_user::access_device(
-    int UserID, int DeviceId, int ChannelId,
-    std::function<void(supla_device *device)> on_device) {
+void supla_user::access_device(int UserID, int DeviceId, int ChannelId,
+                               function<void(supla_device *device)> on_device) {
   supla_user *user = find(UserID, false);
   if (user) {
     user->access_device(DeviceId, ChannelId, on_device);
@@ -671,10 +673,10 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
         ChannelID, value, online, validity_time_sec, for_client);
 
     if (result) {
-      std::list<int> related_list =
+      list<int> related_list =
           device->get_channels()->related_channel(ChannelID);
 
-      std::list<int>::iterator it = related_list.begin();
+      auto it = related_list.begin();
       bool sub_value_exists = false;
       char sub_channel_online = 0;
 
@@ -795,27 +797,27 @@ void supla_user::on_mqtt_settings_changed(int UserID) {
 }
 
 // static
-void supla_user::before_channel_function_change(
-    int UserID, int ChannelID, event_source_type eventSourceType) {
+void supla_user::before_channel_function_change(int UserID, int ChannelID,
+                                                const supla_caller &caller) {
   supla_mqtt_client_suite::globalInstance()->beforeChannelFunctionChange(
       UserID, ChannelID);
 }
 
 // static
 void supla_user::before_device_delete(int UserID, int DeviceID,
-                                      event_source_type eventSourceType) {
+                                      const supla_caller &caller) {
   supla_mqtt_client_suite::globalInstance()->beforeDeviceDelete(UserID,
                                                                 DeviceID);
 }
 
 // static
 void supla_user::on_device_deleted(int UserID, int DeviceID,
-                                   event_source_type eventSourceType) {
+                                   const supla_caller &caller) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
-    supla_http_request_queue::getInstance()->onDeviceDeletedEvent(
-        user, 0, eventSourceType);
+    supla_http_request_queue::getInstance()->onDeviceDeletedEvent(user, 0,
+                                                                  caller);
 
     supla_mqtt_client_suite::globalInstance()->onDeviceDeleted(UserID,
                                                                DeviceID);
@@ -824,7 +826,7 @@ void supla_user::on_device_deleted(int UserID, int DeviceID,
 
 // static
 void supla_user::on_device_settings_changed(int UserID, int DeviceID,
-                                            event_source_type eventSourceType) {
+                                            const supla_caller &caller) {
   supla_user *user = supla_user::find(UserID, false);
 
   if (user) {
@@ -894,32 +896,30 @@ void supla_user::log_metrics(int min_interval_sec) {
   serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 }
 
-void supla_user::on_channels_added(int DeviceID,
-                                   event_source_type eventSourceType) {
-  supla_http_request_queue::getInstance()->onChannelsAddedEvent(
-      this, DeviceID, eventSourceType);
+void supla_user::on_channels_added(int DeviceID, const supla_caller &caller) {
+  supla_http_request_queue::getInstance()->onChannelsAddedEvent(this, DeviceID,
+                                                                caller);
 }
 
 void supla_user::on_device_registered(int DeviceID,
-                                      event_source_type eventSourceType) {
+                                      const supla_caller &caller) {
   supla_mqtt_client_suite::globalInstance()->onDeviceRegistered(getUserID(),
                                                                 DeviceID);
 }
 
 bool supla_user::set_device_channel_value(
-    event_source_type eventSourceType, int SenderID, int DeviceID,
-    int ChannelID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE]) {
+    const supla_caller &caller, int DeviceID, int ChannelID, int GroupID,
+    unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE]) {
   bool result = false;
 
   supla_device *device = device_container->findByID(DeviceID);
   if (device) {
     // TODO(anyone): Check it out. I think there should be "will change"
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-        this, DeviceID, ChannelID, eventSourceType);
+        this, DeviceID, ChannelID, caller);
 
-    device->get_channels()->set_device_channel_value(SenderID, ChannelID,
-                                                     GroupID, EOL, value);
+    device->get_channels()->set_device_channel_value(caller, ChannelID, GroupID,
+                                                     EOL, value);
     device->releasePtr();
   }
 
@@ -938,23 +938,21 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
   }
 }
 
-void supla_user::on_channel_value_changed(event_source_type eventSourceType,
+void supla_user::on_channel_value_changed(const supla_caller &caller,
                                           int DeviceId, int ChannelId,
                                           bool Extended,
                                           bool SignificantChange) {
-  std::list<channel_address> ca_list;
+  list<channel_address> ca_list;
   ca_list.push_back(channel_address(DeviceId, ChannelId));
 
   supla_device *device = device_container->findByID(DeviceId);
   if (device) {
-    std::list<int> master_list =
-        device->get_channels()->master_channel(ChannelId);
+    list<int> master_list = device->get_channels()->master_channel(ChannelId);
 
     device->releasePtr();
     device = NULL;
 
-    for (std::list<int>::iterator it = master_list.begin();
-         it != master_list.end(); it++) {
+    for (auto it = master_list.begin(); it != master_list.end(); it++) {
       device = device_container->findByChannelID(*it);
 
       if (device) {
@@ -969,8 +967,7 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
 
   for (int a = 0; a < client_container->count(); a++) {
     if (NULL != (client = client_container->get(a))) {
-      for (std::list<channel_address>::iterator it = ca_list.begin();
-           it != ca_list.end(); it++) {
+      for (auto it = ca_list.begin(); it != ca_list.end(); it++) {
         client->on_channel_value_changed(it->getDeviceId(), it->getChannelId(),
                                          Extended);
       }
@@ -978,12 +975,11 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
     }
   }
 
-  for (std::list<channel_address>::iterator it = ca_list.begin();
-       it != ca_list.end(); it++) {
+  for (auto it = ca_list.begin(); it != ca_list.end(); it++) {
     if (SignificantChange && !Extended && DeviceId && ChannelId &&
-        eventSourceType != EST_UNKNOWN) {
+        caller != ctUnknown) {
       supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-          this, it->getDeviceId(), it->getChannelId(), eventSourceType);
+          this, it->getDeviceId(), it->getChannelId(), caller);
     }
 
     supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
@@ -993,7 +989,7 @@ void supla_user::on_channel_value_changed(event_source_type eventSourceType,
 
 void supla_user::on_channel_become_online(int DeviceId, int ChannelId) {
   supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-      this, DeviceId, ChannelId, EST_DEVICE);
+      this, DeviceId, ChannelId, supla_caller(ctDevice, DeviceId));
   supla_mqtt_client_suite::globalInstance()->onChannelStateChanged(
       getUserID(), DeviceId, ChannelId);
 }
@@ -1008,7 +1004,7 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
     }
 }
 
-bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
+bool supla_user::device_calcfg_request(const supla_caller &caller, int DeviceId,
                                        int ChannelId,
                                        TCS_DeviceCalCfgRequest_B *request) {
   bool result = false;
@@ -1025,7 +1021,7 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
       switch (device->get_channels()->get_channel_func(ChannelId)) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
         case SUPLA_CHANNELFNC_LIGHTSWITCH: {
-          std::list<int> related =
+          list<int> related =
               device->get_channels()->related_channel(ChannelId);
           if (related.size() == 1) {
             DeviceId = 0;
@@ -1042,9 +1038,12 @@ bool supla_user::device_calcfg_request(int SenderID, int DeviceId,
   }
 
   if (device) {
+    bool superUserAuthorized = false;
+    if (caller == ctClient && caller.get_id() > 0) {
+      superUserAuthorized = isSuperUserAuthorized(caller.get_id());
+    }
     result = device->get_channels()->calcfg_request(
-        SenderID, ChannelId,
-        SenderID > 0 ? isSuperUserAuthorized(SenderID) : false, request);
+        caller, ChannelId, superUserAuthorized, request);
     device->releasePtr();
   }
 
@@ -1075,20 +1074,7 @@ void supla_user::on_device_channel_state_result(int ChannelID,
   }
 }
 
-bool supla_user::device_get_channel_state(int SenderID, int DeviceId,
-                                          TCSD_ChannelStateRequest *request) {
-  bool result = false;
-
-  supla_device *device = device_container->findByID(DeviceId);
-  if (device) {
-    result = device->get_channels()->get_channel_state(SenderID, request);
-    device->releasePtr();
-  }
-
-  return result;
-}
-
-void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
+void supla_user::reconnect(const supla_caller &caller, bool allDevices,
                            bool allClients) {
   int a;
   if (!allDevices && !allClients) {
@@ -1097,7 +1083,7 @@ void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
 
   cgroups->load();  // load == reload
 
-  std::list<cdbase *> cdb;
+  list<cdbase *> cdb;
 
   if (allDevices) {
     supla_device *device;
@@ -1118,19 +1104,17 @@ void supla_user::reconnect(event_source_type eventSourceType, bool allDevices,
   }
 
   if (cdb.size() > 0) {
-    for (std::list<cdbase *>::iterator it = cdb.begin(); it != cdb.end();
-         it++) {
+    for (auto it = cdb.begin(); it != cdb.end(); it++) {
       (*it)->terminate();
       (*it)->releasePtr();
     }
 
-    supla_http_request_queue::getInstance()->onUserReconnectEvent(
-        this, eventSourceType);
+    supla_http_request_queue::getInstance()->onUserReconnectEvent(this, caller);
   }
 }
 
-void supla_user::reconnect(event_source_type eventSourceType) {
-  reconnect(eventSourceType, true, true);
+void supla_user::reconnect(const supla_caller &caller) {
+  reconnect(caller, true, true);
 }
 
 bool supla_user::client_reconnect(int ClientID) {
@@ -1162,11 +1146,11 @@ bool supla_user::device_reconnect(int DeviceID) {
 }
 
 // static
-bool supla_user::reconnect(int UserID, event_source_type eventSourceType) {
+bool supla_user::reconnect(int UserID, const supla_caller &caller) {
   supla_user *user = find(UserID, true);
 
   if (user) {
-    user->reconnect(eventSourceType);
+    user->reconnect(caller);
     // cppcheck-suppress memleak
     return true;
   }
@@ -1326,8 +1310,9 @@ void supla_user::set_channel_function(supla_client *sender,
              !supla_device::funclist_contains_function(FuncList, func->Func))) {
           result.ResultCode = SUPLA_RESULTCODE_NOT_ALLOWED;
         } else {
-          before_channel_function_change(getUserID(), func->ChannelID,
-                                         EST_CLIENT);
+          before_channel_function_change(
+              getUserID(), func->ChannelID,
+              supla_caller(ctClient, sender->getID()));
           if (db->set_channel_function(getUserID(), func->ChannelID,
                                        func->Func)) {
             result.ResultCode = SUPLA_RESULTCODE_TRUE;
@@ -1429,4 +1414,15 @@ supla_state_webhook_credentials *supla_user::stateWebhookCredentials(void) {
 
 supla_user_channelgroups *supla_user::get_channel_groups(void) {
   return cgroups;
+}
+
+// static
+void supla_user::on_scene_changed(const supla_caller &caller, int user_id,
+                                  int scene_id) {
+  supla_user *user = find(user_id, false);
+  if (user) {
+    user->reconnect(caller, false, true);
+    supla_scene_asynctask::interrupt(supla_scene_asynctask::get_queue(),
+                                     user_id, scene_id);
+  }
 }

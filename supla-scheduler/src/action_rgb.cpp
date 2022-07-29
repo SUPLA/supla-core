@@ -17,9 +17,11 @@
  */
 
 #include "action_rgb.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "json/cJSON.h"
 #include "log.h"
 #include "tools.h"
@@ -27,10 +29,15 @@
 s_worker_action_rgb::s_worker_action_rgb(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
-void s_worker_action_rgb::get_function_list(int list[FUNCTION_LIST_SIZE]) {
-  list[0] = SUPLA_CHANNELFNC_DIMMER;
-  list[1] = SUPLA_CHANNELFNC_RGBLIGHTING;
-  list[2] = SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
+bool s_worker_action_rgb::is_action_allowed(void) {
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return true;
+  }
+
+  return false;
 }
 
 int s_worker_action_rgb::try_limit(void) { return 2; }

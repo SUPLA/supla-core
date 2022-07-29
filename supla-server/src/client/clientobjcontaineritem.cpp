@@ -17,11 +17,12 @@
  */
 
 #include "clientobjcontaineritem.h"
+
 #include <stdio.h>   // NOLINT
 #include <stdlib.h>  // NOLINT
 #include <string.h>  // NOLINT
-#include "clientobjcontainer.h"
 
+#include "clientobjcontainer.h"
 
 supla_client_objcontainer_item::supla_client_objcontainer_item(
     supla_client_objcontainer *Container, int Id, const char *Caption)
@@ -51,14 +52,3 @@ void supla_client_objcontainer_item::setCaption(const char *Caption) {
 }
 
 char *supla_client_objcontainer_item::getCaption(void) { return Caption; }
-
-void supla_client_objcontainer_item::proto_get_caption(
-    char *Caption, unsigned _supla_int_t *CaptionSize, unsigned int MaxSize) {
-  if (getCaption()) {
-    snprintf(Caption, MaxSize, "%s", getCaption());
-    *CaptionSize = strnlen(Caption, MaxSize - 1) + 1;
-  } else {
-    *CaptionSize = 1;
-    Caption[0] = 0;
-  }
-}

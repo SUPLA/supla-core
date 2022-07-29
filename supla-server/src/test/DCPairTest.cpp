@@ -17,12 +17,15 @@
  */
 
 #include "DCPairTest.h"
+
 #include <list>  // NOLINT
 
 namespace testing {
 
+using std::list;
+
 TEST_F(DCPairTest, popDeviceChannelIDs) {
-  std::list<dcpair> pairs;
+  list<dcpair> pairs;
 
   int a, b, c;
 
@@ -37,7 +40,7 @@ TEST_F(DCPairTest, popDeviceChannelIDs) {
 
   int deviceId = 0;
 
-  std::list<int> cids;
+  list<int> cids;
   a = 0;
   b = pairs.size();
 
@@ -49,7 +52,7 @@ TEST_F(DCPairTest, popDeviceChannelIDs) {
     ASSERT_EQ((long unsigned int)b, pairs.size());
 
     c = 1;
-    for (std::list<int>::iterator it = cids.begin(); it != cids.end(); it++) {
+    for (auto it = cids.begin(); it != cids.end(); it++) {
       ASSERT_EQ(c + a, *it);
       c++;
     }
@@ -59,7 +62,7 @@ TEST_F(DCPairTest, popDeviceChannelIDs) {
 }
 
 TEST_F(DCPairTest, sortByDeviceId) {
-  std::list<dcpair> pairs;
+  list<dcpair> pairs;
 
   {
     dcpair p(1, 1);
@@ -111,8 +114,7 @@ TEST_F(DCPairTest, sortByDeviceId) {
 
   dcpair::sort_by_device_id(&pairs);
 
-  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
-       it++) {
+  for (auto it = pairs.begin(); it != pairs.end(); it++) {
     ASSERT_EQ(DeviceID, it->getDeviceId());
     ASSERT_EQ(ChannelID, it->getChannelId());
 
@@ -125,7 +127,7 @@ TEST_F(DCPairTest, sortByDeviceId) {
 }
 
 TEST_F(DCPairTest, detectingTheLastOne) {
-  std::list<dcpair> pairs;
+  list<dcpair> pairs;
 
   {
     dcpair p(1, 1);
@@ -181,8 +183,7 @@ TEST_F(DCPairTest, detectingTheLastOne) {
 
   int n = 1;
 
-  for (std::list<dcpair>::iterator it = pairs.begin(); it != pairs.end();
-       it++) {
+  for (auto it = pairs.begin(); it != pairs.end(); it++) {
     if (n == 10) {
       ASSERT_TRUE(dcpair::last_one(&pairs, it));
     } else {

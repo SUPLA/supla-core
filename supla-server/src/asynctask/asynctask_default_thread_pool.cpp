@@ -17,8 +17,12 @@
  */
 
 #include "asynctask_default_thread_pool.h"
+
 #include <string>
+
 #include "asynctask_queue.h"
+
+using std::string;
 
 supla_asynctask_default_thread_pool
     *supla_asynctask_default_thread_pool::_global_instance = NULL;
@@ -34,7 +38,7 @@ unsigned int supla_asynctask_default_thread_pool::thread_count_limit(void) {
   return 20;
 }
 
-std::string supla_asynctask_default_thread_pool::pool_name(void) {
+string supla_asynctask_default_thread_pool::pool_name(void) {
   return "DefaultPool";
 }
 

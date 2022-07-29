@@ -27,8 +27,8 @@
 
 #if defined(ESP8266) || defined(ESP32)
 
-#include <mem.h>
 #if !defined(ESP32)
+#include <mem.h>
 #include <osapi.h>
 #endif
 
@@ -60,6 +60,14 @@
 #define SRPC_BUFFER_SIZE 32
 #define SRPC_QUEUE_SIZE 1
 #define SRPC_QUEUE_MIN_ALLOC_COUNT 1
+#define __EH_DISABLED
+
+#elif defined(SUPLA_DEVICE)
+
+#ifndef SRPC_BUFFER_SIZE
+#define SRPC_BUFFER_SIZE 1024
+#endif /*SRPC_BUFFER_SIZE*/
+
 #define __EH_DISABLED
 
 #else
@@ -102,6 +110,10 @@ typedef struct {
   void *lck;
 } Tsrpc;
 
+void SRPC_ICACHE_FLASH srpc_get_scene_pack(Tsrpc *srpc, TsrpcReceivedData *rd);
+void SRPC_ICACHE_FLASH srpc_get_scene_state_pack(Tsrpc *srpc,
+                                                 TsrpcReceivedData *rd);
+
 void SRPC_ICACHE_FLASH srpc_params_init(TsrpcParams *params) {
   memset(params, 0, sizeof(TsrpcParams));
 }
@@ -117,9 +129,11 @@ void *SRPC_ICACHE_FLASH srpc_init(TsrpcParams *params) {
 #ifndef ESP8266
 #ifndef ESP32
 #ifndef __AVR__
+#ifndef SUPLA_DEVICE
   assert(params != 0);
   assert(params->data_read != 0);
   assert(params->data_write != 0);
+#endif
 #endif
 #endif
 #endif
@@ -216,6 +230,9 @@ char SRPC_ICACHE_FLASH srpc_queue_pop(Tsrpc_Queue *queue, TSuplaDataPacket *sdp,
 
 char SRPC_ICACHE_FLASH srpc_in_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
                                          unsigned _supla_int_t rr_id) {
+  (void)(srpc);
+  (void)(sdp);
+  (void)(rr_id);
 #ifdef SRPC_WITHOUT_IN_QUEUE
   return 1;
 #else
@@ -263,6 +280,7 @@ char SRPC_ICACHE_FLASH srpc_out_queue_pop(Tsrpc *srpc, TSuplaDataPacket *sdp,
 #endif /*SRPC_WITHOUT_OUT_QUEUE*/
 
 unsigned char SRPC_ICACHE_FLASH srpc_out_queue_item_count(void *srpc) {
+  (void)(srpc);
 #ifdef SRPC_WITHOUT_OUT_QUEUE
   return 0;
 #else
@@ -1405,6 +1423,38 @@ char SRPC_ICACHE_FLASH srpc_getdata(void *_srpc, TsrpcReceivedData *rd,
               (TCS_TimerArmRequest *)malloc(sizeof(TCS_TimerArmRequest));
         break;
 
+      case SUPLA_SC_CALL_SCENE_PACK_UPDATE:
+        srpc_get_scene_pack(srpc, rd);
+        break;
+
+      case SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE:
+        srpc_get_scene_state_pack(srpc, rd);
+        break;
+
+      case SUPLA_CS_CALL_EXECUTE_ACTION:
+        if (srpc->sdp.data_size >=
+                (sizeof(TCS_Action) - SUPLA_ACTION_PARAM_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TCS_Action)) {
+          rd->data.cs_action = (TCS_Action *)malloc(sizeof(TCS_Action));
+        }
+        break;
+
+      case SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION:
+        if (srpc->sdp.data_size >=
+                (sizeof(TCS_ActionWithAuth) - SUPLA_ACTION_PARAM_MAXSIZE) &&
+            srpc->sdp.data_size <= sizeof(TCS_ActionWithAuth)) {
+          rd->data.cs_action_with_auth =
+              (TCS_ActionWithAuth *)malloc(sizeof(TCS_ActionWithAuth));
+        }
+        break;
+
+      case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
+        if (srpc->sdp.data_size == sizeof(TSC_ActionExecutionResult))
+          rd->data.sc_action_execution_result =
+              (TSC_ActionExecutionResult *)malloc(
+                  sizeof(TSC_ActionExecutionResult));
+        break;
+
 #endif /*#ifndef SRPC_EXCLUDE_CLIENT*/
     }
 
@@ -1438,6 +1488,7 @@ void SRPC_ICACHE_FLASH srpc_rd_free(TsrpcReceivedData *rd) {
 
 unsigned char SRPC_ICACHE_FLASH
 srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
+  (void)(_srpc);
   switch (call_type) {
     case SUPLA_DCS_CALL_GETVERSION:
     case SUPLA_SDC_CALL_GETVERSION_RESULT:
@@ -1551,6 +1602,13 @@ srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type) {
     case SUPLA_SC_CALL_REGISTER_CLIENT_RESULT_C:
     case SUPLA_CS_CALL_TIMER_ARM:
       return 17;
+    case SUPLA_SC_CALL_SCENE_PACK_UPDATE:
+    case SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE:
+      return 18;
+    case SUPLA_CS_CALL_EXECUTE_ACTION:
+    case SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION:
+    case SUPLA_SC_CALL_ACTION_EXECUTION_RESULT:
+      return 19;
   }
 
   return 255;
@@ -1686,7 +1744,9 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_ping_server(void *_srpc) {
 }
 
 _supla_int_t SRPC_ICACHE_FLASH srpc_sdc_async_ping_server_result(void *_srpc) {
-#if !defined(ESP8266) && !defined(__AVR__) && !defined(ESP32)
+  (void)(_srpc);
+#if !defined(ESP8266) && !defined(__AVR__) && !defined(ESP32) && \
+  !defined(SUPLA_DEVICE)
   TSDC_SuplaPingServerResult ps;
 
   struct timeval now;
@@ -2568,9 +2628,139 @@ _supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_device_reconnect_request_result(
 }
 
 _supla_int_t SRPC_ICACHE_FLASH
-srpc_sc_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request) {
+srpc_cs_async_timer_arm(void *_srpc, TCS_TimerArmRequest *request) {
   return srpc_async_call(_srpc, SUPLA_CS_CALL_TIMER_ARM, (char *)request,
                          sizeof(TCS_TimerArmRequest));
+}
+
+unsigned _supla_int_t SRPC_ICACHE_FLASH
+srpc_scenepack_get_caption_size(void *pack, _supla_int_t idx) {
+  return ((TSC_SuplaScenePack *)pack)->items[idx].CaptionSize;
+}
+
+void *SRPC_ICACHE_FLASH srpc_scenepack_get_item_ptr(void *pack,
+                                                    _supla_int_t idx) {
+  return &((TSC_SuplaScenePack *)pack)->items[idx];  // NOLINT
+}
+
+void SRPC_ICACHE_FLASH srpc_scenepack_set_pack_count(void *pack,
+                                                     _supla_int_t count,
+                                                     unsigned char increment) {
+  if (increment == 0) {
+    ((TSC_SuplaScenePack *)pack)->count = count;
+  } else {
+    ((TSC_SuplaScenePack *)pack)->count += count;
+  }
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_sc_async_scene_pack_update(void *_srpc, TSC_SuplaScenePack *scene_pack) {
+  return srpc_set_pack(
+      _srpc, scene_pack, scene_pack->count, &srpc_scenepack_get_caption_size,
+      &srpc_scenepack_get_item_ptr, &srpc_scenepack_set_pack_count,
+      sizeof(TSC_SuplaScenePack), SUPLA_SCENE_PACK_MAXCOUNT,
+      SUPLA_SCENE_CAPTION_MAXSIZE, sizeof(TSC_SuplaScene),
+      SUPLA_SC_CALL_SCENE_PACK_UPDATE);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_scenepack_get_pack_count(void *pack) {
+  return ((TSC_SuplaScenePack *)pack)->count;
+}
+
+unsigned _supla_int_t SRPC_ICACHE_FLASH
+srpc_scenepack_get_item_caption_size(void *item) {
+  return ((TSC_SuplaScene *)item)->CaptionSize;
+}
+
+void SRPC_ICACHE_FLASH srpc_get_scene_pack(Tsrpc *srpc, TsrpcReceivedData *rd) {
+  srpc_getpack(srpc, rd, sizeof(TSC_SuplaScenePack), sizeof(TSC_SuplaScene),
+               SUPLA_SCENE_PACK_MAXCOUNT, SUPLA_SCENE_CAPTION_MAXSIZE,
+               &srpc_scenepack_get_pack_count, &srpc_scenepack_set_pack_count,
+               &srpc_scenepack_get_item_ptr,
+               &srpc_scenepack_get_item_caption_size);
+}
+
+unsigned _supla_int_t SRPC_ICACHE_FLASH
+srpc_scenestatepack_get_initiatorname_size(void *pack, _supla_int_t idx) {
+  return ((TSC_SuplaSceneStatePack *)pack)->items[idx].InitiatorNameSize;
+}
+
+void *SRPC_ICACHE_FLASH srpc_scenestatepack_get_item_ptr(void *pack,
+                                                         _supla_int_t idx) {
+  return &((TSC_SuplaSceneStatePack *)pack)->items[idx];  // NOLINT
+}
+
+void SRPC_ICACHE_FLASH srpc_scenestatepack_set_pack_count(
+    void *pack, _supla_int_t count, unsigned char increment) {
+  if (increment == 0) {
+    ((TSC_SuplaSceneStatePack *)pack)->count = count;
+  } else {
+    ((TSC_SuplaSceneStatePack *)pack)->count += count;
+  }
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_scene_state_pack_update(
+    void *_srpc, TSC_SuplaSceneStatePack *scene_state_pack) {
+  return srpc_set_pack(
+      _srpc, scene_state_pack, scene_state_pack->count,
+      &srpc_scenestatepack_get_initiatorname_size,
+      &srpc_scenestatepack_get_item_ptr, &srpc_scenestatepack_set_pack_count,
+      sizeof(TSC_SuplaSceneStatePack), SUPLA_SCENE_STATE_PACK_MAXCOUNT,
+      SUPLA_INITIATOR_NAME_MAXSIZE, sizeof(TSC_SuplaSceneState),
+      SUPLA_SC_CALL_SCENE_STATE_PACK_UPDATE);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_scenestatepack_get_pack_count(void *pack) {
+  return ((TSC_SuplaSceneStatePack *)pack)->count;
+}
+
+unsigned _supla_int_t SRPC_ICACHE_FLASH
+srpc_scenestatepack_get_item_initiatorname_size(void *item) {
+  return ((TSC_SuplaSceneState *)item)->InitiatorNameSize;
+}
+
+void SRPC_ICACHE_FLASH srpc_get_scene_state_pack(Tsrpc *srpc,
+                                                 TsrpcReceivedData *rd) {
+  srpc_getpack(
+      srpc, rd, sizeof(TSC_SuplaSceneStatePack), sizeof(TSC_SuplaSceneState),
+      SUPLA_SCENE_STATE_PACK_MAXCOUNT, SUPLA_INITIATOR_NAME_MAXSIZE,
+      &srpc_scenestatepack_get_pack_count, &srpc_scenestatepack_set_pack_count,
+      &srpc_scenestatepack_get_item_ptr,
+      &srpc_scenestatepack_get_item_initiatorname_size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH
+srpc_cs_async_execute_action(void *_srpc, TCS_Action *action) {
+  if (!action) {
+    return 0;
+  }
+  _supla_int_t size =
+      sizeof(TCS_Action) - SUPLA_ACTION_PARAM_MAXSIZE + action->ParamSize;
+
+  if (size > sizeof(TCS_Action)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_EXECUTE_ACTION, (char *)action,
+                         size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_cs_async_execute_action_with_auth(
+    void *_srpc, TCS_ActionWithAuth *action) {
+  if (!action) {
+    return 0;
+  }
+  _supla_int_t size = sizeof(TCS_ActionWithAuth) - SUPLA_ACTION_PARAM_MAXSIZE +
+                      action->Action.ParamSize;
+
+  if (size > sizeof(TCS_ActionWithAuth)) return 0;
+
+  return srpc_async_call(_srpc, SUPLA_CS_CALL_AUTH_AND_EXECUTE_ACTION,
+                         (char *)action, size);
+}
+
+_supla_int_t SRPC_ICACHE_FLASH srpc_sc_async_action_execution_result(
+    void *_srpc, TSC_ActionExecutionResult *result) {
+  return srpc_async_call(_srpc, SUPLA_SC_CALL_ACTION_EXECUTION_RESULT,
+                         (char *)result, sizeof(TSC_ActionExecutionResult));
 }
 
 #endif /*SRPC_EXCLUDE_CLIENT*/

@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifndef ARDUINO
+
 #include "tools.h"
 
 #include <pthread.h>
@@ -577,7 +579,7 @@ char *st_get_authkey_hash_hex(const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
 
 #ifdef __OPENSSL_TOOLS
 
-char *st_openssl_base64_encode(char *src, int src_len) {
+char *st_openssl_base64_encode(const char *src, int src_len) {
   BIO *bio, *b64;
   BUF_MEM *bufferPtr;
   char *result = NULL;
@@ -605,7 +607,7 @@ char *st_openssl_base64_encode(char *src, int src_len) {
   return result;
 }
 
-char *st_openssl_base64_decode(char *src, int src_len, int *dst_len) {
+char *st_openssl_base64_decode(const char *src, int src_len, int *dst_len) {
   BIO *bio, *b64;
 
   char *buffer = (char *)malloc(src_len + 1);
@@ -633,3 +635,4 @@ char *st_openssl_base64_decode(char *src, int src_len, int *dst_len) {
 }
 
 #endif /*__OPENSSL_TOOLS*/
+#endif /* !ARDUINO */

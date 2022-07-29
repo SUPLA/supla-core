@@ -19,12 +19,14 @@
 #ifndef MqttUnpublisherIntegrationTest_H_
 #define MqttUnpublisherIntegrationTest_H_
 
-#include "MqttClientIntegrationTest.h"
+#include "integration/IntegrationTest.h"
+#include "mqtt/MqttClientTest.h"
 #include "mqtt_unpublisher_datasource.h"
 
 namespace testing {
 
-class MqttUnpublisherIntegrationTest : public MqttClientIntegrationTest {
+class MqttUnpublisherIntegrationTest : public MqttClientTest,
+                                       public IntegrationTest {
   virtual supla_mqtt_client *clientInit(
       supla_mqtt_client_library_adapter *library_adapter,
       supla_mqtt_client_settings *settings,

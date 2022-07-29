@@ -16,7 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "AsyncTaskTest.h"
+#include <asynctask/AsyncTaskTest.h>
+
 #include "log.h"
 
 namespace testing {
@@ -24,7 +25,6 @@ namespace testing {
 AsyncTaskTest::AsyncTaskTest(void) {
   queue = NULL;
   pool = NULL;
-  task = NULL;
 }
 AsyncTaskTest::~AsyncTaskTest(void) {}
 
@@ -34,83 +34,47 @@ void AsyncTaskTest::SetUp() {
 
   pool = new AsyncTaskThreadPoolMock(queue);
   EXPECT_TRUE(pool != NULL);
+}
 
-  if (pool) {
-    task = new AsyncTaskMock(queue, pool, -123, true);
+void AsyncTaskTest::TearDown() {
+  if (queue) {
+    delete queue;
   }
 }
 
-void AsyncTaskTest::TearDown() { delete queue; }
+void AsyncTaskTest::WaitForState(supla_abstract_asynctask *task,
+                                 const supla_asynctask_state &expected,
+                                 unsigned int usec) {
+  if (!task) {
+    return;
+  }
 
-TEST_F(AsyncTaskTest, initWithNulls_1) {
-  ASSERT_DEATH(new AsyncTaskMock(NULL, NULL, 0, true),
-               "Assertion `queue' failed");
+  supla_asynctask_state last;
+  unsigned int steps = usec / 100;
+
+  for (unsigned int a = 0; a < steps; a++) {
+    last = task->get_state();
+    if (last == expected) {
+      return;
+    }
+    usleep(100);
+  }
+
+  ASSERT_EQ(last, expected);
 }
 
-TEST_F(AsyncTaskTest, initWithNulls_2) {
-  EXPECT_DEATH(new AsyncTaskMock(queue, NULL, 0, true),
-               "Assertion `pool' failed");
-}
+void AsyncTaskTest::WaitForExec(AsyncTaskThreadPoolMock *pool,
+                                unsigned int expected_count,
+                                unsigned int usec) {
+  unsigned int steps = usec / 100000;
 
-TEST_F(AsyncTaskTest, correctInitialization_1) {
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, true);
-  ASSERT_TRUE(task != NULL);
-  delete task;
-}
+  for (unsigned int a = 0; a < steps; a++) {
+    if (pool->exec_count() == expected_count) {
+      return;
+    }
+    usleep(100000);
+  }
 
-TEST_F(AsyncTaskTest, correctInitialization_2) {
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool);
-  ASSERT_TRUE(task != NULL);
-  EXPECT_EQ(task->get_priority(), 0);
-  EXPECT_TRUE(task->release_immediately_after_execution());
-  delete task;
-}
-
-TEST_F(AsyncTaskTest, priorityCheck) { ASSERT_EQ(task->get_priority(), -123); }
-
-TEST_F(AsyncTaskTest, queueGetter) { ASSERT_EQ(task->get_queue(), queue); }
-
-TEST_F(AsyncTaskTest, poolGetter) { ASSERT_EQ(task->get_pool(), pool); }
-
-TEST_F(AsyncTaskTest, defaultState) {
-  ASSERT_EQ(task->get_state(), STA_STATE_INIT);
-}
-
-TEST_F(AsyncTaskTest, releaseFlag) {
-  ASSERT_TRUE(task->release_immediately_after_execution());
-
-  AsyncTaskMock *task = new AsyncTaskMock(queue, pool, 0, false);
-  ASSERT_TRUE(task != NULL);
-  ASSERT_FALSE(task->release_immediately_after_execution());
-  delete task;
-}
-
-TEST_F(AsyncTaskTest, delay) {
-  ASSERT_EQ(task->get_delay_usec(), 0);
-  ASSERT_EQ(task->time_left_usec(NULL), 0);
-  usleep(1000);
-  ASSERT_EQ(task->time_left_usec(NULL), 0);
-  task->set_delay_usec(2000000);
-  ASSERT_EQ(task->get_delay_usec(), 2000000);
-  ASSERT_GT(task->time_left_usec(NULL), 1990000);
-  task->set_delay_usec(1);
-  usleep(1000);
-  ASSERT_LT(task->time_left_usec(NULL), -990);
-}
-
-TEST_F(AsyncTaskTest, timeout) {
-  ASSERT_EQ(task->get_timeout(), (unsigned long long)0);
-  task->set_timeout(5000);
-  ASSERT_EQ(task->get_timeout(), (unsigned long long)5000);
-  task->set_timeout(0);
-  ASSERT_EQ(task->get_timeout(), (unsigned long long)0);
-}
-
-TEST_F(AsyncTaskTest, cancel) {
-  ASSERT_NE(task->get_state(), STA_STATE_CANCELED);
-  ASSERT_FALSE(task->is_finished());
-  task->cancel();
-  ASSERT_EQ(task->get_state(), STA_STATE_CANCELED);
-  ASSERT_TRUE(task->is_finished());
+  ASSERT_EQ(pool->exec_count(), expected_count);
 }
 }  // namespace testing

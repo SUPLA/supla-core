@@ -26,17 +26,20 @@
 #include "string.h"
 #include "svrcfg.h"
 
+using std::function;
+using std::list;
+
 supla_http_request::supla_http_request(supla_user *user, int ClassID,
                                        int DeviceId, int ChannelId,
                                        event_type EventType,
-                                       event_source_type EventSourceType) {
+                                       const supla_caller &Caller) {
   this->lck = lck_init();
   this->extraParams = NULL;
   this->http = NULL;
   this->https = NULL;
   this->user = user;
   this->EventType = EventType;
-  this->EventSourceType = EventSourceType;
+  this->Caller = Caller;
   this->ClassID = ClassID;
   this->DeviceId = DeviceId;
   this->ChannelId = ChannelId;
@@ -107,13 +110,11 @@ void supla_http_request::setEventType(event_type EventType) {
 
 event_type supla_http_request::getEventType(void) { return EventType; }
 
-void supla_http_request::setEventSourceType(event_source_type EventSourceType) {
-  this->EventSourceType = EventSourceType;
+void supla_http_request::setCaller(const supla_caller &Caller) {
+  this->Caller = Caller;
 }
 
-event_source_type supla_http_request::getEventSourceType(void) {
-  return EventSourceType;
-}
+const supla_caller &supla_http_request::getCaller(void) { return Caller; }
 
 void supla_http_request::setDeviceId(int DeviceId) {
   this->DeviceId = DeviceId;
@@ -148,7 +149,7 @@ void supla_http_request::setExtraParams(
 }
 
 void supla_http_request::accessExtraParams(
-    std::function<void(supla_http_request_extra_params *)> f) {
+    function<void(supla_http_request_extra_params *)> f) {
   lck_lock(this->lck);
   f(extraParams);
   lck_unlock(this->lck);
@@ -269,29 +270,26 @@ AbstractHttpRequestFactory::~AbstractHttpRequestFactory(void) {
   getFactories().remove(this);
 }
 
-std::list<AbstractHttpRequestFactory *>
-    &AbstractHttpRequestFactory::getFactories(void) {
-  static std::list<AbstractHttpRequestFactory *> factories;
+list<AbstractHttpRequestFactory *> &AbstractHttpRequestFactory::getFactories(
+    void) {
+  static list<AbstractHttpRequestFactory *> factories;
   return factories;
 }
 
 int AbstractHttpRequestFactory::getClassID(void) { return ClassID; }
 
 // static
-std::list<supla_http_request *>
-AbstractHttpRequestFactory::createByChannelEventSourceType(
+list<supla_http_request *> AbstractHttpRequestFactory::createInTheCallerContext(
     supla_user *user, int DeviceId, int ChannelId, event_type EventType,
-    event_source_type EventSourceType) {
-  std::list<AbstractHttpRequestFactory *> factories = getFactories();
-  std::list<supla_http_request *> result;
-  for (std::list<AbstractHttpRequestFactory *>::iterator it = factories.begin();
-       it != factories.end(); it++) {
-    supla_http_request *request =
-        (*it)->create(user, (*it)->getClassID(), DeviceId, ChannelId, EventType,
-                      EventSourceType);
+    const supla_caller &Caller) {
+  list<AbstractHttpRequestFactory *> factories = getFactories();
+  list<supla_http_request *> result;
+  for (auto it = factories.begin(); it != factories.end(); it++) {
+    supla_http_request *request = (*it)->create(
+        user, (*it)->getClassID(), DeviceId, ChannelId, EventType, Caller);
     if (request) {
       if (request->isEventTypeAccepted(EventType, true) &&
-          request->isEventSourceTypeAccepted(EventSourceType, true)) {
+          request->isCallerAccepted(Caller, true)) {
         result.push_back(request);
       } else {
         delete request;

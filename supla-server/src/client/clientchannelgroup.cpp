@@ -17,11 +17,15 @@
  */
 
 #include "clientchannelgroup.h"
+
 #include <string.h>
+
 #include "client.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
+
+using std::list;
 
 supla_client_channelgroup::supla_client_channelgroup(
     supla_client_channelgroups *Container, int Id, int LocationID, int Func,
@@ -104,8 +108,9 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup *group) {
   group->AltIcon = AltIcon;
   group->Flags = Flags;
 
-  proto_get_caption(group->Caption, &group->CaptionSize,
-                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), group->Caption,
+                                    &group->CaptionSize,
+                                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
 
 void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
@@ -118,12 +123,13 @@ void supla_client_channelgroup::proto_get(TSC_SuplaChannelGroup_B *group) {
   group->UserIcon = UserIcon;
   group->Flags = Flags;
 
-  proto_get_caption(group->Caption, &group->CaptionSize,
-                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
+  sproto_set_null_terminated_string(getCaption(), group->Caption,
+                                    &group->CaptionSize,
+                                    SUPLA_CHANNELGROUP_CAPTION_MAXSIZE);
 }
 
-std::list<dcpair> supla_client_channelgroup::get_channel_list(void) {
-  std::list<dcpair> result;
+list<dcpair> supla_client_channelgroup::get_channel_list(void) {
+  list<dcpair> result;
 
   supla_client_channelgroup_relation *rel = NULL;
   safe_array_lock(relarr);

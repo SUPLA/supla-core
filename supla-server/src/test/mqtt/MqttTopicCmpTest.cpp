@@ -26,6 +26,9 @@
 
 namespace testing {
 
+using std::list;
+using std::string;
+
 MqttTopicCmpTest::MqttTopicCmpTest() {}
 MqttTopicCmpTest::~MqttTopicCmpTest() {}
 
@@ -57,14 +60,14 @@ TEST_F(MqttTopicCmpTest, topicsRemoved) {
   mp_before->set_data_row(&channel_before);
   mp_after->set_data_row(&channel_after);
 
-  std::list<std::string> removed =
+  list<string> removed =
       supla_mqtt_topic_cmp::topics_removed(NULL, mp_before, mp_after);
 
   delete mp_before;
   delete mp_after;
 
   ASSERT_EQ(removed.size(), (long unsigned int)4);
-  std::list<std::string>::iterator rit = removed.begin();
+  auto rit = removed.begin();
 
   ASSERT_EQ(
       rit->compare(

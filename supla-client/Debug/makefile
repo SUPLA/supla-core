@@ -9,7 +9,6 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/subdir.mk
--include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -20,13 +19,27 @@ endif
 
 -include ../makefile.defs
 
+OPTIONAL_TOOL_DEPS := \
+$(wildcard ../makefile.defs) \
+$(wildcard ../makefile.init) \
+$(wildcard ../makefile.targets) \
+
+
+BUILD_ARTIFACT_NAME := supla-client
+BUILD_ARTIFACT_EXTENSION := a
+BUILD_ARTIFACT_PREFIX := lib
+BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
+
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: libsupla-client.a
+all: main-build
+
+# Main-build Target
+main-build: libsupla-client.a
 
 # Tool invocations
-libsupla-client.a: $(OBJS) $(USER_OBJS)
+libsupla-client.a: $(OBJS) $(USER_OBJS) makefile objects.mk $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross GCC Archiver'
 	ar -r  "libsupla-client.a" $(OBJS) $(USER_OBJS) $(LIBS)
@@ -35,9 +48,9 @@ libsupla-client.a: $(OBJS) $(USER_OBJS)
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(ARCHIVES)$(C_DEPS) libsupla-client.a
+	-$(RM) libsupla-client.a
 	-@echo ' '
 
-.PHONY: all clean dependents
+.PHONY: all clean dependents main-build
 
 -include ../makefile.targets

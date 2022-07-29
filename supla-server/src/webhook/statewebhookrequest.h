@@ -35,13 +35,13 @@ class supla_state_webhook_request : public supla_http_request {
  public:
   supla_state_webhook_request(supla_user *user, int ClassID, int DeviceId,
                               int ChannelId, event_type EventType,
-                              event_source_type EventSourceType);
+                              const supla_caller &Caller);
   ~supla_state_webhook_request(void);
   bool isMeasuringSensor(void);
   virtual bool isCancelled(void *sthread);
   virtual bool verifyExisting(supla_http_request *existing);
   virtual bool queueUp(void);
-  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
+  virtual bool isCallerAccepted(const supla_caller &caller,
                                          bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   virtual void execute(void *sthread);

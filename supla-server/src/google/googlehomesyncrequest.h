@@ -25,10 +25,10 @@ class supla_google_home_sync_request : public supla_google_home_request {
  public:
   supla_google_home_sync_request(supla_user *user, int ClassID, int DeviceId,
                                  int ChannelId, event_type EventType,
-                                 event_source_type EventSourceType);
+                                 const supla_caller &Caller);
   virtual bool verifyExisting(supla_http_request *existing);
   virtual bool queueUp(void);
-  virtual bool isEventSourceTypeAccepted(event_source_type eventSourceType,
+  virtual bool isCallerAccepted(const supla_caller &caller,
                                          bool verification);
   virtual bool isEventTypeAccepted(event_type eventType, bool verification);
   virtual void execute(void *sthread);

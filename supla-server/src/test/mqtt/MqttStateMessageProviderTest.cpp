@@ -987,7 +987,7 @@ TEST_F(MqttStateMessageProviderTest, measurementUnitChangeTest) {
   cvalue.online = true;
   cvalue.channel_type = SUPLA_CHANNELTYPE_ELECTRICITY_METER;
   cvalue.function = SUPLA_CHANNELFNC_ELECTRICITY_METER;
-  provider->setMeasuredValues(EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KWH |
+  provider->setMeasuredValues(EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KW |
                               EM_VAR_POWER_REACTIVE_KVAR |
                               EM_VAR_POWER_APPARENT_KVA);
   provider->setComplexValue(&cvalue);

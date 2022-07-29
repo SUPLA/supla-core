@@ -17,7 +17,9 @@
  */
 
 #include "abstract_asynctask.h"
+
 #include <assert.h>
+
 #include "abstract_asynctask_thread_pool.h"
 #include "asynctask_queue.h"
 #include "lck.h"
@@ -42,25 +44,49 @@ void supla_abstract_asynctask::init(supla_asynctask_queue *queue,
   assert(pool);
 
   this->lck = lck_init();
-  this->state = STA_STATE_INIT;
+  this->observable = false;
+  this->observer_notified = false;
   this->delay_usec = 0;
-  this->start_time.tv_sec = 0;
-  this->start_time.tv_usec = 0;
+  this->started_at = {};
+  this->execution_start_time = {};
   this->timeout_usec = 0;
   this->queue = queue;
   this->pool = pool;
   this->priority = priority;
   this->release_immediately = release_immediately;
+
+  gettimeofday(&started_at, NULL);
 }
 
 supla_abstract_asynctask::~supla_abstract_asynctask(void) {
-  queue->remove_task(this);
+  on_task_finished();
   lck_free(lck);
 }
 
 void supla_abstract_asynctask::lock(void) { lck_lock(lck); }
 
 void supla_abstract_asynctask::unlock(void) { lck_unlock(lck); }
+
+void supla_abstract_asynctask::set_observable(void) {
+  lock();
+  bool prev = observable;
+  if (!observable) {
+    observable = true;
+  }
+  unlock();
+
+  if (!prev) {
+    queue->on_task_started(this);
+  }
+}
+
+bool supla_abstract_asynctask::is_observable(void) {
+  lock();
+  bool result = observable;
+  unlock();
+
+  return result;
+}
 
 supla_asynctask_queue *supla_abstract_asynctask::get_queue(void) {
   return queue;
@@ -72,11 +98,18 @@ supla_abstract_asynctask_thread_pool *supla_abstract_asynctask::get_pool(void) {
 
 short supla_abstract_asynctask::get_priority(void) { return priority; }
 
-async_task_state supla_abstract_asynctask::get_state(void) {
+supla_asynctask_state supla_abstract_asynctask::get_state(void) {
   lock();
-  async_task_state result = state;
+  supla_asynctask_state result = state;
   unlock();
 
+  return result;
+}
+
+struct timeval supla_abstract_asynctask::get_started_at(void) {
+  lock();
+  struct timeval result = started_at;
+  unlock();
   return result;
 }
 
@@ -89,16 +122,16 @@ long long supla_abstract_asynctask::get_delay_usec(void) {
 
 void supla_abstract_asynctask::set_delay_usec(long long delay_usec) {
   lock();
-  gettimeofday(&start_time, NULL);
+  gettimeofday(&execution_start_time, NULL);
   this->delay_usec = delay_usec;
 
   if (delay_usec > 0) {
-    start_time.tv_sec += delay_usec / 1000000;
-    start_time.tv_usec += delay_usec % 1000000;
+    execution_start_time.tv_sec += delay_usec / 1000000;
+    execution_start_time.tv_usec += delay_usec % 1000000;
   }
 
   unlock();
-  if (get_state() != STA_STATE_EXECUTING) {
+  if (get_state() != supla_asynctask_state::EXECUTING) {
     queue->raise_event();
   }
 }
@@ -125,8 +158,9 @@ long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
 
   lock();
   long long result = 0;
-  if (start_time.tv_sec || start_time.tv_usec) {
-    result = (start_time.tv_sec * (long long)1000000 + start_time.tv_usec) -
+  if (execution_start_time.tv_sec || execution_start_time.tv_usec) {
+    result = (execution_start_time.tv_sec * (long long)1000000 +
+              execution_start_time.tv_usec) -
              (now->tv_sec * (long long)1000000 + now->tv_usec);
   }
   unlock();
@@ -136,8 +170,8 @@ long long supla_abstract_asynctask::time_left_usec(struct timeval *now) {
 
 void supla_abstract_asynctask::set_waiting(void) {
   lock();
-  if (state == STA_STATE_INIT) {
-    state = STA_STATE_WAITING;
+  if (state == supla_asynctask_state::INIT) {
+    state = supla_asynctask_state::WAITING;
   }
   unlock();
   queue->raise_event();
@@ -145,9 +179,9 @@ void supla_abstract_asynctask::set_waiting(void) {
 
 bool supla_abstract_asynctask::pick(void) {
   lock();
-  bool result = state == STA_STATE_WAITING;
+  bool result = state == supla_asynctask_state::WAITING;
   if (result) {
-    state = STA_STATE_PICKED;
+    state = supla_asynctask_state::PICKED;
   }
   unlock();
 
@@ -156,21 +190,21 @@ bool supla_abstract_asynctask::pick(void) {
 
 void supla_abstract_asynctask::execute(void) {
   lock();
-  bool exec_allowed = state == STA_STATE_PICKED;
+  bool exec_allowed = state == supla_asynctask_state::PICKED;
 
   if (exec_allowed && timeout_usec) {
     long long time_left = time_left_usec(NULL);
     if (time_left < 0) {
       time_left *= -1;
       if ((long long unsigned)time_left >= timeout_usec) {
-        state = STA_STATE_TIMEOUT;
+        state = supla_asynctask_state::TIMEOUT;
         exec_allowed = false;
       }
     }
   }
 
   if (exec_allowed) {
-    state = STA_STATE_EXECUTING;
+    state = supla_asynctask_state::EXECUTING;
   }
   unlock();
 
@@ -182,22 +216,33 @@ void supla_abstract_asynctask::execute(void) {
   bool result = _execute(&exec_again);
 
   lock();
-  if (state != STA_STATE_CANCELED) {
+  if (state != supla_asynctask_state::CANCELED) {
     if (exec_again) {
-      state = STA_STATE_WAITING;
+      state = supla_asynctask_state::WAITING;
       set_delay_usec(delay_usec);
     } else if (result) {
-      state = STA_STATE_SUCCESS;
+      state = supla_asynctask_state::SUCCESS;
     } else {
-      state = STA_STATE_FAILURE;
+      state = supla_asynctask_state::FAILURE;
     }
   }
   unlock();
+
+  if (is_finished()) {
+    on_task_finished();
+  }
+}
+
+void supla_abstract_asynctask::on_task_finished(void) {
+  if (is_observable() && !observer_notified) {
+    observer_notified = true;
+    queue->on_task_finished(this);
+  }
 }
 
 void supla_abstract_asynctask::cancel(void) {
   lock();
-  state = STA_STATE_CANCELED;
+  state = supla_asynctask_state::CANCELED;
   unlock();
 }
 
@@ -205,11 +250,11 @@ bool supla_abstract_asynctask::is_finished(void) {
   lock();
   bool result = false;
 
-  switch (state) {
-    case STA_STATE_SUCCESS:
-    case STA_STATE_FAILURE:
-    case STA_STATE_TIMEOUT:
-    case STA_STATE_CANCELED:
+  switch (state.get_state()) {
+    case supla_asynctask_state::SUCCESS:
+    case supla_asynctask_state::FAILURE:
+    case supla_asynctask_state::TIMEOUT:
+    case supla_asynctask_state::CANCELED:
       result = true;
       break;
     default:

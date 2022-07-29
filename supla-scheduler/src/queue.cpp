@@ -32,8 +32,8 @@
 #include "worker.h"
 
 char queue_loop_s_exec_arr_free(void *s_exec) {
-  if (((s_exec_t *)s_exec)->action_param)
-    free(((s_exec_t *)s_exec)->action_param);
+  if (((s_exec_params_t *)s_exec)->action_param)
+    free(((s_exec_params_t *)s_exec)->action_param);
 
   free(s_exec);
   return 1;
@@ -150,13 +150,13 @@ bool queue::limit_exceeded(void) {
   return limit_exceeded;
 }
 
-s_exec_t queue::get_job(void) {
-  s_exec_t result;
-  memset(&result, 0, sizeof(s_exec_t));
+s_exec_params_t queue::get_job(void) {
+  s_exec_params_t result;
+  memset(&result, 0, sizeof(s_exec_params_t));
 
   if (sthread_isterminated(q_sthread) || limit_exceeded()) return result;
 
-  s_exec_t *s_exec = (s_exec_t *)safe_array_pop(s_exec_arr);
+  s_exec_params_t *s_exec = (s_exec_params_t *)safe_array_pop(s_exec_arr);
 
   if (s_exec != NULL) {
     lck_lock(lck);

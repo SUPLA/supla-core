@@ -24,6 +24,8 @@
 #include "mqtt_device_message_provider.h"
 #include "mqtt_user_message_provider.h"
 
+using std::list;
+
 #define MPD_DATATYPE_USER 1
 #define MPD_DATATYPE_DEVICE 2
 #define MPD_DATATYPE_CHANNEL 3
@@ -89,8 +91,7 @@ bool supla_mqtt_publisher_datasource::is_context_allowed(
 bool supla_mqtt_publisher_datasource::is_user_enabled(int user_id) {
   bool result = false;
   lock();
-  for (std::list<int>::iterator it = users_enabled.begin();
-       it != users_enabled.end(); ++it) {
+  for (auto it = users_enabled.begin(); it != users_enabled.end(); ++it) {
     if (*it == user_id) {
       result = true;
       break;
@@ -504,9 +505,9 @@ void supla_mqtt_publisher_datasource::close_channelquery(void) {
 }
 
 void supla_mqtt_publisher_datasource::add_user_to_list(int user_id,
-                                                       std::list<int> *ulist) {
+                                                       list<int> *ulist) {
   bool exists = false;
-  for (std::list<int>::iterator it = ulist->begin(); it != ulist->end(); ++it) {
+  for (auto it = ulist->begin(); it != ulist->end(); ++it) {
     if (*it == user_id) {
       exists = true;
       break;
@@ -527,8 +528,7 @@ void supla_mqtt_publisher_datasource::context_close(
     if (users_enabled_tmp.size()) {
       add_user_to_list(users_enabled_tmp.front(), &users_enabled);
     } else if (context->get_user_id()) {
-      for (std::list<int>::iterator it = users_enabled.begin();
-           it != users_enabled.end(); ++it) {
+      for (auto it = users_enabled.begin(); it != users_enabled.end(); ++it) {
         if (*it == context->get_user_id()) {
           it = users_enabled.erase(it);
           break;
@@ -580,9 +580,8 @@ void supla_mqtt_publisher_datasource::on_actions_triggered(
 
   lock();
   bool exists = false;
-  for (std::list<_mqtt_ds_triggered_actions_t>::iterator it =
-           triggered_actions.begin();
-       it != triggered_actions.end(); ++it) {
+  for (auto it = triggered_actions.begin(); it != triggered_actions.end();
+       ++it) {
     if (it->user_id == user_id && it->device_id == device_id &&
         it->channel_id == channel_id) {
       exists = true;

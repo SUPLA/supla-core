@@ -90,15 +90,15 @@ void MqttValueSetterMock::action_shut(const char *closingPercentage) {
 
 void MqttValueSetterMock::action_reveal(void) { reveal_counter++; }
 
-void MqttValueSetterMock::action_up(void) { up_counter++; };
+void MqttValueSetterMock::action_up(void) { up_counter++; }
 
-void MqttValueSetterMock::action_down(void) { down_counter++; };
+void MqttValueSetterMock::action_down(void) { down_counter++; }
 
-void MqttValueSetterMock::action_up_or_stop(void) { up_or_stop_counter++; };
+void MqttValueSetterMock::action_up_or_stop(void) { up_or_stop_counter++; }
 
-void MqttValueSetterMock::action_down_or_stop(void) { down_or_stop_counter++; };
+void MqttValueSetterMock::action_down_or_stop(void) { down_or_stop_counter++; }
 
-void MqttValueSetterMock::action_step_by_step(void) { step_by_step_counter++; };
+void MqttValueSetterMock::action_step_by_step(void) { step_by_step_counter++; }
 
 void MqttValueSetterMock::action_stop(void) { stop_counter++; }
 
@@ -138,9 +138,13 @@ int MqttValueSetterMock::getDownCounter(void) { return down_counter; }
 
 int MqttValueSetterMock::getUpOrStopCounter(void) { return up_or_stop_counter; }
 
-int MqttValueSetterMock::getDownOrStopCounter(void) { return down_or_stop_counter; }
+int MqttValueSetterMock::getDownOrStopCounter(void) {
+  return down_or_stop_counter;
+}
 
-int MqttValueSetterMock::getStepByStepCounter(void) { return step_by_step_counter; }
+int MqttValueSetterMock::getStepByStepCounter(void) {
+  return step_by_step_counter;
+}
 
 int MqttValueSetterMock::getStopCounter(void) { return stop_counter; }
 

@@ -24,18 +24,21 @@
 
 #include "abstract_value_getter.h"
 #include "asynctask/abstract_asynctask.h"
+#include "caller.h"
 
 class supla_action_gate_openclose : public supla_abstract_asynctask {
  private:
   supla_abstract_action_executor *action_executor;
   supla_abstract_value_getter *value_getter;
+  supla_caller caller;
   int user_id;
   int device_id;
   int channel_id;
   bool open;
   short attempt_count_left;
   unsigned int verification_delay_us;
-  void action_init(supla_abstract_action_executor *action_executor,
+  void action_init(const supla_caller &caller,
+                   supla_abstract_action_executor *action_executor,
                    supla_abstract_value_getter *value_getter,
                    abstract_channel_json_config_getter *json_config_getter,
                    int user_id, int device_id, int channel_id,
@@ -47,7 +50,8 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
 
  public:
   supla_action_gate_openclose(
-      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
+      const supla_caller &caller, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool,
       supla_abstract_action_executor *action_executor,
       supla_abstract_value_getter *value_getter,
       abstract_channel_json_config_getter *json_config_getter, int user_id,
@@ -55,22 +59,24 @@ class supla_action_gate_openclose : public supla_abstract_asynctask {
       bool open);
 
   supla_action_gate_openclose(
-      supla_asynctask_queue *queue, supla_abstract_asynctask_thread_pool *pool,
-      short priority, bool release_immediately,
-      supla_abstract_action_executor *action_executor,
+      const supla_caller &caller, supla_asynctask_queue *queue,
+      supla_abstract_asynctask_thread_pool *pool, short priority,
+      bool release_immediately, supla_abstract_action_executor *action_executor,
       supla_abstract_value_getter *value_getter,
       abstract_channel_json_config_getter *json_config_getter, int user_id,
       int device_id, int channel_id, unsigned int verification_delay_us,
       bool open);
   virtual ~supla_action_gate_openclose(void);
 
+  const supla_caller &get_caller(void) const;
   int get_user_id(void);
   int get_device_id(void);
   int get_channel_id(void);
   bool action_open(void);
 
   static void cancel_tasks(int user_id, int device_id, int channel_id);
-  static void open_close(int user_id, int device_id, int channel_id, bool open);
+  static void open_close(const supla_caller &caller, int user_id, int device_id,
+                         int channel_id, bool open);
 };
 
 #endif /*ACTION_OPENCLOSE_H_*/

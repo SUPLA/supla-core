@@ -17,16 +17,23 @@
  */
 
 #include "action_set.h"
+
 #include <string.h>
+
 #include "json/cJSON.h"
 #include "log.h"
 
 s_worker_action_set::s_worker_action_set(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
-void s_worker_action_set::get_function_list(int list[FUNCTION_LIST_SIZE]) {
-  list[0] = SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL;
-  list[1] = SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL;
+bool s_worker_action_set::is_action_allowed(void) {
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_DIGIGLASS_HORIZONTAL:
+    case SUPLA_CHANNELFNC_DIGIGLASS_VERTICAL:
+      return true;
+  }
+
+  return false;
 }
 
 int s_worker_action_set::try_limit(void) { return 2; }

@@ -27,14 +27,20 @@
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
+#include "scene/scene_asynctask.h"
 #include "srpc.h"
 #include "user.h"
 #include "user/userchannelgroups.h"
 
 supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
+  this->srpc_adapter = new supla_srpc_adapter(svrconn->srpc());
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
+  this->scene_remote_updater =
+      new supla_client_scene_remote_updater(srpc_adapter);
+  this->scenes = new supla_client_scenes(scene_remote_updater, &scene_dao,
+                                         supla_scene_asynctask::get_queue());
   this->name[0] = 0;
   this->superuser_authorized = false;
   this->access_id = 0;
@@ -44,6 +50,9 @@ supla_client::~supla_client() {
   delete cgroups;
   delete channels;
   delete locations;
+  delete scenes;
+  delete scene_remote_updater;
+  delete srpc_adapter;
 }
 
 void supla_client::setName(const char *name) {
@@ -133,10 +142,12 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
       int UserID = 0;
       bool pwd_is_set = false;
       bool accessid_enabled = false;
+      bool accessid_active = false;
 
       if (register_client_b != NULL &&
           false == db->accessid_auth(AccessID, register_client_b->AccessIDpwd,
-                                     &UserID, &accessid_enabled)) {
+                                     &UserID, &accessid_enabled,
+                                     &accessid_active)) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
 
       } else if (register_client_d != NULL &&
@@ -154,14 +165,16 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
         bool client_enabled = true;
         bool do_update = true;
         bool _accessid_enabled = false;
+        bool _accessid_active = false;
 
         db->start_transaction();
 
         int ClientID =
             db->get_client(db->get_client_id(UserID, GUID), &client_enabled,
-                           &_AccessID, &_accessid_enabled);
+                           &_AccessID, &_accessid_enabled, &_accessid_active);
 
         if (_accessid_enabled) accessid_enabled = true;
+        if (_accessid_active) accessid_active = true;
 
         pwd_is_set =
             register_client_d != NULL &&
@@ -189,13 +202,20 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
             if (AccessID == 0 && register_client_d != NULL &&
                 (db->get_client_count(UserID) == 0 ||
                  is_superuser_authorized())) {
-              AccessID = db->get_access_id(UserID, true);
+              AccessID = db->get_access_id(UserID, true, true);
 
               if (AccessID > 0) {
                 accessid_enabled = true;
+                accessid_active = true;
               } else {
                 accessid_enabled = false;
-                AccessID = db->get_access_id(UserID, false);
+                AccessID = db->get_access_id(UserID, false, true);
+                if (AccessID > 0) {
+                  accessid_active = true;
+                } else {
+                  accessid_active = false;
+                  AccessID = db->get_access_id(UserID, false, false);
+                }
               }
             }
 
@@ -212,11 +232,17 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
 
               if (AccessID == 0) {
                 _accessid_enabled = false;
-                AccessID =
-                    db->get_client_access_id(ClientID, &_accessid_enabled);
+                _accessid_active = false;
+                AccessID = db->get_client_access_id(
+                    ClientID, &_accessid_enabled, &_accessid_active);
 
-                if (AccessID && _accessid_enabled) {
-                  accessid_enabled = true;
+                if (AccessID) {
+                  if (_accessid_enabled) {
+                    accessid_enabled = true;
+                  }
+                  if (_accessid_active) {
+                    accessid_active = true;
+                  }
                 }
               }
             }
@@ -240,10 +266,11 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
                 }
 
                 if (is_superuser_authorized()) {
-                  AccessID = db->get_access_id(UserID, true);
+                  AccessID = db->get_access_id(UserID, true, true);
 
                   if (AccessID) {
                     accessid_enabled = true;
+                    accessid_active = true;
                   }
                 }
               }
@@ -268,16 +295,21 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               } else if (!accessid_enabled) {
                 resultcode = SUPLA_RESULTCODE_ACCESSID_DISABLED;
 
+              } else if (!accessid_active) {
+                resultcode = SUPLA_RESULTCODE_ACCESSID_INACTIVE;
+
               } else {
                 setID(ClientID);
                 setName(Name);
                 setAccessID(AccessID);
 
+                // Set the user before loading config
+                setUser(supla_user::add_client(this, UserID));
+
                 loadConfig();
 
                 resultcode = SUPLA_RESULTCODE_TRUE;
                 result = 1;
-                setUser(supla_user::add_client(this, UserID));
               }
             }
           }
@@ -364,12 +396,15 @@ void supla_client::remote_update_lists(void) {
   if (channels->remote_update(getSvrConn()->srpc())) return;
 
   if (cgroups->remote_update(getSvrConn()->srpc())) return;
+
+  if (scenes->update_remote()) return;
 }
 
 void supla_client::loadConfig(void) {
   locations->load(getID());
   channels->load();
   cgroups->load();
+  scenes->load(getUserID(), getID());
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }
@@ -385,8 +420,8 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
   } else if (new_value->Target == SUPLA_TARGET_GROUP) {
     if (cgroups->groupExits(
             new_value->Id)) {  // Make sure the client has access to this group
-      getUser()->get_channel_groups()->set_new_value(EST_CLIENT, getID(),
-                                                     new_value);
+      getUser()->get_channel_groups()->set_new_value(
+          supla_caller(ctClient, getID()), new_value);
     }
   }
 }
@@ -484,7 +519,8 @@ void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
   } else if (request->Target == SUPLA_TARGET_GROUP) {
     if (cgroups->groupExits(
             request->Id)) {  // Make sure the client has access to this group
-      getUser()->get_channel_groups()->calcfg_request(getID(), request);
+      getUser()->get_channel_groups()->calcfg_request(
+          supla_caller(ctClient, getID()), request);
     }
   }
 }
@@ -585,9 +621,10 @@ void supla_client::timer_arm(TCS_TimerArmRequest *request) {
     return;
   }
 
-  channels->device_call(
+  channels->device_access(
       request->ChannelID, [this, request](supla_device *device) -> void {
-        device->get_channels()->timer_arm(getID(), request->ChannelID, 0, true,
+        device->get_channels()->timer_arm(supla_caller(ctClient, getID()),
+                                          request->ChannelID, 0, true,
                                           request->On, request->DurationMS);
       });
 }

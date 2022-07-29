@@ -25,7 +25,7 @@
 namespace testing {
 
 MqttUnpublisherIntegrationTest::MqttUnpublisherIntegrationTest()
-    : MqttClientIntegrationTest() {}
+    : MqttClientTest(), IntegrationTest() {}
 
 MqttUnpublisherIntegrationTest::~MqttUnpublisherIntegrationTest() {}
 
@@ -43,7 +43,7 @@ supla_mqtt_client_datasource *MqttUnpublisherIntegrationTest::dsInit(
 
 supla_mqtt_unpublisher_datasource *MqttUnpublisherIntegrationTest::getDS(void) {
   return static_cast<supla_mqtt_unpublisher_datasource *>(
-      MqttClientIntegrationTest::getDS());
+      MqttClientTest::getDS());
 }
 
 void MqttUnpublisherIntegrationTest::SetUp() {
@@ -51,7 +51,7 @@ void MqttUnpublisherIntegrationTest::SetUp() {
   runSqlScript("DataForMqttTests.sql");
   runSqlScript("DisableMqttForUser2645.sql");
 
-  MqttClientIntegrationTest::SetUp();
+  MqttClientTest::SetUp();
 }
 
 TEST_F(MqttUnpublisherIntegrationTest, disableAlreadyDisabled) {

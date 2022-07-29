@@ -26,7 +26,7 @@ class s_worker_action_turn_onoff : public s_worker_action {
   bool setOn;
 
  protected:
-  virtual void get_function_list(int list[FUNCTION_LIST_SIZE]);
+  virtual bool is_action_allowed(void);
   virtual int waiting_time_to_retry(void);
   virtual int waiting_time_to_check(void);
   virtual bool result_success(int *fail_result_code);

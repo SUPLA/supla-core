@@ -4,21 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/test/integration/mqtt/MqttClientIntegrationTest.cpp \
 ../src/test/integration/mqtt/MqttPublisherIntegrationTest.cpp \
-../src/test/integration/mqtt/MqttSubscriberIntegrationTest.cpp \
 ../src/test/integration/mqtt/MqttUnpublisherIntegrationTest.cpp 
 
 CPP_DEPS += \
-./src/test/integration/mqtt/MqttClientIntegrationTest.d \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d \
-./src/test/integration/mqtt/MqttSubscriberIntegrationTest.d \
 ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d 
 
 OBJS += \
-./src/test/integration/mqtt/MqttClientIntegrationTest.o \
 ./src/test/integration/mqtt/MqttPublisherIntegrationTest.o \
-./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o \
 ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o 
 
 
@@ -34,7 +28,7 @@ src/test/integration/mqtt/%.o: ../src/test/integration/mqtt/%.cpp src/test/integ
 clean: clean-src-2f-test-2f-integration-2f-mqtt
 
 clean-src-2f-test-2f-integration-2f-mqtt:
-	-$(RM) ./src/test/integration/mqtt/MqttClientIntegrationTest.d ./src/test/integration/mqtt/MqttClientIntegrationTest.o ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d ./src/test/integration/mqtt/MqttPublisherIntegrationTest.o ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.d ./src/test/integration/mqtt/MqttSubscriberIntegrationTest.o ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o
+	-$(RM) ./src/test/integration/mqtt/MqttPublisherIntegrationTest.d ./src/test/integration/mqtt/MqttPublisherIntegrationTest.o ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.d ./src/test/integration/mqtt/MqttUnpublisherIntegrationTest.o
 
 .PHONY: clean-src-2f-test-2f-integration-2f-mqtt
 

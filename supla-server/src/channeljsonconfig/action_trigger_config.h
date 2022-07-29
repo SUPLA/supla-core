@@ -19,28 +19,11 @@
 #ifndef ACTIONTRIGGERCONFIG_H_
 #define ACTIONTRIGGERCONFIG_H_
 
-#include <channeljsonconfig/channel_json_config.h>
-
 #include <functional>
 #include <string>
 
-#define ACTION_OPEN 10
-#define ACTION_CLOSE 20
-#define ACTION_SHUT 30
-#define ACTION_REVEAL 40
-#define ACTION_REVEAL_PARTIALLY 50
-#define ACTION_SHUT_PARTIALLY 51
-#define ACTION_TURN_ON 60
-#define ACTION_TURN_OFF 70
-#define ACTION_SET_RGBW_PARAMETERS 80
-#define ACTION_OPEN_CLOSE 90
-#define ACTION_STOP 100
-#define ACTION_TOGGLE 110
-#define ACTION_UP_OR_STOP 140
-#define ACTION_DOWN_OR_STOP 150
-#define ACTION_STEP_BY_STEP 160
-#define ACTION_FORWARD_OUTSIDE 10000
-#define ACTION_COPY 10100
+#include "actions/abstract_action_config.h"
+#include "channeljsonconfig/channel_json_config.h"
 
 #define DISABLE_LOCAL_FUNCTION 10200
 
@@ -58,14 +41,8 @@ typedef struct {
   int sourceChannelId;
 } _at_config_action_t;
 
-typedef struct {
-  char brightness;
-  char color_brightness;
-  unsigned int color;
-  bool color_random;
-} _at_config_rgbw_t;
-
-class action_trigger_config : public channel_json_config {
+class action_trigger_config : public abstract_action_config,
+                              public channel_json_config {
  private:
   static const _atc_map_t map[];
   static const char caps_key[];
@@ -80,6 +57,12 @@ class action_trigger_config : public channel_json_config {
   unsigned int get_capabilities(const char *key);
   bool set_capabilities(const char *key, std::function<unsigned int()> get_caps,
                         unsigned int caps);
+  int get_action_id(int cap);
+  _subjectType_e get_subject_type(int cap);
+  int get_subject_id(int cap);
+  int get_source_id(const char *key);
+  int active_cap;
+  int channel_id_if_subject_not_set;
 
  protected:
   virtual int get_map_size(void);
@@ -89,15 +72,25 @@ class action_trigger_config : public channel_json_config {
  public:
   explicit action_trigger_config(channel_json_config *root);
   action_trigger_config(void);
+  virtual ~action_trigger_config(void);
+
+  virtual int get_action_id(void);
+  virtual _subjectType_e get_subject_type(void);
+  virtual int get_subject_id(void);
+  void set_channel_id_if_subject_not_set(int subject_id);
+
+  virtual int get_source_device_id(void);
+  virtual int get_source_channel_id(void);
 
   unsigned int get_capabilities(void);
   bool set_capabilities(unsigned int caps);
   unsigned int get_caps_that_disables_local_operation(void);
   bool set_caps_that_disables_local_operation(unsigned int caps);
   unsigned int get_active_actions(void);
-  _at_config_action_t get_action_assigned_to_capability(int cap);
-  char get_percentage(int cap);
-  _at_config_rgbw_t get_rgbw(int cap);
+  virtual char get_percentage(void);
+  virtual _action_config_rgbw_t get_rgbw(void);
+  virtual int get_cap(void);
+  void set_active_cap(int cap);
   bool channel_exists(int channel_id);
 };
 

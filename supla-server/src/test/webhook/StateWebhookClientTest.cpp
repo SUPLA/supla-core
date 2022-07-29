@@ -1064,7 +1064,7 @@ TEST_F(StateWebhookClientTest, measurementUnitChangeTest) {
   em_ev.total_forward_active_energy_balanced = 100000;
   em_ev.total_reverse_active_energy_balanced = 100000;
 
-  em_ev.measured_values = EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KWH |
+  em_ev.measured_values = EM_VAR_ALL | EM_VAR_POWER_ACTIVE_KW |
                           EM_VAR_POWER_REACTIVE_KVAR |
                           EM_VAR_POWER_APPARENT_KVA;
   em_ev.period = 1;

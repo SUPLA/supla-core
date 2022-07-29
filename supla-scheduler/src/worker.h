@@ -29,6 +29,7 @@ class s_worker : public s_abstract_worker {
 
   virtual int get_channel_func(void);
   virtual int get_id(void);
+  virtual bool it_applies_to_scene(void);
   virtual int get_retry_count(void);
   virtual bool channel_group(void);
   virtual const char *get_action_param(void);
@@ -44,8 +45,11 @@ class s_worker : public s_abstract_worker {
   virtual bool ipcc_get_valve_value(TValve_Value *value);
   virtual bool ipcc_set_digiglass_value(int active_bits, int mask);
   virtual bool ipcc_get_digiglass_value(int *mask);
-  virtual char ipcc_is_connected(void);
   virtual bool ipcc_action_copy(int sourceDeviceId, int sourceChannelId);
+  virtual bool ipcc_execute_scene(void);
+  virtual bool ipcc_interrupt_scene(void);
+  virtual bool ipcc_interrupt_and_execute_scene(void);
+  virtual char ipcc_is_connected(void);
 };
 
 #endif /* WORKER_H_ */

@@ -19,10 +19,14 @@
 #ifndef H_ACTION_TEST_H_
 #define H_ACTION_TEST_H_
 
-class ActionTest {
+#include <gtest/gtest.h>
+
+namespace testing {
+class ActionTest : public Test {
  public:
   virtual ~ActionTest();
   ActionTest();
 };
+}  // namespace testing
 
 #endif /*H_ACTION_TEST_H_*/

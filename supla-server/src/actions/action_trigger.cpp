@@ -30,8 +30,7 @@ supla_action_trigger::supla_action_trigger(
 
 supla_action_trigger::~supla_action_trigger(void) {}
 
-void supla_action_trigger::execute_actions(int user_id,
-                                           int subject_id_if_not_set,
+void supla_action_trigger::execute_actions(int at_channel_id, int user_id,
                                            unsigned int caps) {
   if (!aexec || !config) {
     return;
@@ -45,86 +44,8 @@ void supla_action_trigger::execute_actions(int user_id,
       continue;
     }
 
-    _at_config_action_t action = config->get_action_assigned_to_capability(cap);
-
-    if (!action.subjectId && action.actionId == ACTION_FORWARD_OUTSIDE) {
-      action.subjectId = subject_id_if_not_set;
-    }
-
-    if (!action.actionId || !action.subjectId) {
-      continue;
-    }
-
-    if (action.channelGroup) {
-      aexec->set_group_id(user_id, action.subjectId);
-    } else {
-      aexec->set_channel_id(user_id, 0, action.subjectId);
-    }
-
-    switch (action.actionId) {
-      case ACTION_OPEN:
-        aexec->open();
-        break;
-      case ACTION_CLOSE:
-        aexec->close();
-        break;
-      case ACTION_SHUT:
-        aexec->shut(NULL);
-        break;
-      case ACTION_REVEAL:
-        aexec->reveal();
-        break;
-      case ACTION_UP_OR_STOP:
-        aexec->up_or_stop();
-        break;
-      case ACTION_DOWN_OR_STOP:
-        aexec->down_or_stop();
-        break;
-      case ACTION_STEP_BY_STEP:
-        aexec->step_by_step();
-        break;
-      case ACTION_SHUT_PARTIALLY:
-      case ACTION_REVEAL_PARTIALLY: {
-        char percentage = config->get_percentage(cap);
-        if (percentage > -1) {
-          if (action.actionId == ACTION_REVEAL_PARTIALLY) {
-            percentage = 100 - percentage;
-          }
-
-          aexec->shut(&percentage);
-        }
-      } break;
-      case ACTION_TURN_ON:
-        aexec->set_on(true);
-        break;
-      case ACTION_TURN_OFF:
-        aexec->set_on(false);
-        break;
-      case ACTION_SET_RGBW_PARAMETERS: {
-        _at_config_rgbw_t rgbw = config->get_rgbw(cap);
-        if (rgbw.brightness > -1 || rgbw.color_brightness > -1 || rgbw.color) {
-          aexec->set_rgbw(
-              rgbw.color ? &rgbw.color : NULL,
-              rgbw.color_brightness > -1 ? &rgbw.color_brightness : NULL,
-              rgbw.brightness > -1 ? &rgbw.brightness : NULL, NULL);
-        }
-      } break;
-      case ACTION_OPEN_CLOSE:
-        aexec->open_close();
-        break;
-      case ACTION_STOP:
-        aexec->stop();
-        break;
-      case ACTION_TOGGLE:
-        aexec->toggle();
-        break;
-      case ACTION_COPY:
-        aexec->copy(value_getter, action.sourceDeviceId,
-                    action.sourceChannelId);
-        break;
-      case ACTION_FORWARD_OUTSIDE:
-        aexec->forward_outside(cap);
-        break;
-    }
+    config->set_active_cap(cap);
+    aexec->execute_action(supla_caller(ctActionTrigger, at_channel_id), user_id,
+                          config, value_getter);
   }
 }

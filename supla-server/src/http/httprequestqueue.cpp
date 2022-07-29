@@ -36,6 +36,8 @@
 #include "tools.h"
 #include "user/user.h"
 
+using std::list;
+
 // TODO(anyone): Pass the http queue handling to supla_asynctasks
 
 typedef struct {
@@ -183,10 +185,10 @@ supla_http_request *supla_http_request_queue::queuePop(void *q_sthread,
         supla_log(LOG_WARNING,
                   "HTTP request execution timeout! UserID: %i, IODevice: %i "
                   "Channel: %i QS: %i, TC: %i,"
-                  "EventSourceType: %i (%lu/%lu/%lu/%lu/%lu/%lu/%i)",
+                  "CallerType: %i (%lu/%lu/%lu/%lu/%lu/%lu/%i)",
                   request->getUserID(), request->getDeviceId(),
                   request->getChannelId(), queueSize(), threadCount(),
-                  request->getEventSourceType(), request->getTimeout(),
+                  request->getCaller(), request->getTimeout(),
                   request->getStartTime(), now->tv_sec,
                   request->getTouchTimeSec(), request->getTouchCount(),
                   last_iterate_time_sec, queue_offset);
@@ -379,10 +381,9 @@ void supla_http_request_queue::addRequest(supla_http_request *request) {
   recalculateTime();
 }
 
-void supla_http_request_queue::createByChannelEventSourceType(
+void supla_http_request_queue::createInTheCallerContext(
     supla_user *user, int deviceId, int channelId, event_type eventType,
-    event_source_type eventSourceType,
-    supla_http_request_extra_params *extraParams) {
+    const supla_caller &caller, supla_http_request_extra_params *extraParams) {
   if (st_app_terminate != 0) {
     if (extraParams) {
       delete extraParams;
@@ -390,12 +391,11 @@ void supla_http_request_queue::createByChannelEventSourceType(
     return;
   }
 
-  std::list<supla_http_request *> requests =
-      AbstractHttpRequestFactory::createByChannelEventSourceType(
-          user, deviceId, channelId, eventType, eventSourceType);
+  list<supla_http_request *> requests =
+      AbstractHttpRequestFactory::createInTheCallerContext(
+          user, deviceId, channelId, eventType, caller);
 
-  for (std::list<supla_http_request *>::iterator it = requests.begin();
-       it != requests.end(); it++) {
+  for (auto it = requests.begin(); it != requests.end(); it++) {
     supla_http_request *request = *it;
 
     safe_array_lock(arr_queue);
@@ -416,8 +416,7 @@ void supla_http_request_queue::createByChannelEventSourceType(
     safe_array_unlock(arr_queue);
 
     if (request) {
-      if (!request->isEventSourceTypeAccepted(eventSourceType, false) ||
-          !request->queueUp()) {
+      if (!request->isCallerAccepted(caller, false) || !request->queueUp()) {
         delete request;
         request = NULL;
       }
@@ -436,50 +435,47 @@ void supla_http_request_queue::createByChannelEventSourceType(
 }
 
 void supla_http_request_queue::onChannelValueChangeEvent(
-    supla_user *user, int deviceId, int channelId,
-    event_source_type eventSourceType, const char correlationToken[],
-    const char googleRequestId[]) {
-  createByChannelEventSourceType(
-      user, deviceId, channelId, ET_CHANNEL_VALUE_CHANGED, eventSourceType,
-      new supla_http_request_voice_assistant_extra_params(correlationToken,
-                                                          googleRequestId));
+    supla_user *user, int deviceId, int channelId, const supla_caller &caller,
+    const char correlationToken[], const char googleRequestId[]) {
+  createInTheCallerContext(user, deviceId, channelId, ET_CHANNEL_VALUE_CHANGED,
+                           caller,
+                           new supla_http_request_voice_assistant_extra_params(
+                               correlationToken, googleRequestId));
 }
 
 void supla_http_request_queue::onChannelsAddedEvent(
-    supla_user *user, int deviceId, event_source_type eventSourceType,
+    supla_user *user, int deviceId, const supla_caller &caller,
     const char correlationToken[], const char googleRequestId[]) {
-  createByChannelEventSourceType(
-      user, deviceId, 0, ET_CHANNELS_ADDED, eventSourceType,
-      new supla_http_request_voice_assistant_extra_params(correlationToken,
-                                                          googleRequestId));
+  createInTheCallerContext(user, deviceId, 0, ET_CHANNELS_ADDED, caller,
+                           new supla_http_request_voice_assistant_extra_params(
+                               correlationToken, googleRequestId));
 }
 
 void supla_http_request_queue::onDeviceDeletedEvent(
-    supla_user *user, int deviceId, event_source_type eventSourceType,
+    supla_user *user, int deviceId, const supla_caller &caller,
     const char correlationToken[], const char googleRequestId[]) {
-  createByChannelEventSourceType(
-      user, deviceId, 0, ET_DEVICE_DELETED, eventSourceType,
-      new supla_http_request_voice_assistant_extra_params(correlationToken,
-                                                          googleRequestId));
+  createInTheCallerContext(user, deviceId, 0, ET_DEVICE_DELETED, caller,
+                           new supla_http_request_voice_assistant_extra_params(
+                               correlationToken, googleRequestId));
 }
 
 void supla_http_request_queue::onUserReconnectEvent(
-    supla_user *user, event_source_type eventSourceType) {
-  createByChannelEventSourceType(user, 0, 0, ET_USER_RECONNECT, eventSourceType,
-                                 NULL);
+    supla_user *user, const supla_caller &caller) {
+  createInTheCallerContext(user, 0, 0, ET_USER_RECONNECT, caller, NULL);
 }
 
 void supla_http_request_queue::onGoogleHomeSyncNeededEvent(
-    supla_user *user, event_source_type eventSourceType) {
-  createByChannelEventSourceType(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED,
-                                 eventSourceType, NULL);
+    supla_user *user, const supla_caller &caller) {
+  createInTheCallerContext(user, 0, 0, ET_GOOGLE_HOME_SYNC_NEEDED, caller,
+                           NULL);
 }
 
-void supla_http_request_queue::onActionsTriggered(supla_user *user,
+void supla_http_request_queue::onActionsTriggered(const supla_caller &caller,
+                                                  supla_user *user,
                                                   int deviceId, int channelId,
                                                   unsigned int actions) {
-  createByChannelEventSourceType(
-      user, deviceId, channelId, ET_ACTION_TRIGGERED, EST_DEVICE,
+  createInTheCallerContext(
+      user, deviceId, channelId, ET_ACTION_TRIGGERED, caller,
       new supla_http_request_action_trigger_extra_params(actions));
 }
 

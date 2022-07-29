@@ -19,7 +19,7 @@
 #ifndef LCK_H_
 #define LCK_H_
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266)
 #include <mem.h>
 #define LCK_ICACHE_FLASH ICACHE_FLASH_ATTR
 #endif

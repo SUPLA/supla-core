@@ -17,6 +17,7 @@
  */
 
 #include "abstract_worker.h"
+
 #include "action.h"
 #include "log.h"
 #include "sthread.h"
@@ -38,30 +39,32 @@ ipc_client *s_abstract_worker::get_ipcc(void) { return ipcc; }
 
 queue *s_abstract_worker::get_queue(void) { return q; }
 
-const s_exec_t *s_abstract_worker::get_exec(void) { return &s_exec; }
+const s_exec_params_t *s_abstract_worker::get_params(void) {
+  return &s_exec_params;
+}
 
 void s_abstract_worker::execute(void *sthread) {
   if (!db->connect()) return;
 
-  s_exec = q->get_job();
+  s_exec_params = q->get_job();
 
-  while (s_exec.id && !sthread_isterminated(sthread)) {
-    if (db->set_fetched(s_exec.id)) q->mark_fetched();
+  while (s_exec_params.id && !sthread_isterminated(sthread)) {
+    if (db->set_fetched(s_exec_params.id)) q->mark_fetched();
 
     s_worker_action *action =
-        AbstractActionFactory::createByActionType(s_exec.action, this);
+        AbstractActionFactory::createByActionType(s_exec_params.action, this);
 
     if (action) {
       action->execute();
       delete action;
     } else {
-      db->set_result(s_exec.id, ACTION_EXECUTION_RESULT_CANCELLED);
-      supla_log(LOG_ERR, "Action %i is not supported!", s_exec.action);
+      db->set_result(s_exec_params.id, ACTION_EXECUTION_RESULT_CANCELLED);
+      supla_log(LOG_ERR, "Action %i is not supported!", s_exec_params.action);
     }
 
-    if (s_exec.action_param != NULL) free(s_exec.action_param);
+    if (s_exec_params.action_param != NULL) free(s_exec_params.action_param);
 
-    s_exec = q->get_job();
+    s_exec_params = q->get_job();
   }
 
   q->raise_loop_event();

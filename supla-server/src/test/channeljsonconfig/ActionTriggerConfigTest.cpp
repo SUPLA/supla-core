@@ -306,22 +306,22 @@ TEST_F(ActionTriggerConfigTest, actionShutRevelal) {
       "3611,\"subjectType\":\"channel\",\"action\":{\"id\":40,\"param\":[]}}}"
       "}");
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_HOLD);
-  EXPECT_EQ(action.actionId, 0);
+  config->set_active_cap(SUPLA_ACTION_CAP_HOLD);
+  EXPECT_EQ(config->get_action_id(), 0);
 
-  action = config->get_action_assigned_to_capability(
-      SUPLA_ACTION_CAP_SHORT_PRESS_x2);
-  EXPECT_EQ(action.actionId, 0);
+  config->set_active_cap(SUPLA_ACTION_CAP_SHORT_PRESS_x2);
+  EXPECT_EQ(config->get_action_id(), 0);
 
   config->set_capabilities(SUPLA_ACTION_CAP_HOLD |
                            SUPLA_ACTION_CAP_SHORT_PRESS_x2);
 
-  action = config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_HOLD);
-  EXPECT_EQ(action.actionId, ACTION_SHUT);
-  EXPECT_EQ(action.subjectId, 3611);
-  EXPECT_EQ(action.sourceChannelId, 0);
-  EXPECT_FALSE(action.channelGroup);
+  config->set_active_cap(SUPLA_ACTION_CAP_HOLD);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_SHUT);
+  EXPECT_EQ(config->get_subject_id(), 3611);
+  EXPECT_EQ(config->get_source_device_id(), 0);
+  EXPECT_EQ(config->get_source_channel_id(), 0);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
 }
@@ -334,29 +334,33 @@ TEST_F(ActionTriggerConfigTest, getPercentage) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":98}}}}}");
 
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), -1);
+  EXPECT_EQ(config->get_percentage(), -1);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 98);
+  EXPECT_EQ(config->get_percentage(), -1);
+
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_percentage(), 98);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":110}}}}}");
 
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), -1);
+  EXPECT_EQ(config->get_percentage(), -1);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":0}}}}}");
 
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 0);
+  EXPECT_EQ(config->get_percentage(), 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":3611,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentag\":10}}}}}");
 
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), -1);
+  EXPECT_EQ(config->get_percentage(), -1);
 
   delete config;
 }
@@ -369,29 +373,31 @@ TEST_F(ActionTriggerConfigTest, getBrightness) {
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":15}}}}}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, -1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_rgbw().brightness, -1);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, 15);
+  EXPECT_EQ(config->get_rgbw().brightness, 15);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":110}}}}}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, -1);
+  EXPECT_EQ(config->get_rgbw().brightness, -1);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightness\":0}}}}}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, 0);
+  EXPECT_EQ(config->get_rgbw().brightness, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"brightnes\":15}}}}}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).brightness, -1);
+  EXPECT_EQ(config->get_rgbw().brightness, -1);
 
   delete config;
 }
@@ -405,32 +411,33 @@ TEST_F(ActionTriggerConfigTest, getColorBrightness) {
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":15}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, -1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(config->get_rgbw().color_brightness, -1);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, 15);
+  EXPECT_EQ(config->get_rgbw().color_brightness, 15);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":110}}}"
       "}}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, -1);
+  EXPECT_EQ(config->get_rgbw().color_brightness, -1);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightness\":0}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, 0);
+  EXPECT_EQ(config->get_rgbw().color_brightness, 0);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"color_brightnes\":15}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_brightness, -1);
+  EXPECT_EQ(config->get_rgbw().color_brightness, -1);
 
   delete config;
 }
@@ -444,39 +451,37 @@ TEST_F(ActionTriggerConfigTest, getColor) {
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":35}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
-            (unsigned int)0);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+  EXPECT_EQ(config->get_rgbw().color, (unsigned int)0);
 
-  EXPECT_FALSE(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_random);
+  EXPECT_FALSE(config->get_rgbw().color_random);
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
-            (unsigned int)0xFF9400);
+  EXPECT_EQ(config->get_rgbw().color, (unsigned int)0xFF9400);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"random\"}}}}"
       "}");
 
-  unsigned int color = config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color;
+  unsigned int color = config->get_rgbw().color;
   int a = 0;
   for (a = 0; a < 10; a++) {
-    if (color != config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color) {
+    if (color != config->get_rgbw().color) {
       break;
     }
   }
   EXPECT_NE(a, 10);
 
-  EXPECT_TRUE(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color_random);
+  EXPECT_TRUE(config->get_rgbw().color_random);
 
   config->set_user_config(
       "{\"actions\":{\"TOGGLE_X1\":{\"subjectId\":1551,\"subjectType\":"
       "\"channel\",\"action\":{\"id\":80,\"param\":{\"hue\":\"white\"}}}}"
       "}");
 
-  EXPECT_EQ(config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x1).color,
-            (unsigned int)0xFFFFFF);
+  EXPECT_EQ(config->get_rgbw().color, (unsigned int)0xFFFFFF);
 
   delete config;
 }
@@ -492,14 +497,15 @@ TEST_F(ActionTriggerConfigTest, actionSetRGBW) {
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x5);
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x5);
-  EXPECT_EQ(action.actionId, ACTION_SET_RGBW_PARAMETERS);
-  EXPECT_EQ(action.subjectId, 1551);
-  EXPECT_EQ(action.sourceChannelId, 0);
-  EXPECT_FALSE(action.channelGroup);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x5);
 
-  _at_config_rgbw_t rgbw = config->get_rgbw(SUPLA_ACTION_CAP_TOGGLE_x5);
+  EXPECT_EQ(config->get_action_id(), ACTION_SET_RGBW_PARAMETERS);
+  EXPECT_EQ(config->get_subject_id(), 1551);
+  EXPECT_EQ(config->get_source_device_id(), 0);
+  EXPECT_EQ(config->get_source_channel_id(), 0);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  _action_config_rgbw_t rgbw = config->get_rgbw();
   EXPECT_EQ(rgbw.brightness, (char)-1);
   EXPECT_EQ(rgbw.color_brightness, (char)44);
   EXPECT_EQ(rgbw.color, (unsigned int)0xFF002A);
@@ -517,14 +523,14 @@ TEST_F(ActionTriggerConfigTest, actionRevealPartially) {
       "\"channel\",\"action\":{\"id\":50,\"param\":{\"percentage\":65}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(action.actionId, ACTION_REVEAL_PARTIALLY);
-  EXPECT_EQ(action.subjectId, 3611);
-  EXPECT_EQ(action.sourceChannelId, 0);
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 65);
-  EXPECT_FALSE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_REVEAL_PARTIALLY);
+  EXPECT_EQ(config->get_subject_id(), 3611);
+  EXPECT_EQ(config->get_source_device_id(), 0);
+  EXPECT_EQ(config->get_source_channel_id(), 0);
+  EXPECT_EQ(config->get_percentage(), 65);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
 }
@@ -538,14 +544,13 @@ TEST_F(ActionTriggerConfigTest, actionShutPartially) {
       "\"channel\",\"action\":{\"id\":51,\"param\":{\"percentage\":20}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(action.actionId, ACTION_SHUT_PARTIALLY);
-  EXPECT_EQ(action.subjectId, 45678);
-  EXPECT_EQ(action.sourceChannelId, 0);
-  EXPECT_EQ(config->get_percentage(SUPLA_ACTION_CAP_TOGGLE_x1), 20);
-  EXPECT_FALSE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_SHUT_PARTIALLY);
+  EXPECT_EQ(config->get_subject_id(), 45678);
+  EXPECT_EQ(config->get_source_channel_id(), 0);
+  EXPECT_EQ(config->get_percentage(), 20);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
 }
@@ -559,13 +564,12 @@ TEST_F(ActionTriggerConfigTest, actionTurnOn) {
       "\"channel\",\"action\":{\"id\":60,\"param\":[]}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+  config->set_active_cap(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
 
-  _at_config_action_t action = config->get_action_assigned_to_capability(
-      SUPLA_ACTION_CAP_SHORT_PRESS_x5);
-  EXPECT_EQ(action.actionId, ACTION_TURN_ON);
-  EXPECT_EQ(action.subjectId, 3329);
-  EXPECT_EQ(action.sourceChannelId, 0);
-  EXPECT_FALSE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_TURN_ON);
+  EXPECT_EQ(config->get_subject_id(), 3329);
+  EXPECT_EQ(config->get_source_channel_id(), 0);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
 }
@@ -579,13 +583,12 @@ TEST_F(ActionTriggerConfigTest, actionTurnOnTheGroup) {
       "\"channelGroup\",\"action\":{\"id\":60,\"param\":[]}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
+  config->set_active_cap(SUPLA_ACTION_CAP_SHORT_PRESS_x5);
 
-  _at_config_action_t action = config->get_action_assigned_to_capability(
-      SUPLA_ACTION_CAP_SHORT_PRESS_x5);
-  EXPECT_EQ(action.actionId, ACTION_TURN_ON);
-  EXPECT_EQ(action.subjectId, 3329);
-  EXPECT_EQ(action.sourceChannelId, 0);
-  EXPECT_TRUE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_TURN_ON);
+  EXPECT_EQ(config->get_subject_id(), 3329);
+  EXPECT_EQ(config->get_source_channel_id(), 0);
+  EXPECT_EQ(config->get_subject_type(), stChannelGroup);
 
   delete config;
 }
@@ -643,13 +646,12 @@ TEST_F(ActionTriggerConfigTest, actionCopy) {
       "10100,\"param\":{\"sourceChannelId\":16868}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(action.actionId, ACTION_COPY);
-  EXPECT_EQ(action.subjectId, 55);
-  EXPECT_EQ(action.sourceChannelId, 16868);
-  EXPECT_FALSE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_COPY);
+  EXPECT_EQ(config->get_subject_id(), 55);
+  EXPECT_EQ(config->get_source_channel_id(), 16868);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
 
   delete config;
 }
@@ -665,14 +667,13 @@ TEST_F(ActionTriggerConfigTest, actionCopyToTheChannelGroup) {
       "10100,\"param\":{\"sourceChannelId\":46868}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(action.actionId, ACTION_COPY);
-  EXPECT_EQ(action.subjectId, 31);
-  EXPECT_EQ(action.sourceDeviceId, 0);
-  EXPECT_EQ(action.sourceChannelId, 46868);
-  EXPECT_TRUE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_COPY);
+  EXPECT_EQ(config->get_subject_id(), 31);
+  EXPECT_EQ(config->get_source_device_id(), 0);
+  EXPECT_EQ(config->get_source_channel_id(), 46868);
+  EXPECT_EQ(config->get_subject_type(), stChannelGroup);
 
   delete config;
 }
@@ -688,14 +689,57 @@ TEST_F(ActionTriggerConfigTest, sourceIds) {
       "10100,\"param\":{\"sourceDeviceId\":15,\"sourceChannelId\":16868}}}}}");
 
   config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
 
-  _at_config_action_t action =
-      config->get_action_assigned_to_capability(SUPLA_ACTION_CAP_TOGGLE_x1);
-  EXPECT_EQ(action.actionId, ACTION_COPY);
-  EXPECT_EQ(action.subjectId, 55);
-  EXPECT_EQ(action.sourceDeviceId, 15);
-  EXPECT_EQ(action.sourceChannelId, 16868);
-  EXPECT_FALSE(action.channelGroup);
+  EXPECT_EQ(config->get_action_id(), ACTION_COPY);
+  EXPECT_EQ(config->get_subject_id(), 55);
+  EXPECT_EQ(config->get_source_device_id(), 15);
+  EXPECT_EQ(config->get_source_channel_id(), 16868);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  delete config;
+}
+
+TEST_F(ActionTriggerConfigTest, setSubjectIdIfNotSet) {
+  action_trigger_config *config = new action_trigger_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"action\":{\"id\":"
+      "10100,\"param\":{\"sourceDeviceId\":15,\"sourceChannelId\":16868}}}}}");
+
+  config->set_capabilities(SUPLA_ACTION_CAP_TOGGLE_x1);
+  config->set_active_cap(SUPLA_ACTION_CAP_TOGGLE_x1);
+
+  EXPECT_EQ(config->get_action_id(), ACTION_COPY);
+  EXPECT_EQ(config->get_subject_id(), 0);
+  EXPECT_EQ(config->get_source_device_id(), 15);
+  EXPECT_EQ(config->get_source_channel_id(), 16868);
+  EXPECT_EQ(config->get_subject_type(), stChannel);
+
+  config->set_channel_id_if_subject_not_set(123);
+  EXPECT_EQ(config->get_subject_id(), 0);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channel\",\"action\":{\"id\":"
+      "10000,\"param\":{\"sourceDeviceId\":15,\"sourceChannelId\":16868}}}}}");
+
+  EXPECT_EQ(config->get_subject_id(), 123);
+  EXPECT_EQ(config->get_action_id(), ACTION_FORWARD_OUTSIDE);
+
+  config->set_user_config(
+      "{\"disablesLocalOperation\":[],\"relatedChannelId\":null,"
+      "\"hideInChannelsList\":false,\"actions\":{\"TOGGLE_X1\":{"
+      "\"subjectType\":\"channelGroup\",\"subjectId\":31,\"action\":{\"id\":"
+      "10000,\"param\":{\"sourceChannelId\":46868}}}}}");
+
+  config->set_channel_id_if_subject_not_set(456);
+  EXPECT_EQ(config->get_subject_id(), 31);
+  EXPECT_EQ(config->get_action_id(), ACTION_FORWARD_OUTSIDE);
 
   delete config;
 }

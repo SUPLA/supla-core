@@ -26,17 +26,22 @@
 s_worker_action_copy::s_worker_action_copy(s_abstract_worker *worker)
     : s_worker_action(worker) {}
 
-void s_worker_action_copy::get_function_list(int list[FUNCTION_LIST_SIZE]) {
-  list[0] = SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER;
-  list[1] = SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW;
-  list[2] = SUPLA_CHANNELFNC_CONTROLLINGTHEGATE;
-  list[3] = SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR;
-  list[4] = SUPLA_CHANNELFNC_LIGHTSWITCH;
-  list[5] = SUPLA_CHANNELFNC_POWERSWITCH;
-  list[6] = SUPLA_CHANNELFNC_STAIRCASETIMER;
-  list[7] = SUPLA_CHANNELFNC_DIMMER;
-  list[8] = SUPLA_CHANNELFNC_RGBLIGHTING;
-  list[9] = SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING;
+bool s_worker_action_copy::is_action_allowed(void) {
+  switch (worker->get_channel_func()) {
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROLLERSHUTTER:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEROOFWINDOW:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
+    case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
+    case SUPLA_CHANNELFNC_LIGHTSWITCH:
+    case SUPLA_CHANNELFNC_POWERSWITCH:
+    case SUPLA_CHANNELFNC_STAIRCASETIMER:
+    case SUPLA_CHANNELFNC_DIMMER:
+    case SUPLA_CHANNELFNC_RGBLIGHTING:
+    case SUPLA_CHANNELFNC_DIMMERANDRGBLIGHTING:
+      return true;
+  }
+
+  return false;
 }
 
 int s_worker_action_copy::try_limit(void) { return 1; }

@@ -16,10 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <amazon/alexacredentials.h>
 #include "amazon/alexarequest.h"
+
+#include <amazon/alexacredentials.h>
 #include <assert.h>
 #include <stdlib.h>
+
 #include "amazon/alexaclient.h"
 #include "lck.h"
 #include "log.h"
@@ -29,9 +31,9 @@
 supla_alexa_request::supla_alexa_request(supla_user *user, int ClassID,
                                          int DeviceId, int ChannelId,
                                          event_type EventType,
-                                         event_source_type EventSourceType)
+                                         const supla_caller &Caller)
     : supla_http_request(user, ClassID, DeviceId, ChannelId, EventType,
-                         EventSourceType) {
+                         Caller) {
   client = NULL;
   lck = lck_init();
 }
@@ -81,8 +83,8 @@ supla_alexa_client *supla_alexa_request::getClient(void) {
   return result;
 }
 
-bool supla_alexa_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
+bool supla_alexa_request::isCallerAccepted(const supla_caller &caller,
+                                           bool verification) {
   supla_amazon_alexa_credentials *alexa = getUser()->amazonAlexaCredentials();
   return alexa && alexa->isAccessTokenExists() &&
          getUser()->is_device_online(getDeviceId());
@@ -94,17 +96,18 @@ bool supla_alexa_request::isEventTypeAccepted(event_type eventType,
 }
 
 int supla_alexa_request::getCauseType(void) {
-  switch (getEventSourceType()) {
-    case EST_AMAZON_ALEXA:
+  switch (getCaller().get_type()) {
+    case ctAmazonAlexa:
       return CAUSE_VOICE_INTERACTION;
 
-    case EST_CLIENT:
-    case EST_IPC:
-    case EST_GOOGLE_HOME:
+    case ctClient:
+    case ctIPC:
+    case ctMQTT:
+    case ctGoogleHome:
+    case ctScene:
       return CAUSE_APP_INTERACTION;
 
     default:
       return CAUSE_PHYSICAL_INTERACTION;
   }
 }
-

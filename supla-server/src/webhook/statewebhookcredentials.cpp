@@ -24,6 +24,8 @@
 #include "database.h"
 #include "log.h"
 
+using std::list;
+
 supla_state_webhook_credentials::supla_state_webhook_credentials(
     supla_user *user)
     : supla_webhook_basic_credentials(user) {
@@ -143,8 +145,8 @@ char *supla_state_webhook_credentials::getUrl(void) {
   return result;
 }
 
-std::list<int> supla_state_webhook_credentials::getFunctionsIds(void) {
-  std::list<int> result;
+list<int> supla_state_webhook_credentials::getFunctionsIds(void) {
+  list<int> result;
 
   data_lock();
   result = functions_ids;

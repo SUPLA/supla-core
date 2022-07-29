@@ -19,10 +19,15 @@
 #ifndef TESTHELPER_H_
 #define TESTHELPER_H_
 
+#include <sys/time.h>
+
 namespace testing {
 class TestHelper {
  public:
   static void printEscaped(const char *str);
+  static unsigned long long usecSince(const struct timeval &tv);
+  static unsigned long long timeDiffUs(const struct timeval &now,
+                                       const struct timeval &then);
 };
 }  // namespace testing
 

@@ -16,15 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "clientlocation.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "clientlocation.h"
 #include "database.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
 #include "srpc.h"
+
+using std::vector;
 
 supla_client_location::supla_client_location(int Id, const char *Caption) {
   this->Id = Id;
@@ -186,7 +189,7 @@ bool supla_client_locations::location_exists(int Id) {
   bool result = false;
 
   lck_lock(lck);
-  for (std::vector<int>::iterator it = ids.begin(); it != ids.end(); it++) {
+  for (auto it = ids.begin(); it != ids.end(); it++) {
     if (*it == Id) {
       result = true;
       break;

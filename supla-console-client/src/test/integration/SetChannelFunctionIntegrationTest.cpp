@@ -110,6 +110,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
 }
 
 TEST_F(SetChannelFunctionIntegrationTest, SetAllowedFunction) {
+  runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
   expectedResultCode = SUPLA_RESULTCODE_TRUE;
   expectedChannelID = 303;
   expectedFunction = SUPLA_CHANNELFNC_POWERSWITCH;
@@ -131,6 +132,7 @@ TEST_F(SetChannelFunctionIntegrationTest, SetAllowedFunction) {
 }
 
 TEST_F(SetChannelFunctionIntegrationTest, SetFunctionNone) {
+  runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
   expectedResultCode = SUPLA_RESULTCODE_TRUE;
   expectedChannelID = 303;
   expectedFunction = SUPLA_CHANNELFNC_NONE;
@@ -204,6 +206,7 @@ TEST_F(SetChannelFunctionIntegrationTest,
 
 TEST_F(SetChannelFunctionIntegrationTest,
        SetTheFunctionForChannelAssociatedWithTheActionTrigger) {
+  runSqlScript("DeleteSceneOperaionsWithChannelId303.sql");
   runSqlScript("CreateActionTriggerForChannelId303.sql");
   expectedResultCode =
       SUPLA_RESULTCODE_DENY_CHANNEL_IS_ASSOCIETED_WITH_ACTION_TRIGGER;

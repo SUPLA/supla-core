@@ -18,9 +18,13 @@
 
 #include "impulse_counter_config.h"
 
+#include <limits.h>
+
 #include "srpc.h"
 
+#define INITIAL_VALUE_MIN -100000000
 #define INITIAL_VALUE_MAX 100000000
+#define IMPULSES_PER_UNIT_MIN 0
 #define IMPULSES_PER_UNIT_MAX 1000000
 
 // static
@@ -47,7 +51,8 @@ bool impulse_counter_config::should_be_added_to_history(void) {
   return item && cJSON_IsBool(item) && cJSON_IsTrue(item);
 }
 
-double impulse_counter_config::get_double_value(const char *key, double max) {
+double impulse_counter_config::get_double_value(const char *key, double min,
+                                                double max) {
   cJSON *root = get_user_root();
   if (!root) {
     return 0;
@@ -57,8 +62,8 @@ double impulse_counter_config::get_double_value(const char *key, double max) {
   if (initial_value && cJSON_IsNumber(initial_value)) {
     if (initial_value->valuedouble > max) {
       return max;
-    } else if (initial_value->valuedouble < 0) {
-      return 0;
+    } else if (initial_value->valuedouble < min) {
+      return min;
     }
     return initial_value->valuedouble;
   }
@@ -67,11 +72,13 @@ double impulse_counter_config::get_double_value(const char *key, double max) {
 }
 
 double impulse_counter_config::get_initial_value(void) {
-  return get_double_value(initial_value_key, INITIAL_VALUE_MAX);
+  return get_double_value(initial_value_key, INITIAL_VALUE_MIN,
+                          INITIAL_VALUE_MAX);
 }
 
 unsigned int impulse_counter_config::get_impulses_per_unit(void) {
-  return get_double_value(impulses_per_unit_key, IMPULSES_PER_UNIT_MAX);
+  return get_double_value(impulses_per_unit_key, IMPULSES_PER_UNIT_MIN,
+                          IMPULSES_PER_UNIT_MAX);
 }
 
 void impulse_counter_config::add_initial_value(
@@ -80,8 +87,7 @@ void impulse_counter_config::add_initial_value(
     return;
   }
 
-  unsigned _supla_int64_t left =
-      ((unsigned _supla_int64_t) - 1) - value->counter;
+  unsigned _supla_int64_t left = ULONG_MAX - value->counter;
   double initial_value = get_initial_value();
   int impulses_per_unit = get_impulses_per_unit();
 
@@ -89,10 +95,23 @@ void impulse_counter_config::add_initial_value(
     return;
   }
 
-  unsigned _supla_int64_t _initial_value = initial_value * impulses_per_unit;
-  if (_initial_value > left) {
-    _initial_value = left;
+  bool minus = false;
+  if (initial_value < 0) {
+    minus = true;
+    initial_value *= -1;
   }
 
-  value->counter += _initial_value;
+  unsigned _supla_int64_t impulses_added = initial_value * impulses_per_unit;
+
+  if (minus) {
+    if (impulses_added > value->counter) {
+      impulses_added = value->counter;
+    }
+    value->counter -= impulses_added;
+  } else {
+    if (impulses_added > left) {
+      impulses_added = left;
+    }
+    value->counter += impulses_added;
+  }
 }

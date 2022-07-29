@@ -26,9 +26,9 @@
 
 supla_google_home_statereport_request::supla_google_home_statereport_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, event_source_type EventSourceType)
+    event_type EventType, const supla_caller &Caller)
     : supla_google_home_request(user, ClassID, DeviceId, ChannelId, EventType,
-                                EventSourceType) {
+                                Caller) {
   channel_arr = safe_array_init();
   addChannelId(ChannelId);
   setDelay(1500000);  // 1.5 sec.
@@ -108,21 +108,23 @@ bool supla_google_home_statereport_request::isChannelFunctionAllowed(void) {
   return false;
 }
 
-bool supla_google_home_statereport_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
-  if (!supla_google_home_request::isEventSourceTypeAccepted(eventSourceType,
-                                                            verification)) {
+bool supla_google_home_statereport_request::isCallerAccepted(
+    const supla_caller &caller, bool verification) {
+  if (!supla_google_home_request::isCallerAccepted(caller, verification)) {
     return false;
   }
 
-  switch (eventSourceType) {
-    case EST_DEVICE:
-    case EST_CLIENT:
-    case EST_IPC:
-    case EST_GOOGLE_HOME:
-    case EST_AMAZON_ALEXA:
+  switch (caller.get_type()) {
+    case ctDevice:
+    case ctClient:
+    case ctIPC:
+    case ctMQTT:
+    case ctGoogleHome:
+    case ctAmazonAlexa:
+    case ctScene:
+    case ctActionTrigger:
       return isChannelFunctionAllowed();
-    case EST_UNKNOWN:
+    case ctUnknown:
       return false;
   }
 

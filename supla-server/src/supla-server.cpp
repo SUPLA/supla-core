@@ -120,6 +120,10 @@ int main(int argc, char *argv[]) {
     goto exit_fail;
   }
 
+  // ASYNCTASK QUEUE
+  supla_asynctask_queue::global_instance();
+  supla_asynctask_default_thread_pool::global_instance();
+
   serverstatus::globalInstance();
   supla_user::init();
   serverconnection::init();
@@ -146,10 +150,6 @@ int main(int argc, char *argv[]) {
   // HTTP EVENT QUEUE
   http_request_queue_loop_thread =
       sthread_simple_run(http_request_queue_loop, NULL, 0);
-
-  // ASYNCTASK QUEUE
-  supla_asynctask_queue::global_instance();
-  supla_asynctask_default_thread_pool::global_instance();
 
   // MQTT
   supla_mqtt_client_suite::globalInstance()->start();

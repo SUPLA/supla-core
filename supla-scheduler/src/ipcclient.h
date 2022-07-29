@@ -65,6 +65,9 @@ class ipc_client {
   bool action_copy(int user_id, int device_id, int channel_id,
                    int channel_group_id, int source_device_id,
                    int source_channel_id);
+  bool execute_scene(int user_id, int scene_id);
+  bool interrupt_scene(int user_id, int scene_id);
+  bool interrupt_and_execute_scene(int user_id, int scene_id);
 };
 
 #endif /* IPCCLIENT_H_ */

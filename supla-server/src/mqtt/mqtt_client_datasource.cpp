@@ -22,6 +22,8 @@
 #include "lck.h"
 #include "log.h"
 
+using std::list;
+
 #define WARNING_TIME_MSEC 5000
 
 supla_mqtt_client_datasource::supla_mqtt_client_datasource(
@@ -161,8 +163,7 @@ bool supla_mqtt_client_datasource::fetch(char **topic_name) {
 }
 
 bool supla_mqtt_client_datasource::is_user_queued(int user_id) {
-  for (std::list<int>::iterator it = user_queue.begin(); it != user_queue.end();
-       ++it) {
+  for (auto it = user_queue.begin(); it != user_queue.end(); ++it) {
     if (*it == user_id) {
       return true;
     }
@@ -172,8 +173,7 @@ bool supla_mqtt_client_datasource::is_user_queued(int user_id) {
 }
 
 bool supla_mqtt_client_datasource::is_device_queued(int device_id) {
-  for (std::list<_mqtt_ds_device_id_t>::iterator it = device_queue.begin();
-       it != device_queue.end(); ++it) {
+  for (auto it = device_queue.begin(); it != device_queue.end(); ++it) {
     if ((*it).device_id == device_id) {
       return true;
     }
@@ -183,8 +183,7 @@ bool supla_mqtt_client_datasource::is_device_queued(int device_id) {
 }
 
 bool supla_mqtt_client_datasource::is_channel_queued(int channel_id) {
-  for (std::list<_mqtt_ds_channel_id_t>::iterator it = channel_queue.begin();
-       it != channel_queue.end(); ++it) {
+  for (auto it = channel_queue.begin(); it != channel_queue.end(); ++it) {
     if ((*it).channel_id == channel_id) {
       return true;
     }
@@ -221,16 +220,14 @@ void supla_mqtt_client_datasource::on_userdata_changed(int user_id) {
   if (!all_data_expected && !is_user_queued(user_id)) {
     user_queue.push_back(user_id);
 
-    for (std::list<_mqtt_ds_device_id_t>::iterator it = device_queue.begin();
-         it != device_queue.end(); ++it) {
+    for (auto it = device_queue.begin(); it != device_queue.end(); ++it) {
       if ((*it).user_id == user_id) {
         it = device_queue.erase(it);
         --it;
       }
     }
 
-    for (std::list<_mqtt_ds_channel_id_t>::iterator it = channel_queue.begin();
-         it != channel_queue.end(); ++it) {
+    for (auto it = channel_queue.begin(); it != channel_queue.end(); ++it) {
       if ((*it).user_id == user_id) {
         it = channel_queue.erase(it);
         --it;
@@ -254,8 +251,7 @@ void supla_mqtt_client_datasource::on_devicedata_changed(int user_id,
     _mqtt_ds_device_id_t id = {.user_id = user_id, .device_id = device_id};
     device_queue.push_back(id);
 
-    for (std::list<_mqtt_ds_channel_id_t>::iterator it = channel_queue.begin();
-         it != channel_queue.end(); ++it) {
+    for (auto it = channel_queue.begin(); it != channel_queue.end(); ++it) {
       if ((*it).user_id == user_id && (*it).device_id == device_id) {
         it = channel_queue.erase(it);
         --it;

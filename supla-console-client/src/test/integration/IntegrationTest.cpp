@@ -24,6 +24,8 @@
 
 namespace testing {
 
+using std::string;
+
 char *IntegrationTest::sqlDir = NULL;
 char IntegrationTest::defaultDbName[] = "supla_test";
 char IntegrationTest::defaultDbHost[] = "db";
@@ -272,8 +274,8 @@ void IntegrationTest::runSqlScript(const char *script) {
                            script);
 }
 
-std::string IntegrationTest::sqlQuery(const char *query) {
-  std::string result;
+string IntegrationTest::sqlQuery(const char *query) {
+  string result;
   MySqlShell::sqlQuery(IntegrationTest::sqlDir, IntegrationTest::dbHost,
                        IntegrationTest::dbUser, IntegrationTest::dbName, query,
                        &result);

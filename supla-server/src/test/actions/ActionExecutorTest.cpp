@@ -18,11 +18,15 @@
 
 #include "ActionExecutorTest.h"
 
+#include "actions/action_config.h"
+#include "doubles/device/ValueGetterStub.h"
 #include "user/user.h"
-
 namespace testing {
 
-ActionExecutorTest::ActionExecutorTest(void) { aexec = NULL; }
+ActionExecutorTest::ActionExecutorTest(void) {
+  aexec = NULL;
+  device = NULL;
+}
 
 ActionExecutorTest::~ActionExecutorTest(void) {}
 
@@ -82,6 +86,87 @@ TEST_F(ActionExecutorTest, accessDeviceWithAndWithoutId) {
   });
 
   EXPECT_TRUE(device_accessed);
+}
+
+TEST_F(ActionExecutorTest, setGetChannelId) {
+  aexec->set_scene_id(2, 3);
+  aexec->set_group_id(5, 6);
+  aexec->set_channel_id(12345, 5, 89);
+  EXPECT_EQ(aexec->get_user_id(), 12345);
+  EXPECT_EQ(aexec->get_device_id(), 5);
+  EXPECT_EQ(aexec->get_channel_id(), 89);
+  EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_EQ(aexec->get_scene_id(), 0);
+}
+
+TEST_F(ActionExecutorTest, setGetChannelGroupId) {
+  aexec->set_scene_id(2, 3);
+  aexec->set_channel_id(4, 5, 89);
+  aexec->set_group_id(12345, 6);
+  EXPECT_EQ(aexec->get_user_id(), 12345);
+  EXPECT_EQ(aexec->get_device_id(), 0);
+  EXPECT_EQ(aexec->get_channel_id(), 0);
+  EXPECT_EQ(aexec->get_group_id(), 6);
+  EXPECT_EQ(aexec->get_scene_id(), 0);
+}
+
+TEST_F(ActionExecutorTest, setGetSceneId) {
+  aexec->set_channel_id(1, 5, 89);
+  aexec->set_group_id(5, 6);
+  aexec->set_scene_id(12345, 3);
+  EXPECT_EQ(aexec->get_user_id(), 12345);
+  EXPECT_EQ(aexec->get_device_id(), 0);
+  EXPECT_EQ(aexec->get_channel_id(), 0);
+  EXPECT_EQ(aexec->get_group_id(), 0);
+  EXPECT_EQ(aexec->get_scene_id(), 3);
+}
+
+TEST_F(ActionExecutorTest, executeScene) {
+  supla_action_config config;
+  config.set_subject_id(15);
+  config.set_subject_type(stScene);
+  config.set_action_id(ACTION_EXECUTE);
+
+  ValueGetterStub value_getter;
+
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getExecuteCounter(), 1);
+  EXPECT_EQ(aexec->get_scene_id(), 15);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
+}
+
+TEST_F(ActionExecutorTest, interruptAndExecuteScene) {
+  supla_action_config config;
+  config.set_subject_id(15);
+  config.set_subject_type(stScene);
+  config.set_action_id(ACTION_INTERRUPT_AND_EXECUTE);
+
+  ValueGetterStub value_getter;
+
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getInterruptAndExecuteCounter(), 1);
+  EXPECT_EQ(aexec->get_scene_id(), 15);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
+}
+
+TEST_F(ActionExecutorTest, interruptScene) {
+  supla_action_config config;
+  config.set_subject_id(25);
+  config.set_subject_type(stScene);
+  config.set_action_id(ACTION_STOP);
+
+  ValueGetterStub value_getter;
+
+  aexec->execute_action(supla_caller(ctIPC), 12345, &config, &value_getter);
+
+  EXPECT_EQ(aexec->counterSetCount(), 1);
+  EXPECT_EQ(aexec->getStopCounter(), 1);
+  EXPECT_EQ(aexec->get_scene_id(), 25);
+  EXPECT_TRUE(aexec->get_caller() == supla_caller(ctIPC));
 }
 
 } /* namespace testing */

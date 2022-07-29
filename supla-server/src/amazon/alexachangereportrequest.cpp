@@ -25,9 +25,9 @@
 
 supla_alexa_changereport_request::supla_alexa_changereport_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
-    event_type EventType, event_source_type EventSourceType)
+    event_type EventType, const supla_caller &Caller)
     : supla_alexa_request(user, ClassID, DeviceId, ChannelId, EventType,
-                          EventSourceType) {
+                          Caller) {
   duplicateExists = false;
   setDelay(1500000);  // 1.5 sec.
   setTimeout(scfg_int(CFG_ALEXA_CHANGEREPORT_TIMEOUT) * 1000);
@@ -46,18 +46,20 @@ bool supla_alexa_changereport_request::verifyExisting(
   return true;
 }
 
-bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
-    event_source_type eventSourceType, bool verification) {
-  if (!supla_alexa_request::isEventSourceTypeAccepted(eventSourceType,
-                                                      verification)) {
+bool supla_alexa_changereport_request::isCallerAccepted(
+    const supla_caller &caller, bool verification) {
+  if (!supla_alexa_request::isCallerAccepted(caller, verification)) {
     return false;
   }
 
-  switch (eventSourceType) {
-    case EST_DEVICE:
-    case EST_CLIENT:
-    case EST_AMAZON_ALEXA:
-    case EST_IPC: {
+  switch (caller.get_type()) {
+    case ctDevice:
+    case ctClient:
+    case ctAmazonAlexa:
+    case ctIPC:
+    case ctMQTT:
+    case ctScene:
+    case ctActionTrigger: {
       channel_complex_value value =
           getUser()->get_channel_complex_value(getChannelId());
 
@@ -79,8 +81,8 @@ bool supla_alexa_changereport_request::isEventSourceTypeAccepted(
           return false;
       }
     } break;
-    case EST_UNKNOWN:
-    case EST_GOOGLE_HOME:
+    case ctUnknown:
+    case ctGoogleHome:
       return false;
   }
 

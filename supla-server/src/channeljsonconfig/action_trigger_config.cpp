@@ -21,6 +21,8 @@
 #include "proto.h"
 #include "tools.h"
 
+using std::function;
+
 // static
 const _atc_map_t action_trigger_config::map[] = {
     {.cap = SUPLA_ACTION_CAP_TURN_ON, .str = "TURN_ON"},
@@ -53,10 +55,19 @@ const char action_trigger_config::actions_key[] = "actions";
 // static
 const char action_trigger_config::param_key[] = "param";
 
-action_trigger_config::action_trigger_config(void) : channel_json_config() {}
+action_trigger_config::action_trigger_config(void)
+    : abstract_action_config(), channel_json_config() {
+  active_cap = 0;
+  channel_id_if_subject_not_set = 0;
+}
 
 action_trigger_config::action_trigger_config(channel_json_config *root)
-    : channel_json_config(root) {}
+    : abstract_action_config(), channel_json_config(root) {
+  active_cap = 0;
+  channel_id_if_subject_not_set = 0;
+}
+
+action_trigger_config::~action_trigger_config(void) {}
 
 int action_trigger_config::get_map_size(void) {
   return sizeof(map) / sizeof(_atc_map_t);
@@ -66,6 +77,137 @@ int action_trigger_config::get_map_key(int index) { return map[index].cap; }
 
 const char *action_trigger_config::get_map_str(int index) {
   return map[index].str.c_str();
+}
+
+int action_trigger_config::get_action_id(int cap) {
+  cJSON *cap_cfg = get_cap_user_config(cap);
+
+  if (!cap_cfg) {
+    return 0;
+  }
+
+  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+
+  if (action) {
+    cJSON *id = cJSON_GetObjectItem(action, "id");
+    if (id && cJSON_IsNumber(id)) {
+      return id->valueint;
+    }
+  }
+
+  return 0;
+}
+
+int action_trigger_config::get_action_id(void) {
+  if (!active_cap) {
+    return 0;
+  }
+
+  return get_action_id(active_cap);
+}
+
+_subjectType_e action_trigger_config::get_subject_type(int cap) {
+  cJSON *cap_cfg = get_cap_user_config(cap);
+
+  if (!cap_cfg) {
+    return stUnknown;
+  }
+
+  cJSON *subjectType = cJSON_GetObjectItem(cap_cfg, "subjectType");
+  if (equal(subjectType, "channelGroup")) {
+    return stChannelGroup;
+  } else if (equal(subjectType, "channel")) {
+    return stChannel;
+  } else if (equal(subjectType, "scene")) {
+    return stScene;
+  } else if (channel_id_if_subject_not_set) {
+    cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+    if (action) {
+      cJSON *id = cJSON_GetObjectItem(action, "id");
+      if (id && cJSON_IsNumber(id) && id->valueint == ACTION_FORWARD_OUTSIDE) {
+        return stChannel;
+      }
+    }
+  }
+  return stUnknown;
+}
+
+_subjectType_e action_trigger_config::get_subject_type(void) {
+  if (!active_cap) {
+    return stUnknown;
+  }
+
+  return get_subject_type(active_cap);
+}
+
+int action_trigger_config::get_subject_id(int cap) {
+  cJSON *cap_cfg = get_cap_user_config(cap);
+
+  if (!cap_cfg) {
+    return 0;
+  }
+
+  cJSON *id = cJSON_GetObjectItem(cap_cfg, "subjectId");
+  if (id && cJSON_IsNumber(id) && id->valueint) {
+    return id->valueint;
+  } else if (channel_id_if_subject_not_set) {
+    cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+    if (action) {
+      id = cJSON_GetObjectItem(action, "id");
+      if (id && cJSON_IsNumber(id) && id->valueint == ACTION_FORWARD_OUTSIDE) {
+        return channel_id_if_subject_not_set;
+      }
+    }
+  }
+
+  return 0;
+}
+
+int action_trigger_config::get_subject_id(void) {
+  if (!active_cap) {
+    return 0;
+  }
+
+  return get_subject_id(active_cap);
+}
+
+void action_trigger_config::set_channel_id_if_subject_not_set(int subject_id) {
+  channel_id_if_subject_not_set = subject_id;
+}
+
+int action_trigger_config::get_source_id(const char *key) {
+  if (!active_cap) {
+    return 0;
+  }
+
+  cJSON *cap_cfg = get_cap_user_config(active_cap);
+
+  if (!cap_cfg) {
+    return 0;
+  }
+
+  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
+
+  if (action) {
+    cJSON *param = cJSON_GetObjectItem(action, param_key);
+
+    if (param) {
+      cJSON *id = cJSON_GetObjectItem(param, key);
+      if (id && cJSON_IsNumber(id)) {
+        return id->valueint;
+      }
+    }
+  }
+
+  return 0;
+}
+
+int action_trigger_config::get_source_device_id(void) {
+  return get_source_id("sourceDeviceId");
+}
+
+int action_trigger_config::get_source_channel_id(void) {
+  return get_source_id("sourceChannelId");
 }
 
 unsigned int action_trigger_config::get_capabilities(const char *key) {
@@ -89,9 +231,9 @@ unsigned int action_trigger_config::get_capabilities(const char *key) {
   return result;
 }
 
-bool action_trigger_config::set_capabilities(
-    const char *key, std::function<unsigned int()> get_caps,
-    unsigned int caps) {
+bool action_trigger_config::set_capabilities(const char *key,
+                                             function<unsigned int()> get_caps,
+                                             unsigned int caps) {
   cJSON *json = get_properties_root();
   if (!json) {
     return false;
@@ -214,58 +356,14 @@ cJSON *action_trigger_config::get_cap_user_config(int cap) {
   return cJSON_GetObjectItem(actions, cap_str);
 }
 
-_at_config_action_t action_trigger_config::get_action_assigned_to_capability(
-    int cap) {
-  _at_config_action_t result = {};
-
-  if (!cap) {
-    return result;
-  }
-
-  cJSON *cap_cfg = get_cap_user_config(cap);
-
-  if (!cap_cfg) {
-    return result;
-  }
-
-  cJSON *subjectId = cJSON_GetObjectItem(cap_cfg, "subjectId");
-  if (subjectId && cJSON_IsNumber(subjectId)) {
-    result.subjectId = subjectId->valueint;
-  }
-
-  cJSON *subjectType = cJSON_GetObjectItem(cap_cfg, "subjectType");
-  result.channelGroup = equal(subjectType, "channelGroup");
-
-  cJSON *action = cJSON_GetObjectItem(cap_cfg, action_key);
-
-  if (action) {
-    cJSON *id = cJSON_GetObjectItem(action, "id");
-    if (id && cJSON_IsNumber(id)) {
-      result.actionId = id->valueint;
-    }
-
-    cJSON *param = cJSON_GetObjectItem(action, param_key);
-
-    if (param) {
-      cJSON *id = cJSON_GetObjectItem(param, "sourceChannelId");
-      if (id && cJSON_IsNumber(id)) {
-        result.sourceChannelId = id->valueint;
-      }
-
-      id = cJSON_GetObjectItem(param, "sourceDeviceId");
-      if (id && cJSON_IsNumber(id)) {
-        result.sourceDeviceId = id->valueint;
-      }
-    }
-  }
-
-  return result;
-}
-
-char action_trigger_config::get_percentage(int cap) {
+char action_trigger_config::get_percentage(void) {
   char result = -1;
 
-  cJSON *cap_cfg = get_cap_user_config(cap);
+  if (!active_cap) {
+    return result;
+  }
+
+  cJSON *cap_cfg = get_cap_user_config(active_cap);
 
   if (!cap_cfg) {
     return result;
@@ -287,12 +385,16 @@ char action_trigger_config::get_percentage(int cap) {
   return result;
 }
 
-_at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
-  _at_config_rgbw_t result = {.brightness = -1,
-                              .color_brightness = -1,
-                              .color = 0,
-                              .color_random = false};
-  cJSON *cap_cfg = get_cap_user_config(cap);
+_action_config_rgbw_t action_trigger_config::get_rgbw(void) {
+  _action_config_rgbw_t result = {.brightness = -1,
+                                  .color_brightness = -1,
+                                  .color = 0,
+                                  .color_random = false};
+  if (!active_cap) {
+    return result;
+  }
+
+  cJSON *cap_cfg = get_cap_user_config(active_cap);
 
   if (!cap_cfg) {
     return result;
@@ -323,7 +425,7 @@ _at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
           result.color = 0xFFFFFF;
         } else if (equal(item, "random")) {
           while (!result.color) {
-            struct timeval time;
+            struct timeval time = {};
             gettimeofday(&time, NULL);
             unsigned int seed = time.tv_sec + time.tv_usec;
             result.color = st_hue2rgb(rand_r(&seed) % 360);
@@ -338,15 +440,15 @@ _at_config_rgbw_t action_trigger_config::get_rgbw(int cap) {
   return result;
 }
 
+int action_trigger_config::get_cap(void) { return active_cap; }
+
 bool action_trigger_config::channel_exists(int channel_id) {
   unsigned int caps = get_capabilities();
   short size = sizeof(caps) * 8;
   for (short n = 0; n < size; n++) {
     if (caps & (1 << n)) {
-      _at_config_action_t action = get_action_assigned_to_capability(1 << n);
-
-      if (action.actionId && !action.channelGroup &&
-          action.subjectId == channel_id) {
+      if (get_action_id(1 << n) && get_subject_type(1 << n) == stChannel &&
+          get_subject_id(1 << n) == channel_id) {
         return true;
       }
     }
@@ -354,3 +456,5 @@ bool action_trigger_config::channel_exists(int channel_id) {
 
   return false;
 }
+
+void action_trigger_config::set_active_cap(int cap) { active_cap = cap; }

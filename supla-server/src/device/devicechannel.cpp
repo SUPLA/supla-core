@@ -40,6 +40,9 @@
 #include "srpc.h"
 #include "user/user.h"
 
+using std::function;
+using std::list;
+
 supla_device_channel::supla_device_channel(
     supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
     int Param2, int Param3, int Param4, const char *TextParam1,
@@ -456,9 +459,14 @@ void supla_device_channel::setActionTriggerConfig(
     json_config = at_config;
   }
 
-  if (at_config->set_capabilities(capabilities) ||
-      at_config->set_caps_that_disables_local_operation(
+  bool at_config_changed = at_config->set_capabilities(capabilities);
+
+  if (at_config->set_caps_that_disables_local_operation(
           disablesLocalOperation)) {
+    at_config_changed = true;
+  }
+
+  if (at_config_changed) {
     db_set_properties(at_config);
   }
 
@@ -821,8 +829,8 @@ unsigned int supla_device_channel::getValueDuration(void) {
   return 0;
 }
 
-std::list<int> supla_device_channel::related_channel(void) {
-  std::list<int> result;
+list<int> supla_device_channel::related_channel(void) {
+  list<int> result;
 
   // Only channels associated with NO / NC sensors can return more than one
   // channel!!!
@@ -869,8 +877,8 @@ std::list<int> supla_device_channel::related_channel(void) {
   return result;
 }
 
-std::list<int> supla_device_channel::master_channel(void) {
-  std::list<int> result;
+list<int> supla_device_channel::master_channel(void) {
+  list<int> result;
 
   switch (Func) {
     case SUPLA_CHANNELFNC_OPENINGSENSOR_GATEWAY:
@@ -1045,10 +1053,12 @@ void supla_device_channel::action_trigger(int actions) {
   supla_value_getter *value_getter = new supla_value_getter();
 
   if (aexec && at_config && value_getter) {
+    at_config->set_channel_id_if_subject_not_set(getId());
+
     supla_action_trigger *trigger =
         new supla_action_trigger(aexec, at_config, value_getter);
     if (trigger) {
-      trigger->execute_actions(getUserID(), getId(), actions);
+      trigger->execute_actions(getId(), getUserID(), actions);
       delete trigger;
     }
   }
@@ -1120,7 +1130,7 @@ supla_device_channel *supla_device_channels::find_channel_by_number(
 }
 
 void supla_device_channels::access_channel(
-    int channel_id, std::function<void(supla_device_channel *)> on_channel) {
+    int channel_id, function<void(supla_device_channel *)> on_channel) {
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(channel_id);
@@ -1492,7 +1502,8 @@ bool supla_device_channels::reset_counters(int ChannelID) {
   return result;
 }
 
-bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
+bool supla_device_channels::recalibrate(int ChannelID,
+                                        const supla_caller &caller,
                                         bool SuperUserAuthorized) {
   bool result = false;
 
@@ -1506,7 +1517,7 @@ bool supla_device_channels::recalibrate(int ChannelID, _supla_int_t SenderID,
 
       request.ChannelNumber = channel->getNumber();
       request.Command = SUPLA_CALCFG_CMD_RECALIBRATE;
-      request.SenderID = SenderID;
+      request.SenderID = caller.convert_to_sender_id();
       request.SuperUserAuthorized = SuperUserAuthorized;
 
       TCalCfg_RollerShutterSettings *settings =
@@ -1641,8 +1652,8 @@ int supla_device_channels::get_channel_type(int ChannelID) {
   return Type;
 }
 
-std::list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
-  std::list<int> result;
+list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
+  list<int> result;
   if (ChannelID == 0) return result;
 
   safe_array_lock(arr);
@@ -1657,11 +1668,11 @@ std::list<int> supla_device_channels::mr_channel(int ChannelID, bool Master) {
   return result;
 }
 
-std::list<int> supla_device_channels::master_channel(int ChannelID) {
+list<int> supla_device_channels::master_channel(int ChannelID) {
   return mr_channel(ChannelID, true);
 }
 
-std::list<int> supla_device_channels::related_channel(int ChannelID) {
+list<int> supla_device_channels::related_channel(int ChannelID) {
   return mr_channel(ChannelID, false);
 }
 
@@ -1777,9 +1788,9 @@ int supla_device_channels::get_channel_id(unsigned char ChannelNumber) {
 }
 
 void supla_device_channels::async_set_channel_value(
-    supla_device_channel *channel, int SenderID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE], unsigned int durationMS,
-    bool cancelTasks) {
+    supla_device_channel *channel, const supla_caller &caller, int GroupID,
+    unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE],
+    unsigned int durationMS, bool cancelTasks) {
   if (cancelTasks) {
     switch (channel->getFunc()) {
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
@@ -1796,7 +1807,7 @@ void supla_device_channels::async_set_channel_value(
 
     s.ChannelNumber = channel->getNumber();
     s.DurationMS = durationMS;
-    s.SenderID = SenderID;
+    s.SenderID = caller.convert_to_sender_id();
     s.GroupID = GroupID;
     s.EOL = EOL;
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
@@ -1808,7 +1819,7 @@ void supla_device_channels::async_set_channel_value(
 
     s.ChannelNumber = channel->getNumber();
     s.DurationMS = durationMS;
-    s.SenderID = GroupID ? 0 : SenderID;
+    s.SenderID = GroupID ? 0 : caller.convert_to_sender_id();
     memcpy(s.value, value, SUPLA_CHANNELVALUE_SIZE);
 
     srpc_sd_async_set_channel_value(get_srpc(), &s);
@@ -1816,29 +1827,30 @@ void supla_device_channels::async_set_channel_value(
 }
 
 void supla_device_channels::async_set_channel_value(
-    supla_device_channel *channel, int SenderID, int GroupID, unsigned char EOL,
-    const char value[SUPLA_CHANNELVALUE_SIZE], bool cancelTasks) {
-  async_set_channel_value(channel, SenderID, GroupID, EOL, value,
+    supla_device_channel *channel, const supla_caller &caller, int GroupID,
+    unsigned char EOL, const char value[SUPLA_CHANNELVALUE_SIZE],
+    bool cancelTasks) {
+  async_set_channel_value(channel, caller, GroupID, EOL, value,
                           channel->getValueDuration(), cancelTasks);
 }
 
 void supla_device_channels::set_device_channel_value(
-    int SenderID, int ChannelID, int GroupID, unsigned char EOL,
+    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL,
     const char value[SUPLA_CHANNELVALUE_SIZE]) {
   safe_array_lock(arr);
 
   supla_device_channel *channel = find_channel(ChannelID);
 
   if (channel && channel->isValueWritable()) {
-    async_set_channel_value(channel, SenderID, GroupID, EOL, value);
+    async_set_channel_value(channel, caller, GroupID, EOL, value);
   }
 
   safe_array_unlock(arr);
 }
 
 bool supla_device_channels::set_device_channel_char_value(
-    int SenderID, supla_device_channel *channel, int GroupID, unsigned char EOL,
-    const char value, bool cancelTasks) {
+    const supla_caller &caller, supla_device_channel *channel, int GroupID,
+    unsigned char EOL, const char value, bool cancelTasks) {
   bool result = false;
 
   if (channel) {
@@ -1860,7 +1872,7 @@ bool supla_device_channels::set_device_channel_char_value(
         on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
 
         result = set_device_channel_rgbw_value(
-            SenderID, channel->getId(), GroupID, EOL, color, color_brightness,
+            caller, channel->getId(), GroupID, EOL, color, color_brightness,
             brightness, on_off);
       }
     } else if (channel->isCharValueWritable()) {
@@ -1868,7 +1880,7 @@ bool supla_device_channels::set_device_channel_char_value(
       memset(v, 0, SUPLA_CHANNELVALUE_SIZE);
       channel->assignCharValue(v, value);
 
-      async_set_channel_value(channel, SenderID, GroupID, EOL, v, cancelTasks);
+      async_set_channel_value(channel, caller, GroupID, EOL, v, cancelTasks);
 
       result = true;
     }
@@ -1877,14 +1889,12 @@ bool supla_device_channels::set_device_channel_char_value(
   return result;
 }
 
-bool supla_device_channels::set_device_channel_char_value(int SenderID,
-                                                          int ChannelID,
-                                                          int GroupID,
-                                                          unsigned char EOL,
-                                                          const char value) {
+bool supla_device_channels::set_device_channel_char_value(
+    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL,
+    const char value) {
   safe_array_lock(arr);
 
-  bool result = set_device_channel_char_value(SenderID, find_channel(ChannelID),
+  bool result = set_device_channel_char_value(caller, find_channel(ChannelID),
                                               GroupID, EOL, value);
 
   safe_array_unlock(arr);
@@ -1893,8 +1903,8 @@ bool supla_device_channels::set_device_channel_char_value(int SenderID,
 }
 
 bool supla_device_channels::set_device_channel_rgbw_value(
-    int SenderID, int ChannelID, int GroupID, unsigned char EOL, int color,
-    char color_brightness, char brightness, char on_off) {
+    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL,
+    int color, char color_brightness, char brightness, char on_off) {
   bool result = false;
   safe_array_lock(arr);
 
@@ -1919,7 +1929,7 @@ bool supla_device_channels::set_device_channel_rgbw_value(
 
     channel->assignRgbwValue(v, color, color_brightness, brightness, on_off);
 
-    async_set_channel_value(channel, SenderID, GroupID, EOL, v);
+    async_set_channel_value(channel, caller, GroupID, EOL, v);
 
     result = true;
   }
@@ -2101,7 +2111,8 @@ supla_channel_ic_measurement *supla_device_channels::get_ic_measurement(
   return result;
 }
 
-bool supla_device_channels::calcfg_request(int SenderID, int ChannelID,
+bool supla_device_channels::calcfg_request(const supla_caller &caller,
+                                           int ChannelID,
                                            bool SuperUserAuthorized,
                                            TCS_DeviceCalCfgRequest_B *request) {
   if (request == NULL) {
@@ -2109,7 +2120,7 @@ bool supla_device_channels::calcfg_request(int SenderID, int ChannelID,
   }
 
   if (request->Command == SUPLA_CALCFG_CMD_RECALIBRATE) {
-    return recalibrate(ChannelID, SenderID, SuperUserAuthorized);
+    return recalibrate(ChannelID, caller, SuperUserAuthorized);
   }
 
   bool result = false;
@@ -2121,7 +2132,7 @@ bool supla_device_channels::calcfg_request(int SenderID, int ChannelID,
     TSD_DeviceCalCfgRequest drequest;
     memset(&drequest, 0, sizeof(TSD_DeviceCalCfgRequest));
 
-    drequest.SenderID = SenderID;
+    drequest.SenderID = caller.convert_to_sender_id();
     drequest.ChannelNumber = channel->getNumber();
     drequest.Command = request->Command;
     drequest.SuperUserAuthorized = SuperUserAuthorized;
@@ -2141,7 +2152,7 @@ bool supla_device_channels::calcfg_request(int SenderID, int ChannelID,
 }
 
 bool supla_device_channels::get_channel_state(
-    int SenderID, TCSD_ChannelStateRequest *request) {
+    const supla_caller &caller, TCSD_ChannelStateRequest *request) {
   if (request == NULL) {
     return false;
   }
@@ -2155,7 +2166,7 @@ bool supla_device_channels::get_channel_state(
     TCSD_ChannelStateRequest drequest;
     memcpy(&drequest, request, sizeof(TCSD_ChannelStateRequest));
 
-    drequest.SenderID = SenderID;
+    drequest.SenderID = caller.convert_to_sender_id();
     drequest.ChannelNumber = channel->getNumber();
 
     srpc_csd_async_get_channel_state(get_srpc(), &drequest);
@@ -2302,8 +2313,8 @@ bool supla_device_channels::get_channel_complex_value(
   return result;
 }
 
-std::list<int> supla_device_channels::get_channel_ids(void) {
-  std::list<int> result;
+list<int> supla_device_channels::get_channel_ids(void) {
+  list<int> result;
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
     supla_device_channel *channel =
@@ -2382,8 +2393,9 @@ void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {
   safe_array_unlock(arr);
 }
 
-bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
-                                   unsigned char EOL, bool on, bool toggle) {
+bool supla_device_channels::set_on(const supla_caller &caller, int ChannelID,
+                                   int GroupID, unsigned char EOL, bool on,
+                                   bool toggle) {
   safe_array_lock(arr);
 
   bool result = false;
@@ -2401,7 +2413,7 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
           c = c ? 0 : 1;
         }
         result =
-            set_device_channel_char_value(SenderID, channel, GroupID, EOL, c);
+            set_device_channel_char_value(caller, channel, GroupID, EOL, c);
         break;
       }
 
@@ -2430,7 +2442,7 @@ bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
           on_off = RGBW_BRIGHTNESS_ONOFF | RGBW_COLOR_ONOFF;
 
           result = set_device_channel_rgbw_value(
-              SenderID, channel->getId(), GroupID, EOL, color, color_brightness,
+              caller, channel->getId(), GroupID, EOL, color, color_brightness,
               brightness, on_off);
         }
         break;
@@ -2483,13 +2495,14 @@ bool supla_device_channels::is_on(int ChannelID) {
   return result;
 }
 
-bool supla_device_channels::set_on(int SenderID, int ChannelID, int GroupID,
-                                   unsigned char EOL, bool on) {
-  return set_on(SenderID, ChannelID, GroupID, EOL, on, false);
+bool supla_device_channels::set_on(const supla_caller &caller, int ChannelID,
+                                   int GroupID, unsigned char EOL, bool on) {
+  return set_on(caller, ChannelID, GroupID, EOL, on, false);
 }
 
-bool supla_device_channels::set_rgbw(int SenderID, int ChannelID, int GroupID,
-                                     unsigned char EOL, unsigned int *color,
+bool supla_device_channels::set_rgbw(const supla_caller &caller, int ChannelID,
+                                     int GroupID, unsigned char EOL,
+                                     unsigned int *color,
                                      char *color_brightness, char *brightness,
                                      char *on_off) {
   safe_array_lock(arr);
@@ -2504,7 +2517,7 @@ bool supla_device_channels::set_rgbw(int SenderID, int ChannelID, int GroupID,
 
     if (channel->getRGBW(&_color, &_color_brightness, &_brightness, &_on_off)) {
       result = set_device_channel_rgbw_value(
-          SenderID, ChannelID, GroupID, EOL, color ? *color : _color,
+          caller, ChannelID, GroupID, EOL, color ? *color : _color,
           color_brightness ? *color_brightness : _color_brightness,
           brightness ? *brightness : _brightness, on_off ? *on_off : 0);
     }
@@ -2514,26 +2527,29 @@ bool supla_device_channels::set_rgbw(int SenderID, int ChannelID, int GroupID,
   return result;
 }
 
-bool supla_device_channels::set_color(int SenderID, int ChannelID, int GroupID,
-                                      unsigned char EOL, unsigned int color) {
-  return set_rgbw(SenderID, ChannelID, GroupID, EOL, &color, NULL, NULL, NULL);
+bool supla_device_channels::set_color(const supla_caller &caller, int ChannelID,
+                                      int GroupID, unsigned char EOL,
+                                      unsigned int color) {
+  return set_rgbw(caller, ChannelID, GroupID, EOL, &color, NULL, NULL, NULL);
 }
 
-bool supla_device_channels::set_color_brightness(int SenderID, int ChannelID,
-                                                 int GroupID, unsigned char EOL,
+bool supla_device_channels::set_color_brightness(const supla_caller &caller,
+                                                 int ChannelID, int GroupID,
+                                                 unsigned char EOL,
                                                  char brightness) {
-  return set_rgbw(SenderID, ChannelID, GroupID, EOL, NULL, &brightness, NULL,
+  return set_rgbw(caller, ChannelID, GroupID, EOL, NULL, &brightness, NULL,
                   NULL);
 }
 
-bool supla_device_channels::set_brightness(int SenderID, int ChannelID,
-                                           int GroupID, unsigned char EOL,
-                                           char brightness) {
-  return set_rgbw(SenderID, ChannelID, GroupID, EOL, NULL, NULL, &brightness,
+bool supla_device_channels::set_brightness(const supla_caller &caller,
+                                           int ChannelID, int GroupID,
+                                           unsigned char EOL, char brightness) {
+  return set_rgbw(caller, ChannelID, GroupID, EOL, NULL, NULL, &brightness,
                   NULL);
 }
 
-bool supla_device_channels::set_dgf_transparency(int SenderID, int ChannelID,
+bool supla_device_channels::set_dgf_transparency(const supla_caller &caller,
+                                                 int ChannelID,
                                                  unsigned short activeBits,
                                                  unsigned short mask) {
   safe_array_lock(arr);
@@ -2552,7 +2568,7 @@ bool supla_device_channels::set_dgf_transparency(int SenderID, int ChannelID,
     TCSD_Digiglass_NewValue *new_value = (TCSD_Digiglass_NewValue *)value;
     new_value->active_bits = activeBits;
     new_value->mask = mask;
-    async_set_channel_value(channel, SenderID, 0, 0, value);
+    async_set_channel_value(channel, caller, 0, 0, value);
     result = true;
   }
 
@@ -2560,17 +2576,19 @@ bool supla_device_channels::set_dgf_transparency(int SenderID, int ChannelID,
   return result;
 }
 
-bool supla_device_channels::action_toggle(int SenderID, int ChannelID,
-                                          int GroupID, unsigned char EOL) {
-  return set_on(SenderID, ChannelID, GroupID, EOL, false, true);
+bool supla_device_channels::action_toggle(const supla_caller &caller,
+                                          int ChannelID, int GroupID,
+                                          unsigned char EOL) {
+  return set_on(caller, ChannelID, GroupID, EOL, false, true);
 }
 
-bool supla_device_channels::rs_action(int SenderID, int ChannelID, int GroupID,
-                                      unsigned char EOL, rsAction action,
+bool supla_device_channels::rs_action(const supla_caller &caller, int ChannelID,
+                                      int GroupID, unsigned char EOL,
+                                      rsAction action,
                                       const char *closingPercentage) {
   bool result = false;
   access_channel(ChannelID,
-                 [&result, this, SenderID, GroupID, EOL, action,
+                 [&result, this, caller, GroupID, EOL, action,
                   closingPercentage](supla_device_channel *channel) -> void {
                    char v = -1;
 
@@ -2625,7 +2643,7 @@ bool supla_device_channels::rs_action(int SenderID, int ChannelID, int GroupID,
                        }
                        if (v >= 0 && v <= 110) {
                          result = set_device_channel_char_value(
-                             SenderID, channel, GroupID, EOL, v);
+                             caller, channel, GroupID, EOL, v);
                        }
                        break;
                    }
@@ -2634,54 +2652,59 @@ bool supla_device_channels::rs_action(int SenderID, int ChannelID, int GroupID,
   return result;
 }
 
-bool supla_device_channels::action_shut(int SenderID, int ChannelID,
-                                        int GroupID, unsigned char EOL,
+bool supla_device_channels::action_shut(const supla_caller &caller,
+                                        int ChannelID, int GroupID,
+                                        unsigned char EOL,
                                         const char *closingPercentage) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionShut,
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionShut,
                    closingPercentage);
 }
 
-bool supla_device_channels::action_reveal(int SenderID, int ChannelID,
-                                          int GroupID, unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionReveal, NULL);
+bool supla_device_channels::action_reveal(const supla_caller &caller,
+                                          int ChannelID, int GroupID,
+                                          unsigned char EOL) {
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionReveal, NULL);
 }
 
-bool supla_device_channels::action_stop(int SenderID, int ChannelID,
-                                        int GroupID, unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionStop, NULL);
+bool supla_device_channels::action_stop(const supla_caller &caller,
+                                        int ChannelID, int GroupID,
+                                        unsigned char EOL) {
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStop, NULL);
 }
 
-bool supla_device_channels::action_up(int SenderID, int ChannelID, int GroupID,
-                                      unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionUp, NULL);
+bool supla_device_channels::action_up(const supla_caller &caller, int ChannelID,
+                                      int GroupID, unsigned char EOL) {
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUp, NULL);
 }
 
-bool supla_device_channels::action_down(int SenderID, int ChannelID,
-                                        int GroupID, unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionDown, NULL);
+bool supla_device_channels::action_down(const supla_caller &caller,
+                                        int ChannelID, int GroupID,
+                                        unsigned char EOL) {
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDown, NULL);
 }
 
-bool supla_device_channels::action_up_or_stop(int SenderID, int ChannelID,
-                                              int GroupID, unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionUpOrStop, NULL);
+bool supla_device_channels::action_up_or_stop(const supla_caller &caller,
+                                              int ChannelID, int GroupID,
+                                              unsigned char EOL) {
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionUpOrStop, NULL);
 }
 
-bool supla_device_channels::action_down_or_stop(int SenderID, int ChannelID,
-                                                int GroupID,
+bool supla_device_channels::action_down_or_stop(const supla_caller &caller,
+                                                int ChannelID, int GroupID,
                                                 unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionDownOrStop, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionDownOrStop, NULL);
 }
 
-bool supla_device_channels::action_step_by_step(int SenderID, int ChannelID,
-                                                int GroupID,
+bool supla_device_channels::action_step_by_step(const supla_caller &caller,
+                                                int ChannelID, int GroupID,
                                                 unsigned char EOL) {
-  return rs_action(SenderID, ChannelID, GroupID, EOL, rsActionStepByStep, NULL);
+  return rs_action(caller, ChannelID, GroupID, EOL, rsActionStepByStep, NULL);
 }
 
-bool supla_device_channels::action_open_close(int SenderID, int ChannelID,
-                                              int GroupID, unsigned char EOL,
-                                              bool unknown, bool open,
-                                              bool cancelTasks) {
+bool supla_device_channels::action_open_close(const supla_caller &caller,
+                                              int ChannelID, int GroupID,
+                                              unsigned char EOL, bool unknown,
+                                              bool open, bool cancelTasks) {
   safe_array_lock(arr);
 
   bool result = false;
@@ -2692,22 +2715,23 @@ bool supla_device_channels::action_open_close(int SenderID, int ChannelID,
       switch (channel->getFunc()) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
-          result = set_device_channel_char_value(SenderID, channel, GroupID,
-                                                 EOL, 1, cancelTasks);
+          result = set_device_channel_char_value(caller, channel, GroupID, EOL,
+                                                 1, cancelTasks);
           break;
       }
     } else {
       switch (channel->getFunc()) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-          supla_action_gate_openclose::open_close(
-              device->getUserID(), device->getID(), channel->getId(), open);
+          supla_action_gate_openclose::open_close(caller, device->getUserID(),
+                                                  device->getID(),
+                                                  channel->getId(), open);
           result = true;
         } break;
         case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
-          result = set_device_channel_char_value(SenderID, channel, GroupID,
-                                                 EOL, 1, cancelTasks);
+          result = set_device_channel_char_value(caller, channel, GroupID, EOL,
+                                                 1, cancelTasks);
           break;
       }
     }
@@ -2717,33 +2741,37 @@ bool supla_device_channels::action_open_close(int SenderID, int ChannelID,
   return result;
 }
 
-bool supla_device_channels::action_open(int SenderID, int ChannelID,
-                                        int GroupID, unsigned char EOL) {
-  return action_open_close(SenderID, ChannelID, GroupID, EOL, false, true);
+bool supla_device_channels::action_open(const supla_caller &caller,
+                                        int ChannelID, int GroupID,
+                                        unsigned char EOL) {
+  return action_open_close(caller, ChannelID, GroupID, EOL, false, true);
 }
 
-bool supla_device_channels::action_close(int SenderID, int ChannelID,
-                                         int GroupID, unsigned char EOL) {
-  return action_open_close(SenderID, ChannelID, GroupID, EOL, false, false);
+bool supla_device_channels::action_close(const supla_caller &caller,
+                                         int ChannelID, int GroupID,
+                                         unsigned char EOL) {
+  return action_open_close(caller, ChannelID, GroupID, EOL, false, false);
 }
 
-bool supla_device_channels::action_close(int ChannelID) {
-  return action_open_close(0, ChannelID, 0, 0, false, false);
+bool supla_device_channels::action_close(const supla_caller &caller,
+                                         int ChannelID) {
+  return action_open_close(caller, ChannelID, 0, 0, false, false);
 }
 
-bool supla_device_channels::action_open_close(int SenderID, int ChannelID,
-                                              int GroupID, unsigned char EOL) {
-  return action_open_close(SenderID, ChannelID, GroupID, EOL, true, false);
+bool supla_device_channels::action_open_close(const supla_caller &caller,
+                                              int ChannelID, int GroupID,
+                                              unsigned char EOL) {
+  return action_open_close(caller, ChannelID, GroupID, EOL, true, false);
 }
 
 bool supla_device_channels::action_open_close_without_canceling_tasks(
-    int SenderID, int ChannelID, int GroupID, unsigned char EOL) {
-  return action_open_close(SenderID, ChannelID, GroupID, EOL, true, false,
-                           false);
+    const supla_caller &caller, int ChannelID, int GroupID, unsigned char EOL) {
+  return action_open_close(caller, ChannelID, GroupID, EOL, true, false, false);
 }
 
-void supla_device_channels::timer_arm(int SenderID, int ChannelID, int GroupID,
-                                      unsigned char EOL, unsigned char On,
+void supla_device_channels::timer_arm(const supla_caller &caller, int ChannelID,
+                                      int GroupID, unsigned char EOL,
+                                      unsigned char On,
                                       unsigned int DurationMS) {
   safe_array_lock(arr);
 
@@ -2756,7 +2784,7 @@ void supla_device_channels::timer_arm(int SenderID, int ChannelID, int GroupID,
       case SUPLA_CHANNELFNC_STAIRCASETIMER: {
         char value[SUPLA_CHANNELVALUE_SIZE] = {};
         value[0] = On ? 1 : 0;
-        async_set_channel_value(channel, SenderID, GroupID, EOL, value,
+        async_set_channel_value(channel, caller, GroupID, EOL, value,
                                 DurationMS);
       }
     }

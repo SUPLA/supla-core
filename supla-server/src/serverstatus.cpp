@@ -85,14 +85,14 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
   long int time_sec = ssocket_get_last_accept_error_time_sec();
   if (time_sec) {
     if (now.tv_sec - time_sec < 300) {
-      snprintf(buffer, buffer_size, "CONN_ACCEPT_ERR:%i\n",
+      snprintf(buffer, buffer_size, "CONN_ACCEPT_ERR:%i",
                ssocket_get_last_accept_errno());
       return false;
     }
   }
 
   if (serverconnection::conn_limit_exceeded_hard()) {
-    snprintf(buffer, buffer_size, "CONN_LIMIT_EXCEEDED\n");
+    snprintf(buffer, buffer_size, "CONN_LIMIT_EXCEEDED");
     return false;
   }
 
@@ -102,13 +102,13 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
 
   lck_lock(lck);
   if (now.tv_sec - last_mainloop_heartbeat.tv_sec > 30) {
-    snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i\n",
+    snprintf(buffer, buffer_size, "MAINLOOP_STUCK:%s:%i",
              last_file ? last_file : "", last_line);
 #ifdef __LCK_DEBUG
     main_loop_stuck = true;
 #endif /*__LCK_DEBUG*/
   } else {
-    snprintf(buffer, buffer_size, "OK\n");
+    snprintf(buffer, buffer_size, "OK");
     result = true;
   }
   lck_unlock(lck);

@@ -55,8 +55,13 @@ const char cmd_set_digiglass_value[] = "SET-DIGIGLASS-VALUE";
 const char cmd_action_copy[] = "ACTION-COPY";
 const char cmd_action_cg_copy[] = "ACTION-CG-COPY";
 
+const char cmd_execute_scene[] = "EXECUTE-SCENE";
+const char cmd_interrupt_scene[] = "INTERRUPT-SCENE";
+const char cmd_interrupt_and_execute_scene[] = "INTERRUPT-AND-EXECUTE-SCENE";
+
 const char ipc_result_value[] = "VALUE:";
 const char ipc_result_ok[] = "OK:";
+const char ipc_result_is_during_execution[] = "IS-DURING-EXECUTION:";
 const char ipc_result_connected[] = "CONNECTED:";
 const char ipc_result_disconnected[] = "DISCONNECTED:";
 
@@ -320,5 +325,45 @@ bool ipc_client::action_copy(int user_id, int device_id, int channel_id,
 
   send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
   // supla_log(LOG_DEBUG, "IPC %i %s", sfd, buffer);
+  return check_set_result();
+}
+
+bool ipc_client::execute_scene(int user_id, int scene_id) {
+  if (!ipc_connect()) return false;
+
+  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_execute_scene, user_id,
+           scene_id);
+
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+
+  if (read() &&
+      (memcmp(buffer, ipc_result_ok, strnlen(ipc_result_ok, 255)) == 0 ||
+       memcmp(buffer, ipc_result_is_during_execution,
+              strnlen(ipc_result_is_during_execution, 255)) == 0)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool ipc_client::interrupt_scene(int user_id, int scene_id) {
+  if (!ipc_connect()) return false;
+
+  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n", cmd_interrupt_scene, user_id,
+           scene_id);
+
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+
+  return check_set_result();
+}
+
+bool ipc_client::interrupt_and_execute_scene(int user_id, int scene_id) {
+  if (!ipc_connect()) return false;
+
+  snprintf(buffer, IPC_BUFFER_SIZE, "%s:%i,%i\n",
+           cmd_interrupt_and_execute_scene, user_id, scene_id);
+
+  send(sfd, buffer, strnlen(buffer, IPC_BUFFER_SIZE - 1), 0);
+
   return check_set_result();
 }
