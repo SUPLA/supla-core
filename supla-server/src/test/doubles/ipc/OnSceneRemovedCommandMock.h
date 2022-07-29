@@ -16,25 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ONSCENEDELETEDCOMMANDTEST_H_
-#define ONSCENEDELETEDCOMMANDTEST_H_
+#ifndef ON_SCENE_REMOVED_COMMMAND_MOCK_H_
+#define ON_SCENE_REMOVED_COMMMAND_MOCK_H_
 
-#include <doubles/ipc/OnSceneDeletedCommandMock.h>
-
-#include "ipc/IpcCommandTest.h"
+#include <gmock/gmock.h>
+#include <ipc/abstract_on_scene_removed_command.h>
 
 namespace testing {
 
-class OnSceneDeletedCommandTest : public IpcCommandTest {
- protected:
-  OnSceneDeletedCommandMock *cmd;
-  virtual supla_abstract_ipc_command *getCommand(void);
-
+class OnSceneRemovedCommandMock
+    : public supla_abstract_on_scene_removed_command {
  public:
-  virtual void SetUp();
-  virtual void TearDown();
+  explicit OnSceneRemovedCommandMock(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+
+  MOCK_METHOD2(on_scene_removed, void(int user_id, int scene_id));
 };
 
 } /* namespace testing */
 
-#endif /* ONSCENEDELETEDCOMMANDTEST_H_ */
+#endif /* ON_SCENE_REMOVED_COMMMAND_MOCK_H_ */

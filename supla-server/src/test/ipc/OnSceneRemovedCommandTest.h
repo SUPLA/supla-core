@@ -16,23 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ABSTRACT_ON_SCENE_DELETED_COMMAND_H_
-#define SUPLA_ABSTRACT_ON_SCENE_DELETED_COMMAND_H_
+#ifndef ONSCENEDELETEDCOMMANDTEST_H_
+#define ONSCENEDELETEDCOMMANDTEST_H_
 
-#include <string>
+#include <doubles/ipc/OnSceneRemovedCommandMock.h>
+#include "ipc/IpcCommandTest.h"
 
-#include "ipc/abstract_ipc_command.h"
+namespace testing {
 
-class supla_abstract_on_scene_deleted_command
-    : public supla_abstract_ipc_command {
+class OnSceneRemovedCommandTest : public IpcCommandTest {
  protected:
-  virtual void on_command_match(const char *params);
-  virtual const std::string get_command_name(void);
-  virtual void on_scene_deleted(int user_id, int scene_id) = 0;
+  OnSceneRemovedCommandMock *cmd;
+  virtual supla_abstract_ipc_command *getCommand(void);
 
  public:
-  explicit supla_abstract_on_scene_deleted_command(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
-#endif /* SUPLA_ABSTRACT_ON_SCENE_DELETED_COMMAND_H_ */
+} /* namespace testing */
+
+#endif /* ONSCENEDELETEDCOMMANDTEST_H_ */

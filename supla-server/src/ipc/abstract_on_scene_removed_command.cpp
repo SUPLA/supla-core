@@ -16,20 +16,20 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <ipc/abstract_on_scene_deleted_command.h>
+#include <ipc/abstract_on_scene_removed_command.h>
 
 using std::string;
 
-supla_abstract_on_scene_deleted_command::
-    supla_abstract_on_scene_deleted_command(
+supla_abstract_on_scene_removed_command::
+    supla_abstract_on_scene_removed_command(
         supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_ipc_command(socket_adapter) {}
 
-const string supla_abstract_on_scene_deleted_command::get_command_name(void) {
-  return "USER-ON-SCENE-DELETED:";
+const string supla_abstract_on_scene_removed_command::get_command_name(void) {
+  return "USER-ON-SCENE-REMOVED:";
 }
 
-void supla_abstract_on_scene_deleted_command::on_command_match(
+void supla_abstract_on_scene_removed_command::on_command_match(
     const char *params) {
   int user_id = 0;
   int scene_id = 0;
@@ -38,7 +38,7 @@ void supla_abstract_on_scene_deleted_command::on_command_match(
     sscanf(params, "%i,%i", &user_id, &scene_id);
 
     if (user_id && scene_id) {
-      on_scene_deleted(user_id, scene_id);
+      on_scene_removed(user_id, scene_id);
       send_result("OK:", user_id);
       return;
     }

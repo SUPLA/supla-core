@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <doubles/ipc/OnSceneDeletedCommandMock.h>
+#include <doubles/ipc/OnSceneRemovedCommandMock.h>
 
 namespace testing {
 
-OnSceneDeletedCommandMock::OnSceneDeletedCommandMock(
+OnSceneRemovedCommandMock::OnSceneRemovedCommandMock(
     supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_scene_deleted_command(socket_adapter) {}
+    : supla_abstract_on_scene_removed_command(socket_adapter) {}
 
 }  // namespace testing

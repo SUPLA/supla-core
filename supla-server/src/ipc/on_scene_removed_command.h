@@ -16,15 +16,21 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ipc/on_scene_deleted_command.h"
+#ifndef SUPLA_ON_SCENE_REMOVED_COMMAND_H_
+#define SUPLA_ON_SCENE_REMOVED_COMMAND_H_
 
-#include "user.h"
+#include <ipc/abstract_on_scene_removed_command.h>
+#include <string>
 
-supla_on_scene_deleted_command::supla_on_scene_deleted_command(
-    supla_abstract_ipc_socket_adapter *socket_adapter)
-    : supla_abstract_on_scene_deleted_command(socket_adapter) {}
 
-void supla_on_scene_deleted_command::on_scene_deleted(int user_id,
-                                                      int scene_id) {
-  supla_user::on_scene_changed(get_caller(), user_id, scene_id);
-}
+class supla_on_scene_removed_command
+    : public supla_abstract_on_scene_removed_command {
+ protected:
+  virtual void on_scene_removed(int user_id, int scene_id);
+
+ public:
+  explicit supla_on_scene_removed_command(
+      supla_abstract_ipc_socket_adapter *socket_adapter);
+};
+
+#endif /* SUPLA_ON_SCENE_REMOVED_COMMAND_H_ */

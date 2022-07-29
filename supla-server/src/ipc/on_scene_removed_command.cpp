@@ -16,24 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ON_SCENE_DELETED_COMMMAND_MOCK_H_
-#define ON_SCENE_DELETED_COMMMAND_MOCK_H_
+#include <ipc/on_scene_removed_command.h>
+#include "user.h"
 
-#include <gmock/gmock.h>
+supla_on_scene_removed_command::supla_on_scene_removed_command(
+    supla_abstract_ipc_socket_adapter *socket_adapter)
+    : supla_abstract_on_scene_removed_command(socket_adapter) {}
 
-#include "ipc/abstract_on_scene_deleted_command.h"
-
-namespace testing {
-
-class OnSceneDeletedCommandMock
-    : public supla_abstract_on_scene_deleted_command {
- public:
-  explicit OnSceneDeletedCommandMock(
-      supla_abstract_ipc_socket_adapter *socket_adapter);
-
-  MOCK_METHOD2(on_scene_deleted, void(int user_id, int scene_id));
-};
-
-} /* namespace testing */
-
-#endif /* ON_SCENE_DELETED_COMMMAND_MOCK_H_ */
+void supla_on_scene_removed_command::on_scene_removed(int user_id,
+                                                      int scene_id) {
+  supla_user::on_scene_changed(get_caller(), user_id, scene_id);
+}

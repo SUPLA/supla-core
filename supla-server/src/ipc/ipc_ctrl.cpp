@@ -16,6 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <ipc/on_scene_removed_command.h>
 #include "ipc/ipc_ctrl.h"
 
 #include "sthread.h"
@@ -53,7 +54,6 @@
 #include "ipc/on_mqtt_settings_changed_command.h"
 #include "ipc/on_scene_added_command.h"
 #include "ipc/on_scene_changed_command.h"
-#include "ipc/on_scene_deleted_command.h"
 #include "ipc/on_state_webhook_changed_command.h"
 #include "ipc/recalibrate_command.h"
 #include "ipc/reset_counters_command.h"
@@ -118,7 +118,7 @@ supla_ipc_ctrl::supla_ipc_ctrl(
   add_command(new supla_gh_cred_changed_command(socket_adapter));
   add_command(new supla_on_scene_added_command(socket_adapter));
   add_command(new supla_on_scene_changed_command(socket_adapter));
-  add_command(new supla_on_scene_deleted_command(socket_adapter));
+  add_command(new supla_on_scene_removed_command(socket_adapter));
   add_command(new supla_on_state_webhook_changed_command(socket_adapter));
   add_command(new supla_get_scene_summary_command(socket_adapter));
   add_command(new supla_on_device_deleted_command(socket_adapter));
