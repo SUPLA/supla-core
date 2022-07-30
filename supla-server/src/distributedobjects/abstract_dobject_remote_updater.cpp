@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <distributedobjects/abstract_dobject_remote_updater.h>
+#include <string.h>
 
 #include "log.h"
 
