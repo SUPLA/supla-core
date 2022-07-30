@@ -60,17 +60,21 @@ void supla_channel_rgbw_value::set_color(unsigned int color) {
 }
 
 char supla_channel_rgbw_value::get_brightness(void) {
-  return ((TRGBW_Value *)native_value)->brightness;
+  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  return rgbw->brightness;
 }
 
 void supla_channel_rgbw_value::set_brightness(char brightness) {
-  ((TRGBW_Value *)native_value)->brightness = brightness;
+  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  rgbw->brightness = brightness;
 }
 
 char supla_channel_rgbw_value::get_color_brightness(void) {
-  return ((TRGBW_Value *)native_value)->colorBrightness;
+  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  return rgbw->colorBrightness;
 }
 
 void supla_channel_rgbw_value::set_color_brightness(char brightness) {
-  ((TRGBW_Value *)native_value)->colorBrightness = brightness;
+  TRGBW_Value *rgbw = (TRGBW_Value *)native_value;
+  rgbw->colorBrightness = brightness;
 }
