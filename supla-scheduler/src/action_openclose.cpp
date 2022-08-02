@@ -62,6 +62,10 @@ s_worker_action_open::s_worker_action_open(s_abstract_worker *worker)
     : s_worker_action_openclose(worker, true) {}
 
 bool s_worker_action_open::is_action_allowed(void) {
+  if (s_worker_action_openclose::is_action_allowed()) {
+    return true;
+  }
+
   switch (worker->get_channel_func()) {
     case SUPLA_CHANNELFNC_CONTROLLINGTHEGATEWAYLOCK:
     case SUPLA_CHANNELFNC_CONTROLLINGTHEDOORLOCK:
