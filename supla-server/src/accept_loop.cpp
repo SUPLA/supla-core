@@ -26,7 +26,7 @@
 #include "device.h"
 #include "ipc/ipc_ctrl.h"
 #include "ipc/ipc_socket_adapter.h"
-#include "ipcsocket.h"
+#include "ipc/ipcsocket.h"
 #include "log.h"
 #include "safearray.h"
 #include "serverconnection.h"

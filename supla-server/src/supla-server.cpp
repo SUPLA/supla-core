@@ -28,7 +28,7 @@
 #include "datalogger.h"
 #include "http/httprequestqueue.h"
 #include "http/trivialhttps.h"
-#include "ipcsocket.h"
+#include "ipc/ipcsocket.h"
 #include "lck.h"
 #include "log.h"
 #include "mqtt_client_suite.h"
