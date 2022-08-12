@@ -37,7 +37,7 @@
 #include "device/value_getter.h"
 #include "log.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "user/user.h"
 
 using std::function;

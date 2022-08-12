@@ -39,6 +39,7 @@ src/ipc \
 src/json \
 src/mqtt \
 src/scene \
+src/srpc \
 src/test \
 src/test/actions \
 src/test/alexa \

@@ -29,7 +29,7 @@
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "user.h"
 
 using std::list;

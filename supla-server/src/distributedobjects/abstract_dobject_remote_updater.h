@@ -19,8 +19,8 @@
 #ifndef SUPLA_ABSTRACT_DISTRIBUTED_OBJECT_REMOTE_UPDATER_H_
 #define SUPLA_ABSTRACT_DISTRIBUTED_OBJECT_REMOTE_UPDATER_H_
 
-#include "abstract_srpc_adapter.h"
 #include "distributedobjects/dobject.h"
+#include "srpc/abstract_srpc_adapter.h"
 
 class supla_abstract_dobject_remote_updater {
  private:

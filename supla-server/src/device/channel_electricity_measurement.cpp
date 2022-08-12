@@ -17,12 +17,12 @@
  */
 
 #include "channel_electricity_measurement.h"
-#include "channel_ic_measurement.h"
 
 #include <string.h>
 
+#include "channel_ic_measurement.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 supla_channel_electricity_measurement::supla_channel_electricity_measurement(
     int ChannelId, TElectricityMeter_ExtendedValue_V2 *em_ev, int Param2,

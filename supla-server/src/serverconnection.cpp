@@ -31,7 +31,7 @@
 #include "device/device.h"
 #include "log.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"

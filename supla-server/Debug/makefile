@@ -10,6 +10,7 @@ RM := rm -rf
 -include sources.mk
 -include src/webhook/subdir.mk
 -include src/user/subdir.mk
+-include src/srpc/subdir.mk
 -include src/scene/subdir.mk
 -include src/mqtt/subdir.mk
 -include src/json/subdir.mk

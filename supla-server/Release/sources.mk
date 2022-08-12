@@ -39,6 +39,7 @@ src/ipc \
 src/json \
 src/mqtt \
 src/scene \
+src/srpc \
 src/user \
 src/webhook \
 

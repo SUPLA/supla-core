@@ -26,7 +26,7 @@
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
-#include "srpc_adapter.h"
+#include "srpc/srpc_adapter.h"
 
 class supla_user;
 class serverconnection;

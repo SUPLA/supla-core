@@ -29,7 +29,7 @@
 #include "database.h"
 #include "log.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "user.h"
 
 supla_client_channelgroups::supla_client_channelgroups(supla_client *client)

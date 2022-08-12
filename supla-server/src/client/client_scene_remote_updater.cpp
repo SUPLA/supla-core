@@ -20,7 +20,7 @@
 
 #include "client/client_scene.h"
 #include "client/client_scene_change_indicator.h"
-#include "srpc_adapter.h"
+#include "srpc/srpc_adapter.h"
 
 supla_client_scene_remote_updater::supla_client_scene_remote_updater(
     supla_abstract_srpc_adapter *srpc_adapter)

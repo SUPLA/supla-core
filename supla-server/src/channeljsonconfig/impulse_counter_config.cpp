@@ -20,7 +20,7 @@
 
 #include <limits.h>
 
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 #define INITIAL_VALUE_MIN -100000000
 #define INITIAL_VALUE_MAX 100000000

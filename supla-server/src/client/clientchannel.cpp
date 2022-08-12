@@ -27,7 +27,7 @@
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "user.h"
 
 supla_client_channel::supla_client_channel(

@@ -19,7 +19,7 @@
 #include <limits.h>
 
 #include "electricity_meter_config.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 const _emc_map_t electricity_meter_config::map[] = {
     {.var = EM_VAR_FORWARD_ACTIVE_ENERGY, .str = "forwardActiveEnergy"},

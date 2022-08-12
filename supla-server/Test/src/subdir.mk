@@ -4,7 +4,6 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/abstract_srpc_adapter.cpp \
 ../src/accept_loop.cpp \
 ../src/caller.cpp \
 ../src/cdbase.cpp \
@@ -17,7 +16,6 @@ CPP_SRCS += \
 ../src/objcontaineritem.cpp \
 ../src/serverconnection.cpp \
 ../src/serverstatus.cpp \
-../src/srpc_adapter.cpp \
 ../src/svrdb.cpp \
 ../src/voiceassistantclient.cpp 
 
@@ -29,7 +27,6 @@ C_SRCS += \
 ../src/log.c \
 ../src/proto.c \
 ../src/safearray.c \
-../src/srpc.c \
 ../src/sslcrypto.c \
 ../src/sthread.c \
 ../src/supla-socket.c \
@@ -37,7 +34,6 @@ C_SRCS += \
 ../src/tools.c 
 
 CPP_DEPS += \
-./src/abstract_srpc_adapter.d \
 ./src/accept_loop.d \
 ./src/caller.d \
 ./src/cdbase.d \
@@ -50,7 +46,6 @@ CPP_DEPS += \
 ./src/objcontaineritem.d \
 ./src/serverconnection.d \
 ./src/serverstatus.d \
-./src/srpc_adapter.d \
 ./src/svrdb.d \
 ./src/voiceassistantclient.d 
 
@@ -62,7 +57,6 @@ C_DEPS += \
 ./src/log.d \
 ./src/proto.d \
 ./src/safearray.d \
-./src/srpc.d \
 ./src/sslcrypto.d \
 ./src/sthread.d \
 ./src/supla-socket.d \
@@ -70,7 +64,6 @@ C_DEPS += \
 ./src/tools.d 
 
 OBJS += \
-./src/abstract_srpc_adapter.o \
 ./src/accept_loop.o \
 ./src/caller.o \
 ./src/cdbase.o \
@@ -90,8 +83,6 @@ OBJS += \
 ./src/safearray.o \
 ./src/serverconnection.o \
 ./src/serverstatus.o \
-./src/srpc.o \
-./src/srpc_adapter.o \
 ./src/sslcrypto.o \
 ./src/sthread.o \
 ./src/supla-socket.o \
@@ -120,7 +111,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/abstract_srpc_adapter.d ./src/abstract_srpc_adapter.o ./src/accept_loop.d ./src/accept_loop.o ./src/caller.d ./src/caller.o ./src/cdbase.d ./src/cdbase.o ./src/cdcontainer.d ./src/cdcontainer.o ./src/cfg.d ./src/cfg.o ./src/database.d ./src/database.o ./src/datalogger.d ./src/datalogger.o ./src/dbcommon.d ./src/dbcommon.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverconnection.d ./src/serverconnection.o ./src/serverstatus.d ./src/serverstatus.o ./src/srpc.d ./src/srpc.o ./src/srpc_adapter.d ./src/srpc_adapter.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/svrdb.d ./src/svrdb.o ./src/tools.d ./src/tools.o ./src/voiceassistantclient.d ./src/voiceassistantclient.o
+	-$(RM) ./src/accept_loop.d ./src/accept_loop.o ./src/caller.d ./src/caller.o ./src/cdbase.d ./src/cdbase.o ./src/cdcontainer.d ./src/cdcontainer.o ./src/cfg.d ./src/cfg.o ./src/database.d ./src/database.o ./src/datalogger.d ./src/datalogger.o ./src/dbcommon.d ./src/dbcommon.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverconnection.d ./src/serverconnection.o ./src/serverstatus.d ./src/serverstatus.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/svrdb.d ./src/svrdb.o ./src/tools.d ./src/tools.o ./src/voiceassistantclient.d ./src/voiceassistantclient.o
 
 .PHONY: clean-src
 

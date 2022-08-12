@@ -22,7 +22,7 @@
 #include <string.h>
 
 #include "safearray.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 supla_channel_ic_measurement::supla_channel_ic_measurement(
     int ChannelId, int Func, TDS_ImpulseCounter_Value *ic_val,

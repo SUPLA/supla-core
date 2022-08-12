@@ -21,7 +21,7 @@
 
 #include <gmock/gmock.h>
 
-#include "abstract_srpc_adapter.h"
+#include "srpc/abstract_srpc_adapter.h"
 
 namespace testing {
 

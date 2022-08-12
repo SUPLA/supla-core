@@ -28,7 +28,7 @@
 #include "log.h"
 #include "safearray.h"
 #include "scene/scene_asynctask.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "user.h"
 #include "user/userchannelgroups.h"
 

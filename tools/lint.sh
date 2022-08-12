@@ -21,6 +21,7 @@ cpplint ./supla-server/src/http/*
 cpplint ./supla-server/src/ipc/* 
 cpplint --exclude=./supla-server/src/mqtt/mqtt.c --exclude=./supla-server/src/mqtt/mqtt.h ./supla-server/src/mqtt/*
 cpplint ./supla-server/src/scene/* 
+cpplint ./supla-server/src/srpc/* 
 cpplint ./supla-server/src/user/* 
 cpplint ./supla-server/src/webhook/* 
 cpplint --filter=-build/include ./supla-server/src/test/* 

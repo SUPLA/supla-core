@@ -23,7 +23,7 @@
 #include <sys/time.h>
 
 #include "eh.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 
 #define LOCAL_IPV4_ARRAY_SIZE 5
 

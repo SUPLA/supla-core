@@ -34,7 +34,7 @@
 #include "mqtt_client_suite.h"
 #include "proto.h"
 #include "serverstatus.h"
-#include "srpc.h"
+#include "srpc/srpc.h"
 #include "sslcrypto.h"
 #include "sthread.h"
 #include "supla-socket.h"
