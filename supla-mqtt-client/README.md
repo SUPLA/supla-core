@@ -1,4 +1,4 @@
-# supla-mqtt-client
+# supla-mqtt-client [deprecated - please use native mqtt integration]
 
 This project combines SUPLA with MQTT. Its basic functionality is publishing the status of SUPLA channels to the MQTT server and responding to MQTT server messages to control SUPLA channels. The output and input message patterns are configurable in the state.yaml and command.yaml files
 
