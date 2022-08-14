@@ -64,7 +64,7 @@ class supla_client : public cdbase {
   explicit supla_client(supla_connection *connection);
 
   void iterate();
-  unsigned _supla_int64_t waitTimeUSec();
+  unsigned _supla_int64_t wait_time_usec();
 
   void revoke_superuser_authorization(void);
   bool is_superuser_authorized(void);

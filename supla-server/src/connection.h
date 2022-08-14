@@ -94,10 +94,10 @@ class supla_connection {
                                unsigned int call_type,
                                unsigned char proto_version);
   void *srpc(void);
-  unsigned int getClientIpv4(void);
-  int getClientSD(void);
-  unsigned char GetActivityTimeout(void);
-  unsigned char getProtocolVersion(void);
+  unsigned int get_client_ipv4(void);
+  int get_client_sd(void);
+  unsigned char get_activity_timeout(void);
+  unsigned char get_protocol_version(void);
 };
 
 #endif /* CONNECTION_H_ */

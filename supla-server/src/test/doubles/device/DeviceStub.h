@@ -27,7 +27,7 @@ class DeviceStub : public supla_device {
  protected:
  public:
   explicit DeviceStub(supla_connection *connection);
-  void setID(int ID);
+  void set_id(int id);
 };
 
 } /* namespace testing */

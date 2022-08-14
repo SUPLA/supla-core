@@ -164,7 +164,7 @@ int supla_device_channel::getFunc(void) { return Func; }
 supla_device *supla_device_channel::getDevice() { return Device; }
 
 supla_user *supla_device_channel::getUser(void) {
-  return Device ? Device->getUser() : NULL;
+  return Device ? Device->get_user() : NULL;
 }
 
 int supla_device_channel::getUserID(void) {
@@ -1113,8 +1113,8 @@ void supla_device_channels::arr_clean(void) {
 }
 
 void *supla_device_channels::get_srpc(void) {
-  if (device && device->getConnection()) {
-    return device->getConnection()->srpc();
+  if (device && device->get_connection()) {
+    return device->get_connection()->srpc();
   }
 
   return NULL;
@@ -1259,7 +1259,7 @@ supla_channel_value *supla_device_channels::get_channel_value(int ChannelID) {
       supla_channel_gate_value *gate_value =
           new supla_channel_gate_value(value);
 
-      gate_value->update_sensors(device->getUser(), param2, param3);
+      gate_value->update_sensors(device->get_user(), param2, param3);
       return gate_value;
     }
     case SUPLA_CHANNELFNC_LIGHTSWITCH:
@@ -1796,7 +1796,7 @@ void supla_device_channels::async_set_channel_value(
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
       case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR:
         supla_action_gate_openclose::cancel_tasks(
-            device->getUserID(), device->getID(), channel->getId());
+            device->get_user_id(), device->get_id(), channel->getId());
         break;
     }
   }
@@ -2280,12 +2280,12 @@ bool supla_device_channels::get_channel_complex_value(
         safe_array_unlock(arr);  // Unlock the array to avoid thread deadlock.
                                  // Do not refer to the channel from here.
 
-        supla_user *user = supla_user::find(device->getUserID(), false);
+        supla_user *user = supla_user::find(device->get_user_id(), false);
         if (user) {
           TSuplaChannelValue cv;
           memset(&cv, 0, sizeof(TSuplaChannelValue));
 
-          if (user->get_channel_value(device->getID(), ChannelID, cv.value,
+          if (user->get_channel_value(device->get_id(), ChannelID, cv.value,
                                       cv.sub_value, NULL, NULL, NULL, false)) {
             if (cv.sub_value[0] > 0) {
               value->hi = true;
@@ -2723,8 +2723,8 @@ bool supla_device_channels::action_open_close(const supla_caller &caller,
       switch (channel->getFunc()) {
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGATE:
         case SUPLA_CHANNELFNC_CONTROLLINGTHEGARAGEDOOR: {
-          supla_action_gate_openclose::open_close(caller, device->getUserID(),
-                                                  device->getID(),
+          supla_action_gate_openclose::open_close(caller, device->get_user_id(),
+                                                  device->get_id(),
                                                   channel->getId(), open);
           result = true;
         } break;

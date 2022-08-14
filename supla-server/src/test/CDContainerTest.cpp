@@ -78,12 +78,12 @@ TEST_F(CDContainerTest, moveToTrashWithPtrUse) {
   ASSERT_FALSE(cd == NULL);
 
   container->addToList(cd);
-  cd->retainPtr();
+  cd->retain_ptr();
   container->moveToTrash(cd);
   ASSERT_EQ(0, container->count());
   ASSERT_EQ(1, container->trashCount());
   ASSERT_EQ(0, container->delCount());
-  cd->releasePtr();
+  cd->release_ptr();
   container->deleteAll(0);
   ASSERT_EQ(0, container->count());
   ASSERT_EQ(0, container->trashCount());
@@ -101,12 +101,12 @@ TEST_F(CDContainerTest, findItem) {
   ASSERT_EQ(NULL, container->findByPtr(cd));
 
   container->addToList(cd);
-  ASSERT_FALSE(cd->ptrIsUsed());
+  ASSERT_FALSE(cd->ptr_is_used());
   ASSERT_EQ(NULL, container->findByPtr((void *)1));
   ASSERT_EQ(cd, container->findByPtr(cd));
-  ASSERT_TRUE(cd->ptrIsUsed());
+  ASSERT_TRUE(cd->ptr_is_used());
   container->releasePtr(cd);
-  ASSERT_FALSE(cd->ptrIsUsed());
+  ASSERT_FALSE(cd->ptr_is_used());
   container->moveToTrash(cd);
   ASSERT_EQ(NULL, container->findByPtr(cd));
 
@@ -123,12 +123,12 @@ TEST_F(CDContainerTest, getItem) {
   ASSERT_EQ(NULL, container->get(0));
 
   container->addToList(cd);
-  ASSERT_FALSE(cd->ptrIsUsed());
+  ASSERT_FALSE(cd->ptr_is_used());
   ASSERT_EQ(NULL, container->get(1));
   ASSERT_EQ(cd, container->get(0));
-  ASSERT_TRUE(cd->ptrIsUsed());
+  ASSERT_TRUE(cd->ptr_is_used());
   container->releasePtr(cd);
-  ASSERT_FALSE(cd->ptrIsUsed());
+  ASSERT_FALSE(cd->ptr_is_used());
   container->moveToTrash(cd);
   ASSERT_EQ(NULL, container->get(0));
 

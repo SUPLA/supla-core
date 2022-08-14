@@ -33,7 +33,7 @@ ActionExecutorTest::~ActionExecutorTest(void) {}
 void ActionExecutorTest::SetUp() {
   supla_user *user = supla_user::find(12345, true);
   device = new DeviceStub(NULL);
-  device->setID(567);
+  device->set_id(567);
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   device->get_channels()->add_channel(89, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL,
                                       0, 0, value, 0, NULL, NULL);

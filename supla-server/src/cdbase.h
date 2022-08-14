@@ -28,8 +28,8 @@ class database;
 class cdbase {
  private:
   struct timeval last_activity_time;
-  char GUID[SUPLA_GUID_SIZE];
-  char AuthKey[SUPLA_AUTHKEY_SIZE];
+  char guid[SUPLA_GUID_SIZE];
+  char authkey[SUPLA_AUTHKEY_SIZE];
   supla_connection *conn;
   int ID;
   unsigned long ptr_counter;
@@ -41,47 +41,47 @@ class cdbase {
   static int authkey_auth_cache_size;
 
   // Thread safe start
-  bool setGUID(char GUID[SUPLA_GUID_SIZE]);
-  bool setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
-  void setID(int ID);
-  void setUser(supla_user *user);
+  bool set_guid(char GUID[SUPLA_GUID_SIZE]);
+  bool set_authkey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
+  void set_id(int ID);
+  void set_user(supla_user *user);
   // Thread safe end
 
-  virtual bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                               const char Email[SUPLA_EMAIL_MAXSIZE],
-                               const char AuthKey[SUPLA_AUTHKEY_SIZE],
-                               int *UserID, database *db) = 0;
+  virtual bool db_authkey_auth(const char guid[SUPLA_GUID_SIZE],
+                               const char email[SUPLA_EMAIL_MAXSIZE],
+                               const char authkey[SUPLA_AUTHKEY_SIZE],
+                               int *user_id, database *db) = 0;
 
-  bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                    const char Email[SUPLA_EMAIL_MAXSIZE],
-                    const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+  bool authkey_auth(const char guid[SUPLA_GUID_SIZE],
+                    const char email[SUPLA_EMAIL_MAXSIZE],
+                    const char authkey[SUPLA_AUTHKEY_SIZE], int *UserID,
                     database *db);
 
  public:
   static void init(void);
   static void cdbase_free(void);
-  static int getAuthKeyCacheSize(void);
+  static int get_authkey_cache_size(void);
   explicit cdbase(supla_connection *conn);
   virtual ~cdbase();
   virtual void iterate();
-  virtual unsigned _supla_int64_t waitTimeUSec(void);
-  supla_connection *getConnection(void);
+  virtual unsigned _supla_int64_t wait_time_usec(void);
+  supla_connection *get_connection(void);
 
   // Thread safe start
   void terminate(void);
-  void getGUID(char GUID[SUPLA_GUID_SIZE]);
-  void getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
-  int getID(void);
-  int getUserID(void);
-  supla_user *getUser(void);
-  bool cmpGUID(const char GUID1[SUPLA_GUID_SIZE]);
-  void updateLastActivity(void);
-  int getActivityDelay(void);
-  unsigned char getProtocolVersion(void);
-  cdbase *retainPtr(void);
-  void releasePtr(void);
-  bool ptrIsUsed(void);
-  unsigned long ptrCounter(void);
+  void get_guid(char guid[SUPLA_GUID_SIZE]);
+  void get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]);
+  int get_id(void);
+  int get_user_id(void);
+  supla_user *get_user(void);
+  bool cmp_guid(const char guid1[SUPLA_GUID_SIZE]);
+  void update_last_activity(void);
+  int get_activity_delay(void);
+  unsigned char get_protocol_version(void);
+  cdbase *retain_ptr(void);
+  void release_ptr(void);
+  bool ptr_is_used(void);
+  unsigned long get_ptr_counter(void);
   // Thread safe end
 };
 

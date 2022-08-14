@@ -36,7 +36,7 @@ cdbase *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
   safe_array_lock(arr);
   result = static_cast<cdbase *>(safe_array_findcnd(arr, find_cnd, user_param));
   if (result != NULL) {
-    result = result->retainPtr();
+    result = result->retain_ptr();
   }
   safe_array_unlock(arr);
 
@@ -49,7 +49,7 @@ cdbase *cdcontainer::get(int idx) {
   safe_array_lock(arr);
   result = static_cast<cdbase *>(safe_array_get(arr, idx));
   if (result != NULL) {
-    result = result->retainPtr();
+    result = result->retain_ptr();
   }
   safe_array_unlock(arr);
 
@@ -58,7 +58,7 @@ cdbase *cdcontainer::get(int idx) {
 
 void cdcontainer::releasePtr(cdbase *cd) {
   if (cd != NULL) {
-    cd->releasePtr();
+    cd->release_ptr();
   }
 }
 
@@ -98,7 +98,7 @@ bool cdcontainer::emptyTrash(void) {
 
   for (int a = 0; a < safe_array_count(trash_arr); a++) {
     cdbase *cd = static_cast<cdbase *>(safe_array_get(trash_arr, a));
-    if (cd && !cd->ptrIsUsed()) {
+    if (cd && !cd->ptr_is_used()) {
       cd_delete(cd);
       safe_array_delete(trash_arr, a);
       a--;

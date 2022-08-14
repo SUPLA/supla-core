@@ -17,16 +17,17 @@
  */
 
 #include <clientcontainer.h>
+
 #include "client/client.h"
 
 // static
 char supla_user_client_container::find_client_byid(void *ptr, void *ID) {
-  return ((supla_client *)ptr)->getID() == *(int *)ID ? 1 : 0;
+  return ((supla_client *)ptr)->get_id() == *(int *)ID ? 1 : 0;
 }
 
 // static
 char supla_user_client_container::find_client_byguid(void *ptr, void *GUID) {
-  return ((supla_client *)ptr)->cmpGUID((char *)GUID) ? 1 : 0;
+  return ((supla_client *)ptr)->cmp_guid((char *)GUID) ? 1 : 0;
 }
 
 supla_user_client_container::supla_user_client_container() : cdcontainer() {}
@@ -43,7 +44,7 @@ void supla_user_client_container::cd_delete(cdbase *base) {
 supla_client *supla_user_client_container::baseToClient(cdbase *base) {
   supla_client *client = NULL;
   if (base && (client = static_cast<supla_client *>(base)) == NULL) {
-    base->releasePtr();
+    base->release_ptr();
   }
   return client;
 }

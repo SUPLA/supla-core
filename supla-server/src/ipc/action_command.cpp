@@ -39,7 +39,7 @@ bool supla_action_command::action_open_close(
         // set_device_channel_char_value for the potential report to contain
         // AlexaCorrelationToken / GoogleRequestId
         supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-            device->getUser(), device->getID(), channel_id, get_caller(),
+            device->get_user(), device->get_id(), channel_id, get_caller(),
             get_alexa_correlation_token(), get_google_request_id());
 
         if (open) {

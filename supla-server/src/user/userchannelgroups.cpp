@@ -101,7 +101,7 @@ bool supla_user_channelgroups::set_new_value(const supla_caller &caller,
       new_value->Id,
       [new_value, this, caller](supla_device *device, int channelId,
                                 char EOL) -> bool {
-        return user->set_device_channel_value(caller, device->getID(),
+        return user->set_device_channel_value(caller, device->get_id(),
                                               channelId, new_value->Id, EOL,
                                               new_value->value);
       });

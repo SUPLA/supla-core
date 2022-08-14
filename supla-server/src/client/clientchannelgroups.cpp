@@ -40,10 +40,10 @@ supla_client_channelgroups::supla_client_channelgroups(supla_client *client)
 void supla_client_channelgroups::_load(database *db, e_objc_scope scope) {
   switch (scope) {
     case master:
-      db->get_client_channel_groups(getClient()->getID(), this);
+      db->get_client_channel_groups(getClient()->get_id(), this);
       break;
     case detail1:
-      db->get_client_channel_group_relations(getClient()->getID(), this);
+      db->get_client_channel_group_relations(getClient()->get_id(), this);
       break;
     case detail2:
       break;
@@ -157,7 +157,7 @@ bool supla_client_channelgroups::get_data_for_remote(
   *check_more = true;
 
   if (scope == master) {
-    if (getClient()->getProtocolVersion() >= 10) {
+    if (getClient()->get_protocol_version() >= 10) {
       return get_datapack_for_remote<TSC_SuplaChannelGroupPack_B,
                                      supla_client_channelgroup>(
           obj, data, SUPLA_CHANNELGROUP_PACK_MAXCOUNT);
@@ -172,7 +172,7 @@ bool supla_client_channelgroups::get_data_for_remote(
                                    supla_client_channelgroup_relation>(
         obj, data, SUPLA_CHANNELGROUP_RELATION_PACK_MAXCOUNT);
   } else if (scope == detail2) {
-    if (getClient()->getProtocolVersion() >= 15) {
+    if (getClient()->get_protocol_version() >= 15) {
       return get_datapack_for_remote<TSC_SuplaChannelValuePack_B,
                                      supla_client_channelgroup_value>(
           obj, data, SUPLA_CHANNELVALUE_PACK_MAXCOUNT);
@@ -189,7 +189,7 @@ bool supla_client_channelgroups::get_data_for_remote(
 void supla_client_channelgroups::send_data_to_remote_and_free(
     void *srpc, void *data, int data_type, e_objc_scope scope) {
   if (scope == master) {
-    if (getClient()->getProtocolVersion() >= 10) {
+    if (getClient()->get_protocol_version() >= 10) {
       set_pack_eol<TSC_SuplaChannelGroupPack_B>(data);
 
       srpc_sc_async_channelgroup_pack_update_b(
@@ -207,7 +207,7 @@ void supla_client_channelgroups::send_data_to_remote_and_free(
     srpc_sc_async_channelgroup_relation_pack_update(
         srpc, static_cast<TSC_SuplaChannelGroupRelationPack *>(data));
   } else if (scope == detail2) {
-    if (getClient()->getProtocolVersion() >= 15) {
+    if (getClient()->get_protocol_version() >= 15) {
       set_pack_eol<TSC_SuplaChannelValuePack_B>(data);
 
       srpc_sc_async_channelvalue_pack_update_b(

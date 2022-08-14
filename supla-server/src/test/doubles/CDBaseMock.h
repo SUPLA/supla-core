@@ -34,8 +34,8 @@ class CDBaseMock : public cdbase {
   explicit CDBaseMock(supla_connection *connection);
   int getDbAuthCount();
   void setCacheSizeLimit(int size);
-  bool setGUID(char GUID[SUPLA_GUID_SIZE]);
-  bool setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
+  bool set_guid(char guid[SUPLA_GUID_SIZE]);
+  bool set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]);
 
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],

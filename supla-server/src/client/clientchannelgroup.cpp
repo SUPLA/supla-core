@@ -72,7 +72,7 @@ bool supla_client_channelgroup::add_relation(
 }
 
 bool supla_client_channelgroup::remote_update_is_possible(void) {
-  if (getContainer()->getClient()->getProtocolVersion() < 9) {
+  if (getContainer()->getClient()->get_protocol_version() < 9) {
     return false;
   }
 

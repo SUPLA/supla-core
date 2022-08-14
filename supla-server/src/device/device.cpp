@@ -40,11 +40,11 @@ supla_device::supla_device(supla_connection *connection) : cdbase(connection) {
 }
 
 supla_device::~supla_device() {
-  if (getUser()) {  // 1st line!
+  if (get_user()) {  // 1st line!
     list<int> ids = channels->get_channel_ids();
     for (auto it = ids.begin(); it != ids.end(); it++) {
-      getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
-                                          getID(), *it);
+      get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
+                                           get_id(), *it);
     }
   }
 
@@ -136,11 +136,11 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     flags = register_device_e->Flags;
   }
 
-  if (!setGUID(GUID)) {
+  if (!set_guid(GUID)) {
     resultcode = SUPLA_RESULTCODE_GUID_ERROR;
 
   } else if (register_device_e != NULL &&
-             !setAuthKey(register_device_e->AuthKey)) {
+             !set_authkey(register_device_e->AuthKey)) {
     resultcode = SUPLA_RESULTCODE_AUTHKEY_ERROR;
 
   } else {
@@ -148,8 +148,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               "Device registration started. ClientSD: %i "
               "Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X",
-              getConnection()->getClientSD(),
-              getConnection()->getProtocolVersion(), syscall(__NR_gettid),
+              get_connection()->get_client_sd(),
+              get_connection()->get_protocol_version(), syscall(__NR_gettid),
               (unsigned char)GUID[0], (unsigned char)GUID[1],
               (unsigned char)GUID[2], (unsigned char)GUID[3]);
 
@@ -178,10 +178,11 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                   "(AUTHKEY_AUTH) Bad device credentials. ClientSD: %i "
                   "Protocol Version: %i "
                   "ThreadID: %i GUID: %02X%02X%02X%02X",
-                  getConnection()->getClientSD(),
-                  getConnection()->getProtocolVersion(), syscall(__NR_gettid),
-                  (unsigned char)GUID[0], (unsigned char)GUID[1],
-                  (unsigned char)GUID[2], (unsigned char)GUID[3]);
+                  get_connection()->get_client_sd(),
+                  get_connection()->get_protocol_version(),
+                  syscall(__NR_gettid), (unsigned char)GUID[0],
+                  (unsigned char)GUID[1], (unsigned char)GUID[2],
+                  (unsigned char)GUID[3]);
 
       } else if (UserID == 0) {
         resultcode = SUPLA_RESULTCODE_BAD_CREDENTIALS;
@@ -228,7 +229,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               _LocationID = LocationID;
 
               DeviceID = db->add_device(LocationID, GUID, AuthKey, Name,
-                                        getConnection()->getClientIpv4(),
+                                        get_connection()->get_client_ipv4(),
                                         SoftVer, proto_version, ManufacturerID,
                                         ProductID, DeviceFlags, UserID);
             }
@@ -341,15 +342,15 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               DeviceID =
                   db->update_device(DeviceID, _OriginalLocationID, AuthKey,
-                                    Name, getConnection()->getClientIpv4(),
+                                    Name, get_connection()->get_client_ipv4(),
                                     SoftVer, proto_version, flags);
             }
 
             if (DeviceID != 0) {
               db->commit();
 
-              setID(DeviceID);
-              setUser(supla_user::find(UserID, true));
+              set_id(DeviceID);
+              set_user(supla_user::find(UserID, true));
 
               load_config(UserID);
 
@@ -359,19 +360,19 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
               supla_user::add_device(this, UserID);
-              getUser()->update_client_device_channels(LocationID, DeviceID);
+              get_user()->update_client_device_channels(LocationID, DeviceID);
 
-              channels->on_device_registered(getUser(), DeviceID,
+              channels->on_device_registered(get_user(), DeviceID,
                                              dev_channels_b, dev_channels_c,
                                              channel_count);
 
               if (channels_added) {
-                getUser()->on_channels_added(DeviceID,
-                                             supla_caller(ctDevice, DeviceID));
+                get_user()->on_channels_added(DeviceID,
+                                              supla_caller(ctDevice, DeviceID));
               }
 
-              getUser()->on_device_registered(DeviceID,
-                                              supla_caller(ctDevice, DeviceID));
+              get_user()->on_device_registered(
+                  DeviceID, supla_caller(ctDevice, DeviceID));
             }
           }
         }
@@ -385,8 +386,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X",
-              getID(), getConnection()->getClientSD(),
-              getConnection()->getProtocolVersion(), syscall(__NR_gettid),
+              get_id(), get_connection()->get_client_sd(),
+              get_connection()->get_protocol_version(), syscall(__NR_gettid),
               (unsigned char)GUID[0], (unsigned char)GUID[1],
               (unsigned char)GUID[2], (unsigned char)GUID[3]);
   } else {
@@ -395,15 +396,15 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
   TSD_SuplaRegisterDeviceResult srdr;
   srdr.result_code = resultcode;
-  srdr.activity_timeout = getConnection()->GetActivityTimeout();
+  srdr.activity_timeout = get_connection()->get_activity_timeout();
   srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
-  srpc_sd_async_registerdevice_result(getConnection()->srpc(), &srdr);
+  srpc_sd_async_registerdevice_result(get_connection()->srpc(), &srdr);
 
   return result;
 }
 
-void supla_device::load_config(int UserID) { channels->load(UserID, getID()); }
+void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
 void supla_device::on_device_channel_value_changed(
     TDS_SuplaDeviceChannelValue *value, TDS_SuplaDeviceChannelValue_B *value_b,
@@ -443,13 +444,13 @@ void supla_device::on_device_channel_value_changed(
       differ = true;
     }
     if (differ) {
-      getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
-                                          getID(), ChannelId, false,
-                                          significantChange);
+      get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
+                                           get_id(), ChannelId, false,
+                                           significantChange);
 
       if (converted2extended) {
-        getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
-                                            getID(), ChannelId, true);
+        get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
+                                             get_id(), ChannelId, true);
       }
     }
   }
@@ -461,8 +462,8 @@ void supla_device::on_device_channel_extendedvalue_changed(
 
   if (ChannelId != 0) {
     channels->set_channel_extendedvalue(ChannelId, &ev->value);
-    getUser()->on_channel_value_changed(supla_caller(ctDevice, getID()),
-                                        getID(), ChannelId, true);
+    get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
+                                         get_id(), ChannelId, true);
   }
 }
 
@@ -486,8 +487,8 @@ void supla_device::on_channel_set_value_result(
     event.ChannelID = ChannelID;
     event.SenderID = result->SenderID;
     event.DurationMS = channels->get_channel_value_duration(ChannelID);
-    getUser()->getClientName(result->SenderID, event.SenderName,
-                             SUPLA_SENDER_NAME_MAXSIZE);
+    get_user()->getClientName(result->SenderID, event.SenderName,
+                              SUPLA_SENDER_NAME_MAXSIZE);
     event.SenderNameSize =
         strnlen(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE - 1) + 1;
 
@@ -528,7 +529,7 @@ void supla_device::on_channel_set_value_result(
       }
     }
 
-    getUser()->call_event(&event);
+    get_user()->call_event(&event);
   }
 }
 
@@ -541,11 +542,11 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
   database *db = new database();
 
   if (db->connect() == true)
-    db->get_device_firmware_update_url(getID(), params, &result);
+    db->get_device_firmware_update_url(get_id(), params, &result);
 
   delete db;
 
-  srpc_sd_async_get_firmware_update_url_result(getConnection()->srpc(),
+  srpc_sd_async_get_firmware_update_url_result(get_connection()->srpc(),
                                                &result);
 }
 
@@ -571,14 +572,14 @@ void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
       }
     }
 
-    getUser()->on_device_calcfg_result(ChannelID, result);
+    get_user()->on_device_calcfg_result(ChannelID, result);
   }
 }
 
 void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   int ChannelID;
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
-    getUser()->on_device_channel_state_result(ChannelID, state);
+    get_user()->on_device_channel_state_result(ChannelID, state);
   }
 }
 
@@ -590,7 +591,7 @@ bool supla_device::enter_cfg_mode(void) {
     request.Command = SUPLA_CALCFG_CMD_ENTER_CFG_MODE;
     request.SuperUserAuthorized = true;
 
-    srpc_sd_async_device_calcfg_request(getConnection()->srpc(), &request);
+    srpc_sd_async_device_calcfg_request(get_connection()->srpc(), &request);
     return true;
   }
 

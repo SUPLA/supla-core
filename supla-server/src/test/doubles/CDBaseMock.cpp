@@ -43,10 +43,10 @@ bool CDBaseMock::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
   return cdbase::authkey_auth(GUID, Email, AuthKey, &UserID, NULL);
 }
 
-bool CDBaseMock::setGUID(char GUID[SUPLA_GUID_SIZE]) {
-  return cdbase::setGUID(GUID);
+bool CDBaseMock::set_guid(char guid[SUPLA_GUID_SIZE]) {
+  return cdbase::set_guid(guid);
 }
 
-bool CDBaseMock::setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
-  return cdbase::setAuthKey(AuthKey);
+bool CDBaseMock::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
+  return cdbase::set_authkey(authkey);
 }

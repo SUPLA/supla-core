@@ -28,10 +28,10 @@
 #include "user.h"
 
 typedef struct {
-  char GUID[SUPLA_GUID_SIZE];
-  char *Email;
-  char AuthKey[SUPLA_AUTHKEY_SIZE];
-  int UserID;
+  char guid[SUPLA_GUID_SIZE];
+  char *email;
+  char authkey[SUPLA_AUTHKEY_SIZE];
+  int user_id;
   bool result;
 } authkey_cache_item_t;
 
@@ -50,8 +50,8 @@ void cdbase::cdbase_free(void) {
     authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
         safe_array_get(cdbase::authkey_auth_cache_arr, a));
     if (i) {
-      if (i->Email) {
-        free(i->Email);
+      if (i->email) {
+        free(i->email);
       }
       free(i);
     }
@@ -66,10 +66,10 @@ cdbase::cdbase(supla_connection *conn) {
   this->lck = lck_init();
   this->ID = 0;
   this->ptr_counter = 0;
-  memset(this->GUID, 0, SUPLA_GUID_SIZE);
-  memset(this->AuthKey, 0, SUPLA_AUTHKEY_SIZE);
+  memset(this->guid, 0, SUPLA_GUID_SIZE);
+  memset(this->authkey, 0, SUPLA_AUTHKEY_SIZE);
 
-  updateLastActivity();  // last line / after lck_init
+  update_last_activity();  // last line / after lck_init
 }
 
 cdbase::~cdbase() { lck_free(this->lck); }
@@ -80,55 +80,53 @@ void cdbase::terminate(void) {
   lck_unlock(lck);
 }
 
-bool cdbase::setGUID(char GUID[SUPLA_GUID_SIZE]) {
-  char _GUID[SUPLA_GUID_SIZE];
-  memset(_GUID, 0, SUPLA_GUID_SIZE);
+bool cdbase::set_guid(char guid[SUPLA_GUID_SIZE]) {
+  char _guid[SUPLA_GUID_SIZE] = {};
 
-  if (memcmp(_GUID, GUID, SUPLA_GUID_SIZE) == 0) return false;
+  if (memcmp(_guid, guid, SUPLA_GUID_SIZE) == 0) return false;
 
   lck_lock(lck);
-  memcpy(this->GUID, GUID, SUPLA_GUID_SIZE);
+  memcpy(this->guid, guid, SUPLA_GUID_SIZE);
   lck_unlock(lck);
 
   return true;
 }
 
-void cdbase::getGUID(char GUID[SUPLA_GUID_SIZE]) {
+void cdbase::get_guid(char guid[SUPLA_GUID_SIZE]) {
   lck_lock(lck);
-  memcpy(GUID, this->GUID, SUPLA_GUID_SIZE);
+  memcpy(guid, this->guid, SUPLA_GUID_SIZE);
   lck_unlock(lck);
 }
 
-bool cdbase::cmpGUID(const char GUID[SUPLA_GUID_SIZE]) {
+bool cdbase::cmp_guid(const char guid[SUPLA_GUID_SIZE]) {
   bool result = false;
 
   lck_lock(lck);
-  result = memcmp(this->GUID, GUID, SUPLA_GUID_SIZE) == 0;
+  result = memcmp(this->guid, guid, SUPLA_GUID_SIZE) == 0;
   lck_unlock(lck);
 
   return result;
 }
 
-bool cdbase::setAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
-  char _AuthKey[SUPLA_AUTHKEY_SIZE];
-  memset(_AuthKey, 0, SUPLA_AUTHKEY_SIZE);
+bool cdbase::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
+  char _authkey[SUPLA_AUTHKEY_SIZE] = {};
 
-  if (memcmp(_AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE) == 0) return false;
+  if (memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) return false;
 
   lck_lock(lck);
-  memcpy(this->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+  memcpy(this->authkey, authkey, SUPLA_AUTHKEY_SIZE);
   lck_unlock(lck);
 
   return true;
 }
 
-void cdbase::getAuthKey(char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+void cdbase::get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
   lck_lock(lck);
-  memcpy(AuthKey, this->AuthKey, SUPLA_AUTHKEY_SIZE);
+  memcpy(authkey, this->authkey, SUPLA_AUTHKEY_SIZE);
   lck_unlock(lck);
 }
 
-int cdbase::getID(void) {
+int cdbase::get_id(void) {
   int result = false;
 
   lck_lock(lck);
@@ -138,19 +136,19 @@ int cdbase::getID(void) {
   return result;
 }
 
-void cdbase::setID(int ID) {
+void cdbase::set_id(int ID) {
   lck_lock(lck);
   this->ID = ID;
   lck_unlock(lck);
 }
 
-void cdbase::setUser(supla_user *user) {
+void cdbase::set_user(supla_user *user) {
   lck_lock(lck);
   this->user = user;
   lck_unlock(lck);
 }
 
-supla_user *cdbase::getUser(void) {
+supla_user *cdbase::get_user(void) {
   supla_user *result;
 
   lck_lock(lck);
@@ -160,23 +158,23 @@ supla_user *cdbase::getUser(void) {
   return result;
 }
 
-int cdbase::getUserID(void) {
-  supla_user *user = getUser();
+int cdbase::get_user_id(void) {
+  supla_user *user = get_user();
 
   if (user != NULL) return user->getUserID();
 
   return 0;
 }
 
-supla_connection *cdbase::getConnection(void) { return conn; }
+supla_connection *cdbase::get_connection(void) { return conn; }
 
-void cdbase::updateLastActivity(void) {
+void cdbase::update_last_activity(void) {
   lck_lock(lck);
   gettimeofday(&last_activity_time, NULL);
   lck_unlock(lck);
 }
 
-int cdbase::getActivityDelay(void) {
+int cdbase::get_activity_delay(void) {
   int result;
   struct timeval now;
   gettimeofday(&now, NULL);
@@ -188,24 +186,24 @@ int cdbase::getActivityDelay(void) {
   return result;
 }
 
-unsigned char cdbase::getProtocolVersion(void) {
+unsigned char cdbase::get_protocol_version(void) {
   unsigned char result = 0;
   lck_lock(lck);
   if (conn) {
-    result = conn->getProtocolVersion();
+    result = conn->get_protocol_version();
   }
   lck_unlock(lck);
   return result;
 }
 
-cdbase *cdbase::retainPtr(void) {
+cdbase *cdbase::retain_ptr(void) {
   lck_lock(lck);
   ptr_counter++;
   lck_unlock(lck);
   return this;
 }
 
-void cdbase::releasePtr(void) {
+void cdbase::release_ptr(void) {
   lck_lock(lck);
   if (ptr_counter > 0) {
     ptr_counter--;
@@ -213,7 +211,7 @@ void cdbase::releasePtr(void) {
   lck_unlock(lck);
 }
 
-bool cdbase::ptrIsUsed(void) {
+bool cdbase::ptr_is_used(void) {
   bool result = false;
   lck_lock(lck);
   result = ptr_counter > 0;
@@ -221,7 +219,7 @@ bool cdbase::ptrIsUsed(void) {
   return result;
 }
 
-unsigned long cdbase::ptrCounter(void) {
+unsigned long cdbase::get_ptr_counter(void) {
   unsigned long result = 0;
   lck_lock(lck);
   result = ptr_counter;
@@ -230,19 +228,19 @@ unsigned long cdbase::ptrCounter(void) {
 }
 
 // static
-int cdbase::getAuthKeyCacheSize(void) {
+int cdbase::get_authkey_cache_size(void) {
   return safe_array_count(cdbase::authkey_auth_cache_arr);
 }
 
-bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                          const char Email[SUPLA_EMAIL_MAXSIZE],
-                          const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
+bool cdbase::authkey_auth(const char guid[SUPLA_GUID_SIZE],
+                          const char email[SUPLA_EMAIL_MAXSIZE],
+                          const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id,
                           database *db) {
   // The cache is designed to reduce the number of queries to the database, in
   // particular the number of calls to the function st_bcrypt_check, which
   // consumes CPU resources
 
-  if (GUID == NULL || AuthKey == NULL || Email == NULL) {
+  if (guid == NULL || authkey == NULL || email == NULL) {
     return false;
   }
 
@@ -252,11 +250,11 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
     for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
       authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
           safe_array_get(cdbase::authkey_auth_cache_arr, a));
-      if (i && strncmp(i->Email, Email, SUPLA_EMAIL_MAXSIZE) == 0 &&
-          memcmp(i->GUID, GUID, SUPLA_GUID_SIZE) == 0 &&
-          memcmp(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE) == 0) {
+      if (i && strncmp(i->email, email, SUPLA_EMAIL_MAXSIZE) == 0 &&
+          memcmp(i->guid, guid, SUPLA_GUID_SIZE) == 0 &&
+          memcmp(i->authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) {
         bool result = i->result;
-        *UserID = i->UserID;
+        *user_id = i->user_id;
         safe_array_move_to_begin(cdbase::authkey_auth_cache_arr, a);
         safe_array_unlock(cdbase::authkey_auth_cache_arr);
         return result;
@@ -266,7 +264,7 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
     safe_array_unlock(cdbase::authkey_auth_cache_arr);
 
     authkey_cache_item_t *i = NULL;
-    bool result = db_authkey_auth(GUID, Email, AuthKey, UserID, db);
+    bool result = db_authkey_auth(guid, email, authkey, user_id, db);
 
     safe_array_lock(cdbase::authkey_auth_cache_arr);
 
@@ -290,32 +288,32 @@ bool cdbase::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
     }
 
     if (i) {
-      memcpy(i->GUID, GUID, SUPLA_GUID_SIZE);
-      memcpy(i->AuthKey, AuthKey, SUPLA_AUTHKEY_SIZE);
+      memcpy(i->guid, guid, SUPLA_GUID_SIZE);
+      memcpy(i->authkey, authkey, SUPLA_AUTHKEY_SIZE);
 
-      if (i->Email == NULL) {
-        i->Email = strndup(Email, SUPLA_EMAIL_MAXSIZE);
+      if (i->email == NULL) {
+        i->email = strndup(email, SUPLA_EMAIL_MAXSIZE);
       } else {
-        int len1 = strnlen(Email, SUPLA_EMAIL_MAXSIZE);
-        int len2 = strnlen(i->Email, SUPLA_EMAIL_MAXSIZE);
+        int len1 = strnlen(email, SUPLA_EMAIL_MAXSIZE);
+        int len2 = strnlen(i->email, SUPLA_EMAIL_MAXSIZE);
         if (len1 > len2) {
-          i->Email = (char *)realloc(i->Email, len1 + 1);
+          i->email = (char *)realloc(i->email, len1 + 1);
         }
-        snprintf(i->Email, len1 + 1, "%s", Email);
+        snprintf(i->email, len1 + 1, "%s", email);
       }
 
       i->result = result;
-      i->UserID = *UserID;
+      i->user_id = *user_id;
     }
 
     safe_array_unlock(cdbase::authkey_auth_cache_arr);
     return result;
 
   } else {
-    return db_authkey_auth(GUID, Email, AuthKey, UserID, db);
+    return db_authkey_auth(guid, email, authkey, user_id, db);
   }
 }
 
 void cdbase::iterate() {}
 
-unsigned _supla_int64_t cdbase::waitTimeUSec() { return 120000000; }
+unsigned _supla_int64_t cdbase::wait_time_usec() { return 120000000; }

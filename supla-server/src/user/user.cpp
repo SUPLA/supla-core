@@ -214,7 +214,7 @@ bool supla_user::getClientName(int ClientID, char *buffer, int size) {
 
   if (client) {
     client->getName(buffer, size);
-    client->releasePtr();
+    client->release_ptr();
   }
 
   return client != NULL;
@@ -227,7 +227,7 @@ bool supla_user::isSuperUserAuthorized(int ClientID) {
 
   if (client) {
     result = client->is_superuser_authorized();
-    client->releasePtr();
+    client->release_ptr();
   }
 
   return result;
@@ -288,21 +288,21 @@ int supla_user::suid_to_user_id(const char *suid, bool use_database) {
 supla_user *supla_user::add_device(supla_device *device, int UserID) {
   supla_user *user = find(UserID, true);
 
-  if (device && device->getID()) {
-    user->compex_value_cache_clean(device->getID());
+  if (device && device->get_id()) {
+    user->compex_value_cache_clean(device->get_id());
   }
 
   if (!user->device_container->exists(device)) {
     char GUID[SUPLA_GUID_SIZE];
     memset(GUID, 0, SUPLA_GUID_SIZE);
-    device->getGUID(GUID);
+    device->get_guid(GUID);
 
     supla_device *_device = user->device_container->findByGUID(GUID);
     user->device_container->addToList(device);
 
     if (_device != NULL) {
       _device->terminate();
-      _device->releasePtr();
+      _device->release_ptr();
     }
 
     safe_array_lock(supla_user::user_arr);
@@ -327,14 +327,14 @@ supla_user *supla_user::add_client(supla_client *client, int UserID) {
   if (!user->client_container->exists(client)) {
     char GUID[SUPLA_GUID_SIZE];
     memset(GUID, 0, SUPLA_GUID_SIZE);
-    client->getGUID(GUID);
+    client->get_guid(GUID);
 
     supla_client *_client = user->client_container->findByGUID(GUID);
     user->client_container->addToList(client);
 
     if (_client != NULL) {
       _client->terminate();
-      _client->releasePtr();
+      _client->release_ptr();
     }
 
     safe_array_lock(supla_user::user_arr);
@@ -358,7 +358,7 @@ void supla_user::access_client(int ClientID,
   supla_client *client = client_container->findByID(ClientID);
   if (client) {
     on_client(client);
-    client->releasePtr();
+    client->release_ptr();
   }
 }
 
@@ -445,7 +445,7 @@ void supla_user::access_device(int DeviceId, int ChannelId,
                                : device_container->findByChannelID(ChannelId);
     if (device) {
       on_device(device);
-      device->releasePtr();
+      device->release_ptr();
     }
   }
 }
@@ -457,7 +457,7 @@ void supla_user::for_each_device(
 
     if (NULL != (device = device_container->get(a))) {
       bool _continue = on_device(device);
-      device->releasePtr();
+      device->release_ptr();
       if (!_continue) {
         break;
       }
@@ -492,7 +492,7 @@ bool supla_user::get_channel_double_value(int DeviceID, int ChannelID,
         result = channels->get_channel_humidity_value(ChannelID, Value) == 1;
         break;
     }
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -522,7 +522,7 @@ bool supla_user::get_channel_char_value(int DeviceID, int ChannelID,
   if (device != NULL) {
     result =
         device->get_channels()->get_channel_char_value(ChannelID, Value) == 1;
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -537,7 +537,7 @@ bool supla_user::get_channel_rgbw_value(int DeviceID, int ChannelID, int *color,
   if (device != NULL) {
     result = device->get_channels()->get_channel_rgbw_value(
                  ChannelID, color, color_brightness, brightness, on_off) == 1;
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -552,7 +552,7 @@ bool supla_user::get_channel_valve_value(int DeviceID, int ChannelID,
   if (device != NULL) {
     result =
         device->get_channels()->get_channel_valve_value(ChannelID, Value) == 1;
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -690,7 +690,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
           } else {
             memset(sub_value, 0, SUPLA_CHANNELVALUE_SIZE);
           }
-          related_device->releasePtr();
+          related_device->release_ptr();
           related_device = NULL;
         }
       } else if (related_list.size() > 1) {
@@ -712,7 +712,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
                 sub_value_exists = true;
               }
 
-              related_device->releasePtr();
+              related_device->release_ptr();
               related_device = NULL;
             }
           }
@@ -731,7 +731,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
             int rel_channel_func =
                 related_device->get_channels()->get_channel_func(*it);
 
-            related_device->releasePtr();
+            related_device->release_ptr();
             related_device = NULL;
 
             switch (rel_channel_func) {
@@ -758,7 +758,7 @@ bool supla_user::get_channel_value(int DeviceID, int ChannelID,
       }
     }
 
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -920,7 +920,7 @@ bool supla_user::set_device_channel_value(
 
     device->get_channels()->set_device_channel_value(caller, ChannelID, GroupID,
                                                      EOL, value);
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -933,7 +933,7 @@ void supla_user::update_client_device_channels(int LocationID, int DeviceID) {
     for (int a = 0; a < client_container->count(); a++)
       if (NULL != (client = client_container->get(a))) {
         client->update_device_channels(LocationID, DeviceID);
-        client->releasePtr();
+        client->release_ptr();
       }
   }
 }
@@ -949,15 +949,15 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
   if (device) {
     list<int> master_list = device->get_channels()->master_channel(ChannelId);
 
-    device->releasePtr();
+    device->release_ptr();
     device = NULL;
 
     for (auto it = master_list.begin(); it != master_list.end(); it++) {
       device = device_container->findByChannelID(*it);
 
       if (device) {
-        ca_list.push_back(channel_address(device->getID(), *it));
-        device->releasePtr();
+        ca_list.push_back(channel_address(device->get_id(), *it));
+        device->release_ptr();
         device = NULL;
       }
     }
@@ -971,7 +971,7 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
         client->on_channel_value_changed(it->getDeviceId(), it->getChannelId(),
                                          Extended);
       }
-      client->releasePtr();
+      client->release_ptr();
     }
   }
 
@@ -1000,7 +1000,7 @@ void supla_user::call_event(TSC_SuplaEvent *event) {
   for (int a = 0; a < client_container->count(); a++)
     if (NULL != (client = client_container->get(a))) {
       client->call_event(event);
-      client->releasePtr();
+      client->release_ptr();
     }
 }
 
@@ -1044,7 +1044,7 @@ bool supla_user::device_calcfg_request(const supla_caller &caller, int DeviceId,
     }
     result = device->get_channels()->calcfg_request(
         caller, ChannelId, superUserAuthorized, request);
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return result;
@@ -1058,7 +1058,7 @@ void supla_user::on_device_calcfg_result(int ChannelID,
 
   if (client) {
     client->on_device_calcfg_result(ChannelID, result);
-    client->releasePtr();
+    client->release_ptr();
   }
 }
 
@@ -1070,7 +1070,7 @@ void supla_user::on_device_channel_state_result(int ChannelID,
 
   if (client) {
     client->on_device_channel_state_result(ChannelID, state);
-    client->releasePtr();
+    client->release_ptr();
   }
 }
 
@@ -1106,7 +1106,7 @@ void supla_user::reconnect(const supla_caller &caller, bool allDevices,
   if (cdb.size() > 0) {
     for (auto it = cdb.begin(); it != cdb.end(); it++) {
       (*it)->terminate();
-      (*it)->releasePtr();
+      (*it)->release_ptr();
     }
 
     supla_http_request_queue::getInstance()->onUserReconnectEvent(this, caller);
@@ -1124,7 +1124,7 @@ bool supla_user::client_reconnect(int ClientID) {
 
   if (client) {
     client->terminate();
-    client->releasePtr();
+    client->release_ptr();
     result = true;
   }
 
@@ -1138,7 +1138,7 @@ bool supla_user::device_reconnect(int DeviceID) {
 
   if (device) {
     device->terminate();
-    device->releasePtr();
+    device->release_ptr();
     result = true;
   }
 
@@ -1258,11 +1258,11 @@ channel_complex_value supla_user::get_channel_complex_value(int ChannelID) {
   } else {
     device->get_channels()->get_channel_complex_value(&value, ChannelID);
     if (value.function) {
-      compex_value_cache_update_function(device->getID(), ChannelID,
+      compex_value_cache_update_function(device->get_id(), ChannelID,
                                          value.channel_type, value.function,
                                          value.hidden_channel);
     }
-    device->releasePtr();
+    device->release_ptr();
   }
 
   return value;
@@ -1312,7 +1312,7 @@ void supla_user::set_channel_function(supla_client *sender,
         } else {
           before_channel_function_change(
               getUserID(), func->ChannelID,
-              supla_caller(ctClient, sender->getID()));
+              supla_caller(ctClient, sender->get_id()));
           if (db->set_channel_function(getUserID(), func->ChannelID,
                                        func->Func)) {
             result.ResultCode = SUPLA_RESULTCODE_TRUE;
@@ -1333,7 +1333,7 @@ void supla_user::set_channel_function(supla_client *sender,
     supla_device *device = device_container->findByChannelID(func->ChannelID);
     if (device != NULL) {
       device->get_channels()->set_channel_function(func->ChannelID, func->Func);
-      device->releasePtr();
+      device->release_ptr();
     }
 
     supla_client *client = NULL;
@@ -1341,7 +1341,7 @@ void supla_user::set_channel_function(supla_client *sender,
     for (int a = 0; a < client_container->count(); a++)
       if (NULL != (client = client_container->get(a))) {
         client->set_channel_function(func->ChannelID, func->Func);
-        client->releasePtr();
+        client->release_ptr();
       }
   }
 
@@ -1393,7 +1393,7 @@ void supla_user::set_caption(supla_client *sender, TCS_SetCaption *caption,
           client->set_location_caption(caption->ID, caption->Caption);
         }
 
-        client->releasePtr();
+        client->release_ptr();
       }
   }
 

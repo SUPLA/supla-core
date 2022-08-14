@@ -263,10 +263,10 @@ void supla_action_executor::forward_outside(int cap) {
   // access_device method.
   access_device([this, cap](supla_device *device) -> void {
     supla_mqtt_client_suite::globalInstance()->onActionsTriggered(
-        device->getUserID(), device->getID(), get_channel_id(), cap);
+        device->get_user_id(), device->get_id(), get_channel_id(), cap);
 
     supla_http_request_queue::getInstance()->onActionsTriggered(
-        get_caller(), device->getUser(), device->getID(), get_channel_id(),
+        get_caller(), device->get_user(), device->get_id(), get_channel_id(),
         cap);
   });
 }

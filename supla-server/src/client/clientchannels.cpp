@@ -57,14 +57,14 @@ bool supla_client_channels::channel_exists(int ChannelID) {
 }
 
 void supla_client_channels::_load(database *db, e_objc_scope scope) {
-  db->get_client_channels(getClient()->getID(), NULL, this);
+  db->get_client_channels(getClient()->get_id(), NULL, this);
 }
 
 void supla_client_channels::update_device_channels(int DeviceId) {
   database *db = new database();
   if (db->connect() == true) {
     safe_array_lock(getArr());
-    db->get_client_channels(getClient()->getID(), &DeviceId, this);
+    db->get_client_channels(getClient()->get_id(), &DeviceId, this);
     safe_array_unlock(getArr());
   }
   delete db;
@@ -156,17 +156,17 @@ bool supla_client_channels::get_data_for_remote(
     bool *check_more, e_objc_scope scope) {
   *check_more = true;
   if (data_type & OI_REMOTEUPDATE_DATA1) {
-    if (getClient()->getProtocolVersion() >= 15) {
+    if (getClient()->get_protocol_version() >= 15) {
       return get_datapack_for_remote<TSC_SuplaChannelPack_D,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
 
-    } else if (getClient()->getProtocolVersion() >= 10) {
+    } else if (getClient()->get_protocol_version() >= 10) {
       return get_datapack_for_remote<TSC_SuplaChannelPack_C,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
 
-    } else if (getClient()->getProtocolVersion() >= 8) {
+    } else if (getClient()->get_protocol_version() >= 8) {
       return get_datapack_for_remote<TSC_SuplaChannelPack_B,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
@@ -177,11 +177,11 @@ bool supla_client_channels::get_data_for_remote(
           obj, data, SUPLA_CHANNELPACK_MAXCOUNT);
     }
   } else if (data_type & OI_REMOTEUPDATE_DATA2) {
-    if (getClient()->getProtocolVersion() >= 15) {
+    if (getClient()->get_protocol_version() >= 15) {
       return get_datapack_for_remote<TSC_SuplaChannelValuePack_B,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELVALUE_PACK_MAXCOUNT);
-    } else if (getClient()->getProtocolVersion() >= 9) {
+    } else if (getClient()->get_protocol_version() >= 9) {
       return get_datapack_for_remote<TSC_SuplaChannelValuePack,
                                      supla_client_channel>(
           obj, data, SUPLA_CHANNELVALUE_PACK_MAXCOUNT);
@@ -197,7 +197,7 @@ bool supla_client_channels::get_data_for_remote(
 
     return true;
   } else if (data_type & OI_REMOTEUPDATE_DATA3) {
-    if (getClient()->getProtocolVersion() >= 10) {
+    if (getClient()->get_protocol_version() >= 10) {
       return get_ev_datapack_for_remote(obj, data);
     }
   }
@@ -218,17 +218,17 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
                                                          int data_type,
                                                          e_objc_scope scope) {
   if (data_type & OI_REMOTEUPDATE_DATA1) {
-    if (getClient()->getProtocolVersion() >= 15) {
+    if (getClient()->get_protocol_version() >= 15) {
       set_pack_eol<TSC_SuplaChannelPack_D>(data);
       srpc_sc_async_channelpack_update_d(
           srpc, static_cast<TSC_SuplaChannelPack_D *>(data));
 
-    } else if (getClient()->getProtocolVersion() >= 10) {
+    } else if (getClient()->get_protocol_version() >= 10) {
       set_pack_eol<TSC_SuplaChannelPack_C>(data);
       srpc_sc_async_channelpack_update_c(
           srpc, static_cast<TSC_SuplaChannelPack_C *>(data));
 
-    } else if (getClient()->getProtocolVersion() >= 8) {
+    } else if (getClient()->get_protocol_version() >= 8) {
       set_pack_eol<TSC_SuplaChannelPack_B>(data);
       srpc_sc_async_channelpack_update_b(
           srpc, static_cast<TSC_SuplaChannelPack_B *>(data));
@@ -239,11 +239,11 @@ void supla_client_channels::send_data_to_remote_and_free(void *srpc, void *data,
           srpc, static_cast<TSC_SuplaChannelPack *>(data));
     }
   } else if (data_type & OI_REMOTEUPDATE_DATA2) {
-    if (getClient()->getProtocolVersion() >= 15) {
+    if (getClient()->get_protocol_version() >= 15) {
       set_pack_eol<TSC_SuplaChannelValuePack_B>(data);
       srpc_sc_async_channelvalue_pack_update_b(
           srpc, static_cast<TSC_SuplaChannelValuePack_B *>(data));
-    } else if (getClient()->getProtocolVersion() >= 9) {
+    } else if (getClient()->get_protocol_version() >= 9) {
       set_pack_eol<TSC_SuplaChannelValuePack>(data);
       srpc_sc_async_channelvalue_pack_update(
           srpc, static_cast<TSC_SuplaChannelValuePack *>(data));
@@ -284,8 +284,8 @@ bool supla_client_channels::set_device_channel_new_value(int ChannelId,
     safe_array_unlock(getArr());
 
     if (DeviceID) {
-      return getClient()->getUser()->set_device_channel_value(
-          supla_caller(ctClient, getClient()->getID()), DeviceID, ChannelId, 0,
+      return getClient()->get_user()->set_device_channel_value(
+          supla_caller(ctClient, getClient()->get_id()), DeviceID, ChannelId, 0,
           false, value);
     }
   }
@@ -330,8 +330,8 @@ bool supla_client_channels::device_calcfg_request(
   safe_array_unlock(getArr());
 
   if (DeviceID) {
-    return getClient()->getUser()->device_calcfg_request(
-        supla_caller(ctClient, getClient()->getID()), DeviceID, ChannelID,
+    return getClient()->get_user()->device_calcfg_request(
+        supla_caller(ctClient, getClient()->get_id()), DeviceID, ChannelID,
         request);
   }
 
@@ -357,10 +357,10 @@ bool supla_client_channels::device_get_channel_state(
     safe_array_unlock(getArr());
 
     if (DeviceID) {
-      getClient()->getUser()->access_device(
+      getClient()->get_user()->access_device(
           DeviceID, 0, [this, &result, request](supla_device *device) -> void {
             result = device->get_channels()->get_channel_state(
-                supla_caller(ctClient, getClient()->getID()), request);
+                supla_caller(ctClient, getClient()->get_id()), request);
           });
     }
   }
@@ -470,9 +470,9 @@ void supla_client_channels::device_access(
     return;
   }
 
-  supla_device *device = getClient()->getUser()->get_device(DeviceID);
+  supla_device *device = getClient()->get_user()->get_device(DeviceID);
   if (device) {
     method(device);
-    device->releasePtr();
+    device->release_ptr();
   }
 }

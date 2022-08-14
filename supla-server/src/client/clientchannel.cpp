@@ -209,9 +209,9 @@ void supla_client_channel::proto_get_value(TSuplaChannelValue_B *value,
                                            char *online, supla_client *client) {
   bool result = false;
 
-  if (client && client->getUser()) {
+  if (client && client->get_user()) {
     unsigned _supla_int_t validity_time_sec = 0;
-    result = client->getUser()->get_channel_value(
+    result = client->get_user()->get_channel_value(
         DeviceId, getId(), value->value, value->sub_value,
         &value->sub_value_type, online, &validity_time_sec, true);
     if (result) {
@@ -335,16 +335,16 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
   memset(cev, 0, sizeof(TSC_SuplaChannelExtendedValue));
 
-  if (client && client->getUser()) {
+  if (client && client->get_user()) {
     bool cev_exists = false;
 
     int ChannelId = getId();
-    supla_device *device = client->getUser()->get_device(DeviceId);
+    supla_device *device = client->get_user()->get_device(DeviceId);
 
     if (device) {
       cev_exists =
           device->get_channels()->get_channel_extendedvalue(ChannelId, cev);
-      device->releasePtr();
+      device->release_ptr();
     }
 
     device = NULL;
@@ -362,13 +362,13 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     }
 
     if (ChannelId) {
-      device = client->getUser()->device_by_channelid(ChannelId);
+      device = client->get_user()->device_by_channelid(ChannelId);
 
       if (device) {
         TSC_SuplaChannelExtendedValue second_cev = {};
         if (device->get_channels()->get_channel_extendedvalue(ChannelId,
                                                               &second_cev)) {
-          if (client->getProtocolVersion() >= 17) {
+          if (client->get_protocol_version() >= 17) {
             srpc_evtool_value_add(&cev->value, &second_cev.value);
           } else {
             // For backward compatibility, overwrite cev->value
@@ -378,7 +378,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
           cev_exists = true;
         }
-        device->releasePtr();
+        device->release_ptr();
       }
     }
 

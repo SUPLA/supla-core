@@ -29,25 +29,25 @@ TEST_F(CDBaseTest, retainReleaseTest) {
   CDBaseMock *cd = new CDBaseMock(NULL);
 
   ASSERT_FALSE(cd == NULL);
-  ASSERT_FALSE(cd->ptrIsUsed());
+  ASSERT_FALSE(cd->ptr_is_used());
 
-  ASSERT_EQ((unsigned long)0, cd->ptrCounter());
+  ASSERT_EQ((unsigned long)0, cd->get_ptr_counter());
 
-  cd->retainPtr();
-  ASSERT_TRUE(cd->ptrIsUsed());
-  ASSERT_EQ((unsigned long)1, cd->ptrCounter());
+  cd->retain_ptr();
+  ASSERT_TRUE(cd->ptr_is_used());
+  ASSERT_EQ((unsigned long)1, cd->get_ptr_counter());
 
-  cd->retainPtr();
-  ASSERT_TRUE(cd->ptrIsUsed());
-  ASSERT_EQ((unsigned long)2, cd->ptrCounter());
+  cd->retain_ptr();
+  ASSERT_TRUE(cd->ptr_is_used());
+  ASSERT_EQ((unsigned long)2, cd->get_ptr_counter());
 
-  cd->releasePtr();
-  ASSERT_TRUE(cd->ptrIsUsed());
-  ASSERT_EQ((unsigned long)1, cd->ptrCounter());
+  cd->release_ptr();
+  ASSERT_TRUE(cd->ptr_is_used());
+  ASSERT_EQ((unsigned long)1, cd->get_ptr_counter());
 
-  cd->releasePtr();
-  ASSERT_FALSE(cd->ptrIsUsed());
-  ASSERT_EQ((unsigned long)0, cd->ptrCounter());
+  cd->release_ptr();
+  ASSERT_FALSE(cd->ptr_is_used());
+  ASSERT_EQ((unsigned long)0, cd->get_ptr_counter());
 
   delete cd;
 }
@@ -66,7 +66,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
 
   cd->setCacheSizeLimit(0);
 
@@ -74,13 +74,13 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(2, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
 
   GUID[0] = 1;
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(3, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
 
   cd->setCacheSizeLimit(5);
 
@@ -89,7 +89,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(4, cd->getDbAuthCount());
-  ASSERT_EQ(1, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(1, cdbase::get_authkey_cache_size());
 
   GUID[0] = 2;
 
@@ -98,7 +98,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(5, cd->getDbAuthCount());
-  ASSERT_EQ(2, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(2, cdbase::get_authkey_cache_size());
 
   Email[0] = '@';
 
@@ -107,7 +107,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(6, cd->getDbAuthCount());
-  ASSERT_EQ(3, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(3, cdbase::get_authkey_cache_size());
 
   for (int b = 0; b < 10; b++) {
     Email[b] = '@';
@@ -119,7 +119,7 @@ TEST_F(CDBaseTest, authkey_cache) {
       ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
       ASSERT_EQ(7 + b * 200 + a, cd->getDbAuthCount());
-      ASSERT_EQ(a > 1 || b > 0 ? 5 : 4 + a, cdbase::getAuthKeyCacheSize());
+      ASSERT_EQ(a > 1 || b > 0 ? 5 : 4 + a, cdbase::get_authkey_cache_size());
     }
   }
 
@@ -146,22 +146,22 @@ TEST_F(CDBaseTest, authkey_cache_null_test) {
   ASSERT_FALSE(cd->authkey_auth(NULL, Email, AuthKey));
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
 
   ASSERT_FALSE(cd->authkey_auth(GUID, NULL, AuthKey));
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
 
   ASSERT_FALSE(cd->authkey_auth(GUID, Email, NULL));
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
 
   ASSERT_FALSE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(1, cd->getDbAuthCount());
-  ASSERT_EQ(1, cdbase::getAuthKeyCacheSize());
+  ASSERT_EQ(1, cdbase::get_authkey_cache_size());
 
   delete cd;
 
@@ -180,14 +180,14 @@ TEST_F(CDBaseTest, guid_setter_getter) {
   cdbase::init();
   CDBaseMock *cd = new CDBaseMock(NULL);
 
-  cd->getGUID(v);
+  cd->get_guid(v);
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
 
-  cd->setGUID(v1);
-  cd->getGUID(v);
+  cd->set_guid(v1);
+  cd->get_guid(v);
   ASSERT_EQ(0, memcmp(v, v1, SUPLA_GUID_SIZE));
 
-  cd->getAuthKey(v);
+  cd->get_authkey(v);
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
 
   delete cd;
@@ -206,14 +206,14 @@ TEST_F(CDBaseTest, authkey_setter_getter) {
   cdbase::init();
   CDBaseMock *cd = new CDBaseMock(NULL);
 
-  cd->getAuthKey(v);
+  cd->get_authkey(v);
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
 
-  cd->setAuthKey(v1);
-  cd->getAuthKey(v);
+  cd->set_authkey(v1);
+  cd->get_authkey(v);
   ASSERT_EQ(0, memcmp(v, v1, SUPLA_AUTHKEY_SIZE));
 
-  cd->getGUID(v);
+  cd->get_guid(v);
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
 
   delete cd;
