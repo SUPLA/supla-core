@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lck.h"
 #include "safearray.h"
 #include "svrcfg.h"
@@ -38,13 +39,16 @@ int supla_connection_object::authkey_auth_cache_size = 0;
 
 // static
 void supla_connection_object::init(void) {
-  supla_connection_object::authkey_auth_cache_size = scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
+  supla_connection_object::authkey_auth_cache_size =
+      scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
   supla_connection_object::authkey_auth_cache_arr = safe_array_init();
 }
 
 // static
 void supla_connection_object::release_cache(void) {
-  for (int a = 0; a < safe_array_count(supla_connection_object::authkey_auth_cache_arr); a++) {
+  for (int a = 0;
+       a < safe_array_count(supla_connection_object::authkey_auth_cache_arr);
+       a++) {
     authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
         safe_array_get(supla_connection_object::authkey_auth_cache_arr, a));
     if (i) {
@@ -230,10 +234,9 @@ int supla_connection_object::get_authkey_cache_size(void) {
   return safe_array_count(supla_connection_object::authkey_auth_cache_arr);
 }
 
-bool supla_connection_object::authkey_auth(const char guid[SUPLA_GUID_SIZE],
-                          const char email[SUPLA_EMAIL_MAXSIZE],
-                          const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id,
-                          database *db) {
+bool supla_connection_object::authkey_auth(
+    const char guid[SUPLA_GUID_SIZE], const char email[SUPLA_EMAIL_MAXSIZE],
+    const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id, database *db) {
   // The cache is designed to reduce the number of queries to the database, in
   // particular the number of calls to the function st_bcrypt_check, which
   // consumes CPU resources
@@ -245,7 +248,9 @@ bool supla_connection_object::authkey_auth(const char guid[SUPLA_GUID_SIZE],
   if (supla_connection_object::authkey_auth_cache_size > 0) {
     safe_array_lock(supla_connection_object::authkey_auth_cache_arr);
 
-    for (int a = 0; a < safe_array_count(supla_connection_object::authkey_auth_cache_arr); a++) {
+    for (int a = 0;
+         a < safe_array_count(supla_connection_object::authkey_auth_cache_arr);
+         a++) {
       authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
           safe_array_get(supla_connection_object::authkey_auth_cache_arr, a));
       if (i && strncmp(i->email, email, SUPLA_EMAIL_MAXSIZE) == 0 &&
@@ -253,7 +258,8 @@ bool supla_connection_object::authkey_auth(const char guid[SUPLA_GUID_SIZE],
           memcmp(i->authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) {
         bool result = i->result;
         *user_id = i->user_id;
-        safe_array_move_to_begin(supla_connection_object::authkey_auth_cache_arr, a);
+        safe_array_move_to_begin(
+            supla_connection_object::authkey_auth_cache_arr, a);
         safe_array_unlock(supla_connection_object::authkey_auth_cache_arr);
         return result;
       }
@@ -270,7 +276,8 @@ bool supla_connection_object::authkey_auth(const char guid[SUPLA_GUID_SIZE],
         supla_connection_object::authkey_auth_cache_size) {
       struct timeval tv;
       gettimeofday(&tv, NULL);
-      int count = safe_array_count(supla_connection_object::authkey_auth_cache_arr);
+      int count =
+          safe_array_count(supla_connection_object::authkey_auth_cache_arr);
       int idx = count / 2;
       if (idx > 0) {
         idx = count - 1 - (tv.tv_usec % idx);
@@ -314,4 +321,6 @@ bool supla_connection_object::authkey_auth(const char guid[SUPLA_GUID_SIZE],
 
 void supla_connection_object::iterate() {}
 
-unsigned _supla_int64_t supla_connection_object::wait_time_usec() { return 120000000; }
+unsigned _supla_int64_t supla_connection_object::wait_time_usec() {
+  return 120000000;
+}

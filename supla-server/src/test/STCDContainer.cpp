@@ -17,6 +17,7 @@
  */
 
 #include "test/STCDContainer.h"
+
 #include "log.h"
 
 // static
@@ -35,4 +36,6 @@ STCDContainer::~STCDContainer() {}
 
 int STCDContainer::delCount(void) { return del_count; }
 
-supla_connection_object *STCDContainer::findByPtr(void *ptr) { return find(find_by_ptr, ptr); }
+supla_connection_object *STCDContainer::findByPtr(void *ptr) {
+  return find(find_by_ptr, ptr);
+}

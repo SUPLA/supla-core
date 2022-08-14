@@ -17,29 +17,33 @@
  */
 
 #include <doubles/ConnectionObjectMock.h>  // NOLINT
+
 #include "gtest/gtest.h"  // NOLINT
 
-ConnectionObjectMock::ConnectionObjectMock(supla_connection *connection) : supla_connection_object(connection) {
+ConnectionObjectMock::ConnectionObjectMock(supla_connection *connection)
+    : supla_connection_object(connection) {
   dbAuthCount = 0;
 }
 
-bool ConnectionObjectMock::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                                 const char Email[SUPLA_EMAIL_MAXSIZE],
-                                 const char AuthKey[SUPLA_AUTHKEY_SIZE],
-                                 int *UserID, database *db) {
+bool ConnectionObjectMock::db_authkey_auth(
+    const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE],
+    const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID, database *db) {
   dbAuthCount++;
   return dbAuthCount > 1;
 }
 
 int ConnectionObjectMock::getDbAuthCount() { return dbAuthCount; }
 
-void ConnectionObjectMock::setCacheSizeLimit(int size) { authkey_auth_cache_size = size; }
+void ConnectionObjectMock::setCacheSizeLimit(int size) {
+  authkey_auth_cache_size = size;
+}
 
-bool ConnectionObjectMock::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                              const char Email[SUPLA_EMAIL_MAXSIZE],
-                              const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
+bool ConnectionObjectMock::authkey_auth(
+    const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE],
+    const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   int UserID = 0;
-  return supla_connection_object::authkey_auth(GUID, Email, AuthKey, &UserID, NULL);
+  return supla_connection_object::authkey_auth(GUID, Email, AuthKey, &UserID,
+                                               NULL);
 }
 
 bool ConnectionObjectMock::set_guid(char guid[SUPLA_GUID_SIZE]) {

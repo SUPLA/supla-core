@@ -20,6 +20,7 @@
 #define CDCONTAINER_H_
 
 #include <connection_object.h>
+
 #include "safearray.h"
 
 class cdcontainer {
@@ -28,9 +29,9 @@ class cdcontainer {
   void *trash_arr;
 
  protected:
-  supla_connection_object *find(_func_sa_cnd_param find_cnd,
-                           void *user_param);
+  supla_connection_object *find(_func_sa_cnd_param find_cnd, void *user_param);
   virtual void cd_delete(supla_connection_object *cd) = 0;
+
  public:
   cdcontainer();
   virtual ~cdcontainer();

@@ -47,7 +47,8 @@ void supla_user_device_container::cd_delete(supla_connection_object *base) {
   }
 }
 
-supla_device *supla_user_device_container::baseToDevice(supla_connection_object *base) {
+supla_device *supla_user_device_container::baseToDevice(
+    supla_connection_object *base) {
   supla_device *device = NULL;
   if (base && (device = dynamic_cast<supla_device *>(base)) == NULL) {
     base->release_ptr();

@@ -28,13 +28,17 @@ cdcontainer::~cdcontainer() {
   safe_array_free(trash_arr);
 }
 
-bool cdcontainer::exists(supla_connection_object *cd) { return safe_array_find(arr, cd) > -1; }
+bool cdcontainer::exists(supla_connection_object *cd) {
+  return safe_array_find(arr, cd) > -1;
+}
 
-supla_connection_object *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
+supla_connection_object *cdcontainer::find(_func_sa_cnd_param find_cnd,
+                                           void *user_param) {
   supla_connection_object *result = NULL;
 
   safe_array_lock(arr);
-  result = static_cast<supla_connection_object *>(safe_array_findcnd(arr, find_cnd, user_param));
+  result = static_cast<supla_connection_object *>(
+      safe_array_findcnd(arr, find_cnd, user_param));
   if (result != NULL) {
     result = result->retain_ptr();
   }
@@ -97,7 +101,8 @@ bool cdcontainer::emptyTrash(void) {
   safe_array_lock(trash_arr);
 
   for (int a = 0; a < safe_array_count(trash_arr); a++) {
-    supla_connection_object *cd = static_cast<supla_connection_object *>(safe_array_get(trash_arr, a));
+    supla_connection_object *cd =
+        static_cast<supla_connection_object *>(safe_array_get(trash_arr, a));
     if (cd && !cd->ptr_is_used()) {
       cd_delete(cd);
       safe_array_delete(trash_arr, a);
