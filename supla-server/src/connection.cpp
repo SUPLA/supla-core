@@ -188,12 +188,12 @@ void supla_connection::read_local_ipv4_addresses(void) {
 void supla_connection::init(void) {
   supla_connection::read_local_ipv4_addresses();
   supla_connection::reg_pending_arr = safe_array_init();
-  cdbase::init();
+  supla_connection_object::init();
 }
 
 // static
-void supla_connection::serverconnection_free(void) {
-  cdbase::cdbase_free();
+void supla_connection::cleanup(void) {
+  supla_connection_object::release_cache();
   safe_array_free(supla_connection::reg_pending_arr);
 }
 
@@ -209,7 +209,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   gettimeofday(&this->init_time, NULL);
   this->client_ipv4 = client_ipv4;
   this->sthread = NULL;
-  this->cdptr = NULL;
+  this->object = NULL;
   this->registered = REG_NONE;
   this->ssd = ssd;
   this->supla_socket = supla_socket;
@@ -403,7 +403,7 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_C");
 
-      if (cdptr == NULL && rd->data.ds_register_device_c != NULL) {
+      if (object == NULL && rd->data.ds_register_device_c != NULL) {
         device = new supla_device(this);
         device->retain_ptr();
 
@@ -427,7 +427,7 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_D");
 
-      if (cdptr == NULL && rd->data.ds_register_device_d != NULL) {
+      if (object == NULL && rd->data.ds_register_device_d != NULL) {
         TDS_SuplaRegisterDevice_E *register_device_e =
             (TDS_SuplaRegisterDevice_E *)malloc(
                 sizeof(TDS_SuplaRegisterDevice_E));
@@ -477,7 +477,7 @@ void supla_connection::on_register_device_request(void *_srpc,
     case SUPLA_DS_CALL_REGISTER_DEVICE_E:
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_E");
 
-      if (cdptr == NULL && rd->data.ds_register_device_e != NULL) {
+      if (object == NULL && rd->data.ds_register_device_e != NULL) {
         device = new supla_device(this);
         device->retain_ptr();
 
@@ -580,7 +580,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_B");
 
-        if (cdptr == NULL) {
+        if (object == NULL) {
           client = new supla_client(this);
           client->retain_ptr();
 
@@ -639,7 +639,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_D");
 
-        if (cdptr == NULL) {
+        if (object == NULL) {
           client = new supla_client(this);
           client->retain_ptr();
 
@@ -667,7 +667,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     }
 
   } else {
-    cdptr->update_last_activity();
+    object->update_last_activity();
 
     if (call_type == SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT &&
         (registered == REG_DEVICE || registered == REG_CLIENT)) {
@@ -702,7 +702,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       database *db = new database();
 
       if (!db->connect() ||
-          !db->get_user_localtime(cdptr->get_user_id(), &result)) {
+          !db->get_user_localtime(object->get_user_id(), &result)) {
         memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));
       }
 
@@ -718,7 +718,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       database *db = new database();
 
       if (!db->connect() ||
-          !db->get_reg_enabled(cdptr->get_user_id(), &reg_en.client_timestamp,
+          !db->get_reg_enabled(object->get_user_id(), &reg_en.client_timestamp,
                                &reg_en.iodevice_timestamp)) {
         reg_en.client_timestamp = 0;
         reg_en.iodevice_timestamp = 0;
@@ -925,7 +925,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
         case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
           if (client->is_superuser_authorized()) {
             client->get_user()->reconnect(
-                supla_caller(ctClient, cdptr->get_id()), false, true);
+                supla_caller(ctClient, object->get_id()), false, true);
           } else {
             TSC_ClientsReconnectRequestResult result;
             memset(&result, 0, sizeof(TSC_ClientsReconnectRequestResult));
@@ -943,7 +943,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
               result.ResultCode =
                   db->connect() && db->set_reg_enabled(
-                                       cdptr->get_user_id(),
+                                       object->get_user_id(),
                                        rd.data.cs_set_registration_enabled
                                            ->IODeviceRegistrationTimeSec,
                                        rd.data.cs_set_registration_enabled
@@ -995,7 +995,7 @@ void supla_connection::execute(void *sthread) {
             ssocket_is_secure(ssd));
 
   while (sthread_isterminated(sthread) == 0) {
-    eh_wait(eh, registered == REG_NONE ? 1000000 : cdptr->wait_time_usec());
+    eh_wait(eh, registered == REG_NONE ? 1000000 : object->wait_time_usec());
 
     if (srpc_iterate(_srpc) == SUPLA_RESULT_FALSE) {
       // supla_log(LOG_DEBUG, "srpc_iterate(_srpc) == SUPLA_RESULT_FALSE");
@@ -1014,19 +1014,19 @@ void supla_connection::execute(void *sthread) {
       }
 
     } else {
-      cdptr->iterate();
+      object->iterate();
 
-      if (cdptr->get_activity_delay() >= get_activity_timeout()) {
+      if (object->get_activity_delay() >= get_activity_timeout()) {
         sthread_terminate(sthread);
         supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
-                  cdptr->get_activity_delay(), registered);
+                  object->get_activity_delay(), registered);
         break;
       }
     }
   }
 
-  if (cdptr != NULL) {
-    supla_user *user = cdptr->get_user();
+  if (object != NULL) {
+    supla_user *user = object->get_user();
 
     if (user) {
       if (registered == REG_DEVICE) {
@@ -1039,20 +1039,20 @@ void supla_connection::execute(void *sthread) {
     {
       unsigned long deadlock_counter = 0;
 
-      while (cdptr->get_ptr_counter() > 1) {
+      while (object->get_ptr_counter() > 1) {
         usleep(100);
         deadlock_counter++;
         if (deadlock_counter > 100000) {
           supla_log(
               LOG_WARNING,
               "Too long waiting time to release the object pointer! %i/%i",
-              sthread, cdptr);
+              sthread, object);
           break;
         }
       }
     }
 
-    cdptr->release_ptr();
+    object->release_ptr();
 
     if (user) {
       user->emptyTrash();

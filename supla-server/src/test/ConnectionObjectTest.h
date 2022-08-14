@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CDBASETEST_H_
-#define CDBASETEST_H_
+#ifndef CONNECTION_OBJECT_TEST_H_
+#define CONNECTION_OBJECT_TEST_H_
 
-class CDBaseTest {
+class ConnectionObjectTest {
  public:
-  virtual ~CDBaseTest();
-  CDBaseTest();
+  virtual ~ConnectionObjectTest();
+  ConnectionObjectTest();
 };
-#endif /* CDBASETEST_H_ */
+#endif /* CONNECTION_OBJECT_TEST_H_ */

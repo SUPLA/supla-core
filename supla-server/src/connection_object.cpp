@@ -16,12 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdbase.h"
-
+#include <connection_object.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "lck.h"
 #include "safearray.h"
 #include "svrcfg.h"
@@ -35,20 +33,20 @@ typedef struct {
   bool result;
 } authkey_cache_item_t;
 
-void *cdbase::authkey_auth_cache_arr = NULL;
-int cdbase::authkey_auth_cache_size = 0;
+void *supla_connection_object::authkey_auth_cache_arr = NULL;
+int supla_connection_object::authkey_auth_cache_size = 0;
 
 // static
-void cdbase::init(void) {
-  cdbase::authkey_auth_cache_size = scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
-  cdbase::authkey_auth_cache_arr = safe_array_init();
+void supla_connection_object::init(void) {
+  supla_connection_object::authkey_auth_cache_size = scfg_int(CFG_LIMIT_AUTHKEY_AUTH_CACHE_SIZE);
+  supla_connection_object::authkey_auth_cache_arr = safe_array_init();
 }
 
 // static
-void cdbase::cdbase_free(void) {
-  for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
+void supla_connection_object::release_cache(void) {
+  for (int a = 0; a < safe_array_count(supla_connection_object::authkey_auth_cache_arr); a++) {
     authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
-        safe_array_get(cdbase::authkey_auth_cache_arr, a));
+        safe_array_get(supla_connection_object::authkey_auth_cache_arr, a));
     if (i) {
       if (i->email) {
         free(i->email);
@@ -57,10 +55,10 @@ void cdbase::cdbase_free(void) {
     }
   }
 
-  safe_array_free(cdbase::authkey_auth_cache_arr);
+  safe_array_free(supla_connection_object::authkey_auth_cache_arr);
 }
 
-cdbase::cdbase(supla_connection *conn) {
+supla_connection_object::supla_connection_object(supla_connection *conn) {
   this->user = NULL;
   this->conn = conn;
   this->lck = lck_init();
@@ -72,15 +70,15 @@ cdbase::cdbase(supla_connection *conn) {
   update_last_activity();  // last line / after lck_init
 }
 
-cdbase::~cdbase() { lck_free(this->lck); }
+supla_connection_object::~supla_connection_object() { lck_free(this->lck); }
 
-void cdbase::terminate(void) {
+void supla_connection_object::terminate(void) {
   lck_lock(lck);
   if (conn) conn->terminate();
   lck_unlock(lck);
 }
 
-bool cdbase::set_guid(char guid[SUPLA_GUID_SIZE]) {
+bool supla_connection_object::set_guid(char guid[SUPLA_GUID_SIZE]) {
   char _guid[SUPLA_GUID_SIZE] = {};
 
   if (memcmp(_guid, guid, SUPLA_GUID_SIZE) == 0) return false;
@@ -92,13 +90,13 @@ bool cdbase::set_guid(char guid[SUPLA_GUID_SIZE]) {
   return true;
 }
 
-void cdbase::get_guid(char guid[SUPLA_GUID_SIZE]) {
+void supla_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
   lck_lock(lck);
   memcpy(guid, this->guid, SUPLA_GUID_SIZE);
   lck_unlock(lck);
 }
 
-bool cdbase::cmp_guid(const char guid[SUPLA_GUID_SIZE]) {
+bool supla_connection_object::cmp_guid(const char guid[SUPLA_GUID_SIZE]) {
   bool result = false;
 
   lck_lock(lck);
@@ -108,7 +106,7 @@ bool cdbase::cmp_guid(const char guid[SUPLA_GUID_SIZE]) {
   return result;
 }
 
-bool cdbase::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
+bool supla_connection_object::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
   char _authkey[SUPLA_AUTHKEY_SIZE] = {};
 
   if (memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) return false;
@@ -120,13 +118,13 @@ bool cdbase::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
   return true;
 }
 
-void cdbase::get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
+void supla_connection_object::get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
   lck_lock(lck);
   memcpy(authkey, this->authkey, SUPLA_AUTHKEY_SIZE);
   lck_unlock(lck);
 }
 
-int cdbase::get_id(void) {
+int supla_connection_object::get_id(void) {
   int result = false;
 
   lck_lock(lck);
@@ -136,19 +134,19 @@ int cdbase::get_id(void) {
   return result;
 }
 
-void cdbase::set_id(int ID) {
+void supla_connection_object::set_id(int ID) {
   lck_lock(lck);
   this->ID = ID;
   lck_unlock(lck);
 }
 
-void cdbase::set_user(supla_user *user) {
+void supla_connection_object::set_user(supla_user *user) {
   lck_lock(lck);
   this->user = user;
   lck_unlock(lck);
 }
 
-supla_user *cdbase::get_user(void) {
+supla_user *supla_connection_object::get_user(void) {
   supla_user *result;
 
   lck_lock(lck);
@@ -158,7 +156,7 @@ supla_user *cdbase::get_user(void) {
   return result;
 }
 
-int cdbase::get_user_id(void) {
+int supla_connection_object::get_user_id(void) {
   supla_user *user = get_user();
 
   if (user != NULL) return user->getUserID();
@@ -166,15 +164,15 @@ int cdbase::get_user_id(void) {
   return 0;
 }
 
-supla_connection *cdbase::get_connection(void) { return conn; }
+supla_connection *supla_connection_object::get_connection(void) { return conn; }
 
-void cdbase::update_last_activity(void) {
+void supla_connection_object::update_last_activity(void) {
   lck_lock(lck);
   gettimeofday(&last_activity_time, NULL);
   lck_unlock(lck);
 }
 
-int cdbase::get_activity_delay(void) {
+int supla_connection_object::get_activity_delay(void) {
   int result;
   struct timeval now;
   gettimeofday(&now, NULL);
@@ -186,7 +184,7 @@ int cdbase::get_activity_delay(void) {
   return result;
 }
 
-unsigned char cdbase::get_protocol_version(void) {
+unsigned char supla_connection_object::get_protocol_version(void) {
   unsigned char result = 0;
   lck_lock(lck);
   if (conn) {
@@ -196,14 +194,14 @@ unsigned char cdbase::get_protocol_version(void) {
   return result;
 }
 
-cdbase *cdbase::retain_ptr(void) {
+supla_connection_object *supla_connection_object::retain_ptr(void) {
   lck_lock(lck);
   ptr_counter++;
   lck_unlock(lck);
   return this;
 }
 
-void cdbase::release_ptr(void) {
+void supla_connection_object::release_ptr(void) {
   lck_lock(lck);
   if (ptr_counter > 0) {
     ptr_counter--;
@@ -211,7 +209,7 @@ void cdbase::release_ptr(void) {
   lck_unlock(lck);
 }
 
-bool cdbase::ptr_is_used(void) {
+bool supla_connection_object::ptr_is_used(void) {
   bool result = false;
   lck_lock(lck);
   result = ptr_counter > 0;
@@ -219,7 +217,7 @@ bool cdbase::ptr_is_used(void) {
   return result;
 }
 
-unsigned long cdbase::get_ptr_counter(void) {
+unsigned long supla_connection_object::get_ptr_counter(void) {
   unsigned long result = 0;
   lck_lock(lck);
   result = ptr_counter;
@@ -228,11 +226,11 @@ unsigned long cdbase::get_ptr_counter(void) {
 }
 
 // static
-int cdbase::get_authkey_cache_size(void) {
-  return safe_array_count(cdbase::authkey_auth_cache_arr);
+int supla_connection_object::get_authkey_cache_size(void) {
+  return safe_array_count(supla_connection_object::authkey_auth_cache_arr);
 }
 
-bool cdbase::authkey_auth(const char guid[SUPLA_GUID_SIZE],
+bool supla_connection_object::authkey_auth(const char guid[SUPLA_GUID_SIZE],
                           const char email[SUPLA_EMAIL_MAXSIZE],
                           const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id,
                           database *db) {
@@ -244,47 +242,47 @@ bool cdbase::authkey_auth(const char guid[SUPLA_GUID_SIZE],
     return false;
   }
 
-  if (cdbase::authkey_auth_cache_size > 0) {
-    safe_array_lock(cdbase::authkey_auth_cache_arr);
+  if (supla_connection_object::authkey_auth_cache_size > 0) {
+    safe_array_lock(supla_connection_object::authkey_auth_cache_arr);
 
-    for (int a = 0; a < safe_array_count(cdbase::authkey_auth_cache_arr); a++) {
+    for (int a = 0; a < safe_array_count(supla_connection_object::authkey_auth_cache_arr); a++) {
       authkey_cache_item_t *i = static_cast<authkey_cache_item_t *>(
-          safe_array_get(cdbase::authkey_auth_cache_arr, a));
+          safe_array_get(supla_connection_object::authkey_auth_cache_arr, a));
       if (i && strncmp(i->email, email, SUPLA_EMAIL_MAXSIZE) == 0 &&
           memcmp(i->guid, guid, SUPLA_GUID_SIZE) == 0 &&
           memcmp(i->authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) {
         bool result = i->result;
         *user_id = i->user_id;
-        safe_array_move_to_begin(cdbase::authkey_auth_cache_arr, a);
-        safe_array_unlock(cdbase::authkey_auth_cache_arr);
+        safe_array_move_to_begin(supla_connection_object::authkey_auth_cache_arr, a);
+        safe_array_unlock(supla_connection_object::authkey_auth_cache_arr);
         return result;
       }
     }
 
-    safe_array_unlock(cdbase::authkey_auth_cache_arr);
+    safe_array_unlock(supla_connection_object::authkey_auth_cache_arr);
 
     authkey_cache_item_t *i = NULL;
     bool result = db_authkey_auth(guid, email, authkey, user_id, db);
 
-    safe_array_lock(cdbase::authkey_auth_cache_arr);
+    safe_array_lock(supla_connection_object::authkey_auth_cache_arr);
 
-    if (safe_array_count(cdbase::authkey_auth_cache_arr) >=
-        cdbase::authkey_auth_cache_size) {
+    if (safe_array_count(supla_connection_object::authkey_auth_cache_arr) >=
+        supla_connection_object::authkey_auth_cache_size) {
       struct timeval tv;
       gettimeofday(&tv, NULL);
-      int count = safe_array_count(cdbase::authkey_auth_cache_arr);
+      int count = safe_array_count(supla_connection_object::authkey_auth_cache_arr);
       int idx = count / 2;
       if (idx > 0) {
         idx = count - 1 - (tv.tv_usec % idx);
       }
 
       i = static_cast<authkey_cache_item_t *>(
-          safe_array_get(cdbase::authkey_auth_cache_arr, idx));
+          safe_array_get(supla_connection_object::authkey_auth_cache_arr, idx));
 
     } else {
       i = (authkey_cache_item_t *)malloc(sizeof(authkey_cache_item_t));
       memset(i, 0, sizeof(authkey_cache_item_t));
-      safe_array_add(cdbase::authkey_auth_cache_arr, i);
+      safe_array_add(supla_connection_object::authkey_auth_cache_arr, i);
     }
 
     if (i) {
@@ -306,7 +304,7 @@ bool cdbase::authkey_auth(const char guid[SUPLA_GUID_SIZE],
       i->user_id = *user_id;
     }
 
-    safe_array_unlock(cdbase::authkey_auth_cache_arr);
+    safe_array_unlock(supla_connection_object::authkey_auth_cache_arr);
     return result;
 
   } else {
@@ -314,6 +312,6 @@ bool cdbase::authkey_auth(const char guid[SUPLA_GUID_SIZE],
   }
 }
 
-void cdbase::iterate() {}
+void supla_connection_object::iterate() {}
 
-unsigned _supla_int64_t cdbase::wait_time_usec() { return 120000000; }
+unsigned _supla_int64_t supla_connection_object::wait_time_usec() { return 120000000; }

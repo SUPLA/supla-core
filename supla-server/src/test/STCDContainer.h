@@ -28,14 +28,14 @@ class STCDContainer : public cdcontainer {
 
  protected:
   int del_count;
-  virtual void cd_delete(cdbase *cd);
+  virtual void cd_delete(supla_connection_object *cd);
 
  public:
   STCDContainer();
   virtual ~STCDContainer();
   int delCount(void);
 
-  cdbase *findByPtr(void *ptr);
+  supla_connection_object *findByPtr(void *ptr);
 };
 
 #endif /*H_STCDContainer_H_*/

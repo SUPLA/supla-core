@@ -29,7 +29,7 @@
 
 class supla_client;
 class supla_device;
-class cdbase;
+class supla_connection_object;
 
 class supla_connection {
  private:
@@ -66,7 +66,7 @@ class supla_connection {
   union {
     supla_client *client;
     supla_device *device;
-    cdbase *cdptr;
+    supla_connection_object *object;
   };
 
   char registered;
@@ -82,7 +82,7 @@ class supla_connection {
 
   supla_connection(void *ssd, void *supla_socket, unsigned int client_ipv4);
   static void init(void);
-  static void serverconnection_free(void);
+  static void cleanup(void);
   static int registration_pending_count();
   void execute(void *sthread);
   void terminate(void);

@@ -19,7 +19,7 @@
 #ifndef CDCONTAINER_H_
 #define CDCONTAINER_H_
 
-#include "cdbase.h"
+#include <connection_object.h>
 #include "safearray.h"
 
 class cdcontainer {
@@ -28,22 +28,22 @@ class cdcontainer {
   void *trash_arr;
 
  protected:
-  cdbase *find(_func_sa_cnd_param find_cnd,
+  supla_connection_object *find(_func_sa_cnd_param find_cnd,
                            void *user_param);
-  virtual void cd_delete(cdbase *cd) = 0;
+  virtual void cd_delete(supla_connection_object *cd) = 0;
  public:
   cdcontainer();
   virtual ~cdcontainer();
-  bool exists(cdbase *cd);
-  void releasePtr(cdbase *cd);
-  void addToList(cdbase *cd);
+  bool exists(supla_connection_object *cd);
+  void releasePtr(supla_connection_object *cd);
+  void addToList(supla_connection_object *cd);
   void moveAllToTrash();
-  void moveToTrash(cdbase *cd);
+  void moveToTrash(supla_connection_object *cd);
   bool emptyTrash(void);
   bool emptyTrash(unsigned char timeout_sec);
   bool deleteAll(unsigned char timeout_sec);
   int trashCount(void);
-  cdbase *get(int idx);
+  supla_connection_object *get(int idx);
   int count(void);
 };
 

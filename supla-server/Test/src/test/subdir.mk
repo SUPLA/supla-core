@@ -5,9 +5,9 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/test/AllTests.cpp \
-../src/test/CDBaseTest.cpp \
 ../src/test/CDContainerTest.cpp \
 ../src/test/CallerClassTest.cpp \
+../src/test/ConnectionObjectTest.cpp \
 ../src/test/DCPairTest.cpp \
 ../src/test/DeviceChannelTest.cpp \
 ../src/test/ProtoTest.cpp \
@@ -19,9 +19,9 @@ CPP_SRCS += \
 
 CPP_DEPS += \
 ./src/test/AllTests.d \
-./src/test/CDBaseTest.d \
 ./src/test/CDContainerTest.d \
 ./src/test/CallerClassTest.d \
+./src/test/ConnectionObjectTest.d \
 ./src/test/DCPairTest.d \
 ./src/test/DeviceChannelTest.d \
 ./src/test/ProtoTest.d \
@@ -33,9 +33,9 @@ CPP_DEPS += \
 
 OBJS += \
 ./src/test/AllTests.o \
-./src/test/CDBaseTest.o \
 ./src/test/CDContainerTest.o \
 ./src/test/CallerClassTest.o \
+./src/test/ConnectionObjectTest.o \
 ./src/test/DCPairTest.o \
 ./src/test/DeviceChannelTest.o \
 ./src/test/ProtoTest.o \
@@ -58,7 +58,7 @@ src/test/%.o: ../src/test/%.cpp src/test/subdir.mk
 clean: clean-src-2f-test
 
 clean-src-2f-test:
-	-$(RM) ./src/test/AllTests.d ./src/test/AllTests.o ./src/test/CDBaseTest.d ./src/test/CDBaseTest.o ./src/test/CDContainerTest.d ./src/test/CDContainerTest.o ./src/test/CallerClassTest.d ./src/test/CallerClassTest.o ./src/test/DCPairTest.d ./src/test/DCPairTest.o ./src/test/DeviceChannelTest.d ./src/test/DeviceChannelTest.o ./src/test/ProtoTest.d ./src/test/ProtoTest.o ./src/test/STCDContainer.d ./src/test/STCDContainer.o ./src/test/SafeArrayTest.d ./src/test/SafeArrayTest.o ./src/test/SrpcTest.d ./src/test/SrpcTest.o ./src/test/TestHelper.d ./src/test/TestHelper.o ./src/test/ToolsTest.d ./src/test/ToolsTest.o
+	-$(RM) ./src/test/AllTests.d ./src/test/AllTests.o ./src/test/CDContainerTest.d ./src/test/CDContainerTest.o ./src/test/CallerClassTest.d ./src/test/CallerClassTest.o ./src/test/ConnectionObjectTest.d ./src/test/ConnectionObjectTest.o ./src/test/DCPairTest.d ./src/test/DCPairTest.o ./src/test/DeviceChannelTest.d ./src/test/DeviceChannelTest.o ./src/test/ProtoTest.d ./src/test/ProtoTest.o ./src/test/STCDContainer.d ./src/test/STCDContainer.o ./src/test/SafeArrayTest.d ./src/test/SafeArrayTest.o ./src/test/SrpcTest.d ./src/test/SrpcTest.o ./src/test/TestHelper.d ./src/test/TestHelper.o ./src/test/ToolsTest.d ./src/test/ToolsTest.o
 
 .PHONY: clean-src-2f-test
 

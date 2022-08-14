@@ -26,7 +26,7 @@ char STCDContainer::find_by_ptr(void *ptr1, void *ptr2) {
 
 STCDContainer::STCDContainer() : cdcontainer() { del_count = 0; }
 
-void STCDContainer::cd_delete(cdbase *cd) {
+void STCDContainer::cd_delete(supla_connection_object *cd) {
   delete cd;
   del_count++;
 }
@@ -35,4 +35,4 @@ STCDContainer::~STCDContainer() {}
 
 int STCDContainer::delCount(void) { return del_count; }
 
-cdbase *STCDContainer::findByPtr(void *ptr) { return find(find_by_ptr, ptr); }
+supla_connection_object *STCDContainer::findByPtr(void *ptr) { return find(find_by_ptr, ptr); }

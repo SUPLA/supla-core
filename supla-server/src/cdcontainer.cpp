@@ -28,13 +28,13 @@ cdcontainer::~cdcontainer() {
   safe_array_free(trash_arr);
 }
 
-bool cdcontainer::exists(cdbase *cd) { return safe_array_find(arr, cd) > -1; }
+bool cdcontainer::exists(supla_connection_object *cd) { return safe_array_find(arr, cd) > -1; }
 
-cdbase *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
-  cdbase *result = NULL;
+supla_connection_object *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
+  supla_connection_object *result = NULL;
 
   safe_array_lock(arr);
-  result = static_cast<cdbase *>(safe_array_findcnd(arr, find_cnd, user_param));
+  result = static_cast<supla_connection_object *>(safe_array_findcnd(arr, find_cnd, user_param));
   if (result != NULL) {
     result = result->retain_ptr();
   }
@@ -43,11 +43,11 @@ cdbase *cdcontainer::find(_func_sa_cnd_param find_cnd, void *user_param) {
   return result;
 }
 
-cdbase *cdcontainer::get(int idx) {
-  cdbase *result = NULL;
+supla_connection_object *cdcontainer::get(int idx) {
+  supla_connection_object *result = NULL;
 
   safe_array_lock(arr);
-  result = static_cast<cdbase *>(safe_array_get(arr, idx));
+  result = static_cast<supla_connection_object *>(safe_array_get(arr, idx));
   if (result != NULL) {
     result = result->retain_ptr();
   }
@@ -56,13 +56,13 @@ cdbase *cdcontainer::get(int idx) {
   return result;
 }
 
-void cdcontainer::releasePtr(cdbase *cd) {
+void cdcontainer::releasePtr(supla_connection_object *cd) {
   if (cd != NULL) {
     cd->release_ptr();
   }
 }
 
-void cdcontainer::addToList(cdbase *cd) {
+void cdcontainer::addToList(supla_connection_object *cd) {
   if (cd) {
     safe_array_lock(trash_arr);
     safe_array_lock(arr);
@@ -78,7 +78,7 @@ void cdcontainer::addToList(cdbase *cd) {
   }
 }
 
-void cdcontainer::moveToTrash(cdbase *cd) {
+void cdcontainer::moveToTrash(supla_connection_object *cd) {
   if (cd) {
     safe_array_lock(trash_arr);
     safe_array_lock(arr);
@@ -97,7 +97,7 @@ bool cdcontainer::emptyTrash(void) {
   safe_array_lock(trash_arr);
 
   for (int a = 0; a < safe_array_count(trash_arr); a++) {
-    cdbase *cd = static_cast<cdbase *>(safe_array_get(trash_arr, a));
+    supla_connection_object *cd = static_cast<supla_connection_object *>(safe_array_get(trash_arr, a));
     if (cd && !cd->ptr_is_used()) {
       cd_delete(cd);
       safe_array_delete(trash_arr, a);
@@ -128,7 +128,7 @@ bool cdcontainer::emptyTrash(unsigned char timeout_sec) {
 void cdcontainer::moveAllToTrash() {
   safe_array_lock(arr);
   while (safe_array_count(arr)) {
-    moveToTrash(static_cast<cdbase *>(safe_array_get(arr, 0)));
+    moveToTrash(static_cast<supla_connection_object *>(safe_array_get(arr, 0)));
   }
   safe_array_unlock(arr);
 }

@@ -34,7 +34,7 @@
 
 using std::list;
 
-supla_device::supla_device(supla_connection *connection) : cdbase(connection) {
+supla_device::supla_device(supla_connection *connection) : supla_connection_object(connection) {
   this->channels = new supla_device_channels(this);
   this->flags = 0;
 }

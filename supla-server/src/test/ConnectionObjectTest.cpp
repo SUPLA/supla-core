@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "CDBaseTest.h"
+#include <ConnectionObjectTest.h>
+#include <doubles/ConnectionObjectMock.h>
 
-#include "doubles/CDBaseMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {
 
-class CDBaseTest : public ::testing::Test {};
+class ConnectionObjectTest : public ::testing::Test {};
 
-TEST_F(CDBaseTest, retainReleaseTest) {
-  CDBaseMock *cd = new CDBaseMock(NULL);
+TEST_F(ConnectionObjectTest, retainReleaseTest) {
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   ASSERT_FALSE(cd == NULL);
   ASSERT_FALSE(cd->ptr_is_used());
@@ -52,10 +52,10 @@ TEST_F(CDBaseTest, retainReleaseTest) {
   delete cd;
 }
 
-TEST_F(CDBaseTest, authkey_cache) {
-  cdbase::init();
+TEST_F(ConnectionObjectTest, authkey_cache) {
+  supla_connection_object::init();
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   char GUID[SUPLA_GUID_SIZE];
   char Email[SUPLA_EMAIL_MAXSIZE];
@@ -66,7 +66,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
   cd->setCacheSizeLimit(0);
 
@@ -74,13 +74,13 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(2, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
   GUID[0] = 1;
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(3, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
   cd->setCacheSizeLimit(5);
 
@@ -89,7 +89,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(4, cd->getDbAuthCount());
-  ASSERT_EQ(1, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(1, supla_connection_object::get_authkey_cache_size());
 
   GUID[0] = 2;
 
@@ -98,7 +98,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(5, cd->getDbAuthCount());
-  ASSERT_EQ(2, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(2, supla_connection_object::get_authkey_cache_size());
 
   Email[0] = '@';
 
@@ -107,7 +107,7 @@ TEST_F(CDBaseTest, authkey_cache) {
   ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(6, cd->getDbAuthCount());
-  ASSERT_EQ(3, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(3, supla_connection_object::get_authkey_cache_size());
 
   for (int b = 0; b < 10; b++) {
     Email[b] = '@';
@@ -119,19 +119,20 @@ TEST_F(CDBaseTest, authkey_cache) {
       ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
 
       ASSERT_EQ(7 + b * 200 + a, cd->getDbAuthCount());
-      ASSERT_EQ(a > 1 || b > 0 ? 5 : 4 + a, cdbase::get_authkey_cache_size());
+      ASSERT_EQ(a > 1 || b > 0 ? 5 : 4 + a,
+                supla_connection_object::get_authkey_cache_size());
     }
   }
 
   delete cd;
 
-  cdbase::cdbase_free();
+  supla_connection_object::release_cache();
 }
 
-TEST_F(CDBaseTest, authkey_cache_null_test) {
-  cdbase::init();
+TEST_F(ConnectionObjectTest, authkey_cache_null_test) {
+  supla_connection_object::init();
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   char GUID[SUPLA_GUID_SIZE];
   char Email[SUPLA_EMAIL_MAXSIZE];
@@ -146,29 +147,29 @@ TEST_F(CDBaseTest, authkey_cache_null_test) {
   ASSERT_FALSE(cd->authkey_auth(NULL, Email, AuthKey));
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
   ASSERT_FALSE(cd->authkey_auth(GUID, NULL, AuthKey));
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
   ASSERT_FALSE(cd->authkey_auth(GUID, Email, NULL));
 
   ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
   ASSERT_FALSE(cd->authkey_auth(GUID, Email, AuthKey));
 
   ASSERT_EQ(1, cd->getDbAuthCount());
-  ASSERT_EQ(1, cdbase::get_authkey_cache_size());
+  ASSERT_EQ(1, supla_connection_object::get_authkey_cache_size());
 
   delete cd;
 
-  cdbase::cdbase_free();
+  supla_connection_object::release_cache();
 }
 
-TEST_F(CDBaseTest, guid_setter_getter) {
+TEST_F(ConnectionObjectTest, guid_setter_getter) {
   char v[SUPLA_GUID_SIZE];
   char v0[SUPLA_GUID_SIZE];
   char v1[SUPLA_GUID_SIZE];
@@ -177,8 +178,8 @@ TEST_F(CDBaseTest, guid_setter_getter) {
   memset(v0, 0, SUPLA_GUID_SIZE);
   memset(v1, 1, SUPLA_GUID_SIZE);
 
-  cdbase::init();
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  supla_connection_object::init();
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   cd->get_guid(v);
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
@@ -191,10 +192,10 @@ TEST_F(CDBaseTest, guid_setter_getter) {
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
 
   delete cd;
-  cdbase::cdbase_free();
+  supla_connection_object::release_cache();
 }
 
-TEST_F(CDBaseTest, authkey_setter_getter) {
+TEST_F(ConnectionObjectTest, authkey_setter_getter) {
   char v[SUPLA_AUTHKEY_SIZE];
   char v0[SUPLA_AUTHKEY_SIZE];
   char v1[SUPLA_AUTHKEY_SIZE];
@@ -203,8 +204,8 @@ TEST_F(CDBaseTest, authkey_setter_getter) {
   memset(v0, 0, SUPLA_AUTHKEY_SIZE);
   memset(v1, 1, SUPLA_AUTHKEY_SIZE);
 
-  cdbase::init();
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  supla_connection_object::init();
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   cd->get_authkey(v);
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
@@ -217,7 +218,7 @@ TEST_F(CDBaseTest, authkey_setter_getter) {
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
 
   delete cd;
-  cdbase::cdbase_free();
+  supla_connection_object::release_cache();
 }
 
 }  // namespace

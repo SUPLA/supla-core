@@ -27,10 +27,10 @@ class supla_user_device_container : public cdcontainer {
   static char find_device_by_channelid(void *ptr, void *ID);
   static char find_device_byguid(void *ptr, void *GUID);
 
-  supla_device *baseToDevice(cdbase *base);
+  supla_device *baseToDevice(supla_connection_object *base);
 
  protected:
-  virtual void cd_delete(cdbase *base);
+  virtual void cd_delete(supla_connection_object *base);
 
  public:
   supla_user_device_container();

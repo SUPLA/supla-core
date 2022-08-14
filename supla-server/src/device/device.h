@@ -19,14 +19,14 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
+#include <connection_object.h>
 #include <list>
 
-#include "cdbase.h"
 #include "commontypes.h"
 #include "devicechannel.h"
 
 class supla_user;
-class supla_device : public cdbase {
+class supla_device : public supla_connection_object {
  private:
   int flags;
 

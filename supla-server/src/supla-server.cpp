@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
 
-  supla_connection::serverconnection_free();
+  supla_connection::cleanup();
 
   // ! after serverconnection_free() and before user_free()
   supla_http_request_queue::queueFree();

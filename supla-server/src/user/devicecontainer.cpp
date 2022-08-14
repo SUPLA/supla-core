@@ -40,14 +40,14 @@ supla_user_device_container::supla_user_device_container() : cdcontainer() {}
 
 supla_user_device_container::~supla_user_device_container() {}
 
-void supla_user_device_container::cd_delete(cdbase *base) {
+void supla_user_device_container::cd_delete(supla_connection_object *base) {
   supla_device *device = dynamic_cast<supla_device *>(base);
   if (device) {
     delete device;
   }
 }
 
-supla_device *supla_user_device_container::baseToDevice(cdbase *base) {
+supla_device *supla_user_device_container::baseToDevice(supla_connection_object *base) {
   supla_device *device = NULL;
   if (base && (device = dynamic_cast<supla_device *>(base)) == NULL) {
     base->release_ptr();

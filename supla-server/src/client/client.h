@@ -19,7 +19,7 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include "cdbase.h"
+#include <connection_object.h>
 #include "client_scene_dao.h"
 #include "client_scene_remote_updater.h"
 #include "client_scenes.h"
@@ -30,7 +30,7 @@
 
 class supla_user;
 class supla_connection;
-class supla_client : public cdbase {
+class supla_client : public supla_connection_object {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
   bool superuser_authorized;

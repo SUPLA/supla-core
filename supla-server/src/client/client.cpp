@@ -32,7 +32,7 @@
 #include "user.h"
 #include "user/userchannelgroups.h"
 
-supla_client::supla_client(supla_connection *connection) : cdbase(connection) {
+supla_client::supla_client(supla_connection *connection) : supla_connection_object(connection) {
   this->srpc_adapter = new supla_srpc_adapter(connection->srpc());
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);

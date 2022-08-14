@@ -16,15 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "CDBaseMock.h"  // NOLINT
-
+#include <doubles/ConnectionObjectMock.h>  // NOLINT
 #include "gtest/gtest.h"  // NOLINT
 
-CDBaseMock::CDBaseMock(supla_connection *connection) : cdbase(connection) {
+ConnectionObjectMock::ConnectionObjectMock(supla_connection *connection) : supla_connection_object(connection) {
   dbAuthCount = 0;
 }
 
-bool CDBaseMock::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+bool ConnectionObjectMock::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                                  const char Email[SUPLA_EMAIL_MAXSIZE],
                                  const char AuthKey[SUPLA_AUTHKEY_SIZE],
                                  int *UserID, database *db) {
@@ -32,21 +31,21 @@ bool CDBaseMock::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
   return dbAuthCount > 1;
 }
 
-int CDBaseMock::getDbAuthCount() { return dbAuthCount; }
+int ConnectionObjectMock::getDbAuthCount() { return dbAuthCount; }
 
-void CDBaseMock::setCacheSizeLimit(int size) { authkey_auth_cache_size = size; }
+void ConnectionObjectMock::setCacheSizeLimit(int size) { authkey_auth_cache_size = size; }
 
-bool CDBaseMock::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
+bool ConnectionObjectMock::authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                               const char Email[SUPLA_EMAIL_MAXSIZE],
                               const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
   int UserID = 0;
-  return cdbase::authkey_auth(GUID, Email, AuthKey, &UserID, NULL);
+  return supla_connection_object::authkey_auth(GUID, Email, AuthKey, &UserID, NULL);
 }
 
-bool CDBaseMock::set_guid(char guid[SUPLA_GUID_SIZE]) {
-  return cdbase::set_guid(guid);
+bool ConnectionObjectMock::set_guid(char guid[SUPLA_GUID_SIZE]) {
+  return supla_connection_object::set_guid(guid);
 }
 
-bool CDBaseMock::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
-  return cdbase::set_authkey(authkey);
+bool ConnectionObjectMock::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
+  return supla_connection_object::set_authkey(authkey);
 }

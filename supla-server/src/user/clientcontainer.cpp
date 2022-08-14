@@ -34,14 +34,14 @@ supla_user_client_container::supla_user_client_container() : cdcontainer() {}
 
 supla_user_client_container::~supla_user_client_container() {}
 
-void supla_user_client_container::cd_delete(cdbase *base) {
+void supla_user_client_container::cd_delete(supla_connection_object *base) {
   supla_client *client = static_cast<supla_client *>(base);
   if (client) {
     delete client;
   }
 }
 
-supla_client *supla_user_client_container::baseToClient(cdbase *base) {
+supla_client *supla_user_client_container::baseToClient(supla_connection_object *base) {
   supla_client *client = NULL;
   if (base && (client = static_cast<supla_client *>(base)) == NULL) {
     base->release_ptr();

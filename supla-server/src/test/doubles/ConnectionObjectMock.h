@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CDBASEMOCK_H_
-#define CDBASEMOCK_H_
+#ifndef CONNECTION_OBJECT_MOCK_H_
+#define CONNECTION_OBJECT_MOCK_H_
 
-#include "cdbase.h"
+#include <connection_object.h>
 
-class CDBaseMock : public cdbase {
+class ConnectionObjectMock : public supla_connection_object {
  protected:
   bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                        const char Email[SUPLA_EMAIL_MAXSIZE],
@@ -31,7 +31,7 @@ class CDBaseMock : public cdbase {
   int dbAuthCount;
 
  public:
-  explicit CDBaseMock(supla_connection *connection);
+  explicit ConnectionObjectMock(supla_connection *connection);
   int getDbAuthCount();
   void setCacheSizeLimit(int size);
   bool set_guid(char guid[SUPLA_GUID_SIZE]);
@@ -42,4 +42,4 @@ class CDBaseMock : public cdbase {
                     const char AuthKey[SUPLA_AUTHKEY_SIZE]);
 };
 
-#endif /* CDBASEMOCK_H_ */
+#endif /* CONNECTION_OBJECT_MOCK_H_ */

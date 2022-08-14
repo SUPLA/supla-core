@@ -16,10 +16,10 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <doubles/ConnectionObjectMock.h>
 #include "CDContainerTest.h"
 
 #include "STCDContainer.h"
-#include "doubles/CDBaseMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {
@@ -33,7 +33,7 @@ TEST_F(CDContainerTest, addToList) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
   ASSERT_FALSE(cd == NULL);
 
   ASSERT_EQ(0, container->count());
@@ -53,7 +53,7 @@ TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
   ASSERT_FALSE(cd == NULL);
 
   ASSERT_EQ(0, container->trashCount());
@@ -74,7 +74,7 @@ TEST_F(CDContainerTest, moveToTrashWithPtrUse) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
   ASSERT_FALSE(cd == NULL);
 
   container->addToList(cd);
@@ -96,7 +96,7 @@ TEST_F(CDContainerTest, findItem) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
   ASSERT_FALSE(cd == NULL);
   ASSERT_EQ(NULL, container->findByPtr(cd));
 
@@ -118,7 +118,7 @@ TEST_F(CDContainerTest, getItem) {
   STCDContainer *container = new STCDContainer();
   ASSERT_FALSE(container == NULL);
 
-  CDBaseMock *cd = new CDBaseMock(NULL);
+  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
   ASSERT_FALSE(cd == NULL);
   ASSERT_EQ(NULL, container->get(0));
 

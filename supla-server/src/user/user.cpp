@@ -1083,7 +1083,7 @@ void supla_user::reconnect(const supla_caller &caller, bool allDevices,
 
   cgroups->load();  // load == reload
 
-  list<cdbase *> cdb;
+  list<supla_connection_object *> cdb;
 
   if (allDevices) {
     supla_device *device;

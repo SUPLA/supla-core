@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CDCOMMON_H_
-#define CDCOMMON_H_
+#ifndef SUPLA_CONNECTION_OBJECT_H_
+#define SUPLA_CONNECTION_OBJECT_H_
 
 #include <connection.h>
 
@@ -25,7 +25,7 @@
 
 class supla_user;
 class database;
-class cdbase {
+class supla_connection_object {
  private:
   struct timeval last_activity_time;
   char guid[SUPLA_GUID_SIZE];
@@ -59,10 +59,10 @@ class cdbase {
 
  public:
   static void init(void);
-  static void cdbase_free(void);
+  static void release_cache(void);
   static int get_authkey_cache_size(void);
-  explicit cdbase(supla_connection *conn);
-  virtual ~cdbase();
+  explicit supla_connection_object(supla_connection *conn);
+  virtual ~supla_connection_object();
   virtual void iterate();
   virtual unsigned _supla_int64_t wait_time_usec(void);
   supla_connection *get_connection(void);
@@ -78,11 +78,11 @@ class cdbase {
   void update_last_activity(void);
   int get_activity_delay(void);
   unsigned char get_protocol_version(void);
-  cdbase *retain_ptr(void);
+  supla_connection_object *retain_ptr(void);
   void release_ptr(void);
   bool ptr_is_used(void);
   unsigned long get_ptr_counter(void);
   // Thread safe end
 };
 
-#endif /* CDCOMMON_H_ */
+#endif /* SUPLA_CONNECTION_OBJECT_H_ */

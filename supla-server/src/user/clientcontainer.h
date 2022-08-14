@@ -26,10 +26,10 @@ class supla_user_client_container : public cdcontainer {
   static char find_client_byid(void *ptr, void *ID);
   static char find_client_byguid(void *ptr, void *GUID);
 
-  supla_client *baseToClient(cdbase *base);
+  supla_client *baseToClient(supla_connection_object *base);
 
  protected:
-  virtual void cd_delete(cdbase *base);
+  virtual void cd_delete(supla_connection_object *base);
 
  public:
   supla_user_client_container();
