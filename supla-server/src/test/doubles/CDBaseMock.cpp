@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "CDBaseMock.h"   // NOLINT
+#include "CDBaseMock.h"  // NOLINT
+
 #include "gtest/gtest.h"  // NOLINT
 
-CDBaseMock::CDBaseMock(serverconnection *svrconn) : cdbase(svrconn) {
+CDBaseMock::CDBaseMock(supla_connection *connection) : cdbase(connection) {
   dbAuthCount = 0;
 }
 

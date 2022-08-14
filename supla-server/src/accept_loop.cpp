@@ -18,6 +18,7 @@
 
 #include "accept_loop.h"
 
+#include <connection.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -29,7 +30,6 @@
 #include "ipc/ipcsocket.h"
 #include "log.h"
 #include "safearray.h"
-#include "serverconnection.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
@@ -37,51 +37,51 @@
 
 // SERVER CONNECTION BLOCK BEGIN ---------------------------------------
 
-void accept_loop_srvconn_execute(void *svrconn, void *sthread) {
+void accept_loop_connection_execute(void *connection, void *sthread) {
   database::thread_init();
-  ((serverconnection *)svrconn)->execute(sthread);
+  ((supla_connection *)connection)->execute(sthread);
 }
 
-void accept_loop_srvconn_finish(void *svrconn, void *sthread) {
-  delete (serverconnection *)svrconn;
+void accept_loop_connection_finish(void *connection, void *sthread) {
+  delete (supla_connection *)connection;
   database::thread_end();
 }
 
-char accept_loop_srvconn_thread_cnd(void *svrconn_sthread) {
-  if (sthread_isfinished(svrconn_sthread) == 1) {
-    sthread_free(svrconn_sthread);
+char accept_loop_connection_thread_cnd(void *connection_sthread) {
+  if (sthread_isfinished(connection_sthread) == 1) {
+    sthread_free(connection_sthread);
     return 1;
   }
 
   return 0;
 }
 
-char accept_loop_srvconn_thread_twt(void *svrconn_sthread) {
-  sthread_twf(svrconn_sthread);
+char accept_loop_connection_thread_twt(void *connection_sthread) {
+  sthread_twf(connection_sthread);
   return 1;
 }
 
 void accept_loop(void *ssd, void *al_sthread) {
-  void *svrconn_thread_arr = safe_array_init();
+  void *connection_thread_arr = safe_array_init();
 
   while (sthread_isterminated(al_sthread) == 0 && st_app_terminate == 0) {
-    safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_cnd);
+    safe_array_clean(connection_thread_arr, accept_loop_connection_thread_cnd);
 
     unsigned int ipv4;
     void *supla_socket = NULL;
 
     if (ssocket_accept(ssd, &ipv4, &supla_socket) != 0 &&
         supla_socket != NULL) {
-      if (serverconnection::is_connection_allowed(ipv4)) {
+      if (supla_connection::is_connection_allowed(ipv4)) {
         Tsthread_params stp;
 
-        stp.execute = accept_loop_srvconn_execute;
-        stp.finish = accept_loop_srvconn_finish;
-        stp.user_data = new serverconnection(ssd, supla_socket, ipv4);
+        stp.execute = accept_loop_connection_execute;
+        stp.finish = accept_loop_connection_finish;
+        stp.user_data = new supla_connection(ssd, supla_socket, ipv4);
         stp.free_on_finish = 0;
         stp.initialize = NULL;
 
-        safe_array_add(svrconn_thread_arr, sthread_run(&stp));
+        safe_array_add(connection_thread_arr, sthread_run(&stp));
       } else {
         ssocket_supla_socket_free(supla_socket);
         supla_log(LOG_DEBUG, "Connection Dropped");
@@ -89,8 +89,8 @@ void accept_loop(void *ssd, void *al_sthread) {
     }
   }
 
-  safe_array_clean(svrconn_thread_arr, accept_loop_srvconn_thread_twt);
-  safe_array_free(svrconn_thread_arr);
+  safe_array_clean(connection_thread_arr, accept_loop_connection_thread_twt);
+  safe_array_free(connection_thread_arr);
 }
 
 // SERVER CONNECTION BLOCK BEGIN ---------------------------------------

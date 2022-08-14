@@ -32,8 +32,8 @@
 #include "user.h"
 #include "user/userchannelgroups.h"
 
-supla_client::supla_client(serverconnection *svrconn) : cdbase(svrconn) {
-  this->srpc_adapter = new supla_srpc_adapter(svrconn->srpc());
+supla_client::supla_client(supla_connection *connection) : cdbase(connection) {
+  this->srpc_adapter = new supla_srpc_adapter(connection->srpc());
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
@@ -220,7 +220,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
             }
 
             ClientID = db->add_client(AccessID, GUID, AuthKey, Name,
-                                      getSvrConn()->getClientIpv4(), SoftVer,
+                                      getConnection()->getClientIpv4(), SoftVer,
                                       proto_version, UserID);
 
             if (ClientID == 0) {
@@ -276,7 +276,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
               }
 
               if (false == db->update_client(ClientID, AccessID, AuthKey, Name,
-                                             getSvrConn()->getClientIpv4(),
+                                             getConnection()->getClientIpv4(),
                                              SoftVer, proto_version)) {
                 // something goes wrong
                 ClientID = 0;
@@ -326,7 +326,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     TSC_SuplaRegisterClientResult_C srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
-    srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srcr.activity_timeout = getConnection()->GetActivityTimeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
@@ -337,35 +337,36 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
     gettimeofday(&now, NULL);
     srcr.serverUnixTimestamp = now.tv_sec;
 
-    srpc_sc_async_registerclient_result_c(getSvrConn()->srpc(), &srcr);
+    srpc_sc_async_registerclient_result_c(getConnection()->srpc(), &srcr);
   } else if (proto_version >= 9) {
     TSC_SuplaRegisterClientResult_B srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
-    srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srcr.activity_timeout = getConnection()->GetActivityTimeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
     srcr.ChannelGroupCount = cgroups->count();
-    srpc_sc_async_registerclient_result_b(getSvrConn()->srpc(), &srcr);
+    srpc_sc_async_registerclient_result_b(getConnection()->srpc(), &srcr);
   } else {
     TSC_SuplaRegisterClientResult srcr = {};
     srcr.result_code = resultcode;
     srcr.ClientID = getID();
-    srcr.activity_timeout = getSvrConn()->GetActivityTimeout();
+    srcr.activity_timeout = getConnection()->GetActivityTimeout();
     srcr.version_min = SUPLA_PROTO_VERSION_MIN;
     srcr.version = SUPLA_PROTO_VERSION;
     srcr.LocationCount = locations->count();
     srcr.ChannelCount = channels->count();
-    srpc_sc_async_registerclient_result(getSvrConn()->srpc(), &srcr);
+    srpc_sc_async_registerclient_result(getConnection()->srpc(), &srcr);
   }
 
   // !After srpc_async_registerclient_result
   if (resultcode == SUPLA_RESULTCODE_TRUE) {
     remote_update_lists();
     supla_log(LOG_INFO, "Client registered. ClientSD: %i Protocol Version: %i",
-              getSvrConn()->getClientSD(), getSvrConn()->getProtocolVersion());
+              getConnection()->getClientSD(),
+              getConnection()->getProtocolVersion());
   } else {
     usleep(2000000);
   }
@@ -382,20 +383,20 @@ void supla_client::update_device_channels(int LocationID, int DeviceID) {
 
 void supla_client::on_channel_value_changed(int DeviceId, int ChannelId,
                                             bool Extended) {
-  channels->on_channel_value_changed(getSvrConn()->srpc(), DeviceId, ChannelId,
-                                     Extended);
+  channels->on_channel_value_changed(getConnection()->srpc(), DeviceId,
+                                     ChannelId, Extended);
   if (!Extended) {
-    cgroups->on_channel_value_changed(getSvrConn()->srpc(), DeviceId,
+    cgroups->on_channel_value_changed(getConnection()->srpc(), DeviceId,
                                       ChannelId);
   }
 }
 
 void supla_client::remote_update_lists(void) {
-  if (locations->remote_update(getSvrConn()->srpc())) return;
+  if (locations->remote_update(getConnection()->srpc())) return;
 
-  if (channels->remote_update(getSvrConn()->srpc())) return;
+  if (channels->remote_update(getConnection()->srpc())) return;
 
-  if (cgroups->remote_update(getSvrConn()->srpc())) return;
+  if (cgroups->remote_update(getConnection()->srpc())) return;
 
   if (scenes->update_remote()) return;
 }
@@ -429,7 +430,7 @@ void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
 void supla_client::call_event(TSC_SuplaEvent *event) {
   if (event != NULL && (event->Event != SUPLA_EVENT_SET_BRIDGE_VALUE_FAILED ||
                         event->SenderID == getID())) {
-    srpc_sc_async_event(getSvrConn()->srpc(), event);
+    srpc_sc_async_event(getConnection()->srpc(), event);
   }
 }
 
@@ -458,7 +459,7 @@ void supla_client::oauth_token_request(void) {
     delete db;
   }
 
-  srpc_cs_async_oauth_token_request_result(getSvrConn()->srpc(), &result);
+  srpc_cs_async_oauth_token_request_result(getConnection()->srpc(), &result);
 }
 
 void supla_client::superuser_authorize(
@@ -499,7 +500,8 @@ void supla_client::send_superuser_authorization_result(
     result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
   }
 
-  srpc_sc_async_superuser_authorization_result(getSvrConn()->srpc(), &result);
+  srpc_sc_async_superuser_authorization_result(getConnection()->srpc(),
+                                               &result);
 }
 
 void supla_client::superuser_authorization_request(
@@ -540,7 +542,7 @@ void supla_client::on_device_calcfg_result(int ChannelID,
                          : result->DataSize;
   memcpy(cresult.Data, result->Data, SUPLA_CALCFG_DATA_MAXSIZE);
 
-  srpc_sc_async_device_calcfg_result(getSvrConn()->srpc(), &cresult);
+  srpc_sc_async_device_calcfg_result(getConnection()->srpc(), &cresult);
 }
 
 void supla_client::device_get_channel_state(TCSD_ChannelStateRequest *request) {
@@ -557,16 +559,16 @@ void supla_client::on_device_channel_state_result(int ChannelID,
   cstate.ChannelID = ChannelID;
   cstate.ReceiverID = getID();
 
-  srpc_csd_async_channel_state_result(getSvrConn()->srpc(), &cstate);
+  srpc_csd_async_channel_state_result(getConnection()->srpc(), &cstate);
 }
 
 void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
   if (request == NULL) return;
-  channels->get_channel_basic_cfg(getSvrConn()->srpc(), request);
+  channels->get_channel_basic_cfg(getConnection()->srpc(), request);
 }
 
 void supla_client::set_channel_function(int ChannelId, int Func) {
-  channels->set_channel_function(getSvrConn()->srpc(), ChannelId, Func);
+  channels->set_channel_function(getConnection()->srpc(), ChannelId, Func);
 }
 
 void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
@@ -578,16 +580,16 @@ void supla_client::set_channel_function_result(
   if (result == NULL) {
     return;
   }
-  srpc_sc_async_set_channel_function_result(getSvrConn()->srpc(), result);
+  srpc_sc_async_set_channel_function_result(getConnection()->srpc(), result);
 }
 
 void supla_client::set_channel_caption(int ChannelId, char *Caption) {
-  channels->set_channel_caption(getSvrConn()->srpc(), ChannelId, Caption);
+  channels->set_channel_caption(getConnection()->srpc(), ChannelId, Caption);
 }
 
 void supla_client::set_location_caption(int LocationId, char *Caption) {
   locations->set_caption(LocationId, Caption);
-  locations->remote_update(getSvrConn()->srpc());
+  locations->remote_update(getConnection()->srpc());
 }
 
 void supla_client::set_caption_result(TSC_SetCaptionResult *result,
@@ -596,13 +598,15 @@ void supla_client::set_caption_result(TSC_SetCaptionResult *result,
     return;
   }
   if (channel) {
-    srpc_sc_async_set_channel_caption_result(getSvrConn()->srpc(), result);
+    srpc_sc_async_set_channel_caption_result(getConnection()->srpc(), result);
   } else {
-    srpc_sc_async_set_location_caption_result(getSvrConn()->srpc(), result);
+    srpc_sc_async_set_location_caption_result(getConnection()->srpc(), result);
   }
 }
 
-void supla_client::iterate() { channels->update_expired(getSvrConn()->srpc()); }
+void supla_client::iterate() {
+  channels->update_expired(getConnection()->srpc());
+}
 
 unsigned _supla_int64_t supla_client::waitTimeUSec() {
   unsigned _supla_int64_t time = channels->value_validity_time_usec();

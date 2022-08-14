@@ -16,13 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <connection.h>
 #include "serverstatus.h"
 
 #include <stdlib.h>
 #include <string.h>
-
 #include "lck.h"
-#include "serverconnection.h"
 #include "supla-socket.h"
 
 // static
@@ -91,7 +90,7 @@ bool serverstatus::getStatus(char *buffer, size_t buffer_size) {
     }
   }
 
-  if (serverconnection::conn_limit_exceeded_hard()) {
+  if (supla_connection::conn_limit_exceeded_hard()) {
     snprintf(buffer, buffer_size, "CONN_LIMIT_EXCEEDED");
     return false;
   }

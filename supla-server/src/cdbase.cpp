@@ -17,9 +17,11 @@
  */
 
 #include "cdbase.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "lck.h"
 #include "safearray.h"
 #include "svrcfg.h"
@@ -58,9 +60,9 @@ void cdbase::cdbase_free(void) {
   safe_array_free(cdbase::authkey_auth_cache_arr);
 }
 
-cdbase::cdbase(serverconnection *svrconn) {
+cdbase::cdbase(supla_connection *conn) {
   this->user = NULL;
-  this->svrconn = svrconn;
+  this->conn = conn;
   this->lck = lck_init();
   this->ID = 0;
   this->ptr_counter = 0;
@@ -74,7 +76,7 @@ cdbase::~cdbase() { lck_free(this->lck); }
 
 void cdbase::terminate(void) {
   lck_lock(lck);
-  if (svrconn) svrconn->terminate();
+  if (conn) conn->terminate();
   lck_unlock(lck);
 }
 
@@ -166,7 +168,7 @@ int cdbase::getUserID(void) {
   return 0;
 }
 
-serverconnection *cdbase::getSvrConn(void) { return svrconn; }
+supla_connection *cdbase::getConnection(void) { return conn; }
 
 void cdbase::updateLastActivity(void) {
   lck_lock(lck);
@@ -189,8 +191,8 @@ int cdbase::getActivityDelay(void) {
 unsigned char cdbase::getProtocolVersion(void) {
   unsigned char result = 0;
   lck_lock(lck);
-  if (svrconn) {
-    result = svrconn->getProtocolVersion();
+  if (conn) {
+    result = conn->getProtocolVersion();
   }
   lck_unlock(lck);
   return result;

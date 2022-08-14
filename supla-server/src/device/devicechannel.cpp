@@ -1113,8 +1113,8 @@ void supla_device_channels::arr_clean(void) {
 }
 
 void *supla_device_channels::get_srpc(void) {
-  if (device && device->getSvrConn()) {
-    return device->getSvrConn()->srpc();
+  if (device && device->getConnection()) {
+    return device->getConnection()->srpc();
   }
 
   return NULL;

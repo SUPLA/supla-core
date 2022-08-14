@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SERVERCONNECTION_H_
-#define SERVERCONNECTION_H_
+#ifndef CONNECTION_H_
+#define CONNECTION_H_
 
 #include <stddef.h>
 #include <sys/time.h>
@@ -31,7 +31,7 @@ class supla_client;
 class supla_device;
 class cdbase;
 
-class serverconnection {
+class supla_connection {
  private:
   static void *reg_pending_arr;
   static struct timeval reg_limit_exceeded_alert_time;
@@ -80,13 +80,13 @@ class serverconnection {
   static bool conn_limit_exceeded_soft(void);
   static bool conn_limit_exceeded_hard(void);
 
-  serverconnection(void *ssd, void *supla_socket, unsigned int client_ipv4);
+  supla_connection(void *ssd, void *supla_socket, unsigned int client_ipv4);
   static void init(void);
   static void serverconnection_free(void);
   static int registration_pending_count();
   void execute(void *sthread);
   void terminate(void);
-  virtual ~serverconnection();
+  virtual ~supla_connection();
 
   int socket_read(void *buf, size_t count);
   int socket_write(const void *buf, size_t count);
@@ -100,4 +100,4 @@ class serverconnection {
   unsigned char getProtocolVersion(void);
 };
 
-#endif /* SERVERCONNECTION_H_ */
+#endif /* CONNECTION_H_ */

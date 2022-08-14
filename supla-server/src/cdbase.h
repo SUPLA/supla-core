@@ -19,8 +19,9 @@
 #ifndef CDCOMMON_H_
 #define CDCOMMON_H_
 
+#include <connection.h>
+
 #include "proto.h"
-#include "serverconnection.h"
 
 class supla_user;
 class database;
@@ -29,7 +30,7 @@ class cdbase {
   struct timeval last_activity_time;
   char GUID[SUPLA_GUID_SIZE];
   char AuthKey[SUPLA_AUTHKEY_SIZE];
-  serverconnection *svrconn;
+  supla_connection *conn;
   int ID;
   unsigned long ptr_counter;
   supla_user *user;
@@ -60,11 +61,11 @@ class cdbase {
   static void init(void);
   static void cdbase_free(void);
   static int getAuthKeyCacheSize(void);
-  explicit cdbase(serverconnection *svrconn);
+  explicit cdbase(supla_connection *conn);
   virtual ~cdbase();
   virtual void iterate();
   virtual unsigned _supla_int64_t waitTimeUSec(void);
-  serverconnection *getSvrConn(void);
+  supla_connection *getConnection(void);
 
   // Thread safe start
   void terminate(void);

@@ -31,7 +31,7 @@ class CDBaseMock : public cdbase {
   int dbAuthCount;
 
  public:
-  explicit CDBaseMock(serverconnection *svrconn);
+  explicit CDBaseMock(supla_connection *connection);
   int getDbAuthCount();
   void setCacheSizeLimit(int size);
   bool setGUID(char GUID[SUPLA_GUID_SIZE]);

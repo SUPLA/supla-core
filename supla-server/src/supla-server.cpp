@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 
   serverstatus::globalInstance();
   supla_user::init();
-  serverconnection::init();
+  supla_connection::init();
 
   st_setpidfile(pidfile_path);
   st_mainloop_init();
@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
   while (st_app_terminate == 0) {
     st_mainloop_wait(1000000);
     serverstatus::globalInstance()->mainLoopHeartbeat();
-    serverconnection::log_limits();
+    supla_connection::log_limits();
     supla_user::log_metrics(3600);
     supla_http_request_queue::getInstance()->logMetrics(3600);
     supla_http_request_queue::getInstance()->logStuckWarning();
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
   supla_asynctask_queue::global_instance_release();  // before
                                                      // serverconnection_free()
 
-  serverconnection::serverconnection_free();
+  supla_connection::serverconnection_free();
 
   // ! after serverconnection_free() and before user_free()
   supla_http_request_queue::queueFree();

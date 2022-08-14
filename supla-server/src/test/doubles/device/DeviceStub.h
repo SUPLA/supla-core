@@ -26,7 +26,7 @@ namespace testing {
 class DeviceStub : public supla_device {
  protected:
  public:
-  explicit DeviceStub(serverconnection *svrconn);
+  explicit DeviceStub(supla_connection *connection);
   void setID(int ID);
 };
 

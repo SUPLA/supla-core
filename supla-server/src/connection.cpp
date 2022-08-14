@@ -16,9 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "serverconnection.h"
-
 #include <arpa/inet.h>
+#include <connection.h>
 #include <ifaddrs.h>
 #include <linux/if_link.h>
 #include <serverstatus.h>
@@ -48,24 +47,24 @@
 
 #define INCORRECT_CALL_MAXCOUNT 5
 
-void *serverconnection::reg_pending_arr = NULL;
-unsigned int serverconnection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
-struct timeval serverconnection::reg_limit_exceeded_alert_time = {0, 0};
-struct timeval serverconnection::reg_limit_exceeded_time = {0, 0};
-bool serverconnection::reject_all_new_connections = false;
+void *supla_connection::reg_pending_arr = NULL;
+unsigned int supla_connection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
+struct timeval supla_connection::reg_limit_exceeded_alert_time = {0, 0};
+struct timeval supla_connection::reg_limit_exceeded_time = {0, 0};
+bool supla_connection::reject_all_new_connections = false;
 
 int supla_connection_socket_read(void *buf, int count, void *sc) {
-  return ((serverconnection *)sc)->socket_read(buf, count);
+  return ((supla_connection *)sc)->socket_read(buf, count);
 }
 
 int supla_connection_socket_write(void *buf, int count, void *sc) {
-  return ((serverconnection *)sc)->socket_write(buf, count);
+  return ((supla_connection *)sc)->socket_write(buf, count);
 }
 
 void supla_connection_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                               unsigned int call_type, void *sc,
                                               unsigned char proto_version) {
-  ((serverconnection *)sc)
+  ((supla_connection *)sc)
       ->on_remote_call_received(_srpc, rr_id, call_type, proto_version);
 }
 
@@ -79,7 +78,7 @@ void supla_connection_on_version_error(void *_srpc,
 }
 
 // static
-void serverconnection::log_limits(void) {
+void supla_connection::log_limits(void) {
   serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
 
   int concurrent_registrations_limit =
@@ -89,31 +88,31 @@ void serverconnection::log_limits(void) {
   gettimeofday(&now, NULL);
 
   if (concurrent_registrations_limit > 0 &&
-      serverconnection::registration_pending_count() >=
+      supla_connection::registration_pending_count() >=
           concurrent_registrations_limit) {
-    if (serverconnection::reg_limit_exceeded_alert_time.tv_sec == 0) {
+    if (supla_connection::reg_limit_exceeded_alert_time.tv_sec == 0) {
       supla_log(LOG_ALERT, "Concurrent registration limit exceeded (%i)",
                 concurrent_registrations_limit);
-      serverconnection::reg_limit_exceeded_alert_time = now;
+      supla_connection::reg_limit_exceeded_alert_time = now;
     } else if (now.tv_sec -
-                   serverconnection::reg_limit_exceeded_alert_time.tv_sec >=
+                   supla_connection::reg_limit_exceeded_alert_time.tv_sec >=
                600) {
       supla_log(
           LOG_ALERT,
           "Exceeded number of concurrent registrations takes too long! (%i)",
           concurrent_registrations_limit);
-      serverconnection::reg_limit_exceeded_alert_time = now;
-      serverconnection::reject_all_new_connections = true;
+      supla_connection::reg_limit_exceeded_alert_time = now;
+      supla_connection::reject_all_new_connections = true;
     }
 
-    serverconnection::reg_limit_exceeded_time = now;
+    supla_connection::reg_limit_exceeded_time = now;
 
-  } else if (serverconnection::reg_limit_exceeded_time.tv_sec &&
-             now.tv_sec - serverconnection::reg_limit_exceeded_time.tv_sec >=
+  } else if (supla_connection::reg_limit_exceeded_time.tv_sec &&
+             now.tv_sec - supla_connection::reg_limit_exceeded_time.tv_sec >=
                  10) {
-    serverconnection::reg_limit_exceeded_time = {0, 0};
-    serverconnection::reg_limit_exceeded_alert_time = {0, 0};
-    serverconnection::reject_all_new_connections = false;
+    supla_connection::reg_limit_exceeded_time = {0, 0};
+    supla_connection::reg_limit_exceeded_alert_time = {0, 0};
+    supla_connection::reject_all_new_connections = false;
     supla_log(LOG_INFO,
               "The number of concurrent registrations returned below the "
               "limit");
@@ -122,8 +121,8 @@ void serverconnection::log_limits(void) {
 }
 
 // static
-bool serverconnection::is_connection_allowed(unsigned int ipv4) {
-  if (serverconnection::reject_all_new_connections) {
+bool supla_connection::is_connection_allowed(unsigned int ipv4) {
+  if (supla_connection::reject_all_new_connections) {
     //  It also rejects local connections
     //  Monitoring will be able to detect the problem and restart the process
     return false;
@@ -133,12 +132,12 @@ bool serverconnection::is_connection_allowed(unsigned int ipv4) {
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
   if (concurrent_registrations_limit > 0 &&
-      serverconnection::registration_pending_count() >=
+      supla_connection::registration_pending_count() >=
           concurrent_registrations_limit) {
     for (int a = 0; a < LOCAL_IPV4_ARRAY_SIZE; a++) {
-      if (serverconnection::local_ipv4[a] == 0) {  // end of list
+      if (supla_connection::local_ipv4[a] == 0) {  // end of list
         break;
-      } else if (serverconnection::local_ipv4[a] == ipv4) {
+      } else if (supla_connection::local_ipv4[a] == ipv4) {
         return true;
       }
     }
@@ -150,18 +149,18 @@ bool serverconnection::is_connection_allowed(unsigned int ipv4) {
 }
 
 // static
-bool serverconnection::conn_limit_exceeded_hard(void) {
-  return serverconnection::reject_all_new_connections;
+bool supla_connection::conn_limit_exceeded_hard(void) {
+  return supla_connection::reject_all_new_connections;
 }
 
 // static
-bool serverconnection::conn_limit_exceeded_soft(void) {
-  return serverconnection::reg_limit_exceeded_alert_time.tv_sec != 0;
+bool supla_connection::conn_limit_exceeded_soft(void) {
+  return supla_connection::reg_limit_exceeded_alert_time.tv_sec != 0;
 }
 
 // static
-void serverconnection::read_local_ipv4_addresses(void) {
-  memset(&serverconnection::local_ipv4, 0, sizeof(local_ipv4));
+void supla_connection::read_local_ipv4_addresses(void) {
+  memset(&supla_connection::local_ipv4, 0, sizeof(local_ipv4));
 
   struct ifaddrs *ifaddr, *ifa;
   struct sockaddr_in *addr;
@@ -174,9 +173,9 @@ void serverconnection::read_local_ipv4_addresses(void) {
   for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
     if (ifa && ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
       addr = (struct sockaddr_in *)ifa->ifa_addr;
-      serverconnection::local_ipv4[n] = htonl(addr->sin_addr.s_addr);
+      supla_connection::local_ipv4[n] = htonl(addr->sin_addr.s_addr);
 
-      if (serverconnection::local_ipv4[n] != 0) {
+      if (supla_connection::local_ipv4[n] != 0) {
         n++;
       }
     }
@@ -186,26 +185,26 @@ void serverconnection::read_local_ipv4_addresses(void) {
 }
 
 // static
-void serverconnection::init(void) {
-  serverconnection::read_local_ipv4_addresses();
-  serverconnection::reg_pending_arr = safe_array_init();
+void supla_connection::init(void) {
+  supla_connection::read_local_ipv4_addresses();
+  supla_connection::reg_pending_arr = safe_array_init();
   cdbase::init();
 }
 
 // static
-void serverconnection::serverconnection_free(void) {
+void supla_connection::serverconnection_free(void) {
   cdbase::cdbase_free();
-  safe_array_free(serverconnection::reg_pending_arr);
+  safe_array_free(supla_connection::reg_pending_arr);
 }
 
 // static
-int serverconnection::registration_pending_count() {
-  return safe_array_count(serverconnection::reg_pending_arr);
+int supla_connection::registration_pending_count() {
+  return safe_array_count(supla_connection::reg_pending_arr);
 }
 
-serverconnection::serverconnection(void *ssd, void *supla_socket,
+supla_connection::supla_connection(void *ssd, void *supla_socket,
                                    unsigned int client_ipv4) {
-  safe_array_add(serverconnection::reg_pending_arr, this);
+  safe_array_add(supla_connection::reg_pending_arr, this);
 
   gettimeofday(&this->init_time, NULL);
   this->client_ipv4 = client_ipv4;
@@ -232,24 +231,24 @@ serverconnection::serverconnection(void *ssd, void *supla_socket,
   _srpc = srpc_init(&srpc_params);
 }
 
-serverconnection::~serverconnection() {
+supla_connection::~supla_connection() {
   srpc_free(_srpc);
   eh_free(eh);
   ssocket_supla_socket_free(supla_socket);
 
-  safe_array_remove(serverconnection::reg_pending_arr, this);
+  safe_array_remove(supla_connection::reg_pending_arr, this);
   supla_log(LOG_DEBUG, "Connection Finished");
 }
 
-int serverconnection::socket_read(void *buf, size_t count) {
+int supla_connection::socket_read(void *buf, size_t count) {
   return ssocket_read(ssd, supla_socket, buf, count);
 }
 
-int serverconnection::socket_write(const void *buf, size_t count) {
+int supla_connection::socket_write(const void *buf, size_t count) {
   return ssocket_write(ssd, supla_socket, buf, count);
 }
 
-void serverconnection::catch_incorrect_call(unsigned int call_type) {
+void supla_connection::catch_incorrect_call(unsigned int call_type) {
   incorrect_call_counter++;
   supla_log(LOG_DEBUG, "Incorrect call %i/%i", call_type,
             incorrect_call_counter);
@@ -260,12 +259,12 @@ void serverconnection::catch_incorrect_call(unsigned int call_type) {
   }
 }
 
-void serverconnection::set_registered(char registered) {
+void supla_connection::set_registered(char registered) {
   this->registered = registered;
-  safe_array_remove(serverconnection::reg_pending_arr, this);
+  safe_array_remove(supla_connection::reg_pending_arr, this);
 }
 
-void serverconnection::on_device_reconnect_request(
+void supla_connection::on_device_reconnect_request(
     void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request) {
   TSC_DeviceReconnectRequestResult result;
   memset(&result, 0, sizeof(TSC_DeviceReconnectRequestResult));
@@ -285,14 +284,14 @@ void serverconnection::on_device_reconnect_request(
   srpc_sc_async_device_reconnect_request_result(_srpc, &result);
 }
 
-void serverconnection::on_set_channel_function_request(
+void supla_connection::on_set_channel_function_request(
     TCS_SetChannelFunction *cs_set_channel_function) {
   if (cs_set_channel_function != NULL) {
     client->set_channel_function_request(cs_set_channel_function);
   }
 }
 
-void serverconnection::on_set_caption_request(TCS_SetCaption *cs_set_caption,
+void supla_connection::on_set_caption_request(TCS_SetCaption *cs_set_caption,
                                               bool channel) {
   if (cs_set_caption != NULL) {
     if (cs_set_caption->CaptionSize > 0) {
@@ -311,7 +310,7 @@ void serverconnection::on_set_caption_request(TCS_SetCaption *cs_set_caption,
   }
 }
 
-void serverconnection::on_register_device_request(void *_srpc,
+void supla_connection::on_register_device_request(void *_srpc,
                                                   unsigned int call_type,
                                                   unsigned char proto_version,
                                                   TsrpcReceivedData *rd) {
@@ -500,7 +499,7 @@ void serverconnection::on_register_device_request(void *_srpc,
   }
 }
 
-void serverconnection::on_remote_call_received(void *_srpc, unsigned int rr_id,
+void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                                                unsigned int call_type,
                                                unsigned char proto_version) {
   TsrpcReceivedData rd;
@@ -984,7 +983,7 @@ end:
   srpc_rd_free(&rd);
 }
 
-void serverconnection::execute(void *sthread) {
+void supla_connection::execute(void *sthread) {
   this->sthread = sthread;
 
   if (ssocket_accept_ssl(ssd, supla_socket) != 1) {
@@ -1067,20 +1066,20 @@ void serverconnection::execute(void *sthread) {
   }
 }
 
-void serverconnection::terminate(void) { sthread_terminate(sthread); }
+void supla_connection::terminate(void) { sthread_terminate(sthread); }
 
-unsigned int serverconnection::getClientIpv4(void) { return client_ipv4; }
+unsigned int supla_connection::getClientIpv4(void) { return client_ipv4; }
 
-int serverconnection::getClientSD(void) {
+int supla_connection::getClientSD(void) {
   return ssocket_supla_socket_getsfd(supla_socket);
 }
 
-void *serverconnection::srpc(void) { return _srpc; }
+void *supla_connection::srpc(void) { return _srpc; }
 
-unsigned char serverconnection::GetActivityTimeout(void) {
+unsigned char supla_connection::GetActivityTimeout(void) {
   return activity_timeout;
 }
 
-unsigned char serverconnection::getProtocolVersion(void) {
+unsigned char supla_connection::getProtocolVersion(void) {
   return srpc_get_proto_version(_srpc);
 }

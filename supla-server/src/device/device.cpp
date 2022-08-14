@@ -34,7 +34,7 @@
 
 using std::list;
 
-supla_device::supla_device(serverconnection *svrconn) : cdbase(svrconn) {
+supla_device::supla_device(supla_connection *connection) : cdbase(connection) {
   this->channels = new supla_device_channels(this);
   this->flags = 0;
 }
@@ -148,10 +148,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               "Device registration started. ClientSD: %i "
               "Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X",
-              getSvrConn()->getClientSD(), getSvrConn()->getProtocolVersion(),
-              syscall(__NR_gettid), (unsigned char)GUID[0],
-              (unsigned char)GUID[1], (unsigned char)GUID[2],
-              (unsigned char)GUID[3]);
+              getConnection()->getClientSD(),
+              getConnection()->getProtocolVersion(), syscall(__NR_gettid),
+              (unsigned char)GUID[0], (unsigned char)GUID[1],
+              (unsigned char)GUID[2], (unsigned char)GUID[3]);
 
     database *db = new database();
 
@@ -178,8 +178,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                   "(AUTHKEY_AUTH) Bad device credentials. ClientSD: %i "
                   "Protocol Version: %i "
                   "ThreadID: %i GUID: %02X%02X%02X%02X",
-                  getSvrConn()->getClientSD(),
-                  getSvrConn()->getProtocolVersion(), syscall(__NR_gettid),
+                  getConnection()->getClientSD(),
+                  getConnection()->getProtocolVersion(), syscall(__NR_gettid),
                   (unsigned char)GUID[0], (unsigned char)GUID[1],
                   (unsigned char)GUID[2], (unsigned char)GUID[3]);
 
@@ -228,8 +228,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               _LocationID = LocationID;
 
               DeviceID = db->add_device(LocationID, GUID, AuthKey, Name,
-                                        getSvrConn()->getClientIpv4(), SoftVer,
-                                        proto_version, ManufacturerID,
+                                        getConnection()->getClientIpv4(),
+                                        SoftVer, proto_version, ManufacturerID,
                                         ProductID, DeviceFlags, UserID);
             }
           }
@@ -339,9 +339,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                 if (LocationID == _LocationID) _OriginalLocationID = LocationID;
               }
 
-              DeviceID = db->update_device(
-                  DeviceID, _OriginalLocationID, AuthKey, Name,
-                  getSvrConn()->getClientIpv4(), SoftVer, proto_version, flags);
+              DeviceID =
+                  db->update_device(DeviceID, _OriginalLocationID, AuthKey,
+                                    Name, getConnection()->getClientIpv4(),
+                                    SoftVer, proto_version, flags);
             }
 
             if (DeviceID != 0) {
@@ -384,8 +385,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
     supla_log(LOG_INFO,
               "Device registered. ID: %i, ClientSD: %i Protocol Version: %i "
               "ThreadID: %i GUID: %02X%02X%02X%02X",
-              getID(), getSvrConn()->getClientSD(),
-              getSvrConn()->getProtocolVersion(), syscall(__NR_gettid),
+              getID(), getConnection()->getClientSD(),
+              getConnection()->getProtocolVersion(), syscall(__NR_gettid),
               (unsigned char)GUID[0], (unsigned char)GUID[1],
               (unsigned char)GUID[2], (unsigned char)GUID[3]);
   } else {
@@ -394,10 +395,10 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
   TSD_SuplaRegisterDeviceResult srdr;
   srdr.result_code = resultcode;
-  srdr.activity_timeout = getSvrConn()->GetActivityTimeout();
+  srdr.activity_timeout = getConnection()->GetActivityTimeout();
   srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
-  srpc_sd_async_registerdevice_result(getSvrConn()->srpc(), &srdr);
+  srpc_sd_async_registerdevice_result(getConnection()->srpc(), &srdr);
 
   return result;
 }
@@ -544,7 +545,8 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 
   delete db;
 
-  srpc_sd_async_get_firmware_update_url_result(getSvrConn()->srpc(), &result);
+  srpc_sd_async_get_firmware_update_url_result(getConnection()->srpc(),
+                                               &result);
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
@@ -588,7 +590,7 @@ bool supla_device::enter_cfg_mode(void) {
     request.Command = SUPLA_CALCFG_CMD_ENTER_CFG_MODE;
     request.SuperUserAuthorized = true;
 
-    srpc_sd_async_device_calcfg_request(getSvrConn()->srpc(), &request);
+    srpc_sd_async_device_calcfg_request(getConnection()->srpc(), &request);
     return true;
   }
 

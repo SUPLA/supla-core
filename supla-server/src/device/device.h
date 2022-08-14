@@ -41,7 +41,7 @@ class supla_device : public cdbase {
                        database *db);
 
  public:
-  explicit supla_device(serverconnection *svrconn);
+  explicit supla_device(supla_connection *connection);
 
   static bool funclist_contains_function(int funcList, int func);
 

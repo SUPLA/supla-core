@@ -29,7 +29,7 @@
 #include "srpc/srpc_adapter.h"
 
 class supla_user;
-class serverconnection;
+class supla_connection;
 class supla_client : public cdbase {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
@@ -61,7 +61,7 @@ class supla_client : public cdbase {
                            bool *connection_failed);
 
  public:
-  explicit supla_client(serverconnection *svrconn);
+  explicit supla_client(supla_connection *connection);
 
   void iterate();
   unsigned _supla_int64_t waitTimeUSec();
