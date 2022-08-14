@@ -36,7 +36,8 @@ char supla_user_device_container::find_device_byguid(void *ptr, void *GUID) {
   return ((supla_device *)ptr)->cmp_guid((char *)GUID) ? 1 : 0;
 }
 
-supla_user_device_container::supla_user_device_container() : cdcontainer() {}
+supla_user_device_container::supla_user_device_container()
+    : supla_connection_objects() {}
 
 supla_user_device_container::~supla_user_device_container() {}
 
@@ -75,5 +76,5 @@ supla_device *supla_user_device_container::findByGUID(const char *GUID) {
 }
 
 supla_device *supla_user_device_container::get(int idx) {
-  return dynamic_cast<supla_device *>(cdcontainer::get(idx));
+  return dynamic_cast<supla_device *>(supla_connection_objects::get(idx));
 }

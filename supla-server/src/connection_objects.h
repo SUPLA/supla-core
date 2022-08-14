@@ -16,14 +16,14 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CDCONTAINER_H_
-#define CDCONTAINER_H_
+#ifndef CONNECTION_OBJECTS_H_
+#define CONNECTION_OBJECTS_H_
 
 #include <connection_object.h>
 
 #include "safearray.h"
 
-class cdcontainer {
+class supla_connection_objects {
  private:
   void *arr;
   void *trash_arr;
@@ -33,8 +33,8 @@ class cdcontainer {
   virtual void cd_delete(supla_connection_object *cd) = 0;
 
  public:
-  cdcontainer();
-  virtual ~cdcontainer();
+  supla_connection_objects();
+  virtual ~supla_connection_objects();
   bool exists(supla_connection_object *cd);
   void releasePtr(supla_connection_object *cd);
   void addToList(supla_connection_object *cd);
@@ -48,4 +48,4 @@ class cdcontainer {
   int count(void);
 };
 
-#endif /* CDCONTAINER_H_ */
+#endif /* CONNECTION_OBJECTS_H_ */

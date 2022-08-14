@@ -30,7 +30,8 @@ char supla_user_client_container::find_client_byguid(void *ptr, void *GUID) {
   return ((supla_client *)ptr)->cmp_guid((char *)GUID) ? 1 : 0;
 }
 
-supla_user_client_container::supla_user_client_container() : cdcontainer() {}
+supla_user_client_container::supla_user_client_container()
+    : supla_connection_objects() {}
 
 supla_user_client_container::~supla_user_client_container() {}
 
@@ -62,5 +63,5 @@ supla_client *supla_user_client_container::findByGUID(const char *GUID) {
 }
 
 supla_client *supla_user_client_container::get(int idx) {
-  return static_cast<supla_client *>(cdcontainer::get(idx));
+  return static_cast<supla_client *>(supla_connection_objects::get(idx));
 }

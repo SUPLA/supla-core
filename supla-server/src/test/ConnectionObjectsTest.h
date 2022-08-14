@@ -16,26 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "test/STCDContainer.h"
+#ifndef CONNECTION_OBJECTS_TEST_H_
+#define CONNECTION_OBJECTS_TEST_H_
 
-#include "log.h"
+class ConnectionObjectsTest {
+ public:
+  virtual ~ConnectionObjectsTest();
+  ConnectionObjectsTest();
+};
 
-// static
-char STCDContainer::find_by_ptr(void *ptr1, void *ptr2) {
-  return ptr1 == ptr2 ? 1 : 0;
-}
-
-STCDContainer::STCDContainer() : cdcontainer() { del_count = 0; }
-
-void STCDContainer::cd_delete(supla_connection_object *cd) {
-  delete cd;
-  del_count++;
-}
-
-STCDContainer::~STCDContainer() {}
-
-int STCDContainer::delCount(void) { return del_count; }
-
-supla_connection_object *STCDContainer::findByPtr(void *ptr) {
-  return find(find_by_ptr, ptr);
-}
+#endif /*CONNECTION_OBJECTS_TEST_H_*/

@@ -19,9 +19,9 @@
 #ifndef USER_DEVICECONTAINER_H_
 #define USER_DEVICECONTAINER_H_
 
-#include "cdcontainer.h"
+#include <connection_objects.h>
 
-class supla_user_device_container : public cdcontainer {
+class supla_user_device_container : public supla_connection_objects {
  private:
   static char find_device_byid(void *ptr, void *ID);
   static char find_device_by_channelid(void *ptr, void *ID);

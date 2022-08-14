@@ -16,24 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "cdcontainer.h"
+#include <connection_objects.h>
 
-cdcontainer::cdcontainer() {
+supla_connection_objects::supla_connection_objects() {
   arr = safe_array_init();
   trash_arr = safe_array_init();
 }
 
-cdcontainer::~cdcontainer() {
+supla_connection_objects::~supla_connection_objects() {
   safe_array_free(arr);
   safe_array_free(trash_arr);
 }
 
-bool cdcontainer::exists(supla_connection_object *cd) {
+bool supla_connection_objects::exists(supla_connection_object *cd) {
   return safe_array_find(arr, cd) > -1;
 }
 
-supla_connection_object *cdcontainer::find(_func_sa_cnd_param find_cnd,
-                                           void *user_param) {
+supla_connection_object *supla_connection_objects::find(
+    _func_sa_cnd_param find_cnd, void *user_param) {
   supla_connection_object *result = NULL;
 
   safe_array_lock(arr);
@@ -47,7 +47,7 @@ supla_connection_object *cdcontainer::find(_func_sa_cnd_param find_cnd,
   return result;
 }
 
-supla_connection_object *cdcontainer::get(int idx) {
+supla_connection_object *supla_connection_objects::get(int idx) {
   supla_connection_object *result = NULL;
 
   safe_array_lock(arr);
@@ -60,13 +60,13 @@ supla_connection_object *cdcontainer::get(int idx) {
   return result;
 }
 
-void cdcontainer::releasePtr(supla_connection_object *cd) {
+void supla_connection_objects::releasePtr(supla_connection_object *cd) {
   if (cd != NULL) {
     cd->release_ptr();
   }
 }
 
-void cdcontainer::addToList(supla_connection_object *cd) {
+void supla_connection_objects::addToList(supla_connection_object *cd) {
   if (cd) {
     safe_array_lock(trash_arr);
     safe_array_lock(arr);
@@ -82,7 +82,7 @@ void cdcontainer::addToList(supla_connection_object *cd) {
   }
 }
 
-void cdcontainer::moveToTrash(supla_connection_object *cd) {
+void supla_connection_objects::moveToTrash(supla_connection_object *cd) {
   if (cd) {
     safe_array_lock(trash_arr);
     safe_array_lock(arr);
@@ -97,7 +97,7 @@ void cdcontainer::moveToTrash(supla_connection_object *cd) {
   emptyTrash();
 }
 
-bool cdcontainer::emptyTrash(void) {
+bool supla_connection_objects::emptyTrash(void) {
   safe_array_lock(trash_arr);
 
   for (int a = 0; a < safe_array_count(trash_arr); a++) {
@@ -115,7 +115,7 @@ bool cdcontainer::emptyTrash(void) {
   return safe_array_count(trash_arr) == 0;
 }
 
-bool cdcontainer::emptyTrash(unsigned char timeout_sec) {
+bool supla_connection_objects::emptyTrash(unsigned char timeout_sec) {
   struct timeval now, start;
   gettimeofday(&now, NULL);
   start = now;
@@ -130,7 +130,7 @@ bool cdcontainer::emptyTrash(unsigned char timeout_sec) {
   return safe_array_count(trash_arr) == 0;
 }
 
-void cdcontainer::moveAllToTrash() {
+void supla_connection_objects::moveAllToTrash() {
   safe_array_lock(arr);
   while (safe_array_count(arr)) {
     moveToTrash(static_cast<supla_connection_object *>(safe_array_get(arr, 0)));
@@ -138,11 +138,13 @@ void cdcontainer::moveAllToTrash() {
   safe_array_unlock(arr);
 }
 
-bool cdcontainer::deleteAll(unsigned char timeout_sec) {
+bool supla_connection_objects::deleteAll(unsigned char timeout_sec) {
   moveAllToTrash();
   return emptyTrash(timeout_sec);
 }
 
-int cdcontainer::trashCount(void) { return safe_array_count(trash_arr); }
+int supla_connection_objects::trashCount(void) {
+  return safe_array_count(trash_arr);
+}
 
-int cdcontainer::count(void) { return safe_array_count(arr); }
+int supla_connection_objects::count(void) { return safe_array_count(arr); }

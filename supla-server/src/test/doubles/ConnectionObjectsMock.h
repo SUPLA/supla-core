@@ -16,13 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_STCDContainer_H_
-#define H_STCDContainer_H_
+#ifndef CONNECTION_OBJECTS_MOCK_H_
+#define CONNECTION_OBJECTS_MOCK_H_
 
-#include "cdcontainer.h"
+#include "connection_objects.h"
 #include "gtest/gtest.h"  // NOLINT
 
-class STCDContainer : public cdcontainer {
+class ConnectionObjectsMock : public supla_connection_objects {
  private:
   static char find_by_ptr(void *ptr1, void *ptr2);
 
@@ -31,11 +31,11 @@ class STCDContainer : public cdcontainer {
   virtual void cd_delete(supla_connection_object *cd);
 
  public:
-  STCDContainer();
-  virtual ~STCDContainer();
+  ConnectionObjectsMock();
+  virtual ~ConnectionObjectsMock();
   int delCount(void);
 
   supla_connection_object *findByPtr(void *ptr);
 };
 
-#endif /*H_STCDContainer_H_*/
+#endif /*CONNECTION_OBJECTS_MOCK_H_*/

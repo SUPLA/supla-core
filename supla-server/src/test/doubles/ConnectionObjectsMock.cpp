@@ -16,13 +16,28 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef H_CDCONTAINER_TEST_H_
-#define H_CDCONTAINER_TEST_H_
+#include "test/doubles/ConnectionObjectsMock.h"
 
-class CDContainerTest {
- public:
-  virtual ~CDContainerTest();
-  CDContainerTest();
-};
+#include "log.h"
 
-#endif /*H_CDCONTAINER_TEST_H_*/
+// static
+char ConnectionObjectsMock::find_by_ptr(void *ptr1, void *ptr2) {
+  return ptr1 == ptr2 ? 1 : 0;
+}
+
+ConnectionObjectsMock::ConnectionObjectsMock() : supla_connection_objects() {
+  del_count = 0;
+}
+
+void ConnectionObjectsMock::cd_delete(supla_connection_object *cd) {
+  delete cd;
+  del_count++;
+}
+
+ConnectionObjectsMock::~ConnectionObjectsMock() {}
+
+int ConnectionObjectsMock::delCount(void) { return del_count; }
+
+supla_connection_object *ConnectionObjectsMock::findByPtr(void *ptr) {
+  return find(find_by_ptr, ptr);
+}

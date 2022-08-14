@@ -19,9 +19,9 @@
 #ifndef USER_CLIENTCONTAINER_H_
 #define USER_CLIENTCONTAINER_H_
 
-#include "cdcontainer.h"
+#include <connection_objects.h>
 
-class supla_user_client_container : public cdcontainer {
+class supla_user_client_container : public supla_connection_objects {
  private:
   static char find_client_byid(void *ptr, void *ID);
   static char find_client_byguid(void *ptr, void *GUID);

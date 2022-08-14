@@ -16,21 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <doubles/ConnectionObjectMock.h>
-#include "CDContainerTest.h"
+#include "ConnectionObjectsTest.h"
 
-#include "STCDContainer.h"
+#include <doubles/ConnectionObjectMock.h>
+
+#include "doubles/ConnectionObjectsMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {
 
 class CDContainerTest : public ::testing::Test {
  protected:
-  STCDContainer *c;
+  ConnectionObjectsMock *c;
 };
 
 TEST_F(CDContainerTest, addToList) {
-  STCDContainer *container = new STCDContainer();
+  ConnectionObjectsMock *container = new ConnectionObjectsMock();
   ASSERT_FALSE(container == NULL);
 
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
@@ -50,7 +51,7 @@ TEST_F(CDContainerTest, addToList) {
 }
 
 TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
-  STCDContainer *container = new STCDContainer();
+  ConnectionObjectsMock *container = new ConnectionObjectsMock();
   ASSERT_FALSE(container == NULL);
 
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
@@ -71,7 +72,7 @@ TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
 }
 
 TEST_F(CDContainerTest, moveToTrashWithPtrUse) {
-  STCDContainer *container = new STCDContainer();
+  ConnectionObjectsMock *container = new ConnectionObjectsMock();
   ASSERT_FALSE(container == NULL);
 
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
@@ -93,7 +94,7 @@ TEST_F(CDContainerTest, moveToTrashWithPtrUse) {
 }
 
 TEST_F(CDContainerTest, findItem) {
-  STCDContainer *container = new STCDContainer();
+  ConnectionObjectsMock *container = new ConnectionObjectsMock();
   ASSERT_FALSE(container == NULL);
 
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
@@ -115,7 +116,7 @@ TEST_F(CDContainerTest, findItem) {
 }
 
 TEST_F(CDContainerTest, getItem) {
-  STCDContainer *container = new STCDContainer();
+  ConnectionObjectsMock *container = new ConnectionObjectsMock();
   ASSERT_FALSE(container == NULL);
 
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);

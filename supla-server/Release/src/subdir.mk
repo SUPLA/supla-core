@@ -6,9 +6,9 @@
 CPP_SRCS += \
 ../src/accept_loop.cpp \
 ../src/caller.cpp \
-../src/cdcontainer.cpp \
 ../src/connection.cpp \
 ../src/connection_object.cpp \
+../src/connection_objects.cpp \
 ../src/database.cpp \
 ../src/datalogger.cpp \
 ../src/dbcommon.cpp \
@@ -37,9 +37,9 @@ C_SRCS += \
 CPP_DEPS += \
 ./src/accept_loop.d \
 ./src/caller.d \
-./src/cdcontainer.d \
 ./src/connection.d \
 ./src/connection_object.d \
+./src/connection_objects.d \
 ./src/database.d \
 ./src/datalogger.d \
 ./src/dbcommon.d \
@@ -68,10 +68,10 @@ C_DEPS += \
 OBJS += \
 ./src/accept_loop.o \
 ./src/caller.o \
-./src/cdcontainer.o \
 ./src/cfg.o \
 ./src/connection.o \
 ./src/connection_object.o \
+./src/connection_objects.o \
 ./src/database.o \
 ./src/datalogger.o \
 ./src/dbcommon.o \
@@ -114,7 +114,7 @@ src/%.o: ../src/%.c src/subdir.mk
 clean: clean-src
 
 clean-src:
-	-$(RM) ./src/accept_loop.d ./src/accept_loop.o ./src/caller.d ./src/caller.o ./src/cdcontainer.d ./src/cdcontainer.o ./src/cfg.d ./src/cfg.o ./src/connection.d ./src/connection.o ./src/connection_object.d ./src/connection_object.o ./src/database.d ./src/database.o ./src/datalogger.d ./src/datalogger.o ./src/dbcommon.d ./src/dbcommon.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverstatus.d ./src/serverstatus.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-server.d ./src/supla-server.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/svrdb.d ./src/svrdb.o ./src/tools.d ./src/tools.o ./src/voiceassistantclient.d ./src/voiceassistantclient.o
+	-$(RM) ./src/accept_loop.d ./src/accept_loop.o ./src/caller.d ./src/caller.o ./src/cfg.d ./src/cfg.o ./src/connection.d ./src/connection.o ./src/connection_object.d ./src/connection_object.o ./src/connection_objects.d ./src/connection_objects.o ./src/database.d ./src/database.o ./src/datalogger.d ./src/datalogger.o ./src/dbcommon.d ./src/dbcommon.o ./src/dcpair.d ./src/dcpair.o ./src/eh.d ./src/eh.o ./src/ini.d ./src/ini.o ./src/lck.d ./src/lck.o ./src/log.d ./src/log.o ./src/objcontainer.d ./src/objcontainer.o ./src/objcontaineritem.d ./src/objcontaineritem.o ./src/proto.d ./src/proto.o ./src/safearray.d ./src/safearray.o ./src/serverstatus.d ./src/serverstatus.o ./src/sslcrypto.d ./src/sslcrypto.o ./src/sthread.d ./src/sthread.o ./src/supla-server.d ./src/supla-server.o ./src/supla-socket.d ./src/supla-socket.o ./src/svrcfg.d ./src/svrcfg.o ./src/svrdb.d ./src/svrdb.o ./src/tools.d ./src/tools.o ./src/voiceassistantclient.d ./src/voiceassistantclient.o
 
 .PHONY: clean-src
 
