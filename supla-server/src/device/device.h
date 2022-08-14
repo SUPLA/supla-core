@@ -19,10 +19,10 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-#include <connection_object.h>
 #include <list>
 
 #include "commontypes.h"
+#include "conn/connection_object.h"
 #include "devicechannel.h"
 
 class supla_user;

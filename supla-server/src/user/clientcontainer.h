@@ -19,7 +19,7 @@
 #ifndef USER_CLIENTCONTAINER_H_
 #define USER_CLIENTCONTAINER_H_
 
-#include <connection_objects.h>
+#include "conn/connection_objects.h"
 
 class supla_user_client_container : public supla_connection_objects {
  private:

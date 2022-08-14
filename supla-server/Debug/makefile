@@ -21,6 +21,7 @@ RM := rm -rf
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/converter/subdir.mk
+-include src/conn/subdir.mk
 -include src/client/subdir.mk
 -include src/channeljsonconfig/subdir.mk
 -include src/asynctask/subdir.mk

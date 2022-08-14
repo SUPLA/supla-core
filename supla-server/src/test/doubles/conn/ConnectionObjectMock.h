@@ -19,7 +19,7 @@
 #ifndef CONNECTION_OBJECT_MOCK_H_
 #define CONNECTION_OBJECT_MOCK_H_
 
-#include <connection_object.h>
+#include "conn/connection_object.h"
 
 class ConnectionObjectMock : public supla_connection_object {
  protected:

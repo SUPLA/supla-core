@@ -19,7 +19,7 @@
 #ifndef USER_DEVICECONTAINER_H_
 #define USER_DEVICECONTAINER_H_
 
-#include <connection_objects.h>
+#include "conn/connection_objects.h"
 
 class supla_user_device_container : public supla_connection_objects {
  private:

@@ -19,8 +19,7 @@
 #ifndef SUPLA_CONNECTION_OBJECT_H_
 #define SUPLA_CONNECTION_OBJECT_H_
 
-#include <connection.h>
-
+#include "conn/connection.h"
 #include "proto.h"
 
 class supla_user;

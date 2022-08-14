@@ -29,6 +29,7 @@ src/amazon \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
+src/conn \
 src/converter \
 src/crypt_blowfish \
 src/device \
@@ -46,11 +47,13 @@ src/test/alexa \
 src/test/asynctask \
 src/test/channeljsonconfig \
 src/test/client \
+src/test/conn \
 src/test/distributedobjects \
 src/test/doubles \
 src/test/doubles/actions \
 src/test/doubles/asynctask \
 src/test/doubles/channeljsonconfig \
+src/test/doubles/conn \
 src/test/doubles/device \
 src/test/doubles/distributedobjects \
 src/test/doubles/integration/asynctask \

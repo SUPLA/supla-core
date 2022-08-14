@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <connection_objects.h>
+#include "conn/connection_objects.h"
 
 supla_connection_objects::supla_connection_objects() {
   arr = safe_array_init();

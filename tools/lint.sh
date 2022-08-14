@@ -14,6 +14,7 @@ cpplint ./supla-server/src/amazon/*
 cpplint ./supla-server/src/asynctask/* 
 cpplint ./supla-server/src/channeljsonconfig/* 
 cpplint ./supla-server/src/client/* 
+cpplint ./supla-server/src/conn/* 
 cpplint ./supla-server/src/device/* 
 cpplint ./supla-server/src/distributedobjects/* 
 cpplint ./supla-server/src/google/* 
@@ -30,6 +31,7 @@ cpplint --filter=-build/include ./supla-server/src/test/alexa/*
 cpplint --filter=-build/include ./supla-server/src/test/asynctask/* 
 cpplint --filter=-build/include ./supla-server/src/test/channeljsonconfig/* 
 cpplint --filter=-build/include ./supla-server/src/test/client/* 
+cpplint --filter=-build/include ./supla-server/src/test/conn/* 
 cpplint --filter=-build/include ./supla-server/src/test/google/* 
 cpplint --filter=-build/include ./supla-server/src/test/http/* 
 cpplint --filter=-build/include ./supla-server/src/test/mqtt/* 
@@ -38,6 +40,7 @@ cpplint --filter=-build/include ./supla-server/src/test/doubles/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/actions/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/asynctask/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/channeljsonconfig/*
+cpplint --filter=-build/include ./supla-server/src/test/doubles/conn/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/device/*
 cpplint --filter=-build/include ./supla-server/src/test/doubles/distributedobjects/* 
 cpplint --filter=-build/include ./supla-server/src/test/doubles/mqtt/*

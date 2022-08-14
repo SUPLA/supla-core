@@ -19,8 +19,7 @@
 #ifndef CONNECTION_OBJECTS_H_
 #define CONNECTION_OBJECTS_H_
 
-#include <connection_object.h>
-
+#include "conn/connection_object.h"
 #include "safearray.h"
 
 class supla_connection_objects {

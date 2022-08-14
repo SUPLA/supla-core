@@ -16,11 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <connection.h>
 #include "serverstatus.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "conn/connection.h"
 #include "lck.h"
 #include "supla-socket.h"
 

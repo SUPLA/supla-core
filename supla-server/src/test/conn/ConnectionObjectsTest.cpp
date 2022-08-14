@@ -18,9 +18,8 @@
 
 #include "ConnectionObjectsTest.h"
 
-#include <doubles/ConnectionObjectMock.h>
-
-#include "doubles/ConnectionObjectsMock.h"
+#include "doubles/conn/ConnectionObjectMock.h"
+#include "doubles/conn/ConnectionObjectsMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
 namespace {

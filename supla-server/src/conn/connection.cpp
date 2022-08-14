@@ -16,8 +16,9 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "conn/connection.h"
+
 #include <arpa/inet.h>
-#include <connection.h>
 #include <ifaddrs.h>
 #include <linux/if_link.h>
 #include <serverstatus.h>

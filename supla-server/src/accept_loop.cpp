@@ -18,11 +18,11 @@
 
 #include "accept_loop.h"
 
-#include <connection.h>
 #include <stdio.h>
 #include <unistd.h>
 
 #include "client.h"
+#include "conn/connection.h"
 #include "database.h"
 #include "device.h"
 #include "ipc/ipc_ctrl.h"

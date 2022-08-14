@@ -16,28 +16,26 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "test/doubles/ConnectionObjectsMock.h"
+#ifndef CONNECTION_OBJECTS_MOCK_H_
+#define CONNECTION_OBJECTS_MOCK_H_
 
-#include "log.h"
+#include "conn/connection_objects.h"
+#include "gtest/gtest.h"  // NOLINT
 
-// static
-char ConnectionObjectsMock::find_by_ptr(void *ptr1, void *ptr2) {
-  return ptr1 == ptr2 ? 1 : 0;
-}
+class ConnectionObjectsMock : public supla_connection_objects {
+ private:
+  static char find_by_ptr(void *ptr1, void *ptr2);
 
-ConnectionObjectsMock::ConnectionObjectsMock() : supla_connection_objects() {
-  del_count = 0;
-}
+ protected:
+  int del_count;
+  virtual void cd_delete(supla_connection_object *cd);
 
-void ConnectionObjectsMock::cd_delete(supla_connection_object *cd) {
-  delete cd;
-  del_count++;
-}
+ public:
+  ConnectionObjectsMock();
+  virtual ~ConnectionObjectsMock();
+  int delCount(void);
 
-ConnectionObjectsMock::~ConnectionObjectsMock() {}
+  supla_connection_object *findByPtr(void *ptr);
+};
 
-int ConnectionObjectsMock::delCount(void) { return del_count; }
-
-supla_connection_object *ConnectionObjectsMock::findByPtr(void *ptr) {
-  return find(find_by_ptr, ptr);
-}
+#endif /*CONNECTION_OBJECTS_MOCK_H_*/

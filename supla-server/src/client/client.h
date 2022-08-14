@@ -19,13 +19,13 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
-#include <connection_object.h>
 #include "client_scene_dao.h"
 #include "client_scene_remote_updater.h"
 #include "client_scenes.h"
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
+#include "conn/connection_object.h"
 #include "srpc/srpc_adapter.h"
 
 class supla_user;

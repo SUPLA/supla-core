@@ -27,11 +27,13 @@ RM := rm -rf
 -include src/test/doubles/integration/asynctask/subdir.mk
 -include src/test/doubles/distributedobjects/subdir.mk
 -include src/test/doubles/device/subdir.mk
+-include src/test/doubles/conn/subdir.mk
 -include src/test/doubles/channeljsonconfig/subdir.mk
 -include src/test/doubles/asynctask/subdir.mk
 -include src/test/doubles/actions/subdir.mk
 -include src/test/doubles/subdir.mk
 -include src/test/distributedobjects/subdir.mk
+-include src/test/conn/subdir.mk
 -include src/test/client/subdir.mk
 -include src/test/channeljsonconfig/subdir.mk
 -include src/test/asynctask/subdir.mk
@@ -49,6 +51,7 @@ RM := rm -rf
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/converter/subdir.mk
+-include src/conn/subdir.mk
 -include src/client/subdir.mk
 -include src/channeljsonconfig/subdir.mk
 -include src/asynctask/subdir.mk

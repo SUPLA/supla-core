@@ -16,7 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <doubles/ConnectionObjectMock.h>  // NOLINT
+#include "doubles/conn/ConnectionObjectMock.h"  // NOLINT
 
 #include "gtest/gtest.h"  // NOLINT
 
