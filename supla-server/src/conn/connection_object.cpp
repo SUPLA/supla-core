@@ -68,7 +68,6 @@ supla_connection_object::supla_connection_object(supla_connection *conn) {
   this->conn = conn;
   this->lck = lck_init();
   this->ID = 0;
-  this->ptr_counter = 0;
   memset(this->guid, 0, SUPLA_GUID_SIZE);
   memset(this->authkey, 0, SUPLA_AUTHKEY_SIZE);
 
@@ -101,7 +100,7 @@ void supla_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
   lck_unlock(lck);
 }
 
-bool supla_connection_object::cmp_guid(const char guid[SUPLA_GUID_SIZE]) {
+bool supla_connection_object::guid_equal(const char guid[SUPLA_GUID_SIZE]) {
   bool result = false;
 
   lck_lock(lck);
@@ -199,37 +198,6 @@ unsigned char supla_connection_object::get_protocol_version(void) {
   return result;
 }
 
-supla_connection_object *supla_connection_object::retain_ptr(void) {
-  lck_lock(lck);
-  ptr_counter++;
-  lck_unlock(lck);
-  return this;
-}
-
-void supla_connection_object::release_ptr(void) {
-  lck_lock(lck);
-  if (ptr_counter > 0) {
-    ptr_counter--;
-  }
-  lck_unlock(lck);
-}
-
-bool supla_connection_object::ptr_is_used(void) {
-  bool result = false;
-  lck_lock(lck);
-  result = ptr_counter > 0;
-  lck_unlock(lck);
-  return result;
-}
-
-unsigned long supla_connection_object::get_ptr_counter(void) {
-  unsigned long result = 0;
-  lck_lock(lck);
-  result = ptr_counter;
-  lck_unlock(lck);
-  return result;
-}
-
 // static
 int supla_connection_object::get_authkey_cache_size(void) {
   return safe_array_count(supla_connection_object::authkey_auth_cache_arr);
@@ -319,8 +287,6 @@ bool supla_connection_object::authkey_auth(
     return db_authkey_auth(guid, email, authkey, user_id, db);
   }
 }
-
-void supla_connection_object::iterate() {}
 
 unsigned _supla_int64_t supla_connection_object::wait_time_usec() {
   return 120000000;

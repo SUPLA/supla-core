@@ -18,133 +18,131 @@
 
 #include "conn/connection_objects.h"
 
-supla_connection_objects::supla_connection_objects() {
-  arr = safe_array_init();
-  trash_arr = safe_array_init();
-}
+using std::function;
+using std::shared_ptr;
+using std::vector;
 
-supla_connection_objects::~supla_connection_objects() {
-  safe_array_free(arr);
-  safe_array_free(trash_arr);
-}
+supla_connection_objects::supla_connection_objects() { lck = lck_init(); }
 
-bool supla_connection_objects::exists(supla_connection_object *cd) {
-  return safe_array_find(arr, cd) > -1;
-}
+supla_connection_objects::~supla_connection_objects() { lck_free(lck); }
 
-supla_connection_object *supla_connection_objects::find(
-    _func_sa_cnd_param find_cnd, void *user_param) {
-  supla_connection_object *result = NULL;
+void supla_connection_objects::lock(void) { lck_lock(lck); }
 
-  safe_array_lock(arr);
-  result = static_cast<supla_connection_object *>(
-      safe_array_findcnd(arr, find_cnd, user_param));
-  if (result != NULL) {
-    result = result->retain_ptr();
-  }
-  safe_array_unlock(arr);
+void supla_connection_objects::unlock(void) { lck_unlock(lck); }
 
-  return result;
-}
-
-supla_connection_object *supla_connection_objects::get(int idx) {
-  supla_connection_object *result = NULL;
-
-  safe_array_lock(arr);
-  result = static_cast<supla_connection_object *>(safe_array_get(arr, idx));
-  if (result != NULL) {
-    result = result->retain_ptr();
-  }
-  safe_array_unlock(arr);
-
-  return result;
-}
-
-void supla_connection_objects::releasePtr(supla_connection_object *cd) {
-  if (cd != NULL) {
-    cd->release_ptr();
-  }
-}
-
-void supla_connection_objects::addToList(supla_connection_object *cd) {
-  if (cd) {
-    safe_array_lock(trash_arr);
-    safe_array_lock(arr);
-
-    safe_array_remove(trash_arr, cd);
-
-    if (safe_array_find(arr, cd) == -1) {
-      safe_array_add(arr, cd);
-    }
-
-    safe_array_unlock(arr);
-    safe_array_unlock(trash_arr);
-  }
-}
-
-void supla_connection_objects::moveToTrash(supla_connection_object *cd) {
-  if (cd) {
-    safe_array_lock(trash_arr);
-    safe_array_lock(arr);
-
-    safe_array_add(trash_arr, cd);
-    safe_array_remove(arr, cd);
-
-    safe_array_unlock(arr);
-    safe_array_unlock(trash_arr);
-  }
-
-  emptyTrash();
-}
-
-bool supla_connection_objects::emptyTrash(void) {
-  safe_array_lock(trash_arr);
-
-  for (int a = 0; a < safe_array_count(trash_arr); a++) {
-    supla_connection_object *cd =
-        static_cast<supla_connection_object *>(safe_array_get(trash_arr, a));
-    if (cd && !cd->ptr_is_used()) {
-      cd_delete(cd);
-      safe_array_delete(trash_arr, a);
-      a--;
-    }
-  }
-
-  safe_array_unlock(trash_arr);
-
-  return safe_array_count(trash_arr) == 0;
-}
-
-bool supla_connection_objects::emptyTrash(unsigned char timeout_sec) {
-  struct timeval now, start;
-  gettimeofday(&now, NULL);
-  start = now;
-
-  while (!emptyTrash()) {
-    if (now.tv_sec - start.tv_sec >= timeout_sec) {
+void supla_connection_objects::for_each(
+    function<bool(shared_ptr<supla_connection_object> obj)> on_object) {
+  lock();
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    if (!on_object(*it)) {
       break;
     }
-    gettimeofday(&now, NULL);
+  }
+  unlock();
+}
+
+std::vector<std::shared_ptr<supla_connection_object> >
+supla_connection_objects::get_all(void) {
+  lock();
+  std::vector<std::shared_ptr<supla_connection_object> > result = objects;
+  unlock();
+
+  return result;
+}
+
+bool supla_connection_objects::exists(shared_ptr<supla_connection_object> obj) {
+  bool result = false;
+  lock();
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    if (*it == obj) {
+      result = true;
+      break;
+    }
+  }
+  unlock();
+
+  return result;
+}
+
+bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
+  bool result = false;
+  lock();
+
+  if (!exists(obj)) {
+    char GUID[SUPLA_GUID_SIZE] = {};
+    obj->get_guid(GUID);
+
+    shared_ptr<supla_connection_object> _obj = find_by_guid(GUID);
+    objects.push_back(obj);
+    result = true;
+
+    if (_obj != nullptr) {
+      _obj->terminate();
+    }
   }
 
-  return safe_array_count(trash_arr) == 0;
+  unlock();
+
+  return result;
 }
 
-void supla_connection_objects::moveAllToTrash() {
-  safe_array_lock(arr);
-  while (safe_array_count(arr)) {
-    moveToTrash(static_cast<supla_connection_object *>(safe_array_get(arr, 0)));
+shared_ptr<supla_connection_object> supla_connection_objects::find_by_id(
+    int id) {
+  shared_ptr<supla_connection_object> result;
+  lock();
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    if ((*it)->get_id() == id) {
+      result = *it;
+      break;
+    }
   }
-  safe_array_unlock(arr);
+  unlock();
+  return result;
 }
 
-bool supla_connection_objects::deleteAll(unsigned char timeout_sec) {
-  moveAllToTrash();
-  return emptyTrash(timeout_sec);
+shared_ptr<supla_connection_object> supla_connection_objects::find_by_guid(
+    const char guid[SUPLA_GUID_SIZE]) {
+  shared_ptr<supla_connection_object> result;
+  lock();
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    if ((*it)->guid_equal(guid)) {
+      result = *it;
+      break;
+    }
+  }
+  unlock();
+  return result;
 }
 
-int supla_connection_objects::trashCount(void) {
-  return safe_array_count(trash_arr);
+int supla_connection_objects::count(void) {
+  int result = 0;
+  lock();
+  result = objects.size();
+  unlock();
+  return result;
 }
 
-int supla_connection_objects::count(void) { return safe_array_count(arr); }
+bool supla_connection_objects::terminate_all(void) {
+  lock();
+  vector<shared_ptr<supla_connection_object> > copy = objects;
+  unlock();
+
+  bool result = false;
+
+  for (auto it = copy.begin(); it != copy.end(); ++it) {
+    (*it)->terminate();
+    result = true;
+  }
+
+  return result;
+}
+
+bool supla_connection_objects::terminate(int id) {
+  shared_ptr<supla_connection_object> obj = find_by_id(id);
+  if (obj) {
+    obj->terminate();
+    return true;
+  }
+
+  return false;
+}

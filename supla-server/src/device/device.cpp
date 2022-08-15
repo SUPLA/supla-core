@@ -360,7 +360,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
-              supla_user::add_device(this, UserID);
+              // supla_user::add_device(this, UserID);
               get_user()->update_client_device_channels(LocationID, DeviceID);
 
               channels->on_device_registered(get_user(), DeviceID,
@@ -488,8 +488,8 @@ void supla_device::on_channel_set_value_result(
     event.ChannelID = ChannelID;
     event.SenderID = result->SenderID;
     event.DurationMS = channels->get_channel_value_duration(ChannelID);
-    get_user()->getClientName(result->SenderID, event.SenderName,
-                              SUPLA_SENDER_NAME_MAXSIZE);
+    get_user()->get_client_name(result->SenderID, event.SenderName,
+                                SUPLA_SENDER_NAME_MAXSIZE);
     event.SenderNameSize =
         strnlen(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE - 1) + 1;
 

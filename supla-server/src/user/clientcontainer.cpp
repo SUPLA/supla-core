@@ -20,48 +20,139 @@
 
 #include "client/client.h"
 
-// static
-char supla_user_client_container::find_client_byid(void *ptr, void *ID) {
-  return ((supla_client *)ptr)->get_id() == *(int *)ID ? 1 : 0;
-}
-
-// static
-char supla_user_client_container::find_client_byguid(void *ptr, void *GUID) {
-  return ((supla_client *)ptr)->cmp_guid((char *)GUID) ? 1 : 0;
-}
+using std::dynamic_pointer_cast;
+using std::list;
+using std::shared_ptr;
+using std::vector;
 
 supla_user_client_container::supla_user_client_container()
     : supla_connection_objects() {}
 
 supla_user_client_container::~supla_user_client_container() {}
 
-void supla_user_client_container::cd_delete(supla_connection_object *base) {
-  supla_client *client = static_cast<supla_client *>(base);
-  if (client) {
-    delete client;
+bool supla_user_client_container::add(shared_ptr<supla_client> client) {
+  return supla_user_client_container::add(client);
+}
+
+shared_ptr<supla_client> supla_user_client_container::find_by_id(
+    int client_id) {
+  return dynamic_pointer_cast<supla_client>(
+      supla_connection_objects::find_by_id(client_id));
+}
+
+shared_ptr<supla_client> supla_user_client_container::find_by_guid(
+    const char *guid) {
+  return dynamic_pointer_cast<supla_client>(
+      supla_connection_objects::find_by_guid(guid));
+}
+
+void supla_user_client_container::set_channel_function(int channel_id,
+                                                       int func) {
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    dynamic_pointer_cast<supla_client>(*it)->set_channel_function(channel_id,
+                                                                  func);
   }
 }
 
-supla_client *supla_user_client_container::baseToClient(
-    supla_connection_object *base) {
-  supla_client *client = NULL;
-  if (base && (client = static_cast<supla_client *>(base)) == NULL) {
-    base->release_ptr();
+bool supla_user_client_container::get_client_name(int client_id, char *buffer,
+                                                  int size) {
+  if (size < 1) return false;
+
+  buffer[0] = 0;
+
+  shared_ptr<supla_client> client = find_by_id(client_id);
+
+  if (client != nullptr) {
+    client->getName(buffer, size);
   }
-  return client;
+
+  return client != NULL;
 }
 
-supla_client *supla_user_client_container::findByID(int ClientID) {
-  if (ClientID == 0) {
-    return NULL;
+bool supla_user_client_container::is_super_user_authorized(int client_id) {
+  bool result = false;
+
+  shared_ptr<supla_client> client = find_by_id(client_id);
+
+  if (client != nullptr) {
+    result = client->is_superuser_authorized();
   }
-  return baseToClient(find(find_client_byid, &ClientID));
+
+  return result;
 }
 
-supla_client *supla_user_client_container::findByGUID(const char *GUID) {
-  return baseToClient(find(find_client_byguid, (void *)GUID));
+void supla_user_client_container::update_device_channels(int location_id,
+                                                         int device_id) {
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    dynamic_pointer_cast<supla_client>(*it)->update_device_channels(location_id,
+                                                                    device_id);
+  }
 }
 
-supla_client *supla_user_client_container::get(int idx) {
-  return static_cast<supla_client *>(supla_connection_objects::get(idx));
+void supla_user_client_container::on_channel_value_changed(
+    list<channel_address> addr_list, bool extended) {
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
+
+  for (auto it1 = objects.begin(); it1 != objects.end(); ++it1) {
+    shared_ptr<supla_client> client = dynamic_pointer_cast<supla_client>(*it1);
+
+    for (auto it2 = addr_list.begin(); it2 != addr_list.end(); it2++) {
+      client->on_channel_value_changed(it2->getDeviceId(), it2->getChannelId(),
+                                       extended);
+    }
+  }
+}
+
+void supla_user_client_container::call_event(TSC_SuplaEvent *event) {
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    dynamic_pointer_cast<supla_client>(*it)->call_event(event);
+  }
+}
+
+void supla_user_client_container::on_device_calcfg_result(
+    int channel_id, TDS_DeviceCalCfgResult *result) {
+  if (result != NULL) {
+    shared_ptr<supla_client> client = find_by_id(result->ReceiverID);
+
+    if (client != nullptr) {
+      client->on_device_calcfg_result(channel_id, result);
+    }
+  }
+}
+
+void supla_user_client_container::on_device_channel_state_result(
+    int channel_id, TDSC_ChannelState *state) {
+  if (state != NULL) {
+    shared_ptr<supla_client> client = find_by_id(state->ReceiverID);
+
+    if (client != nullptr) {
+      client->on_device_channel_state_result(channel_id, state);
+    }
+  }
+}
+
+void supla_user_client_container::set_channel_caption(int channel_id,
+                                                      char *caption) {
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    dynamic_pointer_cast<supla_client>(*it)->set_channel_caption(channel_id,
+                                                                 caption);
+  }
+}
+
+void supla_user_client_container::set_location_caption(int location_id,
+                                                       char *caption) {
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    dynamic_pointer_cast<supla_client>(*it)->set_location_caption(location_id,
+                                                                  caption);
+  }
 }

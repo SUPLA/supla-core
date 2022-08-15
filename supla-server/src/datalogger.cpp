@@ -43,10 +43,12 @@ void supla_datalogger::log_temperature() {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    user->for_each_device([&tarr](supla_device *device) -> bool {
-      device->get_channels()->get_temp_and_humidity(tarr);
-      return true;
-    });
+    std::vector<std::shared_ptr<supla_device> > devices =
+        user->get_devices()->get_all();
+
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+      (*it)->get_channels()->get_temp_and_humidity(tarr);
+    }
 
     db->load_temperatures_and_humidity(user->getUserID(), tarr);
   }
@@ -77,10 +79,12 @@ void supla_datalogger::log_electricity_measurement(void) {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    user->for_each_device([&emarr](supla_device *device) -> bool {
-      device->get_channels()->get_electricity_measurements(emarr, true);
-      return true;
-    });
+    std::vector<std::shared_ptr<supla_device> > devices =
+        user->get_devices()->get_all();
+
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+      (*it)->get_channels()->get_electricity_measurements(emarr, true);
+    }
   }
 
   for (a = 0; a < safe_array_count(emarr); a++) {
@@ -102,10 +106,13 @@ void supla_datalogger::log_ic_measurement(void) {
 
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
-    user->for_each_device([&icarr](supla_device *device) -> bool {
-      device->get_channels()->get_ic_measurements(icarr, true);
-      return true;
-    });
+
+    std::vector<std::shared_ptr<supla_device> > devices =
+        user->get_devices()->get_all();
+
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+      (*it)->get_channels()->get_ic_measurements(icarr, true);
+    }
   }
 
   for (a = 0; a < safe_array_count(icarr); a++) {
@@ -128,10 +135,12 @@ void supla_datalogger::log_thermostat_measurement(void) {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    user->for_each_device([&tharr](supla_device *device) -> bool {
-      device->get_channels()->get_thermostat_measurements(tharr);
-      return true;
-    });
+    std::vector<std::shared_ptr<supla_device> > devices =
+        user->get_devices()->get_all();
+
+    for (auto it = devices.begin(); it != devices.end(); ++it) {
+      (*it)->get_channels()->get_thermostat_measurements(tharr);
+    }
   }
 
   for (a = 0; a < safe_array_count(tharr); a++) {

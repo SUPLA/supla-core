@@ -30,6 +30,8 @@
 #include "srpc/srpc.h"
 #include "user.h"
 
+using std::shared_ptr;
+
 supla_client_channel::supla_client_channel(
     supla_client_channels *Container, int Id, int DeviceId, int LocationID,
     int Type, int Func, int Param1, int Param2, int Param3, int Param4,
@@ -339,15 +341,14 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     bool cev_exists = false;
 
     int ChannelId = getId();
-    supla_device *device = client->get_user()->get_device(DeviceId);
+    shared_ptr<supla_device> device = client->get_user()->get_device(DeviceId);
 
-    if (device) {
+    if (device != nullptr) {
       cev_exists =
           device->get_channels()->get_channel_extendedvalue(ChannelId, cev);
-      device->release_ptr();
     }
 
-    device = NULL;
+    device = nullptr;
     ChannelId = 0;
 
     switch (getFunc()) {
@@ -362,9 +363,9 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     }
 
     if (ChannelId) {
-      device = client->get_user()->device_by_channelid(ChannelId);
+      device = client->get_user()->device_by_channel_id(ChannelId);
 
-      if (device) {
+      if (device != nullptr) {
         TSC_SuplaChannelExtendedValue second_cev = {};
         if (device->get_channels()->get_channel_extendedvalue(ChannelId,
                                                               &second_cev)) {
@@ -378,7 +379,6 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
 
           cev_exists = true;
         }
-        device->release_ptr();
       }
     }
 

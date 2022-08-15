@@ -19,62 +19,132 @@
 
 #include "device/device.h"
 
-// static
-char supla_user_device_container::find_device_byid(void *ptr, void *ID) {
-  return ((supla_device *)ptr)->get_id() == *(int *)ID ? 1 : 0;
-}
-
-// static
-char supla_user_device_container::find_device_by_channelid(void *ptr,
-                                                           void *ID) {
-  return ((supla_device *)ptr)->get_channels()->channel_exists(*(int *)ID) ? 1
-                                                                           : 0;
-}
-
-// static
-char supla_user_device_container::find_device_byguid(void *ptr, void *GUID) {
-  return ((supla_device *)ptr)->cmp_guid((char *)GUID) ? 1 : 0;
-}
+using std::dynamic_pointer_cast;
+using std::shared_ptr;
+using std::vector;
 
 supla_user_device_container::supla_user_device_container()
     : supla_connection_objects() {}
 
 supla_user_device_container::~supla_user_device_container() {}
 
-void supla_user_device_container::cd_delete(supla_connection_object *base) {
-  supla_device *device = dynamic_cast<supla_device *>(base);
-  if (device) {
-    delete device;
+bool supla_user_device_container::add(shared_ptr<supla_device> device) {
+  return supla_connection_objects::add(device);
+}
+
+shared_ptr<supla_device> supla_user_device_container::find_by_id(
+    int device_id) {
+  return dynamic_pointer_cast<supla_device>(
+      supla_connection_objects::find_by_id(device_id));
+}
+
+shared_ptr<supla_device> supla_user_device_container::find_by_guid(
+    const char *guid) {
+  return dynamic_pointer_cast<supla_device>(
+      supla_connection_objects::find_by_guid(guid));
+}
+
+shared_ptr<supla_device> supla_user_device_container::find_by_channel_id(
+    int channel_id) {
+  shared_ptr<supla_device> result;
+
+  for_each([&result,
+            channel_id](shared_ptr<supla_connection_object> obj) -> bool {
+    shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(obj);
+    if (device->get_channels()->channel_exists(channel_id)) {
+      result = device;
+      return false;
+    }
+    return true;
+  });
+
+  return result;
+}
+
+vector<shared_ptr<supla_device> > supla_user_device_container::get_all(void) {
+  vector<shared_ptr<supla_device> > result;
+
+  for_each([&result](shared_ptr<supla_connection_object> obj) -> bool {
+    result.push_back(dynamic_pointer_cast<supla_device>(obj));
+    return true;
+  });
+
+  return result;
+}
+
+bool supla_user_device_container::get_channel_double_value(int device_id,
+                                                           int channel_id,
+                                                           double *value,
+                                                           char type) {
+  bool result = false;
+
+  shared_ptr<supla_device> device = find_by_id(device_id);
+  if (device != nullptr) {
+    supla_device_channels *channels = device->get_channels();
+    switch (type) {
+      case 0:
+        result = channels->get_channel_double_value(channel_id, value) == 1;
+        break;
+      case 1:
+        result =
+            channels->get_channel_temperature_value(channel_id, value) == 1;
+        break;
+      case 2:
+        result = channels->get_channel_humidity_value(channel_id, value) == 1;
+        break;
+    }
   }
+
+  return result;
 }
 
-supla_device *supla_user_device_container::baseToDevice(
-    supla_connection_object *base) {
-  supla_device *device = NULL;
-  if (base && (device = dynamic_cast<supla_device *>(base)) == NULL) {
-    base->release_ptr();
+bool supla_user_device_container::get_channel_char_value(int device_id,
+                                                         int channel_id,
+                                                         char *value) {
+  bool result = false;
+
+  shared_ptr<supla_device> device = find_by_id(device_id);
+
+  if (device != nullptr) {
+    result =
+        device->get_channels()->get_channel_char_value(channel_id, value) == 1;
   }
-  return device;
+
+  return result;
 }
 
-supla_device *supla_user_device_container::findByID(int DeviceID) {
-  if (DeviceID == 0) {
-    return NULL;
+bool supla_user_device_container::get_channel_rgbw_value(
+    int device_id, int channel_id, int *color, char *color_brightness,
+    char *brightness, char *on_off) {
+  bool result = false;
+  shared_ptr<supla_device> device = find_by_id(device_id);
+
+  if (device != nullptr) {
+    result = device->get_channels()->get_channel_rgbw_value(
+                 channel_id, color, color_brightness, brightness, on_off) == 1;
   }
-  return baseToDevice(find(find_device_byid, &DeviceID));
+
+  return result;
 }
 
-supla_device *supla_user_device_container::findByChannelID(int ChannelID) {
-  if (ChannelID == 0) {
-    return NULL;
+bool supla_user_device_container::get_channel_valve_value(int device_id,
+                                                          int channel_id,
+                                                          TValve_Value *value) {
+  bool result = false;
+  shared_ptr<supla_device> device = find_by_id(device_id);
+
+  if (device != nullptr) {
+    result =
+        device->get_channels()->get_channel_valve_value(channel_id, value) == 1;
   }
-  return baseToDevice(find(find_device_by_channelid, &ChannelID));
+
+  return result;
 }
 
-supla_device *supla_user_device_container::findByGUID(const char *GUID) {
-  return baseToDevice(find(find_device_byguid, (void *)GUID));
-}
-
-supla_device *supla_user_device_container::get(int idx) {
-  return dynamic_cast<supla_device *>(supla_connection_objects::get(idx));
+void supla_user_device_container::set_channel_function(int channel_id,
+                                                       int func) {
+  shared_ptr<supla_device> device = find_by_channel_id(channel_id);
+  if (device != nullptr) {
+    device->get_channels()->set_channel_function(channel_id, func);
+  }
 }

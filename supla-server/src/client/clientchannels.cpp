@@ -31,6 +31,7 @@
 #include "user.h"
 
 using std::function;
+using std::shared_ptr;
 
 supla_client_channels::supla_client_channels(supla_client *client)
     : supla_client_objcontainer(client) {}
@@ -470,9 +471,9 @@ void supla_client_channels::device_access(
     return;
   }
 
-  supla_device *device = getClient()->get_user()->get_device(DeviceID);
-  if (device) {
-    method(device);
-    device->release_ptr();
+  shared_ptr<supla_device> device =
+      getClient()->get_user()->get_device(DeviceID);
+  if (device != nullptr) {
+    method(device.get());
   }
 }

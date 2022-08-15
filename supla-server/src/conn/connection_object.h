@@ -31,7 +31,6 @@ class supla_connection_object {
   char authkey[SUPLA_AUTHKEY_SIZE];
   supla_connection *conn;
   int ID;
-  unsigned long ptr_counter;
   supla_user *user;
 
  protected:
@@ -62,7 +61,6 @@ class supla_connection_object {
   static int get_authkey_cache_size(void);
   explicit supla_connection_object(supla_connection *conn);
   virtual ~supla_connection_object();
-  virtual void iterate();
   virtual unsigned _supla_int64_t wait_time_usec(void);
   supla_connection *get_connection(void);
 
@@ -73,14 +71,10 @@ class supla_connection_object {
   int get_id(void);
   int get_user_id(void);
   supla_user *get_user(void);
-  bool cmp_guid(const char guid1[SUPLA_GUID_SIZE]);
+  bool guid_equal(const char guid1[SUPLA_GUID_SIZE]);
   void update_last_activity(void);
   int get_activity_delay(void);
   unsigned char get_protocol_version(void);
-  supla_connection_object *retain_ptr(void);
-  void release_ptr(void);
-  bool ptr_is_used(void);
-  unsigned long get_ptr_counter(void);
   // Thread safe end
 };
 

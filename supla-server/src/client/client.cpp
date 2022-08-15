@@ -306,7 +306,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
                 setAccessID(AccessID);
 
                 // Set the user before loading config
-                set_user(supla_user::add_client(this, UserID));
+                // set_user(supla_user::add_client(this, UserID));
 
                 loadConfig();
 

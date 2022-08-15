@@ -25,18 +25,9 @@ char ConnectionObjectsMock::find_by_ptr(void *ptr1, void *ptr2) {
   return ptr1 == ptr2 ? 1 : 0;
 }
 
-ConnectionObjectsMock::ConnectionObjectsMock() : supla_connection_objects() {
-  del_count = 0;
-}
-
-void ConnectionObjectsMock::cd_delete(supla_connection_object *cd) {
-  delete cd;
-  del_count++;
-}
+ConnectionObjectsMock::ConnectionObjectsMock() : supla_connection_objects() {}
 
 ConnectionObjectsMock::~ConnectionObjectsMock() {}
-
-int ConnectionObjectsMock::delCount(void) { return del_count; }
 
 supla_connection_object *ConnectionObjectsMock::findByPtr(void *ptr) {
   return find(find_by_ptr, ptr);

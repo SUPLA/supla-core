@@ -406,7 +406,6 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       if (object == NULL && rd->data.ds_register_device_c != NULL) {
         device = new supla_device(this);
-        device->retain_ptr();
 
         if (device != NULL) {
           rd->data.ds_register_device_c
@@ -480,7 +479,6 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       if (object == NULL && rd->data.ds_register_device_e != NULL) {
         device = new supla_device(this);
-        device->retain_ptr();
 
         if (device != NULL) {
           rd->data.ds_register_device_e->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
@@ -583,7 +581,6 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         if (object == NULL) {
           client = new supla_client(this);
-          client->retain_ptr();
 
           if (client != NULL) {
             rd.data.cs_register_client_b
@@ -642,7 +639,6 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         if (object == NULL) {
           client = new supla_client(this);
-          client->retain_ptr();
 
           if (client != NULL) {
             rd.data.cs_register_client_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
@@ -1015,8 +1011,6 @@ void supla_connection::execute(void *sthread) {
       }
 
     } else {
-      object->iterate();
-
       if (object->get_activity_delay() >= get_activity_timeout()) {
         sthread_terminate(sthread);
         supla_log(LOG_DEBUG, "Activity timeout %i, %i, %i", sthread,
@@ -1031,12 +1025,12 @@ void supla_connection::execute(void *sthread) {
 
     if (user) {
       if (registered == REG_DEVICE) {
-        user->moveDeviceToTrash(device);
+        //       user->moveDeviceToTrash(device);
       } else {
-        user->moveClientToTrash(client);
+        //       user->moveClientToTrash(client);
       }
     }
-
+/*
     {
       unsigned long deadlock_counter = 0;
 
@@ -1054,9 +1048,9 @@ void supla_connection::execute(void *sthread) {
     }
 
     object->release_ptr();
-
+*/
     if (user) {
-      user->emptyTrash();
+      //  user->emptyTrash();
     } else {
       if (registered == REG_DEVICE) {
         delete device;

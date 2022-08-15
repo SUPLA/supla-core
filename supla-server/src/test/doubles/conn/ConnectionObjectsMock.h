@@ -26,14 +26,9 @@ class ConnectionObjectsMock : public supla_connection_objects {
  private:
   static char find_by_ptr(void *ptr1, void *ptr2);
 
- protected:
-  int del_count;
-  virtual void cd_delete(supla_connection_object *cd);
-
  public:
   ConnectionObjectsMock();
   virtual ~ConnectionObjectsMock();
-  int delCount(void);
 
   supla_connection_object *findByPtr(void *ptr);
 };
