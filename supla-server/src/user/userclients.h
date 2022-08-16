@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef USER_CLIENTCONTAINER_H_
-#define USER_CLIENTCONTAINER_H_
+#ifndef USERCLIENTS_H_
+#define USERCLIENTS_H_
 
 #include <list>
 #include <memory>
@@ -26,10 +26,10 @@
 #include "client.h"
 #include "conn/connection_objects.h"
 
-class supla_user_client_container : public supla_connection_objects {
+class supla_user_clients : public supla_connection_objects {
  public:
-  supla_user_client_container();
-  virtual ~supla_user_client_container();
+  supla_user_clients();
+  virtual ~supla_user_clients();
 
   bool add(std::shared_ptr<supla_client> client);
 
@@ -48,4 +48,4 @@ class supla_user_client_container : public supla_connection_objects {
   void set_location_caption(int location_id, char *caption);
 };
 
-#endif /* USER_CLIENTCONTAINER_H_ */
+#endif /* USERCLIENTS_H_ */

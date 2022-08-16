@@ -16,8 +16,7 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "clientcontainer.h"
-
+#include <userclients.h>
 #include <vector>
 
 #include "client/client.h"
@@ -27,28 +26,28 @@ using std::list;
 using std::shared_ptr;
 using std::vector;
 
-supla_user_client_container::supla_user_client_container()
+supla_user_clients::supla_user_clients()
     : supla_connection_objects() {}
 
-supla_user_client_container::~supla_user_client_container() {}
+supla_user_clients::~supla_user_clients() {}
 
-bool supla_user_client_container::add(shared_ptr<supla_client> client) {
-  return supla_user_client_container::add(client);
+bool supla_user_clients::add(shared_ptr<supla_client> client) {
+  return supla_user_clients::add(client);
 }
 
-shared_ptr<supla_client> supla_user_client_container::find_by_id(
+shared_ptr<supla_client> supla_user_clients::find_by_id(
     int client_id) {
   return dynamic_pointer_cast<supla_client>(
       supla_connection_objects::find_by_id(client_id));
 }
 
-shared_ptr<supla_client> supla_user_client_container::find_by_guid(
+shared_ptr<supla_client> supla_user_clients::find_by_guid(
     const char *guid) {
   return dynamic_pointer_cast<supla_client>(
       supla_connection_objects::find_by_guid(guid));
 }
 
-void supla_user_client_container::set_channel_function(int channel_id,
+void supla_user_clients::set_channel_function(int channel_id,
                                                        int func) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 
@@ -58,7 +57,7 @@ void supla_user_client_container::set_channel_function(int channel_id,
   }
 }
 
-bool supla_user_client_container::get_client_name(int client_id, char *buffer,
+bool supla_user_clients::get_client_name(int client_id, char *buffer,
                                                   int size) {
   if (size < 1) return false;
 
@@ -73,7 +72,7 @@ bool supla_user_client_container::get_client_name(int client_id, char *buffer,
   return client != NULL;
 }
 
-bool supla_user_client_container::is_super_user_authorized(int client_id) {
+bool supla_user_clients::is_super_user_authorized(int client_id) {
   bool result = false;
 
   shared_ptr<supla_client> client = find_by_id(client_id);
@@ -85,7 +84,7 @@ bool supla_user_client_container::is_super_user_authorized(int client_id) {
   return result;
 }
 
-void supla_user_client_container::update_device_channels(int location_id,
+void supla_user_clients::update_device_channels(int location_id,
                                                          int device_id) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 
@@ -95,7 +94,7 @@ void supla_user_client_container::update_device_channels(int location_id,
   }
 }
 
-void supla_user_client_container::on_channel_value_changed(
+void supla_user_clients::on_channel_value_changed(
     list<channel_address> addr_list, bool extended) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 
@@ -109,7 +108,7 @@ void supla_user_client_container::on_channel_value_changed(
   }
 }
 
-void supla_user_client_container::call_event(TSC_SuplaEvent *event) {
+void supla_user_clients::call_event(TSC_SuplaEvent *event) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
@@ -117,7 +116,7 @@ void supla_user_client_container::call_event(TSC_SuplaEvent *event) {
   }
 }
 
-void supla_user_client_container::on_device_calcfg_result(
+void supla_user_clients::on_device_calcfg_result(
     int channel_id, TDS_DeviceCalCfgResult *result) {
   if (result != NULL) {
     shared_ptr<supla_client> client = find_by_id(result->ReceiverID);
@@ -128,7 +127,7 @@ void supla_user_client_container::on_device_calcfg_result(
   }
 }
 
-void supla_user_client_container::on_device_channel_state_result(
+void supla_user_clients::on_device_channel_state_result(
     int channel_id, TDSC_ChannelState *state) {
   if (state != NULL) {
     shared_ptr<supla_client> client = find_by_id(state->ReceiverID);
@@ -139,7 +138,7 @@ void supla_user_client_container::on_device_channel_state_result(
   }
 }
 
-void supla_user_client_container::set_channel_caption(int channel_id,
+void supla_user_clients::set_channel_caption(int channel_id,
                                                       char *caption) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 
@@ -149,7 +148,7 @@ void supla_user_client_container::set_channel_caption(int channel_id,
   }
 }
 
-void supla_user_client_container::set_location_caption(int location_id,
+void supla_user_clients::set_location_caption(int location_id,
                                                        char *caption) {
   vector<shared_ptr<supla_connection_object> > objects = get_all();
 

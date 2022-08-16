@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef USER_DEVICECONTAINER_H_
-#define USER_DEVICECONTAINER_H_
+#ifndef USERDEVICES_H_
+#define USERDEVICES_H_
 
 #include <memory>
 #include <vector>
@@ -25,10 +25,10 @@
 #include "conn/connection_objects.h"
 #include "device.h"
 
-class supla_user_device_container : public supla_connection_objects {
+class supla_user_devices : public supla_connection_objects {
  public:
-  supla_user_device_container();
-  virtual ~supla_user_device_container();
+  supla_user_devices();
+  virtual ~supla_user_devices();
   bool add(std::shared_ptr<supla_device> device);
 
   std::shared_ptr<supla_device> find_by_id(int device_id);
@@ -46,4 +46,4 @@ class supla_user_device_container : public supla_connection_objects {
   void set_channel_function(int channel_id, int func);
 };
 
-#endif /* USER_DEVICECONTAINER_H_ */
+#endif /* USERDEVICES_H_ */

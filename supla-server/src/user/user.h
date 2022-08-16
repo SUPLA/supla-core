@@ -22,15 +22,16 @@
 #define SHORT_UNIQUEID_MAXSIZE 37
 #define LONG_UNIQUEID_MAXSIZE 201
 
+#include <userclients.h>
+#include <userdevices.h>
+
 #include <cstddef>
 #include <functional>
 #include <memory>
 
 #include "amazon/alexacredentials.h"
 #include "caller.h"
-#include "clientcontainer.h"
 #include "commontypes.h"
-#include "devicecontainer.h"
 #include "google/googlehomecredentials.h"
 #include "proto.h"
 #include "webhook/statewebhookcredentials.h"
@@ -60,8 +61,8 @@ class supla_user {
  protected:
   static void *user_arr;
 
-  supla_user_client_container *client_container;
-  supla_user_device_container *device_container;
+  supla_user_clients *clients;
+  supla_user_devices *devices;
 
   void *complex_value_functions_arr;
 
@@ -95,8 +96,8 @@ class supla_user {
  public:
   static void init(void);
   static void user_free(void);
-  supla_user_device_container *get_devices();
-  supla_user_client_container *get_clients();
+  supla_user_devices *get_devices();
+  supla_user_clients *get_clients();
 
   static supla_user *add_device(std::shared_ptr<supla_device> device,
                                 int user_id);
