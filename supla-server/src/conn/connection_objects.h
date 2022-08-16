@@ -29,7 +29,7 @@
 class supla_connection_objects {
  private:
   void *lck;
-  std::vector<std::shared_ptr<supla_connection_object> > objects;
+  std::vector<std::weak_ptr<supla_connection_object> > objects;
 
  protected:
   void lock(void);
@@ -38,7 +38,6 @@ class supla_connection_objects {
       std::function<bool(std::shared_ptr<supla_connection_object> obj)>
           on_object);
   std::vector<std::shared_ptr<supla_connection_object> > get_all(void);
-  bool exists(std::shared_ptr<supla_connection_object> obj);
   bool add(std::shared_ptr<supla_connection_object> obj);
   std::shared_ptr<supla_connection_object> find_by_id(int id);
   std::shared_ptr<supla_connection_object> find_by_guid(
@@ -50,15 +49,6 @@ class supla_connection_objects {
   int count(void);
   bool terminate_all(void);
   bool terminate(int id);
-
-  //  void releasePtr(supla_connection_object *cd);
-  //
-  //  void moveAllToTrash();
-  //  void moveToTrash(supla_connection_object *cd);
-  //  bool emptyTrash(void);
-  //  bool emptyTrash(unsigned char timeout_sec);
-  //  bool deleteAll(unsigned char timeout_sec);
-  //  supla_connection_object *get(int idx);
 };
 
 #endif /* CONNECTION_OBJECTS_H_ */

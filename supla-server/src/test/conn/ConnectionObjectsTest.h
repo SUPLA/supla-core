@@ -19,10 +19,14 @@
 #ifndef CONNECTION_OBJECTS_TEST_H_
 #define CONNECTION_OBJECTS_TEST_H_
 
-class ConnectionObjectsTest {
+#include "gtest/gtest.h"  // NOLINT
+
+namespace testing {
+
+class ConnectionObjectsTest : public Test {
  public:
-  virtual ~ConnectionObjectsTest();
-  ConnectionObjectsTest();
 };
+
+}  // namespace testing
 
 #endif /*CONNECTION_OBJECTS_TEST_H_*/

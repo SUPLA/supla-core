@@ -16,6 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "user.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,18 +120,7 @@ supla_user::~supla_user() {
   compex_value_cache_clean(0);
   safe_array_free(complex_value_functions_arr);
 
-  //  if (!device_container->deleteAll(10)) {
-  //    supla_log(LOG_ERR,
-  //              "Can't release user device container items! (TIMEOUT)
-  //              UserID:%i", UserID);
-  //  }
   delete device_container;
-
-  //  if (!client_container->deleteAll(10)) {
-  //    supla_log(LOG_ERR,
-  //              "Can't release user client container items! (TIMEOUT)
-  //              UserID:%i", UserID);
-  //  }
   delete client_container;
 }
 
@@ -191,21 +182,6 @@ int supla_user::user_count(void) {
 supla_user *supla_user::get_user(int idx) {
   return (supla_user *)safe_array_get(supla_user::user_arr, idx);
 }
-
-/*
-void supla_user::moveDeviceToTrash(supla_device *device) {
-  device_container->moveToTrash(device);
-}
-
-void supla_user::moveClientToTrash(supla_client *client) {
-  client_container->moveToTrash(client);
-}
-
-void supla_user::emptyTrash(void) {
-  device_container->emptyTrash();
-  client_container->emptyTrash();
-}
-*/
 
 bool supla_user::get_client_name(int client_id, char *buffer, int size) {
   return client_container->get_client_name(client_id, buffer, size);
@@ -276,11 +252,11 @@ supla_user_client_container *supla_user::get_clients() {
 }
 
 supla_user *supla_user::add_device(shared_ptr<supla_device> device,
-                                   int UserID) {
-  assert(device == nullptr);
-  assert(!device->get_id());
+                                   int user_id) {
+  assert(device != nullptr);
+  assert(device->get_id() != 0);
 
-  supla_user *user = find(UserID, true);
+  supla_user *user = find(user_id, true);
 
   user->compex_value_cache_clean(device->get_id());
 
@@ -302,11 +278,11 @@ supla_user *supla_user::add_device(shared_ptr<supla_device> device,
 }
 
 supla_user *supla_user::add_client(shared_ptr<supla_client> client,
-                                   int UserID) {
+                                   int user_id) {
   assert(client != nullptr);
   assert(client->get_id() != 0);
 
-  supla_user *user = find(UserID, true);
+  supla_user *user = find(user_id, true);
 
   if (user->client_container->add(client)) {
     safe_array_lock(supla_user::user_arr);
@@ -769,12 +745,8 @@ void supla_user::log_metrics(int min_interval_sec) {
     serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
     client_count += user->client_container->count();
     serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-    // client_trash += user->client_container->trashCount();
-    // serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
     device_count += user->device_container->count();
     serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
-    //   device_trash += user->device_container->trashCount();
-    //   serverstatus::globalInstance()->currentLine(__FILE__, __LINE__);
     a++;
   }
 
@@ -1080,9 +1052,9 @@ channel_complex_value supla_user::get_channel_complex_value(int channel_id) {
   return value;
 }
 
-void supla_user::set_channel_function(supla_client *sender,
+void supla_user::set_channel_function(std::shared_ptr<supla_client> sender,
                                       TCS_SetChannelFunction *func) {
-  if (sender == NULL || func == NULL) {
+  if (sender == nullptr || func == NULL) {
     return;
   }
 
@@ -1149,9 +1121,9 @@ void supla_user::set_channel_function(supla_client *sender,
   sender->set_channel_function_result(&result);
 }
 
-void supla_user::set_caption(supla_client *sender, TCS_SetCaption *caption,
-                             bool channel) {
-  if (sender == NULL || caption == NULL) {
+void supla_user::set_caption(std::shared_ptr<supla_client> sender,
+                             TCS_SetCaption *caption, bool channel) {
+  if (sender == nullptr || caption == NULL) {
     return;
   }
 

@@ -19,157 +19,135 @@
 #include "conn/ConnectionObjectTest.h"
 
 #include "doubles/conn/ConnectionObjectMock.h"
-#include "gtest/gtest.h"  // NOLINT
 
-namespace {
+namespace testing {
 
-class ConnectionObjectTest : public ::testing::Test {};
-
-TEST_F(ConnectionObjectTest, retainReleaseTest) {
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
-
-  ASSERT_FALSE(cd == NULL);
-  ASSERT_FALSE(cd->ptr_is_used());
-
-  ASSERT_EQ((unsigned long)0, cd->get_ptr_counter());
-
-  cd->retain_ptr();
-  ASSERT_TRUE(cd->ptr_is_used());
-  ASSERT_EQ((unsigned long)1, cd->get_ptr_counter());
-
-  cd->retain_ptr();
-  ASSERT_TRUE(cd->ptr_is_used());
-  ASSERT_EQ((unsigned long)2, cd->get_ptr_counter());
-
-  cd->release_ptr();
-  ASSERT_TRUE(cd->ptr_is_used());
-  ASSERT_EQ((unsigned long)1, cd->get_ptr_counter());
-
-  cd->release_ptr();
-  ASSERT_FALSE(cd->ptr_is_used());
-  ASSERT_EQ((unsigned long)0, cd->get_ptr_counter());
-
-  delete cd;
-}
-
-TEST_F(ConnectionObjectTest, authkey_cache) {
+TEST_F(ConnectionObjectTest, authkeyWithoutCache) {
   supla_connection_object::init();
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
+  ConnectionObjectMock object(nullptr);
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  char GUID[SUPLA_GUID_SIZE];
-  char Email[SUPLA_EMAIL_MAXSIZE];
-  char AuthKey[SUPLA_AUTHKEY_SIZE];
+  object.set_cache_size_limit(0);
 
-  memset(GUID, 0, SUPLA_GUID_SIZE);
-  memset(Email, 0, SUPLA_EMAIL_MAXSIZE);
-  memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
+  EXPECT_CALL(object, db_authkey_auth)
+      .Times(2)
+      .WillRepeatedly([](const char _guid[SUPLA_GUID_SIZE],
+                         const char _email[SUPLA_EMAIL_MAXSIZE],
+                         const char _authkey[SUPLA_AUTHKEY_SIZE], int *user_id,
+                         database *db) {
+        char guid[SUPLA_GUID_SIZE] = {};
+        char email[SUPLA_EMAIL_MAXSIZE] = {};
+        char authkey[SUPLA_AUTHKEY_SIZE] = {};
 
-  ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
+        guid[0] = 1;
+        authkey[1] = 2;
+        email[2] = 3;
 
-  cd->setCacheSizeLimit(0);
+        return memcmp(guid, _guid, SUPLA_GUID_SIZE) == 0 &&
+               memcmp(email, _email, SUPLA_EMAIL_MAXSIZE) == 0 &&
+               memcmp(authkey, _authkey, SUPLA_AUTHKEY_SIZE) == 0;
+      });
 
-  ASSERT_FALSE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  char guid[SUPLA_GUID_SIZE] = {};
+  char email[SUPLA_EMAIL_MAXSIZE] = {};
+  char authkey[SUPLA_AUTHKEY_SIZE] = {};
 
-  ASSERT_EQ(2, cd->getDbAuthCount());
-  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_FALSE(object.authkey_auth(guid, email, authkey));
 
-  GUID[0] = 1;
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  guid[0] = 1;
+  authkey[1] = 2;
+  email[2] = 3;
 
-  ASSERT_EQ(3, cd->getDbAuthCount());
-  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  cd->setCacheSizeLimit(5);
+  supla_connection_object::release_cache();
+}
 
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+TEST_F(ConnectionObjectTest, authkeyWithCache) {
+  supla_connection_object::init();
 
-  ASSERT_EQ(4, cd->getDbAuthCount());
-  ASSERT_EQ(1, supla_connection_object::get_authkey_cache_size());
+  ConnectionObjectMock object(nullptr);
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  GUID[0] = 2;
+  object.set_cache_size_limit(5);
 
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  EXPECT_CALL(object, db_authkey_auth).Times(2003).WillRepeatedly(Return(true));
 
-  ASSERT_EQ(5, cd->getDbAuthCount());
-  ASSERT_EQ(2, supla_connection_object::get_authkey_cache_size());
+  char guid[SUPLA_GUID_SIZE] = {};
+  char email[SUPLA_EMAIL_MAXSIZE] = {};
+  char authkey[SUPLA_AUTHKEY_SIZE] = {};
 
-  Email[0] = '@';
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
 
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-  ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+  EXPECT_EQ(1, supla_connection_object::get_authkey_cache_size());
 
-  ASSERT_EQ(6, cd->getDbAuthCount());
-  ASSERT_EQ(3, supla_connection_object::get_authkey_cache_size());
+  guid[0] = 2;
+
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+
+  EXPECT_EQ(2, supla_connection_object::get_authkey_cache_size());
+
+  email[0] = '@';
+
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+
+  EXPECT_EQ(3, supla_connection_object::get_authkey_cache_size());
 
   for (int b = 0; b < 10; b++) {
-    Email[b] = '@';
+    email[b] = '@';
     for (int a = 0; a < 200; a++) {
-      AuthKey[0] = 1 + a;
+      authkey[0] = 1 + a;
 
-      ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-      ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
-      ASSERT_TRUE(cd->authkey_auth(GUID, Email, AuthKey));
+      EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+      EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+      EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
 
-      ASSERT_EQ(7 + b * 200 + a, cd->getDbAuthCount());
-      ASSERT_EQ(a > 1 || b > 0 ? 5 : 4 + a,
+      EXPECT_EQ(a > 1 || b > 0 ? 5 : 4 + a,
                 supla_connection_object::get_authkey_cache_size());
     }
   }
 
-  delete cd;
-
   supla_connection_object::release_cache();
 }
 
-TEST_F(ConnectionObjectTest, authkey_cache_null_test) {
+TEST_F(ConnectionObjectTest, authkeyNullTest) {
   supla_connection_object::init();
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
+  ConnectionObjectMock object(nullptr);
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  char GUID[SUPLA_GUID_SIZE];
-  char Email[SUPLA_EMAIL_MAXSIZE];
-  char AuthKey[SUPLA_AUTHKEY_SIZE];
+  object.set_cache_size_limit(5);
 
-  memset(GUID, 0, SUPLA_GUID_SIZE);
-  memset(Email, 0, SUPLA_EMAIL_MAXSIZE);
-  memset(AuthKey, 0, SUPLA_AUTHKEY_SIZE);
+  EXPECT_CALL(object, db_authkey_auth).Times(1).WillRepeatedly(Return(true));
 
-  cd->setCacheSizeLimit(5);
+  char guid[SUPLA_GUID_SIZE] = {};
+  char email[SUPLA_EMAIL_MAXSIZE] = {};
+  char authkey[SUPLA_AUTHKEY_SIZE] = {};
 
-  ASSERT_FALSE(cd->authkey_auth(NULL, Email, AuthKey));
+  EXPECT_FALSE(object.authkey_auth(NULL, email, authkey));
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_FALSE(object.authkey_auth(guid, NULL, authkey));
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  ASSERT_FALSE(cd->authkey_auth(GUID, NULL, AuthKey));
+  EXPECT_FALSE(object.authkey_auth(guid, email, NULL));
+  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
 
-  ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
-
-  ASSERT_FALSE(cd->authkey_auth(GUID, Email, NULL));
-
-  ASSERT_EQ(0, cd->getDbAuthCount());
-  ASSERT_EQ(0, supla_connection_object::get_authkey_cache_size());
-
-  ASSERT_FALSE(cd->authkey_auth(GUID, Email, AuthKey));
-
-  ASSERT_EQ(1, cd->getDbAuthCount());
-  ASSERT_EQ(1, supla_connection_object::get_authkey_cache_size());
-
-  delete cd;
+  EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
+  EXPECT_EQ(1, supla_connection_object::get_authkey_cache_size());
 
   supla_connection_object::release_cache();
 }
 
-TEST_F(ConnectionObjectTest, guid_setter_getter) {
+TEST_F(ConnectionObjectTest, guidSetterAndGtter) {
   char v[SUPLA_GUID_SIZE];
   char v0[SUPLA_GUID_SIZE];
   char v1[SUPLA_GUID_SIZE];
@@ -195,7 +173,7 @@ TEST_F(ConnectionObjectTest, guid_setter_getter) {
   supla_connection_object::release_cache();
 }
 
-TEST_F(ConnectionObjectTest, authkey_setter_getter) {
+TEST_F(ConnectionObjectTest, authkeySetterAndGtter) {
   char v[SUPLA_AUTHKEY_SIZE];
   char v0[SUPLA_AUTHKEY_SIZE];
   char v1[SUPLA_AUTHKEY_SIZE];
@@ -221,4 +199,4 @@ TEST_F(ConnectionObjectTest, authkey_setter_getter) {
   supla_connection_object::release_cache();
 }
 
-}  // namespace
+}  // namespace testing

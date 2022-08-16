@@ -19,6 +19,8 @@
 #ifndef SUPLA_CONNECTION_OBJECT_H_
 #define SUPLA_CONNECTION_OBJECT_H_
 
+#include <memory>
+
 #include "conn/connection.h"
 #include "proto.h"
 
@@ -39,8 +41,8 @@ class supla_connection_object {
   static int authkey_auth_cache_size;
 
   // Thread safe start
-  bool set_guid(char GUID[SUPLA_GUID_SIZE]);
-  bool set_authkey(char AuthKey[SUPLA_AUTHKEY_SIZE]);
+  bool set_guid(const char GUID[SUPLA_GUID_SIZE]);
+  bool set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void set_id(int ID);
   void set_user(supla_user *user);
   // Thread safe end
@@ -63,6 +65,7 @@ class supla_connection_object {
   virtual ~supla_connection_object();
   virtual unsigned _supla_int64_t wait_time_usec(void);
   supla_connection *get_connection(void);
+  std::shared_ptr<supla_connection_object> get_shared_ptr(void);
 
   // Thread safe start
   void terminate(void);

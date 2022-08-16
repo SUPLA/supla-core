@@ -20,18 +20,13 @@
 #define USER_CLIENTCONTAINER_H_
 
 #include <list>
+#include <memory>
 
 #include "channel_address.h"
 #include "client.h"
 #include "conn/connection_objects.h"
 
 class supla_user_client_container : public supla_connection_objects {
- private:
-  static char find_client_byid(void *ptr, void *ID);
-  static char find_client_byguid(void *ptr, void *GUID);
-
-  supla_client *baseToClient(supla_connection_object *base);
-
  public:
   supla_user_client_container();
   virtual ~supla_user_client_container();

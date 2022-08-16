@@ -22,15 +22,16 @@
 #include <stddef.h>
 #include <sys/time.h>
 
+#include <memory>
+
 #include "eh.h"
 #include "srpc/srpc.h"
 
 #define LOCAL_IPV4_ARRAY_SIZE 5
 
-class supla_client;
-class supla_device;
 class supla_connection_object;
-
+class supla_device;
+class supla_client;
 class supla_connection {
  private:
   static void *reg_pending_arr;
@@ -63,11 +64,9 @@ class supla_connection {
   struct timeval init_time;
   unsigned char activity_timeout;
 
-  union {
-    supla_client *client;
-    supla_device *device;
-    supla_connection_object *object;
-  };
+  std::shared_ptr<supla_connection_object> object;
+  std::shared_ptr<supla_client> get_client(void);  // tmp
+  std::shared_ptr<supla_device> get_device(void);  // tmp
 
   char registered;
 
@@ -75,6 +74,7 @@ class supla_connection {
   void catch_incorrect_call(unsigned int call_type);
 
  public:
+  std::shared_ptr<supla_connection_object> get_object(void);
   static void log_limits(void);
   static bool is_connection_allowed(unsigned int ipv4);
   static bool conn_limit_exceeded_soft(void);

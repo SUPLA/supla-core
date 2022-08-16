@@ -20,15 +20,31 @@
 
 #include "log.h"
 
-// static
-char ConnectionObjectsMock::find_by_ptr(void *ptr1, void *ptr2) {
-  return ptr1 == ptr2 ? 1 : 0;
-}
-
 ConnectionObjectsMock::ConnectionObjectsMock() : supla_connection_objects() {}
 
 ConnectionObjectsMock::~ConnectionObjectsMock() {}
 
-supla_connection_object *ConnectionObjectsMock::findByPtr(void *ptr) {
-  return find(find_by_ptr, ptr);
+void ConnectionObjectsMock::for_each(
+    std::function<bool(std::shared_ptr<supla_connection_object> obj)>
+        on_object) {
+  supla_connection_objects::for_each(on_object);
+}
+
+std::vector<std::shared_ptr<supla_connection_object> >
+ConnectionObjectsMock::get_all(void) {
+  return supla_connection_objects::get_all();
+}
+
+bool ConnectionObjectsMock::add(std::shared_ptr<supla_connection_object> obj) {
+  return supla_connection_objects::add(obj);
+}
+
+std::shared_ptr<supla_connection_object> ConnectionObjectsMock::find_by_id(
+    int id) {
+  return supla_connection_objects::find_by_id(id);
+}
+
+std::shared_ptr<supla_connection_object> ConnectionObjectsMock::find_by_guid(
+    const char guid[SUPLA_GUID_SIZE]) {
+  return supla_connection_objects::find_by_guid(guid);
 }

@@ -32,6 +32,9 @@
 #include "user.h"
 #include "user/userchannelgroups.h"
 
+using std::dynamic_pointer_cast;
+using std::shared_ptr;
+
 supla_client::supla_client(supla_connection *connection)
     : supla_connection_object(connection) {
   this->srpc_adapter = new supla_srpc_adapter(connection->srpc());
@@ -54,6 +57,11 @@ supla_client::~supla_client() {
   delete scenes;
   delete scene_remote_updater;
   delete srpc_adapter;
+}
+
+shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
+  return dynamic_pointer_cast<supla_client>(
+      supla_connection_object::get_shared_ptr());
 }
 
 void supla_client::setName(const char *name) {
@@ -306,7 +314,7 @@ char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,
                 setAccessID(AccessID);
 
                 // Set the user before loading config
-                // set_user(supla_user::add_client(this, UserID));
+                set_user(supla_user::add_client(get_shared_ptr(), UserID));
 
                 loadConfig();
 
@@ -574,7 +582,7 @@ void supla_client::set_channel_function(int ChannelId, int Func) {
 }
 
 void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
-  get_user()->set_channel_function(this, func);
+  get_user()->set_channel_function(get_shared_ptr(), func);
 }
 
 void supla_client::set_channel_function_result(

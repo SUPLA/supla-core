@@ -20,10 +20,16 @@
 
 #include <unistd.h>
 
+#include <memory>
+#include <vector>
+
 #include "log.h"
 #include "safearray.h"
 #include "sthread.h"
 #include "user.h"
+
+using std::shared_ptr;
+using std::vector;
 
 supla_datalogger::supla_datalogger() {
   this->temperature_tv.tv_sec = 0;
@@ -43,8 +49,7 @@ void supla_datalogger::log_temperature() {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    std::vector<std::shared_ptr<supla_device> > devices =
-        user->get_devices()->get_all();
+    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
 
     for (auto it = devices.begin(); it != devices.end(); ++it) {
       (*it)->get_channels()->get_temp_and_humidity(tarr);
@@ -79,8 +84,7 @@ void supla_datalogger::log_electricity_measurement(void) {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    std::vector<std::shared_ptr<supla_device> > devices =
-        user->get_devices()->get_all();
+    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
 
     for (auto it = devices.begin(); it != devices.end(); ++it) {
       (*it)->get_channels()->get_electricity_measurements(emarr, true);
@@ -107,8 +111,7 @@ void supla_datalogger::log_ic_measurement(void) {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    std::vector<std::shared_ptr<supla_device> > devices =
-        user->get_devices()->get_all();
+    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
 
     for (auto it = devices.begin(); it != devices.end(); ++it) {
       (*it)->get_channels()->get_ic_measurements(icarr, true);
@@ -135,8 +138,7 @@ void supla_datalogger::log_thermostat_measurement(void) {
   while ((user = supla_user::get_user(n)) != NULL) {
     n++;
 
-    std::vector<std::shared_ptr<supla_device> > devices =
-        user->get_devices()->get_all();
+    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
 
     for (auto it = devices.begin(); it != devices.end(); ++it) {
       (*it)->get_channels()->get_thermostat_measurements(tharr);

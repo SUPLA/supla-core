@@ -37,6 +37,11 @@
 #include "svrcfg.h"
 #include "tools.h"
 
+using std::dynamic_pointer_cast;
+using std::make_shared;
+using std::shared_ptr;
+using std::weak_ptr;
+
 #define REGISTER_WAIT_TIMEOUT 5
 #define REG_NONE 0
 #define REG_DEVICE 1
@@ -48,7 +53,7 @@
 
 #define INCORRECT_CALL_MAXCOUNT 5
 
-void *supla_connection::reg_pending_arr = NULL;
+void *supla_connection::reg_pending_arr = nullptr;
 unsigned int supla_connection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
 struct timeval supla_connection::reg_limit_exceeded_alert_time = {0, 0};
 struct timeval supla_connection::reg_limit_exceeded_time = {0, 0};
@@ -86,7 +91,7 @@ void supla_connection::log_limits(void) {
       scfg_int(CFG_LIMIT_CONCURRENT_REGISTRATIONS);
 
   struct timeval now;
-  gettimeofday(&now, NULL);
+  gettimeofday(&now, nullptr);
 
   if (concurrent_registrations_limit > 0 &&
       supla_connection::registration_pending_count() >=
@@ -171,7 +176,7 @@ void supla_connection::read_local_ipv4_addresses(void) {
     return;
   }
 
-  for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+  for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
     if (ifa && ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET) {
       addr = (struct sockaddr_in *)ifa->ifa_addr;
       supla_connection::local_ipv4[n] = htonl(addr->sin_addr.s_addr);
@@ -207,10 +212,10 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
                                    unsigned int client_ipv4) {
   safe_array_add(supla_connection::reg_pending_arr, this);
 
-  gettimeofday(&this->init_time, NULL);
+  gettimeofday(&this->init_time, nullptr);
   this->client_ipv4 = client_ipv4;
-  this->sthread = NULL;
-  this->object = NULL;
+  this->sthread = nullptr;
+  this->object = nullptr;
   this->registered = REG_NONE;
   this->ssd = ssd;
   this->supla_socket = supla_socket;
@@ -239,6 +244,18 @@ supla_connection::~supla_connection() {
 
   safe_array_remove(supla_connection::reg_pending_arr, this);
   supla_log(LOG_DEBUG, "Connection Finished");
+}
+
+std::shared_ptr<supla_connection_object> supla_connection::get_object(void) {
+  return object;
+}
+
+shared_ptr<supla_client> supla_connection::get_client(void) {
+  return dynamic_pointer_cast<supla_client>(object);
+}
+
+shared_ptr<supla_device> supla_connection::get_device(void) {
+  return dynamic_pointer_cast<supla_device>(object);
 }
 
 int supla_connection::socket_read(void *buf, size_t count) {
@@ -271,10 +288,10 @@ void supla_connection::on_device_reconnect_request(
   memset(&result, 0, sizeof(TSC_DeviceReconnectRequestResult));
   result.ResultCode = SUPLA_RESULTCODE_FALSE;
 
-  if (client->is_superuser_authorized()) {
+  if (get_client()->is_superuser_authorized()) {
     if (cs_device_reconnect_request &&
-        client->get_user()->device_reconnect(
-            client->get_user()->getUserID(),
+        get_client()->get_user()->device_reconnect(
+            get_client()->get_user()->getUserID(),
             cs_device_reconnect_request->DeviceID)) {
       result.ResultCode = SUPLA_RESULTCODE_TRUE;
     }
@@ -287,14 +304,14 @@ void supla_connection::on_device_reconnect_request(
 
 void supla_connection::on_set_channel_function_request(
     TCS_SetChannelFunction *cs_set_channel_function) {
-  if (cs_set_channel_function != NULL) {
-    client->set_channel_function_request(cs_set_channel_function);
+  if (cs_set_channel_function != nullptr) {
+    get_client()->set_channel_function_request(cs_set_channel_function);
   }
 }
 
 void supla_connection::on_set_caption_request(TCS_SetCaption *cs_set_caption,
                                               bool channel) {
-  if (cs_set_caption != NULL) {
+  if (cs_set_caption != nullptr) {
     if (cs_set_caption->CaptionSize > 0) {
       // ! The field in the database is limited to 100 characters !
 
@@ -307,7 +324,8 @@ void supla_connection::on_set_caption_request(TCS_SetCaption *cs_set_caption,
 
     cs_set_caption->Caption[cs_set_caption->CaptionSize - 1] = 0;
 
-    client->get_user()->set_caption(client, cs_set_caption, channel);
+    get_client()->get_user()->set_caption(get_client(), cs_set_caption,
+                                          channel);
   }
 }
 
@@ -320,12 +338,12 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE");
 
-      if (rd->data.ds_register_device != NULL) {
+      if (rd->data.ds_register_device != nullptr) {
         TDS_SuplaRegisterDevice_B *register_device_b =
             (TDS_SuplaRegisterDevice_B *)malloc(
                 sizeof(TDS_SuplaRegisterDevice_B));
 
-        if (register_device_b != NULL) {
+        if (register_device_b != nullptr) {
           memset(register_device_b, 0, sizeof(TDS_SuplaRegisterDevice_B));
 
           register_device_b->LocationID =
@@ -364,12 +382,12 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_B");
 
-      if (rd->data.ds_register_device_b != NULL) {
+      if (rd->data.ds_register_device_b != nullptr) {
         TDS_SuplaRegisterDevice_C *register_device_c =
             (TDS_SuplaRegisterDevice_C *)malloc(
                 sizeof(TDS_SuplaRegisterDevice_C));
 
-        if (register_device_c != NULL) {
+        if (register_device_c != nullptr) {
           memset(register_device_c, 0, sizeof(TDS_SuplaRegisterDevice_C));
 
           register_device_c->LocationID =
@@ -404,10 +422,10 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_C");
 
-      if (object == NULL && rd->data.ds_register_device_c != NULL) {
-        device = new supla_device(this);
+      if (object == nullptr && rd->data.ds_register_device_c != nullptr) {
+        object = std::make_shared<supla_device>(this);
 
-        if (device != NULL) {
+        if (get_device() != nullptr) {
           rd->data.ds_register_device_c
               ->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE - 1] = 0;
           rd->data.ds_register_device_c->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] =
@@ -416,8 +434,8 @@ void supla_connection::on_register_device_request(void *_srpc,
           rd->data.ds_register_device_c
               ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-          if (device->register_device(rd->data.ds_register_device_c, NULL,
-                                      proto_version) == 1) {
+          if (get_device()->register_device(rd->data.ds_register_device_c,
+                                            nullptr, proto_version) == 1) {
             set_registered(REG_DEVICE);
           }
         }
@@ -427,11 +445,11 @@ void supla_connection::on_register_device_request(void *_srpc,
 
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_D");
 
-      if (object == NULL && rd->data.ds_register_device_d != NULL) {
+      if (object == nullptr && rd->data.ds_register_device_d != nullptr) {
         TDS_SuplaRegisterDevice_E *register_device_e =
             (TDS_SuplaRegisterDevice_E *)malloc(
                 sizeof(TDS_SuplaRegisterDevice_E));
-        if (register_device_e != NULL) {
+        if (register_device_e != nullptr) {
           memset(register_device_e, 0, sizeof(TDS_SuplaRegisterDevice_E));
 
           memcpy(register_device_e->Email, rd->data.ds_register_device_d->Email,
@@ -477,10 +495,10 @@ void supla_connection::on_register_device_request(void *_srpc,
     case SUPLA_DS_CALL_REGISTER_DEVICE_E:
       supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_E");
 
-      if (object == NULL && rd->data.ds_register_device_e != NULL) {
-        device = new supla_device(this);
+      if (object == nullptr && rd->data.ds_register_device_e != nullptr) {
+        object = std::make_shared<supla_device>(this);
 
-        if (device != NULL) {
+        if (get_device() != nullptr) {
           rd->data.ds_register_device_e->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
           rd->data.ds_register_device_e->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] =
               0;
@@ -488,8 +506,9 @@ void supla_connection::on_register_device_request(void *_srpc,
           rd->data.ds_register_device_e
               ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-          if (device->register_device(NULL, rd->data.ds_register_device_e,
-                                      proto_version) == 1) {
+          if (get_device()->register_device(nullptr,
+                                            rd->data.ds_register_device_e,
+                                            proto_version) == 1) {
             set_registered(REG_DEVICE);
           }
         }
@@ -549,12 +568,12 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT");
 
-        if (rd.data.cs_register_client != NULL) {
+        if (rd.data.cs_register_client != nullptr) {
           TCS_SuplaRegisterClient_B *register_client_b =
               (TCS_SuplaRegisterClient_B *)malloc(
                   sizeof(TCS_SuplaRegisterClient_B));
 
-          if (register_client_b != NULL) {
+          if (register_client_b != nullptr) {
             memset(register_client_b, 0, sizeof(TCS_SuplaRegisterClient_B));
 
             register_client_b->AccessID = rd.data.cs_register_client->AccessID;
@@ -579,10 +598,10 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_B");
 
-        if (object == NULL) {
-          client = new supla_client(this);
+        if (object == nullptr) {
+          object = std::make_shared<supla_client>(this);
 
-          if (client != NULL) {
+          if (get_client() != nullptr) {
             rd.data.cs_register_client_b
                 ->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE - 1] = 0;
             rd.data.cs_register_client_b->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] =
@@ -592,8 +611,8 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             rd.data.cs_register_client_b
                 ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-            if (client->register_client(rd.data.cs_register_client_b, NULL,
-                                        proto_version) == 1) {
+            if (get_client()->register_client(rd.data.cs_register_client_b,
+                                              nullptr, proto_version) == 1) {
               set_registered(REG_CLIENT);
             }
           }
@@ -605,11 +624,11 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_C");
 
-        if (rd.data.cs_register_client_c != NULL) {
+        if (rd.data.cs_register_client_c != nullptr) {
           TCS_SuplaRegisterClient_D *register_client_d =
               (TCS_SuplaRegisterClient_D *)malloc(
                   sizeof(TCS_SuplaRegisterClient_D));
-          if (register_client_d != NULL) {
+          if (register_client_d != nullptr) {
             memset(register_client_d, 0, sizeof(TCS_SuplaRegisterClient_D));
 
             memcpy(register_client_d->Email,
@@ -637,10 +656,10 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_D");
 
-        if (object == NULL) {
-          client = new supla_client(this);
+        if (object == nullptr) {
+          object = std::make_shared<supla_client>(this);
 
-          if (client != NULL) {
+          if (get_client() != nullptr) {
             rd.data.cs_register_client_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
             rd.data.cs_register_client_d->Password[SUPLA_PASSWORD_MAXSIZE - 1] =
                 0;
@@ -651,8 +670,9 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
             rd.data.cs_register_client_d
                 ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-            if (client->register_client(NULL, rd.data.cs_register_client_d,
-                                        proto_version) == 1) {
+            if (get_client()->register_client(nullptr,
+                                              rd.data.cs_register_client_d,
+                                              proto_version) == 1) {
               set_registered(REG_CLIENT);
             }
           }
@@ -729,33 +749,33 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       switch (call_type) {
         case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED:
           if (rd.data.ds_device_channel_value) {
-            device->on_device_channel_value_changed(
-                rd.data.ds_device_channel_value, NULL, NULL);
+            get_device()->on_device_channel_value_changed(
+                rd.data.ds_device_channel_value, nullptr, nullptr);
           }
           break;
         case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_B:
           if (rd.data.ds_device_channel_value_b) {
-            device->on_device_channel_value_changed(
-                NULL, rd.data.ds_device_channel_value_b, NULL);
+            get_device()->on_device_channel_value_changed(
+                nullptr, rd.data.ds_device_channel_value_b, nullptr);
           }
           break;
         case SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C:
           if (rd.data.ds_device_channel_value_c) {
-            device->on_device_channel_value_changed(
-                NULL, NULL, rd.data.ds_device_channel_value_c);
+            get_device()->on_device_channel_value_changed(
+                nullptr, nullptr, rd.data.ds_device_channel_value_c);
           }
           break;
 
         case SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED:
           if (rd.data.ds_device_channel_extendedvalue) {
-            device->on_device_channel_extendedvalue_changed(
+            get_device()->on_device_channel_extendedvalue_changed(
                 rd.data.ds_device_channel_extendedvalue);
           }
           break;
 
         case SUPLA_DS_CALL_CHANNEL_SET_VALUE_RESULT:
           if (rd.data.ds_channel_new_value_result) {
-            device->on_channel_set_value_result(
+            get_device()->on_channel_set_value_result(
                 rd.data.ds_channel_new_value_result);
           }
 
@@ -763,35 +783,37 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         case SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL:
           if (rd.data.ds_firmware_update_params) {
-            device->get_firmware_update_url(rd.data.ds_firmware_update_params);
+            get_device()->get_firmware_update_url(
+                rd.data.ds_firmware_update_params);
           }
 
           break;
 
         case SUPLA_DS_CALL_DEVICE_CALCFG_RESULT:
           if (rd.data.ds_device_calcfg_result) {
-            device->on_calcfg_result(rd.data.ds_device_calcfg_result);
+            get_device()->on_calcfg_result(rd.data.ds_device_calcfg_result);
           }
 
           break;
 
         case SUPLA_DSC_CALL_CHANNEL_STATE_RESULT:
           if (rd.data.dsc_channel_state) {
-            device->on_channel_state_result(rd.data.dsc_channel_state);
+            get_device()->on_channel_state_result(rd.data.dsc_channel_state);
           }
           break;
 
         case SUPLA_DS_CALL_GET_CHANNEL_FUNCTIONS:
-          device->get_channels()->get_functions_request();
+          get_device()->get_channels()->get_functions_request();
           break;
 
         case SUPLA_DS_CALL_GET_CHANNEL_CONFIG:
-          device->get_channels()->get_channel_config_request(
+          get_device()->get_channels()->get_channel_config_request(
               rd.data.ds_get_channel_config_request);
           break;
 
         case SUPLA_DS_CALL_ACTIONTRIGGER:
-          device->get_channels()->action_trigger(rd.data.ds_action_trigger);
+          get_device()->get_channels()->action_trigger(
+              rd.data.ds_action_trigger);
           break;
 
         default:
@@ -801,18 +823,18 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     } else if (registered == REG_CLIENT) {
       switch (call_type) {
         case SUPLA_CS_CALL_GET_NEXT:
-          client->get_next();
+          get_client()->get_next();
           break;
         case SUPLA_CS_CALL_CHANNEL_SET_VALUE:
 
           supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE");
 
-          if (rd.data.cs_channel_new_value != NULL) {
+          if (rd.data.cs_channel_new_value != nullptr) {
             TCS_SuplaChannelNewValue_B *cs_channel_new_value_b =
                 (TCS_SuplaChannelNewValue_B *)malloc(
                     sizeof(TCS_SuplaChannelNewValue_B));
 
-            if (cs_channel_new_value_b != NULL) {
+            if (cs_channel_new_value_b != nullptr) {
               memset(cs_channel_new_value_b, 0,
                      sizeof(TCS_SuplaChannelNewValue_B));
               cs_channel_new_value_b->ChannelId =
@@ -829,9 +851,9 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
          * SUPLA_CS_CALL_CHANNEL_SET_VALUE_B!!! */
         case SUPLA_CS_CALL_CHANNEL_SET_VALUE_B:
 
-          if (rd.data.cs_channel_new_value_b != NULL) {
+          if (rd.data.cs_channel_new_value_b != nullptr) {
             supla_log(LOG_DEBUG, "SUPLA_CS_CALL_CHANNEL_SET_VALUE_B");
-            client->set_device_channel_new_value(
+            get_client()->set_device_channel_new_value(
                 rd.data.cs_channel_new_value_b);
           }
 
@@ -839,36 +861,36 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
 
         case SUPLA_CS_CALL_SET_VALUE:
 
-          if (rd.data.cs_new_value != NULL) {
+          if (rd.data.cs_new_value != nullptr) {
             supla_log(LOG_DEBUG, "SUPLA_CS_CALL_SET_VALUE");
-            client->set_new_value(rd.data.cs_new_value);
+            get_client()->set_new_value(rd.data.cs_new_value);
           }
 
           break;
 
         case SUPLA_CS_CALL_OAUTH_TOKEN_REQUEST:
-          client->oauth_token_request();
+          get_client()->oauth_token_request();
           break;
 
         case SUPLA_CS_CALL_SUPERUSER_AUTHORIZATION_REQUEST:
-          if (rd.data.cs_superuser_authorization_request != NULL) {
+          if (rd.data.cs_superuser_authorization_request != nullptr) {
             rd.data.cs_superuser_authorization_request
                 ->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
             rd.data.cs_superuser_authorization_request
                 ->Password[SUPLA_PASSWORD_MAXSIZE - 1] = 0;
-            client->superuser_authorization_request(
+            get_client()->superuser_authorization_request(
                 rd.data.cs_superuser_authorization_request);
           }
 
           break;
 
         case SUPLA_CS_CALL_GET_SUPERUSER_AUTHORIZATION_RESULT:
-          client->send_superuser_authorization_result(NULL);
+          get_client()->send_superuser_authorization_result(nullptr);
 
           break;
 
         case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST:
-          if (rd.data.cs_device_calcfg_request != NULL) {
+          if (rd.data.cs_device_calcfg_request != nullptr) {
             TCS_DeviceCalCfgRequest_B *cs_device_calcfg_request_b =
                 (TCS_DeviceCalCfgRequest_B *)malloc(
                     sizeof(TCS_DeviceCalCfgRequest_B));
@@ -890,24 +912,27 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
                    SUPLA_CALCFG_DATA_MAXSIZE);
 
             free(rd.data.cs_device_calcfg_request);
-            rd.data.cs_device_calcfg_request = NULL;
+            rd.data.cs_device_calcfg_request = nullptr;
             rd.data.cs_device_calcfg_request_b = cs_device_calcfg_request_b;
           }
           /* no break between SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST and
            * SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B!!! */
         case SUPLA_CS_CALL_DEVICE_CALCFG_REQUEST_B:
-          if (rd.data.cs_device_calcfg_request_b != NULL) {
-            client->device_calcfg_request(rd.data.cs_device_calcfg_request_b);
+          if (rd.data.cs_device_calcfg_request_b != nullptr) {
+            get_client()->device_calcfg_request(
+                rd.data.cs_device_calcfg_request_b);
           }
           break;
         case SUPLA_CSD_CALL_GET_CHANNEL_STATE:
-          if (rd.data.csd_channel_state_request != NULL) {
-            client->device_get_channel_state(rd.data.csd_channel_state_request);
+          if (rd.data.csd_channel_state_request != nullptr) {
+            get_client()->device_get_channel_state(
+                rd.data.csd_channel_state_request);
           }
           break;
         case SUPLA_CS_CALL_GET_CHANNEL_BASIC_CFG:
-          if (rd.data.cs_channel_basic_cfg_request != NULL) {
-            client->get_channel_basic_cfg(rd.data.cs_channel_basic_cfg_request);
+          if (rd.data.cs_channel_basic_cfg_request != nullptr) {
+            get_client()->get_channel_basic_cfg(
+                rd.data.cs_channel_basic_cfg_request);
           }
           break;
         case SUPLA_CS_CALL_SET_CHANNEL_FUNCTION:
@@ -920,8 +945,8 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           on_set_caption_request(rd.data.cs_set_caption, false);
           break;
         case SUPLA_CS_CALL_CLIENTS_RECONNECT_REQUEST:
-          if (client->is_superuser_authorized()) {
-            client->get_user()->reconnect(
+          if (get_client()->is_superuser_authorized()) {
+            get_client()->get_user()->reconnect(
                 supla_caller(ctClient, object->get_id()), false, true);
           } else {
             TSC_ClientsReconnectRequestResult result;
@@ -931,11 +956,11 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           }
           break;
         case SUPLA_CS_CALL_SET_REGISTRATION_ENABLED:
-          if (rd.data.cs_set_registration_enabled != NULL) {
+          if (rd.data.cs_set_registration_enabled != nullptr) {
             TSC_SetRegistrationEnabledResult result;
             memset(&result, 0, sizeof(TSC_SetRegistrationEnabledResult));
 
-            if (client->is_superuser_authorized()) {
+            if (get_client()->is_superuser_authorized()) {
               database *db = new database();
 
               result.ResultCode =
@@ -962,8 +987,8 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
           break;
         case SUPLA_CS_CALL_TIMER_ARM:
 
-          if (rd.data.cs_timer_arm_request != NULL) {
-            client->timer_arm(rd.data.cs_timer_arm_request);
+          if (rd.data.cs_timer_arm_request != nullptr) {
+            get_client()->timer_arm(rd.data.cs_timer_arm_request);
           }
 
           break;
@@ -1002,7 +1027,7 @@ void supla_connection::execute(void *sthread) {
     if (registered == REG_NONE) {
       // TERMINATE IF REGISTRATION TIMEOUT
       struct timeval now;
-      gettimeofday(&now, NULL);
+      gettimeofday(&now, nullptr);
 
       if (now.tv_sec - init_time.tv_sec >= REGISTER_WAIT_TIMEOUT) {
         sthread_terminate(sthread);
@@ -1020,42 +1045,21 @@ void supla_connection::execute(void *sthread) {
     }
   }
 
-  if (object != NULL) {
-    supla_user *user = object->get_user();
+  if (object != nullptr) {
+    weak_ptr<supla_connection_object> _object = object;
+    object = nullptr;
 
-    if (user) {
-      if (registered == REG_DEVICE) {
-        //       user->moveDeviceToTrash(device);
-      } else {
-        //       user->moveClientToTrash(client);
-      }
-    }
-/*
     {
       unsigned long deadlock_counter = 0;
 
-      while (object->get_ptr_counter() > 1) {
-        usleep(100);
+      while (!_object.expired()) {
+        usleep(deadlock_counter < 100000 ? 100 : 100000);
         deadlock_counter++;
-        if (deadlock_counter > 100000) {
-          supla_log(
-              LOG_WARNING,
-              "Too long waiting time to release the object pointer! %i/%i",
-              sthread, object);
+        if (deadlock_counter == 100000) {
+          supla_log(LOG_WARNING,
+                    "Too long waiting time to release the object! %x", sthread);
           break;
         }
-      }
-    }
-
-    object->release_ptr();
-*/
-    if (user) {
-      //  user->emptyTrash();
-    } else {
-      if (registered == REG_DEVICE) {
-        delete device;
-      } else {
-        delete client;
       }
     }
   }

@@ -19,17 +19,13 @@
 #ifndef USER_DEVICECONTAINER_H_
 #define USER_DEVICECONTAINER_H_
 
+#include <memory>
+#include <vector>
+
 #include "conn/connection_objects.h"
 #include "device.h"
 
 class supla_user_device_container : public supla_connection_objects {
- private:
-  static char find_device_byid(void *ptr, void *ID);
-  static char find_device_by_channelid(void *ptr, void *ID);
-  static char find_device_byguid(void *ptr, void *GUID);
-
-  supla_device *baseToDevice(supla_connection_object *base);
-
  public:
   supla_user_device_container();
   virtual ~supla_user_device_container();

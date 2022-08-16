@@ -23,14 +23,18 @@
 #include "gtest/gtest.h"  // NOLINT
 
 class ConnectionObjectsMock : public supla_connection_objects {
- private:
-  static char find_by_ptr(void *ptr1, void *ptr2);
-
  public:
   ConnectionObjectsMock();
   virtual ~ConnectionObjectsMock();
 
-  supla_connection_object *findByPtr(void *ptr);
+  void for_each(
+      std::function<bool(std::shared_ptr<supla_connection_object> obj)>
+          on_object);
+  std::vector<std::shared_ptr<supla_connection_object> > get_all(void);
+  bool add(std::shared_ptr<supla_connection_object> obj);
+  std::shared_ptr<supla_connection_object> find_by_id(int id);
+  std::shared_ptr<supla_connection_object> find_by_guid(
+      const char guid[SUPLA_GUID_SIZE]);
 };
 
 #endif /*CONNECTION_OBJECTS_MOCK_H_*/

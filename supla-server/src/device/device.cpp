@@ -32,7 +32,9 @@
 #include "srpc/srpc.h"
 #include "user.h"
 
+using std::dynamic_pointer_cast;
 using std::list;
+using std::shared_ptr;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_connection_object(connection) {
@@ -50,6 +52,11 @@ supla_device::~supla_device() {
   }
 
   delete channels;
+}
+
+shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
+  return dynamic_pointer_cast<supla_device>(
+      supla_connection_object::get_shared_ptr());
 }
 
 // static
@@ -360,7 +367,7 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
-              // supla_user::add_device(this, UserID);
+              supla_user::add_device(get_shared_ptr(), UserID);
               get_user()->update_client_device_channels(LocationID, DeviceID);
 
               channels->on_device_registered(get_user(), DeviceID,

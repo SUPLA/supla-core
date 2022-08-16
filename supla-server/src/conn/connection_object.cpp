@@ -82,7 +82,7 @@ void supla_connection_object::terminate(void) {
   lck_unlock(lck);
 }
 
-bool supla_connection_object::set_guid(char guid[SUPLA_GUID_SIZE]) {
+bool supla_connection_object::set_guid(const char guid[SUPLA_GUID_SIZE]) {
   char _guid[SUPLA_GUID_SIZE] = {};
 
   if (memcmp(_guid, guid, SUPLA_GUID_SIZE) == 0) return false;
@@ -110,7 +110,8 @@ bool supla_connection_object::guid_equal(const char guid[SUPLA_GUID_SIZE]) {
   return result;
 }
 
-bool supla_connection_object::set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
+bool supla_connection_object::set_authkey(
+    const char authkey[SUPLA_AUTHKEY_SIZE]) {
   char _authkey[SUPLA_AUTHKEY_SIZE] = {};
 
   if (memcmp(_authkey, authkey, SUPLA_AUTHKEY_SIZE) == 0) return false;
@@ -169,6 +170,11 @@ int supla_connection_object::get_user_id(void) {
 }
 
 supla_connection *supla_connection_object::get_connection(void) { return conn; }
+
+std::shared_ptr<supla_connection_object>
+supla_connection_object::get_shared_ptr(void) {
+  return conn ? conn->get_object() : nullptr;
+}
 
 void supla_connection_object::update_last_activity(void) {
   lck_lock(lck);

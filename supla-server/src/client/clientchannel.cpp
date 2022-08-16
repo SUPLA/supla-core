@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #include "client.h"
 #include "database.h"
 #include "log.h"

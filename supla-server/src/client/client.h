@@ -19,6 +19,8 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
+#include <memory>
+
 #include "client_scene_dao.h"
 #include "client_scene_remote_updater.h"
 #include "client_scenes.h"
@@ -62,6 +64,7 @@ class supla_client : public supla_connection_object {
 
  public:
   explicit supla_client(supla_connection *connection);
+  std::shared_ptr<supla_client> get_shared_ptr(void);
 
   void iterate();
   unsigned _supla_int64_t wait_time_usec();

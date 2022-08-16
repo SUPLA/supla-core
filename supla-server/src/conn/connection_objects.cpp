@@ -21,6 +21,7 @@
 using std::function;
 using std::shared_ptr;
 using std::vector;
+using std::weak_ptr;
 
 supla_connection_objects::supla_connection_objects() { lck = lck_init(); }
 
@@ -34,31 +35,27 @@ void supla_connection_objects::for_each(
     function<bool(shared_ptr<supla_connection_object> obj)> on_object) {
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if (!on_object(*it)) {
+    shared_ptr<supla_connection_object> _obj = (*it).lock();
+
+    if (_obj != nullptr && !on_object(_obj)) {
       break;
     }
   }
   unlock();
 }
 
-std::vector<std::shared_ptr<supla_connection_object> >
-supla_connection_objects::get_all(void) {
+vector<shared_ptr<supla_connection_object> > supla_connection_objects::get_all(
+    void) {
   lock();
-  std::vector<std::shared_ptr<supla_connection_object> > result = objects;
-  unlock();
+  vector<shared_ptr<supla_connection_object> > result;
 
-  return result;
-}
-
-bool supla_connection_objects::exists(shared_ptr<supla_connection_object> obj) {
-  bool result = false;
-  lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if (*it == obj) {
-      result = true;
-      break;
+    shared_ptr<supla_connection_object> _obj = (*it).lock();
+    if (_obj != nullptr) {
+      result.push_back(_obj);
     }
   }
+
   unlock();
 
   return result;
@@ -68,7 +65,20 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
   bool result = false;
   lock();
 
-  if (!exists(obj)) {
+  bool exists = false;
+
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    shared_ptr<supla_connection_object> _obj = (*it).lock();
+    if (_obj == nullptr) {
+      // cleanup
+      it = objects.erase(it);
+      --it;
+    } else if (_obj == obj) {
+      exists = true;
+    }
+  }
+
+  if (!exists) {
     char GUID[SUPLA_GUID_SIZE] = {};
     obj->get_guid(GUID);
 
@@ -91,8 +101,10 @@ shared_ptr<supla_connection_object> supla_connection_objects::find_by_id(
   shared_ptr<supla_connection_object> result;
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if ((*it)->get_id() == id) {
-      result = *it;
+    shared_ptr<supla_connection_object> _obj = (*it).lock();
+
+    if (_obj != nullptr && _obj->get_id() == id) {
+      result = _obj;
       break;
     }
   }
@@ -105,8 +117,10 @@ shared_ptr<supla_connection_object> supla_connection_objects::find_by_guid(
   shared_ptr<supla_connection_object> result;
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    if ((*it)->guid_equal(guid)) {
-      result = *it;
+    shared_ptr<supla_connection_object> _obj = (*it).lock();
+
+    if (_obj != nullptr && _obj->guid_equal(guid)) {
+      result = _obj;
       break;
     }
   }
@@ -117,19 +131,21 @@ shared_ptr<supla_connection_object> supla_connection_objects::find_by_guid(
 int supla_connection_objects::count(void) {
   int result = 0;
   lock();
-  result = objects.size();
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
+    if (!(*it).expired()) {
+      result++;
+    }
+  }
   unlock();
   return result;
 }
 
 bool supla_connection_objects::terminate_all(void) {
-  lock();
-  vector<shared_ptr<supla_connection_object> > copy = objects;
-  unlock();
+  vector<shared_ptr<supla_connection_object> > objects = get_all();
 
   bool result = false;
 
-  for (auto it = copy.begin(); it != copy.end(); ++it) {
+  for (auto it = objects.begin(); it != objects.end(); ++it) {
     (*it)->terminate();
     result = true;
   }

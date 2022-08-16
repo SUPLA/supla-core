@@ -97,10 +97,11 @@ class supla_user {
   static void user_free(void);
   supla_user_device_container *get_devices();
   supla_user_client_container *get_clients();
+
   static supla_user *add_device(std::shared_ptr<supla_device> device,
-                                int UserID);
+                                int user_id);
   static supla_user *add_client(std::shared_ptr<supla_client> client,
-                                int UserID);
+                                int user_id);
   static supla_user *find(int UserID, bool create);
   static supla_user *find_by_suid(const char *suid);
   static int suid_to_user_id(const char *suid, bool use_database);
@@ -210,8 +211,10 @@ class supla_user {
 
   channel_complex_value get_channel_complex_value(int channel_id);
 
-  void set_channel_function(supla_client *sender, TCS_SetChannelFunction *func);
-  void set_caption(supla_client *sender, TCS_SetCaption *caption, bool channel);
+  void set_channel_function(std::shared_ptr<supla_client> sender,
+                            TCS_SetChannelFunction *func);
+  void set_caption(std::shared_ptr<supla_client> sender,
+                   TCS_SetCaption *caption, bool channel);
 
   supla_amazon_alexa_credentials *amazonAlexaCredentials(void);
   supla_google_home_credentials *googleHomeCredentials(void);

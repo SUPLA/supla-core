@@ -19,27 +19,26 @@
 #ifndef CONNECTION_OBJECT_MOCK_H_
 #define CONNECTION_OBJECT_MOCK_H_
 
+#include <gmock/gmock.h>
+
 #include "conn/connection_object.h"
 
 class ConnectionObjectMock : public supla_connection_object {
- protected:
-  bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                       const char Email[SUPLA_EMAIL_MAXSIZE],
-                       const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
-                       database *db);
-
-  int dbAuthCount;
-
  public:
   explicit ConnectionObjectMock(supla_connection *connection);
-  int getDbAuthCount();
-  void setCacheSizeLimit(int size);
-  bool set_guid(char guid[SUPLA_GUID_SIZE]);
-  bool set_authkey(char authkey[SUPLA_AUTHKEY_SIZE]);
+  void set_cache_size_limit(int size);
+  void set_id(int id);
+  bool set_guid(const char guid[SUPLA_GUID_SIZE]);
+  bool set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]);
 
   bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
                     const char Email[SUPLA_EMAIL_MAXSIZE],
                     const char AuthKey[SUPLA_AUTHKEY_SIZE]);
+
+  MOCK_METHOD5(db_authkey_auth, bool(const char guid[SUPLA_GUID_SIZE],
+                                     const char email[SUPLA_EMAIL_MAXSIZE],
+                                     const char authkey[SUPLA_AUTHKEY_SIZE],
+                                     int *user_id, database *db));
 };
 
 #endif /* CONNECTION_OBJECT_MOCK_H_ */

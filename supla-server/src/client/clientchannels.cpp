@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #include "clientchannel.h"
 #include "commontypes.h"
 #include "database.h"

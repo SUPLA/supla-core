@@ -18,122 +18,182 @@
 
 #include "ConnectionObjectsTest.h"
 
+#include <memory>
+
 #include "doubles/conn/ConnectionObjectMock.h"
 #include "doubles/conn/ConnectionObjectsMock.h"
 #include "gtest/gtest.h"  // NOLINT
 
-namespace {
+namespace testing {
 
-class CDContainerTest : public ::testing::Test {
- protected:
-  ConnectionObjectsMock *c;
-};
+using std::make_shared;
+using std::shared_ptr;
+using std::vector;
 
-TEST_F(CDContainerTest, addToList) {
-  ConnectionObjectsMock *container = new ConnectionObjectsMock();
-  ASSERT_FALSE(container == NULL);
+TEST_F(ConnectionObjectsTest, forEach) {
+  ConnectionObjectsMock objects;
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
-  ASSERT_FALSE(cd == NULL);
+  shared_ptr<ConnectionObjectMock> cd1 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  ASSERT_EQ(0, container->count());
-  container->addToList(cd);
-  container->addToList(cd);
-  ASSERT_EQ(1, container->count());
+  shared_ptr<ConnectionObjectMock> cd2 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  ASSERT_EQ(0, container->delCount());
-  container->deleteAll(0);
-  ASSERT_EQ(1, container->delCount());
+  shared_ptr<ConnectionObjectMock> cd3 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  container->deleteAll(0);
-  delete container;
+  objects.add(cd1);
+  objects.add(cd2);
+  objects.add(cd3);
+  objects.add(cd3);
+
+  EXPECT_EQ(3, objects.count());
+  cd2 = nullptr;
+  EXPECT_EQ(2, objects.count());
+
+  short counter = 0;
+  objects.for_each([&counter, cd1, cd2,
+                    cd3](std::shared_ptr<supla_connection_object> obj) -> bool {
+    if (obj == cd1) {
+      counter++;
+    }
+    if (obj == cd2) {
+      counter++;
+    }
+    if (obj == cd3) {
+      counter++;
+    }
+    return true;
+  });
+
+  EXPECT_EQ(2, counter);
+
+  counter = 0;
+  objects.for_each([&counter, cd1, cd2,
+                    cd3](std::shared_ptr<supla_connection_object> obj) -> bool {
+    counter++;
+    return true;
+  });
+
+  EXPECT_EQ(2, counter);
+
+  counter = 0;
+  objects.for_each([&counter, cd1, cd2,
+                    cd3](std::shared_ptr<supla_connection_object> obj) -> bool {
+    counter++;
+    return false;
+  });
+
+  EXPECT_EQ(1, counter);
 }
 
-TEST_F(CDContainerTest, moveToTrashWithoutPtrUse) {
-  ConnectionObjectsMock *container = new ConnectionObjectsMock();
-  ASSERT_FALSE(container == NULL);
+TEST_F(ConnectionObjectsTest, getAll) {
+  ConnectionObjectsMock objects;
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
-  ASSERT_FALSE(cd == NULL);
+  shared_ptr<ConnectionObjectMock> cd1 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  ASSERT_EQ(0, container->trashCount());
-  ASSERT_EQ(0, container->count());
-  container->addToList(cd);
-  ASSERT_EQ(1, container->count());
-  ASSERT_EQ(0, container->trashCount());
-  container->moveToTrash(cd);
-  ASSERT_EQ(0, container->count());
-  ASSERT_EQ(0, container->trashCount());
-  ASSERT_EQ(1, container->delCount());
+  shared_ptr<ConnectionObjectMock> cd2 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  container->deleteAll(0);
-  delete container;
+  shared_ptr<ConnectionObjectMock> cd3 =
+      make_shared<ConnectionObjectMock>(nullptr);
+
+  objects.add(cd1);
+  objects.add(cd2);
+  objects.add(cd3);
+  cd2 = nullptr;
+
+  short counter = 0;
+
+  vector<shared_ptr<supla_connection_object> > _objects = objects.get_all();
+
+  for (auto it = _objects.begin(); it != _objects.end(); ++it) {
+    if (*it == cd1) {
+      counter++;
+    }
+    if (*it == cd2) {
+      counter++;
+    }
+    if (*it == cd3) {
+      counter++;
+    }
+  }
+
+  EXPECT_EQ(2, counter);
+  EXPECT_EQ(2, _objects.size());
 }
 
-TEST_F(CDContainerTest, moveToTrashWithPtrUse) {
-  ConnectionObjectsMock *container = new ConnectionObjectsMock();
-  ASSERT_FALSE(container == NULL);
+TEST_F(ConnectionObjectsTest, add) {
+  ConnectionObjectsMock objects;
+  EXPECT_EQ(0, objects.count());
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
-  ASSERT_FALSE(cd == NULL);
+  shared_ptr<ConnectionObjectMock> cd1 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  container->addToList(cd);
-  cd->retain_ptr();
-  container->moveToTrash(cd);
-  ASSERT_EQ(0, container->count());
-  ASSERT_EQ(1, container->trashCount());
-  ASSERT_EQ(0, container->delCount());
-  cd->release_ptr();
-  container->deleteAll(0);
-  ASSERT_EQ(0, container->count());
-  ASSERT_EQ(0, container->trashCount());
-  ASSERT_EQ(1, container->delCount());
+  shared_ptr<ConnectionObjectMock> cd2 =
+      make_shared<ConnectionObjectMock>(nullptr);
 
-  delete container;
+  objects.add(cd1);
+  EXPECT_EQ(1, objects.count());
+  objects.add(cd2);
+  EXPECT_EQ(2, objects.count());
+  objects.add(cd1);
+  EXPECT_EQ(2, objects.count());
+
+  cd1 = nullptr;
+  EXPECT_EQ(1, objects.count());
 }
 
-TEST_F(CDContainerTest, findItem) {
-  ConnectionObjectsMock *container = new ConnectionObjectsMock();
-  ASSERT_FALSE(container == NULL);
+TEST_F(ConnectionObjectsTest, findById) {
+  ConnectionObjectsMock objects;
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
-  ASSERT_FALSE(cd == NULL);
-  ASSERT_EQ(NULL, container->findByPtr(cd));
+  shared_ptr<ConnectionObjectMock> cd1 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd1->set_id(11);
 
-  container->addToList(cd);
-  ASSERT_FALSE(cd->ptr_is_used());
-  ASSERT_EQ(NULL, container->findByPtr((void *)1));
-  ASSERT_EQ(cd, container->findByPtr(cd));
-  ASSERT_TRUE(cd->ptr_is_used());
-  container->releasePtr(cd);
-  ASSERT_FALSE(cd->ptr_is_used());
-  container->moveToTrash(cd);
-  ASSERT_EQ(NULL, container->findByPtr(cd));
+  shared_ptr<ConnectionObjectMock> cd2 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd2->set_id(12);
 
-  container->deleteAll(0);
-  delete container;
+  objects.add(cd1);
+  objects.add(cd2);
+
+  EXPECT_TRUE(objects.find_by_id(10) == nullptr);
+  EXPECT_TRUE(objects.find_by_id(11) == cd1);
+  EXPECT_TRUE(objects.find_by_id(12) == cd2);
+  cd1 = nullptr;
+  EXPECT_TRUE(objects.find_by_id(11) == nullptr);
+  EXPECT_TRUE(objects.find_by_id(55) == nullptr);
+  cd2->set_id(55);
+  EXPECT_TRUE(objects.find_by_id(55) == cd2);
 }
 
-TEST_F(CDContainerTest, getItem) {
-  ConnectionObjectsMock *container = new ConnectionObjectsMock();
-  ASSERT_FALSE(container == NULL);
+TEST_F(ConnectionObjectsTest, findByGUID) {
+  char guid1[SUPLA_GUID_SIZE] = {};
+  char guid2[SUPLA_GUID_SIZE] = {};
+  char guid3[SUPLA_GUID_SIZE] = {};
 
-  ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
-  ASSERT_FALSE(cd == NULL);
-  ASSERT_EQ(NULL, container->get(0));
+  guid1[0] = 5;
+  guid2[0] = 6;
+  guid3[0] = 7;
 
-  container->addToList(cd);
-  ASSERT_FALSE(cd->ptr_is_used());
-  ASSERT_EQ(NULL, container->get(1));
-  ASSERT_EQ(cd, container->get(0));
-  ASSERT_TRUE(cd->ptr_is_used());
-  container->releasePtr(cd);
-  ASSERT_FALSE(cd->ptr_is_used());
-  container->moveToTrash(cd);
-  ASSERT_EQ(NULL, container->get(0));
+  ConnectionObjectsMock objects;
 
-  container->deleteAll(0);
-  delete container;
+  shared_ptr<ConnectionObjectMock> cd1 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd1->set_guid(guid1);
+
+  shared_ptr<ConnectionObjectMock> cd2 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd2->set_guid(guid2);
+
+  objects.add(cd1);
+  objects.add(cd2);
+
+  EXPECT_TRUE(objects.find_by_guid(guid3) == nullptr);
+  EXPECT_TRUE(objects.find_by_guid(guid2) == cd2);
+  EXPECT_TRUE(objects.find_by_guid(guid1) == cd1);
 }
 
-}  // namespace
+}  // namespace testing

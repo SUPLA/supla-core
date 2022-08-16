@@ -21,22 +21,27 @@
 #include "actions/action_config.h"
 #include "doubles/device/ValueGetterStub.h"
 #include "user/user.h"
+
 namespace testing {
+
+using std::make_shared;
+using std::shared_ptr;
 
 ActionExecutorTest::ActionExecutorTest(void) {
   aexec = NULL;
-  device = NULL;
+  device = nullptr;
 }
 
 ActionExecutorTest::~ActionExecutorTest(void) {}
 
 void ActionExecutorTest::SetUp() {
   supla_user *user = supla_user::find(12345, true);
-  device = new DeviceStub(NULL);
+  device = make_shared<DeviceStub>(nullptr);
   device->set_id(567);
   char value[SUPLA_CHANNELVALUE_SIZE] = {};
   device->get_channels()->add_channel(89, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL,
                                       0, 0, value, 0, NULL, NULL);
+
   supla_user::add_device(device, user->getUserID());
   aexec = new ActionExecutorMock();
 }
@@ -65,7 +70,7 @@ TEST_F(ActionExecutorTest, accessDeviceWithAndWithoutId) {
   aexec->set_channel_id(12345, 567, 3);
   aexec->access_device([this, &device_accessed](supla_device *device) -> void {
     device_accessed = true;
-    EXPECT_EQ(device, this->device);
+    EXPECT_EQ(device, this->device.get());
   });
 
   EXPECT_TRUE(device_accessed);
@@ -82,7 +87,7 @@ TEST_F(ActionExecutorTest, accessDeviceWithAndWithoutId) {
   aexec->set_channel_id(12345, 0, 89);
   aexec->access_device([this, &device_accessed](supla_device *device) -> void {
     device_accessed = true;
-    EXPECT_EQ(device, this->device);
+    EXPECT_EQ(device, this->device.get());
   });
 
   EXPECT_TRUE(device_accessed);
