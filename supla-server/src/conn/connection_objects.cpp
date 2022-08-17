@@ -102,7 +102,7 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
   return result;
 }
 
-shared_ptr<supla_connection_object> supla_connection_objects::find_by_id(
+shared_ptr<supla_connection_object> supla_connection_objects::get(
     int id) {
   if (!id) {
     return nullptr;
@@ -148,7 +148,7 @@ bool supla_connection_objects::terminate_all(void) {
 }
 
 bool supla_connection_objects::terminate(int id) {
-  shared_ptr<supla_connection_object> obj = find_by_id(id);
+  shared_ptr<supla_connection_object> obj = get(id);
   if (obj) {
     obj->terminate();
     return true;
@@ -158,5 +158,5 @@ bool supla_connection_objects::terminate(int id) {
 }
 
 bool supla_connection_objects::is_online(int id) {
-  return find_by_id(id) != nullptr;
+  return get(id) != nullptr;
 }

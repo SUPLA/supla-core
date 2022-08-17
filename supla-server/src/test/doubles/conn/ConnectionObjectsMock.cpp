@@ -39,7 +39,6 @@ bool ConnectionObjectsMock::add(std::shared_ptr<supla_connection_object> obj) {
   return supla_connection_objects::add(obj);
 }
 
-std::shared_ptr<supla_connection_object> ConnectionObjectsMock::find_by_id(
-    int id) {
-  return supla_connection_objects::find_by_id(id);
+std::shared_ptr<supla_connection_object> ConnectionObjectsMock::get(int id) {
+  return supla_connection_objects::get(id);
 }

@@ -145,7 +145,7 @@ TEST_F(ConnectionObjectsTest, add) {
   EXPECT_EQ(1, objects.count());
 }
 
-TEST_F(ConnectionObjectsTest, findById) {
+TEST_F(ConnectionObjectsTest, get) {
   ConnectionObjectsMock objects;
 
   shared_ptr<ConnectionObjectMock> cd1 =
@@ -159,14 +159,14 @@ TEST_F(ConnectionObjectsTest, findById) {
   objects.add(cd1);
   objects.add(cd2);
 
-  EXPECT_TRUE(objects.find_by_id(10) == nullptr);
-  EXPECT_TRUE(objects.find_by_id(11) == cd1);
-  EXPECT_TRUE(objects.find_by_id(12) == cd2);
+  EXPECT_TRUE(objects.get(10) == nullptr);
+  EXPECT_TRUE(objects.get(11) == cd1);
+  EXPECT_TRUE(objects.get(12) == cd2);
   cd1 = nullptr;
-  EXPECT_TRUE(objects.find_by_id(11) == nullptr);
-  EXPECT_TRUE(objects.find_by_id(55) == nullptr);
+  EXPECT_TRUE(objects.get(11) == nullptr);
+  EXPECT_TRUE(objects.get(55) == nullptr);
   cd2->set_id(55);
-  EXPECT_TRUE(objects.find_by_id(55) == cd2);
+  EXPECT_TRUE(objects.get(55) == cd2);
 }
 
 }  // namespace testing

@@ -39,7 +39,7 @@ class supla_connection_objects {
           on_object);
   std::vector<std::shared_ptr<supla_connection_object> > get_all(void);
   bool add(std::shared_ptr<supla_connection_object> obj);
-  std::shared_ptr<supla_connection_object> find_by_id(int id);
+  std::shared_ptr<supla_connection_object> get(int id);
 
  public:
   supla_connection_objects();

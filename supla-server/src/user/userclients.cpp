@@ -35,14 +35,9 @@ bool supla_user_clients::add(shared_ptr<supla_client> client) {
   return supla_user_clients::add(client);
 }
 
-shared_ptr<supla_client> supla_user_clients::find_by_id(int client_id) {
-  return dynamic_pointer_cast<supla_client>(
-      supla_connection_objects::find_by_id(client_id));
-}
-
 std::shared_ptr<supla_client> supla_user_clients::get(int client_id) {
   return dynamic_pointer_cast<supla_client>(
-      supla_connection_objects::find_by_id(client_id));
+      supla_connection_objects::get(client_id));
 }
 
 void supla_user_clients::set_channel_function(int channel_id, int func) {

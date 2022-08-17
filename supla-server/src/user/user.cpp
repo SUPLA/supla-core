@@ -323,7 +323,7 @@ bool supla_user::get_channel_value(int device_id, int channel_id,
   }
 
   shared_ptr<supla_device> related_device;
-  shared_ptr<supla_device> device = devices->find_by_id(device_id);
+  shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     result = device->get_channels()->get_channel_value(
         channel_id, value, online, validity_time_sec, for_client);
@@ -337,7 +337,7 @@ bool supla_user::get_channel_value(int device_id, int channel_id,
       char sub_channel_online = 0;
 
       if (related_list.size() == 1 && *it > 0) {
-        related_device = devices->find_by_channel_id(*it);
+        related_device = devices->get(0, *it);
         if (related_device != nullptr) {
           if (related_device->get_channels()->get_channel_value(
                   *it, sub_value, &sub_channel_online, NULL, for_client) &&
@@ -358,7 +358,7 @@ bool supla_user::get_channel_value(int device_id, int channel_id,
         int n = 0;
         do {
           if (*it > 0) {
-            related_device = devices->find_by_channel_id(*it);
+            related_device = devices->get(0, *it);
             if (related_device != nullptr) {
               sub_channel_online = false;
               if (related_device->get_channels()->get_channel_value(
@@ -381,7 +381,7 @@ bool supla_user::get_channel_value(int device_id, int channel_id,
         *sub_value_type = SUBV_TYPE_NOT_SET_OR_OFFLINE;
 
         if (sub_value_exists && related_list.size() > 0 && *it > 0) {
-          related_device = devices->find_by_channel_id(*it);
+          related_device = devices->get(0, *it);
           if (related_device != nullptr) {
             int rel_channel_func =
                 related_device->get_channels()->get_channel_func(*it);
@@ -559,7 +559,7 @@ bool supla_user::set_device_channel_value(
     unsigned char eol, const char value[SUPLA_CHANNELVALUE_SIZE]) {
   bool result = false;
 
-  shared_ptr<supla_device> device = devices->find_by_id(device_id);
+  shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     // TODO(anyone): Check it out. I think there should be "will change"
     supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
@@ -579,14 +579,14 @@ void supla_user::on_channel_value_changed(const supla_caller &caller,
   list<channel_address> ca_list;
   ca_list.push_back(channel_address(device_id, channel_id));
 
-  shared_ptr<supla_device> device = devices->find_by_id(device_id);
+  shared_ptr<supla_device> device = devices->get(device_id);
   if (device != nullptr) {
     list<int> master_list = device->get_channels()->master_channel(channel_id);
 
     device = nullptr;
 
     for (auto it = master_list.begin(); it != master_list.end(); it++) {
-      device = devices->find_by_channel_id(*it);
+      device = devices->get(0, *it);
 
       if (device != nullptr) {
         ca_list.push_back(channel_address(device->get_id(), *it));
@@ -628,7 +628,7 @@ bool supla_user::device_calcfg_request(const supla_caller &caller,
   shared_ptr<supla_device> device = nullptr;
 
   if (request->Command == SUPLA_CALCFG_CMD_RESET_COUNTERS) {
-    device = devices->find_by_id(device_id);
+    device = devices->get(device_id);
     if (device != nullptr) {
       switch (device->get_channels()->get_channel_func(channel_id)) {
         case SUPLA_CHANNELFNC_POWERSWITCH:
@@ -638,7 +638,7 @@ bool supla_user::device_calcfg_request(const supla_caller &caller,
           if (related.size() == 1) {
             device_id = 0;
             channel_id = related.front();
-            device = devices->find_by_channel_id(channel_id);
+            device = devices->get(0, channel_id);
           }
         } break;
       }
@@ -646,7 +646,7 @@ bool supla_user::device_calcfg_request(const supla_caller &caller,
   }
 
   if (!device && device_id) {
-    device = devices->find_by_id(device_id);
+    device = devices->get(device_id);
   }
 
   if (device) {
@@ -771,7 +771,7 @@ void supla_user::compex_value_cache_update_function(int DeviceId, int ChannelID,
 channel_complex_value supla_user::get_channel_complex_value(int channel_id) {
   channel_complex_value value = {};
 
-  shared_ptr<supla_device> device = devices->find_by_channel_id(channel_id);
+  shared_ptr<supla_device> device = devices->get(0, channel_id);
   if (device == nullptr) {
     channel_function_t f = compex_value_cache_get_function(channel_id);
     value.function = f.function;

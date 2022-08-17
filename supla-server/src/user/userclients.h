@@ -32,8 +32,6 @@ class supla_user_clients : public supla_connection_objects {
   virtual ~supla_user_clients();
 
   bool add(std::shared_ptr<supla_client> client);
-
-  std::shared_ptr<supla_client> find_by_id(int client_id);
   std::shared_ptr<supla_client> get(int client_id);
   void set_channel_function(int channel_id, int func);
   void update_device_channels(int location_id, int device_id);

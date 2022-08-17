@@ -31,8 +31,6 @@ class supla_user_devices : public supla_connection_objects {
   virtual ~supla_user_devices();
   bool add(std::shared_ptr<supla_device> device);
 
-  std::shared_ptr<supla_device> find_by_id(int device_id);
-  std::shared_ptr<supla_device> find_by_channel_id(int channel_id);
   std::shared_ptr<supla_device> get(int device_id);
   std::shared_ptr<supla_device> get(int device_id,
                                     int channel_id);  // device_id or channel_id

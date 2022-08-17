@@ -31,44 +31,31 @@ bool supla_user_devices::add(shared_ptr<supla_device> device) {
   return supla_connection_objects::add(device);
 }
 
-shared_ptr<supla_device> supla_user_devices::find_by_id(int device_id) {
-  return dynamic_pointer_cast<supla_device>(
-      supla_connection_objects::find_by_id(device_id));
-}
-
-shared_ptr<supla_device> supla_user_devices::find_by_channel_id(
-    int channel_id) {
-  if (!channel_id) {
-    return nullptr;
-  }
-
-  shared_ptr<supla_device> result;
-
-  for_each([&result,
-            channel_id](shared_ptr<supla_connection_object> obj) -> bool {
-    shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(obj);
-    if (device->get_channels()->channel_exists(channel_id)) {
-      result = device;
-      return false;
-    }
-    return true;
-  });
-
-  return result;
-}
-
 std::shared_ptr<supla_device> supla_user_devices::get(int device_id) {
   return dynamic_pointer_cast<supla_device>(
-      supla_connection_objects::find_by_id(device_id));
+      supla_connection_objects::get(device_id));
 }
 
 std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
                                                       int channel_id) {
-  if (device_id || channel_id) {
-    shared_ptr<supla_device> device =
-        device_id ? find_by_id(device_id) : find_by_channel_id(channel_id);
-    return device;
+  if (device_id) {
+    return get(device_id);
+  } else if (channel_id) {
+    shared_ptr<supla_device> result;
+
+    for_each([&result,
+              channel_id](shared_ptr<supla_connection_object> obj) -> bool {
+      shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(obj);
+      if (device->get_channels()->channel_exists(channel_id)) {
+        result = device;
+        return false;
+      }
+      return true;
+    });
+
+    return result;
   }
+
   return nullptr;
 }
 
