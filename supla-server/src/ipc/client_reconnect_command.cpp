@@ -18,12 +18,22 @@
 
 #include "ipc/client_reconnect_command.h"
 
+#include <memory>
+
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_client_reconnect_command::supla_client_reconnect_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
     : supla_abstract_client_reconnect_command(socket_adapter) {}
 
 bool supla_client_reconnect_command::reconnect(int user_id, int client_id) {
-  return supla_user::client_reconnect(user_id, client_id);
+  shared_ptr<supla_client> client = supla_user::get_client(user_id, client_id);
+  if (client != nullptr) {
+    client->reconnect();
+    return true;
+  }
+
+  return false;
 }

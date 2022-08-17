@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <memory>
+
 #include "actions/action_gate_openclose.h"
 #include "actions/action_trigger.h"
 #include "channeljsonconfig/action_trigger_config.h"
@@ -629,14 +631,18 @@ void supla_device_channel::updateTimerState(void) {
 
   if (ts_ev->SenderID) {
     supla_user *user = getUser();
-    if (user && user->get_client_name(ts_ev->SenderID, ts_ev->SenderName,
-                                      SUPLA_SENDER_NAME_MAXSIZE)) {
-      ts_ev->SenderNameSize =
-          strnlen(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE) + 1;
-    } else {
-      ts_ev->SenderID = 0;
-      ts_ev->SenderName[0] = 0;
-      ts_ev->SenderNameSize = 0;
+    if (user) {
+      std::shared_ptr<supla_client> client =
+          user->get_clients()->get(ts_ev->SenderID);
+      if (client != nullptr) {
+        client->getName(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE);
+        ts_ev->SenderNameSize =
+            strnlen(ts_ev->SenderName, SUPLA_SENDER_NAME_MAXSIZE) + 1;
+      } else {
+        ts_ev->SenderID = 0;
+        ts_ev->SenderName[0] = 0;
+        ts_ev->SenderNameSize = 0;
+      }
     }
   }
 

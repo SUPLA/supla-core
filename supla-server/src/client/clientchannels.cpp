@@ -345,8 +345,6 @@ bool supla_client_channels::device_get_channel_state(
     TCSD_ChannelStateRequest *request) {
   if (request == NULL) return false;
 
-  bool result = false;
-
   if (channel_exists(request->ChannelID)) {
     safe_array_lock(getArr());
 
@@ -360,15 +358,16 @@ bool supla_client_channels::device_get_channel_state(
     safe_array_unlock(getArr());
 
     if (DeviceID) {
-      getClient()->get_user()->access_device(
-          DeviceID, 0, [this, &result, request](supla_device *device) -> void {
-            result = device->get_channels()->get_channel_state(
-                supla_caller(ctClient, getClient()->get_id()), request);
-          });
+      shared_ptr<supla_device> device =
+          getClient()->get_user()->get_devices()->get(DeviceID);
+      if (device != nullptr) {
+        return device->get_channels()->get_channel_state(
+            supla_caller(ctClient, getClient()->get_id()), request);
+      }
     }
   }
 
-  return result;
+  return false;
 }
 
 void supla_client_channels::get_channel_basic_cfg(
@@ -474,7 +473,7 @@ void supla_client_channels::device_access(
   }
 
   shared_ptr<supla_device> device =
-      getClient()->get_user()->get_device(DeviceID);
+      getClient()->get_user()->get_devices()->get(DeviceID);
   if (device != nullptr) {
     method(device.get());
   }

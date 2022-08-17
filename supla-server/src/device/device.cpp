@@ -368,7 +368,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
               resultcode = SUPLA_RESULTCODE_TRUE;
               result = 1;
               supla_user::add_device(get_shared_ptr(), UserID);
-              get_user()->update_client_device_channels(LocationID, DeviceID);
+              get_user()->get_clients()->update_device_channels(LocationID,
+                                                                DeviceID);
 
               channels->on_device_registered(get_user(), DeviceID,
                                              dev_channels_b, dev_channels_c,
@@ -490,13 +491,17 @@ void supla_device::on_channel_set_value_result(
   int ChannelType = channels->get_channel_type(ChannelID);
 
   if (result->Success == 1 || ChannelType == SUPLA_CHANNELTYPE_BRIDGE) {
-    TSC_SuplaEvent event;
-    memset(&event, 0, sizeof(TSC_SuplaEvent));
+    TSC_SuplaEvent event = {};
     event.ChannelID = ChannelID;
     event.SenderID = result->SenderID;
     event.DurationMS = channels->get_channel_value_duration(ChannelID);
-    get_user()->get_client_name(result->SenderID, event.SenderName,
-                                SUPLA_SENDER_NAME_MAXSIZE);
+
+    std::shared_ptr<supla_client> client =
+        get_user()->get_clients()->get(result->SenderID);
+    if (client != nullptr) {
+      client->getName(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE);
+    }
+
     event.SenderNameSize =
         strnlen(event.SenderName, SUPLA_SENDER_NAME_MAXSIZE - 1) + 1;
 
@@ -537,7 +542,7 @@ void supla_device::on_channel_set_value_result(
       }
     }
 
-    get_user()->call_event(&event);
+    get_user()->get_clients()->call_event(&event);
   }
 }
 
@@ -580,14 +585,22 @@ void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
       }
     }
 
-    get_user()->on_device_calcfg_result(ChannelID, result);
+    std::shared_ptr<supla_client> client =
+        get_user()->get_clients()->get(result->ReceiverID);
+    if (client != nullptr) {
+      client->on_device_calcfg_result(ChannelID, result);
+    }
   }
 }
 
 void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   int ChannelID;
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
-    get_user()->on_device_channel_state_result(ChannelID, state);
+    std::shared_ptr<supla_client> client =
+        get_user()->get_clients()->get(state->ReceiverID);
+    if (client != nullptr) {
+      client->on_device_channel_state_result(ChannelID, state);
+    }
   }
 }
 

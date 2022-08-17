@@ -343,7 +343,8 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     bool cev_exists = false;
 
     int ChannelId = getId();
-    shared_ptr<supla_device> device = client->get_user()->get_device(DeviceId);
+    shared_ptr<supla_device> device =
+        client->get_user()->get_devices()->get(DeviceId);
 
     if (device != nullptr) {
       cev_exists =
@@ -365,7 +366,7 @@ bool supla_client_channel::proto_get(TSC_SuplaChannelExtendedValue *cev,
     }
 
     if (ChannelId) {
-      device = client->get_user()->device_by_channel_id(ChannelId);
+      device = client->get_user()->get_devices()->get(0, ChannelId);
 
       if (device != nullptr) {
         TSC_SuplaChannelExtendedValue second_cev = {};

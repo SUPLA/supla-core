@@ -19,7 +19,9 @@
 #ifndef ACTION_EXECUTOR_MOCK_H_
 #define ACTION_EXECUTOR_MOCK_H_
 
-#include <actions/abstract_action_executor.h>
+#include <memory>
+
+#include "actions/abstract_action_executor.h"
 
 namespace testing {
 
@@ -59,7 +61,7 @@ class ActionExecutorMock : public supla_abstract_action_executor {
  public:
   ActionExecutorMock();
   virtual ~ActionExecutorMock();
-  void access_device(std::function<void(supla_device *device)> on_device);
+  std::shared_ptr<supla_device> get_device(void);
 
   virtual void set_on(bool on);
   virtual void set_color(unsigned int color);

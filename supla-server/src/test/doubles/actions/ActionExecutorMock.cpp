@@ -24,6 +24,7 @@ namespace testing {
 
 using std::function;
 using std::list;
+using std::shared_ptr;
 
 ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
   clear();
@@ -31,9 +32,8 @@ ActionExecutorMock::ActionExecutorMock() : supla_abstract_action_executor() {
 
 ActionExecutorMock::~ActionExecutorMock() {}
 
-void ActionExecutorMock::access_device(
-    function<void(supla_device *device)> on_device) {
-  supla_abstract_action_executor::access_device(on_device);
+shared_ptr<supla_device> ActionExecutorMock::get_device(void) {
+  return supla_abstract_action_executor::get_device();
 }
 
 void ActionExecutorMock::clear(void) {

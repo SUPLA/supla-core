@@ -18,9 +18,13 @@
 
 #include "ipc/set_char_command.h"
 
+#include <memory>
+
 #include "device.h"
 #include "http/httprequestqueue.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_set_char_command::supla_set_char_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -29,21 +33,19 @@ supla_set_char_command::supla_set_char_command(
 bool supla_set_char_command::set_channel_char_value(
     supla_user *user, int device_id, int channel_id, char value,
     const char *alexa_correlation_token, const char *google_request_id) {
-  bool result = false;
-  user->access_device(
-      device_id, channel_id,
-      [&result, channel_id, value, alexa_correlation_token, google_request_id,
-       this](supla_device *device) -> void {
-        // onChannelValueChangeEvent must be called before
-        // set_device_channel_char_value for the potential report to contain
-        // AlexaCorrelationToken / GoogleRequestId
-        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-            device->get_user(), device->get_id(), channel_id, get_caller(),
-            alexa_correlation_token, google_request_id);
+  shared_ptr<supla_device> device =
+      user->get_devices()->get(device_id, channel_id);
 
-        result = device->get_channels()->set_device_channel_char_value(
-            get_caller(), channel_id, 0, false, value);
-      });
+  if (device != nullptr) {
+    // onChannelValueChangeEvent must be called before
+    // set_device_channel_char_value for the potential report to contain
+    // AlexaCorrelationToken / GoogleRequestId
+    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+        device->get_user(), device->get_id(), channel_id, get_caller(),
+        alexa_correlation_token, google_request_id);
 
-  return result;
+    return device->get_channels()->set_device_channel_char_value(
+        get_caller(), channel_id, 0, false, value);
+  }
+  return false;
 }

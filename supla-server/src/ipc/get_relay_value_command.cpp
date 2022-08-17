@@ -18,8 +18,12 @@
 
 #include "ipc/get_relay_value_command.h"
 
+#include <memory>
+
 #include "device.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_get_relay_value_command::supla_get_relay_value_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -27,11 +31,10 @@ supla_get_relay_value_command::supla_get_relay_value_command(
 
 bool supla_get_relay_value_command::get_channel_relay_value(
     int user_id, int device_id, int channel_id, TRelayChannel_Value *value) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, 0,
-      [&result, channel_id, &value](supla_device *device) -> void {
-        result = device->get_channels()->get_relay_value(channel_id, value);
-      });
-  return result;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->get_relay_value(channel_id, value);
+  }
+  return false;
 }

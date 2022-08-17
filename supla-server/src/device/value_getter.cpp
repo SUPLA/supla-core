@@ -16,19 +16,23 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include <value_getter.h>
+#include "value_getter.h"
+
+#include <memory>
 
 #include "device/device.h"
 #include "user/user.h"
 
+using std::shared_ptr;
+
 supla_channel_value *supla_value_getter::_get_value(int user_id, int device_id,
                                                     int channel_id) {
-  supla_channel_value *result = NULL;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id](supla_device *device) -> void {
-        result = device->get_channels()->get_channel_value(channel_id);
-      });
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
 
-  return result;
+  if (device != nullptr) {
+    return device->get_channels()->get_channel_value(channel_id);
+  }
+
+  return NULL;
 }

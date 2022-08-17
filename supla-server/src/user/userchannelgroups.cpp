@@ -18,12 +18,15 @@
 
 #include "userchannelgroups.h"
 
+#include <memory>
+
 #include "database.h"
 #include "safearray.h"
 #include "user.h"
 
 using std::function;
 using std::list;
+using std::shared_ptr;
 
 supla_user_channelgroups::supla_user_channelgroups(supla_user *user) {
   this->user = user;
@@ -70,13 +73,12 @@ bool supla_user_channelgroups::for_each_channel(
   dcpair::sort_by_device_id(&pairs);
 
   for (auto it = pairs.begin(); it != pairs.end(); it++) {
-    user->access_device(
-        it->getDeviceId(), 0,
-        [&result, f, &it, &pairs](supla_device *device) -> void {
-          if (f(device, it->getChannelId(), dcpair::last_one(&pairs, it))) {
-            result = true;
-          }
-        });
+    shared_ptr<supla_device> device =
+        user->get_devices()->get(it->getDeviceId());
+    if (device &&
+        f(device.get(), it->getChannelId(), dcpair::last_one(&pairs, it))) {
+      result = true;
+    }
 
     if (break_on_success && result) {
       break;

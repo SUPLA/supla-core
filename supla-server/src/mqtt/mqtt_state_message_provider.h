@@ -19,13 +19,14 @@
 #ifndef MQTT_STATE_MESSAGE_PROVIDER_H_
 #define MQTT_STATE_MESSAGE_PROVIDER_H_
 
-#include <mqtt_abstract_state_message_provider.h>
+#include <memory.h>
+
 #include "devicechannel.h"
+#include "mqtt_abstract_state_message_provider.h"
 #include "mqtt_db.h"
 
 class supla_mqtt_state_message_provider
     : public supla_mqtt_abstract_state_message_provider {
- private:
  protected:
   virtual const char *_get_user_suid(void);
   virtual channel_complex_value *_get_complex_value(int user_id, int device_id,

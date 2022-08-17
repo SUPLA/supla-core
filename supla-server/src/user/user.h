@@ -81,17 +81,8 @@ class supla_user {
 
   static char find_user_by_id(void *ptr, void *UserID);
   static char find_user_by_suid(void *ptr, void *suid);
-  static bool get_channel_double_value(int user_id, int device_id,
-                                       int channel_id, double *value,
-                                       char type);
-  bool get_channel_double_value(int device_id, int channel_id, double *value,
-                                char type);
 
-  bool client_reconnect(int client_id);
-  bool device_reconnect(int device_id);
   void loadUniqueIDs(void);
-  void access_client(int client_id,
-                     std::function<void(supla_client *client)> on_client);
 
  public:
   static void init(void);
@@ -103,28 +94,15 @@ class supla_user {
                                 int user_id);
   static supla_user *add_client(std::shared_ptr<supla_client> client,
                                 int user_id);
+
+  static std::shared_ptr<supla_device> get_device(
+      int user_id, int device_id, int channel_id);  // device_id or channel_id
+  static std::shared_ptr<supla_client> get_client(int user_id, int client_id);
+
   static supla_user *find(int UserID, bool create);
   static supla_user *find_by_suid(const char *suid);
   static int suid_to_user_id(const char *suid, bool use_database);
   static bool reconnect(int UserID, const supla_caller &caller);
-  static bool client_reconnect(int UserID, int ClientID);
-  static bool device_reconnect(int UserID, int DeviceID);
-  static bool is_client_online(int UserID, int ClientID);
-  static bool is_device_online(int UserID, int DeviceID);
-  static bool is_channel_online(int UserID, int DeviceID, int ChannelID);
-  static bool get_channel_double_value(int user_id, int device_id,
-                                       int channel_id, double *value);
-  static bool get_channel_temperature_value(int user_id, int device_id,
-                                            int channel_id, double *value);
-  static bool get_channel_humidity_value(int user_id, int device_id,
-                                         int channel_id, double *value);
-  static bool get_channel_char_value(int user_id, int device_id, int channel_id,
-                                     char *value);
-  static bool get_channel_rgbw_value(int user_id, int device_id, int channel_id,
-                                     int *color, char *color_brightness,
-                                     char *brightness, char *on_off);
-  static bool get_channel_valve_value(int UserID, int DeviceID, int ChannelID,
-                                      TValve_Value *Value);
 
   static int user_count(void);
   static supla_user *get_user(int idx);
@@ -158,33 +136,7 @@ class supla_user {
   int getUserID(void);
   const char *getShortUniqueID(void);
   const char *getLongUniqueID(void);
-  bool get_client_name(int client_id, char *buffer, int size);
-  bool is_super_user_authorized(int client_id);
 
-  static std::shared_ptr<supla_device> get_device(int user_id, int device_id);
-  std::shared_ptr<supla_device> get_device(int device_id);
-  std::shared_ptr<supla_device> device_by_channel_id(int channel_id);
-
-  void access_device(int device_id, int channel_id,  // device_id or channel_id
-                     std::function<void(supla_device *device)> on_device);
-  static void access_device(
-      int user_id, int device_id, int channel_id,  // device_id or channel_id
-      std::function<void(supla_device *device)> on_device);
-
-  bool get_channel_double_value(int DeviceID, int ChannelID, double *Value);
-  bool get_channel_temperature_value(int DeviceID, int ChannelID,
-                                     double *Value);
-  bool get_channel_humidity_value(int DeviceID, int ChannelID, double *Value);
-  bool get_channel_char_value(int device_id, int channel_id, char *value);
-  bool get_channel_rgbw_value(int device_id, int channel_id, int *color,
-                              char *color_brightness, char *brightness,
-                              char *on_off);
-  bool get_channel_valve_value(int device_id, int channel_id,
-                               TValve_Value *value);
-
-  bool is_client_online(int DeviceID);
-  bool is_device_online(int DeviceID);
-  bool is_channel_online(int DeviceID, int ChannelID);
   bool get_channel_value(int device_id, int channel_id,
                          char value[SUPLA_CHANNELVALUE_SIZE],
                          char sub_value[SUPLA_CHANNELVALUE_SIZE],
@@ -196,19 +148,14 @@ class supla_user {
                                 int channel_id, int group_id, unsigned char eol,
                                 const char value[SUPLA_CHANNELVALUE_SIZE]);
 
-  void update_client_device_channels(int location_id, int device_id);
   void on_channel_value_changed(const supla_caller &caller, int device_id,
                                 int channel_id = 0, bool extended = false,
                                 bool significant_change = true);
   void on_channel_become_online(int DeviceId, int ChannelId);
 
-  void call_event(TSC_SuplaEvent *event);
-
   bool device_calcfg_request(const supla_caller &caller, int device_id,
                              int channel_id,
                              TCS_DeviceCalCfgRequest_B *request);
-  void on_device_calcfg_result(int channel_id, TDS_DeviceCalCfgResult *result);
-  void on_device_channel_state_result(int channel_id, TDSC_ChannelState *state);
 
   channel_complex_value get_channel_complex_value(int channel_id);
 

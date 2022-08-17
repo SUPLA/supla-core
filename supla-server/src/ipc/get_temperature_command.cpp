@@ -18,7 +18,11 @@
 
 #include "ipc/get_temperature_command.h"
 
+#include <memory>
+
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_get_temperature_command::supla_get_temperature_command(
     supla_abstract_ipc_socket_adapter *socket_adapter)
@@ -26,6 +30,11 @@ supla_get_temperature_command::supla_get_temperature_command(
 
 bool supla_get_temperature_command::get_channel_temperature_value(
     int user_id, int device_id, int channel_id, double *value) {
-  return supla_user::get_channel_temperature_value(user_id, device_id,
-                                                   channel_id, value);
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->get_channel_temperature_value(channel_id,
+                                                                 value);
+  }
+  return false;
 }

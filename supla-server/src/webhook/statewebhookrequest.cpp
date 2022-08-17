@@ -21,6 +21,7 @@
 #include <assert.h>
 
 #include <list>
+#include <memory>
 
 #include "device/device.h"
 #include "device/devicechannel.h"
@@ -31,6 +32,7 @@
 #include "webhook/statewebhookcredentials.h"
 
 using std::list;
+using std::shared_ptr;
 
 supla_state_webhook_request::supla_state_webhook_request(
     supla_user *user, int ClassID, int DeviceId, int ChannelId,
@@ -203,12 +205,11 @@ void supla_state_webhook_request::electricityMeterChannelType(
   if (value->function == SUPLA_CHANNELFNC_ELECTRICITY_METER) {
     supla_channel_electricity_measurement *em = NULL;
 
-    getUser()->access_device(
-        getDeviceId(), getChannelId(),
-        [this, &em](supla_device *device) -> void {
-          em = device->get_channels()->get_electricity_measurement(
-              getChannelId());
-        });
+    shared_ptr<supla_device> device =
+        getUser()->get_devices()->get(getDeviceId(), getChannelId());
+    if (device != nullptr) {
+      em = device->get_channels()->get_electricity_measurement(getChannelId());
+    }
 
     getClient()->sendElectricityMeasurementReport(getChannelId(), em,
                                                   value->online);
@@ -223,11 +224,11 @@ void supla_state_webhook_request::impulseCounterChannelType(
     channel_complex_value *value) {
   supla_channel_ic_measurement *icm = NULL;
 
-  getUser()->access_device(
-      getDeviceId(), getChannelId(),
-      [this, &icm](supla_device *device) -> void {
-        icm = device->get_channels()->get_ic_measurement(getChannelId());
-      });
+  shared_ptr<supla_device> device =
+      getUser()->get_devices()->get(getDeviceId(), getChannelId());
+  if (device != nullptr) {
+    icm = device->get_channels()->get_ic_measurement(getChannelId());
+  }
 
   switch (value->function) {
     case SUPLA_CHANNELFNC_IC_ELECTRICITY_METER:

@@ -82,6 +82,8 @@ void supla_connection_object::terminate(void) {
   lck_unlock(lck);
 }
 
+void supla_connection_object::reconnect() { terminate(); }
+
 bool supla_connection_object::set_guid(const char guid[SUPLA_GUID_SIZE]) {
   char _guid[SUPLA_GUID_SIZE] = {};
 

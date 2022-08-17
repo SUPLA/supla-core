@@ -69,6 +69,8 @@ class supla_connection_object {
 
   // Thread safe start
   void terminate(void);
+  void reconnect(void);
+
   void get_guid(char guid[SUPLA_GUID_SIZE]);
   void get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]);
   int get_id(void);

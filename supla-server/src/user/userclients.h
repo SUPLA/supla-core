@@ -35,15 +35,12 @@ class supla_user_clients : public supla_connection_objects {
 
   std::shared_ptr<supla_client> find_by_id(int client_id);
   std::shared_ptr<supla_client> find_by_guid(const char *guid);
+  std::shared_ptr<supla_client> get(int client_id);
   void set_channel_function(int channel_id, int func);
-  bool get_client_name(int client_id, char *buffer, int size);
-  bool is_super_user_authorized(int client_id);
   void update_device_channels(int location_id, int device_id);
   void on_channel_value_changed(std::list<channel_address> addr_list,
                                 bool extended);
   void call_event(TSC_SuplaEvent *event);
-  void on_device_calcfg_result(int channel_id, TDS_DeviceCalCfgResult *result);
-  void on_device_channel_state_result(int channel_id, TDSC_ChannelState *state);
   void set_channel_caption(int channel_id, char *caption);
   void set_location_caption(int location_id, char *caption);
 };

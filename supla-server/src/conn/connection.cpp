@@ -289,11 +289,14 @@ void supla_connection::on_device_reconnect_request(
   result.ResultCode = SUPLA_RESULTCODE_FALSE;
 
   if (get_client()->is_superuser_authorized()) {
-    if (cs_device_reconnect_request &&
-        get_client()->get_user()->device_reconnect(
-            get_client()->get_user()->getUserID(),
-            cs_device_reconnect_request->DeviceID)) {
-      result.ResultCode = SUPLA_RESULTCODE_TRUE;
+    if (cs_device_reconnect_request) {
+      shared_ptr<supla_device> device =
+          get_client()->get_user()->get_devices()->get(
+              cs_device_reconnect_request->DeviceID);
+      if (device != nullptr) {
+        device->reconnect();
+        result.ResultCode = SUPLA_RESULTCODE_TRUE;
+      }
     }
 
   } else {
@@ -506,9 +509,8 @@ void supla_connection::on_register_device_request(void *_srpc,
           rd->data.ds_register_device_e
               ->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
 
-          if (get_device()->register_device(nullptr,
-                                            rd->data.ds_register_device_e,
-                                            proto_version) == 1) {
+          if (get_device()->register_device(
+                  nullptr, rd->data.ds_register_device_e, proto_version) == 1) {
             set_registered(REG_DEVICE);
           }
         }

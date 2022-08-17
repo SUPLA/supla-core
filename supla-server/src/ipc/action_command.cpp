@@ -18,11 +18,15 @@
 
 #include "ipc/action_command.h"
 
+#include <memory>
+
 #include "actions/action_executor.h"
 #include "device.h"
 #include "device/value_getter.h"
 #include "http/httprequestqueue.h"
 #include "user.h"
+
+using std::shared_ptr;
 
 supla_action_command::supla_action_command(
     supla_abstract_ipc_socket_adapter *socket_adapter, int action)
@@ -31,92 +35,81 @@ supla_action_command::supla_action_command(
 bool supla_action_command::action_open_close(
     int user_id, int device_id, int channel_id, bool open,
     const char *alexa_correlation_token, const char *google_request_id) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, open, this](supla_device *device) -> void {
-        // onChannelValueChangeEvent must be called before
-        // set_device_channel_char_value for the potential report to contain
-        // AlexaCorrelationToken / GoogleRequestId
-        supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
-            device->get_user(), device->get_id(), channel_id, get_caller(),
-            get_alexa_correlation_token(), get_google_request_id());
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    // onChannelValueChangeEvent must be called before
+    // set_device_channel_char_value for the potential report to contain
+    // AlexaCorrelationToken / GoogleRequestId
+    supla_http_request_queue::getInstance()->onChannelValueChangeEvent(
+        device->get_user(), device->get_id(), channel_id, get_caller(),
+        get_alexa_correlation_token(), get_google_request_id());
 
-        if (open) {
-          result = device->get_channels()->action_open(get_caller(), channel_id,
-                                                       0, 0);
-        } else {
-          result =
-              device->get_channels()->action_close(get_caller(), channel_id);
-        }
-      });
+    if (open) {
+      return device->get_channels()->action_open(get_caller(), channel_id, 0,
+                                                 0);
+    } else {
+      return device->get_channels()->action_close(get_caller(), channel_id);
+    }
+  }
 
-  return result;
+  return false;
 }
 
 bool supla_action_command::action_toggle(int user_id, int device_id,
                                          int channel_id) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, this](supla_device *device) -> void {
-        result = device->get_channels()->action_toggle(get_caller(), channel_id,
-                                                       0, 0);
-      });
-
-  return result;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_toggle(get_caller(), channel_id, 0,
+                                                 0);
+  }
+  return false;
 }
 
 bool supla_action_command::action_stop(int user_id, int device_id,
                                        int channel_id) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, this](supla_device *device) -> void {
-        result =
-            device->get_channels()->action_stop(get_caller(), channel_id, 0, 0);
-      });
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_stop(get_caller(), channel_id, 0, 0);
+  }
 
-  return result;
+  return false;
 }
 
 bool supla_action_command::action_up_or_stop(int user_id, int device_id,
                                              int channel_id) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, this](supla_device *device) -> void {
-        result = device->get_channels()->action_up_or_stop(get_caller(),
-                                                           channel_id, 0, 0);
-      });
-
-  return result;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_up_or_stop(get_caller(), channel_id,
+                                                     0, 0);
+  }
+  return false;
 }
 
 bool supla_action_command::action_down_or_stop(int user_id, int device_id,
                                                int channel_id) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, this](supla_device *device) -> void {
-        result = device->get_channels()->action_down_or_stop(get_caller(),
-                                                             channel_id, 0, 0);
-      });
-
-  return result;
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_down_or_stop(get_caller(), channel_id,
+                                                       0, 0);
+  }
+  return false;
 }
 
 bool supla_action_command::action_step_by_step(int user_id, int device_id,
                                                int channel_id) {
-  bool result = false;
-  supla_user::access_device(
-      user_id, device_id, channel_id,
-      [&result, channel_id, this](supla_device *device) -> void {
-        result = device->get_channels()->action_step_by_step(get_caller(),
-                                                             channel_id, 0, 0);
-      });
+  shared_ptr<supla_device> device =
+      supla_user::get_device(user_id, device_id, channel_id);
+  if (device != nullptr) {
+    return device->get_channels()->action_step_by_step(get_caller(), channel_id,
+                                                       0, 0);
+  }
 
-  return result;
+  return false;
 }
 
 bool supla_action_command::action_copy(int user_id, int device_id,

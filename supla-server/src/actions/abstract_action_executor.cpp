@@ -21,6 +21,7 @@
 #include "converter/any_value_to_action_converter.h"
 
 using std::function;
+using std::shared_ptr;
 
 supla_abstract_action_executor::supla_abstract_action_executor(void) {
   this->user = NULL;
@@ -88,12 +89,13 @@ void supla_abstract_action_executor::set_scene_id(int user_id, int scene_id) {
   this->subject_type = stScene;
 }
 
-void supla_abstract_action_executor::access_device(
-    function<void(supla_device *device)> on_device) {
+shared_ptr<supla_device> supla_abstract_action_executor::get_device(void) {
   if (user && (device_id || (subject_id && subject_type == stChannel))) {
-    return user->access_device(
-        device_id, subject_type == stChannelGroup ? 0 : subject_id, on_device);
+    return user->get_devices()->get(
+        device_id, subject_type == stChannelGroup ? 0 : subject_id);
   }
+
+  return nullptr;
 }
 
 void supla_abstract_action_executor::execute_action(
@@ -205,12 +207,13 @@ void supla_abstract_action_executor::execute_action(
   if (channel_groups) {
     f(channel_groups, NULL);
   } else {
-    access_device([f](supla_device *device) -> void {
+    std::shared_ptr<supla_device> device = get_device();
+    if (device != nullptr) {
       supla_device_channels *channels = device->get_channels();
       if (channels) {
         f(NULL, channels);
       }
-    });
+    }
   }
 }
 

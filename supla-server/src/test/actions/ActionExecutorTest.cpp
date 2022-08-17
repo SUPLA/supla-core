@@ -51,46 +51,33 @@ void ActionExecutorTest::TearDown() {
   delete aexec;
 }
 
-TEST_F(ActionExecutorTest, accessDeviceWithAndWithoutId) {
-  bool device_accessed = false;
+TEST_F(ActionExecutorTest, getDeviceWithAndWithoutId) {
   aexec->set_channel_id(1, 2, 3);
-  aexec->access_device([&device_accessed](supla_device *device) -> void {
-    device_accessed = true;
-  });
+  shared_ptr<supla_device> device = aexec->get_device();
 
-  EXPECT_FALSE(device_accessed);
+  EXPECT_TRUE(device == nullptr);
 
   aexec->set_channel_id(12345, 2, 3);
-  aexec->access_device([&device_accessed](supla_device *device) -> void {
-    device_accessed = true;
-  });
+  device = aexec->get_device();
 
-  EXPECT_FALSE(device_accessed);
+  EXPECT_TRUE(device == nullptr);
 
   aexec->set_channel_id(12345, 567, 3);
-  aexec->access_device([this, &device_accessed](supla_device *device) -> void {
-    device_accessed = true;
-    EXPECT_EQ(device, this->device.get());
-  });
+  device = aexec->get_device();
 
-  EXPECT_TRUE(device_accessed);
-
-  device_accessed = false;
+  EXPECT_EQ(device, this->device);
+  EXPECT_TRUE(device != nullptr);
 
   aexec->set_channel_id(12345, 5, 89);
-  aexec->access_device([this, &device_accessed](supla_device *device) -> void {
-    device_accessed = true;
-  });
+  device = aexec->get_device();
 
-  EXPECT_FALSE(device_accessed);
+  EXPECT_TRUE(device == nullptr);
 
   aexec->set_channel_id(12345, 0, 89);
-  aexec->access_device([this, &device_accessed](supla_device *device) -> void {
-    device_accessed = true;
-    EXPECT_EQ(device, this->device.get());
-  });
+  device = aexec->get_device();
 
-  EXPECT_TRUE(device_accessed);
+  EXPECT_EQ(device, this->device);
+  EXPECT_TRUE(device != nullptr);
 }
 
 TEST_F(ActionExecutorTest, setGetChannelId) {

@@ -34,16 +34,10 @@ class supla_user_devices : public supla_connection_objects {
   std::shared_ptr<supla_device> find_by_id(int device_id);
   std::shared_ptr<supla_device> find_by_guid(const char *guid);
   std::shared_ptr<supla_device> find_by_channel_id(int channel_id);
+  std::shared_ptr<supla_device> get(int device_id);
+  std::shared_ptr<supla_device> get(int device_id,
+                                    int channel_id);  // device_id or channel_id
   std::vector<std::shared_ptr<supla_device> > get_all(void);
-  bool get_channel_double_value(int device_id, int channel_id, double *value,
-                                char type);
-  bool get_channel_char_value(int device_id, int channel_id, char *value);
-  bool get_channel_rgbw_value(int device_id, int channel_id, int *color,
-                              char *color_brightness, char *brightness,
-                              char *on_off);
-  bool get_channel_valve_value(int device_id, int channel_id,
-                               TValve_Value *value);
-  void set_channel_function(int channel_id, int func);
 };
 
 #endif /* USERDEVICES_H_ */
