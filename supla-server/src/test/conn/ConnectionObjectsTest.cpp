@@ -169,31 +169,4 @@ TEST_F(ConnectionObjectsTest, findById) {
   EXPECT_TRUE(objects.find_by_id(55) == cd2);
 }
 
-TEST_F(ConnectionObjectsTest, findByGUID) {
-  char guid1[SUPLA_GUID_SIZE] = {};
-  char guid2[SUPLA_GUID_SIZE] = {};
-  char guid3[SUPLA_GUID_SIZE] = {};
-
-  guid1[0] = 5;
-  guid2[0] = 6;
-  guid3[0] = 7;
-
-  ConnectionObjectsMock objects;
-
-  shared_ptr<ConnectionObjectMock> cd1 =
-      make_shared<ConnectionObjectMock>(nullptr);
-  cd1->set_guid(guid1);
-
-  shared_ptr<ConnectionObjectMock> cd2 =
-      make_shared<ConnectionObjectMock>(nullptr);
-  cd2->set_guid(guid2);
-
-  objects.add(cd1);
-  objects.add(cd2);
-
-  EXPECT_TRUE(objects.find_by_guid(guid3) == nullptr);
-  EXPECT_TRUE(objects.find_by_guid(guid2) == cd2);
-  EXPECT_TRUE(objects.find_by_guid(guid1) == cd1);
-}
-
 }  // namespace testing

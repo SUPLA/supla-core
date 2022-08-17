@@ -43,8 +43,3 @@ std::shared_ptr<supla_connection_object> ConnectionObjectsMock::find_by_id(
     int id) {
   return supla_connection_objects::find_by_id(id);
 }
-
-std::shared_ptr<supla_connection_object> ConnectionObjectsMock::find_by_guid(
-    const char guid[SUPLA_GUID_SIZE]) {
-  return supla_connection_objects::find_by_guid(guid);
-}

@@ -40,11 +40,6 @@ shared_ptr<supla_client> supla_user_clients::find_by_id(int client_id) {
       supla_connection_objects::find_by_id(client_id));
 }
 
-shared_ptr<supla_client> supla_user_clients::find_by_guid(const char *guid) {
-  return dynamic_pointer_cast<supla_client>(
-      supla_connection_objects::find_by_guid(guid));
-}
-
 std::shared_ptr<supla_client> supla_user_clients::get(int client_id) {
   return dynamic_pointer_cast<supla_client>(
       supla_connection_objects::find_by_id(client_id));

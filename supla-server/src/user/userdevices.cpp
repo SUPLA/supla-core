@@ -36,11 +36,6 @@ shared_ptr<supla_device> supla_user_devices::find_by_id(int device_id) {
       supla_connection_objects::find_by_id(device_id));
 }
 
-shared_ptr<supla_device> supla_user_devices::find_by_guid(const char *guid) {
-  return dynamic_pointer_cast<supla_device>(
-      supla_connection_objects::find_by_guid(guid));
-}
-
 shared_ptr<supla_device> supla_user_devices::find_by_channel_id(
     int channel_id) {
   if (!channel_id) {
