@@ -28,7 +28,7 @@ extern "C" {
 #define CFG_OAUTH_URL_MAXSIZE 96
 #define CFG_OAUTH_TOKEN_SIZE 86
 
-#define SERVER_VERSION "22.07"
+#define SERVER_VERSION "22.07.02"
 
 #define CFG_UID 0
 #define CFG_GID 1
