@@ -68,6 +68,7 @@ supla_connection_object::supla_connection_object(supla_connection *conn) {
   this->conn = conn;
   this->lck = lck_init();
   this->ID = 0;
+  this->registered = false;
   memset(this->guid, 0, SUPLA_GUID_SIZE);
   memset(this->authkey, 0, SUPLA_AUTHKEY_SIZE);
 
@@ -103,10 +104,8 @@ void supla_connection_object::get_guid(char guid[SUPLA_GUID_SIZE]) {
 }
 
 bool supla_connection_object::guid_equal(const char guid[SUPLA_GUID_SIZE]) {
-  bool result = false;
-
   lck_lock(lck);
-  result = memcmp(this->guid, guid, SUPLA_GUID_SIZE) == 0;
+  bool result = memcmp(this->guid, guid, SUPLA_GUID_SIZE) == 0;
   lck_unlock(lck);
 
   return result;
@@ -132,10 +131,8 @@ void supla_connection_object::get_authkey(char authkey[SUPLA_AUTHKEY_SIZE]) {
 }
 
 int supla_connection_object::get_id(void) {
-  int result = false;
-
   lck_lock(lck);
-  result = ID;
+  int result = ID;
   lck_unlock(lck);
 
   return result;
@@ -154,10 +151,8 @@ void supla_connection_object::set_user(supla_user *user) {
 }
 
 supla_user *supla_connection_object::get_user(void) {
-  supla_user *result;
-
   lck_lock(lck);
-  result = this->user;
+  supla_user *result = this->user;
   lck_unlock(lck);
 
   return result;
@@ -169,6 +164,20 @@ int supla_connection_object::get_user_id(void) {
   if (user != NULL) return user->getUserID();
 
   return 0;
+}
+
+void supla_connection_object::set_registered(bool registered) {
+  lck_lock(lck);
+  this->registered = registered;
+  lck_unlock(lck);
+}
+
+bool supla_connection_object::is_registered(void) {
+  lck_lock(lck);
+  bool result = registered;
+  lck_unlock(lck);
+
+  return result;
 }
 
 supla_connection *supla_connection_object::get_connection(void) { return conn; }
@@ -297,5 +306,5 @@ bool supla_connection_object::authkey_auth(
 }
 
 unsigned _supla_int64_t supla_connection_object::wait_time_usec() {
-  return 120000000;
+  return is_registered() ? 120000000 : 1000000;
 }

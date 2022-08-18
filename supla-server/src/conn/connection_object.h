@@ -34,6 +34,7 @@ class supla_connection_object {
   supla_connection *conn;
   int ID;
   supla_user *user;
+  bool registered;
 
  protected:
   void *lck;
@@ -45,6 +46,7 @@ class supla_connection_object {
   bool set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]);
   void set_id(int ID);
   void set_user(supla_user *user);
+  void set_registered(bool registered);
   // Thread safe end
 
   virtual bool db_authkey_auth(const char guid[SUPLA_GUID_SIZE],
@@ -68,6 +70,7 @@ class supla_connection_object {
   std::shared_ptr<supla_connection_object> get_shared_ptr(void);
 
   // Thread safe start
+  bool is_registered(void);
   void terminate(void);
   void reconnect(void);
 

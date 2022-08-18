@@ -30,10 +30,19 @@
 #define LOCAL_IPV4_ARRAY_SIZE 5
 
 class supla_connection_object;
-class supla_device;
-class supla_client;
 class supla_connection {
  private:
+  std::shared_ptr<supla_connection_object> object;
+  unsigned int client_ipv4;
+  void *ssd;
+  void *supla_socket;
+  void *_srpc;
+  void *sthread;
+  TEventHandler *eh;
+  struct timeval init_time;
+  unsigned char activity_timeout;
+  int incorrect_call_counter;
+
   static void *reg_pending_arr;
   static struct timeval reg_limit_exceeded_alert_time;
   static struct timeval reg_limit_exceeded_time;
@@ -47,31 +56,27 @@ class supla_connection {
   void on_set_channel_function_request(
       TCS_SetChannelFunction *cs_set_channel_function);
   void on_set_caption_request(TCS_SetCaption *cs_set_caption, bool channel);
-  void on_register_device_request(void *_srpc, unsigned int call_type,
+  void on_register_device_request(void *_srpc, unsigned int call_id,
                                   unsigned char proto_version,
                                   TsrpcReceivedData *rd);
   void trim_caption_to100chars(char *Caption,
                                unsigned _supla_int_t *CaptionSize);
 
- protected:
-  unsigned int client_ipv4;
-  void *ssd;
-  void *supla_socket;
-  void *_srpc;
-  void *sthread;
-  TEventHandler *eh;
+  static int socket_read(void *buf, int count, void *sc);
+  static int socket_write(void *buf, int count, void *sc);
+  static void on_remote_call_received(void *_srpc, unsigned int rr_id,
+                                      unsigned int call_id, void *sc,
+                                      unsigned char proto_version);
+  static void on_version_error(void *_srpc, unsigned char remote_version,
+                               void *sc);
 
-  struct timeval init_time;
-  unsigned char activity_timeout;
+  int socket_read(void *buf, size_t count);
+  int socket_write(const void *buf, size_t count);
+  void on_remote_call_received(void *_srpc, unsigned int rr_id,
+                               unsigned int call_id,
+                               unsigned char proto_version);
 
-  std::shared_ptr<supla_connection_object> object;
-  std::shared_ptr<supla_client> get_client(void);  // tmp
-  std::shared_ptr<supla_device> get_device(void);  // tmp
-
-  char registered;
-
-  int incorrect_call_counter;
-  void catch_incorrect_call(unsigned int call_type);
+  void catch_incorrect_call(unsigned int call_id);
 
  public:
   std::shared_ptr<supla_connection_object> get_object(void);
@@ -88,11 +93,6 @@ class supla_connection {
   void terminate(void);
   virtual ~supla_connection();
 
-  int socket_read(void *buf, size_t count);
-  int socket_write(const void *buf, size_t count);
-  void on_remote_call_received(void *_srpc, unsigned int rr_id,
-                               unsigned int call_type,
-                               unsigned char proto_version);
   void *srpc(void);
   unsigned int get_client_ipv4(void);
   int get_client_sd(void);
