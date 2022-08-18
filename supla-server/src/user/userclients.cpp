@@ -32,7 +32,7 @@ supla_user_clients::supla_user_clients() : supla_connection_objects() {}
 supla_user_clients::~supla_user_clients() {}
 
 bool supla_user_clients::add(shared_ptr<supla_client> client) {
-  return supla_user_clients::add(client);
+  return supla_connection_objects::add(client);
 }
 
 std::shared_ptr<supla_client> supla_user_clients::get(int client_id) {
