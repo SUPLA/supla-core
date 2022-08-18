@@ -80,21 +80,20 @@ int supla_client_socket_write(void *buf, int count, void *scd) {
   return ssocket_write(((TSuplaClientData *)scd)->ssd, NULL, buf, count);
 }
 
-void supla_client_before_async_call(void *_srpc,
-                                    unsigned _supla_int_t call_type,
+void supla_client_before_async_call(void *_srpc, unsigned _supla_int_t call_id,
                                     void *_scd) {
   TSuplaClientData *scd = (TSuplaClientData *)_scd;
   gettimeofday(&scd->last_call_sent, NULL);
 }
 
 void supla_client_on_min_version_required(void *_srpc,
-                                          unsigned _supla_int_t call_type,
+                                          unsigned _supla_int_t call_id,
                                           unsigned char min_version,
                                           void *_scd) {
   TSuplaClientData *scd = (TSuplaClientData *)_scd;
 
   if (scd->cfg.cb_on_min_version_required) {
-    scd->cfg.cb_on_min_version_required(scd, scd->cfg.user_data, call_type,
+    scd->cfg.cb_on_min_version_required(scd, scd->cfg.user_data, call_id,
                                         min_version);
   }
 }
@@ -704,7 +703,7 @@ void supla_client_on_device_calcfg_result(TSuplaClientData *scd,
 }
 
 void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
-                                          unsigned int call_type, void *_scd,
+                                          unsigned int call_id, void *_scd,
                                           unsigned char proto_version) {
   TsrpcReceivedData rd;
   char result;
@@ -712,10 +711,10 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
 
   gettimeofday(&scd->last_call_recv, NULL);
 
-  supla_log(LOG_DEBUG, "on_remote_call_received: %i", call_type);
+  supla_log(LOG_DEBUG, "on_remote_call_received: %i", call_id);
 
   if (SUPLA_RESULT_TRUE == (result = srpc_getdata(_srpc, &rd, 0))) {
-    switch (rd.call_type) {
+    switch (rd.call_id) {
       case SUPLA_SDC_CALL_GETVERSION_RESULT:
         if (scd->cfg.cb_on_getversion_result && rd.data.sdc_getversion_result) {
           rd.data.sdc_getversion_result->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
@@ -1009,12 +1008,11 @@ void supla_client_on_remote_call_received(void *_srpc, unsigned int rr_id,
                                &rd.data.sc_set_caption_result->CaptionSize,
                                SUPLA_CAPTION_MAXSIZE);
 
-          if (rd.call_type == SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT &&
+          if (rd.call_id == SUPLA_SC_CALL_SET_CHANNEL_CAPTION_RESULT &&
               scd->cfg.cb_on_channel_caption_set_result) {
             scd->cfg.cb_on_channel_caption_set_result(
                 scd, scd->cfg.user_data, rd.data.sc_set_caption_result);
-          } else if (rd.call_type ==
-                         SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT &&
+          } else if (rd.call_id == SUPLA_SC_CALL_SET_LOCATION_CAPTION_RESULT &&
                      scd->cfg.cb_on_location_caption_set_result) {
             scd->cfg.cb_on_location_caption_set_result(
                 scd, scd->cfg.user_data, rd.data.sc_set_caption_result);

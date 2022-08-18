@@ -62,7 +62,7 @@ typedef void (*_suplaclient_cb_on_event)(void *_suplaclient, void *user_data,
 typedef void (*_suplaclient_cb_on_registration_enabled)(
     void *_suplaclient, void *user_data, TSDC_RegistrationEnabled *reg_enabled);
 typedef void (*_suplaclient_cb_on_min_version_required)(
-    void *_suplaclient, void *user_data, unsigned int call_type,
+    void *_suplaclient, void *user_data, unsigned int call_id,
     unsigned char min_version);
 typedef void (*_suplaclient_cb_on_oauth_token_request_result)(
     void *_suplaclient, void *user_data, TSC_OAuthTokenRequestResult *result);

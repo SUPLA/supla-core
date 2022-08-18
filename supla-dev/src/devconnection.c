@@ -16,12 +16,13 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include "devconnection.h"
+
 #include <string.h>
 #include <unistd.h>
 
 #include "channel-io.h"
 #include "devcfg.h"
-#include "devconnection.h"
 #include "log.h"
 #include "srpc.h"
 #include "sthread.h"
@@ -47,7 +48,7 @@ int devconnection_socket_write(void *buf, int count, void *dcd) {
   return ssocket_write(((TDeviceConnectionData *)dcd)->ssd, NULL, buf, count);
 }
 
-void devconnection_before_async_call(void *_srpc, unsigned int call_type,
+void devconnection_before_async_call(void *_srpc, unsigned int call_id,
                                      void *_dcd) {
   TDeviceConnectionData *dcd = (TDeviceConnectionData *)_dcd;
   gettimeofday(&dcd->last_call, NULL);
@@ -190,14 +191,14 @@ void devconnection_channel_set_value(TDeviceConnectionData *dcd,
 }
 
 void devconnection_on_remote_call_received(void *_srpc, unsigned int rr_id,
-                                           unsigned int call_type, void *_dcd,
+                                           unsigned int call_id, void *_dcd,
                                            unsigned char proto_version) {
   TsrpcReceivedData rd;
   char result;
   TDeviceConnectionData *dcd = (TDeviceConnectionData *)_dcd;
 
   if (SUPLA_RESULT_TRUE == (result = srpc_getdata(_srpc, &rd, 0))) {
-    switch (rd.call_type) {
+    switch (rd.call_id) {
       case SUPLA_SDC_CALL_VERSIONERROR:
         devconnection_on_version_error(dcd, rd.data.sdc_version_error);
         break;

@@ -1408,7 +1408,7 @@ void supla_android_client_cb_on_registration_enabled(
 }
 
 void supla_android_client_cb_on_min_version_required(
-    void *_suplaclient, void *user_data, unsigned int call_type,
+    void *_suplaclient, void *user_data, unsigned int call_id,
     unsigned char min_version) {
   jfieldID fid;
   ASC_VAR_DECLARATION();
@@ -1423,7 +1423,7 @@ void supla_android_client_cb_on_min_version_required(
     jclass cmv = (*env)->GetObjectClass(env, mv);
 
     fid = supla_client_GetFieldID(env, cmv, "CallType", "J");
-    (*env)->SetLongField(env, mv, fid, call_type);
+    (*env)->SetLongField(env, mv, fid, call_id);
 
     fid = supla_client_GetFieldID(env, cmv, "MinVersion", "I");
     (*env)->SetIntField(env, mv, fid, min_version);
