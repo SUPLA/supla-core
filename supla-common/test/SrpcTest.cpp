@@ -269,7 +269,7 @@ class SrpcTest : public ::testing::Test {
   void srpcCallAllowed(int min_version, vector<int> call_ids);
 
   unsigned _supla_int_t cr_rr_id;
-  unsigned _supla_int_t cr_call_type;
+  unsigned _supla_int_t cr_call_id;
   unsigned char cr_proto_version;
   TsrpcReceivedData cr_rd;
 
@@ -284,7 +284,7 @@ class SrpcTest : public ::testing::Test {
   void SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize);
   void OnVersionError(unsigned char remote_version);
   void OnRemoteCallReceived(unsigned _supla_int_t rr_id,
-                            unsigned _supla_int_t call_type,
+                            unsigned _supla_int_t call_id,
                             unsigned char proto_version);
 };
 
@@ -302,11 +302,11 @@ void srpc_event_OnVersionError(void *_srpc, unsigned char remote_version,
 }
 
 void srpc_on_remote_call_received(void *_srpc, unsigned _supla_int_t rr_id,
-                                  unsigned _supla_int_t call_type,
+                                  unsigned _supla_int_t call_id,
                                   void *user_params,
                                   unsigned char proto_version) {
   return static_cast<SrpcTest *>(user_params)
-      ->OnRemoteCallReceived(rr_id, call_type, proto_version);
+      ->OnRemoteCallReceived(rr_id, call_id, proto_version);
 }
 
 void SrpcTest::SetUp() {
@@ -318,7 +318,7 @@ void SrpcTest::SetUp() {
   data_read_result = 0;
   data_write_result = 0;
   cr_rr_id = 0;
-  cr_call_type = 0;
+  cr_call_id = 0;
   cr_proto_version = 0;
   memset(&cr_rd, 0, sizeof(TsrpcReceivedData));
 
@@ -618,10 +618,10 @@ void SrpcTest::OnVersionError(unsigned char remote_version) {
 }
 
 void SrpcTest::OnRemoteCallReceived(unsigned _supla_int_t rr_id,
-                                    unsigned _supla_int_t call_type,
+                                    unsigned _supla_int_t call_id,
                                     unsigned char proto_version) {
   cr_rr_id = rr_id;
-  cr_call_type = call_type;
+  cr_call_id = call_id;
   cr_proto_version = proto_version;
 }
 
@@ -781,7 +781,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   data_read_result = data_write_size;
 
   if (ExpectedCallType == (unsigned int)-1) {
-    ((TSuplaDataPacket *)data_write)->call_type = (unsigned int)-1;
+    ((TSuplaDataPacket *)data_write)->call_id = (unsigned int)-1;
   }
 
   memcpy(data_read, data_write, data_write_size);
@@ -793,7 +793,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
   ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_iterate(srpc));
 
   ASSERT_EQ((unsigned int)1, (unsigned int)cr_rr_id);
-  ASSERT_TRUE(ExpectedCallType == cr_call_type);
+  ASSERT_TRUE(ExpectedCallType == cr_call_id);
   ASSERT_EQ(SUPLA_PROTO_VERSION, cr_proto_version);
 
   if (ExpectedCallType == (unsigned int)-1) {
@@ -802,7 +802,7 @@ void SrpcTest::SendAndReceive(unsigned int ExpectedCallType, int ExpectedSize) {
     ASSERT_EQ(SUPLA_RESULT_TRUE, srpc_getdata(srpc, &cr_rd, cr_rr_id));
   }
 
-  ASSERT_EQ(ExpectedCallType, cr_rd.call_type);
+  ASSERT_EQ(ExpectedCallType, cr_rd.call_id);
   ASSERT_EQ(cr_rr_id, cr_rd.rr_id);
 }
 

@@ -49,7 +49,7 @@
 #define SRPC_ICACHE_FLASH
 #endif
 
-#if defined(__AVR__) || defined(ARDUINO) || defined (SUPLA_DEVICE)
+#if defined(__AVR__) || defined(ARDUINO) || defined(SUPLA_DEVICE)
 #define SRPC_EXCLUDE_CLIENT
 #define SRPC_WITHOUT_OUT_QUEUE
 #define SRPC_WITHOUT_IN_QUEUE
@@ -62,16 +62,16 @@ extern "C" {
 typedef _supla_int_t (*_func_srpc_DataRW)(void *buf, _supla_int_t count,
                                           void *user_params);
 typedef void (*_func_srpc_event_OnRemoteCallReceived)(
-    void *_srpc, unsigned _supla_int_t rr_id, unsigned _supla_int_t call_type,
+    void *_srpc, unsigned _supla_int_t rr_id, unsigned _supla_int_t call_id,
     void *user_params, unsigned char proto_version);
 typedef void (*_func_srpc_event_BeforeCall)(void *_srpc,
-                                            unsigned _supla_int_t call_type,
+                                            unsigned _supla_int_t call_id,
                                             void *user_params);
 typedef void (*_func_srpc_event_OnVersionError)(void *_srpc,
                                                 unsigned char remote_version,
                                                 void *user_params);
 typedef void (*_func_srpc_event_OnMinVersionRequired)(
-    void *_srpc, unsigned _supla_int_t call_type, unsigned char min_version,
+    void *_srpc, unsigned _supla_int_t call_id, unsigned char min_version,
     void *user_params);
 
 typedef struct {
@@ -174,7 +174,7 @@ union TsrpcDataPacketData {
 };
 
 typedef struct {
-  unsigned _supla_int_t call_type;
+  unsigned _supla_int_t call_id;
   unsigned _supla_int_t rr_id;
 
   union TsrpcDataPacketData data;
@@ -201,9 +201,9 @@ void SRPC_ICACHE_FLASH srpc_set_proto_version(void *_srpc,
                                               unsigned char version);
 
 unsigned char SRPC_ICACHE_FLASH
-srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_type);
+srpc_call_min_version_required(void *_srpc, unsigned _supla_int_t call_id);
 unsigned char SRPC_ICACHE_FLASH
-srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_type);
+srpc_call_allowed(void *_srpc, unsigned _supla_int_t call_id);
 
 // device/client <-> server
 _supla_int_t SRPC_ICACHE_FLASH srpc_dcs_async_getversion(void *_srpc);

@@ -520,7 +520,7 @@ typedef struct {
   char tag[SUPLA_TAG_SIZE];
   unsigned char version;
   unsigned _supla_int_t rr_id;  // Request/Response ID
-  unsigned _supla_int_t call_type;
+  unsigned _supla_int_t call_id;
   unsigned _supla_int_t data_size;
   char data[SUPLA_MAX_DATA_SIZE];  // Last variable in struct!
 } TSuplaDataPacket;
@@ -2103,7 +2103,7 @@ void PROTO_ICACHE_FLASH sproto_set_version(void *spd_ptr,
 void PROTO_ICACHE_FLASH sproto_sdp_init(void *spd_ptr, TSuplaDataPacket *sdp);
 char PROTO_ICACHE_FLASH sproto_set_data(TSuplaDataPacket *sdp, char *data,
                                         unsigned _supla_int_t data_size,
-                                        unsigned _supla_int_t call_type);
+                                        unsigned _supla_int_t call_id);
 TSuplaDataPacket *PROTO_ICACHE_FLASH sproto_sdp_malloc(void *spd_ptr);
 void PROTO_ICACHE_FLASH sproto_sdp_free(TSuplaDataPacket *sdp);
 
