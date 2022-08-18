@@ -105,7 +105,7 @@ class supla_user {
   static bool reconnect(int UserID, const supla_caller &caller);
 
   static int user_count(void);
-  static supla_user *get_user(int idx);
+  static supla_user *get_user(int user_id);
 
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);

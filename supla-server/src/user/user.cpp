@@ -179,9 +179,7 @@ int supla_user::user_count(void) {
 }
 
 // static
-supla_user *supla_user::get_user(int idx) {
-  return (supla_user *)safe_array_get(supla_user::user_arr, idx);
-}
+supla_user *supla_user::get_user(int user_id) { return find(user_id, false); }
 
 // static
 supla_user *supla_user::find(int UserID, bool create) {
