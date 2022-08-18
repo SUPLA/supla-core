@@ -22,7 +22,7 @@
 
 #include "TestHelper.h"
 #include "channeljsonconfig/electricity_meter_config.h"
-#include "log.h"
+#include "srpc.h"
 
 namespace testing {
 
