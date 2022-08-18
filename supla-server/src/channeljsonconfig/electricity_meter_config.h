@@ -42,6 +42,10 @@ class electricity_meter_config : public channel_json_config {
   virtual int get_map_key(int index);
   virtual const char *get_map_str(int index);
   int get_available_counters(void);
+  void add_initial_value(_supla_int64_t initial_value, unsigned char phase,
+                         int flags, unsigned _supla_int64_t *value,
+                         _supla_int64_t *substracted);
+  void add_initial_value(int var, int flags, unsigned _supla_int64_t value[]);
 
  public:
   explicit electricity_meter_config(channel_json_config *root);

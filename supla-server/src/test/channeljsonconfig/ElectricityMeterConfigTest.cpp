@@ -22,6 +22,7 @@
 
 #include "TestHelper.h"
 #include "channeljsonconfig/electricity_meter_config.h"
+#include "log.h"
 #include "srpc/srpc.h"
 
 namespace testing {
@@ -539,7 +540,7 @@ TEST_F(ElectricityMeterConfigTest, overValue) {
   delete config;
 }
 
-TEST_F(ElectricityMeterConfigTest, negative) {
+TEST_F(ElectricityMeterConfigTest, substractionAboveValue) {
   electricity_meter_config *config = new electricity_meter_config();
   ASSERT_TRUE(config != NULL);
 
@@ -560,7 +561,69 @@ TEST_F(ElectricityMeterConfigTest, negative) {
 
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned)0);
   EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)0);
-  EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)1);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)0);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, substractionWithEqualPhases) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"reverseReactiveEnergy\":-300}}");
+
+  EXPECT_TRUE(
+      config->update_available_counters(EM_VAR_REVERSE_REACTIVE_ENERGY));
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+
+  em_ev.total_reverse_reactive_energy[0] = 10000005;
+  em_ev.total_reverse_reactive_energy[1] = 10000005;
+  em_ev.total_reverse_reactive_energy[2] = 10000005;
+
+  config->add_initial_values(0, &em_ev);
+
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[0], (unsigned)5);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[1], (unsigned)5);
+  EXPECT_EQ(em_ev.total_reverse_reactive_energy[2], (unsigned)5);
+
+  delete config;
+}
+
+TEST_F(ElectricityMeterConfigTest, substractonWithPhaseImbalance) {
+  electricity_meter_config *config = new electricity_meter_config();
+  ASSERT_TRUE(config != NULL);
+
+  config->set_user_config(
+      "{\"electricityMeterInitialValues\":{\"forwardActiveEnergy\":-3427.56}}");
+
+  EXPECT_TRUE(config->update_available_counters(EM_VAR_FORWARD_ACTIVE_ENERGY));
+
+  TElectricityMeter_ExtendedValue_V2 em_ev = {};
+  TElectricityMeter_Value value = {};
+
+  em_ev.total_forward_active_energy[0] = 64066352;
+  em_ev.total_forward_active_energy[1] = 213112468;
+  em_ev.total_forward_active_energy[2] = 65583238;
+
+  value.total_forward_active_energy = (em_ev.total_forward_active_energy[0] +
+                                       em_ev.total_forward_active_energy[1] +
+                                       em_ev.total_forward_active_energy[2]) /
+                                      1000;
+
+  config->add_initial_values(0, &em_ev);
+  config->add_initial_value(&value);
+
+  EXPECT_EQ(value.total_forward_active_energy,
+            (em_ev.total_forward_active_energy[0] +
+             em_ev.total_forward_active_energy[1] +
+             em_ev.total_forward_active_energy[2]) /
+                1000);
+
+  EXPECT_EQ(em_ev.total_forward_active_energy[0], (unsigned)0);
+  EXPECT_EQ(em_ev.total_forward_active_energy[1], (unsigned)6058);
+  EXPECT_EQ(em_ev.total_forward_active_energy[2], (unsigned)0);
 
   delete config;
 }
