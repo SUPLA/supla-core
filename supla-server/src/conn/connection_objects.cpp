@@ -67,9 +67,10 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
 
   char guid[SUPLA_GUID_SIZE] = {};
   obj->get_guid(guid);
+  int id = obj->get_id();
 
   bool ptr_exists = false;
-  shared_ptr<supla_connection_object> obj_with_same_guid = nullptr;
+  shared_ptr<supla_connection_object> duplicate = nullptr;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     shared_ptr<supla_connection_object> _obj = (*it).lock();
@@ -79,8 +80,8 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
       --it;
     } else if (_obj == obj) {
       ptr_exists = true;
-    } else if (_obj->guid_equal(guid)) {
-      obj_with_same_guid = _obj;
+    } else if (_obj->get_id() == id || _obj->guid_equal(guid)) {
+      duplicate = _obj;
       // remove from list (will be terminated)
       it = objects.erase(it);
       --it;
@@ -91,9 +92,9 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
     objects.push_back(obj);
     result = true;
 
-    if (obj_with_same_guid != nullptr) {
+    if (duplicate != nullptr) {
       // Terminate only after adding "obj" to the list
-      obj_with_same_guid->terminate();
+      duplicate->terminate();
     }
   }
 
@@ -102,8 +103,7 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
   return result;
 }
 
-shared_ptr<supla_connection_object> supla_connection_objects::get(
-    int id) {
+shared_ptr<supla_connection_object> supla_connection_objects::get(int id) {
   if (!id) {
     return nullptr;
   }
@@ -157,6 +157,4 @@ bool supla_connection_objects::terminate(int id) {
   return false;
 }
 
-bool supla_connection_objects::is_online(int id) {
-  return get(id) != nullptr;
-}
+bool supla_connection_objects::is_online(int id) { return get(id) != nullptr; }

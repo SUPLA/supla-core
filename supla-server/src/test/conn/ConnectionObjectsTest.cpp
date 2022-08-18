@@ -31,20 +31,29 @@ using std::shared_ptr;
 using std::vector;
 
 TEST_F(ConnectionObjectsTest, forEach) {
+  char guid[SUPLA_GUID_SIZE] = {};
   ConnectionObjectsMock objects;
 
   shared_ptr<ConnectionObjectMock> cd1 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 1;
+  cd1->set_guid(guid);
+  cd1->set_id(1);
 
   shared_ptr<ConnectionObjectMock> cd2 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 2;
+  cd2->set_guid(guid);
+  cd2->set_id(2);
 
   shared_ptr<ConnectionObjectMock> cd3 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 3;
+  cd3->set_guid(guid);
+  cd3->set_id(3);
 
   objects.add(cd1);
   objects.add(cd2);
-  objects.add(cd3);
   objects.add(cd3);
 
   EXPECT_EQ(3, objects.count());
@@ -88,16 +97,26 @@ TEST_F(ConnectionObjectsTest, forEach) {
 }
 
 TEST_F(ConnectionObjectsTest, getAll) {
+  char guid[SUPLA_GUID_SIZE] = {};
   ConnectionObjectsMock objects;
 
   shared_ptr<ConnectionObjectMock> cd1 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 1;
+  cd1->set_guid(guid);
+  cd1->set_id(1);
 
   shared_ptr<ConnectionObjectMock> cd2 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 2;
+  cd2->set_guid(guid);
+  cd2->set_id(2);
 
   shared_ptr<ConnectionObjectMock> cd3 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 3;
+  cd3->set_guid(guid);
+  cd3->set_id(3);
 
   objects.add(cd1);
   objects.add(cd2);
@@ -125,14 +144,21 @@ TEST_F(ConnectionObjectsTest, getAll) {
 }
 
 TEST_F(ConnectionObjectsTest, add) {
+  char guid[SUPLA_GUID_SIZE] = {};
   ConnectionObjectsMock objects;
   EXPECT_EQ(0, objects.count());
 
   shared_ptr<ConnectionObjectMock> cd1 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 1;
+  cd1->set_guid(guid);
+  cd1->set_id(1);
 
   shared_ptr<ConnectionObjectMock> cd2 =
       make_shared<ConnectionObjectMock>(nullptr);
+  guid[0] = 2;
+  cd2->set_guid(guid);
+  cd2->set_id(2);
 
   objects.add(cd1);
   EXPECT_EQ(1, objects.count());
@@ -146,15 +172,20 @@ TEST_F(ConnectionObjectsTest, add) {
 }
 
 TEST_F(ConnectionObjectsTest, get) {
+  char guid[SUPLA_GUID_SIZE] = {};
   ConnectionObjectsMock objects;
 
   shared_ptr<ConnectionObjectMock> cd1 =
       make_shared<ConnectionObjectMock>(nullptr);
   cd1->set_id(11);
+  guid[0] = 1;
+  cd1->set_guid(guid);
 
   shared_ptr<ConnectionObjectMock> cd2 =
       make_shared<ConnectionObjectMock>(nullptr);
   cd2->set_id(12);
+  guid[0] = 2;
+  cd2->set_guid(guid);
 
   objects.add(cd1);
   objects.add(cd2);
@@ -167,6 +198,51 @@ TEST_F(ConnectionObjectsTest, get) {
   EXPECT_TRUE(objects.get(55) == nullptr);
   cd2->set_id(55);
   EXPECT_TRUE(objects.get(55) == cd2);
+}
+
+TEST_F(ConnectionObjectsTest, verifyDuplicates) {
+  char guid[SUPLA_GUID_SIZE] = {};
+  ConnectionObjectsMock objects;
+
+  shared_ptr<ConnectionObjectMock> cd1 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd1->set_id(1);
+  guid[0] = 1;
+  cd1->set_guid(guid);
+
+  objects.add(cd1);
+  objects.add(cd1);
+  EXPECT_TRUE(objects.get(1) == cd1);
+  EXPECT_EQ(1, objects.count());
+
+  shared_ptr<ConnectionObjectMock> cd2 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd2->set_id(1);
+  guid[0] = 2;
+  cd2->set_guid(guid);
+
+  objects.add(cd2);
+  EXPECT_TRUE(objects.get(1) == cd2);
+  EXPECT_EQ(1, objects.count());
+
+  shared_ptr<ConnectionObjectMock> cd3 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd3->set_id(2);
+  cd3->set_guid(guid);
+
+  shared_ptr<ConnectionObjectMock> cd4 =
+      make_shared<ConnectionObjectMock>(nullptr);
+  cd4->set_id(4);
+  guid[0] = 4;
+  cd4->set_guid(guid);
+
+  objects.add(cd3);
+  objects.add(cd4);
+
+  EXPECT_TRUE(objects.get(1) == nullptr);
+  EXPECT_TRUE(objects.get(2) == cd3);
+  EXPECT_TRUE(objects.get(4) == cd4);
+  EXPECT_EQ(2, objects.count());
 }
 
 }  // namespace testing
