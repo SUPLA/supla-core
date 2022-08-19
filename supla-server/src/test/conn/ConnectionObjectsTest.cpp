@@ -61,37 +61,40 @@ TEST_F(ConnectionObjectsTest, forEach) {
   EXPECT_EQ(2, objects.count());
 
   short counter = 0;
-  objects.for_each([&counter, cd1, cd2,
-                    cd3](std::shared_ptr<supla_connection_object> obj) -> bool {
-    if (obj == cd1) {
-      counter++;
-    }
-    if (obj == cd2) {
-      counter++;
-    }
-    if (obj == cd3) {
-      counter++;
-    }
-    return true;
-  });
+  objects.for_each(
+      [&counter, cd1, cd2,
+       cd3](std::shared_ptr<supla_abstract_connection_object> obj) -> bool {
+        if (obj == cd1) {
+          counter++;
+        }
+        if (obj == cd2) {
+          counter++;
+        }
+        if (obj == cd3) {
+          counter++;
+        }
+        return true;
+      });
 
   EXPECT_EQ(2, counter);
 
   counter = 0;
-  objects.for_each([&counter, cd1, cd2,
-                    cd3](std::shared_ptr<supla_connection_object> obj) -> bool {
-    counter++;
-    return true;
-  });
+  objects.for_each(
+      [&counter, cd1, cd2,
+       cd3](std::shared_ptr<supla_abstract_connection_object> obj) -> bool {
+        counter++;
+        return true;
+      });
 
   EXPECT_EQ(2, counter);
 
   counter = 0;
-  objects.for_each([&counter, cd1, cd2,
-                    cd3](std::shared_ptr<supla_connection_object> obj) -> bool {
-    counter++;
-    return false;
-  });
+  objects.for_each(
+      [&counter, cd1, cd2,
+       cd3](std::shared_ptr<supla_abstract_connection_object> obj) -> bool {
+        counter++;
+        return false;
+      });
 
   EXPECT_EQ(1, counter);
 }
@@ -125,7 +128,8 @@ TEST_F(ConnectionObjectsTest, getAll) {
 
   short counter = 0;
 
-  vector<shared_ptr<supla_connection_object> > _objects = objects.get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > _objects =
+      objects.get_all();
 
   for (auto it = _objects.begin(); it != _objects.end(); ++it) {
     if (*it == cd1) {

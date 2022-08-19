@@ -21,11 +21,13 @@
 
 #include <gmock/gmock.h>
 
-#include "conn/connection_object.h"
+#include "conn/abstract_connection_object.h"
 
-class ConnectionObjectMock : public supla_connection_object {
+class ConnectionObjectMock : public supla_abstract_connection_object {
  public:
   explicit ConnectionObjectMock(supla_connection *connection);
+  virtual supla_abstract_srpc_call_handler_collection *
+  get_srpc_call_handler_collection(void);
   void set_cache_size_limit(int size);
   void set_id(int id);
   bool set_guid(const char guid[SUPLA_GUID_SIZE]);

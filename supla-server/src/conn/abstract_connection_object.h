@@ -26,7 +26,8 @@
 
 class supla_user;
 class database;
-class supla_connection_object {
+class supla_abstract_srpc_call_handler_collection;
+class supla_abstract_connection_object {
  private:
   struct timeval last_activity_time;
   char guid[SUPLA_GUID_SIZE];
@@ -63,11 +64,13 @@ class supla_connection_object {
   static void init(void);
   static void release_cache(void);
   static int get_authkey_cache_size(void);
-  explicit supla_connection_object(supla_connection *conn);
-  virtual ~supla_connection_object();
+  explicit supla_abstract_connection_object(supla_connection *conn);
+  virtual ~supla_abstract_connection_object();
   virtual unsigned _supla_int64_t wait_time_usec(void);
   supla_connection *get_connection(void);
-  std::shared_ptr<supla_connection_object> get_shared_ptr(void);
+  std::shared_ptr<supla_abstract_connection_object> get_shared_ptr(void);
+  virtual supla_abstract_srpc_call_handler_collection *
+  get_srpc_call_handler_collection(void) = 0;
 
   // Thread safe start
   bool is_registered(void);

@@ -23,10 +23,10 @@
 namespace testing {
 
 TEST_F(ConnectionObjectTest, authkeyWithoutCache) {
-  supla_connection_object::init();
+  supla_abstract_connection_object::init();
 
   ConnectionObjectMock object(nullptr);
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
   object.set_cache_size_limit(0);
 
@@ -60,16 +60,16 @@ TEST_F(ConnectionObjectTest, authkeyWithoutCache) {
   email[2] = 3;
 
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
-  supla_connection_object::release_cache();
+  supla_abstract_connection_object::release_cache();
 }
 
 TEST_F(ConnectionObjectTest, authkeyWithCache) {
-  supla_connection_object::init();
+  supla_abstract_connection_object::init();
 
   ConnectionObjectMock object(nullptr);
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
   object.set_cache_size_limit(5);
 
@@ -83,7 +83,7 @@ TEST_F(ConnectionObjectTest, authkeyWithCache) {
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
 
-  EXPECT_EQ(1, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(1, supla_abstract_connection_object::get_authkey_cache_size());
 
   guid[0] = 2;
 
@@ -91,7 +91,7 @@ TEST_F(ConnectionObjectTest, authkeyWithCache) {
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
 
-  EXPECT_EQ(2, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(2, supla_abstract_connection_object::get_authkey_cache_size());
 
   email[0] = '@';
 
@@ -99,7 +99,7 @@ TEST_F(ConnectionObjectTest, authkeyWithCache) {
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
 
-  EXPECT_EQ(3, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(3, supla_abstract_connection_object::get_authkey_cache_size());
 
   for (int b = 0; b < 10; b++) {
     email[b] = '@';
@@ -111,18 +111,18 @@ TEST_F(ConnectionObjectTest, authkeyWithCache) {
       EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
 
       EXPECT_EQ(a > 1 || b > 0 ? 5 : 4 + a,
-                supla_connection_object::get_authkey_cache_size());
+                supla_abstract_connection_object::get_authkey_cache_size());
     }
   }
 
-  supla_connection_object::release_cache();
+  supla_abstract_connection_object::release_cache();
 }
 
 TEST_F(ConnectionObjectTest, authkeyNullTest) {
-  supla_connection_object::init();
+  supla_abstract_connection_object::init();
 
   ConnectionObjectMock object(nullptr);
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
   object.set_cache_size_limit(5);
 
@@ -133,18 +133,18 @@ TEST_F(ConnectionObjectTest, authkeyNullTest) {
   char authkey[SUPLA_AUTHKEY_SIZE] = {};
 
   EXPECT_FALSE(object.authkey_auth(NULL, email, authkey));
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
   EXPECT_FALSE(object.authkey_auth(guid, NULL, authkey));
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
   EXPECT_FALSE(object.authkey_auth(guid, email, NULL));
-  EXPECT_EQ(0, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(0, supla_abstract_connection_object::get_authkey_cache_size());
 
   EXPECT_TRUE(object.authkey_auth(guid, email, authkey));
-  EXPECT_EQ(1, supla_connection_object::get_authkey_cache_size());
+  EXPECT_EQ(1, supla_abstract_connection_object::get_authkey_cache_size());
 
-  supla_connection_object::release_cache();
+  supla_abstract_connection_object::release_cache();
 }
 
 TEST_F(ConnectionObjectTest, guidSetterAndGtter) {
@@ -156,7 +156,7 @@ TEST_F(ConnectionObjectTest, guidSetterAndGtter) {
   memset(v0, 0, SUPLA_GUID_SIZE);
   memset(v1, 1, SUPLA_GUID_SIZE);
 
-  supla_connection_object::init();
+  supla_abstract_connection_object::init();
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   cd->get_guid(v);
@@ -170,7 +170,7 @@ TEST_F(ConnectionObjectTest, guidSetterAndGtter) {
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_AUTHKEY_SIZE));
 
   delete cd;
-  supla_connection_object::release_cache();
+  supla_abstract_connection_object::release_cache();
 }
 
 TEST_F(ConnectionObjectTest, authkeySetterAndGtter) {
@@ -182,7 +182,7 @@ TEST_F(ConnectionObjectTest, authkeySetterAndGtter) {
   memset(v0, 0, SUPLA_AUTHKEY_SIZE);
   memset(v1, 1, SUPLA_AUTHKEY_SIZE);
 
-  supla_connection_object::init();
+  supla_abstract_connection_object::init();
   ConnectionObjectMock *cd = new ConnectionObjectMock(NULL);
 
   cd->get_authkey(v);
@@ -196,7 +196,7 @@ TEST_F(ConnectionObjectTest, authkeySetterAndGtter) {
   ASSERT_EQ(0, memcmp(v, v0, SUPLA_GUID_SIZE));
 
   delete cd;
-  supla_connection_object::release_cache();
+  supla_abstract_connection_object::release_cache();
 }
 
 }  // namespace testing
