@@ -29,10 +29,10 @@
 
 #define LOCAL_IPV4_ARRAY_SIZE 5
 
-class supla_connection_object;
+class supla_abstract_connection_object;
 class supla_connection {
  private:
-  std::shared_ptr<supla_connection_object> object;
+  std::shared_ptr<supla_abstract_connection_object> object;
   unsigned int client_ipv4;
   void *ssd;
   void *supla_socket;
@@ -79,7 +79,7 @@ class supla_connection {
   void catch_incorrect_call(unsigned int call_id);
 
  public:
-  std::shared_ptr<supla_connection_object> get_object(void);
+  std::shared_ptr<supla_abstract_connection_object> get_object(void);
   static void log_limits(void);
   static bool is_connection_allowed(unsigned int ipv4);
   static bool conn_limit_exceeded_soft(void);

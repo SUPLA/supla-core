@@ -37,7 +37,7 @@ using std::list;
 using std::shared_ptr;
 
 supla_device::supla_device(supla_connection *connection)
-    : supla_connection_object(connection) {
+    : supla_abstract_connection_object(connection) {
   this->channels = new supla_device_channels(this);
   this->flags = 0;
 }
@@ -54,9 +54,14 @@ supla_device::~supla_device() {
   delete channels;
 }
 
+supla_abstract_srpc_call_handler_collection *
+supla_device::get_srpc_call_handler_collection(void) {
+  return NULL;
+}
+
 shared_ptr<supla_device> supla_device::get_shared_ptr(void) {
   return dynamic_pointer_cast<supla_device>(
-      supla_connection_object::get_shared_ptr());
+      supla_abstract_connection_object::get_shared_ptr());
 }
 
 // static

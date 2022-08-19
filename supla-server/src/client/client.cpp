@@ -36,7 +36,7 @@ using std::dynamic_pointer_cast;
 using std::shared_ptr;
 
 supla_client::supla_client(supla_connection *connection)
-    : supla_connection_object(connection) {
+    : supla_abstract_connection_object(connection) {
   this->srpc_adapter = new supla_srpc_adapter(connection->srpc());
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
@@ -59,9 +59,14 @@ supla_client::~supla_client() {
   delete srpc_adapter;
 }
 
+supla_abstract_srpc_call_handler_collection *
+supla_client::get_srpc_call_handler_collection(void) {
+  return NULL;
+}
+
 shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
   return dynamic_pointer_cast<supla_client>(
-      supla_connection_object::get_shared_ptr());
+      supla_abstract_connection_object::get_shared_ptr());
 }
 
 void supla_client::setName(const char *name) {

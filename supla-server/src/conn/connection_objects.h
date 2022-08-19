@@ -19,27 +19,28 @@
 #ifndef CONNECTION_OBJECTS_H_
 #define CONNECTION_OBJECTS_H_
 
+#include <conn/abstract_connection_object.h>
+
 #include <functional>
 #include <memory>
 #include <vector>
 
-#include "conn/connection_object.h"
 #include "safearray.h"
 
 class supla_connection_objects {
  private:
   void *lck;
-  std::vector<std::weak_ptr<supla_connection_object> > objects;
+  std::vector<std::weak_ptr<supla_abstract_connection_object> > objects;
 
  protected:
   void lock(void);
   void unlock(void);
   void for_each(
-      std::function<bool(std::shared_ptr<supla_connection_object> obj)>
+      std::function<bool(std::shared_ptr<supla_abstract_connection_object> obj)>
           on_object);
-  std::vector<std::shared_ptr<supla_connection_object> > get_all(void);
-  bool add(std::shared_ptr<supla_connection_object> obj);
-  std::shared_ptr<supla_connection_object> get(int id);
+  std::vector<std::shared_ptr<supla_abstract_connection_object> > get_all(void);
+  bool add(std::shared_ptr<supla_abstract_connection_object> obj);
+  std::shared_ptr<supla_abstract_connection_object> get(int id);
 
  public:
   supla_connection_objects();

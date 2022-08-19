@@ -43,8 +43,8 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
   } else if (channel_id) {
     shared_ptr<supla_device> result;
 
-    for_each([&result,
-              channel_id](shared_ptr<supla_connection_object> obj) -> bool {
+    for_each([&result, channel_id](
+                 shared_ptr<supla_abstract_connection_object> obj) -> bool {
       shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(obj);
       if (device->get_channels()->channel_exists(channel_id)) {
         result = device;
@@ -62,7 +62,7 @@ std::shared_ptr<supla_device> supla_user_devices::get(int device_id,
 vector<shared_ptr<supla_device> > supla_user_devices::get_all(void) {
   vector<shared_ptr<supla_device> > result;
 
-  for_each([&result](shared_ptr<supla_connection_object> obj) -> bool {
+  for_each([&result](shared_ptr<supla_abstract_connection_object> obj) -> bool {
     result.push_back(dynamic_pointer_cast<supla_device>(obj));
     return true;
   });

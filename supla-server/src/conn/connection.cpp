@@ -31,6 +31,7 @@
 #include "device/device.h"
 #include "log.h"
 #include "safearray.h"
+#include "srpc/abstract_srpc_call_hanlder_collection.h"
 #include "srpc/srpc.h"
 #include "sthread.h"
 #include "supla-socket.h"
@@ -71,8 +72,8 @@ int supla_connection::socket_write(void *buf, int count, void *sc) {
 
 // static
 void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
-                                                unsigned int call_id, void *sc,
-                                                unsigned char proto_version) {
+                                               unsigned int call_id, void *sc,
+                                               unsigned char proto_version) {
   static_cast<supla_connection *>(sc)->on_remote_call_received(
       _srpc, rr_id, call_id, proto_version);
 }
@@ -199,12 +200,12 @@ void supla_connection::read_local_ipv4_addresses(void) {
 void supla_connection::init(void) {
   supla_connection::read_local_ipv4_addresses();
   supla_connection::reg_pending_arr = safe_array_init();
-  supla_connection_object::init();
+  supla_abstract_connection_object::init();
 }
 
 // static
 void supla_connection::cleanup(void) {
-  supla_connection_object::release_cache();
+  supla_abstract_connection_object::release_cache();
   safe_array_free(supla_connection::reg_pending_arr);
 }
 
@@ -249,7 +250,8 @@ supla_connection::~supla_connection() {
   supla_log(LOG_DEBUG, "Connection Finished");
 }
 
-std::shared_ptr<supla_connection_object> supla_connection::get_object(void) {
+std::shared_ptr<supla_abstract_connection_object> supla_connection::get_object(
+    void) {
   return object;
 }
 
@@ -277,6 +279,32 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
   TsrpcReceivedData rd;
 
   if (srpc_getdata(_srpc, &rd, rr_id) == SUPLA_RESULT_TRUE) {
+    if (object != nullptr &&
+        !object->get_srpc_call_handler_collection()->handle_call(
+            object, _srpc, &rd, call_id, proto_version)) {
+      catch_incorrect_call(call_id);
+    }
+
+    if (object == nullptr) {
+      object = std::make_shared<supla_device>(this);
+      if (!object->get_srpc_call_handler_collection()->handle_call(
+              object, _srpc, &rd, call_id, proto_version)) {
+        object = nullptr;
+      }
+    }
+
+    if (object == nullptr) {
+      object = std::make_shared<supla_client>(this);
+      if (!object->get_srpc_call_handler_collection()->handle_call(
+              object, _srpc, &rd, call_id, proto_version)) {
+        object = nullptr;
+      }
+    }
+
+    if (object == nullptr) {
+      catch_incorrect_call(call_id);
+    }
+
     srpc_rd_free(&rd);
   }
 }
@@ -320,7 +348,7 @@ void supla_connection::execute(void *sthread) {
   }
 
   if (object != nullptr) {
-    weak_ptr<supla_connection_object> _object = object;
+    weak_ptr<supla_abstract_connection_object> _object = object;
     object = nullptr;
 
     {

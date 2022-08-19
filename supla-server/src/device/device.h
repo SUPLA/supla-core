@@ -19,15 +19,16 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
+#include <conn/abstract_connection_object.h>
+
 #include <list>
 #include <memory>
 
 #include "commontypes.h"
-#include "conn/connection_object.h"
 #include "devicechannel.h"
 
 class supla_user;
-class supla_device : public supla_connection_object {
+class supla_device : public supla_abstract_connection_object {
  private:
   int flags;
 
@@ -43,14 +44,16 @@ class supla_device : public supla_connection_object {
 
  public:
   explicit supla_device(supla_connection *connection);
-  std::shared_ptr<supla_device> get_shared_ptr(void);
+  virtual ~supla_device();
 
+  std::shared_ptr<supla_device> get_shared_ptr(void);
+  virtual supla_abstract_srpc_call_handler_collection *
+  get_srpc_call_handler_collection(void);
   static bool funclist_contains_function(int funcList, int func);
 
   char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
                        TDS_SuplaRegisterDevice_E *register_device_e,
                        unsigned char proto_version);
-  virtual ~supla_device();
 
   supla_device_channels *get_channels(void);
 

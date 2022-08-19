@@ -41,7 +41,7 @@ std::shared_ptr<supla_client> supla_user_clients::get(int client_id) {
 }
 
 void supla_user_clients::set_channel_function(int channel_id, int func) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     dynamic_pointer_cast<supla_client>(*it)->set_channel_function(channel_id,
@@ -51,7 +51,7 @@ void supla_user_clients::set_channel_function(int channel_id, int func) {
 
 void supla_user_clients::update_device_channels(int location_id,
                                                 int device_id) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     dynamic_pointer_cast<supla_client>(*it)->update_device_channels(location_id,
@@ -61,7 +61,7 @@ void supla_user_clients::update_device_channels(int location_id,
 
 void supla_user_clients::on_channel_value_changed(
     list<channel_address> addr_list, bool extended) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   for (auto it1 = objects.begin(); it1 != objects.end(); ++it1) {
     shared_ptr<supla_client> client = dynamic_pointer_cast<supla_client>(*it1);
@@ -74,7 +74,7 @@ void supla_user_clients::on_channel_value_changed(
 }
 
 void supla_user_clients::call_event(TSC_SuplaEvent *event) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     dynamic_pointer_cast<supla_client>(*it)->call_event(event);
@@ -82,7 +82,7 @@ void supla_user_clients::call_event(TSC_SuplaEvent *event) {
 }
 
 void supla_user_clients::set_channel_caption(int channel_id, char *caption) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     dynamic_pointer_cast<supla_client>(*it)->set_channel_caption(channel_id,
@@ -91,7 +91,7 @@ void supla_user_clients::set_channel_caption(int channel_id, char *caption) {
 }
 
 void supla_user_clients::set_location_caption(int location_id, char *caption) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
     dynamic_pointer_cast<supla_client>(*it)->set_location_caption(location_id,

@@ -32,10 +32,11 @@ void supla_connection_objects::lock(void) { lck_lock(lck); }
 void supla_connection_objects::unlock(void) { lck_unlock(lck); }
 
 void supla_connection_objects::for_each(
-    function<bool(shared_ptr<supla_connection_object> obj)> on_object) {
+    function<bool(shared_ptr<supla_abstract_connection_object> obj)>
+        on_object) {
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    shared_ptr<supla_connection_object> _obj = (*it).lock();
+    shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
 
     if (_obj != nullptr && !on_object(_obj)) {
       break;
@@ -44,13 +45,13 @@ void supla_connection_objects::for_each(
   unlock();
 }
 
-vector<shared_ptr<supla_connection_object> > supla_connection_objects::get_all(
-    void) {
+vector<shared_ptr<supla_abstract_connection_object> >
+supla_connection_objects::get_all(void) {
   lock();
-  vector<shared_ptr<supla_connection_object> > result;
+  vector<shared_ptr<supla_abstract_connection_object> > result;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    shared_ptr<supla_connection_object> _obj = (*it).lock();
+    shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
     if (_obj != nullptr) {
       result.push_back(_obj);
     }
@@ -61,7 +62,8 @@ vector<shared_ptr<supla_connection_object> > supla_connection_objects::get_all(
   return result;
 }
 
-bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
+bool supla_connection_objects::add(
+    shared_ptr<supla_abstract_connection_object> obj) {
   bool result = false;
   lock();
 
@@ -70,10 +72,10 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
   int id = obj->get_id();
 
   bool ptr_exists = false;
-  shared_ptr<supla_connection_object> duplicate = nullptr;
+  shared_ptr<supla_abstract_connection_object> duplicate = nullptr;
 
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    shared_ptr<supla_connection_object> _obj = (*it).lock();
+    shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
     if (_obj == nullptr) {
       // cleanup
       it = objects.erase(it);
@@ -103,15 +105,16 @@ bool supla_connection_objects::add(shared_ptr<supla_connection_object> obj) {
   return result;
 }
 
-shared_ptr<supla_connection_object> supla_connection_objects::get(int id) {
+shared_ptr<supla_abstract_connection_object> supla_connection_objects::get(
+    int id) {
   if (!id) {
     return nullptr;
   }
 
-  shared_ptr<supla_connection_object> result;
+  shared_ptr<supla_abstract_connection_object> result;
   lock();
   for (auto it = objects.begin(); it != objects.end(); ++it) {
-    shared_ptr<supla_connection_object> _obj = (*it).lock();
+    shared_ptr<supla_abstract_connection_object> _obj = (*it).lock();
 
     if (_obj != nullptr && _obj->get_id() == id) {
       result = _obj;
@@ -135,7 +138,7 @@ int supla_connection_objects::count(void) {
 }
 
 bool supla_connection_objects::terminate_all(void) {
-  vector<shared_ptr<supla_connection_object> > objects = get_all();
+  vector<shared_ptr<supla_abstract_connection_object> > objects = get_all();
 
   bool result = false;
 
@@ -148,7 +151,7 @@ bool supla_connection_objects::terminate_all(void) {
 }
 
 bool supla_connection_objects::terminate(int id) {
-  shared_ptr<supla_connection_object> obj = get(id);
+  shared_ptr<supla_abstract_connection_object> obj = get(id);
   if (obj) {
     obj->terminate();
     return true;

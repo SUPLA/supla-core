@@ -19,6 +19,8 @@
 #ifndef CLIENT_H_
 #define CLIENT_H_
 
+#include <conn/abstract_connection_object.h>
+
 #include <memory>
 
 #include "client_scene_dao.h"
@@ -27,12 +29,11 @@
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
-#include "conn/connection_object.h"
 #include "srpc/srpc_adapter.h"
 
 class supla_user;
 class supla_connection;
-class supla_client : public supla_connection_object {
+class supla_client : public supla_abstract_connection_object {
  private:
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
   bool superuser_authorized;
@@ -64,6 +65,8 @@ class supla_client : public supla_connection_object {
 
  public:
   explicit supla_client(supla_connection *connection);
+  virtual supla_abstract_srpc_call_handler_collection *
+  get_srpc_call_handler_collection(void);
   std::shared_ptr<supla_client> get_shared_ptr(void);
 
   void iterate();
