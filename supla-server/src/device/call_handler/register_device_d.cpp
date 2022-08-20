@@ -28,10 +28,10 @@
 
 using std::shared_ptr;
 
-supla_ch_register_device_d::supla_ch_register_device_c(void)
+supla_ch_register_device_d::supla_ch_register_device_d(void)
     : supla_abstract_srpc_call_handler() {}
 
-supla_ch_register_device_d::~supla_ch_register_device_c() {}
+supla_ch_register_device_d::~supla_ch_register_device_d() {}
 
 bool supla_ch_register_device_d::handle_call(
     std::shared_ptr<supla_abstract_connection_object> object, void* srpc,
