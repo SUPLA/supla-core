@@ -16,21 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef ABSTRACT_SRPC_CALL_HANDLER_H_
-#define ABSTRACT_SRPC_CALL_HANDLER_H_
+#ifndef SUPLA_CH_REGISTER_DEVICE_H_
+#define SUPLA_CH_REGISTER_DEVICE_H_
 
-#include <memory>
+#include "srpc/abstract_srpc_call_hanlder.h"
 
-#include "conn/abstract_connection_object.h"
-
-class supla_abstract_srpc_call_handler {
+class supla_ch_register_device : public supla_abstract_srpc_call_handler {
  public:
-  supla_abstract_srpc_call_handler(void);
-  virtual ~supla_abstract_srpc_call_handler();
+  supla_ch_register_device(void);
+  virtual ~supla_ch_register_device();
   virtual bool handle_call(
       std::shared_ptr<supla_abstract_connection_object> object, void* srpc,
-      TsrpcReceivedData* rd, unsigned int call_id,
-      unsigned char proto_version) = 0;
+      TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version);
 };
 
-#endif /* ABSTRACT_SRPC_CALL_HANDLER_H_ */
+#endif /* SUPLA_CH_REGISTER_DEVICE_H_*/

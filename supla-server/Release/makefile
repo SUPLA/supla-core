@@ -18,6 +18,7 @@ RM := rm -rf
 -include src/http/subdir.mk
 -include src/google/subdir.mk
 -include src/distributedobjects/subdir.mk
+-include src/device/call_handler/subdir.mk
 -include src/device/subdir.mk
 -include src/crypt_blowfish/subdir.mk
 -include src/converter/subdir.mk

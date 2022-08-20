@@ -19,6 +19,7 @@
 #ifndef ABSTRACT_SRPC_CALL_HANDLER_COLLECTION_H_
 #define ABSTRACT_SRPC_CALL_HANDLER_COLLECTION_H_
 
+#include <memory>
 #include <vector>
 
 #include "conn/abstract_connection_object.h"
@@ -32,7 +33,7 @@ class supla_abstract_srpc_call_handler_collection {
   void add_handler(supla_abstract_srpc_call_handler* handler);
 
  public:
-  explicit supla_abstract_srpc_call_handler_collection(void);
+  supla_abstract_srpc_call_handler_collection(void);
   virtual ~supla_abstract_srpc_call_handler_collection();
   bool handle_call(std::shared_ptr<supla_abstract_connection_object> object,
                    void* srpc, TsrpcReceivedData* rd, unsigned int call_id,

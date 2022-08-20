@@ -33,6 +33,7 @@ src/conn \
 src/converter \
 src/crypt_blowfish \
 src/device \
+src/device/call_handler \
 src/distributedobjects \
 src/google \
 src/http \

@@ -16,6 +16,7 @@ cpplint ./supla-server/src/channeljsonconfig/*
 cpplint ./supla-server/src/client/* 
 cpplint ./supla-server/src/conn/* 
 cpplint ./supla-server/src/device/* 
+cpplint ./supla-server/src/device/call_handler* 
 cpplint ./supla-server/src/distributedobjects/* 
 cpplint ./supla-server/src/google/* 
 cpplint ./supla-server/src/http/* 
