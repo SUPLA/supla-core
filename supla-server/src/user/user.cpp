@@ -196,6 +196,20 @@ supla_user *supla_user::find(int UserID, bool create) {
 }
 
 // static
+std::vector<supla_user *> supla_user::get_all_users(void) {
+  std::vector<supla_user *> result;
+  safe_array_lock(supla_user::user_arr);
+  int a = 0;
+
+  supla_user *user = NULL;
+  while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
+    result.push_back(user);
+  }
+  safe_array_unlock(supla_user::user_arr);
+  return result;
+}
+
+// static
 supla_user *supla_user::find_by_suid(const char *suid) {
   if (suid == NULL || suid[0] == 0) {
     return NULL;

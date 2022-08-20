@@ -41,24 +41,22 @@ supla_datalogger::supla_datalogger() {
 }
 
 void supla_datalogger::log_temperature() {
-  supla_user *user;
-  int a;
-  int n = 0;
   void *tarr = safe_array_init();
 
-  while ((user = supla_user::get_user(n)) != NULL) {
-    n++;
+  vector<supla_user *> users = supla_user::get_all_users();
 
-    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
+  for (auto uit = users.cbegin(); uit != users.cend(); ++uit) {
+    vector<shared_ptr<supla_device> > devices =
+        (*uit)->get_devices()->get_all();
 
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
-      (*it)->get_channels()->get_temp_and_humidity(tarr);
+    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
+      (*dit)->get_channels()->get_temp_and_humidity(tarr);
     }
 
-    db->load_temperatures_and_humidity(user->getUserID(), tarr);
+    db->load_temperatures_and_humidity((*uit)->getUserID(), tarr);
   }
 
-  for (a = 0; a < safe_array_count(tarr); a++) {
+  for (int a = 0; a < safe_array_count(tarr); a++) {
     supla_channel_temphum *sct =
         (supla_channel_temphum *)safe_array_get(tarr, a);
 
@@ -76,22 +74,20 @@ void supla_datalogger::log_temperature() {
 }
 
 void supla_datalogger::log_electricity_measurement(void) {
-  supla_user *user;
-  int a;
-  int n = 0;
   void *emarr = safe_array_init();
 
-  while ((user = supla_user::get_user(n)) != NULL) {
-    n++;
+  vector<supla_user *> users = supla_user::get_all_users();
 
-    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
+  for (auto uit = users.cbegin(); uit != users.cend(); ++uit) {
+    vector<shared_ptr<supla_device> > devices =
+        (*uit)->get_devices()->get_all();
 
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
-      (*it)->get_channels()->get_electricity_measurements(emarr, true);
+    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
+      (*dit)->get_channels()->get_electricity_measurements(emarr, true);
     }
   }
 
-  for (a = 0; a < safe_array_count(emarr); a++) {
+  for (int a = 0; a < safe_array_count(emarr); a++) {
     supla_channel_electricity_measurement *em =
         (supla_channel_electricity_measurement *)safe_array_get(emarr, a);
     if (em) {
@@ -103,22 +99,20 @@ void supla_datalogger::log_electricity_measurement(void) {
 }
 
 void supla_datalogger::log_ic_measurement(void) {
-  supla_user *user;
-  int a;
-  int n = 0;
   void *icarr = safe_array_init();
 
-  while ((user = supla_user::get_user(n)) != NULL) {
-    n++;
+  vector<supla_user *> users = supla_user::get_all_users();
 
-    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
+  for (auto uit = users.cbegin(); uit != users.cend(); ++uit) {
+    vector<shared_ptr<supla_device> > devices =
+        (*uit)->get_devices()->get_all();
 
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
-      (*it)->get_channels()->get_ic_measurements(icarr, true);
+    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
+      (*dit)->get_channels()->get_ic_measurements(icarr, true);
     }
   }
 
-  for (a = 0; a < safe_array_count(icarr); a++) {
+  for (int a = 0; a < safe_array_count(icarr); a++) {
     supla_channel_ic_measurement *ic =
         (supla_channel_ic_measurement *)safe_array_get(icarr, a);
     if (ic) {
@@ -130,22 +124,20 @@ void supla_datalogger::log_ic_measurement(void) {
 }
 
 void supla_datalogger::log_thermostat_measurement(void) {
-  supla_user *user;
-  int a;
-  int n = 0;
   void *tharr = safe_array_init();
 
-  while ((user = supla_user::get_user(n)) != NULL) {
-    n++;
+  vector<supla_user *> users = supla_user::get_all_users();
 
-    vector<shared_ptr<supla_device> > devices = user->get_devices()->get_all();
+  for (auto uit = users.cbegin(); uit != users.cend(); ++uit) {
+    vector<shared_ptr<supla_device> > devices =
+        (*uit)->get_devices()->get_all();
 
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
-      (*it)->get_channels()->get_thermostat_measurements(tharr);
+    for (auto dit = devices.cbegin(); dit != devices.cend(); ++dit) {
+      (*dit)->get_channels()->get_thermostat_measurements(tharr);
     }
   }
 
-  for (a = 0; a < safe_array_count(tharr); a++) {
+  for (int a = 0; a < safe_array_count(tharr); a++) {
     supla_channel_thermostat_measurement *th =
         (supla_channel_thermostat_measurement *)safe_array_get(tharr, a);
     if (th) {
