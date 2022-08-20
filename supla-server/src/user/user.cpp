@@ -51,6 +51,7 @@ struct timeval supla_user::metric_tv = (struct timeval){0};
 using std::function;
 using std::list;
 using std::shared_ptr;
+using std::vector;
 
 // static
 char supla_user::find_user_by_id(void *ptr, void *UserID) {
@@ -196,8 +197,8 @@ supla_user *supla_user::find(int UserID, bool create) {
 }
 
 // static
-std::vector<supla_user *> supla_user::get_all_users(void) {
-  std::vector<supla_user *> result;
+vector<supla_user *> supla_user::get_all_users(void) {
+  vector<supla_user *> result;
   safe_array_lock(supla_user::user_arr);
   int a = 0;
 

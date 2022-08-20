@@ -28,6 +28,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <vector>
 
 #include "amazon/alexacredentials.h"
 #include "caller.h"
