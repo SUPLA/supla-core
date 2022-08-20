@@ -204,6 +204,7 @@ std::vector<supla_user *> supla_user::get_all_users(void) {
   supla_user *user = NULL;
   while (NULL != (user = (supla_user *)safe_array_get(user_arr, a))) {
     result.push_back(user);
+    a++;
   }
   safe_array_unlock(supla_user::user_arr);
   return result;
