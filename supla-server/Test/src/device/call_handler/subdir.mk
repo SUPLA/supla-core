@@ -4,13 +4,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../src/device/call_handler/register_device.cpp 
+../src/device/call_handler/register_device.cpp \
+../src/device/call_handler/register_device_b.cpp 
 
 CPP_DEPS += \
-./src/device/call_handler/register_device.d 
+./src/device/call_handler/register_device.d \
+./src/device/call_handler/register_device_b.d 
 
 OBJS += \
-./src/device/call_handler/register_device.o 
+./src/device/call_handler/register_device.o \
+./src/device/call_handler/register_device_b.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -25,7 +28,7 @@ src/device/call_handler/%.o: ../src/device/call_handler/%.cpp src/device/call_ha
 clean: clean-src-2f-device-2f-call_handler
 
 clean-src-2f-device-2f-call_handler:
-	-$(RM) ./src/device/call_handler/register_device.d ./src/device/call_handler/register_device.o
+	-$(RM) ./src/device/call_handler/register_device.d ./src/device/call_handler/register_device.o ./src/device/call_handler/register_device_b.d ./src/device/call_handler/register_device_b.o
 
 .PHONY: clean-src-2f-device-2f-call_handler
 
