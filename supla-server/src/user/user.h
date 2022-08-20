@@ -106,6 +106,7 @@ class supla_user {
 
   static int user_count(void);
   static supla_user *get_user(int user_id);
+  static std::vector<supla_user *> get_all_users(void);
 
   static void on_amazon_alexa_credentials_changed(int UserID);
   static void on_google_home_credentials_changed(int UserID);
