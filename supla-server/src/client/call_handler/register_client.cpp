@@ -35,7 +35,7 @@ supla_ch_register_client::supla_ch_register_client(void)
 supla_ch_register_client::~supla_ch_register_client() {}
 
 bool supla_ch_register_client::handle_call(
-    std::shared_ptr<supla_abstract_connection_object> object,
+    shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT) {

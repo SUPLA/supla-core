@@ -35,7 +35,7 @@ supla_ch_register_device_b::supla_ch_register_device_b(void)
 supla_ch_register_device_b::~supla_ch_register_device_b() {}
 
 bool supla_ch_register_device_b::handle_call(
-    std::shared_ptr<supla_abstract_connection_object> object,
+    shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_REGISTER_DEVICE_B) {
