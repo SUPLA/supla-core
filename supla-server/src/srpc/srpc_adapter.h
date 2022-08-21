@@ -49,7 +49,8 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
     }
   }
 
-  virtual char get_proto_version(void);
+  virtual void set_proto_version(unsigned char version);
+  virtual unsigned char get_proto_version(void);
 
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack);  // ver. >= 18

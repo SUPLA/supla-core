@@ -32,7 +32,8 @@ class supla_abstract_srpc_adapter {
   void *get_srpc(
       void);  // TODO(przemyslawzygmunt): Move to the protected access specifier
 
-  virtual char get_proto_version(void) = 0;
+  virtual void set_proto_version(unsigned char version) = 0;
+  virtual unsigned char get_proto_version(void) = 0;
 
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack) = 0;  // ver. >= 18

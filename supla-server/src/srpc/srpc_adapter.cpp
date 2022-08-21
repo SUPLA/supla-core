@@ -25,7 +25,11 @@ supla_srpc_adapter::supla_srpc_adapter(void *srpc)
 
 supla_srpc_adapter::~supla_srpc_adapter() {}
 
-char supla_srpc_adapter::get_proto_version(void) {
+void supla_srpc_adapter::set_proto_version(unsigned char version) {
+  srpc_set_proto_version(get_srpc(), version);
+}
+
+unsigned char supla_srpc_adapter::get_proto_version(void) {
   return srpc_get_proto_version(get_srpc());
 }
 

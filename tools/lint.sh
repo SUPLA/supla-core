@@ -14,6 +14,7 @@ cpplint ./supla-server/src/amazon/*
 cpplint ./supla-server/src/asynctask/* 
 cpplint ./supla-server/src/channeljsonconfig/* 
 cpplint ./supla-server/src/client/* 
+cpplint ./supla-server/src/client/call_handler/* 
 cpplint ./supla-server/src/conn/* 
 cpplint ./supla-server/src/device/* 
 cpplint ./supla-server/src/device/call_handler* 

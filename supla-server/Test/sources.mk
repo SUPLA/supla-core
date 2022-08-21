@@ -29,6 +29,7 @@ src/amazon \
 src/asynctask \
 src/channeljsonconfig \
 src/client \
+src/client/call_handler \
 src/conn \
 src/converter \
 src/crypt_blowfish \

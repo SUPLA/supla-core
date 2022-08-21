@@ -16,29 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SRPC_ADAPTER_MOCK_H_
-#define SRPC_ADAPTER_MOCK_H_
+#ifndef SUPLA_CH_REGISTER_CLIENT_H_
+#define SUPLA_CH_REGISTER_CLIENT_H_
 
-#include <gmock/gmock.h>
+#include "srpc/abstract_srpc_call_hanlder.h"
 
-#include "srpc/abstract_srpc_adapter.h"
-
-namespace testing {
-
-class SrpcAdapterMock : public supla_abstract_srpc_adapter {
- private:
- protected:
+class supla_ch_register_client : public supla_abstract_srpc_call_handler {
  public:
-  explicit SrpcAdapterMock(void *srpc);
-  virtual ~SrpcAdapterMock(void);
-  MOCK_METHOD1(set_proto_version, void(unsigned char version));
-  MOCK_METHOD0(get_proto_version, unsigned char(void));
-  MOCK_METHOD1(sc_async_scene_pack_update,
-               _supla_int_t(TSC_SuplaScenePack *scene_pack));
-  MOCK_METHOD1(sc_async_scene_state_pack_update,
-               _supla_int_t(TSC_SuplaSceneStatePack *scene_status_pack));
+  supla_ch_register_client(void);
+  virtual ~supla_ch_register_client();
+  virtual bool handle_call(
+      std::shared_ptr<supla_abstract_connection_object> object,
+      supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
+      unsigned int call_id, unsigned char proto_version);
 };
 
-} /* namespace testing */
-
-#endif /* SRPC_ADAPTER_MOCK_H_ */
+#endif /* SUPLA_CH_REGISTER_CLIENT_H_*/
