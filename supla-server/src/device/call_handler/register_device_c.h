@@ -26,8 +26,9 @@ class supla_ch_register_device_c : public supla_abstract_srpc_call_handler {
   supla_ch_register_device_c(void);
   virtual ~supla_ch_register_device_c();
   virtual bool handle_call(
-      std::shared_ptr<supla_abstract_connection_object> object, void* srpc,
-      TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version);
+      std::shared_ptr<supla_abstract_connection_object> object,
+      supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
+      unsigned int call_id, unsigned char proto_version);
 };
 
 #endif /* SUPLA_CH_REGISTER_DEVICE_C_H_*/

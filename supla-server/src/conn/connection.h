@@ -25,6 +25,7 @@
 #include <memory>
 
 #include "eh.h"
+#include "srpc/abstract_srpc_adapter.h"
 #include "srpc/srpc.h"
 
 #define LOCAL_IPV4_ARRAY_SIZE 5
@@ -37,6 +38,7 @@ class supla_connection {
   void *ssd;
   void *supla_socket;
   void *_srpc;
+  supla_abstract_srpc_adapter *srpc_adapter;
   void *sthread;
   TEventHandler *eh;
   struct timeval init_time;
@@ -93,7 +95,7 @@ class supla_connection {
   void terminate(void);
   virtual ~supla_connection();
 
-  void *srpc(void);
+  supla_abstract_srpc_adapter *get_srpc_adapter(void);
   unsigned int get_client_ipv4(void);
   int get_client_sd(void);
   unsigned char get_activity_timeout(void);

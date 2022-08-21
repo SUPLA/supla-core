@@ -413,7 +413,8 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
   srdr.activity_timeout = get_connection()->get_activity_timeout();
   srdr.version_min = SUPLA_PROTO_VERSION_MIN;
   srdr.version = SUPLA_PROTO_VERSION;
-  srpc_sd_async_registerdevice_result(get_connection()->srpc(), &srdr);
+  srpc_sd_async_registerdevice_result(
+      get_connection()->get_srpc_adapter()->get_srpc(), &srdr);
 
   return result;
 }
@@ -564,8 +565,8 @@ void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
 
   delete db;
 
-  srpc_sd_async_get_firmware_update_url_result(get_connection()->srpc(),
-                                               &result);
+  srpc_sd_async_get_firmware_update_url_result(
+      get_connection()->get_srpc_adapter()->get_srpc(), &result);
 }
 
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
@@ -617,7 +618,8 @@ bool supla_device::enter_cfg_mode(void) {
     request.Command = SUPLA_CALCFG_CMD_ENTER_CFG_MODE;
     request.SuperUserAuthorized = true;
 
-    srpc_sd_async_device_calcfg_request(get_connection()->srpc(), &request);
+    srpc_sd_async_device_calcfg_request(
+        get_connection()->get_srpc_adapter()->get_srpc(), &request);
     return true;
   }
 

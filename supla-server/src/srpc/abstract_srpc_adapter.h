@@ -25,12 +25,12 @@ class supla_abstract_srpc_adapter {
  private:
   void *srpc;
 
- protected:
-  void *get_srpc(void);
-
  public:
   explicit supla_abstract_srpc_adapter(void *srpc);
   virtual ~supla_abstract_srpc_adapter();
+
+  void *get_srpc(
+      void);  // TODO(przemyslawzygmunt): Move to the protected access specifier
 
   virtual char get_proto_version(void) = 0;
 

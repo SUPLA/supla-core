@@ -34,8 +34,9 @@ supla_ch_register_device_d::supla_ch_register_device_d(void)
 supla_ch_register_device_d::~supla_ch_register_device_d() {}
 
 bool supla_ch_register_device_d::handle_call(
-    std::shared_ptr<supla_abstract_connection_object> object, void* srpc,
-    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
+    std::shared_ptr<supla_abstract_connection_object> object,
+    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
+    unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_REGISTER_DEVICE_D) {
     return false;
   }
@@ -87,7 +88,8 @@ bool supla_ch_register_device_d::handle_call(
     rd->data.ds_register_device_e = register_device_e;
 
     return object->get_srpc_call_handler_collection()->handle_call(
-        object, srpc, rd, SUPLA_DS_CALL_REGISTER_DEVICE_E, proto_version);
+        object, srpc_adapter, rd, SUPLA_DS_CALL_REGISTER_DEVICE_E,
+        proto_version);
   }
 
   return true;

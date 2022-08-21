@@ -36,7 +36,8 @@ class supla_abstract_srpc_call_handler_collection {
   supla_abstract_srpc_call_handler_collection(void);
   virtual ~supla_abstract_srpc_call_handler_collection();
   bool handle_call(std::shared_ptr<supla_abstract_connection_object> object,
-                   void* srpc, TsrpcReceivedData* rd, unsigned int call_id,
+                   supla_abstract_srpc_adapter* srpc_adapter,
+                   TsrpcReceivedData* rd, unsigned int call_id,
                    unsigned char proto_version);
 };
 

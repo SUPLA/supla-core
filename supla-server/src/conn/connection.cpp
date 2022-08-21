@@ -33,6 +33,7 @@
 #include "safearray.h"
 #include "srpc/abstract_srpc_call_hanlder_collection.h"
 #include "srpc/srpc.h"
+#include "srpc/srpc_adapter.h"
 #include "sthread.h"
 #include "supla-socket.h"
 #include "svrcfg.h"
@@ -239,10 +240,12 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   srpc_params.on_version_error = &on_version_error;
   srpc_params.eh = eh;
   _srpc = srpc_init(&srpc_params);
+  srpc_adapter = new supla_srpc_adapter(_srpc);
 }
 
 supla_connection::~supla_connection() {
   srpc_free(_srpc);
+  delete srpc_adapter;
   eh_free(eh);
   ssocket_supla_socket_free(supla_socket);
 
@@ -281,14 +284,14 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
   if (srpc_getdata(_srpc, &rd, rr_id) == SUPLA_RESULT_TRUE) {
     if (object != nullptr &&
         !object->get_srpc_call_handler_collection()->handle_call(
-            object, _srpc, &rd, call_id, proto_version)) {
+            object, srpc_adapter, &rd, call_id, proto_version)) {
       catch_incorrect_call(call_id);
     }
 
     if (object == nullptr) {
       object = std::make_shared<supla_device>(this);
       if (!object->get_srpc_call_handler_collection()->handle_call(
-              object, _srpc, &rd, call_id, proto_version)) {
+              object, srpc_adapter, &rd, call_id, proto_version)) {
         object = nullptr;
       }
     }
@@ -296,7 +299,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     if (object == nullptr) {
       object = std::make_shared<supla_client>(this);
       if (!object->get_srpc_call_handler_collection()->handle_call(
-              object, _srpc, &rd, call_id, proto_version)) {
+              object, srpc_adapter, &rd, call_id, proto_version)) {
         object = nullptr;
       }
     }
@@ -375,7 +378,9 @@ int supla_connection::get_client_sd(void) {
   return ssocket_supla_socket_getsfd(supla_socket);
 }
 
-void *supla_connection::srpc(void) { return _srpc; }
+supla_abstract_srpc_adapter *supla_connection::get_srpc_adapter(void) {
+  return srpc_adapter;
+}
 
 unsigned char supla_connection::get_activity_timeout(void) {
   return activity_timeout;

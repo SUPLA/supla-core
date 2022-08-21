@@ -29,7 +29,6 @@
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
-#include "srpc/srpc_adapter.h"
 
 class supla_user;
 class supla_connection;
@@ -40,7 +39,6 @@ class supla_client : public supla_abstract_connection_object {
   int access_id;
 
  protected:
-  supla_srpc_adapter *srpc_adapter;
   supla_client_locations *locations;
   supla_client_channels *channels;
   supla_client_channelgroups *cgroups;
