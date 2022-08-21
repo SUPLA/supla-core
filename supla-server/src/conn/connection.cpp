@@ -288,6 +288,12 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
       catch_incorrect_call(call_id);
     }
 
+    if (object == nullptr && proto_version < SUPLA_PROTO_VERSION &&
+        srpc_get_proto_version(_srpc) != proto_version) {
+      supla_log(LOG_DEBUG, "Adjusting protocol version to %i", proto_version);
+      srpc_adapter->set_proto_version(proto_version);
+    }
+
     if (object == nullptr) {
       object = std::make_shared<supla_device>(this);
       if (!object->get_srpc_call_handler_collection()->handle_call(
