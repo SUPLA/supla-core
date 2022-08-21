@@ -6,16 +6,19 @@
 CPP_SRCS += \
 ../src/client/call_handler/register_client.cpp \
 ../src/client/call_handler/register_client_b.cpp \
+../src/client/call_handler/register_client_c.cpp \
 ../src/client/call_handler/register_client_d.cpp 
 
 CPP_DEPS += \
 ./src/client/call_handler/register_client.d \
 ./src/client/call_handler/register_client_b.d \
+./src/client/call_handler/register_client_c.d \
 ./src/client/call_handler/register_client_d.d 
 
 OBJS += \
 ./src/client/call_handler/register_client.o \
 ./src/client/call_handler/register_client_b.o \
+./src/client/call_handler/register_client_c.o \
 ./src/client/call_handler/register_client_d.o 
 
 
@@ -31,7 +34,7 @@ src/client/call_handler/%.o: ../src/client/call_handler/%.cpp src/client/call_ha
 clean: clean-src-2f-client-2f-call_handler
 
 clean-src-2f-client-2f-call_handler:
-	-$(RM) ./src/client/call_handler/register_client.d ./src/client/call_handler/register_client.o ./src/client/call_handler/register_client_b.d ./src/client/call_handler/register_client_b.o ./src/client/call_handler/register_client_d.d ./src/client/call_handler/register_client_d.o
+	-$(RM) ./src/client/call_handler/register_client.d ./src/client/call_handler/register_client.o ./src/client/call_handler/register_client_b.d ./src/client/call_handler/register_client_b.o ./src/client/call_handler/register_client_c.d ./src/client/call_handler/register_client_c.o ./src/client/call_handler/register_client_d.d ./src/client/call_handler/register_client_d.o
 
 .PHONY: clean-src-2f-client-2f-call_handler
 
