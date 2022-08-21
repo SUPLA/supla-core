@@ -74,14 +74,14 @@ bool supla_ch_register_device::handle_call(
                rd->data.ds_register_device->channels[c].value,
                SUPLA_CHANNELVALUE_SIZE);
       }
+
+      free(rd->data.ds_register_device);
+      rd->data.ds_register_device_b = register_device_b;
+
+      return object->get_srpc_call_handler_collection()->handle_call(
+          object, srpc_adapter, rd, SUPLA_DS_CALL_REGISTER_DEVICE_B,
+          proto_version);
     }
-
-    free(rd->data.ds_register_device);
-    rd->data.ds_register_device_b = register_device_b;
-
-    return object->get_srpc_call_handler_collection()->handle_call(
-        object, srpc_adapter, rd, SUPLA_DS_CALL_REGISTER_DEVICE_B,
-        proto_version);
   }
 
   return true;

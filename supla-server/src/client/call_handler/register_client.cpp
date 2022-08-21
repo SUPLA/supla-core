@@ -61,14 +61,14 @@ bool supla_ch_register_client::handle_call(
              SUPLA_CLIENT_NAME_MAXSIZE);
       memcpy(register_client_b->SoftVer, rd->data.cs_register_client->SoftVer,
              SUPLA_SOFTVER_MAXSIZE);
+
+      free(rd->data.cs_register_client);
+      rd->data.cs_register_client_b = register_client_b;
+
+      return object->get_srpc_call_handler_collection()->handle_call(
+          object, srpc_adapter, rd, SUPLA_CS_CALL_REGISTER_CLIENT_B,
+          proto_version);
     }
-
-    free(rd->data.cs_register_client);
-    rd->data.cs_register_client_b = register_client_b;
-
-    return object->get_srpc_call_handler_collection()->handle_call(
-        object, srpc_adapter, rd, SUPLA_CS_CALL_REGISTER_CLIENT_B,
-        proto_version);
   }
 
   return true;
