@@ -19,6 +19,8 @@
 #ifndef SUPLA_CH_REGISTER_CLIENT_D_H_
 #define SUPLA_CH_REGISTER_CLIENT_D_H_
 
+#include <memory>
+
 #include "srpc/abstract_srpc_call_hanlder.h"
 
 class supla_ch_register_client_d : public supla_abstract_srpc_call_handler {
