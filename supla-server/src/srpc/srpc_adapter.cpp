@@ -57,3 +57,8 @@ _supla_int_t supla_srpc_adapter::sc_async_scene_state_pack_update(
     TSC_SuplaSceneStatePack *scene_state_pack) {
   return srpc_sc_async_scene_state_pack_update(get_srpc(), scene_state_pack);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_get_firmware_update_url_result(
+    TSD_FirmwareUpdate_UrlResult *result) {
+  return srpc_sd_async_get_firmware_update_url_result(get_srpc(), result);
+}

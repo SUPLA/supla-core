@@ -64,6 +64,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
       TSC_SuplaScenePack *scene_pack);  // ver. >= 18
   virtual _supla_int_t sc_async_scene_state_pack_update(
       TSC_SuplaSceneStatePack *scene_state_pack);  // ver. >= 18
+
+  virtual _supla_int_t sd_async_get_firmware_update_url_result(
+      TSD_FirmwareUpdate_UrlResult *result);
 };
 
 #endif /* SRPC_ADAPTER_H_ */
