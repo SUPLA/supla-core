@@ -83,7 +83,7 @@ class supla_abstract_connection_object {
   int get_user_id(void);
   supla_user *get_user(void);
   bool guid_equal(const char guid1[SUPLA_GUID_SIZE]);
-  void update_last_activity(void);
+  void update_last_activity_time(void);
   int get_activity_delay(void);
   unsigned char get_protocol_version(void);
   // Thread safe end

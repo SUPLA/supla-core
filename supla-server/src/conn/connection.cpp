@@ -279,10 +279,13 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
   TsrpcReceivedData rd;
 
   if (srpc_getdata(_srpc, &rd, rr_id) == SUPLA_RESULT_TRUE) {
-    if (object != nullptr &&
-        !object->get_srpc_call_handler_collection()->handle_call(
-            object, srpc_adapter, &rd, call_id, proto_version)) {
-      catch_unhandled_call(call_id);
+    if (object != nullptr) {
+      if (object->get_srpc_call_handler_collection()->handle_call(
+              object, srpc_adapter, &rd, call_id, proto_version)) {
+        object->update_last_activity_time();
+      } else {
+        catch_unhandled_call(call_id);
+      }
     }
 
     if (object == nullptr && proto_version < SUPLA_PROTO_VERSION &&

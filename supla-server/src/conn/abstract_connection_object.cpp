@@ -74,7 +74,7 @@ supla_abstract_connection_object::supla_abstract_connection_object(
   memset(this->guid, 0, SUPLA_GUID_SIZE);
   memset(this->authkey, 0, SUPLA_AUTHKEY_SIZE);
 
-  update_last_activity();  // last line / after lck_init
+  update_last_activity_time();  // last line / after lck_init
 }
 
 supla_abstract_connection_object::~supla_abstract_connection_object() {
@@ -196,7 +196,7 @@ supla_abstract_connection_object::get_shared_ptr(void) {
   return conn ? conn->get_object() : nullptr;
 }
 
-void supla_abstract_connection_object::update_last_activity(void) {
+void supla_abstract_connection_object::update_last_activity_time(void) {
   lck_lock(lck);
   gettimeofday(&last_activity_time, NULL);
   lck_unlock(lck);
