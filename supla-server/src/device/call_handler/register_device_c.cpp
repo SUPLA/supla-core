@@ -28,14 +28,13 @@
 using std::shared_ptr;
 
 supla_ch_register_device_c::supla_ch_register_device_c(void)
-    : supla_abstract_srpc_call_handler() {}
+    : supla_abstract_device_srpc_call_handler() {}
 
 supla_ch_register_device_c::~supla_ch_register_device_c() {}
 
 bool supla_ch_register_device_c::handle_call(
-    shared_ptr<supla_abstract_connection_object> object,
-    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-    unsigned int call_id, unsigned char proto_version) {
+    shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
+    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_REGISTER_DEVICE_C) {
     return false;
   }

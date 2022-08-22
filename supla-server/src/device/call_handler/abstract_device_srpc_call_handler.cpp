@@ -16,20 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_REGISTER_DEVICE_B_H_
-#define SUPLA_CH_REGISTER_DEVICE_B_H_
-
 #include "device/call_handler/abstract_device_srpc_call_handler.h"
 
-class supla_ch_register_device_b
-    : public supla_abstract_device_srpc_call_handler {
- public:
-  supla_ch_register_device_b(void);
-  virtual ~supla_ch_register_device_b();
-  virtual bool handle_call(std::shared_ptr<supla_device> device,
-                           supla_abstract_srpc_adapter* srpc_adapter,
-                           TsrpcReceivedData* rd, unsigned int call_id,
-                           unsigned char proto_version);
-};
+using std::dynamic_pointer_cast;
+using std::shared_ptr;
 
-#endif /* SUPLA_CH_REGISTER_DEVICE_B_H_*/
+supla_abstract_device_srpc_call_handler::
+    supla_abstract_device_srpc_call_handler(void)
+    : supla_abstract_srpc_call_handler() {}
+
+supla_abstract_device_srpc_call_handler::
+    ~supla_abstract_device_srpc_call_handler() {}
+
+bool supla_abstract_device_srpc_call_handler::handle_call(
+    shared_ptr<supla_abstract_connection_object> object,
+    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
+    unsigned int call_id, unsigned char proto_version) {
+  shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(object);
+
+  return device != nullptr &&
+         handle_call(device, srpc_adapter, rd, call_id, proto_version);
+}

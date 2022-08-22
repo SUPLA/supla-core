@@ -32,16 +32,15 @@ supla_ch_device_channel_value_changed_c::
     ~supla_ch_device_channel_value_changed_c() {}
 
 bool supla_ch_device_channel_value_changed_c::handle_call(
-    shared_ptr<supla_abstract_connection_object> object,
-    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-    unsigned int call_id, unsigned char proto_version) {
+    shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
+    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_DEVICE_CHANNEL_VALUE_CHANGED_C) {
     return false;
   }
 
   if (rd->data.ds_device_channel_value_c != NULL) {
     on_channel_value_changed(
-        object, rd->data.ds_device_channel_value_c->ChannelNumber,
+        device, rd->data.ds_device_channel_value_c->ChannelNumber,
         rd->data.ds_device_channel_value_c->value,
         rd->data.ds_device_channel_value_c->Offline > 0,
         &rd->data.ds_device_channel_value_c->ValidityTimeSec);

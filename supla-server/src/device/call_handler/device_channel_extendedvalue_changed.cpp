@@ -24,39 +24,33 @@
 #include "proto.h"
 #include "user.h"
 
-using std::dynamic_pointer_cast;
 using std::shared_ptr;
 
 supla_ch_device_channel_extendedvalue_changed::
     supla_ch_device_channel_extendedvalue_changed(void)
-    : supla_abstract_srpc_call_handler() {}
+    : supla_abstract_device_srpc_call_handler() {}
 
 supla_ch_device_channel_extendedvalue_changed::
     ~supla_ch_device_channel_extendedvalue_changed() {}
 
 bool supla_ch_device_channel_extendedvalue_changed::handle_call(
-    shared_ptr<supla_abstract_connection_object> object,
-    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-    unsigned int call_id, unsigned char proto_version) {
+    shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
+    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED) {
     return false;
   }
 
   if (rd->data.ds_device_channel_extendedvalue != nullptr) {
-    shared_ptr<supla_device> device =
-        dynamic_pointer_cast<supla_device>(object);
-    if (device != nullptr) {
-      int channel_id = device->get_channels()->get_channel_id(
-          rd->data.ds_device_channel_extendedvalue->ChannelNumber);
+    int channel_id = device->get_channels()->get_channel_id(
+        rd->data.ds_device_channel_extendedvalue->ChannelNumber);
 
-      if (channel_id != 0) {
-        device->get_channels()->set_channel_extendedvalue(
-            channel_id, &rd->data.ds_device_channel_extendedvalue->value);
+    if (channel_id != 0) {
+      device->get_channels()->set_channel_extendedvalue(
+          channel_id, &rd->data.ds_device_channel_extendedvalue->value);
 
-        device->get_user()->on_channel_value_changed(
-            supla_caller(ctDevice, device->get_id()), device->get_id(),
-            channel_id, true);
-      }
+      device->get_user()->on_channel_value_changed(
+          supla_caller(ctDevice, device->get_id()), device->get_id(),
+          channel_id, true);
     }
   }
 

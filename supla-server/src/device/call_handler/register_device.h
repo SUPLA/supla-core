@@ -19,16 +19,17 @@
 #ifndef SUPLA_CH_REGISTER_DEVICE_H_
 #define SUPLA_CH_REGISTER_DEVICE_H_
 
-#include "srpc/abstract_srpc_call_hanlder.h"
+#include "device/call_handler/abstract_device_srpc_call_handler.h"
 
-class supla_ch_register_device : public supla_abstract_srpc_call_handler {
+class supla_ch_register_device
+    : public supla_abstract_device_srpc_call_handler {
  public:
   supla_ch_register_device(void);
   virtual ~supla_ch_register_device();
-  virtual bool handle_call(
-      std::shared_ptr<supla_abstract_connection_object> object,
-      supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-      unsigned int call_id, unsigned char proto_version);
+  virtual bool handle_call(std::shared_ptr<supla_device> device,
+                           supla_abstract_srpc_adapter* srpc_adapter,
+                           TsrpcReceivedData* rd, unsigned int call_id,
+                           unsigned char proto_version);
 };
 
 #endif /* SUPLA_CH_REGISTER_DEVICE_H_*/

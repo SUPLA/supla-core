@@ -19,15 +19,15 @@
 #ifndef SUPLA_CH_ABSTRACT_DEVICE_CHANNEL_VALUE_CHANED_H_
 #define SUPLA_CH_ABSTRACT_DEVICE_CHANNEL_VALUE_CHANED_H_
 
-#include "srpc/abstract_srpc_call_hanlder.h"
+#include "device/call_handler/abstract_device_srpc_call_handler.h"
 
 class supla_ch_abstract_device_channel_value_changed
-    : public supla_abstract_srpc_call_handler {
+    : public supla_abstract_device_srpc_call_handler {
  protected:
-  void on_channel_value_changed(
-      std::shared_ptr<supla_abstract_connection_object> object,
-      unsigned char channel_number, char *value, bool offline,
-      unsigned _supla_int_t *validity_time_sec);
+  void on_channel_value_changed(std::shared_ptr<supla_device> device,
+                                unsigned char channel_number, char *value,
+                                bool offline,
+                                unsigned _supla_int_t *validity_time_sec);
 
  public:
   supla_ch_abstract_device_channel_value_changed(void);

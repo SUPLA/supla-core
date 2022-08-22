@@ -33,21 +33,14 @@ using std::shared_ptr;
 
 supla_ch_abstract_device_channel_value_changed::
     supla_ch_abstract_device_channel_value_changed(void)
-    : supla_abstract_srpc_call_handler() {}
+    : supla_abstract_device_srpc_call_handler() {}
 
 supla_ch_abstract_device_channel_value_changed::
     ~supla_ch_abstract_device_channel_value_changed() {}
 
 void supla_ch_abstract_device_channel_value_changed::on_channel_value_changed(
-    shared_ptr<supla_abstract_connection_object> object,
-    unsigned char channel_number, char *value, bool offline,
-    unsigned _supla_int_t *validity_time_sec) {
-  shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(object);
-
-  if (device == nullptr) {
-    return;
-  }
-
+    shared_ptr<supla_device> device, unsigned char channel_number, char *value,
+    bool offline, unsigned _supla_int_t *validity_time_sec) {
   int channel_id = device->get_channels()->get_channel_id(channel_number);
 
   if (channel_number == 0) {
