@@ -423,36 +423,6 @@ void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
 supla_device_channels *supla_device::get_channels(void) { return channels; }
 
-void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
-  int ChannelID = channels->get_channel_id(result->ChannelNumber);
-  if (ChannelID != 0) {
-    if (result->DataSize >=
-            (sizeof(TCalCfg_ZWave_Node) - ZWAVE_NODE_NAME_MAXSIZE) &&
-        result->DataSize <= sizeof(TCalCfg_ZWave_Node)) {
-      switch (result->Command) {
-        case SUPLA_CALCFG_CMD_ZWAVE_ADD_NODE:
-        case SUPLA_CALCFG_CMD_ZWAVE_GET_NODE_LIST:
-          TCalCfg_ZWave_Node *node = (TCalCfg_ZWave_Node *)result->Data;
-          if (node->Flags & ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED) {
-            node->ChannelID = channels->get_channel_id(node->ChannelNumber);
-            if (node->ChannelID == 0) {
-              node->Flags ^= ZWAVE_NODE_FLAG_CHANNEL_ASSIGNED;
-            }
-          } else {
-            node->ChannelID = 0;
-          }
-          break;
-      }
-    }
-
-    std::shared_ptr<supla_client> client =
-        get_user()->get_clients()->get(result->ReceiverID);
-    if (client != nullptr) {
-      client->on_device_calcfg_result(ChannelID, result);
-    }
-  }
-}
-
 void supla_device::on_channel_state_result(TDSC_ChannelState *state) {
   int ChannelID;
   if ((ChannelID = channels->get_channel_id(state->ChannelNumber)) != 0) {
