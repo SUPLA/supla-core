@@ -50,9 +50,6 @@ using std::weak_ptr;
 #define REG_CLIENT 2
 
 #define ACTIVITY_TIMEOUT 120
-#define ACTIVITY_TIMEOUT_MIN 10
-#define ACTIVITY_TIMEOUT_MAX 240
-
 #define INCORRECT_CALL_MAXCOUNT 5
 
 void *supla_connection::reg_pending_arr = nullptr;
@@ -386,6 +383,10 @@ int supla_connection::get_client_sd(void) {
 
 supla_abstract_srpc_adapter *supla_connection::get_srpc_adapter(void) {
   return srpc_adapter;
+}
+
+void supla_connection::set_activity_timeout(unsigned char timeout) {
+  activity_timeout = timeout;
 }
 
 unsigned char supla_connection::get_activity_timeout(void) {

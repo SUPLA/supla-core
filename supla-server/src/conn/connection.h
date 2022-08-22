@@ -98,6 +98,7 @@ class supla_connection {
   supla_abstract_srpc_adapter *get_srpc_adapter(void);
   unsigned int get_client_ipv4(void);
   int get_client_sd(void);
+  void set_activity_timeout(unsigned char timeout);
   unsigned char get_activity_timeout(void);
   unsigned char get_protocol_version(void);
 };

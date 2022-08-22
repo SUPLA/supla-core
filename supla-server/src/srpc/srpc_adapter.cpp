@@ -33,6 +33,11 @@ unsigned char supla_srpc_adapter::get_proto_version(void) {
   return srpc_get_proto_version(get_srpc());
 }
 
+_supla_int_t supla_srpc_adapter::dcs_async_set_activity_timeout_result(
+    TSDC_SuplaSetActivityTimeoutResult *result) {
+  return srpc_dcs_async_set_activity_timeout_result(get_srpc(), result);
+}
+
 _supla_int_t supla_srpc_adapter::sc_async_scene_pack_update(
     TSC_SuplaScenePack *scene_pack) {
   return srpc_sc_async_scene_pack_update(get_srpc(), scene_pack);

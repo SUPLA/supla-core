@@ -33,6 +33,10 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
   virtual ~SrpcAdapterMock(void);
   MOCK_METHOD1(set_proto_version, void(unsigned char version));
   MOCK_METHOD0(get_proto_version, unsigned char(void));
+
+  MOCK_METHOD1(dcs_async_set_activity_timeout_result,
+               _supla_int_t(TSDC_SuplaSetActivityTimeoutResult *result));
+
   MOCK_METHOD1(sc_async_scene_pack_update,
                _supla_int_t(TSC_SuplaScenePack *scene_pack));
   MOCK_METHOD1(sc_async_scene_state_pack_update,

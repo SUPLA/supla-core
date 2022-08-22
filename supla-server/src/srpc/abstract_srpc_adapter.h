@@ -35,6 +35,9 @@ class supla_abstract_srpc_adapter {
   virtual void set_proto_version(unsigned char version) = 0;
   virtual unsigned char get_proto_version(void) = 0;
 
+  virtual _supla_int_t dcs_async_set_activity_timeout_result(
+      TSDC_SuplaSetActivityTimeoutResult *sdc_set_activity_timeout_result) = 0;
+
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack) = 0;  // ver. >= 18
   virtual _supla_int_t sc_async_scene_state_pack_update(
