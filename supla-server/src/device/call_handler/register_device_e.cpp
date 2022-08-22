@@ -24,7 +24,6 @@
 
 #include "log.h"
 #include "proto.h"
-#include "srpc/abstract_srpc_call_hanlder_collection.h"
 
 using std::shared_ptr;
 
