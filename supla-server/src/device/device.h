@@ -57,8 +57,6 @@ class supla_device : public supla_abstract_connection_object {
 
   supla_device_channels *get_channels(void);
 
-  void on_device_channel_extendedvalue_changed(
-      TDS_SuplaDeviceChannelExtendedValue *ev);
   void on_channel_set_value_result(TDS_SuplaChannelNewValueResult *result);
   void on_channel_state_result(TDSC_ChannelState *state);
   void get_firmware_update_url(TDS_FirmwareUpdateParams *params);

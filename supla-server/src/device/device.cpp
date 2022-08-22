@@ -421,17 +421,6 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
 void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
-void supla_device::on_device_channel_extendedvalue_changed(
-    TDS_SuplaDeviceChannelExtendedValue *ev) {
-  int ChannelId = channels->get_channel_id(ev->ChannelNumber);
-
-  if (ChannelId != 0) {
-    channels->set_channel_extendedvalue(ChannelId, &ev->value);
-    get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
-                                         get_id(), ChannelId, true);
-  }
-}
-
 void supla_device::on_channel_set_value_result(
     TDS_SuplaChannelNewValueResult *result) {
   if (result == NULL || result->SenderID == 0) {
