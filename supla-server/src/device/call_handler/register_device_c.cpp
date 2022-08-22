@@ -41,7 +41,7 @@ bool supla_ch_register_device_c::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_C");
 
-  if (rd->data.ds_register_device_c != NULL) {
+  if (rd->data.ds_register_device_c != nullptr) {
     rd->data.ds_register_device_c->LocationPWD[SUPLA_LOCATION_PWD_MAXSIZE - 1] =
         0;
     rd->data.ds_register_device_c->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] = 0;
@@ -50,7 +50,7 @@ bool supla_ch_register_device_c::handle_call(
         0;
 
     // TODO(przemyslawzygmunt): Replace the old implementation with the new one
-    // if (device->register_device(rd->data.ds_register_device_c, NULL,
+    // if (device->register_device(rd->data.ds_register_device_c, nullptr,
     //                             proto_version) == 1) {
     //   set_registered(REG_DEVICE);
     // }

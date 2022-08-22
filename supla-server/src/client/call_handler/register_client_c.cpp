@@ -43,10 +43,10 @@ bool supla_ch_register_client_c::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_C");
 
-  if (rd->data.cs_register_client_c != NULL) {
+  if (rd->data.cs_register_client_c != nullptr) {
     TCS_SuplaRegisterClient_D* register_client_d =
         (TCS_SuplaRegisterClient_D*)malloc(sizeof(TCS_SuplaRegisterClient_D));
-    if (register_client_d != NULL) {
+    if (register_client_d != nullptr) {
       memset(register_client_d, 0, sizeof(TCS_SuplaRegisterClient_D));
 
       memcpy(register_client_d->Email, rd->data.cs_register_client_c->Email,

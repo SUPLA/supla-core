@@ -42,10 +42,10 @@ bool supla_ch_register_device_d::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_D");
 
-  if (rd->data.ds_register_device_d != NULL) {
+  if (rd->data.ds_register_device_d != nullptr) {
     TDS_SuplaRegisterDevice_E* register_device_e =
         (TDS_SuplaRegisterDevice_E*)malloc(sizeof(TDS_SuplaRegisterDevice_E));
-    if (register_device_e != NULL) {
+    if (register_device_e != nullptr) {
       memset(register_device_e, 0, sizeof(TDS_SuplaRegisterDevice_E));
 
       memcpy(register_device_e->Email, rd->data.ds_register_device_d->Email,

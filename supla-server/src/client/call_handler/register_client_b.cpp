@@ -42,17 +42,20 @@ bool supla_ch_register_client_b::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_B");
 
-  rd->data.cs_register_client_b->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE - 1] =
-      0;
-  rd->data.cs_register_client_b->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] = 0;
-  rd->data.cs_register_client_b->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
-  rd->data.cs_register_client_b->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
+  if (rd->data.cs_register_client_b != nullptr) {
+    rd->data.cs_register_client_b->AccessIDpwd[SUPLA_ACCESSID_PWD_MAXSIZE - 1] =
+        0;
+    rd->data.cs_register_client_b->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] = 0;
+    rd->data.cs_register_client_b->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
+    rd->data.cs_register_client_b->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
+        0;
 
-  // TODO(przemyslawzygmunt): Replace the old implementation with the new one
-  // if (client->register_client(rd->data.cs_register_client_b, NULL,
-  //                            proto_version) == 1) {
-  //  set_registered(REG_CLIENT);
-  //}
+    // TODO(przemyslawzygmunt): Replace the old implementation with the new one
+    // if (client->register_client(rd->data.cs_register_client_b, NULL,
+    //                            proto_version) == 1) {
+    //  set_registered(REG_CLIENT);
+    //}
+  }
 
   return true;
 }

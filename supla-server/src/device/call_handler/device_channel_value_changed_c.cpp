@@ -38,7 +38,7 @@ bool supla_ch_device_channel_value_changed_c::handle_call(
     return false;
   }
 
-  if (rd->data.ds_device_channel_value_c != NULL) {
+  if (rd->data.ds_device_channel_value_c != nullptr) {
     on_channel_value_changed(
         device, rd->data.ds_device_channel_value_c->ChannelNumber,
         rd->data.ds_device_channel_value_c->value,

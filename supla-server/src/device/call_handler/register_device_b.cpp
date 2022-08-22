@@ -43,11 +43,11 @@ bool supla_ch_register_device_b::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_B");
 
-  if (rd->data.ds_register_device_b != NULL) {
+  if (rd->data.ds_register_device_b != nullptr) {
     TDS_SuplaRegisterDevice_C* register_device_c =
         (TDS_SuplaRegisterDevice_C*)malloc(sizeof(TDS_SuplaRegisterDevice_C));
 
-    if (register_device_c != NULL) {
+    if (register_device_c != nullptr) {
       memset(register_device_c, 0, sizeof(TDS_SuplaRegisterDevice_C));
 
       register_device_c->LocationID = rd->data.ds_register_device_b->LocationID;

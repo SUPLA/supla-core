@@ -36,12 +36,14 @@ bool supla_ch_get_firmware_update_url::handle_call(
     return false;
   }
 
-  TSD_FirmwareUpdate_UrlResult result = {};
-  supla_device_dao dao;
+  if (rd->data.ds_firmware_update_params != nullptr) {
+    TSD_FirmwareUpdate_UrlResult result = {};
+    supla_device_dao dao;
 
-  if (dao.get_device_firmware_update_url(
-          device->get_id(), rd->data.ds_firmware_update_params, &result)) {
-    srpc_adapter->sd_async_get_firmware_update_url_result(&result);
+    if (dao.get_device_firmware_update_url(
+            device->get_id(), rd->data.ds_firmware_update_params, &result)) {
+      srpc_adapter->sd_async_get_firmware_update_url_result(&result);
+    }
   }
 
   return true;

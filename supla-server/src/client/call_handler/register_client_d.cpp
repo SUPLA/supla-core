@@ -42,17 +42,20 @@ bool supla_ch_register_client_d::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT_D");
 
-  rd->data.cs_register_client_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
-  rd->data.cs_register_client_d->Password[SUPLA_PASSWORD_MAXSIZE - 1] = 0;
-  rd->data.cs_register_client_d->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] = 0;
-  rd->data.cs_register_client_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
-  rd->data.cs_register_client_d->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] = 0;
+  if (rd->data.cs_register_client_d != nullptr) {
+    rd->data.cs_register_client_d->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
+    rd->data.cs_register_client_d->Password[SUPLA_PASSWORD_MAXSIZE - 1] = 0;
+    rd->data.cs_register_client_d->Name[SUPLA_CLIENT_NAME_MAXSIZE - 1] = 0;
+    rd->data.cs_register_client_d->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
+    rd->data.cs_register_client_d->ServerName[SUPLA_SERVER_NAME_MAXSIZE - 1] =
+        0;
 
-  // TODO(przemyslawzygmunt): Replace the old implementation with the new one
-  // if (client->register_client(NULL, rd->data.cs_register_client_d,
-  //                             proto_version) == 1) {
-  //   set_registered(REG_CLIENT);
-  // }
+    // TODO(przemyslawzygmunt): Replace the old implementation with the new one
+    // if (client->register_client(NULL, rd->data.cs_register_client_d,
+    //                             proto_version) == 1) {
+    //   set_registered(REG_CLIENT);
+    // }
+  }
 
   return true;
 }

@@ -41,7 +41,7 @@ bool supla_ch_register_device_e::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_E");
 
-  if (rd->data.ds_register_device_e != NULL) {
+  if (rd->data.ds_register_device_e != nullptr) {
     rd->data.ds_register_device_e->Email[SUPLA_EMAIL_MAXSIZE - 1] = 0;
     rd->data.ds_register_device_e->Name[SUPLA_DEVICE_NAME_MAXSIZE - 1] = 0;
     rd->data.ds_register_device_e->SoftVer[SUPLA_SOFTVER_MAXSIZE - 1] = 0;
@@ -49,7 +49,7 @@ bool supla_ch_register_device_e::handle_call(
         0;
 
     // TODO(przemyslawzygmunt): Replace the old implementation with the new one
-    // if (device->register_device(NULL, rd->data.ds_register_device_e,
+    // if (device->register_device(nullptr, rd->data.ds_register_device_e,
     //                             proto_version) == 1) {
     //   set_registered(REG_DEVICE);
     // }

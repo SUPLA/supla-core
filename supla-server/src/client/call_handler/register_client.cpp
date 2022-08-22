@@ -43,11 +43,11 @@ bool supla_ch_register_client::handle_call(
 
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT");
 
-  if (rd->data.cs_register_client != NULL) {
+  if (rd->data.cs_register_client != nullptr) {
     TCS_SuplaRegisterClient_B* register_client_b =
         (TCS_SuplaRegisterClient_B*)malloc(sizeof(TCS_SuplaRegisterClient_B));
 
-    if (register_client_b != NULL) {
+    if (register_client_b != nullptr) {
       memset(register_client_b, 0, sizeof(TCS_SuplaRegisterClient_B));
 
       register_client_b->AccessID = rd->data.cs_register_client->AccessID;
