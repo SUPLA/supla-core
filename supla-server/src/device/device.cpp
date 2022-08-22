@@ -423,21 +423,6 @@ void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
 supla_device_channels *supla_device::get_channels(void) { return channels; }
 
-void supla_device::get_firmware_update_url(TDS_FirmwareUpdateParams *params) {
-  TSD_FirmwareUpdate_UrlResult result;
-  memset(&result, 0, sizeof(TSD_FirmwareUpdate_UrlResult));
-
-  database *db = new database();
-
-  if (db->connect() == true)
-    db->get_device_firmware_update_url(get_id(), params, &result);
-
-  delete db;
-
-  srpc_sd_async_get_firmware_update_url_result(
-      get_connection()->get_srpc_adapter()->get_srpc(), &result);
-}
-
 void supla_device::on_calcfg_result(TDS_DeviceCalCfgResult *result) {
   int ChannelID = channels->get_channel_id(result->ChannelNumber);
   if (ChannelID != 0) {
