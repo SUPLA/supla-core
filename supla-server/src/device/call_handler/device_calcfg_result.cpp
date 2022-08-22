@@ -35,17 +35,18 @@ bool supla_ch_device_calcfg_result::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_DEVICE_CALCFG_RESULT) {
-    return false;
+    return CH_UNHANDLED;
   }
 
   if (rd->data.ds_device_calcfg_result == nullptr) {
-    return true;
+    return CH_HANDLED;
   }
 
   int channel_id = device->get_channels()->get_channel_id(
       rd->data.ds_device_calcfg_result->ChannelNumber);
+
   if (channel_id == 0) {
-    return true;
+    return CH_HANDLED;
   }
 
   if (rd->data.ds_device_calcfg_result->DataSize >=
@@ -77,5 +78,5 @@ bool supla_ch_device_calcfg_result::handle_call(
                                     rd->data.ds_device_calcfg_result);
   }
 
-  return true;
+  return CH_HANDLED;
 }

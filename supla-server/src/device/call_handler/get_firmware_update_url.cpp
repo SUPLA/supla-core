@@ -33,7 +33,7 @@ bool supla_ch_get_firmware_update_url::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_GET_FIRMWARE_UPDATE_URL) {
-    return false;
+    return CH_UNHANDLED;
   }
 
   if (rd->data.ds_firmware_update_params != nullptr) {
@@ -46,5 +46,5 @@ bool supla_ch_get_firmware_update_url::handle_call(
     }
   }
 
-  return true;
+  return CH_HANDLED;
 }

@@ -35,5 +35,7 @@ bool supla_abstract_device_srpc_call_handler::handle_call(
   shared_ptr<supla_device> device = dynamic_pointer_cast<supla_device>(object);
 
   return device != nullptr &&
-         handle_call(device, srpc_adapter, rd, call_id, proto_version);
+                 handle_call(device, srpc_adapter, rd, call_id, proto_version)
+             ? CH_HANDLED
+             : CH_UNHANDLED;
 }

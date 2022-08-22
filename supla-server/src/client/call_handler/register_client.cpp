@@ -38,7 +38,7 @@ bool supla_ch_register_client::handle_call(
     shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT) {
-    return false;
+    return CH_UNHANDLED;
   }
 
   supla_log(LOG_DEBUG, "SUPLA_CS_CALL_REGISTER_CLIENT");
@@ -70,5 +70,5 @@ bool supla_ch_register_client::handle_call(
     }
   }
 
-  return true;
+  return CH_HANDLED;
 }

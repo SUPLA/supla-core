@@ -37,7 +37,7 @@ bool supla_ch_device_channel_extendedvalue_changed::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_DEVICE_CHANNEL_EXTENDEDVALUE_CHANGED) {
-    return false;
+    return CH_UNHANDLED;
   }
 
   if (rd->data.ds_device_channel_extendedvalue != nullptr) {
@@ -54,5 +54,5 @@ bool supla_ch_device_channel_extendedvalue_changed::handle_call(
     }
   }
 
-  return true;
+  return CH_HANDLED;
 }

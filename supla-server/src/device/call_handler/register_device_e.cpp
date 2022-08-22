@@ -36,7 +36,7 @@ bool supla_ch_register_device_e::handle_call(
     shared_ptr<supla_device> device, supla_abstract_srpc_adapter* srpc_adapter,
     TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DS_CALL_REGISTER_DEVICE_E) {
-    return false;
+    return CH_UNHANDLED;
   }
 
   supla_log(LOG_DEBUG, "SUPLA_DS_CALL_REGISTER_DEVICE_E");
@@ -55,5 +55,5 @@ bool supla_ch_register_device_e::handle_call(
     // }
   }
 
-  return true;
+  return CH_HANDLED;
 }

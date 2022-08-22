@@ -35,5 +35,7 @@ bool supla_abstract_client_srpc_call_handler::handle_call(
   shared_ptr<supla_client> client = dynamic_pointer_cast<supla_client>(object);
 
   return client != nullptr &&
-         handle_call(client, srpc_adapter, rd, call_id, proto_version);
+                 handle_call(client, srpc_adapter, rd, call_id, proto_version)
+             ? CH_HANDLED
+             : CH_UNHANDLED;
 }

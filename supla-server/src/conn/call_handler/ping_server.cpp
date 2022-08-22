@@ -38,14 +38,12 @@ bool supla_ch_ping_server::handle_call(
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DCS_CALL_PING_SERVER) {
-    return false;
+    return CH_UNHANDLED;
   }
 
-  if (!object->is_registered()) {
-    return true;
+  if (object->is_registered()) {
+    srpc_adapter->sdc_async_ping_server_result();
   }
 
-  srpc_adapter->sdc_async_ping_server_result();
-
-  return true;
+  return CH_HANDLED;
 }

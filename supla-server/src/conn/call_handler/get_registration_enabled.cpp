@@ -39,23 +39,21 @@ bool supla_ch_get_registration_enabled::handle_call(
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED) {
-    return false;
+    return CH_UNHANDLED;
   }
 
-  if (!object->is_registered()) {
-    return true;
+  if (object->is_registered()) {
+    TSDC_RegistrationEnabled reg_en = {};
+
+    supla_connection_dao dao;
+    if (!dao.get_reg_enabled(object->get_user_id(), &reg_en.client_timestamp,
+                             &reg_en.iodevice_timestamp)) {
+      reg_en.client_timestamp = 0;
+      reg_en.iodevice_timestamp = 0;
+    }
+
+    srpc_adapter->sdc_async_get_registration_enabled_result(&reg_en);
   }
 
-  TSDC_RegistrationEnabled reg_en = {};
-
-  supla_connection_dao dao;
-  if (!dao.get_reg_enabled(object->get_user_id(), &reg_en.client_timestamp,
-                           &reg_en.iodevice_timestamp)) {
-    reg_en.client_timestamp = 0;
-    reg_en.iodevice_timestamp = 0;
-  }
-
-  srpc_adapter->sdc_async_get_registration_enabled_result(&reg_en);
-
-  return true;
+  return CH_HANDLED;
 }

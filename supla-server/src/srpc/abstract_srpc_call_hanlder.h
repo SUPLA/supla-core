@@ -23,6 +23,9 @@
 
 #include "conn/abstract_connection_object.h"
 
+#define CH_UNHANDLED false
+#define CH_HANDLED true
+
 class supla_abstract_srpc_call_handler {
  public:
   supla_abstract_srpc_call_handler(void);
