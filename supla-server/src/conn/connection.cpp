@@ -50,7 +50,7 @@ using std::weak_ptr;
 #define REG_CLIENT 2
 
 #define ACTIVITY_TIMEOUT 120
-#define INCORRECT_CALL_MAXCOUNT 5
+#define UNHANDLED_CALL_MAXCOUNT 5
 
 void *supla_connection::reg_pending_arr = nullptr;
 unsigned int supla_connection::local_ipv4[LOCAL_IPV4_ARRAY_SIZE];
@@ -223,7 +223,7 @@ supla_connection::supla_connection(void *ssd, void *supla_socket,
   this->ssd = ssd;
   this->supla_socket = supla_socket;
   this->activity_timeout = ACTIVITY_TIMEOUT;
-  this->incorrect_call_counter = 0;
+  this->unhandled_call_counter = 0;
 
   eh = eh_init();
   eh_add_fd(eh, ssocket_supla_socket_getsfd(supla_socket));
@@ -263,12 +263,12 @@ int supla_connection::socket_write(const void *buf, size_t count) {
   return ssocket_write(ssd, supla_socket, buf, count);
 }
 
-void supla_connection::catch_incorrect_call(unsigned int call_id) {
-  incorrect_call_counter++;
-  supla_log(LOG_DEBUG, "Incorrect call %i/%i", call_id, incorrect_call_counter);
+void supla_connection::catch_unhandled_call(unsigned int call_id) {
+  unhandled_call_counter++;
+  supla_log(LOG_DEBUG, "Unhandled call %i/%i", call_id, unhandled_call_counter);
 
-  if (incorrect_call_counter >= INCORRECT_CALL_MAXCOUNT) {
-    supla_log(LOG_DEBUG, "The number of incorrect calls has been exceeded.");
+  if (unhandled_call_counter >= UNHANDLED_CALL_MAXCOUNT) {
+    supla_log(LOG_DEBUG, "The number of unhandled calls has been exceeded.");
     sthread_terminate(sthread);
   }
 }
@@ -282,7 +282,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     if (object != nullptr &&
         !object->get_srpc_call_handler_collection()->handle_call(
             object, srpc_adapter, &rd, call_id, proto_version)) {
-      catch_incorrect_call(call_id);
+      catch_unhandled_call(call_id);
     }
 
     if (object == nullptr && proto_version < SUPLA_PROTO_VERSION &&
@@ -308,7 +308,7 @@ void supla_connection::on_remote_call_received(void *_srpc, unsigned int rr_id,
     }
 
     if (object == nullptr) {
-      catch_incorrect_call(call_id);
+      catch_unhandled_call(call_id);
     }
 
     srpc_rd_free(&rd);

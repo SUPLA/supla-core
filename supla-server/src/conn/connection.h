@@ -43,7 +43,7 @@ class supla_connection {
   TEventHandler *eh;
   struct timeval init_time;
   unsigned char activity_timeout;
-  int incorrect_call_counter;
+  int unhandled_call_counter;
 
   static void *reg_pending_arr;
   static struct timeval reg_limit_exceeded_alert_time;
@@ -78,7 +78,7 @@ class supla_connection {
                                unsigned int call_id,
                                unsigned char proto_version);
 
-  void catch_incorrect_call(unsigned int call_id);
+  void catch_unhandled_call(unsigned int call_id);
 
  public:
   std::shared_ptr<supla_abstract_connection_object> get_object(void);
