@@ -141,8 +141,6 @@ class database : public svrdb {
   void add_impulses(supla_channel_ic_measurement *ic);
   void add_thermostat_measurements(supla_channel_thermostat_measurement *th);
 
-  bool get_reg_enabled(int UserID, unsigned int *client,
-                       unsigned int *iodevice);
   bool set_reg_enabled(int UserID, int deviceRegTimeSec, int clientRegTimeSec);
 
   int oauth_add_client_id(void);

@@ -1905,32 +1905,6 @@ bool database::get_device_firmware_update_url(
   return result;
 }
 
-bool database::get_reg_enabled(int UserID, unsigned int *client,
-                               unsigned int *iodevice) {
-  if (UserID == 0) return false;
-
-  MYSQL_STMT *stmt = NULL;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  if (!stmt_get_int(
-          (void **)&stmt, (int *)client, (int *)iodevice, NULL, NULL,
-          "SELECT CAST(IFNULL(UNIX_TIMESTAMP(CONVERT_TZ(IF(client_reg_enabled "
-          ">= UTC_TIMESTAMP(), client_reg_enabled, NULL),'+00:00','SYSTEM')), "
-          "0) AS UNSIGNED INT), "
-          "CAST(IFNULL(UNIX_TIMESTAMP(CONVERT_TZ(IF(iodevice_reg_enabled >= "
-          "UTC_TIMESTAMP(), iodevice_reg_enabled, NULL),'+00:00','SYSTEM')), "
-          "0) AS UNSIGNED INT) FROM supla_user WHERE id = ?",
-          pbind, 1))
-    return false;
-
-  return true;
-}
-
 bool database::set_reg_enabled(int UserID, int deviceRegTimeSec,
                                int clientRegTimeSec) {
   char sql[100];
