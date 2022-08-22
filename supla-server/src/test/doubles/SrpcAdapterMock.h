@@ -46,6 +46,9 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
                _supla_int_t(TSC_SuplaScenePack *scene_pack));
   MOCK_METHOD1(sc_async_scene_state_pack_update,
                _supla_int_t(TSC_SuplaSceneStatePack *scene_status_pack));
+
+  MOCK_METHOD1(sd_async_get_firmware_update_url_result,
+               _supla_int_t(TSD_FirmwareUpdate_UrlResult *result));
 };
 
 } /* namespace testing */
