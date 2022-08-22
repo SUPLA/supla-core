@@ -40,27 +40,35 @@ bool supla_ch_set_activity_timeout::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT ||
-      !object->is_registered()) {
+  if (call_id != SUPLA_DCS_CALL_SET_ACTIVITY_TIMEOUT) {
     return false;
   }
 
-  if (rd->data.dcs_set_activity_timeout->activity_timeout <
-      ACTIVITY_TIMEOUT_MIN)
-    rd->data.dcs_set_activity_timeout->activity_timeout = ACTIVITY_TIMEOUT_MIN;
+  if (!object->is_registered()) {
+    return true;
+  }
 
-  if (rd->data.dcs_set_activity_timeout->activity_timeout >
-      ACTIVITY_TIMEOUT_MAX)
-    rd->data.dcs_set_activity_timeout->activity_timeout = ACTIVITY_TIMEOUT_MAX;
+  if (rd->data.dcs_set_activity_timeout != nullptr) {
+    if (rd->data.dcs_set_activity_timeout->activity_timeout <
+        ACTIVITY_TIMEOUT_MIN)
+      rd->data.dcs_set_activity_timeout->activity_timeout =
+          ACTIVITY_TIMEOUT_MIN;
 
-  TSDC_SuplaSetActivityTimeoutResult result;
-  result.activity_timeout = rd->data.dcs_set_activity_timeout->activity_timeout;
-  result.min = ACTIVITY_TIMEOUT_MIN;
-  result.max = ACTIVITY_TIMEOUT_MAX;
+    if (rd->data.dcs_set_activity_timeout->activity_timeout >
+        ACTIVITY_TIMEOUT_MAX)
+      rd->data.dcs_set_activity_timeout->activity_timeout =
+          ACTIVITY_TIMEOUT_MAX;
 
-  object->get_connection()->set_activity_timeout(result.activity_timeout);
+    TSDC_SuplaSetActivityTimeoutResult result;
+    result.activity_timeout =
+        rd->data.dcs_set_activity_timeout->activity_timeout;
+    result.min = ACTIVITY_TIMEOUT_MIN;
+    result.max = ACTIVITY_TIMEOUT_MAX;
 
-  srpc_adapter->dcs_async_set_activity_timeout_result(&result);
+    object->get_connection()->set_activity_timeout(result.activity_timeout);
+
+    srpc_adapter->dcs_async_set_activity_timeout_result(&result);
+  }
 
   return true;
 }
