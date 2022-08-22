@@ -30,14 +30,13 @@
 using std::shared_ptr;
 
 supla_ch_register_client::supla_ch_register_client(void)
-    : supla_abstract_srpc_call_handler() {}
+    : supla_abstract_client_srpc_call_handler() {}
 
 supla_ch_register_client::~supla_ch_register_client() {}
 
 bool supla_ch_register_client::handle_call(
-    shared_ptr<supla_abstract_connection_object> object,
-    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-    unsigned int call_id, unsigned char proto_version) {
+    shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
+    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT) {
     return false;
   }
@@ -65,8 +64,8 @@ bool supla_ch_register_client::handle_call(
       free(rd->data.cs_register_client);
       rd->data.cs_register_client_b = register_client_b;
 
-      return object->get_srpc_call_handler_collection()->handle_call(
-          object, srpc_adapter, rd, SUPLA_CS_CALL_REGISTER_CLIENT_B,
+      return client->get_srpc_call_handler_collection()->handle_call(
+          client, srpc_adapter, rd, SUPLA_CS_CALL_REGISTER_CLIENT_B,
           proto_version);
     }
   }

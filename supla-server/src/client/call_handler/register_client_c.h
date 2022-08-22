@@ -21,16 +21,19 @@
 
 #include <memory>
 
-#include "srpc/abstract_srpc_call_hanlder.h"
+#include "client/call_handler/abstract_client_srpc_call_handler.h"
 
-class supla_ch_register_client_c : public supla_abstract_srpc_call_handler {
+class supla_ch_register_client_c
+    : public supla_abstract_client_srpc_call_handler {
+ protected:
+  virtual bool handle_call(std::shared_ptr<supla_client> client,
+                           supla_abstract_srpc_adapter* srpc_adapter,
+                           TsrpcReceivedData* rd, unsigned int call_id,
+                           unsigned char proto_version);
+
  public:
   supla_ch_register_client_c(void);
   virtual ~supla_ch_register_client_c();
-  virtual bool handle_call(
-      std::shared_ptr<supla_abstract_connection_object> object,
-      supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-      unsigned int call_id, unsigned char proto_version);
 };
 
 #endif /* SUPLA_CH_REGISTER_CLIENT_C_H_*/

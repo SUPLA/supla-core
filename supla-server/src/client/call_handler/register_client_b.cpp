@@ -29,14 +29,13 @@
 using std::shared_ptr;
 
 supla_ch_register_client_b::supla_ch_register_client_b(void)
-    : supla_abstract_srpc_call_handler() {}
+    : supla_abstract_client_srpc_call_handler() {}
 
 supla_ch_register_client_b::~supla_ch_register_client_b() {}
 
 bool supla_ch_register_client_b::handle_call(
-    shared_ptr<supla_abstract_connection_object> object,
-    supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
-    unsigned int call_id, unsigned char proto_version) {
+    shared_ptr<supla_client> client, supla_abstract_srpc_adapter* srpc_adapter,
+    TsrpcReceivedData* rd, unsigned int call_id, unsigned char proto_version) {
   if (call_id != SUPLA_CS_CALL_REGISTER_CLIENT_B) {
     return false;
   }

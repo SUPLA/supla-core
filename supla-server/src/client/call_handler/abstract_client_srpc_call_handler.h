@@ -16,24 +16,29 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CH_REGISTER_CLIENT_B_H_
-#define SUPLA_CH_REGISTER_CLIENT_B_H_
+#ifndef SUPLA_CH_ABSTRACT_CLIENT_SRPC_CALL_HANDLER_H_
+#define SUPLA_CH_ABSTRACT_CLIENT_SRPC_CALL_HANDLER_H_
 
 #include <memory>
 
-#include "client/call_handler/abstract_client_srpc_call_handler.h"
+#include "client.h"
+#include "srpc/abstract_srpc_call_hanlder.h"
 
-class supla_ch_register_client_b
-    : public supla_abstract_client_srpc_call_handler {
+class supla_abstract_client_srpc_call_handler
+    : public supla_abstract_srpc_call_handler {
  protected:
   virtual bool handle_call(std::shared_ptr<supla_client> client,
                            supla_abstract_srpc_adapter* srpc_adapter,
                            TsrpcReceivedData* rd, unsigned int call_id,
-                           unsigned char proto_version);
+                           unsigned char proto_version) = 0;
 
  public:
-  supla_ch_register_client_b(void);
-  virtual ~supla_ch_register_client_b();
+  supla_abstract_client_srpc_call_handler(void);
+  virtual ~supla_abstract_client_srpc_call_handler();
+  virtual bool handle_call(
+      std::shared_ptr<supla_abstract_connection_object> object,
+      supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
+      unsigned int call_id, unsigned char proto_version);
 };
 
-#endif /* SUPLA_CH_REGISTER_CLIENT_B_H_*/
+#endif /* SUPLA_CH_ABSTRACT_CLIENT_SRPC_CALL_HANDLER_H_*/
