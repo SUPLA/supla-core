@@ -33,6 +33,10 @@ unsigned char supla_srpc_adapter::get_proto_version(void) {
   return srpc_get_proto_version(get_srpc());
 }
 
+_supla_int_t supla_srpc_adapter::sdc_async_ping_server_result(void) {
+  return srpc_sdc_async_ping_server_result(get_srpc());
+}
+
 _supla_int_t supla_srpc_adapter::dcs_async_set_activity_timeout_result(
     TSDC_SuplaSetActivityTimeoutResult *result) {
   return srpc_dcs_async_set_activity_timeout_result(get_srpc(), result);
