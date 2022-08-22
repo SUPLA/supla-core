@@ -38,9 +38,12 @@ bool supla_ch_get_registration_enabled::handle_call(
     shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  if (call_id != SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED ||
-      !object->is_registered()) {
+  if (call_id != SUPLA_DCS_CALL_GET_REGISTRATION_ENABLED) {
     return false;
+  }
+
+  if (!object->is_registered()) {
+    return true;
   }
 
   TSDC_RegistrationEnabled reg_en = {};
