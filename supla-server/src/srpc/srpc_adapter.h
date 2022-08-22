@@ -57,6 +57,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
   _supla_int_t dcs_async_set_activity_timeout_result(
       TSDC_SuplaSetActivityTimeoutResult *result);
 
+  virtual _supla_int_t sdc_async_get_registration_enabled_result(
+      TSDC_RegistrationEnabled *reg_enabled);
+
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack);  // ver. >= 18
   virtual _supla_int_t sc_async_scene_state_pack_update(

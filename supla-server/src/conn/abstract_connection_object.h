@@ -16,8 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CONNECTION_OBJECT_H_
-#define SUPLA_CONNECTION_OBJECT_H_
+#ifndef SUPLA_ABSTRACT_CONNECTION_OBJECT_H_
+#define SUPLA_ABSTRACT_CONNECTION_OBJECT_H_
 
 #include <memory>
 
@@ -89,4 +89,4 @@ class supla_abstract_connection_object {
   // Thread safe end
 };
 
-#endif /* SUPLA_CONNECTION_OBJECT_H_ */
+#endif /* SUPLA_ABSTRACT_CONNECTION_OBJECT_H_ */
