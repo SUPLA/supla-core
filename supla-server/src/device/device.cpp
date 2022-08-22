@@ -421,56 +421,6 @@ char supla_device::register_device(TDS_SuplaRegisterDevice_C *register_device_c,
 
 void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
-void supla_device::on_device_channel_value_changed(
-    TDS_SuplaDeviceChannelValue *value, TDS_SuplaDeviceChannelValue_B *value_b,
-    TDS_SuplaDeviceChannelValue_C *value_c) {
-  if (value == NULL && value_b == NULL && value_c == NULL) {
-    return;
-  }
-
-  unsigned char ChannelNumber = 0;
-  char *value_value = NULL;
-  bool offline = false;
-
-  if (value_c) {
-    ChannelNumber = value_c->ChannelNumber;
-    value_value = value_c->value;
-    offline = value_c->Offline > 0;
-  } else if (value_b) {
-    ChannelNumber = value_b->ChannelNumber;
-    value_value = value_b->value;
-    offline = value_b->Offline > 0;
-  } else if (value) {
-    ChannelNumber = value->ChannelNumber;
-    value_value = value->value;
-  }
-
-  int ChannelId = channels->get_channel_id(ChannelNumber);
-
-  if (ChannelId != 0) {
-    bool converted2extended = false;
-    bool differ = false;
-    bool significantChange = false;
-
-    differ = channels->set_channel_value(
-        ChannelId, value_value, &converted2extended,
-        value_c ? &value_c->ValidityTimeSec : NULL, &significantChange);
-    if (channels->set_channel_offline(ChannelId, offline)) {
-      differ = true;
-    }
-    if (differ) {
-      get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
-                                           get_id(), ChannelId, false,
-                                           significantChange);
-
-      if (converted2extended) {
-        get_user()->on_channel_value_changed(supla_caller(ctDevice, get_id()),
-                                             get_id(), ChannelId, true);
-      }
-    }
-  }
-}
-
 void supla_device::on_device_channel_extendedvalue_changed(
     TDS_SuplaDeviceChannelExtendedValue *ev) {
   int ChannelId = channels->get_channel_id(ev->ChannelNumber);
