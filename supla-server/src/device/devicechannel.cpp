@@ -44,6 +44,7 @@
 
 using std::function;
 using std::list;
+using std::map;
 
 supla_device_channel::supla_device_channel(
     supla_device *Device, int Id, int Number, int Type, int Func, int Param1,
@@ -2342,26 +2343,20 @@ void supla_device_channels::set_channel_function(int ChannelId, int Func) {
   }
 }
 
-void supla_device_channels::get_functions_request(void) {
-  TSD_ChannelFunctions result;
-  memset(&result, 0, sizeof(TSD_ChannelFunctions));
+map<int, int> supla_device_channels::get_functions(void) {
+  map<int, int> result;
 
   safe_array_lock(arr);
   for (int a = 0; a < safe_array_count(arr); a++) {
     supla_device_channel *channel =
         static_cast<supla_device_channel *>(safe_array_get(arr, a));
-    if (channel && channel->getNumber() >= 0 &&
-        channel->getNumber() < SUPLA_CHANNELMAXCOUNT) {
-      if (result.ChannelCount >= channel->getNumber()) {
-        result.ChannelCount = channel->getNumber() + 1;
-      }
-
-      result.Functions[channel->getNumber()] = channel->getFunc();
+    if (channel) {
+      result.insert({channel->getNumber(), channel->getFunc()});
     }
   }
   safe_array_unlock(arr);
 
-  srpc_sd_async_get_channel_functions_result(get_srpc(), &result);
+  return result;
 }
 
 void supla_device_channels::get_channel_config_request(

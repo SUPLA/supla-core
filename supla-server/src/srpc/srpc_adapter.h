@@ -67,6 +67,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sd_async_get_firmware_update_url_result(
       TSD_FirmwareUpdate_UrlResult *result);
+
+  virtual _supla_int_t sd_async_get_channel_functions_result(
+      TSD_ChannelFunctions *result);
 };
 
 #endif /* SRPC_ADAPTER_H_ */

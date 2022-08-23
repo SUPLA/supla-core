@@ -62,3 +62,8 @@ _supla_int_t supla_srpc_adapter::sd_async_get_firmware_update_url_result(
     TSD_FirmwareUpdate_UrlResult *result) {
   return srpc_sd_async_get_firmware_update_url_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_get_channel_functions_result(
+    TSD_ChannelFunctions *result) {
+  return srpc_sd_async_get_channel_functions_result(get_srpc(), result);
+}

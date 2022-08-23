@@ -21,6 +21,7 @@
 
 #include <functional>
 #include <list>
+#include <map>
 
 #include "caller.h"
 #include "channel_address.h"
@@ -285,7 +286,7 @@ class supla_device_channels {
 
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
-  void get_functions_request(void);
+  std::map<int, int> get_functions(void);
   void get_channel_config_request(TDS_GetChannelConfigRequest *request);
   void action_trigger(TDS_ActionTrigger *at);
 
