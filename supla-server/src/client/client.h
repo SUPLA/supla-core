@@ -67,6 +67,7 @@ class supla_client : public supla_abstract_connection_object {
   get_srpc_call_handler_collection(void);
   std::shared_ptr<supla_client> get_shared_ptr(void);
   supla_client_channels *get_channels(void);
+  supla_client_channelgroups *get_cgroups(void);
 
   void iterate();
   unsigned _supla_int64_t wait_time_usec();
@@ -80,7 +81,6 @@ class supla_client : public supla_abstract_connection_object {
   void on_channel_value_changed(int DeviceId, int ChannelId = 0,
                                 bool Extended = false);
   void get_next(void);
-  void set_new_value(TCS_SuplaNewValue *new_value);
   int getName(char *buffer, int size);
   int getAccessID(void);
 

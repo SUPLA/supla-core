@@ -44,12 +44,8 @@ bool supla_ch_channel_set_value_b::handle_call(
 
   if (rd->data.cs_channel_new_value_b != NULL &&
       rd->data.cs_channel_new_value_b->ChannelId) {
-    int device_id = 0;
-    client->get_channels()->channel_access(
-        rd->data.cs_channel_new_value_b->ChannelId,
-        [&device_id](supla_client_channel* channel) -> void {
-          device_id = channel->getDeviceId();
-        });
+    int device_id = client->get_channels()->get_device_id(
+        rd->data.cs_channel_new_value_b->ChannelId);
 
     if (device_id) {
       client->get_user()->set_device_channel_value(

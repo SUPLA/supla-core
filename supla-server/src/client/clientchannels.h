@@ -71,6 +71,7 @@ class supla_client_channels : public supla_client_objcontainer {
                       std::function<void(supla_client_channel *)> on_channel);
   void device_access(int channel_id,
                      std::function<void(supla_device *)> method);
+  int get_device_id(int channel_id);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

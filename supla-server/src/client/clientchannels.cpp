@@ -487,3 +487,12 @@ void supla_client_channels::device_access(
     method(device.get());
   }
 }
+
+int supla_client_channels::get_device_id(int channel_id) {
+  int result = 0;
+  channel_access(channel_id, [&result](supla_client_channel *channel) -> void {
+    result = channel->getDeviceId();
+  });
+
+  return result;
+}
