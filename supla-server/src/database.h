@@ -139,10 +139,6 @@ class database : public svrdb {
 
   bool set_reg_enabled(int UserID, int deviceRegTimeSec, int clientRegTimeSec);
 
-  int oauth_add_client_id(void);
-  int oauth_get_client_id(bool create);
-  bool oauth_get_token(TSC_OAuthToken *token, int user_id, int access_id);
-
   bool superuser_authorization(int UserID,
                                const char email[SUPLA_EMAIL_MAXSIZE],
                                const char password[SUPLA_PASSWORD_MAXSIZE]);

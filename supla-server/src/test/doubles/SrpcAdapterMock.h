@@ -26,8 +26,6 @@
 namespace testing {
 
 class SrpcAdapterMock : public supla_abstract_srpc_adapter {
- private:
- protected:
  public:
   explicit SrpcAdapterMock(void *srpc);
   virtual ~SrpcAdapterMock(void);
@@ -55,6 +53,9 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sd_async_get_channel_config_result,
                _supla_int_t(TSD_ChannelConfig *config));
+
+  MOCK_METHOD1(cs_async_oauth_token_request_result,
+               _supla_int_t(TSC_OAuthTokenRequestResult *result));
 };
 
 } /* namespace testing */

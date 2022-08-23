@@ -16,20 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DEVICE_DAO_H_
-#define SUPLA_DEVICE_DAO_H_
+#include "client/abstract_client_dao.h"
 
-#include "device/abstract_device_dao.h"
-#include "svrdb.h"
+supla_abstract_client_dao::supla_abstract_client_dao(void) {}
 
-class supla_device_dao : public supla_abstract_device_dao, private svrdb {
- public:
-  supla_device_dao();
-  virtual ~supla_device_dao();
-
-  virtual bool get_device_firmware_update_url(
-      int device_id, TDS_FirmwareUpdateParams *params,
-      TSD_FirmwareUpdate_UrlResult *url);
-};
-
-#endif /* SUPLA_DEVICE_DAO_H_ */
+supla_abstract_client_dao::~supla_abstract_client_dao() {}

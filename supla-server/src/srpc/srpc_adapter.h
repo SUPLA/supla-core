@@ -73,6 +73,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sd_async_get_channel_config_result(
       TSD_ChannelConfig *config);
+
+  virtual _supla_int_t cs_async_oauth_token_request_result(
+      TSC_OAuthTokenRequestResult *result);
 };
 
 #endif /* SRPC_ADAPTER_H_ */

@@ -86,7 +86,6 @@ class supla_client : public supla_abstract_connection_object {
 
   void call_event(TSC_SuplaEvent *event);
 
-  void oauth_token_request(void);
   void superuser_authorization_request(
       TCS_SuperUserAuthorizationRequest *request);
   void send_superuser_authorization_result(bool *connection_failed);

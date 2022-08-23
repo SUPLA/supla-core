@@ -443,35 +443,6 @@ void supla_client::call_event(TSC_SuplaEvent *event) {
   }
 }
 
-void supla_client::oauth_token_request(void) {
-  TSC_OAuthTokenRequestResult result;
-  memset(&result, 0, sizeof(TSC_OAuthTokenRequestResult));
-
-  int AccessID = getAccessID();
-
-  result.ResultCode = SUPLA_OAUTH_RESULTCODE_ERROR;
-
-  if (get_user() && AccessID) {
-    database *db = new database();
-
-    if (db->connect() == true) {
-      if (db->oauth_get_token(&result.Token, get_user()->getUserID(),
-                              AccessID)) {
-        result.ResultCode = SUPLA_OAUTH_RESULTCODE_SUCCESS;
-      } else {
-        memset(&result.Token, 0, sizeof(TSC_OAuthToken));
-      }
-    } else {
-      result.ResultCode = SUPLA_OAUTH_TEMPORARILY_UNAVAILABLE;
-    }
-
-    delete db;
-  }
-
-  srpc_cs_async_oauth_token_request_result(
-      get_connection()->get_srpc_adapter()->get_srpc(), &result);
-}
-
 void supla_client::superuser_authorize(
     int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
     const char Password[SUPLA_PASSWORD_MAXSIZE], bool *connection_failed) {

@@ -72,3 +72,8 @@ _supla_int_t supla_srpc_adapter::sd_async_get_channel_config_result(
     TSD_ChannelConfig *config) {
   return srpc_sd_async_get_channel_config_result(get_srpc(), config);
 }
+
+_supla_int_t supla_srpc_adapter::cs_async_oauth_token_request_result(
+    TSC_OAuthTokenRequestResult *result) {
+  return srpc_cs_async_oauth_token_request_result(get_srpc(), result);
+}

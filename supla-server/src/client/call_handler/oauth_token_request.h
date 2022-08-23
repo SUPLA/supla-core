@@ -16,20 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_DEVICE_DAO_H_
-#define SUPLA_DEVICE_DAO_H_
+#ifndef SUPLA_CH_OAUTH_TOKEN_REQUEST_H_
+#define SUPLA_CH_OAUTH_TOKEN_REQUEST_H_
 
-#include "device/abstract_device_dao.h"
-#include "svrdb.h"
+#include <memory>
 
-class supla_device_dao : public supla_abstract_device_dao, private svrdb {
+#include "client/call_handler/abstract_client_srpc_call_handler.h"
+
+class supla_ch_oauth_token_request
+    : public supla_abstract_client_srpc_call_handler {
+ protected:
+  virtual bool handle_call(std::shared_ptr<supla_client> client,
+                           supla_abstract_srpc_adapter* srpc_adapter,
+                           TsrpcReceivedData* rd, unsigned int call_id,
+                           unsigned char proto_version);
+
  public:
-  supla_device_dao();
-  virtual ~supla_device_dao();
-
-  virtual bool get_device_firmware_update_url(
-      int device_id, TDS_FirmwareUpdateParams *params,
-      TSD_FirmwareUpdate_UrlResult *url);
+  supla_ch_oauth_token_request(void);
+  virtual ~supla_ch_oauth_token_request();
 };
 
-#endif /* SUPLA_DEVICE_DAO_H_ */
+#endif /* SUPLA_CH_OAUTH_TOKEN_REQUEST_H_*/
