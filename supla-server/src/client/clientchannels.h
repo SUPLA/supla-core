@@ -67,7 +67,10 @@ class supla_client_channels : public supla_client_objcontainer {
   unsigned _supla_int64_t value_validity_time_usec(void);
   void update_expired(void *srpc);
 
-  void device_access(int ChannelID, std::function<void(supla_device *)> method);
+  void channel_access(int channel_id,
+                      std::function<void(supla_client_channel *)> on_channel);
+  void device_access(int channel_id,
+                     std::function<void(supla_device *)> method);
 };
 
 #endif /* CLIENTCHANNELS_H_ */

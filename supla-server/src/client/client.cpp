@@ -67,6 +67,8 @@ shared_ptr<supla_client> supla_client::get_shared_ptr(void) {
       supla_abstract_connection_object::get_shared_ptr());
 }
 
+supla_client_channels *supla_client::get_channels(void) { return channels; }
+
 void supla_client::setName(const char *name) {
   lck_lock(lck);
   snprintf(this->name, SUPLA_CLIENT_NAME_MAXSIZE, "%s", name);
@@ -430,11 +432,6 @@ void supla_client::loadConfig(void) {
 }
 
 void supla_client::get_next(void) { remote_update_lists(); }
-
-void supla_client::set_device_channel_new_value(
-    TCS_SuplaChannelNewValue_B *channel_new_value) {
-  channels->set_device_channel_new_value(channel_new_value);
-}
 
 void supla_client::set_new_value(TCS_SuplaNewValue *new_value) {
   if (new_value->Target == SUPLA_TARGET_CHANNEL) {

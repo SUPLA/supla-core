@@ -455,25 +455,34 @@ void supla_client_channels::update_expired(void *srpc) {
   safe_array_unlock(arr);
 }
 
-void supla_client_channels::device_access(
-    int ChannelID, function<void(supla_device *)> method) {
+void supla_client_channels::channel_access(
+    int channel_id, std::function<void(supla_client_channel *)> on_channel) {
   safe_array_lock(getArr());
 
   supla_client_channel *channel = NULL;
-  int DeviceID = 0;
 
-  if (NULL != (channel = find_channel(ChannelID))) {
-    DeviceID = channel->getDeviceId();
+  if (NULL != (channel = find_channel(channel_id))) {
+    on_channel(channel);
   }
 
   safe_array_unlock(getArr());
+}
 
-  if (!DeviceID) {
+void supla_client_channels::device_access(
+    int channel_id, function<void(supla_device *)> method) {
+  int device_id = 0;
+
+  channel_access(channel_id,
+                 [&device_id](supla_client_channel *channel) -> void {
+                   device_id = channel->getDeviceId();
+                 });
+
+  if (!device_id) {
     return;
   }
 
   shared_ptr<supla_device> device =
-      getClient()->get_user()->get_devices()->get(DeviceID);
+      getClient()->get_user()->get_devices()->get(device_id);
   if (device != nullptr) {
     method(device.get());
   }
