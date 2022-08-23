@@ -370,11 +370,11 @@ bool supla_device_channel::getValveValue(TValve_Value *Value) {
   return false;
 }
 
-void supla_device_channel::getConfig(TSD_ChannelConfig *config,
+bool supla_device_channel::getConfig(TSD_ChannelConfig *config,
                                      unsigned char configType,
                                      unsigned _supla_int_t flags) {
   if (configType != SUPLA_CONFIG_TYPE_DEFAULT || flags != 0) {
-    return;
+    return false;
   }
 
   memset(config, 0, sizeof(TSD_ChannelConfig));
@@ -411,6 +411,8 @@ void supla_device_channel::getConfig(TSD_ChannelConfig *config,
       }
     } break;
   }
+
+  return true;
 }
 
 void supla_device_channel::db_set_properties(channel_json_config *config) {
@@ -2359,24 +2361,27 @@ map<int, int> supla_device_channels::get_functions(void) {
   return result;
 }
 
-void supla_device_channels::get_channel_config_request(
-    TDS_GetChannelConfigRequest *request) {
-  if (request == NULL) {
-    return;
+bool supla_device_channels::get_channel_config(unsigned char channel_number,
+                                               unsigned char type,
+                                               unsigned _supla_int_t flags,
+                                               TSD_ChannelConfig *config) {
+  if (config == nullptr) {
+    return false;
   }
+
+  bool result = false;
 
   safe_array_lock(arr);
 
-  supla_device_channel *channel =
-      find_channel_by_number(request->ChannelNumber);
+  supla_device_channel *channel = find_channel_by_number(channel_number);
 
   if (channel) {
-    TSD_ChannelConfig config = {};
-    channel->getConfig(&config, request->ConfigType, request->Flags);
-    srpc_sd_async_get_channel_config_result(get_srpc(), &config);
+    result = channel->getConfig(config, type, flags);
   }
 
   safe_array_unlock(arr);
+
+  return result;
 }
 
 void supla_device_channels::action_trigger(TDS_ActionTrigger *at) {

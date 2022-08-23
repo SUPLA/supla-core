@@ -52,6 +52,9 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sd_async_get_channel_functions_result,
                _supla_int_t(TSD_ChannelFunctions *result));
+
+  MOCK_METHOD1(sd_async_get_channel_config_result,
+               _supla_int_t(TSD_ChannelConfig *config));
 };
 
 } /* namespace testing */

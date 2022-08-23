@@ -139,7 +139,7 @@ class supla_device_channel {
   bool getRGBW(int *color, char *color_brightness, char *brightness,
                char *on_off);
   bool getValveValue(TValve_Value *Value);
-  void getConfig(TSD_ChannelConfig *config, unsigned char configType,
+  bool getConfig(TSD_ChannelConfig *config, unsigned char configType,
                  unsigned _supla_int_t flags);
   void setActionTriggerConfig(unsigned int capabilities, int relatedChannelId,
                               unsigned int disablesLocalOperation);
@@ -287,7 +287,9 @@ class supla_device_channels {
   bool get_channel_complex_value(channel_complex_value *value, int ChannelID);
   void set_channel_function(int ChannelId, int Func);
   std::map<int, int> get_functions(void);
-  void get_channel_config_request(TDS_GetChannelConfigRequest *request);
+  bool get_channel_config(unsigned char channel_number, unsigned char type,
+                          unsigned _supla_int_t flags,
+                          TSD_ChannelConfig *config);
   void action_trigger(TDS_ActionTrigger *at);
 
   bool set_on(const supla_caller &caller, int ChannelID, int GroupID,

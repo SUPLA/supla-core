@@ -67,3 +67,8 @@ _supla_int_t supla_srpc_adapter::sd_async_get_channel_functions_result(
     TSD_ChannelFunctions *result) {
   return srpc_sd_async_get_channel_functions_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sd_async_get_channel_config_result(
+    TSD_ChannelConfig *config) {
+  return srpc_sd_async_get_channel_config_result(get_srpc(), config);
+}

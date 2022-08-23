@@ -70,6 +70,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sd_async_get_channel_functions_result(
       TSD_ChannelFunctions *result);
+
+  virtual _supla_int_t sd_async_get_channel_config_result(
+      TSD_ChannelConfig *config);
 };
 
 #endif /* SRPC_ADAPTER_H_ */
