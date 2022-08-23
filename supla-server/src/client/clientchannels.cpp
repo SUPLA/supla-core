@@ -272,41 +272,6 @@ void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
                    Extended ? OI_REMOTEUPDATE_DATA3 : OI_REMOTEUPDATE_DATA2);
 }
 
-bool supla_client_channels::set_device_channel_new_value(int ChannelId,
-                                                         char *value) {
-  if (channel_exists(ChannelId)) {
-    safe_array_lock(getArr());
-
-    supla_client_channel *channel;
-    int DeviceID = 0;
-
-    if (NULL != (channel = find_channel(ChannelId))) {
-      DeviceID = channel->getDeviceId();
-    }
-
-    safe_array_unlock(getArr());
-
-    if (DeviceID) {
-      return getClient()->get_user()->set_device_channel_value(
-          supla_caller(ctClient, getClient()->get_id()), DeviceID, ChannelId, 0,
-          false, value);
-    }
-  }
-
-  return false;
-}
-
-bool supla_client_channels::set_device_channel_new_value(
-    TCS_SuplaChannelNewValue_B *channel_new_value) {
-  return set_device_channel_new_value(channel_new_value->ChannelId,
-                                      channel_new_value->value);
-}
-
-bool supla_client_channels::set_device_channel_new_value(
-    TCS_SuplaNewValue *new_value) {
-  return set_device_channel_new_value(new_value->Id, new_value->value);
-}
-
 bool supla_client_channels::device_calcfg_request(
     TCS_DeviceCalCfgRequest_B *request) {
   if (request == NULL || (request->Target != SUPLA_TARGET_CHANNEL &&
