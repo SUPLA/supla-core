@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/client/call_handler/abstract_client_srpc_call_handler.cpp \
+../src/client/call_handler/channel_set_value.cpp \
 ../src/client/call_handler/get_next.cpp \
 ../src/client/call_handler/register_client.cpp \
 ../src/client/call_handler/register_client_b.cpp \
@@ -13,6 +14,7 @@ CPP_SRCS += \
 
 CPP_DEPS += \
 ./src/client/call_handler/abstract_client_srpc_call_handler.d \
+./src/client/call_handler/channel_set_value.d \
 ./src/client/call_handler/get_next.d \
 ./src/client/call_handler/register_client.d \
 ./src/client/call_handler/register_client_b.d \
@@ -21,6 +23,7 @@ CPP_DEPS += \
 
 OBJS += \
 ./src/client/call_handler/abstract_client_srpc_call_handler.o \
+./src/client/call_handler/channel_set_value.o \
 ./src/client/call_handler/get_next.o \
 ./src/client/call_handler/register_client.o \
 ./src/client/call_handler/register_client_b.o \
@@ -40,7 +43,7 @@ src/client/call_handler/%.o: ../src/client/call_handler/%.cpp src/client/call_ha
 clean: clean-src-2f-client-2f-call_handler
 
 clean-src-2f-client-2f-call_handler:
-	-$(RM) ./src/client/call_handler/abstract_client_srpc_call_handler.d ./src/client/call_handler/abstract_client_srpc_call_handler.o ./src/client/call_handler/get_next.d ./src/client/call_handler/get_next.o ./src/client/call_handler/register_client.d ./src/client/call_handler/register_client.o ./src/client/call_handler/register_client_b.d ./src/client/call_handler/register_client_b.o ./src/client/call_handler/register_client_c.d ./src/client/call_handler/register_client_c.o ./src/client/call_handler/register_client_d.d ./src/client/call_handler/register_client_d.o
+	-$(RM) ./src/client/call_handler/abstract_client_srpc_call_handler.d ./src/client/call_handler/abstract_client_srpc_call_handler.o ./src/client/call_handler/channel_set_value.d ./src/client/call_handler/channel_set_value.o ./src/client/call_handler/get_next.d ./src/client/call_handler/get_next.o ./src/client/call_handler/register_client.d ./src/client/call_handler/register_client.o ./src/client/call_handler/register_client_b.d ./src/client/call_handler/register_client_b.o ./src/client/call_handler/register_client_c.d ./src/client/call_handler/register_client_c.o ./src/client/call_handler/register_client_d.d ./src/client/call_handler/register_client_d.o
 
 .PHONY: clean-src-2f-client-2f-call_handler
 
