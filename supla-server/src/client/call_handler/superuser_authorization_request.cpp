@@ -18,13 +18,9 @@
 
 #include "client/call_handler/superuser_authorization_request.h"
 
-#include <string.h>
-
 #include <memory>
 
 #include "client/client.h"
-#include "client/client_dao.h"
-#include "user/user.h"
 
 using std::shared_ptr;
 
