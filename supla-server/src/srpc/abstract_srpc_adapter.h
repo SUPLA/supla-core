@@ -59,6 +59,9 @@ class supla_abstract_srpc_adapter {
 
   virtual _supla_int_t cs_async_oauth_token_request_result(
       TSC_OAuthTokenRequestResult *result) = 0;
+
+  virtual _supla_int_t sc_async_superuser_authorization_result(
+      TSC_SuperUserAuthorizationResult *result) = 0;
 };
 
 #endif /* ABSTRACT_SRPC_ADAPTER_H_ */

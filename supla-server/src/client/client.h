@@ -57,9 +57,6 @@ class supla_client : public supla_abstract_connection_object {
                        const char Email[SUPLA_EMAIL_MAXSIZE],
                        const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
                        database *db);
-  void superuser_authorize(int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
-                           const char Password[SUPLA_PASSWORD_MAXSIZE],
-                           bool *connection_failed);
 
  public:
   explicit supla_client(supla_connection *connection);
@@ -72,6 +69,9 @@ class supla_client : public supla_abstract_connection_object {
   void iterate();
   unsigned _supla_int64_t wait_time_usec();
 
+  void superuser_authorize(int UserID, const char Email[SUPLA_EMAIL_MAXSIZE],
+                           const char Password[SUPLA_PASSWORD_MAXSIZE],
+                           bool *connection_failed);
   void revoke_superuser_authorization(void);
   bool is_superuser_authorized(void);
   char register_client(TCS_SuplaRegisterClient_B *register_client_b,
@@ -86,8 +86,6 @@ class supla_client : public supla_abstract_connection_object {
 
   void call_event(TSC_SuplaEvent *event);
 
-  void superuser_authorization_request(
-      TCS_SuperUserAuthorizationRequest *request);
   void send_superuser_authorization_result(bool *connection_failed);
 
   void device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);

@@ -77,3 +77,8 @@ _supla_int_t supla_srpc_adapter::cs_async_oauth_token_request_result(
     TSC_OAuthTokenRequestResult *result) {
   return srpc_cs_async_oauth_token_request_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sc_async_superuser_authorization_result(
+    TSC_SuperUserAuthorizationResult *result) {
+  return srpc_sc_async_superuser_authorization_result(get_srpc(), result);
+}
