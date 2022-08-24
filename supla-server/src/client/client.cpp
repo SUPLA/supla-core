@@ -469,22 +469,6 @@ void supla_client::superuser_authorize(
   delete db;
 }
 
-void supla_client::send_superuser_authorization_result(
-    bool *connection_failed) {
-  TSC_SuperUserAuthorizationResult result;
-  memset(&result, 0, sizeof(TSC_SuperUserAuthorizationResult));
-  if (is_superuser_authorized()) {
-    result.Result = SUPLA_RESULTCODE_AUTHORIZED;
-  } else if (connection_failed && *connection_failed) {
-    result.Result = SUPLA_RESULTCODE_TEMPORARILY_UNAVAILABLE;
-  } else {
-    result.Result = SUPLA_RESULTCODE_UNAUTHORIZED;
-  }
-
-  srpc_sc_async_superuser_authorization_result(
-      get_connection()->get_srpc_adapter()->get_srpc(), &result);
-}
-
 void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
   if (request->Target == SUPLA_TARGET_CHANNEL ||
       request->Target == SUPLA_TARGET_IODEVICE) {
