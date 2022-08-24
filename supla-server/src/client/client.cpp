@@ -469,19 +469,6 @@ void supla_client::superuser_authorize(
   delete db;
 }
 
-void supla_client::device_calcfg_request(TCS_DeviceCalCfgRequest_B *request) {
-  if (request->Target == SUPLA_TARGET_CHANNEL ||
-      request->Target == SUPLA_TARGET_IODEVICE) {
-    channels->device_calcfg_request(request);
-  } else if (request->Target == SUPLA_TARGET_GROUP) {
-    if (cgroups->groupExits(
-            request->Id)) {  // Make sure the client has access to this group
-      get_user()->get_channel_groups()->calcfg_request(
-          supla_caller(ctClient, get_id()), request);
-    }
-  }
-}
-
 void supla_client::on_device_calcfg_result(int ChannelID,
                                            TDS_DeviceCalCfgResult *result) {
   if (result == NULL) return;

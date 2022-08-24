@@ -55,7 +55,6 @@ class supla_client_channels : public supla_client_objcontainer {
       bool Extended = false);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
 
-  bool device_calcfg_request(TCS_DeviceCalCfgRequest_B *request);
   bool device_get_channel_state(TCSD_ChannelStateRequest *request);
   void get_channel_basic_cfg(void *srpc, TCS_ChannelBasicCfgRequest *request);
   void set_channel_function(void *srpc, int ChannelId, int Func);
@@ -68,6 +67,7 @@ class supla_client_channels : public supla_client_objcontainer {
   void device_access(int channel_id,
                      std::function<void(supla_device *)> method);
   int get_device_id(int channel_id);
+  int get_any_channel_id_with_deviceid(int device_id);
 };
 
 #endif /* CLIENTCHANNELS_H_ */
