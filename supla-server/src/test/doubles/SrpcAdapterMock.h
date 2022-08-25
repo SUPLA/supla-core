@@ -59,6 +59,9 @@ class SrpcAdapterMock : public supla_abstract_srpc_adapter {
 
   MOCK_METHOD1(sc_async_superuser_authorization_result,
                _supla_int_t(TSC_SuperUserAuthorizationResult *result));
+
+  MOCK_METHOD1(sc_async_channel_basic_cfg_result,
+               _supla_int_t(TSC_ChannelBasicCfg *basic_cfg));
 };
 
 } /* namespace testing */

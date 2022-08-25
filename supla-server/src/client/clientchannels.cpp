@@ -272,31 +272,6 @@ void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
                    Extended ? OI_REMOTEUPDATE_DATA3 : OI_REMOTEUPDATE_DATA2);
 }
 
-void supla_client_channels::get_channel_basic_cfg(
-    void *srpc, TCS_ChannelBasicCfgRequest *request) {
-  if (request == NULL) return;
-
-  if (channel_exists(request->ChannelID)) {
-    TSC_ChannelBasicCfg basic_cfg;
-    memset(&basic_cfg, 0, sizeof(TSC_ChannelBasicCfg));
-
-    safe_array_lock(getArr());
-
-    supla_client_channel *channel;
-
-    if (NULL == (channel = find_channel(request->ChannelID)) ||
-        !channel->get_basic_cfg(&basic_cfg)) {
-      basic_cfg.ID = 0;
-    }
-
-    safe_array_unlock(getArr());
-
-    if (basic_cfg.ID) {
-      srpc_sc_async_channel_basic_cfg_result(srpc, &basic_cfg);
-    }
-  }
-}
-
 void supla_client_channels::set_channel_function(void *srpc, int ChannelId,
                                                  int Func) {
   supla_client_channel *channel = find_channel(ChannelId);

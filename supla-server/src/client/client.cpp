@@ -502,12 +502,6 @@ void supla_client::on_device_channel_state_result(int ChannelID,
       get_connection()->get_srpc_adapter()->get_srpc(), &cstate);
 }
 
-void supla_client::get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request) {
-  if (request == NULL) return;
-  channels->get_channel_basic_cfg(
-      get_connection()->get_srpc_adapter()->get_srpc(), request);
-}
-
 void supla_client::set_channel_function(int ChannelId, int Func) {
   channels->set_channel_function(
       get_connection()->get_srpc_adapter()->get_srpc(), ChannelId, Func);

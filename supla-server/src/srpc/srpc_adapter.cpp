@@ -82,3 +82,8 @@ _supla_int_t supla_srpc_adapter::sc_async_superuser_authorization_result(
     TSC_SuperUserAuthorizationResult *result) {
   return srpc_sc_async_superuser_authorization_result(get_srpc(), result);
 }
+
+_supla_int_t supla_srpc_adapter::sc_async_channel_basic_cfg_result(
+    TSC_ChannelBasicCfg *basic_cfg) {
+  return srpc_sc_async_channel_basic_cfg_result(get_srpc(), basic_cfg);
+}

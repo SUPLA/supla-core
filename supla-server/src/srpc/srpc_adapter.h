@@ -79,6 +79,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_superuser_authorization_result(
       TSC_SuperUserAuthorizationResult *result);
+
+  virtual _supla_int_t sc_async_channel_basic_cfg_result(
+      TSC_ChannelBasicCfg *basic_cfg);
 };
 
 #endif /* SRPC_ADAPTER_H_ */
