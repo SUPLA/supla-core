@@ -55,7 +55,6 @@ class supla_client_channels : public supla_client_objcontainer {
       bool Extended = false);  // ChannelId == 0 - All channels
   bool channel_exists(int ChannelID);
 
-  bool device_get_channel_state(TCSD_ChannelStateRequest *request);
   void get_channel_basic_cfg(void *srpc, TCS_ChannelBasicCfgRequest *request);
   void set_channel_function(void *srpc, int ChannelId, int Func);
   void set_channel_caption(void *srpc, int ChannelId, char *Caption);

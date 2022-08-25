@@ -272,35 +272,6 @@ void supla_client_channels::on_channel_value_changed(void *srpc, int DeviceId,
                    Extended ? OI_REMOTEUPDATE_DATA3 : OI_REMOTEUPDATE_DATA2);
 }
 
-bool supla_client_channels::device_get_channel_state(
-    TCSD_ChannelStateRequest *request) {
-  if (request == NULL) return false;
-
-  if (channel_exists(request->ChannelID)) {
-    safe_array_lock(getArr());
-
-    supla_client_channel *channel = NULL;
-    int DeviceID = 0;
-
-    if (NULL != (channel = find_channel(request->ChannelID))) {
-      DeviceID = channel->getDeviceId();
-    }
-
-    safe_array_unlock(getArr());
-
-    if (DeviceID) {
-      shared_ptr<supla_device> device =
-          getClient()->get_user()->get_devices()->get(DeviceID);
-      if (device != nullptr) {
-        return device->get_channels()->get_channel_state(
-            supla_caller(ctClient, getClient()->get_id()), request);
-      }
-    }
-  }
-
-  return false;
-}
-
 void supla_client_channels::get_channel_basic_cfg(
     void *srpc, TCS_ChannelBasicCfgRequest *request) {
   if (request == NULL) return;

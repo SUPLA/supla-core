@@ -488,10 +488,6 @@ void supla_client::on_device_calcfg_result(int ChannelID,
       get_connection()->get_srpc_adapter()->get_srpc(), &cresult);
 }
 
-void supla_client::device_get_channel_state(TCSD_ChannelStateRequest *request) {
-  channels->device_get_channel_state(request);
-}
-
 void supla_client::on_device_channel_state_result(int ChannelID,
                                                   TDSC_ChannelState *state) {
   if (state == NULL) return;

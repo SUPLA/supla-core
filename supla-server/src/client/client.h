@@ -87,8 +87,6 @@ class supla_client : public supla_abstract_connection_object {
   void call_event(TSC_SuplaEvent *event);
 
   void on_device_calcfg_result(int ChannelID, TDS_DeviceCalCfgResult *result);
-
-  void device_get_channel_state(TCSD_ChannelStateRequest *request);
   void on_device_channel_state_result(int ChannelID, TDSC_ChannelState *state);
 
   void get_channel_basic_cfg(TCS_ChannelBasicCfgRequest *request);
