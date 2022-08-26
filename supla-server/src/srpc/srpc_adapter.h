@@ -82,6 +82,9 @@ class supla_srpc_adapter : public supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_channel_basic_cfg_result(
       TSC_ChannelBasicCfg *basic_cfg);
+
+  virtual _supla_int_t sc_async_clients_reconnect_request_result(
+      TSC_ClientsReconnectRequestResult *result);
 };
 
 #endif /* SRPC_ADAPTER_H_ */

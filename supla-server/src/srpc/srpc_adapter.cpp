@@ -87,3 +87,8 @@ _supla_int_t supla_srpc_adapter::sc_async_channel_basic_cfg_result(
     TSC_ChannelBasicCfg *basic_cfg) {
   return srpc_sc_async_channel_basic_cfg_result(get_srpc(), basic_cfg);
 }
+
+_supla_int_t supla_srpc_adapter::sc_async_clients_reconnect_request_result(
+    TSC_ClientsReconnectRequestResult *result) {
+  return srpc_sc_async_clients_reconnect_request_result(get_srpc(), result);
+}
