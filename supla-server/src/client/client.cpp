@@ -507,10 +507,6 @@ void supla_client::set_channel_function(int ChannelId, int Func) {
       get_connection()->get_srpc_adapter()->get_srpc(), ChannelId, Func);
 }
 
-void supla_client::set_channel_function_request(TCS_SetChannelFunction *func) {
-  get_user()->set_channel_function(get_shared_ptr(), func);
-}
-
 void supla_client::set_channel_function_result(
     TSC_SetChannelFunctionResult *result) {
   if (result == NULL) {
