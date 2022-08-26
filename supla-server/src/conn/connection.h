@@ -52,18 +52,6 @@ class supla_connection {
   static bool reject_all_new_connections;
 
   static void read_local_ipv4_addresses(void);
-  void set_registered(char registered);
-  void on_device_reconnect_request(
-      void *_srpc, TCS_DeviceReconnectRequest *cs_device_reconnect_request);
-  void on_set_channel_function_request(
-      TCS_SetChannelFunction *cs_set_channel_function);
-  void on_set_caption_request(TCS_SetCaption *cs_set_caption, bool channel);
-  void on_register_device_request(void *_srpc, unsigned int call_id,
-                                  unsigned char proto_version,
-                                  TsrpcReceivedData *rd);
-  void trim_caption_to100chars(char *Caption,
-                               unsigned _supla_int_t *CaptionSize);
-
   static int socket_read(void *buf, int count, void *sc);
   static int socket_write(void *buf, int count, void *sc);
   static void on_remote_call_received(void *_srpc, unsigned int rr_id,
