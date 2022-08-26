@@ -56,6 +56,7 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_calcfg_request());
   add_handler(new supla_ch_oauth_token_request());
   add_handler(new supla_ch_superuser_authorization_request());
+  add_handler(new supla_ch_superuser_authorization_result());
   add_handler(new supla_ch_get_channel_basic_cfg());
   add_handler(new supla_ch_set_caption());
   add_handler(new supla_ch_set_channel_function());
