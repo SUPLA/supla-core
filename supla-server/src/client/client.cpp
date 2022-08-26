@@ -555,16 +555,3 @@ unsigned _supla_int64_t supla_client::wait_time_usec() {
 
   return 120000000;
 }
-
-void supla_client::timer_arm(TCS_TimerArmRequest *request) {
-  if (!request) {
-    return;
-  }
-
-  channels->device_access(
-      request->ChannelID, [this, request](supla_device *device) -> void {
-        device->get_channels()->timer_arm(supla_caller(ctClient, get_id()),
-                                          request->ChannelID, 0, true,
-                                          request->On, request->DurationMS);
-      });
-}
