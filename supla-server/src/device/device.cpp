@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include "database.h"
+#include "device/call_handler/call_handler_collection.h"
 #include "http/httprequestqueue.h"
 #include "lck.h"
 #include "log.h"
@@ -35,6 +36,9 @@
 using std::dynamic_pointer_cast;
 using std::list;
 using std::shared_ptr;
+
+// static
+supla_device_call_handler_collection supla_device::call_handler_collection;
 
 supla_device::supla_device(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
@@ -56,7 +60,7 @@ supla_device::~supla_device() {
 
 supla_abstract_srpc_call_handler_collection *
 supla_device::get_srpc_call_handler_collection(void) {
-  return NULL;
+  return &supla_device::call_handler_collection;
 }
 
 shared_ptr<supla_device> supla_device::get_shared_ptr(void) {

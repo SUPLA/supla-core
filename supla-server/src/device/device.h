@@ -28,9 +28,11 @@
 #include "devicechannel.h"
 
 class supla_user;
+class supla_device_call_handler_collection;
 class supla_device : public supla_abstract_connection_object {
  private:
   int flags;
+  static supla_device_call_handler_collection call_handler_collection;
 
  protected:
   supla_device_channels *channels;
