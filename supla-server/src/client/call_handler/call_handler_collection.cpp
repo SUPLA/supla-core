@@ -28,6 +28,10 @@
 #include "client/call_handler/get_channel_state.h"
 #include "client/call_handler/get_next.h"
 #include "client/call_handler/oauth_token_request.h"
+#include "client/call_handler/register_client.h"
+#include "client/call_handler/register_client_b.h"
+#include "client/call_handler/register_client_c.h"
+#include "client/call_handler/register_client_d.h"
 #include "client/call_handler/set_caption.h"
 #include "client/call_handler/set_channel_function.h"
 #include "client/call_handler/set_registration_enabled.h"
@@ -58,6 +62,10 @@ supla_client_call_handler_collection::supla_client_call_handler_collection(void)
   add_handler(new supla_ch_clients_reconnect_request());
   add_handler(new supla_ch_set_registration_enabled());
   add_handler(new supla_ch_device_reconnect_request());
+  add_handler(new supla_ch_register_client_d);
+  add_handler(new supla_ch_register_client_c);
+  add_handler(new supla_ch_register_client_b);
+  add_handler(new supla_ch_register_client);
 
   // common
   add_handler(new supla_ch_set_activity_timeout());
