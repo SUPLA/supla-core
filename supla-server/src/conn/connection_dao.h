@@ -30,6 +30,8 @@ class supla_connection_dao : public supla_abstract_connection_dao,
 
   virtual bool get_reg_enabled(int user_id, unsigned int *client,
                                unsigned int *iodevice);
+
+  virtual bool get_user_localtime(int user_id, TSDC_UserLocalTimeResult *time);
 };
 
 #endif /* SUPLA_CONNECTION_DAO_H_ */

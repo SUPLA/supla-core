@@ -22,6 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "client/call_handler/call_handler_collection.h"
 #include "clientlocation.h"
 #include "database.h"
 #include "lck.h"
@@ -34,6 +35,9 @@
 
 using std::dynamic_pointer_cast;
 using std::shared_ptr;
+
+// static
+supla_client_call_handler_collection supla_client::call_handler_collection;
 
 supla_client::supla_client(supla_connection *connection)
     : supla_abstract_connection_object(connection) {
@@ -59,7 +63,7 @@ supla_client::~supla_client() {
 
 supla_abstract_srpc_call_handler_collection *
 supla_client::get_srpc_call_handler_collection(void) {
-  return NULL;
+  return &supla_client::call_handler_collection;
 }
 
 shared_ptr<supla_client> supla_client::get_shared_ptr(void) {

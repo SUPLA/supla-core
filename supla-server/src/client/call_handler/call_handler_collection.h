@@ -16,20 +16,18 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ABSTRACT_CONNECTION_DAO_H_
-#define SUPLA_ABSTRACT_CONNECTION_DAO_H_
+#ifndef SUPLA_CLIENT_CALL_HANDLER_COLLECTION_H_
+#define SUPLA_CLIENT_CALL_HANDLER_COLLECTION_H_
 
-#include "proto.h"
+#include <memory>
 
-class supla_abstract_connection_dao {
+#include "srpc/abstract_srpc_call_hanlder_collection.h"
+
+class supla_client_call_handler_collection
+    : public supla_abstract_srpc_call_handler_collection {
  public:
-  supla_abstract_connection_dao();
-  virtual ~supla_abstract_connection_dao();
-
-  virtual bool get_reg_enabled(int user_id, unsigned int *client,
-                               unsigned int *iodevice) = 0;
-  virtual bool get_user_localtime(int user_id,
-                                  TSDC_UserLocalTimeResult *time) = 0;
+  supla_client_call_handler_collection(void);
+  virtual ~supla_client_call_handler_collection();
 };
 
-#endif /* SUPLA_ABSTRACT_CONNECTION_DAO_H_ */
+#endif /* SUPLA_CLIENT_CALL_HANDLER_COLLECTION_H_*/

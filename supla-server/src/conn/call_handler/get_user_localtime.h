@@ -16,20 +16,19 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ABSTRACT_CONNECTION_DAO_H_
-#define SUPLA_ABSTRACT_CONNECTION_DAO_H_
+#ifndef SUPLA_CH_GET_USER_LOCALTIME_H_
+#define SUPLA_CH_GET_USER_LOCALTIME_H_
 
-#include "proto.h"
+#include "srpc/abstract_srpc_call_hanlder.h"
 
-class supla_abstract_connection_dao {
+class supla_ch_get_user_localtime : public supla_abstract_srpc_call_handler {
  public:
-  supla_abstract_connection_dao();
-  virtual ~supla_abstract_connection_dao();
-
-  virtual bool get_reg_enabled(int user_id, unsigned int *client,
-                               unsigned int *iodevice) = 0;
-  virtual bool get_user_localtime(int user_id,
-                                  TSDC_UserLocalTimeResult *time) = 0;
+  supla_ch_get_user_localtime(void);
+  virtual ~supla_ch_get_user_localtime();
+  virtual bool handle_call(
+      std::shared_ptr<supla_abstract_connection_object> object,
+      supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
+      unsigned int call_id, unsigned char proto_version);
 };
 
-#endif /* SUPLA_ABSTRACT_CONNECTION_DAO_H_ */
+#endif /* SUPLA_CH_GET_USER_LOCALTIME_H_*/

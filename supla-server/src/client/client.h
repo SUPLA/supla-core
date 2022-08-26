@@ -30,6 +30,7 @@
 #include "clientchannels.h"
 #include "clientlocation.h"
 
+class supla_client_call_handler_collection;
 class supla_user;
 class supla_connection;
 class supla_client : public supla_abstract_connection_object {
@@ -37,6 +38,7 @@ class supla_client : public supla_abstract_connection_object {
   char name[SUPLA_CLIENT_NAME_MAXSIZE];
   bool superuser_authorized;
   int access_id;
+  static supla_client_call_handler_collection call_handler_collection;
 
  protected:
   supla_client_locations *locations;

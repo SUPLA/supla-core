@@ -43,6 +43,9 @@ class supla_abstract_srpc_adapter {
   virtual _supla_int_t sdc_async_get_registration_enabled_result(
       TSDC_RegistrationEnabled *reg_enabled) = 0;
 
+  virtual _supla_int_t sdc_async_get_user_localtime_result(
+      TSDC_UserLocalTimeResult *localtime) = 0;
+
   virtual _supla_int_t sc_async_scene_pack_update(
       TSC_SuplaScenePack *scene_pack) = 0;  // ver. >= 18
   virtual _supla_int_t sc_async_scene_state_pack_update(

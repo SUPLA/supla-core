@@ -16,34 +16,43 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "srpc/abstract_srpc_call_hanlder_collection.h"
+#include "conn/call_handler/get_user_localtime.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+#include <memory>
+
+#include "conn/connection_dao.h"
+#include "log.h"
+#include "proto.h"
 
 using std::shared_ptr;
 
-supla_abstract_srpc_call_handler_collection::
-    supla_abstract_srpc_call_handler_collection(void) {}
+supla_ch_get_user_localtime::supla_ch_get_user_localtime(void)
+    : supla_abstract_srpc_call_handler() {}
 
-supla_abstract_srpc_call_handler_collection::
-    ~supla_abstract_srpc_call_handler_collection() {
-  for (auto it = handlers.cbegin(); it != handlers.cend(); ++it) {
-    delete *it;
-  }
-}
+supla_ch_get_user_localtime::~supla_ch_get_user_localtime() {}
 
-void supla_abstract_srpc_call_handler_collection::add_handler(
-    supla_abstract_srpc_call_handler* handler) {
-  handlers.push_back(handler);
-}
-
-bool supla_abstract_srpc_call_handler_collection::handle_call(
-    std::shared_ptr<supla_abstract_connection_object> object,
+bool supla_ch_get_user_localtime::handle_call(
+    shared_ptr<supla_abstract_connection_object> object,
     supla_abstract_srpc_adapter* srpc_adapter, TsrpcReceivedData* rd,
     unsigned int call_id, unsigned char proto_version) {
-  for (auto it = handlers.cbegin(); it != handlers.cend(); ++it) {
-    if ((*it)->handle_call(object, srpc_adapter, rd, call_id, proto_version)) {
-      return true;
-    }
+  if (call_id != SUPLA_DCS_CALL_GET_USER_LOCALTIME) {
+    return CH_UNHANDLED;
   }
 
-  return false;
+  if (object->is_registered()) {
+    TSDC_UserLocalTimeResult result = {};
+
+    supla_connection_dao dao;
+
+    if (!dao.get_user_localtime(object->get_user_id(), &result)) {
+      memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));
+    }
+
+    srpc_adapter->sdc_async_get_user_localtime_result(&result);
+  }
+
+  return CH_HANDLED;
 }

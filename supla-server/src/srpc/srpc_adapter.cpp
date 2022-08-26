@@ -48,6 +48,11 @@ _supla_int_t supla_srpc_adapter::sdc_async_get_registration_enabled_result(
                                                         reg_enabled);
 }
 
+_supla_int_t supla_srpc_adapter::sdc_async_get_user_localtime_result(
+    TSDC_UserLocalTimeResult *localtime) {
+  return srpc_sdc_async_get_user_localtime_result(get_srpc(), localtime);
+}
+
 _supla_int_t supla_srpc_adapter::sc_async_scene_pack_update(
     TSC_SuplaScenePack *scene_pack) {
   return srpc_sc_async_scene_pack_update(get_srpc(), scene_pack);
