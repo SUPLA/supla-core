@@ -1798,18 +1798,6 @@ void database::add_thermostat_measurements(
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
 
-bool database::set_reg_enabled(int UserID, int deviceRegTimeSec,
-                               int clientRegTimeSec) {
-  char sql[100];
-  snprintf(sql, sizeof(sql),
-           "CALL `supla_set_registration_enabled`(%i, %i, %i)", UserID,
-           deviceRegTimeSec, clientRegTimeSec);
-
-  return query(sql, true) == 0;
-}
-
-
-
 bool database::superuser_authorization(
     int UserID, const char email[SUPLA_EMAIL_MAXSIZE],
     const char password[SUPLA_PASSWORD_MAXSIZE]) {

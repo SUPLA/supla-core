@@ -68,6 +68,9 @@ class supla_abstract_srpc_adapter {
 
   virtual _supla_int_t sc_async_clients_reconnect_request_result(
       TSC_ClientsReconnectRequestResult *result) = 0;
+
+  virtual _supla_int_t sc_async_set_registration_enabled_result(
+      TSC_SetRegistrationEnabledResult *result) = 0;
 };
 
 #endif /* ABSTRACT_SRPC_ADAPTER_H_ */

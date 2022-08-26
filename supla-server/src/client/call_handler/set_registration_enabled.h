@@ -16,26 +16,24 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_CLIENT_DAO_H_
-#define SUPLA_CLIENT_DAO_H_
+#ifndef SUPLA_CH_SET_REGISTRATION_ENABLED_H_
+#define SUPLA_CH_SET_REGISTRATION_ENABLED_H_
 
-#include "client/abstract_client_dao.h"
-#include "svrdb.h"
+#include <memory>
 
-class supla_client_dao : public supla_abstract_client_dao, private svrdb {
- private:
-  int oauth_add_client_id(void);
-  int oauth_get_client_id(bool create);
+#include "client/call_handler/abstract_client_srpc_call_handler.h"
+
+class supla_ch_set_registration_enabled
+    : public supla_abstract_client_srpc_call_handler {
+ protected:
+  virtual bool handle_call(std::shared_ptr<supla_client> client,
+                           supla_abstract_srpc_adapter* srpc_adapter,
+                           TsrpcReceivedData* rd, unsigned int call_id,
+                           unsigned char proto_version);
 
  public:
-  supla_client_dao();
-  virtual ~supla_client_dao();
-
-  virtual bool oauth_get_token(TSC_OAuthToken *token, int user_id,
-                               int access_id, bool *storage_connect_error);
-
-  virtual bool set_reg_enabled(int user_id, int device_reg_time_sec,
-                               int client_reg_time_sec);
+  supla_ch_set_registration_enabled(void);
+  virtual ~supla_ch_set_registration_enabled();
 };
 
-#endif /* SUPLA_CLIENT_DAO_H_ */
+#endif /* SUPLA_CH_SET_REGISTRATION_ENABLED_H_*/

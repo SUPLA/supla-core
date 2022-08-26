@@ -28,6 +28,8 @@ class supla_abstract_client_dao {
 
   virtual bool oauth_get_token(TSC_OAuthToken *token, int user_id,
                                int access_id, bool *storage_connect_error) = 0;
+  virtual bool set_reg_enabled(int user_id, int device_reg_time_sec,
+                               int client_reg_time_sec) = 0;
 };
 
 #endif /* SUPLA_ABSTRACT_CLIENT_DAO_H_ */

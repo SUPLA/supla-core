@@ -19,6 +19,7 @@
 #include "client/client_dao.h"
 
 #include <mysql.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -133,6 +134,24 @@ bool supla_client_dao::oauth_get_token(TSC_OAuthToken *token, int user_id,
   pbind[3].buffer = (char *)&access_id;
 
   bool result = add_by_proc_call(sql, pbind, 4) > 0;
+
+  disconnect();
+
+  return result;
+}
+
+bool supla_client_dao::set_reg_enabled(int user_id, int device_reg_time_sec,
+                                       int client_reg_time_sec) {
+  if (!connect()) {
+    return false;
+  }
+
+  char sql[100] = {};
+  snprintf(sql, sizeof(sql),
+           "CALL `supla_set_registration_enabled`(%i, %i, %i)", user_id,
+           device_reg_time_sec, client_reg_time_sec);
+
+  bool result = query(sql, true) == 0;
 
   disconnect();
 
