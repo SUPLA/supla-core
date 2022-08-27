@@ -139,3 +139,26 @@ bool supla_device_dao::get_device_firmware_update_url(
 
   return result;
 }
+
+bool supla_device_dao::location_auth(int LocationID, char *LocationPWD,
+                                     int *UserID, bool *is_enabled) {
+  if (LocationID == 0) return false;
+
+  bool already_connected = is_connected();
+
+  if (!already_connected && !connect()) {
+    return false;
+  }
+
+  bool result = auth(
+      "SELECT id, user_id, enabled FROM `supla_location` WHERE id = ? AND "
+      "password = ?",
+      LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID, is_enabled,
+      NULL);
+
+  if (!already_connected) {
+    disconnect();
+  }
+
+  return result;
+}

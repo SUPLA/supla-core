@@ -76,17 +76,6 @@ bool database::auth(const char *query, int ID, char *PWD, int PWD_MAXSIZE,
   return __ID != 0;
 }
 
-bool database::location_auth(int LocationID, char *LocationPWD, int *UserID,
-                             bool *is_enabled) {
-  if (LocationID == 0) return false;
-
-  return auth(
-      "SELECT id, user_id, enabled FROM `supla_location` WHERE id = ? AND "
-      "password = ?",
-      LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID, is_enabled,
-      NULL);
-}
-
 bool database::accessid_auth(int AccessID, char *AccessIDpwd, int *UserID,
                              bool *is_enabled, bool *is_active) {
   if (AccessID == 0) return false;

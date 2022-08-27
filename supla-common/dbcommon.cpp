@@ -17,6 +17,7 @@
  */
 
 #include "dbcommon.h"
+
 #include <mysql.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,6 +112,8 @@ void dbcommon::disconnect(void) {
     _mysql = NULL;
   }
 }
+
+bool dbcommon::is_connected(void) { return _mysql != nullptr; }
 
 int dbcommon::query(const char *stmt_str, bool log_err) {
   int result = mysql_query((MYSQL *)_mysql, stmt_str);

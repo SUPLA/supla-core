@@ -53,10 +53,6 @@ class supla_device : public supla_abstract_connection_object {
   get_srpc_call_handler_collection(void);
   static bool funclist_contains_function(int funcList, int func);
 
-  char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
-                       TDS_SuplaRegisterDevice_E *register_device_e,
-                       unsigned char proto_version);
-
   supla_device_channels *get_channels(void);
 
   void on_channel_state_result(TDSC_ChannelState *state);

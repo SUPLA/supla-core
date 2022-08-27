@@ -46,6 +46,7 @@ class dbcommon {
   dbcommon();
   bool connect(int connection_timeout_sec);
   bool connect(void);
+  bool is_connected(void);
   void disconnect(void);
   virtual ~dbcommon();
 

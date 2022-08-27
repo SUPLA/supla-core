@@ -30,6 +30,9 @@ class supla_device_dao : public supla_abstract_device_dao, private svrdb {
   virtual bool get_device_firmware_update_url(
       int device_id, TDS_FirmwareUpdateParams *params,
       TSD_FirmwareUpdate_UrlResult *url);
+
+  virtual bool location_auth(int LocationID, char *LocationPWD, int *UserID,
+                             bool *is_enabled);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

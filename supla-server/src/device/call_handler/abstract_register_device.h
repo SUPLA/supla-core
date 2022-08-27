@@ -16,22 +16,27 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_ABSTRACT_DEVICE_DAO_H_
-#define SUPLA_ABSTRACT_DEVICE_DAO_H_
+#ifndef SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_
+#define SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_
 
 #include "proto.h"
 
-class supla_abstract_device_dao {
+class supla_ch_abstract_register_device {
+ protected:
+  char register_device(TDS_SuplaRegisterDevice_C *register_device_c,
+                       TDS_SuplaRegisterDevice_E *register_device_e,
+                       unsigned char proto_version);
+
+  virtual bool db_connect(void) = 0;
+  virtual void db_disconnect(void) = 0;
+  virtual void set_flags(int flags) = 0;
+  virtual bool set_guid(const char GUID[SUPLA_GUID_SIZE]) = 0;
+  virtual bool set_authkey(const char AuthKey[SUPLA_AUTHKEY_SIZE]) = 0;
+  virtual int get_client_sd(void) = 0;
+
  public:
-  supla_abstract_device_dao();
-  virtual ~supla_abstract_device_dao();
-
-  virtual bool get_device_firmware_update_url(
-      int device_id, TDS_FirmwareUpdateParams *params,
-      TSD_FirmwareUpdate_UrlResult *url) = 0;
-
-  virtual bool location_auth(int LocationID, char *LocationPWD, int *UserID,
-                             bool *is_enabled) = 0;
+  supla_ch_abstract_register_device(void);
+  virtual ~supla_ch_abstract_register_device();
 };
 
-#endif /* SUPLA_ABSTRACT_DEVICE_DAO_H_ */
+#endif /* SUPLA_CH_ABSTRACT_REGISTER_DEVICE_H_*/
