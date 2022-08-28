@@ -17,8 +17,10 @@
  */
 
 #include "objcontainer.h"
+
 #include <string.h>
-#include "database.h"
+
+#include "db/database.h"
 #include "objcontaineritem.h"
 #include "safearray.h"
 

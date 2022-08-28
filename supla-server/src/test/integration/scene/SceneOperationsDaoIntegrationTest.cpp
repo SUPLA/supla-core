@@ -30,7 +30,8 @@ SceneOperationsDaoIntegrationTest::SceneOperationsDaoIntegrationTest()
 SceneOperationsDaoIntegrationTest::~SceneOperationsDaoIntegrationTest() {}
 
 void SceneOperationsDaoIntegrationTest::SetUp() {
-  dao = new supla_scene_operations_dao();
+  dba = new supla_db_access_provider();
+  dao = new supla_scene_operations_dao(dba);
   ASSERT_TRUE(dao != NULL);
 
   initTestDatabase();
@@ -41,6 +42,11 @@ void SceneOperationsDaoIntegrationTest::TearDown() {
   if (dao) {
     delete dao;
     dao = NULL;
+  }
+
+  if (dba) {
+    delete dba;
+    dba = NULL;
   }
   Test::TearDown();
 }

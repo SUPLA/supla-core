@@ -22,9 +22,8 @@
 #define IPV4_STRING_MAXSIZE 16
 #define DATE_STRING_MAXSIZE 21
 
-#include <svrdb.h>
-
 #include "channeljsonconfig/channel_json_config.h"
+#include "db/svrdb.h"
 #include "proto.h"
 #include "user.h"
 

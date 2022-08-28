@@ -25,7 +25,7 @@
 #include <memory>
 
 #include "client.h"
-#include "database.h"
+#include "db/database.h"
 #include "log.h"
 #include "proto.h"
 #include "safearray.h"

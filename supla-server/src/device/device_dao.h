@@ -19,12 +19,15 @@
 #ifndef SUPLA_DEVICE_DAO_H_
 #define SUPLA_DEVICE_DAO_H_
 
+#include "db/abstract_db_access_provider.h"
 #include "device/abstract_device_dao.h"
-#include "svrdb.h"
 
-class supla_device_dao : public supla_abstract_device_dao, private svrdb {
+class supla_device_dao : public supla_abstract_device_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  supla_device_dao();
+  explicit supla_device_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_device_dao();
 
   virtual bool get_device_firmware_update_url(

@@ -23,7 +23,7 @@
 
 #include "client.h"
 #include "conn/connection.h"
-#include "database.h"
+#include "db/database.h"
 #include "device.h"
 #include "ipc/ipc_ctrl.h"
 #include "ipc/ipc_socket_adapter.h"

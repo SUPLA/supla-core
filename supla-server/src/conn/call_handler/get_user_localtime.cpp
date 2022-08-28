@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "conn/connection_dao.h"
+#include "db/db_access_provider.h"
 #include "log.h"
 #include "proto.h"
 
@@ -45,7 +46,8 @@ bool supla_ch_get_user_localtime::handle_call(
   if (object->is_registered()) {
     TSDC_UserLocalTimeResult result = {};
 
-    supla_connection_dao dao;
+    supla_db_access_provider dba;
+    supla_connection_dao dao(&dba);
 
     if (!dao.get_user_localtime(object->get_user_id(), &result)) {
       memset(&result, 0, sizeof(TSDC_UserLocalTimeResult));

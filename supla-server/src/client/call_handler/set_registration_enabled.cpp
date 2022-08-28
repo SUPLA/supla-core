@@ -24,6 +24,7 @@
 
 #include "client/client.h"
 #include "client/client_dao.h"
+#include "db/db_access_provider.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -44,7 +45,9 @@ bool supla_ch_set_registration_enabled::handle_call(
     TSC_SetRegistrationEnabledResult result = {};
 
     if (client->is_superuser_authorized()) {
-      supla_client_dao dao;
+      supla_db_access_provider dba;
+      supla_client_dao dao(&dba);
+
       result.ResultCode = dao.set_reg_enabled(
           client->get_user_id(),
           rd->data.cs_set_registration_enabled->IODeviceRegistrationTimeSec,

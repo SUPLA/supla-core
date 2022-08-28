@@ -29,7 +29,7 @@
 
 #include "amazon/alexacredentials.h"
 #include "client.h"
-#include "database.h"
+#include "db/database.h"
 #include "device.h"
 #include "google/googlehomecredentials.h"
 #include "http/httprequestqueue.h"

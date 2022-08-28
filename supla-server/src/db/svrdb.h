@@ -16,21 +16,22 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SUPLA_SCENE_OPERATIONS_DAO_H_
-#define SUPLA_SCENE_OPERATIONS_DAO_H_
+#ifndef SVRDB_H_
+#define SVRDB_H_
 
-#include "db/abstract_db_access_provider.h"
-#include "scene/abstract_scene_operations_dao.h"
+#include "db/dbcommon.h"
 
-class supla_scene_operations_dao : public supla_abstract_scene_operations_dao {
- private:
-  supla_abstract_db_access_provider *dba;
+class svrdb : public dbcommon {
+ protected:
+  virtual char *cfg_get_host(void);
+  virtual char *cfg_get_user(void);
+  virtual char *cfg_get_password(void);
+  virtual char *cfg_get_database(void);
+  virtual int cfg_get_port(void);
 
  public:
-  explicit supla_scene_operations_dao(supla_abstract_db_access_provider *dba);
-  virtual ~supla_scene_operations_dao();
-
-  virtual supla_scene_operations *get_scene_operations(int scene_id);
+  svrdb(void);
+  virtual ~svrdb(void);
 };
 
-#endif /*SUPLA_SCENE_OPERATIONS_DAO_H_ */
+#endif /* SVRDB_H_ */

@@ -38,20 +38,28 @@ typedef struct {
   int delay_ms;
 } _supla_scene_operation_row_t;
 
-supla_scene_operations_dao::supla_scene_operations_dao()
-    : supla_abstract_scene_operations_dao(), svrdb() {}
+supla_scene_operations_dao::supla_scene_operations_dao(
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_scene_operations_dao() {
+  this->dba = dba;
+}
 
 supla_scene_operations_dao::~supla_scene_operations_dao() {}
 
 supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
     int scene_id) {
-  if (!connect()) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     return NULL;
   }
 
   supla_scene_operations *operations = new supla_scene_operations();
   if (!operations) {
-    disconnect();
+    if (!already_connected) {
+      dba->disconnect();
+    }
+
     return NULL;
   }
 
@@ -71,7 +79,7 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&scene_id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     MYSQL_BIND rbind[6];
     memset(rbind, 0, sizeof(rbind));
 
@@ -109,8 +117,9 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
 
       if (mysql_stmt_num_rows(stmt) > 0) {
         while (!mysql_stmt_fetch(stmt)) {
-          set_terminating_byte(row.action_param, sizeof(row.action_param),
-                               row.action_param_len, row.action_param_is_null);
+          dba->set_terminating_byte(row.action_param, sizeof(row.action_param),
+                                    row.action_param_len,
+                                    row.action_param_is_null);
 
           supla_scene_operation *op = new supla_scene_operation();
           if (op) {
@@ -141,7 +150,9 @@ supla_scene_operations *supla_scene_operations_dao::get_scene_operations(
     mysql_stmt_close(stmt);
   }
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return operations;
 }

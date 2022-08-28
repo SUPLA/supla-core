@@ -33,7 +33,8 @@ ClientSceneDaoIntegrationTest::ClientSceneDaoIntegrationTest()
 ClientSceneDaoIntegrationTest::~ClientSceneDaoIntegrationTest() {}
 
 void ClientSceneDaoIntegrationTest::SetUp() {
-  dao = new supla_client_scene_dao();
+  dba = new supla_db_access_provider();
+  dao = new supla_client_scene_dao(dba);
   ASSERT_TRUE(dao != NULL);
 
   initTestDatabase();
@@ -45,6 +46,12 @@ void ClientSceneDaoIntegrationTest::TearDown() {
     delete dao;
     dao = NULL;
   }
+
+  if (dba) {
+    delete dba;
+    dba = NULL;
+  }
+
   Test::TearDown();
 }
 

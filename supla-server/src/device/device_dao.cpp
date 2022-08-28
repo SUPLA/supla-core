@@ -23,15 +23,23 @@
 
 #include "log.h"
 
-supla_device_dao::supla_device_dao(void)
-    : supla_abstract_device_dao(), svrdb() {}
+supla_device_dao::supla_device_dao(supla_abstract_db_access_provider *dba)
+    : supla_abstract_device_dao() {
+  this->dba = dba;
+}
 
 supla_device_dao::~supla_device_dao() {}
 
 bool supla_device_dao::get_device_firmware_update_url(
     int device_id, TDS_FirmwareUpdateParams *params,
     TSD_FirmwareUpdate_UrlResult *url) {
-  if (!device_id || params == nullptr || url == nullptr || !connect()) {
+  if (!device_id || params == nullptr || url == nullptr) {
+    return false;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     return false;
   }
 
@@ -68,17 +76,18 @@ bool supla_device_dao::get_device_firmware_update_url(
 
   char q_executed = 0;
 
-  if (stmt_execute((void **)&stmt, sql1, pbind, 6, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql1, pbind, 6, true)) {
     if (stmt != nullptr) mysql_stmt_close((MYSQL_STMT *)stmt);
     q_executed++;
   }
 
-  if (stmt_execute((void **)&stmt, sql2, nullptr, 0, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql2, nullptr, 0, true)) {
     if (stmt != nullptr) mysql_stmt_close((MYSQL_STMT *)stmt);
     q_executed++;
   }
 
-  if (q_executed == 2 && stmt_execute((void **)&stmt, sql3, nullptr, 0, true)) {
+  if (q_executed == 2 &&
+      dba->stmt_execute((void **)&stmt, sql3, nullptr, 0, true)) {
     if (stmt != nullptr) mysql_stmt_store_result(stmt);
 
     if (mysql_stmt_num_rows(stmt) > 0) {
@@ -135,7 +144,9 @@ bool supla_device_dao::get_device_firmware_update_url(
     mysql_stmt_close(stmt);
   }
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return result;
 }
@@ -144,20 +155,23 @@ bool supla_device_dao::location_auth(int LocationID, char *LocationPWD,
                                      int *UserID, bool *is_enabled) {
   if (LocationID == 0) return false;
 
-  bool already_connected = is_connected();
+  bool already_connected = dba->is_connected();
 
-  if (!already_connected && !connect()) {
+  if (!already_connected && !dba->connect()) {
     return false;
   }
 
+  bool result = false;
+  /*
   bool result = auth(
       "SELECT id, user_id, enabled FROM `supla_location` WHERE id = ? AND "
       "password = ?",
       LocationID, LocationPWD, SUPLA_LOCATION_PWD_MAXSIZE, UserID, is_enabled,
       NULL);
+      */
 
   if (!already_connected) {
-    disconnect();
+    dba->disconnect();
   }
 
   return result;

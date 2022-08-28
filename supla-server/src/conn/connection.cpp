@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #include "client/client.h"
-#include "database.h"
+#include "db/database.h"
 #include "device/device.h"
 #include "log.h"
 #include "safearray.h"

@@ -16,22 +16,8 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef SVRDB_H_
-#define SVRDB_H_
+#include "abstract_db_access_provider.h"
 
-#include <dbcommon.h>
+supla_abstract_db_access_provider::supla_abstract_db_access_provider(void) {}
 
-class svrdb : public dbcommon {
- protected:
-  virtual char *cfg_get_host(void);
-  virtual char *cfg_get_user(void);
-  virtual char *cfg_get_password(void);
-  virtual char *cfg_get_database(void);
-  virtual int cfg_get_port(void);
-
- public:
-  svrdb(void);
-  virtual ~svrdb(void);
-};
-
-#endif /* SVRDB_H_ */
+supla_abstract_db_access_provider::~supla_abstract_db_access_provider(void) {}

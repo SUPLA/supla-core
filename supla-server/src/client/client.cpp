@@ -24,7 +24,7 @@
 
 #include "client/call_handler/call_handler_collection.h"
 #include "clientlocation.h"
-#include "database.h"
+#include "db/database.h"
 #include "lck.h"
 #include "log.h"
 #include "safearray.h"
@@ -44,9 +44,10 @@ supla_client::supla_client(supla_connection *connection)
   this->locations = new supla_client_locations();
   this->channels = new supla_client_channels(this);
   this->cgroups = new supla_client_channelgroups(this);
+  this->scene_dao = new supla_client_scene_dao(&dba);
   this->scene_remote_updater =
       new supla_client_scene_remote_updater(connection->get_srpc_adapter());
-  this->scenes = new supla_client_scenes(scene_remote_updater, &scene_dao,
+  this->scenes = new supla_client_scenes(scene_remote_updater, scene_dao,
                                          supla_scene_asynctask::get_queue());
   this->name[0] = 0;
   this->superuser_authorized = false;
@@ -59,6 +60,7 @@ supla_client::~supla_client() {
   delete locations;
   delete scenes;
   delete scene_remote_updater;
+  delete scene_dao;
 }
 
 supla_abstract_srpc_call_handler_collection *

@@ -20,6 +20,7 @@
 
 #include <memory>
 
+#include "db/db_access_provider.h"
 #include "device/device_dao.h"
 
 using std::shared_ptr;
@@ -38,7 +39,8 @@ bool supla_ch_get_firmware_update_url::handle_call(
 
   if (rd->data.ds_firmware_update_params != nullptr) {
     TSD_FirmwareUpdate_UrlResult result = {};
-    supla_device_dao dao;
+    supla_db_access_provider dba;
+    supla_device_dao dao(&dba);
 
     if (dao.get_device_firmware_update_url(
             device->get_id(), rd->data.ds_firmware_update_params, &result)) {

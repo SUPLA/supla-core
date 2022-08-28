@@ -18,7 +18,7 @@
 
 #include <google/googlehomecredentials.h>
 
-#include "database.h"
+#include "db/database.h"
 #include "http/httprequestqueue.h"
 #include "log.h"
 #include "user/user.h"

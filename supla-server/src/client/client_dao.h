@@ -20,15 +20,17 @@
 #define SUPLA_CLIENT_DAO_H_
 
 #include "client/abstract_client_dao.h"
-#include "svrdb.h"
+#include "db/abstract_db_access_provider.h"
 
-class supla_client_dao : public supla_abstract_client_dao, private svrdb {
+class supla_client_dao : public supla_abstract_client_dao {
  private:
+  supla_abstract_db_access_provider *dba;
+
   int oauth_add_client_id(void);
   int oauth_get_client_id(bool create);
 
  public:
-  supla_client_dao();
+  explicit supla_client_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_client_dao();
 
   virtual bool oauth_get_token(TSC_OAuthToken *token, int user_id,

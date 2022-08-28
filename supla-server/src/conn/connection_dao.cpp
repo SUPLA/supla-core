@@ -23,14 +23,23 @@
 
 #include "log.h"
 
-supla_connection_dao::supla_connection_dao(void)
-    : supla_abstract_connection_dao(), svrdb() {}
+supla_connection_dao::supla_connection_dao(
+    supla_abstract_db_access_provider *dba)
+    : supla_abstract_connection_dao() {
+  this->dba = dba;
+}
 
 supla_connection_dao::~supla_connection_dao() {}
 
 bool supla_connection_dao::get_reg_enabled(int user_id, unsigned int *client,
                                            unsigned int *iodevice) {
-  if (user_id == 0 || !connect()) {
+  if (user_id == 0) {
+    return false;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     return false;
   }
 
@@ -43,7 +52,7 @@ bool supla_connection_dao::get_reg_enabled(int user_id, unsigned int *client,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&user_id;
 
-  if (stmt_get_int(
+  if (dba->stmt_get_int(
           (void **)&stmt, (int *)client, (int *)iodevice, nullptr, nullptr,
           "SELECT CAST(IFNULL(UNIX_TIMESTAMP(CONVERT_TZ(IF(client_reg_enabled "
           ">= UTC_TIMESTAMP(), client_reg_enabled, NULL),'+00:00','SYSTEM')), "
@@ -55,14 +64,22 @@ bool supla_connection_dao::get_reg_enabled(int user_id, unsigned int *client,
     result = true;
   }
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return result;
 }
 
 bool supla_connection_dao::get_user_localtime(int user_id,
                                               TSDC_UserLocalTimeResult *time) {
-  if (user_id == 0 || !connect()) {
+  if (user_id == 0) {
+    return false;
+  }
+
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     return false;
   }
 
@@ -84,7 +101,7 @@ bool supla_connection_dao::get_user_localtime(int user_id,
   pbind[0].buffer_type = MYSQL_TYPE_LONG;
   pbind[0].buffer = (char *)&user_id;
 
-  if (stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
+  if (dba->stmt_execute((void **)&stmt, sql, pbind, 1, true)) {
     MYSQL_BIND rbind[9];
     memset(rbind, 0, sizeof(rbind));
 
@@ -144,7 +161,9 @@ bool supla_connection_dao::get_user_localtime(int user_id,
     mysql_stmt_close(stmt);
   }
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return result;
 }

@@ -23,7 +23,7 @@
 #include <cstddef>  // NOLINT
 #include <list>     // NOLINT
 
-#include "database.h"
+#include "db/database.h"
 #include "http/httprequest.h"
 #include "http/httprequestactiontriggerextraparams.h"
 #include "http/httprequestvoiceassistantextraparams.h"

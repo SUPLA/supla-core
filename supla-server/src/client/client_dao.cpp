@@ -27,8 +27,10 @@
 #include "svrcfg.h"
 #include "tools.h"
 
-supla_client_dao::supla_client_dao(void)
-    : supla_abstract_client_dao(), svrdb() {}
+supla_client_dao::supla_client_dao(supla_abstract_db_access_provider *dba)
+    : supla_abstract_client_dao() {
+  this->dba = dba;
+}
 
 supla_client_dao::~supla_client_dao() {}
 
@@ -57,14 +59,14 @@ int supla_client_dao::oauth_add_client_id(void) {
   pbind[1].buffer = (char *)secret;
   pbind[1].buffer_length = strnlen(secret, 50);
 
-  return add_by_proc_call(sql, pbind, 2);
+  return dba->add_by_proc_call(sql, pbind, 2);
 }
 
 int supla_client_dao::oauth_get_client_id(bool create) {
   int id = 0;
   MYSQL_STMT *stmt = NULL;
 
-  if (!stmt_get_int(
+  if (!dba->stmt_get_int(
           (void **)&stmt, &id, NULL, NULL, NULL,
           "SELECT `id` FROM `supla_oauth_clients` WHERE `type` = 2 LIMIT 1",
           NULL, 0)) {
@@ -97,7 +99,9 @@ bool supla_client_dao::oauth_get_token(TSC_OAuthToken *token, int user_id,
     return false;
   }
 
-  if (!connect()) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     if (storage_connect_error) {
       *storage_connect_error = true;
     }
@@ -133,16 +137,20 @@ bool supla_client_dao::oauth_get_token(TSC_OAuthToken *token, int user_id,
   pbind[3].buffer_type = MYSQL_TYPE_LONG;
   pbind[3].buffer = (char *)&access_id;
 
-  bool result = add_by_proc_call(sql, pbind, 4) > 0;
+  bool result = dba->add_by_proc_call(sql, pbind, 4) > 0;
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return result;
 }
 
 bool supla_client_dao::set_reg_enabled(int user_id, int device_reg_time_sec,
                                        int client_reg_time_sec) {
-  if (!connect()) {
+  bool already_connected = dba->is_connected();
+
+  if (!already_connected && !dba->connect()) {
     return false;
   }
 
@@ -151,9 +159,11 @@ bool supla_client_dao::set_reg_enabled(int user_id, int device_reg_time_sec,
            "CALL `supla_set_registration_enabled`(%i, %i, %i)", user_id,
            device_reg_time_sec, client_reg_time_sec);
 
-  bool result = query(sql, true) == 0;
+  bool result = dba->query(sql, true) == 0;
 
-  disconnect();
+  if (!already_connected) {
+    dba->disconnect();
+  }
 
   return result;
 }

@@ -31,7 +31,7 @@
 #include "channeljsonconfig/action_trigger_config.h"
 #include "channeljsonconfig/electricity_meter_config.h"
 #include "channeljsonconfig/impulse_counter_config.h"
-#include "database.h"
+#include "db/database.h"
 #include "device/channel_gate_value.h"
 #include "device/channel_onoff_value.h"
 #include "device/channel_rgbw_value.h"

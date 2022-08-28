@@ -19,7 +19,7 @@
 #ifndef DATALOGGER_H_
 #define DATALOGGER_H_
 
-#include "database.h"
+#include "db/database.h"
 
 #define TEMPLOG_INTERVAL 600
 #define ELECTRICITYMETERLOG_INTERVAL 600

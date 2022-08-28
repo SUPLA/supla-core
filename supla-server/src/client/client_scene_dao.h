@@ -22,12 +22,14 @@
 #include <list>
 
 #include "client/abstract_client_scene_dao.h"
-#include "svrdb.h"
+#include "db/abstract_db_access_provider.h"
 
-class supla_client_scene_dao : public supla_abstract_client_scene_dao,
-                               private svrdb {
+class supla_client_scene_dao : public supla_abstract_client_scene_dao {
+ private:
+  supla_abstract_db_access_provider *dba;
+
  public:
-  supla_client_scene_dao();
+  explicit supla_client_scene_dao(supla_abstract_db_access_provider *dba);
   virtual ~supla_client_scene_dao();
 
   virtual std::list<supla_client_scene *> get_all_scenes(int user_id,

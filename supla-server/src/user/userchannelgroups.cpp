@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include "database.h"
+#include "db/database.h"
 #include "safearray.h"
 #include "user.h"
 

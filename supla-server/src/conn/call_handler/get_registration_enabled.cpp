@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "conn/connection_dao.h"
+#include "db/db_access_provider.h"
 #include "log.h"
 #include "proto.h"
 
@@ -45,7 +46,8 @@ bool supla_ch_get_registration_enabled::handle_call(
   if (object->is_registered()) {
     TSDC_RegistrationEnabled reg_en = {};
 
-    supla_connection_dao dao;
+    supla_db_access_provider dba;
+    supla_connection_dao dao(&dba);
     if (!dao.get_reg_enabled(object->get_user_id(), &reg_en.client_timestamp,
                              &reg_en.iodevice_timestamp)) {
       reg_en.client_timestamp = 0;

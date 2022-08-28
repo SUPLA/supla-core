@@ -29,6 +29,7 @@
 #include "clientchannelgroups.h"
 #include "clientchannels.h"
 #include "clientlocation.h"
+#include "db/db_access_provider.h"
 
 class supla_client_call_handler_collection;
 class supla_user;
@@ -39,6 +40,7 @@ class supla_client : public supla_abstract_connection_object {
   bool superuser_authorized;
   int access_id;
   static supla_client_call_handler_collection call_handler_collection;
+  supla_db_access_provider dba;
 
  protected:
   supla_client_locations *locations;
@@ -47,7 +49,7 @@ class supla_client : public supla_abstract_connection_object {
   supla_client_scenes *scenes;
 
   supla_client_scene_remote_updater *scene_remote_updater;
-  supla_client_scene_dao scene_dao;
+  supla_client_scene_dao *scene_dao;
 
   void loadIODevices(void);
   void loadConfig(void);

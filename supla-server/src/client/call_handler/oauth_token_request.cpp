@@ -24,6 +24,7 @@
 
 #include "client/client.h"
 #include "client/client_dao.h"
+#include "db/db_access_provider.h"
 #include "user/user.h"
 
 using std::shared_ptr;
@@ -47,7 +48,8 @@ bool supla_ch_oauth_token_request::handle_call(
   result.ResultCode = SUPLA_OAUTH_RESULTCODE_ERROR;
 
   if (access_id) {
-    supla_client_dao dao;
+    supla_db_access_provider dba;
+    supla_client_dao dao(&dba);
 
     bool storage_connect_error = false;
 
