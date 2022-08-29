@@ -160,6 +160,7 @@ TEST_F(ActionConfigTest, jsonRGBW_random) {
     short a = 0;
     for (a = 0; a < 10; a++) {
       rgbw2 = config.get_rgbw();
+      usleep(1000);
       if (rgbw2.color != color) {
         break;
       }
