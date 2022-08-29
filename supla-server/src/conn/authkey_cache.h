@@ -16,17 +16,33 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CONNECTION_OBJECT_TEST_H_
-#define CONNECTION_OBJECT_TEST_H
+#ifndef SUPLA_AUTHKEYCACHE_H_
+#define SUPLA_AUTHKEYCACHE_H_
 
-#include "gtest/gtest.h"  // NOLINT
+#include <functional>
 
-namespace testing {
+#include "proto.h"
 
-class ConnectionObjectTest : public Test {
+class supla_authkey_cache {
+ private:
+  static supla_authkey_cache global_instance;
+  void* items;
+
+ protected:
+  int cache_size_limit;
+
  public:
+  supla_authkey_cache(void);
+  ~supla_authkey_cache(void);
+
+  static supla_authkey_cache& get_global_instance(void);
+
+  bool authkey_auth(const char guid[SUPLA_GUID_SIZE],
+                    const char email[SUPLA_EMAIL_MAXSIZE],
+                    const char authkey[SUPLA_AUTHKEY_SIZE], int* user_id,
+                    std::function<bool(void)> db_authkey_auth);
+  int get_cache_size_limit(void);
+  int get_size(void);
 };
 
-}  // namespace testing
-
-#endif /* CONNECTION_OBJECT_TEST_H_ */
+#endif /* SUPLA_AUTHKEYCACHE_H_ */

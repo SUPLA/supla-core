@@ -108,13 +108,6 @@ bool supla_device::funclist_contains_function(int funcList, int func) {
   return false;
 }
 
-bool supla_device::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                                   const char Email[SUPLA_EMAIL_MAXSIZE],
-                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
-                                   int *UserID, database *db) {
-  return db->device_authkey_auth(GUID, Email, AuthKey, UserID);
-}
-
 void supla_device::load_config(int UserID) { channels->load(UserID, get_id()); }
 
 supla_device_channels *supla_device::get_channels(void) { return channels; }

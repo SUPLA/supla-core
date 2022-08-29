@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/doubles/conn/AuthkeyCacheStub.cpp \
 ../src/test/doubles/conn/ConnectionObjectMock.cpp \
 ../src/test/doubles/conn/ConnectionObjectsMock.cpp 
 
 CPP_DEPS += \
+./src/test/doubles/conn/AuthkeyCacheStub.d \
 ./src/test/doubles/conn/ConnectionObjectMock.d \
 ./src/test/doubles/conn/ConnectionObjectsMock.d 
 
 OBJS += \
+./src/test/doubles/conn/AuthkeyCacheStub.o \
 ./src/test/doubles/conn/ConnectionObjectMock.o \
 ./src/test/doubles/conn/ConnectionObjectsMock.o 
 
@@ -28,7 +31,7 @@ src/test/doubles/conn/%.o: ../src/test/doubles/conn/%.cpp src/test/doubles/conn/
 clean: clean-src-2f-test-2f-doubles-2f-conn
 
 clean-src-2f-test-2f-doubles-2f-conn:
-	-$(RM) ./src/test/doubles/conn/ConnectionObjectMock.d ./src/test/doubles/conn/ConnectionObjectMock.o ./src/test/doubles/conn/ConnectionObjectsMock.d ./src/test/doubles/conn/ConnectionObjectsMock.o
+	-$(RM) ./src/test/doubles/conn/AuthkeyCacheStub.d ./src/test/doubles/conn/AuthkeyCacheStub.o ./src/test/doubles/conn/ConnectionObjectMock.d ./src/test/doubles/conn/ConnectionObjectMock.o ./src/test/doubles/conn/ConnectionObjectsMock.d ./src/test/doubles/conn/ConnectionObjectsMock.o
 
 .PHONY: clean-src-2f-test-2f-doubles-2f-conn
 

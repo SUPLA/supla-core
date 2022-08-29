@@ -198,12 +198,10 @@ void supla_connection::read_local_ipv4_addresses(void) {
 void supla_connection::init(void) {
   supla_connection::read_local_ipv4_addresses();
   supla_connection::reg_pending_arr = safe_array_init();
-  supla_abstract_connection_object::init();
 }
 
 // static
 void supla_connection::cleanup(void) {
-  supla_abstract_connection_object::release_cache();
   safe_array_free(supla_connection::reg_pending_arr);
 }
 

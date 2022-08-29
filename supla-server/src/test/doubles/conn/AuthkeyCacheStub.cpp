@@ -16,17 +16,12 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CONNECTION_OBJECT_TEST_H_
-#define CONNECTION_OBJECT_TEST_H
+#include "doubles/conn/AuthkeyCacheStub.h"  // NOLINT
 
 #include "gtest/gtest.h"  // NOLINT
 
-namespace testing {
+AuthkeyCacheStub::AuthkeyCacheStub(void) : supla_authkey_cache() {}
 
-class ConnectionObjectTest : public Test {
- public:
-};
-
-}  // namespace testing
-
-#endif /* CONNECTION_OBJECT_TEST_H_ */
+void AuthkeyCacheStub::set_cache_size_limit(int limit) {
+  supla_authkey_cache::cache_size_limit = limit;
+}

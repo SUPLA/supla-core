@@ -16,17 +16,17 @@
  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef CONNECTION_OBJECT_TEST_H_
-#define CONNECTION_OBJECT_TEST_H
+#ifndef AUTHKEY_CACHE_TEST_H_
+#define AUTHKEY_CACHE_TEST_H_
 
 #include "gtest/gtest.h"  // NOLINT
 
 namespace testing {
 
-class ConnectionObjectTest : public Test {
+class AuthkeyCacheTest : public Test {
  public:
 };
 
 }  // namespace testing
 
-#endif /* CONNECTION_OBJECT_TEST_H_ */
+#endif /* AUTHKEY_CACHE_TEST_H_ */

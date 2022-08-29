@@ -24,6 +24,7 @@
 
 #include "client/call_handler/call_handler_collection.h"
 #include "clientlocation.h"
+#include "conn/authkey_cache.h"
 #include "db/database.h"
 #include "lck.h"
 #include "log.h"
@@ -116,11 +117,15 @@ bool supla_client::is_superuser_authorized(void) {
   return result;
 }
 
-bool supla_client::db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                                   const char Email[SUPLA_EMAIL_MAXSIZE],
-                                   const char AuthKey[SUPLA_AUTHKEY_SIZE],
-                                   int *UserID, database *db) {
-  return db->client_authkey_auth(GUID, Email, AuthKey, UserID);
+bool supla_client::authkey_auth(const char guid[SUPLA_GUID_SIZE],
+                                const char email[SUPLA_EMAIL_MAXSIZE],
+                                const char authkey[SUPLA_AUTHKEY_SIZE],
+                                int *user_id, database *db) {
+  return supla_authkey_cache::get_global_instance().authkey_auth(
+      guid, email, authkey, user_id,
+      [guid, email, authkey, user_id, db]() -> bool {
+        return db->client_authkey_auth(guid, email, authkey, user_id);
+      });
 }
 
 char supla_client::register_client(TCS_SuplaRegisterClient_B *register_client_b,

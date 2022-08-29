@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../src/test/conn/AuthkeyCacheTest.cpp \
 ../src/test/conn/ConnectionObjectTest.cpp \
 ../src/test/conn/ConnectionObjectsTest.cpp 
 
 CPP_DEPS += \
+./src/test/conn/AuthkeyCacheTest.d \
 ./src/test/conn/ConnectionObjectTest.d \
 ./src/test/conn/ConnectionObjectsTest.d 
 
 OBJS += \
+./src/test/conn/AuthkeyCacheTest.o \
 ./src/test/conn/ConnectionObjectTest.o \
 ./src/test/conn/ConnectionObjectsTest.o 
 
@@ -28,7 +31,7 @@ src/test/conn/%.o: ../src/test/conn/%.cpp src/test/conn/subdir.mk
 clean: clean-src-2f-test-2f-conn
 
 clean-src-2f-test-2f-conn:
-	-$(RM) ./src/test/conn/ConnectionObjectTest.d ./src/test/conn/ConnectionObjectTest.o ./src/test/conn/ConnectionObjectsTest.d ./src/test/conn/ConnectionObjectsTest.o
+	-$(RM) ./src/test/conn/AuthkeyCacheTest.d ./src/test/conn/AuthkeyCacheTest.o ./src/test/conn/ConnectionObjectTest.d ./src/test/conn/ConnectionObjectTest.o ./src/test/conn/ConnectionObjectsTest.d ./src/test/conn/ConnectionObjectsTest.o
 
 .PHONY: clean-src-2f-test-2f-conn
 

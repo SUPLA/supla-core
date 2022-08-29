@@ -23,21 +23,9 @@
 ConnectionObjectMock::ConnectionObjectMock(supla_connection *connection)
     : supla_abstract_connection_object(connection) {}
 
-void ConnectionObjectMock::set_cache_size_limit(int size) {
-  authkey_auth_cache_size = size;
-}
-
 supla_abstract_srpc_call_handler_collection *
 ConnectionObjectMock::get_srpc_call_handler_collection(void) {
   return NULL;
-}
-
-bool ConnectionObjectMock::authkey_auth(
-    const char GUID[SUPLA_GUID_SIZE], const char Email[SUPLA_EMAIL_MAXSIZE],
-    const char AuthKey[SUPLA_AUTHKEY_SIZE]) {
-  int UserID = 0;
-  return supla_abstract_connection_object::authkey_auth(GUID, Email, AuthKey,
-                                                        &UserID, NULL);
 }
 
 void ConnectionObjectMock::set_id(int id) {

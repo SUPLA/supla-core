@@ -42,6 +42,11 @@ class supla_client : public supla_abstract_connection_object {
   static supla_client_call_handler_collection call_handler_collection;
   supla_db_access_provider dba;
 
+  bool authkey_auth(const char guid[SUPLA_GUID_SIZE],
+                    const char email[SUPLA_EMAIL_MAXSIZE],
+                    const char authkey[SUPLA_AUTHKEY_SIZE], int *user_id,
+                    database *db);
+
  protected:
   supla_client_locations *locations;
   supla_client_channels *channels;
@@ -57,10 +62,6 @@ class supla_client : public supla_abstract_connection_object {
   void remote_update_lists(void);
   void setName(const char *name);
   void setAccessID(int AccessID);
-  bool db_authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                       const char Email[SUPLA_EMAIL_MAXSIZE],
-                       const char AuthKey[SUPLA_AUTHKEY_SIZE], int *UserID,
-                       database *db);
 
  public:
   explicit supla_client(supla_connection *connection);

@@ -28,19 +28,9 @@ class ConnectionObjectMock : public supla_abstract_connection_object {
   explicit ConnectionObjectMock(supla_connection *connection);
   virtual supla_abstract_srpc_call_handler_collection *
   get_srpc_call_handler_collection(void);
-  void set_cache_size_limit(int size);
   void set_id(int id);
   bool set_guid(const char guid[SUPLA_GUID_SIZE]);
   bool set_authkey(const char authkey[SUPLA_AUTHKEY_SIZE]);
-
-  bool authkey_auth(const char GUID[SUPLA_GUID_SIZE],
-                    const char Email[SUPLA_EMAIL_MAXSIZE],
-                    const char AuthKey[SUPLA_AUTHKEY_SIZE]);
-
-  MOCK_METHOD5(db_authkey_auth, bool(const char guid[SUPLA_GUID_SIZE],
-                                     const char email[SUPLA_EMAIL_MAXSIZE],
-                                     const char authkey[SUPLA_AUTHKEY_SIZE],
-                                     int *user_id, database *db));
 };
 
 #endif /* CONNECTION_OBJECT_MOCK_H_ */

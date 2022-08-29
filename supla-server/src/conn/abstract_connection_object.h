@@ -39,8 +39,6 @@ class supla_abstract_connection_object {
 
  protected:
   void *lck;
-  static void *authkey_auth_cache_arr;
-  static int authkey_auth_cache_size;
 
   // Thread safe start
   bool set_guid(const char GUID[SUPLA_GUID_SIZE]);
@@ -50,20 +48,7 @@ class supla_abstract_connection_object {
   void set_registered(bool registered);
   // Thread safe end
 
-  virtual bool db_authkey_auth(const char guid[SUPLA_GUID_SIZE],
-                               const char email[SUPLA_EMAIL_MAXSIZE],
-                               const char authkey[SUPLA_AUTHKEY_SIZE],
-                               int *user_id, database *db) = 0;
-
-  bool authkey_auth(const char guid[SUPLA_GUID_SIZE],
-                    const char email[SUPLA_EMAIL_MAXSIZE],
-                    const char authkey[SUPLA_AUTHKEY_SIZE], int *UserID,
-                    database *db);
-
  public:
-  static void init(void);
-  static void release_cache(void);
-  static int get_authkey_cache_size(void);
   explicit supla_abstract_connection_object(supla_connection *conn);
   virtual ~supla_abstract_connection_object();
   virtual unsigned _supla_int64_t wait_time_usec(void);
