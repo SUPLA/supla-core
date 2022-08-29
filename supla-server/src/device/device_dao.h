@@ -34,8 +34,20 @@ class supla_device_dao : public supla_abstract_device_dao {
       int device_id, TDS_FirmwareUpdateParams *params,
       TSD_FirmwareUpdate_UrlResult *url);
 
-  virtual bool location_auth(int LocationID, char *LocationPWD, int *UserID,
+  virtual bool location_auth(int location_id, char *location_pwd, int *user_id,
                              bool *is_enabled);
+
+  virtual int get_location_id(int user_id, bool enabled);
+
+  virtual int get_device_id(int user_id, const char guid[SUPLA_GUID_SIZE]);
+
+  virtual bool get_device_reg_enabled(int user_id);
+
+  virtual int get_device_limit_left(int user_id);
+
+  virtual int get_device_variables(int device_id, bool *device_enabled,
+                                   int *original_location_id, int *location_id,
+                                   bool *location_enabled);
 };
 
 #endif /* SUPLA_DEVICE_DAO_H_ */

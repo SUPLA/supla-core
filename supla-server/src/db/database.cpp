@@ -365,70 +365,6 @@ int database::get_device_id(int UserID, const char GUID[SUPLA_GUID_SIZE]) {
   return get_device_client_id(UserID, GUID, false);
 }
 
-int database::get_device(int DeviceID, bool *device_enabled,
-                         int *original_location_id, int *location_id,
-                         bool *location_enabled) {
-  if (_mysql == NULL || DeviceID == 0) return 0;
-
-  MYSQL_STMT *stmt = NULL;
-
-  MYSQL_BIND pbind[1];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&DeviceID;
-
-  int _device_enabled = 0;
-  int _original_location_id = 0;
-  int _location_id = 0;
-  int _location_enabled = 0;
-
-  bool result = false;
-
-  if (stmt_execute((void **)&stmt,
-                   "SELECT CAST(d.`enabled` AS unsigned integer) `d_enabled`, "
-                   "IFNULL(d.original_location_id, 0), IFNULL(d.location_id, "
-                   "0), IFNULL(CAST(l.`enabled` AS unsigned integer), 0) "
-                   "`l_enabled` FROM supla_iodevice d LEFT JOIN supla_location "
-                   "l ON l.id = d.location_id WHERE d.id = ?",
-                   pbind, 1, true)) {
-    MYSQL_BIND rbind[4];
-    memset(rbind, 0, sizeof(rbind));
-
-    rbind[0].buffer_type = MYSQL_TYPE_LONG;
-    rbind[0].buffer = (char *)&_device_enabled;
-
-    rbind[1].buffer_type = MYSQL_TYPE_LONG;
-    rbind[1].buffer = (char *)&_original_location_id;
-
-    rbind[2].buffer_type = MYSQL_TYPE_LONG;
-    rbind[2].buffer = (char *)&_location_id;
-
-    rbind[3].buffer_type = MYSQL_TYPE_LONG;
-    rbind[3].buffer = (char *)&_location_enabled;
-
-    if (mysql_stmt_bind_result(stmt, rbind)) {
-      supla_log(LOG_ERR, "MySQL - stmt bind error - %s",
-                mysql_stmt_error(stmt));
-    } else {
-      mysql_stmt_store_result(stmt);
-
-      if (mysql_stmt_num_rows(stmt) > 0 && !mysql_stmt_fetch(stmt)) {
-        *device_enabled = _device_enabled == 1;
-        *original_location_id = _original_location_id;
-        *location_id = _location_id;
-        *location_enabled = _location_enabled == 1;
-
-        result = true;
-      }
-    }
-
-    mysql_stmt_close(stmt);
-  }
-
-  return result ? DeviceID : 0;
-}
-
 bool database::on_newdevice(int DeviceID) {
   char sql[51];
   snprintf(sql, sizeof(sql), "CALL `supla_on_newdevice`(%i)", DeviceID);
@@ -461,38 +397,6 @@ int database::get_device_limit_left(int UserID) {
 int database::get_device_count(int UserID) {
   return get_count(UserID,
                    "SELECT COUNT(*) FROM supla_iodevice WHERE user_id = ?");
-}
-
-int database::get_location_id(int UserID, bool enabled) {
-  MYSQL_STMT *stmt = NULL;
-  int Result = 0;
-  int _enabled = enabled ? 1 : 0;
-
-  MYSQL_BIND pbind[2];
-  memset(pbind, 0, sizeof(pbind));
-
-  pbind[0].buffer_type = MYSQL_TYPE_LONG;
-  pbind[0].buffer = (char *)&UserID;
-
-  pbind[1].buffer_type = MYSQL_TYPE_LONG;
-  pbind[1].buffer = (char *)&_enabled;
-
-  if (!stmt_get_int((void **)&stmt, &Result, NULL, NULL, NULL,
-                    "SELECT id FROM `supla_location` WHERE user_id = ? AND "
-                    "enabled = ? LIMIT 1",
-                    pbind, 2))
-    return 0;
-
-  return Result;
-}
-
-bool database::get_device_reg_enabled(int UserID) {
-  return get_count(UserID,
-                   "SELECT COUNT(*) FROM `supla_user` WHERE id = ? AND "
-                   "iodevice_reg_enabled IS NOT NULL AND iodevice_reg_enabled "
-                   ">= UTC_TIMESTAMP()") > 0
-             ? true
-             : false;
 }
 
 int database::add_device(int LocationID, const char GUID[SUPLA_GUID_SIZE],
@@ -960,13 +864,6 @@ int database::get_client(int ClientID, bool *client_enabled, int *access_id,
   }
 
   return 0;
-}
-
-int database::get_client_limit_left(int UserID) {
-  return get_int(UserID, 0,
-                 "SELECT IFNULL(limit_client, 0) - IFNULL(( SELECT COUNT(*) "
-                 "FROM supla_client WHERE user_id = supla_user.id ), 0) FROM "
-                 "supla_user WHERE id = ?");
 }
 
 int database::get_client_count(int UserID) {
@@ -2167,8 +2064,6 @@ void database::state_webhook_remove_token(int UserID) {
 
   if (stmt != NULL) mysql_stmt_close(stmt);
 }
-
-
 
 bool database::get_channel_basic_cfg(int ChannelID, TSC_ChannelBasicCfg *cfg) {
   if (cfg == NULL) {
